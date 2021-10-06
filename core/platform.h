@@ -93,8 +93,9 @@ typedef _microstep_t microstep_t;
 /**
  * Create a new thread, starting with execution of lf_thread
  * getting passed arguments. The new handle is stored in thread_id.
- * 
+ *
  * @return 0 on success, platform-specific error number otherwise.
+ *
  */
 extern int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments);
 

@@ -544,12 +544,15 @@ void* listen_to_rti_UDP_thread(void* args) {
     return NULL;
 }
 
+
+
 /**
  * Create the thread responsible for handling clock synchronization
  * with the RTI if (runtime) clock synchronization is on.
  * Otherwise, do nothing an return 0.
  * 
  * @return On success, returns 0; On error, it returns an error number.
+ * \ingroup agroup
  */
 int create_clock_sync_thread(lf_thread_t* thread_id) {
 #ifdef _LF_CLOCK_SYNC_ON

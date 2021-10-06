@@ -24,7 +24,8 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
-/** C11 threads support for the C target of Lingua Franca.
+/** \file if_c11_threads_support.c
+ * C11 threads support for the C target of Lingua Franca.
  *  
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
  */
@@ -35,7 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * Create a new thread, starting with execution of lf_thread
- * getting passed arguments. The new handle is stored in thread.
+ * getting passed arguments. The new handle is tored in thread.
  *
  * @return 0 on success, error number otherwise (see thrd_create()).
  */
