@@ -13,5 +13,5 @@ To generate and view documentation, follow the following steps:
   - `git clone git@github.com:lf-lang/reactor-c.git`
   - `cd reactor-c/doc-sphinx`
   - `make html`
-- Navigate your browser to the generated HTML page:
+- Point your browser to the generated HTML page:
   - `firefox _build/html/index.html`
