@@ -1,4 +1,4 @@
-# reactor-c
+# Reactor-C: A reactor runtime implementation in C
 
 ## Documentation
 To generate documentation, follow the following steps:
