@@ -91,6 +91,7 @@ int _lf_register_trace_event(void* pointer1, void* pointer2, _lf_trace_object_t 
     lf_mutex_lock(&_lf_trace_mutex);
     if (_lf_trace_object_descriptions_size >= TRACE_OBJECT_TABLE_SIZE) {
         lf_mutex_unlock(&_lf_trace_mutex);
+        fprintf(stderr, "WARNING: Exceeded trace object table size. Trace file will be incomplete.\n");
         return 0;
     }
     _lf_trace_object_descriptions[_lf_trace_object_descriptions_size].pointer = pointer1;
