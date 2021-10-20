@@ -137,6 +137,20 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SET_TOKEN(out, newtoken) _LF_SET_TOKEN(out, newtoken)
 
 //////////////////////////////////////////////////////////////
+/////////////  SET_MODE Function (to switch a mode)
+
+/**
+ * Sets the next mode of a modal reactor. Same as SET for outputs, only
+ * the last value will have effect if invoked multiple times.
+ * Works only in reactions with the target mode declared as effect.
+ *
+ * @param mode The target mode to set for activation.
+ */
+#ifdef MODAL_REACTORS
+#define SET_MODE(mode) _LF_SET_MODE(mode)
+#endif
+
+//////////////////////////////////////////////////////////////
 /////////////  Schedule Functions
  
 
