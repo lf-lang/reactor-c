@@ -1942,25 +1942,25 @@ void termination() {
  * @param mode The mode instace to check.
  */
 bool _lf_mode_is_active(reactor_mode_t* mode) {
-	if (mode != NULL) {
-		//DEBUG_PRINT("Checking mode state of %s", mode->name);
-		reactor_mode_state_t* state = mode->state;
-		while (state != NULL) {
-		    // If this or any parent mode is inactive, return inactive
-			if (state->active_mode != mode) {
-				//DEBUG_PRINT(" => Mode is inactive");
-				return false;
-			}
-			mode = state->parent_mode;
-			if (mode != NULL) {
-				state = mode->state;
-			} else {
-				state = NULL;
-			}
-		}
-		//DEBUG_PRINT(" => Mode is active");
-	}
-	return true;
+    if (mode != NULL) {
+        //DEBUG_PRINT("Checking mode state of %s", mode->name);
+        reactor_mode_state_t* state = mode->state;
+        while (state != NULL) {
+            // If this or any parent mode is inactive, return inactive
+            if (state->active_mode != mode) {
+                //DEBUG_PRINT(" => Mode is inactive");
+                return false;
+            }
+            mode = state->parent_mode;
+            if (mode != NULL) {
+                state = mode->state;
+            } else {
+                state = NULL;
+            }
+        }
+        //DEBUG_PRINT(" => Mode is active");
+    }
+    return true;
 }
 
 // Collection for suspending events in inactive modes
@@ -1972,31 +1972,31 @@ int _suspended_event_size = 0;
  * Save the given event as suspended.
  */
 void _lf_suspend_event(event_t* event) {
-	if (_suspended_event_size + 1 >= _suspended_event_capacity) {
-		_suspended_event_capacity += 10;
-		_suspended_events = (event_t**) realloc (_suspended_events, sizeof(event_t*) * _suspended_event_capacity);
-	}
-	_suspended_events[_suspended_event_size++] = event;
+    if (_suspended_event_size + 1 >= _suspended_event_capacity) {
+        _suspended_event_capacity += 10;
+        _suspended_events = (event_t**) realloc (_suspended_events, sizeof(event_t*) * _suspended_event_capacity);
+    }
+    _suspended_events[_suspended_event_size++] = event;
 }
 
 /**
  * Removes all null pointers in the collection of suspended events and updates its size.
  */
 void _lf_defrag_suspended_events() {
-	int gap_head = -1;
-	for (int i = 0; i < _suspended_event_size; i++) {
-		if (_suspended_events[i] == NULL && gap_head == -1) { // new gap
-			gap_head = i;
-		} else if (gap_head != -1) { // end of gap -> move tail forward
-			memmove(_suspended_events + gap_head, _suspended_events + i, (_suspended_event_size - i) * sizeof(event_t*));
-			_suspended_event_size -= i - gap_head;
-			i = gap_head; // continue on new position of this element
-			gap_head = -1;
-		}
-	}
-	if (gap_head != -1) { // gap end at the end of the list
-		_suspended_event_size -= _suspended_event_size - gap_head; // simply reduce size
-	}
+    int gap_head = -1;
+    for (int i = 0; i < _suspended_event_size; i++) {
+        if (_suspended_events[i] == NULL && gap_head == -1) { // new gap
+            gap_head = i;
+        } else if (gap_head != -1) { // end of gap -> move tail forward
+            memmove(_suspended_events + gap_head, _suspended_events + i, (_suspended_event_size - i) * sizeof(event_t*));
+            _suspended_event_size -= i - gap_head;
+            i = gap_head; // continue on new position of this element
+            gap_head = -1;
+        }
+    }
+    if (gap_head != -1) { // gap end at the end of the list
+        _suspended_event_size -= _suspended_event_size - gap_head; // simply reduce size
+    }
 }
 
 /**
@@ -2005,106 +2005,117 @@ void _lf_defrag_suspended_events() {
  *              Enclosing mode must come before inner.
  * @param num_states The number of mode state.
  */
-void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states) {
-	bool transition = false; // any mode change in this step
+void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mode_state_variable_reset_data_t reset_data[], int reset_data_size) {
+    bool transition = false; // any mode change in this step
 
-	// Detect mode changes (top down for hierarchical reset)
-	for (int i = 0; i < num_states; i++) {
-    	reactor_mode_state_t* state = states[i];
-    	if (state != NULL) {
-    		// Hierarchical reset: if this mode has parent that is entered in this step with a reset this reactor has to enter its initial mode
-			if (state->parent_mode != NULL &&
-				state->parent_mode->state != NULL &&
-				state->parent_mode->state->next_mode == state->parent_mode &&
-				state->parent_mode->state->mode_change == 1) {
-				// Reset to initial state
-				state->next_mode = state->initial_mode;
-				state->mode_change = 1; // Enter with reset, to cascade it further down
-				DEBUG_PRINT("Hierarchical mode reset to %s when entering %s.", state->initial_mode->name, state->parent_mode->name);
-			}
+    // Detect mode changes (top down for hierarchical reset)
+    for (int i = 0; i < num_states; i++) {
+        reactor_mode_state_t* state = states[i];
+        if (state != NULL) {
+            // Hierarchical reset: if this mode has parent that is entered in this step with a reset this reactor has to enter its initial mode
+            if (state->parent_mode != NULL &&
+                state->parent_mode->state != NULL &&
+                state->parent_mode->state->next_mode == state->parent_mode &&
+                state->parent_mode->state->mode_change == 1) {
+                // Reset to initial state
+                state->next_mode = state->initial_mode;
+                state->mode_change = 1; // Enter with reset, to cascade it further down
+                DEBUG_PRINT("Modes: Hierarchical mode reset to %s when entering %s.", state->initial_mode->name, state->parent_mode->name);
+            }
 
-			// Handle effect of entering next mode
-        	if (state->next_mode != NULL) {
-        		DEBUG_PRINT("Mode transition to %s.", state->next_mode->name);
-				transition = true;
+            // Handle effect of entering next mode
+            if (state->next_mode != NULL) {
+                DEBUG_PRINT("Modes: Transition to %s.", state->next_mode->name);
+                transition = true;
 
-				// TODO Introduce reset reaction trigger (for resetting state variables) and schedule here for next microstep.
+                if (state->mode_change == 1) {
+                    // Reset state variables
+                    for (int i = 0; i < reset_data_size; i++) {
+                        mode_state_variable_reset_data_t data = reset_data[i];
+                        if (data.mode == state->next_mode) {
+                            DEBUG_PRINT("Modes: Reseting state variable.");
+                            memcpy(data.target, data.source, data.size);
+                        }
+                    }
+                }
 
-				// Reset/Reactivate previously suspended events of next state
-				for (int i = 0; i < _suspended_event_size; i++) {
-					event_t* event = _suspended_events[i];
+                // TODO Introduce reset reaction trigger and schedule here for next microstep.
 
-					if (event != NULL && event->trigger != NULL && event->trigger->mode == state->next_mode) {
-						if (state->mode_change == 1) { // Reset transition
-							if (event->trigger->is_timer) { // Only reset timers
-								trigger_t* timer = event->trigger;
+                // Reset/Reactivate previously suspended events of next state
+                for (int i = 0; i < _suspended_event_size; i++) {
+                    event_t* event = _suspended_events[i];
 
-								DEBUG_PRINT("Re-enqueuing reset timer.");
-								// Reschedule the timer with no additional delay.
-								// This will take care of super dense time when offset is 0.
-								_lf_schedule(timer, 0, NULL);
-							}
-							// Drop all events upon reset (timer event was recreated by schedule and original can be removed here)
-						} else if (state->next_mode != state->active_mode && event->trigger != NULL) { // History transition to a different mode
-							// Remaining time that the event would have been waiting before mode was left
-							instant_t local_remaining_delay = event->time - (state->next_mode->deactivation_time != 0 ? state->next_mode->deactivation_time : get_start_time());
-							// Reschedule event with original delay (schedule will add the standard offset, hence remove it)
-							DEBUG_PRINT("Re-enqueuing event with a suspended delay of %d (TTH: %d, Mode left at: %d).", local_remaining_delay, event->time, state->next_mode->deactivation_time);
-							// FIXME this does not correctly take microsteps into account
-							_lf_schedule(event->trigger, local_remaining_delay - event->trigger->offset, event->token);
-						}
-						// Clear out field for now; collection will be defragmented later
-						_suspended_events[i] = NULL;
+                    if (event != NULL && event->trigger != NULL && event->trigger->mode == state->next_mode) {
+                        if (state->mode_change == 1) { // Reset transition
+                            if (event->trigger->is_timer) { // Only reset timers
+                                trigger_t* timer = event->trigger;
 
-						// A fresh event was created by schedule, hence, recycle old one
-						_lf_recycle_event(event);
-					}
-				}
-			}
+                                DEBUG_PRINT("Modes: Re-enqueuing reset timer.");
+                                // Reschedule the timer with no additional delay.
+                                // This will take care of super dense time when offset is 0.
+                                _lf_schedule(timer, 0, NULL);
+                            }
+                            // Drop all events upon reset (timer event was recreated by schedule and original can be removed here)
+                        } else if (state->next_mode != state->active_mode && event->trigger != NULL) { // History transition to a different mode
+                            // Remaining time that the event would have been waiting before mode was left
+                            instant_t local_remaining_delay = event->time - (state->next_mode->deactivation_time != 0 ? state->next_mode->deactivation_time : get_start_time());
+                            // Reschedule event with original delay (schedule will add the standard offset, hence remove it)
+                            DEBUG_PRINT("Modes: Re-enqueuing event with a suspended delay of %d (TTH: %d, Mode left at: %d).", local_remaining_delay, event->time, state->next_mode->deactivation_time);
+                            // FIXME this does not correctly take microsteps into account
+                            _lf_schedule(event->trigger, local_remaining_delay - event->trigger->offset, event->token);
+                        }
+                        // Clear out field for now; collection will be defragmented later
+                        _suspended_events[i] = NULL;
+
+                        // A fresh event was created by schedule, hence, recycle old one
+                        _lf_recycle_event(event);
+                    }
+                }
+            }
         }
     }
 
-	// Handle leaving active mode in all states
+    // Handle leaving active mode in all states
     if (transition) {
-    	// Defragment suspended events and update size (before suspending new ones)
-    	_lf_defrag_suspended_events();
+        // Defragment suspended events and update size (before suspending new ones)
+        _lf_defrag_suspended_events();
 
-		// Set new active mode and clear mode change flags
-		for (int i = 0; i < num_states; i++) {
-			reactor_mode_state_t* state = states[i];
-			if (state != NULL && state->next_mode != NULL) {
-				// Save time when mode was left to handle suspended events in the future
-				state->active_mode->deactivation_time = get_logical_time();
+        // Set new active mode and clear mode change flags
+        for (int i = 0; i < num_states; i++) {
+            reactor_mode_state_t* state = states[i];
+            if (state != NULL && state->next_mode != NULL) {
+                // Save time when mode was left to handle suspended events in the future
+                state->active_mode->deactivation_time = get_logical_time();
 
-				// Apply transition
-				state->active_mode = state->next_mode;
-				state->next_mode = NULL;
-				state->mode_change = 0;
-			}
-		}
+                // Apply transition
+                state->active_mode = state->next_mode;
+                state->next_mode = NULL;
+                state->mode_change = 0;
+            }
+        }
 
-		// Retract all events from the event queue that are associate with now inactive modes
-		if (event_q != NULL) {
-			int q_size = pqueue_size(event_q);
-			event_t* delayed_removal[q_size];
-			int delayed_removal_count = 0;
+        // Retract all events from the event queue that are associate with now inactive modes
+        if (event_q != NULL) {
+            int q_size = pqueue_size(event_q);
+            event_t* delayed_removal[q_size];
+            int delayed_removal_count = 0;
 
-			// Find events
-		    for (int i = 0; i < q_size; i++) {
-		    	event_t* event = (event_t*)event_q->d[i + 1]; // internal queue data structure omits index 0
-		        if (event != NULL && event->trigger != NULL && !_lf_mode_is_active(event->trigger->mode)) {
-		        	delayed_removal[delayed_removal_count++] = event;
-		        	_lf_suspend_event(event);
-		        }
-		    }
+            // Find events
+            for (int i = 0; i < q_size; i++) {
+                event_t* event = (event_t*)event_q->d[i + 1]; // internal queue data structure omits index 0
+                if (event != NULL && event->trigger != NULL && !_lf_mode_is_active(event->trigger->mode)) {
+                    delayed_removal[delayed_removal_count++] = event;
+                    _lf_suspend_event(event);
+                }
+            }
 
-		    // Events are removed delayed in order to allow linear iteration over the queue
-			DEBUG_PRINT("Pulling %d events from the event queue to suspend them. %d events are now suspended.", delayed_removal_count, _suspended_event_size);
-		    for (int i = 0; i < delayed_removal_count; i++) {
-		    	// FIXME This will break next event references that models super dense time!!!
-		    	pqueue_remove(event_q, delayed_removal[i]);
-		    }
-		}
+            // Events are removed delayed in order to allow linear iteration over the queue
+            DEBUG_PRINT("Modes: Pulling %d events from the event queue to suspend them. %d events are now suspended.", delayed_removal_count, _suspended_event_size);
+            for (int i = 0; i < delayed_removal_count; i++) {
+                // FIXME This will break next event references that models super dense time!!!
+                pqueue_remove(event_q, delayed_removal[i]);
+            }
+        }
     }
 }
 #endif

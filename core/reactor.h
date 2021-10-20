@@ -449,6 +449,8 @@ typedef struct token_present_t {
 typedef struct reactor_mode_t reactor_mode_t;
 /** Typedef for reactor_mode_state_t struct, used for storing modal state of reactor and/or its relation to enclosing modes. */
 typedef struct reactor_mode_state_t reactor_mode_state_t;
+/** Typedef for mode_state_variable_reset_data_t struct, used for storing data for resetting state variables nested in modes. */
+typedef struct mode_state_variable_reset_data_t mode_state_variable_reset_data_t;
 
 /** A struct to represent a single mode instace in a reactor instance. */
 struct reactor_mode_t {
@@ -463,6 +465,13 @@ struct reactor_mode_state_t {
     reactor_mode_t* active_mode;    // Pointer to the currently active mode.
     reactor_mode_t* next_mode;      // Pointer to the next mode to activate at the end of this step (if set).
     char mode_change;               // A mode change type flag (0: no change, 1: reset, 2: history).
+};
+/** A struct to store data for resetting state variables nested in modes. */
+struct mode_state_variable_reset_data_t {
+    reactor_mode_t* mode;           // Pointer to the enclosing mode.
+    void* target;                   // Pointer to the target variable.
+    void* source;                   // Pointer to the data source.
+    size_t size;                    // The size of the variable.
 };
 #else
 /*
