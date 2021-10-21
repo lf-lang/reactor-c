@@ -700,6 +700,13 @@ void _lf_next() {
  */
 void request_stop() {
     lf_mutex_lock(&mutex);
+    // Check if already at the previous stop tag.
+    if (compare_tags(current_tag, stop_tag) >= 0) {
+        // If so, ignore the stop request since the program
+        // is already stopping at the current tag.
+        lf_mutex_unlock(&mutex);
+        return;
+    }
 #ifdef FEDERATED
     _lf_fd_send_stop_request_to_rti();
     // Do not set stop_requested
@@ -1086,6 +1093,9 @@ void* worker(void* arg) {
                     tracepoint_worker_wait_ends(worker_number);
                     DEBUG_PRINT("Worker %d: Done waiting.", worker_number);
                 }
+            } else if (compare_tags(current_tag, stop_tag) >= 0) {
+                // At the stop tag so we can exit this thread.
+                break;
             } else {
                 // Logical time is not complete, and nothing on the reaction queue
                 // is ready to run.
