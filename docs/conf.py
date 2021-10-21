@@ -80,14 +80,14 @@ html_theme_options = {
     # Toc options
     'collapse_navigation': True,
     'sticky_navigation': True,
-    'navigation_depth': 4,
+    'navigation_depth': 8,
     'includehidden': True,
     'titles_only': False
 }
 
 # Setup the breathe extension
 breathe_projects = {
-    "reactor-cpp": "./_build/xml"
+    "reactor-c": "./_build/xml"
 }
 
 # Setup the exhale extension
@@ -96,7 +96,7 @@ exhale_args = {
     "containmentFolder":     "./api",
     "rootFileName":          "library_root.rst",
     "rootFileTitle":         "Reactor C Documentation",
-    "doxygenStripFromPath":  "..",
+    "doxygenStripFromPath":  "../.",
     # Suggested optional arguments
     "createTreeView":        True,
     # TIP: if using the sphinx-bootstrap-theme, you need
@@ -105,8 +105,15 @@ exhale_args = {
     # "exhaleDoxygenStdin":    "INPUT = ../core"
 }
 
+
+
 # Tell sphinx what the primary language being documented is.
 primary_domain = 'c'
+
+breathe_domain_by_extension = {
+    "h" : "c",
+    "c" : "c",
+}
 
 # Tell sphinx what the pygments highlight language should be.
 highlight_language = 'c'
@@ -119,7 +126,7 @@ highlight_language = 'c'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+# html_static_path = ['_static']
 
-breathe_default_project = "reactor-cpp"
+breathe_default_project = "reactor-c"
 breathe_default_members = ('members', 'undoc-members')
