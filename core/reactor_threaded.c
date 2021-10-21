@@ -1093,9 +1093,6 @@ void* worker(void* arg) {
                     tracepoint_worker_wait_ends(worker_number);
                     DEBUG_PRINT("Worker %d: Done waiting.", worker_number);
                 }
-            } else if (compare_tags(current_tag, stop_tag) >= 0) {
-                // At the stop tag so we can exit this thread.
-                break;
             } else {
                 // Logical time is not complete, and nothing on the reaction queue
                 // is ready to run.
