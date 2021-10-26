@@ -103,6 +103,10 @@ Macros</h2></td></tr>
 <tr class="separator:a30e47c4dd44d168c2982d3ec1d4e0825"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8d1ccba996ebc6fc86c6c3c52051329d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a8d1ccba996ebc6fc86c6c3c52051329d">SECS</a>(t)&#160;&#160;&#160;(t * 1000000000LL)</td></tr>
 <tr class="separator:a8d1ccba996ebc6fc86c6c3c52051329d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af7dae730408c43d8c820ab73e580865a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#af7dae730408c43d8c820ab73e580865a">SECOND</a>(t)&#160;&#160;&#160;(t * 1000000000LL)</td></tr>
+<tr class="separator:af7dae730408c43d8c820ab73e580865a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2874e6caf9a4e0452441e9edeca046dc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a2874e6caf9a4e0452441e9edeca046dc">SECONDS</a>(t)&#160;&#160;&#160;(t * 1000000000LL)</td></tr>
+<tr class="separator:a2874e6caf9a4e0452441e9edeca046dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a72e3dbcf6a85e8c0a04691cfb14d3876"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a72e3dbcf6a85e8c0a04691cfb14d3876">MINUTE</a>(t)&#160;&#160;&#160;(t * 60000000000LL)</td></tr>
 <tr class="separator:a72e3dbcf6a85e8c0a04691cfb14d3876"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a694878332b974b464c7d58c7114ee6e9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a694878332b974b464c7d58c7114ee6e9">MINUTES</a>(t)&#160;&#160;&#160;(t * 60000000000LL)</td></tr>
@@ -147,6 +151,10 @@ Functions</h2></td></tr>
 <tr class="separator:a285bf3926110e2e1ee38febe34f69222"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a23e91eb69aca986b03aba4ce86923102"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a23e91eb69aca986b03aba4ce86923102">get_elapsed_logical_time</a> ()</td></tr>
 <tr class="separator:a23e91eb69aca986b03aba4ce86923102"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a43509483b3e9886acd002c7d7b6482c8"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a43509483b3e9886acd002c7d7b6482c8">lf_readable_time</a> (char *buffer, <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> time)</td></tr>
+<tr class="separator:a43509483b3e9886acd002c7d7b6482c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae956f1688a3893b44cf4bced3c13ef9a"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ae956f1688a3893b44cf4bced3c13ef9a">lf_comma_separated_time</a> (char *buffer, <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> time)</td></tr>
+<tr class="separator:ae956f1688a3893b44cf4bced3c13ef9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9da5960071964c9c2bdb602526da0565"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a9da5960071964c9c2bdb602526da0565">get_logical_time</a> ()</td></tr>
 <tr class="separator:a9da5960071964c9c2bdb602526da0565"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a284eab9a62e22fa3a64d36d301d0195d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a284eab9a62e22fa3a64d36d301d0195d">get_current_tag</a> ()</td></tr>
@@ -486,6 +494,42 @@ DESCRIPTION</h1>
 
 </div>
 </div>
+<a id="af7dae730408c43d8c820ab73e580865a" name="af7dae730408c43d8c820ab73e580865a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af7dae730408c43d8c820ab73e580865a">&#9670;&nbsp;</a></span>SECOND</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SECOND</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">t</td><td>)</td>
+          <td>&#160;&#160;&#160;(t * 1000000000LL)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a2874e6caf9a4e0452441e9edeca046dc" name="a2874e6caf9a4e0452441e9edeca046dc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2874e6caf9a4e0452441e9edeca046dc">&#9670;&nbsp;</a></span>SECONDS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define SECONDS</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">t</td><td>)</td>
+          <td>&#160;&#160;&#160;(t * 1000000000LL)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a8d1ccba996ebc6fc86c6c3c52051329d" name="a8d1ccba996ebc6fc86c6c3c52051329d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8d1ccba996ebc6fc86c6c3c52051329d">&#9670;&nbsp;</a></span>SECS</h2>
 
@@ -754,7 +798,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Return the current logical time in nanoseconds. On many platforms, this is the number of nanoseconds since January 1, 1970, but it is actually platform dependent.</p>
+<p >Store into the specified buffer a string representing the specified time with commas inserted every three digits. Return the current logical time in nanoseconds. On many platforms, this is the number of nanoseconds since January 1, 1970, but it is actually platform dependent.</p>
 <dl class="section return"><dt>Returns</dt><dd>A time instant.</dd></dl>
 <p>Return the current logical time in nanoseconds since January 1, 1970. </p>
 
@@ -813,6 +857,87 @@ DESCRIPTION</h1>
 </div><div class="memdoc">
 <p >Return the physical and logical time of the start of execution in nanoseconds. On many platforms, this is the number of nanoseconds since January 1, 1970, but it is actually platform dependent. </p><dl class="section return"><dt>Returns</dt><dd>A time instant.</dd></dl>
 <p>Return the physical time of the start of execution in nanoseconds. * On many platforms, this is the number of nanoseconds since January 1, 1970, but it is actually platform dependent. * </p><dl class="section return"><dt>Returns</dt><dd>A time instant. </dd></dl>
+
+</div>
+</div>
+<a id="ae956f1688a3893b44cf4bced3c13ef9a" name="ae956f1688a3893b44cf4bced3c13ef9a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae956f1688a3893b44cf4bced3c13ef9a">&#9670;&nbsp;</a></span>lf_comma_separated_time()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t lf_comma_separated_time </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>buffer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td>
+          <td class="paramname"><em>time</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Print a non-negative time value in nanoseconds with commas separating thousands into the specified buffer. Ideally, this would use the locale to use periods if appropriate, but I haven't found a sufficiently portable way to do that. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">buffer</td><td>A buffer long enough to contain a string like "9,223,372,036,854,775,807". </td></tr>
+    <tr><td class="paramname">time</td><td>A time value. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The number of characters written (not counting the null terminator).</dd></dl>
+<p>Print a non-negative time value in nanoseconds with commas separating thousands into the specified buffer. Ideally, this would use the locale to use periods if appropriate, but I haven't found a sufficiently portable way to do that. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">buffer</td><td>A buffer long enough to contain a string like "-9,223,372,036,854,775,807". </td></tr>
+    <tr><td class="paramname">time</td><td>A time value. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The number of characters written into the buffer (not including the null terminator). </dd></dl>
+
+</div>
+</div>
+<a id="a43509483b3e9886acd002c7d7b6482c8" name="a43509483b3e9886acd002c7d7b6482c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a43509483b3e9886acd002c7d7b6482c8">&#9670;&nbsp;</a></span>lf_readable_time()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t lf_readable_time </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>buffer</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td>
+          <td class="paramname"><em>time</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Store into the specified buffer a string giving a human-readable rendition of the specified time. The buffer must have length at least equal to LF_TIME_BUFFER_LENGTH. The format is: </p><div class="fragment"><div class="line">x weeks, x days, x hours, x minutes, x seconds, x unit</div>
+</div><!-- fragment --><p> where each <code>x</code> is a string of numbers with commas inserted if needed every three numbers and <code>unit</code> is nanoseconds, microseconds, or milliseconds. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">buffer</td><td>The buffer into which to write the string. </td></tr>
+    <tr><td class="paramname">time</td><td>The time to write. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The number of characters written (not counting the null terminator). </dd></dl>
 
 </div>
 </div>

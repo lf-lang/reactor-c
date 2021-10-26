@@ -106,8 +106,6 @@ Functions</h2></td></tr>
 <tr class="separator:a54be08fbc7990c2d8082a31cbbf6e019"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a75a5bf324229d35fb88541a04449c95b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a75a5bf324229d35fb88541a04449c95b">set_stp_offset</a> (<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset)</td></tr>
 <tr class="separator:a75a5bf324229d35fb88541a04449c95b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aab41b7d549aa8e04de9183dcd4ee468b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#aab41b7d549aa8e04de9183dcd4ee468b">readable_time</a> (char *buffer, <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> time)</td></tr>
-<tr class="separator:aab41b7d549aa8e04de9183dcd4ee468b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a88c890be1f8d45461a6985cbfe6faa99"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor__common_8c.html#abe23a36a87d2f0c076da417eb0114c7e">token_freed</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a88c890be1f8d45461a6985cbfe6faa99">_lf_done_using</a> (<a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
 <tr class="separator:a88c890be1f8d45461a6985cbfe6faa99"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a90d13f45544346ea6623768358762d8f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a90d13f45544346ea6623768358762d8f">_lf_enqueue_reaction</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *reaction)</td></tr>
@@ -1010,41 +1008,6 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p >Process the command-line arguments. If the command line arguments are not understood, then print a usage message and return 0. Otherwise, return 1. </p><dl class="section return"><dt>Returns</dt><dd>1 if the arguments processed successfully, 0 otherwise. </dd></dl>
-
-</div>
-</div>
-<a id="aab41b7d549aa8e04de9183dcd4ee468b" name="aab41b7d549aa8e04de9183dcd4ee468b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aab41b7d549aa8e04de9183dcd4ee468b">&#9670;&nbsp;</a></span>readable_time()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void readable_time </td>
-          <td>(</td>
-          <td class="paramtype">char *&#160;</td>
-          <td class="paramname"><em>buffer</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td>
-          <td class="paramname"><em>time</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Print a non-negative time value in nanoseconds with commas separating thousands into the specified buffer. Ideally, this would use the locale to use periods if appropriate, but I haven't found a sufficiently portable way to do that. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">buffer</td><td>A buffer long enough to contain a string like "9,223,372,036,854,775,807". </td></tr>
-    <tr><td class="paramname">time</td><td>A time value. </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>

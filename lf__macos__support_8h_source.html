@@ -110,21 +110,16 @@ $(function() {
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="preprocessor">#include &lt;time.h&gt;</span>   <span class="comment">// For CLOCK_MONOTONIC</span></div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="preprocessor">#include &lt;stdbool.h&gt;</span></div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno"><a class="line" href="lf__macos__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">   53</a></span><span class="keyword">typedef</span> int64_t <a class="code hl_typedef" href="lf__macos__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">_instant_t</a>;</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span> </div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno"><a class="line" href="lf__macos__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">   58</a></span><span class="keyword">typedef</span> int64_t <a class="code hl_typedef" href="lf__macos__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">_interval_t</a>;</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno"><a class="line" href="lf__macos__support_8h.html#a6fa587bab59881a6741957a2c1a13798">   63</a></span><span class="keyword">typedef</span> uint32_t <a class="code hl_typedef" href="lf__macos__support_8h.html#a6fa587bab59881a6741957a2c1a13798">_microstep_t</a>;</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span> </div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="comment">// The underlying physical clock for MacOS</span></div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno"><a class="line" href="lf__macos__support_8h.html#a98d0737d9461f08293ba054a2f754fc4">   66</a></span><span class="preprocessor">#define _LF_CLOCK CLOCK_MONOTONIC</span></div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span><span class="preprocessor">#endif </span><span class="comment">// LF_MACOS_SUPPORT_H</span></div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="comment">// Use 64-bit times and 32-bit unsigned microsteps</span></div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="preprocessor">#include &quot;<a class="code" href="lf__tag__64__32_8h.html">lf_tag_64_32.h</a>&quot;</span></div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="comment">// The underlying physical clock for MacOS</span></div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno"><a class="line" href="lf__macos__support_8h.html#a98d0737d9461f08293ba054a2f754fc4">   51</a></span><span class="preprocessor">#define _LF_CLOCK CLOCK_MONOTONIC</span></div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="preprocessor">#endif </span><span class="comment">// LF_MACOS_SUPPORT_H</span></div>
 <div class="ttc" id="alf___c11__threads__support_8h_html"><div class="ttname"><a href="lf___c11__threads__support_8h.html">lf_C11_threads_support.h</a></div></div>
 <div class="ttc" id="alf___p_o_s_i_x__threads__support_8h_html"><div class="ttname"><a href="lf___p_o_s_i_x__threads__support_8h.html">lf_POSIX_threads_support.h</a></div></div>
-<div class="ttc" id="alf__macos__support_8h_html_a5903c83266094ca1bc1b5cbd4c3bdad8"><div class="ttname"><a href="lf__macos__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">_interval_t</a></div><div class="ttdeci">int64_t _interval_t</div><div class="ttdef"><b>Definition:</b> lf_macos_support.h:58</div></div>
-<div class="ttc" id="alf__macos__support_8h_html_a6fa587bab59881a6741957a2c1a13798"><div class="ttname"><a href="lf__macos__support_8h.html#a6fa587bab59881a6741957a2c1a13798">_microstep_t</a></div><div class="ttdeci">uint32_t _microstep_t</div><div class="ttdef"><b>Definition:</b> lf_macos_support.h:63</div></div>
-<div class="ttc" id="alf__macos__support_8h_html_af8f0f3e156808b8af18129b60baf8ceb"><div class="ttname"><a href="lf__macos__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">_instant_t</a></div><div class="ttdeci">int64_t _instant_t</div><div class="ttdef"><b>Definition:</b> lf_macos_support.h:53</div></div>
+<div class="ttc" id="alf__tag__64__32_8h_html"><div class="ttname"><a href="lf__tag__64__32_8h.html">lf_tag_64_32.h</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

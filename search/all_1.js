@@ -1,8 +1,8 @@
 var searchData=
 [
   ['_5ffed_0',['_fed',['../federate_8c.html#a8dd2a9d602522afd72f6c524356868e4',1,'federate.c']]],
-  ['_5finstant_5ft_1',['_instant_t',['../lf__linux__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb',1,'_instant_t():&#160;lf_linux_support.h'],['../lf__macos__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb',1,'_instant_t():&#160;lf_macos_support.h'],['../lf__windows__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb',1,'_instant_t():&#160;lf_windows_support.h']]],
-  ['_5finterval_5ft_2',['_interval_t',['../lf__linux__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8',1,'_interval_t():&#160;lf_linux_support.h'],['../lf__macos__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8',1,'_interval_t():&#160;lf_macos_support.h'],['../lf__windows__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8',1,'_interval_t():&#160;lf_windows_support.h']]],
+  ['_5finstant_5ft_1',['_instant_t',['../lf__tag__64__32_8h.html#af8f0f3e156808b8af18129b60baf8ceb',1,'lf_tag_64_32.h']]],
+  ['_5finterval_5ft_2',['_interval_t',['../lf__tag__64__32_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8',1,'lf_tag_64_32.h']]],
   ['_5flf_5faction_5ffor_5fport_3',['_lf_action_for_port',['../federate_8c.html#a89f108cab37717071993e6e76efc83d7',1,'federate.c']]],
   ['_5flf_5faction_5fto_5ftrigger_4',['_lf_action_to_trigger',['../reactor__common_8c.html#aca6f924d2da176c98435f96d3bcfac6b',1,'reactor_common.c']]],
   ['_5flf_5fadvance_5flogical_5ftime_5',['_lf_advance_logical_time',['../reactor_8h.html#abadead0c4f54963b062503cf6cb7ace7',1,'_lf_advance_logical_time(instant_t next_time):&#160;reactor_common.c'],['../reactor__common_8c.html#abadead0c4f54963b062503cf6cb7ace7',1,'_lf_advance_logical_time(instant_t next_time):&#160;reactor_common.c']]],
@@ -20,7 +20,7 @@ var searchData=
   ['_5flf_5fdecrement_5fglobal_5ftag_5fbarrier_5flocked_17',['_lf_decrement_global_tag_barrier_locked',['../reactor__threaded_8c.html#a9438a9e9c2e8e6f15cc02c28b4828e2f',1,'reactor_threaded.c']]],
   ['_5flf_5fdo_5fstep_18',['_lf_do_step',['../reactor_8c.html#aadb792a95dca006ee73274b3547c7b96',1,'reactor.c']]],
   ['_5flf_5fdone_5fusing_19',['_lf_done_using',['../reactor__common_8c.html#a88c890be1f8d45461a6985cbfe6faa99',1,'reactor_common.c']]],
-  ['_5flf_5fenqueue_5freaction_20',['_lf_enqueue_reaction',['../reactor_8c.html#a90d13f45544346ea6623768358762d8f',1,'_lf_enqueue_reaction(reaction_t *reaction):&#160;reactor.c'],['../reactor__common_8c.html#a90d13f45544346ea6623768358762d8f',1,'_lf_enqueue_reaction(reaction_t *reaction):&#160;reactor.c'],['../reactor__threaded_8c.html#a90d13f45544346ea6623768358762d8f',1,'_lf_enqueue_reaction(reaction_t *reaction):&#160;reactor_threaded.c']]],
+  ['_5flf_5fenqueue_5freaction_20',['_lf_enqueue_reaction',['../reactor__threaded_8c.html#a90d13f45544346ea6623768358762d8f',1,'_lf_enqueue_reaction(reaction_t *reaction):&#160;reactor_threaded.c'],['../reactor__common_8c.html#a90d13f45544346ea6623768358762d8f',1,'_lf_enqueue_reaction(reaction_t *reaction):&#160;reactor.c'],['../reactor_8c.html#a90d13f45544346ea6623768358762d8f',1,'_lf_enqueue_reaction(reaction_t *reaction):&#160;reactor.c']]],
   ['_5flf_5fepoch_5foffset_21',['_lf_epoch_offset',['../lf__unix__clock__support_8c.html#ad4570173ff1498d16032fb37814b3f40',1,'_lf_epoch_offset():&#160;lf_unix_clock_support.c'],['../tag_8h.html#ad4570173ff1498d16032fb37814b3f40',1,'_lf_epoch_offset():&#160;lf_unix_clock_support.c']]],
   ['_5flf_5fexecution_5fstarted_22',['_lf_execution_started',['../reactor__common_8c.html#abac6e1f16371ec26c509b7ad375d6334',1,'reactor_common.c']]],
   ['_5flf_5ffd_5fsend_5fstop_5frequest_5fto_5frti_23',['_lf_fd_send_stop_request_to_rti',['../federate_8c.html#a60ec02f52c1a7db4c7bdbc2871eae636',1,'_lf_fd_send_stop_request_to_rti():&#160;federate.c'],['../reactor_8h.html#a60ec02f52c1a7db4c7bdbc2871eae636',1,'_lf_fd_send_stop_request_to_rti():&#160;federate.c']]],
@@ -30,7 +30,7 @@ var searchData=
   ['_5flf_5ffrequency_5fto_5fns_27',['_lf_frequency_to_ns',['../lf__windows__support_8c.html#a0ed17a48e846fb53e89df6d499882524',1,'lf_windows_support.c']]],
   ['_5flf_5fget_5fnew_5fevent_28',['_lf_get_new_event',['../reactor__common_8c.html#aeaa7db644ec69c067d3d6aadd2da9d81',1,'_lf_get_new_event():&#160;reactor_common.c'],['../reactor_8h.html#aeaa7db644ec69c067d3d6aadd2da9d81',1,'_lf_get_new_event():&#160;reactor_common.c']]],
   ['_5flf_5fglobal_5fphysical_5fclock_5fdrift_29',['_lf_global_physical_clock_drift',['../tag_8c.html#add35442c29c7b864362ef6672f35e7a5',1,'tag.c']]],
-  ['_5flf_5fglobal_5fphysical_5fclock_5foffset_30',['_lf_global_physical_clock_offset',['../tag_8c.html#a25a4105de2c979a2af935f5381058f15',1,'_lf_global_physical_clock_offset():&#160;tag.c'],['../tag_8h.html#a25a4105de2c979a2af935f5381058f15',1,'_lf_global_physical_clock_offset():&#160;tag.c']]],
+  ['_5flf_5fglobal_5fphysical_5fclock_5foffset_30',['_lf_global_physical_clock_offset',['../tag_8h.html#a25a4105de2c979a2af935f5381058f15',1,'_lf_global_physical_clock_offset():&#160;tag.c'],['../tag_8c.html#a25a4105de2c979a2af935f5381058f15',1,'_lf_global_physical_clock_offset():&#160;tag.c']]],
   ['_5flf_5fglobal_5ftag_5fadvancement_5fbarrier_31',['_lf_global_tag_advancement_barrier',['../reactor__threaded_8c.html#a539865ef209f81fba78e6d6935fa023d',1,'reactor_threaded.c']]],
   ['_5flf_5fglobal_5ftest_5fphysical_5fclock_5foffset_32',['_lf_global_test_physical_clock_offset',['../tag_8c.html#a0fb7f81b3b001d51f72b052a8a23c6d2',1,'_lf_global_test_physical_clock_offset():&#160;tag.c'],['../tag_8h.html#a0fb7f81b3b001d51f72b052a8a23c6d2',1,'_lf_global_test_physical_clock_offset():&#160;tag.c']]],
   ['_5flf_5fglobal_5ftime_5fstp_5foffset_33',['_lf_global_time_STP_offset',['../reactor_8h.html#a39f588e1df453139dbb9a4157dda2027',1,'_lf_global_time_STP_offset():&#160;reactor_common.c'],['../reactor__common_8c.html#a39f588e1df453139dbb9a4157dda2027',1,'_lf_global_time_STP_offset():&#160;reactor_common.c']]],
@@ -65,7 +65,7 @@ var searchData=
   ['_5flf_5fnotify_5fworkers_5flocked_62',['_lf_notify_workers_locked',['../reactor__threaded_8c.html#ad85dac0aa31333cb4fa1efb00f0cf907',1,'reactor_threaded.c']]],
   ['_5flf_5fnumber_5fof_5fthreads_63',['_lf_number_of_threads',['../reactor__common_8c.html#af74a2782bda0d66298d22d637ad964b5',1,'_lf_number_of_threads():&#160;reactor_common.c'],['../reactor_8h.html#af74a2782bda0d66298d22d637ad964b5',1,'_lf_number_of_threads():&#160;reactor_common.c']]],
   ['_5flf_5fnumber_5fof_5ftrace_5fbuffers_64',['_lf_number_of_trace_buffers',['../trace_8c.html#a143958fccee03b6d931bdb53ac00dff1',1,'trace.c']]],
-  ['_5flf_5fpop_5fevents_65',['_lf_pop_events',['../reactor_8h.html#acf1ea511fbce4c80b124391d75e6ba92',1,'_lf_pop_events():&#160;reactor_common.c'],['../reactor__common_8c.html#acf1ea511fbce4c80b124391d75e6ba92',1,'_lf_pop_events():&#160;reactor_common.c']]],
+  ['_5flf_5fpop_5fevents_65',['_lf_pop_events',['../reactor__common_8c.html#acf1ea511fbce4c80b124391d75e6ba92',1,'_lf_pop_events():&#160;reactor_common.c'],['../reactor_8h.html#acf1ea511fbce4c80b124391d75e6ba92',1,'_lf_pop_events():&#160;reactor_common.c']]],
   ['_5flf_5fprint_5fmessage_5ffunction_66',['_lf_print_message_function',['../sensor__simulator_8c.html#a9468858bfcd43511b468a8612e4b5fdc',1,'sensor_simulator.c']]],
   ['_5flf_5frecycle_5fevent_67',['_lf_recycle_event',['../reactor_8h.html#a662cfd5714e5930f5e1c880f13deba6d',1,'_lf_recycle_event(event_t *e):&#160;reactor_common.c'],['../reactor__common_8c.html#a662cfd5714e5930f5e1c880f13deba6d',1,'_lf_recycle_event(event_t *e):&#160;reactor_common.c']]],
   ['_5flf_5fregister_5ftrace_5fevent_68',['_lf_register_trace_event',['../trace_8c.html#a292c73e4f09daa50330b53079df620a9',1,'trace.c']]],
@@ -135,6 +135,6 @@ var searchData=
   ['_5flf_5ftrigger_5fstartup_5freactions_132',['_lf_trigger_startup_reactions',['../reactor_8h.html#aab3994336fae3b238f40283885873995',1,'reactor.h']]],
   ['_5flf_5fuse_5fperformance_5fcounter_133',['_lf_use_performance_counter',['../lf__windows__support_8c.html#a7ca2cba7fc3282d51a1386b95b06a6d4',1,'lf_windows_support.c']]],
   ['_5flf_5fwait_5fon_5fglobal_5ftag_5fbarrier_134',['_lf_wait_on_global_tag_barrier',['../reactor__threaded_8c.html#a6392f1a7187ec9d36d35ad51bf06ded0',1,'reactor_threaded.c']]],
-  ['_5fmicrostep_5ft_135',['_microstep_t',['../lf__linux__support_8h.html#a6fa587bab59881a6741957a2c1a13798',1,'_microstep_t():&#160;lf_linux_support.h'],['../lf__macos__support_8h.html#a6fa587bab59881a6741957a2c1a13798',1,'_microstep_t():&#160;lf_macos_support.h'],['../lf__windows__support_8h.html#a6fa587bab59881a6741957a2c1a13798',1,'_microstep_t():&#160;lf_windows_support.h']]],
+  ['_5fmicrostep_5ft_135',['_microstep_t',['../lf__tag__64__32_8h.html#a6fa587bab59881a6741957a2c1a13798',1,'lf_tag_64_32.h']]],
   ['_5frti_136',['_RTI',['../rti_8c.html#a104f9a0ac7ff4aa717e0462b8ac445ea',1,'rti.c']]]
 ];

@@ -67,14 +67,14 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a> &#124;
-<a href="#typedef-members">Typedefs</a>  </div>
+<a href="#define-members">Macros</a>  </div>
   <div class="headertitle"><div class="title">lf_macos_support.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &lt;time.h&gt;</code><br />
 <code>#include &lt;stdbool.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="lf__tag__64__32_8h_source.html">lf_tag_64_32.h</a>&quot;</code><br />
 </div>
 <p><a href="lf__macos__support_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -82,15 +82,6 @@ $(function() {
 Macros</h2></td></tr>
 <tr class="memitem:a98d0737d9461f08293ba054a2f754fc4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__macos__support_8h.html#a98d0737d9461f08293ba054a2f754fc4">_LF_CLOCK</a>&#160;&#160;&#160;CLOCK_MONOTONIC</td></tr>
 <tr class="separator:a98d0737d9461f08293ba054a2f754fc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
-Typedefs</h2></td></tr>
-<tr class="memitem:af8f0f3e156808b8af18129b60baf8ceb"><td class="memItemLeft" align="right" valign="top">typedef int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__macos__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">_instant_t</a></td></tr>
-<tr class="separator:af8f0f3e156808b8af18129b60baf8ceb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5903c83266094ca1bc1b5cbd4c3bdad8"><td class="memItemLeft" align="right" valign="top">typedef int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__macos__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">_interval_t</a></td></tr>
-<tr class="separator:a5903c83266094ca1bc1b5cbd4c3bdad8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6fa587bab59881a6741957a2c1a13798"><td class="memItemLeft" align="right" valign="top">typedef uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__macos__support_8h.html#a6fa587bab59881a6741957a2c1a13798">_microstep_t</a></td></tr>
-<tr class="separator:a6fa587bab59881a6741957a2c1a13798"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a98d0737d9461f08293ba054a2f754fc4" name="a98d0737d9461f08293ba054a2f754fc4"></a>
@@ -104,53 +95,8 @@ Typedefs</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-</div>
-</div>
-<h2 class="groupheader">Typedef Documentation</h2>
-<a id="af8f0f3e156808b8af18129b60baf8ceb" name="af8f0f3e156808b8af18129b60baf8ceb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af8f0f3e156808b8af18129b60baf8ceb">&#9670;&nbsp;</a></span>_instant_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">typedef int64_t <a class="el" href="lf__linux__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">_instant_t</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
 <p >MacOS API support for the C target of Lingua Franca.</p>
-<dl class="section author"><dt>Author</dt><dd>{Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span style="display: none;">.nosp@m.</span>sh@u<span style="display: none;">.nosp@m.</span>tdall<span style="display: none;">.nosp@m.</span>as.e<span style="display: none;">.nosp@m.</span>du</a>} Time instant. Both physical and logical times are represented using this typedef. WARNING: If this code is used after about the year 2262, then representing time as a 64-bit long long will be insufficient. </dd></dl>
-
-</div>
-</div>
-<a id="a5903c83266094ca1bc1b5cbd4c3bdad8" name="a5903c83266094ca1bc1b5cbd4c3bdad8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5903c83266094ca1bc1b5cbd4c3bdad8">&#9670;&nbsp;</a></span>_interval_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">typedef int64_t <a class="el" href="lf__linux__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">_interval_t</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Interval of time. </p>
-
-</div>
-</div>
-<a id="a6fa587bab59881a6741957a2c1a13798" name="a6fa587bab59881a6741957a2c1a13798"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6fa587bab59881a6741957a2c1a13798">&#9670;&nbsp;</a></span>_microstep_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">typedef uint32_t <a class="el" href="lf__linux__support_8h.html#a6fa587bab59881a6741957a2c1a13798">_microstep_t</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Microstep instant. </p>
+<dl class="section author"><dt>Author</dt><dd>{Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span style="display: none;">.nosp@m.</span>sh@u<span style="display: none;">.nosp@m.</span>tdall<span style="display: none;">.nosp@m.</span>as.e<span style="display: none;">.nosp@m.</span>du</a>} </dd></dl>
 
 </div>
 </div>
