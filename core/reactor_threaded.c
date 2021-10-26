@@ -700,6 +700,13 @@ void _lf_next() {
  */
 void request_stop() {
     lf_mutex_lock(&mutex);
+    // Check if already at the previous stop tag.
+    if (compare_tags(current_tag, stop_tag) >= 0) {
+        // If so, ignore the stop request since the program
+        // is already stopping at the current tag.
+        lf_mutex_unlock(&mutex);
+        return;
+    }
 #ifdef FEDERATED
     _lf_fd_send_stop_request_to_rti();
     // Do not set stop_requested
