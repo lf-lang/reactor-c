@@ -47,7 +47,7 @@ preamble {=
 To create a deque, use calloc to ensure that it gets initialized
 with null pointers and zero size:
 <pre>
-    deque* my_deque = calloc(1, sizeof(struct deque));
+    deque_t* my_deque = (deque_t*) calloc(1, sizeof(deque_t));
 </pre>
 Alternatively, you can call initialize:
 <pre>
@@ -55,6 +55,8 @@ Alternatively, you can call initialize:
     deque_initialize(&my_deque);
 </pre>
 */
+
+#include "deque.h"
 
 /**
  * A node in the queue.
@@ -66,19 +68,10 @@ typedef struct deque_node_t {
 } deque_node_t;
 
 /**
- * A double-ended queue.
- */
-typedef struct deque_t {
-    struct deque_node_t* front;
-    struct deque_node_t* back;
-    size_t size;
-} deque_t;
-
-/**
  * Initialize the specified deque to an empty deque.
  * @param d The deque.
  */
-void deque_initialize(struct deque_t* d) {
+void deque_initialize(deque_t* d) {
     if (d != NULL) {
         d->front = NULL;
         d->back = NULL;
@@ -90,11 +83,20 @@ void deque_initialize(struct deque_t* d) {
  * Return true if the queue is empty.
  * @param d The deque.
  */
-bool deque_is_empty(struct deque_t* d) {
+bool deque_is_empty(deque_t* d) {
     if (d != NULL) {
         return (d->front == NULL);
     }
     return true;
+}
+
+/**
+ * Return the size of the queue.
+ * @param d The deque.
+ * @return The size of the queue.
+ */
+size_t deque_size(deque_t* d) {
+	return d->size;
 }
 
 /**
@@ -105,7 +107,7 @@ bool deque_is_empty(struct deque_t* d) {
  * @param value The payload of the node.
  */
 deque_node_t* _deque_create_node(void* value) {
-    deque_node_t *new_node = (struct deque_node_t *) calloc(1, sizeof(struct deque_node_t));
+    deque_node_t *new_node = (deque_node_t *) calloc(1, sizeof(deque_node_t));
     new_node->value = value;
     return new_node;
 }
@@ -115,7 +117,7 @@ deque_node_t* _deque_create_node(void* value) {
  * @param d The queue.
  * @param value The value to push.
  */
-void deque_push_front(struct deque_t* d, void* value) {
+void deque_push_front(deque_t* d, void* value) {
     deque_node_t *n = _deque_create_node(value);
     if (d->front == NULL) {
     	d->back = d->front = n;
@@ -133,7 +135,7 @@ void deque_push_front(struct deque_t* d, void* value) {
  * @param d The queue.
  * @param value The value to push.
  */
-void deque_push_back(struct deque_t* d, void* value) {
+void deque_push_back(deque_t* d, void* value) {
     deque_node_t *n = _deque_create_node(value);
     if (d->back == NULL) {
         d->back = d->front = n;
@@ -151,13 +153,13 @@ void deque_push_back(struct deque_t* d, void* value) {
  * @param d The queue.
  * @return The value on the front of the queue or NULL if the queue is empty.
  */
-void* deque_pop_front(struct deque_t* d) {
+void* deque_pop_front(deque_t* d) {
     if (d == NULL || d->front == NULL) {
         return NULL;
     }
 
     void* value = d->front->value;
-    struct deque_node_t *temp = d->front; // temporary pointer for freeing up memory
+    deque_node_t *temp = d->front; // temporary pointer for freeing up memory
 
     if (d->front == d->back) {
         // popping last element in deque
@@ -175,13 +177,13 @@ void* deque_pop_front(struct deque_t* d) {
  * @param d The queue.
  * @return The value on the back of the queue or NULL if the queue is empty.
  */
-void* deque_pop_back(struct deque_t* d) {
+void* deque_pop_back(deque_t* d) {
     if (d == NULL || d->back == NULL) {
         return NULL;
     }
 
     void* value = d->back->value;
-    struct deque_node_t *temp = d->back; // temporary pointer for freeing up memory
+    deque_node_t *temp = d->back; // temporary pointer for freeing up memory
     if (d->front == d->back) {
         // popping last element in deque
         d->front = d->back = NULL;
@@ -198,7 +200,7 @@ void* deque_pop_back(struct deque_t* d) {
  * @param d The queue.
  * @return The value on the front of the queue or NULL if the queue is empty.
  */
-void* deque_peek_back(struct deque_t* d) {
+void* deque_peek_back(deque_t* d) {
     if (d == NULL || d->back == NULL) {
         return NULL;
     }
@@ -210,7 +212,7 @@ void* deque_peek_back(struct deque_t* d) {
  * @param d The queue.
  * @return The value on the back of the queue or NULL if the queue is empty.
  */
-void* deque_peek_front(struct deque_t* d) {
+void* deque_peek_front(deque_t* d) {
     if (d == NULL || d->front == NULL) {
         return NULL;
     }
