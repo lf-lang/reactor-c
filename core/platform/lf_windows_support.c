@@ -58,10 +58,6 @@ double _lf_frequency_to_ns = 1.0;
 #ifdef NUMBER_OF_WORKERS
 #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
 
-NtDelayExecution_t *NtDelayExecution = NULL;
-NtQueryPerformanceCounter_t *NtQueryPerformanceCounter = NULL;
-NtQuerySystemTime_t *NtQuerySystemTime = NULL;
-
 /**
  * Create a new thread, starting with execution of lf_thread
  * getting passed arguments. The new handle is stored in thread.

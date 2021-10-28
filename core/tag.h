@@ -149,11 +149,6 @@ size_t lf_readable_time(char* buffer, instant_t time);
 size_t lf_comma_separated_time(char* buffer, instant_t time);
 
 /**
- * Store into the specified buffer a string representing the specified
- * time with commas inserted every three digits.
- */
-
-/**
  * Return the current logical time in nanoseconds.
  * On many platforms, this is the number of nanoseconds
  * since January 1, 1970, but it is actually platform dependent.
