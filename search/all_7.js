@@ -29,5 +29,6 @@ var searchData=
   ['forever_5ftag_26',['FOREVER_TAG',['../tag_8h.html#a183109e082a793ae85cec00d72e70d4b',1,'tag.h']]],
   ['forever_5ftag_5finitializer_27',['FOREVER_TAG_INITIALIZER',['../tag_8h.html#a33ccb2b8fb9f20ab29ea298b9051443a',1,'tag.h']]],
   ['format_28',['format',['../structlf__wav__riff__t.html#aea96746028148a39a7781392f1284a51',1,'lf_wav_riff_t']]],
-  ['function_29',['function',['../structreaction__t.html#afd6087e8a7d3cc46b430d4187128896c',1,'reaction_t']]]
+  ['front_29',['front',['../structdeque__t.html#af38a8d05684909a3674ebcb3beeff730',1,'deque_t']]],
+  ['function_30',['function',['../structreaction__t.html#afd6087e8a7d3cc46b430d4187128896c',1,'reaction_t']]]
 ];

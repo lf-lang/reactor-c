@@ -9,7 +9,7 @@ var searchData=
   ['server_5fport_6',['server_port',['../structfederate__instance__t.html#a309c9672d657f20cd1d3661edc7d5179',1,'federate_instance_t::server_port()'],['../structfederate__t.html#a24da23c5b4db458364795823e03ddff2',1,'federate_t::server_port()']]],
   ['server_5fsocket_7',['server_socket',['../structfederate__instance__t.html#a20c5d19d5166ec82a09efe072c2f1b49',1,'federate_instance_t']]],
   ['setpos_8',['setpos',['../structpqueue__t.html#a0960bed72e0c851bccf1591c39360c73',1,'pqueue_t']]],
-  ['size_9',['size',['../structpqueue__t.html#a37a81db394494e542cdaec80ce4f2f42',1,'pqueue_t']]],
+  ['size_9',['size',['../structpqueue__t.html#a37a81db394494e542cdaec80ce4f2f42',1,'pqueue_t::size()'],['../structdeque__t.html#ac8a00537c1990f31e76114c498c86b29',1,'deque_t::size()']]],
   ['socket_10',['socket',['../structfederate__t.html#ab43bed0befa07b0d538c174eeaf5c0f7',1,'federate_t']]],
   ['socket_5fdescriptor_5ftcp_11',['socket_descriptor_TCP',['../struct_r_t_i__instance__t.html#a3e379f2a116786efca3a89041a6af2cc',1,'RTI_instance_t']]],
   ['socket_5fdescriptor_5fudp_12',['socket_descriptor_UDP',['../struct_r_t_i__instance__t.html#af7ea0946430be69dbd403314255334a9',1,'RTI_instance_t']]],
