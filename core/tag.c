@@ -341,6 +341,8 @@ size_t lf_readable_time(char* buffer, instant_t time) {
 		buffer += printed;
 		sprintf(buffer, " %s", units);
 		buffer += strlen(units) + 1;
+	} else {
+		sprintf(buffer, "0");
 	}
 	return (buffer - original_buffer);
 }

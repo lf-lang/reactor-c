@@ -479,7 +479,7 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
             if (ns_to_wait < MIN_WAIT_TIME) {
                 return true;
             }
-            DEBUG_PRINT("-------- pthread_cond_timedwait claims to have timed out, "
+            DEBUG_PRINT("-------- lf_cond_timedwait claims to have timed out, "
                     "but it did not reach the target time. Waiting again.");
             return wait_until(wait_until_time_ns, condition);
         }

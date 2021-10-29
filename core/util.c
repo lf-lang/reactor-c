@@ -77,30 +77,32 @@ int get_fed_id() {
 void _lf_message_print(
 		int is_error, char* prefix, char* format, va_list args, int log_level
 ) {
-    // Rather than calling printf() multiple times, we need to call it just
-    // once because this function is invoked by multiple threads.
-    // If we make multiple calls to printf(), then the results could be
-    // interleaved between threads.
-    // vprintf() is a version that takes an arg list rather than multiple args.
-    size_t length = strlen(prefix) + strlen(format) + 32;
-    char* message = (char*) malloc(length + 1);
-    if (_lf_my_fed_id < 0) {
-        snprintf(message, length, "%s%s\n",
-                prefix, format);
-    } else {
-        snprintf(message, length, "Federate %d: %s%s\n",
-                _lf_my_fed_id, prefix, format);
-    }
-    if (print_message_function == NULL) {
-        if (is_error) {
-            vfprintf(stderr, message, args);
-        } else {
-            vfprintf(stdout, message, args);
-        }
-    } else if (log_level <= print_message_level) {
-        (*print_message_function)(message, args);
-    }
-    free(message);
+	if (log_level <= print_message_level) {
+		// Rather than calling printf() multiple times, we need to call it just
+		// once because this function is invoked by multiple threads.
+		// If we make multiple calls to printf(), then the results could be
+		// interleaved between threads.
+		// vprintf() is a version that takes an arg list rather than multiple args.
+		size_t length = strlen(prefix) + strlen(format) + 32;
+		char* message = (char*) malloc(length + 1);
+		if (_lf_my_fed_id < 0) {
+			snprintf(message, length, "%s%s\n",
+					prefix, format);
+		} else {
+			snprintf(message, length, "Federate %d: %s%s\n",
+					_lf_my_fed_id, prefix, format);
+		}
+		if (print_message_function == NULL) {
+			if (is_error) {
+				vfprintf(stderr, message, args);
+			} else {
+				vfprintf(stdout, message, args);
+			}
+		} else {
+			(*print_message_function)(message, args);
+		}
+		free(message);
+	}
 }
 
 /**
