@@ -2039,8 +2039,6 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
                     }
                 }
 
-                // TODO Introduce reset reaction trigger and schedule here for next microstep.
-
                 // Reset/Reactivate previously suspended events of next state
                 for (int i = 0; i < _suspended_event_size; i++) {
                     event_t* event = _suspended_events[i];
@@ -2060,9 +2058,17 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
                             // Remaining time that the event would have been waiting before mode was left
                             instant_t local_remaining_delay = event->time - (state->next_mode->deactivation_time != 0 ? state->next_mode->deactivation_time : get_start_time());
                             // Reschedule event with original delay (schedule will add the standard offset, hence remove it)
-                            DEBUG_PRINT("Modes: Re-enqueuing event with a suspended delay of %d (TTH: %d, Mode left at: %d).", local_remaining_delay, event->time, state->next_mode->deactivation_time);
-                            // FIXME this does not correctly take microsteps into account
+                            DEBUG_PRINT("Modes: Re-enqueuing event with a suspended delay of %d (previous TTH: %d, Mode left at: %d).", local_remaining_delay, event->time, state->next_mode->deactivation_time);
                             _lf_schedule(event->trigger, local_remaining_delay - event->trigger->offset, event->token);
+
+                            if (event->next != NULL) {
+                                // The event has more events stacked up in super dense time, attach them to the newly created event.
+                                if (event->trigger->last->next == NULL) {
+                                    event->trigger->last->next = event->next;
+                                } else {
+                                    error_print("Modes: Cannot attach events stacked up in super dense to the just unsuspended root event.");
+                                }
+                            }
                         }
                         // Clear out field for now; collection will be defragmented later
                         _suspended_events[i] = NULL;
@@ -2105,6 +2111,7 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
                 event_t* event = (event_t*)event_q->d[i + 1]; // internal queue data structure omits index 0
                 if (event != NULL && event->trigger != NULL && !_lf_mode_is_active(event->trigger->mode)) {
                     delayed_removal[delayed_removal_count++] = event;
+                    // This will store the event including possibly those chained up next in super dense time
                     _lf_suspend_event(event);
                 }
             }
@@ -2112,7 +2119,6 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
             // Events are removed delayed in order to allow linear iteration over the queue
             DEBUG_PRINT("Modes: Pulling %d events from the event queue to suspend them. %d events are now suspended.", delayed_removal_count, _suspended_event_size);
             for (int i = 0; i < delayed_removal_count; i++) {
-                // FIXME This will break next event references that models super dense time!!!
                 pqueue_remove(event_q, delayed_removal[i]);
             }
         }
