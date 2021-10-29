@@ -32,12 +32,13 @@ This provides an implementation of a double-ended queue.
 Each node contains a void* pointer.
 
 To use this, include the following in your target properties:
+To use this, include the following in your target properties:
 <pre>
 target C {
-    files: ["/lib/C/util/deque.c", "/lib/C/util/deque.h"]
+    cmake-include: "/lib/c/reactor-c/util/deque.cmake"
+    files: ["/lib/c/reactor-c/util/deque.c", "/lib/c/reactor-c/util/deque.h"]
 };
 </pre>
-
 In addition, you need this in your Lingua Franca file:
 <pre>
 preamble {=
