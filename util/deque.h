@@ -34,10 +34,10 @@ Each node in the queue contains a void* pointer.
 To use this, include the following in your target properties:
 <pre>
 target C {
-    files: ["/lib/C/util/deque.c", "/lib/C/util/deque.h"]
+    cmake-include: "/lib/c/reactor-c/util/deque.cmake"
+    files: ["/lib/c/reactor-c/util/deque.c", "/lib/c/reactor-c/util/deque.h"]
 };
 </pre>
-
 In addition, you need this in your Lingua Franca file:
 <pre>
 preamble {=
@@ -55,6 +55,13 @@ Alternatively, you can call initialize:
     deque_initialize(&my_deque);
 </pre>
 */
+
+#ifndef DEQUE_H
+#define DEQUE_H
+
+#include <stddef.h>  // Defines size_t
+#include <stdbool.h> // Defines bool
+#include <stdlib.h>  // Defines malloc and free
 
 /**
  * A double-ended queue data structure.
@@ -125,3 +132,5 @@ void* deque_peek_back(deque_t* d);
  * @return The value on the back of the queue or NULL if the queue is empty.
  */
 void* deque_peek_front(deque_t* d);
+
+#endif // DEQUE_H
