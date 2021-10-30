@@ -77,7 +77,23 @@ int get_fed_id() {
 void _lf_message_print(
 		int is_error, char* prefix, char* format, va_list args, int log_level
 ) {
-	if (log_level <= print_message_level) {
+	// The logging level may be set either by a LOG_LEVEL #define
+	// (which is code generated based on the logging target property)
+	// or by a register_print_function() call. Honor both. If neither
+	// has been set, then assume LOG_LEVEL_INFO. If both have been set,
+	// then honor the maximum.
+	int print_level = -1;
+#ifdef LOG_LEVEL
+	print_level = LOG_LEVEL;
+#endif
+	if (print_level < print_message_level) {
+		print_level = print_message_level;
+	}
+	if (print_level < 0) {
+		// Neither has been set.
+		print_level = LOG_LEVEL_INFO;
+	}
+	if (log_level <= print_level) {
 		// Rather than calling printf() multiple times, we need to call it just
 		// once because this function is invoked by multiple threads.
 		// If we make multiple calls to printf(), then the results could be
