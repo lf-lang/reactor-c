@@ -119,7 +119,7 @@ int wait_until(instant_t logical_time_ns) {
 }
 
 void print_snapshot() {
-    if(LOG_LEVEL > 3) {
+    if(LOG_LEVEL > LOG_LEVEL_LOG) {
         DEBUG_PRINT(">>> START Snapshot");
         pqueue_dump(reaction_q, reaction_q->prt);
         DEBUG_PRINT(">>> END Snapshot");

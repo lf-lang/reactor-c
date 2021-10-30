@@ -1262,7 +1262,7 @@ void* worker(void* arg) {
  * the reaction queue, and the executing queue.
  */
 void print_snapshot() {
-    if(LOG_LEVEL > 3) {
+    if(LOG_LEVEL > LOG_LEVEL_LOG) {
         DEBUG_PRINT(">>> START Snapshot");
         DEBUG_PRINT("Pending:");
         pqueue_dump(reaction_q, print_reaction);
