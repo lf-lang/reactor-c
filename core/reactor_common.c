@@ -136,6 +136,7 @@ port_status_t determine_port_status_if_possible(int portID);
 #ifdef MODAL_REACTORS
 bool _lf_mode_is_active(reactor_mode_t* mode);
 void _lf_suspend_event(event_t* event);
+void _lf_terminate_modal_reactors();
 #endif
 
 /**
@@ -1900,6 +1901,11 @@ void termination() {
     // In order to free tokens, we perform the same actions we would have for a new time step.
     _lf_start_time_step();
 
+#ifdef MODAL_REACTORS
+    // Free events and tokens suspended by modal reactors.
+    _lf_terminate_modal_reactors();
+#endif
+
     // If the event queue still has events on it, report that.
     if (event_q != NULL && pqueue_size(event_q) > 0) {
         warning_print("---- There are %zu unprocessed future events on the event queue.", pqueue_size(event_q));
@@ -2123,5 +2129,18 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
             }
         }
     }
+}
+
+/**
+ * Releases internal data structures for modes.
+ * - Frees all suspended events.
+ */
+void _lf_terminate_modal_reactors() {
+    for (int i = 0; i < _suspended_event_size; i++) {
+        _lf_recycle_event(_suspended_events[i]);
+    }
+    free(_suspended_events);
+    _suspended_event_size = -999;
+    _suspended_event_capacity = -999;
 }
 #endif
