@@ -1014,15 +1014,9 @@ int worker_thread_count = 0;
 bool _lf_logical_tag_completed = false;
 
 /**
- * Advance tag. This will also pop events for the newly acquired tag and puts
- * the triggered reactions on the reaction queue.
- * 
- * @return should_exit True if the worker thread should exit. False otherwise.
+ * Return true if the worker should stop now; false otherwise.
  */
-bool _lf_worker_advance_tag(int worker_number) {
-    // Block other worker threads from doing that.
-    _lf_advancing_time = true;
-
+bool _lf_worker_should_stop() {
     // If this is not the very first step, notify that the previous step is complete
     // and check against the stop tag to see whether this is the last step.
     if (_lf_logical_tag_completed) {
@@ -1040,6 +1034,23 @@ bool _lf_worker_advance_tag(int worker_number) {
             return true;
         }
     }
+    return false;
+}
+
+/**
+ * Advance tag. This will also pop events for the newly acquired tag and puts
+ * the triggered reactions on the reaction queue.
+ * 
+ * @return should_exit True if the worker thread should exit. False otherwise.
+ */
+bool _lf_worker_advance_tag(int worker_number) {
+    // Block other worker threads from doing that.
+    _lf_advancing_time = true;
+
+    if (_lf_worker_should_stop()) {
+        return true;
+    }
+
     _lf_logical_tag_completed = true;
 
     // Advance time.
@@ -1050,60 +1061,57 @@ bool _lf_worker_advance_tag(int worker_number) {
     _lf_next();
     tracepoint_worker_advancing_time_ends(worker_number);
     _lf_advancing_time = false;
+    // Repeatably call first_ready_reaction() and add ready reaction to
+    // executing queue and stop when there are no more reactions ready.
     DEBUG_PRINT("Worker %d: Done waiting for _lf_next().", worker_number);
     return false;
 }
 
 /**
- * Advance tag if there are no reactions in the reaction queue or executing. If
+ * Advance tag if there are no reactions in the reaction queue or in progress. If
  * there are such reactions or if another thread is already advancing time, wait
  * until something on the reaction queue is changed.
  * 
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
-bool _lf_worker_advance_tag_or_wait_on_reaction_q(int worker_number) {
+bool _lf_worker_try_advance_tag_or_wait(int worker_number) {
     if (pqueue_size(reaction_q) == 0
             && pqueue_size(executing_q) == 0) {
             // Nothing more happening at this logical time.
         if (!_lf_advancing_time) {
             // This thread will take charge of advancing time.
-            if(_lf_worker_advance_tag(worker_number)) {
+            if (_lf_worker_advance_tag(worker_number)) {
                 return true;
+            } else {
+                return false;
             }
         } else if (compare_tags(current_tag, stop_tag) >= 0) {
             // At the stop tag so we can exit the worker thread.
             return true;
-        } else {
-            // Some other worker thread is advancing time.
-            // Just wait for work on the reaction queue.
-            DEBUG_PRINT("Worker %d: Waiting for items on the reaction queue.", worker_number);
-            tracepoint_worker_wait_starts(worker_number);
-            lf_cond_wait(&reaction_q_changed, &mutex);
-            tracepoint_worker_wait_ends(worker_number);
-            DEBUG_PRINT("Worker %d: Done waiting.", worker_number);
         }
-    } else {
-        // Logical time is not complete, and nothing on the reaction queue
-        // is ready to run.
-        // Wait for something to change (either a stop request or
-        // something went on the reaction queue.
-        DEBUG_PRINT("Worker %d: Waiting for items on the reaction queue.", worker_number);
-        tracepoint_worker_wait_starts(worker_number);
-        // NOTE: Could use a timedwait here to ensure that the worker thread
-        // wakes up periodically. But this appears to be unnecessary. When there
-        // is a ready reaction on the reaction queue, there will be a notification
-        // and notification occurs while holding the mutex lock so it should not be missed.
-        // Nevertheless, we keep the commented out code for a timedwait in case we later
-        // want to put this back in:
-        //
-        // struct timespec physical_time;
-        // lf_clock_gettime(CLOCK_REALTIME, &physical_time);
-        // physical_time.tv_nsec += MAX_STALL_INTERVAL;
-        // lf_cond_wait(&reaction_q_changed, &mutex, &physical_time);
-        lf_cond_wait(&reaction_q_changed, &mutex);
-        tracepoint_worker_wait_ends(worker_number);
-        DEBUG_PRINT("Worker %d: Done waiting.", worker_number);
     }
+    // We have not returned, so logical time is not complete or some other worker thread
+    // is advancing time.
+
+    // Wait for something to change (either a stop request or
+    // something went on the reaction queue).
+    DEBUG_PRINT("Worker %d: Waiting for items on the reaction queue.", worker_number);
+    tracepoint_worker_wait_starts(worker_number);
+    // NOTE: Could use a timedwait here to ensure that the worker thread
+    // wakes up periodically. But this appears to be unnecessary. When there
+    // is a ready reaction on the reaction queue, there will be a notification
+    // and notification occurs while holding the mutex lock so it should not be missed.
+    // Nevertheless, we keep the commented out code for a timedwait in case we later
+    // want to put this back in:
+    //
+    // struct timespec physical_time;
+    // lf_clock_gettime(CLOCK_REALTIME, &physical_time);
+    // physical_time.tv_nsec += MAX_STALL_INTERVAL;
+    // lf_cond_wait(&reaction_q_changed, &mutex, &physical_time);
+    lf_cond_wait(&reaction_q_changed, &mutex);
+    tracepoint_worker_wait_ends(worker_number);
+    DEBUG_PRINT("Worker %d: Done waiting.", worker_number);
+
     return false;
 }
 
@@ -1194,7 +1202,7 @@ bool _lf_worker_handle_STP_violation_for_reaction(int worker_number, reaction_t*
  * 
  * @return true if a violation occurred. false otherwise.
  */
-bool _lf_worker_handle_violations_for_reaction_locked(int worker_number, reaction_t* reaction) {
+bool _lf_worker_handle_violations(int worker_number, reaction_t* reaction) {
     bool violation = false;
     
     violation = _lf_worker_handle_deadline_violation_for_reaction(worker_number, reaction) ||
@@ -1206,7 +1214,7 @@ bool _lf_worker_handle_violations_for_reaction_locked(int worker_number, reactio
  * Invoke 'reaction' and schedule any resulting triggered reaction(s) on the
  * reaction queue.
  */
-void _lf_worker_invoke_reaction_locked(int worker_number, reaction_t* reaction) {
+void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
     LOG_PRINT("Worker %d: Invoking reaction %s at elapsed tag (%lld, %d).",
             worker_number,
             reaction->name,
@@ -1222,18 +1230,13 @@ void _lf_worker_invoke_reaction_locked(int worker_number, reaction_t* reaction) 
 }
 
 /**
- * Worker thread for the thread pool.
- * This acquires the mutex lock and releases it to wait for time to
- * elapse or for asynchronous events and also releases it to execute reactions.
+ * The main looping logic of each LF worker thread.
+ * 
+ * @param worker_number The number assigned to this worker thread
  */
-void* worker(void* arg) {
+void _lf_worker_do_work(int worker_number) {
     // Keep track of whether we have decremented the idle thread count.
     bool have_been_busy = false;
-    lf_mutex_lock(&mutex);
-
-    int worker_number = ++worker_thread_count;
-    LOG_PRINT("Worker thread %d started.", worker_number);
-
     // Iterate until the stop_tag is reached or reaction queue is empty
     while (true) {
         // Obtain a reaction from the reaction_q that is ready to execute
@@ -1255,7 +1258,7 @@ void* worker(void* arg) {
             // unless some other worker thread is already advancing time. In
             // that case, just wait on to be notified when reaction_q is changed
             // (i.e., populated by the worker thread that is advancing time).
-            if(_lf_worker_advance_tag_or_wait_on_reaction_q(worker_number)) {
+            if(_lf_worker_try_advance_tag_or_wait(worker_number)) {
                 break;
             }
         } else {
@@ -1285,34 +1288,26 @@ void* worker(void* arg) {
             // Unlock the mutex to run the reaction.
             lf_mutex_unlock(&mutex);
 
-            bool violation = _lf_worker_handle_violations_for_reaction_locked(
+            bool violation = _lf_worker_handle_violations(
                 worker_number, 
                 current_reaction_to_execute
             );
 
-            if (violation) {
-                // Need to acquire the mutex lock to remove this from the executing queue
-                // and to obtain the next reaction to execute.
-                lf_mutex_lock(&mutex);
-
-                // The reaction is not going to be executed. However,
-                // this thread holds the mutex lock, so if this is the last
-                // reaction of the current time step, this thread will also
-                // be the one to advance time.
-                pqueue_remove(executing_q, current_reaction_to_execute);
-            } else {
+            if (!violation) {
                 // Invoke the reaction function.
-                _lf_worker_invoke_reaction_locked(worker_number, current_reaction_to_execute);
-
-                // Reacquire the mutex lock.
-                lf_mutex_lock(&mutex);
-
-                // Remove the reaction from the executing queue.
-                // This thread holds the mutex lock, so if this is the last
-                // reaction of the current time step, this thread will also
-                // be the one to advance time.
-                pqueue_remove(executing_q, current_reaction_to_execute);
+                _lf_worker_invoke_reaction(worker_number, current_reaction_to_execute);
             }
+
+            // Need to acquire the mutex lock to remove this from the executing queue
+            // and to obtain the next reaction to execute.
+            lf_mutex_lock(&mutex);
+
+            // The reaction is not going to be executed. However,
+            // this thread holds the mutex lock, so if this is the last
+            // reaction of the current time step, this thread will also
+            // be the one to advance time.
+            pqueue_remove(executing_q, current_reaction_to_execute);
+
             // Reset the is_STP_violated because it has been passed
             // down the chain
             current_reaction_to_execute->is_STP_violated = false;
@@ -1320,7 +1315,22 @@ void* worker(void* arg) {
             DEBUG_PRINT("Worker %d: Done with reaction %s.",
             		worker_number, current_reaction_to_execute->name);
         }
-    } // while (!stop_requested || pqueue_size(reaction_q) > 0)
+    }
+}
+
+/**
+ * Worker thread for the thread pool.
+ * This acquires the mutex lock and releases it to wait for time to
+ * elapse or for asynchronous events and also releases it to execute reactions.
+ */
+void* worker(void* arg) {
+    lf_mutex_lock(&mutex);
+
+    int worker_number = ++worker_thread_count;
+    LOG_PRINT("Worker thread %d started.", worker_number);
+
+    _lf_worker_do_work(worker_number);
+
     // This thread is exiting, so don't count it anymore.
     _lf_number_of_threads--;
 
