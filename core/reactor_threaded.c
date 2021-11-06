@@ -1075,7 +1075,7 @@ bool _lf_worker_advance_tag_locked(int worker_number) {
  * 
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
-bool _lf_worker_try_advance_tag_or_wait(int worker_number) {
+bool _lf_worker_try_advance_tag_or_wait_locked(int worker_number) {
     if (pqueue_size(reaction_q) == 0
             && pqueue_size(executing_q) == 0) {
             // Nothing more happening at this logical time.
@@ -1273,7 +1273,7 @@ void _lf_worker_do_work_locked(int worker_number) {
             // unless some other worker thread is already advancing time. In
             // that case, just wait on to be notified when reaction_q is changed
             // (i.e., populated by the worker thread that is advancing time).
-            if(_lf_worker_try_advance_tag_or_wait(worker_number)) {
+            if(_lf_worker_try_advance_tag_or_wait_locked(worker_number)) {
                 break;
             }
         } else {
