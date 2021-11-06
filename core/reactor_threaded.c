@@ -97,6 +97,12 @@ lf_cond_t executing_q_emptied;
 lf_cond_t global_tag_barrier_requestors_reached_zero;
 
 /**
+ * Flag indicating that a signaling on the condition variable reaction_q_changed
+ * has been issued but no thread has yet responded to it.
+ */
+bool _lf_notification_pending = false;
+
+/**
  * Enqueue network input control reactions that determine if the trigger for a
  * given network input port is going to be present at the current logical time
  * or absent.
@@ -881,15 +887,18 @@ void _lf_enqueue_reaction(reaction_t* reaction) {
  * Notify workers that something has changed on the reaction_q.
  * Notification is performed only if there is a reaction on the
  * reaction queue that is ready to execute and there is an idle
- * worker thread.
+ * worker thread. Also, notification is not performed if a
+ * previous notification has not been responded to by some thread.
  * This function assumes the caller holds the mutex lock.
  */
 void _lf_notify_workers_locked() {
     if (number_of_idle_threads > 0) {
         reaction_t* next_ready_reaction = (reaction_t*)pqueue_peek(reaction_q);
         if (next_ready_reaction != NULL
+        		&& !_lf_notification_pending
                 && !_lf_is_blocked_by_executing_reaction(next_ready_reaction)
         ) {
+        	// _lf_notification_pending = true;
             // FIXME: In applications without parallelism, this notification
             // proves very expensive. Perhaps we should be checking execution times.
             lf_cond_signal(&reaction_q_changed);
@@ -1051,6 +1060,7 @@ void* worker(void* arg) {
                 	// This thread will take charge of advancing time.
                 	// Block other worker threads from doing that.
                     _lf_advancing_time = true;
+                    _lf_notification_pending = false;
 
                     // If this is not the very first step, notify that the previous step is complete
                     // and check against the stop tag to see whether this is the last step.
@@ -1091,6 +1101,7 @@ void* worker(void* arg) {
                     tracepoint_worker_wait_starts(worker_number);
                     lf_cond_wait(&reaction_q_changed, &mutex);
                     tracepoint_worker_wait_ends(worker_number);
+                    _lf_notification_pending = false;
                     DEBUG_PRINT("Worker %d: Done waiting.", worker_number);
                 }
             } else {
