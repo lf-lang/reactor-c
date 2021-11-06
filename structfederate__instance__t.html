@@ -206,7 +206,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >A record of the most recently sent LTC (logical tag complete) message. In some situations, federates can send logical_tag_complete for the same tag twice or more in-a-row to the RTI. For example, when <a class="el" href="reactor__threaded_8c.html#ade95ea72c144f9c7983a7d398c0f825b">_lf_next()</a> returns without advancing tag. To prevent overwhelming the RTI with extra messages, record the last sent logical tag complete message and check against it in <a class="el" href="federate_8c.html#a77aa8325df62cb64364fb8af6b1c2334">_lf_logical_tag_complete()</a>.</p>
+<p >A record of the most recently sent LTC (logical tag complete) message. In some situations, federates can send logical_tag_complete for the same tag twice or more in-a-row to the RTI. For example, when _lf_next() returns without advancing tag. To prevent overwhelming the RTI with extra messages, record the last sent logical tag complete message and check against it in <a class="el" href="federate_8c.html#a77aa8325df62cb64364fb8af6b1c2334">_lf_logical_tag_complete()</a>.</p>
 <dl class="section note"><dt>Note</dt><dd>Here, the underlying assumption is that the TCP stack will deliver the Logical TAG Complete message to the RTI eventually if it is deliverable </dd></dl>
 
 </div>

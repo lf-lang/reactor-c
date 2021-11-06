@@ -126,8 +126,8 @@ Functions</h2></td></tr>
 <tr class="separator:abf5752e7ec0ac5ddd757162c0125dd2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a00a390347d084375a99b1c9151bd3137"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a00a390347d084375a99b1c9151bd3137">send_next_event_tag</a> (<a class="el" href="structtag__t.html">tag_t</a> tag, <a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> wait_for_reply)</td></tr>
 <tr class="separator:a00a390347d084375a99b1c9151bd3137"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ade95ea72c144f9c7983a7d398c0f825b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ade95ea72c144f9c7983a7d398c0f825b">_lf_next</a> ()</td></tr>
-<tr class="separator:ade95ea72c144f9c7983a7d398c0f825b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30de5114ba04269152b0fa25406b75f4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a30de5114ba04269152b0fa25406b75f4">_lf_next_locked</a> ()</td></tr>
+<tr class="separator:a30de5114ba04269152b0fa25406b75f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af629769c213699f0e4c9360811ee7251"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#af629769c213699f0e4c9360811ee7251">request_stop</a> ()</td></tr>
 <tr class="separator:af629769c213699f0e4c9360811ee7251"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a92faef7f26ced82ad093c4876d6ab9bf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a92faef7f26ced82ad093c4876d6ab9bf">_lf_has_precedence_over</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *r1, <a class="el" href="structreaction__t.html">reaction_t</a> *r2)</td></tr>
@@ -144,6 +144,22 @@ Functions</h2></td></tr>
 <tr class="separator:aa46a83ed702e2c83d42625a8c78a9f50"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31c8ecdfd2be6749341fb93b679b1533"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a31c8ecdfd2be6749341fb93b679b1533">_lf_initialize_start_tag</a> ()</td></tr>
 <tr class="separator:a31c8ecdfd2be6749341fb93b679b1533"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acbd1ceaa09b7984ab43ee35e251243e4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#acbd1ceaa09b7984ab43ee35e251243e4">_lf_worker_should_stop_locked</a> ()</td></tr>
+<tr class="separator:acbd1ceaa09b7984ab43ee35e251243e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2a61756f607ba92930ea481f603d7cf8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a2a61756f607ba92930ea481f603d7cf8">_lf_worker_advance_tag_locked</a> (int worker_number)</td></tr>
+<tr class="separator:a2a61756f607ba92930ea481f603d7cf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:addbd94a47aab30564ebec3ace1f6f642"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#addbd94a47aab30564ebec3ace1f6f642">_lf_worker_try_advance_tag_or_wait_locked</a> (int worker_number)</td></tr>
+<tr class="separator:addbd94a47aab30564ebec3ace1f6f642"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adae05d3398044fee1cbf7ed69c9baa4c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#adae05d3398044fee1cbf7ed69c9baa4c">_lf_worker_handle_deadline_violation_for_reaction</a> (int worker_number, <a class="el" href="structreaction__t.html">reaction_t</a> *reaction)</td></tr>
+<tr class="separator:adae05d3398044fee1cbf7ed69c9baa4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e5bd68eed26abd46af9f4f33ef96549"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a6e5bd68eed26abd46af9f4f33ef96549">_lf_worker_handle_STP_violation_for_reaction</a> (int worker_number, <a class="el" href="structreaction__t.html">reaction_t</a> *reaction)</td></tr>
+<tr class="separator:a6e5bd68eed26abd46af9f4f33ef96549"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e72898f6ae7a130f5c09079c2174e20"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a0e72898f6ae7a130f5c09079c2174e20">_lf_worker_handle_violations</a> (int worker_number, <a class="el" href="structreaction__t.html">reaction_t</a> *reaction)</td></tr>
+<tr class="separator:a0e72898f6ae7a130f5c09079c2174e20"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6da3cf06b6db80c2c9a4cc5f4918d26"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ac6da3cf06b6db80c2c9a4cc5f4918d26">_lf_worker_invoke_reaction</a> (int worker_number, <a class="el" href="structreaction__t.html">reaction_t</a> *reaction)</td></tr>
+<tr class="separator:ac6da3cf06b6db80c2c9a4cc5f4918d26"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae20ceb083b14cbee85e91bad4ae56121"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ae20ceb083b14cbee85e91bad4ae56121">_lf_worker_do_work_locked</a> (int worker_number)</td></tr>
+<tr class="separator:ae20ceb083b14cbee85e91bad4ae56121"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a15b16453216ed29570af03009e7c7c63"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63">worker</a> (void *arg)</td></tr>
 <tr class="separator:a15b16453216ed29570af03009e7c7c63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad96dc6cbe1d3365e52aad6aecbf036d8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ad96dc6cbe1d3365e52aad6aecbf036d8">print_snapshot</a> ()</td></tr>
@@ -416,14 +432,14 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="ade95ea72c144f9c7983a7d398c0f825b" name="ade95ea72c144f9c7983a7d398c0f825b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ade95ea72c144f9c7983a7d398c0f825b">&#9670;&nbsp;</a></span>_lf_next()</h2>
+<a id="a30de5114ba04269152b0fa25406b75f4" name="a30de5114ba04269152b0fa25406b75f4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a30de5114ba04269152b0fa25406b75f4">&#9670;&nbsp;</a></span>_lf_next_locked()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void _lf_next </td>
+          <td class="memname">void _lf_next_locked </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -615,6 +631,208 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>0 if no wait was needed and 1 if a wait actually occurred. </dd></dl>
+
+</div>
+</div>
+<a id="a2a61756f607ba92930ea481f603d7cf8" name="a2a61756f607ba92930ea481f603d7cf8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a61756f607ba92930ea481f603d7cf8">&#9670;&nbsp;</a></span>_lf_worker_advance_tag_locked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_worker_advance_tag_locked </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>worker_number</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Advance tag. This will also pop events for the newly acquired tag and put the triggered reactions on the reaction queue. This function assumes the caller holds the mutex lock.</p>
+<dl class="section return"><dt>Returns</dt><dd>should_exit True if the worker thread should exit. False otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="ae20ceb083b14cbee85e91bad4ae56121" name="ae20ceb083b14cbee85e91bad4ae56121"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae20ceb083b14cbee85e91bad4ae56121">&#9670;&nbsp;</a></span>_lf_worker_do_work_locked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_worker_do_work_locked </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>worker_number</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >The main looping logic of each LF worker thread. This function assumes the caller holds the mutex lock.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">worker_number</td><td>The number assigned to this worker thread </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="adae05d3398044fee1cbf7ed69c9baa4c" name="adae05d3398044fee1cbf7ed69c9baa4c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adae05d3398044fee1cbf7ed69c9baa4c">&#9670;&nbsp;</a></span>_lf_worker_handle_deadline_violation_for_reaction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_worker_handle_deadline_violation_for_reaction </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>worker_number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structreaction__t.html">reaction_t</a> *&#160;</td>
+          <td class="paramname"><em>reaction</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Handle deadline violation for 'reaction'. The mutex should NOT be locked when this function is called. It might acquire the mutex when scheduling the reactions that are triggered as a result of executing the deadline violation handler on the 'reaction', if it exists.</p>
+<dl class="section return"><dt>Returns</dt><dd>true if a deadline violation occurred. false otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a6e5bd68eed26abd46af9f4f33ef96549" name="a6e5bd68eed26abd46af9f4f33ef96549"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6e5bd68eed26abd46af9f4f33ef96549">&#9670;&nbsp;</a></span>_lf_worker_handle_STP_violation_for_reaction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_worker_handle_STP_violation_for_reaction </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>worker_number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structreaction__t.html">reaction_t</a> *&#160;</td>
+          <td class="paramname"><em>reaction</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Handle STP violation for 'reaction'. The mutex should NOT be locked when this function is called. It might acquire the mutex when scheduling the reactions that are triggered as a result of executing the STP violation handler on the 'reaction', if it exists.</p>
+<dl class="section return"><dt>Returns</dt><dd>true if an STP violation occurred. false otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a0e72898f6ae7a130f5c09079c2174e20" name="a0e72898f6ae7a130f5c09079c2174e20"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e72898f6ae7a130f5c09079c2174e20">&#9670;&nbsp;</a></span>_lf_worker_handle_violations()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_worker_handle_violations </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>worker_number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structreaction__t.html">reaction_t</a> *&#160;</td>
+          <td class="paramname"><em>reaction</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Handle violations for 'reaction'. Currently limited to deadline violations and STP violations. The mutex should NOT be locked when this function is called. It might acquire the mutex when scheduling the reactions that are triggered as a result of executing the deadline or STP violation handler(s) on the 'reaction', if they exist.</p>
+<dl class="section return"><dt>Returns</dt><dd>true if a violation occurred. false otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="ac6da3cf06b6db80c2c9a4cc5f4918d26" name="ac6da3cf06b6db80c2c9a4cc5f4918d26"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac6da3cf06b6db80c2c9a4cc5f4918d26">&#9670;&nbsp;</a></span>_lf_worker_invoke_reaction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_worker_invoke_reaction </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>worker_number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structreaction__t.html">reaction_t</a> *&#160;</td>
+          <td class="paramname"><em>reaction</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Invoke 'reaction' and schedule any resulting triggered reaction(s) on the reaction queue. The mutex should NOT be locked when this function is called. It might acquire the mutex when scheduling the reactions that are triggered as a result of executing 'reaction'. </p>
+
+</div>
+</div>
+<a id="acbd1ceaa09b7984ab43ee35e251243e4" name="acbd1ceaa09b7984ab43ee35e251243e4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acbd1ceaa09b7984ab43ee35e251243e4">&#9670;&nbsp;</a></span>_lf_worker_should_stop_locked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_worker_should_stop_locked </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Return true if the worker should stop now; false otherwise. This function assumes the caller holds the mutex lock. </p>
+
+</div>
+</div>
+<a id="addbd94a47aab30564ebec3ace1f6f642" name="addbd94a47aab30564ebec3ace1f6f642"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#addbd94a47aab30564ebec3ace1f6f642">&#9670;&nbsp;</a></span>_lf_worker_try_advance_tag_or_wait_locked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_worker_try_advance_tag_or_wait_locked </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>worker_number</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Advance tag if there are no reactions in the reaction queue or in progress. If there are such reactions or if another thread is already advancing the tag, wait until something on the reaction queue is changed. This function assumes the caller holds the mutex lock.</p>
+<dl class="section return"><dt>Returns</dt><dd>should_exit True if the worker thread should exit. False otherwise. </dd></dl>
 
 </div>
 </div>

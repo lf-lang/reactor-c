@@ -30,7 +30,7 @@ var searchData=
   ['_5flf_5fis_5ftag_5fafter_5fstop_5ftag_27',['_lf_is_tag_after_stop_tag',['../reactor__common_8c.html#a7d189a2e2d8b3af5f40e261f3a6b8076',1,'reactor_common.c']]],
   ['_5flf_5flogical_5ftag_5fcomplete_28',['_lf_logical_tag_complete',['../federate_8c.html#a77aa8325df62cb64364fb8af6b1c2334',1,'federate.c']]],
   ['_5flf_5fmessage_5fprint_29',['_lf_message_print',['../util_8c.html#a8310a8941e8159259095f412b4af11a5',1,'util.c']]],
-  ['_5flf_5fnext_30',['_lf_next',['../reactor__threaded_8c.html#ade95ea72c144f9c7983a7d398c0f825b',1,'reactor_threaded.c']]],
+  ['_5flf_5fnext_5flocked_30',['_lf_next_locked',['../reactor__threaded_8c.html#a30de5114ba04269152b0fa25406b75f4',1,'reactor_threaded.c']]],
   ['_5flf_5fnotify_5fworkers_31',['_lf_notify_workers',['../reactor_8c.html#aa46a83ed702e2c83d42625a8c78a9f50',1,'_lf_notify_workers():&#160;reactor.c'],['../reactor_8h.html#aa46a83ed702e2c83d42625a8c78a9f50',1,'_lf_notify_workers():&#160;reactor.c'],['../reactor__threaded_8c.html#aa46a83ed702e2c83d42625a8c78a9f50',1,'_lf_notify_workers():&#160;reactor_threaded.c']]],
   ['_5flf_5fnotify_5fworkers_5flocked_32',['_lf_notify_workers_locked',['../reactor__threaded_8c.html#ad85dac0aa31333cb4fa1efb00f0cf907',1,'reactor_threaded.c']]],
   ['_5flf_5fpop_5fevents_33',['_lf_pop_events',['../reactor_8h.html#acf1ea511fbce4c80b124391d75e6ba92',1,'_lf_pop_events():&#160;reactor_common.c'],['../reactor__common_8c.html#acf1ea511fbce4c80b124391d75e6ba92',1,'_lf_pop_events():&#160;reactor_common.c']]],
@@ -61,5 +61,13 @@ var searchData=
   ['_5flf_5fstart_5ftime_5fstep_58',['_lf_start_time_step',['../reactor_8h.html#ad14a3abed525c815a41a4c273937e399',1,'_lf_start_time_step():&#160;reactor_common.c'],['../reactor__common_8c.html#ad14a3abed525c815a41a4c273937e399',1,'_lf_start_time_step():&#160;reactor_common.c']]],
   ['_5flf_5ftrigger_5fshutdown_5freactions_59',['_lf_trigger_shutdown_reactions',['../reactor_8h.html#a1fbf8288f24a4549d837ac90d7837da9',1,'reactor.h']]],
   ['_5flf_5ftrigger_5fstartup_5freactions_60',['_lf_trigger_startup_reactions',['../reactor_8h.html#aab3994336fae3b238f40283885873995',1,'reactor.h']]],
-  ['_5flf_5fwait_5fon_5fglobal_5ftag_5fbarrier_61',['_lf_wait_on_global_tag_barrier',['../reactor__threaded_8c.html#a6392f1a7187ec9d36d35ad51bf06ded0',1,'reactor_threaded.c']]]
+  ['_5flf_5fwait_5fon_5fglobal_5ftag_5fbarrier_61',['_lf_wait_on_global_tag_barrier',['../reactor__threaded_8c.html#a6392f1a7187ec9d36d35ad51bf06ded0',1,'reactor_threaded.c']]],
+  ['_5flf_5fworker_5fadvance_5ftag_5flocked_62',['_lf_worker_advance_tag_locked',['../reactor__threaded_8c.html#a2a61756f607ba92930ea481f603d7cf8',1,'reactor_threaded.c']]],
+  ['_5flf_5fworker_5fdo_5fwork_5flocked_63',['_lf_worker_do_work_locked',['../reactor__threaded_8c.html#ae20ceb083b14cbee85e91bad4ae56121',1,'reactor_threaded.c']]],
+  ['_5flf_5fworker_5fhandle_5fdeadline_5fviolation_5ffor_5freaction_64',['_lf_worker_handle_deadline_violation_for_reaction',['../reactor__threaded_8c.html#adae05d3398044fee1cbf7ed69c9baa4c',1,'reactor_threaded.c']]],
+  ['_5flf_5fworker_5fhandle_5fstp_5fviolation_5ffor_5freaction_65',['_lf_worker_handle_STP_violation_for_reaction',['../reactor__threaded_8c.html#a6e5bd68eed26abd46af9f4f33ef96549',1,'reactor_threaded.c']]],
+  ['_5flf_5fworker_5fhandle_5fviolations_66',['_lf_worker_handle_violations',['../reactor__threaded_8c.html#a0e72898f6ae7a130f5c09079c2174e20',1,'reactor_threaded.c']]],
+  ['_5flf_5fworker_5finvoke_5freaction_67',['_lf_worker_invoke_reaction',['../reactor__threaded_8c.html#ac6da3cf06b6db80c2c9a4cc5f4918d26',1,'reactor_threaded.c']]],
+  ['_5flf_5fworker_5fshould_5fstop_5flocked_68',['_lf_worker_should_stop_locked',['../reactor__threaded_8c.html#acbd1ceaa09b7984ab43ee35e251243e4',1,'reactor_threaded.c']]],
+  ['_5flf_5fworker_5ftry_5fadvance_5ftag_5for_5fwait_5flocked_69',['_lf_worker_try_advance_tag_or_wait_locked',['../reactor__threaded_8c.html#addbd94a47aab30564ebec3ace1f6f642',1,'reactor_threaded.c']]]
 ];

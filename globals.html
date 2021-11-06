@@ -126,7 +126,7 @@ $(function() {
 <li>_lf_more_tokens_with_ref_count&#160;:&#160;<a class="el" href="reactor__common_8c.html#a10daeb6bf7d37ada7a878859a34ed5ed">reactor_common.c</a></li>
 <li>_lf_mutex_t&#160;:&#160;<a class="el" href="lf___c11__threads__support_8h.html#af138a3eb9c01e6c750ec727fc3263351">lf_C11_threads_support.h</a>, <a class="el" href="lf___p_o_s_i_x__threads__support_8h.html#a3d2a0d3780373cad3d9e3bded3579c54">lf_POSIX_threads_support.h</a></li>
 <li>_lf_my_fed_id&#160;:&#160;<a class="el" href="util_8c.html#a2c4180118c19ff02a0d42f4c6758bdd3">util.c</a>, <a class="el" href="util_8h.html#a2c4180118c19ff02a0d42f4c6758bdd3">util.h</a></li>
-<li>_lf_next()&#160;:&#160;<a class="el" href="reactor__threaded_8c.html#ade95ea72c144f9c7983a7d398c0f825b">reactor_threaded.c</a></li>
+<li>_lf_next_locked()&#160;:&#160;<a class="el" href="reactor__threaded_8c.html#a30de5114ba04269152b0fa25406b75f4">reactor_threaded.c</a></li>
 <li>_lf_notify_workers()&#160;:&#160;<a class="el" href="reactor_8c.html#aa46a83ed702e2c83d42625a8c78a9f50">reactor.c</a>, <a class="el" href="reactor_8h.html#aa46a83ed702e2c83d42625a8c78a9f50">reactor.h</a>, <a class="el" href="reactor__threaded_8c.html#aa46a83ed702e2c83d42625a8c78a9f50">reactor_threaded.c</a></li>
 <li>_lf_notify_workers_locked()&#160;:&#160;<a class="el" href="reactor__threaded_8c.html#ad85dac0aa31333cb4fa1efb00f0cf907">reactor_threaded.c</a></li>
 <li>_lf_number_of_threads&#160;:&#160;<a class="el" href="reactor_8h.html#af74a2782bda0d66298d22d637ad964b5">reactor.h</a>, <a class="el" href="reactor__common_8c.html#af74a2782bda0d66298d22d637ad964b5">reactor_common.c</a></li>
@@ -201,6 +201,14 @@ $(function() {
 <li>_lf_trigger_startup_reactions()&#160;:&#160;<a class="el" href="reactor_8h.html#aab3994336fae3b238f40283885873995">reactor.h</a></li>
 <li>_lf_use_performance_counter&#160;:&#160;<a class="el" href="lf__windows__support_8c.html#a7ca2cba7fc3282d51a1386b95b06a6d4">lf_windows_support.c</a></li>
 <li>_lf_wait_on_global_tag_barrier()&#160;:&#160;<a class="el" href="reactor__threaded_8c.html#a6392f1a7187ec9d36d35ad51bf06ded0">reactor_threaded.c</a></li>
+<li>_lf_worker_advance_tag_locked()&#160;:&#160;<a class="el" href="reactor__threaded_8c.html#a2a61756f607ba92930ea481f603d7cf8">reactor_threaded.c</a></li>
+<li>_lf_worker_do_work_locked()&#160;:&#160;<a class="el" href="reactor__threaded_8c.html#ae20ceb083b14cbee85e91bad4ae56121">reactor_threaded.c</a></li>
+<li>_lf_worker_handle_deadline_violation_for_reaction()&#160;:&#160;<a class="el" href="reactor__threaded_8c.html#adae05d3398044fee1cbf7ed69c9baa4c">reactor_threaded.c</a></li>
+<li>_lf_worker_handle_STP_violation_for_reaction()&#160;:&#160;<a class="el" href="reactor__threaded_8c.html#a6e5bd68eed26abd46af9f4f33ef96549">reactor_threaded.c</a></li>
+<li>_lf_worker_handle_violations()&#160;:&#160;<a class="el" href="reactor__threaded_8c.html#a0e72898f6ae7a130f5c09079c2174e20">reactor_threaded.c</a></li>
+<li>_lf_worker_invoke_reaction()&#160;:&#160;<a class="el" href="reactor__threaded_8c.html#ac6da3cf06b6db80c2c9a4cc5f4918d26">reactor_threaded.c</a></li>
+<li>_lf_worker_should_stop_locked()&#160;:&#160;<a class="el" href="reactor__threaded_8c.html#acbd1ceaa09b7984ab43ee35e251243e4">reactor_threaded.c</a></li>
+<li>_lf_worker_try_advance_tag_or_wait_locked()&#160;:&#160;<a class="el" href="reactor__threaded_8c.html#addbd94a47aab30564ebec3ace1f6f642">reactor_threaded.c</a></li>
 <li>_microstep_t&#160;:&#160;<a class="el" href="lf__tag__64__32_8h.html#a6fa587bab59881a6741957a2c1a13798">lf_tag_64_32.h</a></li>
 <li>_RTI&#160;:&#160;<a class="el" href="rti_8c.html#a104f9a0ac7ff4aa717e0462b8ac445ea">rti.c</a></li>
 </ul>
