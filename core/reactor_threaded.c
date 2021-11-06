@@ -1061,8 +1061,6 @@ bool _lf_worker_advance_tag(int worker_number) {
     _lf_next();
     tracepoint_worker_advancing_time_ends(worker_number);
     _lf_advancing_time = false;
-    // Repeatably call first_ready_reaction() and add ready reaction to
-    // executing queue and stop when there are no more reactions ready.
     DEBUG_PRINT("Worker %d: Done waiting for _lf_next().", worker_number);
     return false;
 }
