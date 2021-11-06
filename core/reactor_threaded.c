@@ -1118,7 +1118,7 @@ bool _lf_worker_try_advance_tag_or_wait(int worker_number) {
 
 /**
  * Handle deadline violation for 'reaction'. 
- * The mutex should NOT be locked when this reaction is called. It might acquire
+ * The mutex should NOT be locked when this function is called. It might acquire
  * the mutex when scheduling the reactions that are triggered as a result of
  * executing the deadline violation handler on the 'reaction', if it exists.
  *
@@ -1158,7 +1158,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(int worker_number, reacti
 
 /**
  * Handle STP violation for 'reaction'. 
- * The mutex should NOT be locked when this reaction is called. It might acquire
+ * The mutex should NOT be locked when this function is called. It might acquire
  * the mutex when scheduling the reactions that are triggered as a result of
  * executing the STP violation handler on the 'reaction', if it exists.
  *
@@ -1206,7 +1206,7 @@ bool _lf_worker_handle_STP_violation_for_reaction(int worker_number, reaction_t*
 /**
  * Handle violations for 'reaction'. Currently limited to deadline violations
  * and STP violations. 
- * The mutex should NOT be locked when this reaction is called. It might acquire
+ * The mutex should NOT be locked when this function is called. It might acquire
  * the mutex when scheduling the reactions that are triggered as a result of
  * executing the deadline or STP violation handler(s) on the 'reaction', if they
  * exist.
@@ -1224,7 +1224,7 @@ bool _lf_worker_handle_violations(int worker_number, reaction_t* reaction) {
 /**
  * Invoke 'reaction' and schedule any resulting triggered reaction(s) on the
  * reaction queue. 
- * The mutex should NOT be locked when this reaction is called. It might acquire
+ * The mutex should NOT be locked when this function is called. It might acquire
  * the mutex when scheduling the reactions that are triggered as a result of
  * executing 'reaction'.
  */
