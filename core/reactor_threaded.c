@@ -572,7 +572,7 @@ tag_t send_next_event_tag(tag_t tag, bool wait_for_reply) {
  *
  * This does not acquire the mutex lock. It assumes the lock is already held.
  */
-void _lf_next() {
+void _lf_next_locked() {
     // Previous logical time is complete.
     tag_t next_tag = get_next_event_tag();
 
@@ -623,7 +623,7 @@ void _lf_next() {
     // arrives from an upstream federate or a local physical action triggers).
     LOG_PRINT("Waiting until elapsed time %lld.", (next_tag.time - start_time));
     while (!wait_until(next_tag.time, &event_q_changed)) {
-        DEBUG_PRINT("_lf_next(): Wait until time interrupted.");
+        DEBUG_PRINT("_lf_next_locked(): Wait until time interrupted.");
         // Sleep was interrupted.  Check for a new next_event.
         // The interruption could also have been due to a call to request_stop().
         next_tag = get_next_event_tag();
@@ -1015,16 +1015,17 @@ bool _lf_logical_tag_completed = false;
 
 /**
  * Return true if the worker should stop now; false otherwise.
+ * This function assumes the caller holds the mutex lock.
  */
-bool _lf_worker_should_stop() {
+bool _lf_worker_should_stop_locked() {
     // If this is not the very first step, notify that the previous step is complete
     // and check against the stop tag to see whether this is the last step.
     if (_lf_logical_tag_completed) {
         logical_tag_complete(current_tag);
-        // If we are at the stop tag, do not call _lf_next()
+        // If we are at the stop tag, do not call _lf_next_locked()
         // to prevent advancing the logical time.
         if (compare_tags(current_tag, stop_tag) >= 0) {
-            // Break out of the while loop and notify other
+            // Return true to stop the worker and notify other
             // worker threads potentially waiting to continue.
             // Also, notify the RTI that there will be no more events (if centralized coord).
             // False argument means don't wait for a reply.
@@ -1040,28 +1041,29 @@ bool _lf_worker_should_stop() {
 /**
  * Advance tag. This will also pop events for the newly acquired tag and put
  * the triggered reactions on the reaction queue.
+ * This function assumes the caller holds the mutex lock.
  * 
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
-bool _lf_worker_advance_tag(int worker_number) {
+bool _lf_worker_advance_tag_locked(int worker_number) {
     // Block other worker threads from also advancing the tag.
     _lf_advancing_time = true;
 
-    if (_lf_worker_should_stop()) {
+    if (_lf_worker_should_stop_locked()) {
         return true;
     }
 
     _lf_logical_tag_completed = true;
 
     // Advance time.
-    // _lf_next() may block waiting for real time to pass or events to appear.
+    // _lf_next_locked() may block waiting for real time to pass or events to appear.
     // to appear on the event queue. Note that we already
     // hold the mutex lock.
     tracepoint_worker_advancing_time_starts(worker_number);
-    _lf_next();
+    _lf_next_locked();
     tracepoint_worker_advancing_time_ends(worker_number);
     _lf_advancing_time = false;
-    DEBUG_PRINT("Worker %d: Done waiting for _lf_next().", worker_number);
+    DEBUG_PRINT("Worker %d: Done waiting for _lf_next_locked().", worker_number);
     return false;
 }
 
@@ -1069,6 +1071,7 @@ bool _lf_worker_advance_tag(int worker_number) {
  * Advance tag if there are no reactions in the reaction queue or in progress. If
  * there are such reactions or if another thread is already advancing the tag, wait
  * until something on the reaction queue is changed.
+ * This function assumes the caller holds the mutex lock.
  * 
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
@@ -1078,7 +1081,7 @@ bool _lf_worker_try_advance_tag_or_wait(int worker_number) {
             // Nothing more happening at this logical time.
         if (!_lf_advancing_time) {
             // This thread will take charge of advancing time.
-            if (_lf_worker_advance_tag(worker_number)) {
+            if (_lf_worker_advance_tag_locked(worker_number)) {
                 return true;
             } else {
                 return false;
@@ -1114,8 +1117,11 @@ bool _lf_worker_try_advance_tag_or_wait(int worker_number) {
 }
 
 /**
- * Handle deadline violation for 'reaction'.
- * 
+ * Handle deadline violation for 'reaction'. 
+ * The mutex should NOT be locked when this reaction is called. It might acquire
+ * the mutex when scheduling the reactions that are triggered as a result of
+ * executing the deadline violation handler on the 'reaction', if it exists.
+ *
  * @return true if a deadline violation occurred. false otherwise.
  */
 bool _lf_worker_handle_deadline_violation_for_reaction(int worker_number, reaction_t* reaction) {
@@ -1151,8 +1157,11 @@ bool _lf_worker_handle_deadline_violation_for_reaction(int worker_number, reacti
 }
 
 /**
- * Handle STP violation for 'reaction'.
- * 
+ * Handle STP violation for 'reaction'. 
+ * The mutex should NOT be locked when this reaction is called. It might acquire
+ * the mutex when scheduling the reactions that are triggered as a result of
+ * executing the STP violation handler on the 'reaction', if it exists.
+ *
  * @return true if an STP violation occurred. false otherwise.
  */
 bool _lf_worker_handle_STP_violation_for_reaction(int worker_number, reaction_t* reaction) {
@@ -1196,8 +1205,12 @@ bool _lf_worker_handle_STP_violation_for_reaction(int worker_number, reaction_t*
 
 /**
  * Handle violations for 'reaction'. Currently limited to deadline violations
- * and STP violations.
- * 
+ * and STP violations. 
+ * The mutex should NOT be locked when this reaction is called. It might acquire
+ * the mutex when scheduling the reactions that are triggered as a result of
+ * executing the deadline or STP violation handler(s) on the 'reaction', if they
+ * exist.
+ *
  * @return true if a violation occurred. false otherwise.
  */
 bool _lf_worker_handle_violations(int worker_number, reaction_t* reaction) {
@@ -1210,7 +1223,10 @@ bool _lf_worker_handle_violations(int worker_number, reaction_t* reaction) {
 
 /**
  * Invoke 'reaction' and schedule any resulting triggered reaction(s) on the
- * reaction queue.
+ * reaction queue. 
+ * The mutex should NOT be locked when this reaction is called. It might acquire
+ * the mutex when scheduling the reactions that are triggered as a result of
+ * executing 'reaction'.
  */
 void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
     LOG_PRINT("Worker %d: Invoking reaction %s at elapsed tag (%lld, %d).",
@@ -1229,10 +1245,11 @@ void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
 
 /**
  * The main looping logic of each LF worker thread.
+ * This function assumes the caller holds the mutex lock.
  * 
  * @param worker_number The number assigned to this worker thread
  */
-void _lf_worker_do_work(int worker_number) {
+void _lf_worker_do_work_locked(int worker_number) {
     // Keep track of whether we have decremented the idle thread count.
     bool have_been_busy = false;
     // Iterate until the stop_tag is reached or reaction queue is empty
@@ -1327,7 +1344,7 @@ void* worker(void* arg) {
     int worker_number = ++worker_thread_count;
     LOG_PRINT("Worker thread %d started.", worker_number);
 
-    _lf_worker_do_work(worker_number);
+    _lf_worker_do_work_locked(worker_number);
 
     // This thread is exiting, so don't count it anymore.
     _lf_number_of_threads--;
