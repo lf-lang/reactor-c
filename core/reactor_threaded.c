@@ -892,7 +892,7 @@ void _lf_notify_workers_locked() {
         ) {
             // FIXME: In applications without parallelism, this notification
             // proves very expensive. Perhaps we should be checking execution times.
-            lf_cond_broadcast(&reaction_q_changed); // This used to be a cond_signal, but that would only wake up one thread.
+            lf_cond_signal(&reaction_q_changed);
             DEBUG_PRINT("Notify another worker of a reaction on the reaction queue.");
         }
     }
@@ -1080,8 +1080,7 @@ void* worker(void* arg) {
                     tracepoint_worker_advancing_time_ends(worker_number);
                     _lf_advancing_time = false;
                     DEBUG_PRINT("Worker %d: Done waiting for _lf_next().", worker_number);
-                    // After populating the reaction queue, notify workers.
-                    _lf_notify_workers();
+
                 } else if (compare_tags(current_tag, stop_tag) >= 0) {
                 	// At the stop tag so we can exit this thread.
                 	break;
