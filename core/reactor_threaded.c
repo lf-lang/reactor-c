@@ -1038,13 +1038,13 @@ bool _lf_worker_should_stop() {
 }
 
 /**
- * Advance tag. This will also pop events for the newly acquired tag and puts
+ * Advance tag. This will also pop events for the newly acquired tag and put
  * the triggered reactions on the reaction queue.
  * 
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
 bool _lf_worker_advance_tag(int worker_number) {
-    // Block other worker threads from doing that.
+    // Block other worker threads from also advancing the tag.
     _lf_advancing_time = true;
 
     if (_lf_worker_should_stop()) {
@@ -1067,7 +1067,7 @@ bool _lf_worker_advance_tag(int worker_number) {
 
 /**
  * Advance tag if there are no reactions in the reaction queue or in progress. If
- * there are such reactions or if another thread is already advancing time, wait
+ * there are such reactions or if another thread is already advancing the tag, wait
  * until something on the reaction queue is changed.
  * 
  * @return should_exit True if the worker thread should exit. False otherwise.
