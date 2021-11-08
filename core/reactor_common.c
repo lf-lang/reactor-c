@@ -421,13 +421,13 @@ void _lf_start_time_step() {
     }
     for(int i = 0; i < size; i++) {
         *is_present_fields[i] = false;
+    }
 #ifdef FEDERATED_DECENTRALIZED
+    for (int i = 0; i < _lf_is_present_fields_size; i++) {
         // FIXME: For now, an intended tag of (NEVER, 0)
         // indicates that it has never been set.
-        *is_present_fields[i] = (tag_t) {NEVER, 0};
-#endif
+        *_lf_intended_tag_fields[i] = (tag_t) {NEVER, 0};
     }
-#ifdef FEDERATED
     // Reset absent fields on network ports because
     // their status is unknown
     reset_status_fields_on_input_port_triggers();
