@@ -85,12 +85,15 @@ bool keepalive_specified = false;
 bool** _lf_is_present_fields = NULL;
 int _lf_is_present_fields_size = 0;
 
-// Define an array of pointers to those particular _is_present fields
-// that need to be reinitialized at the start of the next time step.
-// NOTE: If the same fields are repeatedly set to present at the same
-// time step, then it is possible that _lf_is_present_fields_abbreviated
-// will run out of space, in which case it is necessary to fall back to
-// _lf_is_present_fields to determine which fields to reset.
+// Define an array of pointers to the _is_present fields
+// that have been set to true during the execution of a tag
+// so that at the conclusion of the tag, these fields can be reset to
+// false. Usually, this list will have fewer records than will
+// _lf_is_present_fields, allowing for some time to be saved.
+// However, it is possible for it to have more records if some ports
+// are set multiple times at the same tag. In such cases, we fall back
+// to resetting all is_present fields at the start of the next time
+// step.
 bool** _lf_is_present_fields_abbreviated = NULL;
 int _lf_is_present_fields_abbreviated_size = 0;
 
