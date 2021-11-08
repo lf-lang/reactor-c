@@ -428,6 +428,8 @@ void _lf_start_time_step() {
         // indicates that it has never been set.
         *_lf_intended_tag_fields[i] = (tag_t) {NEVER, 0};
     }
+#endif
+#ifdef FEDERATED
     // Reset absent fields on network ports because
     // their status is unknown
     reset_status_fields_on_input_port_triggers();
