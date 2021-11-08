@@ -134,7 +134,8 @@ void print_snapshot() {
 void _lf_enqueue_reaction(reaction_t* reaction) {
     // Do not enqueue this reaction twice.
     if (pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
-        DEBUG_PRINT("Enqueing downstream reaction %s.", reaction->name);
+        DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
+        		reaction->name, reaction->index & 0xffffLL);
         pqueue_insert(reaction_q, reaction);
     }
 }

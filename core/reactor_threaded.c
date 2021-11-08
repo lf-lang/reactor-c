@@ -866,7 +866,8 @@ void _lf_enqueue_reaction(reaction_t* reaction) {
     lf_mutex_lock(&mutex);
     // Do not enqueue this reaction twice.
     if (reaction != NULL && pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
-        DEBUG_PRINT("Enqueing downstream reaction %s.", reaction->name);
+        DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
+        		reaction->name, reaction->index & 0xffffLL);
         pqueue_insert(reaction_q, reaction);
         // NOTE: We could notify another thread so it can execute this reaction.
         // However, this notification is expensive!
