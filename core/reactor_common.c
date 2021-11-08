@@ -85,6 +85,15 @@ bool keepalive_specified = false;
 bool** _lf_is_present_fields = NULL;
 int _lf_is_present_fields_size = 0;
 
+// Define an array of pointers to those particular _is_present fields
+// that need to be reinitialized at the start of the next time step.
+// NOTE: If the same fields are repeatedly set to present at the same
+// time step, then it is possible that _lf_is_present_fields_abbreviated
+// will run out of space, in which case it is necessary to fall back to
+// _lf_is_present_fields to determine which fields to reset.
+bool** _lf_is_present_fields_abbreviated = NULL;
+int _lf_is_present_fields_abbreviated_size = 0;
+
 // Define the array of pointers to the intended_tag fields of all
 // ports and actions that need to be reinitialized at the start
 // of each time step.
@@ -404,12 +413,18 @@ void _lf_start_time_step() {
         _lf_done_using(_lf_more_tokens_with_ref_count);
         _lf_more_tokens_with_ref_count = next;
     }
-    for(int i = 0; i < _lf_is_present_fields_size; i++) {
-        *_lf_is_present_fields[i] = false;
+    bool** is_present_fields = _lf_is_present_fields_abbreviated;
+    int size = _lf_is_present_fields_abbreviated_size;
+    if (_lf_is_present_fields_abbreviated_size > _lf_is_present_fields_size) {
+        size = _lf_is_present_fields_size;
+        is_present_fields = _lf_is_present_fields;
+    }
+    for(int i = 0; i < size; i++) {
+        *is_present_fields[i] = false;
 #ifdef FEDERATED_DECENTRALIZED
         // FIXME: For now, an intended tag of (NEVER, 0)
         // indicates that it has never been set.
-        *_lf_intended_tag_fields[i] = (tag_t) {NEVER, 0};
+        *is_present_fields[i] = (tag_t) {NEVER, 0};
 #endif
     }
 #ifdef FEDERATED
@@ -417,6 +432,22 @@ void _lf_start_time_step() {
     // their status is unknown
     reset_status_fields_on_input_port_triggers();
 #endif
+    _lf_is_present_fields_abbreviated_size = 0;
+}
+
+/*
+ * Mark the given is_present field as true. This is_present field
+ * will later be cleaned up by _lf_start_time_step.
+ * @param is_present_field A pointer to the is_present field that
+ * must be set.
+ */
+void _lf_set_present(bool* is_present_field) {
+    if (_lf_is_present_fields_abbreviated_size < _lf_is_present_fields_size) {
+        _lf_is_present_fields_abbreviated[_lf_is_present_fields_abbreviated_size]
+            = is_present_field;
+    }
+    _lf_is_present_fields_abbreviated_size++;
+    *is_present_field = true;
 }
 
 /**
