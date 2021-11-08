@@ -84,6 +84,8 @@
 // problems with if ... else statements that do not use braces around the
 // two branches.
 
+void _lf_set_present(bool* is_present_field);
+
 /**
  * Set the specified output (or input of a contained reactor)
  * to the specified value.
