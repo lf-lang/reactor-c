@@ -175,17 +175,11 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  * @param addend the value to be added to x.
  * @return the original value of x, from before addend was added.
  */
-int lf_atomic_fetch_add(int* x, int addend);
-
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-int lf_atomic_fetch_add(int* x, int addend) {
-    // Assume that an integer is 32 bits.
-    return InterlockedExchangeAdd(x, addend);
-}
+// Assume that an integer is 32 bits.
+#define lf_atomic_fetch_add(x, addend) InterlockedExchangeAdd(x, addend)
 #elif defined(__GNUC__) || defined(__clang__)
-int lf_atomic_fetch_add(int* x, int addend) {
-    return __sync_fetch_and_add(x, addend);
-}
+#define lf_atomic_fetch_add(x, addend) __sync_fetch_and_add(x, addend)
 #else
 #error "Compiler not supported"
 #endif
