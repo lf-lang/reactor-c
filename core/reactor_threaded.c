@@ -359,6 +359,24 @@ trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* 
     return return_value;
 }
 
+/*
+ * Mark the given is_present field as true. This is_present field
+ * will later be cleaned up by _lf_start_time_step.
+ * This assumes that the mutex is not held.
+ * @param is_present_field A pointer to the is_present field that
+ * must be set.
+ */
+void _lf_set_present(bool* is_present_field) {
+    lf_mutex_lock(&mutex);
+    if (_lf_is_present_fields_abbreviated_size < _lf_is_present_fields_size) {
+        _lf_is_present_fields_abbreviated[_lf_is_present_fields_abbreviated_size]
+            = is_present_field;
+    }
+    _lf_is_present_fields_abbreviated_size++;
+    lf_mutex_unlock(&mutex);
+    *is_present_field = true;
+}
+
 /** 
  * Placeholder for code-generated function that will, in a federated
  * execution, be used to coordinate the advancement of tag. It will notify

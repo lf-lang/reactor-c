@@ -440,21 +440,6 @@ void _lf_start_time_step() {
     _lf_is_present_fields_abbreviated_size = 0;
 }
 
-/*
- * Mark the given is_present field as true. This is_present field
- * will later be cleaned up by _lf_start_time_step.
- * @param is_present_field A pointer to the is_present field that
- * must be set.
- */
-void _lf_set_present(bool* is_present_field) {
-    if (_lf_is_present_fields_abbreviated_size < _lf_is_present_fields_size) {
-        _lf_is_present_fields_abbreviated[_lf_is_present_fields_abbreviated_size]
-            = is_present_field;
-    }
-    _lf_is_present_fields_abbreviated_size++;
-    *is_present_field = true;
-}
-
 /**
  * Create a new lf_token_t struct and initialize it for assignment to a trigger.
  * The value pointer will be NULL and the length will be 0.
