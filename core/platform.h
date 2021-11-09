@@ -177,9 +177,15 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  */
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that an integer is 32 bits.
-#define lf_atomic_fetch_add(x, addend) InterlockedExchangeAdd(x, addend)
+#define lf_atomic_fetch_add(ptr, value) \
+do { \
+    InterlockedExchangeAdd(ptr, value); \
+} while(0)
 #elif defined(__GNUC__) || defined(__clang__)
-#define lf_atomic_fetch_add(x, addend) __sync_fetch_and_add(x, addend)
+#define lf_atomic_fetch_add(ptr, value) \
+do { \
+    __sync_fetch_and_add(ptr, value); \
+} while(0)
 #else
 #error "Compiler not supported"
 #endif
