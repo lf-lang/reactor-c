@@ -367,13 +367,10 @@ trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* 
  * must be set.
  */
 void _lf_set_present(bool* is_present_field) {
-    lf_mutex_lock(&mutex);
-    if (_lf_is_present_fields_abbreviated_size < _lf_is_present_fields_size) {
-        _lf_is_present_fields_abbreviated[_lf_is_present_fields_abbreviated_size]
-            = is_present_field;
+    int ipfas = lf_atomic_fetch_add(&_lf_is_present_fields_abbreviated_size, 1);
+    if (ipfas < _lf_is_present_fields_size) {
+        _lf_is_present_fields_abbreviated[ipfas] = is_present_field;
     }
-    _lf_is_present_fields_abbreviated_size++;
-    lf_mutex_unlock(&mutex);
     *is_present_field = true;
 }
 
