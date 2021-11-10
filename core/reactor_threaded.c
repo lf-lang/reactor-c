@@ -863,20 +863,20 @@ bool _lf_advancing_time = false;
  */
 void _lf_enqueue_reaction(reaction_t* reaction) {
     // Do not enqueue this reaction twice.
+    // Acquire the mutex lock.
+    lf_mutex_lock(&mutex);
     if (reaction != NULL && reaction->status == inactive) {
         DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
         		reaction->name, reaction->index & 0xffffLL);
         reaction->status = queued;
-        // Acquire the mutex lock.
-        lf_mutex_lock(&mutex);
         pqueue_insert(reaction_q, reaction);
-        lf_mutex_unlock(&mutex);
         // NOTE: We could notify another thread so it can execute this reaction.
         // However, this notification is expensive!
         // It is now handled by schedule_output_reactions() in reactor_common,
         // which calls the _lf_notify_workers() function defined below.
         // lf_cond_signal(&reaction_q_changed);
     }
+    lf_mutex_unlock(&mutex);
 }
 
 /**

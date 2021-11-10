@@ -1221,7 +1221,7 @@ void enqueue_network_input_control_reactions(pqueue_t *reaction_q) {
         // Reaction 0 should always be the network input control reaction
         if (get_current_port_status(i) == unknown) {
             reaction_t *reaction = _fed.triggers_for_network_input_control_reactions[i]->reactions[0];
-            if (reaction->status = inactive) {
+            if (reaction->status == inactive) {
                 reaction->is_a_control_reaction = true;
                 DEBUG_PRINT("Inserting network input control reaction on reaction queue.");
                 reaction->status = queued;
