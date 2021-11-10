@@ -559,7 +559,7 @@ void _lf_pop_events() {
         for (int i = 0; i < event->trigger->number_of_reactions; i++) {
             reaction_t *reaction = event->trigger->reactions[i];
             // Do not enqueue this reaction twice.
-            if (pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
+            if (reaction->status == inactive) {
 #ifdef FEDERATED_DECENTRALIZED
                 // In federated execution, an intended tag that is not (NEVER, 0)
                 // indicates that this particular event is triggered by a network message.
@@ -583,6 +583,7 @@ void _lf_pop_events() {
                 }
 #endif
                 DEBUG_PRINT("Enqueing reaction %s.", reaction->name);
+                reaction->status = queued;
                 pqueue_insert(reaction_q, reaction);
             } else {
                 DEBUG_PRINT("Reaction is already on the reaction_q: %s", reaction->name);
@@ -1295,8 +1296,9 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
     for (int i = 0; i < trigger->number_of_reactions; i++) {
         reaction_t* reaction = trigger->reactions[i];
         // Do not enqueue this reaction twice.
-        if (pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
+        if (reaction->status == inactive) {
             reaction->is_STP_violated = is_STP_violated;
+            reaction->status = queued;
             pqueue_insert(reaction_q, reaction);
             LOG_PRINT("Enqueued reaction %s at time %lld.", reaction->name, get_logical_time());
         }
