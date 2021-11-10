@@ -862,20 +862,21 @@ bool _lf_advancing_time = false;
  * @param reaction The reaction.
  */
 void _lf_enqueue_reaction(reaction_t* reaction) {
-    // Acquire the mutex lock.
-    lf_mutex_lock(&mutex);
     // Do not enqueue this reaction twice.
-    if (reaction != NULL && pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
+    if (reaction != NULL && reaction->status == inactive) {
         DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
         		reaction->name, reaction->index & 0xffffLL);
+        reaction->status = queued;
+        // Acquire the mutex lock.
+        lf_mutex_lock(&mutex);
         pqueue_insert(reaction_q, reaction);
+        lf_mutex_unlock(&mutex);
         // NOTE: We could notify another thread so it can execute this reaction.
         // However, this notification is expensive!
         // It is now handled by schedule_output_reactions() in reactor_common,
         // which calls the _lf_notify_workers() function defined below.
         // lf_cond_signal(&reaction_q_changed);
     }
-    lf_mutex_unlock(&mutex);
 }
 
 /**
@@ -1294,6 +1295,7 @@ void _lf_worker_do_work_locked(int worker_number) {
 
             // Push the reaction on the executing queue in order to prevent any
             // reactions that may depend on it from executing before this reaction is finished.
+            current_reaction_to_execute->status = running;
             pqueue_insert(executing_q, current_reaction_to_execute);
 
             // If there are additional reactions on the reaction_q, notify one other
@@ -1327,6 +1329,10 @@ void _lf_worker_do_work_locked(int worker_number) {
             // Reset the is_STP_violated because it has been passed
             // down the chain
             current_reaction_to_execute->is_STP_violated = false;
+
+            // There cannot be any subsequent events that trigger this reaction at the
+            //  current tag, so it is safe to conclude that it is now inactive.
+            current_reaction_to_execute->status = inactive;
 
             DEBUG_PRINT("Worker %d: Done with reaction %s.",
             		worker_number, current_reaction_to_execute->name);

@@ -1221,9 +1221,10 @@ void enqueue_network_input_control_reactions(pqueue_t *reaction_q) {
         // Reaction 0 should always be the network input control reaction
         if (get_current_port_status(i) == unknown) {
             reaction_t *reaction = _fed.triggers_for_network_input_control_reactions[i]->reactions[0];
-            if (pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
+            if (reaction->status = inactive) {
                 reaction->is_a_control_reaction = true;
                 DEBUG_PRINT("Inserting network input control reaction on reaction queue.");
+                reaction->status = queued;
                 pqueue_insert(reaction_q, reaction);
                 mark_control_reaction_waiting(i, true);
             }
@@ -1244,9 +1245,10 @@ void enqueue_network_output_control_reactions(pqueue_t* reaction_q){
     }
     for (int i = 0; i < _fed.trigger_for_network_output_control_reactions->number_of_reactions; i++) {
         reaction_t* reaction = _fed.trigger_for_network_output_control_reactions->reactions[i];
-        if (pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
+        if (reaction->status == inactive) {
             reaction->is_a_control_reaction = true;
             DEBUG_PRINT("Inserting network output control reaction on reaction queue.");
+            reaction->status = queued;
             pqueue_insert(reaction_q, reaction);
         }
     }
