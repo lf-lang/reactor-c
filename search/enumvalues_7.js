@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['pending_0',['PENDING',['../rti_8h.html#a7a2e496e8d9be587cc662640a4251b23a1869818fd53ff519eb8e429301bdff73',1,'rti.h']]],
-  ['present_1',['present',['../reactor_8h.html#a759ba374f75ea0025b9af1bb35f14d7eaaeb73d7cb56b19bff3d9f80426ed3267',1,'reactor.h']]]
+  ['no_0',['no',['../reactor_8h.html#a174f339edecd4463df25e673366a2b16a8fe4a05f1addc1b9a4aae17d7b166646',1,'reactor.h']]],
+  ['not_5fconnected_1',['NOT_CONNECTED',['../rti_8h.html#a7a2e496e8d9be587cc662640a4251b23a96c582a5af213ca7fb34f970d83875f5',1,'rti.h']]],
+  ['not_5ffreed_2',['NOT_FREED',['../reactor__common_8c.html#abe23a36a87d2f0c076da417eb0114c7ea3d7522b54086645e077eb70e78731c5c',1,'reactor_common.c']]]
 ];

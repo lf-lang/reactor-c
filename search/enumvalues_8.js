@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['reaction_5fends_0',['reaction_ends',['../trace_8h.html#ab02e9e69539d60297cedb38c2193a453a79889b5c51ccdf63962a8ec230ff3f6b',1,'trace.h']]],
-  ['reaction_5fstarts_1',['reaction_starts',['../trace_8h.html#ab02e9e69539d60297cedb38c2193a453a7ca2fc1a301d8e66944fab471646728a',1,'trace.h']]],
-  ['realtime_2',['REALTIME',['../rti_8h.html#a83ca4d4187a661b1395c9f860d61c97eadbd89a052eecc45eaa443bcbecc7c5e4',1,'rti.h']]],
-  ['replace_3',['replace',['../reactor_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a8a4df390c6f816287b90cb2b33ab4323',1,'reactor.h']]]
+  ['pending_0',['PENDING',['../rti_8h.html#a7a2e496e8d9be587cc662640a4251b23a1869818fd53ff519eb8e429301bdff73',1,'rti.h']]],
+  ['present_1',['present',['../reactor_8h.html#a759ba374f75ea0025b9af1bb35f14d7eaaeb73d7cb56b19bff3d9f80426ed3267',1,'reactor.h']]]
 ];

@@ -13,6 +13,5 @@ var searchData=
   ['reset_5fis_5fpresent_10',['reset_is_present',['../structtoken__present__t.html#aa8a58416b02e87198d2e67af2a6061c0',1,'token_present_t']]],
   ['riff_11',['riff',['../structlf__wav__t.html#a4dfe6fe77717d001176da92f396b85d9',1,'lf_wav_t']]],
   ['rti_5fmutex_12',['rti_mutex',['../struct_r_t_i__instance__t.html#aae78ec13a834f35ead74a65c05ac691b',1,'RTI_instance_t']]],
-  ['rti_5fsocket_5flistener_13',['RTI_socket_listener',['../structfederate__instance__t.html#a5b6b4b5912a7bb7df1c8987f38e12004',1,'federate_instance_t']]],
-  ['running_14',['running',['../structreaction__t.html#afb83ae2b2429fe59f1e548bcad1bc153',1,'reaction_t']]]
+  ['rti_5fsocket_5flistener_13',['RTI_socket_listener',['../structfederate__instance__t.html#a5b6b4b5912a7bb7df1c8987f38e12004',1,'federate_instance_t']]]
 ];

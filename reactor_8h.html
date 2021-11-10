@@ -178,6 +178,11 @@ Enumerations</h2></td></tr>
 , <a class="el" href="reactor_8h.html#a759ba374f75ea0025b9af1bb35f14d7ea5b9f6d065e6e98483b3d3ed01f4f6cbe">unknown</a>
  }</td></tr>
 <tr class="separator:a759ba374f75ea0025b9af1bb35f14d7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6e496c05213aa4bcbc0055ceee7808fa"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a6e496c05213aa4bcbc0055ceee7808fa">reaction_status_t</a> { <a class="el" href="reactor_8h.html#a6e496c05213aa4bcbc0055ceee7808faa76c1253bb97844abbdf89af6dfc3c7d6">inactive</a> = 0
+, <a class="el" href="reactor_8h.html#a6e496c05213aa4bcbc0055ceee7808faa8ff224790af0c8a18f259da89dfb2225">queued</a>
+, <a class="el" href="reactor_8h.html#a6e496c05213aa4bcbc0055ceee7808faab514bba77fe136c3a3b6f56b818f7b0c">running</a>
+ }</td></tr>
+<tr class="separator:a6e496c05213aa4bcbc0055ceee7808fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -385,7 +390,7 @@ DESCRIPTION</h1>
 <div class="line">    out-&gt;value = token-&gt;value; \</div>
 <div class="line">    out-&gt;token = token; \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="areactor__common_8c_html_a9df90516cce7d8e01b46acf61db64b8f"><div class="ttname"><a href="reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a></div><div class="ttdeci">lf_token_t * _lf_set_new_array_impl(lf_token_t *token, size_t length, int num_destinations)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1391</div></div>
+<div class="ttc" id="areactor__common_8c_html_a9df90516cce7d8e01b46acf61db64b8f"><div class="ttname"><a href="reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a></div><div class="ttdeci">lf_token_t * _lf_set_new_array_impl(lf_token_t *token, size_t length, int num_destinations)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1393</div></div>
 </div><!-- fragment --><p >Version of set() for output types given as 'type*' that allocates a new object of the type of the specified output port.</p>
 <p >This macro dynamically allocates enough memory to contain one instance of the output datatype and sets the variable named by the argument to point to the newly allocated memory. The user code can then populate it with whatever value it wishes to send.</p>
 <p >This macro also sets the corresponding _is_present variable in the self struct to true (which causes the object message to be sent), </p><dl class="params"><dt>Parameters</dt><dd>
@@ -930,6 +935,28 @@ The absent and present fields need to be compatible with false and true respecti
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a759ba374f75ea0025b9af1bb35f14d7ea1a8fae68a24a59c5629c241401fabb08" name="a759ba374f75ea0025b9af1bb35f14d7ea1a8fae68a24a59c5629c241401fabb08"></a>absent&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a759ba374f75ea0025b9af1bb35f14d7eaaeb73d7cb56b19bff3d9f80426ed3267" name="a759ba374f75ea0025b9af1bb35f14d7eaaeb73d7cb56b19bff3d9f80426ed3267"></a>present&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a759ba374f75ea0025b9af1bb35f14d7ea5b9f6d065e6e98483b3d3ed01f4f6cbe" name="a759ba374f75ea0025b9af1bb35f14d7ea5b9f6d065e6e98483b3d3ed01f4f6cbe"></a>unknown&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+</div>
+</div>
+<a id="a6e496c05213aa4bcbc0055ceee7808fa" name="a6e496c05213aa4bcbc0055ceee7808fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6e496c05213aa4bcbc0055ceee7808fa">&#9670;&nbsp;</a></span>reaction_status_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="reactor_8h.html#a6e496c05213aa4bcbc0055ceee7808fa">reaction_status_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Status of a given reaction at a given logical time.</p>
+<p >If a reaction is 'inactive', it is neither running nor queued. If a reaction is 'queued', it is going to be executed at the current logical time, but it has not started running yet. If a reaction is 'running', its body is being executed.</p>
+<dl class="section note"><dt>Note</dt><dd>inactive must equal zero because it should be possible to allocate a reaction with default values using calloc. FIXME: The running state does not seem to be read. </dd></dl>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a6e496c05213aa4bcbc0055ceee7808faa76c1253bb97844abbdf89af6dfc3c7d6" name="a6e496c05213aa4bcbc0055ceee7808faa76c1253bb97844abbdf89af6dfc3c7d6"></a>inactive&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a6e496c05213aa4bcbc0055ceee7808faa8ff224790af0c8a18f259da89dfb2225" name="a6e496c05213aa4bcbc0055ceee7808faa8ff224790af0c8a18f259da89dfb2225"></a>queued&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a6e496c05213aa4bcbc0055ceee7808faab514bba77fe136c3a3b6f56b818f7b0c" name="a6e496c05213aa4bcbc0055ceee7808faab514bba77fe136c3a3b6f56b818f7b0c"></a>running&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>

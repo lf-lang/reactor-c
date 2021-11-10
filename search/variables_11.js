@@ -19,7 +19,7 @@ var searchData=
   ['standard_5fdeviation_16',['standard_deviation',['../structlf__stat__ll.html#a70b953298d0cca9ac399168825cd54d6',1,'lf_stat_ll']]],
   ['start_5ftime_17',['start_time',['../tag_8c.html#a20b56e8fb05c017508f1c4fa2e311a87',1,'tag.c']]],
   ['state_18',['state',['../structfederate__t.html#a3f4d9c9743013e7a8aa596942237fa50',1,'federate_t']]],
-  ['status_19',['status',['../structtoken__present__t.html#a6fba04c24e4e49088464a0e9b2fa231d',1,'token_present_t::status()'],['../structtrigger__t.html#aebe251fea18aa0bf9435acf5d5ab6012',1,'trigger_t::status()']]],
+  ['status_19',['status',['../structtoken__present__t.html#a6fba04c24e4e49088464a0e9b2fa231d',1,'token_present_t::status()'],['../structreaction__t.html#a2c42ec5e47d9ee2c7b44882d96117002',1,'reaction_t::status()'],['../structtrigger__t.html#aebe251fea18aa0bf9435acf5d5ab6012',1,'trigger_t::status()']]],
   ['step_20',['step',['../structpqueue__t.html#ab405fbb415065192ce9a1a39b5f45978',1,'pqueue_t']]],
   ['stop_5faudio_21',['stop_audio',['../audio__loop__linux_8c.html#a18e506de17bb8e0ee78fc5a3dc67e408',1,'audio_loop_linux.c']]],
   ['stop_5ftag_22',['stop_tag',['../reactor__common_8c.html#a007aadaac39cca4ce69656a91b5e236c',1,'reactor_common.c']]],
