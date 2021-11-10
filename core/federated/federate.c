@@ -1771,7 +1771,7 @@ void handle_tagged_message(int socket, int fed_id) {
         lf_cond_broadcast(&port_status_changed);
 
         // Notify the main thread in case it is waiting for reactions.
-        DEBUG_PRINT("Broadcasting notification that reaction queue changed.");
+        DEBUG_PRINT("Signaling that reaction queue changed.");
         lf_cond_signal(&reaction_q_changed);
     } else {
         // If no control reaction is waiting for this message, or if the intended

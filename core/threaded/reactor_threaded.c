@@ -31,8 +31,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
  */
 
+#ifndef NUMBER_OF_WORKERS
+#define NUMBER_OF_WORKERS 1
+#endif // NUMBER_OF_WORKERS
+
 #include "reactor_common.c"
 #include "platform.h"
+#include "scheduler.c"
 #include <signal.h>
 
 /**
@@ -51,9 +56,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * performing the wait.
  */
 #define MIN_WAIT_TIME USEC(10)
-
-// Number of idle worker threads.
-int number_of_idle_threads = 0;
 
 /*
  * A struct representing a barrier in threaded 
@@ -82,8 +84,6 @@ _lf_tag_advancement_barrier _lf_global_tag_advancement_barrier = {0, FOREVER_TAG
 
 // Queue of currently executing reactions.
 pqueue_t* executing_q; // Sorted by index (precedence sort)
-
-pqueue_t* transfer_q;  // To store reactions that are still blocked by other reactions.
 
 // The one and only mutex lock.
 lf_mutex_t mutex;
@@ -358,16 +358,6 @@ trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* 
     lf_mutex_unlock(&mutex);
     return return_value;
 }
-
-/** 
- * Placeholder for code-generated function that will, in a federated
- * execution, be used to coordinate the advancement of tag. It will notify
- * the runtime infrastructure (RTI) that all reactions at the specified
- * logical tag have completed. This function should be called only while
- * holding the mutex lock.
- * @param tag_to_send The tag to send.
- */
-void logical_tag_complete(tag_t tag_to_send);
 
 /** 
  * Synchronize the start with other federates via the RTI.
@@ -729,134 +719,6 @@ void request_stop() {
 }
 
 /**
- * Return true if the first reaction has precedence over the second, false otherwise.
- * @param r1 The first reaction.
- * @param r2 The second reaction.
- */
-bool _lf_has_precedence_over(reaction_t* r1, reaction_t* r2) {
-    if (LEVEL(r1->index) < LEVEL(r2->index)
-            && OVERLAPPING(r1->chain_id, r2->chain_id)) {
-        return true;
-    }
-    return false;
-}
-
-/**
- * If the reaction is blocked by a currently executing
- * reaction, return true. Otherwise, return false.
- * A reaction blocks the specified reaction if it has a
- * level less than that of the specified reaction and it also has
- * an overlapping chain ID, meaning that it is (possibly) upstream
- * of the specified reaction.
- * This function assumes the mutex is held because it accesses
- * the executing_q.
- * @param reaction The reaction.
- * @return true if this reaction is blocked, false otherwise.
- */
-bool _lf_is_blocked_by_executing_reaction(reaction_t* reaction) {
-    if (reaction == NULL) {
-        return false;
-    }
-    for (size_t i = 1; i < executing_q->size; i++) {
-        reaction_t* running = (reaction_t*) executing_q->d[i];
-        if (_lf_has_precedence_over(running, reaction)) {
-            DEBUG_PRINT("Reaction %s is blocked by reaction %s.", reaction->name, running->name);
-            return true;
-        }
-    }
-    // NOTE: checks against the transfer_q are not performed in 
-    // this function but at its call site (where appropriate).
-
-    // printf("Not blocking for reaction with chainID %llu and level %llu\n", reaction->chain_id, reaction->index);
-    // pqueue_dump(executing_q, stdout, executing_q->prt);
-    return false;
-}
-
-/**
- * Return the first ready (i.e., unblocked) reaction in the reaction queue if
- * there is one. Return `NULL` if all pending reactions are blocked.
- *
- * The reaction queue is sorted by index, where a lower index appears
- * earlier in the queue. The first reaction in the reaction queue is
- * ready to execute if it is not blocked by any reaction that is currently
- * executing in another thread. If that first reaction is blocked, then
- * the second reaction is ready to execute if it is not blocked by any
- * reaction that is currently executing (if it is blocked by the first
- * reaction, then it is also blocked by a currently executing reaction because
- * the first reaction is blocked).
- *
- * The upper 48 bits of the index are the deadline and the
- * lower 16 bits denote a level in the precedence graph.  Reactions that
- * do not depend on any upstream reactions have level 0, and greater values
- * indicate the length of the longest upstream path to a reaction with level 0.
- * If a reaction has no specified deadline and is not upstream of any reaction
- * with a specified deadline, then its deadline is the largest 48 bit number.
- * Also, all reactions that precede a reaction r that has a deadline D
- * are are assigned a deadline D' <= D.
- *
- * A reaction r is blocked by an executing reaction e if e has a lower level
- * and the chain ID of e overlaps (shares at least one bit) with the chain ID
- * of r. If the two chain IDs share no bits, then we are assured that e is not
- * upstream of r and hence cannot block r.
- *
- * This function assumes the mutex is held.
- *
- * @return the first-ranked reaction that is ready to execute, NULL if there is
- * none.
- */ 
-reaction_t* first_ready_reaction() {    
-    reaction_t* r;
-    reaction_t* b;
-    // Keep track of the chain IDs of blocked reactions.
-    unsigned long long mask = 0LL;
-
-    // Find a reaction that is ready to execute.
-    while ((r = (reaction_t*)pqueue_pop(reaction_q)) != NULL) {
-        // Set the reaction aside if it is blocked, either by another
-        // blocked reaction or by a reaction that is currently executing.
-        if (OVERLAPPING(mask, r->chain_id)) {
-            pqueue_insert(transfer_q, r);
-            DEBUG_PRINT("Reaction %s is blocked by a reaction that is also blocked.", r->name);
-        } else {
-            if (_lf_is_blocked_by_executing_reaction(r)) {
-                pqueue_insert(transfer_q, r);
-            } else {
-                // Not blocked. Break out of the loop and return the reaction.
-                break;
-            }
-        }
-        mask = mask | r->chain_id;
-    }
-    
-    // Push blocked reactions back onto the reaction queue.
-    // This will swap the two queues if the transfer_q has
-    // gotten larger than the reaction_q.
-    if (pqueue_size(reaction_q) >= pqueue_size(transfer_q)) {
-        while ((b = (reaction_t*)pqueue_pop(transfer_q)) != NULL) {
-            pqueue_insert(reaction_q, b);
-        }
-    } else {
-        pqueue_t* tmp;
-        while ((b = (reaction_t*)pqueue_pop(reaction_q)) != NULL) {
-            pqueue_insert(transfer_q, b);
-        }
-        tmp = reaction_q;
-        reaction_q = transfer_q;
-        transfer_q = tmp;
-    }
-    return r;
-}
-
-/** 
- * Indicator that a worker thread has already taken charge of
- * advancing time. When another worker thread encouters a true
- * value to this variable, it should wait for events to appear
- * on the reaction queue rather than advance time.
- * This variable should only be accessed while holding the mutex lock.
- */
-bool _lf_advancing_time = false;
-
-/**
  * Put the specified reaction on the reaction queue.
  * This version acquires a mutex lock.
  * @param reaction The reaction.
@@ -869,11 +731,6 @@ void _lf_enqueue_reaction(reaction_t* reaction) {
         DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
         		reaction->name, reaction->index & 0xffffLL);
         pqueue_insert(reaction_q, reaction);
-        // NOTE: We could notify another thread so it can execute this reaction.
-        // However, this notification is expensive!
-        // It is now handled by schedule_output_reactions() in reactor_common,
-        // which calls the _lf_notify_workers() function defined below.
-        // lf_cond_signal(&reaction_q_changed);
     }
     lf_mutex_unlock(&mutex);
 }
@@ -886,16 +743,14 @@ void _lf_enqueue_reaction(reaction_t* reaction) {
  * This function assumes the caller holds the mutex lock.
  */
 void _lf_notify_workers_locked() {
-    if (number_of_idle_threads > 0) {
-        reaction_t* next_ready_reaction = (reaction_t*)pqueue_peek(reaction_q);
-        if (next_ready_reaction != NULL
-                && !_lf_is_blocked_by_executing_reaction(next_ready_reaction)
-        ) {
-            // FIXME: In applications without parallelism, this notification
-            // proves very expensive. Perhaps we should be checking execution times.
-            lf_cond_signal(&reaction_q_changed);
-            DEBUG_PRINT("Notify another worker of a reaction on the reaction queue.");
-        }
+    reaction_t* next_ready_reaction = (reaction_t*)pqueue_peek(reaction_q);
+    if (next_ready_reaction != NULL
+            && !_lf_sched_is_blocked_by_executing_reaction(next_ready_reaction)
+    ) {
+        // FIXME: In applications without parallelism, this notification
+        // proves very expensive. Perhaps we should be checking execution times.
+        lf_cond_signal(&reaction_q_changed);
+        DEBUG_PRINT("Notify another worker of a reaction on the reaction queue.");
     }
 }
 
@@ -1010,112 +865,6 @@ void _lf_initialize_start_tag() {
 
 /** For logging and debugging, each worker thread is numbered. */
 int worker_thread_count = 0;
-
-// Indicator that execution at at least one tag has completed.
-bool _lf_logical_tag_completed = false;
-
-/**
- * Return true if the worker should stop now; false otherwise.
- * This function assumes the caller holds the mutex lock.
- */
-bool _lf_worker_should_stop_locked() {
-    // If this is not the very first step, notify that the previous step is complete
-    // and check against the stop tag to see whether this is the last step.
-    if (_lf_logical_tag_completed) {
-        logical_tag_complete(current_tag);
-        // If we are at the stop tag, do not call _lf_next_locked()
-        // to prevent advancing the logical time.
-        if (compare_tags(current_tag, stop_tag) >= 0) {
-            // Return true to stop the worker and notify other
-            // worker threads potentially waiting to continue.
-            // Also, notify the RTI that there will be no more events (if centralized coord).
-            // False argument means don't wait for a reply.
-            send_next_event_tag(FOREVER_TAG, false);
-            lf_cond_broadcast(&reaction_q_changed);
-            lf_cond_signal(&event_q_changed);
-            return true;
-        }
-    }
-    return false;
-}
-
-/**
- * Advance tag. This will also pop events for the newly acquired tag and put
- * the triggered reactions on the reaction queue.
- * This function assumes the caller holds the mutex lock.
- * 
- * @return should_exit True if the worker thread should exit. False otherwise.
- */
-bool _lf_worker_advance_tag_locked(int worker_number) {
-    // Block other worker threads from also advancing the tag.
-    _lf_advancing_time = true;
-
-    if (_lf_worker_should_stop_locked()) {
-        return true;
-    }
-
-    _lf_logical_tag_completed = true;
-
-    // Advance time.
-    // _lf_next_locked() may block waiting for real time to pass or events to appear.
-    // to appear on the event queue. Note that we already
-    // hold the mutex lock.
-    tracepoint_worker_advancing_time_starts(worker_number);
-    _lf_next_locked();
-    tracepoint_worker_advancing_time_ends(worker_number);
-    _lf_advancing_time = false;
-    DEBUG_PRINT("Worker %d: Done waiting for _lf_next_locked().", worker_number);
-    return false;
-}
-
-/**
- * Advance tag if there are no reactions in the reaction queue or in progress. If
- * there are such reactions or if another thread is already advancing the tag, wait
- * until something on the reaction queue is changed.
- * This function assumes the caller holds the mutex lock.
- * 
- * @return should_exit True if the worker thread should exit. False otherwise.
- */
-bool _lf_worker_try_advance_tag_or_wait_locked(int worker_number) {
-    if (pqueue_size(reaction_q) == 0
-            && pqueue_size(executing_q) == 0) {
-            // Nothing more happening at this logical time.
-        if (!_lf_advancing_time) {
-            // This thread will take charge of advancing time.
-            if (_lf_worker_advance_tag_locked(worker_number)) {
-                return true;
-            } else {
-                return false;
-            }
-        } else if (compare_tags(current_tag, stop_tag) >= 0) {
-            // At the stop tag so we can exit the worker thread.
-            return true;
-        }
-    }
-    // We have not returned, so logical time is not complete or some other worker thread
-    // is advancing time.
-
-    // Wait for something to change (either a stop request or
-    // something went on the reaction queue).
-    DEBUG_PRINT("Worker %d: Waiting for items on the reaction queue.", worker_number);
-    tracepoint_worker_wait_starts(worker_number);
-    // NOTE: Could use a timedwait here to ensure that the worker thread
-    // wakes up periodically. But this appears to be unnecessary. When there
-    // is a ready reaction on the reaction queue, there will be a notification
-    // and notification occurs while holding the mutex lock so it should not be missed.
-    // Nevertheless, we keep the commented out code for a timedwait in case we later
-    // want to put this back in:
-    //
-    // struct timespec physical_time;
-    // lf_clock_gettime(CLOCK_REALTIME, &physical_time);
-    // physical_time.tv_nsec += MAX_STALL_INTERVAL;
-    // lf_cond_wait(&reaction_q_changed, &mutex, &physical_time);
-    lf_cond_wait(&reaction_q_changed, &mutex);
-    tracepoint_worker_wait_ends(worker_number);
-    DEBUG_PRINT("Worker %d: Done waiting.", worker_number);
-
-    return false;
-}
 
 /**
  * Handle deadline violation for 'reaction'. 
@@ -1250,87 +999,38 @@ void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
  * 
  * @param worker_number The number assigned to this worker thread
  */
-void _lf_worker_do_work_locked(int worker_number) {
+void _lf_worker_do_work(int worker_number) {
     // Keep track of whether we have decremented the idle thread count.
-    bool have_been_busy = false;
-    // Iterate until the stop_tag is reached or reaction queue is empty
-    while (true) {
-        // Obtain a reaction from the reaction_q that is ready to execute
-        // (i.e., it is not blocked by concurrently executing reactions
-        // that it depends on).
-        // print_snapshot(); // This is quite verbose (but very useful in debugging reaction deadlocks).
-        reaction_t* current_reaction_to_execute = first_ready_reaction();
-        if (current_reaction_to_execute == NULL) {
-            // There are no reactions ready to run.
-            // If we were previously busy, count this thread as idle now.
-            if (have_been_busy) {
-                number_of_idle_threads++;
-                have_been_busy = false;
-            }
+    // Obtain a reaction from the reaction_q that is ready to execute
+    // (i.e., it is not blocked by concurrently executing reactions
+    // that it depends on).
+    // print_snapshot(); // This is quite verbose (but very useful in debugging reaction deadlocks).
+    reaction_t* current_reaction_to_execute = NULL;
+    while ((current_reaction_to_execute = 
+            _lf_sched_pop_ready_reaction(worker_number)) 
+            != NULL) {
+        // Got a reaction that is ready to run.
+        DEBUG_PRINT("Worker %d: Popped from reaction_q %s: "
+                "is control reaction: %d, chain ID: %llu, and deadline %lld.", worker_number,
+                current_reaction_to_execute->name,
+                current_reaction_to_execute->is_a_control_reaction,
+                current_reaction_to_execute->chain_id,
+                current_reaction_to_execute->deadline);
 
+        bool violation = _lf_worker_handle_violations(
+            worker_number, 
+            current_reaction_to_execute
+        );
 
-            // If there are no reactions in progress and no reactions on
-            // the reaction queue, then advance time,
-            // unless some other worker thread is already advancing time. In
-            // that case, just wait on to be notified when reaction_q is changed
-            // (i.e., populated by the worker thread that is advancing time).
-            if(_lf_worker_try_advance_tag_or_wait_locked(worker_number)) {
-                break;
-            }
-        } else {
-            // Got a reaction that is ready to run.
-            DEBUG_PRINT("Worker %d: Popped from reaction_q %s: "
-                    "is control reaction: %d, chain ID: %llu, and deadline %lld.", worker_number,
-                    current_reaction_to_execute->name,
-					current_reaction_to_execute->is_a_control_reaction,
-                    current_reaction_to_execute->chain_id,
-                    current_reaction_to_execute->deadline);
-
-            // This thread will no longer be idle.
-            if (!have_been_busy) {
-                number_of_idle_threads--;
-                have_been_busy = true;
-            }
-
-            // Push the reaction on the executing queue in order to prevent any
-            // reactions that may depend on it from executing before this reaction is finished.
-            pqueue_insert(executing_q, current_reaction_to_execute);
-
-            // If there are additional reactions on the reaction_q, notify one other
-            // idle thread, if there is one, so that it can attempt to execute
-            // that reaction.
-            _lf_notify_workers_locked();
-
-            // Unlock the mutex to run the reaction.
-            lf_mutex_unlock(&mutex);
-
-            bool violation = _lf_worker_handle_violations(
-                worker_number, 
-                current_reaction_to_execute
-            );
-
-            if (!violation) {
-                // Invoke the reaction function.
-                _lf_worker_invoke_reaction(worker_number, current_reaction_to_execute);
-            }
-
-            // Need to acquire the mutex lock to remove this from the executing queue
-            // and to obtain the next reaction to execute.
-            lf_mutex_lock(&mutex);
-
-            // The reaction is not going to be executed. However,
-            // this thread holds the mutex lock, so if this is the last
-            // reaction of the current time step, this thread will also
-            // be the one to advance time.
-            pqueue_remove(executing_q, current_reaction_to_execute);
-
-            // Reset the is_STP_violated because it has been passed
-            // down the chain
-            current_reaction_to_execute->is_STP_violated = false;
-
-            DEBUG_PRINT("Worker %d: Done with reaction %s.",
-            		worker_number, current_reaction_to_execute->name);
+        if (!violation) {
+            // Invoke the reaction function.
+            _lf_worker_invoke_reaction(worker_number, current_reaction_to_execute);
         }
+
+        DEBUG_PRINT("Worker %d: Done with reaction %s.",
+                worker_number, current_reaction_to_execute->name);
+
+        _lf_sched_done_with_reaction(worker_number, current_reaction_to_execute);
     }
 }
 
@@ -1341,16 +1041,32 @@ void _lf_worker_do_work_locked(int worker_number) {
  */
 void* worker(void* arg) {
     lf_mutex_lock(&mutex);
-
-    int worker_number = ++worker_thread_count;
+    int worker_number = worker_thread_count++;
     LOG_PRINT("Worker thread %d started.", worker_number);
+    lf_mutex_unlock(&mutex);
 
-    _lf_worker_do_work_locked(worker_number);
+    // Iterate until the stop_tag is reached or reaction queue is empty
+    while (!_lf_sched_do_scheduling(worker_number)) {
+        _lf_worker_do_work(worker_number);
+    }
+
+    lf_mutex_lock(&mutex);
+    
+    lf_cond_signal(&event_q_changed);
+
+    // Return true to stop the worker and notify other
+    // worker threads potentially waiting to continue.
+    // Also, notify the RTI that there will be no more events (if centralized coord).
+    // False argument means don't wait for a reply.
+    send_next_event_tag(FOREVER_TAG, false);
+    
+    lf_mutex_unlock(&mutex);
 
     // This thread is exiting, so don't count it anymore.
     _lf_number_of_threads--;
 
     DEBUG_PRINT("Worker %d: Stop requested. Exiting.", worker_number);
+    _lf_sched_signal_stop(worker_number);
     // Signal the main thread.
     lf_cond_signal(&executing_q_emptied);
     lf_mutex_unlock(&mutex);
@@ -1383,10 +1099,6 @@ lf_thread_t* _lf_thread_ids;
 void start_threads() {
     LOG_PRINT("Starting %u worker threads.", _lf_number_of_threads);
     _lf_thread_ids = (lf_thread_t*)malloc(_lf_number_of_threads * sizeof(lf_thread_t));
-    number_of_idle_threads = (int)_lf_number_of_threads; // Sign is checked when 
-                                                         // reading the argument
-                                                         // from the command
-                                                         // line.
     for (unsigned int i = 0; i < _lf_number_of_threads; i++) {
         lf_thread_create(&_lf_thread_ids[i], worker, NULL);
     }
@@ -1447,18 +1159,18 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         lf_mutex_lock(&mutex); // Sets start_time
         initialize();
 
-        transfer_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
-            get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
-
         // Create a queue on which to put reactions that are currently executing.
         executing_q = pqueue_init(_lf_number_of_threads, in_reverse_order, get_reaction_index,
             get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
+
+        _lf_sched_init((size_t)_lf_number_of_threads);
 
         // Call the following function only once, rather than per worker thread (although 
         // it can be probably called in that manner as well).
         _lf_initialize_start_tag();
 
         start_threads();
+
         lf_mutex_unlock(&mutex);
         DEBUG_PRINT("Waiting for worker threads to exit.");
 
@@ -1481,6 +1193,7 @@ int lf_reactor_c_main(int argc, char* argv[]) {
             LOG_PRINT("---- All worker threads exited successfully.");
         }
         
+        _lf_sched_free();
         free(_lf_thread_ids);
         return ret;
     } else {
