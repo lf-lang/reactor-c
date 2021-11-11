@@ -331,6 +331,20 @@ typedef enum {no=0, token_and_value, token_only} ok_to_free_t;
 typedef enum {absent = false, present = true, unknown} port_status_t;
 
 /**
+ * Status of a given reaction at a given logical time.
+ *
+ * If a reaction is 'inactive', it is neither running nor queued.
+ * If a reaction is 'queued', it is going to be executed at the current logical time,
+ * but it has not started running yet.
+ * If a reaction is 'running', its body is being executed.
+ *
+ * @note inactive must equal zero because it should be possible to allocate a reaction
+ *  with default values using calloc.
+ * FIXME: The running state does not seem to be read.
+ */
+typedef enum {inactive = 0, queued, running} reaction_status_t;
+
+/**
  * The flag OK_TO_FREE is used to indicate whether
  * the void* in toke_t should be freed or not.
  */ 
@@ -451,7 +465,7 @@ struct reaction_t {
     bool** output_produced;   // Array of pointers to booleans indicating whether outputs were produced. COMMON.
     int* triggered_sizes;     // Pointer to array of ints with number of triggers per output. INSTANCE.
     trigger_t ***triggers;    // Array of pointers to arrays of pointers to triggers triggered by each output. INSTANCE.
-    bool running;             // Indicator that this reaction has already started executing. RUNTIME.
+    reaction_status_t status; // Indicator of whether the reaction is inactive, queued, or running. RUNTIME.
     interval_t deadline;      // Deadline relative to the time stamp for invocation of the reaction. INSTANCE.
     bool is_STP_violated;     // Indicator of STP violation in one of the input triggers to this reaction. default = false.
                               // Value of True indicates to the runtime that this reaction contains trigger(s)

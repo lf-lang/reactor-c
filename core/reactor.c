@@ -136,9 +136,10 @@ void print_snapshot() {
  */
 void _lf_enqueue_reaction(reaction_t* reaction, int worker_number) {
     // Do not enqueue this reaction twice.
-    if (pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
+    if (reaction->status == inactive) {
         DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
         		reaction->name, reaction->index & 0xffffLL);
+        reaction->status = queued;
         pqueue_insert(reaction_q, reaction);
     }
 }
@@ -154,6 +155,7 @@ int _lf_do_step() {
     while(pqueue_size(reaction_q) > 0) {
         // print_snapshot();
         reaction_t* reaction = (reaction_t*)pqueue_pop(reaction_q);
+        reaction->status = running;
         
         LOG_PRINT("Invoking reaction %s at elapsed logical tag (%lld, %d).",
         		reaction->name,
@@ -201,6 +203,9 @@ int _lf_do_step() {
             // reactions into the queue.
             schedule_output_reactions(reaction, 0);
         }
+        // There cannot be any subsequent events that trigger this reaction at the
+        //  current tag, so it is safe to conclude that it is now inactive.
+        reaction->status = inactive;
     }
     
     // No more reactions should be blocked at this point.
