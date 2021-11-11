@@ -43,21 +43,29 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 extern pqueue_t* reaction_q;
 extern pqueue_t* executing_q;
-extern lf_cond_t reaction_q_changed;
-extern lf_cond_t executing_q_emptied;
 extern lf_mutex_t mutex;
+
+lf_cond_t _lf_sched_need_more_work;
+
+pqueue_t* transfer_q;
+// Queue of currently executing reactions.
+pqueue_t* executing_q; // Sorted by index (precedence sort)
+
+size_t _lf_sched_balancing_index = 0;
 
 typedef struct {
     lf_mutex_t mutex;
     lf_cond_t cond;
     pqueue_t* ready_reactions;
     pqueue_t* done_reactions;
+    bool should_stop;
 } _lf_sched_thread_info_t;
 
 _lf_sched_thread_info_t* _lf_sched_threads_info;
 
 size_t _lf_sched_number_of_workers = 1;
 
+///////////////////// Scheduler Worker APIs /////////////////////////
 reaction_t* _lf_sched_pop_ready_reaction(int worker_number) {
     lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
     reaction_t* reaction_to_return = 
@@ -84,18 +92,103 @@ reaction_t* _lf_sched_pop_ready_reaction(int worker_number) {
 }
 
 void _lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction) {
+    lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
     pqueue_insert(_lf_sched_threads_info[worker_number].done_reactions, done_reaction);
+    lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
 }
 
 
-size_t _lf_sched_balancing_index = 0;
+void _lf_sched_worker_ask_for_work(size_t worker_number) {
+    lf_mutex_lock(&mutex);
+    DEBUG_PRINT("Worker %d: Asking the scheduler for more work", worker_number);
+    lf_cond_signal(&_lf_sched_need_more_work);
+    lf_mutex_unlock(&mutex);
+}
 
-static inline void _lf_sched_distribute_ready_reaction(size_t worker_number, reaction_t* ready_reaction) {
-    DEBUG_PRINT("Worker %d: Trying to distribute reaction %s.", worker_number, ready_reaction->name);
+void _lf_sched_worker_wait_for_work(size_t worker_number) {
+    _lf_sched_worker_ask_for_work(worker_number);
+    lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
+    if (pqueue_size(
+            _lf_sched_threads_info[worker_number].ready_reactions
+            ) > 0 // More work to be done
+            || _lf_sched_threads_info[worker_number].should_stop // Time to stop
+        ) {
+        lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
+        return;
+    }
+    DEBUG_PRINT("Worker %d: Waiting on work to be handed out.", worker_number);
+    lf_cond_wait(&_lf_sched_threads_info[worker_number].cond, &_lf_sched_threads_info[worker_number].mutex);
+    lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
+}
+
+bool _lf_sched_worker_should_stop(size_t worker_number) {
+    lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
+    bool should_stop = _lf_sched_threads_info[worker_number].should_stop;
+    lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
+    return should_stop;
+}
+
+
+///////////////////// Scheduler Init /////////////////////////
+void _lf_sched_init(size_t number_of_workers) {
+    DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
+    
+    lf_cond_init(&_lf_sched_need_more_work);
+    
+    _lf_sched_number_of_workers = number_of_workers;
+    
+    _lf_sched_threads_info = 
+        (_lf_sched_thread_info_t*)malloc(
+            sizeof(_lf_sched_thread_info_t) * _lf_sched_number_of_workers);
+    
+    for (int i=0; i < _lf_sched_number_of_workers; i++) {
+        lf_cond_init(&_lf_sched_threads_info[i].cond);
+        lf_mutex_init(&_lf_sched_threads_info[i].mutex);
+        _lf_sched_threads_info[i].ready_reactions = 
+            pqueue_init(
+                INITIAL_REACT_QUEUE_SIZE, 
+                in_reverse_order, 
+                get_reaction_index,
+                get_reaction_position, 
+                set_reaction_position, 
+                reaction_matches, 
+                print_reaction
+            );
+        _lf_sched_threads_info[i].done_reactions = 
+            pqueue_init(
+                INITIAL_REACT_QUEUE_SIZE, 
+                in_reverse_order, 
+                get_reaction_index,
+                get_reaction_position, 
+                set_reaction_position, 
+                reaction_matches, 
+                print_reaction
+            );
+        _lf_sched_threads_info[i].should_stop = false;
+    }
+    transfer_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
+            get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
+    // Create a queue on which to put reactions that are currently executing.
+    executing_q = pqueue_init(_lf_number_of_threads, in_reverse_order, get_reaction_index,
+        get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
+}
+
+void _lf_sched_free() {
+    for (int i=0; i < _lf_sched_number_of_workers; i++) {
+        pqueue_free(_lf_sched_threads_info[i].ready_reactions);
+        pqueue_free(_lf_sched_threads_info[i].done_reactions);
+    }
+    pqueue_free(transfer_q);
+    pqueue_free(executing_q);
+    free(_lf_sched_threads_info);
+}
+
+///////////////////// Scheduler APIs /////////////////////////
+static inline void _lf_sched_distribute_ready_reaction(reaction_t* ready_reaction) {
+    DEBUG_PRINT("Scheduler: Trying to distribute reaction %s.", ready_reaction->name);
     lf_mutex_lock(&_lf_sched_threads_info[_lf_sched_balancing_index].mutex);
     DEBUG_PRINT(
-        "Worker %d: Assigning reaction %s to worker %d.", 
-        worker_number,
+        "Scheduler: Assigning reaction %s to worker %d.",
         ready_reaction->name,
         _lf_sched_balancing_index);
     pqueue_insert(
@@ -104,11 +197,11 @@ static inline void _lf_sched_distribute_ready_reaction(size_t worker_number, rea
     );
     lf_cond_signal(&_lf_sched_threads_info[_lf_sched_balancing_index].cond);
     lf_mutex_unlock(&_lf_sched_threads_info[_lf_sched_balancing_index++].mutex);
-    
+
     // Push the reaction on the executing queue in order to prevent any
     // reactions that may depend on it from executing before this reaction is finished.
     pqueue_insert(executing_q, ready_reaction);
-
+    
     if (_lf_sched_balancing_index == _lf_sched_number_of_workers) {
         _lf_sched_balancing_index = 0;
     }
@@ -159,7 +252,39 @@ bool _lf_sched_is_blocked_by_executing_reaction(reaction_t* reaction) {
     return false;
 }
 
-pqueue_t* transfer_q;
+// Indicator that execution at at least one tag has completed.
+bool _lf_logical_tag_completed = false;
+
+
+/** 
+ * Placeholder for code-generated function that will, in a federated
+ * execution, be used to coordinate the advancement of tag. It will notify
+ * the runtime infrastructure (RTI) that all reactions at the specified
+ * logical tag have completed. This function should be called only while
+ * holding the mutex lock.
+ * @param tag_to_send The tag to send.
+ */
+void logical_tag_complete(tag_t tag_to_send);
+
+/**
+ * Return true if the worker should stop now; false otherwise.
+ * This function assumes the caller holds the mutex lock.
+ */
+bool _lf_sched_should_stop_locked() {
+    // If this is not the very first step, notify that the previous step is complete
+    // and check against the stop tag to see whether this is the last step.
+    if (_lf_logical_tag_completed) {
+        logical_tag_complete(current_tag);
+        // If we are at the stop tag, do not call _lf_next_locked()
+        // to prevent advancing the logical time.
+        if (compare_tags(current_tag, stop_tag) >= 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void _lf_next_locked();
 
 /**
  * Return the first ready (i.e., unblocked) reaction in the reaction queue if
@@ -193,7 +318,7 @@ pqueue_t* transfer_q;
  * @return the first-ranked reaction that is ready to execute, NULL if there is
  * none.
  */ 
-int distribute_ready_reactions(size_t worker_number) {    
+int distribute_ready_reactions() {    
     reaction_t* r;
     reaction_t* b;
     // Keep track of the chain IDs of blocked reactions.
@@ -213,7 +338,7 @@ int distribute_ready_reactions(size_t worker_number) {
                 pqueue_insert(transfer_q, r);
             } else {
                 reactions_distributed++;
-                _lf_sched_distribute_ready_reaction(worker_number, r);
+                _lf_sched_distribute_ready_reaction(r);
                 continue;
             }
         }
@@ -240,49 +365,6 @@ int distribute_ready_reactions(size_t worker_number) {
     return reactions_distributed;
 }
 
-// Indicator that execution at at least one tag has completed.
-bool _lf_logical_tag_completed = false;
-
-
-/** 
- * Placeholder for code-generated function that will, in a federated
- * execution, be used to coordinate the advancement of tag. It will notify
- * the runtime infrastructure (RTI) that all reactions at the specified
- * logical tag have completed. This function should be called only while
- * holding the mutex lock.
- * @param tag_to_send The tag to send.
- */
-void logical_tag_complete(tag_t tag_to_send);
-
-/**
- * Return true if the worker should stop now; false otherwise.
- * This function assumes the caller holds the mutex lock.
- */
-bool _lf_sched_should_stop_locked() {
-    // If this is not the very first step, notify that the previous step is complete
-    // and check against the stop tag to see whether this is the last step.
-    if (_lf_logical_tag_completed) {
-        logical_tag_complete(current_tag);
-        // If we are at the stop tag, do not call _lf_next_locked()
-        // to prevent advancing the logical time.
-        if (compare_tags(current_tag, stop_tag) >= 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-/** 
- * Indicator that a worker thread has already taken charge of
- * advancing time. When another worker thread encouters a true
- * value to this variable, it should wait for events to appear
- * on the reaction queue rather than advance time.
- * This variable should only be accessed while holding the mutex lock.
- */
-bool _lf_advancing_time = false;
-
-void _lf_next_locked();
-
 /**
  * Advance tag. This will also pop events for the newly acquired tag and put
  * the triggered reactions on the reaction queue.
@@ -290,9 +372,7 @@ void _lf_next_locked();
  * 
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
-bool _lf_sched_advance_tag_locked(int worker_number) {
-    // Block other worker threads from also advancing the tag.
-    _lf_advancing_time = true;
+bool _lf_sched_advance_tag_locked() {
 
     if (_lf_sched_should_stop_locked()) {
         return true;
@@ -304,12 +384,31 @@ bool _lf_sched_advance_tag_locked(int worker_number) {
     // _lf_next_locked() may block waiting for real time to pass or events to appear.
     // to appear on the event queue. Note that we already
     // hold the mutex lock.
-    tracepoint_worker_advancing_time_starts(worker_number);
+    //tracepoint_worker_advancing_time_starts(worker_number);
     _lf_next_locked();
-    tracepoint_worker_advancing_time_ends(worker_number);
-    _lf_advancing_time = false;
-    DEBUG_PRINT("Worker %d: Done waiting for _lf_next_locked().", worker_number);
+
+    DEBUG_PRINT("Scheduler: Done waiting for _lf_next_locked().");
     return false;
+}
+
+void _lf_sched_cleanup_done_reactions_locked() {
+    for (int i=0; i< _lf_sched_number_of_workers; i++) {
+        reaction_t* reaction_to_remove = NULL;
+        lf_mutex_lock(&_lf_sched_threads_info[i].mutex);
+        while(
+            (reaction_to_remove = 
+            (reaction_t*)pqueue_pop(_lf_sched_threads_info[i].done_reactions))
+            != NULL) {
+            DEBUG_PRINT(
+                "Scheduler: Removing reaction %s from executing queue.",
+                reaction_to_remove->name
+            );
+            if (pqueue_remove(executing_q, reaction_to_remove) != 0) {
+                error_print_and_exit("Could not properly clear the executing queue.");
+            }
+        }
+        lf_mutex_unlock(&_lf_sched_threads_info[i].mutex);
+    }
 }
 
 /**
@@ -320,151 +419,57 @@ bool _lf_sched_advance_tag_locked(int worker_number) {
  * 
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
-bool _lf_sched_try_advance_tag_or_distribute(int worker_number) {
-    while(true) {
-        if (pqueue_size(reaction_q) == 0
-                && pqueue_size(executing_q) == 0) {
-            DEBUG_PRINT("Worker %d: Trying to advance time.", worker_number);
-                // Nothing more happening at this logical time.
-            if (!_lf_advancing_time) {
-                DEBUG_PRINT("Worker %d: Advancing time.", worker_number);
-                // This thread will take charge of advancing time.
-                if (_lf_sched_advance_tag_locked(worker_number)) {
-                    DEBUG_PRINT("Worker %d: Reached stop tag.", worker_number);
-                    return true;
-                } else {
-                    return false;
-                }
-            } else if (compare_tags(current_tag, stop_tag) >= 0) {
-                // At the stop tag so we can exit the worker thread.
-                DEBUG_PRINT("Worker %d: Reached stop tag.", worker_number);
-                return true;
-            }
-        } 
-        
-        if (distribute_ready_reactions(worker_number) != 0) {
-            return false;
+bool _lf_sched_try_advance_tag_and_distribute() {
+    bool return_value = false;
+
+    _lf_sched_cleanup_done_reactions_locked();
+
+    if (pqueue_size(reaction_q) == 0
+            && pqueue_size(executing_q) == 0) {
+        // Nothing more happening at this logical time.
+        DEBUG_PRINT("Scheduler: Advancing time.");
+        // This thread will take charge of advancing time.
+        if (_lf_sched_advance_tag_locked()) {
+            DEBUG_PRINT("Scheduler: Reached stop tag.");
+            return_value = true;
         }
-        // We have not returned, so logical time is not complete.
-        // Wait for something to change (either a stop request or
-        // something went on the reaction queue).
-        DEBUG_PRINT("Worker %d: Waiting for items on the reaction queue.", worker_number);
-        tracepoint_worker_wait_starts(worker_number);
-        // NOTE: Could use a timedwait here to ensure that the worker thread
-        // wakes up periodically. But this appears to be unnecessary. When there
-        // is a ready reaction on the reaction queue, there will be a notification
-        // and notification occurs while holding the mutex lock so it should not be missed.
-        // Nevertheless, we keep the commented out code for a timedwait in case we later
-        // want to put this back in:
-        //
-        // struct timespec physical_time;
-        // lf_clock_gettime(CLOCK_REALTIME, &physical_time);
-        // physical_time.tv_nsec += MAX_STALL_INTERVAL;
-        // lf_cond_wait(&reaction_q_changed, &mutex, &physical_time);
-        lf_cond_wait(&reaction_q_changed, &mutex);
-        tracepoint_worker_wait_ends(worker_number);
-        DEBUG_PRINT("Worker %d: Scheduler done waiting.", worker_number);
     }
-}
-
-bool _lf_sched_cleanup_done_reactions_locked(size_t worker_number) {
-    bool removed_at_least_one_reaction = false;
-    reaction_t* reaction_to_remove = NULL;
-    while((reaction_to_remove = (reaction_t*)pqueue_pop(_lf_sched_threads_info[worker_number].done_reactions)) != NULL) {
-        DEBUG_PRINT(
-            "Worker %d: Removing reaction %s from executing queue.", 
-            worker_number, 
-            reaction_to_remove->name
-        );
-        if (pqueue_remove(executing_q, reaction_to_remove) != 0) {
-            error_print_and_exit("Could not properly clear the executing queue.");
-        }
-        removed_at_least_one_reaction = true;
-    }
-    return removed_at_least_one_reaction;
-}
-
-volatile bool _lf_scheduling_in_progress = false;
-
-void _lf_sched_wait_for_work(size_t worker_number) {
-    lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
-    DEBUG_PRINT("Worker %d: Waiting on work to be handed out.", worker_number);
-    lf_cond_wait(&_lf_sched_threads_info[worker_number].cond, &_lf_sched_threads_info[worker_number].mutex);
-    lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
-}
-
-bool _lf_sched_do_scheduling(size_t worker_number) {
-    lf_mutex_lock(&mutex);
-    bool removed_at_least_one_reaction = _lf_sched_cleanup_done_reactions_locked(worker_number);
     
-    if (_lf_scheduling_in_progress) {
-        if (removed_at_least_one_reaction) {
-            lf_cond_signal(&reaction_q_changed);
-        }
-        lf_mutex_unlock(&mutex);
-        _lf_sched_wait_for_work(worker_number);
-        return false;
+    if (pqueue_size(reaction_q) > 0) {
+        DEBUG_PRINT("Scheduler: Reaction queue is not empty. Distributing work.");
+        distribute_ready_reactions();
     }
-
-    _lf_scheduling_in_progress = true;
-
-    // If there are no reactions in progress and no reactions on
-    // the reaction queue, then advance time,
-    // unless some other worker thread is already advancing time. In
-    // that case, just wait on to be notified when reaction_q is changed
-    // (i.e., populated by the worker thread that is advancing time).
-    bool return_value = _lf_sched_try_advance_tag_or_distribute(worker_number);
-
-    _lf_scheduling_in_progress = false;
-    lf_mutex_unlock(&mutex);
-
+    DEBUG_PRINT("Scheduler: Executing queue size is %u.", pqueue_size(executing_q));
     return return_value;
 }
 
-void _lf_sched_init(size_t number_of_workers) {
-    DEBUG_PRINT("Initializing the scheduler with %d workers", number_of_workers);
-    _lf_sched_number_of_workers = number_of_workers;
-    _lf_sched_threads_info = 
-        (_lf_sched_thread_info_t*)malloc(
-            sizeof(_lf_sched_thread_info_t) * _lf_sched_number_of_workers);
-    for (int i=0; i < _lf_sched_number_of_workers; i++) {
-        lf_cond_init(&_lf_sched_threads_info[i].cond);
-        lf_mutex_init(&_lf_sched_threads_info[i].mutex);
-        _lf_sched_threads_info[i].ready_reactions = 
-            pqueue_init(
-                INITIAL_REACT_QUEUE_SIZE, 
-                in_reverse_order, 
-                get_reaction_index,
-                get_reaction_position, 
-                set_reaction_position, 
-                reaction_matches, 
-                print_reaction
-            );
-        _lf_sched_threads_info[i].done_reactions = 
-            pqueue_init(
-                INITIAL_REACT_QUEUE_SIZE, 
-                in_reverse_order, 
-                get_reaction_index,
-                get_reaction_position, 
-                set_reaction_position, 
-                reaction_matches, 
-                print_reaction
-            );
+void _lf_sched_wait_for_threads_asking_for_more_work() {
+    // If there is more work to be handed out wait for threads to ask for more
+    // work
+    if (pqueue_size(reaction_q) == 0 && pqueue_size(executing_q) == 0) {
+        // No work to be handed out
+        return;
     }
-    transfer_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
-            get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
-}
-
-void _lf_sched_free() {
-    for (int i=0; i < _lf_sched_number_of_workers; i++) {
-        pqueue_free(_lf_sched_threads_info[i].ready_reactions);
-        pqueue_free(_lf_sched_threads_info[i].done_reactions);
-    }
-    free(_lf_sched_threads_info);
+    DEBUG_PRINT("Scheduler: Waiting for threads to ask for more work");
+    // lf_cond_timedwait(&_lf_sched_need_more_work, &mutex, MSEC(10));
+    lf_cond_wait(&_lf_sched_need_more_work, &mutex);
 }
 
 void _lf_sched_signal_stop() {
     for (int i=0; i < _lf_sched_number_of_workers; i++) {
+        lf_mutex_lock(&_lf_sched_threads_info[i].mutex);
+        _lf_sched_threads_info[i].should_stop = true;
         lf_cond_signal(&_lf_sched_threads_info[i].cond);
+        lf_mutex_unlock(&_lf_sched_threads_info[i].mutex);
     }
+}
+
+void* _lf_sched_do_scheduling() {
+    lf_mutex_lock(&mutex);
+    while(!_lf_sched_try_advance_tag_and_distribute()) {
+        _lf_sched_wait_for_threads_asking_for_more_work();
+    }
+    lf_mutex_unlock(&mutex);
+    _lf_sched_signal_stop();
+    return NULL;
 }

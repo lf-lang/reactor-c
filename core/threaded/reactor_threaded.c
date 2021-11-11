@@ -82,16 +82,11 @@ typedef struct _lf_tag_advancement_barrier {
  */
 _lf_tag_advancement_barrier _lf_global_tag_advancement_barrier = {0, FOREVER_TAG_INITIALIZER};
 
-// Queue of currently executing reactions.
-pqueue_t* executing_q; // Sorted by index (precedence sort)
-
 // The one and only mutex lock.
 lf_mutex_t mutex;
 
 // Condition variables used for notification between threads.
 lf_cond_t event_q_changed;
-lf_cond_t reaction_q_changed;
-lf_cond_t executing_q_emptied;
 // A condition variable that notifies threads whenever the number
 // of requestors on the tag barrier reaches zero.
 lf_cond_t global_tag_barrier_requestors_reached_zero;
@@ -708,8 +703,6 @@ void request_stop() {
 #else
     // In a non-federated program, the stop_tag will be the next microstep
     _lf_set_stop_tag((tag_t) {.time = current_tag.time, .microstep = current_tag.microstep+1});
-    // In case any thread is waiting on a condition, notify all.
-    lf_cond_broadcast(&reaction_q_changed);
     // We signal instead of broadcast under the assumption that only
     // one worker thread can call wait_until at a given time because
     // the call to wait_until is protected by a mutex lock
@@ -732,38 +725,6 @@ void _lf_enqueue_reaction(reaction_t* reaction) {
         		reaction->name, reaction->index & 0xffffLL);
         pqueue_insert(reaction_q, reaction);
     }
-    lf_mutex_unlock(&mutex);
-}
-
-/**
- * Notify workers that something has changed on the reaction_q.
- * Notification is performed only if there is a reaction on the
- * reaction queue that is ready to execute and there is an idle
- * worker thread.
- * This function assumes the caller holds the mutex lock.
- */
-void _lf_notify_workers_locked() {
-    reaction_t* next_ready_reaction = (reaction_t*)pqueue_peek(reaction_q);
-    if (next_ready_reaction != NULL
-            && !_lf_sched_is_blocked_by_executing_reaction(next_ready_reaction)
-    ) {
-        // FIXME: In applications without parallelism, this notification
-        // proves very expensive. Perhaps we should be checking execution times.
-        lf_cond_signal(&reaction_q_changed);
-        DEBUG_PRINT("Notify another worker of a reaction on the reaction queue.");
-    }
-}
-
-/**
- * Notify workers that something has changed on the reaction_q.
- * Notification is performed only if there is a reaction on the
- * reaction queue that is ready to execute and there is an idle
- * worker thread.
- * This function acquires the mutex lock.
- */
-void _lf_notify_workers() {
-    lf_mutex_lock(&mutex);
-    _lf_notify_workers_locked();
     lf_mutex_unlock(&mutex);
 }
 
@@ -1046,12 +1007,14 @@ void* worker(void* arg) {
     lf_mutex_unlock(&mutex);
 
     // Iterate until the stop_tag is reached or reaction queue is empty
-    while (!_lf_sched_do_scheduling(worker_number)) {
+    while (!_lf_sched_worker_should_stop(worker_number)) {
         _lf_worker_do_work(worker_number);
+
+        _lf_sched_worker_wait_for_work(worker_number);
     }
 
     lf_mutex_lock(&mutex);
-    
+
     lf_cond_signal(&event_q_changed);
 
     // Return true to stop the worker and notify other
@@ -1059,16 +1022,11 @@ void* worker(void* arg) {
     // Also, notify the RTI that there will be no more events (if centralized coord).
     // False argument means don't wait for a reply.
     send_next_event_tag(FOREVER_TAG, false);
-    
-    lf_mutex_unlock(&mutex);
 
     // This thread is exiting, so don't count it anymore.
     _lf_number_of_threads--;
 
     DEBUG_PRINT("Worker %d: Stop requested. Exiting.", worker_number);
-    _lf_sched_signal_stop(worker_number);
-    // Signal the main thread.
-    lf_cond_signal(&executing_q_emptied);
     lf_mutex_unlock(&mutex);
     // timeout has been requested.
     return NULL;
@@ -1083,8 +1041,6 @@ void print_snapshot() {
         DEBUG_PRINT(">>> START Snapshot");
         DEBUG_PRINT("Pending:");
         pqueue_dump(reaction_q, print_reaction);
-        DEBUG_PRINT("Executing:");
-        pqueue_dump(executing_q, print_reaction);
         DEBUG_PRINT("Event queue size: %d. Contents:",
                         pqueue_size(event_q));
         pqueue_dump(event_q, print_reaction); 
@@ -1136,8 +1092,6 @@ int lf_reactor_c_main(int argc, char* argv[]) {
 
     // Initialize condition variables used for notification between threads.
     lf_cond_init(&event_q_changed);
-    lf_cond_init(&reaction_q_changed);
-    lf_cond_init(&executing_q_emptied);
     lf_cond_init(&global_tag_barrier_requestors_reached_zero);
 
     if (atexit(termination) != 0) {
@@ -1159,10 +1113,6 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         lf_mutex_lock(&mutex); // Sets start_time
         initialize();
 
-        // Create a queue on which to put reactions that are currently executing.
-        executing_q = pqueue_init(_lf_number_of_threads, in_reverse_order, get_reaction_index,
-            get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
-
         _lf_sched_init((size_t)_lf_number_of_threads);
 
         // Call the following function only once, rather than per worker thread (although 
@@ -1170,6 +1120,12 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         _lf_initialize_start_tag();
 
         start_threads();
+
+        lf_thread_t scheduler_id;
+        lf_thread_create(
+            &scheduler_id,
+            &_lf_sched_do_scheduling,
+            NULL);
 
         lf_mutex_unlock(&mutex);
         DEBUG_PRINT("Waiting for worker threads to exit.");
@@ -1188,6 +1144,8 @@ int lf_reactor_c_main(int argc, char* argv[]) {
                 ret = 1;
         	}
         }
+        void* scheduler_exit_status = NULL;
+        lf_thread_join(scheduler_id, &scheduler_exit_status);
 
         if (ret == 0) {
             LOG_PRINT("---- All worker threads exited successfully.");

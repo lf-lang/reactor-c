@@ -300,12 +300,6 @@ void request_stop() {
 }
 
 /**
- * Do nothing. This implementation is not multithreaded.
- */
-void _lf_notify_workers() {
-}
-
-/**
  * Return false.
  * @param reaction The reaction.
  */

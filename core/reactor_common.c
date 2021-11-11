@@ -1562,10 +1562,6 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
         downstream_to_execute_now->is_STP_violated = false;
         DEBUG_PRINT("Finally, reset reaction's is_STP_violated field to false: %s",
         		downstream_to_execute_now->name);
-    } else if (num_downstream_reactions > 0) {
-        // If we are running a multithreaded setting, the following function
-        // may wake up other worker threads to execute the newly queued reactions.
-        _lf_notify_workers();
     }
 }
 

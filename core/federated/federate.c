@@ -1724,11 +1724,6 @@ void handle_tagged_message(int socket, int fed_id) {
 #endif // In centralized coordination, a TAG message from the RTI 
        // can set the last_known_status_tag to a future tag where messages
        // have not arrived yet.
-    if (action->is_a_control_reaction_waiting && 
-            _lf_advancing_time) {
-        error_print_and_exit("Federate was attempting to advance time "
-                             "while control reactions are still present.");
-    }
 
     // FIXME: It might be enough to just check this field and not the status at all
     update_last_known_status_on_input_port(intended_tag, port_id);
@@ -1769,10 +1764,6 @@ void handle_tagged_message(int socket, int fed_id) {
         // Port is now present. Therefore, notify the network input control reactions to
         // stop waiting and re-check the port status.
         lf_cond_broadcast(&port_status_changed);
-
-        // Notify the main thread in case it is waiting for reactions.
-        DEBUG_PRINT("Signaling that reaction queue changed.");
-        lf_cond_signal(&reaction_q_changed);
     } else {
         // If no control reaction is waiting for this message, or if the intended
         // tag is in the future, use schedule functions to process the message.
@@ -2064,8 +2055,6 @@ void handle_stop_granted_message() {
                 stop_tag.microstep);
 
     _lf_decrement_global_tag_barrier_locked();
-    // In case any thread is waiting on a condition, notify all.
-    lf_cond_broadcast(&reaction_q_changed);
     // We signal instead of broadcast under the assumption that only
     // one worker thread can call wait_until at a given time because
     // the call to wait_until is protected by a mutex lock
