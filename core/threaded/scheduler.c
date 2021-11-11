@@ -42,7 +42,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pqueue.h"
 
 extern pqueue_t* reaction_q;
-extern pqueue_t* executing_q;
 extern lf_mutex_t mutex;
 
 lf_cond_t _lf_sched_need_more_work;
@@ -60,6 +59,7 @@ typedef struct {
     pqueue_t* output_reactions;
     pqueue_t* done_reactions;
     bool should_stop;
+    bool is_idle;
 } _lf_sched_thread_info_t;
 
 _lf_sched_thread_info_t* _lf_sched_threads_info;
@@ -68,39 +68,39 @@ size_t _lf_sched_number_of_workers = 1;
 
 ///////////////////// Scheduler Worker APIs /////////////////////////
 reaction_t* _lf_sched_pop_ready_reaction(int worker_number) {
-    lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
-    reaction_t* reaction_to_return = 
-        pqueue_pop(_lf_sched_threads_info[worker_number].ready_reactions);
-    lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
+    return pqueue_pop(_lf_sched_threads_info[worker_number].ready_reactions);
 
-    if (reaction_to_return == NULL && _lf_sched_number_of_workers > 1) {
-        // Try to steal
-        int index_to_steal = (worker_number + 1) % _lf_sched_number_of_workers;
-        lf_mutex_lock(&_lf_sched_threads_info[index_to_steal].mutex);
-        reaction_to_return = 
-            pqueue_pop(_lf_sched_threads_info[index_to_steal].ready_reactions);
-        if (reaction_to_return != NULL) {
-            DEBUG_PRINT(
-                "Worker %d: Had nothing on my ready queue. Stole reaction %s from %d", 
-                worker_number,
-                reaction_to_return->name,
-                index_to_steal);
-        }
-        lf_mutex_unlock(&_lf_sched_threads_info[index_to_steal].mutex);
-    }
+    // if (reaction_to_return == NULL && _lf_sched_number_of_workers > 1) {
+    //     // Try to steal
+    //     int index_to_steal = (worker_number + 1) % _lf_sched_number_of_workers;
+    //     lf_mutex_lock(&_lf_sched_threads_info[index_to_steal].mutex);
+    //     reaction_to_return = 
+    //         pqueue_pop(_lf_sched_threads_info[index_to_steal].ready_reactions);
+    //     if (reaction_to_return != NULL) {
+    //         DEBUG_PRINT(
+    //             "Worker %d: Had nothing on my ready queue. Stole reaction %s from %d", 
+    //             worker_number,
+    //             reaction_to_return->name,
+    //             index_to_steal);
+    //     }
+    //     lf_mutex_unlock(&_lf_sched_threads_info[index_to_steal].mutex);
+    // }
 
-    return reaction_to_return;
+    // return reaction_to_return;
 }
 
 void _lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction) {
-    lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
-    pqueue_insert(_lf_sched_threads_info[worker_number].done_reactions, done_reaction);
-    lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
+    if (pqueue_insert(_lf_sched_threads_info[worker_number].done_reactions, done_reaction) != 0) {
+        error_print_and_exit("Scheduler: Could not mark reaction as done for worker %d.", worker_number);
+    }
 }
 
 
 void _lf_sched_worker_ask_for_work(size_t worker_number) {
     lf_mutex_lock(&mutex);
+    lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
+    _lf_sched_threads_info[worker_number].is_idle = true;
+    lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
     DEBUG_PRINT("Worker %d: Asking the scheduler for more work", worker_number);
     lf_cond_signal(&_lf_sched_need_more_work);
     lf_mutex_unlock(&mutex);
@@ -108,25 +108,28 @@ void _lf_sched_worker_ask_for_work(size_t worker_number) {
 
 void _lf_sched_worker_wait_for_work(size_t worker_number) {
     _lf_sched_worker_ask_for_work(worker_number);
+
     lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
+    if (_lf_sched_threads_info[worker_number].should_stop) { // Time to stop
+        lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
+        return;
+    }
     if (pqueue_size(
             _lf_sched_threads_info[worker_number].ready_reactions
             ) > 0 // More work to be done
-            || _lf_sched_threads_info[worker_number].should_stop // Time to stop
         ) {
+        _lf_sched_threads_info[worker_number].is_idle = false;
         lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
         return;
     }
     DEBUG_PRINT("Worker %d: Waiting on work to be handed out.", worker_number);
     lf_cond_wait(&_lf_sched_threads_info[worker_number].cond, &_lf_sched_threads_info[worker_number].mutex);
+    _lf_sched_threads_info[worker_number].is_idle = false;
     lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
 }
 
-bool _lf_sched_worker_should_stop(size_t worker_number) {
-    lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
-    bool should_stop = _lf_sched_threads_info[worker_number].should_stop;
-    lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
-    return should_stop;
+static inline bool _lf_sched_worker_should_stop(size_t worker_number) {
+    return _lf_sched_threads_info[worker_number].should_stop;
 }
 
 /**
@@ -151,14 +154,12 @@ void _lf_sched_worker_enqueue_reaction(int worker_number, reaction_t* reaction) 
         return;
     }
     // Acquire the mutex lock.
-    lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
     // Note: The scheduler will check that we don't enqueue this reaction twice.
     if (reaction != NULL) {
         DEBUG_PRINT("Enqueuing downstream reaction %s, which has level %lld.",
         		reaction->name, reaction->index & 0xffffLL);
         pqueue_insert(_lf_sched_threads_info[worker_number].output_reactions, reaction);
     }
-    lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
 }
 
 
@@ -208,6 +209,7 @@ void _lf_sched_init(size_t number_of_workers) {
                 print_reaction
             );
         _lf_sched_threads_info[i].should_stop = false;
+        _lf_sched_threads_info[i].is_idle = false;
     }
     transfer_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
             get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
@@ -227,27 +229,45 @@ void _lf_sched_free() {
 }
 
 ///////////////////// Scheduler APIs /////////////////////////
-static inline void _lf_sched_distribute_ready_reaction(reaction_t* ready_reaction) {
-    DEBUG_PRINT("Scheduler: Trying to distribute reaction %s.", ready_reaction->name);
-    lf_mutex_lock(&_lf_sched_threads_info[_lf_sched_balancing_index].mutex);
-    DEBUG_PRINT(
-        "Scheduler: Assigning reaction %s to worker %d.",
-        ready_reaction->name,
-        _lf_sched_balancing_index);
-    pqueue_insert(
-        _lf_sched_threads_info[_lf_sched_balancing_index].ready_reactions,
-        ready_reaction
-    );
-    lf_cond_signal(&_lf_sched_threads_info[_lf_sched_balancing_index].cond);
-    lf_mutex_unlock(&_lf_sched_threads_info[_lf_sched_balancing_index++].mutex);
 
-    // Push the reaction on the executing queue in order to prevent any
-    // reactions that may depend on it from executing before this reaction is finished.
-    pqueue_insert(executing_q, ready_reaction);
-    
-    if (_lf_sched_balancing_index == _lf_sched_number_of_workers) {
-        _lf_sched_balancing_index = 0;
+static inline bool _lf_sched_is_worker_idle_locked(size_t worker_number) {
+    return _lf_sched_threads_info[worker_number].is_idle;
+}
+
+static inline bool _lf_sched_distribute_ready_reaction(reaction_t* ready_reaction) {
+    DEBUG_PRINT("Scheduler: Trying to distribute reaction %s.", ready_reaction->name);
+    bool target_thread_found = false;
+    for(size_t i=0; i<_lf_sched_number_of_workers; i++) {
+        // Go over all the workers to see if anyone is idle.
+        lf_mutex_lock(&_lf_sched_threads_info[_lf_sched_balancing_index].mutex);
+        if (_lf_sched_is_worker_idle_locked(_lf_sched_balancing_index)) {
+            DEBUG_PRINT(
+                "Scheduler: Assigning reaction %s to worker %d.",
+                ready_reaction->name,
+                _lf_sched_balancing_index);
+            if (pqueue_insert(
+                _lf_sched_threads_info[_lf_sched_balancing_index].ready_reactions,
+                ready_reaction
+            ) != 0) {
+                error_print_and_exit("Could not assign reaction to worker %d.", _lf_sched_balancing_index);
+            }
+            target_thread_found = true;
+            // Push the reaction on the executing queue in order to prevent any
+            // reactions that may depend on it from executing before this reaction is finished.
+            pqueue_insert(executing_q, ready_reaction);
+        }
+        lf_mutex_unlock(&_lf_sched_threads_info[_lf_sched_balancing_index++].mutex);
+        
+        if (_lf_sched_balancing_index == _lf_sched_number_of_workers) {
+            _lf_sched_balancing_index = 0;
+        }
+
+        if (target_thread_found) {
+            break;
+        }
     }
+
+    return target_thread_found;
         
 }
 
@@ -330,34 +350,7 @@ bool _lf_sched_should_stop_locked() {
 void _lf_next_locked();
 
 /**
- * Return the first ready (i.e., unblocked) reaction in the reaction queue if
- * there is one. Return `NULL` if all pending reactions are blocked.
- *
- * The reaction queue is sorted by index, where a lower index appears
- * earlier in the queue. The first reaction in the reaction queue is
- * ready to execute if it is not blocked by any reaction that is currently
- * executing in another thread. If that first reaction is blocked, then
- * the second reaction is ready to execute if it is not blocked by any
- * reaction that is currently executing (if it is blocked by the first
- * reaction, then it is also blocked by a currently executing reaction because
- * the first reaction is blocked).
- *
- * The upper 48 bits of the index are the deadline and the
- * lower 16 bits denote a level in the precedence graph.  Reactions that
- * do not depend on any upstream reactions have level 0, and greater values
- * indicate the length of the longest upstream path to a reaction with level 0.
- * If a reaction has no specified deadline and is not upstream of any reaction
- * with a specified deadline, then its deadline is the largest 48 bit number.
- * Also, all reactions that precede a reaction r that has a deadline D
- * are are assigned a deadline D' <= D.
- *
- * A reaction r is blocked by an executing reaction e if e has a lower level
- * and the chain ID of e overlaps (shares at least one bit) with the chain ID
- * of r. If the two chain IDs share no bits, then we are assured that e is not
- * upstream of r and hence cannot block r.
- *
- * This function assumes the mutex is held.
- *
+ * 
  * @return the first-ranked reaction that is ready to execute, NULL if there is
  * none.
  */ 
@@ -374,17 +367,21 @@ int distribute_ready_reactions() {
         // Set the reaction aside if it is blocked, either by another
         // blocked reaction or by a reaction that is currently executing.
         if (OVERLAPPING(mask, r->chain_id)) {
-            pqueue_insert(transfer_q, r);
             DEBUG_PRINT("Reaction %s is blocked by a reaction that is also blocked.", r->name);
         } else {
-            if (_lf_sched_is_blocked_by_executing_reaction(r)) {
-                pqueue_insert(transfer_q, r);
-            } else {
-                reactions_distributed++;
-                _lf_sched_distribute_ready_reaction(r);
-                continue;
+            if (!_lf_sched_is_blocked_by_executing_reaction(r)) {
+                if (_lf_sched_distribute_ready_reaction(r)){
+                    // Found a thread to execute r
+                    reactions_distributed++;
+                    continue;
+                }
+                // Couldn't find a thread to execute r.
+                DEBUG_PRINT("Scheduler: Could not find an idle thread to execute reaction %s.", r->name);
             }
         }
+        // Couldn't execute the reaction. Will have to put it back in the
+        // reaction queue.
+        pqueue_insert(transfer_q, r);
         mask = mask | r->chain_id;
     }
     
@@ -434,10 +431,20 @@ bool _lf_sched_advance_tag_locked() {
     return false;
 }
 
-void _lf_sched_fill_reaction_queue() {
+void _lf_sched_update_queues_locked() {
     for (int i=0; i< _lf_sched_number_of_workers; i++) {
         reaction_t* reaction_to_add = NULL;
+        reaction_t* reaction_to_remove = NULL;
         lf_mutex_lock(&_lf_sched_threads_info[i].mutex);
+        if (!_lf_sched_is_worker_idle_locked(i)) {
+            // Don't touch the queues since the thread is still busy
+            DEBUG_PRINT("Scheduler: Worker %d is busy. Can't empty the queues for it.", i);
+            lf_mutex_unlock(&_lf_sched_threads_info[i].mutex);
+            continue;
+        }
+
+        DEBUG_PRINT("Scheduler: Emptying queues of Worker %d.", i);
+        // Add output reactions to the reaction queue
         while(
             (reaction_to_add = 
             (reaction_t*)pqueue_pop(_lf_sched_threads_info[i].output_reactions))
@@ -454,14 +461,8 @@ void _lf_sched_fill_reaction_queue() {
                 }
             }
         }
-        lf_mutex_unlock(&_lf_sched_threads_info[i].mutex);
-    }
-}
 
-void _lf_sched_cleanup_done_reactions_locked() {
-    for (int i=0; i< _lf_sched_number_of_workers; i++) {
-        reaction_t* reaction_to_remove = NULL;
-        lf_mutex_lock(&_lf_sched_threads_info[i].mutex);
+        // Remove done reactions from the executing queue
         while(
             (reaction_to_remove = 
             (reaction_t*)pqueue_pop(_lf_sched_threads_info[i].done_reactions))
@@ -478,6 +479,18 @@ void _lf_sched_cleanup_done_reactions_locked() {
     }
 }
 
+void _lf_sched_notify_workers() {
+    for (int i=0; i< _lf_sched_number_of_workers; i++) {
+        lf_mutex_lock(&_lf_sched_threads_info[i].mutex);
+        if (pqueue_size(_lf_sched_threads_info[i].ready_reactions) > 0 &&
+            _lf_sched_threads_info[i].is_idle) {
+            DEBUG_PRINT("Notifying worker %d that there is work to do.", i);
+            lf_cond_signal(&_lf_sched_threads_info[i].cond);
+        }
+        lf_mutex_unlock(&_lf_sched_threads_info[i].mutex);
+    }
+}
+
 /**
  * Advance tag if there are no reactions in the reaction queue or in progress. If
  * there are such reactions or if another thread is already advancing the tag, wait
@@ -489,9 +502,7 @@ void _lf_sched_cleanup_done_reactions_locked() {
 bool _lf_sched_try_advance_tag_and_distribute() {
     bool return_value = false;
 
-    _lf_sched_cleanup_done_reactions_locked();
-
-    _lf_sched_fill_reaction_queue();
+    _lf_sched_update_queues_locked();
 
     if (pqueue_size(reaction_q) == 0
             && pqueue_size(executing_q) == 0) {
@@ -504,11 +515,12 @@ bool _lf_sched_try_advance_tag_and_distribute() {
         }
     }
     
-    if (pqueue_size(reaction_q) > 0) {
-        DEBUG_PRINT("Scheduler: Reaction queue is not empty. Distributing work.");
-        distribute_ready_reactions();
+    if (distribute_ready_reactions() > 0) {
+        _lf_sched_notify_workers();
     }
-    DEBUG_PRINT("Scheduler: Executing queue size is %u.", pqueue_size(executing_q));
+    
+    DEBUG_PRINT("Scheduler: Executing queue size is %zu.", pqueue_size(executing_q));
+    pqueue_dump(executing_q, print_reaction);
     return return_value;
 }
 
