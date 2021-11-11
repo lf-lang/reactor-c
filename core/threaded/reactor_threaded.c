@@ -712,20 +712,17 @@ void request_stop() {
 }
 
 /**
- * Put the specified reaction on the reaction queue.
+ * Put the specified reaction eventually on the reaction queue. There is no
+ * guarantee that this happens immediately, unless 'worker_number' is -1.
  * This version acquires a mutex lock.
  * @param reaction The reaction.
+ * @param worker_number The ID of the worker that is making a call. 0 should be
+ *  used if there is only one worker (e.g., when the program is using the
+ *  unthreaded C runtime). -1 should be used if putting the reaction on the
+ *  reaction queue should be done immediately.
  */
-void _lf_enqueue_reaction(reaction_t* reaction) {
-    // Acquire the mutex lock.
-    lf_mutex_lock(&mutex);
-    // Do not enqueue this reaction twice.
-    if (reaction != NULL && pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
-        DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
-        		reaction->name, reaction->index & 0xffffLL);
-        pqueue_insert(reaction_q, reaction);
-    }
-    lf_mutex_unlock(&mutex);
+void _lf_enqueue_reaction(reaction_t* reaction, int worker_number) {
+    _lf_sched_worker_enqueue_reaction(worker_number, reaction);
 }
 
 /**
@@ -756,7 +753,7 @@ void _lf_initialize_start_tag() {
     // reactions. This can only happen if the timeout time
     // was set to 0.
     if (compare_tags(current_tag, stop_tag) >= 0) {
-        _lf_trigger_shutdown_reactions();
+        _lf_trigger_shutdown_reactions(0);
     }
 
 #ifdef FEDERATED

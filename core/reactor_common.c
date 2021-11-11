@@ -376,11 +376,16 @@ token_freed _lf_done_using(lf_token_t* token) {
 }
 
 /**
- * Put the specified reaction on the reaction queue.
- * This version is just a template.
+ * Put the specified reaction eventually on the reaction queue. There is no
+ * guarantee that this happens immediately, unless 'worker_number' is -1.
+ * This version acquires a mutex lock.
  * @param reaction The reaction.
+ * @param worker_number The ID of the worker that is making a call. 0 should be
+ *  used if there is only one worker (e.g., when the program is using the
+ *  unthreaded C runtime). -1 should be used if putting the reaction on the
+ *  reaction queue should be done immediately.
  */
-void _lf_enqueue_reaction(reaction_t* reaction);
+void _lf_enqueue_reaction(reaction_t* reaction, int worker_number);
 
 /**
  * Use tables to reset is_present fields to false,
@@ -657,7 +662,7 @@ void _lf_initialize_timer(trigger_t* timer) {
     interval_t delay = 0;
     if (timer->offset == 0) {
         for (int i = 0; i < timer->number_of_reactions; i++) {
-            _lf_enqueue_reaction(timer->reactions[i]);
+            _lf_enqueue_reaction(timer->reactions[i], 0);
             tracepoint_schedule(timer, 0LL); // Trace even though schedule is not called.
         }
         if (timer->period == 0) {
@@ -1470,11 +1475,11 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
                                     // downstream reaction would be blocked because this reaction
                                     // remains on the executing queue. Hence, the optimization
                                     // is not valid. Put the candidate reaction on the queue.
-                                    _lf_enqueue_reaction(downstream_to_execute_now);
+                                    _lf_enqueue_reaction(downstream_to_execute_now, worker);
                                     downstream_to_execute_now = NULL;
                                 }
                                 // Queue the reaction.
-                                _lf_enqueue_reaction(downstream_reaction);
+                                _lf_enqueue_reaction(downstream_reaction, worker);
                             }
                         }
                     }

@@ -57,6 +57,7 @@ typedef struct {
     lf_mutex_t mutex;
     lf_cond_t cond;
     pqueue_t* ready_reactions;
+    pqueue_t* output_reactions;
     pqueue_t* done_reactions;
     bool should_stop;
 } _lf_sched_thread_info_t;
@@ -128,6 +129,38 @@ bool _lf_sched_worker_should_stop(size_t worker_number) {
     return should_stop;
 }
 
+/**
+ * FIXME
+ * @param reaction The reaction.
+ * @param worker_number The ID of the worker that is making a call. 0 should be
+ *  used if there is only one worker (e.g., when the program is using the
+ *  unthreaded C runtime). -1 should be used if the scheduler should handle
+ *  enqueuing the reaction immediately.
+ */
+void _lf_sched_worker_enqueue_reaction(int worker_number, reaction_t* reaction) {
+    if (worker_number == -1) {
+        // The scheduler should handle this immediately
+        lf_mutex_lock(&mutex);
+        // Do not enqueue this reaction twice.
+        if (reaction != NULL && pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
+            DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
+                        reaction->name, reaction->index & 0xffffLL);
+            pqueue_insert(reaction_q, reaction);
+        }
+        lf_mutex_unlock(&mutex);
+        return;
+    }
+    // Acquire the mutex lock.
+    lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
+    // Note: The scheduler will check that we don't enqueue this reaction twice.
+    if (reaction != NULL) {
+        DEBUG_PRINT("Enqueuing downstream reaction %s, which has level %lld.",
+        		reaction->name, reaction->index & 0xffffLL);
+        pqueue_insert(_lf_sched_threads_info[worker_number].output_reactions, reaction);
+    }
+    lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
+}
+
 
 ///////////////////// Scheduler Init /////////////////////////
 void _lf_sched_init(size_t number_of_workers) {
@@ -145,6 +178,16 @@ void _lf_sched_init(size_t number_of_workers) {
         lf_cond_init(&_lf_sched_threads_info[i].cond);
         lf_mutex_init(&_lf_sched_threads_info[i].mutex);
         _lf_sched_threads_info[i].ready_reactions = 
+            pqueue_init(
+                INITIAL_REACT_QUEUE_SIZE, 
+                in_reverse_order, 
+                get_reaction_index,
+                get_reaction_position, 
+                set_reaction_position, 
+                reaction_matches, 
+                print_reaction
+            );
+        _lf_sched_threads_info[i].output_reactions = 
             pqueue_init(
                 INITIAL_REACT_QUEUE_SIZE, 
                 in_reverse_order, 
@@ -391,6 +434,30 @@ bool _lf_sched_advance_tag_locked() {
     return false;
 }
 
+void _lf_sched_fill_reaction_queue() {
+    for (int i=0; i< _lf_sched_number_of_workers; i++) {
+        reaction_t* reaction_to_add = NULL;
+        lf_mutex_lock(&_lf_sched_threads_info[i].mutex);
+        while(
+            (reaction_to_add = 
+            (reaction_t*)pqueue_pop(_lf_sched_threads_info[i].output_reactions))
+            != NULL) {
+            DEBUG_PRINT(
+                "Scheduler: Inserting reaction %s into the reaction queue.",
+                reaction_to_add->name
+            );
+            // Avoid inserting duplicate reactions. FIXME: to be replaced with
+            // the new mechanism
+            if (pqueue_find_equal_same_priority(reaction_q, reaction_to_add) == NULL) {
+                if (pqueue_insert(reaction_q, reaction_to_add) != 0) {
+                    error_print_and_exit("Scheduler: Could not properly fill the reaction queue.");
+                }
+            }
+        }
+        lf_mutex_unlock(&_lf_sched_threads_info[i].mutex);
+    }
+}
+
 void _lf_sched_cleanup_done_reactions_locked() {
     for (int i=0; i< _lf_sched_number_of_workers; i++) {
         reaction_t* reaction_to_remove = NULL;
@@ -404,7 +471,7 @@ void _lf_sched_cleanup_done_reactions_locked() {
                 reaction_to_remove->name
             );
             if (pqueue_remove(executing_q, reaction_to_remove) != 0) {
-                error_print_and_exit("Could not properly clear the executing queue.");
+                error_print_and_exit("Scheduler: Could not properly clear the executing queue.");
             }
         }
         lf_mutex_unlock(&_lf_sched_threads_info[i].mutex);
@@ -423,6 +490,8 @@ bool _lf_sched_try_advance_tag_and_distribute() {
     bool return_value = false;
 
     _lf_sched_cleanup_done_reactions_locked();
+
+    _lf_sched_fill_reaction_queue();
 
     if (pqueue_size(reaction_q) == 0
             && pqueue_size(executing_q) == 0) {

@@ -130,8 +130,11 @@ void print_snapshot() {
  * Put the specified reaction on the reaction queue.
  * This version does not acquire a mutex lock.
  * @param reaction The reaction.
+ * @param worker_number The ID of the worker that is making a call. 0 can be
+ *  used if there is only one worker (e.g., when the program is using the
+ *  unthreaded C runtime).
  */
-void _lf_enqueue_reaction(reaction_t* reaction) {
+void _lf_enqueue_reaction(reaction_t* reaction, int worker_number) {
     // Do not enqueue this reaction twice.
     if (pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
         DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
@@ -274,7 +277,7 @@ int next() {
     _lf_advance_logical_time(next_tag.time);
 
     if (compare_tags(current_tag, stop_tag) >= 0) {        
-        _lf_trigger_shutdown_reactions();
+        _lf_trigger_shutdown_reactions(0);
     }
 
     // Invoke code that must execute before starting a new logical time round,
@@ -346,7 +349,7 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         // reactions. This can only happen if the timeout time
         // was set to 0.
         if (compare_tags(current_tag, stop_tag) >= 0) {
-            _lf_trigger_shutdown_reactions(); // _lf_trigger_shutdown_reactions();
+            _lf_trigger_shutdown_reactions(0); // _lf_trigger_shutdown_reactions();
         }
         DEBUG_PRINT("Running the program's main loop.");
         // Handle reactions triggered at time (T,m).
