@@ -116,6 +116,8 @@ Functions</h2></td></tr>
 <tr class="separator:acf2937acf3f9a8dfeb7af0152f31634e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8f772464d0281b57bfa40d2d40fd062c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a8f772464d0281b57bfa40d2d40fd062c">_lf_schedule_value</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, void *value, size_t length)</td></tr>
 <tr class="separator:a8f772464d0281b57bfa40d2d40fd062c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad216e238632a5cbf4eed4817c1c5308f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ad216e238632a5cbf4eed4817c1c5308f">_lf_set_present</a> (<a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> *is_present_field)</td></tr>
+<tr class="separator:ad216e238632a5cbf4eed4817c1c5308f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad96dd94446ff66184dcf0f8f65cdb4f0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ad96dd94446ff66184dcf0f8f65cdb4f0">logical_tag_complete</a> (<a class="el" href="structtag__t.html">tag_t</a> tag_to_send)</td></tr>
 <tr class="separator:ad96dd94446ff66184dcf0f8f65cdb4f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad83fe9661682934029a42954b8fe6e2f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ad83fe9661682934029a42954b8fe6e2f">synchronize_with_other_federates</a> ()</td></tr>
@@ -603,6 +605,30 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p >Variant of schedule_token that creates a token to carry the specified value. See <a class="el" href="reactor_8h.html">reactor.h</a> for documentation. </p>
+
+</div>
+</div>
+<a id="ad216e238632a5cbf4eed4817c1c5308f" name="ad216e238632a5cbf4eed4817c1c5308f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad216e238632a5cbf4eed4817c1c5308f">&#9670;&nbsp;</a></span>_lf_set_present()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_set_present </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> *&#160;</td>
+          <td class="paramname"><em>is_present_field</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Mark the given is_present field as true. This is_present field will later be cleaned up by _lf_start_time_step. This assumes that the mutex is not held. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">is_present_field</td><td>A pointer to the is_present field that must be set. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

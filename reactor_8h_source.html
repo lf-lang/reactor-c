@@ -104,92 +104,92 @@ $(function() {
 <div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span><span class="comment">// problems with if ... else statements that do not use braces around the</span></div>
 <div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span><span class="comment">// two branches.</span></div>
 <div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span> </div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno"><a class="line" href="reactor_8h.html#af5f7e281be573bc680ed652ad54f5386">  101</a></span><span class="preprocessor">#define _LF_SET(out, val) \</span></div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span><span class="preprocessor">do { \</span></div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span><span class="preprocessor">    out-&gt;value = val; \</span></div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span><span class="preprocessor">    out-&gt;is_present = true; \</span></div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span><span class="preprocessor">} while(0)</span></div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span> </div>
-<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span><span class="preprocessor">#ifndef __cplusplus</span></div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno"><a class="line" href="reactor_8h.html#a8a4001d12854ff4675f7d119dfb0b952">  121</a></span><span class="preprocessor">#define _LF_SET_ARRAY(out, val, element_size, length) \</span></div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span><span class="preprocessor">do { \</span></div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span><span class="preprocessor">    out-&gt;is_present = true; \</span></div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span><span class="preprocessor">    lf_token_t* token = _lf_initialize_token_with_value(out-&gt;token, val, length); \</span></div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span><span class="preprocessor">    token-&gt;ref_count = out-&gt;num_destinations; \</span></div>
-<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span><span class="preprocessor">    out-&gt;token = token; \</span></div>
-<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span><span class="preprocessor">    out-&gt;value = token-&gt;value; \</span></div>
-<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span><span class="preprocessor">} while(0)</span></div>
-<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span><span class="preprocessor">#define _LF_SET_ARRAY(out, val, element_size, length) \</span></div>
-<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span><span class="preprocessor">do { \</span></div>
-<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span><span class="preprocessor">    out-&gt;is_present = true; \</span></div>
-<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span><span class="preprocessor">    lf_token_t* token = _lf_initialize_token_with_value(out-&gt;token, val, length); \</span></div>
-<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span><span class="preprocessor">    token-&gt;ref_count = out-&gt;num_destinations; \</span></div>
-<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span><span class="preprocessor">    out-&gt;token = token; \</span></div>
-<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span><span class="preprocessor">    out-&gt;value = static_cast&lt;decltype(out-&gt;value)&gt;(token-&gt;value); \</span></div>
-<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span><span class="preprocessor">} while(0)</span></div>
-<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span> </div>
-<div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span><span class="preprocessor">#ifndef __cplusplus</span></div>
-<div class="line"><a id="l00155" name="l00155"></a><span class="lineno"><a class="line" href="reactor_8h.html#ae6d69be73768b3d144a524fa87f0d069">  155</a></span><span class="preprocessor">#define _LF_SET_NEW(out) \</span></div>
-<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span><span class="preprocessor">do { \</span></div>
-<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span><span class="preprocessor">    out-&gt;is_present = true; \</span></div>
-<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span><span class="preprocessor">    lf_token_t* token = _lf_set_new_array_impl(out-&gt;token, 1, out-&gt;num_destinations); \</span></div>
-<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span><span class="preprocessor">    out-&gt;value = token-&gt;value; \</span></div>
-<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span><span class="preprocessor">    out-&gt;token = token; \</span></div>
-<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span><span class="preprocessor">} while(0)</span></div>
-<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span><span class="preprocessor">#define _LF_SET_NEW(out) \</span></div>
-<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span><span class="preprocessor">do { \</span></div>
-<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span><span class="preprocessor">    out-&gt;is_present = true; \</span></div>
-<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span><span class="preprocessor">    lf_token_t* token = _lf_set_new_array_impl(out-&gt;token, 1, out-&gt;num_destinations); \</span></div>
-<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span><span class="preprocessor">    out-&gt;value = static_cast&lt;decltype(out-&gt;value)&gt;(token-&gt;value); \</span></div>
-<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span><span class="preprocessor">    out-&gt;token = token; \</span></div>
-<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span><span class="preprocessor">} while(0)</span></div>
-<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span><span class="preprocessor">#endif </span><span class="comment">// __cplusplus</span></div>
-<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span> </div>
-<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span><span class="preprocessor">#ifndef __cplusplus</span></div>
-<div class="line"><a id="l00186" name="l00186"></a><span class="lineno"><a class="line" href="reactor_8h.html#a64c4d124085ac4279bac7158ad144218">  186</a></span><span class="preprocessor">#define _LF_SET_NEW_ARRAY(out, len) \</span></div>
-<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span><span class="preprocessor">do { \</span></div>
-<div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span><span class="preprocessor">    out-&gt;is_present = true; \</span></div>
-<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span><span class="preprocessor">    lf_token_t* token = _lf_set_new_array_impl(out-&gt;token, len, out-&gt;num_destinations); \</span></div>
-<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span><span class="preprocessor">    out-&gt;value = token-&gt;value; \</span></div>
-<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span><span class="preprocessor">    out-&gt;token = token; \</span></div>
-<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span><span class="preprocessor">    out-&gt;length = len; \</span></div>
-<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span><span class="preprocessor">} while(0)</span></div>
-<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span><span class="preprocessor">#define _LF_SET_NEW_ARRAY(out, len) \</span></div>
-<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span><span class="preprocessor">do { \</span></div>
-<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span><span class="preprocessor">    out-&gt;is_present = true; \</span></div>
-<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span><span class="preprocessor">    lf_token_t* token = _lf_set_new_array_impl(out-&gt;token, len, out-&gt;num_destinations); \</span></div>
-<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span><span class="preprocessor">    out-&gt;value = static_cast&lt;decltype(out-&gt;value)&gt;(token-&gt;value); \</span></div>
-<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span><span class="preprocessor">    out-&gt;token = token; \</span></div>
-<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span><span class="preprocessor">    out-&gt;length = len; \</span></div>
-<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span><span class="preprocessor">} while(0)</span></div>
-<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00213" name="l00213"></a><span class="lineno"><a class="line" href="reactor_8h.html#a26960b6a12ebe9eff3f276c2b07096ab">  213</a></span><span class="preprocessor">#define _LF_SET_PRESENT(out) \</span></div>
-<div class="line"><a id="l00214" name="l00214"></a><span class="lineno">  214</span><span class="preprocessor">do { \</span></div>
-<div class="line"><a id="l00215" name="l00215"></a><span class="lineno">  215</span><span class="preprocessor">    out-&gt;is_present = true; \</span></div>
-<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span><span class="preprocessor">} while(0)</span></div>
-<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span> </div>
-<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span><span class="preprocessor">#ifndef __cplusplus</span></div>
-<div class="line"><a id="l00228" name="l00228"></a><span class="lineno"><a class="line" href="reactor_8h.html#a5f45a70cbab4e36efdc9efdcf37a7bb9">  228</a></span><span class="preprocessor">#define _LF_SET_TOKEN(out, newtoken) \</span></div>
-<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span><span class="preprocessor">do { \</span></div>
-<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span><span class="preprocessor">    out-&gt;is_present = true; \</span></div>
-<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span><span class="preprocessor">    out-&gt;value = newtoken-&gt;value; \</span></div>
-<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span><span class="preprocessor">    out-&gt;token = newtoken; \</span></div>
-<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span><span class="preprocessor">    newtoken-&gt;ref_count += out-&gt;num_destinations; \</span></div>
-<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span><span class="preprocessor">    out-&gt;is_present = true; \</span></div>
-<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span><span class="preprocessor">    out-&gt;length = newtoken-&gt;length; \</span></div>
-<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span><span class="preprocessor">} while(0)</span></div>
-<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span><span class="preprocessor">#define _LF_SET_TOKEN(out, newtoken) \</span></div>
-<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span><span class="preprocessor">do { \</span></div>
-<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span><span class="preprocessor">    out-&gt;is_present = true; \</span></div>
-<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span><span class="preprocessor">    out-&gt;value = static_cast&lt;decltype(out-&gt;value)&gt;(newtoken-&gt;value); \</span></div>
-<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span><span class="preprocessor">    out-&gt;token = newtoken; \</span></div>
-<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span><span class="preprocessor">    newtoken-&gt;ref_count += out-&gt;num_destinations; \</span></div>
-<div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span><span class="preprocessor">    out-&gt;is_present = true; \</span></div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span><span class="keywordtype">void</span> <a class="code hl_function" href="reactor_8h.html#ad216e238632a5cbf4eed4817c1c5308f">_lf_set_present</a>(<span class="keywordtype">bool</span>* is_present_field);</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno"><a class="line" href="reactor_8h.html#af5f7e281be573bc680ed652ad54f5386">  103</a></span><span class="preprocessor">#define _LF_SET(out, val) \</span></div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span><span class="preprocessor">do { \</span></div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span><span class="preprocessor">    out-&gt;value = val; \</span></div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span><span class="preprocessor">    _lf_set_present(&amp;out-&gt;is_present); \</span></div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span><span class="preprocessor">} while(0)</span></div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span> </div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span><span class="preprocessor">#ifndef __cplusplus</span></div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno"><a class="line" href="reactor_8h.html#a8a4001d12854ff4675f7d119dfb0b952">  123</a></span><span class="preprocessor">#define _LF_SET_ARRAY(out, val, element_size, length) \</span></div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span><span class="preprocessor">do { \</span></div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span><span class="preprocessor">    _lf_set_present(&amp;out-&gt;is_present); \</span></div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span><span class="preprocessor">    lf_token_t* token = _lf_initialize_token_with_value(out-&gt;token, val, length); \</span></div>
+<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span><span class="preprocessor">    token-&gt;ref_count = out-&gt;num_destinations; \</span></div>
+<div class="line"><a id="l00128" name="l00128"></a><span class="lineno">  128</span><span class="preprocessor">    out-&gt;token = token; \</span></div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno">  129</span><span class="preprocessor">    out-&gt;value = token-&gt;value; \</span></div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span><span class="preprocessor">} while(0)</span></div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno">  131</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span><span class="preprocessor">#define _LF_SET_ARRAY(out, val, element_size, length) \</span></div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span><span class="preprocessor">do { \</span></div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span><span class="preprocessor">    _lf_set_present(&amp;out-&gt;is_present); \</span></div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span><span class="preprocessor">    lf_token_t* token = _lf_initialize_token_with_value(out-&gt;token, val, length); \</span></div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span><span class="preprocessor">    token-&gt;ref_count = out-&gt;num_destinations; \</span></div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span><span class="preprocessor">    out-&gt;token = token; \</span></div>
+<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span><span class="preprocessor">    out-&gt;value = static_cast&lt;decltype(out-&gt;value)&gt;(token-&gt;value); \</span></div>
+<div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span><span class="preprocessor">} while(0)</span></div>
+<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span> </div>
+<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span><span class="preprocessor">#ifndef __cplusplus</span></div>
+<div class="line"><a id="l00157" name="l00157"></a><span class="lineno"><a class="line" href="reactor_8h.html#ae6d69be73768b3d144a524fa87f0d069">  157</a></span><span class="preprocessor">#define _LF_SET_NEW(out) \</span></div>
+<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span><span class="preprocessor">do { \</span></div>
+<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span><span class="preprocessor">    _lf_set_present(&amp;out-&gt;is_present); \</span></div>
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span><span class="preprocessor">    lf_token_t* token = _lf_set_new_array_impl(out-&gt;token, 1, out-&gt;num_destinations); \</span></div>
+<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span><span class="preprocessor">    out-&gt;value = token-&gt;value; \</span></div>
+<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span><span class="preprocessor">    out-&gt;token = token; \</span></div>
+<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span><span class="preprocessor">} while(0)</span></div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span><span class="preprocessor">#define _LF_SET_NEW(out) \</span></div>
+<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span><span class="preprocessor">do { \</span></div>
+<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span><span class="preprocessor">    _lf_set_present(&amp;out-&gt;is_present); \</span></div>
+<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span><span class="preprocessor">    lf_token_t* token = _lf_set_new_array_impl(out-&gt;token, 1, out-&gt;num_destinations); \</span></div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span><span class="preprocessor">    out-&gt;value = static_cast&lt;decltype(out-&gt;value)&gt;(token-&gt;value); \</span></div>
+<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span><span class="preprocessor">    out-&gt;token = token; \</span></div>
+<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span><span class="preprocessor">} while(0)</span></div>
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span><span class="preprocessor">#endif </span><span class="comment">// __cplusplus</span></div>
+<div class="line"><a id="l00173" name="l00173"></a><span class="lineno">  173</span> </div>
+<div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span><span class="preprocessor">#ifndef __cplusplus</span></div>
+<div class="line"><a id="l00188" name="l00188"></a><span class="lineno"><a class="line" href="reactor_8h.html#a64c4d124085ac4279bac7158ad144218">  188</a></span><span class="preprocessor">#define _LF_SET_NEW_ARRAY(out, len) \</span></div>
+<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span><span class="preprocessor">do { \</span></div>
+<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span><span class="preprocessor">    _lf_set_present(&amp;out-&gt;is_present); \</span></div>
+<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span><span class="preprocessor">    lf_token_t* token = _lf_set_new_array_impl(out-&gt;token, len, out-&gt;num_destinations); \</span></div>
+<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span><span class="preprocessor">    out-&gt;value = token-&gt;value; \</span></div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span><span class="preprocessor">    out-&gt;token = token; \</span></div>
+<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span><span class="preprocessor">    out-&gt;length = len; \</span></div>
+<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span><span class="preprocessor">} while(0)</span></div>
+<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span><span class="preprocessor">#define _LF_SET_NEW_ARRAY(out, len) \</span></div>
+<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span><span class="preprocessor">do { \</span></div>
+<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span><span class="preprocessor">    _lf_set_present(&amp;out-&gt;is_present); \</span></div>
+<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span><span class="preprocessor">    lf_token_t* token = _lf_set_new_array_impl(out-&gt;token, len, out-&gt;num_destinations); \</span></div>
+<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span><span class="preprocessor">    out-&gt;value = static_cast&lt;decltype(out-&gt;value)&gt;(token-&gt;value); \</span></div>
+<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span><span class="preprocessor">    out-&gt;token = token; \</span></div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span><span class="preprocessor">    out-&gt;length = len; \</span></div>
+<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span><span class="preprocessor">} while(0)</span></div>
+<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00215" name="l00215"></a><span class="lineno"><a class="line" href="reactor_8h.html#a26960b6a12ebe9eff3f276c2b07096ab">  215</a></span><span class="preprocessor">#define _LF_SET_PRESENT(out) \</span></div>
+<div class="line"><a id="l00216" name="l00216"></a><span class="lineno">  216</span><span class="preprocessor">do { \</span></div>
+<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span><span class="preprocessor">    _lf_set_present(&amp;out-&gt;is_present); \</span></div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span><span class="preprocessor">} while(0)</span></div>
+<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span> </div>
+<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span><span class="preprocessor">#ifndef __cplusplus</span></div>
+<div class="line"><a id="l00230" name="l00230"></a><span class="lineno"><a class="line" href="reactor_8h.html#a5f45a70cbab4e36efdc9efdcf37a7bb9">  230</a></span><span class="preprocessor">#define _LF_SET_TOKEN(out, newtoken) \</span></div>
+<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span><span class="preprocessor">do { \</span></div>
+<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span><span class="preprocessor">    _lf_set_present(&amp;out-&gt;is_present); \</span></div>
+<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span><span class="preprocessor">    out-&gt;value = newtoken-&gt;value; \</span></div>
+<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span><span class="preprocessor">    out-&gt;token = newtoken; \</span></div>
+<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span><span class="preprocessor">    newtoken-&gt;ref_count += out-&gt;num_destinations; \</span></div>
+<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span><span class="preprocessor">    out-&gt;length = newtoken-&gt;length; \</span></div>
+<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span><span class="preprocessor">} while(0)</span></div>
+<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span><span class="preprocessor">#define _LF_SET_TOKEN(out, newtoken) \</span></div>
+<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span><span class="preprocessor">do { \</span></div>
+<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span><span class="preprocessor">    _lf_set_present(&amp;out-&gt;is_present); \</span></div>
+<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span><span class="preprocessor">    out-&gt;value = static_cast&lt;decltype(out-&gt;value)&gt;(newtoken-&gt;value); \</span></div>
+<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span><span class="preprocessor">    out-&gt;token = newtoken; \</span></div>
+<div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span><span class="preprocessor">    newtoken-&gt;ref_count += out-&gt;num_destinations; \</span></div>
 <div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span><span class="preprocessor">    out-&gt;length = newtoken-&gt;length; \</span></div>
 <div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span><span class="preprocessor">} while(0)</span></div>
 <div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span><span class="preprocessor">#endif</span></div>
@@ -421,12 +421,12 @@ $(function() {
 <div class="ttc" id="aplatform_8h_html_a25b148cb4bef9a108b00306879433f7b"><div class="ttname"><a href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a></div><div class="ttdeci">_interval_t interval_t</div><div class="ttdef"><b>Definition:</b> platform.h:84</div></div>
 <div class="ttc" id="apqueue_8h_html"><div class="ttname"><a href="pqueue_8h.html">pqueue.h</a></div><div class="ttdoc">Priority Queue function declarations.</div></div>
 <div class="ttc" id="apqueue_8h_html_ad8239ddc32134716f57e54bb972f6bf0"><div class="ttname"><a href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a></div><div class="ttdeci">unsigned long long pqueue_pri_t</div><div class="ttdef"><b>Definition:</b> pqueue.h:45</div></div>
-<div class="ttc" id="areactor_8c_html_a4311a28891c362d4d0dd4f748beba33b"><div class="ttname"><a href="reactor_8c.html#a4311a28891c362d4d0dd4f748beba33b">next</a></div><div class="ttdeci">int next()</div><div class="ttdef"><b>Definition:</b> reactor.c:233</div></div>
+<div class="ttc" id="areactor_8c_html_a4311a28891c362d4d0dd4f748beba33b"><div class="ttname"><a href="reactor_8c.html#a4311a28891c362d4d0dd4f748beba33b">next</a></div><div class="ttdeci">int next()</div><div class="ttdef"><b>Definition:</b> reactor.c:249</div></div>
 <div class="ttc" id="areactor_8h_html_a0183c0b43037a172a1cd9aa6ed6b3822"><div class="ttname"><a href="reactor_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822">lf_spacing_policy_t</a></div><div class="ttdeci">lf_spacing_policy_t</div><div class="ttdef"><b>Definition:</b> reactor.h:310</div></div>
 <div class="ttc" id="areactor_8h_html_a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019"><div class="ttname"><a href="reactor_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019">drop</a></div><div class="ttdeci">@ drop</div><div class="ttdef"><b>Definition:</b> reactor.h:310</div></div>
 <div class="ttc" id="areactor_8h_html_a0183c0b43037a172a1cd9aa6ed6b3822a893b1cf0de04eaf44a009fecabd16b90"><div class="ttname"><a href="reactor_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a893b1cf0de04eaf44a009fecabd16b90">defer</a></div><div class="ttdeci">@ defer</div><div class="ttdef"><b>Definition:</b> reactor.h:310</div></div>
 <div class="ttc" id="areactor_8h_html_a0183c0b43037a172a1cd9aa6ed6b3822a8a4df390c6f816287b90cb2b33ab4323"><div class="ttname"><a href="reactor_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a8a4df390c6f816287b90cb2b33ab4323">replace</a></div><div class="ttdeci">@ replace</div><div class="ttdef"><b>Definition:</b> reactor.h:310</div></div>
-<div class="ttc" id="areactor_8h_html_a0b3e914b48f5f90533eecbf63acdf8d9"><div class="ttname"><a href="reactor_8h.html#a0b3e914b48f5f90533eecbf63acdf8d9">create_token</a></div><div class="ttdeci">lf_token_t * create_token(size_t element_size)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:463</div></div>
+<div class="ttc" id="areactor_8h_html_a0b3e914b48f5f90533eecbf63acdf8d9"><div class="ttname"><a href="reactor_8h.html#a0b3e914b48f5f90533eecbf63acdf8d9">create_token</a></div><div class="ttdeci">lf_token_t * create_token(size_t element_size)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:484</div></div>
 <div class="ttc" id="areactor_8h_html_a114c79dc673219d5df3b794552ca88d7"><div class="ttname"><a href="reactor_8h.html#a114c79dc673219d5df3b794552ca88d7">terminate_execution</a></div><div class="ttdeci">void terminate_execution()</div><div class="ttdef"><b>Definition:</b> federate.c:2147</div></div>
 <div class="ttc" id="areactor_8h_html_a149e5fee1c1841bcc96c72f200601d90"><div class="ttname"><a href="reactor_8h.html#a149e5fee1c1841bcc96c72f200601d90">reaction_function_t</a></div><div class="ttdeci">void(* reaction_function_t)(void *)</div><div class="ttdef"><b>Definition:</b> reactor.h:385</div></div>
 <div class="ttc" id="areactor_8h_html_a174f339edecd4463df25e673366a2b16"><div class="ttname"><a href="reactor_8h.html#a174f339edecd4463df25e673366a2b16">ok_to_free_t</a></div><div class="ttdeci">ok_to_free_t</div><div class="ttdef"><b>Definition:</b> reactor.h:316</div></div>
@@ -437,15 +437,15 @@ $(function() {
 <div class="ttc" id="areactor_8h_html_a2c506d193748554de2ff32e5f7cee41e"><div class="ttname"><a href="reactor_8h.html#a2c506d193748554de2ff32e5f7cee41e">token_present_t</a></div><div class="ttdeci">struct token_present_t token_present_t</div></div>
 <div class="ttc" id="areactor_8h_html_a3260d94d4fb70236a49c2b782470bb6e"><div class="ttname"><a href="reactor_8h.html#a3260d94d4fb70236a49c2b782470bb6e">_lf_initialize_timers</a></div><div class="ttdeci">void _lf_initialize_timers()</div></div>
 <div class="ttc" id="areactor_8h_html_a3608c2ed78ba97535f8d82a489846305"><div class="ttname"><a href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a></div><div class="ttdeci">int trigger_handle_t</div><div class="ttdef"><b>Definition:</b> reactor.h:363</div></div>
-<div class="ttc" id="areactor_8h_html_a39f588e1df453139dbb9a4157dda2027"><div class="ttname"><a href="reactor_8h.html#a39f588e1df453139dbb9a4157dda2027">_lf_global_time_STP_offset</a></div><div class="ttdeci">interval_t _lf_global_time_STP_offset</div><div class="ttdef"><b>Definition:</b> reactor_common.c:111</div></div>
+<div class="ttc" id="areactor_8h_html_a39f588e1df453139dbb9a4157dda2027"><div class="ttname"><a href="reactor_8h.html#a39f588e1df453139dbb9a4157dda2027">_lf_global_time_STP_offset</a></div><div class="ttdeci">interval_t _lf_global_time_STP_offset</div><div class="ttdef"><b>Definition:</b> reactor_common.c:123</div></div>
 <div class="ttc" id="areactor_8h_html_a3fa7784c89589b49764048e9909d0e07"><div class="ttname"><a href="reactor_8h.html#a3fa7784c89589b49764048e9909d0e07">ushort</a></div><div class="ttdeci">unsigned short int ushort</div><div class="ttdef"><b>Definition:</b> reactor.h:295</div></div>
 <div class="ttc" id="areactor_8h_html_a4448d06be794d3f5412d0edb412dc00e"><div class="ttname"><a href="reactor_8h.html#a4448d06be794d3f5412d0edb412dc00e">index_t</a></div><div class="ttdeci">pqueue_pri_t index_t</div><div class="ttdef"><b>Definition:</b> reactor.h:378</div></div>
 <div class="ttc" id="areactor_8h_html_a4505c08c065b48840a30eedd9845cce2"><div class="ttname"><a href="reactor_8h.html#a4505c08c065b48840a30eedd9845cce2">string</a></div><div class="ttdeci">char * string</div><div class="ttdef"><b>Definition:</b> reactor.h:372</div></div>
 <div class="ttc" id="areactor_8h_html_a46845578328233d51b6bfb55e8724ee1"><div class="ttname"><a href="reactor_8h.html#a46845578328233d51b6bfb55e8724ee1">_lf_create_dummy_event</a></div><div class="ttdeci">event_t * _lf_create_dummy_event(trigger_t *trigger, instant_t time, event_t *next, unsigned int offset)</div></div>
 <div class="ttc" id="areactor_8h_html_a52ffa06ff177dc19d33713beb2ff344e"><div class="ttname"><a href="reactor_8h.html#a52ffa06ff177dc19d33713beb2ff344e">_lf_initialize_trigger_objects</a></div><div class="ttdeci">void _lf_initialize_trigger_objects()</div></div>
-<div class="ttc" id="areactor_8h_html_a54be08fbc7990c2d8082a31cbbf6e019"><div class="ttname"><a href="reactor_8h.html#a54be08fbc7990c2d8082a31cbbf6e019">get_stp_offset</a></div><div class="ttdeci">interval_t get_stp_offset()</div><div class="ttdef"><b>Definition:</b> reactor_common.c:157</div></div>
+<div class="ttc" id="areactor_8h_html_a54be08fbc7990c2d8082a31cbbf6e019"><div class="ttname"><a href="reactor_8h.html#a54be08fbc7990c2d8082a31cbbf6e019">get_stp_offset</a></div><div class="ttdeci">interval_t get_stp_offset()</div><div class="ttdef"><b>Definition:</b> reactor_common.c:169</div></div>
 <div class="ttc" id="areactor_8h_html_a60ec02f52c1a7db4c7bdbc2871eae636"><div class="ttname"><a href="reactor_8h.html#a60ec02f52c1a7db4c7bdbc2871eae636">_lf_fd_send_stop_request_to_rti</a></div><div class="ttdeci">void _lf_fd_send_stop_request_to_rti()</div><div class="ttdef"><b>Definition:</b> federate.c:2001</div></div>
-<div class="ttc" id="areactor_8h_html_a662cfd5714e5930f5e1c880f13deba6d"><div class="ttname"><a href="reactor_8h.html#a662cfd5714e5930f5e1c880f13deba6d">_lf_recycle_event</a></div><div class="ttdeci">void _lf_recycle_event(event_t *e)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:705</div></div>
+<div class="ttc" id="areactor_8h_html_a662cfd5714e5930f5e1c880f13deba6d"><div class="ttname"><a href="reactor_8h.html#a662cfd5714e5930f5e1c880f13deba6d">_lf_recycle_event</a></div><div class="ttdeci">void _lf_recycle_event(event_t *e)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:726</div></div>
 <div class="ttc" id="areactor_8h_html_a6e496c05213aa4bcbc0055ceee7808fa"><div class="ttname"><a href="reactor_8h.html#a6e496c05213aa4bcbc0055ceee7808fa">reaction_status_t</a></div><div class="ttdeci">reaction_status_t</div><div class="ttdef"><b>Definition:</b> reactor.h:345</div></div>
 <div class="ttc" id="areactor_8h_html_a6e496c05213aa4bcbc0055ceee7808faa76c1253bb97844abbdf89af6dfc3c7d6"><div class="ttname"><a href="reactor_8h.html#a6e496c05213aa4bcbc0055ceee7808faa76c1253bb97844abbdf89af6dfc3c7d6">inactive</a></div><div class="ttdeci">@ inactive</div><div class="ttdef"><b>Definition:</b> reactor.h:345</div></div>
 <div class="ttc" id="areactor_8h_html_a6e496c05213aa4bcbc0055ceee7808faa8ff224790af0c8a18f259da89dfb2225"><div class="ttname"><a href="reactor_8h.html#a6e496c05213aa4bcbc0055ceee7808faa8ff224790af0c8a18f259da89dfb2225">queued</a></div><div class="ttdeci">@ queued</div><div class="ttdef"><b>Definition:</b> reactor.h:345</div></div>
@@ -454,25 +454,26 @@ $(function() {
 <div class="ttc" id="areactor_8h_html_a759ba374f75ea0025b9af1bb35f14d7ea1a8fae68a24a59c5629c241401fabb08"><div class="ttname"><a href="reactor_8h.html#a759ba374f75ea0025b9af1bb35f14d7ea1a8fae68a24a59c5629c241401fabb08">absent</a></div><div class="ttdeci">@ absent</div><div class="ttdef"><b>Definition:</b> reactor.h:331</div></div>
 <div class="ttc" id="areactor_8h_html_a759ba374f75ea0025b9af1bb35f14d7ea5b9f6d065e6e98483b3d3ed01f4f6cbe"><div class="ttname"><a href="reactor_8h.html#a759ba374f75ea0025b9af1bb35f14d7ea5b9f6d065e6e98483b3d3ed01f4f6cbe">unknown</a></div><div class="ttdeci">@ unknown</div><div class="ttdef"><b>Definition:</b> reactor.h:331</div></div>
 <div class="ttc" id="areactor_8h_html_a759ba374f75ea0025b9af1bb35f14d7eaaeb73d7cb56b19bff3d9f80426ed3267"><div class="ttname"><a href="reactor_8h.html#a759ba374f75ea0025b9af1bb35f14d7eaaeb73d7cb56b19bff3d9f80426ed3267">present</a></div><div class="ttdeci">@ present</div><div class="ttdef"><b>Definition:</b> reactor.h:331</div></div>
-<div class="ttc" id="areactor_8h_html_a75a5bf324229d35fb88541a04449c95b"><div class="ttname"><a href="reactor_8h.html#a75a5bf324229d35fb88541a04449c95b">set_stp_offset</a></div><div class="ttdeci">void set_stp_offset(interval_t offset)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:168</div></div>
+<div class="ttc" id="areactor_8h_html_a75a5bf324229d35fb88541a04449c95b"><div class="ttname"><a href="reactor_8h.html#a75a5bf324229d35fb88541a04449c95b">set_stp_offset</a></div><div class="ttdeci">void set_stp_offset(interval_t offset)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:180</div></div>
 <div class="ttc" id="areactor_8h_html_a75fa89818532f0a22032b4892061f4dd"><div class="ttname"><a href="reactor_8h.html#a75fa89818532f0a22032b4892061f4dd">_lf_set_default_command_line_options</a></div><div class="ttdeci">void _lf_set_default_command_line_options()</div></div>
 <div class="ttc" id="areactor_8h_html_a8b4f2e4e87e43670217c0c53099ae2f5"><div class="ttname"><a href="reactor_8h.html#a8b4f2e4e87e43670217c0c53099ae2f5">get_start_time</a></div><div class="ttdeci">instant_t get_start_time()</div><div class="ttdef"><b>Definition:</b> tag.c:229</div></div>
 <div class="ttc" id="areactor_8h_html_a8f772464d0281b57bfa40d2d40fd062c"><div class="ttname"><a href="reactor_8h.html#a8f772464d0281b57bfa40d2d40fd062c">_lf_schedule_value</a></div><div class="ttdeci">trigger_handle_t _lf_schedule_value(void *action, interval_t extra_delay, void *value, size_t length)</div><div class="ttdef"><b>Definition:</b> reactor.c:64</div></div>
-<div class="ttc" id="areactor_8h_html_a95d938abdd650091f0cbadc6bb8577fa"><div class="ttname"><a href="reactor_8h.html#a95d938abdd650091f0cbadc6bb8577fa">_lf_schedule</a></div><div class="ttdeci">trigger_handle_t _lf_schedule(trigger_t *trigger, interval_t delay, lf_token_t *token)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:991</div></div>
+<div class="ttc" id="areactor_8h_html_a95d938abdd650091f0cbadc6bb8577fa"><div class="ttname"><a href="reactor_8h.html#a95d938abdd650091f0cbadc6bb8577fa">_lf_schedule</a></div><div class="ttdeci">trigger_handle_t _lf_schedule(trigger_t *trigger, interval_t delay, lf_token_t *token)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1012</div></div>
 <div class="ttc" id="areactor_8h_html_a973e404c4c1bd798a54501d0e1d640f9"><div class="ttname"><a href="reactor_8h.html#a973e404c4c1bd798a54501d0e1d640f9">lf_token_t</a></div><div class="ttdeci">struct lf_token_t lf_token_t</div></div>
-<div class="ttc" id="areactor_8h_html_aa46a83ed702e2c83d42625a8c78a9f50"><div class="ttname"><a href="reactor_8h.html#aa46a83ed702e2c83d42625a8c78a9f50">_lf_notify_workers</a></div><div class="ttdeci">void _lf_notify_workers()</div><div class="ttdef"><b>Definition:</b> reactor.c:310</div></div>
+<div class="ttc" id="areactor_8h_html_aa46a83ed702e2c83d42625a8c78a9f50"><div class="ttname"><a href="reactor_8h.html#aa46a83ed702e2c83d42625a8c78a9f50">_lf_notify_workers</a></div><div class="ttdeci">void _lf_notify_workers()</div><div class="ttdef"><b>Definition:</b> reactor.c:326</div></div>
 <div class="ttc" id="areactor_8h_html_aab3994336fae3b238f40283885873995"><div class="ttname"><a href="reactor_8h.html#aab3994336fae3b238f40283885873995">_lf_trigger_startup_reactions</a></div><div class="ttdeci">void _lf_trigger_startup_reactions()</div></div>
-<div class="ttc" id="areactor_8h_html_aaed2aef62e15386727c88c11b1737401"><div class="ttname"><a href="reactor_8h.html#aaed2aef62e15386727c88c11b1737401">_lf_schedule_int</a></div><div class="ttdeci">trigger_handle_t _lf_schedule_int(void *action, interval_t extra_delay, int value)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1369</div></div>
-<div class="ttc" id="areactor_8h_html_ab461661c6c9757862959540fe57e3554"><div class="ttname"><a href="reactor_8h.html#ab461661c6c9757862959540fe57e3554">_lf_is_blocked_by_executing_reaction</a></div><div class="ttdeci">bool _lf_is_blocked_by_executing_reaction()</div><div class="ttdef"><b>Definition:</b> reactor.c:317</div></div>
-<div class="ttc" id="areactor_8h_html_abadead0c4f54963b062503cf6cb7ace7"><div class="ttname"><a href="reactor_8h.html#abadead0c4f54963b062503cf6cb7ace7">_lf_advance_logical_time</a></div><div class="ttdeci">void _lf_advance_logical_time(instant_t next_time)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1333</div></div>
-<div class="ttc" id="areactor_8h_html_acf1ea511fbce4c80b124391d75e6ba92"><div class="ttname"><a href="reactor_8h.html#acf1ea511fbce4c80b124391d75e6ba92">_lf_pop_events</a></div><div class="ttdeci">void _lf_pop_events()</div><div class="ttdef"><b>Definition:</b> reactor_common.c:539</div></div>
+<div class="ttc" id="areactor_8h_html_aaed2aef62e15386727c88c11b1737401"><div class="ttname"><a href="reactor_8h.html#aaed2aef62e15386727c88c11b1737401">_lf_schedule_int</a></div><div class="ttdeci">trigger_handle_t _lf_schedule_int(void *action, interval_t extra_delay, int value)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1390</div></div>
+<div class="ttc" id="areactor_8h_html_ab461661c6c9757862959540fe57e3554"><div class="ttname"><a href="reactor_8h.html#ab461661c6c9757862959540fe57e3554">_lf_is_blocked_by_executing_reaction</a></div><div class="ttdeci">bool _lf_is_blocked_by_executing_reaction()</div><div class="ttdef"><b>Definition:</b> reactor.c:333</div></div>
+<div class="ttc" id="areactor_8h_html_abadead0c4f54963b062503cf6cb7ace7"><div class="ttname"><a href="reactor_8h.html#abadead0c4f54963b062503cf6cb7ace7">_lf_advance_logical_time</a></div><div class="ttdeci">void _lf_advance_logical_time(instant_t next_time)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1354</div></div>
+<div class="ttc" id="areactor_8h_html_acf1ea511fbce4c80b124391d75e6ba92"><div class="ttname"><a href="reactor_8h.html#acf1ea511fbce4c80b124391d75e6ba92">_lf_pop_events</a></div><div class="ttdeci">void _lf_pop_events()</div><div class="ttdef"><b>Definition:</b> reactor_common.c:560</div></div>
 <div class="ttc" id="areactor_8h_html_acf2937acf3f9a8dfeb7af0152f31634e"><div class="ttname"><a href="reactor_8h.html#acf2937acf3f9a8dfeb7af0152f31634e">_lf_schedule_copy</a></div><div class="ttdeci">trigger_handle_t _lf_schedule_copy(void *action, interval_t offset, void *value, size_t length)</div><div class="ttdef"><b>Definition:</b> reactor.c:77</div></div>
-<div class="ttc" id="areactor_8h_html_ad14a3abed525c815a41a4c273937e399"><div class="ttname"><a href="reactor_8h.html#ad14a3abed525c815a41a4c273937e399">_lf_start_time_step</a></div><div class="ttdeci">void _lf_start_time_step()</div><div class="ttdef"><b>Definition:</b> reactor_common.c:391</div></div>
+<div class="ttc" id="areactor_8h_html_ad14a3abed525c815a41a4c273937e399"><div class="ttname"><a href="reactor_8h.html#ad14a3abed525c815a41a4c273937e399">_lf_start_time_step</a></div><div class="ttdeci">void _lf_start_time_step()</div><div class="ttdef"><b>Definition:</b> reactor_common.c:403</div></div>
+<div class="ttc" id="areactor_8h_html_ad216e238632a5cbf4eed4817c1c5308f"><div class="ttname"><a href="reactor_8h.html#ad216e238632a5cbf4eed4817c1c5308f">_lf_set_present</a></div><div class="ttdeci">void _lf_set_present(bool *is_present_field)</div><div class="ttdef"><b>Definition:</b> reactor.c:102</div></div>
 <div class="ttc" id="areactor_8h_html_ad48107f740a882d05dc5a85f47486158"><div class="ttname"><a href="reactor_8h.html#ad48107f740a882d05dc5a85f47486158">_lf_schedule_token</a></div><div class="ttdeci">trigger_handle_t _lf_schedule_token(void *action, interval_t extra_delay, lf_token_t *token)</div><div class="ttdef"><b>Definition:</b> reactor.c:55</div></div>
-<div class="ttc" id="areactor_8h_html_ad96dc6cbe1d3365e52aad6aecbf036d8"><div class="ttname"><a href="reactor_8h.html#ad96dc6cbe1d3365e52aad6aecbf036d8">print_snapshot</a></div><div class="ttdeci">void print_snapshot()</div><div class="ttdef"><b>Definition:</b> reactor.c:121</div></div>
-<div class="ttc" id="areactor_8h_html_aeaa7db644ec69c067d3d6aadd2da9d81"><div class="ttname"><a href="reactor_8h.html#aeaa7db644ec69c067d3d6aadd2da9d81">_lf_get_new_event</a></div><div class="ttdeci">event_t * _lf_get_new_event()</div><div class="ttdef"><b>Definition:</b> reactor_common.c:689</div></div>
-<div class="ttc" id="areactor_8h_html_af1f3a3c4613102e28fc0105408731c5e"><div class="ttname"><a href="reactor_8h.html#af1f3a3c4613102e28fc0105408731c5e">_lf_schedule_at_tag</a></div><div class="ttdeci">int _lf_schedule_at_tag(trigger_t *trigger, tag_t tag, lf_token_t *token)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:788</div></div>
-<div class="ttc" id="areactor_8h_html_af629769c213699f0e4c9360811ee7251"><div class="ttname"><a href="reactor_8h.html#af629769c213699f0e4c9360811ee7251">request_stop</a></div><div class="ttdeci">void request_stop()</div><div class="ttdef"><b>Definition:</b> reactor.c:300</div></div>
+<div class="ttc" id="areactor_8h_html_ad96dc6cbe1d3365e52aad6aecbf036d8"><div class="ttname"><a href="reactor_8h.html#ad96dc6cbe1d3365e52aad6aecbf036d8">print_snapshot</a></div><div class="ttdeci">void print_snapshot()</div><div class="ttdef"><b>Definition:</b> reactor.c:137</div></div>
+<div class="ttc" id="areactor_8h_html_aeaa7db644ec69c067d3d6aadd2da9d81"><div class="ttname"><a href="reactor_8h.html#aeaa7db644ec69c067d3d6aadd2da9d81">_lf_get_new_event</a></div><div class="ttdeci">event_t * _lf_get_new_event()</div><div class="ttdef"><b>Definition:</b> reactor_common.c:710</div></div>
+<div class="ttc" id="areactor_8h_html_af1f3a3c4613102e28fc0105408731c5e"><div class="ttname"><a href="reactor_8h.html#af1f3a3c4613102e28fc0105408731c5e">_lf_schedule_at_tag</a></div><div class="ttdeci">int _lf_schedule_at_tag(trigger_t *trigger, tag_t tag, lf_token_t *token)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:809</div></div>
+<div class="ttc" id="areactor_8h_html_af629769c213699f0e4c9360811ee7251"><div class="ttname"><a href="reactor_8h.html#af629769c213699f0e4c9360811ee7251">request_stop</a></div><div class="ttdeci">void request_stop()</div><div class="ttdef"><b>Definition:</b> reactor.c:316</div></div>
 <div class="ttc" id="areactor_8h_html_af74a2782bda0d66298d22d637ad964b5"><div class="ttname"><a href="reactor_8h.html#af74a2782bda0d66298d22d637ad964b5">_lf_number_of_threads</a></div><div class="ttdeci">unsigned int _lf_number_of_threads</div><div class="ttdef"><b>Definition:</b> reactor_common.c:54</div></div>
 <div class="ttc" id="astructevent__t_html"><div class="ttname"><a href="structevent__t.html">event_t</a></div><div class="ttdef"><b>Definition:</b> reactor.h:494</div></div>
 <div class="ttc" id="astructevent__t_html_a0687a08899f1c750aedcc2f44e47f308"><div class="ttname"><a href="structevent__t.html#a0687a08899f1c750aedcc2f44e47f308">event_t::trigger</a></div><div class="ttdeci">trigger_t * trigger</div><div class="ttdef"><b>Definition:</b> reactor.h:496</div></div>
