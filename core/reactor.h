@@ -84,6 +84,8 @@
 // problems with if ... else statements that do not use braces around the
 // two branches.
 
+void _lf_set_present(bool* is_present_field);
+
 /**
  * Set the specified output (or input of a contained reactor)
  * to the specified value.
@@ -101,7 +103,7 @@
 #define _LF_SET(out, val) \
 do { \
     out->value = val; \
-    out->is_present = true; \
+    _lf_set_present(&out->is_present); \
 } while(0)
 
 /**
@@ -120,7 +122,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_ARRAY(out, val, element_size, length) \
 do { \
-    out->is_present = true; \
+    _lf_set_present(&out->is_present); \
     lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
     token->ref_count = out->num_destinations; \
     out->token = token; \
@@ -129,7 +131,7 @@ do { \
 #else
 #define _LF_SET_ARRAY(out, val, element_size, length) \
 do { \
-    out->is_present = true; \
+    _lf_set_present(&out->is_present); \
     lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
     token->ref_count = out->num_destinations; \
     out->token = token; \
@@ -154,7 +156,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW(out) \
 do { \
-    out->is_present = true; \
+    _lf_set_present(&out->is_present); \
     lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
     out->value = token->value; \
     out->token = token; \
@@ -162,7 +164,7 @@ do { \
 #else
 #define _LF_SET_NEW(out) \
 do { \
-    out->is_present = true; \
+    _lf_set_present(&out->is_present); \
     lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
     out->value = static_cast<decltype(out->value)>(token->value); \
     out->token = token; \
@@ -185,7 +187,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    out->is_present = true; \
+    _lf_set_present(&out->is_present); \
     lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
     out->value = token->value; \
     out->token = token; \
@@ -194,7 +196,7 @@ do { \
 #else
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    out->is_present = true; \
+    _lf_set_present(&out->is_present); \
     lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
     out->value = static_cast<decltype(out->value)>(token->value); \
     out->token = token; \
@@ -212,7 +214,7 @@ do { \
  */
 #define _LF_SET_PRESENT(out) \
 do { \
-    out->is_present = true; \
+    _lf_set_present(&out->is_present); \
 } while(0)
 
 /**
@@ -227,21 +229,19 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    out->is_present = true; \
+    _lf_set_present(&out->is_present); \
     out->value = newtoken->value; \
     out->token = newtoken; \
     newtoken->ref_count += out->num_destinations; \
-    out->is_present = true; \
     out->length = newtoken->length; \
 } while(0)
 #else
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    out->is_present = true; \
+    _lf_set_present(&out->is_present); \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
     out->token = newtoken; \
     newtoken->ref_count += out->num_destinations; \
-    out->is_present = true; \
     out->length = newtoken->length; \
 } while(0)
 #endif

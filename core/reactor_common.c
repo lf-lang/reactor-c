@@ -85,6 +85,18 @@ bool keepalive_specified = false;
 bool** _lf_is_present_fields = NULL;
 int _lf_is_present_fields_size = 0;
 
+// Define an array of pointers to the _is_present fields
+// that have been set to true during the execution of a tag
+// so that at the conclusion of the tag, these fields can be reset to
+// false. Usually, this list will have fewer records than will
+// _lf_is_present_fields, allowing for some time to be saved.
+// However, it is possible for it to have more records if some ports
+// are set multiple times at the same tag. In such cases, we fall back
+// to resetting all is_present fields at the start of the next time
+// step.
+bool** _lf_is_present_fields_abbreviated = NULL;
+int _lf_is_present_fields_abbreviated_size = 0;
+
 // Define the array of pointers to the intended_tag fields of all
 // ports and actions that need to be reinitialized at the start
 // of each time step.
@@ -404,19 +416,28 @@ void _lf_start_time_step() {
         _lf_done_using(_lf_more_tokens_with_ref_count);
         _lf_more_tokens_with_ref_count = next;
     }
-    for(int i = 0; i < _lf_is_present_fields_size; i++) {
-        *_lf_is_present_fields[i] = false;
+    bool** is_present_fields = _lf_is_present_fields_abbreviated;
+    int size = _lf_is_present_fields_abbreviated_size;
+    if (_lf_is_present_fields_abbreviated_size > _lf_is_present_fields_size) {
+        size = _lf_is_present_fields_size;
+        is_present_fields = _lf_is_present_fields;
+    }
+    for(int i = 0; i < size; i++) {
+        *is_present_fields[i] = false;
+    }
 #ifdef FEDERATED_DECENTRALIZED
+    for (int i = 0; i < _lf_is_present_fields_size; i++) {
         // FIXME: For now, an intended tag of (NEVER, 0)
         // indicates that it has never been set.
         *_lf_intended_tag_fields[i] = (tag_t) {NEVER, 0};
-#endif
     }
+#endif
 #ifdef FEDERATED
     // Reset absent fields on network ports because
     // their status is unknown
     reset_status_fields_on_input_port_triggers();
 #endif
+    _lf_is_present_fields_abbreviated_size = 0;
 }
 
 /**
