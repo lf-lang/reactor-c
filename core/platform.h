@@ -170,10 +170,10 @@ extern int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex);
 extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absolute_time_ns);
 
 /*
- * Atomically add addend to x and return the original value held by x.
- * @param x the value to be accessed.
- * @param addend the value to be added to x.
- * @return the original value of x, from before addend was added.
+ * Atomically increment the variable that ptr points to by the given value, and return the original value of the variable.
+ * @param ptr A pointer to a variable. The value of this variable will be replaced with the result of the operation.
+ * @param value The value to be added to the variable pointed to by the ptr parameter.
+ * @return The original value of the variable that ptr points to (i.e., from before the application of this operation).
  */
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that an integer is 32 bits.

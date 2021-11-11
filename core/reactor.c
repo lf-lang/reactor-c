@@ -92,7 +92,7 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
     return schedule_token(action, offset, token);
 }
 
-/*
+/**
  * Mark the given is_present field as true. This is_present field
  * will later be cleaned up by _lf_start_time_step.
  * This assumes that the mutex is not held.
