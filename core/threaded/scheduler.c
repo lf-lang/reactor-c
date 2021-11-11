@@ -68,7 +68,7 @@ size_t _lf_sched_number_of_workers = 1;
 
 ///////////////////// Scheduler Worker APIs /////////////////////////
 reaction_t* _lf_sched_pop_ready_reaction(int worker_number) {
-    return pqueue_pop((reaction_t*)_lf_sched_threads_info[worker_number].ready_reactions);
+    return (reaction_t*)pqueue_pop(_lf_sched_threads_info[worker_number].ready_reactions);
 
     // if (reaction_to_return == NULL && _lf_sched_number_of_workers > 1) {
     //     // Try to steal
