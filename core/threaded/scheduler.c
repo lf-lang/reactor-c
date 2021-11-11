@@ -145,9 +145,10 @@ void _lf_sched_worker_enqueue_reaction(int worker_number, reaction_t* reaction) 
         // The scheduler should handle this immediately
         lf_mutex_lock(&mutex);
         // Do not enqueue this reaction twice.
-        if (reaction != NULL && pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
+        if (reaction != NULL && reaction->status == inactive) {
             DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
                         reaction->name, reaction->index & 0xffffLL);
+            reaction->status = queued;
             pqueue_insert(reaction_q, reaction);
         }
         lf_mutex_unlock(&mutex);
@@ -252,6 +253,7 @@ static inline bool _lf_sched_distribute_ready_reaction(reaction_t* ready_reactio
                 error_print_and_exit("Could not assign reaction to worker %d.", _lf_sched_balancing_index);
             }
             target_thread_found = true;
+            ready_reaction->status = running;
             // Push the reaction on the executing queue in order to prevent any
             // reactions that may depend on it from executing before this reaction is finished.
             pqueue_insert(executing_q, ready_reaction);
@@ -455,7 +457,8 @@ void _lf_sched_update_queues_locked() {
             );
             // Avoid inserting duplicate reactions. FIXME: to be replaced with
             // the new mechanism
-            if (pqueue_find_equal_same_priority(reaction_q, reaction_to_add) == NULL) {
+            if (reaction_to_add->status == inactive) {
+                reaction_to_add->status = queued;
                 if (pqueue_insert(reaction_q, reaction_to_add) != 0) {
                     error_print_and_exit("Scheduler: Could not properly fill the reaction queue.");
                 }
@@ -474,6 +477,7 @@ void _lf_sched_update_queues_locked() {
             if (pqueue_remove(executing_q, reaction_to_remove) != 0) {
                 error_print_and_exit("Scheduler: Could not properly clear the executing queue.");
             }
+            reaction_to_remove->status = inactive;
         }
         lf_mutex_unlock(&_lf_sched_threads_info[i].mutex);
     }
