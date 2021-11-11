@@ -68,7 +68,7 @@ size_t _lf_sched_number_of_workers = 1;
 
 ///////////////////// Scheduler Worker APIs /////////////////////////
 reaction_t* _lf_sched_pop_ready_reaction(int worker_number) {
-    return pqueue_pop(_lf_sched_threads_info[worker_number].ready_reactions);
+    return pqueue_pop((reaction_t*)_lf_sched_threads_info[worker_number].ready_reactions);
 
     // if (reaction_to_return == NULL && _lf_sched_number_of_workers > 1) {
     //     // Try to steal
@@ -549,7 +549,7 @@ void _lf_sched_signal_stop() {
     }
 }
 
-void* _lf_sched_do_scheduling() {
+void* _lf_sched_do_scheduling(void* arg) {
     lf_mutex_lock(&mutex);
     while(!_lf_sched_try_advance_tag_and_distribute()) {
         _lf_sched_wait_for_threads_asking_for_more_work();

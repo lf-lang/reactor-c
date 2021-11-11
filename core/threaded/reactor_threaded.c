@@ -753,7 +753,7 @@ void _lf_initialize_start_tag() {
     // reactions. This can only happen if the timeout time
     // was set to 0.
     if (compare_tags(current_tag, stop_tag) >= 0) {
-        _lf_trigger_shutdown_reactions(0);
+        _lf_trigger_shutdown_reactions();
     }
 
 #ifdef FEDERATED
