@@ -120,7 +120,7 @@ reaction_t* _lf_sched_pop_ready_reaction(int worker_number) {
             return reaction_to_return;
         }
 
-        DEBUG_PRINT("Worker %d is out of ready reactions.");
+        DEBUG_PRINT("Worker %d is out of ready reactions.", worker_number);
 
         _lf_sched_wait_for_work(worker_number);
     }
@@ -177,8 +177,8 @@ void _lf_sched_worker_enqueue_reaction(int worker_number, reaction_t* reaction) 
     // Acquire the mutex lock.
     // Note: The scheduler will check that we don't enqueue this reaction twice.
     if (reaction != NULL) {
-        DEBUG_PRINT("Enqueuing downstream reaction %s, which has level %lld.",
-        		reaction->name, reaction->index & 0xffffLL);
+        DEBUG_PRINT("Worker %d: Enqueuing downstream reaction %s, which has level %lld.",
+        		worker_number, reaction->name, reaction->index & 0xffffLL);
         pqueue_insert(_lf_sched_threads_info[worker_number].output_reactions, reaction);
     }
 }
@@ -453,7 +453,8 @@ bool _lf_sched_advance_tag_locked() {
     return false;
 }
 
-void _lf_sched_update_queues_locked() {
+bool _lf_sched_update_queues_locked() {
+    bool is_any_worker_busy = false;
     for (int i=0; i< _lf_sched_number_of_workers; i++) {
         reaction_t* reaction_to_add = NULL;
         reaction_t* reaction_to_remove = NULL;
@@ -462,6 +463,7 @@ void _lf_sched_update_queues_locked() {
             // Don't touch the queues since the thread is still busy
             DEBUG_PRINT("Scheduler: Worker %d is busy. Can't empty the queues for it.", i);
             lf_mutex_unlock(&_lf_sched_threads_info[i].mutex);
+            is_any_worker_busy = true;
             continue;
         }
 
@@ -501,6 +503,7 @@ void _lf_sched_update_queues_locked() {
         }
         lf_mutex_unlock(&_lf_sched_threads_info[i].mutex);
     }
+    return is_any_worker_busy;
 }
 
 void _lf_sched_notify_workers() {
@@ -527,20 +530,20 @@ void _lf_sched_notify_workers() {
 bool _lf_sched_try_advance_tag_and_distribute() {
     bool return_value = false;
 
-    _lf_sched_update_queues_locked();
-
-    if (pqueue_size(reaction_q) == 0
-            && pqueue_size(executing_q) == 0) {
-        // Nothing more happening at this logical time.
-
-        // Protect against asynchronous events while advancing time by locking
-        // the mutex.
+    if (!_lf_sched_update_queues_locked()) {
         lf_mutex_lock(&mutex);
-        DEBUG_PRINT("Scheduler: Advancing time.");
-        // This thread will take charge of advancing time.
-        if (_lf_sched_advance_tag_locked()) {
-            DEBUG_PRINT("Scheduler: Reached stop tag.");
-            return_value = true;
+        if (pqueue_size(reaction_q) == 0
+                && pqueue_size(executing_q) == 0) {
+            // Nothing more happening at this logical time.
+
+            // Protect against asynchronous events while advancing time by locking
+            // the mutex.
+            DEBUG_PRINT("Scheduler: Advancing time.");
+            // This thread will take charge of advancing time.
+            if (_lf_sched_advance_tag_locked()) {
+                DEBUG_PRINT("Scheduler: Reached stop tag.");
+                return_value = true;
+            }
         }
         lf_mutex_unlock(&mutex);
     }
