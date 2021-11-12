@@ -45,6 +45,9 @@ extern pqueue_t* reaction_q;
 extern lf_mutex_t mutex;
 
 lf_cond_t _lf_sched_need_more_work;
+lf_mutex_t _lf_sched_mutex; // Needed only for lf_cond_wait,
+                            // which appears to need a mutex 
+                            // for general platform compatibility.
 
 pqueue_t* transfer_q;
 // Queue of currently executing reactions.
@@ -66,9 +69,63 @@ _lf_sched_thread_info_t* _lf_sched_threads_info;
 
 size_t _lf_sched_number_of_workers = 1;
 
-///////////////////// Scheduler Worker APIs /////////////////////////
+void _lf_sched_ask_for_work(size_t worker_number) {
+    _lf_sched_threads_info[worker_number].is_idle = true;
+    DEBUG_PRINT("Worker %d: Asking the scheduler for more work", worker_number);
+    lf_cond_signal(&_lf_sched_need_more_work);
+}
+
+void _lf_sched_wait_for_work(size_t worker_number) {
+    lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
+
+    if (_lf_sched_threads_info[worker_number].should_stop) { // Time to stop
+        lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
+        return;
+    }
+
+    _lf_sched_ask_for_work(worker_number);
+
+    lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
+
+    lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex); // FIXME: Document carefully
+    
+    if (pqueue_size(
+            _lf_sched_threads_info[worker_number].ready_reactions
+            ) > 0 // More work to be done
+        ) {
+        _lf_sched_threads_info[worker_number].is_idle = false;
+        lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
+        return;
+    }
+
+    DEBUG_PRINT("Worker %d: Waiting on work to be handed out.", worker_number);
+    lf_cond_wait(&_lf_sched_threads_info[worker_number].cond, &_lf_sched_threads_info[worker_number].mutex);
+    lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
+}
+
+static inline bool _lf_sched_should_stop(size_t worker_number) {
+    return _lf_sched_threads_info[worker_number].should_stop;
+}
+
+///////////////////// Scheduler Worker API /////////////////////////
+/**
+ * FIXME
+ */
 reaction_t* _lf_sched_pop_ready_reaction(int worker_number) {
-    return (reaction_t*)pqueue_pop(_lf_sched_threads_info[worker_number].ready_reactions);
+    // Iterate until the stop_tag is reached or reaction queue is empty
+    while (!_lf_sched_should_stop(worker_number)) {
+        reaction_t* reaction_to_return = (reaction_t*)pqueue_pop(_lf_sched_threads_info[worker_number].ready_reactions);
+        
+        if (reaction_to_return != NULL) {
+            return reaction_to_return;
+        }
+
+        DEBUG_PRINT("Worker %d is out of ready reactions.");
+
+        _lf_sched_wait_for_work(worker_number);
+    }
+
+    return NULL;
 
     // if (reaction_to_return == NULL && _lf_sched_number_of_workers > 1) {
     //     // Try to steal
@@ -93,43 +150,6 @@ void _lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reactio
     if (pqueue_insert(_lf_sched_threads_info[worker_number].done_reactions, done_reaction) != 0) {
         error_print_and_exit("Scheduler: Could not mark reaction as done for worker %d.", worker_number);
     }
-}
-
-
-void _lf_sched_worker_ask_for_work(size_t worker_number) {
-    lf_mutex_lock(&mutex);
-    lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
-    _lf_sched_threads_info[worker_number].is_idle = true;
-    lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
-    DEBUG_PRINT("Worker %d: Asking the scheduler for more work", worker_number);
-    lf_cond_signal(&_lf_sched_need_more_work);
-    lf_mutex_unlock(&mutex);
-}
-
-void _lf_sched_worker_wait_for_work(size_t worker_number) {
-    _lf_sched_worker_ask_for_work(worker_number);
-
-    lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
-    if (_lf_sched_threads_info[worker_number].should_stop) { // Time to stop
-        lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
-        return;
-    }
-    if (pqueue_size(
-            _lf_sched_threads_info[worker_number].ready_reactions
-            ) > 0 // More work to be done
-        ) {
-        _lf_sched_threads_info[worker_number].is_idle = false;
-        lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
-        return;
-    }
-    DEBUG_PRINT("Worker %d: Waiting on work to be handed out.", worker_number);
-    lf_cond_wait(&_lf_sched_threads_info[worker_number].cond, &_lf_sched_threads_info[worker_number].mutex);
-    _lf_sched_threads_info[worker_number].is_idle = false;
-    lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
-}
-
-static inline bool _lf_sched_worker_should_stop(size_t worker_number) {
-    return _lf_sched_threads_info[worker_number].should_stop;
 }
 
 /**
@@ -169,8 +189,13 @@ void _lf_sched_init(size_t number_of_workers) {
     DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
     
     lf_cond_init(&_lf_sched_need_more_work);
-    
+    lf_mutex_init(&_lf_sched_mutex);
     _lf_sched_number_of_workers = number_of_workers;
+    transfer_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
+            get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
+    // Create a queue on which to put reactions that are currently executing.
+    executing_q = pqueue_init(_lf_number_of_threads, in_reverse_order, get_reaction_index,
+        get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
     
     _lf_sched_threads_info = 
         (_lf_sched_thread_info_t*)malloc(
@@ -212,11 +237,6 @@ void _lf_sched_init(size_t number_of_workers) {
         _lf_sched_threads_info[i].should_stop = false;
         _lf_sched_threads_info[i].is_idle = false;
     }
-    transfer_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
-            get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
-    // Create a queue on which to put reactions that are currently executing.
-    executing_q = pqueue_init(_lf_number_of_threads, in_reverse_order, get_reaction_index,
-        get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
 }
 
 void _lf_sched_free() {
@@ -489,6 +509,7 @@ void _lf_sched_notify_workers() {
         if (pqueue_size(_lf_sched_threads_info[i].ready_reactions) > 0 &&
             _lf_sched_threads_info[i].is_idle) {
             DEBUG_PRINT("Notifying worker %d that there is work to do.", i);
+            _lf_sched_threads_info[i].is_idle = false;
             lf_cond_signal(&_lf_sched_threads_info[i].cond);
         }
         lf_mutex_unlock(&_lf_sched_threads_info[i].mutex);
@@ -511,12 +532,17 @@ bool _lf_sched_try_advance_tag_and_distribute() {
     if (pqueue_size(reaction_q) == 0
             && pqueue_size(executing_q) == 0) {
         // Nothing more happening at this logical time.
+
+        // Protect against asynchronous events while advancing time by locking
+        // the mutex.
+        lf_mutex_lock(&mutex);
         DEBUG_PRINT("Scheduler: Advancing time.");
         // This thread will take charge of advancing time.
         if (_lf_sched_advance_tag_locked()) {
             DEBUG_PRINT("Scheduler: Reached stop tag.");
             return_value = true;
         }
+        lf_mutex_unlock(&mutex);
     }
     
     if (distribute_ready_reactions() > 0) {
@@ -536,8 +562,7 @@ void _lf_sched_wait_for_threads_asking_for_more_work() {
         return;
     }
     DEBUG_PRINT("Scheduler: Waiting for threads to ask for more work");
-    // lf_cond_timedwait(&_lf_sched_need_more_work, &mutex, MSEC(10));
-    lf_cond_wait(&_lf_sched_need_more_work, &mutex);
+    lf_cond_timedwait(&_lf_sched_need_more_work, &_lf_sched_mutex, USEC(30));
 }
 
 void _lf_sched_signal_stop() {
@@ -550,11 +575,11 @@ void _lf_sched_signal_stop() {
 }
 
 void* _lf_sched_do_scheduling(void* arg) {
-    lf_mutex_lock(&mutex);
+    lf_mutex_lock(&_lf_sched_mutex);
     while(!_lf_sched_try_advance_tag_and_distribute()) {
         _lf_sched_wait_for_threads_asking_for_more_work();
     }
-    lf_mutex_unlock(&mutex);
+    lf_mutex_unlock(&_lf_sched_mutex);
     _lf_sched_signal_stop();
     return NULL;
 }

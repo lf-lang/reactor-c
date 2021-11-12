@@ -1003,12 +1003,7 @@ void* worker(void* arg) {
     LOG_PRINT("Worker thread %d started.", worker_number);
     lf_mutex_unlock(&mutex);
 
-    // Iterate until the stop_tag is reached or reaction queue is empty
-    while (!_lf_sched_worker_should_stop(worker_number)) {
-        _lf_worker_do_work(worker_number);
-
-        _lf_sched_worker_wait_for_work(worker_number);
-    }
+    _lf_worker_do_work(worker_number);
 
     lf_mutex_lock(&mutex);
 
