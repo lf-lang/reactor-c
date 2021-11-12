@@ -37,14 +37,16 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
 
-#include "reactor.h"
-#include "platform.h"
-#include "pqueue.h"
+#include "../reactor.h"
+#include "../platform.h"
+#include "../utils/semaphore.c"
 
 extern pqueue_t* reaction_q;
 extern lf_mutex_t mutex;
+extern tag_t current_tag;
+extern tag_t stop_tag;
 
-lf_cond_t _lf_sched_need_more_work;
+semaphore_t* _lf_sched_semaphore; // To keep track of idle threads.
 lf_mutex_t _lf_sched_mutex; // Needed only for lf_cond_wait,
                             // which appears to need a mutex 
                             // for general platform compatibility.
@@ -72,7 +74,7 @@ size_t _lf_sched_number_of_workers = 1;
 void _lf_sched_ask_for_work(size_t worker_number) {
     _lf_sched_threads_info[worker_number].is_idle = true;
     DEBUG_PRINT("Worker %d: Asking the scheduler for more work", worker_number);
-    lf_cond_signal(&_lf_sched_need_more_work);
+    lf_semaphore_release(_lf_sched_semaphore, 1);
 }
 
 void _lf_sched_wait_for_work(size_t worker_number) {
@@ -185,10 +187,45 @@ void _lf_sched_worker_enqueue_reaction(int worker_number, reaction_t* reaction) 
 
 
 ///////////////////// Scheduler Init /////////////////////////
+/**
+ * Return whether the first and second argument are given in reverse order.
+ */
+static int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that);
+
+/**
+ * Report a priority equal to the index of the given reaction.
+ * Used for sorting pointers to reaction_t structs in the 
+ * blocked and executing queues.
+ */
+static pqueue_pri_t get_reaction_index(void *a);
+
+/**
+ * Return the given reaction's position in the queue.
+ */
+static size_t get_reaction_position(void *a);
+
+/**
+ * Return the given reaction's position in the queue.
+ */
+static void set_reaction_position(void *a, size_t pos);
+
+/**
+ * Print some information about the given reaction.
+ * 
+ * DEBUG function only.
+ */
+static void print_reaction(void *reaction);
+
+/**
+ * Return whether or not the given reaction_t pointers 
+ * point to the same struct.
+ */
+static int reaction_matches(void* next, void* curr);
+
 void _lf_sched_init(size_t number_of_workers) {
     DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
     
-    lf_cond_init(&_lf_sched_need_more_work);
+    _lf_sched_semaphore = lf_semaphore_new(number_of_workers);
     lf_mutex_init(&_lf_sched_mutex);
     _lf_sched_number_of_workers = number_of_workers;
     transfer_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
@@ -246,6 +283,9 @@ void _lf_sched_free() {
     }
     pqueue_free(transfer_q);
     pqueue_free(executing_q);
+    if (lf_semaphore_destroy(_lf_sched_semaphore) != 0) {
+        error_print_and_exit("Scheduler: Could not destroy my semaphore.");
+    }
     free(_lf_sched_threads_info);
 }
 
@@ -553,7 +593,7 @@ bool _lf_sched_try_advance_tag_and_distribute() {
     }
     
     DEBUG_PRINT("Scheduler: Executing queue size is %zu.", pqueue_size(executing_q));
-    pqueue_dump(executing_q, print_reaction);
+    // pqueue_dump(executing_q, print_reaction);
     return return_value;
 }
 
@@ -565,7 +605,16 @@ void _lf_sched_wait_for_threads_asking_for_more_work() {
         return;
     }
     DEBUG_PRINT("Scheduler: Waiting for threads to ask for more work");
-    lf_cond_timedwait(&_lf_sched_need_more_work, &_lf_sched_mutex, USEC(30));
+    // FIXME: timedwait strategy doesn't work well with fast
+    // lf_cond_timedwait(&_lf_sched_need_more_work, &_lf_sched_mutex, USEC(30));
+    
+    // Not using a timedwait and using a vanilla lf_cond_wait instead requires
+    // us to lock all the threads' mutexes or for the threads to lock the
+    // scheduler mutex before signalling, both wasting resources.
+
+    // For now, using a counting semaphore.
+    lf_semaphore_acquire(_lf_sched_semaphore);
+    
 }
 
 void _lf_sched_signal_stop() {
