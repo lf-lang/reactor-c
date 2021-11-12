@@ -54,7 +54,7 @@ void vector_pushall(vector_t* v, void** array, size_t size) {
     void** required_end = v->next + size;
     if (required_end > v->end)
         vector_grow(v, (required_end - v->start) * SCALE_FACTOR);
-    for (int i = 0; i < size; i++) {
+    for (size_t i = 0; i < size; i++) {
         assert(array[i]);
         v->next[i] = array[i];
     }
@@ -81,8 +81,10 @@ void* vector_pop(vector_t* v) {
  */
 void vector_vote(vector_t* v) {
     size_t size = v->next - v->start;
-    if (size && size * CAPACITY_TO_SIZE_RATIO_FOR_SHRINK_VOTE <= v->end - v->start)
-        v->votes_to_shrink++;
+    if (
+        size // The following cast is fine because v->end >= v->start is an invariant.
+        && size * CAPACITY_TO_SIZE_RATIO_FOR_SHRINK_VOTE <= (size_t) (v->end - v->start)
+    ) v->votes_to_shrink++;
 }
 
 // Non-API helper functions follow.

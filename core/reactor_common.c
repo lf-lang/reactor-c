@@ -1851,7 +1851,7 @@ void termination() {
 
     // Free other memory used by the runtime.
     free(_lf_is_present_fields_abbreviated);
-    for (int i = 0; i < (_lf_number_of_threads ? _lf_number_of_threads : 1); i++)
+    for (size_t i = 0; i < (_lf_number_of_threads ? _lf_number_of_threads : 1); i++)
         vector_free(_lf_current_triggers_by_thread + i);
     free(_lf_current_triggers_by_thread);
 
