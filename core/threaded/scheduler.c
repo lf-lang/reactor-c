@@ -47,15 +47,17 @@ extern tag_t current_tag;
 extern tag_t stop_tag;
 
 semaphore_t* _lf_sched_semaphore; // To keep track of idle threads.
-lf_mutex_t _lf_sched_mutex; // Needed only for lf_cond_wait,
-                            // which appears to need a mutex 
-                            // for general platform compatibility.
 
 pqueue_t* transfer_q;
 // Queue of currently executing reactions.
 pqueue_t* executing_q; // Sorted by index (precedence sort)
 
-size_t _lf_sched_balancing_index = 0;
+/**
+ * @brief The smallest worker number that is idle.
+ * 
+ * Useful for cache optimization and processor core affinity.
+ */
+size_t _lf_sched_least_idle_worker_number = 0;
 
 typedef struct {
     lf_mutex_t mutex;
@@ -226,7 +228,6 @@ void _lf_sched_init(size_t number_of_workers) {
     DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
     
     _lf_sched_semaphore = lf_semaphore_new(number_of_workers);
-    lf_mutex_init(&_lf_sched_mutex);
     _lf_sched_number_of_workers = number_of_workers;
     transfer_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
             get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
@@ -300,17 +301,17 @@ static inline bool _lf_sched_distribute_ready_reaction(reaction_t* ready_reactio
     bool target_thread_found = false;
     for(size_t i=0; i<_lf_sched_number_of_workers; i++) {
         // Go over all the workers to see if anyone is idle.
-        lf_mutex_lock(&_lf_sched_threads_info[_lf_sched_balancing_index].mutex);
-        if (_lf_sched_is_worker_idle_locked(_lf_sched_balancing_index)) {
+        lf_mutex_lock(&_lf_sched_threads_info[_lf_sched_least_idle_worker_number].mutex);
+        if (_lf_sched_is_worker_idle_locked(_lf_sched_least_idle_worker_number)) {
             DEBUG_PRINT(
                 "Scheduler: Assigning reaction %s to worker %d.",
                 ready_reaction->name,
-                _lf_sched_balancing_index);
+                _lf_sched_least_idle_worker_number);
             if (pqueue_insert(
-                _lf_sched_threads_info[_lf_sched_balancing_index].ready_reactions,
+                _lf_sched_threads_info[_lf_sched_least_idle_worker_number].ready_reactions,
                 ready_reaction
             ) != 0) {
-                error_print_and_exit("Could not assign reaction to worker %d.", _lf_sched_balancing_index);
+                error_print_and_exit("Could not assign reaction to worker %d.", _lf_sched_least_idle_worker_number);
             }
             target_thread_found = true;
             ready_reaction->status = running;
@@ -318,10 +319,10 @@ static inline bool _lf_sched_distribute_ready_reaction(reaction_t* ready_reactio
             // reactions that may depend on it from executing before this reaction is finished.
             pqueue_insert(executing_q, ready_reaction);
         }
-        lf_mutex_unlock(&_lf_sched_threads_info[_lf_sched_balancing_index++].mutex);
+        lf_mutex_unlock(&_lf_sched_threads_info[_lf_sched_least_idle_worker_number++].mutex);
         
-        if (_lf_sched_balancing_index == _lf_sched_number_of_workers) {
-            _lf_sched_balancing_index = 0;
+        if (_lf_sched_least_idle_worker_number == _lf_sched_number_of_workers) {
+            _lf_sched_least_idle_worker_number = 0;
         }
 
         if (target_thread_found) {
@@ -463,6 +464,11 @@ int distribute_ready_reactions() {
         reaction_q = transfer_q;
         transfer_q = tmp;
     }
+
+    // Remember the last thread we assigned work to
+    _lf_sched_least_idle_worker_number = 
+        ((_lf_sched_least_idle_worker_number - 1) + 
+            _lf_sched_number_of_workers) % _lf_sched_number_of_workers;
 
     return reactions_distributed;
 }
@@ -608,7 +614,7 @@ void _lf_sched_wait_for_threads_asking_for_more_work() {
     // FIXME: timedwait strategy doesn't work well with fast
     // lf_cond_timedwait(&_lf_sched_need_more_work, &_lf_sched_mutex, USEC(30));
     
-    // Not using a timedwait and using a vanilla lf_cond_wait instead requires
+    // Not using a timedwait (polling scheduler) and using a vanilla lf_cond_wait instead requires
     // us to lock all the threads' mutexes or for the threads to lock the
     // scheduler mutex before signalling, both wasting resources.
 
@@ -627,11 +633,9 @@ void _lf_sched_signal_stop() {
 }
 
 void* _lf_sched_do_scheduling(void* arg) {
-    lf_mutex_lock(&_lf_sched_mutex);
     while(!_lf_sched_try_advance_tag_and_distribute()) {
         _lf_sched_wait_for_threads_asking_for_more_work();
     }
-    lf_mutex_unlock(&_lf_sched_mutex);
     _lf_sched_signal_stop();
     return NULL;
 }
