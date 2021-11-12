@@ -1479,7 +1479,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
     vector_t* current_triggers = _lf_current_triggers_by_thread + worker;
     vector_vote(current_triggers);
     trigger_t* trigger;
-    while((trigger = vector_pop(current_triggers))) {
+    while((trigger = (trigger_t*) vector_pop(current_triggers))) {
         DEBUG_PRINT("Trigger %p lists %d reactions.", trigger, trigger->number_of_reactions);
         for (int k=0; k < trigger->number_of_reactions; k++) {
             reaction_t* downstream_reaction = trigger->reactions[k];
@@ -1816,7 +1816,7 @@ void initialize() {
             get_event_position, set_event_position, event_matches, print_event);
 
     size_t n_threads = _lf_number_of_threads ? _lf_number_of_threads : 1;
-    _lf_current_triggers_by_thread = malloc(n_threads * sizeof(vector_t));
+    _lf_current_triggers_by_thread = (vector_t*) malloc(n_threads * sizeof(vector_t));
     for (int i = 0; i < n_threads; i++)
         _lf_current_triggers_by_thread[i] = vector_new(_lf_triggers_initial_capacity);
 
