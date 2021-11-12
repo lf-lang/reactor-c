@@ -1252,7 +1252,7 @@ void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
             current_tag.time - start_time,
             current_tag.microstep);
     tracepoint_reaction_starts(reaction, worker_number);
-    reaction->function(reaction->self);
+    reaction->function(reaction->self, worker_number);
     tracepoint_reaction_ends(reaction, worker_number);
 
     // If the reaction produced outputs, put the resulting triggered

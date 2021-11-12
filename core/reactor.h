@@ -59,6 +59,7 @@
 #include <limits.h>
 #include <errno.h>
 #include "pqueue.h"
+#include "vector.h"
 #include "util.h"
 #include "tag.h"       // Time-related functions.
 
@@ -84,8 +85,6 @@
 // problems with if ... else statements that do not use braces around the
 // two branches.
 
-void _lf_set_present(bool* is_present_field);
-
 /**
  * Set the specified output (or input of a contained reactor)
  * to the specified value.
@@ -103,7 +102,7 @@ void _lf_set_present(bool* is_present_field);
 #define _LF_SET(out, val) \
 do { \
     out->value = val; \
-    _lf_set_present(&out->is_present); \
+    _LF_SET_PRESENT(out); \
 } while(0)
 
 /**
@@ -122,7 +121,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_ARRAY(out, val, element_size, length) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _LF_SET_PRESENT(out); \
     lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
     token->ref_count = out->num_destinations; \
     out->token = token; \
@@ -131,7 +130,7 @@ do { \
 #else
 #define _LF_SET_ARRAY(out, val, element_size, length) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _LF_SET_PRESENT(out); \
     lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
     token->ref_count = out->num_destinations; \
     out->token = token; \
@@ -156,7 +155,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW(out) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _LF_SET_PRESENT(out); \
     lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
     out->value = token->value; \
     out->token = token; \
@@ -164,7 +163,7 @@ do { \
 #else
 #define _LF_SET_NEW(out) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _LF_SET_PRESENT(out); \
     lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
     out->value = static_cast<decltype(out->value)>(token->value); \
     out->token = token; \
@@ -187,7 +186,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _LF_SET_PRESENT(out); \
     lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
     out->value = token->value; \
     out->token = token; \
@@ -196,7 +195,7 @@ do { \
 #else
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _LF_SET_PRESENT(out); \
     lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
     out->value = static_cast<decltype(out->value)>(token->value); \
     out->token = token; \
@@ -215,6 +214,7 @@ do { \
 #define _LF_SET_PRESENT(out) \
 do { \
     _lf_set_present(&out->is_present); \
+    _lf_add_triggers(out->triggers, out->triggers_size, _lf_worker_number); \
 } while(0)
 
 /**
@@ -229,7 +229,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _LF_SET_PRESENT(out); \
     out->value = newtoken->value; \
     out->token = newtoken; \
     newtoken->ref_count += out->num_destinations; \
@@ -238,7 +238,7 @@ do { \
 #else
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _LF_SET_PRESENT(out); \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
     out->token = newtoken; \
     newtoken->ref_count += out->num_destinations; \
@@ -378,11 +378,11 @@ typedef char* string;
 typedef pqueue_pri_t index_t;
 
 /**
- * Reaction function type. The argument passed to one of
- * these reaction functions is a pointer to the self struct
- * for the reactor.
+ * Reaction function type. The arguments are a pointer to
+ * the self struct of the reactor and the ID of the current
+ * worker, respectively.
  */
-typedef void(*reaction_function_t)(void*);
+typedef void(*reaction_function_t)(void*, int);
 
 /** Trigger struct representing an output, timer, action, or input. See below. */
 typedef struct trigger_t trigger_t;
@@ -505,7 +505,6 @@ struct event_t {
 
 /**
  * Trigger struct representing an output, timer, action, or input.
- * Instances of this struct are put onto the event queue (event_q).
  */
 struct trigger_t {
     reaction_t** reactions;   // Array of pointers to reactions sensitive to this trigger.
@@ -606,6 +605,25 @@ void _lf_start_time_step();
  * (i.e., inputs, timers, and actions).
  */
 void _lf_initialize_trigger_objects();
+
+/**
+ * Mark the given is_present field as true. This is_present field
+ * will later be cleaned up by _lf_start_time_step.
+ * This assumes that the mutex is not held.
+ * @param is_present_field A pointer to the is_present field that
+ * must be set.
+ */
+void _lf_set_present(bool* is_present_field);
+
+/*
+ * Add all elements of the given trigger array to the current thread's
+ * active trigger vector.
+ * @param trigger_array An array of triggers that have been activated in the
+ * current time step.
+ * @param size The length of trigger_array.
+ * @param worker_number The current worker number.
+ */
+void _lf_add_triggers(trigger_t** trigger_array, size_t length, int worker_number);
 
 /**
  * Pop all events from event_q with timestamp equal to current_time, extract all

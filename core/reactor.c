@@ -198,7 +198,8 @@ int _lf_do_step() {
                 // Invoke the local handler, if there is one.
                 reaction_function_t handler = reaction->deadline_violation_handler;
                 if (handler != NULL) {
-                    (*handler)(reaction->self);
+                    // In the single threaded runtime, the ID of the only thread is 0.
+                    (*handler)(reaction->self, 0);
                     // If the reaction produced outputs, put the resulting
                     // triggered reactions into the queue.
                     schedule_output_reactions(reaction, 0);
@@ -209,7 +210,7 @@ int _lf_do_step() {
         if (!violation) {
             // Invoke the reaction function.
             tracepoint_reaction_starts(reaction, 0); // 0 indicates unthreaded.
-            reaction->function(reaction->self);
+            reaction->function(reaction->self, 0);
             tracepoint_reaction_ends(reaction, 0);
 
             // If the reaction produced outputs, put the resulting triggered
@@ -373,7 +374,7 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         // reactions. This can only happen if the timeout time
         // was set to 0.
         if (compare_tags(current_tag, stop_tag) >= 0) {
-            _lf_trigger_shutdown_reactions(); // _lf_trigger_shutdown_reactions();
+            _lf_trigger_shutdown_reactions();
         }
         DEBUG_PRINT("Running the program's main loop.");
         // Handle reactions triggered at time (T,m).
