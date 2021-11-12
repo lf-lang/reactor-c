@@ -524,8 +524,8 @@ tag_t get_next_event_tag() {
 
         next_tag.time = event->time;
         if (next_tag.time == current_tag.time) {
-        	DEBUG_PRINT("Earliest event matches current time. Incrementing microstep. Event is dummy: %d.",
-        			event->is_dummy);
+            DEBUG_PRINT("Earliest event matches current time. Incrementing microstep. Event is dummy: %d.",
+                    event->is_dummy);
             next_tag.microstep =  get_microstep() + 1;
         } else {
             next_tag.microstep = 0;
@@ -882,7 +882,7 @@ void _lf_enqueue_reaction(reaction_t* reaction) {
     lf_mutex_lock(&mutex);
     if (reaction != NULL && reaction->status == inactive) {
         DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
-        		reaction->name, reaction->index & 0xffffLL);
+                reaction->name, reaction->index & 0xffffLL);
         reaction->status = queued;
         pqueue_insert(reaction_q, reaction);
         // NOTE: We could notify another thread so it can execute this reaction.
@@ -1076,11 +1076,11 @@ bool _lf_worker_advance_tag_locked(int worker_number) {
     // _lf_next_locked() may block waiting for real time to pass or events to appear.
     // to appear on the event queue. Note that we already
     // hold the mutex lock.
-    tracepoint_worker_advancing_time_starts(worker_number);
+    tracepoint_worker_advancing_time_starts(worker_number + 1);
     _lf_next_locked();
-    tracepoint_worker_advancing_time_ends(worker_number);
+    tracepoint_worker_advancing_time_ends(worker_number + 1);
     _lf_advancing_time = false;
-    DEBUG_PRINT("Worker %d: Done waiting for _lf_next_locked().", worker_number);
+    DEBUG_PRINT("Worker %d: Done waiting for _lf_next_locked().", worker_number + 1);
     return false;
 }
 
@@ -1113,8 +1113,8 @@ bool _lf_worker_try_advance_tag_or_wait_locked(int worker_number) {
 
     // Wait for something to change (either a stop request or
     // something went on the reaction queue).
-    DEBUG_PRINT("Worker %d: Waiting for items on the reaction queue.", worker_number);
-    tracepoint_worker_wait_starts(worker_number);
+    DEBUG_PRINT("Worker %d: Waiting for items on the reaction queue.", worker_number + 1);
+    tracepoint_worker_wait_starts(worker_number + 1);
     // NOTE: Could use a timedwait here to ensure that the worker thread
     // wakes up periodically. But this appears to be unnecessary. When there
     // is a ready reaction on the reaction queue, there will be a notification
@@ -1127,8 +1127,8 @@ bool _lf_worker_try_advance_tag_or_wait_locked(int worker_number) {
     // physical_time.tv_nsec += MAX_STALL_INTERVAL;
     // lf_cond_wait(&reaction_q_changed, &mutex, &physical_time);
     lf_cond_wait(&reaction_q_changed, &mutex);
-    tracepoint_worker_wait_ends(worker_number);
-    DEBUG_PRINT("Worker %d: Done waiting.", worker_number);
+    tracepoint_worker_wait_ends(worker_number + 1);
+    DEBUG_PRINT("Worker %d: Done waiting.", worker_number + 1);
 
     return false;
 }
@@ -1160,8 +1160,8 @@ bool _lf_worker_handle_deadline_violation_for_reaction(int worker_number, reacti
             reaction_function_t handler = reaction->deadline_violation_handler;
             if (handler != NULL) {
                 LOG_PRINT("Worker %d: Deadline violation. Invoking deadline handler.",
-                        worker_number);
-                (*handler)(reaction->self);
+                        worker_number + 1);
+                (*handler)(reaction->self, worker_number);
 
                 // If the reaction produced outputs, put the resulting
                 // triggered reactions into the queue or execute them directly if possible.
@@ -1204,10 +1204,10 @@ bool _lf_worker_handle_STP_violation_for_reaction(int worker_number, reaction_t*
         LOG_PRINT("STP violation detected.");
         // Invoke the STP handler if there is one.
         if (handler != NULL) {
-            LOG_PRINT("Worker %d: Invoking tardiness handler.", worker_number);
+            LOG_PRINT("Worker %d: Invoking tardiness handler.", worker_number + 1);
             // There is a violation
             violation_occurred = true;
-            (*handler)(reaction->self);
+            (*handler)(reaction->self, worker_number);
             
             // If the reaction produced outputs, put the resulting
             // triggered reactions into the queue or execute them directly if possible.
@@ -1247,13 +1247,13 @@ bool _lf_worker_handle_violations(int worker_number, reaction_t* reaction) {
  */
 void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
     LOG_PRINT("Worker %d: Invoking reaction %s at elapsed tag (%lld, %d).",
-            worker_number,
+            worker_number + 1,
             reaction->name,
             current_tag.time - start_time,
             current_tag.microstep);
-    tracepoint_reaction_starts(reaction, worker_number);
+    tracepoint_reaction_starts(reaction, worker_number + 1);
     reaction->function(reaction->self, worker_number);
-    tracepoint_reaction_ends(reaction, worker_number);
+    tracepoint_reaction_ends(reaction, worker_number + 1);
 
     // If the reaction produced outputs, put the resulting triggered
     // reactions into the queue or execute them immediately.
@@ -1296,9 +1296,9 @@ void _lf_worker_do_work_locked(int worker_number) {
         } else {
             // Got a reaction that is ready to run.
             DEBUG_PRINT("Worker %d: Popped from reaction_q %s: "
-                    "is control reaction: %d, chain ID: %llu, and deadline %lld.", worker_number,
+                    "is control reaction: %d, chain ID: %llu, and deadline %lld.", worker_number + 1,
                     current_reaction_to_execute->name,
-					current_reaction_to_execute->is_a_control_reaction,
+                    current_reaction_to_execute->is_a_control_reaction,
                     current_reaction_to_execute->chain_id,
                     current_reaction_to_execute->deadline);
 
@@ -1350,7 +1350,7 @@ void _lf_worker_do_work_locked(int worker_number) {
             current_reaction_to_execute->status = inactive;
 
             DEBUG_PRINT("Worker %d: Done with reaction %s.",
-            		worker_number, current_reaction_to_execute->name);
+                    worker_number + 1, current_reaction_to_execute->name);
         }
     }
 }
@@ -1363,15 +1363,15 @@ void _lf_worker_do_work_locked(int worker_number) {
 void* worker(void* arg) {
     lf_mutex_lock(&mutex);
 
-    int worker_number = ++worker_thread_count;
-    LOG_PRINT("Worker thread %d started.", worker_number);
+    int worker_number = worker_thread_count++;
+    LOG_PRINT("Worker thread %d started.", worker_number + 1);
 
     _lf_worker_do_work_locked(worker_number);
 
     // This thread is exiting, so don't count it anymore.
     _lf_number_of_threads--;
 
-    DEBUG_PRINT("Worker %d: Stop requested. Exiting.", worker_number);
+    DEBUG_PRINT("Worker %d: Stop requested. Exiting.", worker_number + 1);
     // Signal the main thread.
     lf_cond_signal(&executing_q_emptied);
     lf_mutex_unlock(&mutex);
@@ -1488,14 +1488,14 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         DEBUG_PRINT("Number of threads: %d.", _lf_number_of_threads);
         int ret = 0;
         for (int i = 0; i < _lf_number_of_threads; i++) {
-        	int failure = lf_thread_join(_lf_thread_ids[i], &worker_thread_exit_status);
-        	if (failure) {
-        		error_print("Failed to join thread listening for incoming messages: %s", strerror(failure));
-        	}
-        	if (worker_thread_exit_status != NULL) {
+            int failure = lf_thread_join(_lf_thread_ids[i], &worker_thread_exit_status);
+            if (failure) {
+                error_print("Failed to join thread listening for incoming messages: %s", strerror(failure));
+            }
+            if (worker_thread_exit_status != NULL) {
                 error_print("---- Worker %d reports error code %p", worker_thread_exit_status);
                 ret = 1;
-        	}
+            }
         }
 
         if (ret == 0) {
