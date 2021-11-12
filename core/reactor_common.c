@@ -1849,17 +1849,17 @@ void termination() {
     // Invoke the code generated termination function.
     terminate_execution();
 
-    // Free other memory used by the runtime.
-    free(_lf_is_present_fields_abbreviated);
-    for (size_t i = 0; i < (_lf_number_of_threads ? _lf_number_of_threads : 1); i++)
-        vector_free(_lf_current_triggers_by_thread + i);
-    free(_lf_current_triggers_by_thread);
-
     // Stop any tracing, if it is running.
     stop_trace();
 
     // In order to free tokens, we perform the same actions we would have for a new time step.
     _lf_start_time_step();
+
+    // Free other memory used by the runtime.
+    free(_lf_is_present_fields_abbreviated);
+    for (size_t i = 0; i < (_lf_number_of_threads ? _lf_number_of_threads : 1); i++)
+        vector_free(_lf_current_triggers_by_thread + i);
+    free(_lf_current_triggers_by_thread);
 
     // If the event queue still has events on it, report that.
     if (event_q != NULL && pqueue_size(event_q) > 0) {
