@@ -40,6 +40,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../reactor.h"
 #include "../platform.h"
 #include "../utils/semaphore.c"
+#include "../utils/vector.c"
 
 extern pqueue_t* reaction_q;
 extern lf_mutex_t mutex;
@@ -48,9 +49,18 @@ extern tag_t stop_tag;
 
 semaphore_t* _lf_sched_semaphore; // To keep track of idle threads.
 
-pqueue_t* transfer_q;
-// Queue of currently executing reactions.
-pqueue_t* executing_q; // Sorted by index (precedence sort)
+/**
+ * @brief Vector used to keep reactions temporarily.
+ * 
+ */
+vector_t transfer_q;
+
+/**
+ * @brief Queue of currently executing reactions.
+ * 
+ * Sorted by index (precedence sort)
+ */
+pqueue_t* executing_q;
 
 /**
  * @brief The smallest worker number that is idle.
@@ -63,8 +73,8 @@ typedef struct {
     lf_mutex_t mutex;
     lf_cond_t cond;
     pqueue_t* ready_reactions;
-    pqueue_t* output_reactions;
-    pqueue_t* done_reactions;
+    vector_t output_reactions;
+    vector_t done_reactions;
     bool should_stop;
     bool is_idle;
 } _lf_sched_thread_info_t;
@@ -151,9 +161,7 @@ reaction_t* _lf_sched_pop_ready_reaction(int worker_number) {
 }
 
 void _lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction) {
-    if (pqueue_insert(_lf_sched_threads_info[worker_number].done_reactions, done_reaction) != 0) {
-        error_print_and_exit("Scheduler: Could not mark reaction as done for worker %d.", worker_number);
-    }
+    vector_push(&_lf_sched_threads_info[worker_number].done_reactions, (void*)done_reaction);
 }
 
 /**
@@ -183,7 +191,7 @@ void _lf_sched_worker_enqueue_reaction(int worker_number, reaction_t* reaction) 
     if (reaction != NULL) {
         DEBUG_PRINT("Worker %d: Enqueuing downstream reaction %s, which has level %lld.",
         		worker_number, reaction->name, reaction->index & 0xffffLL);
-        pqueue_insert(_lf_sched_threads_info[worker_number].output_reactions, reaction);
+        vector_push(&_lf_sched_threads_info[worker_number].output_reactions, (void*)reaction);
     }
 }
 
@@ -229,8 +237,7 @@ void _lf_sched_init(size_t number_of_workers) {
     
     _lf_sched_semaphore = lf_semaphore_new(number_of_workers);
     _lf_sched_number_of_workers = number_of_workers;
-    transfer_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
-            get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
+    transfer_q = vector_new(INITIAL_REACT_QUEUE_SIZE);
     // Create a queue on which to put reactions that are currently executing.
     executing_q = pqueue_init(_lf_number_of_threads, in_reverse_order, get_reaction_index,
         get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
@@ -253,25 +260,9 @@ void _lf_sched_init(size_t number_of_workers) {
                 print_reaction
             );
         _lf_sched_threads_info[i].output_reactions = 
-            pqueue_init(
-                INITIAL_REACT_QUEUE_SIZE, 
-                in_reverse_order, 
-                get_reaction_index,
-                get_reaction_position, 
-                set_reaction_position, 
-                reaction_matches, 
-                print_reaction
-            );
+            vector_new(INITIAL_REACT_QUEUE_SIZE);
         _lf_sched_threads_info[i].done_reactions = 
-            pqueue_init(
-                INITIAL_REACT_QUEUE_SIZE, 
-                in_reverse_order, 
-                get_reaction_index,
-                get_reaction_position, 
-                set_reaction_position, 
-                reaction_matches, 
-                print_reaction
-            );
+            vector_new(INITIAL_REACT_QUEUE_SIZE);
         _lf_sched_threads_info[i].should_stop = false;
         _lf_sched_threads_info[i].is_idle = false;
     }
@@ -280,9 +271,10 @@ void _lf_sched_init(size_t number_of_workers) {
 void _lf_sched_free() {
     for (int i=0; i < _lf_sched_number_of_workers; i++) {
         pqueue_free(_lf_sched_threads_info[i].ready_reactions);
-        pqueue_free(_lf_sched_threads_info[i].done_reactions);
+        vector_free(&_lf_sched_threads_info[i].output_reactions);
+        vector_free(&_lf_sched_threads_info[i].done_reactions);
     }
-    pqueue_free(transfer_q);
+    vector_free(&transfer_q);
     pqueue_free(executing_q);
     if (lf_semaphore_destroy(_lf_sched_semaphore) != 0) {
         error_print_and_exit("Scheduler: Could not destroy my semaphore.");
@@ -419,7 +411,6 @@ void _lf_next_locked();
  */ 
 int distribute_ready_reactions() {    
     reaction_t* r;
-    reaction_t* b;
     // Keep track of the chain IDs of blocked reactions.
     unsigned long long mask = 0LL;
 
@@ -444,25 +435,13 @@ int distribute_ready_reactions() {
         }
         // Couldn't execute the reaction. Will have to put it back in the
         // reaction queue.
-        pqueue_insert(transfer_q, r);
+        vector_push(&transfer_q, (void*)r);
         mask = mask | r->chain_id;
     }
-    
-    // Push blocked reactions back onto the reaction queue.
-    // This will swap the two queues if the transfer_q has
-    // gotten larger than the reaction_q.
-    if (pqueue_size(reaction_q) >= pqueue_size(transfer_q)) {
-        while ((b = (reaction_t*)pqueue_pop(transfer_q)) != NULL) {
-            pqueue_insert(reaction_q, b);
-        }
-    } else {
-        pqueue_t* tmp;
-        while ((b = (reaction_t*)pqueue_pop(reaction_q)) != NULL) {
-            pqueue_insert(transfer_q, b);
-        }
-        tmp = reaction_q;
-        reaction_q = transfer_q;
-        transfer_q = tmp;
+
+    reaction_t* reaction_to_transfer = NULL;
+    while ((reaction_to_transfer = (reaction_t*)vector_pop(&transfer_q)) != NULL) {
+        pqueue_insert(reaction_q, reaction_to_transfer);
     }
 
     // Remember the last thread we assigned work to
@@ -517,7 +496,7 @@ bool _lf_sched_update_queues_locked() {
         // Add output reactions to the reaction queue
         while(
             (reaction_to_add = 
-            (reaction_t*)pqueue_pop(_lf_sched_threads_info[i].output_reactions))
+            (reaction_t*)vector_pop(&_lf_sched_threads_info[i].output_reactions))
             != NULL) {
             DEBUG_PRINT(
                 "Scheduler: Inserting reaction %s into the reaction queue.",
@@ -536,7 +515,7 @@ bool _lf_sched_update_queues_locked() {
         // Remove done reactions from the executing queue
         while(
             (reaction_to_remove = 
-            (reaction_t*)pqueue_pop(_lf_sched_threads_info[i].done_reactions))
+            (reaction_t*)vector_pop(&_lf_sched_threads_info[i].done_reactions))
             != NULL) {
             DEBUG_PRINT(
                 "Scheduler: Removing reaction %s from executing queue.",
