@@ -1552,7 +1552,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
                 // to downstream reactions.
                 violation = true;
                 LOG_PRINT("Invoke tardiness handler.");
-                (*handler)(downstream_to_execute_now->self);
+                (*handler)(downstream_to_execute_now->self, worker);
 
                 // If the reaction produced outputs, put the resulting
                 // triggered reactions into the queue or execute them directly if possible.
