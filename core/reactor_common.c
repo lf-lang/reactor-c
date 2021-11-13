@@ -1815,9 +1815,9 @@ void initialize() {
     next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
 
-    size_t n_threads = _lf_number_of_threads ? _lf_number_of_threads : 1;
+    unsigned int n_threads = _lf_number_of_threads ? _lf_number_of_threads : 1;
     _lf_current_triggers_by_thread = (vector_t*) malloc(n_threads * sizeof(vector_t));
-    for (int i = 0; i < n_threads; i++)
+    for (unsigned int i = 0; i < n_threads; i++)
         _lf_current_triggers_by_thread[i] = vector_new(_lf_triggers_initial_capacity);
 
     // Initialize the trigger table.

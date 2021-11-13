@@ -1487,7 +1487,7 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         void* worker_thread_exit_status = NULL;
         DEBUG_PRINT("Number of threads: %d.", _lf_number_of_threads);
         int ret = 0;
-        for (int i = 0; i < _lf_number_of_threads; i++) {
+        for (unsigned int i = 0; i < _lf_number_of_threads; i++) {
             int failure = lf_thread_join(_lf_thread_ids[i], &worker_thread_exit_status);
             if (failure) {
                 error_print("Failed to join thread listening for incoming messages: %s", strerror(failure));
