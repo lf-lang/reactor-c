@@ -684,7 +684,7 @@ void _lf_initialize_timer(trigger_t* timer) {
     interval_t delay = 0;
     if (timer->offset == 0) {
         for (int i = 0; i < timer->number_of_reactions; i++) {
-            _lf_enqueue_reaction(timer->reactions[i], 0);
+            _lf_enqueue_reaction(timer->reactions[i], -1);
             tracepoint_schedule(timer, 0LL); // Trace even though schedule is not called.
         }
         if (timer->period == 0) {
