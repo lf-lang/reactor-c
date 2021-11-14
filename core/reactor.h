@@ -461,10 +461,6 @@ struct reaction_t {
     unsigned long long chain_id; // Binary encoding of the branches that this reaction has upstream in the dependency graph. INSTANCE.
     size_t pos;       // Current position in the priority queue. RUNTIME.
     reaction_t* last_enabling_reaction; // The last enabling reaction, or NULL if there is none. Used for optimization. INSTANCE.
-    size_t num_outputs;  // Number of outputs that may possibly be produced by this function. COMMON.
-    bool** output_produced;   // Array of pointers to booleans indicating whether outputs were produced. COMMON.
-    int* triggered_sizes;     // Pointer to array of ints with number of triggers per output. INSTANCE.
-    trigger_t ***triggers;    // Array of pointers to arrays of pointers to triggers triggered by each output. INSTANCE.
     reaction_status_t status; // Indicator of whether the reaction is inactive, queued, or running. RUNTIME.
     interval_t deadline;      // Deadline relative to the time stamp for invocation of the reaction. INSTANCE.
     bool is_STP_violated;     // Indicator of STP violation in one of the input triggers to this reaction. default = false.

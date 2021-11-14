@@ -1502,7 +1502,6 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
     bool inherited_STP_violation = reaction->is_STP_violated;
     LOG_PRINT("Reaction %s has STP violation status: %d.", reaction->name, reaction->is_STP_violated);
 #endif
-    DEBUG_PRINT("There are %d outputs from reaction %s.", reaction->num_outputs, reaction->name);
     vector_t* current_reactions = _lf_triggered_reactions_by_thread + worker;
     vector_vote(current_reactions);
     reaction_t* downstream_reaction;
