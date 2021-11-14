@@ -202,6 +202,20 @@ size_t _lf_sched_number_of_workers = 1;
  */
 int* _lf_sched_distributed_reactions_in_progress;
 
+
+/**
+ * @brief Index used by the scheduler to balance the distributed workload.
+ * 
+ * The maximum of _lf_sched_balancing_index and reaction->worker_affinity is chosen by
+ * the scheduler as the starting point in the quest to find the next available
+ * worker to assign a reaction to. During the work distribution phase, this
+ * index is updated to make sure the scheduler does not assign work to the same
+ * worker thread two times in a row. After the work distribution phase, this
+ * index is reset to 0.
+ * 
+ */
+int _lf_sched_balancing_index = 0;
+
 /**
  * @brief Indicator that execution of at least one tag has completed.
  */
@@ -490,13 +504,19 @@ static inline bool _lf_sched_is_worker_idle(size_t worker_number) {
 static inline bool _lf_sched_distribute_ready_reaction(reaction_t* ready_reaction) {
     DEBUG_PRINT("Scheduler: Trying to distribute reaction %s.", ready_reaction->name);
     bool target_thread_found = false;
-    // Start with the preferred worker for the ready reaction.
-    size_t worker_id = ready_reaction->worker_affinity;
+    // Start with the preferred worker for the ready reaction or the balancing
+    // index, whichever is larger.
+    size_t worker_id = MAX(ready_reaction->worker_affinity, _lf_sched_balancing_index);
     // Rotate through all the workers once.
     for(size_t i=0; i<_lf_sched_number_of_workers; i++) {
         // Go over all the workers to see if anyone is idle.
         lf_mutex_lock(&_lf_sched_threads_info[worker_id].mutex);
         if (_lf_sched_is_worker_idle(worker_id)) {
+            // FIXME: It could be possible to cache this status for each round
+            // of work distribution only once so that locking the thread mutex
+            // is subsequently not necessary for workers that are busy, but this
+            // caching adds overhead.
+
             // The worker is idle.
             DEBUG_PRINT(
                 "Scheduler: Assigning reaction %s to worker %d.",
@@ -527,6 +547,11 @@ static inline bool _lf_sched_distribute_ready_reaction(reaction_t* ready_reactio
             break;
         }
     }
+
+    // Update the balancing index to be the next worker in line
+    // FIXME: Ideally, it's better to set this index to the least idle worker
+    // number but that is an expensive operation.
+    _lf_sched_balancing_index = worker_id;
 
     return target_thread_found;
         
@@ -613,6 +638,9 @@ int distribute_ready_reactions() {
         mask = mask | r->chain_id;
     }
 
+    // Reset the balancing index since this work distribution round is over.
+    _lf_sched_balancing_index = 0;
+
     // Put back the set-aside reactions into the reaction queue.
     reaction_t* reaction_to_transfer = NULL;
     while ((reaction_to_transfer = (reaction_t*)vector_pop(&transfer_q)) != NULL) {
@@ -661,7 +689,8 @@ bool _lf_sched_advance_tag_locked() {
     // _lf_next_locked() may block waiting for real time to pass or events to appear.
     // to appear on the event queue. Note that we already
     // hold the mutex lock.
-    // tracepoint_worker_advancing_time_starts(worker_number); FIXME
+    // tracepoint_worker_advancing_time_starts(worker_number); 
+    // FIXME: Tracing should be updated to support scheduler events
     _lf_next_locked();
 
     DEBUG_PRINT("Scheduler: Done waiting for _lf_next_locked().");
@@ -708,8 +737,7 @@ bool _lf_sched_update_queues() {
                 "Scheduler: Inserting reaction %s into the reaction queue.",
                 reaction_to_add->name
             );
-            // Avoid inserting duplicate reactions. FIXME: to be replaced with
-            // the new mechanism
+            // Avoid inserting duplicate reactions.
             if (reaction_to_add->status == inactive) {
                 reaction_to_add->status = queued;
                 if (pqueue_insert(reaction_q, reaction_to_add) != 0) {
