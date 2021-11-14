@@ -737,7 +737,7 @@ void request_stop() {
  *  reaction queue should be done immediately.
  */
 void _lf_enqueue_reaction(reaction_t* reaction, int worker_number) {
-    _lf_sched_worker_enqueue_reaction(worker_number, reaction);
+    lf_sched_worker_enqueue_reaction(worker_number, reaction);
 }
 
 /**
@@ -980,7 +980,7 @@ void _lf_worker_do_work(int worker_number) {
     // print_snapshot(); // This is quite verbose (but very useful in debugging reaction deadlocks).
     reaction_t* current_reaction_to_execute = NULL;
     while ((current_reaction_to_execute = 
-            _lf_sched_pop_ready_reaction(worker_number)) 
+            lf_sched_pop_ready_reaction(worker_number)) 
             != NULL) {
         // Got a reaction that is ready to run.
         DEBUG_PRINT("Worker %d: Popped from reaction_q %s: "
@@ -1003,7 +1003,7 @@ void _lf_worker_do_work(int worker_number) {
         DEBUG_PRINT("Worker %d: Done with reaction %s.",
                 worker_number, current_reaction_to_execute->name);
 
-        _lf_sched_done_with_reaction(worker_number, current_reaction_to_execute);
+        lf_sched_done_with_reaction(worker_number, current_reaction_to_execute);
     }
 }
 
@@ -1120,7 +1120,7 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         lf_mutex_lock(&mutex); // Sets start_time
         initialize();
 
-        _lf_sched_init((size_t)_lf_number_of_threads);
+        lf_sched_init((size_t)_lf_number_of_threads);
 
         // Call the following function only once, rather than per worker thread (although 
         // it can be probably called in that manner as well).
@@ -1131,7 +1131,7 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         lf_thread_t scheduler_id;
         lf_thread_create(
             &scheduler_id,
-            &_lf_sched_do_scheduling,
+            &lf_sched_do_scheduling,
             NULL);
 
         lf_mutex_unlock(&mutex);
@@ -1158,7 +1158,7 @@ int lf_reactor_c_main(int argc, char* argv[]) {
             LOG_PRINT("---- All worker threads exited successfully.");
         }
         
-        _lf_sched_free();
+        lf_sched_free();
         free(_lf_thread_ids);
         return ret;
     } else {

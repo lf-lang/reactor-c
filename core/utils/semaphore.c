@@ -80,6 +80,7 @@ int lf_semaphore_acquire(semaphore_t* semaphore) {
     }
     semaphore->count--;
     lf_mutex_unlock(&semaphore->mutex);
+    return 0;
 }
 
 /**
@@ -97,6 +98,7 @@ int lf_semaphore_wait(semaphore_t* semaphore) {
         lf_cond_wait(&semaphore->cond, &semaphore->mutex);
     }
     lf_mutex_unlock(&semaphore->mutex);
+    return 0;
 }
 
 /**
