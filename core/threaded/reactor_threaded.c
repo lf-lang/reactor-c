@@ -974,7 +974,7 @@ void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
  */
 void _lf_worker_do_work(int worker_number) {
     // Keep track of whether we have decremented the idle thread count.
-    // Obtain a reaction from the reaction_q that is ready to execute
+    // Obtain a reaction from the scheduler that is ready to execute
     // (i.e., it is not blocked by concurrently executing reactions
     // that it depends on).
     // print_snapshot(); // This is quite verbose (but very useful in debugging reaction deadlocks).
