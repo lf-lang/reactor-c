@@ -204,7 +204,8 @@ int* _lf_sched_distributed_reactions_in_progress;
 
 
 /**
- * @brief Index used by the scheduler to balance the distributed workload.
+ * @brief Index used by the scheduler to balance the distribution of reactions
+ * to worker threads.
  * 
  * The maximum of _lf_sched_balancing_index and reaction->worker_affinity is chosen by
  * the scheduler as the starting point in the quest to find the next available
