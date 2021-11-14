@@ -37,7 +37,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
 
-#include "../reactor.h"
+#include "scheduler.h"
 #include "../platform.h"
 #include "../utils/semaphore.c"
 #include "../utils/vector.c"
