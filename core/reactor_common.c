@@ -98,9 +98,9 @@ int _lf_is_present_fields_size = 0;
 bool** _lf_is_present_fields_abbreviated = NULL;
 int _lf_is_present_fields_abbreviated_size = 0;
 
-// Define an array of vectors of pointers to reactions that have been
-// triggered during the execution of the current tag. These vectors are
-// sorted by worker number.
+// Define an array of vectors of arrays of pointers to reactions that
+// have been triggered during the execution of the current tag. These
+// vectors are sorted by worker number.
 vector_t* _lf_triggered_reactions_by_thread = NULL;
 const size_t _lf_reactions_initial_capacity = 16;
 
@@ -130,19 +130,14 @@ int _lf_tokens_with_ref_count_size = 0;
 interval_t _lf_global_time_STP_offset = 0LL;
 
 /*
- * Add all elements of the given reaction array to the current thread's
- * active triggered reaction vector.
- * @param reaction_array An array of reaction that have been triggered in the
- * current time step.
- * @param size The length of trigger_array.
+ * Add the given reaction array to the current thread's active triggered
+ * reaction vector.
+ * @param reaction_array A null-terminated array of reactions that have
+ * been triggered in the current time step.
  * @param worker_number The current worker number.
  */
-void _lf_add_triggered_reactions(reaction_t** reaction_array, size_t size, int worker_number) {
-    vector_pushall(
-        &_lf_triggered_reactions_by_thread[worker_number],
-        (void**) reaction_array,
-        size
-    );
+void _lf_add_triggered_reactions(reaction_t** reaction_array, int worker_number) {
+    vector_push(&_lf_triggered_reactions_by_thread[worker_number], reaction_array);
 }
 
 /*
@@ -150,26 +145,23 @@ void _lf_add_triggered_reactions(reaction_t** reaction_array, size_t size, int w
  * array. This is used to link a port with the reactions that it triggers.
  * @param triggers An array of triggers.
  * @param triggers_length The length of triggers.
- * @param reactions A pointer to a field that should contain a pointer to an array of
- * pointers to reactions.
- * @param reactions_size A pointer to a field that should contain the length of
- * reactions.
+ * @param reactions A pointer to a field that should contain a pointer to a
+ * null-terminated array of pointers to reactions.
  */
 void _lf_associate_reactions_to_port(
     trigger_t** triggers,
     size_t triggers_size,
-    reaction_t*** reactions,
-    size_t* reactions_size
+    reaction_t*** reactions
 ) {
     int num_reactions = 0;
     for (int i = 0; i < triggers_size; i++)
         num_reactions += triggers[i]->number_of_reactions;
-    *reactions = (reaction_t**) malloc(num_reactions * sizeof(reaction_t*));
+    *reactions = (reaction_t**) malloc((num_reactions + 1) * sizeof(reaction_t*));
     int k = 0;
     for (int i = 0; i < triggers_size; i++)
         for (int j = 0; j < triggers[i]->number_of_reactions; j++)
             (*reactions)[k++] = triggers[i]->reactions[j];
-    *reactions_size = num_reactions;
+    (*reactions)[k] = NULL;
 }
 
 #ifdef FEDERATED
@@ -1504,42 +1496,47 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
 #endif
     vector_t* current_reactions = _lf_triggered_reactions_by_thread + worker;
     vector_vote(current_reactions);
-    reaction_t* downstream_reaction;
-    while((downstream_reaction = (reaction_t*) vector_pop(current_reactions))) {
+    reaction_t** downstream_reactions;
+    while((downstream_reactions = (reaction_t**) vector_pop(current_reactions))) {
+        int k = 0;
+        reaction_t* downstream_reaction;
+        // The following works because downstream_reactions is null-terminated.
+        while ((downstream_reaction = downstream_reactions[k++])) {
 #ifdef FEDERATED_DECENTRALIZED // Only pass down tardiness for federated LF programs
-        // Set the is_STP_violated for the downstream reaction
-        if (downstream_reaction != NULL) {
-            downstream_reaction->is_STP_violated = inherited_STP_violation;
-            DEBUG_PRINT("Passing is_STP_violated of %d to the downstream reaction: %s",
-                    downstream_reaction->is_STP_violated, downstream_reaction->name);
-        }
+            // Set the is_STP_violated for the downstream reaction
+            if (downstream_reaction != NULL) {
+                downstream_reaction->is_STP_violated = inherited_STP_violation;
+                DEBUG_PRINT("Passing is_STP_violated of %d to the downstream reaction: %s",
+                        downstream_reaction->is_STP_violated, downstream_reaction->name);
+            }
 #endif
-        if (downstream_reaction != NULL && downstream_reaction != downstream_to_execute_now) {
-            num_downstream_reactions++;
-            // If there is exactly one downstream reaction that is enabled by this
-            // reaction, then we can execute that reaction immediately without
-            // going through the reaction queue. In multithreaded execution, this
-            // avoids acquiring a mutex lock.
-            // FIXME: Check the earliest deadline on the reaction queue.
-            // This optimization could violate EDF scheduling otherwise.
-            if (num_downstream_reactions == 1 && downstream_reaction->last_enabling_reaction == reaction) {
-                // So far, this downstream reaction is a candidate to execute now.
-                downstream_to_execute_now = downstream_reaction;
-            } else {
-                // If there is a previous candidate reaction to execute now,
-                // it is no longer a candidate.
-                if (downstream_to_execute_now != NULL) {
-                    // More than one downstream reaction is enabled.
-                    // In this case, if we were to execute the downstream reaction
-                    // immediately without changing any queues, then the second
-                    // downstream reaction would be blocked because this reaction
-                    // remains on the executing queue. Hence, the optimization
-                    // is not valid. Put the candidate reaction on the queue.
-                    _lf_enqueue_reaction(downstream_to_execute_now);
-                    downstream_to_execute_now = NULL;
+            if (downstream_reaction != NULL && downstream_reaction != downstream_to_execute_now) {
+                num_downstream_reactions++;
+                // If there is exactly one downstream reaction that is enabled by this
+                // reaction, then we can execute that reaction immediately without
+                // going through the reaction queue. In multithreaded execution, this
+                // avoids acquiring a mutex lock.
+                // FIXME: Check the earliest deadline on the reaction queue.
+                // This optimization could violate EDF scheduling otherwise.
+                if (num_downstream_reactions == 1 && downstream_reaction->last_enabling_reaction == reaction) {
+                    // So far, this downstream reaction is a candidate to execute now.
+                    downstream_to_execute_now = downstream_reaction;
+                } else {
+                    // If there is a previous candidate reaction to execute now,
+                    // it is no longer a candidate.
+                    if (downstream_to_execute_now != NULL) {
+                        // More than one downstream reaction is enabled.
+                        // In this case, if we were to execute the downstream reaction
+                        // immediately without changing any queues, then the second
+                        // downstream reaction would be blocked because this reaction
+                        // remains on the executing queue. Hence, the optimization
+                        // is not valid. Put the candidate reaction on the queue.
+                        _lf_enqueue_reaction(downstream_to_execute_now);
+                        downstream_to_execute_now = NULL;
+                    }
+                    // Queue the reaction.
+                    _lf_enqueue_reaction(downstream_reaction);
                 }
-                // Queue the reaction.
-                _lf_enqueue_reaction(downstream_reaction);
             }
         }
     }

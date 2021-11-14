@@ -214,7 +214,7 @@ do { \
 #define _LF_SET_PRESENT(out) \
 do { \
     _lf_set_present(&out->is_present); \
-    _lf_add_triggered_reactions(out->reactions, out->reactions_size, _lf_worker_number); \
+    _lf_add_triggered_reactions(out->reactions, _lf_worker_number); \
 } while(0)
 
 /**
@@ -612,14 +612,13 @@ void _lf_initialize_trigger_objects();
 void _lf_set_present(bool* is_present_field);
 
 /*
- * Add all elements of the given reaction array to the current thread's
- * active triggered reaction vector.
- * @param reaction_array An array of reaction that have been triggered in the
- * current time step.
- * @param size The length of trigger_array.
+ * Add the given reaction array to the current thread's active triggered
+ * reaction vector.
+ * @param reaction_array A null-terminated array of reactions that have
+ * been triggered in the current time step.
  * @param worker_number The current worker number.
  */
-void _lf_add_triggered_reactions(reaction_t** reaction_array, size_t size, int worker_number);
+void _lf_add_triggered_reactions(reaction_t** reaction_array, int worker_number);
 
 /**
  * Pop all events from event_q with timestamp equal to current_time, extract all
