@@ -153,12 +153,12 @@ void _lf_associate_reactions_to_port(
     size_t triggers_size,
     reaction_t*** reactions
 ) {
-    int num_reactions = 0;
-    for (int i = 0; i < triggers_size; i++)
+    size_t num_reactions = 0;
+    for (size_t i = 0; i < triggers_size; i++)
         num_reactions += triggers[i]->number_of_reactions;
     *reactions = (reaction_t**) malloc((num_reactions + 1) * sizeof(reaction_t*));
-    int k = 0;
-    for (int i = 0; i < triggers_size; i++)
+    size_t k = 0;
+    for (size_t i = 0; i < triggers_size; i++)
         for (int j = 0; j < triggers[i]->number_of_reactions; j++)
             (*reactions)[k++] = triggers[i]->reactions[j];
     (*reactions)[k] = NULL;
