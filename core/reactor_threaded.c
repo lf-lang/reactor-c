@@ -772,6 +772,29 @@ bool _lf_is_blocked_by_executing_or_blocked_reaction(reaction_t* reaction) {
     if (reaction == NULL) {
         return false;
     }
+    // The head of the executing_q has the lowest level of anything
+    // on the queue, and that level is also lower than anything on the
+    // transfer_q (because reactions on the transfer queue are blocked
+    // by reactions on the executing_q). Hence, if the candidate reaction
+    // has a level less than or equal to that of the head of the
+    // executing_q, then it is executable and we don't need to check
+    // the contents of either queue further.
+    if (reaction.index <= ((reaction_t*) pqueue_peek(executing_q))->index) {
+        return false;
+    }
+
+    // Candidate reaction has a level larger than some executing reaction,
+    // so we need to check whether it is blocked by any executing reaction
+    // or any reaction that is is blocked by an executing reaction.
+
+    // The following iterates over the elements of those queues in arbitrary
+    // order, not in priority order.
+    // NOTE: If chainID is disabled, this will never yield a false result
+    // if the above test failed to yield a false result. But the check
+    // is kept here in anticipation of chainID becoming enabled sometime
+    // in the future.  It is relatively harmless because the calling thread
+    // has nothing to do anyway.
+    
     // NOTE: Element 0 of the pqueue is not used and will likely be null.
     for (size_t i = 1; i < executing_q->size; i++) {
         reaction_t* running = (reaction_t*) executing_q->d[i];
