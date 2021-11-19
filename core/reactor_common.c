@@ -98,12 +98,6 @@ int _lf_is_present_fields_size = 0;
 bool** _lf_is_present_fields_abbreviated = NULL;
 int _lf_is_present_fields_abbreviated_size = 0;
 
-// Define an array of vectors of arrays of pointers to reactions that
-// have been triggered during the execution of the current tag. These
-// vectors are sorted by worker number.
-vector_t* _lf_triggered_reactions_by_thread = NULL;
-const size_t _lf_reactions_initial_capacity = 16;
-
 // Define the array of pointers to the intended_tag fields of all
 // ports and actions that need to be reinitialized at the start
 // of each time step.
@@ -128,17 +122,6 @@ int _lf_tokens_with_ref_count_size = 0;
  * calling set_stp_offset(interval_t offset).
  */
 interval_t _lf_global_time_STP_offset = 0LL;
-
-/*
- * Add the given reaction array to the current thread's active triggered
- * reaction vector.
- * @param reaction_array A null-terminated array of reactions that have
- * been triggered in the current time step.
- * @param worker_number The current worker number.
- */
-void _lf_add_triggered_reactions(reaction_t** reaction_array, int worker_number) {
-    vector_push(&_lf_triggered_reactions_by_thread[worker_number], reaction_array);
-}
 
 /*
  * Add all reactions associated with the given trigger array to the given reaction
@@ -1494,14 +1477,11 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
     bool inherited_STP_violation = reaction->is_STP_violated;
     LOG_PRINT("Reaction %s has STP violation status: %d.", reaction->name, reaction->is_STP_violated);
 #endif
-    vector_t* current_reactions = _lf_triggered_reactions_by_thread + worker;
-    vector_vote(current_reactions);
-    reaction_t** downstream_reactions;
-    while((downstream_reactions = (reaction_t**) vector_pop(current_reactions))) {
+    for (size_t i = 0; i < reaction->triggered_reactions_size; i++) {
         int k = 0;
         reaction_t* downstream_reaction;
         // The following works because downstream_reactions is null-terminated.
-        while ((downstream_reaction = downstream_reactions[k++])) {
+        while ((downstream_reaction = (reaction->triggered_reactions[i])[k++])) {
 #ifdef FEDERATED_DECENTRALIZED // Only pass down tardiness for federated LF programs
             // Set the is_STP_violated for the downstream reaction
             if (downstream_reaction != NULL) {
@@ -1837,11 +1817,6 @@ void initialize() {
     // Initialize the trigger table.
     _lf_initialize_trigger_objects();
 
-    unsigned int n_threads = _lf_number_of_threads ? _lf_number_of_threads : 1;
-    _lf_triggered_reactions_by_thread = (vector_t*) malloc(n_threads * sizeof(vector_t));
-    for (unsigned int i = 0; i < n_threads; i++)
-        _lf_triggered_reactions_by_thread[i] = vector_new(_lf_reactions_initial_capacity);
-
     physical_start_time = get_physical_time();
     current_tag.time = physical_start_time;
     start_time = current_tag.time;
@@ -1876,9 +1851,6 @@ void termination() {
 
     // Free other memory used by the runtime.
     free(_lf_is_present_fields_abbreviated);
-    for (size_t i = 0; i < (_lf_number_of_threads ? _lf_number_of_threads : 1); i++)
-        vector_free(_lf_triggered_reactions_by_thread + i);
-    free(_lf_triggered_reactions_by_thread);
 
     // If the event queue still has events on it, report that.
     if (event_q != NULL && pqueue_size(event_q) > 0) {
