@@ -779,7 +779,8 @@ bool _lf_is_blocked_by_executing_or_blocked_reaction(reaction_t* reaction) {
     // has a level less than or equal to that of the head of the
     // executing_q, then it is executable and we don't need to check
     // the contents of either queue further.
-    if (reaction.index <= ((reaction_t*) pqueue_peek(executing_q))->index) {
+    if (pqueue_size(executing_q) > 0
+            && reaction->index <= ((reaction_t*) pqueue_peek(executing_q))->index) {
         return false;
     }
 
