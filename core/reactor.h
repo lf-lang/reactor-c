@@ -61,6 +61,7 @@
 #include "pqueue.h"
 #include "util.h"
 #include "tag.h"       // Time-related functions.
+#include <stdbool.h>
 
 // The following file is also included, but must be included
 // after its requirements are met, so the #include appears at
