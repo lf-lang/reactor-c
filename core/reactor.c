@@ -191,7 +191,7 @@ int _lf_do_step() {
             // container deadlines are defined in the container.
             // They can have different deadlines, so we have to check both.
             // Handle the local deadline first.
-            if (reaction->deadline > 0LL && physical_time > current_tag.time + reaction->deadline) {
+            if (physical_time > current_tag.time + reaction->deadline) {
                 LOG_PRINT("Deadline violation. Invoking deadline handler.");
                 // Deadline violation has occurred.
                 violation = true;
