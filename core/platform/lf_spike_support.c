@@ -25,7 +25,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Shaokai Lin <shaokai@berkeley.edu>}
  */
 
-#include "lf_baremetal_riscv_support.h"
+#include "lf_spike_support.h"
 #include "../platform.h"
 #include <time.h> //needed for timespec _lf_time_spec_t -- is this a linux or OS based library?
 #include "../tag.h" //needed for BILLION. In flexpret-script under tag.h CLOCK_FREQ is defined, but it's not defined in lf repo
