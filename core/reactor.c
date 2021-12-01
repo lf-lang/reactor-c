@@ -176,6 +176,7 @@ int _lf_do_step() {
 
         bool violation = false;
 
+        // FIXME: These comments look outdated. We may need to update them.
         // If the reaction has a deadline, compare to current physical time
         // and invoke the deadline violation reaction instead of the reaction function
         // if a violation has occurred. Note that the violation reaction will be invoked
@@ -185,13 +186,14 @@ int _lf_do_step() {
         if (reaction->deadline > 0LL) {
             // Get the current physical time.
             instant_t physical_time = get_physical_time();
+            // FIXME: These comments look outdated. We may need to update them.
             // Check for deadline violation.
             // There are currently two distinct deadline mechanisms:
             // local deadlines are defined with the reaction;
             // container deadlines are defined in the container.
             // They can have different deadlines, so we have to check both.
             // Handle the local deadline first.
-            if (reaction->deadline > 0LL && physical_time > current_tag.time + reaction->deadline) {
+            if (physical_time > current_tag.time + reaction->deadline) {
                 LOG_PRINT("Deadline violation. Invoking deadline handler.");
                 // Deadline violation has occurred.
                 violation = true;
