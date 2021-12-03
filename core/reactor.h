@@ -214,15 +214,7 @@ do { \
 #define _LF_SET_PRESENT(out) \
 do { \
     _lf_set_present(&out->is_present); \
-    if (_lf_this_reaction->triggered_reactions_size \
-        < _lf_this_reaction->triggered_reactions_capacity \
-    ) { \
-        _lf_this_reaction->triggered_reactions[ \
-            _lf_this_reaction->triggered_reactions_size++ \
-        ] = out->reactions; \
-    } else { \
-        _lf_this_reaction->schedule_output_reactions = &schedule_output_reactions_typical; \
-    } \
+    _lf_add_triggered_reactions(out->reactions, _lf_worker_number); \
 } while(0)
 
 /**
@@ -392,13 +384,6 @@ typedef pqueue_pri_t index_t;
  */
 typedef void(*reaction_function_t)(void*, int);
 
-/**
- * Schedule triggered reactions function type. The arguments
- * are a pointer to the triggering reaction and the ID of the
- * current worker, respectively.
- */
-typedef void(*schedule_output_reactions_function_t)(reaction_t*, int);
-
 /** Trigger struct representing an output, timer, action, or input. See below. */
 typedef struct trigger_t trigger_t;
 
@@ -470,20 +455,12 @@ typedef struct token_present_t {
 typedef struct reaction_t reaction_t;
 struct reaction_t {
     reaction_function_t function; // The reaction function. COMMON.
-    reaction_t*** triggered_reactions; // An array of null-terminated arrays of pointers to reactions. INSTANCE.
-    size_t triggered_reactions_size; // INSTANCE.
-    size_t triggered_reactions_capacity; // INSTANCE.
-    schedule_output_reactions_function_t schedule_output_reactions; // INSTANCE.
     void* self;    // Pointer to a struct with the reactor's state. INSTANCE.
     int number;    // The number of the reaction in the reactor (0 is the first reaction).
     index_t index; // Inverse priority determined by dependency analysis. INSTANCE.
     unsigned long long chain_id; // Binary encoding of the branches that this reaction has upstream in the dependency graph. INSTANCE.
     size_t pos;       // Current position in the priority queue. RUNTIME.
     reaction_t* last_enabling_reaction; // The last enabling reaction, or NULL if there is none. Used for optimization. INSTANCE.
-    size_t num_outputs;  // Number of outputs that may possibly be produced by this function. COMMON.
-    bool** output_produced;   // Array of pointers to booleans indicating whether outputs were produced. COMMON.
-    int* triggered_sizes;     // Pointer to array of ints with number of triggers per output. INSTANCE.
-    trigger_t ***triggers;    // Array of pointers to arrays of pointers to triggers triggered by each output. INSTANCE.
     reaction_status_t status; // Indicator of whether the reaction is inactive, queued, or running. RUNTIME.
     interval_t deadline;      // Deadline relative to the time stamp for invocation of the reaction. INSTANCE.
     bool is_STP_violated;     // Indicator of STP violation in one of the input triggers to this reaction. default = false.
@@ -633,6 +610,15 @@ void _lf_initialize_trigger_objects();
  * must be set.
  */
 void _lf_set_present(bool* is_present_field);
+
+/*
+ * Add the given reaction array to the current thread's active triggered
+ * reaction vector.
+ * @param reaction_array A null-terminated array of reactions that have
+ * been triggered in the current time step.
+ * @param worker_number The current worker number.
+ */
+void _lf_add_triggered_reactions(reaction_t** reaction_array, int worker_number);
 
 /**
  * Pop all events from event_q with timestamp equal to current_time, extract all
