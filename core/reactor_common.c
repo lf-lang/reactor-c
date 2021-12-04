@@ -143,25 +143,31 @@ void _lf_add_triggered_reactions(reaction_t** reaction_array, int worker_number)
 /*
  * Add all reactions associated with the given trigger array to the given reaction
  * array. This is used to link a port with the reactions that it triggers.
- * @param triggers An array of triggers.
- * @param triggers_length The length of triggers.
- * @param reactions A pointer to a field that should contain a pointer to a
- * null-terminated array of pointers to reactions.
+ * @param triggers An array of pointers to triggers.
+ * @param triggers_size The size of the triggers array.
+ * @param reactionses An array of pointers to fields that should contain pointers to
+ * null-terminated arrays of pointers to reactions.
+ * @param reactionses_size The size of the array reactionses.
  */
 void _lf_associate_reactions_to_port(
     trigger_t** triggers,
     size_t triggers_size,
-    reaction_t*** reactions
+    reaction_t**** reactionses,
+    size_t reactionses_size
 ) {
     size_t num_reactions = 0;
     for (size_t i = 0; i < triggers_size; i++)
         num_reactions += triggers[i]->number_of_reactions;
-    *reactions = (reaction_t**) malloc((num_reactions + 1) * sizeof(reaction_t*));
+    reaction_t** reactions = (reaction_t**) malloc(
+        (num_reactions + 1) * sizeof(reaction_t*)
+    );
     size_t k = 0;
     for (size_t i = 0; i < triggers_size; i++)
         for (int j = 0; j < triggers[i]->number_of_reactions; j++)
-            (*reactions)[k++] = triggers[i]->reactions[j];
-    (*reactions)[k] = NULL;
+            reactions[k++] = triggers[i]->reactions[j];
+    reactions[k] = NULL;
+    for (size_t i = 0; i < reactionses_size; i++)
+        *(reactionses[i]) = reactions;
 }
 
 #ifdef FEDERATED
