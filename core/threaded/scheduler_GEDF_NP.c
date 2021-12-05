@@ -163,24 +163,22 @@ void _lf_sched_update_reaction_q(size_t worker_number) {
     // has gotten larger than the reaction_q.
     if (pqueue_size(reaction_q) >= pqueue_size(_lf_sched_threads_info[worker_number].output_reactions)) {
         while ((reaction_to_add = (reaction_t*)pqueue_pop(_lf_sched_threads_info[worker_number].output_reactions)) != NULL) {
-            if (reaction_to_add->status == inactive) {
+            if (lf_bool_compare_and_swap(&reaction_to_add->status, inactive, queued)) {
                 DEBUG_PRINT(
                     "Scheduler: Inserting reaction %s into the reaction queue.",
                     reaction_to_add->name
                 );
-                reaction_to_add->status = queued;
                 pqueue_insert(reaction_q, reaction_to_add);
             }
         }
     } else {
         pqueue_t* tmp;
         while ((reaction_to_add = (reaction_t*)pqueue_pop(reaction_q)) != NULL) {
-            if (reaction_to_add->status == inactive) {
+            if (lf_bool_compare_and_swap(&reaction_to_add->status, inactive, queued)) {
                 DEBUG_PRINT(
                     "Scheduler: Inserting reaction %s into the reaction queue.",
                     reaction_to_add->name
                 );
-                reaction_to_add->status = queued;
                 pqueue_insert(_lf_sched_threads_info[worker_number].output_reactions, reaction_to_add);
             }
         }
@@ -392,6 +390,7 @@ void _lf_sched_notify_workers() {
     DEBUG_PRINT("Notifying %d workers.", workers_to_be_awaken);
     lf_atomic_fetch_add(&_lf_sched_number_of_idle_workers, -1 * workers_to_be_awaken);
     if (workers_to_be_awaken > 1) {
+        // Notify all the workers except the worker thread that has called this function. 
         lf_semaphore_release(_lf_sched_semaphore, (workers_to_be_awaken-1));
     }
 }
@@ -451,10 +450,10 @@ void _lf_sched_signal_stop() {
  * to be assigned to it.
  */
 void _lf_sched_wait_for_work(size_t worker_number) {
-
-    size_t previous_idle_workers = lf_atomic_fetch_add(&_lf_sched_number_of_idle_workers, 1);
     
     _lf_sched_update_reaction_q(worker_number);
+    
+    size_t previous_idle_workers = lf_atomic_fetch_add(&_lf_sched_number_of_idle_workers, 1);
 
     // Check if this is the last worker thread to be idle
     if (previous_idle_workers == (_lf_sched_number_of_workers - 1)) {
@@ -616,17 +615,16 @@ void lf_sched_worker_enqueue_reaction(int worker_number, reaction_t* reaction) {
         // The scheduler should handle this immediately
         lf_mutex_lock(&mutex);
         // Do not enqueue this reaction twice.
-        if (reaction != NULL && reaction->status == inactive) {
+        if (reaction != NULL && lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
             DEBUG_PRINT("Enqueing reaction %s, which has level %lld.",
                         reaction->name, reaction->index & 0xffffLL);
             // Immediately put 'reaction' on the reaction queue.
-            reaction->status = queued;
             pqueue_insert(reaction_q, reaction);
         }
         lf_mutex_unlock(&mutex);
         return;
     }
-    if (reaction != NULL) {
+    if (reaction != NULL && lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
         DEBUG_PRINT("Worker %d: Enqueuing reaction %s, which has level %lld.",
         		worker_number, reaction->name, reaction->index & 0xffffLL);
         reaction->worker_affinity = worker_number;
