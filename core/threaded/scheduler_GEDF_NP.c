@@ -391,7 +391,9 @@ void _lf_sched_notify_workers() {
     size_t workers_to_be_awaken = MIN(_lf_sched_number_of_idle_workers, pqueue_size(executing_q));
     DEBUG_PRINT("Notifying %d workers.", workers_to_be_awaken);
     lf_atomic_fetch_add(&_lf_sched_number_of_idle_workers, -1 * workers_to_be_awaken);
-    lf_semaphore_release(_lf_sched_semaphore, (workers_to_be_awaken-1));
+    if (workers_to_be_awaken > 1) {
+        lf_semaphore_release(_lf_sched_semaphore, (workers_to_be_awaken-1));
+    }
 }
 
 /**
