@@ -1,4 +1,5 @@
-/* Scheduler for the threaded version of the C target of Lingua Franca. */
+/* Partitioned Earliest Deadline First (GEDF) non-preemptive Scheduler for the
+threaded runtime of the C target of Lingua Franca. */
 
 /*************
 Copyright (c) 2021, The University of Texas at Dallas.
@@ -26,7 +27,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /** 
- * Scheduler for the threaded version of the C target of Lingua Franca.
+ * Partitioned Earliest Deadline First (GEDF) non-preemptive for the threaded
+ * runtime of the C target of Lingua Franca.
  *  
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  * @author{Edward A. Lee <eal@berkeley.edu>}
