@@ -184,6 +184,23 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
 #error "Compiler not supported"
 #endif
 
+/*
+ * Atomically compare the variable that ptr points to against oldval. If the
+ * current value is oldval, then write newval into *ptr.
+ * @param ptr A pointer to a variable.
+ * @param oldval The value to compare against.
+ * @param newval The value to assign to *ptr if comparison is successful.
+ * @return The true if comparison was successful. False otherwise.
+ */
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+// Assume that an integer is 32 bits.
+#define lf_bool_compare_and_swap(ptr, oldval, newval) (InterlockedCompareExchange(ptr, newval, oldval) == oldval)
+#elif defined(__GNUC__) || defined(__clang__)
+#define lf_bool_compare_and_swap(ptr, oldval, newval) __sync_bool_compare_and_swap(ptr, oldval, newval)
+#else
+#error "Compiler not supported"
+#endif
+
 #endif
 
 /**

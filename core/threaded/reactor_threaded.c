@@ -37,8 +37,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../reactor_common.c"
 #include "../platform.h"
-#include "scheduler.c"
+#include "scheduler.h"
 #include <signal.h>
+
 
 /**
  * The maximum amount of time a worker thread should stall
@@ -96,13 +97,13 @@ lf_cond_t global_tag_barrier_requestors_reached_zero;
  * given network input port is going to be present at the current logical time
  * or absent.
  */
-void enqueue_network_input_control_reactions(pqueue_t *reaction_q);
+void enqueue_network_input_control_reactions();
 
 /**
  * Enqueue network output control reactions that will send a PORT_ABSENT
  * message to downstream federates if a given network output port is not present.
  */
-void enqueue_network_output_control_reactions(pqueue_t* reaction_q);
+void enqueue_network_output_control_reactions();
 
 /**
  * Raise a barrier to prevent the current tag from advancing to or
@@ -604,7 +605,7 @@ void _lf_next_locked() {
     // allow keepalive to be either true or false and could get the same
     // behavior with centralized coordination as with unfederated execution.
 
-#else  // FEDERATED_CENTRALIZED
+#else  // not FEDERATED_CENTRALIZED
     if (pqueue_peek(event_q) == NULL && !keepalive_specified) {
         // There is no event on the event queue and keepalive is false.
         // No event in the queue
@@ -616,7 +617,7 @@ void _lf_next_locked() {
         // Stop tag has changed. Need to check next_tag again.
         next_tag = get_next_event_tag();
     }
-#endif // FEDERATED_CENTRALIZED
+#endif
 
     // Wait for physical time to advance to the next event time (or stop time).
     // This can be interrupted if a physical action triggers (e.g., a message
@@ -789,8 +790,8 @@ void _lf_initialize_start_tag() {
     // or timer events at (0,0) to wait on all of their input ports and send
     // an absent message on all of their output ports. This inadvertantly causes
     // extra messages going back and forth for (0,0).
-    enqueue_network_input_control_reactions(reaction_q);
-    enqueue_network_output_control_reactions(reaction_q);
+    enqueue_network_input_control_reactions();
+    enqueue_network_output_control_reactions();
 
     // Call wait_until if federated. This is required because the startup procedure
     // in synchronize_with_other_federates() can decide on a new start_time that is 
@@ -1120,19 +1121,13 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         lf_mutex_lock(&mutex); // Sets start_time
         initialize();
 
-        lf_sched_init((size_t)_lf_number_of_threads);
-
         // Call the following function only once, rather than per worker thread (although 
         // it can be probably called in that manner as well).
         _lf_initialize_start_tag();
 
         start_threads();
 
-        lf_thread_t scheduler_id;
-        lf_thread_create(
-            &scheduler_id,
-            &lf_sched_do_scheduling,
-            NULL);
+        lf_sched_init((size_t)_lf_number_of_threads);
 
         lf_mutex_unlock(&mutex);
         DEBUG_PRINT("Waiting for worker threads to exit.");
@@ -1151,8 +1146,6 @@ int lf_reactor_c_main(int argc, char* argv[]) {
                 ret = 1;
         	}
         }
-        void* scheduler_exit_status = NULL;
-        lf_thread_join(scheduler_id, &scheduler_exit_status);
 
         if (ret == 0) {
             LOG_PRINT("---- All worker threads exited successfully.");

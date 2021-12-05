@@ -45,6 +45,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "net_common.h" // Defines message types, etc.
 #include "../reactor.h"    // Defines instant_t.
 #include "../platform.h"
+#include "../threaded/scheduler.h"
 #include "clock-sync.c" // Defines clock synchronization functions.
 #include "federate.h"   // Defines federate_instance_t
 
@@ -1216,7 +1217,7 @@ port_status_t get_current_port_status(int portID) {
  * given network input port is going to be present at the current logical time
  * or absent.
  */
-void enqueue_network_input_control_reactions(pqueue_t *reaction_q) {
+void enqueue_network_input_control_reactions() {
     for (int i = 0; i < _fed.triggers_for_network_input_control_reactions_size; i++) {
         // Reaction 0 should always be the network input control reaction
         if (get_current_port_status(i) == unknown) {
@@ -1224,8 +1225,7 @@ void enqueue_network_input_control_reactions(pqueue_t *reaction_q) {
             if (reaction->status == inactive) {
                 reaction->is_a_control_reaction = true;
                 DEBUG_PRINT("Inserting network input control reaction on reaction queue.");
-                reaction->status = queued;
-                pqueue_insert(reaction_q, reaction);
+                lf_sched_worker_enqueue_reaction(reaction, -1);
                 mark_control_reaction_waiting(i, true);
             }
         }
@@ -1236,7 +1236,7 @@ void enqueue_network_input_control_reactions(pqueue_t *reaction_q) {
  * Enqueue network output control reactions that will send a MSG_TYPE_PORT_ABSENT
  * message to downstream federates if a given network output port is not present.
  */
-void enqueue_network_output_control_reactions(pqueue_t* reaction_q){
+void enqueue_network_output_control_reactions(){
     DEBUG_PRINT("Enqueueing output control reactions.");
     if (_fed.trigger_for_network_output_control_reactions == NULL) {
         // There are no network output control reactions
@@ -1248,8 +1248,7 @@ void enqueue_network_output_control_reactions(pqueue_t* reaction_q){
         if (reaction->status == inactive) {
             reaction->is_a_control_reaction = true;
             DEBUG_PRINT("Inserting network output control reaction on reaction queue.");
-            reaction->status = queued;
-            pqueue_insert(reaction_q, reaction);
+            lf_sched_worker_enqueue_reaction(reaction, -1);
         }
     }
 }
@@ -1258,7 +1257,7 @@ void enqueue_network_output_control_reactions(pqueue_t* reaction_q){
 /**
  * Enqueue network control reactions.
  */
-void enqueue_network_control_reactions(pqueue_t* reaction_q) {
+void enqueue_network_control_reactions() {
 #ifdef FEDERATED_CENTRALIZED
     // If the granted tag is not provisional, there is no
     // need for network control reactions
@@ -1267,8 +1266,8 @@ void enqueue_network_control_reactions(pqueue_t* reaction_q) {
         return;
     }
 #endif
-    enqueue_network_input_control_reactions(reaction_q);
-    enqueue_network_output_control_reactions(reaction_q);
+    enqueue_network_input_control_reactions();
+    enqueue_network_output_control_reactions();
 }
 
 /**

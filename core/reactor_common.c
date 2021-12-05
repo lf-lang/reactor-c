@@ -35,6 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Soroush Bateni <soroush@utdallas.edu}
  */
 #include "reactor.h"
+#include "../utils/pqueue_support.h"
 #include "tag.c"
 #include "utils/pqueue.c"
 #include "utils/util.c"
@@ -132,7 +133,7 @@ void reset_status_fields_on_input_port_triggers();
 /**
  * Enqueue network control reactions.
  */
-void enqueue_network_control_reactions(pqueue_t* reaction_q);
+void enqueue_network_control_reactions();
 
 /**
  * Determine the status of the port at the current logical time.
@@ -195,106 +196,6 @@ pqueue_t* next_q;      // For temporarily storing the next event lined
                        // up in superdense time.
 
 trigger_handle_t _lf_handle = 1;
-
-// ********** Priority Queue Support Start
-
-/**
- * Return whether the first and second argument are given in reverse order.
- */
-static int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that) {
-    return (thiz > that);
-}
-
-/**
- * Return whether the first and second argument are given in reverse order.
- */
-static int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that) {
-    return false;
-}
-
-/**
- * Return whether or not the given events have matching triggers.
- */
-static int event_matches(void* next, void* curr) {
-    return (((event_t*)next)->trigger == ((event_t*)curr)->trigger);
-}
-
-/**
- * Return whether or not the given reaction_t pointers 
- * point to the same struct.
- */
-static int reaction_matches(void* next, void* curr) {
-    return (next == curr);
-}
-
-/**
- * Report a priority equal to the time of the given event.
- * Used for sorting pointers to event_t structs in the event queue.
- */
-static pqueue_pri_t get_event_time(void *a) {
-    return (pqueue_pri_t)(((event_t*) a)->time);
-}
-
-/**
- * Report a priority equal to the index of the given reaction.
- * Used for sorting pointers to reaction_t structs in the 
- * blocked and executing queues.
- */
-static pqueue_pri_t get_reaction_index(void *a) {
-    return ((reaction_t*) a)->index;
-}
-
-/**
- * Return the given event's position in the queue.
- */
-static size_t get_event_position(void *a) {
-    return ((event_t*) a)->pos;
-}
-
-/**
- * Return the given reaction's position in the queue.
- */
-static size_t get_reaction_position(void *a) {
-    return ((reaction_t*) a)->pos;
-}
-
-/**
- * Set the given event's position in the queue.
- */
-static void set_event_position(void *a, size_t pos) {
-    ((event_t*) a)->pos = pos;
-}
-
-/**
- * Return the given reaction's position in the queue.
- */
-static void set_reaction_position(void *a, size_t pos) {
-    ((reaction_t*) a)->pos = pos;
-}
-
-/**
- * Print some information about the given reaction.
- * 
- * DEBUG function only.
- */
-static void print_reaction(void *reaction) {
-	reaction_t *r = (reaction_t*)reaction;
-    DEBUG_PRINT("%s: chain_id:%llu, index: %llx, reaction: %p",
-    		r->name, r->chain_id, r->index, r);
-}
-
-/**
- * Print some information about the given event.
- * 
- * DEBUG function only.
- */
-static void print_event(void *event) {
-	event_t *e = (event_t*)event;
-    DEBUG_PRINT("time: %lld, trigger: %p, token: %p",
-			e->time, e->trigger, e->token);
-}
-
-// ********** Priority Queue Support End
 
 /**
  * Counter used to issue a warning if memory is
@@ -662,7 +563,7 @@ void _lf_pop_events() {
 #ifdef FEDERATED
     // Insert network dependent reactions for network input and output ports into
     // the reaction queue
-    enqueue_network_control_reactions(reaction_q);
+    enqueue_network_control_reactions();
 #endif // FEDERATED
 
     DEBUG_PRINT("There are %d events deferred to the next microstep.", pqueue_size(next_q));

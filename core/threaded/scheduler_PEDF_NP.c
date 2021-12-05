@@ -39,6 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "scheduler.h"
 #include "../platform.h"
+#include "../utils/pqueue_support.h"
 #include "../utils/semaphore.c"
 #include "../utils/vector.c"
 
@@ -222,6 +223,21 @@ int _lf_sched_balancing_index = 0;
  */
 bool _lf_logical_tag_completed = false;
 
+
+/**
+ * @brief Thread handler for the scheduler
+ * 
+ */
+lf_thread_t _lf_sched_thread;
+
+/**
+ * @brief The main thread of the scheduler, to be created by the main program.
+ * 
+ * @param arg Ignored.
+ * @return void* NULL on exit.
+ */
+void* _lf_sched_scheduling_thread(void* arg);
+
 ///////////////////// Scheduler Init and Destroy API /////////////////////////
 
 /**
@@ -267,6 +283,8 @@ void lf_sched_init(size_t number_of_workers) {
         _lf_sched_threads_info[i].should_stop = false;
         _lf_sched_threads_info[i].is_idle = false;
     }
+
+    lf_thread_create(&_lf_sched_thread, _lf_sched_scheduling_thread, NULL);
 }
 
 /**
@@ -288,6 +306,8 @@ void lf_sched_free() {
     }
     free(_lf_sched_threads_info);
     free(_lf_sched_distributed_reactions_in_progress);
+    void* sched_thread_result;
+    lf_thread_join(_lf_sched_thread, &sched_thread_result);
 }
 
 
@@ -857,14 +877,13 @@ void _lf_sched_signal_stop() {
     }
 }
 
-///////////////////// Scheduler Runtime API (public) /////////////////////////
 /**
  * @brief The main thread of the scheduler, to be created by the main program.
  * 
  * @param arg Ignored.
  * @return void* NULL on exit.
  */
-void* lf_sched_do_scheduling(void* arg) {
+void* _lf_sched_scheduling_thread(void* arg) {
     while(!_lf_sched_try_advance_tag_and_distribute()) {
         _lf_sched_wait_for_threads_asking_for_more_work();
     }

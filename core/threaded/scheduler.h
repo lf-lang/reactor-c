@@ -3,6 +3,12 @@
 
 #include "../reactor.h"
 
+
+typedef enum {
+    GEDF_NP,
+    PEDF_NP
+} lf_supported_schedulers;
+
 /**
  * @brief Initialize the scheduler.
  * 
@@ -61,13 +67,5 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  *  enqueuing the reaction immediately.
  */
 void lf_sched_worker_enqueue_reaction(int worker_number, reaction_t* reaction);
-
-/**
- * @brief The main thread of the scheduler, to be created by the main program.
- * 
- * @param arg Ignored.
- * @return void* NULL on exit.
- */
-void* lf_sched_do_scheduling(void* arg);
 
 #endif // LF_SCHEDULER_H
