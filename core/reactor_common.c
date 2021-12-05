@@ -35,9 +35,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Soroush Bateni <soroush@utdallas.edu}
  */
 #include "reactor.h"
-#include "../utils/pqueue_support.h"
 #include "tag.c"
 #include "utils/pqueue.c"
+#include "utils/pqueue_support.h"
 #include "utils/util.c"
 
 /** 
