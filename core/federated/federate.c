@@ -1225,7 +1225,7 @@ void enqueue_network_input_control_reactions() {
             if (reaction->status == inactive) {
                 reaction->is_a_control_reaction = true;
                 DEBUG_PRINT("Inserting network input control reaction on reaction queue.");
-                lf_sched_worker_enqueue_reaction(reaction, -1);
+                lf_sched_worker_enqueue_reaction(-1, reaction);
                 mark_control_reaction_waiting(i, true);
             }
         }
@@ -1248,7 +1248,7 @@ void enqueue_network_output_control_reactions(){
         if (reaction->status == inactive) {
             reaction->is_a_control_reaction = true;
             DEBUG_PRINT("Inserting network output control reaction on reaction queue.");
-            lf_sched_worker_enqueue_reaction(reaction, -1);
+            lf_sched_worker_enqueue_reaction(-1, reaction);
         }
     }
 }
