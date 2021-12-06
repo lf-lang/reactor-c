@@ -163,24 +163,22 @@ void _lf_sched_update_reaction_q(size_t worker_number) {
     // has gotten larger than the reaction_q.
     if (pqueue_size(reaction_q) >= pqueue_size(_lf_sched_threads_info[worker_number].output_reactions)) {
         while ((reaction_to_add = (reaction_t*)pqueue_pop(_lf_sched_threads_info[worker_number].output_reactions)) != NULL) {
-            if (lf_bool_compare_and_swap(&reaction_to_add->status, inactive, queued)) {
-                DEBUG_PRINT(
-                    "Scheduler: Inserting reaction %s into the reaction queue.",
-                    reaction_to_add->name
-                );
-                pqueue_insert(reaction_q, reaction_to_add);
-            }
+            lf_bool_compare_and_swap(&reaction_to_add->status, inactive, queued);
+            DEBUG_PRINT(
+                "Scheduler: Inserting reaction %s into the reaction queue.",
+                reaction_to_add->name
+            );
+            pqueue_insert(reaction_q, reaction_to_add);
         }
     } else {
         pqueue_t* tmp;
         while ((reaction_to_add = (reaction_t*)pqueue_pop(reaction_q)) != NULL) {
-            if (lf_bool_compare_and_swap(&reaction_to_add->status, inactive, queued)) {
-                DEBUG_PRINT(
-                    "Scheduler: Inserting reaction %s into the reaction queue.",
-                    reaction_to_add->name
-                );
-                pqueue_insert(_lf_sched_threads_info[worker_number].output_reactions, reaction_to_add);
-            }
+            lf_bool_compare_and_swap(&reaction_to_add->status, inactive, queued);
+            DEBUG_PRINT(
+                "Scheduler: Inserting reaction %s into the reaction queue.",
+                reaction_to_add->name
+            );
+            pqueue_insert(_lf_sched_threads_info[worker_number].output_reactions, reaction_to_add);
         }
         tmp = reaction_q;
         reaction_q = _lf_sched_threads_info[worker_number].output_reactions;
@@ -458,7 +456,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
     // Check if this is the last worker thread to be idle
     if (previous_idle_workers == (_lf_sched_number_of_workers - 1)) {
         // Last thread to go idle
-        DEBUG_PRINT("Worker %d is the last idle thread.", worker_number);
+        DEBUG_PRINT("Scheduler: Worker %d is the last idle thread.", worker_number);
         if(_lf_sched_try_advance_tag()) {
             _lf_sched_signal_stop();
         }
@@ -614,9 +612,10 @@ void lf_sched_worker_enqueue_reaction(int worker_number, reaction_t* reaction) {
     if (worker_number == -1) {
         // The scheduler should handle this immediately
         lf_mutex_lock(&mutex);
-        // Do not enqueue this reaction twice.
+        // Protect against putting a reaction twice on the reaction queue by
+        // checking its status.
         if (reaction != NULL && lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
-            DEBUG_PRINT("Enqueing reaction %s, which has level %lld.",
+            DEBUG_PRINT("Scheduler: Enqueing reaction %s, which has level %lld.",
                         reaction->name, reaction->index & 0xffffLL);
             // Immediately put 'reaction' on the reaction queue.
             pqueue_insert(reaction_q, reaction);
@@ -624,8 +623,10 @@ void lf_sched_worker_enqueue_reaction(int worker_number, reaction_t* reaction) {
         lf_mutex_unlock(&mutex);
         return;
     }
+    // Protect against putting a reaction twice on the reaction queue by
+    // checking its status.
     if (reaction != NULL && lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
-        DEBUG_PRINT("Worker %d: Enqueuing reaction %s, which has level %lld.",
+        DEBUG_PRINT("Scheduler: Worker %d: Enqueuing reaction %s, which has level %lld.",
         		worker_number, reaction->name, reaction->index & 0xffffLL);
         reaction->worker_affinity = worker_number;
         // Note: The scheduler will check that we don't enqueue this reaction
