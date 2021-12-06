@@ -1023,16 +1023,17 @@ void* worker(void* arg) {
 
     lf_mutex_lock(&mutex);
 
-    lf_cond_signal(&event_q_changed);
-
-    // Return true to stop the worker and notify other
-    // worker threads potentially waiting to continue.
-    // Also, notify the RTI that there will be no more events (if centralized coord).
-    // False argument means don't wait for a reply.
-    send_next_event_tag(FOREVER_TAG, false);
-
     // This thread is exiting, so don't count it anymore.
     _lf_number_of_threads--;
+
+    if (_lf_number_of_threads == 0) {
+        // The last worker thread to exit will inform the RTI if needed.
+        // Notify the RTI that there will be no more events (if centralized coord).
+        // False argument means don't wait for a reply.
+        send_next_event_tag(FOREVER_TAG, false);
+    }
+
+    lf_cond_signal(&event_q_changed);
 
     DEBUG_PRINT("Worker %d: Stop requested. Exiting.", worker_number);
     lf_mutex_unlock(&mutex);
