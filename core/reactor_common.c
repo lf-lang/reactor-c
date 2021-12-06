@@ -141,33 +141,61 @@ void _lf_add_triggered_reactions(reaction_t** reaction_array, int worker_number)
 }
 
 /*
- * Add all reactions associated with the given trigger array to the given reaction
- * array. This is used to link a port with the reactions that it triggers.
- * @param triggers An array of pointers to triggers.
- * @param triggers_size The size of the triggers array.
- * @param reactionses An array of pointers to fields that should contain pointers to
- * null-terminated arrays of pointers to reactions.
- * @param reactionses_size The size of the array reactionses.
+ * Associates the reactions in each trigger array with each port field (reactions) in
+ * the corresponding array (reactionses) of port fields.
+ * - Each trigger_array   is an array of pointers to triggers.
+ * - Each reactions____es is an array of pointers to port fields. Each port field is a
+ *   sized array of pointers to reactions. A "sized array" here means an array that is
+ *   prefixed with its own length.
+ * - Each reactions_sizes is an array of pointers to port fields.
+ *
+ * @param trigger_arrays A vector of [arrays of (pointers to {triggers that are all
+ * triggered by the same ports})].
+ * @param trigger_array_sizes The sizes of the given trigger arrays.
+ * @param reactionseses A vector of [arrays of (fields in {ports that all trigger the
+ * same reactions})].
+ * @param reactionses_sizes A vector of {sizes of [arrays of (fields in ports)]}.
+ * @return An array that must be freed upon teardown.
  */
-void _lf_associate_reactions_to_port(
-    trigger_t** triggers,
-    size_t triggers_size,
-    reaction_t**** reactionses,
-    size_t reactionses_size
+reaction_t** _lf_associate_reactions_to_ports(
+    vector_t trigger_arrays,
+    vector_t trigger_array_sizes,
+    vector_t reactionseses,
+    vector_t reactionses_sizes
 ) {
-    size_t num_reactions = 0;
-    for (size_t i = 0; i < triggers_size; i++)
-        num_reactions += triggers[i]->number_of_reactions;
-    reaction_t** reactions = (reaction_t**) malloc(
-        (num_reactions + 1) * sizeof(reaction_t*)
-    );
-    size_t k = 0;
-    for (size_t i = 0; i < triggers_size; i++)
-        for (int j = 0; j < triggers[i]->number_of_reactions; j++)
-            reactions[k++] = triggers[i]->reactions[j];
-    reactions[k] = NULL;
-    for (size_t i = 0; i < reactionses_size; i++)
-        *(reactionses[i]) = reactions;
+    // Implementation note. This method allocates one contiguous memory block for all of reactions associated
+    //  with a given multiport. Additionally, adjacent ports in the multiport that trigger the same reactions
+    //  are associated with the same blocks in the reaction pointer array.
+    // Allocate the contiguous memory block.
+    size_t total_reactions = 0;
+    size_t n_reactionses = trigger_arrays.next - trigger_arrays.start;
+    for (size_t i = 0; i < n_reactionses; i++)
+        for (size_t j = 0; j < (size_t) trigger_array_sizes.start[i]; j++)
+            total_reactions += ((trigger_t*) ((trigger_t**) trigger_arrays.start[i])[j])->number_of_reactions;
+    reaction_t** reactions = (reaction_t**) malloc((total_reactions + n_reactionses) * sizeof(reaction_t*));
+    // Populate the memory block with sized arrays.
+    reaction_t** current_reaction = reactions;
+    for (ptrdiff_t i = 0; i < trigger_arrays.next - trigger_arrays.start; i++) {
+        trigger_t** current_trigger_array = (trigger_t**) trigger_arrays.start[i];
+        reaction_t**** current_reactionses = (reaction_t****) reactionseses.start[i];
+        reaction_t** current_reactions = current_reaction++;
+        size_t current_reactions_size = 0;
+        // Set the contents of the sized array current_reactions.
+        for (size_t j = 0; j < (size_t) trigger_array_sizes.start[i]; j++) {
+            for (size_t k = 0; k < current_trigger_array[j]->number_of_reactions; k++) {
+                *(current_reaction++) = current_trigger_array[j]->reactions[k];
+                current_reactions_size++;
+            }
+        }
+        // Record the size of the sized array current_reactions.
+        *current_reactions = (reaction_t*) current_reactions_size;
+        // Save pointers to the sized array.
+        for (size_t j = 0; j < (size_t) reactionses_sizes.start[i]; j++)
+            *current_reactionses[j] = current_reactions;
+        free(current_trigger_array);
+        free(current_reactionses);
+    }
+    return reactions;
 }
 
 #ifdef FEDERATED
@@ -1504,10 +1532,9 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
     vector_vote(current_reactions);
     reaction_t** downstream_reactions;
     while((downstream_reactions = (reaction_t**) vector_pop(current_reactions))) {
-        int k = 0;
-        reaction_t* downstream_reaction;
-        // The following works because downstream_reactions is null-terminated.
-        while ((downstream_reaction = downstream_reactions[k++])) {
+        size_t downstream_reactions_length = (size_t) *(downstream_reactions++);
+        for (int k = 0; k < downstream_reactions_length; k++) {
+            reaction_t* downstream_reaction = downstream_reactions[k];
 #ifdef FEDERATED_DECENTRALIZED // Only pass down tardiness for federated LF programs
             // Set the is_STP_violated for the downstream reaction
             if (downstream_reaction != NULL) {
