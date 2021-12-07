@@ -28,7 +28,7 @@ file(GLOB_RECURSE TEST_FILES RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} *.c)
 set(ALL_TESTS)
 foreach(FILE ${TEST_FILES})
     string(REGEX REPLACE "[./]" "_" NAME ${FILE}) # create exe name
-    add_executable(${NAME} ${FILE} ${LF_PLATFORM_FILE} ../core/tag.c ../core/util.c ../core/reactor.c ../core/reactor_common.c ../lib/ctarget.c)
+    add_executable(${NAME} ${FILE} ${LF_PLATFORM_FILE} ../core/tag.c ../core/utils/util.c ../core/reactor.c ../core/reactor_common.c ../lib/ctarget.c)
     # target_link_libraries(${NAME} ${PROJECT_NAME}) # ${Boost_UNIT_TEST_FRAMEWORK_LIBRARY}) # link against our lib and boost test 
     add_test(NAME ${NAME} COMMAND ${NAME})                              # this is how to add tests to CMake
 endforeach(FILE ${TEST_FILES})
