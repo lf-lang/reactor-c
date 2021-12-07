@@ -195,6 +195,10 @@ reaction_t** _lf_associate_reactions_to_ports(
         free(current_trigger_array);
         free(current_reactionses);
     }
+    vector_free(&trigger_arrays);
+    vector_free(&trigger_array_sizes);
+    vector_free(&reactionseses);
+    vector_free(&reactionses_sizes);
     return reactions;
 }
 
