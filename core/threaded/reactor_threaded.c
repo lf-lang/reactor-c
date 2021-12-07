@@ -738,7 +738,7 @@ void request_stop() {
  *  reaction queue should be done immediately.
  */
 void _lf_enqueue_reaction(reaction_t* reaction, int worker_number) {
-    lf_sched_worker_enqueue_reaction(worker_number, reaction);
+    lf_sched_worker_trigger_reaction(worker_number, reaction);
 }
 
 /**
@@ -1026,7 +1026,7 @@ void* worker(void* arg) {
     // This thread is exiting, so don't count it anymore.
     _lf_number_of_threads--;
 
-    if (_lf_number_of_threads == 0) {
+    if (worker_thread_count == 0) {
         // The last worker thread to exit will inform the RTI if needed.
         // Notify the RTI that there will be no more events (if centralized coord).
         // False argument means don't wait for a reply.

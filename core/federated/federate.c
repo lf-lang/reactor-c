@@ -431,7 +431,7 @@ void _lf_send_time(unsigned char type, instant_t time) {
             // FIXME: Shutdown is probably not working properly because the socket gets disconnected.
             error_print("Socket to the RTI is no longer connected. Considering this a soft error.");
         } else {
-            error_print_and_exit("Failed to send time %lld to the RTI.", 
+            error_print_and_exit("Failed to send time %lld to the RTI." 
                                     " Error code %d: %s",
                                     time - start_time,
                                     errno,
@@ -448,8 +448,10 @@ void _lf_send_time(unsigned char type, instant_t time) {
  * It assumes the caller is.
  * @param type The message type (MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LOGICAL_TAG_COMPLETE).
  * @param tag The tag.
+ * @param exit_on_error If set to true, exit the program if sending 'tag' fails.
+ *  Print a soft error message otherwise
  */
-void _lf_send_tag(unsigned char type, tag_t tag) {
+void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
     DEBUG_PRINT("Sending tag (%lld, %u) to the RTI.", tag.time - start_time, tag.microstep);
     size_t bytes_to_write = 1 + sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_write];
@@ -464,11 +466,20 @@ void _lf_send_tag(unsigned char type, tag_t tag) {
     }
     ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
     if (bytes_written < (ssize_t)bytes_to_write) {
-        if (errno == ENOTCONN) {
+        if (!exit_on_error) {
+            error_print("Failed to send tag (%lld, %u) to the RTI." 
+                            " Error code %d: %s",
+                            tag.time - start_time, 
+                            tag.microstep,
+                            errno,
+                            strerror(errno)
+                        );
+
+        } else if (errno == ENOTCONN) {
             error_print("Socket to the RTI is no longer connected. Considering this a soft error.");
         } else {
             lf_mutex_unlock(&outbound_socket_mutex);
-            error_print_and_exit("Failed to send tag (%lld, %u) to the RTI.", 
+            error_print_and_exit("Failed to send tag (%lld, %u) to the RTI." 
                                     " Error code %d: %s",
                                     tag.time - start_time, 
                                     tag.microstep,
@@ -1225,7 +1236,7 @@ void enqueue_network_input_control_reactions() {
             if (reaction->status == inactive) {
                 reaction->is_a_control_reaction = true;
                 DEBUG_PRINT("Inserting network input control reaction on reaction queue.");
-                lf_sched_worker_enqueue_reaction(-1, reaction);
+                lf_sched_worker_trigger_reaction(-1, reaction);
                 mark_control_reaction_waiting(i, true);
             }
         }
@@ -1248,7 +1259,7 @@ void enqueue_network_output_control_reactions(){
         if (reaction->status == inactive) {
             reaction->is_a_control_reaction = true;
             DEBUG_PRINT("Inserting network output control reaction on reaction queue.");
-            lf_sched_worker_enqueue_reaction(-1, reaction);
+            lf_sched_worker_trigger_reaction(-1, reaction);
         }
     }
 }
@@ -1865,7 +1876,7 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
     LOG_PRINT("Sending Logical Time Complete (LTC) (%lld, %u) to the RTI.",
             tag_to_send.time - start_time,
             tag_to_send.microstep);
-    _lf_send_tag(MSG_TYPE_LOGICAL_TAG_COMPLETE, tag_to_send);
+    _lf_send_tag(MSG_TYPE_LOGICAL_TAG_COMPLETE, tag_to_send, true);
     _fed.last_sent_LTC = tag_to_send;
 }
 
@@ -2528,7 +2539,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
         if (!tag_bounded_by_physical_time) {
             // NET is not bounded by physical time or has no downstream federates.
             // Normal case.
-            _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
+            _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag, wait_for_reply);
             _fed.last_sent_NET = tag;
             LOG_PRINT("Sent next event tag (NET) (%lld, %u) to RTI.",
                     tag.time - start_time, tag.microstep);
@@ -2578,7 +2589,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
         // federates. Need to send TAN rather than NET.
         // TAN does not include a microstep and expects no reply.
         // It is sent to enable downstream federates to advance.
-        _lf_send_time(MSG_TYPE_TIME_ADVANCE_NOTICE, tag.time);
+        _lf_send_time(MSG_TYPE_TIME_ADVANCE_NOTICE, tag.time, wait_for_reply);
         _fed.last_sent_NET = tag;
         LOG_PRINT("Sent Time Advance Notice (TAN) %lld to RTI.",
                 tag.time - start_time);
