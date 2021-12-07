@@ -66,6 +66,6 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  *  unthreaded C runtime). -1 should be used if the scheduler should handle
  *  enqueuing the reaction immediately.
  */
-void lf_sched_worker_enqueue_reaction(int worker_number, reaction_t* reaction);
+void lf_sched_worker_trigger_reaction(int worker_number, reaction_t* reaction);
 
 #endif // LF_SCHEDULER_H
