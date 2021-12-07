@@ -36,8 +36,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "reactor.h"
 #include "tag.c"
-#include "pqueue.c"
-#include "util.c"
+#include "utils/pqueue.c"
+#include "utils/pqueue_support.h"
+#include "utils/util.c"
 
 /** 
  * Indicator of whether to wait for physical time to match logical time.
@@ -85,6 +86,18 @@ bool keepalive_specified = false;
 bool** _lf_is_present_fields = NULL;
 int _lf_is_present_fields_size = 0;
 
+// Define an array of pointers to the _is_present fields
+// that have been set to true during the execution of a tag
+// so that at the conclusion of the tag, these fields can be reset to
+// false. Usually, this list will have fewer records than will
+// _lf_is_present_fields, allowing for some time to be saved.
+// However, it is possible for it to have more records if some ports
+// are set multiple times at the same tag. In such cases, we fall back
+// to resetting all is_present fields at the start of the next time
+// step.
+bool** _lf_is_present_fields_abbreviated = NULL;
+int _lf_is_present_fields_abbreviated_size = 0;
+
 // Define the array of pointers to the intended_tag fields of all
 // ports and actions that need to be reinitialized at the start
 // of each time step.
@@ -120,7 +133,7 @@ void reset_status_fields_on_input_port_triggers();
 /**
  * Enqueue network control reactions.
  */
-void enqueue_network_control_reactions(pqueue_t* reaction_q);
+void enqueue_network_control_reactions();
 
 /**
  * Determine the status of the port at the current logical time.
@@ -171,44 +184,6 @@ void set_stp_offset(interval_t offset) {
     }
 }
 
-/**
- * Print a non-negative time value in nanoseconds with commas separating thousands
- * into the specified buffer. Ideally, this would use the locale to
- * use periods if appropriate, but I haven't found a sufficiently portable
- * way to do that.
- * @param buffer A buffer long enough to contain a string like "9,223,372,036,854,775,807".
- * @param time A time value.
- */
-void readable_time(char* buffer, instant_t time) {
-    // If the number is negative or below 1000, just print it and return.
-    if (time < 1000LL) {
-        sprintf(buffer, "%lld", (long long)time);
-        return;
-    }
-    int count = 0;
-    instant_t clauses[7];
-    while (time > 0LL) {
-        clauses[count++] = time;
-        time = time/1000LL;
-    }
-    // Highest order clause should not be filled with zeros.
-    instant_t to_print = clauses[--count] % 1000LL;
-    sprintf(buffer, "%lld", (long long)to_print);
-    if (to_print >= 100LL) {
-        buffer += 3;
-    } else if (to_print >= 10LL) {
-        buffer += 2;
-    } else {
-        buffer += 1;
-    }
-    while (count-- > 1) {
-        to_print = clauses[count] % 1000LL;
-        sprintf(buffer, ",%03lld,", (long long)to_print);
-        buffer += 4;
-    }
-    sprintf(buffer, ",%03lld", clauses[0] % 1000LL);
-}
-
 /////////////////////////////
 // The following is not in scope for reactors:
 
@@ -221,106 +196,6 @@ pqueue_t* next_q;      // For temporarily storing the next event lined
                        // up in superdense time.
 
 trigger_handle_t _lf_handle = 1;
-
-// ********** Priority Queue Support Start
-
-/**
- * Return whether the first and second argument are given in reverse order.
- */
-static int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that) {
-    return (thiz > that);
-}
-
-/**
- * Return whether the first and second argument are given in reverse order.
- */
-static int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that) {
-    return false;
-}
-
-/**
- * Return whether or not the given events have matching triggers.
- */
-static int event_matches(void* next, void* curr) {
-    return (((event_t*)next)->trigger == ((event_t*)curr)->trigger);
-}
-
-/**
- * Return whether or not the given reaction_t pointers 
- * point to the same struct.
- */
-static int reaction_matches(void* next, void* curr) {
-    return (next == curr);
-}
-
-/**
- * Report a priority equal to the time of the given event.
- * Used for sorting pointers to event_t structs in the event queue.
- */
-static pqueue_pri_t get_event_time(void *a) {
-    return (pqueue_pri_t)(((event_t*) a)->time);
-}
-
-/**
- * Report a priority equal to the index of the given reaction.
- * Used for sorting pointers to reaction_t structs in the 
- * blocked and executing queues.
- */
-static pqueue_pri_t get_reaction_index(void *a) {
-    return ((reaction_t*) a)->index;
-}
-
-/**
- * Return the given event's position in the queue.
- */
-static size_t get_event_position(void *a) {
-    return ((event_t*) a)->pos;
-}
-
-/**
- * Return the given reaction's position in the queue.
- */
-static size_t get_reaction_position(void *a) {
-    return ((reaction_t*) a)->pos;
-}
-
-/**
- * Set the given event's position in the queue.
- */
-static void set_event_position(void *a, size_t pos) {
-    ((event_t*) a)->pos = pos;
-}
-
-/**
- * Return the given reaction's position in the queue.
- */
-static void set_reaction_position(void *a, size_t pos) {
-    ((reaction_t*) a)->pos = pos;
-}
-
-/**
- * Print some information about the given reaction.
- * 
- * DEBUG function only.
- */
-static void print_reaction(void *reaction) {
-	reaction_t *r = (reaction_t*)reaction;
-    DEBUG_PRINT("%s: chain_id:%llu, index: %llx, reaction: %p",
-    		r->name, r->chain_id, r->index, r);
-}
-
-/**
- * Print some information about the given event.
- * 
- * DEBUG function only.
- */
-static void print_event(void *event) {
-	event_t *e = (event_t*)event;
-    DEBUG_PRINT("time: %lld, trigger: %p, token: %p",
-			e->time, e->trigger, e->token);
-}
-
-// ********** Priority Queue Support End
 
 /**
  * Counter used to issue a warning if memory is
@@ -414,11 +289,16 @@ token_freed _lf_done_using(lf_token_t* token) {
 }
 
 /**
- * Put the specified reaction on the reaction queue.
- * This version is just a template.
+ * Put the specified reaction eventually on the reaction queue. There is no
+ * guarantee that this happens immediately, unless 'worker_number' is -1.
+ * This version acquires a mutex lock.
  * @param reaction The reaction.
+ * @param worker_number The ID of the worker that is making a call. 0 should be
+ *  used if there is only one worker (e.g., when the program is using the
+ *  unthreaded C runtime). -1 should be used if putting the reaction on the
+ *  reaction queue should be done immediately.
  */
-void _lf_enqueue_reaction(reaction_t* reaction);
+void _lf_enqueue_reaction(reaction_t* reaction, int worker_number);
 
 /**
  * Use tables to reset is_present fields to false,
@@ -442,19 +322,28 @@ void _lf_start_time_step() {
         _lf_done_using(_lf_more_tokens_with_ref_count);
         _lf_more_tokens_with_ref_count = next;
     }
-    for(int i = 0; i < _lf_is_present_fields_size; i++) {
-        *_lf_is_present_fields[i] = false;
+    bool** is_present_fields = _lf_is_present_fields_abbreviated;
+    int size = _lf_is_present_fields_abbreviated_size;
+    if (_lf_is_present_fields_abbreviated_size > _lf_is_present_fields_size) {
+        size = _lf_is_present_fields_size;
+        is_present_fields = _lf_is_present_fields;
+    }
+    for(int i = 0; i < size; i++) {
+        *is_present_fields[i] = false;
+    }
 #ifdef FEDERATED_DECENTRALIZED
+    for (int i = 0; i < _lf_is_present_fields_size; i++) {
         // FIXME: For now, an intended tag of (NEVER, 0)
         // indicates that it has never been set.
         *_lf_intended_tag_fields[i] = (tag_t) {NEVER, 0};
-#endif
     }
+#endif
 #ifdef FEDERATED
     // Reset absent fields on network ports because
     // their status is unknown
     reset_status_fields_on_input_port_triggers();
 #endif
+    _lf_is_present_fields_abbreviated_size = 0;
 }
 
 /**
@@ -597,7 +486,7 @@ void _lf_pop_events() {
         for (int i = 0; i < event->trigger->number_of_reactions; i++) {
             reaction_t *reaction = event->trigger->reactions[i];
             // Do not enqueue this reaction twice.
-            if (pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
+            if (reaction->status == inactive) {
 #ifdef FEDERATED_DECENTRALIZED
                 // In federated execution, an intended tag that is not (NEVER, 0)
                 // indicates that this particular event is triggered by a network message.
@@ -621,6 +510,7 @@ void _lf_pop_events() {
                 }
 #endif
                 DEBUG_PRINT("Enqueing reaction %s.", reaction->name);
+                reaction->status = queued;
                 pqueue_insert(reaction_q, reaction);
             } else {
                 DEBUG_PRINT("Reaction is already on the reaction_q: %s", reaction->name);
@@ -673,7 +563,7 @@ void _lf_pop_events() {
 #ifdef FEDERATED
     // Insert network dependent reactions for network input and output ports into
     // the reaction queue
-    enqueue_network_control_reactions(reaction_q);
+    enqueue_network_control_reactions();
 #endif // FEDERATED
 
     DEBUG_PRINT("There are %d events deferred to the next microstep.", pqueue_size(next_q));
@@ -695,7 +585,7 @@ void _lf_initialize_timer(trigger_t* timer) {
     interval_t delay = 0;
     if (timer->offset == 0) {
         for (int i = 0; i < timer->number_of_reactions; i++) {
-            _lf_enqueue_reaction(timer->reactions[i]);
+            _lf_enqueue_reaction(timer->reactions[i], -1);
             tracepoint_schedule(timer, 0LL); // Trace even though schedule is not called.
         }
         if (timer->period == 0) {
@@ -1333,8 +1223,9 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
     for (int i = 0; i < trigger->number_of_reactions; i++) {
         reaction_t* reaction = trigger->reactions[i];
         // Do not enqueue this reaction twice.
-        if (pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
+        if (reaction->status == inactive) {
             reaction->is_STP_violated = is_STP_violated;
+            reaction->status = queued;
             pqueue_insert(reaction_q, reaction);
             LOG_PRINT("Enqueued reaction %s at time %lld.", reaction->name, get_logical_time());
         }
@@ -1508,11 +1399,11 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
                                     // downstream reaction would be blocked because this reaction
                                     // remains on the executing queue. Hence, the optimization
                                     // is not valid. Put the candidate reaction on the queue.
-                                    _lf_enqueue_reaction(downstream_to_execute_now);
+                                    _lf_enqueue_reaction(downstream_to_execute_now, worker);
                                     downstream_to_execute_now = NULL;
                                 }
                                 // Queue the reaction.
-                                _lf_enqueue_reaction(downstream_reaction);
+                                _lf_enqueue_reaction(downstream_reaction, worker);
                             }
                         }
                     }
@@ -1600,10 +1491,6 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
         downstream_to_execute_now->is_STP_violated = false;
         DEBUG_PRINT("Finally, reset reaction's is_STP_violated field to false: %s",
         		downstream_to_execute_now->name);
-    } else if (num_downstream_reactions > 0) {
-        // If we are running a multithreaded setting, the following function
-        // may wake up other worker threads to execute the newly queued reactions.
-        _lf_notify_workers();
     }
 }
 
@@ -1825,7 +1712,7 @@ void initialize() {
 
     struct timespec physical_time_timespec = {physical_start_time / BILLION, physical_start_time % BILLION};
 
-    info_print("---- Start execution at time %s---- plus %ld nanoseconds.",
+    printf("---- Start execution at time %s---- plus %ld nanoseconds.\n",
             ctime(&physical_time_timespec.tv_sec), physical_time_timespec.tv_nsec);
     
     if (duration >= 0LL) {
@@ -1869,15 +1756,15 @@ void termination() {
     // If these are negative, then the program failed to start up.
     interval_t elapsed_time = get_elapsed_logical_time();
     if (elapsed_time >= 0LL) {
-        char time_buffer[28]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
-        readable_time(time_buffer, elapsed_time);
-        info_print("---- Elapsed logical time (in nsec): %s", time_buffer);
+        char time_buffer[29]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
+        lf_comma_separated_time(time_buffer, elapsed_time);
+        printf("---- Elapsed logical time (in nsec): %s\n", time_buffer);
 
         // If physical_start_time is 0, then execution didn't get far enough along
         // to initialize this.
         if (physical_start_time > 0LL) {
-            readable_time(time_buffer, get_elapsed_physical_time());
-            info_print("---- Elapsed physical time (in nsec): %s", time_buffer);
+        	lf_comma_separated_time(time_buffer, get_elapsed_physical_time());
+            printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
         }
     }
 }

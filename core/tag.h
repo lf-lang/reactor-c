@@ -45,6 +45,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSECS(t) (t * 1000000LL)
 #define SEC(t)  (t * 1000000000LL)
 #define SECS(t) (t * 1000000000LL)
+#define SECOND(t)  (t * 1000000000LL)
+#define SECONDS(t) (t * 1000000000LL)
 #define MINUTE(t)   (t * 60000000000LL)
 #define MINUTES(t)  (t * 60000000000LL)
 #define HOUR(t)  (t * 3600000000000LL)
@@ -118,6 +120,33 @@ tag_t delay_tag(tag_t tag, interval_t interval);
  * @return A time interval.
  */
 interval_t get_elapsed_logical_time();
+
+/**
+ * Store into the specified buffer a string giving a human-readable
+ * rendition of the specified time. The buffer must have length at least
+ * equal to LF_TIME_BUFFER_LENGTH. The format is:
+ * ```
+ *    x weeks, x days, x hours, x minutes, x seconds, x unit
+ * ```
+ * where each `x` is a string of numbers with commas inserted if needed
+ * every three numbers and `unit` is nanoseconds, microseconds, or
+ * milliseconds.
+ * @param buffer The buffer into which to write the string.
+ * @param time The time to write.
+ * @return The number of characters written (not counting the null terminator).
+ */
+size_t lf_readable_time(char* buffer, instant_t time);
+
+/**
+ * Print a non-negative time value in nanoseconds with commas separating thousands
+ * into the specified buffer. Ideally, this would use the locale to
+ * use periods if appropriate, but I haven't found a sufficiently portable
+ * way to do that.
+ * @param buffer A buffer long enough to contain a string like "9,223,372,036,854,775,807".
+ * @param time A time value.
+ * @return The number of characters written (not counting the null terminator).
+ */
+size_t lf_comma_separated_time(char* buffer, instant_t time);
 
 /**
  * Return the current logical time in nanoseconds.
@@ -201,7 +230,7 @@ instant_t get_start_time();
  * variant.
  */
 #ifdef __cplusplus
-tag_t convert_volatile_tag_to_nonvolatile(tag_t volatile const& vtag);
+tag_t convert_volatile_tag_to_nonvolatile(const volatile tag_t &vtag);
 #else
 /**
  * @note This is an undefined behavior in C and should

@@ -1,6 +1,6 @@
-/* MacOS API support for the C target of Lingua Franca. */
+/* Common definitions for 64-bit times and 32-bit unsigned microsteps. */
 
-/*************
+/*
 Copyright (c) 2021, The University of California at Berkeley.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -22,32 +22,38 @@ PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR B
 INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************/
+*/
 
-/** MacOS API support for the C target of Lingua Franca.
- *  
- *  @author{Soroush Bateni <soroush@utdallas.edu>}
+/**
+ * Time instant. Both physical and logical times are represented
+ * using this typedef.
+ * WARNING: If this code is used after about the year 2262,
+ * then representing time as a 64-bit long long will be insufficient.
  */
+typedef int64_t _instant_t;
 
-#ifndef LF_MACOS_SUPPORT_H
-#define LF_MACOS_SUPPORT_H
+/**
+ * Interval of time.
+ */
+typedef int64_t _interval_t;
 
-#ifdef NUMBER_OF_WORKERS
-#if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
-#include "lf_POSIX_threads_support.h"
-#else
-#include "lf_C11_threads_support.h"
-#endif
-#endif
+/**
+ * Microstep instant.
+ */
+typedef uint32_t _microstep_t;
 
-#include <stdint.h> // For fixed-width integral types
-#include <time.h>   // For CLOCK_MONOTONIC
-#include <stdbool.h>
-
-// Use 64-bit times and 32-bit unsigned microsteps
-#include "lf_tag_64_32.h"
-
-// The underlying physical clock for MacOS
-#define _LF_CLOCK CLOCK_MONOTONIC
-
-#endif // LF_MACOS_SUPPORT_H
+/**
+ * For user-friendly reporting of time values, the buffer length required.
+ * This is calculated as follows, based on 64-bit time in nanoseconds:
+ * Maximum number of weeks is 15,250
+ * Maximum number of days is 6
+ * Maximum number of hours is 23
+ * Maximum number of minutes is 59
+ * Maximum number of seconds is 59
+ * Maximum number of nanoseconds is 999,999,999
+ * Maximum number of microsteps is 4,294,967,295
+ * Total number of characters for the above is 24.
+ * Text descriptions and spaces add an additional 55,
+ * for a total of 79. One more allows for a null terminator.
+ */
+#define LF_TIME_BUFFER_LENGTH 80

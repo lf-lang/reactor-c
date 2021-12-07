@@ -93,6 +93,22 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
 }
 
 /**
+ * Mark the given is_present field as true. This is_present field
+ * will later be cleaned up by _lf_start_time_step.
+ * This assumes that the mutex is not held.
+ * @param is_present_field A pointer to the is_present field that
+ * must be set.
+ */
+void _lf_set_present(bool* is_present_field) {
+    if (_lf_is_present_fields_abbreviated_size < _lf_is_present_fields_size) {
+        _lf_is_present_fields_abbreviated[_lf_is_present_fields_abbreviated_size]
+            = is_present_field;
+    }
+    _lf_is_present_fields_abbreviated_size++;
+    *is_present_field = true;
+}
+
+/**
  * Advance logical time to the lesser of the specified time or the
  * timeout time, if a timeout time has been given. If the -fast command-line option
  * was not given, then wait until physical time matches or exceeds the start time of
@@ -119,7 +135,7 @@ int wait_until(instant_t logical_time_ns) {
 }
 
 void print_snapshot() {
-    if(LOG_LEVEL > 3) {
+    if(LOG_LEVEL > LOG_LEVEL_LOG) {
         DEBUG_PRINT(">>> START Snapshot");
         pqueue_dump(reaction_q, reaction_q->prt);
         DEBUG_PRINT(">>> END Snapshot");
@@ -130,11 +146,16 @@ void print_snapshot() {
  * Put the specified reaction on the reaction queue.
  * This version does not acquire a mutex lock.
  * @param reaction The reaction.
+ * @param worker_number The ID of the worker that is making a call. 0 can be
+ *  used if there is only one worker (e.g., when the program is using the
+ *  unthreaded C runtime).
  */
-void _lf_enqueue_reaction(reaction_t* reaction) {
+void _lf_enqueue_reaction(reaction_t* reaction, int worker_number) {
     // Do not enqueue this reaction twice.
-    if (pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
-        DEBUG_PRINT("Enqueing downstream reaction %s.", reaction->name);
+    if (reaction->status == inactive) {
+        DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
+        		reaction->name, reaction->index & 0xffffLL);
+        reaction->status = queued;
         pqueue_insert(reaction_q, reaction);
     }
 }
@@ -150,6 +171,7 @@ int _lf_do_step() {
     while(pqueue_size(reaction_q) > 0) {
         // print_snapshot();
         reaction_t* reaction = (reaction_t*)pqueue_pop(reaction_q);
+        reaction->status = running;
         
         LOG_PRINT("Invoking reaction %s at elapsed logical tag (%lld, %d).",
         		reaction->name,
@@ -157,6 +179,7 @@ int _lf_do_step() {
 
         bool violation = false;
 
+        // FIXME: These comments look outdated. We may need to update them.
         // If the reaction has a deadline, compare to current physical time
         // and invoke the deadline violation reaction instead of the reaction function
         // if a violation has occurred. Note that the violation reaction will be invoked
@@ -166,13 +189,14 @@ int _lf_do_step() {
         if (reaction->deadline > 0LL) {
             // Get the current physical time.
             instant_t physical_time = get_physical_time();
+            // FIXME: These comments look outdated. We may need to update them.
             // Check for deadline violation.
             // There are currently two distinct deadline mechanisms:
             // local deadlines are defined with the reaction;
             // container deadlines are defined in the container.
             // They can have different deadlines, so we have to check both.
             // Handle the local deadline first.
-            if (reaction->deadline > 0LL && physical_time > current_tag.time + reaction->deadline) {
+            if (physical_time > current_tag.time + reaction->deadline) {
                 LOG_PRINT("Deadline violation. Invoking deadline handler.");
                 // Deadline violation has occurred.
                 violation = true;
@@ -197,6 +221,9 @@ int _lf_do_step() {
             // reactions into the queue.
             schedule_output_reactions(reaction, 0);
         }
+        // There cannot be any subsequent events that trigger this reaction at the
+        //  current tag, so it is safe to conclude that it is now inactive.
+        reaction->status = inactive;
     }
     
     // No more reactions should be blocked at this point.
@@ -296,12 +323,6 @@ void request_stop() {
 	new_stop_tag.time = current_tag.time;
 	new_stop_tag.microstep = current_tag.microstep + 1;
 	_lf_set_stop_tag(new_stop_tag);
-}
-
-/**
- * Do nothing. This implementation is not multithreaded.
- */
-void _lf_notify_workers() {
 }
 
 /**
