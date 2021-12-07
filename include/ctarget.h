@@ -41,7 +41,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CTARGET_H
 #define CTARGET_H
 
-#include "core/reactor.h"
+#include "../core/reactor.h"
 
 //////////////////////////////////////////////////////////////
 /////////////  SET Functions (to produce an output)
