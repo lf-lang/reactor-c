@@ -197,7 +197,7 @@ void _lf_sched_update_reaction_q(size_t worker_number) {
  */
 static inline void _lf_sched_distribute_ready_reaction(reaction_t* ready_reaction) {
     DEBUG_PRINT("Scheduler: Trying to distribute reaction %s.", ready_reaction->name);
-    ready_reaction->status = running;
+    lf_bool_compare_and_swap(&ready_reaction->status, queued, running);
     lf_mutex_lock(&_lf_sched_executing_q_mutex);
     if (pqueue_insert(executing_q, ready_reaction) != 0) {
         error_print_and_exit("Could not add reaction to the executing queue.");
@@ -585,13 +585,11 @@ reaction_t* lf_sched_pop_ready_reaction(int worker_number) {
  * @param done_reaction The reaction is that is done.
  */
 void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction) {
-    if (done_reaction->status != running) {
+    if (!lf_bool_compare_and_swap(&done_reaction->status, running, inactive)) {
         error_print_and_exit("Unexpected reaction status: %d. Expected %d.", 
             done_reaction->status,
             running);
     }
-    done_reaction->status = inactive;
-    return;
 }
 
 /**
