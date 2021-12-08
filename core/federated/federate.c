@@ -412,8 +412,10 @@ int send_timed_message(interval_t additional_delay,
  * It assumes the caller is.
  * @param type The message type (MSG_TYPE_TIMESTAMP or MSG_TYPE_TIME_ADVANCE_NOTICE).
  * @param time The time.
+ * @param exit_on_error If set to true, exit the program if sending 'time' fails.
+ *  Print a soft error message otherwise
  */
-void _lf_send_time(unsigned char type, instant_t time) {
+void _lf_send_time(unsigned char type, instant_t time, bool exit_on_error) {
     DEBUG_PRINT("Sending time %lld to the RTI.", time);
     size_t bytes_to_write = 1 + sizeof(instant_t);
     unsigned char buffer[bytes_to_write];
@@ -427,7 +429,15 @@ void _lf_send_time(unsigned char type, instant_t time) {
     }
     ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
     if (bytes_written < (ssize_t)bytes_to_write) {
-        if (errno == ENOTCONN) {
+        if (!exit_on_error) {
+            error_print("Failed to send time %lld to the RTI." 
+                            " Error code %d: %s",
+                            time - start_time,
+                            errno,
+                            strerror(errno)
+                        );
+
+        } else if (errno == ENOTCONN) {
             // FIXME: Shutdown is probably not working properly because the socket gets disconnected.
             error_print("Socket to the RTI is no longer connected. Considering this a soft error.");
         } else {
@@ -1018,7 +1028,7 @@ void connect_to_rti(char* hostname, int port) {
  */
 instant_t get_start_time_from_rti(instant_t my_physical_time) {
     // Send the timestamp marker first.
-    _lf_send_time(MSG_TYPE_TIMESTAMP, my_physical_time);
+    _lf_send_time(MSG_TYPE_TIMESTAMP, my_physical_time, true);
 
     // Read bytes from the socket. We need 9 bytes.
     // Buffer for message ID plus timestamp.
@@ -2580,7 +2590,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
                 // Check whether the new event on the event queue requires sending a new NET.
                 tag_t next_tag = get_next_event_tag();
                 if (compare_tags(next_tag, tag) != 0) {
-                    _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag);
+                    _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag, wait_for_reply);
                     _fed.last_sent_NET = next_tag;
                 }
             }
