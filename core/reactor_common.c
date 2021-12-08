@@ -137,6 +137,8 @@ interval_t _lf_global_time_STP_offset = 0LL;
  * @param worker_number The current worker number.
  */
 void _lf_add_triggered_reactions(reaction_t** reaction_array, int worker_number) {
+    if (*reaction_array) return;
+    *reaction_array = (reaction_t*) true;
     vector_push(&_lf_triggered_reactions_by_thread[worker_number], reaction_array);
 }
 
@@ -152,6 +154,47 @@ static bool _lf_array_equal(void** a0, size_t size0, void** a1, size_t size1) {
     if (size0 != size1) return false;
     for (int i = 0; i < size0; i++) if (a0[i] != a1[i]) return false;
     return true;
+}
+
+/**
+ * Allocate an array of the appropriate size to hold the reactions arrays for the given
+ * trigger arrays.
+ */
+static reaction_t** _lf_allocate_reactions_array(
+    vector_t trigger_arrays,
+    vector_t trigger_array_sizes,
+    bool* different_from_previous
+) {
+    size_t total_reactions = 0;
+    size_t n_reactionses = 0;
+    reaction_t** last_reactions = NULL;
+    size_t last_reactions_size = 0;
+    for (size_t i = 0; i < trigger_arrays.next - trigger_arrays.start; i++) {
+        trigger_t** current_trigger_array = (trigger_t**) trigger_arrays.start[i];
+        size_t current_reactions_size = 0;
+        // NOTE: This assumes that the elements of the trigger array do not all trigger the same reactions. If
+        //  they do, there is significant redundancy that should be optimized out.
+        for (size_t j = 0; j < (size_t) trigger_array_sizes.start[i]; j++)
+            current_reactions_size += current_trigger_array[j]->number_of_reactions;
+        reaction_t** current_reactions = (reaction_t**) malloc(current_reactions_size * sizeof(reaction_t*));
+        current_reactions_size = 0;
+        for (size_t j = 0; j < (size_t) trigger_array_sizes.start[i]; j++)
+            for (size_t k = 0; k < current_trigger_array[j]->number_of_reactions; k++)
+                current_reactions[current_reactions_size++] = current_trigger_array[j]->reactions[k];
+        if (last_reactions && _lf_array_equal(
+            (void**) last_reactions, last_reactions_size, (void**) current_reactions, current_reactions_size
+        )) continue;
+        different_from_previous[i] = true;
+        total_reactions += current_reactions_size;
+        n_reactionses++;
+        free(last_reactions);
+        last_reactions = current_reactions;
+        last_reactions_size = current_reactions_size;
+    }
+    free(last_reactions);
+    // Each array is preceded by a header that contains a boolean (indicating whether it has been triggered) and a
+    //  size (indicating its length).
+    return (reaction_t**) malloc((total_reactions + 2 * n_reactionses) * sizeof(reaction_t*));
 }
 
 /*
@@ -180,45 +223,19 @@ reaction_t** _lf_associate_reactions_to_ports(
     // Implementation note. This method allocates one contiguous memory block for all of reactions associated
     //  with a given multiport. Additionally, adjacent ports in the multiport that trigger the same reactions
     //  are associated with the same blocks in the reaction pointer array.
-    // Allocate the contiguous memory block.
-    size_t total_reactions = 0;
-    size_t n_reactionses = 0;
-    reaction_t** last_reactions = NULL;
-    size_t last_reactions_size = 0;
-    for (size_t i = 0; i < trigger_arrays.next - trigger_arrays.start; i++) {
-        trigger_t** current_trigger_array = (trigger_t**) trigger_arrays.start[i];
-        size_t current_reactions_size = 0;
-        // NOTE: This assumes that the elements of the trigger array do not all trigger the same reactions. If
-        //  they do, there is significant redundancy that should be optimized out.
-        for (size_t j = 0; j < (size_t) trigger_array_sizes.start[i]; j++)
-            current_reactions_size += current_trigger_array[j]->number_of_reactions;
-        reaction_t** current_reactions = (reaction_t**) malloc(current_reactions_size * sizeof(reaction_t*));
-        current_reactions_size = 0;
-        for (size_t j = 0; j < (size_t) trigger_array_sizes.start[i]; j++)
-            for (size_t k = 0; k < current_trigger_array[j]->number_of_reactions; k++)
-                current_reactions[current_reactions_size++] = current_trigger_array[j]->reactions[k]; 
-        if (_lf_array_equal(
-            (void**) last_reactions, last_reactions_size, (void**) current_reactions, current_reactions_size)
-        ) {
-            trigger_array_sizes.start[i] = 0; // Zero out this trigger array so that it will be skipped in next pass.
-            continue;
-        }
-        total_reactions += current_reactions_size;
-        n_reactionses++;
-        free(last_reactions);
-        last_reactions = current_reactions;
-        last_reactions_size = current_reactions_size;
-    }
-    free(last_reactions);
-    reaction_t** reactions = (reaction_t**) malloc((total_reactions + n_reactionses) * sizeof(reaction_t*));
+    bool* different_from_previous = (bool*) calloc((size_t) (trigger_arrays.next - trigger_arrays.start), sizeof(bool));
+    reaction_t** reactions = _lf_allocate_reactions_array(
+        trigger_arrays, trigger_array_sizes, different_from_previous
+    );
     // Populate the memory block with sized arrays.
     reaction_t** current_reaction = reactions;
     reaction_t** current_reactions = current_reaction;
     for (size_t i = 0; i < trigger_arrays.next - trigger_arrays.start; i++) {
         trigger_t** current_trigger_array = (trigger_t**) trigger_arrays.start[i];
         reaction_t**** current_reactionses = (reaction_t****) reactionseses.start[i];
-        if (trigger_array_sizes.start[i]) {
-            current_reactions = current_reaction++;
+        if (different_from_previous[i]) {
+            current_reactions = current_reaction;
+            current_reaction += 2;
             size_t current_reactions_size = 0;
             // Set the contents of the sized array current_reactions.
             for (size_t j = 0; j < (size_t) trigger_array_sizes.start[i]; j++) {
@@ -228,7 +245,8 @@ reaction_t** _lf_associate_reactions_to_ports(
                 }
             }
             // Record the size of the sized array current_reactions.
-            *current_reactions = (reaction_t*) current_reactions_size;
+            *current_reactions = NULL;
+            *(current_reactions + 1) = (reaction_t*) current_reactions_size;
         }
         // Save pointers to the sized array.
         for (size_t j = 0; j < (size_t) reactionses_sizes.start[i]; j++)
@@ -1577,6 +1595,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
     vector_vote(current_reactions);
     reaction_t** downstream_reactions;
     while((downstream_reactions = (reaction_t**) vector_pop(current_reactions))) {
+        *(downstream_reactions++) = (reaction_t*) false; // FIXME: Ideally this would be done at _lf_start_time_step
         size_t downstream_reactions_length = (size_t) *(downstream_reactions++);
         for (int k = 0; k < downstream_reactions_length; k++) {
             reaction_t* downstream_reaction = downstream_reactions[k];
