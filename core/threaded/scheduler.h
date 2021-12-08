@@ -54,13 +54,16 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
 
 /**
  * @brief Inform the scheduler that worker thread 'worker_number' would like to
- * enqueue 'reaction'.
+ * trigger 'reaction' at the current tag.
  * 
- * This enqueuing happens lazily (at a later point when the scheduler deems
- * appropriate), unless worker_number is set to -1. In that case, the enqueuing
+ * This triggering happens lazily (at a later point when the scheduler deems
+ * appropriate), unless worker_number is set to -1. In that case, the triggering
  * of 'reaction' is done immediately.
  * 
- * @param reaction The reaction to enqueue.
+ * The scheduler will ensure that the same reaction is not triggered twice in
+ * the same tag.
+ * 
+ * @param reaction The reaction to trigger at the current tag.
  * @param worker_number The ID of the worker that is making this call. 0 should be
  *  used if there is only one worker (e.g., when the program is using the
  *  unthreaded C runtime). -1 should be used if the scheduler should handle

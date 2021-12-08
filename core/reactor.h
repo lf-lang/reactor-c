@@ -450,7 +450,7 @@ typedef struct token_present_t {
  * The COMMON information is set in the constructor.
  * The fields marked RUNTIME have values that change
  * during execution.
- * Instances of this struct are put onto the reaction queue (reaction_q).
+ * Instances of this struct are put onto the reaction queue by the scheduler.
  */
 typedef struct reaction_t reaction_t;
 struct reaction_t {

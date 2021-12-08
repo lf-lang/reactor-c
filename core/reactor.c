@@ -38,6 +38,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#include <assert.h>
 
 /**
+ * @brief Queue of triggered reactions at the current tag.
+ * 
+ */
+pqueue_t* reaction_q;
+
+/**
  * Unless the "fast" option is given, an LF program will wait until
  * physical time matches logical time before handling an event with
  * a given logical time. The amount of time is less than this given
@@ -364,6 +370,13 @@ int lf_reactor_c_main(int argc, char* argv[]) {
 
         DEBUG_PRINT("Initializing.");
         initialize(); // Sets start_time.
+        
+        // Reaction queue ordered first by deadline, then by level.
+        // The index of the reaction holds the deadline in the 48 most significant bits,
+        // the level in the 16 least significant bits.
+        reaction_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
+                get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
+                
         current_tag = (tag_t){.time = start_time, .microstep = 0u};
         _lf_execution_started = true;
         _lf_trigger_startup_reactions();

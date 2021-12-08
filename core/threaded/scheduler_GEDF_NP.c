@@ -47,29 +47,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 /////////////////// External Variables /////////////////////////
-extern pqueue_t* reaction_q;
 extern lf_mutex_t mutex;
 extern tag_t current_tag;
 extern tag_t stop_tag;
 
 /////////////////// External Functions /////////////////////////
 /**
- * If there is at least one event in the event queue, then wait until
- * physical time matches or exceeds the time of the least tag on the event
- * queue; pop the next event(s) from the event queue that all have the same tag;
- * extract from those events the reactions that are to be invoked at this
- * logical time and insert them into the reaction queue. The event queue is
- * sorted by time tag.
- *
- * If there is no event in the queue and the keepalive command-line option was
- * not given, and this is not a federated execution with centralized coordination,
- * set the stop tag to the current tag.
- * If keepalive was given, then wait for either request_stop()
- * to be called or an event appears in the event queue and then return.
- *
- * Every time tag is advanced, it is checked against stop tag and if they are
- * equal, shutdown reactions are triggered.
- *
+ * Placeholder for function that will advance tag and initially fill the
+ * reaction queue.
+ * 
  * This does not acquire the mutex lock. It assumes the lock is already held.
  */
 void _lf_next_locked();
@@ -94,6 +80,13 @@ semaphore_t* _lf_sched_semaphore;
 
 
 volatile bool _lf_sched_should_stop = false;
+
+/**
+ * @brief Queue of triggered reactions at the current tag.
+ * 
+ */
+pqueue_t* reaction_q;
+
 
 /**
  * @brief Queue used to keep reactions temporarily.
@@ -483,6 +476,12 @@ void lf_sched_init(size_t number_of_workers) {
     
     _lf_sched_semaphore = lf_semaphore_new(0);
     _lf_sched_number_of_workers = number_of_workers;
+
+    // Reaction queue ordered first by deadline, then by level.
+    // The index of the reaction holds the deadline in the 48 most significant bits,
+    // the level in the 16 least significant bits.
+    reaction_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
+            get_reaction_position, set_reaction_position, reaction_matches, print_reaction); 
     transfer_q = pqueue_init(_lf_number_of_threads, in_reverse_order, get_reaction_index,
         get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
     // Create a queue on which to put reactions that are currently executing.
@@ -514,6 +513,7 @@ void lf_sched_free() {
     for (int i=0; i < _lf_sched_number_of_workers; i++) {
         pqueue_free(_lf_sched_threads_info[i].output_reactions);
     }
+    pqueue_free(reaction_q);
     pqueue_free(transfer_q);
     pqueue_free(executing_q);
     if (lf_semaphore_destroy(_lf_sched_semaphore) != 0) {
@@ -594,13 +594,16 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
 
 /**
  * @brief Inform the scheduler that worker thread 'worker_number' would like to
- * enqueue 'reaction'.
+ * trigger 'reaction' at the current tag.
  * 
- * This enqueuing happens lazily (at a later point when the scheduler deems
- * appropriate), unless worker_number is set to -1. In that case, the enqueuing
+ * This triggering happens lazily (at a later point when the scheduler deems
+ * appropriate), unless worker_number is set to -1. In that case, the triggering
  * of 'reaction' is done immediately.
  * 
- * @param reaction The reaction to enqueue.
+ * The scheduler will ensure that the same reaction is not triggered twice in
+ * the same tag.
+ * 
+ * @param reaction The reaction to trigger at the current tag.
  * @param worker_number The ID of the worker that is making this call. 0 should be
  *  used if there is only one worker (e.g., when the program is using the
  *  unthreaded C runtime). -1 should be used if the scheduler should handle
@@ -616,7 +619,7 @@ void lf_sched_worker_trigger_reaction(int worker_number, reaction_t* reaction) {
             DEBUG_PRINT("Scheduler: Enqueing reaction %s, which has level %lld.",
                         reaction->name, reaction->index & 0xffffLL);
             // Immediately put 'reaction' on the reaction queue.
-            pqueue_insert(reaction_q, reaction);
+            pqueue_insert(reaction_q, (void*)reaction);
         }
         lf_mutex_unlock(&mutex);
         return;

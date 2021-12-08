@@ -47,7 +47,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 /////////////////// External Variables /////////////////////////
-extern pqueue_t* reaction_q;
 extern lf_mutex_t mutex;
 extern tag_t current_tag;
 extern tag_t stop_tag;
@@ -126,6 +125,12 @@ void logical_tag_complete(tag_t tag_to_send);
  * Initially assumed that there are 0 idle threads.
  */
 semaphore_t* _lf_sched_semaphore; 
+
+/**
+ * @brief Queue of triggered reactions at the current tag.
+ * 
+ */
+pqueue_t* reaction_q;
 
 /**
  * @brief Vector used to keep reactions temporarily.
@@ -242,6 +247,12 @@ void lf_sched_init(size_t number_of_workers) {
     
     _lf_sched_semaphore = lf_semaphore_new(0);
     _lf_sched_number_of_workers = number_of_workers;
+
+    // Reaction queue ordered first by deadline, then by level.
+    // The index of the reaction holds the deadline in the 48 most significant bits,
+    // the level in the 16 least significant bits.
+    reaction_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
+            get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
     transfer_q = vector_new(INITIAL_REACT_QUEUE_SIZE);
     // Create a queue on which to put reactions that are currently executing.
     executing_q = pqueue_init(_lf_number_of_threads, in_reverse_order, get_reaction_index,
@@ -287,6 +298,7 @@ void lf_sched_free() {
         vector_free(&_lf_sched_threads_info[i].output_reactions);
         vector_free(&_lf_sched_threads_info[i].done_reactions);
     }
+    pqueue_free(reaction_q);
     vector_free(&transfer_q);
     pqueue_free(executing_q);
     if (lf_semaphore_destroy(_lf_sched_semaphore) != 0) {
@@ -440,13 +452,16 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
 
 /**
  * @brief Inform the scheduler that worker thread 'worker_number' would like to
- * enqueue 'reaction'.
+ * trigger 'reaction' at the current tag.
  * 
- * This enqueuing happens lazily (at a later point when the scheduler deems
- * appropriate), unless worker_number is set to -1. In that case, the enqueuing
+ * This triggering happens lazily (at a later point when the scheduler deems
+ * appropriate), unless worker_number is set to -1. In that case, the triggering
  * of 'reaction' is done immediately.
  * 
- * @param reaction The reaction to enqueue.
+ * The scheduler will ensure that the same reaction is not triggered twice in
+ * the same tag.
+ * 
+ * @param reaction The reaction to trigger at the current tag.
  * @param worker_number The ID of the worker that is making this call. 0 should be
  *  used if there is only one worker (e.g., when the program is using the
  *  unthreaded C runtime). -1 should be used if the scheduler should handle

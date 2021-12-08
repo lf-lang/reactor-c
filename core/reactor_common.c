@@ -190,7 +190,6 @@ void set_stp_offset(interval_t offset) {
 /** Priority queues. */
 pqueue_t* event_q;     // For sorting by time.
 
-pqueue_t* reaction_q;  // For sorting by deadline.
 pqueue_t* recycle_q;   // For recycling malloc'd events.
 pqueue_t* next_q;      // For temporarily storing the next event lined 
                        // up in superdense time.
@@ -509,11 +508,10 @@ void _lf_pop_events() {
                     }
                 }
 #endif
-                DEBUG_PRINT("Enqueing reaction %s.", reaction->name);
-                reaction->status = queued;
-                pqueue_insert(reaction_q, reaction);
+                DEBUG_PRINT("Triggering reaction %s.", reaction->name);
+                _lf_enqueue_reaction(reaction, -1);
             } else {
-                DEBUG_PRINT("Reaction is already on the reaction_q: %s", reaction->name);
+                DEBUG_PRINT("Reaction is already triggered: %s", reaction->name);
             }
         }
 
@@ -1225,8 +1223,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
         // Do not enqueue this reaction twice.
         if (reaction->status == inactive) {
             reaction->is_STP_violated = is_STP_violated;
-            reaction->status = queued;
-            pqueue_insert(reaction_q, reaction);
+            _lf_enqueue_reaction(reaction, -1);
             LOG_PRINT("Enqueued reaction %s at time %lld.", reaction->name, get_logical_time());
         }
     }
@@ -1685,13 +1682,7 @@ void initialize() {
     _lf_count_payload_allocations = 0;
     _lf_count_token_allocations = 0;
 
-    // Initialize our priority queues.
-
-    // Reaction queue ordered first by deadline, then by level.
-    // The index of the reaction holds the deadline in the 48 most significant bits,
-    // the level in the 16 least significant bits.
-    reaction_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
-            get_reaction_position, set_reaction_position, reaction_matches, print_reaction);    
+    // Initialize our priority queues.  
 
     event_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_reverse_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);

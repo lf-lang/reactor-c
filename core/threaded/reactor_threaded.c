@@ -750,6 +750,9 @@ void _lf_enqueue_reaction(reaction_t* reaction, int worker_number) {
  * This assumes the mutex lock is held by the caller.
  */
 void _lf_initialize_start_tag() {
+    // Initialize the scheduler
+    lf_sched_init((size_t)_lf_number_of_threads);
+
     // Add reactions invoked at tag (0,0) (including startup reactions) to the reaction queue
     _lf_trigger_startup_reactions(); 
 
@@ -1049,7 +1052,8 @@ void print_snapshot() {
     if(LOG_LEVEL > LOG_LEVEL_LOG) {
         DEBUG_PRINT(">>> START Snapshot");
         DEBUG_PRINT("Pending:");
-        pqueue_dump(reaction_q, print_reaction);
+        // pqueue_dump(reaction_q, print_reaction); FIXME: reaction_q is not
+        // accessible here
         DEBUG_PRINT("Event queue size: %d. Contents:",
                         pqueue_size(event_q));
         pqueue_dump(event_q, print_reaction); 
@@ -1127,8 +1131,6 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         _lf_initialize_start_tag();
 
         start_threads();
-
-        lf_sched_init((size_t)_lf_number_of_threads);
 
         lf_mutex_unlock(&mutex);
         DEBUG_PRINT("Waiting for worker threads to exit.");
