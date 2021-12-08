@@ -359,6 +359,21 @@ trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* 
     return return_value;
 }
 
+/*
+ * Mark the given is_present field as true. This is_present field
+ * will later be cleaned up by _lf_start_time_step.
+ * This assumes that the mutex is not held.
+ * @param is_present_field A pointer to the is_present field that
+ * must be set.
+ */
+void _lf_set_present(bool* is_present_field) {
+    int ipfas = lf_atomic_fetch_add(&_lf_is_present_fields_abbreviated_size, 1);
+    if (ipfas < _lf_is_present_fields_size) {
+        _lf_is_present_fields_abbreviated[ipfas] = is_present_field;
+    }
+    *is_present_field = true;
+}
+
 /** 
  * Placeholder for code-generated function that will, in a federated
  * execution, be used to coordinate the advancement of tag. It will notify
@@ -479,7 +494,7 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
             if (ns_to_wait < MIN_WAIT_TIME) {
                 return true;
             }
-            DEBUG_PRINT("-------- pthread_cond_timedwait claims to have timed out, "
+            DEBUG_PRINT("-------- lf_cond_timedwait claims to have timed out, "
                     "but it did not reach the target time. Waiting again.");
             return wait_until(wait_until_time_ns, condition);
         }
@@ -572,7 +587,7 @@ tag_t send_next_event_tag(tag_t tag, bool wait_for_reply) {
  *
  * This does not acquire the mutex lock. It assumes the lock is already held.
  */
-void _lf_next() {
+void _lf_next_locked() {
     // Previous logical time is complete.
     tag_t next_tag = get_next_event_tag();
 
@@ -623,7 +638,7 @@ void _lf_next() {
     // arrives from an upstream federate or a local physical action triggers).
     LOG_PRINT("Waiting until elapsed time %lld.", (next_tag.time - start_time));
     while (!wait_until(next_tag.time, &event_q_changed)) {
-        DEBUG_PRINT("_lf_next(): Wait until time interrupted.");
+        DEBUG_PRINT("_lf_next_locked(): Wait until time interrupted.");
         // Sleep was interrupted.  Check for a new next_event.
         // The interruption could also have been due to a call to request_stop().
         next_tag = get_next_event_tag();
@@ -700,6 +715,13 @@ void _lf_next() {
  */
 void request_stop() {
     lf_mutex_lock(&mutex);
+    // Check if already at the previous stop tag.
+    if (compare_tags(current_tag, stop_tag) >= 0) {
+        // If so, ignore the stop request since the program
+        // is already stopping at the current tag.
+        lf_mutex_unlock(&mutex);
+        return;
+    }
 #ifdef FEDERATED
     _lf_fd_send_stop_request_to_rti();
     // Do not set stop_requested
@@ -746,19 +768,49 @@ bool _lf_has_precedence_over(reaction_t* r1, reaction_t* r2) {
  * @param reaction The reaction.
  * @return true if this reaction is blocked, false otherwise.
  */
-bool _lf_is_blocked_by_executing_reaction(reaction_t* reaction) {
+bool _lf_is_blocked_by_executing_or_blocked_reaction(reaction_t* reaction) {
     if (reaction == NULL) {
         return false;
     }
+    // The head of the executing_q has the lowest level of anything
+    // on the queue, and that level is also lower than anything on the
+    // transfer_q (because reactions on the transfer queue are blocked
+    // by reactions on the executing_q). Hence, if the candidate reaction
+    // has a level less than or equal to that of the head of the
+    // executing_q, then it is executable and we don't need to check
+    // the contents of either queue further.
+    if (pqueue_size(executing_q) > 0
+            && reaction->index <= ((reaction_t*) pqueue_peek(executing_q))->index) {
+        return false;
+    }
+
+    // Candidate reaction has a level larger than some executing reaction,
+    // so we need to check whether it is blocked by any executing reaction
+    // or any reaction that is is blocked by an executing reaction.
+
+    // The following iterates over the elements of those queues in arbitrary
+    // order, not in priority order.
+    // NOTE: If chainID is disabled, this will never yield a false result
+    // if the above test failed to yield a false result. But the check
+    // is kept here in anticipation of chainID becoming enabled sometime
+    // in the future.  It is relatively harmless because the calling thread
+    // has nothing to do anyway.
+    
+    // NOTE: Element 0 of the pqueue is not used and will likely be null.
     for (size_t i = 1; i < executing_q->size; i++) {
         reaction_t* running = (reaction_t*) executing_q->d[i];
         if (_lf_has_precedence_over(running, reaction)) {
-            DEBUG_PRINT("Reaction %s is blocked by reaction %s.", reaction->name, running->name);
+            DEBUG_PRINT("Reaction %s is blocked by executing reaction %s.", reaction->name, running->name);
             return true;
         }
     }
-    // NOTE: checks against the transfer_q are not performed in 
-    // this function but at its call site (where appropriate).
+    for (size_t i = 1; i < transfer_q->size; i++) {
+        reaction_t* blocked = (reaction_t*) transfer_q->d[i];
+        if (_lf_has_precedence_over(blocked, reaction)) {
+            DEBUG_PRINT("Reaction %s is blocked by blocked reaction %s.", reaction->name, blocked->name);
+            return true;
+        }
+    }
 
     // printf("Not blocking for reaction with chainID %llu and level %llu\n", reaction->chain_id, reaction->index);
     // pqueue_dump(executing_q, stdout, executing_q->prt);
@@ -800,25 +852,17 @@ bool _lf_is_blocked_by_executing_reaction(reaction_t* reaction) {
 reaction_t* first_ready_reaction() {    
     reaction_t* r;
     reaction_t* b;
-    // Keep track of the chain IDs of blocked reactions.
-    unsigned long long mask = 0LL;
 
     // Find a reaction that is ready to execute.
     while ((r = (reaction_t*)pqueue_pop(reaction_q)) != NULL) {
         // Set the reaction aside if it is blocked, either by another
         // blocked reaction or by a reaction that is currently executing.
-        if (OVERLAPPING(mask, r->chain_id)) {
+        if (_lf_is_blocked_by_executing_or_blocked_reaction(r)) {
             pqueue_insert(transfer_q, r);
-            DEBUG_PRINT("Reaction %s is blocked by a reaction that is also blocked.", r->name);
         } else {
-            if (_lf_is_blocked_by_executing_reaction(r)) {
-                pqueue_insert(transfer_q, r);
-            } else {
-                // Not blocked. Break out of the loop and return the reaction.
-                break;
-            }
-        }
-        mask = mask | r->chain_id;
+			// Not blocked. Break out of the loop and return the reaction.
+			break;
+		}
     }
     
     // Push blocked reactions back onto the reaction queue.
@@ -855,11 +899,13 @@ bool _lf_advancing_time = false;
  * @param reaction The reaction.
  */
 void _lf_enqueue_reaction(reaction_t* reaction) {
+    // Do not enqueue this reaction twice.
     // Acquire the mutex lock.
     lf_mutex_lock(&mutex);
-    // Do not enqueue this reaction twice.
-    if (reaction != NULL && pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
-        DEBUG_PRINT("Enqueing downstream reaction %s.", reaction->name);
+    if (reaction != NULL && reaction->status == inactive) {
+        DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
+        		reaction->name, reaction->index & 0xffffLL);
+        reaction->status = queued;
         pqueue_insert(reaction_q, reaction);
         // NOTE: We could notify another thread so it can execute this reaction.
         // However, this notification is expensive!
@@ -881,7 +927,7 @@ void _lf_notify_workers_locked() {
     if (number_of_idle_threads > 0) {
         reaction_t* next_ready_reaction = (reaction_t*)pqueue_peek(reaction_q);
         if (next_ready_reaction != NULL
-                && !_lf_is_blocked_by_executing_reaction(next_ready_reaction)
+                && !_lf_is_blocked_by_executing_or_blocked_reaction(next_ready_reaction)
         ) {
             // FIXME: In applications without parallelism, this notification
             // proves very expensive. Perhaps we should be checking execution times.
@@ -1007,18 +1053,244 @@ int worker_thread_count = 0;
 bool _lf_logical_tag_completed = false;
 
 /**
- * Worker thread for the thread pool.
- * This acquires the mutex lock and releases it to wait for time to
- * elapse or for asynchronous events and also releases it to execute reactions.
+ * Return true if the worker should stop now; false otherwise.
+ * This function assumes the caller holds the mutex lock.
  */
-void* worker(void* arg) {
+bool _lf_worker_should_stop_locked() {
+    // If this is not the very first step, notify that the previous step is complete
+    // and check against the stop tag to see whether this is the last step.
+    if (_lf_logical_tag_completed) {
+        logical_tag_complete(current_tag);
+        // If we are at the stop tag, do not call _lf_next_locked()
+        // to prevent advancing the logical time.
+        if (compare_tags(current_tag, stop_tag) >= 0) {
+            // Return true to stop the worker and notify other
+            // worker threads potentially waiting to continue.
+            // Also, notify the RTI that there will be no more events (if centralized coord).
+            // False argument means don't wait for a reply.
+            send_next_event_tag(FOREVER_TAG, false);
+            lf_cond_broadcast(&reaction_q_changed);
+            lf_cond_signal(&event_q_changed);
+            return true;
+        }
+    }
+    return false;
+}
+
+/**
+ * Advance tag. This will also pop events for the newly acquired tag and put
+ * the triggered reactions on the reaction queue.
+ * This function assumes the caller holds the mutex lock.
+ * 
+ * @return should_exit True if the worker thread should exit. False otherwise.
+ */
+bool _lf_worker_advance_tag_locked(int worker_number) {
+    // Block other worker threads from also advancing the tag.
+    _lf_advancing_time = true;
+
+    if (_lf_worker_should_stop_locked()) {
+        return true;
+    }
+
+    _lf_logical_tag_completed = true;
+
+    // Advance time.
+    // _lf_next_locked() may block waiting for real time to pass or events to appear.
+    // to appear on the event queue. Note that we already
+    // hold the mutex lock.
+    tracepoint_worker_advancing_time_starts(worker_number);
+    _lf_next_locked();
+    tracepoint_worker_advancing_time_ends(worker_number);
+    _lf_advancing_time = false;
+    DEBUG_PRINT("Worker %d: Done waiting for _lf_next_locked().", worker_number);
+    return false;
+}
+
+/**
+ * Advance tag if there are no reactions in the reaction queue or in progress. If
+ * there are such reactions or if another thread is already advancing the tag, wait
+ * until something on the reaction queue is changed.
+ * This function assumes the caller holds the mutex lock.
+ * 
+ * @return should_exit True if the worker thread should exit. False otherwise.
+ */
+bool _lf_worker_try_advance_tag_or_wait_locked(int worker_number) {
+    if (pqueue_size(reaction_q) == 0
+            && pqueue_size(executing_q) == 0) {
+            // Nothing more happening at this logical time.
+        if (!_lf_advancing_time) {
+            // This thread will take charge of advancing time.
+            if (_lf_worker_advance_tag_locked(worker_number)) {
+                return true;
+            } else {
+                return false;
+            }
+        } else if (compare_tags(current_tag, stop_tag) >= 0) {
+            // At the stop tag so we can exit the worker thread.
+            return true;
+        }
+    }
+    // We have not returned, so logical time is not complete or some other worker thread
+    // is advancing time.
+
+    // Wait for something to change (either a stop request or
+    // something went on the reaction queue).
+    DEBUG_PRINT("Worker %d: Waiting for items on the reaction queue.", worker_number);
+    tracepoint_worker_wait_starts(worker_number);
+    // NOTE: Could use a timedwait here to ensure that the worker thread
+    // wakes up periodically. But this appears to be unnecessary. When there
+    // is a ready reaction on the reaction queue, there will be a notification
+    // and notification occurs while holding the mutex lock so it should not be missed.
+    // Nevertheless, we keep the commented out code for a timedwait in case we later
+    // want to put this back in:
+    //
+    // struct timespec physical_time;
+    // lf_clock_gettime(CLOCK_REALTIME, &physical_time);
+    // physical_time.tv_nsec += MAX_STALL_INTERVAL;
+    // lf_cond_wait(&reaction_q_changed, &mutex, &physical_time);
+    lf_cond_wait(&reaction_q_changed, &mutex);
+    tracepoint_worker_wait_ends(worker_number);
+    DEBUG_PRINT("Worker %d: Done waiting.", worker_number);
+
+    return false;
+}
+
+/**
+ * Handle deadline violation for 'reaction'. 
+ * The mutex should NOT be locked when this function is called. It might acquire
+ * the mutex when scheduling the reactions that are triggered as a result of
+ * executing the deadline violation handler on the 'reaction', if it exists.
+ *
+ * @return true if a deadline violation occurred. false otherwise.
+ */
+bool _lf_worker_handle_deadline_violation_for_reaction(int worker_number, reaction_t* reaction) {
+    bool violation_occurred = false;
+    // If the reaction has a deadline, compare to current physical time
+    // and invoke the deadline violation reaction instead of the reaction function
+    // if a violation has occurred. Note that the violation reaction will be invoked
+    // at most once per logical time value. If the violation reaction triggers the
+    // same reaction at the current time value, even if at a future superdense time,
+    // then the reaction will be invoked and the violation reaction will not be invoked again.
+    if (reaction->deadline > 0LL) {
+        // Get the current physical time.
+        instant_t physical_time = get_physical_time();
+        // Check for deadline violation.
+        if (physical_time > current_tag.time + reaction->deadline) {
+            // Deadline violation has occurred.
+            violation_occurred = true;
+            // Invoke the local handler, if there is one.
+            reaction_function_t handler = reaction->deadline_violation_handler;
+            if (handler != NULL) {
+                LOG_PRINT("Worker %d: Deadline violation. Invoking deadline handler.",
+                        worker_number);
+                (*handler)(reaction->self);
+
+                // If the reaction produced outputs, put the resulting
+                // triggered reactions into the queue or execute them directly if possible.
+                schedule_output_reactions(reaction, worker_number);
+                // Remove the reaction from the executing queue.
+            }
+        }
+    }
+    return violation_occurred;
+}
+
+/**
+ * Handle STP violation for 'reaction'. 
+ * The mutex should NOT be locked when this function is called. It might acquire
+ * the mutex when scheduling the reactions that are triggered as a result of
+ * executing the STP violation handler on the 'reaction', if it exists.
+ *
+ * @return true if an STP violation occurred. false otherwise.
+ */
+bool _lf_worker_handle_STP_violation_for_reaction(int worker_number, reaction_t* reaction) {
+    bool violation_occurred = false;
+    // If the reaction violates the STP offset,
+    // an input trigger to this reaction has been triggered at a later
+    // logical time than originally anticipated. In this case, a special
+    // STP handler will be invoked.             
+    // FIXME: Note that the STP handler will be invoked
+    // at most once per logical time value. If the STP handler triggers the
+    // same reaction at the current time value, even if at a future superdense time,
+    // then the reaction will be invoked and the STP handler will not be invoked again.
+    // However, inputs ports to a federate reactor are network port types so this possibly should
+    // be disallowed.
+    // @note The STP handler and the deadline handler are not mutually exclusive.
+    //  In other words, both can be invoked for a reaction if it is triggered late
+    //  in logical time (STP offset is violated) and also misses the constraint on 
+    //  physical time (deadline).
+    // @note In absence of an STP handler, the is_STP_violated will be passed down the reaction
+    //  chain until it is dealt with in a downstream STP handler.
+    if (reaction->is_STP_violated == true) {
+        reaction_function_t handler = reaction->STP_handler;
+        LOG_PRINT("STP violation detected.");
+        // Invoke the STP handler if there is one.
+        if (handler != NULL) {
+            LOG_PRINT("Worker %d: Invoking tardiness handler.", worker_number);
+            // There is a violation
+            violation_occurred = true;
+            (*handler)(reaction->self);
+            
+            // If the reaction produced outputs, put the resulting
+            // triggered reactions into the queue or execute them directly if possible.
+            schedule_output_reactions(reaction, worker_number);
+            
+            // Reset the is_STP_violated because it has been dealt with
+            reaction->is_STP_violated = false;
+        }
+    }
+    return violation_occurred;
+}
+
+/**
+ * Handle violations for 'reaction'. Currently limited to deadline violations
+ * and STP violations. 
+ * The mutex should NOT be locked when this function is called. It might acquire
+ * the mutex when scheduling the reactions that are triggered as a result of
+ * executing the deadline or STP violation handler(s) on the 'reaction', if they
+ * exist.
+ *
+ * @return true if a violation occurred. false otherwise.
+ */
+bool _lf_worker_handle_violations(int worker_number, reaction_t* reaction) {
+    bool violation = false;
+    
+    violation = _lf_worker_handle_deadline_violation_for_reaction(worker_number, reaction) ||
+                    _lf_worker_handle_STP_violation_for_reaction(worker_number, reaction);
+    return violation;
+}
+
+/**
+ * Invoke 'reaction' and schedule any resulting triggered reaction(s) on the
+ * reaction queue. 
+ * The mutex should NOT be locked when this function is called. It might acquire
+ * the mutex when scheduling the reactions that are triggered as a result of
+ * executing 'reaction'.
+ */
+void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
+    LOG_PRINT("Worker %d: Invoking reaction %s at elapsed tag (%lld, %d).",
+            worker_number,
+            reaction->name,
+            current_tag.time - start_time,
+            current_tag.microstep);
+    tracepoint_reaction_starts(reaction, worker_number);
+    reaction->function(reaction->self);
+    tracepoint_reaction_ends(reaction, worker_number);
+
+    // If the reaction produced outputs, put the resulting triggered
+    // reactions into the queue or execute them immediately.
+    schedule_output_reactions(reaction, worker_number);
+}
+
+/**
+ * The main looping logic of each LF worker thread.
+ * This function assumes the caller holds the mutex lock.
+ * 
+ * @param worker_number The number assigned to this worker thread
+ */
+void _lf_worker_do_work_locked(int worker_number) {
     // Keep track of whether we have decremented the idle thread count.
     bool have_been_busy = false;
-    lf_mutex_lock(&mutex);
-
-    int worker_number = ++worker_thread_count;
-    LOG_PRINT("Worker thread %d started.", worker_number);
-
     // Iterate until the stop_tag is reached or reaction queue is empty
     while (true) {
         // Obtain a reaction from the reaction_q that is ready to execute
@@ -1034,79 +1306,14 @@ void* worker(void* arg) {
                 have_been_busy = false;
             }
 
+
             // If there are no reactions in progress and no reactions on
             // the reaction queue, then advance time,
-            // unless some other worker thread is already advancing time.
-            if (pqueue_size(reaction_q) == 0
-                    && pqueue_size(executing_q) == 0) {
-            	// Nothing more happening at this logical time.
-                if (!_lf_advancing_time) {
-                	// This thread will take charge of advancing time.
-                	// Block other worker threads from doing that.
-                    _lf_advancing_time = true;
-
-                    // If this is not the very first step, notify that the previous step is complete
-                    // and check against the stop tag to see whether this is the last step.
-                    if (_lf_logical_tag_completed) {
-                        logical_tag_complete(current_tag);
-                        // If we are at the stop tag, do not call _lf_next()
-                        // to prevent advancing the logical time.
-                        if (compare_tags(current_tag, stop_tag) >= 0) {
-                            // Break out of the while loop and notify other
-                            // worker threads potentially waiting to continue.
-                            // Also, notify the RTI that there will be no more events (if centralized coord).
-                            // False argument means don't wait for a reply.
-                            send_next_event_tag(FOREVER_TAG, false);
-                            lf_cond_broadcast(&reaction_q_changed);
-                            lf_cond_signal(&event_q_changed);
-                            break;
-                        }
-                    }
-                    _lf_logical_tag_completed = true;
-
-                    // Advance time.
-                    // _lf_next() may block waiting for real time to pass or events to appear.
-                    // to appear on the event queue. Note that we already
-                    // hold the mutex lock.
-                    tracepoint_worker_advancing_time_starts(worker_number);
-                    _lf_next();
-                    tracepoint_worker_advancing_time_ends(worker_number);
-                    _lf_advancing_time = false;
-                    DEBUG_PRINT("Worker %d: Done waiting for _lf_next().", worker_number);
-
-                } else if (compare_tags(current_tag, stop_tag) >= 0) {
-                	// At the stop tag so we can exit this thread.
-                	break;
-                } else {
-                	// Some other worker thread is advancing time.
-                	// Just wait for work on the reaction queue.
-                    DEBUG_PRINT("Worker %d: Waiting for items on the reaction queue.", worker_number);
-                    tracepoint_worker_wait_starts(worker_number);
-                    lf_cond_wait(&reaction_q_changed, &mutex);
-                    tracepoint_worker_wait_ends(worker_number);
-                    DEBUG_PRINT("Worker %d: Done waiting.", worker_number);
-                }
-            } else {
-                // Logical time is not complete, and nothing on the reaction queue
-                // is ready to run.
-                // Wait for something to change (either a stop request or
-                // something went on the reaction queue.
-                DEBUG_PRINT("Worker %d: Waiting for items on the reaction queue.", worker_number);
-                tracepoint_worker_wait_starts(worker_number);
-                // NOTE: Could use a timedwait here to ensure that the worker thread
-                // wakes up periodically. But this appears to be unnecessary. When there
-                // is a ready reaction on the reaction queue, there will be a notification
-                // and notification occurs while holding the mutex lock so it should not be missed.
-                // Nevertheless, we keep the commented out code for a timedwait in case we later
-                // want to put this back in:
-                //
-                // struct timespec physical_time;
-                // lf_clock_gettime(CLOCK_REALTIME, &physical_time);
-                // physical_time.tv_nsec += MAX_STALL_INTERVAL;
-                // lf_cond_wait(&reaction_q_changed, &mutex, &physical_time);
-                lf_cond_wait(&reaction_q_changed, &mutex);
-                tracepoint_worker_wait_ends(worker_number);
-                DEBUG_PRINT("Worker %d: Done waiting.", worker_number);
+            // unless some other worker thread is already advancing time. In
+            // that case, just wait on to be notified when reaction_q is changed
+            // (i.e., populated by the worker thread that is advancing time).
+            if(_lf_worker_try_advance_tag_or_wait_locked(worker_number)) {
+                break;
             }
         } else {
             // Got a reaction that is ready to run.
@@ -1125,6 +1332,7 @@ void* worker(void* arg) {
 
             // Push the reaction on the executing queue in order to prevent any
             // reactions that may depend on it from executing before this reaction is finished.
+            current_reaction_to_execute->status = running;
             pqueue_insert(executing_q, current_reaction_to_execute);
 
             // If there are additional reactions on the reaction_q, notify one other
@@ -1135,110 +1343,53 @@ void* worker(void* arg) {
             // Unlock the mutex to run the reaction.
             lf_mutex_unlock(&mutex);
 
-            bool violation = false;
-            // If the reaction violates the STP offset,
-            // an input trigger to this reaction has been triggered at a later
-            // logical time than originally anticipated. In this case, a special
-            // STP handler will be invoked.             
-            // FIXME: Note that the STP handler will be invoked
-            // at most once per logical time value. If the STP handler triggers the
-            // same reaction at the current time value, even if at a future superdense time,
-            // then the reaction will be invoked and the STP handler will not be invoked again.
-            // However, inputs ports to a federate reactor are network port types so this possibly should
-            // be disallowed.
-            // @note The STP handler and the deadline handler are not mutually exclusive.
-            //  In other words, both can be invoked for a reaction if it is triggered late
-            //  in logical time (STP offset is violated) and also misses the constraint on 
-            //  physical time (deadline).
-            // @note In absence of an STP handler, the is_STP_violated will be passed down the reaction
-            //  chain until it is dealt with in a downstream STP handler.
-            if (current_reaction_to_execute->is_STP_violated == true) {
-                reaction_function_t handler = current_reaction_to_execute->STP_handler;
-                LOG_PRINT("STP violation detected.");
-                // Invoke the STP handler if there is one.
-                if (handler != NULL) {
-                    LOG_PRINT("Worker %d: Invoking tardiness handler.", worker_number);
-                    // There is a violation
-                    violation = true;
-                    (*handler)(current_reaction_to_execute->self);
-                    
-                    // If the reaction produced outputs, put the resulting
-                    // triggered reactions into the queue or execute them directly if possible.
-                    schedule_output_reactions(current_reaction_to_execute, worker_number);
-                    
-                    // Reset the is_STP_violated because it has been dealt with
-                    current_reaction_to_execute->is_STP_violated = false;
-                }
-            }
-            // If the reaction has a deadline, compare to current physical time
-            // and invoke the deadline violation reaction instead of the reaction function
-            // if a violation has occurred. Note that the violation reaction will be invoked
-            // at most once per logical time value. If the violation reaction triggers the
-            // same reaction at the current time value, even if at a future superdense time,
-            // then the reaction will be invoked and the violation reaction will not be invoked again.
-            if (current_reaction_to_execute->deadline > 0LL) {
-                // Get the current physical time.
-                instant_t physical_time = get_physical_time();
-                // Check for deadline violation.
-                if (physical_time > current_tag.time + current_reaction_to_execute->deadline) {
-                    // Deadline violation has occurred.
-                    violation = true;
-                    // Invoke the local handler, if there is one.
-                    reaction_function_t handler = current_reaction_to_execute->deadline_violation_handler;
-                    if (handler != NULL) {
-                        LOG_PRINT("Worker %d: Deadline violation. Invoking deadline handler.",
-                                worker_number);
-                        (*handler)(current_reaction_to_execute->self);
+            bool violation = _lf_worker_handle_violations(
+                worker_number, 
+                current_reaction_to_execute
+            );
 
-                        // If the reaction produced outputs, put the resulting
-                        // triggered reactions into the queue or execute them directly if possible.
-                        schedule_output_reactions(current_reaction_to_execute, worker_number);
-                        // Remove the reaction from the executing queue.
-                    }
-                }
-            }
-            if (violation) {
-                // Need to acquire the mutex lock to remove this from the executing queue
-                // and to obtain the next reaction to execute.
-                lf_mutex_lock(&mutex);
-
-                // The reaction is not going to be executed. However,
-                // this thread holds the mutex lock, so if this is the last
-                // reaction of the current time step, this thread will also
-                // be the one to advance time.
-                pqueue_remove(executing_q, current_reaction_to_execute);
-            } else {
+            if (!violation) {
                 // Invoke the reaction function.
-                LOG_PRINT("Worker %d: Invoking reaction %s at elapsed tag (%lld, %d).",
-                        worker_number,
-						current_reaction_to_execute->name,
-                        current_tag.time - start_time,
-                        current_tag.microstep);
-                tracepoint_reaction_starts(current_reaction_to_execute, worker_number);
-                current_reaction_to_execute->function(current_reaction_to_execute->self);
-                tracepoint_reaction_ends(current_reaction_to_execute, worker_number);
-
-                // If the reaction produced outputs, put the resulting triggered
-                // reactions into the queue or execute them immediately.
-                schedule_output_reactions(current_reaction_to_execute, worker_number);
-
-                // Reacquire the mutex lock.
-                lf_mutex_lock(&mutex);
-
-                // Remove the reaction from the executing queue.
-                // This thread holds the mutex lock, so if this is the last
-                // reaction of the current time step, this thread will also
-                // be the one to advance time.
-                pqueue_remove(executing_q, current_reaction_to_execute);
+                _lf_worker_invoke_reaction(worker_number, current_reaction_to_execute);
             }
+
+            // Need to acquire the mutex lock to remove this from the executing queue
+            // and to obtain the next reaction to execute.
+            lf_mutex_lock(&mutex);
+
+            // The reaction is not going to be executed. However,
+            // this thread holds the mutex lock, so if this is the last
+            // reaction of the current time step, this thread will also
+            // be the one to advance time.
+            pqueue_remove(executing_q, current_reaction_to_execute);
+
             // Reset the is_STP_violated because it has been passed
             // down the chain
             current_reaction_to_execute->is_STP_violated = false;
 
+            // There cannot be any subsequent events that trigger this reaction at the
+            //  current tag, so it is safe to conclude that it is now inactive.
+            current_reaction_to_execute->status = inactive;
+
             DEBUG_PRINT("Worker %d: Done with reaction %s.",
             		worker_number, current_reaction_to_execute->name);
         }
-    } // while (!stop_requested || pqueue_size(reaction_q) > 0)
+    }
+}
+
+/**
+ * Worker thread for the thread pool.
+ * This acquires the mutex lock and releases it to wait for time to
+ * elapse or for asynchronous events and also releases it to execute reactions.
+ */
+void* worker(void* arg) {
+    lf_mutex_lock(&mutex);
+
+    int worker_number = ++worker_thread_count;
+    LOG_PRINT("Worker thread %d started.", worker_number);
+
+    _lf_worker_do_work_locked(worker_number);
+
     // This thread is exiting, so don't count it anymore.
     _lf_number_of_threads--;
 
@@ -1255,7 +1406,7 @@ void* worker(void* arg) {
  * the reaction queue, and the executing queue.
  */
 void print_snapshot() {
-    if(LOG_LEVEL > 3) {
+    if(LOG_LEVEL > LOG_LEVEL_LOG) {
         DEBUG_PRINT(">>> START Snapshot");
         DEBUG_PRINT("Pending:");
         pqueue_dump(reaction_q, print_reaction);

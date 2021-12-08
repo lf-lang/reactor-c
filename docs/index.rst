@@ -5,5 +5,5 @@
 
 .. toctree::
 
-   about
    api/library_root
+   api

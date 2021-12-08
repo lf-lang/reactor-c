@@ -85,6 +85,18 @@ bool keepalive_specified = false;
 bool** _lf_is_present_fields = NULL;
 int _lf_is_present_fields_size = 0;
 
+// Define an array of pointers to the _is_present fields
+// that have been set to true during the execution of a tag
+// so that at the conclusion of the tag, these fields can be reset to
+// false. Usually, this list will have fewer records than will
+// _lf_is_present_fields, allowing for some time to be saved.
+// However, it is possible for it to have more records if some ports
+// are set multiple times at the same tag. In such cases, we fall back
+// to resetting all is_present fields at the start of the next time
+// step.
+bool** _lf_is_present_fields_abbreviated = NULL;
+int _lf_is_present_fields_abbreviated_size = 0;
+
 // Define the array of pointers to the intended_tag fields of all
 // ports and actions that need to be reinitialized at the start
 // of each time step.
@@ -176,44 +188,6 @@ void set_stp_offset(interval_t offset) {
     if (offset > 0LL) {
         _lf_global_time_STP_offset = offset;
     }
-}
-
-/**
- * Print a non-negative time value in nanoseconds with commas separating thousands
- * into the specified buffer. Ideally, this would use the locale to
- * use periods if appropriate, but I haven't found a sufficiently portable
- * way to do that.
- * @param buffer A buffer long enough to contain a string like "9,223,372,036,854,775,807".
- * @param time A time value.
- */
-void readable_time(char* buffer, instant_t time) {
-    // If the number is negative or below 1000, just print it and return.
-    if (time < 1000LL) {
-        sprintf(buffer, "%lld", (long long)time);
-        return;
-    }
-    int count = 0;
-    instant_t clauses[7];
-    while (time > 0LL) {
-        clauses[count++] = time;
-        time = time/1000LL;
-    }
-    // Highest order clause should not be filled with zeros.
-    instant_t to_print = clauses[--count] % 1000LL;
-    sprintf(buffer, "%lld", (long long)to_print);
-    if (to_print >= 100LL) {
-        buffer += 3;
-    } else if (to_print >= 10LL) {
-        buffer += 2;
-    } else {
-        buffer += 1;
-    }
-    while (count-- > 1) {
-        to_print = clauses[count] % 1000LL;
-        sprintf(buffer, ",%03lld,", (long long)to_print);
-        buffer += 4;
-    }
-    sprintf(buffer, ",%03lld", clauses[0] % 1000LL);
 }
 
 /////////////////////////////
@@ -449,19 +423,28 @@ void _lf_start_time_step() {
         _lf_done_using(_lf_more_tokens_with_ref_count);
         _lf_more_tokens_with_ref_count = next;
     }
-    for(int i = 0; i < _lf_is_present_fields_size; i++) {
-        *_lf_is_present_fields[i] = false;
+    bool** is_present_fields = _lf_is_present_fields_abbreviated;
+    int size = _lf_is_present_fields_abbreviated_size;
+    if (_lf_is_present_fields_abbreviated_size > _lf_is_present_fields_size) {
+        size = _lf_is_present_fields_size;
+        is_present_fields = _lf_is_present_fields;
+    }
+    for(int i = 0; i < size; i++) {
+        *is_present_fields[i] = false;
+    }
 #ifdef FEDERATED_DECENTRALIZED
+    for (int i = 0; i < _lf_is_present_fields_size; i++) {
         // FIXME: For now, an intended tag of (NEVER, 0)
         // indicates that it has never been set.
         *_lf_intended_tag_fields[i] = (tag_t) {NEVER, 0};
-#endif
     }
+#endif
 #ifdef FEDERATED
     // Reset absent fields on network ports because
     // their status is unknown
     reset_status_fields_on_input_port_triggers();
 #endif
+    _lf_is_present_fields_abbreviated_size = 0;
 }
 
 /**
@@ -612,7 +595,7 @@ void _lf_pop_events() {
         for (int i = 0; i < event->trigger->number_of_reactions; i++) {
             reaction_t *reaction = event->trigger->reactions[i];
             // Do not enqueue this reaction twice.
-            if (pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
+            if (reaction->status == inactive) {
 #ifdef FEDERATED_DECENTRALIZED
                 // In federated execution, an intended tag that is not (NEVER, 0)
                 // indicates that this particular event is triggered by a network message.
@@ -645,6 +628,7 @@ void _lf_pop_events() {
 #endif
 
                 DEBUG_PRINT("Enqueing reaction %s.", reaction->name);
+                reaction->status = queued;
                 pqueue_insert(reaction_q, reaction);
             } else {
                 DEBUG_PRINT("Reaction is already on the reaction_q: %s", reaction->name);
@@ -1385,8 +1369,9 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
 #endif
 
         // Do not enqueue this reaction twice.
-        if (pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
+        if (reaction->status == inactive) {
             reaction->is_STP_violated = is_STP_violated;
+            reaction->status = queued;
             pqueue_insert(reaction_q, reaction);
             LOG_PRINT("Enqueued reaction %s at time %lld.", reaction->name, get_logical_time());
         }
@@ -1877,7 +1862,7 @@ void initialize() {
 
     struct timespec physical_time_timespec = {physical_start_time / BILLION, physical_start_time % BILLION};
 
-    info_print("---- Start execution at time %s---- plus %ld nanoseconds.",
+    printf("---- Start execution at time %s---- plus %ld nanoseconds.\n",
             ctime(&physical_time_timespec.tv_sec), physical_time_timespec.tv_nsec);
     
     if (duration >= 0LL) {
@@ -1926,15 +1911,15 @@ void termination() {
     // If these are negative, then the program failed to start up.
     interval_t elapsed_time = get_elapsed_logical_time();
     if (elapsed_time >= 0LL) {
-        char time_buffer[28]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
-        readable_time(time_buffer, elapsed_time);
-        info_print("---- Elapsed logical time (in nsec): %s", time_buffer);
+        char time_buffer[29]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
+        lf_comma_separated_time(time_buffer, elapsed_time);
+        printf("---- Elapsed logical time (in nsec): %s\n", time_buffer);
 
         // If physical_start_time is 0, then execution didn't get far enough along
         // to initialize this.
         if (physical_start_time > 0LL) {
-            readable_time(time_buffer, get_elapsed_physical_time());
-            info_print("---- Elapsed physical time (in nsec): %s", time_buffer);
+        	lf_comma_separated_time(time_buffer, get_elapsed_physical_time());
+            printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
         }
     }
 }

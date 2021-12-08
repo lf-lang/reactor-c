@@ -252,6 +252,154 @@ void set_physical_clock_offset(interval_t offset) {
 }
 
 /**
+ * Store into the specified buffer a string giving a human-readable
+ * rendition of the specified time. The buffer must have length at least
+ * equal to LF_TIME_BUFFER_LENGTH. The format is:
+ * ```
+ *    x weeks, x days, x hours, x minutes, x seconds, x unit
+ * ```
+ * where each `x` is a string of numbers with commas inserted if needed
+ * every three numbers and `unit` is nanoseconds, microseconds, or
+ * milliseconds.
+ * @param buffer The buffer into which to write the string.
+ * @param time The time to write.
+ * @return The number of characters written (not counting the null terminator).
+ */
+size_t lf_readable_time(char* buffer, instant_t time) {
+	char* original_buffer = buffer;
+	bool lead = false; // Set to true when first clause has been printed.
+	if (time > WEEKS(1)) {
+		lead = true;
+		size_t printed = lf_comma_separated_time(buffer, time / WEEKS(1));
+		time = time % WEEKS(1);
+		buffer += printed;
+		sprintf(buffer, " weeks");
+		buffer += 6;
+	}
+	if (time > DAYS(1)) {
+		if (lead == true) {
+			sprintf(buffer, ", ");
+			buffer += 2;
+		}
+		lead = true;
+		size_t printed = lf_comma_separated_time(buffer, time / DAYS(1));
+		time = time % DAYS(1);
+		buffer += printed;
+		sprintf(buffer, " days");
+		buffer += 5;
+	}
+	if (time > HOURS(1)) {
+		if (lead == true) {
+			sprintf(buffer, ", ");
+			buffer += 2;
+		}
+		lead = true;
+		size_t printed = lf_comma_separated_time(buffer, time / HOURS(1));
+		time = time % HOURS(1);
+		buffer += printed;
+		sprintf(buffer, " hours");
+		buffer += 6;
+	}
+	if (time > MINUTES(1)) {
+		if (lead == true) {
+			sprintf(buffer, ", ");
+			buffer += 2;
+		}
+		lead = true;
+		size_t printed = lf_comma_separated_time(buffer, time / MINUTES(1));
+		time = time % MINUTES(1);
+		buffer += printed;
+		sprintf(buffer, " minutes");
+		buffer += 8;
+	}
+	if (time > SECONDS(1)) {
+		if (lead == true) {
+			sprintf(buffer, ", ");
+			buffer += 2;
+		}
+		lead = true;
+		size_t printed = lf_comma_separated_time(buffer, time / SECONDS(1));
+		time = time % SECONDS(1);
+		buffer += printed;
+		sprintf(buffer, " seconds");
+		buffer += 8;
+	}
+	if (time > (instant_t)0) {
+		if (lead == true) {
+			sprintf(buffer, ", ");
+			buffer += 2;
+		}
+		char* units = "nanoseconds";
+		if (time % MSEC(1) == (instant_t) 0) {
+			units = "milliseconds";
+			time = time % MSEC(1);
+		} else if (time % USEC(1) == (instant_t) 0) {
+			units = "microseconds";
+			time = time % USEC(1);
+		}
+		size_t printed = lf_comma_separated_time(buffer, time);
+		buffer += printed;
+		sprintf(buffer, " %s", units);
+		buffer += strlen(units) + 1;
+	} else {
+		sprintf(buffer, "0");
+	}
+	return (buffer - original_buffer);
+}
+
+/**
+ * Print a non-negative time value in nanoseconds with commas separating thousands
+ * into the specified buffer. Ideally, this would use the locale to
+ * use periods if appropriate, but I haven't found a sufficiently portable
+ * way to do that.
+ * @param buffer A buffer long enough to contain a string like "-9,223,372,036,854,775,807".
+ * @param time A time value.
+ * @return The number of characters written into the buffer (not including
+ *  the null terminator).
+ */
+size_t lf_comma_separated_time(char* buffer, instant_t time) {
+	size_t result = 0; // The number of characters printed.
+    // If the number is zero, print it and return.
+    if (time == (instant_t)0) {
+        sprintf(buffer, "0");
+        return 1;
+    }
+    // If the number is negative, print a minus sign.
+    if (time < (instant_t)0) {
+    	sprintf(buffer, "-");
+    	buffer++;
+    	result++;
+    }
+    int count = 0;
+    // Assume the time value is no larger than 64 bits.
+    instant_t clauses[7];
+    while (time > (instant_t)0) {
+        clauses[count++] = time;
+        time = time/1000;
+    }
+    // Highest order clause should not be filled with zeros.
+    instant_t to_print = clauses[--count] % 1000;
+    sprintf(buffer, "%lld", (long long)to_print);
+    if (to_print >= 100LL) {
+        buffer += 3;
+        result += 3;
+    } else if (to_print >= 10LL) {
+        buffer += 2;
+        result += 2;
+    } else {
+        buffer += 1;
+        result += 1;
+    }
+    while (count-- > 0) {
+        to_print = clauses[count] % 1000LL;
+        sprintf(buffer, ",%03lld", (long long)to_print);
+        buffer += 4;
+        result += 4;
+    }
+    return result;
+}
+
+/**
  * For C++ compatibility, take a volatile tag_t and return a non-volatile
  * variant.
  */

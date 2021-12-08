@@ -1,1 +1,4 @@
 /.idea/
+/docs/_build
+/docs/api
+/.vscode/
