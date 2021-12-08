@@ -1983,7 +1983,7 @@ void _lf_defrag_suspended_events() {
     for (int i = 0; i < _suspended_event_size; i++) {
         if (_suspended_events[i] == NULL && gap_head == -1) { // new gap
             gap_head = i;
-        } else if (gap_head != -1) { // end of gap -> move tail forward
+        } else if (_suspended_events[i] != NULL && gap_head != -1) { // end of gap -> move tail forward
             memmove(_suspended_events + gap_head, _suspended_events + i, (_suspended_event_size - i) * sizeof(event_t*));
             _suspended_event_size -= i - gap_head;
             i = gap_head; // continue on new position of this element
