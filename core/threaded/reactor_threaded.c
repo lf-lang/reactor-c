@@ -1026,7 +1026,7 @@ void* worker(void* arg) {
     // This thread is exiting, so don't count it anymore.
     _lf_number_of_threads--;
 
-    if (worker_thread_count == 0) {
+    if (_lf_number_of_threads == 0) {
         // The last worker thread to exit will inform the RTI if needed.
         // Notify the RTI that there will be no more events (if centralized coord).
         // False argument means don't wait for a reply.
