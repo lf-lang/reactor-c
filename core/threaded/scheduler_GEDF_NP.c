@@ -128,7 +128,12 @@ _lf_sched_thread_info_t* _lf_sched_threads_info;
  */
 size_t _lf_sched_number_of_workers = 1;
 
-
+/**
+ * @brief Number of workers that are idle.
+ * 
+ * Adding to/subtracting from this variable must be done atomically.
+ * 
+ */
 volatile size_t _lf_sched_number_of_idle_workers = 0;
 
 /**
@@ -136,6 +141,10 @@ volatile size_t _lf_sched_number_of_idle_workers = 0;
  */
 bool _lf_logical_tag_completed = false;
 
+/**
+ * @brief Mutex that must be acquired by workers before accessing the executing_q.
+ * 
+ */
 lf_mutex_t _lf_sched_executing_q_mutex;
 
 ///////////////////// Scheduler Runtime API (private) /////////////////////////
