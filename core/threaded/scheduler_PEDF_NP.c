@@ -622,6 +622,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
         
         // Check if it is time to stop. If it is, return.
         if (_lf_sched_should_stop(worker_number)) { // Time to stop
+            lf_bool_compare_and_swap(&_lf_sched_threads_info[worker_number].is_idle, 1, 0);
             lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
             return;
         }
@@ -726,17 +727,34 @@ void lf_sched_free() {
 reaction_t* lf_sched_pop_ready_reaction(int worker_number) {
     // Iterate until the stop_tag is reached or reaction queue is empty
     while (!_lf_sched_should_stop(worker_number)) {
+        lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
         reaction_t* reaction_to_return = (reaction_t*)pqueue_pop(_lf_sched_threads_info[worker_number].ready_reactions);
+        lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
         
+        if (reaction_to_return == NULL && _lf_sched_number_of_workers > 1) {
+            // Try to steal
+            int index_to_steal = (worker_number + 1) % _lf_sched_number_of_workers;
+            lf_mutex_lock(&_lf_sched_threads_info[index_to_steal].mutex);
+            reaction_to_return = 
+                pqueue_pop(_lf_sched_threads_info[index_to_steal].ready_reactions);
+            if (reaction_to_return != NULL) {
+                DEBUG_PRINT(
+                    "Worker %d: Had nothing on my ready queue. Stole reaction %s from %d", 
+                    worker_number,
+                    reaction_to_return->name,
+                    index_to_steal);
+            }
+            lf_mutex_unlock(&_lf_sched_threads_info[index_to_steal].mutex);
+        }
+
         if (reaction_to_return != NULL) {
             // Got a reaction
             return reaction_to_return;
+        } else {
+            DEBUG_PRINT("Worker %d is out of ready reactions.", worker_number);
+            // Ask the scheduler for more work or wait
+            _lf_sched_wait_for_work(worker_number);
         }
-
-        DEBUG_PRINT("Worker %d is out of ready reactions.", worker_number);
-
-        // Ask the scheduler for more work and wait
-        _lf_sched_wait_for_work(worker_number);
     }
 
     // It's time for the worker thread to stop and exit.
