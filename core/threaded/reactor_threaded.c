@@ -738,7 +738,7 @@ void request_stop() {
  *  reaction queue should be done immediately.
  */
 void _lf_enqueue_reaction(reaction_t* reaction, int worker_number) {
-    lf_sched_worker_trigger_reaction(worker_number, reaction);
+    lf_sched_trigger_reaction(worker_number, reaction);
 }
 
 /**
@@ -984,7 +984,7 @@ void _lf_worker_do_work(int worker_number) {
     // print_snapshot(); // This is quite verbose (but very useful in debugging reaction deadlocks).
     reaction_t* current_reaction_to_execute = NULL;
     while ((current_reaction_to_execute = 
-            lf_sched_pop_ready_reaction(worker_number)) 
+            lf_sched_get_ready_reaction(worker_number)) 
             != NULL) {
         // Got a reaction that is ready to run.
         DEBUG_PRINT("Worker %d: Popped from reaction_q %s: "

@@ -260,11 +260,6 @@ static inline bool _lf_sched_distribute_ready_reaction(reaction_t* ready_reactio
     for(size_t i=0; i<_lf_sched_number_of_workers; i++) {
         // Go over all the workers to see if anyone is idle.
         if (_lf_sched_is_worker_idle(worker_id)) {
-            // FIXME: It could be possible to cache this status for each round
-            // of work distribution only once so that locking the thread mutex
-            // is subsequently not necessary for workers that are busy, but this
-            // caching adds overhead.
-
             // The worker is idle.
             DEBUG_PRINT(
                 "Scheduler: Assigning reaction %s to worker %d.",
@@ -647,7 +642,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
 /**
  * @brief Initialize the scheduler.
  * 
- * This has to be called before the main thread of the scheduler is created.
+ * This has to be called before other functions of the scheduler can be used.
  * 
  * @param number_of_workers Indicate how many workers this scheduler will be managing.
  */
@@ -695,8 +690,7 @@ void lf_sched_init(size_t number_of_workers) {
 /**
  * @brief Free the memory used by the scheduler.
  * 
- * This must be called after the main scheduler thread exits.
- * 
+ * This must be called when the scheduler is no longer needed.
  */
 void lf_sched_free() {
     for (int i=0; i < _lf_sched_number_of_workers; i++) {
@@ -724,7 +718,7 @@ void lf_sched_free() {
  * @return reaction_t* A reaction for the worker to execute. NULL if the calling
  * worker thread should exit.
  */
-reaction_t* lf_sched_pop_ready_reaction(int worker_number) {
+reaction_t* lf_sched_get_ready_reaction(int worker_number) {
     // Iterate until the stop_tag is reached or reaction queue is empty
     while (!_lf_sched_should_stop(worker_number)) {
         lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
@@ -787,10 +781,10 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  * @param reaction The reaction to trigger at the current tag.
  * @param worker_number The ID of the worker that is making this call. 0 should be
  *  used if there is only one worker (e.g., when the program is using the
- *  unthreaded C runtime). -1 should be used if the scheduler should handle
- *  enqueuing the reaction immediately.
+ *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
+ *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
-void lf_sched_worker_trigger_reaction(int worker_number, reaction_t* reaction) {
+void lf_sched_trigger_reaction(int worker_number, reaction_t* reaction) {
     if (worker_number == -1) {
         // The scheduler should handle this immediately
         lf_mutex_lock(&mutex);

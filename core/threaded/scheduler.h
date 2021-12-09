@@ -12,7 +12,7 @@ typedef enum {
 /**
  * @brief Initialize the scheduler.
  * 
- * This has to be called before the main thread of the scheduler is created.
+ * This has to be called before other functions of the scheduler can be used.
  * 
  * @param number_of_workers Indicate how many workers this scheduler will be managing.
  */
@@ -21,8 +21,7 @@ void lf_sched_init(size_t number_of_workers);
 /**
  * @brief Free the memory used by the scheduler.
  * 
- * This must be called after the main scheduler thread exits.
- * 
+ * This must be called when the scheduler is no longer needed.
  */
 void lf_sched_free();
 
@@ -39,7 +38,7 @@ void lf_sched_free();
  * @return reaction_t* A reaction for the worker to execute. NULL if the calling
  * worker thread should exit.
  */
-reaction_t* lf_sched_pop_ready_reaction(int worker_number);
+reaction_t* lf_sched_get_ready_reaction(int worker_number);
 
 /**
  * @brief Inform the scheduler that worker thread 'worker_number' is done
@@ -47,7 +46,7 @@ reaction_t* lf_sched_pop_ready_reaction(int worker_number);
  * 
  * @param worker_number The worker number for the worker thread that has
  * finished executing 'done_reaction'.
- * @param done_reaction The reaction is that is done.
+ * @param done_reaction The reaction that is done.
  */
 void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction);
 
@@ -56,9 +55,8 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  * @brief Inform the scheduler that worker thread 'worker_number' would like to
  * trigger 'reaction' at the current tag.
  * 
- * This triggering happens lazily (at a later point when the scheduler deems
- * appropriate), unless worker_number is set to -1. In that case, the triggering
- * of 'reaction' is done immediately.
+ * If a worker number is not available (e.g., this function is not called by a
+ * worker thread), -1 should be passed as the 'worker_number'.
  * 
  * The scheduler will ensure that the same reaction is not triggered twice in
  * the same tag.
@@ -66,9 +64,10 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  * @param reaction The reaction to trigger at the current tag.
  * @param worker_number The ID of the worker that is making this call. 0 should be
  *  used if there is only one worker (e.g., when the program is using the
- *  unthreaded C runtime). -1 should be used if the scheduler should handle
- *  enqueuing the reaction immediately.
+ *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
+ *  worker number does not make sense (e.g., the caller is not a worker thread).
+ * 
  */
-void lf_sched_worker_trigger_reaction(int worker_number, reaction_t* reaction);
+void lf_sched_trigger_reaction(int worker_number, reaction_t* reaction);
 
 #endif // LF_SCHEDULER_H
