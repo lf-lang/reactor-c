@@ -759,24 +759,6 @@ reaction_t* lf_sched_pop_ready_reaction(int worker_number) {
 
     // It's time for the worker thread to stop and exit.
     return NULL;
-
-    // if (reaction_to_return == NULL && _lf_sched_number_of_workers > 1) {
-    //     // Try to steal
-    //     int index_to_steal = (worker_number + 1) % _lf_sched_number_of_workers;
-    //     lf_mutex_lock(&_lf_sched_threads_info[index_to_steal].mutex);
-    //     reaction_to_return = 
-    //         pqueue_pop(_lf_sched_threads_info[index_to_steal].ready_reactions);
-    //     if (reaction_to_return != NULL) {
-    //         DEBUG_PRINT(
-    //             "Worker %d: Had nothing on my ready queue. Stole reaction %s from %d", 
-    //             worker_number,
-    //             reaction_to_return->name,
-    //             index_to_steal);
-    //     }
-    //     lf_mutex_unlock(&_lf_sched_threads_info[index_to_steal].mutex);
-    // }
-
-    // return reaction_to_return;
 }
 
 /**
