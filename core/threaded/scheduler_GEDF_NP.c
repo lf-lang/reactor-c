@@ -522,7 +522,7 @@ void lf_sched_free() {
     for (int i=0; i < _lf_sched_number_of_workers; i++) {
         pqueue_free(_lf_sched_threads_info[i].output_reactions);
     }
-    pqueue_free(reaction_q);
+    // pqueue_free(reaction_q); FIXME: This might be causing weird memory errors
     pqueue_free(transfer_q);
     pqueue_free(executing_q);
     if (lf_semaphore_destroy(_lf_sched_semaphore) != 0) {

@@ -370,7 +370,7 @@ int lf_reactor_c_main(int argc, char* argv[]) {
 
         DEBUG_PRINT("Initializing.");
         initialize(); // Sets start_time.
-        
+
         // Reaction queue ordered first by deadline, then by level.
         // The index of the reaction holds the deadline in the 48 most significant bits,
         // the level in the 16 least significant bits.
@@ -392,6 +392,7 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         if (_lf_do_step()) {
             while (next() != 0);
         }
+        // pqueue_free(reaction_q); FIXME: This might be causing weird memory errors
         return 0;
     } else {
         return -1;

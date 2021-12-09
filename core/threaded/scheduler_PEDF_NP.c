@@ -703,11 +703,10 @@ void lf_sched_free() {
         vector_free(&_lf_sched_threads_info[i].output_reactions);
         vector_free(&_lf_sched_threads_info[i].done_reactions);
     }
-    pqueue_free(reaction_q);
+    // pqueue_free(reaction_q); FIXME: This might be causing weird memory errors
     vector_free(&transfer_q);
     pqueue_free(executing_q);
     free(_lf_sched_threads_info);
-    void* sched_thread_result;
 }
 
 ///////////////////// Scheduler Worker API (public) /////////////////////////
