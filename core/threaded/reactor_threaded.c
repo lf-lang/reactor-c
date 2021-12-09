@@ -1027,9 +1027,9 @@ void* worker(void* arg) {
     lf_mutex_lock(&mutex);
 
     // This thread is exiting, so don't count it anymore.
-    _lf_number_of_threads--;
+    worker_thread_count--;
 
-    if (_lf_number_of_threads == 0) {
+    if (worker_thread_count == 0) {
         // The last worker thread to exit will inform the RTI if needed.
         // Notify the RTI that there will be no more events (if centralized coord).
         // False argument means don't wait for a reply.
