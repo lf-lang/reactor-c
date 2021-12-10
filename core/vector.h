@@ -11,11 +11,12 @@
 #include <stdlib.h>
 
 typedef struct vector_t {
-    int votes_to_shrink;  /* The number of votes required to shrink this vector. */
     void** start; /* The start of the underlying array. */
     void** next;  /* The element after the last element in the underlying array.
                         start <= next <= end. */
     void** end;   /* The end of the underlying array. */
+    int votes_required;  /* The number of votes required to shrink this vector. */
+    int votes;    /* The number of votes to shrink this vector. */
 } vector_t;
 
 /*

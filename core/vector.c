@@ -1,11 +1,9 @@
-
-
 #include <stddef.h>
 #include <stdlib.h>
 #include <assert.h>
 #include "vector.h"
 
-#define REQUIRED_VOTES_TO_SHRINK 50
+#define REQUIRED_VOTES_TO_SHRINK 15
 #define CAPACITY_TO_SIZE_RATIO_FOR_SHRINK_VOTE 4
 #define SCALE_FACTOR 2
 
@@ -19,6 +17,7 @@ static void vector_grow(vector_t* v, size_t new_capacity);
 vector_t vector_new(size_t initial_capacity) {
     vector_t v;
     vector_reset(&v, initial_capacity);
+    v.votes_required = REQUIRED_VOTES_TO_SHRINK;
     return v;
 }
 
@@ -39,7 +38,10 @@ void vector_free(vector_t* v) {
  */
 void vector_push(vector_t* v, void* element) {
     assert(element);
-    if (v->next == v->end) vector_grow(v, (v->end - v->start) * SCALE_FACTOR);
+    if (v->next == v->end) {
+        v->votes_required++;
+        vector_grow(v, (v->end - v->start) * SCALE_FACTOR);
+    }
     *(v->next++) = element;
 }
 
@@ -68,7 +70,7 @@ void vector_pushall(vector_t* v, void** array, size_t size) {
  */
 void* vector_pop(vector_t* v) {
     if (v->next == v->start) {
-        if (v->votes_to_shrink >= REQUIRED_VOTES_TO_SHRINK) {
+        if (v->votes >= v->votes_required) {
             vector_reset(v, (v->end - v->start) / SCALE_FACTOR);
         }
         return NULL;
@@ -84,7 +86,8 @@ void vector_vote(vector_t* v) {
     if (
         size // The following cast is fine because v->end >= v->start is an invariant.
         && size * CAPACITY_TO_SIZE_RATIO_FOR_SHRINK_VOTE <= (size_t) (v->end - v->start)
-    ) v->votes_to_shrink++;
+    ) v->votes++;
+    else v->votes = 0;
 }
 
 // Non-API helper functions follow.
@@ -96,10 +99,10 @@ void vector_vote(vector_t* v) {
  */
 static void vector_reset(vector_t* v, size_t new_capacity) {
     void** start = (void**) malloc(new_capacity * sizeof(void*));
-    v->votes_to_shrink = 0;
     v->start = start;
     v->next = start;
     v->end = start + new_capacity;
+    v->votes = 0;
 }
 
 /*
