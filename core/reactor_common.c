@@ -147,7 +147,7 @@ port_status_t determine_port_status_if_possible(int portID);
 // Forward declaration for mode related functions
 #ifdef MODAL_REACTORS
 bool _lf_mode_is_active(reactor_mode_t* mode);
-void _lf_suspend_event(event_t* event);
+void _lf_add_suspended_event(event_t* event);
 void _lf_terminate_modal_reactors();
 #endif
 
@@ -708,7 +708,7 @@ void _lf_initialize_timer(trigger_t* timer) {
         event_t* e = _lf_get_new_event();
         e->trigger = timer;
         e->time = get_logical_time() + timer->offset;
-        _lf_suspend_event(e);
+        _lf_add_suspended_event(e);
     	return;
     }
 #endif
@@ -1931,7 +1931,7 @@ void termination() {
  * Checks if the given mode is currently considered active.
  * This includes checking all enclosing modes.
  *
- * @param mode The mode instace to check.
+ * @param mode The mode instance to check.
  */
 bool _lf_mode_is_active(reactor_mode_t* mode) {
     /*
@@ -1959,40 +1959,60 @@ bool _lf_mode_is_active(reactor_mode_t* mode) {
     return true;
 }
 
-// Collections for suspended events in inactive modes
-event_t** _suspended_events = NULL;
-int _suspended_event_capacity = 0;
-int _suspended_event_size = 0;
+// Linked list element for suspended events in inactive modes
+typedef struct _lf_suspended_event {
+    struct _lf_suspended_event* next;
+    event_t* event;
+} _lf_suspended_event_t;
+_lf_suspended_event_t* _lf_suspended_events_head = NULL; // Start of linked collection of suspended events (managed automatically!)
+int _lf_suspended_events_num = 0; // Number of suspended events (managed automatically!)
+_lf_suspended_event_t* _lf_unsused_suspended_events_head = NULL; // Internal collection of reusable list elements (managed automatically!)
 
 /**
  * Save the given event as suspended.
  */
-void _lf_suspend_event(event_t* event) {
-    if (_suspended_event_size + 1 >= _suspended_event_capacity) {
-        _suspended_event_capacity += 10;
-        _suspended_events = (event_t**) realloc (_suspended_events, sizeof(event_t*) * _suspended_event_capacity);
+void _lf_add_suspended_event(event_t* event) {
+    _lf_suspended_event_t* new_suspended_event;
+    if (_lf_unsused_suspended_events_head != NULL) {
+        new_suspended_event = _lf_unsused_suspended_events_head;
+        _lf_unsused_suspended_events_head = _lf_unsused_suspended_events_head->next;
+    } else {
+        new_suspended_event = malloc(sizeof(_lf_suspended_event_t));
     }
-    _suspended_events[_suspended_event_size++] = event;
+
+    new_suspended_event->event = event;
+    new_suspended_event->next = _lf_suspended_events_head; // prepend
+    _lf_suspended_events_num++;
+
+    _lf_suspended_events_head = new_suspended_event;
 }
 
 /**
- * Removes all null pointers in the collection of suspended events and updates its size.
+ * Removes the given node from the list of suspended events.
+ * Returns the next element in the list.
  */
-void _lf_defrag_suspended_events() {
-    int gap_head = -1;
-    for (int i = 0; i < _suspended_event_size; i++) {
-        if (_suspended_events[i] == NULL && gap_head == -1) { // new gap
-            gap_head = i;
-        } else if (_suspended_events[i] != NULL && gap_head != -1) { // end of gap -> move tail forward
-            memmove(_suspended_events + gap_head, _suspended_events + i, (_suspended_event_size - i) * sizeof(event_t*));
-            _suspended_event_size -= i - gap_head;
-            i = gap_head; // continue on new position of this element
-            gap_head = -1;
-        }
+_lf_suspended_event_t* _lf_remove_suspended_event(_lf_suspended_event_t* event) {
+    _lf_suspended_event_t* next = event->next;
+
+    // Clear content
+    event->event = NULL;
+    event->next = NULL;
+    _lf_suspended_events_num--;
+
+    // Store for recycling
+    if (_lf_unsused_suspended_events_head == NULL) {
+        _lf_unsused_suspended_events_head = event;
+    } else {
+        event->next = _lf_unsused_suspended_events_head;
+        _lf_unsused_suspended_events_head = event;
     }
-    if (gap_head != -1) { // gap end at the end of the list
-        _suspended_event_size -= _suspended_event_size - gap_head; // simply reduce size
+
+    // Adjust head
+    if (_lf_suspended_events_head == event) {
+        _lf_suspended_events_head = next;
     }
+
+    return next;
 }
 
 /**
@@ -2036,8 +2056,9 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
                 }
 
                 // Reset/Reactivate previously suspended events of next state
-                for (int i = 0; i < _suspended_event_size; i++) {
-                    event_t* event = _suspended_events[i];
+                _lf_suspended_event_t* suspended_event = _lf_suspended_events_head;
+                while(suspended_event != NULL) {
+                    event_t* event = suspended_event->event;
                     if (event != NULL && event->trigger != NULL && event->trigger->mode == state->next_mode) {
                         if (state->mode_change == 1) { // Reset transition
                             if (event->trigger->is_timer) { // Only reset timers
@@ -2055,7 +2076,7 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
                             tag_t current_logical_tag = get_current_tag();
 
                             // Reschedule event with original local delay
-                            DEBUG_PRINT("Modes: Re-enqueuing event with a suspended delay of %d (previous TTH: %d, Mode suspended at: %d).", local_remaining_delay, event->time, state->next_mode->deactivation_time);
+                            DEBUG_PRINT("Modes: Re-enqueuing event with a suspended delay of %d (previous TTH: %u, Mode suspended at: %u).", local_remaining_delay, event->time, state->next_mode->deactivation_time);
                             tag_t schedule_tag = {.time = current_logical_tag.time + local_remaining_delay, .microstep = (local_remaining_delay == 0 ? current_logical_tag.microstep + 1 : 0)};
                             _lf_schedule_at_tag(event->trigger, schedule_tag, event->token);
 
@@ -2068,11 +2089,13 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
                                 }
                             }
                         }
-                        // Clear out field for now; collection will be defragmented later
-                        _suspended_events[i] = NULL;
-
                         // A fresh event was created by schedule, hence, recycle old one
                         _lf_recycle_event(event);
+
+                        // Remove suspended event and continue
+                        suspended_event = _lf_remove_suspended_event(suspended_event);
+                    } else {
+                        suspended_event = suspended_event->next;
                     }
                 }
             }
@@ -2081,9 +2104,6 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
 
     // Handle leaving active mode in all states
     if (transition) {
-        // Defragment suspended events collection and update size (before suspending new ones)
-        _lf_defrag_suspended_events();
-
         // Set new active mode and clear mode change flags
         for (int i = 0; i < num_states; i++) {
             reactor_mode_state_t* state = states[i];
@@ -2110,12 +2130,12 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
                 if (event != NULL && event->trigger != NULL && !_lf_mode_is_active(event->trigger->mode)) {
                     delayed_removal[delayed_removal_count++] = event;
                     // This will store the event including possibly those chained up in super dense time
-                    _lf_suspend_event(event);
+                    _lf_add_suspended_event(event);
                 }
             }
 
             // Events are removed delayed in order to allow linear iteration over the queue
-            DEBUG_PRINT("Modes: Pulling %d events from the event queue to suspend them. %d events are now suspended.", delayed_removal_count, _suspended_event_size);
+            DEBUG_PRINT("Modes: Pulling %d events from the event queue to suspend them. %d events are now suspended.", delayed_removal_count, _lf_suspended_events_num);
             for (int i = 0; i < delayed_removal_count; i++) {
                 pqueue_remove(event_q, delayed_removal[i]);
             }
@@ -2128,11 +2148,23 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
  * - Frees all suspended events.
  */
 void _lf_terminate_modal_reactors() {
-    for (int i = 0; i < _suspended_event_size; i++) {
-        _lf_recycle_event(_suspended_events[i]);
+    _lf_suspended_event_t* suspended_event = _lf_suspended_events_head;
+    while(suspended_event != NULL) {
+        _lf_recycle_event(suspended_event->event);
+        _lf_suspended_event_t* next = suspended_event->next;
+        free(suspended_event);
+        suspended_event = next;
     }
-    free(_suspended_events);
-    _suspended_event_size = -666;
-    _suspended_event_capacity = -666;
+    _lf_suspended_events_head = NULL;
+    _lf_suspended_events_num = 0;
+
+    // Also free suspended_event elements stored for recycling
+    suspended_event = _lf_unsused_suspended_events_head;
+    while(suspended_event != NULL) {
+        _lf_suspended_event_t* next = suspended_event->next;
+        free(suspended_event);
+        suspended_event = next;
+    }
+    _lf_unsused_suspended_events_head = NULL;
 }
 #endif
