@@ -7,8 +7,7 @@
 #define CAPACITY_TO_SIZE_RATIO_FOR_SHRINK_VOTE 4
 #define SCALE_FACTOR 2
 
-static void vector_reset(vector_t* v, size_t new_capacity);
-static void vector_grow(vector_t* v, size_t new_capacity);
+static void vector_resize(vector_t* v, size_t new_capacity);
 
 /**
  * Allocate and initialize a new vector.
@@ -17,10 +16,15 @@ static void vector_grow(vector_t* v, size_t new_capacity);
  */
 vector_t vector_new(size_t initial_capacity) {
     assert(initial_capacity > 0);
-    vector_t v;
-    vector_reset(&v, initial_capacity);
-    v.votes_required = REQUIRED_VOTES_TO_SHRINK;
-    return v;
+    void** start = (void**) malloc(initial_capacity * sizeof(void*));
+    assert(start);
+    return (vector_t) {
+        .start = start,
+        .next = start,
+        .end = start + initial_capacity,
+        .votes_required = REQUIRED_VOTES_TO_SHRINK,
+        .votes = 0
+    };
 }
 
 /**
@@ -42,7 +46,7 @@ void vector_push(vector_t* v, void* element) {
     assert(element);
     if (v->next == v->end) {
         v->votes_required++;
-        vector_grow(v, (v->end - v->start) * SCALE_FACTOR);
+        vector_resize(v, (v->end - v->start) * SCALE_FACTOR);
     }
     *(v->next++) = element;
 }
@@ -57,7 +61,7 @@ void vector_push(vector_t* v, void* element) {
 void vector_pushall(vector_t* v, void** array, size_t size) {
     void** required_end = v->next + size;
     if (required_end > v->end) {
-        vector_grow(v, (required_end - v->start) * SCALE_FACTOR);
+        vector_resize(v, (required_end - v->start) * SCALE_FACTOR);
     }
     for (size_t i = 0; i < size; i++) {
         assert(array[i]);
@@ -76,7 +80,7 @@ void* vector_pop(vector_t* v) {
         if (v->votes >= v->votes_required) {
             size_t new_capacity = (v->end - v->start) / SCALE_FACTOR;
             if (new_capacity > 0) {
-                vector_grow(v, new_capacity);
+                vector_resize(v, new_capacity);
             }
         }
         return NULL;
@@ -96,31 +100,12 @@ void vector_vote(vector_t* v) {
     else v->votes = 0;
 }
 
-// Non-API helper functions follow.
-
 /**
- * Clears the given vector and sets it with the specified capacity.
- * @param v A vector that should be reset with a new capacity.
- * @param new_capacity The capacity that the vector should be given.
- */
-static void vector_reset(vector_t* v, size_t new_capacity) {
-    if (new_capacity == 0) {
-        // Don't shrink the queue further
-        return;
-    }
-    void** start = (void**) malloc(new_capacity * sizeof(void*));
-    v->start = start;
-    v->next = start;
-    v->end = start + new_capacity;
-    v->votes = 0;
-}
-
-/**
- * Increases the capacity of the given vector without otherwise altering its
+ * Resets the capacity of the given vector without otherwise altering its
  * observable state.
- * @param v A vector that should have more capacity.
+ * @param v A vector that should have a different capacity.
  */
-static void vector_grow(vector_t* v, size_t new_capacity) {
+static void vector_resize(vector_t* v, size_t new_capacity) {
     if (new_capacity == 0) {
         // Don't shrink the queue further
         return;
