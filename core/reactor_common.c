@@ -37,7 +37,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "reactor.h"
 #include "tag.c"
 #include "pqueue.c"
-#include "vector.c"
+#include "utils/vector.c"
 #include "util.c"
 
 /** 

@@ -59,7 +59,7 @@
 #include <limits.h>
 #include <errno.h>
 #include "pqueue.h"
-#include "vector.h"
+#include "utils/vector.h"
 #include "util.h"
 #include "tag.h"       // Time-related functions.
 
