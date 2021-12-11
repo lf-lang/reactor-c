@@ -137,8 +137,6 @@ interval_t _lf_global_time_STP_offset = 0LL;
  * @param worker_number The current worker number.
  */
 void _lf_add_triggered_reactions(reaction_t** reaction_array, int worker_number) {
-    if (*reaction_array) return;
-    *reaction_array = (reaction_t*) true;
     vector_push(&_lf_triggered_reactions_by_thread[worker_number], reaction_array);
 }
 
@@ -192,9 +190,7 @@ static reaction_t** _lf_allocate_reactions_array(
         last_reactions_size = current_reactions_size;
     }
     free(last_reactions);
-    // Each array is preceded by a header that contains a boolean (indicating whether it has been triggered) and a
-    //  size (indicating its length).
-    return (reaction_t**) malloc((total_reactions + 2 * n_reactionses) * sizeof(reaction_t*));
+    return (reaction_t**) malloc((total_reactions + n_reactionses) * sizeof(reaction_t*));
 }
 
 /*
@@ -234,8 +230,7 @@ reaction_t** _lf_associate_reactions_to_ports(
         trigger_t** current_trigger_array = (trigger_t**) trigger_arrays.start[i];
         reaction_t**** current_reactionses = (reaction_t****) reactionseses.start[i];
         if (different_from_previous[i]) {
-            current_reactions = current_reaction;
-            current_reaction += 2;
+            current_reactions = current_reaction++;
             size_t current_reactions_size = 0;
             // Set the contents of the sized array current_reactions.
             for (size_t j = 0; j < (size_t) trigger_array_sizes.start[i]; j++) {
@@ -245,8 +240,7 @@ reaction_t** _lf_associate_reactions_to_ports(
                 }
             }
             // Record the size of the sized array current_reactions.
-            *current_reactions = NULL;
-            *(current_reactions + 1) = (reaction_t*) current_reactions_size;
+            *current_reactions = (reaction_t*) current_reactions_size;
         }
         // Save pointers to the sized array.
         for (size_t j = 0; j < (size_t) reactionses_sizes.start[i]; j++)
@@ -1595,7 +1589,6 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
     vector_vote(current_reactions);
     reaction_t** downstream_reactions;
     while((downstream_reactions = (reaction_t**) vector_pop(current_reactions))) {
-        *(downstream_reactions++) = (reaction_t*) false; // FIXME: Ideally this would be done at _lf_start_time_step
         size_t downstream_reactions_length = (size_t) *(downstream_reactions++);
         for (int k = 0; k < downstream_reactions_length; k++) {
             reaction_t* downstream_reaction = downstream_reactions[k];
