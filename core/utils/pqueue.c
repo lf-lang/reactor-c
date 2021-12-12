@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 #include "pqueue.h"
 #include "util.h"
@@ -282,6 +283,35 @@ void* pqueue_pop(pqueue_t *q) {
     percolate_down(q, 1);
     
     return head;
+}
+
+/**
+ * @brief Empty 'src' into 'dest'.
+ * 
+ * As an optimization, this function might swap 'src' and 'dest'.
+ * 
+ * @param dest The queue to fill up
+ * @param src  The queue to empty
+ */
+void pqueue_empty_into(pqueue_t** dest, pqueue_t** src) {
+    assert(src);
+    assert(dest);
+    assert(*src);
+    assert(*dest);
+    void* item;
+    if ((*dest)->size >= (*src)->size) {
+        while ((item = pqueue_pop(*src))) {
+            pqueue_insert(*dest, item);
+        }
+    } else {
+        while ((item = pqueue_pop(*dest))) {
+            pqueue_insert(*src, item);
+        }
+
+        pqueue_t* tmp = *dest;
+        *dest = *src;
+        *src = tmp;
+    }
 }
 
 void* pqueue_peek(pqueue_t *q) {
