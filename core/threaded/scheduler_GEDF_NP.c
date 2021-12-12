@@ -161,34 +161,8 @@ void _lf_sched_update_reaction_q(size_t worker_number) {
     // Check if we have actually assigned work to this worker thread previously.
     reaction_t* reaction_to_add = NULL;
     lf_mutex_lock(&mutex);
-    DEBUG_PRINT("Scheduler: Emptying queues of Worker %d.", worker_number);
-
-    // Add output reactions to the reaction queue. This will swap the
-    // two queues if the _lf_sched_threads_info[worker_number].output_reactions
-    // has gotten larger than the reaction_q.
-    if (pqueue_size(reaction_q) >= pqueue_size(_lf_sched_threads_info[worker_number].output_reactions)) {
-        while ((reaction_to_add = (reaction_t*)pqueue_pop(_lf_sched_threads_info[worker_number].output_reactions)) != NULL) {
-            lf_bool_compare_and_swap(&reaction_to_add->status, inactive, queued);
-            DEBUG_PRINT(
-                "Scheduler: Inserting reaction %s into the reaction queue.",
-                reaction_to_add->name
-            );
-            pqueue_insert(reaction_q, reaction_to_add);
-        }
-    } else {
-        pqueue_t* tmp;
-        while ((reaction_to_add = (reaction_t*)pqueue_pop(reaction_q)) != NULL) {
-            lf_bool_compare_and_swap(&reaction_to_add->status, inactive, queued);
-            DEBUG_PRINT(
-                "Scheduler: Inserting reaction %s into the reaction queue.",
-                reaction_to_add->name
-            );
-            pqueue_insert(_lf_sched_threads_info[worker_number].output_reactions, reaction_to_add);
-        }
-        tmp = reaction_q;
-        reaction_q = _lf_sched_threads_info[worker_number].output_reactions;
-        _lf_sched_threads_info[worker_number].output_reactions = tmp;
-    }
+    DEBUG_PRINT("Scheduler: Emptying the output reaction queue of Worker %d.", worker_number);
+    pqueue_empty_into(&reaction_q, &_lf_sched_threads_info[worker_number].output_reactions);
     lf_mutex_unlock(&mutex);
 }
 
@@ -299,7 +273,6 @@ int _lf_sched_distribute_ready_reactions() {
     unsigned long long mask = 0LL;
 
     int reactions_distributed = 0;
-
     // Find a reaction that is ready to execute.
     while ((r = (reaction_t*)pqueue_pop(reaction_q)) != NULL) {
         // Set the reaction aside if it is blocked, either by another
@@ -315,22 +288,11 @@ int _lf_sched_distribute_ready_reactions() {
         mask = mask | r->chain_id;
     }
 
+
     // Push blocked reactions back onto the reaction queue.
     // This will swap the two queues if the transfer_q has
     // gotten larger than the reaction_q.
-    if (pqueue_size(reaction_q) >= pqueue_size(transfer_q)) {
-        while ((b = (reaction_t*)pqueue_pop(transfer_q)) != NULL) {
-            pqueue_insert(reaction_q, b);
-        }
-    } else {
-        pqueue_t* tmp;
-        while ((b = (reaction_t*)pqueue_pop(reaction_q)) != NULL) {
-            pqueue_insert(transfer_q, b);
-        }
-        tmp = reaction_q;
-        reaction_q = transfer_q;
-        transfer_q = tmp;
-    }
+    pqueue_empty_into(&reaction_q, &transfer_q);
 
     DEBUG_PRINT("Scheduler: Distributed %d reactions.", reactions_distributed);
     return reactions_distributed;
@@ -410,7 +372,7 @@ void _lf_sched_notify_workers() {
  * 
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
-bool _lf_sched_try_advance_tag() {
+bool _lf_sched_try_advance_tag_and_distribute() {
     bool return_value = false;
 
     lf_mutex_lock(&mutex);
@@ -428,7 +390,13 @@ bool _lf_sched_try_advance_tag() {
             break;
         }
     }
+
+    int reactions_distributed = _lf_sched_distribute_ready_reactions();
     lf_mutex_unlock(&mutex);
+
+    if (reactions_distributed) {
+        _lf_sched_notify_workers();
+    }
     
     // pqueue_dump(executing_q, print_reaction);
     return return_value;
@@ -462,12 +430,8 @@ void _lf_sched_wait_for_work(size_t worker_number) {
     if (previous_idle_workers == (_lf_sched_number_of_workers - 1)) {
         // Last thread to go idle
         DEBUG_PRINT("Scheduler: Worker %d is the last idle thread.", worker_number);
-        if(_lf_sched_try_advance_tag()) {
+        if(_lf_sched_try_advance_tag_and_distribute()) {
             _lf_sched_signal_stop();
-        }
-
-        if (_lf_sched_distribute_ready_reactions() > 0) {
-            _lf_sched_notify_workers();
         }
     } else {
         // Wait for work to be released
