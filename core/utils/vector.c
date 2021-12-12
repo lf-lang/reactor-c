@@ -110,6 +110,7 @@ static void vector_reset(vector_t* v, size_t new_capacity) {
         return;
     }
     void** start = (void**) malloc(new_capacity * sizeof(void*));
+    assert(start);
     v->votes_to_shrink = 0;
     v->start = start;
     v->next = start;
