@@ -738,7 +738,7 @@ void request_stop() {
  *  reaction queue should be done immediately.
  */
 void _lf_enqueue_reaction(reaction_t* reaction, int worker_number) {
-    lf_sched_trigger_reaction(worker_number, reaction);
+    lf_sched_trigger_reaction(reaction, worker_number);
 }
 
 /**

@@ -68,6 +68,6 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  * 
  */
-void lf_sched_trigger_reaction(int worker_number, reaction_t* reaction);
+void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number);
 
 #endif // LF_SCHEDULER_H

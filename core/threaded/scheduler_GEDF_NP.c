@@ -268,11 +268,10 @@ bool _lf_is_blocked_by_executing_or_blocked_reaction(reaction_t* reaction) {
  */ 
 int _lf_sched_distribute_ready_reactions() {    
     reaction_t* r;
-    reaction_t* b;
-    // Keep track of the chain IDs of blocked reactions.
-    unsigned long long mask = 0LL;
 
+    // Keep track of the number of reactions distributed
     int reactions_distributed = 0;
+
     // Find a reaction that is ready to execute.
     while ((r = (reaction_t*)pqueue_pop(reaction_q)) != NULL) {
         // Set the reaction aside if it is blocked, either by another
@@ -285,7 +284,6 @@ int _lf_sched_distribute_ready_reactions() {
         // Couldn't execute the reaction. Will have to put it back in the
         // reaction queue.
         pqueue_insert(transfer_q, (void*)r);
-        mask = mask | r->chain_id;
     }
 
 
@@ -566,7 +564,7 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
-void lf_sched_trigger_reaction(int worker_number, reaction_t* reaction) {
+void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     if (worker_number == -1) {
         // The scheduler should handle this immediately
         lf_mutex_lock(&mutex);
