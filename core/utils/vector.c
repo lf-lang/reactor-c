@@ -1,15 +1,9 @@
-/*
- * This file defines a minimal vector (resizing array) data type.
- * It is intended to be the simplest way of storing a collection of
- * pointers that is frequently filled and then completely emptied.
- */
-
 #include <stddef.h>
 #include <stdlib.h>
 #include <assert.h>
 #include "vector.h"
 
-#define REQUIRED_VOTES_TO_SHRINK 50
+#define REQUIRED_VOTES_TO_SHRINK 15
 #define CAPACITY_TO_SIZE_RATIO_FOR_SHRINK_VOTE 4
 #define SCALE_FACTOR 2
 
@@ -43,13 +37,11 @@ void vector_free(vector_t* v) {
 }
 
 /**
- * Add the given element to the vector. The given element should be
- * non-null.
+ * Add the given element to the vector.
  * @param v A vector that is to grow.
  * @param element An element that the vector should contain.
  */
 void vector_push(vector_t* v, void* element) {
-    assert(element);
     if (v->next == v->end) {
         v->votes_required++;
         vector_resize(v, (v->end - v->start) * SCALE_FACTOR);
@@ -83,7 +75,7 @@ void vector_pushall(vector_t* v, void** array, size_t size) {
  */
 void* vector_pop(vector_t* v) {
     if (v->next == v->start) {
-        if (v->votes_to_shrink >= REQUIRED_VOTES_TO_SHRINK) {
+        if (v->votes >= v->votes_required) {
             size_t new_capacity = (v->end - v->start) / SCALE_FACTOR;
             if (new_capacity > 0) {
                 vector_resize(v, new_capacity);
@@ -102,7 +94,8 @@ void vector_vote(vector_t* v) {
     if (
         size // The following cast is fine because v->end >= v->start is an invariant.
         && (size * CAPACITY_TO_SIZE_RATIO_FOR_SHRINK_VOTE <= (size_t) (v->end - v->start))
-    ) v->votes_to_shrink++;
+    ) v->votes++;
+    else v->votes = 0;
 }
 
 /**
@@ -119,7 +112,7 @@ static void vector_resize(vector_t* v, size_t new_capacity) {
     assert(size <= new_capacity);
     void** start = (void**) realloc(v->start, new_capacity * sizeof(void*));
     assert(start);
-    v->votes_to_shrink = 0;
+    v->votes = 0;
     v->start = start;
     v->next = start + size;
     v->end = start + new_capacity;
