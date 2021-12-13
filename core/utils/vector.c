@@ -37,13 +37,11 @@ void vector_free(vector_t* v) {
 }
 
 /**
- * Add the given element to the vector. The given element should be
- * non-null.
+ * Add the given element to the vector.
  * @param v A vector that is to grow.
  * @param element An element that the vector should contain.
  */
 void vector_push(vector_t* v, void* element) {
-    assert(element);
     if (v->next == v->end) {
         v->votes_required++;
         vector_resize(v, (v->end - v->start) * SCALE_FACTOR);

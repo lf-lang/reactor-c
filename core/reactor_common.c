@@ -1587,8 +1587,10 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
 #endif
     vector_t* current_reactions = _lf_triggered_reactions_by_thread + worker;
     vector_vote(current_reactions);
-    reaction_t** downstream_reactions;
-    while((downstream_reactions = (reaction_t**) vector_pop(current_reactions))) {
+    size_t n_reactions_arrays = current_reactions->next - current_reactions->start;
+    current_reactions->next = current_reactions->start;
+    for (size_t i = 0; i < n_reactions_arrays; i++) {
+        reaction_t** downstream_reactions = (reaction_t**) current_reactions->start[i];
         size_t downstream_reactions_length = (size_t) *(downstream_reactions++);
         for (int k = 0; k < downstream_reactions_length; k++) {
             reaction_t* downstream_reaction = downstream_reactions[k];
