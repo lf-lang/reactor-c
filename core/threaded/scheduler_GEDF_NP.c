@@ -572,7 +572,7 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
         // checking its status.
         if (reaction != NULL && lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
             DEBUG_PRINT("Scheduler: Enqueing reaction %s, which has level %lld.",
-                        reaction->name, reaction->index & 0xffffLL);
+                        reaction->name, LEVEL(reaction->index));
             // Immediately put 'reaction' on the reaction queue.
             pqueue_insert(reaction_q, (void*)reaction);
         }
@@ -583,7 +583,7 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     // checking its status.
     if (reaction != NULL && lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
         DEBUG_PRINT("Scheduler: Worker %d: Enqueuing reaction %s, which has level %lld.",
-        		worker_number, reaction->name, reaction->index & 0xffffLL);
+        		worker_number, reaction->name, LEVEL(reaction->index));
         reaction->worker_affinity = worker_number;
         // Note: The scheduler will check that we don't enqueue this reaction
         // twice when it is actually pushing it to the global reaction queue.
