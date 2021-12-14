@@ -608,8 +608,8 @@ void _lf_sched_wait_for_work(size_t worker_number) {
     if (lf_bool_compare_and_swap(&_lf_sched_scheduling_in_progress, false, true)) {
         // Ask for more work from the scheduler.
         _lf_sched_do_scheduling();
-        lf_bool_compare_and_swap(&_lf_sched_scheduling_in_progress, true, false);
         lf_bool_compare_and_swap(&_lf_sched_threads_info[worker_number].is_idle, 1, 0);
+        lf_bool_compare_and_swap(&_lf_sched_scheduling_in_progress, true, false);
     } else {
         lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
     
