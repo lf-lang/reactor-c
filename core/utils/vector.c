@@ -91,11 +91,8 @@ void* vector_pop(vector_t* v) {
  */
 void vector_vote(vector_t* v) {
     size_t size = v->next - v->start;
-    if (
-        size // The following cast is fine because v->end >= v->start is an invariant.
-        && (size * CAPACITY_TO_SIZE_RATIO_FOR_SHRINK_VOTE <= (size_t) (v->end - v->start))
-    ) v->votes++;
-    else v->votes = 0;
+    int vote = size * CAPACITY_TO_SIZE_RATIO_FOR_SHRINK_VOTE <= (size_t) (v->end - v->start);
+    v->votes = vote * v->votes + vote;
 }
 
 /**
