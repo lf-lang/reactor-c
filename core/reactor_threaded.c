@@ -903,6 +903,12 @@ void _lf_enqueue_reaction(reaction_t* reaction) {
     // Acquire the mutex lock.
     lf_mutex_lock(&mutex);
     if (reaction != NULL && reaction->status == inactive) {
+#ifdef MODAL_REACTORS
+        // Check if reaction is disabled by mode inactivity
+        if (!_lf_mode_is_active(reaction->mode)) {
+            DEBUG_PRINT("Suppressing downstream reaction %s due inactivity of mode %s.", reaction->name, reaction->mode->name);
+        } else { // Suppress reaction by preventing entering reaction queue
+#endif
         DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
         		reaction->name, reaction->index & 0xffffLL);
         reaction->status = queued;
@@ -912,6 +918,9 @@ void _lf_enqueue_reaction(reaction_t* reaction) {
         // It is now handled by schedule_output_reactions() in reactor_common,
         // which calls the _lf_notify_workers() function defined below.
         // lf_cond_signal(&reaction_q_changed);
+#ifdef MODAL_REACTORS
+        }
+#endif
     }
     lf_mutex_unlock(&mutex);
 }
@@ -1093,6 +1102,11 @@ bool _lf_worker_advance_tag_locked(int worker_number) {
     }
 
     _lf_logical_tag_completed = true;
+
+#ifdef MODAL_REACTORS
+    // Perform mode transitions
+    _lf_handle_mode_changes();
+#endif
 
     // Advance time.
     // _lf_next_locked() may block waiting for real time to pass or events to appear.
