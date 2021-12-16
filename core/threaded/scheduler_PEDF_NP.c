@@ -375,7 +375,7 @@ bool _lf_is_blocked_by_executing_or_blocked_reaction(reaction_t* reaction) {
  * 
  * @return Number of reactions that were successfully distributed to worker threads.
  */ 
-static inline int _lf_sched_distribute_ready_reactions() {    
+static inline int _lf_sched_distribute_ready_reactions_locked() {    
     reaction_t* r;
 
     // Keep track of the number of reactions distributed
@@ -558,7 +558,7 @@ bool _lf_sched_try_advance_tag_and_distribute() {
         }
     }
     
-    int reactions_distributed = _lf_sched_distribute_ready_reactions();    
+    int reactions_distributed = _lf_sched_distribute_ready_reactions_locked();    
     lf_mutex_unlock(&mutex);
 
     if (reactions_distributed) {
