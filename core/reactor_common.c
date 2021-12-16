@@ -1977,7 +1977,7 @@ void _lf_add_suspended_event(event_t* event) {
         new_suspended_event = _lf_unsused_suspended_events_head;
         _lf_unsused_suspended_events_head = _lf_unsused_suspended_events_head->next;
     } else {
-        new_suspended_event = malloc(sizeof(_lf_suspended_event_t));
+        new_suspended_event = (_lf_suspended_event_t*) malloc(sizeof(_lf_suspended_event_t));
     }
 
     new_suspended_event->event = event;
