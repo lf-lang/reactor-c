@@ -150,22 +150,6 @@ bool _lf_logical_tag_completed = false;
  */
 lf_mutex_t _lf_sched_executing_q_mutex;
 
-///////////////////// Scheduler Runtime API (private) /////////////////////////
-/**
- * @brief Transfer the contents of worker thread queues to the actual global queues.
- * 
- * FIXME
- * 
- */
-void _lf_sched_update_reaction_q(size_t worker_number) {
-    // Check if we have actually assigned work to this worker thread previously.
-    reaction_t* reaction_to_add = NULL;
-    lf_mutex_lock(&mutex);
-    DEBUG_PRINT("Scheduler: Emptying the output reaction queue of Worker %d.", worker_number);
-    pqueue_empty_into(&reaction_q, &_lf_sched_threads_info[worker_number].output_reactions);
-    lf_mutex_unlock(&mutex);
-}
-
 /////////////////// Scheduler Worker API (private) /////////////////////////
 /**
  * @brief Distribute 'ready_reaction' to the best idle thread.
@@ -177,11 +161,9 @@ void _lf_sched_update_reaction_q(size_t worker_number) {
 static inline void _lf_sched_distribute_ready_reaction(reaction_t* ready_reaction) {
     DEBUG_PRINT("Scheduler: Trying to distribute reaction %s.", ready_reaction->name);
     lf_bool_compare_and_swap(&ready_reaction->status, queued, running);
-    lf_mutex_lock(&_lf_sched_executing_q_mutex);
     if (pqueue_insert(executing_q, ready_reaction) != 0) {
         error_print_and_exit("Could not add reaction to the executing queue.");
     }
-    lf_mutex_unlock(&_lf_sched_executing_q_mutex);
 }
 
 /**
@@ -262,11 +244,11 @@ bool _lf_is_blocked_by_executing_or_blocked_reaction(reaction_t* reaction) {
 /**
  * @brief Distribute any reaction that is ready to execute to idle worker thread(s).
  * 
- * This assumes that the caller is not holding any thread mutexes.
+ * This assumes that the caller is holding 'mutex' and is not holding any thread mutexes.
  * 
  * @return Number of reactions that were successfully distributed to worker threads.
  */ 
-int _lf_sched_distribute_ready_reactions() {    
+int _lf_sched_distribute_ready_reactions_locked() {    
     reaction_t* r;
 
     // Keep track of the number of reactions distributed
@@ -286,7 +268,6 @@ int _lf_sched_distribute_ready_reactions() {
         pqueue_insert(transfer_q, (void*)r);
     }
 
-
     // Push blocked reactions back onto the reaction queue.
     // This will swap the two queues if the transfer_q has
     // gotten larger than the reaction_q.
@@ -295,7 +276,6 @@ int _lf_sched_distribute_ready_reactions() {
     DEBUG_PRINT("Scheduler: Distributed %d reactions.", reactions_distributed);
     return reactions_distributed;
 }
-
 
 /**
  * Return true if the worker should stop now; false otherwise.
@@ -317,7 +297,7 @@ bool _lf_sched_should_stop_locked() {
 
 /**
  * Advance tag. This will also pop events for the newly acquired tag and put
- * the triggered reactions on the reaction queue.
+ * the triggered reactions on the 'reaction_q'.
  * 
  * This function assumes the caller holds the 'mutex' lock.
  * 
@@ -361,10 +341,8 @@ void _lf_sched_notify_workers() {
 /**
  * @brief Advance tag or distribute reactions to worker threads.
  *
- * Advance tag if there are no reactions in the reaction queue or in progress. If
- * there are such reactions, distribute them to worker threads. As part of its
- * book-keeping, this function will clear the output_reactions and
- * done_reactions queues of all idle worker threads if appropriate.
+ * Advance tag if there are no reactions on the reaction queue. If
+ * there are such reactions, distribute them to worker threads.
  * 
  * This function assumes the caller does not hold the 'mutex' lock.
  * 
@@ -373,15 +351,17 @@ void _lf_sched_notify_workers() {
 bool _lf_sched_try_advance_tag_and_distribute() {
     bool return_value = false;
 
-    lf_mutex_lock(&mutex);
-    while (pqueue_size(reaction_q) == 0 &&
-         pqueue_size(executing_q) == 0) {
-        // Nothing more happening at this logical time.
+    // Executing queue must be empty when this is called.
+    // However, checking for this adds to the scheduler overhead.
+    // if (pqueue_size(executing_q) != 0) {
+    //     error_print_and_exit("Scheduler: Executing queue was not empty when _lf_sched_try_advance_tag_and_distribute() was invoked.");
+    // }
 
-        // Protect against asynchronous events while advancing time by locking
-        // the mutex.
-        DEBUG_PRINT("Scheduler: Advancing time.");
-        // This thread will take charge of advancing time.
+    lf_mutex_lock(&mutex);
+    while (pqueue_size(reaction_q) == 0) {
+        // Nothing more happening at this tag.
+        DEBUG_PRINT("Scheduler: Advancing tag.");
+        // This worker thread will take charge of advancing tag.
         if (_lf_sched_advance_tag_locked()) {
             DEBUG_PRINT("Scheduler: Reached stop tag.");
             return_value = true;
@@ -389,7 +369,7 @@ bool _lf_sched_try_advance_tag_and_distribute() {
         }
     }
 
-    int reactions_distributed = _lf_sched_distribute_ready_reactions();
+    int reactions_distributed = _lf_sched_distribute_ready_reactions_locked();
     lf_mutex_unlock(&mutex);
 
     if (reactions_distributed) {
@@ -409,30 +389,49 @@ void _lf_sched_signal_stop() {
     lf_semaphore_release(_lf_sched_semaphore, (_lf_sched_number_of_workers - 1));
 }
 
+/**
+ * @brief Transfer the contents of the 'output_reactions' queue to the 'reaction_q'.
+ * 
+ * This function assumes that the 'mutex' is not locked.
+ * 
+ * @param worker_number The worker number of the calling worker thread.
+ */
+void _lf_sched_update_reaction_q(size_t worker_number) {
+    lf_mutex_lock(&mutex);
+    DEBUG_PRINT("Scheduler: Emptying the output reaction queue of Worker %d.", worker_number);
+    pqueue_empty_into(&reaction_q, &_lf_sched_threads_info[worker_number].output_reactions);
+    lf_mutex_unlock(&mutex);
+}
 
 /**
  * @brief Wait until the scheduler assigns work.
  *
- * FIXME
+ * If the calling worker thread is the last to become idle, it will call on the
+ * scheduler to distribute work. Otherwise, it will wait on '_lf_sched_semaphore'.
  *
  * @param worker_number The worker number of the worker thread asking for work
  * to be assigned to it.
  */
 void _lf_sched_wait_for_work(size_t worker_number) {
     
+    // First, empty the 'output_reactions' for this worker thread into the 'reaction_q'.
     _lf_sched_update_reaction_q(worker_number);
     
+    // Second, increment the number of idle workers by 1.
     size_t previous_idle_workers = lf_atomic_fetch_add(&_lf_sched_number_of_idle_workers, 1);
 
-    // Check if this is the last worker thread to be idle
+    // Check if this is the last worker thread to become idle.
     if (previous_idle_workers == (_lf_sched_number_of_workers - 1)) {
         // Last thread to go idle
         DEBUG_PRINT("Scheduler: Worker %d is the last idle thread.", worker_number);
+        // Call on the scheduler to distribute work or advance tag.
         if(_lf_sched_try_advance_tag_and_distribute()) {
+            // It's time to stop
             _lf_sched_signal_stop();
         }
     } else {
-        // Wait for work to be released
+        // Not the last thread to become idle.
+        // Wait for work to be released.
         lf_semaphore_acquire(_lf_sched_semaphore);
     }
 }
@@ -567,16 +566,16 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
 void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     if (worker_number == -1) {
         // The scheduler should handle this immediately
-        lf_mutex_lock(&mutex);
         // Protect against putting a reaction twice on the reaction queue by
         // checking its status.
         if (reaction != NULL && lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
+            lf_mutex_lock(&mutex);
             DEBUG_PRINT("Scheduler: Enqueing reaction %s, which has level %lld.",
                         reaction->name, LEVEL(reaction->index));
             // Immediately put 'reaction' on the reaction queue.
             pqueue_insert(reaction_q, (void*)reaction);
+            lf_mutex_unlock(&mutex);
         }
-        lf_mutex_unlock(&mutex);
         return;
     }
     // Protect against putting a reaction twice on the reaction queue by
