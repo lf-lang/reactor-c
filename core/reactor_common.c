@@ -2120,24 +2120,28 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
 
         // Retract all events from the event queue that are associated with now inactive modes
         if (event_q != NULL) {
-            int q_size = pqueue_size(event_q);
-            event_t* delayed_removal[q_size];
-            int delayed_removal_count = 0;
+            size_t q_size = pqueue_size(event_q);
+            if (q_size > 0) {
+                event_t** delayed_removal = (event_t**) calloc(q_size, sizeof(event_t*));
+                size_t delayed_removal_count = 0;
 
-            // Find events
-            for (int i = 0; i < q_size; i++) {
-                event_t* event = (event_t*)event_q->d[i + 1]; // internal queue data structure omits index 0
-                if (event != NULL && event->trigger != NULL && !_lf_mode_is_active(event->trigger->mode)) {
-                    delayed_removal[delayed_removal_count++] = event;
-                    // This will store the event including possibly those chained up in super dense time
-                    _lf_add_suspended_event(event);
+                // Find events
+                for (int i = 0; i < q_size; i++) {
+                    event_t* event = (event_t*)event_q->d[i + 1]; // internal queue data structure omits index 0
+                    if (event != NULL && event->trigger != NULL && !_lf_mode_is_active(event->trigger->mode)) {
+                        delayed_removal[delayed_removal_count++] = event;
+                        // This will store the event including possibly those chained up in super dense time
+                        _lf_add_suspended_event(event);
+                    }
                 }
-            }
 
-            // Events are removed delayed in order to allow linear iteration over the queue
-            DEBUG_PRINT("Modes: Pulling %d events from the event queue to suspend them. %d events are now suspended.", delayed_removal_count, _lf_suspended_events_num);
-            for (int i = 0; i < delayed_removal_count; i++) {
-                pqueue_remove(event_q, delayed_removal[i]);
+                // Events are removed delayed in order to allow linear iteration over the queue
+                DEBUG_PRINT("Modes: Pulling %d events from the event queue to suspend them. %d events are now suspended.", delayed_removal_count, _lf_suspended_events_num);
+                for (int i = 0; i < delayed_removal_count; i++) {
+                    pqueue_remove(event_q, delayed_removal[i]);
+                }
+
+                free(delayed_removal);
             }
         }
     }
