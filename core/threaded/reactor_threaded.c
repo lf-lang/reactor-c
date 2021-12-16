@@ -38,6 +38,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../reactor_common.c"
 #include "../platform.h"
 #include "scheduler.h"
+#include "worker.h"
+#include "wait_until.h"
 #include <signal.h>
 
 
@@ -47,16 +49,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * This is not currently used.
  */
 #define MAX_STALL_INTERVAL MSEC(1)
-
-/**
- * Unless the "fast" option is given, an LF program will wait until
- * physical time matches logical time before handling an event with
- * a given logical time. The amount of time is less than this given
- * threshold, then no wait will occur. The purpose of this is
- * to prevent unnecessary delays caused by simply setting up and
- * performing the wait.
- */
-#define MIN_WAIT_TIME USEC(10)
 
 /*
  * A struct representing a barrier in threaded 
@@ -88,6 +80,7 @@ lf_mutex_t mutex;
 
 // Condition variables used for notification between threads.
 lf_cond_t event_q_changed;
+
 // A condition variable that notifies threads whenever the number
 // of requestors on the tag barrier reaches zero.
 lf_cond_t global_tag_barrier_requestors_reached_zero;
@@ -385,313 +378,6 @@ void _lf_set_present(bool* is_present_field) {
 void synchronize_with_other_federates();
 
 /**
- * Wait until physical time matches or exceeds the specified logical time,
- * unless -fast is given.
- *
- * If an event is put on the event queue during the wait, then the wait is
- * interrupted and this function returns false. It also returns false if the
- * timeout time is reached before the wait has completed.
- * 
- * The mutex lock is assumed to be held by the calling thread.
- * Note this this could return true even if the a new event
- * was placed on the queue if that event time matches or exceeds
- * the specified time.
- *
- * @param logical_time_ns Logical time to wait until physical time matches it.
- * @param return_if_interrupted If this is false, then wait_util will wait
- *  until physical time matches the logical time regardless of whether new
- *  events get put on the event queue. This is useful, for example, for
- *  synchronizing the start of the program.
- * 
- * @return Return false if the wait is interrupted either because of an event
- *  queue signal or if the wait time was interrupted early by reaching
- *  the stop time, if one was specified. Return true if the full wait time
- *  was reached.
- */
-bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
-    DEBUG_PRINT("-------- Waiting until physical time matches logical time %lld", logical_time_ns);
-    bool return_value = true;
-    interval_t wait_until_time_ns = logical_time_ns;
-#ifdef FEDERATED_DECENTRALIZED // Only apply the STP offset if coordination is decentralized
-    // Apply the STP offset to the logical time
-    // Prevent an overflow
-    if (wait_until_time_ns < FOREVER - _lf_global_time_STP_offset) {
-        // If wait_time is not forever
-        DEBUG_PRINT("Adding STP offset %lld to wait until time %lld.",
-                _lf_global_time_STP_offset,
-                wait_until_time_ns - start_time);
-        wait_until_time_ns += _lf_global_time_STP_offset;
-    }
-#endif
-    if (!fast) {
-        // Get physical time as adjusted by clock synchronization offset.
-        instant_t current_physical_time = get_physical_time();
-        // We want to wait until that adjusted time matches the logical time.
-        interval_t ns_to_wait = wait_until_time_ns - current_physical_time;
-        // We should not wait if that adjusted time is already ahead
-        // of logical time.
-        if (ns_to_wait < MIN_WAIT_TIME) {
-            DEBUG_PRINT("Wait time %lld is less than MIN_WAIT_TIME %lld. Skipping wait.",
-                ns_to_wait, MIN_WAIT_TIME);
-            return return_value;
-        }
-
-        // We will use lf_cond_timedwait, which takes as an argument the absolute
-        // time to wait until. However, that will not include the offset that we
-        // have calculated with clock synchronization. So we need to instead ensure
-        // that the time it waits is ns_to_wait.
-        // We need the current clock value as obtained using CLOCK_REALTIME because
-        // that is what lf_cond_timedwait will use.
-        // The above call to setPhysicalTime() set the
-        // _lf_last_reported_unadjusted_physical_time_ns to the CLOCK_REALTIME value
-        // unadjusted by clock synchronization.
-        // Note that if ns_to_wait is large enough, then the following addition could
-        // overflow. This could happen, for example, if wait_until_time_ns == FOREVER.
-        instant_t unadjusted_wait_until_time_ns = FOREVER;
-        if (FOREVER - _lf_last_reported_unadjusted_physical_time_ns > ns_to_wait) {
-            unadjusted_wait_until_time_ns = _lf_last_reported_unadjusted_physical_time_ns + ns_to_wait;
-        }
-        DEBUG_PRINT("-------- Clock offset is %lld ns.", current_physical_time - _lf_last_reported_unadjusted_physical_time_ns);
-        DEBUG_PRINT("-------- Waiting %lld ns for physical time to match logical time %llu.", ns_to_wait, 
-                logical_time_ns - start_time);
-
-        // lf_cond_timedwait returns 0 if it is awakened before the timeout.
-        // Hence, we want to run it repeatedly until either it returns non-zero or the
-        // current physical time matches or exceeds the logical time.
-        if (lf_cond_timedwait(condition, &mutex, unadjusted_wait_until_time_ns) != LF_TIMEOUT) {
-            DEBUG_PRINT("-------- wait_until interrupted before timeout.");
-
-            // Wait did not time out, which means that there
-            // may have been an asynchronous call to schedule().
-            // Continue waiting.
-            // Do not adjust current_tag.time here. If there was an asynchronous
-            // call to schedule(), it will have put an event on the event queue,
-            // and current_tag.time will be set to that time when that event is pulled.
-            return_value = false;
-        } else {
-            // Reached timeout.
-            // FIXME: move this to Mac-specific platform implementation
-            // Unfortunately, at least on Macs, pthread_cond_timedwait appears
-            // to be implemented incorrectly and it returns well short of the target
-            // time.  Check for this condition and wait again if necessary.
-            interval_t ns_to_wait = wait_until_time_ns - get_physical_time();
-            // We should not wait if that adjusted time is already ahead
-            // of logical time.
-            if (ns_to_wait < MIN_WAIT_TIME) {
-                return true;
-            }
-            DEBUG_PRINT("-------- lf_cond_timedwait claims to have timed out, "
-                    "but it did not reach the target time. Waiting again.");
-            return wait_until(wait_until_time_ns, condition);
-        }
-
-        DEBUG_PRINT("-------- Returned from wait, having waited %lld ns.", get_physical_time() - current_physical_time);
-    }
-    return return_value;
-}
-
-/**
- * Return the tag of the next event on the event queue.
- * If the event queue is empty then return either FOREVER_TAG
- * or, is a stop_time (timeout time) has been set, the stop time.
- */
-tag_t get_next_event_tag() {
-    // Peek at the earliest event in the event queue.
-    event_t* event = (event_t*)pqueue_peek(event_q);
-    tag_t next_tag = FOREVER_TAG;
-    if (event != NULL) {
-        // There is an event in the event queue.
-        if (event->time < current_tag.time) {
-            error_print_and_exit("get_next_event_tag(): Earliest event on the event queue (%lld) is "
-                                  "earlier than the current time (%lld).",
-                                  event->time - start_time,
-                                  current_tag.time - start_time);
-        }
-
-        next_tag.time = event->time;
-        if (next_tag.time == current_tag.time) {
-        	DEBUG_PRINT("Earliest event matches current time. Incrementing microstep. Event is dummy: %d.",
-        			event->is_dummy);
-            next_tag.microstep =  get_microstep() + 1;
-        } else {
-            next_tag.microstep = 0;
-        }
-    }
-
-    // If a timeout tag was given, adjust the next_tag from the
-    // event tag to that timeout tag.
-    if (_lf_is_tag_after_stop_tag(next_tag)) {
-        next_tag = stop_tag;
-    }
-    LOG_PRINT("Earliest event on the event queue (or stop time if empty) is (%lld, %u). Event queue has size %d.",
-            next_tag.time - start_time, next_tag.microstep, pqueue_size(event_q));
-    return next_tag;
-}
-
-#ifdef FEDERATED_CENTRALIZED
-// The following is defined in federate.c and used in the following function.
-tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply);
-#endif
-
-/**
- * In a federated execution with centralized coordination, this function returns
- * a tag that is less than or equal to the specified tag when, as far
- * as the federation is concerned, it is safe to commit to advancing
- * to the returned tag. That is, all incoming network messages with
- * tags less than the returned tag have been received.
- * In unfederated execution or in federated execution with decentralized
- * control, this function returns the specified tag immediately.
- *
- * @param tag The tag to which to advance.
- * @param wait_for_reply If true, wait for the RTI to respond.
- * @return The tag to which it is safe to advance.
- */
-tag_t send_next_event_tag(tag_t tag, bool wait_for_reply) {
-#ifdef FEDERATED_CENTRALIZED
-    return _lf_send_next_event_tag(tag, wait_for_reply);
-#else
-    return tag;
-#endif
-}
-
-/**
- * If there is at least one event in the event queue, then wait until
- * physical time matches or exceeds the time of the least tag on the event
- * queue; pop the next event(s) from the event queue that all have the same tag;
- * extract from those events the reactions that are to be invoked at this
- * logical time and insert them into the reaction queue. The event queue is
- * sorted by time tag.
- *
- * If there is no event in the queue and the keepalive command-line option was
- * not given, and this is not a federated execution with centralized coordination,
- * set the stop tag to the current tag.
- * If keepalive was given, then wait for either request_stop()
- * to be called or an event appears in the event queue and then return.
- *
- * Every time tag is advanced, it is checked against stop tag and if they are
- * equal, shutdown reactions are triggered.
- *
- * This does not acquire the mutex lock. It assumes the lock is already held.
- */
-void _lf_next_locked() {
-    // Previous logical time is complete.
-    tag_t next_tag = get_next_event_tag();
-
-#ifdef FEDERATED_CENTRALIZED
-    // In case this is in a federation with centralized coordination, notify 
-    // the RTI of the next earliest tag at which this federate might produce 
-    // an event. This function may block until it is safe to advance the current 
-    // tag to the next tag. Specifically, it blocks if there are upstream 
-    // federates. If an action triggers during that wait, it will unblock
-    // and return with a time (typically) less than the next_time.
-    tag_t grant_tag = send_next_event_tag(next_tag, true); // true means this blocks.
-    if (compare_tags(grant_tag, next_tag) < 0) {
-        // RTI has granted tag advance to an earlier tag or the wait
-        // for the RTI response was interrupted by a local physical action with
-        // a tag earlier than requested.
-        // Continue executing. The event queue may have changed.
-        return;
-    }
-    // Granted tag is greater than or equal to next event tag that we sent to the RTI.
-    // Since send_next_event_tag releases the mutex lock internally, we need to check
-    // again for what the next tag is (e.g., the stop time could have changed).
-    next_tag = get_next_event_tag();
-    
-    // FIXME: Do starvation analysis for centralized coordination.
-    // Specifically, if the event queue is empty on *all* federates, this
-    // can become known to the RTI which can then stop execution.
-    // Hence, it will no longer be necessary to force keepalive to be true
-    // for all federated execution. With centralized coordination, we could
-    // allow keepalive to be either true or false and could get the same
-    // behavior with centralized coordination as with unfederated execution.
-
-#else  // not FEDERATED_CENTRALIZED
-    if (pqueue_peek(event_q) == NULL && !keepalive_specified) {
-        // There is no event on the event queue and keepalive is false.
-        // No event in the queue
-        // keepalive is not set so we should stop.
-        // Note that federated programs with decentralized coordination always have
-        // keepalive = true
-        _lf_set_stop_tag((tag_t){.time=current_tag.time,.microstep=current_tag.microstep+1});
-
-        // Stop tag has changed. Need to check next_tag again.
-        next_tag = get_next_event_tag();
-    }
-#endif
-
-    // Wait for physical time to advance to the next event time (or stop time).
-    // This can be interrupted if a physical action triggers (e.g., a message
-    // arrives from an upstream federate or a local physical action triggers).
-    LOG_PRINT("Waiting until elapsed time %lld.", (next_tag.time - start_time));
-    while (!wait_until(next_tag.time, &event_q_changed)) {
-        DEBUG_PRINT("_lf_next_locked(): Wait until time interrupted.");
-        // Sleep was interrupted.  Check for a new next_event.
-        // The interruption could also have been due to a call to request_stop().
-        next_tag = get_next_event_tag();
-
-        // If this (possibly new) next tag is past the stop time, return.
-        if (_lf_is_tag_after_stop_tag(next_tag)) {
-            return;
-        }
-    }
-    // A wait occurs even if wait_until() returns true, which means that the
-    // tag on the head of the event queue may have changed.
-    next_tag = get_next_event_tag();
-
-    // If this (possibly new) next tag is past the stop time, return.
-    if (_lf_is_tag_after_stop_tag(next_tag)) { // compare_tags(tag, stop_tag) > 0
-        return;
-    }
-
-    DEBUG_PRINT("Physical time is ahead of next tag time by %lld. This should be small unless -fast is used.",
-                get_physical_time() - next_tag.time);
-    
-#ifdef FEDERATED
-    // In federated execution (at least under decentralized coordination),
-    // it is possible that an incoming message has been partially read,
-    // enough to see its tag. To prevent it from becoming tardy, the thread
-    // that is reading the message has set a barrier to prevent logical time
-    // from exceeding the timestamp of the message. It will remove that barrier
-    // once the complete message has been read. Here, we wait for that barrier
-    // to be removed, if appropriate.
-    if(_lf_wait_on_global_tag_barrier(next_tag)) {
-        // A wait actually occurred, so the next_tag may have changed again.
-        next_tag = get_next_event_tag();
-    }
-#endif // FEDERATED
-
-    // If the first event in the event queue has a tag greater than or equal to the
-    // stop time, and the current_tag matches the stop tag (meaning that we have already
-    // executed microstep 0 at the timeout time), then we are done. The above code prevents the next_tag
-    // from exceeding the stop_tag, so we have to do further checks if
-    // they are equal.
-    if (compare_tags(next_tag, stop_tag) >= 0 && compare_tags(current_tag, stop_tag) >= 0) {
-        // If we pop anything further off the event queue with this same time or larger,
-        // then it will be assigned a tag larger than the stop tag.
-        return;
-    }
-
-    // Invoke code that must execute before starting a new logical time round,
-    // such as initializing outputs to be absent.
-    _lf_start_time_step();
-        
-    // At this point, finally, we have an event to process.
-    // Advance current time to match that of the first event on the queue.
-    _lf_advance_logical_time(next_tag.time);
-
-    if (compare_tags(current_tag, stop_tag) >= 0) {
-        // Pop shutdown events
-        DEBUG_PRINT("Scheduling shutdown reactions.");
-        _lf_trigger_shutdown_reactions();
-    }
-
-    // Pop all events from event_q with timestamp equal to current_tag.time,
-    // extract all the reactions triggered by these events, and
-    // stick them into the reaction queue.
-    _lf_pop_events();
-}
-
-/**
  * Request a stop to execution as soon as possible.
  * In a non-federated execution, this will occur
  * at the conclusion of the current logical time.
@@ -813,7 +499,7 @@ void _lf_initialize_start_tag() {
             start_time, _lf_global_time_STP_offset);
     // Ignore interrupts to this wait. We don't want to start executing until
     // physical time matches or exceeds the logical start time.
-    while (!wait_until(start_time, &event_q_changed)) {}
+    while (!wait_until(start_time, &event_q_changed, fast)) {}
     DEBUG_PRINT("Done waiting for start time %lld.", start_time);
     DEBUG_PRINT("Physical time is ahead of current time by %lld. This should be small.",
             get_physical_time() - start_time);
@@ -840,210 +526,6 @@ void _lf_initialize_start_tag() {
     _lf_execution_started = true;
 }
 
-/** For logging and debugging, each worker thread is numbered. */
-int worker_thread_count = 0;
-
-/**
- * Handle deadline violation for 'reaction'. 
- * The mutex should NOT be locked when this function is called. It might acquire
- * the mutex when scheduling the reactions that are triggered as a result of
- * executing the deadline violation handler on the 'reaction', if it exists.
- *
- * @return true if a deadline violation occurred. false otherwise.
- */
-bool _lf_worker_handle_deadline_violation_for_reaction(int worker_number, reaction_t* reaction) {
-    bool violation_occurred = false;
-    // If the reaction has a deadline, compare to current physical time
-    // and invoke the deadline violation reaction instead of the reaction function
-    // if a violation has occurred. Note that the violation reaction will be invoked
-    // at most once per logical time value. If the violation reaction triggers the
-    // same reaction at the current time value, even if at a future superdense time,
-    // then the reaction will be invoked and the violation reaction will not be invoked again.
-    if (reaction->deadline > 0LL) {
-        // Get the current physical time.
-        instant_t physical_time = get_physical_time();
-        // Check for deadline violation.
-        if (physical_time > current_tag.time + reaction->deadline) {
-            // Deadline violation has occurred.
-            violation_occurred = true;
-            // Invoke the local handler, if there is one.
-            reaction_function_t handler = reaction->deadline_violation_handler;
-            if (handler != NULL) {
-                LOG_PRINT("Worker %d: Deadline violation. Invoking deadline handler.",
-                        worker_number);
-                (*handler)(reaction->self);
-
-                // If the reaction produced outputs, put the resulting
-                // triggered reactions into the queue or execute them directly if possible.
-                schedule_output_reactions(reaction, worker_number);
-                // Remove the reaction from the executing queue.
-            }
-        }
-    }
-    return violation_occurred;
-}
-
-/**
- * Handle STP violation for 'reaction'. 
- * The mutex should NOT be locked when this function is called. It might acquire
- * the mutex when scheduling the reactions that are triggered as a result of
- * executing the STP violation handler on the 'reaction', if it exists.
- *
- * @return true if an STP violation occurred. false otherwise.
- */
-bool _lf_worker_handle_STP_violation_for_reaction(int worker_number, reaction_t* reaction) {
-    bool violation_occurred = false;
-    // If the reaction violates the STP offset,
-    // an input trigger to this reaction has been triggered at a later
-    // logical time than originally anticipated. In this case, a special
-    // STP handler will be invoked.             
-    // FIXME: Note that the STP handler will be invoked
-    // at most once per logical time value. If the STP handler triggers the
-    // same reaction at the current time value, even if at a future superdense time,
-    // then the reaction will be invoked and the STP handler will not be invoked again.
-    // However, inputs ports to a federate reactor are network port types so this possibly should
-    // be disallowed.
-    // @note The STP handler and the deadline handler are not mutually exclusive.
-    //  In other words, both can be invoked for a reaction if it is triggered late
-    //  in logical time (STP offset is violated) and also misses the constraint on 
-    //  physical time (deadline).
-    // @note In absence of an STP handler, the is_STP_violated will be passed down the reaction
-    //  chain until it is dealt with in a downstream STP handler.
-    if (reaction->is_STP_violated == true) {
-        reaction_function_t handler = reaction->STP_handler;
-        LOG_PRINT("STP violation detected.");
-        // Invoke the STP handler if there is one.
-        if (handler != NULL) {
-            LOG_PRINT("Worker %d: Invoking tardiness handler.", worker_number);
-            // There is a violation
-            violation_occurred = true;
-            (*handler)(reaction->self);
-            
-            // If the reaction produced outputs, put the resulting
-            // triggered reactions into the queue or execute them directly if possible.
-            schedule_output_reactions(reaction, worker_number);
-            
-            // Reset the is_STP_violated because it has been dealt with
-            reaction->is_STP_violated = false;
-        }
-    }
-    return violation_occurred;
-}
-
-/**
- * Handle violations for 'reaction'. Currently limited to deadline violations
- * and STP violations. 
- * The mutex should NOT be locked when this function is called. It might acquire
- * the mutex when scheduling the reactions that are triggered as a result of
- * executing the deadline or STP violation handler(s) on the 'reaction', if they
- * exist.
- *
- * @return true if a violation occurred. false otherwise.
- */
-bool _lf_worker_handle_violations(int worker_number, reaction_t* reaction) {
-    bool violation = false;
-    
-    violation = _lf_worker_handle_deadline_violation_for_reaction(worker_number, reaction) ||
-                    _lf_worker_handle_STP_violation_for_reaction(worker_number, reaction);
-    return violation;
-}
-
-/**
- * Invoke 'reaction' and schedule any resulting triggered reaction(s) on the
- * reaction queue. 
- * The mutex should NOT be locked when this function is called. It might acquire
- * the mutex when scheduling the reactions that are triggered as a result of
- * executing 'reaction'.
- */
-void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
-    LOG_PRINT("Worker %d: Invoking reaction %s at elapsed tag (%lld, %d).",
-            worker_number,
-            reaction->name,
-            current_tag.time - start_time,
-            current_tag.microstep);
-    tracepoint_reaction_starts(reaction, worker_number);
-    reaction->function(reaction->self);
-    tracepoint_reaction_ends(reaction, worker_number);
-
-    // If the reaction produced outputs, put the resulting triggered
-    // reactions into the queue or execute them immediately.
-    schedule_output_reactions(reaction, worker_number);
-}
-
-/**
- * The main looping logic of each LF worker thread.
- * This function assumes the caller holds the mutex lock.
- * 
- * @param worker_number The number assigned to this worker thread
- */
-void _lf_worker_do_work(int worker_number) {
-    // Keep track of whether we have decremented the idle thread count.
-    // Obtain a reaction from the scheduler that is ready to execute
-    // (i.e., it is not blocked by concurrently executing reactions
-    // that it depends on).
-    // print_snapshot(); // This is quite verbose (but very useful in debugging reaction deadlocks).
-    reaction_t* current_reaction_to_execute = NULL;
-    while ((current_reaction_to_execute = 
-            lf_sched_get_ready_reaction(worker_number)) 
-            != NULL) {
-        // Got a reaction that is ready to run.
-        DEBUG_PRINT("Worker %d: Popped from reaction_q %s: "
-                "is control reaction: %d, chain ID: %llu, and deadline %lld.", worker_number,
-                current_reaction_to_execute->name,
-                current_reaction_to_execute->is_a_control_reaction,
-                current_reaction_to_execute->chain_id,
-                current_reaction_to_execute->deadline);
-
-        bool violation = _lf_worker_handle_violations(
-            worker_number, 
-            current_reaction_to_execute
-        );
-
-        if (!violation) {
-            // Invoke the reaction function.
-            _lf_worker_invoke_reaction(worker_number, current_reaction_to_execute);
-        }
-
-        DEBUG_PRINT("Worker %d: Done with reaction %s.",
-                worker_number, current_reaction_to_execute->name);
-
-        lf_sched_done_with_reaction(worker_number, current_reaction_to_execute);
-    }
-}
-
-/**
- * Worker thread for the thread pool.
- * This acquires the mutex lock and releases it to wait for time to
- * elapse or for asynchronous events and also releases it to execute reactions.
- */
-void* worker(void* arg) {
-    lf_mutex_lock(&mutex);
-    int worker_number = worker_thread_count++;
-    LOG_PRINT("Worker thread %d started.", worker_number);
-    lf_mutex_unlock(&mutex);
-
-    _lf_worker_do_work(worker_number);
-
-    lf_mutex_lock(&mutex);
-
-    // This thread is exiting, so don't count it anymore.
-    worker_thread_count--;
-
-    if (worker_thread_count == 0) {
-        // The last worker thread to exit will inform the RTI if needed.
-        // Notify the RTI that there will be no more events (if centralized coord).
-        // False argument means don't wait for a reply.
-        send_next_event_tag(FOREVER_TAG, false);
-    }
-
-    lf_cond_signal(&event_q_changed);
-
-    DEBUG_PRINT("Worker %d: Stop requested. Exiting.", worker_number);
-    lf_mutex_unlock(&mutex);
-    // timeout has been requested.
-    return NULL;
-}
-
 /**
  * If DEBUG logging is enabled, prints the status of the event queue,
  * the reaction queue, and the executing queue.
@@ -1058,18 +540,6 @@ void print_snapshot() {
                         pqueue_size(event_q));
         pqueue_dump(event_q, print_reaction); 
         DEBUG_PRINT(">>> END Snapshot");
-    }
-}
-
-// Array of thread IDs (to be dynamically allocated).
-lf_thread_t* _lf_thread_ids;
-
-// Start threads in the thread pool.
-void start_threads() {
-    LOG_PRINT("Starting %u worker threads.", _lf_number_of_threads);
-    _lf_thread_ids = (lf_thread_t*)malloc(_lf_number_of_threads * sizeof(lf_thread_t));
-    for (unsigned int i = 0; i < _lf_number_of_threads; i++) {
-        lf_thread_create(&_lf_thread_ids[i], worker, NULL);
     }
 }
 
@@ -1130,32 +600,13 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         // it can be probably called in that manner as well).
         _lf_initialize_start_tag();
 
-        start_threads();
+        lf_worker_start(_lf_number_of_threads);
 
         lf_mutex_unlock(&mutex);
         DEBUG_PRINT("Waiting for worker threads to exit.");
 
-        // Wait for the worker threads to exit.
-        void* worker_thread_exit_status = NULL;
-        DEBUG_PRINT("Number of threads: %d.", _lf_number_of_threads);
-        int ret = 0;
-        for (int i = 0; i < _lf_number_of_threads; i++) {
-        	int failure = lf_thread_join(_lf_thread_ids[i], &worker_thread_exit_status);
-        	if (failure) {
-        		error_print("Failed to join thread listening for incoming messages: %s", strerror(failure));
-        	}
-        	if (worker_thread_exit_status != NULL) {
-                error_print("---- Worker %d reports error code %p", worker_thread_exit_status);
-                ret = 1;
-        	}
-        }
+        int ret = lf_worker_wait_exit();
 
-        if (ret == 0) {
-            LOG_PRINT("---- All worker threads exited successfully.");
-        }
-        
-        lf_sched_free();
-        free(_lf_thread_ids);
         return ret;
     } else {
         return -1;

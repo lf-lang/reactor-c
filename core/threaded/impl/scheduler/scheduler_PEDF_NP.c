@@ -39,11 +39,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
 
-#include "scheduler.h"
-#include "../platform.h"
-#include "../utils/pqueue_support.h"
-#include "../utils/semaphore.c"
-#include "../utils/vector.c"
+#include "../../scheduler.h"
+#include "../../next.h"
+#include "../../../reactor_common.h"
+#include "../../../platform.h"
+#include "../../../utils/semaphore.c"
+#include "../../../utils/vector.c"
+#include "../../../utils/pqueue_support.h"
 
 
 /////////////////// External Variables /////////////////////////
@@ -86,27 +88,6 @@ static void print_reaction(void *reaction);
  * point to the same struct.
  */
 static int reaction_matches(void* next, void* curr);
-
-/**
- * If there is at least one event in the event queue, then wait until
- * physical time matches or exceeds the time of the least tag on the event
- * queue; pop the next event(s) from the event queue that all have the same tag;
- * extract from those events the reactions that are to be invoked at this
- * logical time and insert them into the reaction queue. The event queue is
- * sorted by time tag.
- *
- * If there is no event in the queue and the keepalive command-line option was
- * not given, and this is not a federated execution with centralized coordination,
- * set the stop tag to the current tag.
- * If keepalive was given, then wait for either request_stop()
- * to be called or an event appears in the event queue and then return.
- *
- * Every time tag is advanced, it is checked against stop tag and if they are
- * equal, shutdown reactions are triggered.
- *
- * This does not acquire the mutex lock. It assumes the lock is already held.
- */
-void _lf_next_locked();
 
 /** 
  * Placeholder for code-generated function that will, in a federated
@@ -420,7 +401,7 @@ bool _lf_sched_should_stop_locked() {
     // and check against the stop tag to see whether this is the last step.
     if (_lf_logical_tag_completed) {
         logical_tag_complete(current_tag);
-        // If we are at the stop tag, do not call _lf_next_locked()
+        // If we are at the stop tag, do not call lf_next_locked()
         // to prevent advancing the logical time.
         if (compare_tags(current_tag, stop_tag) >= 0) {
             return true;
@@ -446,14 +427,14 @@ bool _lf_sched_advance_tag_locked() {
     _lf_logical_tag_completed = true;
 
     // Advance time.
-    // _lf_next_locked() may block waiting for real time to pass or events to appear.
+    // lf_next_locked() may block waiting for real time to pass or events to appear.
     // to appear on the event queue. Note that we already
     // hold the mutex lock.
     // tracepoint_worker_advancing_time_starts(worker_number); 
     // FIXME: Tracing should be updated to support scheduler events
-    _lf_next_locked();
+    lf_next_locked(event_q, keepalive_specified, fast);
 
-    DEBUG_PRINT("Scheduler: Done waiting for _lf_next_locked().");
+    DEBUG_PRINT("Scheduler: Done waiting for lf_next_locked().");
     return false;
 }
 

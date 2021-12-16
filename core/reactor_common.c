@@ -35,6 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Soroush Bateni <soroush@utdallas.edu}
  */
 #include "reactor.h"
+#include "reactor_common.h"
 #include "tag.c"
 #include "utils/pqueue.c"
 #include "utils/pqueue_support.h"
@@ -66,16 +67,6 @@ instant_t duration = -1LL;
  * has started.
  */
 bool _lf_execution_started = false;
-
-/**
- * The tag at which the Lingua Franca program should stop.
- * It will be initially set to timeout if it is set. However,
- * starvation or calling request_stop() can also alter the stop_tag by moving it
- * earlier.
- * 
- * FIXME: This variable might need to be volatile
- */
-tag_t stop_tag = FOREVER_TAG_INITIALIZER;
 
 /** Indicator of whether the keepalive command-line option was given. */
 bool keepalive_specified = false;
@@ -144,21 +135,6 @@ void enqueue_network_control_reactions();
  */
 port_status_t determine_port_status_if_possible(int portID);
 #endif
-
-/**
- * Set the stop tag.
- * 
- * This function will always choose the minimum
- * of the provided tag and stop_tag
- * 
- * @note In threaded programs, the mutex must be locked before
- *  calling this function.
- */
-void _lf_set_stop_tag(tag_t tag) {
-    if (compare_tags(tag, stop_tag) < 0) {
-        stop_tag = tag;
-    }
-}
 
 /////////////////////////////
 // The following functions are in scope for all reactors:
@@ -446,15 +422,6 @@ lf_token_t* _lf_initialize_token(lf_token_t* token, size_t length) {
     // Count allocations to issue a warning if this is never freed.
     _lf_count_payload_allocations++;
     return _lf_initialize_token_with_value(token, value, length);
-}
-
-/**
- * A helper function that returns true if the provided tag is after stop tag.
- * 
- * @param tag The tag to check against stop tag
- */
-bool _lf_is_tag_after_stop_tag(tag_t tag) {
-    return (compare_tags(tag, stop_tag) > 0);
 }
 
 /**

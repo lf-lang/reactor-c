@@ -30,6 +30,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The main entry point is synchronize_with_other_federates().
  */
 
+
+#ifndef NUMBER_OF_WORKERS
+#define NUMBER_OF_WORKERS 1
+#endif // NUMBER_OF_WORKERS
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>      // Defined perror(), errno
@@ -46,6 +51,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../reactor.h"    // Defines instant_t.
 #include "../platform.h"
 #include "../threaded/scheduler.h"
+#include "../threaded/wait_until.h"
+#include "../threaded/next.h"
 #include "clock-sync.c" // Defines clock synchronization functions.
 #include "federate.h"   // Defines federate_instance_t
 
@@ -1393,7 +1400,7 @@ void wait_until_port_status_known(int port_ID, interval_t STP) {
                 port_ID,
                 current_tag.time - start_time,
                 current_tag.microstep);
-        while(!wait_until(wait_until_time, &port_status_changed)) {
+        while(!wait_until(wait_until_time, &port_status_changed, fast)) {
             // Interrupted
             DEBUG_PRINT("------ Wait for network input port %d interrupted.", port_ID);
             // Check if the status of the port is known
@@ -2588,7 +2595,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
                     return _fed.last_TAG;
                 }
                 // Check whether the new event on the event queue requires sending a new NET.
-                tag_t next_tag = get_next_event_tag();
+                tag_t next_tag = get_next_event_tag(event_q);
                 if (compare_tags(next_tag, tag) != 0) {
                     _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag, wait_for_reply);
                     _fed.last_sent_NET = next_tag;
@@ -2640,6 +2647,6 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
         // put onto the event queue. In either case, we can just loop around.
         // The next iteration will determine whether another
         // TAN should be sent or a NET.
-        tag = get_next_event_tag();
+        tag = get_next_event_tag(event_q);
     }
 }

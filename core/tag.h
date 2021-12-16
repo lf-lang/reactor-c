@@ -85,6 +85,24 @@ typedef struct {
 typedef tag_t tag_interval_t;
 
 /**
+ * A helper function that returns true if the provided tag is after stop tag.
+ * 
+ * @param tag The tag to check against stop tag
+ */
+bool _lf_is_tag_after_stop_tag(tag_t tag);
+
+/**
+ * Set the stop tag.
+ * 
+ * This function will always choose the minimum
+ * of the provided tag and stop_tag
+ * 
+ * @note In threaded programs, the mutex must be locked before
+ *  calling this function.
+ */
+void _lf_set_stop_tag(tag_t tag);
+
+/**
  * Compare two tags. Return -1 if the first is less than
  * the second, 0 if they are equal, and +1 if the first is
  * greater than the second. A tag is greater than another if
@@ -168,6 +186,13 @@ tag_t get_current_tag();
 microstep_t get_microstep();
 
 /**
+ * @brief Get the stop tag.
+ * 
+ * @return tag_t The stop tag.
+ */
+tag_t get_stop_tag();
+
+/**
  * Global physical clock offset.
  * Initially set according to the RTI's clock in federated
  * programs.
@@ -192,6 +217,17 @@ extern interval_t _lf_global_test_physical_clock_offset;
  * clocks at the start of the execution.
  */
 extern interval_t _lf_epoch_offset;
+
+/**
+ * Records the most recent time reported by the physical clock
+ * when accessed by get_physical_time(). This will be an epoch time
+ * (number of nanoseconds since Jan. 1, 1970), as reported when
+ * you call lf_clock_gettime(CLOCK_REALTIME, ...). This differs from
+ * _lf_last_reported_physical_time_ns by _lf_global_physical_clock_offset
+ * plus any calculated drift adjustement, which are adjustments made
+ * by clock synchronization.
+ */
+extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
 
 /**
  * Return the current physical time in nanoseconds.

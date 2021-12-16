@@ -39,11 +39,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
 
-#include "scheduler.h"
-#include "../platform.h"
-#include "../utils/semaphore.c"
-#include "../utils/vector.c"
-#include "../utils/pqueue_support.h"
+#include "../../scheduler.h"
+#include "../../next.h"
+#include "../../../reactor_common.h"
+#include "../../../platform.h"
+#include "../../../utils/semaphore.c"
+#include "../../../utils/pqueue_support.h"
 
 
 /////////////////// External Variables /////////////////////////
@@ -52,14 +53,6 @@ extern tag_t current_tag;
 extern tag_t stop_tag;
 
 /////////////////// External Functions /////////////////////////
-/**
- * Placeholder for function that will advance tag and initially fill the
- * reaction queue.
- * 
- * This does not acquire the mutex lock. It assumes the lock is already held.
- */
-void _lf_next_locked();
-
 /** 
  * Placeholder for code-generated function that will, in a federated
  * execution, be used to coordinate the advancement of tag. It will notify
@@ -306,7 +299,7 @@ bool _lf_sched_should_stop_locked() {
     // and check against the stop tag to see whether this is the last step.
     if (_lf_logical_tag_completed) {
         logical_tag_complete(current_tag);
-        // If we are at the stop tag, do not call _lf_next_locked()
+        // If we are at the stop tag, do not call lf_next_locked()
         // to prevent advancing the logical time.
         if (compare_tags(current_tag, stop_tag) >= 0) {
             return true;
@@ -332,14 +325,14 @@ bool _lf_sched_advance_tag_locked() {
     _lf_logical_tag_completed = true;
 
     // Advance time.
-    // _lf_next_locked() may block waiting for real time to pass or events to appear.
+    // lf_next_locked() may block waiting for real time to pass or events to appear.
     // to appear on the event queue. Note that we already
     // hold the mutex lock.
     // tracepoint_worker_advancing_time_starts(worker_number); 
     // FIXME: Tracing should be updated to support scheduler events
-    _lf_next_locked();
+    lf_next_locked(event_q, keepalive_specified, fast);
 
-    DEBUG_PRINT("Scheduler: Done waiting for _lf_next_locked().");
+    DEBUG_PRINT("Scheduler: Done waiting for lf_next_locked().");
     return false;
 }
 
