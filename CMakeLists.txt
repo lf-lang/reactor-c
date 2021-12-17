@@ -14,7 +14,13 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE ${DEFAULT_BUILD_TYPE} CACHE STRING "Choose the type of build." FORCE)
 endif()
 
+set(Lib lib)
+set(CoreLib core)
+set(PlatformLib platform)
+
 enable_testing()
 add_subdirectory(test)
+add_subdirectory(${Lib})
+add_subdirectory(${CoreLib})
 
-
+include(Tests.cmake)
