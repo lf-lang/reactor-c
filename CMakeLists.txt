@@ -19,6 +19,8 @@ set(Lib lib)
 set(CoreLib core)
 set(PlatformLib platform)
 
+include_directories(${CMAKE_SOURCE_DIR}/include)
+
 enable_testing()
 add_subdirectory(${Test})
 add_subdirectory(${Lib})
