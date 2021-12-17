@@ -26,4 +26,4 @@ add_subdirectory(${Test})
 add_subdirectory(${Lib})
 add_subdirectory(${CoreLib})
 
-include(Tests.cmake)
+include(test/Tests.cmake)

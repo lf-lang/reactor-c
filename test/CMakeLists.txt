@@ -1,1 +1,1 @@
-add_library(test-lib STATIC dummy_src_gen.c)
+add_library(test-lib STATIC src_gen_stub.c)
