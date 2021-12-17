@@ -1,11 +1,11 @@
 # Check which system we are running on to select the correct platform support
 # file and assign the file's path to LF_PLATFORM_FILE
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-    set(LF_PLATFORM_FILE ${CoreLib}/platform/lf_linux_support.c)
+    set(LF_PLATFORM_FILE ${CoreLib}/${PlatformLib}/lf_linux_support.c)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-    set(LF_PLATFORM_FILE ${CoreLib}/platform/lf_macos_support.c)
+    set(LF_PLATFORM_FILE ${CoreLib}/${PlatformLib}/lf_macos_support.c)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    set(LF_PLATFORM_FILE ${CoreLib}/platform/lf_windows_support.c)
+    set(LF_PLATFORM_FILE ${CoreLib}/${PlatformLib}/lf_windows_support.c)
     set(CMAKE_SYSTEM_VERSION 10.0)
     message("Using Windows SDK version ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")
 else()
