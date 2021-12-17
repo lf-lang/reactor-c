@@ -15,3 +15,12 @@ To generate and view documentation, follow the following steps:
   - `make html`
 - Point your browser to the generated HTML page:
   - `firefox _build/html/index.html`
+
+To create a new test, write a C program with a file name ending in "test.c"
+in the `test` directory.
+
+To run all tests, execute the following:
+- `cd build`
+- `cmake ..`
+- `cmake --build .`
+- `make test`
