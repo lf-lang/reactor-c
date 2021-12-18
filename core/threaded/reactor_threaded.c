@@ -987,9 +987,11 @@ void _lf_worker_do_work(int worker_number) {
             lf_sched_get_ready_reaction(worker_number)) 
             != NULL) {
         // Got a reaction that is ready to run.
-        DEBUG_PRINT("Worker %d: Popped from reaction_q %s: "
-                "is control reaction: %d, chain ID: %llu, and deadline %lld.", worker_number,
+        DEBUG_PRINT("Worker %d: Got from scheduler reaction %s: "
+                "level: %lld, is control reaction: %d, chain ID: %llu, and deadline %lld.", 
+                worker_number,
                 current_reaction_to_execute->name,
+                LEVEL(current_reaction_to_execute->index),
                 current_reaction_to_execute->is_a_control_reaction,
                 current_reaction_to_execute->chain_id,
                 current_reaction_to_execute->deadline);

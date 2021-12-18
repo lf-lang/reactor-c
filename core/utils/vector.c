@@ -87,6 +87,40 @@ void* vector_pop(vector_t* v) {
 }
 
 /**
+ * @brief Return a pointer of the vector element at 'idx'.
+ * 
+ * @param v Any vector.
+ * @param idx The index in the vector.
+ * 
+ * @return NULL on error. A valid pointer to the element at 'idx' otherwise.
+ */
+void** vector_at(vector_t* v, size_t idx) {
+    void** vector_position = v->start + idx;
+    if (vector_position >= v->end) {
+        size_t new_size = (v->end - v->start) * SCALE_FACTOR;
+        // Find a size that includes idx
+        while (new_size <= idx) {
+            new_size *= SCALE_FACTOR;
+        }
+        vector_resize(v, new_size);
+    }
+    if ((vector_position + 1) > v->next) {
+        v->next = vector_position + 1;
+    }
+    return vector_position;
+}
+
+/**
+ * @brief Return the size of the vector.
+ * 
+ * @param v Any vector
+ * @return size_t  The size of the vector.
+ */
+size_t vector_size(vector_t* v) {
+    return (v->next - v->start);
+}
+
+/**
  * Vote on whether this vector ought to have a smaller memory footprint.
  */
 void vector_vote(vector_t* v) {

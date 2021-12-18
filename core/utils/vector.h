@@ -57,6 +57,24 @@ void vector_pushall(vector_t* v, void** array, size_t size);
 void* vector_pop(vector_t* v);
 
 /**
+ * @brief Return a pointer that is contained in the vector at 'idx'.
+ * 
+ * @param v Any vector.
+ * @param idx The index in the vector.
+ * 
+ * @return NULL on error. A valid pointer to the element at 'idx' otherwise.
+ */
+void** vector_at(vector_t* v, size_t idx);
+
+/**
+ * @brief Return the size of the vector.
+ * 
+ * @param v Any vector
+ * @return size_t  The size of the vector.
+ */
+size_t vector_size(vector_t* v);
+
+/**
  * Vote on whether this vector ought to have a smaller memory footprint.
  */
 void vector_vote(vector_t* v);
