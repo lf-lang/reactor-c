@@ -1,4 +1,5 @@
 #include "rand_utils.h"
+#include <stdlib.h>
 
 /**
  * @brief Ensures that the expectation of each entry of `out` is equal
