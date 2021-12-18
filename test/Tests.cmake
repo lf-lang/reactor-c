@@ -16,4 +16,5 @@ foreach(FILE ${TEST_FILES})
         ${NAME} PUBLIC
         ${CoreLib} ${PlatformLib} ${Lib} ${TestLib}
     )
+    target_include_directories(${NAME} PRIVATE ${TEST_DIR})
 endforeach(FILE ${TEST_FILES})
