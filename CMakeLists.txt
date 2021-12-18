@@ -9,6 +9,9 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Currently this build process is used for testing, not production.
+# To save time, the default log level is used. Uncomment the following for full logging output.
+# add_compile_definitions(LOG_LEVEL=LOG_LEVEL_DEBUG)
 set(DEFAULT_BUILD_TYPE Debug)
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     set(CMAKE_BUILD_TYPE ${DEFAULT_BUILD_TYPE} CACHE STRING "Choose the type of build." FORCE)
