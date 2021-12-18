@@ -1,10 +1,13 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "core/utils/vector.h"
-#include "../rand_utils.h"
+#include "rand_utils.h"
+#include "core/utils/util.h"
 
 #define CAPACITY 100
 #define MAX_PUSHALL 8
+#define N 5000
+#define RANDOM_SEED 1614
 
 static void* mock[CAPACITY];
 static size_t mock_size = 0;
@@ -18,7 +21,7 @@ static int distribution[4] = {30, 50, 5, 15};
  * @param x Any pointer.
  */
 void test_push(vector_t* v) {
-    printf("push.\n");
+    DEBUG_PRINT("push.");
     void* x = mock + rand();
     vector_push(v, x);
     mock[mock_size++] = x;
@@ -30,17 +33,16 @@ void test_push(vector_t* v) {
  * @param v A vector.
  */
 void test_pop(vector_t* v) {
-    printf("pop.\n");
+    DEBUG_PRINT("pop.");
     void* expected;
     void* found;
     if (mock_size && (
         (found = vector_pop(v)) != (expected = mock[--mock_size])
     )) {
-        printf(
-            "Expected %p but got %p while popping from a vector.\n",
+        error_print_and_exit(
+            "Expected %p but got %p while popping from a vector.",
             expected, found
         );
-        exit(1);
     }
 }
 
@@ -51,7 +53,7 @@ void test_pop(vector_t* v) {
  * @return The number of items pushed to `v`.
  */
 int test_pushall(vector_t* v) {
-    printf("pushall.\n");
+    DEBUG_PRINT("pushall.");
     int count = rand() % MAX_PUSHALL;
     void** mock_start = mock + mock_size;
     for (int i = 0; i < count; i++) {
@@ -71,11 +73,10 @@ void test_random_access(vector_t* v) {
     if (mock_size) {
         int idx = rand() % mock_size;
         if (v->start[idx] != mock[idx]) {
-            printf(
-                "Expected %p but got %p while randomly accessing a vector.\n",
+            error_print_and_exit(
+                "Expected %p but got %p while randomly accessing a vector.",
                 mock[idx], v->start[idx]
             );
-            exit(1);
         }
     }
 }
@@ -86,7 +87,7 @@ void test_random_access(vector_t* v) {
  * @param v A vector.
  */
 void test_vote(vector_t* v) {
-    printf("vote.\n");
+    DEBUG_PRINT("vote.");
     vector_vote(v);
 }
 
@@ -116,12 +117,12 @@ int run_test(vector_t* v, int* distribution) {
 }
 
 int main() {
-    srand(1614);
-    for (int i = 0; i < 1000; i++) {
+    srand(RANDOM_SEED);
+    for (int i = 0; i < N; i++) {
         int perturbed[4];
         perturb(distribution, 4, perturbed);
-        printf(
-            "Distribution: %d, %d, %d, %d\n",
+        DEBUG_PRINT(
+            "Distribution: %d, %d, %d, %d",
             perturbed[0], perturbed[1], perturbed[2], perturbed[3]
         );
         // FIXME: Decide whether it should be possible to initialize
