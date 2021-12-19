@@ -19,9 +19,10 @@ To generate and view documentation, follow the following steps:
 To create a new test, write a C program with a file name ending in "test.c"
 in the `test` directory.
 
-To run unthreaded tests, execute the following:
+To run unthreaded tests, execute the following. Note that -U is required to undefine
+a name.
 - `cd build`
-- `cmake .. -DNUMBER_OF_WORKERS=0`
+- `cmake .. -UNUMBER_OF_WORKERS`
 - `cmake --build .`
 - `make test`
 

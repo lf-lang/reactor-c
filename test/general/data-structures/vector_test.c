@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "core/utils/vector.h"
 #include "rand_utils.h"
-#include "core/utils/util.h"
+#include "core/util.h"
 
 #define CAPACITY 100
 #define MAX_PUSHALL 8

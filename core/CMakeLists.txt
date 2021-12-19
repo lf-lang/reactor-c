@@ -1,3 +1,5 @@
+set(CORE_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
+
 # Appends the provided sources to the SOURCES variable of the parent.
 macro(add_sources_to_parent GENERAL_SOURCES THREADED_SOURCES UNTHREADED_SOURCES)
     set(TEMP ${GENERAL_SOURCES})
@@ -7,28 +9,60 @@ macro(add_sources_to_parent GENERAL_SOURCES THREADED_SOURCES UNTHREADED_SOURCES)
         list(APPEND TEMP ${UNTHREADED_SOURCES})
     endif(NUMBER_OF_WORKERS)
     foreach(FILE ${TEMP})
-        list(APPEND SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${FILE})
+        file(RELATIVE_PATH RELATIVE_TO_ROOT ${CORE_ROOT} ${CMAKE_CURRENT_SOURCE_DIR}/${FILE})
+        list(APPEND SOURCES ${RELATIVE_TO_ROOT})
     endforeach()
     set(SOURCES ${SOURCES} PARENT_SCOPE)
 endmacro()
 
+# Applies the X as a preprocessor definition if X is defined.
+macro(define X)
+    if(DEFINED ${X})
+        message(STATUS ${X}=${${X}})
+        add_compile_definitions(${X}=${${X}})
+    endif(DEFINED ${X})
+endmacro()
+
+message(STATUS "Applying preprocessor definitions...")
+define(_LF_CLOCK_SYNC_INITIAL)
+define(_LF_CLOCK_SYNC_PERIOD_NS)
+define(_LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL)
+define(_LF_CLOCK_SYNC_ATTENUATION)
+define(_LF_CLOCK_SYNC_COLLECT_STATS)
+define(_LF_CLOCK_SYNC_ON)
+define(LOG_LEVEL)
+define(FEDERATED)
+define(FEDERATED_CENTRALIZED)
+define(FEDERATED_DECENTRALIZED)
+define(NUMBER_OF_FEDERATES)
+define(NUMBER_OF_WORKERS)
+define(TARGET_FILES_DIRECTORY)
+define(ADVANCE_MESSAGE_INTERVAL)
+define(LINGUA_FRANCA_TRACE)
+message(STATUS "")
+
 # Add sources from subdirectories.
 add_subdirectory(platform)
-add_subdirectory(threaded)
 add_subdirectory(utils)
 
-# Determine which sources to include.
+# List sources in this directory.
 set(UNTHREADED_SOURCES reactor.c)
+set(THREADED_SOURCES reactor_threaded.c)
+set(GENERAL_SOURCES pqueue.c util.c)
+
+# Determine which sources to include.
+list(APPEND SOURCES ${GENERAL_SOURCES})
 if(NUMBER_OF_WORKERS)
     message(STATUS "Including sources for threaded runtime with ${NUMBER_OF_WORKERS} worker(s).")
-    add_compile_definitions(NUMBER_OF_WORKERS=${NUMBER_OF_WORKERS})
+    list(APPEND SOURCES ${THREADED_SOURCES})
 else()
     message(STATUS "Including sources for unthreaded runtime.")
-    remove_definitions(-DNUMBER_OF_WORKERS)
     list(APPEND SOURCES ${UNTHREADED_SOURCES})
 endif(NUMBER_OF_WORKERS)
 
 # Create the library "core".
+list(JOIN SOURCES ", " PRINTABLE_SOURCE_LIST)
+message(STATUS "Including the following sources: " ${PRINTABLE_SOURCE_LIST})
 add_library(core ${SOURCES})
 
 # Link threading library if necessary.
