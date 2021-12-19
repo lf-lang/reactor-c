@@ -1,3 +1,8 @@
+/**
+ * @author Peter Donovan (peterdonovan@berkeley.edu)
+ * @author Soroush Bateni (soroush@utdallas.edu)
+ */
+
 #include <stddef.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -87,7 +92,12 @@ void* vector_pop(vector_t* v) {
 }
 
 /**
- * Vote on whether this vector ought to have a smaller memory footprint.
+ * Vote on whether this vector should be given less memory.
+ * If `v` contains few elements, it becomes more likely to shrink.
+ *
+ * It is suggested that this function be called when the number of
+ * elements in `v` reaches a local maximum.
+ * @param v Any vector.
  */
 void vector_vote(vector_t* v) {
     size_t size = v->next - v->start;
