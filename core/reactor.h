@@ -58,8 +58,8 @@
 #include <time.h>
 #include <limits.h>
 #include <errno.h>
-#include "pqueue.h"
-#include "util.h"
+#include "utils/pqueue.h"
+#include "utils/util.h"
 #include "tag.h"       // Time-related functions.
 
 // The following file is also included, but must be included
