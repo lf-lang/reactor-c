@@ -19,8 +19,12 @@ To generate and view documentation, follow the following steps:
 To create a new test, write a C program with a file name ending in "test.c"
 in the `test` directory.
 
-To run all tests, execute the following:
+To run unthreaded tests, execute the following:
 - `cd build`
-- `cmake ..`
+- `cmake .. -DNUMBER_OF_WORKERS=0`
 - `cmake --build .`
 - `make test`
+
+To run threaded tests, provide a nonzero number of workers when invoking `cmake ..`.
+For example:
+- `cmake .. -DNUMBER_OF_WORKERS=2`
