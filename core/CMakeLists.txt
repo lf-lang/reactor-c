@@ -1,3 +1,18 @@
+# Appends the provided sources to the SOURCES variable of the parent.
+macro(add_sources_to_parent GENERAL_SOURCES THREADED_SOURCES UNTHREADED_SOURCES)
+    set(TEMP ${GENERAL_SOURCES})
+    if(NUMBER_OF_WORKERS)
+        list(APPEND TEMP ${THREADED_SOURCES})
+    else()
+        list(APPEND TEMP ${UNTHREADED_SOURCES})
+    endif(NUMBER_OF_WORKERS)
+    foreach(FILE ${TEMP})
+        list(APPEND SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/${FILE})
+    endforeach()
+    set(SOURCES ${SOURCES} PARENT_SCOPE)
+endmacro()
+
+# Add sources from subdirectories.
 add_subdirectory(platform)
 add_subdirectory(threaded)
 add_subdirectory(utils)
