@@ -30,7 +30,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Utility functions for a federate in a federated execution.
  */
 
-#include "../utils/util.h"
+#include "../util.h"
 #include "net_util.h"
 #include <errno.h>
 #include <stdio.h>

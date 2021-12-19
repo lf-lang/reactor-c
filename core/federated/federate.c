@@ -45,7 +45,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "net_common.h" // Defines message types, etc.
 #include "../reactor.h"    // Defines instant_t.
 #include "../platform.h"
-#include "../threaded/scheduler.h"
 #include "clock-sync.c" // Defines clock synchronization functions.
 #include "federate.h"   // Defines federate_instance_t
 
@@ -1217,15 +1216,15 @@ port_status_t get_current_port_status(int portID) {
  * given network input port is going to be present at the current logical time
  * or absent.
  */
-void enqueue_network_input_control_reactions() {
+void enqueue_network_input_control_reactions(pqueue_t *reaction_q) {
     for (int i = 0; i < _fed.triggers_for_network_input_control_reactions_size; i++) {
         // Reaction 0 should always be the network input control reaction
         if (get_current_port_status(i) == unknown) {
             reaction_t *reaction = _fed.triggers_for_network_input_control_reactions[i]->reactions[0];
-            if (reaction->status == inactive) {
+            if (pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
                 reaction->is_a_control_reaction = true;
                 DEBUG_PRINT("Inserting network input control reaction on reaction queue.");
-                lf_sched_worker_enqueue_reaction(-1, reaction);
+                pqueue_insert(reaction_q, reaction);
                 mark_control_reaction_waiting(i, true);
             }
         }
@@ -1236,7 +1235,7 @@ void enqueue_network_input_control_reactions() {
  * Enqueue network output control reactions that will send a MSG_TYPE_PORT_ABSENT
  * message to downstream federates if a given network output port is not present.
  */
-void enqueue_network_output_control_reactions(){
+void enqueue_network_output_control_reactions(pqueue_t* reaction_q){
     DEBUG_PRINT("Enqueueing output control reactions.");
     if (_fed.trigger_for_network_output_control_reactions == NULL) {
         // There are no network output control reactions
@@ -1245,10 +1244,10 @@ void enqueue_network_output_control_reactions(){
     }
     for (int i = 0; i < _fed.trigger_for_network_output_control_reactions->number_of_reactions; i++) {
         reaction_t* reaction = _fed.trigger_for_network_output_control_reactions->reactions[i];
-        if (reaction->status == inactive) {
+        if (pqueue_find_equal_same_priority(reaction_q, reaction) == NULL) {
             reaction->is_a_control_reaction = true;
             DEBUG_PRINT("Inserting network output control reaction on reaction queue.");
-            lf_sched_worker_enqueue_reaction(-1, reaction);
+            pqueue_insert(reaction_q, reaction);
         }
     }
 }
@@ -1257,7 +1256,7 @@ void enqueue_network_output_control_reactions(){
 /**
  * Enqueue network control reactions.
  */
-void enqueue_network_control_reactions() {
+void enqueue_network_control_reactions(pqueue_t* reaction_q) {
 #ifdef FEDERATED_CENTRALIZED
     // If the granted tag is not provisional, there is no
     // need for network control reactions
@@ -1266,8 +1265,8 @@ void enqueue_network_control_reactions() {
         return;
     }
 #endif
-    enqueue_network_input_control_reactions();
-    enqueue_network_output_control_reactions();
+    enqueue_network_input_control_reactions(reaction_q);
+    enqueue_network_output_control_reactions(reaction_q);
 }
 
 /**
@@ -1725,6 +1724,11 @@ void handle_tagged_message(int socket, int fed_id) {
 #endif // In centralized coordination, a TAG message from the RTI 
        // can set the last_known_status_tag to a future tag where messages
        // have not arrived yet.
+    if (action->is_a_control_reaction_waiting && 
+            _lf_advancing_time) {
+        error_print_and_exit("Federate was attempting to advance time "
+                             "while control reactions are still present.");
+    }
 
     // FIXME: It might be enough to just check this field and not the status at all
     update_last_known_status_on_input_port(intended_tag, port_id);
@@ -1765,6 +1769,10 @@ void handle_tagged_message(int socket, int fed_id) {
         // Port is now present. Therefore, notify the network input control reactions to
         // stop waiting and re-check the port status.
         lf_cond_broadcast(&port_status_changed);
+
+        // Notify the main thread in case it is waiting for reactions.
+        DEBUG_PRINT("Broadcasting notification that reaction queue changed.");
+        lf_cond_signal(&reaction_q_changed);
     } else {
         // If no control reaction is waiting for this message, or if the intended
         // tag is in the future, use schedule functions to process the message.
@@ -2056,6 +2064,8 @@ void handle_stop_granted_message() {
                 stop_tag.microstep);
 
     _lf_decrement_global_tag_barrier_locked();
+    // In case any thread is waiting on a condition, notify all.
+    lf_cond_broadcast(&reaction_q_changed);
     // We signal instead of broadcast under the assumption that only
     // one worker thread can call wait_until at a given time because
     // the call to wait_until is protected by a mutex lock

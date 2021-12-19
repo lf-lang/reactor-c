@@ -44,8 +44,23 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <time.h>   // For CLOCK_MONOTONIC
 #include <stdbool.h>
 
-// Use 64-bit times and 32-bit unsigned microsteps
-#include "lf_tag_64_32.h"
+/**
+ * Time instant. Both physical and logical times are represented
+ * using this typedef.
+ * WARNING: If this code is used after about the year 2262,
+ * then representing time as a 64-bit long long will be insufficient.
+ */
+typedef int64_t _instant_t;
+
+/**
+ * Interval of time.
+ */
+typedef int64_t _interval_t;
+
+/**
+ * Microstep instant.
+ */
+typedef uint32_t _microstep_t;
 
 // The underlying physical clock for MacOS
 #define _LF_CLOCK CLOCK_MONOTONIC

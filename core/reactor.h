@@ -58,8 +58,8 @@
 #include <time.h>
 #include <limits.h>
 #include <errno.h>
-#include "utils/pqueue.h"
-#include "utils/util.h"
+#include "pqueue.h"
+#include "util.h"
 #include "tag.h"       // Time-related functions.
 
 // The following file is also included, but must be included
@@ -84,8 +84,6 @@
 // problems with if ... else statements that do not use braces around the
 // two branches.
 
-void _lf_set_present(bool* is_present_field);
-
 /**
  * Set the specified output (or input of a contained reactor)
  * to the specified value.
@@ -103,7 +101,7 @@ void _lf_set_present(bool* is_present_field);
 #define _LF_SET(out, val) \
 do { \
     out->value = val; \
-    _lf_set_present(&out->is_present); \
+    out->is_present = true; \
 } while(0)
 
 /**
@@ -122,7 +120,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_ARRAY(out, val, element_size, length) \
 do { \
-    _lf_set_present(&out->is_present); \
+    out->is_present = true; \
     lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
     token->ref_count = out->num_destinations; \
     out->token = token; \
@@ -131,7 +129,7 @@ do { \
 #else
 #define _LF_SET_ARRAY(out, val, element_size, length) \
 do { \
-    _lf_set_present(&out->is_present); \
+    out->is_present = true; \
     lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
     token->ref_count = out->num_destinations; \
     out->token = token; \
@@ -156,7 +154,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW(out) \
 do { \
-    _lf_set_present(&out->is_present); \
+    out->is_present = true; \
     lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
     out->value = token->value; \
     out->token = token; \
@@ -164,7 +162,7 @@ do { \
 #else
 #define _LF_SET_NEW(out) \
 do { \
-    _lf_set_present(&out->is_present); \
+    out->is_present = true; \
     lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
     out->value = static_cast<decltype(out->value)>(token->value); \
     out->token = token; \
@@ -187,7 +185,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    _lf_set_present(&out->is_present); \
+    out->is_present = true; \
     lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
     out->value = token->value; \
     out->token = token; \
@@ -196,7 +194,7 @@ do { \
 #else
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    _lf_set_present(&out->is_present); \
+    out->is_present = true; \
     lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
     out->value = static_cast<decltype(out->value)>(token->value); \
     out->token = token; \
@@ -214,7 +212,7 @@ do { \
  */
 #define _LF_SET_PRESENT(out) \
 do { \
-    _lf_set_present(&out->is_present); \
+    out->is_present = true; \
 } while(0)
 
 /**
@@ -229,19 +227,21 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    _lf_set_present(&out->is_present); \
+    out->is_present = true; \
     out->value = newtoken->value; \
     out->token = newtoken; \
     newtoken->ref_count += out->num_destinations; \
+    out->is_present = true; \
     out->length = newtoken->length; \
 } while(0)
 #else
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    _lf_set_present(&out->is_present); \
+    out->is_present = true; \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
     out->token = newtoken; \
     newtoken->ref_count += out->num_destinations; \
+    out->is_present = true; \
     out->length = newtoken->length; \
 } while(0)
 #endif
@@ -329,20 +329,6 @@ typedef enum {no=0, token_and_value, token_only} ok_to_free_t;
  *  or absent (no possibility of unknown).
  */
 typedef enum {absent = false, present = true, unknown} port_status_t;
-
-/**
- * Status of a given reaction at a given logical time.
- *
- * If a reaction is 'inactive', it is neither running nor queued.
- * If a reaction is 'queued', it is going to be executed at the current logical time,
- * but it has not started running yet.
- * If a reaction is 'running', its body is being executed.
- *
- * @note inactive must equal zero because it should be possible to allocate a reaction
- *  with default values using calloc.
- * FIXME: The running state does not seem to be read.
- */
-typedef enum {inactive = 0, queued, running} reaction_status_t;
 
 /**
  * The flag OK_TO_FREE is used to indicate whether
@@ -465,7 +451,7 @@ struct reaction_t {
     bool** output_produced;   // Array of pointers to booleans indicating whether outputs were produced. COMMON.
     int* triggered_sizes;     // Pointer to array of ints with number of triggers per output. INSTANCE.
     trigger_t ***triggers;    // Array of pointers to arrays of pointers to triggers triggered by each output. INSTANCE.
-    reaction_status_t status; // Indicator of whether the reaction is inactive, queued, or running. RUNTIME.
+    bool running;             // Indicator that this reaction has already started executing. RUNTIME.
     interval_t deadline;      // Deadline relative to the time stamp for invocation of the reaction. INSTANCE.
     bool is_STP_violated;     // Indicator of STP violation in one of the input triggers to this reaction. default = false.
                               // Value of True indicates to the runtime that this reaction contains trigger(s)
@@ -482,8 +468,6 @@ struct reaction_t {
     bool is_a_control_reaction; // Indicates whether this reaction is a control reaction. Control
                                 // reactions will not set ports or actions and don't require scheduling
                                 // any output reactions. Default is false.
-    size_t worker_affinity;     // The worker number of the thread that scheduled this reaction. Used
-                                // as a suggestion to the scheduler.
     char* name;                 // If logging is set to LOG or higher, then this will
                                 // point to the full name of the reactor followed by
     							// the reaction number.
@@ -795,6 +779,12 @@ void _lf_fd_send_stop_request_to_rti();
  * time and set the microstep to zero.
  */ 
 void _lf_advance_logical_time(instant_t next_time);
+
+/**
+ * If multithreaded, notify workers that something has changed
+ * on the reaction_q. Otherwise, do nothing.
+ */
+void _lf_notify_workers();
 
 /**
  * If multithreaded and the reaction is blocked by

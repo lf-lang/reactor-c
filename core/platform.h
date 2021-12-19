@@ -169,38 +169,6 @@ extern int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex);
  */
 extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absolute_time_ns);
 
-/*
- * Atomically increment the variable that ptr points to by the given value, and return the original value of the variable.
- * @param ptr A pointer to a variable. The value of this variable will be replaced with the result of the operation.
- * @param value The value to be added to the variable pointed to by the ptr parameter.
- * @return The original value of the variable that ptr points to (i.e., from before the application of this operation).
- */
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-// Assume that an integer is 32 bits.
-#define lf_atomic_fetch_add(ptr, value) InterlockedExchangeAdd(ptr, value)
-#elif defined(__GNUC__) || defined(__clang__)
-#define lf_atomic_fetch_add(ptr, value) __sync_fetch_and_add(ptr, value)
-#else
-#error "Compiler not supported"
-#endif
-
-/*
- * Atomically compare the variable that ptr points to against oldval. If the
- * current value is oldval, then write newval into *ptr.
- * @param ptr A pointer to a variable.
- * @param oldval The value to compare against.
- * @param newval The value to assign to *ptr if comparison is successful.
- * @return The true if comparison was successful. False otherwise.
- */
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-// Assume that an integer is 32 bits.
-#define lf_bool_compare_and_swap(ptr, oldval, newval) (InterlockedCompareExchange(ptr, newval, oldval) == oldval)
-#elif defined(__GNUC__) || defined(__clang__)
-#define lf_bool_compare_and_swap(ptr, oldval, newval) __sync_bool_compare_and_swap(ptr, oldval, newval)
-#else
-#error "Compiler not supported"
-#endif
-
 #endif
 
 /**
