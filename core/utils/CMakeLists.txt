@@ -1,8 +1,3 @@
-set(UTILS_SOURCES utils/pqueue.c utils/util.c utils/vector.c)
-
-if(NUMBER_OF_WORKERS)
-    list(APPEND SOURCES utils/semaphore.c)
-endif(NUMBER_OF_WORKERS)
-
-list(APPEND SOURCES ${UTILS_SOURCES})
-set(SOURCES ${SOURCES} PARENT_SCOPE)
+set(GENERAL_SOURCES pqueue.c util.c vector.c)
+set(THREADED_SOURCES semaphore.c)
+add_sources_to_parent("${GENERAL_SOURCES}" "${THREADED_SOURCES}" "")

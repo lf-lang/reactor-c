@@ -28,7 +28,6 @@ endif(NUMBER_OF_WORKERS)
 # Create executables for each test.
 foreach(FILE ${TEST_FILES})
     string(REGEX REPLACE "[./]" "_" NAME ${FILE})
-    message(STATUS ${TEST_DIR}/${FILE})
     add_executable(${NAME} ${TEST_DIR}/${FILE})
     add_test(NAME ${NAME} COMMAND ${NAME})
     target_link_libraries(

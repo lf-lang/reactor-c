@@ -1,4 +1,4 @@
 include(${CMAKE_SOURCE_DIR}/Platform.cmake)
 
-list(APPEND SOURCES ${CMAKE_SOURCE_DIR}/${LF_PLATFORM_FILE})
-set(SOURCES ${SOURCES} PARENT_SCOPE)
+set(GENERAL_SOURCES ${LF_PLATFORM_FILE})
+add_sources_to_parent("${GENERAL_SOURCES}" "" "")
