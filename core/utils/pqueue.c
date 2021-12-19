@@ -158,6 +158,7 @@ void pqueue_free(pqueue_t *q) {
 }
 
 size_t pqueue_size(pqueue_t *q) {
+    if (!q) return 0;
     // Queue element 0 exists but doesn't count since it isn't used.
     return (q->size - 1);
 }
@@ -262,6 +263,7 @@ int pqueue_insert(pqueue_t *q, void *d) {
 }
 
 int pqueue_remove(pqueue_t *q, void *d) {
+    if (q->size == 1) return 0; // Nothing to remove
     size_t posn = q->getpos(d);
     q->d[posn] = q->d[--q->size];
     if (q->cmppri(q->getpri(d), q->getpri(q->d[posn])))
@@ -273,10 +275,10 @@ int pqueue_remove(pqueue_t *q, void *d) {
 }
 
 void* pqueue_pop(pqueue_t *q) {
-    void* head;
-    
     if (!q || q->size == 1)
         return NULL;
+
+    void* head;
         
     head = q->d[1];
     q->d[1] = q->d[--q->size];
