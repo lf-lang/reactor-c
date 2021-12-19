@@ -265,7 +265,7 @@ do { \
  * upstream in the dependence graph execute before reactions
  * that are downstream.
  */
-#define LEVEL(index) (index & 0xFFFF)
+#define LEVEL(index) (index & 0xffffLL)
 
 /** Utility for finding the maximum of two values. */
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
