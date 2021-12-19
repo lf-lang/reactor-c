@@ -185,6 +185,21 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
 #endif
 
 /*
+ * Atomically increment the variable that ptr points to by the given value, and return the new value of the variable.
+ * @param ptr A pointer to a variable. The value of this variable will be replaced with the result of the operation.
+ * @param value The value to be added to the variable pointed to by the ptr parameter.
+ * @return The new value of the variable that ptr points to (i.e., from before the application of this operation).
+ */
+#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+// Assume that an integer is 32 bits.
+#define lf_atomic_add_fetch(ptr, value) InterlockedAdd(ptr, value)
+#elif defined(__GNUC__) || defined(__clang__)
+#define lf_atomic_add_fetch(ptr, value) __sync_add_and_fetch(ptr, value)
+#else
+#error "Compiler not supported"
+#endif
+
+/*
  * Atomically compare the variable that ptr points to against oldval. If the
  * current value is oldval, then write newval into *ptr.
  * @param ptr A pointer to a variable.
