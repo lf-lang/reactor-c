@@ -39,16 +39,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
 
-#ifndef MAX_REACTION_LEVEL
-#define MAX_REACTION_LEVEL INITIAL_REACT_QUEUE_SIZE
-#endif
-
 #include "scheduler.h"
 #include "../platform.h"
 #include "../utils/semaphore.c"
 #include "../utils/pqueue_support.h"
 #include <assert.h>
 
+#ifndef MAX_REACTION_LEVEL
+#define MAX_REACTION_LEVEL INITIAL_REACT_QUEUE_SIZE
+#endif
 
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;
@@ -92,14 +91,24 @@ volatile bool _lf_sched_should_stop = false;
  * @brief FIXME
  * 
  */
-pqueue_t* vector_of_reaction_qs[MAX_REACTION_LEVEL + 1];
+pqueue_t* _lf_sched_vector_of_reaction_qs[MAX_REACTION_LEVEL + 1];
+
+/**
+ * @brief Mutexes for the reaction queues.
+ * 
+ * In case all threads are idle, there is no need to lock any of these mutexes.
+ * Otherwise, depending on the situation, the appropriate mutex for a given
+ * level must be locked before accessing the reaction queue of that level.
+ * 
+ */
+lf_mutex_t _lf_sched_vector_of_reaction_qs_mutexes[MAX_REACTION_LEVEL + 1];
 
 /**
  * @brief Queue of currently executing reactions.
  * 
  * Sorted by index (precedence sort)
  */
-pqueue_t* executing_q;
+pqueue_t* executing_q = NULL;
 
 /**
  * @brief Number of workers that this scheduler is managing.
@@ -121,20 +130,14 @@ volatile size_t _lf_sched_number_of_idle_workers = 0;
 bool _lf_logical_tag_completed = false;
 
 /**
- * @brief Mutex that must be acquired by workers before accessing the executing_q.
- * 
- */
-lf_mutex_t _lf_sched_executing_q_mutex;
-
-/**
  * @brief The current level of reactions (either executing or to execute).
  * 
  */
-volatile size_t _lf_sched_next_reaction_level = 0;
+volatile size_t _lf_sched_next_reaction_level = 1;
 
 /////////////////// Scheduler Private API /////////////////////////
 /**
- * @brief Insert 'reaction' into vector_of_reaction_qs at the appropriate level.
+ * @brief Insert 'reaction' into _lf_sched_vector_of_reaction_qs at the appropriate level.
  * 
  * If there is not pqueue at the level of 'reaction', this function will
  * initialize one.
@@ -143,27 +146,11 @@ volatile size_t _lf_sched_next_reaction_level = 0;
  */
 static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
     size_t reaction_level = LEVEL(reaction->index);
-#ifdef FEDERATED
-    // Inserting reactions at the same level as executing reactions can only
-    // happen in federated execution where network input control reactions can
-    // block until the network receiver reaction (which has the same level as
-    // the network input control reaction) is triggered.
-    bool locked = false;
-    if (reaction_level == (_lf_sched_next_reaction_level-1)) {
-        // If inserting a reaction at a level that matches the current executing
-        // level, lock the executing queue mutex because worker threads are also
-        // accessing this queue.
-        DEBUG_PRINT("Scheduler: Locking the executing queue mutex.");
-        lf_mutex_lock(&_lf_sched_executing_q_mutex);
-        locked = true;
-    }
-#endif
-    pqueue_insert(vector_of_reaction_qs[reaction_level], (void*)reaction);
-#ifdef FEDERATED
-    if (locked) {
-        lf_mutex_unlock(&_lf_sched_executing_q_mutex);
-    }
-#endif
+    DEBUG_PRINT("Scheduler: Trying to lock the mutex for level %d.", reaction_level);
+    lf_mutex_lock(&_lf_sched_vector_of_reaction_qs_mutexes[reaction_level]);
+    DEBUG_PRINT("Scheduler: Locked the mutex for level %d.", reaction_level);
+    pqueue_insert(_lf_sched_vector_of_reaction_qs[reaction_level], (void*)reaction);
+    lf_mutex_unlock(&_lf_sched_vector_of_reaction_qs_mutexes[reaction_level]);
 }
 
 /**
@@ -174,10 +161,15 @@ static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
  * @return Number of reactions that were successfully distributed to worker threads.
  */ 
 int _lf_sched_distribute_ready_reactions_locked() {
-    for (;_lf_sched_next_reaction_level <= MAX_REACTION_LEVEL; _lf_sched_next_reaction_level++) {
-        executing_q = vector_of_reaction_qs[_lf_sched_next_reaction_level];
-        size_t reactions_to_execute = pqueue_size(executing_q);
+    pqueue_t* tmp_queue = NULL;
+    // Note: All the threads are idle, which means that they are done inserting
+    // reactions. Therefore, the reaction queues can be accessed without locking
+    // a mutex.
+    for (;_lf_sched_next_reaction_level <= MAX_REACTION_LEVEL; _lf_sched_next_reaction_level++) { 
+        tmp_queue = _lf_sched_vector_of_reaction_qs[_lf_sched_next_reaction_level];
+        size_t reactions_to_execute = pqueue_size(tmp_queue);
         if (reactions_to_execute) {
+            executing_q = tmp_queue;
             _lf_sched_next_reaction_level++;
             return reactions_to_execute;
         }
@@ -206,7 +198,7 @@ bool _lf_sched_should_stop_locked() {
 
 /**
  * Advance tag. This will also pop events for the newly acquired tag and put
- * the triggered reactions on the 'vector_of_reaction_qs'.
+ * the triggered reactions on the '_lf_sched_vector_of_reaction_qs'.
  * 
  * This function assumes the caller holds the 'mutex' lock.
  * 
@@ -238,6 +230,9 @@ bool _lf_sched_advance_tag_locked() {
  * This assumes that the caller is not holding any thread mutexes.
  */
 void _lf_sched_notify_workers() {
+    // Note: All threads are idle. Therefore, there is no need to lock the mutex
+    // while accessing the executing queue (which is pointing to one of the
+    // reaction queues).
     size_t workers_to_be_awaken = MIN(_lf_sched_number_of_idle_workers, pqueue_size(executing_q));
     DEBUG_PRINT("Scheduler: Notifying %d workers.", workers_to_be_awaken);
     _lf_sched_number_of_idle_workers -= workers_to_be_awaken;
@@ -266,6 +261,10 @@ void _lf_sched_signal_stop() {
  * This function assumes the caller does not hold the 'mutex' lock.
  */
 void _lf_sched_try_advance_tag_and_distribute() {
+    // if (pqueue_size(executing_q) != 0) {
+    //     error_print_and_exit("Scheduler: Executing queue is not empty.");
+    // }
+
     // Loop until it's time to stop or work has been distributed
     while (true) {
         if (_lf_sched_next_reaction_level == (MAX_REACTION_LEVEL + 1)) {
@@ -331,16 +330,16 @@ void lf_sched_init(size_t number_of_workers) {
     _lf_sched_number_of_workers = number_of_workers;
 
     for (size_t i = 0; i <= MAX_REACTION_LEVEL; i++) {
-        vector_of_reaction_qs[i] = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
+        // Initialize the reaction queues
+        _lf_sched_vector_of_reaction_qs[i] = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
                 get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
+        // Initialize the mutexes for the reaction queues
+        lf_mutex_init(&_lf_sched_vector_of_reaction_qs_mutexes[i]);
     }
-
-    // Create a queue on which to put reactions that are currently executing.
-    executing_q = vector_of_reaction_qs[0];
+    
+    executing_q = _lf_sched_vector_of_reaction_qs[0];
     
     _lf_sched_should_stop = false;
-
-    lf_mutex_init(&_lf_sched_executing_q_mutex);
 }
 
 /**
@@ -350,7 +349,7 @@ void lf_sched_init(size_t number_of_workers) {
  */
 void lf_sched_free() {
     // for (size_t j = 0; j <= MAX_REACTION_LEVEL; j++) {
-    //     pqueue_free(vector_of_reaction_qs[j]); FIXME: This is causing weird
+    //     pqueue_free(_lf_sched_vector_of_reaction_qs[j]); FIXME: This is causing weird
     //     memory errors.
     // }
     pqueue_free(executing_q);
@@ -376,9 +375,13 @@ void lf_sched_free() {
 reaction_t* lf_sched_get_ready_reaction(int worker_number) {
     // Iterate until the stop_tag is reached or reaction queue is empty
     while (!_lf_sched_should_stop) {
-        lf_mutex_lock(&_lf_sched_executing_q_mutex);
+        // Need to lock the mutex for the current level
+        size_t current_level = _lf_sched_next_reaction_level - 1;
+        DEBUG_PRINT("Scheduler: Worker %d trying to lock the mutex for level %d.", worker_number, current_level);
+        lf_mutex_lock(&_lf_sched_vector_of_reaction_qs_mutexes[current_level]);
+        DEBUG_PRINT("Scheduler: Worker %d locked the mutex for level %d.", worker_number, current_level);
         reaction_t* reaction_to_return = (reaction_t*)pqueue_pop(executing_q);
-        lf_mutex_unlock(&_lf_sched_executing_q_mutex);
+        lf_mutex_unlock(&_lf_sched_vector_of_reaction_qs_mutexes[current_level]);
         
         if (reaction_to_return != NULL) {
             // Got a reaction
