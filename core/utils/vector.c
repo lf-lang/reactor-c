@@ -1,3 +1,8 @@
+/**
+ * @author Peter Donovan (peterdonovan@berkeley.edu)
+ * @author Soroush Bateni (soroush@utdallas.edu)
+ */
+
 #include <stddef.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -124,15 +129,17 @@ size_t vector_size(vector_t* v) {
 }
 
 /**
- * Vote on whether this vector ought to have a smaller memory footprint.
+ * Vote on whether this vector should be given less memory.
+ * If `v` contains few elements, it becomes more likely to shrink.
+ *
+ * It is suggested that this function be called when the number of
+ * elements in `v` reaches a local maximum.
+ * @param v Any vector.
  */
 void vector_vote(vector_t* v) {
     size_t size = v->next - v->start;
-    if (
-        size // The following cast is fine because v->end >= v->start is an invariant.
-        && (size * CAPACITY_TO_SIZE_RATIO_FOR_SHRINK_VOTE <= (size_t) (v->end - v->start))
-    ) v->votes++;
-    else v->votes = 0;
+    int vote = size * CAPACITY_TO_SIZE_RATIO_FOR_SHRINK_VOTE <= (size_t) (v->end - v->start);
+    v->votes = vote * v->votes + vote;
 }
 
 /**

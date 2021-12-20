@@ -2,6 +2,9 @@
  * This file defines a minimal vector (resizing array) data type.
  * It is intended to be the simplest way of storing a collection of
  * pointers that is frequently filled and then completely emptied.
+ * 
+ * @author Peter Donovan (peterdonovan@berkeley.edu)
+ * @author Soroush Bateni (soroush@utdallas.edu)
  */
 
 #ifndef VECTOR_H
@@ -75,7 +78,12 @@ void** vector_at(vector_t* v, size_t idx);
 size_t vector_size(vector_t* v);
 
 /**
- * Vote on whether this vector ought to have a smaller memory footprint.
+ * Vote on whether this vector should be given less memory.
+ * If `v` contains few elements, it becomes more likely to shrink.
+ *
+ * It is suggested that this function be called when the number of
+ * elements in `v` reaches a local maximum.
+ * @param v Any vector.
  */
 void vector_vote(vector_t* v);
 
