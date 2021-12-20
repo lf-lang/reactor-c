@@ -23,15 +23,15 @@ in a subdirectory of the `test` directory.
 * Tests in the `single-threaded` and `multithreaded` subdirectories will be run
 depending on parameters passed to `cmake`.
 
-To run unthreaded tests, execute the following. Note that `-U` is required to undefine
-a name that may be cached from a previous run.
+To run tests for the single-threaded runtime, execute the following. Note that
+`-U` is required to undefine a name that may be cached from a previous run.
 - `cd build`
 - `cmake .. -UNUMBER_OF_WORKERS`
 - `cmake --build .`
 - `make test`
 
-To run threaded tests, provide a nonzero number of workers when invoking `cmake`.
-For example:
+To run tests for the multithreaded runtime, provide a nonzero number of workers
+when invoking `cmake`. For example:
 - `cmake .. -DNUMBER_OF_WORKERS=2`
 
 To define/undefine other preprocessor definitions such as `LOG_LEVEL`, pass them as

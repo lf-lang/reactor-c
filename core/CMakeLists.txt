@@ -1,7 +1,7 @@
 set(CORE_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Appends the provided sources to the SOURCES variable of the parent.
-macro(add_sources_to_parent GENERAL_SOURCES MULTITHREADED_SOURCES SINGLE_UNTHREADED_SOURCES)
+macro(add_sources_to_parent GENERAL_SOURCES MULTITHREADED_SOURCES SINGLE_THREADED_SOURCES)
     set(TEMP ${${GENERAL_SOURCES}})
     if(NUMBER_OF_WORKERS)
         list(APPEND TEMP ${${MULTITHREADED_SOURCES}})
