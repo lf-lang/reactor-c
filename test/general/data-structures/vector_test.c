@@ -15,7 +15,7 @@ static size_t mock_size = 0;
 static int distribution[4] = {30, 50, 5, 15};
 
 /**
- * @brief Tests the append functionality of `v`.
+ * @brief Test the append functionality of `v`.
  * 
  * @param v A vector.
  * @param x Any pointer.
@@ -28,7 +28,7 @@ void test_push(vector_t* v) {
 }
 
 /**
- * @brief Tests the pop functionality of `v`.
+ * @brief Test the pop functionality of `v`.
  * 
  * @param v A vector.
  */
@@ -47,7 +47,7 @@ void test_pop(vector_t* v) {
 }
 
 /**
- * @brief Tests the "push all" functionality of `v`.
+ * @brief Test the "push all" functionality of `v`.
  * 
  * @param v A vector
  * @return The number of items pushed to `v`.
@@ -64,7 +64,7 @@ int test_pushall(vector_t* v) {
 }
 
 /**
- * @brief Checks that the result of a random access to `v` yields the
+ * @brief Check that the result of a random access to `v` yields the
  * correct result.
  * 
  * @param v A vector.
@@ -82,7 +82,7 @@ void test_random_access(vector_t* v) {
 }
 
 /**
- * @brief Checks that voting does not cause an error.
+ * @brief Check that voting does not cause an error.
  * 
  * @param v A vector.
  */
@@ -92,7 +92,7 @@ void test_vote(vector_t* v) {
 }
 
 /**
- * @brief Runs a randomly selected test on `v`.
+ * @brief Run a randomly selected test on `v`.
  * 
  * @param v A vector.
  * @param distribution The desired probability distribution with
