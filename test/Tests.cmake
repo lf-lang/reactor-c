@@ -20,9 +20,9 @@ endfunction()
 # Add the appropriate directories for the provided build parameters.
 add_test_dir(${TEST_DIR}/general)
 if(NUMBER_OF_WORKERS)
-    add_test_dir(${TEST_DIR}/threaded)
+    add_test_dir(${TEST_DIR}/multithreaded)
 else()
-    add_test_dir(${TEST_DIR}/unthreaded)
+    add_test_dir(${TEST_DIR}/single-threaded)
 endif(NUMBER_OF_WORKERS)
 
 # Create executables for each test.

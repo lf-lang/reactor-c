@@ -1,12 +1,12 @@
 set(CORE_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Appends the provided sources to the SOURCES variable of the parent.
-macro(add_sources_to_parent GENERAL_SOURCES THREADED_SOURCES UNTHREADED_SOURCES)
-    set(TEMP ${GENERAL_SOURCES})
+macro(add_sources_to_parent GENERAL_SOURCES MULTITHREADED_SOURCES SINGLE_UNTHREADED_SOURCES)
+    set(TEMP ${${GENERAL_SOURCES}})
     if(NUMBER_OF_WORKERS)
-        list(APPEND TEMP ${THREADED_SOURCES})
+        list(APPEND TEMP ${${MULTITHREADED_SOURCES}})
     else()
-        list(APPEND TEMP ${UNTHREADED_SOURCES})
+        list(APPEND TEMP ${${SINGLE_THREADED_SOURCES}})
     endif(NUMBER_OF_WORKERS)
     foreach(FILE ${TEMP})
         file(RELATIVE_PATH RELATIVE_TO_ROOT ${CORE_ROOT} ${CMAKE_CURRENT_SOURCE_DIR}/${FILE})
@@ -47,18 +47,18 @@ add_subdirectory(platform)
 add_subdirectory(utils)
 
 # List sources in this directory.
-set(UNTHREADED_SOURCES reactor.c)
-set(THREADED_SOURCES reactor_threaded.c)
+set(SINGLE_THREADED_SOURCES reactor.c)
+set(MULTITHREADED_SOURCES reactor_threaded.c)
 set(GENERAL_SOURCES pqueue.c util.c)
 
 # Determine which sources to include.
 list(APPEND SOURCES ${GENERAL_SOURCES})
 if(NUMBER_OF_WORKERS)
     message(STATUS "Including sources for threaded runtime with ${NUMBER_OF_WORKERS} worker(s).")
-    list(APPEND SOURCES ${THREADED_SOURCES})
+    list(APPEND SOURCES ${MULTITHREADED_SOURCES})
 else()
     message(STATUS "Including sources for unthreaded runtime.")
-    list(APPEND SOURCES ${UNTHREADED_SOURCES})
+    list(APPEND SOURCES ${SINGLE_THREADED_SOURCES})
 endif(NUMBER_OF_WORKERS)
 
 # Create the library "core".
