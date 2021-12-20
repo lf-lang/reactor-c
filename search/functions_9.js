@@ -24,5 +24,5 @@ var searchData=
   ['listen_5fto_5frti_5ftcp_21',['listen_to_rti_TCP',['../federate_8c.html#a8eb5fcb3c057fc7195d4cc0826b207a9',1,'federate.c']]],
   ['listen_5fto_5frti_5fudp_5fthread_22',['listen_to_rti_UDP_thread',['../clock-sync_8c.html#a6d31f2c4caa9ee12f2e1e018f9e6e1f0',1,'listen_to_rti_UDP_thread(void *args):&#160;clock-sync.c'],['../clock-sync_8h.html#a6d31f2c4caa9ee12f2e1e018f9e6e1f0',1,'listen_to_rti_UDP_thread(void *args):&#160;clock-sync.c']]],
   ['log_5fprint_23',['log_print',['../util_8c.html#aca1b11267854044bfb09f5b172afa99a',1,'log_print(char *format,...):&#160;util.c'],['../util_8h.html#aca1b11267854044bfb09f5b172afa99a',1,'log_print(char *format,...):&#160;util.c']]],
-  ['logical_5ftag_5fcomplete_24',['logical_tag_complete',['../reactor__threaded_8c.html#ad96dd94446ff66184dcf0f8f65cdb4f0',1,'reactor_threaded.c']]]
+  ['logical_5ftag_5fcomplete_24',['logical_tag_complete',['../reactor__threaded_8c.html#ad96dd94446ff66184dcf0f8f65cdb4f0',1,'logical_tag_complete(tag_t tag_to_send):&#160;src_gen_stub.c'],['../src__gen__stub_8c.html#ad96dd94446ff66184dcf0f8f65cdb4f0',1,'logical_tag_complete(tag_t tag_to_send):&#160;src_gen_stub.c']]]
 ];
