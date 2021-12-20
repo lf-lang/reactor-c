@@ -81,6 +81,16 @@ vector_t _lf_sched_vector_of_reaction_qs[MAX_REACTION_LEVEL + 1];
  * level must be locked before accessing the reaction queue of that level.
  * 
  */
+lf_mutex_t _lf_sched_vector_of_reaction_qs_mutexes[MAX_REACTION_LEVEL + 1];
+
+/**
+ * @brief Mutexes for the reaction queues.
+ * 
+ * In case all threads are idle, there is no need to lock any of these mutexes.
+ * Otherwise, depending on the situation, the appropriate mutex for a given
+ * level must be locked before accessing the reaction queue of that level.
+ * 
+ */
 volatile int _lf_sched_level_indexes[MAX_REACTION_LEVEL + 1] = {0};
 
 /**
@@ -120,12 +130,16 @@ volatile size_t _lf_sched_next_reaction_level = 1;
  */
 static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
     size_t reaction_level = LEVEL(reaction->index);
-    int reaction_q_level_index = lf_atomic_fetch_add(&_lf_sched_level_indexes[reaction_level], 1);
+    DEBUG_PRINT("Scheduler: Trying to lock the mutex for level %d.", reaction_level);
+    lf_mutex_lock(&_lf_sched_vector_of_reaction_qs_mutexes[reaction_level]);
+    DEBUG_PRINT("Scheduler: Locked the mutex for level %d.", reaction_level);
+    int reaction_q_level_index = _lf_sched_level_indexes[reaction_level]++;
     *vector_at(
         &_lf_sched_vector_of_reaction_qs[reaction_level], 
         reaction_q_level_index
     ) = (void*)reaction;
     DEBUG_PRINT("Scheduler: Index for level %d is at %d.", reaction_level, reaction_q_level_index);
+    lf_mutex_unlock(&_lf_sched_vector_of_reaction_qs_mutexes[reaction_level]);
 }
 
 /**
@@ -264,6 +278,8 @@ void lf_sched_init(size_t number_of_workers) {
     for (size_t i = 0; i <= MAX_REACTION_LEVEL; i++) {
         // Initialize the reaction queues
         _lf_sched_vector_of_reaction_qs[i] = vector_new(INITIAL_REACT_QUEUE_SIZE);
+        // Initialize the mutexes for the reaction queues
+        lf_mutex_init(&_lf_sched_vector_of_reaction_qs_mutexes[i]);
     }
     
     executing_q = &_lf_sched_vector_of_reaction_qs[0];
