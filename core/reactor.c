@@ -66,7 +66,7 @@ trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* 
     lf_token_t* token = create_token(trigger->element_size);
     token->value = value;
     token->length = length;
-    return schedule_token(action, extra_delay, token);
+    return _lf_schedule_token(action, extra_delay, token);
 }
 
 /**
@@ -77,7 +77,7 @@ trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* 
 trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value, size_t length) {
     trigger_t* trigger = _lf_action_to_trigger(action);
     if (value == NULL) {
-        return schedule_token(action, offset, NULL);
+        return _lf_schedule_token(action, offset, NULL);
     }
     if (trigger == NULL || trigger->token == NULL || trigger->token->element_size <= 0) {
         error_print("schedule: Invalid trigger or element size.");
@@ -89,7 +89,7 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
     // Copy the value into the newly allocated memory.
     memcpy(token->value, value, token->element_size * length);
     // The schedule function will increment the reference count.
-    return schedule_token(action, offset, token);
+    return _lf_schedule_token(action, offset, token);
 }
 
 /**
@@ -386,8 +386,4 @@ int lf_reactor_c_main(int argc, char* argv[]) {
     } else {
         return -1;
     }
-}
-
-int main(int argc, char* argv[]) {
-    return lf_reactor_c_main(argc, argv);
 }

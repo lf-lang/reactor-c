@@ -33,7 +33,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "clock-sync.h"
 #include "net_common.h"
 
-/** 
+/**
  * Keep a record of connection statistics
  * and the remote physical clock of the RTI.
  */
