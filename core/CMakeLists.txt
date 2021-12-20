@@ -15,7 +15,8 @@ macro(add_sources_to_parent GENERAL_SOURCES THREADED_SOURCES UNTHREADED_SOURCES)
     set(SOURCES ${SOURCES} PARENT_SCOPE)
 endmacro()
 
-# Applies the X as a preprocessor definition if X is defined.
+# Applies the variable whose name is X as a preprocessor definition,
+#  if that variable is defined.
 macro(define X)
     if(DEFINED ${X})
         message(STATUS ${X}=${${X}})
