@@ -120,10 +120,12 @@ volatile size_t _lf_sched_next_reaction_level = 1;
  */
 static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
     size_t reaction_level = LEVEL(reaction->index);
+    int reaction_q_level_index = lf_atomic_fetch_add(&_lf_sched_level_indexes[reaction_level], 1);
     *vector_at(
         &_lf_sched_vector_of_reaction_qs[reaction_level], 
-        lf_atomic_fetch_add(&_lf_sched_level_indexes[reaction_level], 1)
+        reaction_q_level_index
     ) = (void*)reaction;
+    DEBUG_PRINT("Scheduler: Index for level %d is at %d.", reaction_level, reaction_q_level_index);
 }
 
 /**
@@ -160,12 +162,10 @@ void _lf_sched_notify_workers() {
     // Note: All threads are idle. Therefore, there is no need to lock the mutex
     // while accessing the executing queue (which is pointing to one of the
     // reaction queues).
-    size_t reactions_to_execute = vector_size(executing_q);
-    size_t workers_to_be_awaken = MIN(_lf_sched_number_of_idle_workers, reactions_to_execute);
+    size_t workers_to_be_awaken = MIN(_lf_sched_number_of_idle_workers, vector_size(executing_q));
     DEBUG_PRINT("Scheduler: Notifying %d workers.", workers_to_be_awaken);
     _lf_sched_number_of_idle_workers -= workers_to_be_awaken;
     DEBUG_PRINT("Scheduler: New number of idle workers: %u.", _lf_sched_number_of_idle_workers);
-    _lf_sched_level_indexes[_lf_sched_next_reaction_level - 1]--;
     if (workers_to_be_awaken > 1) {
         // Notify all the workers except the worker thread that has called this function. 
         lf_semaphore_release(_lf_sched_semaphore, (workers_to_be_awaken-1));
@@ -193,6 +193,9 @@ void _lf_sched_try_advance_tag_and_distribute() {
     // if (vector_size(executing_q) != 0) {
     //     error_print_and_exit("Scheduler: Executing queue is not empty.");
     // }
+
+    // Reset the index
+    _lf_sched_level_indexes[_lf_sched_next_reaction_level - 1] = 0;
 
     // Loop until it's time to stop or work has been distributed
     while (true) {
@@ -306,7 +309,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
         int current_level_q_index = lf_atomic_add_fetch(&_lf_sched_level_indexes[current_level], -1);        
         if (current_level_q_index >= 0) {
             DEBUG_PRINT(
-                "Scheduler: Worker %d popping reaction with level %d, index %d.", 
+                "Scheduler: Worker %d popping reaction with level %d, index for level: %d.", 
                 worker_number, 
                 current_level, 
                 current_level_q_index
