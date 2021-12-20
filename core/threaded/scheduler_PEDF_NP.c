@@ -44,79 +44,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../utils/pqueue_support.h"
 #include "../utils/semaphore.c"
 #include "../utils/vector.c"
-
+#include "scheduler_sync_tag_advance.c"
 
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;
-extern tag_t current_tag;
-extern tag_t stop_tag;
 
-/////////////////// External Functions /////////////////////////
-/**
- * Return whether the first and second argument are given in reverse order.
- */
-static int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that);
-
-/**
- * Report a priority equal to the index of the given reaction.
- * Used for sorting pointers to reaction_t structs in the 
- * blocked and executing queues.
- */
-static pqueue_pri_t get_reaction_index(void *a);
-
-/**
- * Return the given reaction's position in the queue.
- */
-static size_t get_reaction_position(void *a);
-
-/**
- * Return the given reaction's position in the queue.
- */
-static void set_reaction_position(void *a, size_t pos);
-
-/**
- * Print some information about the given reaction.
- * 
- * DEBUG function only.
- */
-static void print_reaction(void *reaction);
-
-/**
- * Return whether or not the given reaction_t pointers 
- * point to the same struct.
- */
-static int reaction_matches(void* next, void* curr);
-
-/**
- * If there is at least one event in the event queue, then wait until
- * physical time matches or exceeds the time of the least tag on the event
- * queue; pop the next event(s) from the event queue that all have the same tag;
- * extract from those events the reactions that are to be invoked at this
- * logical time and insert them into the reaction queue. The event queue is
- * sorted by time tag.
- *
- * If there is no event in the queue and the keepalive command-line option was
- * not given, and this is not a federated execution with centralized coordination,
- * set the stop tag to the current tag.
- * If keepalive was given, then wait for either request_stop()
- * to be called or an event appears in the event queue and then return.
- *
- * Every time tag is advanced, it is checked against stop tag and if they are
- * equal, shutdown reactions are triggered.
- *
- * This does not acquire the mutex lock. It assumes the lock is already held.
- */
-void _lf_next_locked();
-
-/** 
- * Placeholder for code-generated function that will, in a federated
- * execution, be used to coordinate the advancement of tag. It will notify
- * the runtime infrastructure (RTI) that all reactions at the specified
- * logical tag have completed. This function should be called only while
- * holding the mutex lock.
- * @param tag_to_send The tag to send.
- */
-void logical_tag_complete(tag_t tag_to_send);
 
 /////////////////// Scheduler Variables and Structs /////////////////////////
 /**
@@ -211,11 +143,6 @@ volatile bool _lf_sched_scheduling_in_progress = false;;
  * 
  */
 int _lf_sched_balancing_index = 0;
-
-/**
- * @brief Indicator that execution of at least one tag has completed.
- */
-bool _lf_logical_tag_completed = false;
 
 ///////////////////// Scheduler Runtime API (private) /////////////////////////
 /**
@@ -408,53 +335,6 @@ static inline int _lf_sched_distribute_ready_reactions_locked() {
     // Reset the balancing index since this work distribution round is over.
     _lf_sched_balancing_index = 0;
     return reactions_distributed;
-}
-
-
-/**
- * Return true if the worker should stop now; false otherwise.
- * This function assumes the caller holds the mutex lock.
- */
-bool _lf_sched_should_stop_locked() {
-    // If this is not the very first step, notify that the previous step is complete
-    // and check against the stop tag to see whether this is the last step.
-    if (_lf_logical_tag_completed) {
-        logical_tag_complete(current_tag);
-        // If we are at the stop tag, do not call _lf_next_locked()
-        // to prevent advancing the logical time.
-        if (compare_tags(current_tag, stop_tag) >= 0) {
-            return true;
-        }
-    }
-    return false;
-}
-
-/**
- * Advance tag. This will also pop events for the newly acquired tag and put
- * the triggered reactions on the reaction queue.
- * 
- * This function assumes the caller holds the 'mutex' lock.
- * 
- * @return should_exit True if the worker thread should exit. False otherwise.
- */
-bool _lf_sched_advance_tag_locked() {
-
-    if (_lf_sched_should_stop_locked()) {
-        return true;
-    }
-
-    _lf_logical_tag_completed = true;
-
-    // Advance time.
-    // _lf_next_locked() may block waiting for real time to pass or events to appear.
-    // to appear on the event queue. Note that we already
-    // hold the mutex lock.
-    // tracepoint_worker_advancing_time_starts(worker_number); 
-    // FIXME: Tracing should be updated to support scheduler events
-    _lf_next_locked();
-
-    DEBUG_PRINT("Scheduler: Done waiting for _lf_next_locked().");
-    return false;
 }
 
 /**
