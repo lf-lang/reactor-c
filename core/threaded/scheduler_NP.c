@@ -132,6 +132,14 @@ static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
     size_t reaction_level = LEVEL(reaction->index);
     DEBUG_PRINT("Scheduler: Trying to lock the mutex for level %d.", reaction_level);
     lf_mutex_lock(&_lf_sched_vector_of_reaction_qs_mutexes[reaction_level]);
+#ifdef FEDERATED
+    // The level index for the current level can sometimes become negative. Set
+    // it back to zero before adding a reaction (otherwise worker threads will
+    // not be able to see the added reaction).
+    if (_lf_sched_level_indexes[reaction_level] < 0) {
+        _lf_sched_level_indexes[reaction_level] = 0;
+    }
+#endif
     DEBUG_PRINT("Scheduler: Locked the mutex for level %d.", reaction_level);
     int reaction_q_level_index = _lf_sched_level_indexes[reaction_level]++;
     *vector_at(
@@ -155,10 +163,9 @@ int _lf_sched_distribute_ready_reactions_locked() {
     // reactions. Therefore, the reaction queues can be accessed without locking
     // a mutex.
     for (;_lf_sched_next_reaction_level <= MAX_REACTION_LEVEL; _lf_sched_next_reaction_level++) { 
-        tmp_queue = &_lf_sched_vector_of_reaction_qs[_lf_sched_next_reaction_level];
-        size_t reactions_to_execute = vector_size(tmp_queue);
+        executing_q = &_lf_sched_vector_of_reaction_qs[_lf_sched_next_reaction_level];
+        size_t reactions_to_execute = vector_size(executing_q);
         if (reactions_to_execute) {
-            executing_q = tmp_queue;
             _lf_sched_next_reaction_level++;
             return reactions_to_execute;
         }
@@ -322,6 +329,11 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
     while (!_lf_sched_should_stop) {
         // Need to lock the mutex for the current level
         size_t current_level = _lf_sched_next_reaction_level - 1;
+#ifdef FEDERATED
+        // Need to lock the mutex because federate.c could trigger reactions at
+        // the current level (if there is a causality loop)
+        lf_mutex_lock(&_lf_sched_vector_of_reaction_qs_mutexes[current_level]);
+#endif
         int current_level_q_index = lf_atomic_add_fetch(&_lf_sched_level_indexes[current_level], -1);        
         if (current_level_q_index >= 0) {
             DEBUG_PRINT(
@@ -336,9 +348,15 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
                     current_level_q_index
                 );
             if (reaction_to_return != NULL) {
+#ifdef FEDERATED
+                lf_mutex_unlock(&_lf_sched_vector_of_reaction_qs_mutexes[current_level]);
+#endif
                 return reaction_to_return;
             }
         }
+#ifdef FEDERATED
+        lf_mutex_unlock(&_lf_sched_vector_of_reaction_qs_mutexes[current_level]);
+#endif
 
         DEBUG_PRINT("Worker %d is out of ready reactions.", worker_number);
 
