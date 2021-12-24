@@ -211,4 +211,51 @@ typedef void(print_message_function_t)(char*, va_list);
  */
 void register_print_function(print_message_function_t* function, int log_level);
 
+/**
+ * Representation of a mixed radix integer.
+ * A mixed radix number is a number representation where each digit can have
+ * a distinct radix. The radixes are given by a list of numbers, r0, r1, ... , rn,
+ * where r0 is the radix of the lowest-order digit and rn is the radix of the
+ * highest order digit that has a specified radix. This implementation represents
+ * a finite range, and if it is incremented beyond its maximum value, it
+ * wraps around.
+ */
+typedef struct mixed_radix_int_t {
+	int size;
+	int* digits;
+	int* radixes;
+} mixed_radix_int_t;
+
+/**
+ * Return the int value of a mixed-radix number.
+ */
+int mixed_radix_to_int(mixed_radix_int_t* mixed);
+
+/**
+ * Permute the digits of the src mixed-radix number and write
+ * the result into dst. The permutation argument is required to be an
+ * array of indices from 0 to L-1, where L is equal to the number
+ * of digits in the src and dst. Each index in this list specifies
+ * the index from which the corresponding digit should be taken.
+ *
+ * For example, if this number is "1%2, 2%5", which has value 5 = 1 + 2*2,
+ * then permute([1, 0]) will return the number "2%5, 1%2", which
+ * has value 7 = 2 + 1*5.
+ *
+ * @param dst The number to write into.
+ * @param src The number to draw from.
+ * @param permutation The permutation array.
+ */
+void mixed_radix_permute(mixed_radix_int_t* dst, mixed_radix_int_t* src, int* permutation);
+
+/**
+ * Drop the first n digits and write the resulting mixed-radix number to dst.
+ * @param dst The number to write to.
+ * @param src The source number.
+ * @param n The number of digits to drop.
+ * @throws IllegalArgumentException If n is equal to or larger than the
+ *  number of digits.
+ */
+void mixed_radix_drop(mixed_radix_int_t* dst, mixed_radix_int_t* src, int n);
+
 #endif /* UTIL_H */
