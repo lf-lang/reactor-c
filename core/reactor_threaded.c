@@ -768,19 +768,49 @@ bool _lf_has_precedence_over(reaction_t* r1, reaction_t* r2) {
  * @param reaction The reaction.
  * @return true if this reaction is blocked, false otherwise.
  */
-bool _lf_is_blocked_by_executing_reaction(reaction_t* reaction) {
+bool _lf_is_blocked_by_executing_or_blocked_reaction(reaction_t* reaction) {
     if (reaction == NULL) {
         return false;
     }
+    // The head of the executing_q has the lowest level of anything
+    // on the queue, and that level is also lower than anything on the
+    // transfer_q (because reactions on the transfer queue are blocked
+    // by reactions on the executing_q). Hence, if the candidate reaction
+    // has a level less than or equal to that of the head of the
+    // executing_q, then it is executable and we don't need to check
+    // the contents of either queue further.
+    if (pqueue_size(executing_q) > 0
+            && reaction->index <= ((reaction_t*) pqueue_peek(executing_q))->index) {
+        return false;
+    }
+
+    // Candidate reaction has a level larger than some executing reaction,
+    // so we need to check whether it is blocked by any executing reaction
+    // or any reaction that is is blocked by an executing reaction.
+
+    // The following iterates over the elements of those queues in arbitrary
+    // order, not in priority order.
+    // NOTE: If chainID is disabled, this will never yield a false result
+    // if the above test failed to yield a false result. But the check
+    // is kept here in anticipation of chainID becoming enabled sometime
+    // in the future.  It is relatively harmless because the calling thread
+    // has nothing to do anyway.
+    
+    // NOTE: Element 0 of the pqueue is not used and will likely be null.
     for (size_t i = 1; i < executing_q->size; i++) {
         reaction_t* running = (reaction_t*) executing_q->d[i];
         if (_lf_has_precedence_over(running, reaction)) {
-            DEBUG_PRINT("Reaction %s is blocked by reaction %s.", reaction->name, running->name);
+            DEBUG_PRINT("Reaction %s is blocked by executing reaction %s.", reaction->name, running->name);
             return true;
         }
     }
-    // NOTE: checks against the transfer_q are not performed in 
-    // this function but at its call site (where appropriate).
+    for (size_t i = 1; i < transfer_q->size; i++) {
+        reaction_t* blocked = (reaction_t*) transfer_q->d[i];
+        if (_lf_has_precedence_over(blocked, reaction)) {
+            DEBUG_PRINT("Reaction %s is blocked by blocked reaction %s.", reaction->name, blocked->name);
+            return true;
+        }
+    }
 
     // printf("Not blocking for reaction with chainID %llu and level %llu\n", reaction->chain_id, reaction->index);
     // pqueue_dump(executing_q, stdout, executing_q->prt);
@@ -822,25 +852,17 @@ bool _lf_is_blocked_by_executing_reaction(reaction_t* reaction) {
 reaction_t* first_ready_reaction() {    
     reaction_t* r;
     reaction_t* b;
-    // Keep track of the chain IDs of blocked reactions.
-    unsigned long long mask = 0LL;
 
     // Find a reaction that is ready to execute.
     while ((r = (reaction_t*)pqueue_pop(reaction_q)) != NULL) {
         // Set the reaction aside if it is blocked, either by another
         // blocked reaction or by a reaction that is currently executing.
-        if (OVERLAPPING(mask, r->chain_id)) {
+        if (_lf_is_blocked_by_executing_or_blocked_reaction(r)) {
             pqueue_insert(transfer_q, r);
-            DEBUG_PRINT("Reaction %s is blocked by a reaction that is also blocked.", r->name);
         } else {
-            if (_lf_is_blocked_by_executing_reaction(r)) {
-                pqueue_insert(transfer_q, r);
-            } else {
-                // Not blocked. Break out of the loop and return the reaction.
-                break;
-            }
-        }
-        mask = mask | r->chain_id;
+			// Not blocked. Break out of the loop and return the reaction.
+			break;
+		}
     }
     
     // Push blocked reactions back onto the reaction queue.
@@ -905,7 +927,7 @@ void _lf_notify_workers_locked() {
     if (number_of_idle_threads > 0) {
         reaction_t* next_ready_reaction = (reaction_t*)pqueue_peek(reaction_q);
         if (next_ready_reaction != NULL
-                && !_lf_is_blocked_by_executing_reaction(next_ready_reaction)
+                && !_lf_is_blocked_by_executing_or_blocked_reaction(next_ready_reaction)
         ) {
             // FIXME: In applications without parallelism, this notification
             // proves very expensive. Perhaps we should be checking execution times.
@@ -1507,9 +1529,4 @@ int lf_reactor_c_main(int argc, char* argv[]) {
     } else {
         return -1;
     }
-}
-
-
-int main(int argc, char* argv[]) {
-    return lf_reactor_c_main(argc, argv);
 }
