@@ -22,5 +22,5 @@ If you would like to go back to the non-DEBUG mode, you would have to remove all
 
 To build a docker image for the RTI, do 
 ```bash
-docker build -t NAME_OF_RTI_IMAGe -f rti.Dockerfile ../../../core/
+docker build -t rti:rti -f rti.Dockerfile ../../../core/
 ```
