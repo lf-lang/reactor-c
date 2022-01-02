@@ -219,27 +219,15 @@ void register_print_function(print_message_function_t* function, int log_level) 
 }
 
 /**
- * Return the int value of a mixed-radix number.
- */
-int mixed_radix_to_int(mixed_radix_int_t* mixed) {
-	int result = 0;
-	int factor = 1;
-	for (int i = 0; i < mixed->size; i++) {
-		result += factor * mixed->digits[i];
-		factor *= mixed->radixes[i];
-	}
-	return result;
-}
-
-/**
- * Increment the mixed radix number by one.
+ * Increment the mixed radix number by one according to the permutation matrix.
  */
 void mixed_radix_incr(mixed_radix_int_t* mixed) {
 	int i = 0;
 	while (i < mixed->size) {
-		mixed->digits[i]++;
-		if (mixed->digits[i] >= mixed->radixes[i]) {
-			mixed->digits[i] = 0;
+		int digit_to_increment = mixed->permutation[i];
+		mixed->digits[digit_to_increment]++;
+		if (mixed->digits[digit_to_increment] >= mixed->radixes[digit_to_increment]) {
+			mixed->digits[digit_to_increment] = 0;
 			i++;
 		} else {
 			return; // All done.
@@ -250,44 +238,26 @@ void mixed_radix_incr(mixed_radix_int_t* mixed) {
 }
 
 /**
- * Permute the digits of the src mixed-radix number and write
- * the result into dst. The permutation argument is required to be an
- * array of indices from 0 to L-1, where L is equal to the number
- * of digits in the src and dst. Each index in this list specifies
- * the index from which the corresponding digit should be taken.
- *
- * For example, if this number is "1%2, 2%5", which has value 5 = 1 + 2*2,
- * then permute([1, 0]) will return the number "2%5, 1%2", which
- * has value 7 = 2 + 1*5.
- *
- * @param dst The number to write into.
- * @param src The number to draw from.
- * @param permutation The permutation array.
+ * Return the int value of a mixed-radix number after dropping
+ * the first n digits.
+ * @param mixed The mixed-radix number.
+ * @param n The number of digits to drop, which is assumed to
+ *  be greater than or equal to 0.
  */
-void mixed_radix_permute(mixed_radix_int_t* dst, mixed_radix_int_t* src, int* permutation) {
-    for (int i = 0; i < src->size; i++) {
-    	int p = permutation[i];
-        dst->digits[i] = src->digits[p];
-        dst->radixes[i] = src->radixes[p];
-    }
+int mixed_radix_parent(mixed_radix_int_t* mixed, int n) {
+	int result = 0;
+	int factor = 1;
+	for (int i = n; i < mixed->size; i++) {
+		result += factor * mixed->digits[i];
+		factor *= mixed->radixes[i];
+	}
+	return result;
 }
 
 /**
- * Drop the first n digits and write the resulting mixed-radix number to dst.
- * @param dst The number to write to.
- * @param src The source number.
- * @param n The number of digits to drop.
- * @throws IllegalArgumentException If n is equal to or larger than the
- *  number of digits.
+ * Return the int value of a mixed-radix number.
  */
-void mixed_radix_drop(mixed_radix_int_t* dst, mixed_radix_int_t* src, int n) {
-    if (n == 0) {
-    	dst->digits = src->digits;
-    	dst->radixes = src->radixes;
-    }
-    for (int i = n; i < src->size; i++) {
-    	dst->digits[i - n] = src->digits[i];
-    	dst->radixes[i - n] = src->radixes[i];
-    	dst->size = src->size - n;
-    }
+int mixed_radix_to_int(mixed_radix_int_t* mixed) {
+	return mixed_radix_parent(mixed, 0);
 }
+

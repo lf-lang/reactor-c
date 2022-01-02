@@ -212,18 +212,27 @@ typedef void(print_message_function_t)(char*, va_list);
 void register_print_function(print_message_function_t* function, int log_level);
 
 /**
- * Representation of a mixed radix integer.
+ * Representation of a permuted mixed radix integer.
  * A mixed radix number is a number representation where each digit can have
  * a distinct radix. The radixes are given by a list of numbers, r0, r1, ... , rn,
  * where r0 is the radix of the lowest-order digit and rn is the radix of the
- * highest order digit that has a specified radix. This implementation represents
- * a finite range, and if it is incremented beyond its maximum value, it
- * wraps around.
+ * highest order digit that has a specified radix.
+ *
+ * A permuted mixed radix number is a mixed radix number that, when incremented,
+ * increments the digits in the order given by the permutation matrix.
+ * For an ordinary mixed radix number, the permutation matrix is
+ * [0, 1, ..., n-1]. The permutation matrix may be any permutation of
+ * these digits, [d0, d1, ..., dn-1], in which case, when incremented,
+ * the d0 digit will be incremented first. If it overflows, it will be
+ * set to 0 and the d1 digit will be incremented. If it overflows, the
+ * next digit is incremented.  If the last digit overflows, then the
+ * number wraps around so that all digits become zero.
  */
 typedef struct mixed_radix_int_t {
 	int size;
 	int* digits;
 	int* radixes;
+	int* permutation;
 } mixed_radix_int_t;
 
 /**
@@ -232,30 +241,8 @@ typedef struct mixed_radix_int_t {
 int mixed_radix_to_int(mixed_radix_int_t* mixed);
 
 /**
- * Permute the digits of the src mixed-radix number and write
- * the result into dst. The permutation argument is required to be an
- * array of indices from 0 to L-1, where L is equal to the number
- * of digits in the src and dst. Each index in this list specifies
- * the index from which the corresponding digit should be taken.
- *
- * For example, if this number is "1%2, 2%5", which has value 5 = 1 + 2*2,
- * then permute([1, 0]) will return the number "2%5, 1%2", which
- * has value 7 = 2 + 1*5.
- *
- * @param dst The number to write into.
- * @param src The number to draw from.
- * @param permutation The permutation array.
+ * Increment the mixed radix number by one according to the permuitation matrix.
  */
-void mixed_radix_permute(mixed_radix_int_t* dst, mixed_radix_int_t* src, int* permutation);
-
-/**
- * Drop the first n digits and write the resulting mixed-radix number to dst.
- * @param dst The number to write to.
- * @param src The source number.
- * @param n The number of digits to drop.
- * @throws IllegalArgumentException If n is equal to or larger than the
- *  number of digits.
- */
-void mixed_radix_drop(mixed_radix_int_t* dst, mixed_radix_int_t* src, int n);
+void mixed_radix_incr(mixed_radix_int_t* mixed);
 
 #endif /* UTIL_H */
