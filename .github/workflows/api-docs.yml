@@ -1,9 +1,6 @@
-name: Docs
+name: API docs
 
 on:
-  #push:
-  #  branches-ignore:
-  #    - '**'
   push:
     branches: [ main ]
 
