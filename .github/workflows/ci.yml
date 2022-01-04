@@ -7,19 +7,33 @@ on:
   workflow_dispatch:
 
 jobs:
-  unit-tests:
-    # The type of runner that the job will run on
+  unit-tests-single:
     runs-on: ubuntu-latest
 
     steps:
       - name: Check out reactor-c repository
         uses: actions/checkout@v2
       
-      - name: Run the tests
+      - name: Run the single-threaded unit tests
         run: |
           mkdir build
           cd build
-          cmake ..
+          cmake .. -UNUMBER_OF_WORKERS
+          cmake --build .
+          make test
+
+  unit-tests-multi:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out reactor-c repository
+        uses: actions/checkout@v2
+      
+      - name: Run the multi-threaded unit tests
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DNUMBER_OF_WORKERS=2
           cmake --build .
           make test
 
