@@ -20,7 +20,7 @@ jobs:
           mkdir build
           cd build
           cmake ..
-          cmake --build
+          cmake --build .
           make test
 
   fetch-lf:
