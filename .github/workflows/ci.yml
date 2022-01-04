@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  # Also allow running this workflow manually from the Actions tab.
+  workflow_dispatch:
+
+jobs:
+  unit-tests:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out reactor-c repository
+        uses: actions/checkout@v2
+      
+      - name: Run the tests
+        run: |
+          mkdir build
+          cd build
+          cmake ..
+          cmake --build
+          make test
+
+  fetch-lf:
+    uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@ci
+    with:
+      file: 'lingua-franca-ref.txt'
+  
+  lf-tests:
+    needs: fetch-lf
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
+    with:
+      runtime-ref: ${{ github.ref }}
+      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
