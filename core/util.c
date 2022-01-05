@@ -239,7 +239,8 @@ void mixed_radix_incr(mixed_radix_int_t* mixed) {
 
 /**
  * Return the int value of a mixed-radix number after dropping
- * the first n digits.
+ * the first n digits. If n is larger than or equal to the size
+ * of the mixed-radix number, then return 0.
  * @param mixed The mixed-radix number.
  * @param n The number of digits to drop, which is assumed to
  *  be greater than or equal to 0.

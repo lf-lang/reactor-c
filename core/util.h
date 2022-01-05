@@ -236,13 +236,23 @@ typedef struct mixed_radix_int_t {
 } mixed_radix_int_t;
 
 /**
- * Return the int value of a mixed-radix number.
- */
-int mixed_radix_to_int(mixed_radix_int_t* mixed);
-
-/**
  * Increment the mixed radix number by one according to the permuitation matrix.
  */
 void mixed_radix_incr(mixed_radix_int_t* mixed);
+
+/**
+ * Return the int value of a mixed-radix number after dropping
+ * the first n digits. If n is larger than or equal to the size
+ * of the mixed-radix number, then return 0.
+ * @param mixed The mixed-radix number.
+ * @param n The number of digits to drop, which is assumed to
+ *  be greater than or equal to 0.
+ */
+int mixed_radix_parent(mixed_radix_int_t* mixed, int n);
+
+/**
+ * Return the int value of a mixed-radix number.
+ */
+int mixed_radix_to_int(mixed_radix_int_t* mixed);
 
 #endif /* UTIL_H */
