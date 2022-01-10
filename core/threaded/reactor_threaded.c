@@ -728,16 +728,14 @@ void request_stop() {
 }
 
 /**
- * Put the specified reaction eventually on the reaction queue. There is no
- * guarantee that this happens immediately, unless 'worker_number' is -1.
- * This version acquires a mutex lock.
+ * Trigger 'reaction'.
+ * 
  * @param reaction The reaction.
- * @param worker_number The ID of the worker that is making a call. 0 should be
- *  used if there is only one worker (e.g., when the program is using the
- *  unthreaded C runtime). -1 should be used if putting the reaction on the
- *  reaction queue should be done immediately.
+ * @param worker_number The ID of the worker that is making a call. If a worker
+ * number is not available (e.g., this function is not called by a worker), -1
+ * should be passed as the 'worker_number'.
  */
-void _lf_enqueue_reaction(reaction_t* reaction, int worker_number) {
+void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
     lf_sched_trigger_reaction(reaction, worker_number);
 }
 

@@ -288,16 +288,14 @@ token_freed _lf_done_using(lf_token_t* token) {
 }
 
 /**
- * Put the specified reaction eventually on the reaction queue. There is no
- * guarantee that this happens immediately, unless 'worker_number' is -1.
- * This version acquires a mutex lock.
+ * Trigger 'reaction'.
+ * 
  * @param reaction The reaction.
- * @param worker_number The ID of the worker that is making a call. 0 should be
- *  used if there is only one worker (e.g., when the program is using the
- *  unthreaded C runtime). -1 should be used if putting the reaction on the
- *  reaction queue should be done immediately.
+ * @param worker_number The ID of the worker that is making a call. If a worker
+ * number is not available (e.g., this function is not called by a worker), -1
+ * should be passed as the 'worker_number'.
  */
-void _lf_enqueue_reaction(reaction_t* reaction, int worker_number);
+void _lf_trigger_reaction(reaction_t* reaction, int worker_number);
 
 /**
  * Use tables to reset is_present fields to false,
@@ -509,7 +507,7 @@ void _lf_pop_events() {
                 }
 #endif
                 DEBUG_PRINT("Triggering reaction %s.", reaction->name);
-                _lf_enqueue_reaction(reaction, -1);
+                _lf_trigger_reaction(reaction, -1);
             } else {
                 DEBUG_PRINT("Reaction is already triggered: %s", reaction->name);
             }
@@ -583,7 +581,7 @@ void _lf_initialize_timer(trigger_t* timer) {
     interval_t delay = 0;
     if (timer->offset == 0) {
         for (int i = 0; i < timer->number_of_reactions; i++) {
-            _lf_enqueue_reaction(timer->reactions[i], -1);
+            _lf_trigger_reaction(timer->reactions[i], -1);
             tracepoint_schedule(timer, 0LL); // Trace even though schedule is not called.
         }
         if (timer->period == 0) {
@@ -1223,7 +1221,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
         // Do not enqueue this reaction twice.
         if (reaction->status == inactive) {
             reaction->is_STP_violated = is_STP_violated;
-            _lf_enqueue_reaction(reaction, -1);
+            _lf_trigger_reaction(reaction, -1);
             LOG_PRINT("Enqueued reaction %s at time %lld.", reaction->name, get_logical_time());
         }
     }
@@ -1396,11 +1394,11 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
                                     // downstream reaction would be blocked because this reaction
                                     // remains on the executing queue. Hence, the optimization
                                     // is not valid. Put the candidate reaction on the queue.
-                                    _lf_enqueue_reaction(downstream_to_execute_now, worker);
+                                    _lf_trigger_reaction(downstream_to_execute_now, worker);
                                     downstream_to_execute_now = NULL;
                                 }
                                 // Queue the reaction.
-                                _lf_enqueue_reaction(downstream_reaction, worker);
+                                _lf_trigger_reaction(downstream_reaction, worker);
                             }
                         }
                     }
