@@ -68,7 +68,9 @@ semaphore_t* _lf_sched_semaphore;
 volatile bool _lf_sched_should_stop = false;
 
 /**
- * @brief FIXME
+ * @brief Vector of reaction queues.
+ * 
+ * Each element is a reaction queue for a reaction level.
  * 
  */
 vector_t _lf_sched_vector_of_reaction_qs[MAX_REACTION_LEVEL + 1];
@@ -88,15 +90,13 @@ lf_mutex_t _lf_sched_vector_of_reaction_qs_mutexes[MAX_REACTION_LEVEL + 1];
  * 
  * In case all threads are idle, there is no need to lock any of these mutexes.
  * Otherwise, depending on the situation, the appropriate mutex for a given
- * level must be locked before accessing the reaction queue of that level.
+ * level might need to be locked before accessing the reaction queue of that level.
  * 
  */
 volatile int _lf_sched_level_indexes[MAX_REACTION_LEVEL + 1] = {0};
 
 /**
  * @brief Queue of currently executing reactions.
- * 
- * Sorted by index (precedence sort)
  */
 vector_t* executing_q = NULL;
 
@@ -115,7 +115,7 @@ size_t _lf_sched_number_of_workers = 1;
 volatile size_t _lf_sched_number_of_idle_workers = 0;
 
 /**
- * @brief The current level of reactions (either executing or to execute).
+ * @brief The next level of reactions to execute.
  * 
  */
 volatile size_t _lf_sched_next_reaction_level = 1;
@@ -327,7 +327,7 @@ void lf_sched_free() {
 reaction_t* lf_sched_get_ready_reaction(int worker_number) {
     // Iterate until the stop_tag is reached or reaction queue is empty
     while (!_lf_sched_should_stop) {
-        // Need to lock the mutex for the current level
+        // Calculate the current level of reactions to execute
         size_t current_level = _lf_sched_next_reaction_level - 1;
 #ifdef FEDERATED
         // Need to lock the mutex because federate.c could trigger reactions at
