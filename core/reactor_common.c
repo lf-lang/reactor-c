@@ -404,7 +404,8 @@ void _lf_start_time_step() {
     LOG_PRINT("--------- Start time step at tag (%lld, %u).", current_tag.time - start_time, current_tag.microstep);
     for(int i = 0; i < _lf_tokens_with_ref_count_size; i++) {
         if (*(_lf_tokens_with_ref_count[i].status) == present) {
-            if (_lf_tokens_with_ref_count[i].reset_is_present) {
+            if (_lf_tokens_with_ref_count[i].reset_is_present
+            		&& _lf_tokens_with_ref_count[i].status != NULL) {
                 *(_lf_tokens_with_ref_count[i].status) = absent;
             }
             _lf_done_using(*(_lf_tokens_with_ref_count[i].token));
