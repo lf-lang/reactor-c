@@ -152,9 +152,10 @@ void print_snapshot() {
  * Trigger 'reaction'.
  * 
  * @param reaction The reaction.
- * @param worker_number The ID of the worker that is making a call. If a worker
- * number is not available (e.g., this function is not called by a worker), -1
- * should be passed as the 'worker_number'.
+ * @param worker_number The ID of the worker that is making this call. 0 should be
+ *  used if there is only one worker (e.g., when the program is using the
+ *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
+ *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
 void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
     // Do not enqueue this reaction twice.

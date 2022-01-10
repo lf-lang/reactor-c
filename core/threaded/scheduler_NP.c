@@ -68,7 +68,7 @@ semaphore_t* _lf_sched_semaphore;
 volatile bool _lf_sched_should_stop = false;
 
 /**
- * @brief Vector of reaction queues.
+ * @brief Array of reaction queues.
  * 
  * Each element is a reaction queue for a reaction level.
  * 
@@ -123,9 +123,7 @@ volatile size_t _lf_sched_next_reaction_level = 1;
 /////////////////// Scheduler Private API /////////////////////////
 /**
  * @brief Insert 'reaction' into _lf_sched_vector_of_reaction_qs at the appropriate level.
- * 
- * FIXME
- * 
+ *  
  * @param reaction The reaction to insert.
  */
 static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
@@ -326,6 +324,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
     while (!_lf_sched_should_stop) {
         // Calculate the current level of reactions to execute
         size_t current_level = _lf_sched_next_reaction_level - 1;
+        reaction_t* reaction_to_return = NULL;
 #ifdef FEDERATED
         // Need to lock the mutex because federate.c could trigger reactions at
         // the current level (if there is a causality loop)
@@ -339,21 +338,16 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
                 current_level, 
                 current_level_q_index
             );
-            reaction_t* reaction_to_return = 
-                *(reaction_t**)vector_at(
-                    executing_q, 
-                    current_level_q_index
-                );
-            if (reaction_to_return != NULL) {
-#ifdef FEDERATED
-                lf_mutex_unlock(&_lf_sched_vector_of_reaction_qs_mutexes[current_level]);
-#endif
-                return reaction_to_return;
-            }
+            reaction_to_return = *(reaction_t**)vector_at(executing_q, current_level_q_index);
         }
 #ifdef FEDERATED
         lf_mutex_unlock(&_lf_sched_vector_of_reaction_qs_mutexes[current_level]);
 #endif
+
+        if (reaction_to_return != NULL) {
+            // Got a reaction
+            return reaction_to_return;
+        }
 
         DEBUG_PRINT("Worker %d is out of ready reactions.", worker_number);
 
@@ -371,7 +365,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
  * 
  * @param worker_number The worker number for the worker thread that has
  * finished executing 'done_reaction'.
- * @param done_reaction The reaction is that is done.
+ * @param done_reaction The reaction that is done.
  */
 void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction) {
     if (!lf_bool_compare_and_swap(&done_reaction->status, queued, inactive)) {
@@ -386,8 +380,8 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  * trigger 'reaction' at the current tag.
  * 
  * This triggering happens lazily (at a later point when the scheduler deems
- * appropriate), unless worker_number is set to -1. In that case, the triggering
- * of 'reaction' is done immediately.
+ * appropriate), unless worker_number is set to -1 (which indicates an anonymous
+ * caller). In that case, the triggering of 'reaction' is done immediately.
  * 
  * The scheduler will ensure that the same reaction is not triggered twice in
  * the same tag.
@@ -399,14 +393,11 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
 void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
-    // The scheduler should handle this immediately
     // Protect against putting a reaction twice on the reaction queue by
     // checking its status.
     if (reaction != NULL && lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
         DEBUG_PRINT("Scheduler: Enqueing reaction %s, which has level %lld.",
                     reaction->name, LEVEL(reaction->index));
-        // Immediately put 'reaction' on the reaction queue.
         _lf_sched_insert_reaction(reaction);
     }
-    return;
 }
