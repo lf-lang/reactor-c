@@ -153,12 +153,9 @@ static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
 /**
  * @brief Distribute any reaction that is ready to execute to idle worker thread(s).
  * 
- * This assumes that the caller is holding 'mutex' and is not holding any thread mutexes.
- * 
  * @return Number of reactions that were successfully distributed to worker threads.
  */ 
-int _lf_sched_distribute_ready_reactions_locked() {
-    vector_t* tmp_queue = NULL;
+int _lf_sched_distribute_ready_reactions() {
     // Note: All the threads are idle, which means that they are done inserting
     // reactions. Therefore, the reaction queues can be accessed without locking
     // a mutex.
@@ -235,7 +232,7 @@ void _lf_sched_try_advance_tag_and_distribute() {
             lf_mutex_unlock(&mutex);
         }
 
-        if (_lf_sched_distribute_ready_reactions_locked() > 0) {
+        if (_lf_sched_distribute_ready_reactions() > 0) {
             _lf_sched_notify_workers();
             break;
         }
