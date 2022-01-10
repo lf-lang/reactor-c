@@ -62,13 +62,13 @@ double _lf_frequency_to_ns = 1.0;
  * Create a new thread, starting with execution of lf_thread
  * getting passed arguments. The new handle is stored in thread.
  * 
- * @return 0 on success, 1 otherwise.
+ * @return 0 on success, errno otherwise.
  */
 int lf_thread_create(_lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
-    uintptr_t handle = _beginthread(lf_thread, 0, arguments);
+    uintptr_t handle = _beginthreadex(NULL, 0, lf_thread, arguments, 0, NULL);
     *thread = (HANDLE)handle;
     if(thread == (HANDLE)-1){
-        return 1;
+        return errno;
     }else{
         return 0;
     }
@@ -83,11 +83,10 @@ int lf_thread_create(_lf_thread_t* thread, void *(*lf_thread) (void *), void* ar
  */
 int lf_thread_join(_lf_thread_t thread, void** thread_return) {    
     DWORD retvalue = WaitForSingleObject(thread, INFINITE);
-    if(retvalue == WAIT_OBJECT_0){
-        return 0;
-    }else{
+    if(retvalue == WAIT_FAILED){
         return EINVAL;
     }
+    return 0;
 }
 
 /**
