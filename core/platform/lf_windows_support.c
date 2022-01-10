@@ -67,7 +67,7 @@ double _lf_frequency_to_ns = 1.0;
 int lf_thread_create(_lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     uintptr_t handle = _beginthreadex(NULL, 0, lf_thread, arguments, 0, NULL);
     *thread = (HANDLE)handle;
-    if(thread == (HANDLE)-1){
+    if(handle == 0){
         return errno;
     }else{
         return 0;
