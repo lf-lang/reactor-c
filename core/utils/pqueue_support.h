@@ -1,5 +1,5 @@
 /*************
-Copyright (c) 2021, The University of California at Berkeley.
+Copyright (c) 2022, The University of California at Berkeley.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -28,12 +28,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Edward A. Lee <eal@berkeley.edu>}
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  * 
- * @brief Header-only support functions for pqueue
+ * @brief Header-only support functions for pqueue.
  * @version 0.1
  * @date 2021-12-04
  * 
- * @copyright Copyright (c) 2021 The University of California at Berkeley
- * 
+ * @copyright Copyright (c) 2022, The University of California at Berkeley. 
  */
 
 #ifndef PQUEUE_SUPPORT_H
