@@ -1455,7 +1455,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
 #endif
     DEBUG_PRINT("There are %d outputs from reaction %s.", reaction->num_outputs, reaction->name);
     for (int i=0; i < reaction->num_outputs; i++) {
-        if (*(reaction->output_produced[i])) {
+        if (reaction->output_produced[i] != NULL && *(reaction->output_produced[i])) {
             DEBUG_PRINT("Output %d has been produced.", i);
             trigger_t** triggerArray = (reaction->triggers)[i];
             DEBUG_PRINT("There are %d trigger arrays associated with output %d.", reaction->triggered_sizes[i], i);
