@@ -1677,6 +1677,38 @@ federation_metadata_t federation_metadata = {
 };
 
 /**
+ * Checks if port is valid.
+ * @return true if valid, false otherwise.
+ */
+bool valid_port(char* port) {
+    // magic number 6 since port range is [0, 65535]
+    int port_len = strnlen(port, 6); 
+    if (port_len < 1 || port_len > 5) {
+        return false;
+    }
+
+    for (int i = 0; i < port_len; i++) {
+        switch (port[i]) {
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                break;
+            default:
+                return false;
+        }
+    }
+    int port_number = atoi(port);
+    return port_number >= 0 && port_number <= 65535;
+}
+
+/**
  * Process the command-line arguments. If the command line arguments are not
  * understood, then print a usage message and return 0. Otherwise, return 1.
  * @return 1 if the arguments processed successfully, 0 otherwise.
@@ -1775,6 +1807,28 @@ int process_args(int argc, char* argv[]) {
             }
             federation_metadata.federation_id = argv[i++];
             info_print("Federation ID for executable %s: %s", argv[0], federation_metadata.federation_id);
+        } else if (strcmp(arg, "--host") == 0) {
+            if (argc < i + 1) {
+                error_print("--host needs a string argument.");
+                usage(argc, argv);
+                return 0;
+            }
+            federation_metadata.rti_host = argv[i++];
+        } else if (strcmp(arg, "--port") == 0) {
+            char* rti_port = argv[i++];
+            if (argc < i + 1 || !valid_port(rti_port)) {
+                error_print("--port needs an integer argument between 0 and 65535.");
+                usage(argc, argv);
+                return 0;
+            }
+            federation_metadata.rti_port = atoi(rti_port);
+        } else if (strcmp(arg, "--user") == 0) {
+            if (argc < i + 1) {
+                error_print("--user needs a string argument.");
+                usage(argc, argv);
+                return 0;
+            }
+            federation_metadata.rti_user = argv[i++];
         } else if (strcmp(arg, "--ros-args") == 0) {
     	      // FIXME: Ignore ROS arguments for now
         } else {

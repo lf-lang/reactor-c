@@ -834,6 +834,11 @@ void connect_to_federate(uint16_t remote_federate_id) {
  */
 void connect_to_rti(char* hostname, int port) {
     LOG_PRINT("Connecting to the RTI.");
+
+    // override passed hostname and port if passed as runtime arguments
+    hostname = federation_metadata.rti_host ? federation_metadata.rti_host : hostname;
+    port = federation_metadata.rti_port >= 0 ? federation_metadata.rti_port : port;
+
     uint16_t uport = 0;
     if (port < 0 ||
             port > INT16_MAX) {
