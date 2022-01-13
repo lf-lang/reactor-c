@@ -1680,7 +1680,7 @@ federation_metadata_t federation_metadata = {
  * Checks if port is valid.
  * @return true if valid, false otherwise.
  */
-bool valid_port(char* port) {
+bool validate_port(char* port) {
     // magic number 6 since port range is [0, 65535]
     int port_len = strnlen(port, 6); 
     if (port_len < 1 || port_len > 5) {
@@ -1816,7 +1816,7 @@ int process_args(int argc, char* argv[]) {
             federation_metadata.rti_host = argv[i++];
         } else if (strcmp(arg, "--port") == 0) {
             char* rti_port = argv[i++];
-            if (argc < i + 1 || !valid_port(rti_port)) {
+            if (argc < i + 1 || !validate_port(rti_port)) {
                 error_print("--port needs an integer argument between 0 and 65535.");
                 usage(argc, argv);
                 return 0;
