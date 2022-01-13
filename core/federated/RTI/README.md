@@ -18,3 +18,9 @@ sudo make install
 ```
 
 If you would like to go back to the non-DEBUG mode, you would have to remove all contents of the `build` folder.
+
+
+To build a docker image for the RTI, do 
+```bash
+docker build -t rti:rti -f rti.Dockerfile ../../../core/
+```
