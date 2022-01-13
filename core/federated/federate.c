@@ -525,7 +525,7 @@ void* handle_p2p_connections_from_federates(void* ignored) {
         char remote_federation_id[federation_id_length];
         bytes_read = read_from_socket(socket_id, federation_id_length, (unsigned char*)remote_federation_id);
         if (bytes_read != federation_id_length
-                 || (strncmp(federation_id, remote_federation_id, strnlen(federation_id, 255)) != 0)) {
+                 || (strncmp(federation_metadata.federation_id, remote_federation_id, strnlen(federation_metadata.federation_id, 255)) != 0)) {
             warning_print("Received invalid federation ID. Closing socket.");
             if (bytes_read >= 0) {
                 unsigned char response[2];
@@ -774,13 +774,13 @@ void connect_to_federate(uint16_t remote_federate_id) {
                 error_print_and_exit("Too many federates! More than %d.", UINT16_MAX);
             }
             encode_uint16((uint16_t)_lf_my_fed_id, (unsigned char*)&(buffer[1]));
-            unsigned char federation_id_length = (unsigned char)strnlen(federation_id, 255);
+            unsigned char federation_id_length = (unsigned char)strnlen(federation_metadata.federation_id, 255);
             buffer[sizeof(uint16_t) + 1] = federation_id_length;
             write_to_socket_errexit(socket_id,
                     buffer_length, buffer,
                     "Failed to send fed_id to federate %d.", remote_federate_id);
             write_to_socket_errexit(socket_id,
-                    federation_id_length, (unsigned char*)federation_id,
+                    federation_id_length, (unsigned char*)federation_metadata.federation_id,
                     "Failed to send federation id to federate %d.",
                     remote_federate_id);
 
@@ -938,14 +938,14 @@ void connect_to_rti(char* hostname, int port) {
             encode_uint16((uint16_t)_lf_my_fed_id, &buffer[1]);
             // Next send the federation ID length.
             // The federation ID is limited to 255 bytes.
-            size_t federation_id_length = strnlen(federation_id, 255);
+            size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
             buffer[1 + sizeof(uint16_t)] = (unsigned char)(federation_id_length & 0xff);
 
             write_to_socket_errexit(_fed.socket_TCP_RTI, 2 + sizeof(uint16_t), buffer,
                     "Failed to send federate ID to RTI.");
 
             // Next send the federation ID itself.
-            write_to_socket_errexit(_fed.socket_TCP_RTI, federation_id_length, (unsigned char*)federation_id,
+            write_to_socket_errexit(_fed.socket_TCP_RTI, federation_id_length, (unsigned char*)federation_metadata.federation_id,
                             "Failed to send federation ID to RTI.");
 
             // Wait for a response.

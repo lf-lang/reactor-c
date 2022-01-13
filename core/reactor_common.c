@@ -1662,6 +1662,20 @@ char** default_argv = NULL;
  */
 char* federation_id = "Unidentified Federation";
 
+typedef struct federation_metadata_t {
+    char* federation_id;
+    char* rti_host;
+    int rti_port;
+    char* rti_user;
+} federation_metadata_t;
+
+federation_metadata_t federation_metadata = {
+    .federation_id =  "Unidentified Federation",
+    .rti_host = NULL,
+    .rti_port = -1,
+    .rti_user = NULL
+};
+
 /**
  * Process the command-line arguments. If the command line arguments are not
  * understood, then print a usage message and return 0. Otherwise, return 1.
@@ -1763,7 +1777,7 @@ int process_args(int argc, char* argv[]) {
             }
             i++;
             info_print("Federation ID for executable %s: %s", argv[0], argv[i]);
-            federation_id = argv[i++];
+            federation_metadata.federation_id = argv[i++];
         } else if (strcmp(argv[i], "--ros-args") == 0) {
     	      // FIXME: Ignore ROS arguments for now
         } else {
