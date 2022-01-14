@@ -38,6 +38,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.c"
 #include "pqueue.c"
 #include "util.c"
+#include "ctype.h"
 
 /** 
  * Indicator of whether to wait for physical time to match logical time.
@@ -1688,20 +1689,8 @@ bool validate_port(char* port) {
     }
 
     for (int i = 0; i < port_len; i++) {
-        switch (port[i]) {
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-            case '8':
-            case '9':
-                break;
-            default:
-                return false;
+        if (!isdigit(port[i])) {
+            return false;
         }
     }
     int port_number = atoi(port);
