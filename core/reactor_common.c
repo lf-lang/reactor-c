@@ -1701,30 +1701,31 @@ typedef struct rti_addr_info_t {
     bool has_user;
 } rti_addr_info_t;
 
-void extract_rti_addr_info(char* rti_addr, rti_addr_info_t* rti_addr_info) {
-    char rti_hostStr[256] = {0};
-    char rti_portStr[6] = {0};
-    char rti_userStr[256] = {0};
+typedef enum parse_rti_code_t {
+    SUCCESS,
+    INVALID_PORT,
+    INVALID_HOST,
+    INVALID_USER,
+    FAILED_TO_PARSE
+} parse_rti_code_t;
 
+void extract_rti_addr_info(char* rti_addr, rti_addr_info_t* rti_addr_info) {
     int n = 0;
-    n = sscanf(rti_addr, "%255s@%255s:%5s", rti_userStr, rti_hostStr, rti_portStr);
+    n = sscanf(rti_addr, "%255s@%255s:%5s", rti_addr_info->rti_userStr, rti_addr_info->rti_hostStr, rti_addr_info->rti_portStr);
     if (n == 3) {
-        info_print("three");
         rti_addr_info->has_host = rti_addr_info->has_port = rti_addr_info->has_user = true;
     } else {
-        n = sscanf(rti_addr, "%255s:%5s", rti_hostStr, rti_portStr);
+        n = sscanf(rti_addr, "%255s:%5s", rti_addr_info->rti_hostStr, rti_addr_info->rti_portStr);
         if (n == 2) {
-            info_print("two");
             rti_addr_info->has_host = rti_addr_info->has_port = true;
         } else {
-            info_print("one");
-            n = sscanf(rti_addr, "%255s", rti_hostStr);
+            n = sscanf(rti_addr, "%255s", rti_addr_info->rti_hostStr);
             rti_addr_info->has_host = true;
         }
     }
 }
 
-bool parse_rti_addr(char* rti_addr) {
+parse_rti_code_t parse_rti_addr(char* rti_addr) {
     bool has_host = false, has_port = false, has_user = false;
     rti_addr_info_t rti_addr_info = {
         .rti_hostStr = {0},
@@ -1736,22 +1737,27 @@ bool parse_rti_addr(char* rti_addr) {
     };
     extract_rti_addr_info(rti_addr, &rti_addr_info);
     if (!rti_addr_info.has_host && !rti_addr_info.has_port && !rti_addr_info.has_user) {
-        return false;
+        return FAILED_TO_PARSE;
     }
+
     if (rti_addr_info.has_host) {
         char* rti_host = calloc(256, sizeof(char));
         strncpy(rti_host, rti_addr_info.rti_hostStr, 255);
         federation_metadata.rti_host = rti_host;
     }
-    if (rti_addr_info.has_port && validate_port(rti_addr_info.rti_portStr)) {
-        federation_metadata.rti_port = atoi(rti_addr_info.rti_portStr);
+    if (rti_addr_info.has_port) {
+        if (validate_port(rti_addr_info.rti_portStr)) {
+            federation_metadata.rti_port = atoi(rti_addr_info.rti_portStr);
+        } else {
+            return INVALID_PORT;
+        }
     }
     if (rti_addr_info.has_user) {
         char* rti_user = calloc(256, sizeof(char));
         strncpy(rti_user, rti_addr_info.rti_userStr, 255);
         federation_metadata.rti_user = rti_user;
     }
-    return true;
+    return SUCCESS;
 }
 
 
@@ -1855,26 +1861,32 @@ int process_args(int argc, char* argv[]) {
             federation_metadata.federation_id = argv[i++];
             info_print("Federation ID for executable %s: %s", argv[0], federation_metadata.federation_id);
         } else if (strcmp(arg, "--rti") == 0) {
-            if (argc < i + 1 || !parse_rti_addr(argv[i++])) {
+            if (argc < i + 1) {
                 error_print("--rti needs a string argument.");
                 usage(argc, argv);
                 return 0;
             }
-        } else if (strcmp(arg, "--port") == 0) {
-            char* rti_port = argv[i++];
-            if (argc < i + 1 || !validate_port(rti_port)) {
-                error_print("--port needs an integer argument between 0 and 65535.");
+            parse_rti_code_t code = parse_rti_addr(argv[i++]);
+            if (code != SUCCESS) {
+                switch (code) {
+                    case INVALID_HOST:
+                        error_print("--rti needs a valid host");
+                        break;
+                    case INVALID_PORT:
+                        error_print("--rti needs a valid port");
+                        break;
+                    case INVALID_USER:
+                        error_print("--rti needs a valid user");
+                        break;
+                    case FAILED_TO_PARSE:
+                        error_print("Failed to parse address of RTI");
+                        break;
+                    default:
+                        break;
+                }
                 usage(argc, argv);
                 return 0;
             }
-            federation_metadata.rti_port = atoi(rti_port);
-        } else if (strcmp(arg, "--user") == 0) {
-            if (argc < i + 1) {
-                error_print("--user needs a string argument.");
-                usage(argc, argv);
-                return 0;
-            }
-            federation_metadata.rti_user = argv[i++];
         } else if (strcmp(arg, "--ros-args") == 0) {
     	      // FIXME: Ignore ROS arguments for now
         } else {
