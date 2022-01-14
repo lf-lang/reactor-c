@@ -2197,6 +2197,8 @@ void terminate_execution() {
     lf_thread_join(_fed.RTI_socket_listener, NULL);
 
     free(_fed.inbound_socket_listeners);
+    free(federation_metadata.rti_host);
+    free(federation_metadata.rti_user);
 }
 
 /** 

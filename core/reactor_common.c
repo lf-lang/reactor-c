@@ -1643,6 +1643,8 @@ void usage(int argc, char* argv[]) {
     printf("   Executed in <n> threads if possible (optional feature).\n\n");
     printf("  -i, --id <n>\n");
     printf("   The ID of the federation that this reactor will join.\n\n");
+    printf("  -r, --rti <n>\n");
+    printf("   The address of the RTI, which can be in the form of user@host:port or ip:port.\n\n");
 
     printf("Command given:\n");
     for (int i = 0; i < argc; i++) {
@@ -1655,13 +1657,6 @@ void usage(int argc, char* argv[]) {
 // default command-line options.
 int default_argc = 0;
 char** default_argv = NULL;
-
-/**
- * The ID of the federation that this reactor will join.
- * This should be overridden with a command-line -i option to ensure
- * that each federate only joins its assigned federation.
- */
-char* federation_id = "Unidentified Federation";
 
 typedef struct federation_metadata_t {
     char* federation_id;
@@ -1696,6 +1691,69 @@ bool validate_port(char* port) {
     int port_number = atoi(port);
     return port_number >= 0 && port_number <= 65535;
 }
+
+typedef struct rti_addr_info_t {
+    char rti_hostStr[256];
+    char rti_portStr[6];
+    char rti_userStr[256];
+    bool has_host;
+    bool has_port;
+    bool has_user;
+} rti_addr_info_t;
+
+void extract_rti_addr_info(char* rti_addr, rti_addr_info_t* rti_addr_info) {
+    char rti_hostStr[256] = {0};
+    char rti_portStr[6] = {0};
+    char rti_userStr[256] = {0};
+
+    int n = 0;
+    n = sscanf(rti_addr, "%255s@%255s:%5s", rti_userStr, rti_hostStr, rti_portStr);
+    if (n == 3) {
+        info_print("three");
+        rti_addr_info->has_host = rti_addr_info->has_port = rti_addr_info->has_user = true;
+    } else {
+        n = sscanf(rti_addr, "%255s:%5s", rti_hostStr, rti_portStr);
+        if (n == 2) {
+            info_print("two");
+            rti_addr_info->has_host = rti_addr_info->has_port = true;
+        } else {
+            info_print("one");
+            n = sscanf(rti_addr, "%255s", rti_hostStr);
+            rti_addr_info->has_host = true;
+        }
+    }
+}
+
+bool parse_rti_addr(char* rti_addr) {
+    bool has_host = false, has_port = false, has_user = false;
+    rti_addr_info_t rti_addr_info = {
+        .rti_hostStr = {0},
+        .rti_portStr = {0},
+        .rti_userStr = {0},
+        .has_host = false,
+        .has_port = false,
+        .has_user = false
+    };
+    extract_rti_addr_info(rti_addr, &rti_addr_info);
+    if (!rti_addr_info.has_host && !rti_addr_info.has_port && !rti_addr_info.has_user) {
+        return false;
+    }
+    if (rti_addr_info.has_host) {
+        char* rti_host = calloc(256, sizeof(char));
+        strncpy(rti_host, rti_addr_info.rti_hostStr, 255);
+        federation_metadata.rti_host = rti_host;
+    }
+    if (rti_addr_info.has_port && validate_port(rti_addr_info.rti_portStr)) {
+        federation_metadata.rti_port = atoi(rti_addr_info.rti_portStr);
+    }
+    if (rti_addr_info.has_user) {
+        char* rti_user = calloc(256, sizeof(char));
+        strncpy(rti_user, rti_addr_info.rti_userStr, 255);
+        federation_metadata.rti_user = rti_user;
+    }
+    return true;
+}
+
 
 /**
  * Process the command-line arguments. If the command line arguments are not
@@ -1796,13 +1854,12 @@ int process_args(int argc, char* argv[]) {
             }
             federation_metadata.federation_id = argv[i++];
             info_print("Federation ID for executable %s: %s", argv[0], federation_metadata.federation_id);
-        } else if (strcmp(arg, "--host") == 0) {
-            if (argc < i + 1) {
-                error_print("--host needs a string argument.");
+        } else if (strcmp(arg, "--rti") == 0) {
+            if (argc < i + 1 || !parse_rti_addr(argv[i++])) {
+                error_print("--rti needs a string argument.");
                 usage(argc, argv);
                 return 0;
             }
-            federation_metadata.rti_host = argv[i++];
         } else if (strcmp(arg, "--port") == 0) {
             char* rti_port = argv[i++];
             if (argc < i + 1 || !validate_port(rti_port)) {
