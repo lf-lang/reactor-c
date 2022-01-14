@@ -1754,7 +1754,7 @@ parse_rti_code_t parse_rti_addr(char* rti_addr) {
     }
 
     if (rti_addr_info.has_host) {
-        char* rti_host = calloc(256, sizeof(char));
+        char* rti_host = (char*) calloc(256, sizeof(char));
         strncpy(rti_host, rti_addr_info.rti_hostStr, 255);
         federation_metadata.rti_host = rti_host;
     }
@@ -1766,7 +1766,7 @@ parse_rti_code_t parse_rti_addr(char* rti_addr) {
         }
     }
     if (rti_addr_info.has_user) {
-        char* rti_user = calloc(256, sizeof(char));
+        char* rti_user = (char*) calloc(256, sizeof(char));
         strncpy(rti_user, rti_addr_info.rti_userStr, 255);
         federation_metadata.rti_user = rti_user;
     }
