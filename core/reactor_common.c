@@ -1692,6 +1692,9 @@ bool validate_port(char* port) {
     return port_number >= 0 && port_number <= 65535;
 }
 
+/**
+ * A helper struct for passing rti_addr information betweem parse_rti_addr and extract_rti_addr_info
+ */
 typedef struct rti_addr_info_t {
     char rti_hostStr[256];
     char rti_portStr[6];
@@ -1701,6 +1704,9 @@ typedef struct rti_addr_info_t {
     bool has_user;
 } rti_addr_info_t;
 
+/**
+ * A helper enum for the returned status code of parse_rti_addr.  
+ */
 typedef enum parse_rti_code_t {
     SUCCESS,
     INVALID_PORT,
@@ -1709,6 +1715,9 @@ typedef enum parse_rti_code_t {
     FAILED_TO_PARSE
 } parse_rti_code_t;
 
+/**
+ * Extract the host, port and user from rti_addr.  
+ */
 void extract_rti_addr_info(char* rti_addr, rti_addr_info_t* rti_addr_info) {
     int n = 0;
     n = sscanf(rti_addr, "%255s@%255s:%5s", rti_addr_info->rti_userStr, rti_addr_info->rti_hostStr, rti_addr_info->rti_portStr);
@@ -1725,6 +1734,10 @@ void extract_rti_addr_info(char* rti_addr, rti_addr_info_t* rti_addr_info) {
     }
 }
 
+/**
+ * Parse the address of the RTI and store them into the global federation_metadata struct.
+ * @return a parse_rti_code_t indicating the result of the parse.
+ */
 parse_rti_code_t parse_rti_addr(char* rti_addr) {
     bool has_host = false, has_port = false, has_user = false;
     rti_addr_info_t rti_addr_info = {
