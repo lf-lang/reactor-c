@@ -30,6 +30,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The main entry point is synchronize_with_other_federates().
  */
 
+#ifndef NUMBER_OF_WORKERS
+#define NUMBER_OF_WORKERS 4
+#endif
+
+#define FEDERATED
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>      // Defined perror(), errno
@@ -432,7 +438,7 @@ void _lf_send_time(unsigned char type, instant_t time, bool exit_on_error) {
         if (!exit_on_error) {
             error_print("Failed to send time %lld to the RTI." 
                             " Error code %d: %s",
-                            time - start_time,
+                            time - get_start_time(),
                             errno,
                             strerror(errno)
                         );
@@ -443,7 +449,7 @@ void _lf_send_time(unsigned char type, instant_t time, bool exit_on_error) {
         } else {
             error_print_and_exit("Failed to send time %lld to the RTI." 
                                     " Error code %d: %s",
-                                    time - start_time,
+                                    time - get_start_time(),
                                     errno,
                                     strerror(errno)
                                 );
@@ -462,7 +468,7 @@ void _lf_send_time(unsigned char type, instant_t time, bool exit_on_error) {
  *  Print a soft error message otherwise
  */
 void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
-    DEBUG_PRINT("Sending tag (%lld, %u) to the RTI.", tag.time - start_time, tag.microstep);
+    DEBUG_PRINT("Sending tag (%lld, %u) to the RTI.", tag.time - get_start_time(), tag.microstep);
     size_t bytes_to_write = 1 + sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_write];
     buffer[0] = type;
@@ -479,7 +485,7 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
         if (!exit_on_error) {
             error_print("Failed to send tag (%lld, %u) to the RTI." 
                             " Error code %d: %s",
-                            tag.time - start_time, 
+                            tag.time - get_start_time(), 
                             tag.microstep,
                             errno,
                             strerror(errno)
@@ -491,7 +497,7 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
             lf_mutex_unlock(&outbound_socket_mutex);
             error_print_and_exit("Failed to send tag (%lld, %u) to the RTI." 
                                     " Error code %d: %s",
-                                    tag.time - start_time, 
+                                    tag.time - get_start_time(), 
                                     tag.microstep,
                                     errno,
                                     strerror(errno)
@@ -1317,7 +1323,7 @@ void send_port_absent_to_federate(interval_t additional_delay,
 
     LOG_PRINT("Sending port "
             "absent for tag (%lld, %u) for port %d to federate %d.",
-            current_message_intended_tag.time - start_time,
+            current_message_intended_tag.time - get_start_time(),
             current_message_intended_tag.microstep,
             port_ID, fed_ID);
 
@@ -1391,7 +1397,7 @@ void wait_until_port_status_known(int port_ID, interval_t STP) {
         LOG_PRINT("------ Waiting until time %lldns for network input port %d at tag (%llu, %d).",
                 wait_until_time,
                 port_ID,
-                current_tag.time - start_time,
+                current_tag.time - get_start_time(),
                 current_tag.microstep);
         while(!wait_until(wait_until_time, &port_status_changed)) {
             // Interrupted
@@ -1484,13 +1490,13 @@ trigger_handle_t schedule_message_received_from_network_already_locked(
         error_print_and_exit("Received a message at tag (%lld, %u) that"
                                 " has a tag (%lld, %u) that has violated the STP offset. "
                                 "Centralized coordination should not have these types of messages.",
-                                current_tag.time - start_time, get_microstep(),
-                                tag.time - start_time, tag.microstep);
+                                current_tag.time - get_start_time(), get_microstep(),
+                                tag.time - get_start_time(), tag.microstep);
 #else
         // Set the delay back to 0
         extra_delay = 0LL;
         LOG_PRINT("Calling schedule with 0 delay and intended tag (%lld, %u).",
-                    trigger->intended_tag.time - start_time,
+                    trigger->intended_tag.time - get_start_time(),
                     trigger->intended_tag.microstep);
         return_value = _lf_schedule(trigger, extra_delay, token);
 #endif
@@ -1586,7 +1592,7 @@ void handle_port_absent_message(int socket, int fed_id) {
     tag_t intended_tag = extract_tag(&(buffer[sizeof(uint16_t)+sizeof(uint16_t)]));
 
     LOG_PRINT("Handling port absent for tag (%lld, %u) for port %d.",
-            intended_tag.time - start_time,
+            intended_tag.time - get_start_time(),
             intended_tag.microstep,
             port_id, 
             fed_id
@@ -1601,9 +1607,9 @@ void handle_port_absent_message(int socket, int fed_id) {
         error_print_and_exit("The following contract was violated for port absent messages: In-order "
                              "delivery of messages over a TCP socket. Had status for (%lld, %u), got "
                              "port absent with intended tag (%lld, %u).",
-                             network_input_port_action->last_known_status_tag.time - start_time,
+                             network_input_port_action->last_known_status_tag.time - get_start_time(),
                              network_input_port_action->last_known_status_tag.microstep,
-                             intended_tag.time - start_time,
+                             intended_tag.time - get_start_time(),
                              intended_tag.microstep);
     }
 #endif // In centralized coordination, a TAG message from the RTI 
@@ -1711,7 +1717,7 @@ void handle_tagged_message(int socket, int fed_id) {
     _lf_increment_global_tag_barrier(intended_tag);
 #endif
     LOG_PRINT("Received message with tag: (%lld, %u), Current tag: (%lld, %u).",
-            intended_tag.time - start_time, intended_tag.microstep, get_elapsed_logical_time(), get_microstep());
+            intended_tag.time - get_start_time(), intended_tag.microstep, get_elapsed_logical_time(), get_microstep());
 
     // Read the payload.
     // Allocate memory for the message contents.
@@ -1738,9 +1744,9 @@ void handle_tagged_message(int socket, int fed_id) {
         error_print_and_exit("The following contract was violated for a timed message: In-order "
                              "delivery of messages over a TCP socket. Had status for (%lld, %u), got "
                              "timed message with intended tag (%lld, %u).",
-                             action->last_known_status_tag.time - start_time,
+                             action->last_known_status_tag.time - get_start_time(),
                              action->last_known_status_tag.microstep,
-                             intended_tag.time - start_time,
+                             intended_tag.time - get_start_time(),
                              intended_tag.microstep);
     }
 #endif // In centralized coordination, a TAG message from the RTI 
@@ -1774,7 +1780,7 @@ void handle_tagged_message(int socket, int fed_id) {
         // Since the message is intended for the current tag and a control reaction
         // was waiting for the message, trigger the corresponding reactions for this
         // message.
-        LOG_PRINT("Inserting reactions directly at tag (%lld, %u).", intended_tag.time - start_time, intended_tag.microstep);
+        LOG_PRINT("Inserting reactions directly at tag (%lld, %u).", intended_tag.time - get_start_time(), intended_tag.microstep);
         action->intended_tag = intended_tag;
         _lf_insert_reactions_for_trigger(action, message_token);
 
@@ -1798,7 +1804,7 @@ void handle_tagged_message(int socket, int fed_id) {
             return;
         }
         
-        LOG_PRINT("Calling schedule with tag (%lld, %u).", intended_tag.time - start_time, intended_tag.microstep);
+        LOG_PRINT("Calling schedule with tag (%lld, %u).", intended_tag.time - get_start_time(), intended_tag.microstep);
         schedule_message_received_from_network_already_locked(action, intended_tag, message_token);
     }
 
@@ -1855,13 +1861,13 @@ void handle_tag_advance_grant() {
         _fed.last_TAG.microstep = TAG.microstep;
         _fed.is_last_TAG_provisional = false;
         LOG_PRINT("Received Time Advance Grant (TAG): (%lld, %u).",
-        		_fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
+        		_fed.last_TAG.time - get_start_time(), _fed.last_TAG.microstep);
     } else {
         lf_mutex_unlock(&mutex);
         error_print("Received a TAG (%lld, %u) that wasn't larger "
         		"than the previous TAG or PTAG (%lld, %u). Ignoring the TAG.",
-                TAG.time - start_time, TAG.microstep,
-                _fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
+                TAG.time - get_start_time(), TAG.microstep,
+                _fed.last_TAG.time - get_start_time(), _fed.last_TAG.microstep);
     }
 
     _fed.waiting_for_TAG = false;
@@ -1884,7 +1890,7 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
         return;
     }
     LOG_PRINT("Sending Logical Time Complete (LTC) (%lld, %u) to the RTI.",
-            tag_to_send.time - start_time,
+            tag_to_send.time - get_start_time(),
             tag_to_send.microstep);
     _lf_send_tag(MSG_TYPE_LOGICAL_TAG_COMPLETE, tag_to_send, true);
     _fed.last_sent_LTC = tag_to_send;
@@ -1935,8 +1941,8 @@ void handle_provisional_tag_advance_grant() {
     _fed.waiting_for_TAG = false;
     _fed.is_last_TAG_provisional = true;
     LOG_PRINT("At tag (%lld, %d), received Provisional Tag Advance Grant (PTAG): (%lld, %u).",
-    		current_tag.time - start_time, current_tag.microstep,
-    		_fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
+    		current_tag.time - get_start_time(), current_tag.microstep,
+    		_fed.last_TAG.time - get_start_time(), _fed.last_TAG.microstep);
 
     // Even if we don't modify the event queue, we need to broadcast a change
     // because we do not need to continue to wait for a TAG.
@@ -1989,8 +1995,8 @@ void handle_provisional_tag_advance_grant() {
     // Schedule a dummy event at the specified time and (relative) microstep.
    	DEBUG_PRINT("At tag (%lld, %d), inserting into the event queue a dummy event "
    			"with time %lld and (relative) microstep %d.",
-    		current_tag.time - start_time, current_tag.microstep,
-    		dummy_event_time - start_time, dummy_event_relative_microstep);
+    		current_tag.time - get_start_time(), current_tag.microstep,
+    		dummy_event_time - get_start_time(), dummy_event_relative_microstep);
 
    	// Dummy event points to a NULL trigger and NULL real event.
 	event_t* dummy = _lf_create_dummy_events(
@@ -2031,7 +2037,7 @@ void _lf_fd_send_stop_request_to_rti() {
     }
     write_to_socket_errexit_with_mutex(_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH, 
     		buffer, &outbound_socket_mutex,
-            "Failed to send stop time %lld to the RTI.", current_tag.time - start_time);
+            "Failed to send stop time %lld to the RTI.", current_tag.time - get_start_time());
     lf_mutex_unlock(&outbound_socket_mutex);
     _fed.sent_a_stop_request_to_rti = true;
 }
@@ -2059,21 +2065,21 @@ void handle_stop_granted_message() {
     tag_t received_stop_tag = extract_tag(buffer);
 
     LOG_PRINT("Received from RTI a MSG_TYPE_STOP_GRANTED message with elapsed tag (%lld, %d).",
-            received_stop_tag.time - start_time, received_stop_tag.microstep);
+            received_stop_tag.time - get_start_time(), received_stop_tag.microstep);
     
     // Sanity check.
     tag_t current_tag = get_current_tag();
     if (compare_tags(received_stop_tag, current_tag) <= 0) {
         error_print("RTI granted a MSG_TYPE_STOP_GRANTED tag that is equal to or less than this federate's current tag (%lld, %u). "
         		"Stopping at the next microstep instead.",
-                current_tag.time - start_time, current_tag.microstep);
+                current_tag.time - get_start_time(), current_tag.microstep);
         received_stop_tag = current_tag;
         received_stop_tag.microstep++;
     }
 
     stop_tag = received_stop_tag;
     DEBUG_PRINT("Setting the stop tag to (%lld, %u).",
-                stop_tag.time - start_time,
+                stop_tag.time - get_start_time(),
                 stop_tag.microstep);
 
     _lf_decrement_global_tag_barrier_locked();
@@ -2109,7 +2115,7 @@ void handle_stop_request_message() {
     tag_t tag_to_stop = extract_tag(buffer);
 
     LOG_PRINT("Received from RTI a MSG_TYPE_STOP_REQUEST message with tag (%lld, %u).",
-             tag_to_stop.time - start_time,
+             tag_to_stop.time - get_start_time(),
              tag_to_stop.microstep);
 
     // Encode the current logical time plus one microstep
@@ -2371,11 +2377,11 @@ void synchronize_with_other_federates() {
     // Advance Grant message to request for permission to execute. In the decentralized
     // coordination, either the after delay on the connection must be sufficiently large
     // enough or the STP offset must be set globally to an accurate value.
-    start_time = get_start_time_from_rti(get_physical_time());
+    init_start_time(get_start_time_from_rti(get_physical_time()));
 
     // Every federate starts out assuming that it has been granted a PTAG
     // at the start time, or if it has no upstream federates, a TAG.
-    _fed.last_TAG = (tag_t){.time = start_time, .microstep = 0u};
+    _fed.last_TAG = (tag_t){.time = get_start_time(), .microstep = 0u};
     if (_fed.has_upstream) {
     	_fed.is_last_TAG_provisional = true;
     } else {
@@ -2384,7 +2390,7 @@ void synchronize_with_other_federates() {
 
     if (duration >= 0LL) {
         // A duration has been specified. Recalculate the stop time.
-       stop_tag = ((tag_t) {.time = start_time + duration, .microstep = 0});
+       stop_tag = ((tag_t) {.time = get_start_time() + duration, .microstep = 0});
     }
     
     // Start a thread to listen for incoming TCP messages from the RTI.

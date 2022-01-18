@@ -194,6 +194,17 @@ extern interval_t _lf_global_test_physical_clock_offset;
 extern interval_t _lf_epoch_offset;
 
 /**
+ * Return the most recent time reported by the physical clock
+ * when accessed by get_physical_time(). This will be an epoch time
+ * (number of nanoseconds since Jan. 1, 1970), as reported when
+ * you call lf_clock_gettime(CLOCK_REALTIME, ...). This differs from
+ * _lf_last_reported_physical_time_ns by _lf_global_physical_clock_offset
+ * plus any calculated drift adjustement, which are adjustments made
+ * by clock synchronization.
+ */
+instant_t get_last_reported_unadjusted_physical_time();
+
+/**
  * Return the current physical time in nanoseconds.
  * On many platforms, this is the number of nanoseconds
  * since January 1, 1970, but it is actually platform dependent.
@@ -216,6 +227,12 @@ instant_t get_elapsed_physical_time();
  * added to what it would have returned before the call.
  */
 void set_physical_clock_offset(interval_t offset);
+
+/**
+ * @brief Initialize the start time.
+ * 
+ */
+void init_start_time(instant_t start_time);
 
 /**
  * Return the physical and logical time of the start of execution in nanoseconds.

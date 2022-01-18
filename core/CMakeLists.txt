@@ -40,11 +40,11 @@ define(NUMBER_OF_WORKERS)
 define(TARGET_FILES_DIRECTORY)
 define(ADVANCE_MESSAGE_INTERVAL)
 define(LINGUA_FRANCA_TRACE)
-message(STATUS "")
 
 # Add sources from subdirectories.
 add_subdirectory(platform)
 add_subdirectory(utils)
+add_subdirectory(threaded)
 
 # List sources in this directory.
 set(SINGLE_THREADED_SOURCES reactor.c)
@@ -53,7 +53,7 @@ set(SINGLE_THREADED_SOURCES reactor.c)
 list(APPEND SOURCES ${GENERAL_SOURCES})
 if(NUMBER_OF_WORKERS)
     message(STATUS "Including sources for threaded runtime with ${NUMBER_OF_WORKERS} worker(s).")
-    add_subdirectory(threaded)
+    list(APPEND SOURCES ${MULTITHREADED_SOURCES})
 else()
     message(STATUS "Including sources for unthreaded runtime.")
     list(APPEND SOURCES ${SINGLE_THREADED_SOURCES})

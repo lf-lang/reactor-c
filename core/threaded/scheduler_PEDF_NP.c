@@ -42,9 +42,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler.h"
 #include "../platform.h"
 #include "../utils/pqueue_support.h"
-#include "../utils/semaphore.c"
-#include "../utils/vector.c"
-#include "scheduler_sync_tag_advance.c"
+#include "../utils/semaphore.h"
+#include "../utils/vector.h"
+#include "sync_tag_advance.c"
 
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;

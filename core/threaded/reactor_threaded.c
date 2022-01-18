@@ -153,7 +153,7 @@ void _lf_increment_global_tag_barrier_already_locked(tag_t future_tag) {
             // future tag.
             _lf_global_tag_advancement_barrier.horizon = future_tag;
             DEBUG_PRINT("Raised barrier at elapsed tag (%lld, %u).",
-                        _lf_global_tag_advancement_barrier.horizon.time - start_time,
+                        _lf_global_tag_advancement_barrier.horizon.time - get_start_time(),
                         _lf_global_tag_advancement_barrier.horizon.microstep);
         } 
     } else {
@@ -169,7 +169,7 @@ void _lf_increment_global_tag_barrier_already_locked(tag_t future_tag) {
             _lf_global_tag_advancement_barrier.horizon = current_tag;
             _lf_global_tag_advancement_barrier.horizon.microstep++;
             DEBUG_PRINT("Raised barrier at elapsed tag (%lld, %u).",
-                        _lf_global_tag_advancement_barrier.horizon.time - start_time,
+                        _lf_global_tag_advancement_barrier.horizon.time - get_start_time(),
                         _lf_global_tag_advancement_barrier.horizon.microstep);
     }
     // Increment the number of requestors
@@ -282,7 +282,7 @@ int _lf_wait_on_global_tag_barrier(tag_t proposed_tag) {
             && compare_tags(proposed_tag, _lf_global_tag_advancement_barrier.horizon) >= 0
     ) {
         result = 1;
-        LOG_PRINT("Waiting on barrier for tag (%lld, %u).", proposed_tag.time - start_time, proposed_tag.microstep);
+        LOG_PRINT("Waiting on barrier for tag (%lld, %u).", proposed_tag.time - get_start_time(), proposed_tag.microstep);
         // Wait until no requestor remains for the barrier on logical time
         lf_cond_wait(&global_tag_barrier_requestors_reached_zero, &mutex);
         
@@ -419,7 +419,7 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
         // If wait_time is not forever
         DEBUG_PRINT("Adding STP offset %lld to wait until time %lld.",
                 _lf_global_time_STP_offset,
-                wait_until_time_ns - start_time);
+                wait_until_time_ns - get_start_time());
         wait_until_time_ns += _lf_global_time_STP_offset;
     }
 #endif
@@ -448,12 +448,12 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
         // Note that if ns_to_wait is large enough, then the following addition could
         // overflow. This could happen, for example, if wait_until_time_ns == FOREVER.
         instant_t unadjusted_wait_until_time_ns = FOREVER;
-        if (FOREVER - _lf_last_reported_unadjusted_physical_time_ns > ns_to_wait) {
-            unadjusted_wait_until_time_ns = _lf_last_reported_unadjusted_physical_time_ns + ns_to_wait;
+        if (FOREVER - get_last_reported_unadjusted_physical_time() > ns_to_wait) {
+            unadjusted_wait_until_time_ns = get_last_reported_unadjusted_physical_time() + ns_to_wait;
         }
-        DEBUG_PRINT("-------- Clock offset is %lld ns.", current_physical_time - _lf_last_reported_unadjusted_physical_time_ns);
+        DEBUG_PRINT("-------- Clock offset is %lld ns.", current_physical_time - get_last_reported_unadjusted_physical_time());
         DEBUG_PRINT("-------- Waiting %lld ns for physical time to match logical time %llu.", ns_to_wait, 
-                logical_time_ns - start_time);
+                logical_time_ns - get_start_time());
 
         // lf_cond_timedwait returns 0 if it is awakened before the timeout.
         // Hence, we want to run it repeatedly until either it returns non-zero or the
@@ -501,11 +501,12 @@ tag_t get_next_event_tag() {
     tag_t next_tag = FOREVER_TAG;
     if (event != NULL) {
         // There is an event in the event queue.
+        tag_t current_tag = get_current_tag();
         if (event->time < current_tag.time) {
             error_print_and_exit("get_next_event_tag(): Earliest event on the event queue (%lld) is "
                                   "earlier than the current time (%lld).",
-                                  event->time - start_time,
-                                  current_tag.time - start_time);
+                                  event->time - get_start_time(),
+                                  current_tag.time - get_start_time());
         }
 
         next_tag.time = event->time;
@@ -524,7 +525,7 @@ tag_t get_next_event_tag() {
         next_tag = stop_tag;
     }
     LOG_PRINT("Earliest event on the event queue (or stop time if empty) is (%lld, %u). Event queue has size %d.",
-            next_tag.time - start_time, next_tag.microstep, pqueue_size(event_q));
+            next_tag.time - get_start_time(), next_tag.microstep, pqueue_size(event_q));
     return next_tag;
 }
 
@@ -612,6 +613,7 @@ void _lf_next_locked() {
         // keepalive is not set so we should stop.
         // Note that federated programs with decentralized coordination always have
         // keepalive = true
+        tag_t current_tag = get_current_tag();
         _lf_set_stop_tag((tag_t){.time=current_tag.time,.microstep=current_tag.microstep+1});
 
         // Stop tag has changed. Need to check next_tag again.
@@ -622,7 +624,7 @@ void _lf_next_locked() {
     // Wait for physical time to advance to the next event time (or stop time).
     // This can be interrupted if a physical action triggers (e.g., a message
     // arrives from an upstream federate or a local physical action triggers).
-    LOG_PRINT("Waiting until elapsed time %lld.", (next_tag.time - start_time));
+    LOG_PRINT("Waiting until elapsed time %lld.", (next_tag.time - get_start_time()));
     while (!wait_until(next_tag.time, &event_q_changed)) {
         DEBUG_PRINT("_lf_next_locked(): Wait until time interrupted.");
         // Sleep was interrupted.  Check for a new next_event.
@@ -665,6 +667,7 @@ void _lf_next_locked() {
     // executed microstep 0 at the timeout time), then we are done. The above code prevents the next_tag
     // from exceeding the stop_tag, so we have to do further checks if
     // they are equal.
+    tag_t current_tag = get_current_tag();
     if (compare_tags(next_tag, stop_tag) >= 0 && compare_tags(current_tag, stop_tag) >= 0) {
         // If we pop anything further off the event queue with this same time or larger,
         // then it will be assigned a tag larger than the stop tag.
@@ -702,6 +705,7 @@ void _lf_next_locked() {
 void request_stop() {
     lf_mutex_lock(&mutex);
     // Check if already at the previous stop tag.
+    tag_t current_tag = get_current_tag();
     if (compare_tags(current_tag, stop_tag) >= 0) {
         // If so, ignore the stop request since the program
         // is already stopping at the current tag.
@@ -762,7 +766,7 @@ void _lf_initialize_start_tag() {
 
     // Get a start_time from the RTI
     synchronize_with_other_federates(); // Resets start_time in federated execution according to the RTI.
-    current_tag = (tag_t){.time = start_time, .microstep = 0u};
+    current_tag = (tag_t){.time = get_start_time(), .microstep = 0u};
 #endif
 
     _lf_initialize_timers();
@@ -770,6 +774,7 @@ void _lf_initialize_start_tag() {
     // If the stop_tag is (0,0), also insert the shutdown
     // reactions. This can only happen if the timeout time
     // was set to 0.
+    tag_t current_tag = get_current_tag();
     if (compare_tags(current_tag, stop_tag) >= 0) {
         _lf_trigger_shutdown_reactions();
     }
@@ -809,18 +814,13 @@ void _lf_initialize_start_tag() {
     // especially useful if an STP offset is set properly because the federate will get
     // a chance to process incoming messages while utilizing the STP offset.
     LOG_PRINT("Waiting for start time %lld plus STP offset %lld.",
-            start_time, _lf_global_time_STP_offset);
+            get_start_time(), _lf_global_time_STP_offset);
     // Ignore interrupts to this wait. We don't want to start executing until
     // physical time matches or exceeds the logical start time.
-    while (!wait_until(start_time, &event_q_changed)) {}
-    DEBUG_PRINT("Done waiting for start time %lld.", start_time);
+    while (!wait_until(get_start_time(), &event_q_changed)) {}
+    DEBUG_PRINT("Done waiting for start time %lld.", get_start_time());
     DEBUG_PRINT("Physical time is ahead of current time by %lld. This should be small.",
-            get_physical_time() - start_time);
-
-    // Reinitialize the physical start time to match the start_time.
-    // Otherwise, reports of get_elapsed_physical_time are not very meaningful
-    // w.r.t. logical time.
-    physical_start_time = start_time;
+            get_physical_time() - get_start_time());
 #endif
 
 #ifdef FEDERATED_DECENTRALIZED
@@ -861,6 +861,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(int worker_number, reacti
     if (reaction->deadline > 0LL) {
         // Get the current physical time.
         instant_t physical_time = get_physical_time();
+        tag_t current_tag = get_current_tag();
         // Check for deadline violation.
         if (physical_time > current_tag.time + reaction->deadline) {
             // Deadline violation has occurred.
@@ -955,10 +956,11 @@ bool _lf_worker_handle_violations(int worker_number, reaction_t* reaction) {
  * executing 'reaction'.
  */
 void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
+    tag_t current_tag = get_current_tag();
     LOG_PRINT("Worker %d: Invoking reaction %s at elapsed tag (%lld, %d).",
             worker_number,
             reaction->name,
-            current_tag.time - start_time,
+            current_tag.time - get_start_time(),
             current_tag.microstep);
     tracepoint_reaction_starts(reaction, worker_number);
     reaction->function(reaction->self);

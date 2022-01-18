@@ -24,7 +24,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /**
- * @file scheduler_sync_tag_advance.c
+ * @file sync_tag_advance.c
  * @author Soroush Bateni (soroush@utdallas.edu)
  * @author Edward A. Lee <eal@berkeley.edu>
  * @author Marten Lohstroh <marten@berkeley.edu>

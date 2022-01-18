@@ -32,6 +32,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "tag.h"
 #include "platform.h"
+#include "utils/util.h"
+#include <stdio.h>      // For sprintf
+#include <string.h>     // For strlen
 
 /**
  * Current time in nanoseconds since January 1, 1970
@@ -179,6 +182,19 @@ instant_t _lf_last_reported_physical_time_ns = 0LL;
 instant_t _lf_last_reported_unadjusted_physical_time_ns = NEVER;
 
 /**
+ * Return the most recent time reported by the physical clock
+ * when accessed by get_physical_time(). This will be an epoch time
+ * (number of nanoseconds since Jan. 1, 1970), as reported when
+ * you call lf_clock_gettime(CLOCK_REALTIME, ...). This differs from
+ * _lf_last_reported_physical_time_ns by _lf_global_physical_clock_offset
+ * plus any calculated drift adjustement, which are adjustments made
+ * by clock synchronization.
+ */
+instant_t get_last_reported_unadjusted_physical_time() {
+	return _lf_last_reported_unadjusted_physical_time_ns;
+}
+
+/**
  * Return the current physical time in nanoseconds since January 1, 1970,
  * adjusted by the global physical time offset.
  */
@@ -218,6 +234,16 @@ instant_t get_physical_time() {
             _lf_global_physical_clock_offset + _lf_global_test_physical_clock_offset);
 
     return _lf_last_reported_physical_time_ns;
+}
+
+/**
+ * @brief Initialize the start time.
+ * 
+ */
+void init_start_time(instant_t start_time) {
+    physical_start_time = start_time;
+    current_tag.time = physical_start_time;
+    start_time = current_tag.time;
 }
 
 /**

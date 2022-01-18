@@ -17,22 +17,10 @@ function(add_test_dir DIR)
     set(TEST_FILES ${TEST_FILES} PARENT_SCOPE)
 endfunction()
 
-# Add the appropriate directories for the provided build parameters.
-add_test_dir(${TEST_DIR}/general)
-if(NUMBER_OF_WORKERS)
-    add_test_dir(${TEST_DIR}/multithreaded)
-else()
-    add_test_dir(${TEST_DIR}/single-threaded)
-endif(NUMBER_OF_WORKERS)
+# Add the appropriate directories FIXME: Find a way to automaticall find all
+# .cmake files.
+include(${TEST_DIR}/general/Tests.cmake)
 
-# Create executables for each test.
-foreach(FILE ${TEST_FILES})
-    string(REGEX REPLACE "[./]" "_" NAME ${FILE})
-    add_executable(${NAME} ${TEST_DIR}/${FILE})
-    add_test(NAME ${NAME} COMMAND ${NAME})
-    target_link_libraries(
-        ${NAME} PUBLIC
-        ${CoreLib} ${Lib} ${TestLib}
-    )
-    target_include_directories(${NAME} PRIVATE ${TEST_DIR})
-endforeach(FILE ${TEST_FILES})
+if(NUMBER_OF_WORKERS)
+    include(${TEST_DIR}/multithreaded/scheduler/Tests.cmake)
+endif(NUMBER_OF_WORKERS)

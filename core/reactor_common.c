@@ -35,10 +35,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Soroush Bateni <soroush@utdallas.edu}
  */
 #include "reactor.h"
-#include "tag.c"
-#include "utils/pqueue.c"
+#include "tag.h"
+#include "utils/pqueue.h"
 #include "utils/pqueue_support.h"
-#include "utils/util.c"
+#include "utils/util.h"
 
 /** 
  * Indicator of whether to wait for physical time to match logical time.
@@ -305,7 +305,8 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number);
  * counts between time steps and at the end of execution.
  */
 void _lf_start_time_step() {
-    LOG_PRINT("--------- Start time step at tag (%lld, %u).", current_tag.time - start_time, current_tag.microstep);
+    tag_t current_tag = get_current_tag();
+    LOG_PRINT("--------- Start time step at tag (%lld, %u).", current_tag.time - get_start_time(), current_tag.microstep);
     for(int i = 0; i < _lf_tokens_with_ref_count_size; i++) {
         if (*(_lf_tokens_with_ref_count[i].status) == present) {
             if (_lf_tokens_with_ref_count[i].reset_is_present) {
@@ -463,6 +464,7 @@ bool _lf_is_tag_after_stop_tag(tag_t tag) {
  */
 void _lf_pop_events() {
     event_t* event = (event_t*)pqueue_peek(event_q);
+    tag_t current_tag = get_current_tag();
     while(event != NULL && event->time == current_tag.time) {
         event = (event_t*)pqueue_pop(event_q);
         
@@ -714,8 +716,8 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
     tag_t current_logical_tag = get_current_tag();
 
     DEBUG_PRINT("_lf_schedule_at_tag() called with tag (%lld, %u) at tag (%lld, %u).",
-                  tag.time - start_time, tag.microstep,
-                  current_logical_tag.time - start_time, current_logical_tag.microstep);
+                  tag.time - get_start_time(), tag.microstep,
+                  current_logical_tag.time - get_start_time(), current_logical_tag.microstep);
     if (compare_tags(tag, current_logical_tag) <= 0) {
         warning_print("_lf_schedule_at_tag(): requested to schedule an event in the past.");
         return -1;
@@ -913,7 +915,7 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
  * @return A handle to the event, or 0 if no new event was scheduled, or -1 for error.
  */
 trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
-    if (_lf_is_tag_after_stop_tag(current_tag)) {
+    if (_lf_is_tag_after_stop_tag(get_current_tag())) {
         // If schedule is called after stop_tag
         // This is a critical condition.
         _lf_done_using(token);
@@ -951,6 +953,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     if (!trigger->is_timer) {
     	delay += trigger->offset;
     }
+    tag_t current_tag = get_current_tag();
     interval_t intended_time = current_tag.time + delay;
     DEBUG_PRINT("_lf_schedule: current_tag.time = %lld. Total logical delay = %lld",
             current_tag.time, delay);
@@ -1111,7 +1114,11 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
 
     // Do not schedule events if if the event time is past the stop time
     // (current microsteps are checked earlier).
-    DEBUG_PRINT("Comparing event with elapsed time %lld against stop time %lld.", e->time - start_time, stop_tag.time - start_time);
+    DEBUG_PRINT(
+        "Comparing event with elapsed time %lld against stop time %lld.", 
+        e->time - get_start_time(), 
+        stop_tag.time - get_start_time()
+    );
     if (e->time > stop_tag.time) {
         DEBUG_PRINT("_lf_schedule: event time is past the timeout. Discarding event.");
         _lf_done_using(token);
@@ -1132,7 +1139,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     // rather than the event_q, so anything put in the event_q with this
     // same time will automatically be executed at the next microstep.
     LOG_PRINT("Inserting event in the event queue with elapsed time %lld.",
-            e->time - start_time);
+            e->time - get_start_time());
     pqueue_insert(event_q, e);
 
     tracepoint_schedule(trigger, e->time - current_tag.time);
@@ -1272,7 +1279,7 @@ void _lf_advance_logical_time(instant_t next_time) {
         }
     }
     */
-
+    tag_t current_tag = get_current_tag();
     if (current_tag.time < next_time) {
         current_tag.time = next_time;
         current_tag.microstep = 0;
@@ -1281,7 +1288,7 @@ void _lf_advance_logical_time(instant_t next_time) {
     } else {
         error_print_and_exit("_lf_advance_logical_time(): Attempted to move tag back in time.");
     }
-    LOG_PRINT("Advanced (elapsed) tag to (%lld, %u)", next_time - start_time, current_tag.microstep);
+    LOG_PRINT("Advanced (elapsed) tag to (%lld, %u)", next_time - get_start_time(), current_tag.microstep);
 }
 
 /**
@@ -1456,6 +1463,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
             // Get the current physical time.
             instant_t physical_time = get_physical_time();
             // Check for deadline violation.
+            tag_t current_tag = get_current_tag();
             if (physical_time > current_tag.time + downstream_to_execute_now->deadline) {
                 // Deadline violation has occurred.
                 violation = true;
@@ -1694,19 +1702,18 @@ void initialize() {
     // Initialize the trigger table.
     _lf_initialize_trigger_objects();
 
-    physical_start_time = get_physical_time();
-    current_tag.time = physical_start_time;
-    start_time = current_tag.time;
+    init_start_time(get_physical_time());
 
-    DEBUG_PRINT("Start time: %lldns", start_time);
+    DEBUG_PRINT("Start time: %lldns", get_start_time());
 
-    struct timespec physical_time_timespec = {physical_start_time / BILLION, physical_start_time % BILLION};
+    struct timespec physical_time_timespec = {get_start_time() / BILLION, get_start_time() % BILLION};
 
     printf("---- Start execution at time %s---- plus %ld nanoseconds.\n",
             ctime(&physical_time_timespec.tv_sec), physical_time_timespec.tv_nsec);
     
     if (duration >= 0LL) {
         // A duration has been specified. Calculate the stop time.
+        tag_t current_tag = get_current_tag();
         _lf_set_stop_tag((tag_t) {.time = current_tag.time + duration, .microstep = 0});
     }
 }
@@ -1730,7 +1737,7 @@ void termination() {
     if (event_q != NULL && pqueue_size(event_q) > 0) {
         warning_print("---- There are %zu unprocessed future events on the event queue.", pqueue_size(event_q));
         event_t* event = (event_t*)pqueue_peek(event_q);
-        interval_t event_time = event->time - start_time;
+        interval_t event_time = event->time - get_start_time();
         warning_print("---- The first future event has timestamp %lld after start time.", event_time);
     }
     // Issue a warning if a memory leak has been detected.
@@ -1752,7 +1759,7 @@ void termination() {
 
         // If physical_start_time is 0, then execution didn't get far enough along
         // to initialize this.
-        if (physical_start_time > 0LL) {
+        if (get_start_time() > 0LL) {
         	lf_comma_separated_time(time_buffer, get_elapsed_physical_time());
             printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
         }

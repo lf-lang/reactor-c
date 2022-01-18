@@ -41,9 +41,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "scheduler.h"
 #include "../platform.h"
-#include "../utils/semaphore.c"
-#include "../utils/vector.c"
-#include "scheduler_sync_tag_advance.c"
+#include "../utils/semaphore.h"
+#include "../utils/vector.h"
+#include "sync_tag_advance.c"
 #include <assert.h>
 
 #ifndef MAX_REACTION_LEVEL
