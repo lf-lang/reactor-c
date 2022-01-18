@@ -39,6 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "pqueue.c"
 #include "util.c"
 #include "ctype.h"
+#include "regex.h"
 
 /** 
  * Indicator of whether to wait for physical time to match logical time.
@@ -1696,9 +1697,9 @@ bool validate_port(char* port) {
  * A helper struct for passing rti_addr information betweem parse_rti_addr and extract_rti_addr_info
  */
 typedef struct rti_addr_info_t {
-    char rti_hostStr[256];
-    char rti_portStr[6];
-    char rti_userStr[256];
+    char rti_host_str[256];
+    char rti_port_str[6];
+    char rti_user_str[256];
     bool has_host;
     bool has_port;
     bool has_user;
@@ -1716,22 +1717,76 @@ typedef enum parse_rti_code_t {
 } parse_rti_code_t;
 
 /**
+ * Extract match groups from the rti_addr regex  
+ */
+bool extract_match_group(char* rti_addr, char* dest, regmatch_t group, int max_len, int min_len, char* err_msg) {
+    size_t size = group.rm_eo - group.rm_so;
+    if (size > max_len || size < min_len) {
+        error_print(err_msg);
+        return false;
+    }
+    strncpy(dest, &rti_addr[group.rm_so], size);
+    dest[size] = '\0';
+    return true;
+}
+
+/**
  * Extract the host, port and user from rti_addr.  
  */
 void extract_rti_addr_info(char* rti_addr, rti_addr_info_t* rti_addr_info) {
-    int n = 0;
-    n = sscanf(rti_addr, "%255s@%255s:%5s", rti_addr_info->rti_userStr, rti_addr_info->rti_hostStr, rti_addr_info->rti_portStr);
-    if (n == 3) {
-        rti_addr_info->has_host = rti_addr_info->has_port = rti_addr_info->has_user = true;
-    } else {
-        n = sscanf(rti_addr, "%255s:%5s", rti_addr_info->rti_hostStr, rti_addr_info->rti_portStr);
-        if (n == 2) {
-            rti_addr_info->has_host = rti_addr_info->has_port = true;
-        } else {
-            n = sscanf(rti_addr, "%255s", rti_addr_info->rti_hostStr);
-            rti_addr_info->has_host = true;
+    char* regex_str = "(([a-zA-Z0-9_-]{1,254})@)?([a-zA-Z0-9.]{1,255})(:([0-9]{1,5}))?";
+    size_t max_groups = 6;
+    // The group indices of each field of interest in the regex.
+    int user_gid = 2, host_gid = 3, port_gid = 5;
+    regex_t regex_compiled;
+    regmatch_t group_array[max_groups];
+
+    if (regcomp(&regex_compiled, regex_str, REG_EXTENDED)) {
+        error_print("Could not compile regex to parse RTI address");
+        return;
+    }
+
+    if (regexec(&regex_compiled, rti_addr, max_groups, group_array, 0) == 0) {
+        // Check for matched username. group_array[0] is the entire matched string.
+        for (int i = 1; i < max_groups; i++) {
+            DEBUG_PRINT("runtime rti_addr regex: so: %d   eo: %d\n", group_array[i].rm_so, group_array[i].rm_eo);
+        }
+        if (group_array[user_gid].rm_so != -1) {
+            if (!extract_match_group(rti_addr, rti_addr_info->rti_user_str, group_array[user_gid], 255, 1, "User name must be between 1 to 255 characters long.")) {
+                memset(rti_addr_info, 0, sizeof(rti_addr_info_t));
+                regfree(&regex_compiled);
+                return;
+            } else {
+                rti_addr_info->has_user = true;
+                DEBUG_PRINT("runtime rti_addr user: '%s'\n", rti_addr_info->rti_user_str);
+            }
+        }
+
+        // Check for matched host
+        if (group_array[host_gid].rm_so != -1) {
+            if (!extract_match_group(rti_addr, rti_addr_info->rti_host_str, group_array[host_gid], 255, 1, "Host must be between 1 to 255 characters long.")) {
+                memset(rti_addr_info, 0, sizeof(rti_addr_info_t));
+                regfree(&regex_compiled);
+                return;
+            } else {
+                rti_addr_info->has_host = true;
+                DEBUG_PRINT("runtime rti_addr host: '%s'\n", rti_addr_info->rti_host_str);
+            }
+        }
+
+        // Check for matched port
+        if (group_array[port_gid].rm_so != -1) {
+            if (!extract_match_group(rti_addr, rti_addr_info->rti_port_str, group_array[port_gid], 5, 1, "Port must be between 1 to 5 characters long.")) {
+                memset(rti_addr_info, 0, sizeof(rti_addr_info_t));
+                regfree(&regex_compiled);
+                return;
+            } else {
+                rti_addr_info->has_port = true;
+                DEBUG_PRINT("runtime rti_addr port: '%s'\n", rti_addr_info->rti_port_str);
+            }
         }
     }
+    regfree(&regex_compiled);
 }
 
 /**
@@ -1740,14 +1795,7 @@ void extract_rti_addr_info(char* rti_addr, rti_addr_info_t* rti_addr_info) {
  */
 parse_rti_code_t parse_rti_addr(char* rti_addr) {
     bool has_host = false, has_port = false, has_user = false;
-    rti_addr_info_t rti_addr_info = {
-        .rti_hostStr = {0},
-        .rti_portStr = {0},
-        .rti_userStr = {0},
-        .has_host = false,
-        .has_port = false,
-        .has_user = false
-    };
+    rti_addr_info_t rti_addr_info = {0};
     extract_rti_addr_info(rti_addr, &rti_addr_info);
     if (!rti_addr_info.has_host && !rti_addr_info.has_port && !rti_addr_info.has_user) {
         return FAILED_TO_PARSE;
@@ -1755,19 +1803,20 @@ parse_rti_code_t parse_rti_addr(char* rti_addr) {
 
     if (rti_addr_info.has_host) {
         char* rti_host = (char*) calloc(256, sizeof(char));
-        strncpy(rti_host, rti_addr_info.rti_hostStr, 255);
+        strncpy(rti_host, rti_addr_info.rti_host_str, 255);
         federation_metadata.rti_host = rti_host;
     }
     if (rti_addr_info.has_port) {
-        if (validate_port(rti_addr_info.rti_portStr)) {
-            federation_metadata.rti_port = atoi(rti_addr_info.rti_portStr);
+        if (validate_port(rti_addr_info.rti_port_str)) {
+            federation_metadata.rti_port = atoi(rti_addr_info.rti_port_str);
+            DEBUG_PRINT("rti_port: %d\n", federation_metadata.rti_port);
         } else {
             return INVALID_PORT;
         }
     }
     if (rti_addr_info.has_user) {
         char* rti_user = (char*) calloc(256, sizeof(char));
-        strncpy(rti_user, rti_addr_info.rti_userStr, 255);
+        strncpy(rti_user, rti_addr_info.rti_user_str, 255);
         federation_metadata.rti_user = rti_user;
     }
     return SUCCESS;
@@ -1875,7 +1924,7 @@ int process_args(int argc, char* argv[]) {
             info_print("Federation ID for executable %s: %s", argv[0], federation_metadata.federation_id);
         } else if (strcmp(arg, "--rti") == 0) {
             if (argc < i + 1) {
-                error_print("--rti needs a string argument.");
+                error_print("--rti needs a string argument in the form of [user]@[host]:[port].");
                 usage(argc, argv);
                 return 0;
             }
