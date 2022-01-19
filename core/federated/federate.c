@@ -2675,7 +2675,8 @@ bool validate_port(char* port) {
 }
 
 /**
- * Extract match groups from the rti_addr regex  
+ * Extract one match group from the rti_addr regex .
+ * @return true if SUCCESS, else false.
  */
 bool extract_match_group(char* rti_addr, char* dest, regmatch_t group, int max_len, int min_len, char* err_msg) {
     size_t size = group.rm_eo - group.rm_so;
@@ -2689,6 +2690,23 @@ bool extract_match_group(char* rti_addr, char* dest, regmatch_t group, int max_l
 }
 
 /**
+ * Extract match groups from the rti_addr regex.
+ * @return true if success, else false.
+ */
+bool extract_match_groups(char* rti_addr, char** rti_addr_strs, bool** rti_addr_flags, regmatch_t* group_array, int* gids, int* max_lens, int* min_lens, char** err_msgs) {
+    for (int i = 0; i < 3; i++) {
+        if (group_array[gids[i]].rm_so != -1) {
+            if (!extract_match_group(rti_addr, rti_addr_strs[i], group_array[gids[i]], max_lens[i], min_lens[i], err_msgs[i])) {
+                return false;
+            } else {
+                *rti_addr_flags[i] = true;
+            }
+        }
+    }
+    return true;
+}
+
+/**
  * Extract the host, port and user from rti_addr.  
  */
 void extract_rti_addr_info(char* rti_addr, rti_addr_info_t* rti_addr_info) {
@@ -2697,6 +2715,13 @@ void extract_rti_addr_info(char* rti_addr, rti_addr_info_t* rti_addr_info) {
     // The group indices of each field of interest in the regex.
     int user_gid = 2, host_gid = 3, port_gid = 5;
     int gids[3] = {user_gid, host_gid, port_gid};
+    char* rti_addr_strs[3] = {rti_addr_info->rti_user_str, rti_addr_info->rti_host_str, rti_addr_info->rti_port_str};
+    bool* rti_addr_flags[3] = {&rti_addr_info->has_user, &rti_addr_info->has_host, &rti_addr_info->has_port};
+    int max_lens[3] = {255, 255, 5};
+    int min_lens[3] = {1, 1, 1};
+    char* err_msgs[3] = {"User name must be between 1 to 255 characters long.",
+                         "Host must be between 1 to 255 characters long.",
+                         "Port must be between 1 to 5 characters long."};
 
     regex_t regex_compiled;
     regmatch_t group_array[max_groups];
@@ -2711,39 +2736,8 @@ void extract_rti_addr_info(char* rti_addr, rti_addr_info_t* rti_addr_info) {
         for (int i = 1; i < max_groups; i++) {
             DEBUG_PRINT("runtime rti_addr regex: so: %d   eo: %d\n", group_array[i].rm_so, group_array[i].rm_eo);
         }
-        if (group_array[user_gid].rm_so != -1) {
-            if (!extract_match_group(rti_addr, rti_addr_info->rti_user_str, group_array[user_gid], 255, 1, "User name must be between 1 to 255 characters long.")) {
-                memset(rti_addr_info, 0, sizeof(rti_addr_info_t));
-                regfree(&regex_compiled);
-                return;
-            } else {
-                rti_addr_info->has_user = true;
-                DEBUG_PRINT("runtime rti_addr user: '%s'\n", rti_addr_info->rti_user_str);
-            }
-        }
-
-        // Check for matched host
-        if (group_array[host_gid].rm_so != -1) {
-            if (!extract_match_group(rti_addr, rti_addr_info->rti_host_str, group_array[host_gid], 255, 1, "Host must be between 1 to 255 characters long.")) {
-                memset(rti_addr_info, 0, sizeof(rti_addr_info_t));
-                regfree(&regex_compiled);
-                return;
-            } else {
-                rti_addr_info->has_host = true;
-                DEBUG_PRINT("runtime rti_addr host: '%s'\n", rti_addr_info->rti_host_str);
-            }
-        }
-
-        // Check for matched port
-        if (group_array[port_gid].rm_so != -1) {
-            if (!extract_match_group(rti_addr, rti_addr_info->rti_port_str, group_array[port_gid], 5, 1, "Port must be between 1 to 5 characters long.")) {
-                memset(rti_addr_info, 0, sizeof(rti_addr_info_t));
-                regfree(&regex_compiled);
-                return;
-            } else {
-                rti_addr_info->has_port = true;
-                DEBUG_PRINT("runtime rti_addr port: '%s'\n", rti_addr_info->rti_port_str);
-            }
+        if (!extract_match_groups(rti_addr, rti_addr_strs, rti_addr_flags, group_array, gids, max_lens, min_lens, err_msgs)) {
+            memset(rti_addr_info, 0, sizeof(rti_addr_info_t));
         }
     }
     regfree(&regex_compiled);
