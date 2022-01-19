@@ -213,9 +213,6 @@ void _lf_sched_signal_stop() {
  * This function assumes the caller does not hold the 'mutex' lock.
  */
 void _lf_sched_try_advance_tag_and_distribute() {
-    // Executing vector must be empty when this is called.
-    assert(vector_size(executing_q) == 0);
-
     // Reset the index
     _lf_sched_level_indexes[_lf_sched_next_reaction_level - 1] = 0;
 
