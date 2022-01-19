@@ -42,6 +42,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/types.h>
 #include "../platform.h"  // defines lf_mutex_t
 #include "../tag.h"       // Defines tag_t
+#include <regex.h>
 
 #define HOST_LITTLE_ENDIAN 1
 #define HOST_BIG_ENDIAN 2
@@ -295,5 +296,66 @@ void encode_tag(
     unsigned char* buffer,
 	tag_t tag
 );
+
+/**
+ * A helper struct for passing rti_addr information betweem parse_rti_addr and extract_rti_addr_info
+ */
+typedef struct rti_addr_info_t {
+    char rti_host_str[256];
+    char rti_port_str[6];
+    char rti_user_str[256];
+    bool has_host;
+    bool has_port;
+    bool has_user;
+} rti_addr_info_t;
+
+/**
+ * Checks if str matches regex.
+ * @return true if there is a match, false otherwise.
+ */
+bool match_regex(char* str, char* regex);
+
+
+/**
+ * Checks if port is valid.
+ * @return true if valid, false otherwise.
+ */
+bool validate_port(char* port);
+
+
+/**
+ * Checks if host is valid.
+ * @return true if valid, false otherwise.
+ */
+bool validate_host(char* host);
+
+
+/**
+ * Checks if user is valid.
+ * @return true if valid, false otherwise.
+ */
+bool validate_user(char* user);
+
+
+/**
+ * Extract one match group from the rti_addr regex .
+ * @return true if SUCCESS, else false.
+ */
+bool extract_match_group(char* rti_addr, char* dest, regmatch_t group, int max_len, int min_len, char* err_msg);
+
+
+/**
+ * Extract match groups from the rti_addr regex.
+ * @return true if success, else false.
+ */
+bool extract_match_groups(char* rti_addr, char** rti_addr_strs, bool** rti_addr_flags, regmatch_t* group_array, 
+                          int* gids, int* max_lens, int* min_lens, char** err_msgs);
+
+
+/**
+ * Extract the host, port and user from rti_addr.  
+ */
+void extract_rti_addr_info(char* rti_addr, rti_addr_info_t* rti_addr_info);
+
 
 #endif /* NET_UTIL_H */
