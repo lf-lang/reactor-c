@@ -34,6 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "reactor_common.c"
 #include "platform.h"
+#include "tag.h"
 #include <signal.h> // To trap ctrl-c and invoke termination().
 //#include <assert.h>
 
@@ -126,7 +127,7 @@ void _lf_set_present(bool* is_present_field) {
 int wait_until(instant_t logical_time_ns) {
     int return_value = 0;
     if (!fast) {
-        LOG_PRINT("Waiting for elapsed logical time %lld.", logical_time_ns - start_time);
+        LOG_PRINT("Waiting for elapsed logical time %lld.", logical_time_ns - get_start_time());
         interval_t ns_to_wait = logical_time_ns - get_physical_time();
     
         if (ns_to_wait < MIN_WAIT_TIME) {
@@ -180,9 +181,10 @@ int _lf_do_step() {
         reaction_t* reaction = (reaction_t*)pqueue_pop(reaction_q);
         reaction->status = running;
         
+        tag_t current_tag = get_current_tag();
         LOG_PRINT("Invoking reaction %s at elapsed logical tag (%lld, %d).",
         		reaction->name,
-                current_tag.time - start_time, current_tag.microstep);
+                current_tag.time - get_start_time(), current_tag.microstep);
 
         bool violation = false;
 
@@ -236,7 +238,7 @@ int _lf_do_step() {
     // No more reactions should be blocked at this point.
     //assert(pqueue_size(blocked_q) == 0);
 
-    if (compare_tags(current_tag, stop_tag) >= 0) {
+    if (compare_tags(get_current_tag(), stop_tag) >= 0) {
         return 0;
     }
 
@@ -265,6 +267,7 @@ int next() {
     // on the command line, then we will wait the maximum time possible.
     // FIXME: is LLONG_MAX different from FOREVER?
     tag_t next_tag = { .time = LLONG_MAX, .microstep = UINT_MAX};
+    tag_t current_tag = get_current_tag();
     if (event == NULL) {
         // No event in the queue.
         if (!keepalive_specified) { // FIXME: validator should issue a warning for unthreaded implementation
@@ -286,7 +289,7 @@ int next() {
         next_tag = stop_tag;
     }
 
-    LOG_PRINT("Next event (elapsed) time is %lld.", next_tag.time - start_time);
+    LOG_PRINT("Next event (elapsed) time is %lld.", next_tag.time - get_start_time());
     // Wait until physical time >= event.time.
     // The wait_until function will advance current_tag.time.
     if (wait_until(next_tag.time) != 0) {
@@ -306,7 +309,7 @@ int next() {
     // Advance current time to match that of the first event on the queue.
     _lf_advance_logical_time(next_tag.time);
 
-    if (compare_tags(current_tag, stop_tag) >= 0) {        
+    if (compare_tags(get_current_tag(), stop_tag) >= 0) {        
         _lf_trigger_shutdown_reactions();
     }
 
@@ -327,6 +330,7 @@ int next() {
  */
 void request_stop() {
 	tag_t new_stop_tag;
+    tag_t current_tag = get_current_tag();
 	new_stop_tag.time = current_tag.time;
 	new_stop_tag.microstep = current_tag.microstep + 1;
 	_lf_set_stop_tag(new_stop_tag);
@@ -377,15 +381,14 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         // the level in the 16 least significant bits.
         reaction_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
                 get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
-                
-        current_tag = (tag_t){.time = start_time, .microstep = 0u};
+        
         _lf_execution_started = true;
         _lf_trigger_startup_reactions();
         _lf_initialize_timers(); 
         // If the stop_tag is (0,0), also insert the shutdown
         // reactions. This can only happen if the timeout time
         // was set to 0.
-        if (compare_tags(current_tag, stop_tag) >= 0) {
+        if (compare_tags(get_current_tag(), stop_tag) >= 0) {
             _lf_trigger_shutdown_reactions(); // _lf_trigger_shutdown_reactions();
         }
         DEBUG_PRINT("Running the program's main loop.");

@@ -682,7 +682,7 @@ void _lf_next_locked() {
     // Advance current time to match that of the first event on the queue.
     _lf_advance_logical_time(next_tag.time);
 
-    if (compare_tags(current_tag, stop_tag) >= 0) {
+    if (compare_tags(get_current_tag(), stop_tag) >= 0) {
         // Pop shutdown events
         DEBUG_PRINT("Scheduling shutdown reactions.");
         _lf_trigger_shutdown_reactions();
