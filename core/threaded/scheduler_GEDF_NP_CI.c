@@ -409,9 +409,7 @@ void lf_sched_free() {
     // pqueue_free(reaction_q); FIXME: This might be causing weird memory errors
     pqueue_free(transfer_q);
     pqueue_free(executing_q);
-    if (lf_semaphore_destroy(_lf_sched_semaphore) != 0) {
-        error_print_and_exit("Scheduler: Could not destroy my semaphore.");
-    }
+    lf_semaphore_destroy(_lf_sched_semaphore);
     free(_lf_sched_threads_info);
 }
 
