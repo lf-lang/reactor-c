@@ -1785,7 +1785,7 @@ int process_args(int argc, char* argv[]) {
             char* fid = argv[i++];
             set_federation_id(fid);
             info_print("Federation ID for executable %s: %s", argv[0], fid);
-        } else if (strcmp(arg, "--rti") == 0) {
+        } else if (strcmp(arg, "-r") == 0 || strcmp(arg, "--rti") == 0) {
             if (argc < i + 1) {
                 error_print("--rti needs a string argument in the form of [user]@[host]:[port].");
                 usage(argc, argv);

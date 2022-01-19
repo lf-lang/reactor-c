@@ -2653,6 +2653,28 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
 }
 
 
+/**
+ * Checks if str matches regex.
+ * @return true if there is a match, false otherwise.
+ */
+bool match_regex(char* str, char* regex) {
+    regex_t regex_compiled;
+    regmatch_t group;
+    bool valid = false;
+
+    if (regcomp(&regex_compiled, regex, REG_EXTENDED)) {
+        error_print("Could not compile regex to parse RTI address");
+        return valid;
+    }
+
+    // regexec returns 0 when a match is found. 
+    if (regexec(&regex_compiled, str, 1, &group, 0) == 0) {
+        valid = true;
+    }
+    regfree(&regex_compiled);
+    return valid;
+}
+
 
 /**
  * Checks if port is valid.
@@ -2672,6 +2694,29 @@ bool validate_port(char* port) {
     }
     int port_number = atoi(port);
     return port_number >= 0 && port_number <= 65535;
+}
+
+
+/**
+ * Checks if host is valid.
+ * @return true if valid, false otherwise.
+ */
+bool validate_host(char* host) {
+    // regex taken from LFValidator.xtend
+    char* ipv4_regex = "((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])";
+    char* host_or_FQN_regex = "^([a-z0-9]+(-[a-z0-9]+)*)|(([a-z0-9]+(-[a-z0-9]+)*\\.)+[a-z]{2,})$";
+    return match_regex(host, ipv4_regex) || match_regex(host, host_or_FQN_regex);
+}
+
+
+/**
+ * Checks if user is valid.
+ * @return true if valid, false otherwise.
+ */
+bool validate_user(char* user) {
+    // regex taken from LFValidator.xtend
+    char* username_regex = "^[a-z_]([a-z0-9_-]{0,31}|[a-z0-9_-]{0,30}\\$)$";
+    return match_regex(user, username_regex);
 }
 
 /**
@@ -2754,11 +2799,14 @@ parse_rti_code_t parse_rti_addr(char* rti_addr) {
     if (!rti_addr_info.has_host && !rti_addr_info.has_port && !rti_addr_info.has_user) {
         return FAILED_TO_PARSE;
     }
-
     if (rti_addr_info.has_host) {
-        char* rti_host = (char*) calloc(256, sizeof(char));
-        strncpy(rti_host, rti_addr_info.rti_host_str, 255);
-        federation_metadata.rti_host = rti_host;
+        if (validate_host(rti_addr_info.rti_host_str)) {
+            char* rti_host = (char*) calloc(256, sizeof(char));
+            strncpy(rti_host, rti_addr_info.rti_host_str, 255);
+            federation_metadata.rti_host = rti_host;
+        } else {
+            return INVALID_HOST;
+        }
     }
     if (rti_addr_info.has_port) {
         if (validate_port(rti_addr_info.rti_port_str)) {
@@ -2769,9 +2817,13 @@ parse_rti_code_t parse_rti_addr(char* rti_addr) {
         }
     }
     if (rti_addr_info.has_user) {
-        char* rti_user = (char*) calloc(256, sizeof(char));
-        strncpy(rti_user, rti_addr_info.rti_user_str, 255);
-        federation_metadata.rti_user = rti_user;
+        if (validate_user(rti_addr_info.rti_user_str)) {
+            char* rti_user = (char*) calloc(256, sizeof(char));
+            strncpy(rti_user, rti_addr_info.rti_user_str, 255);
+            federation_metadata.rti_user = rti_user;
+        } else {
+            return INVALID_USER;
+        }
     }
     return SUCCESS;
 }
