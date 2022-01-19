@@ -231,6 +231,25 @@ typedef struct federate_instance_t {
 
 } federate_instance_t;
 
+/**
+ * A helper struct for passing rti_addr information betweem parse_rti_addr and extract_rti_addr_info
+ */
+typedef struct rti_addr_info_t {
+    char rti_host_str[256];
+    char rti_port_str[6];
+    char rti_user_str[256];
+    bool has_host;
+    bool has_port;
+    bool has_user;
+} rti_addr_info_t;
+
+typedef struct federation_metadata_t {
+    char* federation_id;
+    char* rti_host;
+    int rti_port;
+    char* rti_user;
+} federation_metadata_t;
+
 /** 
  * Synchronize the start with other federates via the RTI.
  * This assumes that a connection to the RTI is already made 
