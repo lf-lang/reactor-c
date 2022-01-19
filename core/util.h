@@ -211,48 +211,4 @@ typedef void(print_message_function_t)(char*, va_list);
  */
 void register_print_function(print_message_function_t* function, int log_level);
 
-/**
- * Representation of a permuted mixed radix integer.
- * A mixed radix number is a number representation where each digit can have
- * a distinct radix. The radixes are given by a list of numbers, r0, r1, ... , rn,
- * where r0 is the radix of the lowest-order digit and rn is the radix of the
- * highest order digit that has a specified radix.
- *
- * A permuted mixed radix number is a mixed radix number that, when incremented,
- * increments the digits in the order given by the permutation matrix.
- * For an ordinary mixed radix number, the permutation matrix is
- * [0, 1, ..., n-1]. The permutation matrix may be any permutation of
- * these digits, [d0, d1, ..., dn-1], in which case, when incremented,
- * the d0 digit will be incremented first. If it overflows, it will be
- * set to 0 and the d1 digit will be incremented. If it overflows, the
- * next digit is incremented.  If the last digit overflows, then the
- * number wraps around so that all digits become zero.
- */
-typedef struct mixed_radix_int_t {
-	int size;
-	int* digits;
-	int* radixes;
-	int* permutation;
-} mixed_radix_int_t;
-
-/**
- * Increment the mixed radix number by one according to the permuitation matrix.
- */
-void mixed_radix_incr(mixed_radix_int_t* mixed);
-
-/**
- * Return the int value of a mixed-radix number after dropping
- * the first n digits. If n is larger than or equal to the size
- * of the mixed-radix number, then return 0.
- * @param mixed The mixed-radix number.
- * @param n The number of digits to drop, which is assumed to
- *  be greater than or equal to 0.
- */
-int mixed_radix_parent(mixed_radix_int_t* mixed, int n);
-
-/**
- * Return the int value of a mixed-radix number.
- */
-int mixed_radix_to_int(mixed_radix_int_t* mixed);
-
 #endif /* UTIL_H */

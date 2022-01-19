@@ -49,7 +49,7 @@ add_subdirectory(utils)
 # List sources in this directory.
 set(SINGLE_THREADED_SOURCES reactor.c)
 set(MULTITHREADED_SOURCES reactor_threaded.c)
-set(GENERAL_SOURCES pqueue.c util.c)
+set(GENERAL_SOURCES pqueue.c util.c mixed_radix.c)
 
 # Determine which sources to include.
 list(APPEND SOURCES ${GENERAL_SOURCES})
