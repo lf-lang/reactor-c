@@ -119,7 +119,7 @@ tag_t delay_tag(tag_t tag, interval_t interval);
  * since the start of execution.
  * @return A time interval.
  */
-interval_t get_elapsed_logical_time();
+interval_t get_elapsed_logical_time(void);
 
 /**
  * Store into the specified buffer a string giving a human-readable
@@ -155,17 +155,17 @@ size_t lf_comma_separated_time(char* buffer, instant_t time);
  * 
  * @return A time instant.
  */
-instant_t get_logical_time();
+instant_t get_logical_time(void);
 
 /**
  * Return the current tag, a logical time, microstep pair.
  */
-tag_t get_current_tag();
+tag_t get_current_tag(void);
 
 /**
  * Return the current microstep.
  */
-microstep_t get_microstep();
+microstep_t get_microstep(void);
 
 /**
  * Global physical clock offset.
@@ -199,20 +199,20 @@ extern interval_t _lf_epoch_offset;
  * since January 1, 1970, but it is actually platform dependent.
  * @return A time instant.
  */
-instant_t get_physical_time();
+instant_t get_physical_time(void);
 
 /**
  * Return the elapsed physical time in nanoseconds.
- * This is the time returned by get_physical_time() minus the
- * physical start time as measured by get_physical_time() when
+ * This is the time returned by get_physical_time(void) minus the
+ * physical start time as measured by get_physical_time(void) when
  * the program was started.
  */
-instant_t get_elapsed_physical_time();
+instant_t get_elapsed_physical_time(void);
 
 /**
  * Set a fixed offset to the physical clock.
- * After calling this, the value returned by get_physical_time()
- * and get_elpased_physical_time() will have this specified offset
+ * After calling this, the value returned by get_physical_time(void)
+ * and get_elpased_physical_time(void) will have this specified offset
  * added to what it would have returned before the call.
  */
 void set_physical_clock_offset(interval_t offset);
@@ -223,7 +223,7 @@ void set_physical_clock_offset(interval_t offset);
  * since January 1, 1970, but it is actually platform dependent. 
  * @return A time instant.
  */
-instant_t get_start_time();
+instant_t get_start_time(void);
 
 /**
  * For C++ compatibility, take a volatile tag_t and return a non-volatile

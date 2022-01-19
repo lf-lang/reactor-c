@@ -26,7 +26,7 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  * @section DESCRIPTION
- * @short Functions for permuted mixed-radix numbers used in Lingua Franca programs.
+ * Functions for permuted mixed-radix numbers used in Lingua Franca programs.
  * @see mixed_radix.h
  */
 

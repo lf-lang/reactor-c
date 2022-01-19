@@ -189,7 +189,7 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
 /**
  * Initialize the LF clock. Must be called before using other clock-related APIs.
  */
-extern void lf_initialize_clock();
+extern void lf_initialize_clock(void);
 
 /**
  * Fetch the value of an internal (and platform-specific) physical clock and 

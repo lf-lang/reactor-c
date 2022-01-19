@@ -1454,7 +1454,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
     LOG_PRINT("Reaction %s has STP violation status: %d.", reaction->name, reaction->is_STP_violated);
 #endif
     DEBUG_PRINT("There are %d outputs from reaction %s.", reaction->num_outputs, reaction->name);
-    for (int i=0; i < reaction->num_outputs; i++) {
+    for (size_t i=0; i < reaction->num_outputs; i++) {
         if (reaction->output_produced[i] != NULL && *(reaction->output_produced[i])) {
             DEBUG_PRINT("Output %d has been produced.", i);
             trigger_t** triggerArray = (reaction->triggers)[i];

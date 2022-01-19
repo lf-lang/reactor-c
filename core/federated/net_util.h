@@ -49,7 +49,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** Return true (1) if the host is big endian. Otherwise,
  *  return false.
  */
-int host_is_big_endian();
+int host_is_big_endian(void);
 
 /**
  * Read the specified number of bytes from the specified socket into the
