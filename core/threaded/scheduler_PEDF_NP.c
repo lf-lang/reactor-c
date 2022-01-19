@@ -424,6 +424,9 @@ void _lf_sched_notify_workers() {
 bool _lf_sched_try_advance_tag_and_distribute() {
     bool return_value = false;
 
+    // Executing queue must be empty when this is called.
+    assert(pqueue_size(executing_q) != 0);
+
     lf_mutex_lock(&mutex);
     if (!_lf_sched_update_queues()) {
         if (pqueue_size(reaction_q) == 0
@@ -576,11 +579,9 @@ void lf_sched_free() {
 /**
  * @brief Ask the scheduler for one more reaction.
  * 
- * If there is a ready reaction for worker thread 'worker_number', then a
- * reaction will be returned. If not, this function will block and ask the
- * scheduler for more work. Once work is delivered, it will return a ready
- * reaction. When it's time for the worker thread to stop and exit, it will
- * return NULL.
+ * This function blocks until it can return a ready reaction for worker thread
+ * 'worker_number' or it is time for the worker thread to stop and exit (where a
+ * NULL value would be returned).
  * 
  * @param worker_number 
  * @return reaction_t* A reaction for the worker to execute. NULL if the calling
@@ -644,9 +645,8 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  * @brief Inform the scheduler that worker thread 'worker_number' would like to
  * trigger 'reaction' at the current tag.
  * 
- * This triggering happens lazily (at a later point when the scheduler deems
- * appropriate), unless worker_number is set to -1. In that case, the triggering
- * of 'reaction' is done immediately.
+ * If a worker number is not available (e.g., this function is not called by a
+ * worker thread), -1 should be passed as the 'worker_number'.
  * 
  * The scheduler will ensure that the same reaction is not triggered twice in
  * the same tag.
@@ -656,6 +656,7 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  *  used if there is only one worker (e.g., when the program is using the
  *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
  *  worker number does not make sense (e.g., the caller is not a worker thread).
+ * 
  */
 void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     if (worker_number == -1) {

@@ -126,11 +126,11 @@ lf_mutex_t _lf_sched_executing_q_mutex;
 /**
  * @brief Distribute 'ready_reaction' to the best idle thread.
  * 
- * FIXME
- *
+ * This assumes that the caller is holding 'mutex'.
+ * 
  * @param ready_reaction A reaction that is ready to execute.
  */
-static inline void _lf_sched_distribute_ready_reaction(reaction_t* ready_reaction) {
+static inline void _lf_sched_distribute_ready_reaction_locked(reaction_t* ready_reaction) {
     DEBUG_PRINT("Scheduler: Trying to distribute reaction %s.", ready_reaction->name);
     lf_bool_compare_and_swap(&ready_reaction->status, queued, running);
     if (pqueue_insert(executing_q, ready_reaction) != 0) {
@@ -231,7 +231,7 @@ int _lf_sched_distribute_ready_reactions_locked() {
         // Set the reaction aside if it is blocked, either by another
         // blocked reaction or by a reaction that is currently executing.
         if (!_lf_is_blocked_by_executing_or_blocked_reaction(r)) {
-            _lf_sched_distribute_ready_reaction(r);
+            _lf_sched_distribute_ready_reaction_locked(r);
             reactions_distributed++;
             continue;
         }
@@ -255,12 +255,12 @@ int _lf_sched_distribute_ready_reactions_locked() {
  * This assumes that the caller is not holding any thread mutexes.
  */
 void _lf_sched_notify_workers() {
-    size_t workers_to_be_awaken = MIN(_lf_sched_number_of_idle_workers, pqueue_size(executing_q));
-    DEBUG_PRINT("Notifying %d workers.", workers_to_be_awaken);
-    lf_atomic_fetch_add(&_lf_sched_number_of_idle_workers, -1 * workers_to_be_awaken);
-    if (workers_to_be_awaken > 1) {
+    size_t workers_to_awaken = MIN(_lf_sched_number_of_idle_workers, pqueue_size(executing_q));
+    DEBUG_PRINT("Notifying %d workers.", workers_to_awaken);
+    lf_atomic_fetch_add(&_lf_sched_number_of_idle_workers, -1 * workers_to_awaken);
+    if (workers_to_awaken > 1) {
         // Notify all the workers except the worker thread that has called this function. 
-        lf_semaphore_release(_lf_sched_semaphore, (workers_to_be_awaken-1));
+        lf_semaphore_release(_lf_sched_semaphore, (workers_to_awaken-1));
     }
 }
 
@@ -278,10 +278,7 @@ bool _lf_sched_try_advance_tag_and_distribute() {
     bool return_value = false;
 
     // Executing queue must be empty when this is called.
-    // However, checking for this adds to the scheduler overhead.
-    // if (pqueue_size(executing_q) != 0) {
-    //     error_print_and_exit("Scheduler: Executing queue was not empty when _lf_sched_try_advance_tag_and_distribute() was invoked.");
-    // }
+    assert(pqueue_size(executing_q) != 0);
 
     lf_mutex_lock(&mutex);
     while (pqueue_size(reaction_q) == 0) {
@@ -422,11 +419,9 @@ void lf_sched_free() {
 /**
  * @brief Ask the scheduler for one more reaction.
  * 
- * If there is a ready reaction for worker thread 'worker_number', then a
- * reaction will be returned. If not, this function will block and ask the
- * scheduler for more work. Once work is delivered, it will return a ready
- * reaction. When it's time for the worker thread to stop and exit, it will
- * return NULL.
+ * This function blocks until it can return a ready reaction for worker thread
+ * 'worker_number' or it is time for the worker thread to stop and exit (where a
+ * NULL value would be returned).
  * 
  * @param worker_number 
  * @return reaction_t* A reaction for the worker to execute. NULL if the calling
@@ -474,7 +469,8 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  * @brief Inform the scheduler that worker thread 'worker_number' would like to
  * trigger 'reaction' at the current tag.
  * 
- * FIXME
+ * If a worker number is not available (e.g., this function is not called by a
+ * worker thread), -1 should be passed as the 'worker_number'.
  * 
  * The scheduler will ensure that the same reaction is not triggered twice in
  * the same tag.
@@ -506,8 +502,8 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
         DEBUG_PRINT("Scheduler: Worker %d: Enqueuing reaction %s, which has level %lld.",
         		worker_number, reaction->name, LEVEL(reaction->index));
         reaction->worker_affinity = worker_number;
-        // Note: The scheduler will check that we don't enqueue this reaction
-        // twice when it is actually pushing it to the global reaction queue.
+        // Note: The scheduler has already checked that we are not enqueueing
+        // this reaction twice.
         pqueue_insert(_lf_sched_threads_info[worker_number].output_reactions, (void*)reaction);
     }
 }

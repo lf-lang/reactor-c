@@ -73,7 +73,7 @@ volatile bool _lf_sched_should_stop = false;
  * Each element is a reaction queue for a reaction level.
  * 
  */
-vector_t _lf_sched_vector_of_reaction_qs[MAX_REACTION_LEVEL + 1];
+vector_t _lf_sched_array_of_reaction_vectors[MAX_REACTION_LEVEL + 1];
 
 /**
  * @brief Mutexes for the reaction queues.
@@ -83,7 +83,7 @@ vector_t _lf_sched_vector_of_reaction_qs[MAX_REACTION_LEVEL + 1];
  * level must be locked before accessing the reaction queue of that level.
  * 
  */
-lf_mutex_t _lf_sched_vector_of_reaction_qs_mutexes[MAX_REACTION_LEVEL + 1];
+lf_mutex_t _lf_sched_array_of_reaction_vectors_mutexes[MAX_REACTION_LEVEL + 1];
 
 /**
  * @brief Mutexes for the reaction queues.
@@ -122,14 +122,14 @@ volatile size_t _lf_sched_next_reaction_level = 1;
 
 /////////////////// Scheduler Private API /////////////////////////
 /**
- * @brief Insert 'reaction' into _lf_sched_vector_of_reaction_qs at the appropriate level.
+ * @brief Insert 'reaction' into _lf_sched_array_of_reaction_vectors at the appropriate level.
  *  
  * @param reaction The reaction to insert.
  */
 static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
     size_t reaction_level = LEVEL(reaction->index);
     DEBUG_PRINT("Scheduler: Trying to lock the mutex for level %d.", reaction_level);
-    lf_mutex_lock(&_lf_sched_vector_of_reaction_qs_mutexes[reaction_level]);
+    lf_mutex_lock(&_lf_sched_array_of_reaction_vectors_mutexes[reaction_level]);
 #ifdef FEDERATED
     // The level index for the current level can sometimes become negative. Set
     // it back to zero before adding a reaction (otherwise worker threads will
@@ -141,11 +141,11 @@ static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
     DEBUG_PRINT("Scheduler: Locked the mutex for level %d.", reaction_level);
     int reaction_q_level_index = _lf_sched_level_indexes[reaction_level]++;
     *vector_at(
-        &_lf_sched_vector_of_reaction_qs[reaction_level], 
+        &_lf_sched_array_of_reaction_vectors[reaction_level], 
         reaction_q_level_index
     ) = (void*)reaction;
     DEBUG_PRINT("Scheduler: Index for level %d is at %d.", reaction_level, reaction_q_level_index);
-    lf_mutex_unlock(&_lf_sched_vector_of_reaction_qs_mutexes[reaction_level]);
+    lf_mutex_unlock(&_lf_sched_array_of_reaction_vectors_mutexes[reaction_level]);
 }
 
 /**
@@ -158,7 +158,7 @@ int _lf_sched_distribute_ready_reactions() {
     // reactions. Therefore, the reaction queues can be accessed without locking
     // a mutex.
     for (;_lf_sched_next_reaction_level <= MAX_REACTION_LEVEL; _lf_sched_next_reaction_level++) { 
-        executing_q = &_lf_sched_vector_of_reaction_qs[_lf_sched_next_reaction_level];
+        executing_q = &_lf_sched_array_of_reaction_vectors[_lf_sched_next_reaction_level];
         size_t reactions_to_execute = vector_size(executing_q);
         if (reactions_to_execute) {
             _lf_sched_next_reaction_level++;
@@ -178,13 +178,13 @@ void _lf_sched_notify_workers() {
     // Note: All threads are idle. Therefore, there is no need to lock the mutex
     // while accessing the executing queue (which is pointing to one of the
     // reaction queues).
-    size_t workers_to_be_awaken = MIN(_lf_sched_number_of_idle_workers, vector_size(executing_q));
-    DEBUG_PRINT("Scheduler: Notifying %d workers.", workers_to_be_awaken);
-    _lf_sched_number_of_idle_workers -= workers_to_be_awaken;
+    size_t workers_to_awaken = MIN(_lf_sched_number_of_idle_workers, vector_size(executing_q));
+    DEBUG_PRINT("Scheduler: Notifying %d workers.", workers_to_awaken);
+    _lf_sched_number_of_idle_workers -= workers_to_awaken;
     DEBUG_PRINT("Scheduler: New number of idle workers: %u.", _lf_sched_number_of_idle_workers);
-    if (workers_to_be_awaken > 1) {
+    if (workers_to_awaken > 1) {
         // Notify all the workers except the worker thread that has called this function. 
-        lf_semaphore_release(_lf_sched_semaphore, (workers_to_be_awaken-1));
+        lf_semaphore_release(_lf_sched_semaphore, (workers_to_awaken-1));
     }
 }
 
@@ -206,9 +206,8 @@ void _lf_sched_signal_stop() {
  * This function assumes the caller does not hold the 'mutex' lock.
  */
 void _lf_sched_try_advance_tag_and_distribute() {
-    // if (vector_size(executing_q) != 0) {
-    //     error_print_and_exit("Scheduler: Executing queue is not empty.");
-    // }
+    // Executing queue must be empty when this is called.
+    assert(vector_size(executing_q) != 0);
 
     // Reset the index
     _lf_sched_level_indexes[_lf_sched_next_reaction_level - 1] = 0;
@@ -279,12 +278,12 @@ void lf_sched_init(size_t number_of_workers) {
 
     for (size_t i = 0; i <= MAX_REACTION_LEVEL; i++) {
         // Initialize the reaction queues
-        _lf_sched_vector_of_reaction_qs[i] = vector_new(INITIAL_REACT_QUEUE_SIZE);
+        _lf_sched_array_of_reaction_vectors[i] = vector_new(INITIAL_REACT_QUEUE_SIZE);
         // Initialize the mutexes for the reaction queues
-        lf_mutex_init(&_lf_sched_vector_of_reaction_qs_mutexes[i]);
+        lf_mutex_init(&_lf_sched_array_of_reaction_vectors_mutexes[i]);
     }
     
-    executing_q = &_lf_sched_vector_of_reaction_qs[0];
+    executing_q = &_lf_sched_array_of_reaction_vectors[0];
     
     _lf_sched_should_stop = false;
 }
@@ -296,7 +295,7 @@ void lf_sched_init(size_t number_of_workers) {
  */
 void lf_sched_free() {
     // for (size_t j = 0; j <= MAX_REACTION_LEVEL; j++) {
-    //     vector_free(_lf_sched_vector_of_reaction_qs[j]); FIXME: This is causing weird
+    //     vector_free(_lf_sched_array_of_reaction_vectors[j]); FIXME: This is causing weird
     //     memory errors.
     // }
     vector_free(executing_q);
@@ -309,11 +308,9 @@ void lf_sched_free() {
 /**
  * @brief Ask the scheduler for one more reaction.
  * 
- * If there is a ready reaction for worker thread 'worker_number', then a
- * reaction will be returned. If not, this function will block and ask the
- * scheduler for more work. Once work is delivered, it will return a ready
- * reaction. When it's time for the worker thread to stop and exit, it will
- * return NULL.
+ * This function blocks until it can return a ready reaction for worker thread
+ * 'worker_number' or it is time for the worker thread to stop and exit (where a
+ * NULL value would be returned).
  * 
  * @param worker_number 
  * @return reaction_t* A reaction for the worker to execute. NULL if the calling
@@ -328,7 +325,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
 #ifdef FEDERATED
         // Need to lock the mutex because federate.c could trigger reactions at
         // the current level (if there is a causality loop)
-        lf_mutex_lock(&_lf_sched_vector_of_reaction_qs_mutexes[current_level]);
+        lf_mutex_lock(&_lf_sched_array_of_reaction_vectors_mutexes[current_level]);
 #endif
         int current_level_q_index = lf_atomic_add_fetch(&_lf_sched_level_indexes[current_level], -1);        
         if (current_level_q_index >= 0) {
@@ -341,7 +338,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
             reaction_to_return = *(reaction_t**)vector_at(executing_q, current_level_q_index);
         }
 #ifdef FEDERATED
-        lf_mutex_unlock(&_lf_sched_vector_of_reaction_qs_mutexes[current_level]);
+        lf_mutex_unlock(&_lf_sched_array_of_reaction_vectors_mutexes[current_level]);
 #endif
 
         if (reaction_to_return != NULL) {
@@ -379,9 +376,8 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  * @brief Inform the scheduler that worker thread 'worker_number' would like to
  * trigger 'reaction' at the current tag.
  * 
- * This triggering happens lazily (at a later point when the scheduler deems
- * appropriate), unless worker_number is set to -1 (which indicates an anonymous
- * caller). In that case, the triggering of 'reaction' is done immediately.
+ * If a worker number is not available (e.g., this function is not called by a
+ * worker thread), -1 should be passed as the 'worker_number'.
  * 
  * The scheduler will ensure that the same reaction is not triggered twice in
  * the same tag.
@@ -391,6 +387,7 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  *  used if there is only one worker (e.g., when the program is using the
  *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
  *  worker number does not make sense (e.g., the caller is not a worker thread).
+ * 
  */
 void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     // Protect against putting a reaction twice on the reaction queue by

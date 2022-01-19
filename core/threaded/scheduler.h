@@ -28,6 +28,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author Soroush Bateni <soroush@utdallas.edu>
  * @brief Scheduler API for the threaded C runtime.
  * 
+ * A scheduler for the threaded runtime of reactor-c should provide an
+ * implementation for these functions.
+ * 
  * @copyright Copyright (c) 2022, The University of Texas at Dallas.
  * @copyright Copyright (c) 2022, The University of California at Berkeley.
  */
@@ -56,11 +59,9 @@ void lf_sched_free();
 /**
  * @brief Ask the scheduler for one more reaction.
  * 
- * If there is a ready reaction for worker thread 'worker_number', then a
- * reaction will be returned. If not, this function will block and ask the
- * scheduler for more work. Once work is delivered, it will return a ready
- * reaction. When it's time for the worker thread to stop and exit, it will
- * return NULL.
+ * This function blocks until it can return a ready reaction for worker thread
+ * 'worker_number' or it is time for the worker thread to stop and exit (where a
+ * NULL value would be returned).
  * 
  * @param worker_number 
  * @return reaction_t* A reaction for the worker to execute. NULL if the calling

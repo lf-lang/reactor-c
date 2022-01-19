@@ -51,7 +51,7 @@ static int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that) {
 }
 
 /**
- * Return whether the first and second argument are given in reverse order.
+ * Return false (0) regardless of reaction order.
  */
 static int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that) {
     return false;

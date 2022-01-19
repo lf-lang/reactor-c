@@ -55,10 +55,10 @@ typedef struct {
 semaphore_t* lf_semaphore_new(int count);
 
 /**
- * @brief Release the 'semaphore' and deduct 'i' from its count.
+ * @brief Release the 'semaphore' and add 'i' to its count.
  * 
- * @param semaphore Instance of a semaphore.
- * @param i The count to deduct
+ * @param semaphore Instance of a semaphore
+ * @param i The count to add.
  * @return int -1 on error. 0 on success.
  */
 int lf_semaphore_release(semaphore_t* semaphore, int i);
