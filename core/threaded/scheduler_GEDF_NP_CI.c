@@ -86,9 +86,6 @@ pqueue_t* executing_q;
 
 /**
  * @brief Information about one worker thread.
- * 
- * Only reading and writing the 'is_idle' field strictly requires acquiring the
- * 'mutex' in this struct.
  */
 typedef struct {    
     pqueue_t* output_reactions; // Reactions produced by the worker after 

@@ -247,7 +247,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
  * 
  * This has to be called before other functions of the scheduler can be used.
  * 
- * @param number_of_workers Indicate how many workers this scheduler will be managing.
+ * @param number_of_workers The number of workers this scheduler will be managing.
  */
 void lf_sched_init(size_t number_of_workers) {
     DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);

@@ -1,4 +1,4 @@
-/* Partitioned Earliest Deadline First (GEDF) non-preemptive Scheduler for the
+/* Partitioned Earliest Deadline First (PEDF) non-preemptive scheduler for the
 threaded runtime of the C target of Lingua Franca. */
 
 /*************
