@@ -58,7 +58,6 @@
 #include <time.h>
 #include <limits.h>
 #include <errno.h>
-#include "mixed_radix.h"
 #include "pqueue.h"
 #include "util.h"
 #include "tag.h"       // Time-related functions.
