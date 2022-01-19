@@ -55,9 +55,14 @@ extern lf_mutex_t mutex;
 
 /////////////////// Scheduler Variables and Structs /////////////////////////
 /**
- * @brief Atomically keep track of how many worker threads are idle.
+ * @brief Used by the scheduler to signal the maximum number of worker threads
+ * that should be executing work at the same time.
  *
- * Initially assumed that there are 0 idle threads.
+ * Initially, the count is set to 0. Maximum value of count should be
+ * `_lf_sched_number_of_workers`.
+ *
+ * For example, if the scheduler releases the semaphore with a count of 4, no
+ * more than 4 worker threads should wake up to process reactions.
  */
 semaphore_t* _lf_sched_semaphore; 
 
@@ -188,7 +193,7 @@ void _lf_sched_signal_stop() {
  */
 void _lf_sched_try_advance_tag_and_distribute() {
     // Executing queue must be empty when this is called.
-    assert(pqueue_size(executing_q) != 0);
+    assert(pqueue_size(executing_q) == 0);
 
     // Loop until it's time to stop or work has been distributed
     while (true) {
