@@ -38,7 +38,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.c"
 #include "pqueue.c"
 #include "util.c"
-#include "ctype.h"
 
 /** 
  * Indicator of whether to wait for physical time to match logical time.

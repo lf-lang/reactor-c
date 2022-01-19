@@ -41,6 +41,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdarg.h>     // Defines va_list
 #include <time.h>       // Defines nanosleep()
 #include <math.h>       // For sqrtl() and powl
+#include <ctype.h>
 
 #ifndef NUMBER_OF_FEDERATES
 #define NUMBER_OF_FEDERATES 1
