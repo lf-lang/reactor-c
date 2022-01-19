@@ -31,6 +31,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "semaphore.h"
+#include "assert.h"
 
 /**
  * @brief Create a new semaphore.
@@ -51,66 +52,50 @@ semaphore_t* lf_semaphore_new(int count) {
  * 
  * @param semaphore Instance of a semaphore
  * @param i The count to add.
- * @return int -1 on error. 0 on success.
  */
-int lf_semaphore_release(semaphore_t* semaphore, int i) {
-    if (semaphore == NULL) {
-        return -1;
-    }
+void lf_semaphore_release(semaphore_t* semaphore, int i) {
+    assert(semaphore != NULL);
     lf_mutex_lock(&semaphore->mutex);
     semaphore->count += i;
     lf_cond_broadcast(&semaphore->cond);
     lf_mutex_unlock(&semaphore->mutex);
-    return 0;
 }
 
 /**
  * @brief Acquire the 'semaphore'. Will block if count is 0.
  * 
  * @param semaphore Instance of a semaphore.
- * @return int -1 on error. 0 on success.
  */
-int lf_semaphore_acquire(semaphore_t* semaphore) {
-    if (semaphore == NULL) {
-        return -1;
-    }
+void lf_semaphore_acquire(semaphore_t* semaphore) {
+    assert(semaphore != NULL);
     lf_mutex_lock(&semaphore->mutex);
     while (semaphore->count == 0) {
         lf_cond_wait(&semaphore->cond, &semaphore->mutex);
     }
     semaphore->count--;
     lf_mutex_unlock(&semaphore->mutex);
-    return 0;
 }
 
 /**
  * @brief Wait on the 'semaphore' if count is 0.
  * 
  * @param semaphore Instance of a semaphore.
- * @return int -1 on error. 0 on success.
  */
-int lf_semaphore_wait(semaphore_t* semaphore) {
-    if (semaphore == NULL) {
-        return -1;
-    }
+void lf_semaphore_wait(semaphore_t* semaphore) {
+    assert(semaphore != NULL);
     lf_mutex_lock(&semaphore->mutex);
     while (semaphore->count == 0) {
         lf_cond_wait(&semaphore->cond, &semaphore->mutex);
     }
     lf_mutex_unlock(&semaphore->mutex);
-    return 0;
 }
 
 /**
  * @brief Destroy the 'semaphore'.
  * 
  * @param semaphore Instance of a semaphore.
- * @return int -1 on error. 0 on success.
  */
-int lf_semaphore_destroy(semaphore_t* semaphore) {
-    if (semaphore == NULL) {
-        return -1;
-    }
+void lf_semaphore_destroy(semaphore_t* semaphore) {
+    assert(semaphore != NULL);
     free(semaphore);
-    return 0;
 }

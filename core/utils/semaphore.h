@@ -59,32 +59,28 @@ semaphore_t* lf_semaphore_new(int count);
  * 
  * @param semaphore Instance of a semaphore
  * @param i The count to add.
- * @return int -1 on error. 0 on success.
  */
-int lf_semaphore_release(semaphore_t* semaphore, int i);
+void lf_semaphore_release(semaphore_t* semaphore, int i);
 
 /**
  * @brief Acquire the 'semaphore'. Will block if count is 0.
  * 
  * @param semaphore Instance of a semaphore.
- * @return int -1 on error. 0 on success.
  */
-int lf_semaphore_acquire(semaphore_t* semaphore);
+void lf_semaphore_acquire(semaphore_t* semaphore);
 
 /**
  * @brief Wait on the 'semaphore' if count is 0.
  * 
  * @param semaphore Instance of a semaphore.
- * @return int -1 on error. 0 on success.
  */
-int lf_semaphore_wait(semaphore_t* semaphore);
+void lf_semaphore_wait(semaphore_t* semaphore);
 
 /**
  * @brief Destroy the 'semaphore'.
  * 
  * @param semaphore Instance of a semaphore.
- * @return int -1 on error. 0 on success.
  */
-int lf_semaphore_destroy(semaphore_t* semaphore);
+void lf_semaphore_destroy(semaphore_t* semaphore);
 
 #endif // LF_SEMAPHORE_H
