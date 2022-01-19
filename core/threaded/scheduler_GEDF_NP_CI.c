@@ -137,7 +137,7 @@ lf_mutex_t _lf_sched_executing_q_mutex;
  */
 static inline void _lf_sched_distribute_ready_reaction_locked(reaction_t* ready_reaction) {
     DEBUG_PRINT("Scheduler: Trying to distribute reaction %s.", ready_reaction->name);
-    lf_bool_compare_and_swap(&ready_reaction->status, queued, running);
+    ready_reaction->status = running;
     if (pqueue_insert(executing_q, ready_reaction) != 0) {
         error_print_and_exit("Could not add reaction to the executing queue.");
     }
