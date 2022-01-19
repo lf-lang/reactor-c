@@ -55,9 +55,14 @@ extern lf_mutex_t mutex;
 
 /////////////////// Scheduler Variables and Structs /////////////////////////
 /**
- * @brief Atomically keep track of how many worker threads are idle.
+ * @brief Used by the scheduler to signal the maximum number of worker threads
+ * that should be executing work at the same time.
  *
- * Initially assumed that there are 0 idle threads.
+ * Initially, the count is set to 0. Maximum value of count should be
+ * `_lf_sched_number_of_workers`.
+ *
+ * For example, if the scheduler releases the semaphore with a count of 4, no
+ * more than 4 worker threads should wake up to process reactions.
  */
 semaphore_t* _lf_sched_semaphore; 
 
@@ -159,13 +164,13 @@ void _lf_sched_notify_workers() {
     // Note: All threads are idle. Therefore, there is no need to lock the mutex
     // while accessing the executing queue (which is pointing to one of the
     // reaction queues).
-    size_t workers_to_be_awaken = MIN(_lf_sched_number_of_idle_workers, pqueue_size(executing_q));
-    DEBUG_PRINT("Scheduler: Notifying %d workers.", workers_to_be_awaken);
-    _lf_sched_number_of_idle_workers -= workers_to_be_awaken;
+    size_t workers_to_awaken = MIN(_lf_sched_number_of_idle_workers, pqueue_size(executing_q));
+    DEBUG_PRINT("Scheduler: Notifying %d workers.", workers_to_awaken);
+    _lf_sched_number_of_idle_workers -= workers_to_awaken;
     DEBUG_PRINT("Scheduler: New number of idle workers: %u.", _lf_sched_number_of_idle_workers);
-    if (workers_to_be_awaken > 1) {
+    if (workers_to_awaken > 1) {
         // Notify all the workers except the worker thread that has called this function. 
-        lf_semaphore_release(_lf_sched_semaphore, (workers_to_be_awaken-1));
+        lf_semaphore_release(_lf_sched_semaphore, (workers_to_awaken-1));
     }
 }
 
@@ -187,9 +192,8 @@ void _lf_sched_signal_stop() {
  * This function assumes the caller does not hold the 'mutex' lock.
  */
 void _lf_sched_try_advance_tag_and_distribute() {
-    // if (pqueue_size(executing_q) != 0) {
-    //     error_print_and_exit("Scheduler: Executing queue is not empty.");
-    // }
+    // Executing queue must be empty when this is called.
+    assert(pqueue_size(executing_q) == 0);
 
     // Loop until it's time to stop or work has been distributed
     while (true) {
@@ -247,7 +251,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
  * 
  * This has to be called before other functions of the scheduler can be used.
  * 
- * @param number_of_workers Indicate how many workers this scheduler will be managing.
+ * @param number_of_workers The number of workers this scheduler will be managing.
  */
 void lf_sched_init(size_t number_of_workers) {
     DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
@@ -279,20 +283,16 @@ void lf_sched_free() {
     //     memory errors.
     // }
     pqueue_free(executing_q);
-    if (lf_semaphore_destroy(_lf_sched_semaphore) != 0) {
-        error_print_and_exit("Scheduler: Could not destroy my semaphore.");
-    }
+    lf_semaphore_destroy(_lf_sched_semaphore);
 }
 
 ///////////////////// Scheduler Worker API (public) /////////////////////////
 /**
  * @brief Ask the scheduler for one more reaction.
  * 
- * If there is a ready reaction for worker thread 'worker_number', then a
- * reaction will be returned. If not, this function will block and ask the
- * scheduler for more work. Once work is delivered, it will return a ready
- * reaction. When it's time for the worker thread to stop and exit, it will
- * return NULL.
+ * This function blocks until it can return a ready reaction for worker thread
+ * 'worker_number' or it is time for the worker thread to stop and exit (where a
+ * NULL value would be returned).
  * 
  * @param worker_number 
  * @return reaction_t* A reaction for the worker to execute. NULL if the calling
@@ -344,9 +344,8 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  * @brief Inform the scheduler that worker thread 'worker_number' would like to
  * trigger 'reaction' at the current tag.
  * 
- * This triggering happens lazily (at a later point when the scheduler deems
- * appropriate), unless worker_number is set to -1 (which indicates an anonymous
- * caller). In that case, the triggering of 'reaction' is done immediately.
+ * If a worker number is not available (e.g., this function is not called by a
+ * worker thread), -1 should be passed as the 'worker_number'.
  * 
  * The scheduler will ensure that the same reaction is not triggered twice in
  * the same tag.

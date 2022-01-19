@@ -55,36 +55,32 @@ typedef struct {
 semaphore_t* lf_semaphore_new(int count);
 
 /**
- * @brief Release the 'semaphore' and deduct 'i' from its count.
+ * @brief Release the 'semaphore' and add 'i' to its count.
  * 
- * @param semaphore Instance of a semaphore.
- * @param i The count to deduct
- * @return int -1 on error. 0 on success.
+ * @param semaphore Instance of a semaphore
+ * @param i The count to add.
  */
-int lf_semaphore_release(semaphore_t* semaphore, int i);
+void lf_semaphore_release(semaphore_t* semaphore, int i);
 
 /**
  * @brief Acquire the 'semaphore'. Will block if count is 0.
  * 
  * @param semaphore Instance of a semaphore.
- * @return int -1 on error. 0 on success.
  */
-int lf_semaphore_acquire(semaphore_t* semaphore);
+void lf_semaphore_acquire(semaphore_t* semaphore);
 
 /**
  * @brief Wait on the 'semaphore' if count is 0.
  * 
  * @param semaphore Instance of a semaphore.
- * @return int -1 on error. 0 on success.
  */
-int lf_semaphore_wait(semaphore_t* semaphore);
+void lf_semaphore_wait(semaphore_t* semaphore);
 
 /**
  * @brief Destroy the 'semaphore'.
  * 
  * @param semaphore Instance of a semaphore.
- * @return int -1 on error. 0 on success.
  */
-int lf_semaphore_destroy(semaphore_t* semaphore);
+void lf_semaphore_destroy(semaphore_t* semaphore);
 
 #endif // LF_SEMAPHORE_H
