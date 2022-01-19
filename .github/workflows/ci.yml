@@ -8,12 +8,12 @@ on:
 
 jobs:
   unit-tests-single:
-    uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@master
+    uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@main
     with:
       cmake-args: '-UNUMBER_OF_WORKERS'
 
   unit-tests-multi:
-    uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@master
+    uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@main
     with:
       cmake-args: '-DNUMBER_OF_WORKERS=4'
 
