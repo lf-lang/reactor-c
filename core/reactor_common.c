@@ -142,6 +142,28 @@ void enqueue_network_control_reactions(pqueue_t* reaction_q);
  * @param portID the ID of the port to determine status for
  */
 port_status_t determine_port_status_if_possible(int portID);
+
+/**
+ * A helper enum for the returned status code of parse_rti_addr.  
+ */
+typedef enum parse_rti_code_t {
+    SUCCESS,
+    INVALID_PORT,
+    INVALID_HOST,
+    INVALID_USER,
+    FAILED_TO_PARSE
+} parse_rti_code_t;
+
+/**
+ * Parse the address of the RTI and store them into the global federation_metadata struct.
+ * @return a parse_rti_code_t indicating the result of the parse.
+ */
+parse_rti_code_t parse_rti_addr(char* rti_addr);
+
+/**
+ * Sets the federation_id of this federate to fid.
+ */
+void set_federation_id(char* fid);
 #endif
 
 /**
@@ -1642,6 +1664,10 @@ void usage(int argc, char* argv[]) {
     printf("   Executed in <n> threads if possible (optional feature).\n\n");
     printf("  -i, --id <n>\n");
     printf("   The ID of the federation that this reactor will join.\n\n");
+    #ifdef FEDERATED
+    printf("  -r, --rti <n>\n");
+    printf("   The address of the RTI, which can be in the form of user@host:port or ip:port.\n\n");
+    #endif
 
     printf("Command given:\n");
     for (int i = 0; i < argc; i++) {
@@ -1655,12 +1681,6 @@ void usage(int argc, char* argv[]) {
 int default_argc = 0;
 char** default_argv = NULL;
 
-/**
- * The ID of the federation that this reactor will join.
- * This should be overridden with a command-line -i option to ensure
- * that each federate only joins its assigned federation.
- */
-char* federation_id = "Unidentified Federation";
 
 /**
  * Process the command-line arguments. If the command line arguments are not
@@ -1668,15 +1688,16 @@ char* federation_id = "Unidentified Federation";
  * @return 1 if the arguments processed successfully, 0 otherwise.
  */
 int process_args(int argc, char* argv[]) {
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-f") == 0 || strcmp(argv[i], "--fast") == 0) {
-            if (argc < i + 2) {
+    int i = 1;
+    while (i < argc) {
+        char* arg = argv[i++];
+        if (strcmp(arg, "-f") == 0 || strcmp(arg, "--fast") == 0) {
+            if (argc < i + 1) {
                 error_print("--fast needs a boolean.");
                 usage(argc, argv);
                 return 0;
             }
-            i++;
-            char* fast_spec = argv[i];
+            char* fast_spec = argv[i++];
             if (strcmp(fast_spec, "true") == 0) {
                 fast = true;
             } else if (strcmp(fast_spec, "false") == 0) {
@@ -1684,18 +1705,17 @@ int process_args(int argc, char* argv[]) {
             } else {
                 error_print("Invalid value for --fast: %s", fast_spec);
             }
-        } else if (strcmp(argv[i], "-o") == 0
-                || strcmp(argv[i], "--timeout") == 0
-                || strcmp(argv[i], "-timeout") == 0) {
+        } else if (strcmp(arg, "-o") == 0
+                || strcmp(arg, "--timeout") == 0
+                || strcmp(arg, "-timeout") == 0) {
             // Tolerate -timeout for legacy uses.
-            if (argc < i + 3) {
+            if (argc < i + 2) {
                 error_print("--timeout needs time and units.");
                 usage(argc, argv);
                 return 0;
             }
-            i++;
             char* time_spec = argv[i++];
-            char* units = argv[i];
+            char* units = argv[i++];
             duration = atoll(time_spec);
             // A parse error returns 0LL, so check to see whether that is what is meant.
             if (duration == 0LL && strncmp(time_spec, "0", 1) != 0) {
@@ -1726,14 +1746,13 @@ int process_args(int argc, char* argv[]) {
                 usage(argc, argv);
                 return 0;
             }
-        } else if (strcmp(argv[i], "-k") == 0 || strcmp(argv[i], "--keepalive") == 0) {
-            if (argc < i + 2) {
+        } else if (strcmp(arg, "-k") == 0 || strcmp(arg, "--keepalive") == 0) {
+            if (argc < i + 1) {
                 error_print("--keepalive needs a boolean.");
                 usage(argc, argv);
                 return 0;
             }
-            i++;
-            char* keep_spec = argv[i];
+            char* keep_spec = argv[i++];
             if (strcmp(keep_spec, "true") == 0) {
                 keepalive_specified = true;
             } else if (strcmp(keep_spec, "false") == 0) {
@@ -1741,13 +1760,12 @@ int process_args(int argc, char* argv[]) {
             } else {
                 error_print("Invalid value for --keepalive: %s", keep_spec);
             }
-        } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--threads") == 0) {
-            if (argc < i + 2) {
+        } else if (strcmp(arg, "-t") == 0 || strcmp(arg, "--threads") == 0) {
+            if (argc < i + 1) {
                 error_print("--threads needs an integer argument.s");
                 usage(argc, argv);
                 return 0;
             }
-            i++;
             char* threads_spec = argv[i++];
             int num_threads = atoi(threads_spec);
             if (num_threads <= 0) {
@@ -1755,19 +1773,50 @@ int process_args(int argc, char* argv[]) {
                 num_threads = 1;
             }
             _lf_number_of_threads = (unsigned int)num_threads;
-        } else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--id") == 0) {
-            if (argc < i + 2) {
+        }
+        #ifdef FEDERATED
+          else if (strcmp(arg, "-i") == 0 || strcmp(arg, "--id") == 0) {
+            if (argc < i + 1) {
                 error_print("--id needs a string argument.");
                 usage(argc, argv);
                 return 0;
             }
-            i++;
-            info_print("Federation ID for executable %s: %s", argv[0], argv[i]);
-            federation_id = argv[i++];
-        } else if (strcmp(argv[i], "--ros-args") == 0) {
+            char* fid = argv[i++];
+            set_federation_id(fid);
+            info_print("Federation ID for executable %s: %s", argv[0], fid);
+        } else if (strcmp(arg, "-r") == 0 || strcmp(arg, "--rti") == 0) {
+            if (argc < i + 1) {
+                error_print("--rti needs a string argument in the form of [user]@[host]:[port].");
+                usage(argc, argv);
+                return 0;
+            }
+            parse_rti_code_t code = parse_rti_addr(argv[i++]);
+            if (code != SUCCESS) {
+                switch (code) {
+                    case INVALID_HOST:
+                        error_print("--rti needs a valid host");
+                        break;
+                    case INVALID_PORT:
+                        error_print("--rti needs a valid port");
+                        break;
+                    case INVALID_USER:
+                        error_print("--rti needs a valid user");
+                        break;
+                    case FAILED_TO_PARSE:
+                        error_print("Failed to parse address of RTI");
+                        break;
+                    default:
+                        break;
+                }
+                usage(argc, argv);
+                return 0;
+            }
+        }
+        #endif 
+          else if (strcmp(arg, "--ros-args") == 0) {
     	      // FIXME: Ignore ROS arguments for now
         } else {
-            error_print("Unrecognized command-line argument: %s", argv[i]);
+            error_print("Unrecognized command-line argument: %s", arg);
             usage(argc, argv);
             return 0;
         }

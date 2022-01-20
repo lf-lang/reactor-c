@@ -47,6 +47,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../platform.h"
 #include "clock-sync.c" // Defines clock synchronization functions.
 #include "federate.h"   // Defines federate_instance_t
+#include "regex.h"
 
 // Error messages.
 char* ERROR_SENDING_HEADER = "ERROR sending header information to federate via RTI";
@@ -82,6 +83,15 @@ federate_instance_t _fed = {
         .triggers_for_network_input_control_reactions_size = 0,
         .trigger_for_network_output_control_reactions = NULL
 };
+
+
+federation_metadata_t federation_metadata = {
+    .federation_id =  "Unidentified Federation",
+    .rti_host = NULL,
+    .rti_port = -1,
+    .rti_user = NULL
+};
+
 
 /** 
  * Thread that listens for inputs from other federates.
@@ -525,7 +535,7 @@ void* handle_p2p_connections_from_federates(void* ignored) {
         char remote_federation_id[federation_id_length];
         bytes_read = read_from_socket(socket_id, federation_id_length, (unsigned char*)remote_federation_id);
         if (bytes_read != federation_id_length
-                 || (strncmp(federation_id, remote_federation_id, strnlen(federation_id, 255)) != 0)) {
+                 || (strncmp(federation_metadata.federation_id, remote_federation_id, strnlen(federation_metadata.federation_id, 255)) != 0)) {
             warning_print("Received invalid federation ID. Closing socket.");
             if (bytes_read >= 0) {
                 unsigned char response[2];
@@ -774,13 +784,13 @@ void connect_to_federate(uint16_t remote_federate_id) {
                 error_print_and_exit("Too many federates! More than %d.", UINT16_MAX);
             }
             encode_uint16((uint16_t)_lf_my_fed_id, (unsigned char*)&(buffer[1]));
-            unsigned char federation_id_length = (unsigned char)strnlen(federation_id, 255);
+            unsigned char federation_id_length = (unsigned char)strnlen(federation_metadata.federation_id, 255);
             buffer[sizeof(uint16_t) + 1] = federation_id_length;
             write_to_socket_errexit(socket_id,
                     buffer_length, buffer,
                     "Failed to send fed_id to federate %d.", remote_federate_id);
             write_to_socket_errexit(socket_id,
-                    federation_id_length, (unsigned char*)federation_id,
+                    federation_id_length, (unsigned char*)federation_metadata.federation_id,
                     "Failed to send federation id to federate %d.",
                     remote_federate_id);
 
@@ -834,6 +844,11 @@ void connect_to_federate(uint16_t remote_federate_id) {
  */
 void connect_to_rti(char* hostname, int port) {
     LOG_PRINT("Connecting to the RTI.");
+
+    // override passed hostname and port if passed as runtime arguments
+    hostname = federation_metadata.rti_host ? federation_metadata.rti_host : hostname;
+    port = federation_metadata.rti_port >= 0 ? federation_metadata.rti_port : port;
+
     uint16_t uport = 0;
     if (port < 0 ||
             port > INT16_MAX) {
@@ -938,14 +953,14 @@ void connect_to_rti(char* hostname, int port) {
             encode_uint16((uint16_t)_lf_my_fed_id, &buffer[1]);
             // Next send the federation ID length.
             // The federation ID is limited to 255 bytes.
-            size_t federation_id_length = strnlen(federation_id, 255);
+            size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
             buffer[1 + sizeof(uint16_t)] = (unsigned char)(federation_id_length & 0xff);
 
             write_to_socket_errexit(_fed.socket_TCP_RTI, 2 + sizeof(uint16_t), buffer,
                     "Failed to send federate ID to RTI.");
 
             // Next send the federation ID itself.
-            write_to_socket_errexit(_fed.socket_TCP_RTI, federation_id_length, (unsigned char*)federation_id,
+            write_to_socket_errexit(_fed.socket_TCP_RTI, federation_id_length, (unsigned char*)federation_metadata.federation_id,
                             "Failed to send federation ID to RTI.");
 
             // Wait for a response.
@@ -2192,6 +2207,8 @@ void terminate_execution() {
     lf_thread_join(_fed.RTI_socket_listener, NULL);
 
     free(_fed.inbound_socket_listeners);
+    free(federation_metadata.rti_host);
+    free(federation_metadata.rti_user);
 }
 
 /** 
@@ -2633,4 +2650,50 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
         // TAN should be sent or a NET.
         tag = get_next_event_tag();
     }
+}
+
+/**
+ * Parse the address of the RTI and store them into the global federation_metadata struct.
+ * @return a parse_rti_code_t indicating the result of the parse.
+ */
+parse_rti_code_t parse_rti_addr(char* rti_addr) {
+    bool has_host = false, has_port = false, has_user = false;
+    rti_addr_info_t rti_addr_info = {0};
+    extract_rti_addr_info(rti_addr, &rti_addr_info);
+    if (!rti_addr_info.has_host && !rti_addr_info.has_port && !rti_addr_info.has_user) {
+        return FAILED_TO_PARSE;
+    }
+    if (rti_addr_info.has_host) {
+        if (validate_host(rti_addr_info.rti_host_str)) {
+            char* rti_host = (char*) calloc(256, sizeof(char));
+            strncpy(rti_host, rti_addr_info.rti_host_str, 255);
+            federation_metadata.rti_host = rti_host;
+        } else {
+            return INVALID_HOST;
+        }
+    }
+    if (rti_addr_info.has_port) {
+        if (validate_port(rti_addr_info.rti_port_str)) {
+            federation_metadata.rti_port = atoi(rti_addr_info.rti_port_str);
+        } else {
+            return INVALID_PORT;
+        }
+    }
+    if (rti_addr_info.has_user) {
+        if (validate_user(rti_addr_info.rti_user_str)) {
+            char* rti_user = (char*) calloc(256, sizeof(char));
+            strncpy(rti_user, rti_addr_info.rti_user_str, 255);
+            federation_metadata.rti_user = rti_user;
+        } else {
+            return INVALID_USER;
+        }
+    }
+    return SUCCESS;
+}
+
+/**
+ * Sets the federation_id of this federate to fid.
+ */
+void set_federation_id(char* fid) {
+    federation_metadata.federation_id = fid;
 }
