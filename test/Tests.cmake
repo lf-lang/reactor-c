@@ -14,7 +14,8 @@ function(add_test_dir DIR TEST_FILES)
         RELATIVE ${TEST_DIR}
         ${DIR}/*${TEST_SUFFIX}
     )
-    list(APPEND TEST_FILES ${TEST_FILES_FOR_DIR})
+    message(STATUS "Found ${TEST_FILES_FOR_DIR}.")
+    set(${TEST_FILES} ${TEST_FILES_FOR_DIR} PARENT_SCOPE)
 endfunction()
 
 # Add the appropriate directories FIXME: Find a way to automaticall find all
