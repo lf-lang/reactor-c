@@ -229,8 +229,11 @@ instant_t get_elapsed_physical_time();
 void set_physical_clock_offset(interval_t offset);
 
 /**
- * @brief Initialize the start time.
- * 
+ * @brief Use `t` as a start time for the program.
+ *
+ * This will also set the initial tag and and the starting physical time to `t`.
+ *
+ * @param t The instant_t that is used as a start time.
  */
 void init_start_time(instant_t start_time);
 

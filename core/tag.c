@@ -237,11 +237,14 @@ instant_t get_physical_time() {
 }
 
 /**
- * @brief Initialize the start time.
- * 
+ * @brief Use `t` as a start time for the program.
+ *
+ * This will also set the initial tag and and the starting physical time to `t`.
+ *
+ * @param t The instant_t that is used as a start time.
  */
-void init_start_time(instant_t start_time) {
-    physical_start_time = start_time;
+void init_start_time(instant_t t) {
+    physical_start_time = t;
     current_tag.time = physical_start_time;
     start_time = current_tag.time;
 }
