@@ -45,6 +45,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../utils/semaphore.h"
 #include "../utils/vector.h"
 #include "sync_tag_advance.c"
+#include <assert.h>
 
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;

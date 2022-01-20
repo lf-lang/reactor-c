@@ -46,6 +46,9 @@ add_subdirectory(platform)
 add_subdirectory(utils)
 add_subdirectory(threaded)
 
+# Add additional sources
+list(APPEND SOURCES tag.c)
+
 # List sources in this directory.
 set(SINGLE_THREADED_SOURCES reactor.c)
 
