@@ -54,11 +54,19 @@ reaction_function_t dummy_reaction_function2() {
 }
 
 extern lf_mutex_t mutex;
+void _lf_initialize_start_tag();
+void initialize();
 
 int main(int argc, char **argv) {
     lf_mutex_init(&mutex);
-    // Initialize the scheduler
-    lf_sched_init(NUMBER_OF_WORKERS);
+
+    lf_mutex_lock(&mutex);
+    initialize();
+
+    // Call the following function only once, rather than per worker thread (although 
+    // it can be probably called in that manner as well).
+    _lf_initialize_start_tag();
+
     info_print("Initialized the scheduler.");
 
     // Create a dummy reaction
@@ -78,6 +86,8 @@ int main(int argc, char **argv) {
     // Feed the dummy reactions to the scheduler
     lf_sched_trigger_reaction(&dummy_reaction1, -1);
     lf_sched_trigger_reaction(&dummy_reaction2, -1);
+
+    lf_mutex_unlock(&mutex);
 
     // Get it back from the scheduler
     reaction_t* returned_reaction = lf_sched_get_ready_reaction(0);

@@ -773,8 +773,7 @@ void _lf_initialize_start_tag() {
     // If the stop_tag is (0,0), also insert the shutdown
     // reactions. This can only happen if the timeout time
     // was set to 0.
-    tag_t current_tag = get_current_tag();
-    if (compare_tags(current_tag, stop_tag) >= 0) {
+    if (compare_tags(get_current_tag(), stop_tag) >= 0) {
         _lf_trigger_shutdown_reactions();
     }
 
