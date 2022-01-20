@@ -680,7 +680,7 @@ void _lf_next_locked() {
         
     // At this point, finally, we have an event to process.
     // Advance current time to match that of the first event on the queue.
-    _lf_advance_logical_time(next_tag.time);
+    advance_tag(next_tag.time);
 
     if (compare_tags(get_current_tag(), stop_tag) >= 0) {
         // Pop shutdown events
@@ -766,7 +766,6 @@ void _lf_initialize_start_tag() {
 
     // Get a start_time from the RTI
     synchronize_with_other_federates(); // Resets start_time in federated execution according to the RTI.
-    current_tag = (tag_t){.time = get_start_time(), .microstep = 0u};
 #endif
 
     _lf_initialize_timers();

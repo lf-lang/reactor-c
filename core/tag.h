@@ -85,6 +85,15 @@ typedef struct {
 typedef tag_t tag_interval_t;
 
 /**
+ * Advance from the current tag to the next. If the given next_time is equal to
+ * the current time, then increase the microstep. Otherwise, update the current
+ * time and set the microstep to zero.
+ * 
+ * @param next_time The time step to advance to.
+ */ 
+void advance_tag(instant_t next_time);
+
+/**
  * Compare two tags. Return -1 if the first is less than
  * the second, 0 if they are equal, and +1 if the first is
  * greater than the second. A tag is greater than another if

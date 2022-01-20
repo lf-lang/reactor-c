@@ -1254,44 +1254,6 @@ trigger_t* _lf_action_to_trigger(void* action) {
 }
 
 /**
- * Advance from the current tag to the next. If the given next_time is equal to
- * the current time, then increase the microstep. Otherwise, update the current
- * time and set the microstep to zero.
- * 
- * @param next_time The time step to advance to.
- */ 
-void _lf_advance_logical_time(instant_t next_time) {
-    // FIXME: The following checks that _lf_advance_logical_time()
-    // is being called correctly. Namely, check if logical time
-    // is being pushed past the head of the event queue. This should
-    // never happen if _lf_advance_logical_time() is called correctly.
-    // This is commented out because it will add considerable overhead
-    // to the ordinary execution of LF programs. Instead, there might
-    // be a need for a target property that enables these kinds of logic
-    // assertions for development purposes only.
-    /*
-    event_t* next_event = (event_t*)pqueue_peek(event_q);
-    if (next_event != NULL) {
-        if (next_time > next_event->time) {
-            error_print_and_exit("_lf_advance_logical_time(): Attempted to move time to %lld, which is "
-                    "past the head of the event queue, %lld.", 
-                    next_time - start_time, next_event->time - start_time);
-        }
-    }
-    */
-    tag_t current_tag = get_current_tag();
-    if (current_tag.time < next_time) {
-        current_tag.time = next_time;
-        current_tag.microstep = 0;
-    } else if (current_tag.time == next_time) {
-        current_tag.microstep++;
-    } else {
-        error_print_and_exit("_lf_advance_logical_time(): Attempted to move tag back in time.");
-    }
-    LOG_PRINT("Advanced (elapsed) tag to (%lld, %u)", next_time - get_start_time(), current_tag.microstep);
-}
-
-/**
  * Variant of schedule_value when the value is an integer.
  * See reactor.h for documentation.
  * @param action Pointer to an action on the self struct.

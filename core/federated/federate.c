@@ -378,7 +378,7 @@ int send_timed_message(interval_t additional_delay,
     buffer_head += sizeof(int64_t) + sizeof(uint32_t);
 
     LOG_PRINT("Sending message with tag (%lld, %u) to %s.",
-            current_message_intended_tag.time - start_time, current_message_intended_tag.microstep, next_destination_str);
+            current_message_intended_tag.time - get_start_time(), current_message_intended_tag.microstep, next_destination_str);
 
     // Header:  message_type + port_id + federate_id + length of message + timestamp + microstep
     size_t header_length = buffer_head;
@@ -1366,6 +1366,8 @@ void wait_until_port_status_known(int port_ID, interval_t STP) {
     // receiver logic.
     lf_mutex_lock(&mutex);
 
+    tag_t current_tag = get_current_tag();
+
     // See if the port status is already known.
     if (get_current_port_status(port_ID) != unknown) {
         // The status of the trigger is known. No need to wait.
@@ -1469,11 +1471,13 @@ trigger_handle_t schedule_message_received_from_network_already_locked(
     // Return value of the function
     int return_value = 0;
 
+    tag_t current_tag = get_current_tag();
+
     // Indicates whether or not the intended tag
     // of the message (timestamp, microstep) is
     // in the future relative to the tag of this
     // federate. By default, assume it is not.
-    bool message_tag_is_in_the_future = compare_tags(tag, current_tag) > 0;
+    bool message_tag_is_in_the_future = compare_tags(tag, get_current_tag()) > 0;
 
     // Assign the intended tag
     trigger->intended_tag = tag;
@@ -1798,7 +1802,7 @@ void handle_tagged_message(int socket, int fed_id) {
 
         // Before that, if the current time >= stop time, discard the message.
         // But only if the stop time is not equal to the start time!
-        if (compare_tags(current_tag, stop_tag) >= 0) {
+        if (compare_tags(get_current_tag(), stop_tag) >= 0) {
             lf_mutex_unlock(&mutex);
             warning_print("Received message too late. Already at stopping time. Discarding message.");
             return;
@@ -1927,6 +1931,8 @@ void handle_provisional_tag_advance_grant() {
     // the value of PTAG. Only a TAG message indicates that.
     lf_mutex_lock(&mutex);
 
+    tag_t current_tag = get_current_tag();
+    
     // Sanity check
     if (compare_tags(PTAG, _fed.last_TAG) < 0
     		|| (compare_tags(PTAG, _fed.last_TAG) == 0 && !_fed.is_last_TAG_provisional)) {
@@ -2022,7 +2028,9 @@ void _lf_fd_send_stop_request_to_rti() {
     }
     LOG_PRINT("Requesting the whole program to stop.");
     // Raise a logical time barrier at the current tag.
-    _lf_increment_global_tag_barrier_already_locked(current_tag);
+    _lf_increment_global_tag_barrier_already_locked(get_current_tag());
+
+    tag_t current_tag = get_current_tag();
 
     // Send a stop request with the current tag to the RTI
     unsigned char buffer[MSG_TYPE_STOP_REQUEST_LENGTH];
@@ -2105,6 +2113,7 @@ void handle_stop_request_message() {
     // Acquire a mutex lock to ensure that this state does change while a
     // message is being used to determine a TAG.
     lf_mutex_lock(&mutex);
+
     // Ignore the message if this federate originated a request.
     // The federate is already blocked is awaiting a MSG_TYPE_STOP_GRANTED message.
     if (_fed.sent_a_stop_request_to_rti == true) {
@@ -2120,9 +2129,9 @@ void handle_stop_request_message() {
 
     // Encode the current logical time plus one microstep
     // or the requested tag_to_stop, whichever is bigger.
-    if (compare_tags(tag_to_stop, current_tag) <= 0) {
+    if (compare_tags(tag_to_stop, get_current_tag()) <= 0) {
     	// Can't stop at the requested tag. Make a counteroffer.
-        tag_to_stop = current_tag;
+        tag_to_stop = get_current_tag();
         tag_to_stop.microstep++;
     }
 
@@ -2449,7 +2458,7 @@ bool _lf_bounded_NET(tag_t* tag) {
             tag->time = physical_time + _fed.min_delay_from_physical_action_to_federate_output - 1L;
             tag->microstep = 0;
             LOG_PRINT("Has physical actions that bound NET to (%lld, %u).",
-                    tag->time - start_time, tag->microstep);
+                    tag->time - get_start_time(), tag->microstep);
             return true;
         }
     }
@@ -2524,7 +2533,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
             // physical connections, so I don't think we need to worry about this.
             DEBUG_PRINT("Granted tag (%lld, %u) because the federate has neither "
             		"upstream nor downstream federates.",
-                    tag.time - start_time, tag.microstep);
+                    tag.time - get_start_time(), tag.microstep);
             return tag;
         }
 
@@ -2532,7 +2541,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
         // or a larger tag, then return immediately.
         if (compare_tags(_fed.last_TAG, tag) >= 0) {
             DEBUG_PRINT("Granted tag (%lld, %u) because TAG or PTAG has been received.",
-            		_fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
+            		_fed.last_TAG.time - get_start_time(), _fed.last_TAG.microstep);
             return _fed.last_TAG;
         }
 
@@ -2558,7 +2567,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
             _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag, wait_for_reply);
             _fed.last_sent_NET = tag;
             LOG_PRINT("Sent next event tag (NET) (%lld, %u) to RTI.",
-                    tag.time - start_time, tag.microstep);
+                    tag.time - get_start_time(), tag.microstep);
 
             if (!wait_for_reply) {
                 LOG_PRINT("Not waiting for reply to NET.");
@@ -2573,7 +2582,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
             if (!_fed.has_upstream) {
                 DEBUG_PRINT("Not waiting for reply to NET (%lld, %u) because I "
                 		"have no upstream federates.",
-                        tag.time - start_time, tag.microstep);
+                        tag.time - get_start_time(), tag.microstep);
                 return tag;
             }
             // Fed has upstream federates. Have to wait for a TAG or PTAG.
@@ -2608,7 +2617,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
         _lf_send_time(MSG_TYPE_TIME_ADVANCE_NOTICE, tag.time, wait_for_reply);
         _fed.last_sent_NET = tag;
         LOG_PRINT("Sent Time Advance Notice (TAN) %lld to RTI.",
-                tag.time - start_time);
+                tag.time - get_start_time());
 
         if (!wait_for_reply) {
             LOG_PRINT("Not waiting physical time to advance further.");
@@ -2624,13 +2633,14 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
         // in the future.
         DEBUG_PRINT("Waiting for physical time to elapse or an event on the event queue.");
 
-        // The above call to _lf_bounded_NET called get_physical_time
-        // set _lf_last_reported_unadjusted_physical_time_ns, the
-        // time obtained using CLOCK_REALTIME before adjustment for
-        // clock synchronization. Since that is the clock used by
-        // lf_cond_timedwait, this is the clock we want to use.
+        // The above call to _lf_bounded_NET called get_physical_time, which in
+        // turn updates the value returned by
+        // get_last_reported_unadjusted_physical_time, the time obtained using
+        // CLOCK_REALTIME before adjustment for clock synchronization. Since
+        // that is the clock used by lf_cond_timedwait, this is the clock we
+        // want to use.
         instant_t wait_until_time_ns =
-                _lf_last_reported_unadjusted_physical_time_ns + ADVANCE_MESSAGE_INTERVAL;
+                get_last_reported_unadjusted_physical_time() + ADVANCE_MESSAGE_INTERVAL;
 
         // Regardless of the ADVANCE_MESSAGE_INTERVAL, do not let this
         // wait exceed the time of the next tag.

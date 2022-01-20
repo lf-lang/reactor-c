@@ -76,6 +76,44 @@ interval_t _lf_global_physical_clock_drift = 0LL;
  */
 interval_t _lf_global_test_physical_clock_offset = 0LL;
 
+
+/**
+ * Advance from the current tag to the next. If the given next_time is equal to
+ * the current time, then increase the microstep. Otherwise, update the current
+ * time and set the microstep to zero.
+ * 
+ * @param next_time The time step to advance to.
+ */ 
+void advance_tag(instant_t next_time) {
+    // FIXME: The following checks that advance_tag()
+    // is being called correctly. Namely, check if logical time
+    // is being pushed past the head of the event queue. This should
+    // never happen if _lf_advance_logical_time() is called correctly.
+    // This is commented out because it will add considerable overhead
+    // to the ordinary execution of LF programs. Instead, there might
+    // be a need for a target property that enables these kinds of logic
+    // assertions for development purposes only.
+    /*
+    event_t* next_event = (event_t*)pqueue_peek(event_q);
+    if (next_event != NULL) {
+        if (next_time > next_event->time) {
+            error_print_and_exit("_lf_advance_logical_time(): Attempted to move time to %lld, which is "
+                    "past the head of the event queue, %lld.", 
+                    next_time - start_time, next_event->time - start_time);
+        }
+    }
+    */
+    if (current_tag.time < next_time) {
+        current_tag.time = next_time;
+        current_tag.microstep = 0;
+    } else if (current_tag.time == next_time) {
+        current_tag.microstep++;
+    } else {
+        error_print_and_exit("_lf_advance_logical_time(): Attempted to move tag back in time.");
+    }
+    LOG_PRINT("Advanced (elapsed) tag to (%lld, %u)", next_time - get_start_time(), current_tag.microstep);
+}
+
 /**
  * Compare two tags. Return -1 if the first is less than
  * the second, 0 if they are equal, and +1 if the first is
