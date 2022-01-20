@@ -12,6 +12,12 @@ var searchData=
   ['requestors_9',['requestors',['../struct__lf__tag__advancement__barrier.html#a49b697f9e16f30a2112910efd1ee6da6',1,'_lf_tag_advancement_barrier']]],
   ['reset_5fis_5fpresent_10',['reset_is_present',['../structtoken__present__t.html#aa8a58416b02e87198d2e67af2a6061c0',1,'token_present_t']]],
   ['riff_11',['riff',['../structlf__wav__t.html#a4dfe6fe77717d001176da92f396b85d9',1,'lf_wav_t']]],
-  ['rti_5fmutex_12',['rti_mutex',['../struct_r_t_i__instance__t.html#aae78ec13a834f35ead74a65c05ac691b',1,'RTI_instance_t']]],
-  ['rti_5fsocket_5flistener_13',['RTI_socket_listener',['../structfederate__instance__t.html#a5b6b4b5912a7bb7df1c8987f38e12004',1,'federate_instance_t']]]
+  ['rti_5fhost_12',['rti_host',['../structfederation__metadata__t.html#a8e66865ef3fa328713e63c4a1666c69a',1,'federation_metadata_t']]],
+  ['rti_5fhost_5fstr_13',['rti_host_str',['../structrti__addr__info__t.html#ab67e59a55eda384237ee0c01b161808c',1,'rti_addr_info_t']]],
+  ['rti_5fmutex_14',['rti_mutex',['../struct_r_t_i__instance__t.html#aae78ec13a834f35ead74a65c05ac691b',1,'RTI_instance_t']]],
+  ['rti_5fport_15',['rti_port',['../structfederation__metadata__t.html#af75d81e35fab4ed398df21bd48a50b52',1,'federation_metadata_t']]],
+  ['rti_5fport_5fstr_16',['rti_port_str',['../structrti__addr__info__t.html#a182bcc2f25e999e33b4065115287a6a0',1,'rti_addr_info_t']]],
+  ['rti_5fsocket_5flistener_17',['RTI_socket_listener',['../structfederate__instance__t.html#a5b6b4b5912a7bb7df1c8987f38e12004',1,'federate_instance_t']]],
+  ['rti_5fuser_18',['rti_user',['../structfederation__metadata__t.html#acb5d86838516db68d87a30babcce36dd',1,'federation_metadata_t']]],
+  ['rti_5fuser_5fstr_19',['rti_user_str',['../structrti__addr__info__t.html#a3604fd6c5f95ce9afa7afcb188093ac8',1,'rti_addr_info_t']]]
 ];

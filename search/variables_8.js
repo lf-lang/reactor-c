@@ -1,7 +1,10 @@
 var searchData=
 [
   ['has_5fdownstream_0',['has_downstream',['../structfederate__instance__t.html#ac130c67ec68fe84d6753a54e6e73d59a',1,'federate_instance_t']]],
-  ['has_5fupstream_1',['has_upstream',['../structfederate__instance__t.html#a603662cf0155920b8a76659e7dacb9ef',1,'federate_instance_t']]],
-  ['history_2',['history',['../structsocket__stat__t.html#ab34f093b789df801fe4717cca5a3e745',1,'socket_stat_t']]],
-  ['horizon_3',['horizon',['../struct__lf__tag__advancement__barrier.html#ad60842fa9c91497e893075d9b42913ba',1,'_lf_tag_advancement_barrier']]]
+  ['has_5fhost_1',['has_host',['../structrti__addr__info__t.html#a73312cb4f806de3a9b23eb811861ac24',1,'rti_addr_info_t']]],
+  ['has_5fport_2',['has_port',['../structrti__addr__info__t.html#a814382a63d0c415566268997e7e2c238',1,'rti_addr_info_t']]],
+  ['has_5fupstream_3',['has_upstream',['../structfederate__instance__t.html#a603662cf0155920b8a76659e7dacb9ef',1,'federate_instance_t']]],
+  ['has_5fuser_4',['has_user',['../structrti__addr__info__t.html#a66ce998dc61ba1e1a939c18cb79ae9af',1,'rti_addr_info_t']]],
+  ['history_5',['history',['../structsocket__stat__t.html#ab34f093b789df801fe4717cca5a3e745',1,'socket_stat_t']]],
+  ['horizon_6',['horizon',['../struct__lf__tag__advancement__barrier.html#ad60842fa9c91497e893075d9b42913ba',1,'_lf_tag_advancement_barrier']]]
 ];

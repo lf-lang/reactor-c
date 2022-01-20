@@ -89,6 +89,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="platform_8h_source.html">../platform.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="clock-sync_8c.html">clock-sync.c</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="federate_8h_source.html">federate.h</a>&quot;</code><br />
+<code>#include &quot;regex.h&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -180,6 +181,10 @@ Functions</h2></td></tr>
 <tr class="separator:aa4e74edba14fe2d25b2f05c3497c1054"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acd313a38ec1a25c22cc94333146ba8fc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#acd313a38ec1a25c22cc94333146ba8fc">_lf_send_next_event_tag</a> (<a class="el" href="structtag__t.html">tag_t</a> tag, <a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> wait_for_reply)</td></tr>
 <tr class="separator:acd313a38ec1a25c22cc94333146ba8fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3b0b572736c7e851b93f08ace4b5f0a"><td class="memItemLeft" align="right" valign="top">parse_rti_code_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#ad3b0b572736c7e851b93f08ace4b5f0a">parse_rti_addr</a> (char *rti_addr)</td></tr>
+<tr class="separator:ad3b0b572736c7e851b93f08ace4b5f0a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afe4e7460987c62f4c952552196854368"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#afe4e7460987c62f4c952552196854368">set_federation_id</a> (char *fid)</td></tr>
+<tr class="separator:afe4e7460987c62f4c952552196854368"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -193,6 +198,8 @@ Variables</h2></td></tr>
 <tr class="separator:ac31c3ee54cd862c9381fbf980fa7d9ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8dd2a9d602522afd72f6c524356868e4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structfederate__instance__t.html">federate_instance_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a8dd2a9d602522afd72f6c524356868e4">_fed</a></td></tr>
 <tr class="separator:a8dd2a9d602522afd72f6c524356868e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7de4491a57458e3090628acf441ae2b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structfederation__metadata__t.html">federation_metadata_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a7de4491a57458e3090628acf441ae2b5">federation_metadata</a></td></tr>
+<tr class="separator:a7de4491a57458e3090628acf441ae2b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>)</dd></dl>
@@ -1036,6 +1043,25 @@ DESCRIPTION</h1>
 
 </div>
 </div>
+<a id="ad3b0b572736c7e851b93f08ace4b5f0a" name="ad3b0b572736c7e851b93f08ace4b5f0a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad3b0b572736c7e851b93f08ace4b5f0a">&#9670;&nbsp;</a></span>parse_rti_addr()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">parse_rti_code_t parse_rti_addr </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>rti_addr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Parse the address of the RTI and store them into the global federation_metadata struct. </p><dl class="section return"><dt>Returns</dt><dd>a parse_rti_code_t indicating the result of the parse. </dd></dl>
+
+</div>
+</div>
 <a id="af89b0ab26ec13c6deafeb05c3c14a88e" name="af89b0ab26ec13c6deafeb05c3c14a88e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af89b0ab26ec13c6deafeb05c3c14a88e">&#9670;&nbsp;</a></span>reset_status_fields_on_input_port_triggers()</h2>
 
@@ -1305,6 +1331,25 @@ DESCRIPTION</h1>
 
 </div>
 </div>
+<a id="afe4e7460987c62f4c952552196854368" name="afe4e7460987c62f4c952552196854368"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afe4e7460987c62f4c952552196854368">&#9670;&nbsp;</a></span>set_federation_id()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void set_federation_id </td>
+          <td>(</td>
+          <td class="paramtype">char *&#160;</td>
+          <td class="paramname"><em>fid</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Sets the federation_id of this federate to fid. </p>
+
+</div>
+</div>
 <a id="a26a55f84538e1d96832c6247d74e7da6" name="a26a55f84538e1d96832c6247d74e7da6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a26a55f84538e1d96832c6247d74e7da6">&#9670;&nbsp;</a></span>set_network_port_status()</h2>
 
@@ -1546,6 +1591,26 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 
+</div>
+</div>
+<a id="a7de4491a57458e3090628acf441ae2b5" name="a7de4491a57458e3090628acf441ae2b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7de4491a57458e3090628acf441ae2b5">&#9670;&nbsp;</a></span>federation_metadata</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structfederation__metadata__t.html">federation_metadata_t</a> federation_metadata</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Initial value:</b><div class="fragment"><div class="line">= {</div>
+<div class="line">    .federation_id =  <span class="stringliteral">&quot;Unidentified Federation&quot;</span>,</div>
+<div class="line">    .rti_host = NULL,</div>
+<div class="line">    .rti_port = -1,</div>
+<div class="line">    .rti_user = NULL</div>
+<div class="line">}</div>
+</div><!-- fragment -->
 </div>
 </div>
 <a id="a1de2c61d36e14fae8de7043ff2661a34" name="a1de2c61d36e14fae8de7043ff2661a34"></a>
