@@ -143,6 +143,12 @@ void log_print(char* format, ...);
 void debug_print(char* format, ...);
 
 /**
+ * Report an error with the prefix "ERROR: " and a newline appended
+ * at the end.  The arguments are just like printf().
+ */
+void error_print(char* format, ...);
+
+/**
  * A macro used to print useful debug information. It can be enabled
  * by setting the target property 'logging' to 'DEBUG' or
  * by defining LOG_LEVEL to 2 in the top-level preamble.

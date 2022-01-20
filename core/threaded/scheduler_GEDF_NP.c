@@ -43,7 +43,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../platform.h"
 #include "../utils/semaphore.c"
 #include "../utils/pqueue_support.h"
-#include "scheduler_sync_tag_advance.c"
+#include "sync_tag_advance.c"
 #include <assert.h>
 
 #ifndef MAX_REACTION_LEVEL

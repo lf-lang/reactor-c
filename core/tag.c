@@ -32,6 +32,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "tag.h"
 #include "platform.h"
+#include "utils/util.h"
+#include <stdio.h>      // For sprintf
+#include <string.h>     // For strlen
 
 /**
  * Current time in nanoseconds since January 1, 1970
@@ -72,6 +75,44 @@ interval_t _lf_global_physical_clock_drift = 0LL;
  * same machine.
  */
 interval_t _lf_global_test_physical_clock_offset = 0LL;
+
+
+/**
+ * Advance from the current tag to the next. If the given next_time is equal to
+ * the current time, then increase the microstep. Otherwise, update the current
+ * time and set the microstep to zero.
+ * 
+ * @param next_time The time step to advance to.
+ */ 
+void advance_tag(instant_t next_time) {
+    // FIXME: The following checks that advance_tag()
+    // is being called correctly. Namely, check if logical time
+    // is being pushed past the head of the event queue. This should
+    // never happen if _lf_advance_logical_time() is called correctly.
+    // This is commented out because it will add considerable overhead
+    // to the ordinary execution of LF programs. Instead, there might
+    // be a need for a target property that enables these kinds of logic
+    // assertions for development purposes only.
+    /*
+    event_t* next_event = (event_t*)pqueue_peek(event_q);
+    if (next_event != NULL) {
+        if (next_time > next_event->time) {
+            error_print_and_exit("_lf_advance_logical_time(): Attempted to move time to %lld, which is "
+                    "past the head of the event queue, %lld.", 
+                    next_time - start_time, next_event->time - start_time);
+        }
+    }
+    */
+    if (current_tag.time < next_time) {
+        current_tag.time = next_time;
+        current_tag.microstep = 0;
+    } else if (current_tag.time == next_time) {
+        current_tag.microstep++;
+    } else {
+        error_print_and_exit("_lf_advance_logical_time(): Attempted to move tag back in time.");
+    }
+    LOG_PRINT("Advanced (elapsed) tag to (%lld, %u)", next_time - get_start_time(), current_tag.microstep);
+}
 
 /**
  * Compare two tags. Return -1 if the first is less than
@@ -179,6 +220,19 @@ instant_t _lf_last_reported_physical_time_ns = 0LL;
 instant_t _lf_last_reported_unadjusted_physical_time_ns = NEVER;
 
 /**
+ * Return the most recent time reported by the physical clock
+ * when accessed by get_physical_time(). This will be an epoch time
+ * (number of nanoseconds since Jan. 1, 1970), as reported when
+ * you call lf_clock_gettime(CLOCK_REALTIME, ...). This differs from
+ * _lf_last_reported_physical_time_ns by _lf_global_physical_clock_offset
+ * plus any calculated drift adjustement, which are adjustments made
+ * by clock synchronization.
+ */
+instant_t get_last_reported_unadjusted_physical_time() {
+	return _lf_last_reported_unadjusted_physical_time_ns;
+}
+
+/**
  * Return the current physical time in nanoseconds since January 1, 1970,
  * adjusted by the global physical time offset.
  */
@@ -218,6 +272,19 @@ instant_t get_physical_time() {
             _lf_global_physical_clock_offset + _lf_global_test_physical_clock_offset);
 
     return _lf_last_reported_physical_time_ns;
+}
+
+/**
+ * @brief Use `t` as a start time for the program.
+ *
+ * This will also set the initial tag and and the starting physical time to `t`.
+ *
+ * @param t The instant_t that is used as a start time.
+ */
+void init_start_time(instant_t t) {
+    physical_start_time = t;
+    current_tag.time = physical_start_time;
+    start_time = current_tag.time;
 }
 
 /**
