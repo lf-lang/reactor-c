@@ -217,3 +217,4 @@ void register_print_function(print_message_function_t* function, int log_level) 
     print_message_function = function;
     print_message_level = log_level;
 }
+

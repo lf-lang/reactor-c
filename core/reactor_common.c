@@ -426,7 +426,8 @@ void _lf_start_time_step() {
     LOG_PRINT("--------- Start time step at tag (%lld, %u).", current_tag.time - start_time, current_tag.microstep);
     for(int i = 0; i < _lf_tokens_with_ref_count_size; i++) {
         if (*(_lf_tokens_with_ref_count[i].status) == present) {
-            if (_lf_tokens_with_ref_count[i].reset_is_present) {
+            if (_lf_tokens_with_ref_count[i].reset_is_present
+            		&& _lf_tokens_with_ref_count[i].status != NULL) {
                 *(_lf_tokens_with_ref_count[i].status) = absent;
             }
             _lf_done_using(*(_lf_tokens_with_ref_count[i].token));
@@ -1475,8 +1476,8 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
     LOG_PRINT("Reaction %s has STP violation status: %d.", reaction->name, reaction->is_STP_violated);
 #endif
     DEBUG_PRINT("There are %d outputs from reaction %s.", reaction->num_outputs, reaction->name);
-    for (int i=0; i < reaction->num_outputs; i++) {
-        if (*(reaction->output_produced[i])) {
+    for (size_t i=0; i < reaction->num_outputs; i++) {
+        if (reaction->output_produced[i] != NULL && *(reaction->output_produced[i])) {
             DEBUG_PRINT("Output %d has been produced.", i);
             trigger_t** triggerArray = (reaction->triggers)[i];
             DEBUG_PRINT("There are %d trigger arrays associated with output %d.", reaction->triggered_sizes[i], i);

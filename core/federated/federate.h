@@ -251,7 +251,7 @@ typedef struct federation_metadata_t {
  * not wait for physical time to match the logical start time
  * returned by the RTI.
  */
-void synchronize_with_other_federates();
+void synchronize_with_other_federates(void);
 
 /**
  * Wait until the status of network port "portID" can be determined.
