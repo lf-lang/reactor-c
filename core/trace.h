@@ -238,7 +238,7 @@ void tracepoint_worker_advancing_time_starts(int worker);
  */
 void tracepoint_worker_advancing_time_ends(int worker);
 
-void stop_trace();
+void stop_trace(void);
 
 #else
 

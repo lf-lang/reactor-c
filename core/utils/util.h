@@ -88,7 +88,7 @@ extern int _lf_my_fed_id;
 /**
  * Return the federate ID or -1 if this program is not part of a federation.
  */
-int get_fed_id();
+int get_fed_id(void);
 
 /**
  * Report an informational message on stdout with

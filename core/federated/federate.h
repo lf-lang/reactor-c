@@ -231,6 +231,14 @@ typedef struct federate_instance_t {
 
 } federate_instance_t;
 
+
+typedef struct federation_metadata_t {
+    char* federation_id;
+    char* rti_host;
+    int rti_port;
+    char* rti_user;
+} federation_metadata_t;
+
 /** 
  * Synchronize the start with other federates via the RTI.
  * This assumes that a connection to the RTI is already made 
@@ -243,7 +251,7 @@ typedef struct federate_instance_t {
  * not wait for physical time to match the logical start time
  * returned by the RTI.
  */
-void synchronize_with_other_federates();
+void synchronize_with_other_federates(void);
 
 /**
  * Wait until the status of network port "portID" can be determined.

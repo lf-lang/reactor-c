@@ -559,13 +559,13 @@ struct trigger_t {
  * since January 1, 1970, but it is actually platform dependent.
  * @return A time instant.
  */
-instant_t get_start_time();
+instant_t get_start_time(void);
 
 /**
  * Return the global STP offset on advancement of logical
  * time for federated execution.
  */
-interval_t get_stp_offset();
+interval_t get_stp_offset(void);
 
 /**
  * Set the global STP offset on advancement of logical
@@ -580,7 +580,7 @@ void set_stp_offset(interval_t offset);
  * Print a snapshot of the priority queues used during execution
  * (for debugging).
  */
-void print_snapshot();
+void print_snapshot(void);
 
 /**
  * Request a stop to execution as soon as possible.
@@ -590,31 +590,31 @@ void print_snapshot();
  * a later logical time determined by the RTI so that
  * all federates stop at the same logical time.
  */
-void request_stop();
+void request_stop(void);
 
 /** 
  * Generated function that optionally sets default command-line options.
  */
-void _lf_set_default_command_line_options();
+void _lf_set_default_command_line_options(void);
 
 /** 
  * Generated function that resets outputs to be absent at the
  * start of a new time step.
  */
-void _lf_start_time_step();
+void _lf_start_time_step(void);
 
 /** 
  * Generated function that produces a table containing all triggers
  * (i.e., inputs, timers, and actions).
  */
-void _lf_initialize_trigger_objects();
+void _lf_initialize_trigger_objects(void);
 
 /**
  * Pop all events from event_q with timestamp equal to current_time, extract all
  * the reactions triggered by these events, and stick them into the reaction
  * queue.
  */
-void _lf_pop_events();
+void _lf_pop_events(void);
 
 /** 
  * Internal version of the schedule() function, used by generated 
@@ -629,24 +629,24 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t delay, lf_token_t* 
 /**
  * Function (to be code generated) to schedule timers.
  */
-void _lf_initialize_timers();
+void _lf_initialize_timers(void);
 
 /**
  * Function (to be code generated) to trigger startup reactions.
  */
-void _lf_trigger_startup_reactions();
+void _lf_trigger_startup_reactions(void);
 
 
 /**
  * Function (to be code generated) to terminate execution.
  * This will be invoked after all shutdown actions have completed.
  */
-void terminate_execution();
+void terminate_execution(void);
 
 /**
  * Function (to be code generated) to trigger shutdown reactions.
  */
-bool _lf_trigger_shutdown_reactions();
+bool _lf_trigger_shutdown_reactions(void);
 
 /**
  * Create a new token and initialize it.
@@ -673,7 +673,7 @@ trigger_handle_t _lf_schedule_int(void* action, interval_t extra_delay, int valu
  * Get a new event. If there is a recycled event available, use that.
  * If not, allocate a new one. In either case, all fields will be zero'ed out.
  */
-event_t* _lf_get_new_event();
+event_t* _lf_get_new_event(void);
 
 /**
  * Recycle the given event.
@@ -787,22 +787,7 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
  * For a federated execution, send a STOP_REQUEST message
  * to the RTI.
  */
-void _lf_fd_send_stop_request_to_rti();
-
-/**
- * Advance from the current tag to the next. If the given next_time is equal to
- * the current time, then increase the microstep. Otherwise, update the current
- * time and set the microstep to zero.
- */ 
-void _lf_advance_logical_time(instant_t next_time);
-
-/**
- * If multithreaded and the reaction is blocked by
- * a currently executing reaction, return true.
- * Otherwise, return false.
- * @param reaction The reaction.
- */
-bool _lf_is_blocked_by_executing_reaction();
+void _lf_fd_send_stop_request_to_rti(void);
 
 //  ******** Global Variables ********  //
 
