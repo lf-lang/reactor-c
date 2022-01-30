@@ -136,8 +136,21 @@ volatile size_t _lf_sched_next_reaction_level = 1;
 static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
     size_t reaction_level = LEVEL(reaction->index);
     DEBUG_PRINT("Scheduler: Trying to lock the mutex for level %d.", reaction_level);
-    lf_mutex_lock(&_lf_sched_array_of_reaction_vectors_mutexes[reaction_level]);
 #ifdef FEDERATED
+    // Lock the mutex if federated because a federate can insert reactions with
+    // a level equal to the current level.
+    size_t current_level = _lf_sched_next_reaction_level - 1;
+    // There is a race condition here where `_lf_sched_next_reaction_level` can
+    // change after it is cached here. In that case, if the cached value is
+    // equal to `reaction_level`, the cost will be an additional unnecessary
+    // mutex lock, but no logic error. If the cached value is not equal to
+    // `reaction_level`, it can never become `reaction_level` because the
+    // scheduler will only change the `_lf_sched_next_reaction_level` if it can
+    // ensure that all worker threads are idle, and thus, none are triggering
+    // reactions (and therefore calling this function).
+    if (reaction_level == current_level) {
+        lf_mutex_lock(&_lf_sched_array_of_reaction_vectors_mutexes[reaction_level]);
+    }
     // The level index for the current level can sometimes become negative. Set
     // it back to zero before adding a reaction (otherwise worker threads will
     // not be able to see the added reaction).
@@ -152,7 +165,11 @@ static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
         reaction_q_level_index
     ) = (void*)reaction;
     DEBUG_PRINT("Scheduler: Index for level %d is at %d.", reaction_level, reaction_q_level_index);
-    lf_mutex_unlock(&_lf_sched_array_of_reaction_vectors_mutexes[reaction_level]);
+#ifdef FEDERATED
+    if (reaction_level == current_level) {
+        lf_mutex_unlock(&_lf_sched_array_of_reaction_vectors_mutexes[reaction_level]);
+    }
+#endif
 }
 
 /**
@@ -269,20 +286,39 @@ void _lf_sched_wait_for_work(size_t worker_number) {
 ///////////////////// Scheduler Init and Destroy API /////////////////////////
 /**
  * @brief Initialize the scheduler.
- * 
+ *
  * This has to be called before other functions of the scheduler can be used.
- * 
- * @param number_of_workers Indicate how many workers this scheduler will be managing.
+ *
+ * @param number_of_workers Indicate how many workers this scheduler will be
+ *  managing.
+ * @param option Pointer to a `sched_options_t` struct containing additional
+ *  scheduler options. Can be NULL.
  */
-void lf_sched_init(size_t number_of_workers) {
+void lf_sched_init(
+    size_t number_of_workers, 
+    sched_options_t* options
+) {
     DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
+    if (options == NULL || options.max_reactions_per_level == NULL) {
+        error_print_and_exit(
+            "Scheduler: Internal error. The NP scheduler "
+            "requires options.max_reactions_per_level to be set."
+        );
+    }
+    assert(options.max_reactions_per_level_size == (MAX_REACTION_LEVEL+1));
     
     _lf_sched_semaphore = lf_semaphore_new(0);
     _lf_sched_number_of_workers = number_of_workers;
 
+    size_t queue_size = INITIAL_REACT_QUEUE_SIZE;
     for (size_t i = 0; i <= MAX_REACTION_LEVEL; i++) {
+        if (options != NULL) {
+            if (options.max_reactions_per_level != NULL) {
+                queue_size = options.max_reactions_per_level[i];
+            }
+        }
         // Initialize the reaction vectors
-        _lf_sched_array_of_reaction_vectors[i] = vector_new(INITIAL_REACT_QUEUE_SIZE);
+        _lf_sched_array_of_reaction_vectors[i] = vector_new(queue_size);
         // Initialize the mutexes for the reaction vectors
         lf_mutex_init(&_lf_sched_array_of_reaction_vectors_mutexes[i]);
     }

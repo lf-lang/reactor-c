@@ -46,6 +46,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../utils/pqueue_support.h"
 #include "scheduler_sync_tag_advance.c"
 
+#ifndef MAX_REACTION_LEVEL
+#define MAX_REACTION_LEVEL INITIAL_REACT_QUEUE_SIZE
+#endif
 
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;
@@ -365,21 +368,38 @@ void _lf_sched_wait_for_work(size_t worker_number) {
 ///////////////////// Scheduler Init and Destroy API /////////////////////////
 /**
  * @brief Initialize the scheduler.
- * 
+ *
  * This has to be called before other functions of the scheduler can be used.
- * 
- * @param number_of_workers Indicate how many workers this scheduler will be managing.
+ *
+ * @param number_of_workers Indicate how many workers this scheduler will be
+ *  managing.
+ * @param option Pointer to a `sched_options_t` struct containing additional
+ *  scheduler options. Can be NULL.
  */
-void lf_sched_init(size_t number_of_workers) {
+void lf_sched_init(
+    size_t number_of_workers, 
+    sched_options_t* options
+) {
     DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
-    
+    size_t queue_size = INITIAL_REACT_QUEUE_SIZE;
+    if (options != NULL) {
+        if (options.max_reactions_per_level != NULL) {
+            assert(options.max_reactions_per_level_size == (MAX_REACTION_LEVEL+1));
+            // Recalculate the queue size
+            queue_size = 0;
+            for (size_t i = 0; i <= MAX_REACTION_LEVEL; i++) {
+                queue_size += options.max_reactions_per_level[i];
+            }
+        }
+    }
+
     _lf_sched_semaphore = lf_semaphore_new(0);
     _lf_sched_number_of_workers = number_of_workers;
 
     // Reaction queue ordered first by deadline, then by level.
     // The index of the reaction holds the deadline in the 48 most significant bits,
     // the level in the 16 least significant bits.
-    reaction_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
+    reaction_q = pqueue_init(queue_size, in_reverse_order, get_reaction_index,
             get_reaction_position, set_reaction_position, reaction_matches, print_reaction); 
     transfer_q = pqueue_init(_lf_number_of_threads, in_reverse_order, get_reaction_index,
         get_reaction_position, set_reaction_position, reaction_matches, print_reaction);

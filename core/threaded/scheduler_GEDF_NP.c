@@ -248,21 +248,42 @@ void _lf_sched_wait_for_work(size_t worker_number) {
 ///////////////////// Scheduler Init and Destroy API /////////////////////////
 /**
  * @brief Initialize the scheduler.
- * 
+ *
  * This has to be called before other functions of the scheduler can be used.
- * 
- * @param number_of_workers The number of workers this scheduler will be managing.
+ *
+ * @param number_of_workers Indicate how many workers this scheduler will be
+ *  managing.
+ * @param option Pointer to a `sched_options_t` struct containing additional
+ *  scheduler options. Can be NULL.
  */
-void lf_sched_init(size_t number_of_workers) {
+void lf_sched_init(
+    size_t number_of_workers, 
+    sched_options_t* options
+) {
     DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
+    if (options != NULL) {
+        if (options.max_reactions_per_level != NULL) {
+            assert(options.max_reactions_per_level_size == (MAX_REACTION_LEVEL+1));
+        }
+    }
     
     _lf_sched_semaphore = lf_semaphore_new(0);
     _lf_sched_number_of_workers = number_of_workers;
 
+    size_t queue_size = INITIAL_REACT_QUEUE_SIZE;
     for (size_t i = 0; i <= MAX_REACTION_LEVEL; i++) {
+        if (options != NULL) {
+            if (options.max_reactions_per_level != NULL) {
+                queue_size = options.max_reactions_per_level[i];
+            }
+        }
         // Initialize the reaction queues
-        _lf_sched_vector_of_reaction_qs[i] = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
-                get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
+        _lf_sched_vector_of_reaction_qs[i] = pqueue_init(
+            queue_size, 
+            in_reverse_order, get_reaction_index,
+            get_reaction_position, set_reaction_position, 
+            reaction_matches, print_reaction
+        );
         // Initialize the mutexes for the reaction queues
         lf_mutex_init(&_lf_sched_vector_of_reaction_qs_mutexes[i]);
     }

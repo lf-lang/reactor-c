@@ -749,8 +749,6 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
  * This assumes the mutex lock is held by the caller.
  */
 void _lf_initialize_start_tag() {
-    // Initialize the scheduler
-    lf_sched_init((size_t)_lf_number_of_threads);
 
     // Add reactions invoked at tag (0,0) (including startup reactions) to the reaction queue
     _lf_trigger_startup_reactions(); 
@@ -1126,6 +1124,9 @@ int lf_reactor_c_main(int argc, char* argv[]) {
             && process_args(argc, argv)) {
         lf_mutex_lock(&mutex); // Sets start_time
         initialize();
+        
+        // Initialize the scheduler
+        lf_sched_init((size_t)_lf_number_of_threads);
 
         // Call the following function only once, rather than per worker thread (although 
         // it can be probably called in that manner as well).
