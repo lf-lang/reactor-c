@@ -548,6 +548,30 @@ struct trigger_t {
                                         // Note: The physical_time_of_arrival is only passed down one level of the hierarchy. Default: NEVER.
 #endif
 };
+
+/**
+ * An allocation record that is used by a destructor for a reactor
+ * to free memory that has been dynamically allocated for the particular
+ * instance of the reactor.  This will be an element of linked list.
+ */
+typedef struct allocation_record_t {
+	void* allocated;
+	allocation_record_t *next;
+} allocation_record_t;
+
+/**
+ * The first element of every self struct defined in generated code
+ * will be a pointer to an allocation record, which is either NULL
+ * or the head of a NULL-terminated linked list of allocation records.
+ * Casting the self struct to this type enables access to this list
+ * by the function {@link free_reactor(self_t)}. To allocate memory
+ * for the reactor that will be freed by that function, allocate the
+ * memory using {@link _lf_allocate(size_t,size_t,self_t)}.
+ */
+typedef struct self_base_t {
+	allocation_record_t *allocations;
+};
+
 //  ======== Function Declarations ========  //
 
 /**
