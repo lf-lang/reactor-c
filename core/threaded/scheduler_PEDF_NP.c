@@ -512,14 +512,31 @@ void _lf_sched_wait_for_work(size_t worker_number) {
 ///////////////////// Scheduler Init and Destroy API /////////////////////////
 /**
  * @brief Initialize the scheduler.
- * 
+ *
  * This has to be called before other functions of the scheduler can be used.
- * 
- * @param number_of_workers Indicate how many workers this scheduler will be managing.
+ *
+ * @param number_of_workers Indicate how many workers this scheduler will be
+ *  managing.
+ * @param option Pointer to a `sched_options_t` struct containing additional
+ *  scheduler options. Can be NULL.
  */
-void lf_sched_init(size_t number_of_workers) {
+void lf_sched_init(
+    size_t number_of_workers, 
+    sched_options_t* options
+) {
     DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
-
+    size_t queue_size = INITIAL_REACT_QUEUE_SIZE;
+    if (options != NULL) {
+        if (options.max_reactions_per_level != NULL) {
+            assert(options.max_reactions_per_level_size == (MAX_REACTION_LEVEL+1));
+            // Recalculate the queue size
+            queue_size = 0;
+            for (size_t i = 0; i <= MAX_REACTION_LEVEL; i++) {
+                queue_size += options.max_reactions_per_level[i];
+            }
+        }
+    }
+    
     _lf_sched_number_of_workers = number_of_workers;
 
     // Reaction queue ordered first by deadline, then by level.
@@ -541,7 +558,7 @@ void lf_sched_init(size_t number_of_workers) {
         lf_mutex_init(&_lf_sched_threads_info[i].mutex);
         _lf_sched_threads_info[i].ready_reactions = 
             pqueue_init(
-                INITIAL_REACT_QUEUE_SIZE, 
+                queue_size, 
                 in_reverse_order, 
                 get_reaction_index,
                 get_reaction_position, 
@@ -549,10 +566,8 @@ void lf_sched_init(size_t number_of_workers) {
                 reaction_matches, 
                 print_reaction
             );
-        _lf_sched_threads_info[i].output_reactions = 
-            vector_new(INITIAL_REACT_QUEUE_SIZE);
-        _lf_sched_threads_info[i].done_reactions = 
-            vector_new(INITIAL_REACT_QUEUE_SIZE);
+        _lf_sched_threads_info[i].output_reactions = vector_new(queue_size);
+        _lf_sched_threads_info[i].done_reactions = vector_new(queue_size);
         _lf_sched_threads_info[i].should_stop = false;
         _lf_sched_threads_info[i].is_idle = 0;
     }

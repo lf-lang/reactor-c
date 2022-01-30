@@ -55,7 +55,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  program. Ignored if max_reactions_per_level is NULL.
  */
 typedef struct {
-    size_t max_reactions_per_level[];
+    size_t* max_reactions_per_level;
     size_t max_reactions_per_level_size;
 } sched_options_t;
 
