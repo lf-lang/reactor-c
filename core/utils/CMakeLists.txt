@@ -1,2 +1,3 @@
 set(GENERAL_SOURCES vector.c pqueue.c util.c)
-add_sources_to_parent(GENERAL_SOURCES "" "")
+set(MULTITHREADED_SOURCES semaphore.c)
+add_sources_to_parent(GENERAL_SOURCES MULTITHREADED_SOURCES "")
