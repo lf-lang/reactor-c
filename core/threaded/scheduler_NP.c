@@ -64,8 +64,6 @@ _lf_sched_instance_t* _lf_sched_instance;
  */
 static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
     size_t reaction_level = LEVEL(reaction->index);
-    DEBUG_PRINT("Scheduler: Trying to lock the mutex for level %d.",
-                reaction_level);
 #ifdef FEDERATED
     // Lock the mutex if federated because a federate can insert reactions with
     // a level equal to the current level.
@@ -80,8 +78,11 @@ static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
     // ensure that all worker threads are idle, and thus, none are triggering
     // reactions (and therefore calling this function).
     if (reaction_level == current_level) {
+        DEBUG_PRINT("Scheduler: Trying to lock the mutex for level %d.",
+                    reaction_level);
         lf_mutex_lock(
             &_lf_sched_instance->_lf_sched_array_of_mutexes[reaction_level]);
+        DEBUG_PRINT("Scheduler: Locked the mutex for level %d.", reaction_level);
     }
     // The level index for the current level can sometimes become negative. Set
     // it back to zero before adding a reaction (otherwise worker threads will
@@ -90,10 +91,14 @@ static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
         _lf_sched_instance->_lf_sched_indexes[reaction_level] = 0;
     }
 #endif
-    DEBUG_PRINT("Scheduler: Locked the mutex for level %d.", reaction_level);
     int reaction_q_level_index =
         lf_atomic_fetch_add(&_lf_sched_instance->_lf_sched_indexes[reaction_level], 1);
     assert(reaction_q_level_index >= 0);
+    DEBUG_PRINT(
+        "Scheduler: Accessing triggered reactions at the level %u with index %u.", 
+        reaction_level, 
+        reaction_q_level_index
+    );
     *vector_at(&((vector_t*)_lf_sched_instance
                      ->_lf_sched_triggered_reactions)[reaction_level],
                reaction_q_level_index) = (void*)reaction;
@@ -274,6 +279,8 @@ void lf_sched_init(
         return;
     }
 
+    DEBUG_PRINT("Scheduler: Max reaction level: %u", _lf_sched_instance->max_reaction_level);
+
     _lf_sched_instance->_lf_sched_triggered_reactions =
         calloc((_lf_sched_instance->max_reaction_level + 1), sizeof(vector_t));
 
@@ -281,7 +288,7 @@ void lf_sched_init(
         (_lf_sched_instance->max_reaction_level + 1), sizeof(lf_mutex_t));
 
     _lf_sched_instance->_lf_sched_indexes = (volatile int*)calloc(
-        (_lf_sched_instance->max_reaction_level + 1), sizeof(int));
+        (_lf_sched_instance->max_reaction_level + 1), sizeof(volatile int));
 
     size_t queue_size = INITIAL_REACT_QUEUE_SIZE;
     for (size_t i = 0; i <= _lf_sched_instance->max_reaction_level; i++) {
@@ -293,6 +300,13 @@ void lf_sched_init(
         // Initialize the reaction vectors
         ((vector_t*)_lf_sched_instance->_lf_sched_triggered_reactions)[i] =
             vector_new(queue_size);
+        
+        DEBUG_PRINT(
+            "Scheduler: Initialized vector of reactions for level %u with size %u",
+            i,
+            queue_size
+        );
+        
         // Initialize the mutexes for the reaction vectors
         lf_mutex_init(&_lf_sched_instance->_lf_sched_array_of_mutexes[i]);
     }
