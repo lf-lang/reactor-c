@@ -42,17 +42,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * @brief Struct representing most common scheduler options.
- * 
- * @param max_reactions_per_level Optional. An array of non-negative integers, where each
- *  element represents a reaction level (corresponding to the index), and the
- *  value of the element represents the maximum number of reactions in the
- *  program for that level. For example, max_reactions_per_level = { 2, 3 }
+ *
+ * @param max_reactions_per_level Optional. An array of non-negative integers,
+ *  where each element represents a reaction level (corresponding to the index),
+ *  and the value of the element represents the maximum number of reactions in
+ *  the program for that level. For example, max_reactions_per_level = { 2, 3 }
  *  indicates that there will be a maximum of 2 reactions in the program with a
  *  level of 0, and a maximum of 3 reactions in the program with a level of 1.
  *  Can be NULL.
- * @param max_reactions_per_level_size Optional. The size of the `max_reactions_per_level`
- *  array, which should be the maximum level over all reactions in the
- *  program. Ignored if max_reactions_per_level is NULL.
+ * @param max_reactions_per_level_size Optional. The size of the
+ *  `max_reactions_per_level` array, which should be the maximum level over all
+ *  reactions in the program. Ignored if max_reactions_per_level is NULL.
  */
 typedef struct {
     size_t* max_reactions_per_level;
@@ -63,6 +63,7 @@ typedef struct {
  * @brief Initialize the scheduler.
  *
  * This has to be called before other functions of the scheduler can be used.
+ * If the scheduler is already initialized, this will be a no-op.
  *
  * @param number_of_workers Indicate how many workers this scheduler will be
  *  managing.
