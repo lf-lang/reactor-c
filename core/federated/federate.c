@@ -2209,6 +2209,10 @@ void terminate_execution() {
     free(_fed.inbound_socket_listeners);
     free(federation_metadata.rti_host);
     free(federation_metadata.rti_user);
+    _lf_free_all_reactors();
+    free(_lf_tokens_with_ref_count);
+    free(_lf_is_present_fields);
+    free(_lf_is_present_fields_abbreviated);
 }
 
 /** 

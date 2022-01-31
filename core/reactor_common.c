@@ -167,6 +167,85 @@ void set_federation_id(char* fid);
 #endif
 
 /**
+ * Allocate memory using calloc (so the allocated memory is zeroed out)
+ * and record the allocated memory on the specified self struct so that
+ * it will be freed when calling {@link free_reactor(self_base_t)}.
+ * @param count The number of items of size 'size' to accomodate.
+ * @param size The size of each item.
+ * @param self The self struct on which to record the allocation.
+ */
+void* _lf_allocate(size_t count, size_t size, struct self_base_t *self) {
+	void *mem = calloc(count, size);
+	struct allocation_record_t* head = self->allocations;
+	struct allocation_record_t* record = (allocation_record_t*)calloc(1, sizeof(allocation_record_t));
+	self->allocations = record;
+	record->allocated = mem;
+	record->next = head;
+	return mem;
+}
+
+/**
+ * Head of a list of pointers to dynamically generated reactor
+ * self structs to be freed in terminate().
+ */
+struct allocation_record_t *_lf_reactors_to_free = NULL;
+
+/**
+ * Allocate memory for a new runtime instance of a reactor.
+ * This records the reactor on the list of reactors to be freed at
+ * termination of the program. If you plan to free the reactor before
+ * termination of the program, use calloc instead (which this uses).
+ * @param size The size of the self struct, obtained with sizeof().
+ */
+void* _lf_new_reactor(size_t size) {
+	void* result = calloc(1, size);
+	struct allocation_record_t* head = _lf_reactors_to_free;
+	struct allocation_record_t* record = (allocation_record_t*)calloc(1, sizeof(allocation_record_t));
+	_lf_reactors_to_free = record;
+	record->allocated = result;
+	record->next = head;
+	return result;
+}
+
+/**
+ * Free memory recorded on the specified allocations list.
+ * @param head The head of the allocations list.
+ */
+void _lf_free_memory_on_list(struct allocation_record_t* head) {
+	while (head != NULL) {
+		free(head->allocated);
+		struct allocation_record_t* tmp = head->next;
+		free(head);
+		head = tmp;
+	}
+}
+
+/**
+ * Free memory recorded on the allocations list of the specified reactor
+ * and then free the specified self struct.
+ * @param self The self struct of the reactor.
+ */
+void _lf_free_reactor(struct self_base_t *self) {
+	_lf_free_memory_on_list(self->allocations);
+	free(self);
+}
+
+/**
+ * Free all the reactors that are allocated with
+ * {@link #_lf_new_reactor(size_t)}.
+ */
+void _lf_free_all_reactors() {
+	struct allocation_record_t* head = _lf_reactors_to_free;
+	while (head != NULL) {
+		_lf_free_reactor((self_base_t*)head->allocated);
+		struct allocation_record_t* tmp = head->next;
+		free(head);
+		head = tmp;
+	}
+	_lf_reactors_to_free = NULL;
+}
+
+/**
  * Set the stop tag.
  * 
  * This function will always choose the minimum

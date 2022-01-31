@@ -309,12 +309,12 @@ typedef unsigned short int ushort;
  */
 typedef enum {defer, drop, replace} lf_spacing_policy_t;
 
- /* An enum that enables the C core library to
+/**
+ * An enum that enables the C core library to
  * ignore freeing the void* inside a token if the void*
  * value is garbage collected by an external controller
  */
 typedef enum {no=0, token_and_value, token_only} ok_to_free_t;
-
 
 /**
  * Status of a given port at a given logical time.
@@ -556,7 +556,7 @@ struct trigger_t {
  */
 typedef struct allocation_record_t {
 	void* allocated;
-	allocation_record_t *next;
+	struct allocation_record_t *next;
 } allocation_record_t;
 
 /**
@@ -564,13 +564,13 @@ typedef struct allocation_record_t {
  * will be a pointer to an allocation record, which is either NULL
  * or the head of a NULL-terminated linked list of allocation records.
  * Casting the self struct to this type enables access to this list
- * by the function {@link free_reactor(self_t)}. To allocate memory
+ * by the function {@link _lf_free_reactor(self_base_t*)}. To allocate memory
  * for the reactor that will be freed by that function, allocate the
- * memory using {@link _lf_allocate(size_t,size_t,self_t)}.
+ * memory using {@link _lf_allocate(size_t,size_t,self_base_t*)}.
  */
 typedef struct self_base_t {
-	allocation_record_t *allocations;
-};
+	struct allocation_record_t *allocations;
+} self_base_t;
 
 //  ======== Function Declarations ========  //
 
@@ -613,6 +613,37 @@ void print_snapshot(void);
  * all federates stop at the same logical time.
  */
 void request_stop(void);
+
+/**
+ * Allocate memory using calloc (so the allocated memory is zeroed out)
+ * and record the allocated memory on the specified self struct so that
+ * it will be freed when calling {@link free_reactor(self_base_t)}.
+ * @param count The number of items of size 'size' to accomodate.
+ * @param size The size of each item.
+ * @param self The self struct on which to record the allocation.
+ */
+void* _lf_allocate(size_t count, size_t size, struct self_base_t *self);
+
+/**
+ * Allocate memory for a new runtime instance of a reactor.
+ * This records the reactor on the list of reactors to be freed at
+ * termination of the program. If you plan to free the reactor before
+ * termination of the program, use calloc instead (which this uses).
+ * @param size The size of the self struct, obtained with sizeof().
+ */
+void* _lf_new_reactor(size_t size);
+
+/**
+ * Free all the reactors that are allocated with
+ * {@link #_lf_new_reactor(size_t)}.
+ */
+void _lf_free_all_reactors();
+
+/**
+ * Free memory recorded on the allocations list of the specified reactor.
+ * @param self The self struct of the reactor.
+ */
+void _lf_free_reactor(struct self_base_t *self);
 
 /** 
  * Generated function that optionally sets default command-line options.
