@@ -1,35 +1,36 @@
 /*************
-Copyright (c) 2022, The University of Texas at Dallas.
-Copyright (c) 2022, The University of California at Berkeley.
+Copyright (c) 2022, The University of Texas at Dallas. Copyright (c) 2022, The
+University of California at Berkeley.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
 
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /**
  * @file scheduler_params.h
  * @author Soroush Bateni <soroush@utdallas.edu>
  * @brief Scheduler parameters.
- * 
+ *
  * Meant for book-keeping in the threaded schedulers in the reactor C runtime.
- * 
+ *
  * @copyright Copyright (c) 2022, The University of Texas at Dallas.
  * @copyright Copyright (c) 2022, The University of California at Berkeley.
  */
@@ -37,89 +38,149 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef LF_SCHEDULER_PARAMS_H
 #define LF_SCHEDULER_PARAMS_H
 
+#ifndef NUMBER_OF_WORKERS // Enable thread-related platform functions
+#define NUMBER_OF_WORKERS 1
+#endif  // NUMBER_OF_WORKERS
+
+#include "../utils/semaphore.h"
+
+extern lf_mutex_t mutex;
+
+
 /**
- * @brief Paramters used in schedulers in the threaded reactor C runtime.
- * 
+ * @brief Paramters used in schedulers of the threaded reactor C runtime.
+ *
+ * @note Members of this struct are added based on existing schedulers' needs.
+ *  These should be expanded to accommodate new schedulers.
  */
 typedef struct {
     /**
      * @brief Maximum number of levels for reactions in the program.
-     * 
+     *
      */
     size_t max_reaction_level;
 
     /**
-     * @brief Used by the scheduler to signal the maximum number of worker threads
-     * that should be executing work at the same time.
+     * @brief Used by the scheduler to signal the maximum number of worker
+     * threads that should be executing work at the same time.
      *
      * Initially, the count is set to 0. Maximum value of count should be
      * `_lf_sched_number_of_workers`.
      *
-     * For example, if the scheduler releases the semaphore with a count of 4, no
-     * more than 4 worker threads should wake up to process reactions.
+     * For example, if the scheduler releases the semaphore with a count of 4,
+     * no more than 4 worker threads should wake up to process reactions.
+     *
+     * FIXME: specific comment
      */
     semaphore_t* _lf_sched_semaphore; 
 
     /**
      * @brief Indicate whether the program should stop
-     * 
+     *
      */
     volatile bool _lf_sched_should_stop;
 
     /**
-     * @brief Array of reaction vectors.
-     * 
-     * Each element is a reaction vector for a reaction level.
-     * 
+     * @brief Hold triggered reactions.
+     *
      */
-    vector_t* _lf_sched_array_of_reaction_vectors;
+    void* _lf_sched_triggered_reactions;
 
     /**
-     * @brief Mutexes for the reaction vectors.
-     * 
-     * In case all threads are idle, there is no need to lock any of these mutexes.
-     * Otherwise, depending on the situation, the appropriate mutex for a given
-     * level must be locked before accessing the reaction vector of that level.
-     * 
+     * @brief An array of mutexes.
+     *
+     * Can be used to avoid race conditions. Schedulers are allowed to
+     * initialize as many mutexes as they deem fit.
      */
-    lf_mutex_t* _lf_sched_array_of_reaction_vectors_mutexes;
+    lf_mutex_t* _lf_sched_array_of_mutexes;
 
     /**
-     * @brief Indexes for each reaction vector (one per reaction level).
-     * 
-     * Used for accessing `_lf_sched_array_of_reaction_vectors`. Note that race
-     * conditions can occur when accessing this index. This must be avoided either
-     * by using atomic operations, locking one of the
-     * `_lf_sched_array_of_reaction_vectors_mutexes`, or ensuring that no other
-     * worker thread can access this index (e.g., by making sure that all worker
-     * threads are idle).
+     * @brief An array of atomic indexes.
+     *
+     * Can be used to avoid race conditions. Schedulers are allowed to to use as
+     * many indexes as they deem fit.
      */
-    volatile int* _lf_sched_level_indexes;
+    volatile int* _lf_sched_indexes;
 
     /**
-     * @brief Vector of currently executing reactions.
+     * @brief Hold currently executing reactions.
      */
-    vector_t* executing_v;
+    void* _lf_sched_executing_reactions;
+
+    /**
+     * @brief Hold reactions temporarily.
+     */
+    void* _lf_sched_transfer_reactions;
 
     /**
      * @brief Number of workers that this scheduler is managing.
-     * 
+     *
      */
     size_t _lf_sched_number_of_workers;
 
     /**
      * @brief Number of workers that are idle.
-     * 
+     *
      * Adding to/subtracting from this variable must be done atomically.
-     * 
+     *
      */
     volatile size_t _lf_sched_number_of_idle_workers;
 
     /**
      * @brief The next level of reactions to execute.
-     * 
+     *
      */
     volatile size_t _lf_sched_next_reaction_level;
 } _lf_sched_params_t;
+
+/**
+ * @brief Initialize `param` using the provided information.
+ * 
+ * No-op if `param` is already initialized (i.e., not NULL).
+ * This function assumes that mutex is allowed to be recursively locked.
+ * 
+ * @param param The `_lf_sched_params_t` object to initialize.
+ * @param number_of_workers  Number of workers in the program.
+ * @param options Reference to scheduler options in the form of a `sched_options_t`.
+ */
+void init_sched_param(
+    _lf_sched_params_t** param,
+    size_t number_of_workers,
+    sched_options_t* options) {
+
+    // Check if the param is already initialized
+    lf_mutex_lock(&mutex); // Safeguard against multiple threads calling this 
+                           // function.
+    if (*param != NULL) {
+        // Already initialized
+        lf_mutex_unlock(&mutex);
+        return;
+    } else {
+        *param =
+            (_lf_sched_params_t*)calloc(1, sizeof(_lf_sched_params_t));
+    }
+    lf_mutex_unlock(&mutex);
+
+    if (options == NULL || options->max_reaction_level == 0) {
+        error_print_and_exit(
+            "Scheduler: Internal error. Schedulers "
+            "require options.max_reaction_level "
+            "to be set.");
+    }
+
+    if (options != NULL) {
+        if (options->max_reactions_per_level != NULL) {
+            (*param)->max_reaction_level =
+                options->max_reaction_level;
+        }
+    }
+
+    (*param)->_lf_sched_semaphore = lf_semaphore_new(0);
+    (*param)->_lf_sched_number_of_workers = number_of_workers;
+    (*param)->_lf_sched_next_reaction_level = 1;
+
+    (*param)->_lf_sched_should_stop = false;
+
+}
 
 #endif // LF_SCHEDULER_PARAMS_H

@@ -50,13 +50,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  indicates that there will be a maximum of 2 reactions in the program with a
  *  level of 0, and a maximum of 3 reactions in the program with a level of 1.
  *  Can be NULL.
- * @param max_reactions_per_level_size Optional. The size of the
- *  `max_reactions_per_level` array, which should be the maximum level over all
- *  reactions in the program. Ignored if max_reactions_per_level is NULL.
+ * @param max_reaction_level Required. The maximum level over all
+ *  reactions in the program. Should be the (size-1) of the
+ *  `max_reactions_per_level` array if it is not NULL.
  */
 typedef struct {
     size_t* max_reactions_per_level;
-    size_t max_reactions_per_level_size;
+    size_t max_reaction_level;
 } sched_options_t;
 
 /**
