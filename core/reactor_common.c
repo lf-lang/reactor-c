@@ -176,6 +176,7 @@ void set_federation_id(char* fid);
  */
 void* _lf_allocate(size_t count, size_t size, struct self_base_t *self) {
 	void *mem = calloc(count, size);
+    if (mem == NULL) error_print_and_exit("Out of memory!");
 	struct allocation_record_t* head = self->allocations;
 	struct allocation_record_t* record = (allocation_record_t*)calloc(1, sizeof(allocation_record_t));
 	self->allocations = record;
@@ -199,8 +200,10 @@ struct allocation_record_t *_lf_reactors_to_free = NULL;
  */
 void* _lf_new_reactor(size_t size) {
 	void* result = calloc(1, size);
+    if (result == NULL) error_print_and_exit("Out of memory!");
 	struct allocation_record_t* head = _lf_reactors_to_free;
 	struct allocation_record_t* record = (allocation_record_t*)calloc(1, sizeof(allocation_record_t));
+    if (record == NULL) error_print_and_exit("Out of memory!");
 	_lf_reactors_to_free = record;
 	record->allocated = result;
 	record->next = head;
@@ -814,6 +817,7 @@ event_t* _lf_get_new_event() {
     event_t* e = (event_t*)pqueue_pop(recycle_q);
     if (e == NULL) {
         e = (event_t*)calloc(1, sizeof(struct event_t));
+        if (e == NULL) error_print_and_exit("Out of memory!");
 #ifdef FEDERATED_DECENTRALIZED
         e->intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
 #endif
@@ -1994,4 +1998,8 @@ void termination() {
             printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
         }
     }
+    _lf_free_all_reactors();
+    free(_lf_tokens_with_ref_count);
+    free(_lf_is_present_fields);
+    free(_lf_is_present_fields_abbreviated);
 }
