@@ -226,7 +226,7 @@ void lf_sched_init(
     sched_params_t* params
 ) {
     DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
-    if(!init_sched_param(&_lf_sched_instance, number_of_workers, params)) {
+    if(!init_sched_instance(&_lf_sched_instance, number_of_workers, params)) {
         // Already initialized
         return;
     }

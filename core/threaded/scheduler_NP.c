@@ -262,7 +262,7 @@ void lf_sched_init(
 
     // This scheduler is unique in that it requires `max_reactions_per_level` to
     // work correctly.
-    if (init_sched_param(&_lf_sched_instance, number_of_workers, params)) {
+    if (init_sched_instance(&_lf_sched_instance, number_of_workers, params)) {
         // Scheduler has not been initialized before.
         if (params == NULL || params->max_reactions_per_level == NULL) {
             error_print_and_exit(

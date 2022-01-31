@@ -162,7 +162,7 @@ static inline bool _lf_sched_distribute_ready_reaction(reaction_t* ready_reactio
     // index, whichever is larger.
     size_t worker_id = MAX(ready_reaction->worker_affinity, _lf_sched_balancing_index);
     // Rotate through all the workers once.
-    for(size_t i=0; i<_lf_sched_number_of_workers; i++) {
+    for(size_t i=0; i<_lf_sched_instance->_lf_sched_number_of_workers; i++) {
         // Go over all the workers to see if anyone is idle.
         if (_lf_sched_is_worker_idle(worker_id)) {
             // The worker is idle.
@@ -191,7 +191,7 @@ static inline bool _lf_sched_distribute_ready_reaction(reaction_t* ready_reactio
         worker_id++;
         
         // Rotate through workers in a circular fashion.
-        if (worker_id == _lf_sched_number_of_workers) {
+        if (worker_id == _lf_sched_instance->_lf_sched_number_of_workers) {
             worker_id = 0;
         }
 
@@ -328,7 +328,7 @@ static inline int _lf_sched_distribute_ready_reactions_locked() {
  */
 bool _lf_sched_update_queues() {
     bool is_any_worker_busy = false;
-    for (int i = 0; i < _lf_sched_number_of_workers; i++) {
+    for (int i = 0; i < _lf_sched_instance->_lf_sched_number_of_workers; i++) {
         // Check if we have actually assigned work to this worker thread previously.
         reaction_t* reaction_to_add = NULL;
         reaction_t* reaction_to_remove = NULL;
@@ -376,7 +376,7 @@ bool _lf_sched_update_queues() {
  * This assumes that the caller is not holding any thread mutexes.
  */
 void _lf_sched_notify_workers() {
-    for (int i=0; i< _lf_sched_number_of_workers; i++) {
+    for (int i=0; i< _lf_sched_instance->_lf_sched_number_of_workers; i++) {
         if (pqueue_size(_lf_sched_threads_info[i].ready_reactions) > 0 &&
             lf_bool_compare_and_swap(&_lf_sched_threads_info[i].is_idle, 1, 0)) {
             DEBUG_PRINT("Notifying worker %d that there is work to do.", i);
@@ -435,7 +435,7 @@ bool _lf_sched_try_advance_tag_and_distribute() {
  * 
  */
 void _lf_sched_signal_stop() {
-    for (int i=0; i < _lf_sched_number_of_workers; i++) {
+    for (int i=0; i < _lf_sched_instance->_lf_sched_number_of_workers; i++) {
         lf_mutex_lock(&_lf_sched_threads_info[i].mutex);
         _lf_sched_threads_info[i].should_stop = true;
         lf_cond_signal(&_lf_sched_threads_info[i].cond);
@@ -504,7 +504,7 @@ void lf_sched_init(
     sched_params_t* params
 ) {
     DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
-    if(!init_sched_param(&_lf_sched_instance, number_of_workers, params)) {
+    if(!init_sched_instance(&_lf_sched_instance, number_of_workers, params)) {
         // Already initialized
         return;
     }
@@ -519,6 +519,7 @@ void lf_sched_init(
             }
         }
     }
+    DEBUG_PRINT("Scheduler: Adopting a queue size of %d.", queue_size);
 
     // Reaction queue ordered first by deadline, then by level.
     // The index of the reaction holds the deadline in the 48 most significant bits,
@@ -532,9 +533,9 @@ void lf_sched_init(
     
     _lf_sched_threads_info = 
         (_lf_sched_thread_info_t*)malloc(
-            sizeof(_lf_sched_thread_info_t) * _lf_sched_number_of_workers);
+            sizeof(_lf_sched_thread_info_t) * _lf_sched_instance->_lf_sched_number_of_workers);
     
-    for (int i=0; i < _lf_sched_number_of_workers; i++) {
+    for (int i=0; i < _lf_sched_instance->_lf_sched_number_of_workers; i++) {
         lf_cond_init(&_lf_sched_threads_info[i].cond);
         lf_mutex_init(&_lf_sched_threads_info[i].mutex);
         _lf_sched_threads_info[i].ready_reactions = 
@@ -560,7 +561,7 @@ void lf_sched_init(
  * This must be called when the scheduler is no longer needed.
  */
 void lf_sched_free() {
-    for (int i=0; i < _lf_sched_number_of_workers; i++) {
+    for (int i=0; i < _lf_sched_instance->_lf_sched_number_of_workers; i++) {
         pqueue_free(_lf_sched_threads_info[i].ready_reactions);
         vector_free(&_lf_sched_threads_info[i].output_reactions);
         vector_free(&_lf_sched_threads_info[i].done_reactions);
@@ -590,9 +591,9 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
         reaction_t* reaction_to_return = (reaction_t*)pqueue_pop(_lf_sched_threads_info[worker_number].ready_reactions);
         lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
         
-        if (reaction_to_return == NULL && _lf_sched_number_of_workers > 1) {
+        if (reaction_to_return == NULL && _lf_sched_instance->_lf_sched_number_of_workers > 1) {
             // Try to steal
-            int index_to_steal = (worker_number + 1) % _lf_sched_number_of_workers;
+            int index_to_steal = (worker_number + 1) % _lf_sched_instance->_lf_sched_number_of_workers;
             lf_mutex_lock(&_lf_sched_threads_info[index_to_steal].mutex);
             reaction_to_return = 
                 pqueue_pop(_lf_sched_threads_info[index_to_steal].ready_reactions);

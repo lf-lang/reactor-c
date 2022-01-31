@@ -43,6 +43,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif  // NUMBER_OF_WORKERS
 
 #include "../utils/semaphore.h"
+#include "scheduler.h"
 
 extern lf_mutex_t mutex;
 
@@ -134,54 +135,52 @@ typedef struct {
 } _lf_sched_instance_t;
 
 /**
- * @brief Initialize `param` using the provided information.
+ * @brief Initialize `instance` using the provided information.
  * 
- * No-op if `param` is already initialized (i.e., not NULL).
+ * No-op if `instance` is already initialized (i.e., not NULL).
  * This function assumes that mutex is allowed to be recursively locked.
  * 
- * @param param The `_lf_sched_instance_t` object to initialize.
+ * @param instance The `_lf_sched_instance_t` object to initialize.
  * @param number_of_workers  Number of workers in the program.
- * @param params Reference to scheduler parameters in the form of a `sched_params_t`.
- * @return `true` if initialization was performed. `false` if param is already
+ * @param params Reference to scheduler parameters in the form of a
+ * `sched_params_t`. Can be NULL.
+ * @return `true` if initialization was performed. `false` if instance is already
  *  initialized (checked in a thread-safe way).
  */
-bool init_sched_param(
-    _lf_sched_instance_t** param,
+bool init_sched_instance(
+    _lf_sched_instance_t** instance,
     size_t number_of_workers,
     sched_params_t* params) {
 
-    // Check if the param is already initialized
+    // Check if the instance is already initialized
     lf_mutex_lock(&mutex); // Safeguard against multiple threads calling this 
                            // function.
-    if (*param != NULL) {
+    if (*instance != NULL) {
         // Already initialized
         lf_mutex_unlock(&mutex);
         return false;
     } else {
-        *param =
+        *instance =
             (_lf_sched_instance_t*)calloc(1, sizeof(_lf_sched_instance_t));
     }
     lf_mutex_unlock(&mutex);
 
-    if (params == NULL || params->max_reaction_level == 0) {
-        error_print_and_exit(
-            "Scheduler: Internal error. Schedulers "
-            "require params.max_reaction_level "
-            "to be set.");
+    if (params == NULL || params->max_reactions_per_level_size == 0) {
+        (*instance)->max_reaction_level = DEFAULT_MAX_REACTION_LEVEL;
     }
 
     if (params != NULL) {
         if (params->max_reactions_per_level != NULL) {
-            (*param)->max_reaction_level =
-                params->max_reaction_level;
+            (*instance)->max_reaction_level =
+                params->max_reactions_per_level_size - 1;
         }
     }
 
-    (*param)->_lf_sched_semaphore = lf_semaphore_new(0);
-    (*param)->_lf_sched_number_of_workers = number_of_workers;
-    (*param)->_lf_sched_next_reaction_level = 1;
+    (*instance)->_lf_sched_semaphore = lf_semaphore_new(0);
+    (*instance)->_lf_sched_number_of_workers = number_of_workers;
+    (*instance)->_lf_sched_next_reaction_level = 1;
 
-    (*param)->_lf_sched_should_stop = false;
+    (*instance)->_lf_sched_should_stop = false;
 
     return true;
 }

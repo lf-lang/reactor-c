@@ -1126,7 +1126,9 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         initialize();
         
         // Initialize the scheduler
-        lf_sched_init((size_t)_lf_number_of_threads, NULL);
+        lf_sched_init(
+            (size_t)_lf_number_of_threads, 
+            NULL);
 
         // Call the following function only once, rather than per worker thread (although 
         // it can be probably called in that manner as well).
