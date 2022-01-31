@@ -115,7 +115,7 @@ void _lf_sched_notify_workers() {
     // reaction queues).
     size_t workers_to_awaken =
         MIN(_lf_sched_params->_lf_sched_number_of_idle_workers,
-            pqueue_size(_lf_sched_params->_lf_sched_executing_reactions));
+            pqueue_size((pqueue_t*)_lf_sched_params->_lf_sched_executing_reactions));
     DEBUG_PRINT("Scheduler: Notifying %d workers.", workers_to_awaken);
     _lf_sched_params->_lf_sched_number_of_idle_workers -= workers_to_awaken;
     DEBUG_PRINT("Scheduler: New number of idle workers: %u.",
@@ -148,7 +148,7 @@ void _lf_sched_signal_stop() {
  */
 void _lf_sched_try_advance_tag_and_distribute() {
     // Executing queue must be empty when this is called.
-    assert(pqueue_size(_lf_sched_params->_lf_sched_executing_reactions) == 0);
+    assert(pqueue_size((pqueue_t*)_lf_sched_params->_lf_sched_executing_reactions) == 0);
 
     // Loop until it's time to stop or work has been distributed
     while (true) {
@@ -261,7 +261,7 @@ void lf_sched_free() {
     //     pqueue_free(_lf_sched_params->_lf_sched_triggered_reactions[j]);
     //     FIXME: This is causing weird memory errors.
     // }
-    pqueue_free(_lf_sched_params->_lf_sched_executing_reactions);
+    pqueue_free((pqueue_t*)_lf_sched_params->_lf_sched_executing_reactions);
     lf_semaphore_destroy(_lf_sched_params->_lf_sched_semaphore);
 }
 
@@ -291,7 +291,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
         DEBUG_PRINT("Scheduler: Worker %d locked the mutex for level %d.",
                     worker_number, current_level);
         reaction_t* reaction_to_return = (reaction_t*)pqueue_pop(
-            _lf_sched_params->_lf_sched_executing_reactions);
+            (pqueue_t*)_lf_sched_params->_lf_sched_executing_reactions);
         lf_mutex_unlock(
             &_lf_sched_params->_lf_sched_array_of_mutexes[current_level]);
 
