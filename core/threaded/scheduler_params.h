@@ -142,8 +142,10 @@ typedef struct {
  * @param param The `_lf_sched_params_t` object to initialize.
  * @param number_of_workers  Number of workers in the program.
  * @param options Reference to scheduler options in the form of a `sched_options_t`.
+ * @return `true` if initialization was performed. `false` if param is already
+ *  initialized (checked in a thread-safe way).
  */
-void init_sched_param(
+bool init_sched_param(
     _lf_sched_params_t** param,
     size_t number_of_workers,
     sched_options_t* options) {
@@ -154,7 +156,7 @@ void init_sched_param(
     if (*param != NULL) {
         // Already initialized
         lf_mutex_unlock(&mutex);
-        return;
+        return false;
     } else {
         *param =
             (_lf_sched_params_t*)calloc(1, sizeof(_lf_sched_params_t));
@@ -181,6 +183,7 @@ void init_sched_param(
 
     (*param)->_lf_sched_should_stop = false;
 
+    return true;
 }
 
 #endif // LF_SCHEDULER_PARAMS_H

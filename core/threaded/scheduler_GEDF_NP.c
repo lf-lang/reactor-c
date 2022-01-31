@@ -222,7 +222,10 @@ void _lf_sched_wait_for_work(size_t worker_number) {
  */
 void lf_sched_init(size_t number_of_workers, sched_options_t* options) {
     DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
-    init_sched_param(&_lf_sched_params, number_of_workers, options);
+    if(!init_sched_param(&_lf_sched_params, number_of_workers, options)) {
+        // Already initialized
+        return;
+    }
 
     _lf_sched_params->_lf_sched_triggered_reactions = calloc(
         (_lf_sched_params->max_reaction_level + 1),

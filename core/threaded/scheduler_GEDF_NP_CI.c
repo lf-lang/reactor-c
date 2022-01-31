@@ -376,7 +376,10 @@ void _lf_sched_wait_for_work(size_t worker_number) {
  */
 void lf_sched_init(size_t number_of_workers, sched_options_t* options) {
     DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
-    init_sched_param(&_lf_sched_params, number_of_workers, options);
+    if(!init_sched_param(&_lf_sched_params, number_of_workers, options)) {
+        // Already initialized
+        return;
+    }
 
     size_t queue_size = INITIAL_REACT_QUEUE_SIZE;
     if (options != NULL) {
@@ -407,12 +410,12 @@ void lf_sched_init(size_t number_of_workers, sched_options_t* options) {
         set_reaction_position, reaction_matches, print_reaction);
 
     _lf_sched_threads_info = (_lf_sched_thread_info_t*)calloc(
-        sizeof(_lf_sched_thread_info_t),
-        _lf_sched_params->_lf_sched_number_of_workers);
+        _lf_sched_params->_lf_sched_number_of_workers,
+        sizeof(_lf_sched_thread_info_t));
 
     for (int i = 0; i < _lf_sched_params->_lf_sched_number_of_workers; i++) {
         _lf_sched_threads_info[i].output_reactions = pqueue_init(
-            INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
+            queue_size, in_reverse_order, get_reaction_index,
             get_reaction_position, set_reaction_position, reaction_matches,
             print_reaction);
     }

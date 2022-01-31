@@ -92,7 +92,8 @@ static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
 #endif
     DEBUG_PRINT("Scheduler: Locked the mutex for level %d.", reaction_level);
     int reaction_q_level_index =
-        _lf_sched_params->_lf_sched_indexes[reaction_level]++;
+        lf_atomic_fetch_add(&_lf_sched_params->_lf_sched_indexes[reaction_level], 1);
+    assert(reaction_q_level_index >= 0);
     *vector_at(&((vector_t*)_lf_sched_params
                      ->_lf_sched_triggered_reactions)[reaction_level],
                reaction_q_level_index) = (void*)reaction;
@@ -257,19 +258,17 @@ void lf_sched_init(size_t number_of_workers, sched_options_t* options) {
 
     // This scheduler is unique in that it requires `max_reactions_per_level` to
     // work correctly.
-    lf_mutex_lock(&mutex);  // Safeguard against multiple threads calling this 
-                            // function.
-    if (_lf_sched_params == NULL) {
-        // Scheduler is not initialized yet.
+    if (init_sched_param(&_lf_sched_params, number_of_workers, options)) {
+        // Scheduler has not been initialized before.
         if (options == NULL || options->max_reactions_per_level == NULL) {
             error_print_and_exit(
                 "Scheduler: Internal error. The NP scheduler "
                 "requires options.max_reactions_per_level to be set.");
         }
+    } else {
+        // Already initialized
+        return;
     }
-    lf_mutex_unlock(&mutex);
-
-    init_sched_param(&_lf_sched_params, number_of_workers, options);
 
     _lf_sched_params->_lf_sched_triggered_reactions =
         calloc((_lf_sched_params->max_reaction_level + 1), sizeof(vector_t));

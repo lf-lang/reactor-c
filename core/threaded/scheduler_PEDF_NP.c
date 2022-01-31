@@ -502,7 +502,10 @@ void lf_sched_init(
     sched_options_t* options
 ) {
     DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
-    init_sched_param(&_lf_sched_params, number_of_workers, options);
+    if(!init_sched_param(&_lf_sched_params, number_of_workers, options)) {
+        // Already initialized
+        return;
+    }
 
     size_t queue_size = INITIAL_REACT_QUEUE_SIZE;
     if (options != NULL) {
