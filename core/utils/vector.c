@@ -17,10 +17,8 @@ static void vector_resize(vector_t* v, size_t new_capacity);
 /**
  * Allocate and initialize a new vector.
  * @param initial_capacity The desired initial capacity to allocate.
- *  Must be more than 0
  */
 vector_t vector_new(size_t initial_capacity) {
-    assert(initial_capacity > 0);
     void** start = (void**) malloc(initial_capacity * sizeof(void*));
     assert(start);
     return (vector_t) {
