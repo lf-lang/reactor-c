@@ -131,7 +131,7 @@ typedef struct {
      *
      */
     volatile size_t _lf_sched_next_reaction_level;
-} _lf_sched_params_t;
+} _lf_sched_instance_t;
 
 /**
  * @brief Initialize `param` using the provided information.
@@ -139,16 +139,16 @@ typedef struct {
  * No-op if `param` is already initialized (i.e., not NULL).
  * This function assumes that mutex is allowed to be recursively locked.
  * 
- * @param param The `_lf_sched_params_t` object to initialize.
+ * @param param The `_lf_sched_instance_t` object to initialize.
  * @param number_of_workers  Number of workers in the program.
- * @param options Reference to scheduler options in the form of a `sched_options_t`.
+ * @param params Reference to scheduler parameters in the form of a `sched_params_t`.
  * @return `true` if initialization was performed. `false` if param is already
  *  initialized (checked in a thread-safe way).
  */
 bool init_sched_param(
-    _lf_sched_params_t** param,
+    _lf_sched_instance_t** param,
     size_t number_of_workers,
-    sched_options_t* options) {
+    sched_params_t* params) {
 
     // Check if the param is already initialized
     lf_mutex_lock(&mutex); // Safeguard against multiple threads calling this 
@@ -159,21 +159,21 @@ bool init_sched_param(
         return false;
     } else {
         *param =
-            (_lf_sched_params_t*)calloc(1, sizeof(_lf_sched_params_t));
+            (_lf_sched_instance_t*)calloc(1, sizeof(_lf_sched_instance_t));
     }
     lf_mutex_unlock(&mutex);
 
-    if (options == NULL || options->max_reaction_level == 0) {
+    if (params == NULL || params->max_reaction_level == 0) {
         error_print_and_exit(
             "Scheduler: Internal error. Schedulers "
-            "require options.max_reaction_level "
+            "require params.max_reaction_level "
             "to be set.");
     }
 
-    if (options != NULL) {
-        if (options->max_reactions_per_level != NULL) {
+    if (params != NULL) {
+        if (params->max_reactions_per_level != NULL) {
             (*param)->max_reaction_level =
-                options->max_reaction_level;
+                params->max_reaction_level;
         }
     }
 

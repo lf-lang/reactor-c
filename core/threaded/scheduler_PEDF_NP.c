@@ -44,6 +44,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../utils/pqueue_support.h"
 #include "../utils/semaphore.c"
 #include "../utils/vector.c"
+#include "scheduler_instance.h"
 #include "scheduler_sync_tag_advance.c"
 
 /////////////////// External Variables /////////////////////////
@@ -51,7 +52,7 @@ extern lf_mutex_t mutex;
 
 
 /////////////////// Scheduler Variables and Structs /////////////////////////
-_lf_sched_params_t* _lf_sched_params;
+_lf_sched_instance_t* _lf_sched_instance;
 
 /**
  * @brief Information about one worker thread.
@@ -184,7 +185,7 @@ static inline bool _lf_sched_distribute_ready_reaction(reaction_t* ready_reactio
             target_thread_found = true;
             // Push the reaction on the executing queue in order to prevent any
             // reactions that may depend on it from executing before this reaction is finished.
-            pqueue_insert(_lf_sched_params->_lf_sched_executing_reactions, ready_reaction);
+            pqueue_insert(_lf_sched_instance->_lf_sched_executing_reactions, ready_reaction);
         }
 
         worker_id++;
@@ -229,7 +230,7 @@ bool _lf_has_precedence_over(reaction_t* r1, reaction_t* r2) {
  * an overlapping chain ID, meaning that it is (possibly) upstream
  * of the specified reaction.
  * This function assumes the mutex is held because it accesses
- * the _lf_sched_params->_lf_sched_executing_reactions.
+ * the _lf_sched_instance->_lf_sched_executing_reactions.
  * @param reaction The reaction.
  * @return true if this reaction is blocked, false otherwise.
  */
@@ -237,38 +238,38 @@ bool _lf_is_blocked_by_executing_or_blocked_reaction(reaction_t* reaction) {
     if (reaction == NULL) {
         return false;
     }
-    // The head of the _lf_sched_params->_lf_sched_executing_reactions has the lowest level of anything
+    // The head of the _lf_sched_instance->_lf_sched_executing_reactions has the lowest level of anything
     // on the queue, and that level is also lower than anything on the
-    // _lf_sched_params->_lf_sched_transfer_reactions (because reactions on the transfer queue are blocked
-    // by reactions on the _lf_sched_params->_lf_sched_executing_reactions). Hence, if the candidate reaction
+    // _lf_sched_instance->_lf_sched_transfer_reactions (because reactions on the transfer queue are blocked
+    // by reactions on the _lf_sched_instance->_lf_sched_executing_reactions). Hence, if the candidate reaction
     // has a level less than or equal to that of the head of the
-    // _lf_sched_params->_lf_sched_executing_reactions, then it is executable and we don't need to check
+    // _lf_sched_instance->_lf_sched_executing_reactions, then it is executable and we don't need to check
     // the contents of either queue further.
-    if (pqueue_size(_lf_sched_params->_lf_sched_executing_reactions) > 0
-            && reaction->index <= ((reaction_t*) pqueue_peek(_lf_sched_params->_lf_sched_executing_reactions))->index) {
+    if (pqueue_size(_lf_sched_instance->_lf_sched_executing_reactions) > 0
+            && reaction->index <= ((reaction_t*) pqueue_peek(_lf_sched_instance->_lf_sched_executing_reactions))->index) {
         return false;
     }
 
-    for (size_t i = 1; i < _lf_sched_params->_lf_sched_executing_reactions->size; i++) {
-        reaction_t* running = (reaction_t*) _lf_sched_params->_lf_sched_executing_reactions->d[i];
+    for (size_t i = 1; i < _lf_sched_instance->_lf_sched_executing_reactions->size; i++) {
+        reaction_t* running = (reaction_t*) _lf_sched_instance->_lf_sched_executing_reactions->d[i];
         if (_lf_has_precedence_over(running, reaction)) {
             DEBUG_PRINT("Reaction %s is blocked by reaction %s.", reaction->name, running->name);
             return true;
         }
     }
 
-    for (size_t i = 0; i < _lf_sched_params->_lf_sched_transfer_reactions.next - _lf_sched_params->_lf_sched_transfer_reactions.start; i++) {
-        reaction_t* blocked = (reaction_t*) (_lf_sched_params->_lf_sched_transfer_reactions.start + i);
+    for (size_t i = 0; i < _lf_sched_instance->_lf_sched_transfer_reactions.next - _lf_sched_instance->_lf_sched_transfer_reactions.start; i++) {
+        reaction_t* blocked = (reaction_t*) (_lf_sched_instance->_lf_sched_transfer_reactions.start + i);
         if (_lf_has_precedence_over(blocked, reaction)) {
             DEBUG_PRINT("Reaction %s is blocked by blocked reaction %s.", reaction->name, blocked->name);
             return true;
         }
     }
-    // NOTE: checks against the _lf_sched_params->_lf_sched_transfer_reactions are not performed in 
+    // NOTE: checks against the _lf_sched_instance->_lf_sched_transfer_reactions are not performed in 
     // this function but at its call site (where appropriate).
 
     // printf("Not blocking for reaction with chainID %llu and level %llu\n", reaction->chain_id, reaction->index);
-    // pqueue_dump(_lf_sched_params->_lf_sched_executing_reactions, stdout, _lf_sched_params->_lf_sched_executing_reactions->prt);
+    // pqueue_dump(_lf_sched_instance->_lf_sched_executing_reactions, stdout, _lf_sched_instance->_lf_sched_executing_reactions->prt);
     return false;
 }
 
@@ -286,7 +287,7 @@ static inline int _lf_sched_distribute_ready_reactions_locked() {
     int reactions_distributed = 0;
 
     // Find a reaction that is ready to execute.
-    while ((r = (reaction_t*)pqueue_pop(_lf_sched_params->_lf_sched_triggered_reactions)) != NULL) {
+    while ((r = (reaction_t*)pqueue_pop(_lf_sched_instance->_lf_sched_triggered_reactions)) != NULL) {
         // Set the reaction aside if it is blocked, either by another
         // blocked reaction or by a reaction that is currently executing.
         if (!_lf_is_blocked_by_executing_or_blocked_reaction(r)) {
@@ -300,13 +301,13 @@ static inline int _lf_sched_distribute_ready_reactions_locked() {
         }
         // Couldn't execute the reaction. Will have to put it back in the
         // reaction queue.
-        vector_push(&_lf_sched_params->_lf_sched_transfer_reactions, (void*)r);
+        vector_push(&_lf_sched_instance->_lf_sched_transfer_reactions, (void*)r);
     }
 
     // Put back the set-aside reactions into the reaction queue.
     reaction_t* reaction_to_transfer = NULL;
-    while ((reaction_to_transfer = (reaction_t*)vector_pop(&_lf_sched_params->_lf_sched_transfer_reactions)) != NULL) {
-        pqueue_insert(_lf_sched_params->_lf_sched_triggered_reactions, reaction_to_transfer);
+    while ((reaction_to_transfer = (reaction_t*)vector_pop(&_lf_sched_instance->_lf_sched_transfer_reactions)) != NULL) {
+        pqueue_insert(_lf_sched_instance->_lf_sched_triggered_reactions, reaction_to_transfer);
     }
     
     // Reset the balancing index since this work distribution round is over.
@@ -347,7 +348,7 @@ bool _lf_sched_update_queues() {
                 "Scheduler: Inserting reaction %s into the reaction queue.",
                 reaction_to_add->name
             );
-            if (pqueue_insert(_lf_sched_params->_lf_sched_triggered_reactions, reaction_to_add) != 0) {
+            if (pqueue_insert(_lf_sched_instance->_lf_sched_triggered_reactions, reaction_to_add) != 0) {
                 error_print_and_exit("Scheduler: Could not properly fill the reaction queue.");
             }
         }
@@ -361,7 +362,7 @@ bool _lf_sched_update_queues() {
                 "Scheduler: Removing reaction %s from executing queue.",
                 reaction_to_remove->name
             );
-            if (pqueue_remove(_lf_sched_params->_lf_sched_executing_reactions, reaction_to_remove) != 0) {
+            if (pqueue_remove(_lf_sched_instance->_lf_sched_executing_reactions, reaction_to_remove) != 0) {
                 error_print_and_exit("Scheduler: Could not properly clear the executing queue.");
             }
         }
@@ -402,12 +403,12 @@ bool _lf_sched_try_advance_tag_and_distribute() {
     bool return_value = false;
 
     // Executing queue must be empty when this is called.
-    assert(pqueue_size(_lf_sched_params->_lf_sched_executing_reactions) != 0);
+    assert(pqueue_size(_lf_sched_instance->_lf_sched_executing_reactions) != 0);
 
     lf_mutex_lock(&mutex);
     if (!_lf_sched_update_queues()) {
-        if (pqueue_size(_lf_sched_params->_lf_sched_triggered_reactions) == 0
-                && pqueue_size(_lf_sched_params->_lf_sched_executing_reactions) == 0) {
+        if (pqueue_size(_lf_sched_instance->_lf_sched_triggered_reactions) == 0
+                && pqueue_size(_lf_sched_instance->_lf_sched_executing_reactions) == 0) {
             // Nothing more happening at this tag.
             DEBUG_PRINT("Scheduler: Advancing time.");
             // This thread will take charge of advancing tag.
@@ -425,7 +426,7 @@ bool _lf_sched_try_advance_tag_and_distribute() {
         _lf_sched_notify_workers();
     }
 
-    // pqueue_dump(_lf_sched_params->_lf_sched_executing_reactions, print_reaction);
+    // pqueue_dump(_lf_sched_instance->_lf_sched_executing_reactions, print_reaction);
     return return_value;
 }
 
@@ -491,30 +492,30 @@ void _lf_sched_wait_for_work(size_t worker_number) {
  * @brief Initialize the scheduler.
  *
  * This has to be called before other functions of the scheduler can be used.
+ * If the scheduler is already initialized, this will be a no-op.
  *
  * @param number_of_workers Indicate how many workers this scheduler will be
  *  managing.
- * @param option Pointer to a `sched_options_t` struct containing additional
- *  scheduler options. Can be NULL.
+ * @param option Pointer to a `sched_params_t` struct containing additional
+ *  scheduler parameters.
  */
 void lf_sched_init(
     size_t number_of_workers, 
-    sched_options_t* options
+    sched_params_t* params
 ) {
     DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
-    if(!init_sched_param(&_lf_sched_params, number_of_workers, options)) {
+    if(!init_sched_param(&_lf_sched_instance, number_of_workers, params)) {
         // Already initialized
         return;
     }
 
     size_t queue_size = INITIAL_REACT_QUEUE_SIZE;
-    if (options != NULL) {
-        if (options.max_reactions_per_level != NULL) {
-            assert(options.max_reactions_per_level_size == (MAX_REACTION_LEVEL+1));
+    if (params != NULL) {
+        if (params->max_reactions_per_level != NULL) {
             // Recalculate the queue size
             queue_size = 0;
             for (size_t i = 0; i <= MAX_REACTION_LEVEL; i++) {
-                queue_size += options.max_reactions_per_level[i];
+                queue_size += params->max_reactions_per_level[i];
             }
         }
     }
@@ -522,11 +523,11 @@ void lf_sched_init(
     // Reaction queue ordered first by deadline, then by level.
     // The index of the reaction holds the deadline in the 48 most significant bits,
     // the level in the 16 least significant bits.
-    _lf_sched_params->_lf_sched_triggered_reactions = pqueue_init(queue_size, in_reverse_order, get_reaction_index,
+    _lf_sched_instance->_lf_sched_triggered_reactions = pqueue_init(queue_size, in_reverse_order, get_reaction_index,
             get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
-    _lf_sched_params->_lf_sched_transfer_reactions = vector_new(queue_size);
+    _lf_sched_instance->_lf_sched_transfer_reactions = vector_new(queue_size);
     // Create a queue on which to put reactions that are currently executing.
-    _lf_sched_params->_lf_sched_executing_reactions = pqueue_init(queue_size, in_reverse_order, get_reaction_index,
+    _lf_sched_instance->_lf_sched_executing_reactions = pqueue_init(queue_size, in_reverse_order, get_reaction_index,
         get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
     
     _lf_sched_threads_info = 
@@ -564,9 +565,9 @@ void lf_sched_free() {
         vector_free(&_lf_sched_threads_info[i].output_reactions);
         vector_free(&_lf_sched_threads_info[i].done_reactions);
     }
-    // pqueue_free((pqueue_t*)_lf_sched_params->_lf_sched_triggered_reactions); FIXME: This might be causing weird memory errors
-    vector_free(&_lf_sched_params->_lf_sched_transfer_reactions);
-    pqueue_free(_lf_sched_params->_lf_sched_executing_reactions);
+    // pqueue_free((pqueue_t*)_lf_sched_instance->_lf_sched_triggered_reactions); FIXME: This might be causing weird memory errors
+    vector_free(&_lf_sched_instance->_lf_sched_transfer_reactions);
+    pqueue_free(_lf_sched_instance->_lf_sched_executing_reactions);
     free(_lf_sched_threads_info);
 }
 
@@ -662,7 +663,7 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
             DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
                         reaction->name, reaction->index & 0xffffLL);
             // Immediately put 'reaction' on the reaction queue.
-            pqueue_insert((pqueue_t*)_lf_sched_params->_lf_sched_triggered_reactions, reaction);
+            pqueue_insert((pqueue_t*)_lf_sched_instance->_lf_sched_triggered_reactions, reaction);
         }
         lf_mutex_unlock(&mutex);
         return;

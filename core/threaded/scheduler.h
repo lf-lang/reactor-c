@@ -41,7 +41,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../reactor.h"
 
 /**
- * @brief Struct representing most common scheduler options.
+ * @brief Struct representing the most common scheduler parameters.
  *
  * @param max_reactions_per_level Optional. An array of non-negative integers,
  *  where each element represents a reaction level (corresponding to the index),
@@ -57,7 +57,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 typedef struct {
     size_t* max_reactions_per_level;
     size_t max_reaction_level;
-} sched_options_t;
+} sched_params_t;
 
 /**
  * @brief Initialize the scheduler.
@@ -67,12 +67,12 @@ typedef struct {
  *
  * @param number_of_workers Indicate how many workers this scheduler will be
  *  managing.
- * @param option Pointer to a `sched_options_t` struct containing additional
- *  scheduler options. Can be NULL.
+ * @param option Pointer to a `sched_params_t` struct containing additional
+ *  scheduler parameters.
  */
 void lf_sched_init(
     size_t number_of_workers, 
-    sched_options_t* options
+    sched_params_t* parameters
 );
 
 /**
