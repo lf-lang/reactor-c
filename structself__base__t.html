@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: Globals</title>
+<title>reactor-c: self_base_t Struct Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -46,7 +46,6 @@ $(function() {
 /* @license-end */
 </script>
 <div id="main-nav"></div>
-</div><!-- top -->
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -61,17 +60,40 @@ $(function() {
 </iframe>
 </div>
 
+</div><!-- top -->
+<div class="header">
+  <div class="summary">
+<a href="#pub-attribs">Data Fields</a>  </div>
+  <div class="headertitle"><div class="title">self_base_t Struct Reference</div></div>
+</div><!--header-->
 <div class="contents">
-<div class="textblock">Here is a list of all functions, variables, defines, enums, and typedefs with links to the files they belong to:</div>
 
-<h3><a id="index_a" name="index_a"></a>- a -</h3><ul>
-<li>absent&#160;:&#160;<a class="el" href="reactor_8h.html#a759ba374f75ea0025b9af1bb35f14d7ea1a8fae68a24a59c5629c241401fabb08">reactor.h</a></li>
-<li>add_to_sound()&#160;:&#160;<a class="el" href="audio__loop__linux_8c.html#ae0d2efe97b2aac751245705e32d2c927">audio_loop_linux.c</a>, <a class="el" href="audio__loop__mac_8c.html#ae0d2efe97b2aac751245705e32d2c927">audio_loop_mac.c</a></li>
-<li>ADDRESS_QUERY_RETRY_INTERVAL&#160;:&#160;<a class="el" href="net__common_8h.html#a8ce563da4edbe9c4f7c1ccf35ad8694f">net_common.h</a></li>
-<li>ADVANCE_MESSAGE_INTERVAL&#160;:&#160;<a class="el" href="federate_8h.html#a2312893474cb0415e16af40b1de063ca">federate.h</a></li>
-<li>allocation_record_t&#160;:&#160;<a class="el" href="reactor_8h.html#a416845ec4469b3186de047c32402f5e8">reactor.h</a></li>
-<li>AUDIO_BUFFER_SIZE&#160;:&#160;<a class="el" href="audio__loop_8h.html#a1d48237cb63c5ae67aab6d00cc64afb6">audio_loop.h</a></li>
-<li>AUDIO_DEVICE&#160;:&#160;<a class="el" href="audio__loop__linux_8c.html#ad4fb01232c5d7bf6036bb14780bfe09e">audio_loop_linux.c</a></li>
+<p><code>#include &lt;<a class="el" href="reactor_8h_source.html">reactor.h</a>&gt;</code></p>
+<table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
+Data Fields</h2></td></tr>
+<tr class="memitem:a851c71d2d9ce4ca9c1811283bcf5f2f9"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structallocation__record__t.html">allocation_record_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structself__base__t.html#a851c71d2d9ce4ca9c1811283bcf5f2f9">allocations</a></td></tr>
+<tr class="separator:a851c71d2d9ce4ca9c1811283bcf5f2f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >The first element of every self struct defined in generated code will be a pointer to an allocation record, which is either NULL or the head of a NULL-terminated linked list of allocation records. Casting the self struct to this type enables access to this list by the function <code><a class="el" href="reactor__common_8c.html#a19fb043a580467f2a8c14bae304db490">_lf_free_reactor(self_base_t*)</a></code>. To allocate memory for the reactor that will be freed by that function, allocate the memory using <code><a class="el" href="">_lf_allocate(size_t,size_t,self_base_t*)</a></code>. </p>
+</div><h2 class="groupheader">Field Documentation</h2>
+<a id="a851c71d2d9ce4ca9c1811283bcf5f2f9" name="a851c71d2d9ce4ca9c1811283bcf5f2f9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a851c71d2d9ce4ca9c1811283bcf5f2f9">&#9670;&nbsp;</a></span>allocations</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct <a class="el" href="structallocation__record__t.html">allocation_record_t</a>* self_base_t::allocations</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<hr/>The documentation for this struct was generated from the following file:<ul>
+<li>core/<a class="el" href="reactor_8h_source.html">reactor.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['bool_0',['bool',['../lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e',1,'lf_windows_support.h']]]
+  ['allocation_5frecord_5ft_0',['allocation_record_t',['../reactor_8h.html#a416845ec4469b3186de047c32402f5e8',1,'reactor.h']]]
 ];

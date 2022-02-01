@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['index_5ft_0',['index_t',['../reactor_8h.html#a4448d06be794d3f5412d0edb412dc00e',1,'reactor.h']]],
-  ['instant_5ft_1',['instant_t',['../platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1',1,'platform.h']]],
-  ['interval_5ft_2',['interval_t',['../platform_8h.html#a25b148cb4bef9a108b00306879433f7b',1,'platform.h']]]
+  ['fed_5fstate_5ft_0',['fed_state_t',['../rti_8h.html#ae0ca2ecc00a6486432e5965cb81c3044',1,'rti.h']]],
+  ['federate_5finstance_5ft_1',['federate_instance_t',['../federate_8h.html#a675c841ec6a29e45cacc71b61ef8d270',1,'federate.h']]],
+  ['federate_5ft_2',['federate_t',['../rti_8h.html#afa071c0f847bd1cc2a736ab3cd20ee72',1,'rti.h']]],
+  ['federation_5fmetadata_5ft_3',['federation_metadata_t',['../federate_8h.html#ae335f4cb4e7d5e88ed712be8cf9592ac',1,'federate.h']]]
 ];

@@ -1,8 +1,7 @@
 var searchData=
 [
-  ['tag_5finterval_5ft_0',['tag_interval_t',['../tag_8h.html#a9921069499ea65eecb0aeed778a5b92c',1,'tag.h']]],
-  ['token_5ffreed_1',['token_freed',['../reactor__common_8c.html#a0cb4f0fedba2f1e1fd3893440ab53647',1,'reactor_common.c']]],
-  ['token_5fpresent_5ft_2',['token_present_t',['../reactor_8h.html#a2c506d193748554de2ff32e5f7cee41e',1,'reactor.h']]],
-  ['trigger_5fhandle_5ft_3',['trigger_handle_t',['../reactor_8h.html#a3608c2ed78ba97535f8d82a489846305',1,'reactor.h']]],
-  ['trigger_5ft_4',['trigger_t',['../reactor_8h.html#ae98c19a4a03c495fdd3044c206e99afc',1,'reactor.h']]]
+  ['self_5fbase_5ft_0',['self_base_t',['../reactor_8h.html#a6202eb05c29c30bfd6a8fc203de6422f',1,'reactor.h']]],
+  ['socket_5fstat_5ft_1',['socket_stat_t',['../clock-sync_8h.html#a7e49fed082ec884e26d761e1c4f0d428',1,'clock-sync.h']]],
+  ['socket_5ftype_5ft_2',['socket_type_t',['../rti_8h.html#a45bb50f52b617bc6a30719cbaafd075d',1,'rti.h']]],
+  ['string_3',['string',['../reactor_8h.html#a4505c08c065b48840a30eedd9845cce2',1,'reactor.h']]]
 ];

@@ -100,6 +100,16 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:afa9a756e5a6685531141bb4bfdc1f327"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#afa9a756e5a6685531141bb4bfdc1f327">_lf_allocate</a> (size_t count, size_t size, struct <a class="el" href="structallocation__record__t.html">allocation_record_t</a> **head)</td></tr>
+<tr class="separator:afa9a756e5a6685531141bb4bfdc1f327"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a906a0d04740b6228fe3719624d11c14a"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a906a0d04740b6228fe3719624d11c14a">_lf_new_reactor</a> (size_t size)</td></tr>
+<tr class="separator:a906a0d04740b6228fe3719624d11c14a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abbc6bff98286fbe73dabb8900dfa9043"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#abbc6bff98286fbe73dabb8900dfa9043">_lf_free</a> (struct <a class="el" href="structallocation__record__t.html">allocation_record_t</a> **head)</td></tr>
+<tr class="separator:abbc6bff98286fbe73dabb8900dfa9043"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19fb043a580467f2a8c14bae304db490"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a19fb043a580467f2a8c14bae304db490">_lf_free_reactor</a> (struct <a class="el" href="structself__base__t.html">self_base_t</a> *self)</td></tr>
+<tr class="separator:a19fb043a580467f2a8c14bae304db490"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad25b542fa5949d3ad4bf707cd07be62f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#ad25b542fa5949d3ad4bf707cd07be62f">_lf_free_all_reactors</a> ()</td></tr>
+<tr class="separator:ad25b542fa5949d3ad4bf707cd07be62f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae7e27b8e8e57c4d024a0db52043034df"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#ae7e27b8e8e57c4d024a0db52043034df">_lf_set_stop_tag</a> (<a class="el" href="structtag__t.html">tag_t</a> tag)</td></tr>
 <tr class="separator:ae7e27b8e8e57c4d024a0db52043034df"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54be08fbc7990c2d8082a31cbbf6e019"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a54be08fbc7990c2d8082a31cbbf6e019">get_stp_offset</a> ()</td></tr>
@@ -195,6 +205,8 @@ Variables</h2></td></tr>
 <tr class="separator:a0bf357e4cd193ba66ac15262992e2a9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a39f588e1df453139dbb9a4157dda2027"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a39f588e1df453139dbb9a4157dda2027">_lf_global_time_STP_offset</a> = 0LL</td></tr>
 <tr class="separator:a39f588e1df453139dbb9a4157dda2027"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4b5bfd131da48f0fb95eab14e6e61c8"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structallocation__record__t.html">allocation_record_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#af4b5bfd131da48f0fb95eab14e6e61c8">_lf_reactors_to_free</a> = NULL</td></tr>
+<tr class="separator:af4b5bfd131da48f0fb95eab14e6e61c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5336de38071181906a15eccf873858fe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpqueue__t.html">pqueue_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a5336de38071181906a15eccf873858fe">event_q</a></td></tr>
 <tr class="separator:a5336de38071181906a15eccf873858fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac78005c2cb229d6bec832088d9cdef10"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpqueue__t.html">pqueue_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#ac78005c2cb229d6bec832088d9cdef10">reaction_q</a></td></tr>
@@ -312,6 +324,48 @@ Variables</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">next_time</td><td>The time step to advance to. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="afa9a756e5a6685531141bb4bfdc1f327" name="afa9a756e5a6685531141bb4bfdc1f327"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afa9a756e5a6685531141bb4bfdc1f327">&#9670;&nbsp;</a></span>_lf_allocate()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void * _lf_allocate </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>count</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>size</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">struct <a class="el" href="structallocation__record__t.html">allocation_record_t</a> **&#160;</td>
+          <td class="paramname"><em>head</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Allocate memory using calloc (so the allocated memory is zeroed out) and record the allocated memory on the specified self struct so that it will be freed when calling <code><a class="el" href="">free_reactor(self_base_t)</a></code>. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">count</td><td>The number of items of size 'size' to accomodate. </td></tr>
+    <tr><td class="paramname">size</td><td>The size of each item. </td></tr>
+    <tr><td class="paramname">head</td><td>Pointer to the head of a list on which to record the allocation, or NULL to not record it. </td></tr>
   </table>
   </dd>
 </dl>
@@ -448,6 +502,72 @@ Variables</h2></td></tr>
 <p>Put the specified reaction on the reaction queue. This version acquires a mutex lock. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">reaction</td><td>The reaction. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="abbc6bff98286fbe73dabb8900dfa9043" name="abbc6bff98286fbe73dabb8900dfa9043"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abbc6bff98286fbe73dabb8900dfa9043">&#9670;&nbsp;</a></span>_lf_free()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_free </td>
+          <td>(</td>
+          <td class="paramtype">struct <a class="el" href="structallocation__record__t.html">allocation_record_t</a> **&#160;</td>
+          <td class="paramname"><em>head</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Free memory allocated using <code><a class="el" href="reactor__common_8c.html#afa9a756e5a6685531141bb4bfdc1f327">_lf_allocate(size_t, size_t, allocation_record_t**)</a></code> and mark the list empty by setting <code>*head</code> to NULL. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">head</td><td>Pointer to the head of a list on which to record the allocation, or NULL to not record it. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ad25b542fa5949d3ad4bf707cd07be62f" name="ad25b542fa5949d3ad4bf707cd07be62f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad25b542fa5949d3ad4bf707cd07be62f">&#9670;&nbsp;</a></span>_lf_free_all_reactors()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_free_all_reactors </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Free all the reactors that are allocated with <code><a class="el" href="reactor__common_8c.html#a906a0d04740b6228fe3719624d11c14a">_lf_new_reactor(size_t)</a></code>. </p>
+
+</div>
+</div>
+<a id="a19fb043a580467f2a8c14bae304db490" name="a19fb043a580467f2a8c14bae304db490"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a19fb043a580467f2a8c14bae304db490">&#9670;&nbsp;</a></span>_lf_free_reactor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_free_reactor </td>
+          <td>(</td>
+          <td class="paramtype">struct <a class="el" href="structself__base__t.html">self_base_t</a> *&#160;</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Free memory recorded on the allocations list of the specified reactor and then free the specified self struct. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">self</td><td>The self struct of the reactor. </td></tr>
   </table>
   </dd>
 </dl>
@@ -629,6 +749,30 @@ Variables</h2></td></tr>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">tag</td><td>The tag to check against stop tag </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a906a0d04740b6228fe3719624d11c14a" name="a906a0d04740b6228fe3719624d11c14a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a906a0d04740b6228fe3719624d11c14a">&#9670;&nbsp;</a></span>_lf_new_reactor()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void * _lf_new_reactor </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>size</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Allocate memory for a new runtime instance of a reactor. This records the reactor on the list of reactors to be freed at termination of the program. If you plan to free the reactor before termination of the program, use calloc instead (which this uses). </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">size</td><td>The size of the self struct, obtained with sizeof(). </td></tr>
   </table>
   </dd>
 </dl>
@@ -1298,6 +1442,21 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p >The number of worker threads for threaded execution. By default, execution is not threaded and this variable will have value 0, meaning that the execution is not threaded. </p>
+
+</div>
+</div>
+<a id="af4b5bfd131da48f0fb95eab14e6e61c8" name="af4b5bfd131da48f0fb95eab14e6e61c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af4b5bfd131da48f0fb95eab14e6e61c8">&#9670;&nbsp;</a></span>_lf_reactors_to_free</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct <a class="el" href="structallocation__record__t.html">allocation_record_t</a>* _lf_reactors_to_free = NULL</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Head of a list of pointers to dynamically generated reactor self structs to be freed in terminate(). </p>
 
 </div>
 </div>

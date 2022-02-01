@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['deque_5fnode_5ft_0',['deque_node_t',['../structdeque__node__t.html',1,'']]],
-  ['deque_5ft_1',['deque_t',['../structdeque__t.html',1,'']]]
+  ['allocation_5frecord_5ft_0',['allocation_record_t',['../structallocation__record__t.html',1,'']]]
 ];

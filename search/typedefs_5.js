@@ -1,7 +1,5 @@
 var searchData=
 [
-  ['fed_5fstate_5ft_0',['fed_state_t',['../rti_8h.html#ae0ca2ecc00a6486432e5965cb81c3044',1,'rti.h']]],
-  ['federate_5finstance_5ft_1',['federate_instance_t',['../federate_8h.html#a675c841ec6a29e45cacc71b61ef8d270',1,'federate.h']]],
-  ['federate_5ft_2',['federate_t',['../rti_8h.html#afa071c0f847bd1cc2a736ab3cd20ee72',1,'rti.h']]],
-  ['federation_5fmetadata_5ft_3',['federation_metadata_t',['../federate_8h.html#ae335f4cb4e7d5e88ed712be8cf9592ac',1,'federate.h']]]
+  ['event_5ft_0',['event_t',['../reactor_8h.html#a59f5f6b9c6023baebf9c49c328b639a1',1,'reactor.h']]],
+  ['execution_5fmode_5ft_1',['execution_mode_t',['../rti_8h.html#a50856f252373f4c456a34c6f26d385ce',1,'rti.h']]]
 ];
