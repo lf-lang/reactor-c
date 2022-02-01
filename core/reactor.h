@@ -615,20 +615,33 @@ void print_snapshot(void);
 void request_stop(void);
 
 /**
- * Allocate memory using calloc (so the allocated memory is zeroed out)
- * and record the allocated memory on the specified self struct so that
- * it will be freed when calling {@link free_reactor(self_base_t)}.
+ * Allocate zeroed-out memory and record the allocated memory on
+ * the specified list so that it will be freed when calling
+ * {@link _lf_free(allocation_record_t**)}.
  * @param count The number of items of size 'size' to accomodate.
  * @param size The size of each item.
- * @param self The self struct on which to record the allocation.
+ * @param head Pointer to the head of a list on which to record
+ *  the allocation, or NULL to not record it.
  */
-void* _lf_allocate(size_t count, size_t size, struct self_base_t *self);
+void* _lf_allocate(
+		size_t count, size_t size, struct allocation_record_t** head);
+
+/**
+ * Free memory allocated using
+ * {@link _lf_allocate(size_t, size_t, allocation_record_t**)}
+ * and mark the list empty by setting `*head` to NULL.
+ * @param head Pointer to the head of a list on which to record
+ *  the allocation, or NULL to not record it.
+ */
+void _lf_free(struct allocation_record_t** head);
 
 /**
  * Allocate memory for a new runtime instance of a reactor.
  * This records the reactor on the list of reactors to be freed at
  * termination of the program. If you plan to free the reactor before
- * termination of the program, use calloc instead (which this uses).
+ * termination of the program, use
+ * {@link _lf_allocate(size_t, size_t, allocation_record_t**)}
+ * with a null last argument instead.
  * @param size The size of the self struct, obtained with sizeof().
  */
 void* _lf_new_reactor(size_t size);

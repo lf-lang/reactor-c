@@ -172,16 +172,22 @@ void set_federation_id(char* fid);
  * it will be freed when calling {@link free_reactor(self_base_t)}.
  * @param count The number of items of size 'size' to accomodate.
  * @param size The size of each item.
- * @param self The self struct on which to record the allocation.
+ * @param head Pointer to the head of a list on which to record
+ *  the allocation, or NULL to not record it.
  */
-void* _lf_allocate(size_t count, size_t size, struct self_base_t *self) {
+void* _lf_allocate(
+		size_t count, size_t size, struct allocation_record_t** head) {
 	void *mem = calloc(count, size);
     if (mem == NULL) error_print_and_exit("Out of memory!");
-	struct allocation_record_t* head = self->allocations;
-	struct allocation_record_t* record = (allocation_record_t*)calloc(1, sizeof(allocation_record_t));
-	self->allocations = record;
-	record->allocated = mem;
-	record->next = head;
+	if (head != NULL) {
+		struct allocation_record_t* record
+				= (allocation_record_t*)calloc(1, sizeof(allocation_record_t));
+		if (record == NULL) error_print_and_exit("Out of memory!");
+		record->allocated = mem;
+		allocation_record_t* tmp = *head; // Previous head of the list or NULL.
+		*head = record;                   // New head of the list.
+		record->next = tmp;
+	}
 	return mem;
 }
 
@@ -189,7 +195,7 @@ void* _lf_allocate(size_t count, size_t size, struct self_base_t *self) {
  * Head of a list of pointers to dynamically generated reactor
  * self structs to be freed in terminate().
  */
-struct allocation_record_t *_lf_reactors_to_free = NULL;
+struct allocation_record_t* _lf_reactors_to_free = NULL;
 
 /**
  * Allocate memory for a new runtime instance of a reactor.
@@ -199,28 +205,26 @@ struct allocation_record_t *_lf_reactors_to_free = NULL;
  * @param size The size of the self struct, obtained with sizeof().
  */
 void* _lf_new_reactor(size_t size) {
-	void* result = calloc(1, size);
-    if (result == NULL) error_print_and_exit("Out of memory!");
-	struct allocation_record_t* head = _lf_reactors_to_free;
-	struct allocation_record_t* record = (allocation_record_t*)calloc(1, sizeof(allocation_record_t));
-    if (record == NULL) error_print_and_exit("Out of memory!");
-	_lf_reactors_to_free = record;
-	record->allocated = result;
-	record->next = head;
-	return result;
+	return _lf_allocate(1, size, &_lf_reactors_to_free);
 }
 
 /**
- * Free memory recorded on the specified allocations list.
- * @param head The head of the allocations list.
+ * Free memory allocated using
+ * {@link _lf_allocate(size_t, size_t, allocation_record_t**)}
+ * and mark the list empty by setting `*head` to NULL.
+ * @param head Pointer to the head of a list on which to record
+ *  the allocation, or NULL to not record it.
  */
-void _lf_free_memory_on_list(struct allocation_record_t* head) {
-	while (head != NULL) {
-		free(head->allocated);
-		struct allocation_record_t* tmp = head->next;
-		free(head);
-		head = tmp;
+void _lf_free(struct allocation_record_t** head) {
+	if (head == NULL) return;
+	struct allocation_record_t* record = *head;
+	while (record != NULL) {
+		free(record->allocated);
+		struct allocation_record_t* tmp = record->next;
+		free(record);
+		record = tmp;
 	}
+	*head = NULL;
 }
 
 /**
@@ -229,7 +233,7 @@ void _lf_free_memory_on_list(struct allocation_record_t* head) {
  * @param self The self struct of the reactor.
  */
 void _lf_free_reactor(struct self_base_t *self) {
-	_lf_free_memory_on_list(self->allocations);
+	_lf_free(&self->allocations);
 	free(self);
 }
 
