@@ -44,7 +44,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../platform.h"
 #include "../utils/semaphore.h"
-#include "../utils/vector.c"
 #include "scheduler.h"
 #include "scheduler_instance.h"
 #include "scheduler_sync_tag_advance.c"
@@ -99,9 +98,7 @@ static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
         reaction_level, 
         reaction_q_level_index
     );
-    *vector_at(&((vector_t*)_lf_sched_instance
-                     ->_lf_sched_triggered_reactions)[reaction_level],
-               reaction_q_level_index) = (void*)reaction;
+    ((reaction_t***)_lf_sched_instance->_lf_sched_triggered_reactions)[reaction_level][reaction_q_level_index] = reaction;
     DEBUG_PRINT("Scheduler: Index for level %d is at %d.", reaction_level,
                 reaction_q_level_index);
 #ifdef FEDERATED
@@ -116,8 +113,7 @@ static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
  * @brief Distribute any reaction that is ready to execute to idle worker
  * thread(s).
  *
- * @return Number of reactions that were successfully distributed to worker
- * threads.
+ * @return 1 if any reaction is ready. 0 otherwise.
  */
 int _lf_sched_distribute_ready_reactions() {
     // Note: All the threads are idle, which means that they are done inserting
@@ -125,15 +121,18 @@ int _lf_sched_distribute_ready_reactions() {
     // locking a mutex.
     for (; _lf_sched_instance->_lf_sched_next_reaction_level <=
            _lf_sched_instance->max_reaction_level;
-         _lf_sched_instance->_lf_sched_next_reaction_level++) {
+         _lf_sched_instance->_lf_sched_next_reaction_level++
+    ) {
+
         _lf_sched_instance->_lf_sched_executing_reactions =
-            &((vector_t*)_lf_sched_instance->_lf_sched_triggered_reactions)
-                [_lf_sched_instance->_lf_sched_next_reaction_level];
-        size_t reactions_to_execute = vector_size(
-            (vector_t*)_lf_sched_instance->_lf_sched_executing_reactions);
-        if (reactions_to_execute) {
+            (void*)((reaction_t***)_lf_sched_instance->_lf_sched_triggered_reactions)[
+                _lf_sched_instance->_lf_sched_next_reaction_level
+            ];
+            
+        if (((reaction_t**)_lf_sched_instance->_lf_sched_executing_reactions)[0] != NULL) {
+            // There is at least one reaction to execute
             _lf_sched_instance->_lf_sched_next_reaction_level++;
-            return reactions_to_execute;
+            return 1;
         }
     }
 
@@ -146,17 +145,23 @@ int _lf_sched_distribute_ready_reactions() {
  * This assumes that the caller is not holding any thread mutexes.
  */
 void _lf_sched_notify_workers() {
+    // Calculate the number of workers that we need to wake up, which is the
     // Note: All threads are idle. Therefore, there is no need to lock the mutex
-    // while accessing the executing vector (which is pointing to one of the
-    // reaction vectors).
+    // while accessing the index for the current level.
     size_t workers_to_awaken =
         MIN(_lf_sched_instance->_lf_sched_number_of_idle_workers,
-            vector_size(
-                (vector_t*)_lf_sched_instance->_lf_sched_executing_reactions));
+            _lf_sched_instance->_lf_sched_indexes[
+                _lf_sched_instance->_lf_sched_next_reaction_level - 1 // Current 
+                                                                      // reaction
+                                                                      // level
+                                                                      // to execute.                                                         
+            ]);
     DEBUG_PRINT("Scheduler: Notifying %d workers.", workers_to_awaken);
+
     _lf_sched_instance->_lf_sched_number_of_idle_workers -= workers_to_awaken;
     DEBUG_PRINT("Scheduler: New number of idle workers: %u.",
                 _lf_sched_instance->_lf_sched_number_of_idle_workers);
+    
     if (workers_to_awaken > 1) {
         // Notify all the workers except the worker thread that has called this
         // function.
@@ -282,7 +287,7 @@ void lf_sched_init(
     DEBUG_PRINT("Scheduler: Max reaction level: %u", _lf_sched_instance->max_reaction_level);
 
     _lf_sched_instance->_lf_sched_triggered_reactions =
-        calloc((_lf_sched_instance->max_reaction_level + 1), sizeof(vector_t));
+        calloc((_lf_sched_instance->max_reaction_level + 1), sizeof(reaction_t**));
 
     _lf_sched_instance->_lf_sched_array_of_mutexes = (lf_mutex_t*)calloc(
         (_lf_sched_instance->max_reaction_level + 1), sizeof(lf_mutex_t));
@@ -298,8 +303,8 @@ void lf_sched_init(
             }
         }
         // Initialize the reaction vectors
-        ((vector_t*)_lf_sched_instance->_lf_sched_triggered_reactions)[i] =
-            vector_new(queue_size);
+        ((reaction_t***)_lf_sched_instance->_lf_sched_triggered_reactions)[i] =
+            (reaction_t**)calloc(queue_size, sizeof(reaction_t*));
         
         DEBUG_PRINT(
             "Scheduler: Initialized vector of reactions for level %u with size %u",
@@ -311,8 +316,9 @@ void lf_sched_init(
         lf_mutex_init(&_lf_sched_instance->_lf_sched_array_of_mutexes[i]);
     }
 
-    _lf_sched_instance->_lf_sched_executing_reactions =
-        &((vector_t*)_lf_sched_instance->_lf_sched_triggered_reactions)[0];
+    _lf_sched_instance->_lf_sched_executing_reactions = 
+        (void*)((reaction_t***)_lf_sched_instance->
+            _lf_sched_triggered_reactions)[0];
 }
 
 /**
@@ -322,10 +328,10 @@ void lf_sched_init(
  */
 void lf_sched_free() {
     // for (size_t j = 0; j <= _lf_sched_instance->max_reaction_level; j++) {
-    //     vector_free(_lf_sched_instance->_lf_sched_triggered_reactions[j]);
-    //     FIXME: This is causing weird memory errors.
+    //     free(((reaction_t***)_lf_sched_instance->_lf_sched_triggered_reactions)[j]);
     // }
-    vector_free((vector_t*)_lf_sched_instance->_lf_sched_executing_reactions);
+    free(_lf_sched_instance->_lf_sched_triggered_reactions);
+    free(_lf_sched_instance->_lf_sched_executing_reactions);
     lf_semaphore_destroy(_lf_sched_instance->_lf_sched_semaphore);
 }
 
@@ -360,10 +366,13 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
             DEBUG_PRINT(
                 "Scheduler: Worker %d popping reaction with level %d, index "
                 "for level: %d.",
-                worker_number, current_level, current_level_q_index);
-            reaction_to_return = *(reaction_t**)vector_at(
-                (vector_t*)_lf_sched_instance->_lf_sched_executing_reactions,
-                current_level_q_index);
+                worker_number, current_level, current_level_q_index
+            );
+            reaction_to_return = 
+                ((reaction_t**)_lf_sched_instance->
+                    _lf_sched_executing_reactions)[current_level_q_index];
+            ((reaction_t**)_lf_sched_instance->
+                    _lf_sched_executing_reactions)[current_level_q_index] = NULL;
         }
 #ifdef FEDERATED
         lf_mutex_unlock(
