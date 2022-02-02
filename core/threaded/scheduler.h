@@ -29,7 +29,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @brief Scheduler API for the threaded C runtime.
  * 
  * A scheduler for the threaded runtime of reactor-c should provide an
- * implementation for these functions.
+ * implementation for functions that are defined in this header file.
  * 
  * @copyright Copyright (c) 2022, The University of Texas at Dallas.
  * @copyright Copyright (c) 2022, The University of California at Berkeley.
@@ -41,7 +41,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../reactor.h"
 
 /**
- * @brief Default value that is assumed to be the maximum reaction level in this
+ * @brief Default value that is assumed to be the maximum reaction level in the
  *  program. 
  *
  * Can be overriden by passing the appropriate `parameters` argument to
@@ -99,7 +99,7 @@ void lf_sched_free();
  * 'worker_number' or it is time for the worker thread to stop and exit (where a
  * NULL value would be returned).
  * 
- * @param worker_number 
+ * @param worker_number For the calling worker thread.
  * @return reaction_t* A reaction for the worker to execute. NULL if the calling
  * worker thread should exit.
  */
