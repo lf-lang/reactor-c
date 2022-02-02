@@ -168,6 +168,92 @@ void set_federation_id(char* fid);
 #endif
 
 /**
+ * Allocate memory using calloc (so the allocated memory is zeroed out)
+ * and record the allocated memory on the specified self struct so that
+ * it will be freed when calling {@link free_reactor(self_base_t)}.
+ * @param count The number of items of size 'size' to accomodate.
+ * @param size The size of each item.
+ * @param head Pointer to the head of a list on which to record
+ *  the allocation, or NULL to not record it.
+ */
+void* _lf_allocate(
+		size_t count, size_t size, struct allocation_record_t** head) {
+	void *mem = calloc(count, size);
+    if (mem == NULL) error_print_and_exit("Out of memory!");
+	if (head != NULL) {
+		struct allocation_record_t* record
+				= (allocation_record_t*)calloc(1, sizeof(allocation_record_t));
+		if (record == NULL) error_print_and_exit("Out of memory!");
+		record->allocated = mem;
+		allocation_record_t* tmp = *head; // Previous head of the list or NULL.
+		*head = record;                   // New head of the list.
+		record->next = tmp;
+	}
+	return mem;
+}
+
+/**
+ * Head of a list of pointers to dynamically generated reactor
+ * self structs to be freed in terminate().
+ */
+struct allocation_record_t* _lf_reactors_to_free = NULL;
+
+/**
+ * Allocate memory for a new runtime instance of a reactor.
+ * This records the reactor on the list of reactors to be freed at
+ * termination of the program. If you plan to free the reactor before
+ * termination of the program, use calloc instead (which this uses).
+ * @param size The size of the self struct, obtained with sizeof().
+ */
+void* _lf_new_reactor(size_t size) {
+	return _lf_allocate(1, size, &_lf_reactors_to_free);
+}
+
+/**
+ * Free memory allocated using
+ * {@link _lf_allocate(size_t, size_t, allocation_record_t**)}
+ * and mark the list empty by setting `*head` to NULL.
+ * @param head Pointer to the head of a list on which to record
+ *  the allocation, or NULL to not record it.
+ */
+void _lf_free(struct allocation_record_t** head) {
+	if (head == NULL) return;
+	struct allocation_record_t* record = *head;
+	while (record != NULL) {
+		free(record->allocated);
+		struct allocation_record_t* tmp = record->next;
+		free(record);
+		record = tmp;
+	}
+	*head = NULL;
+}
+
+/**
+ * Free memory recorded on the allocations list of the specified reactor
+ * and then free the specified self struct.
+ * @param self The self struct of the reactor.
+ */
+void _lf_free_reactor(struct self_base_t *self) {
+	_lf_free(&self->allocations);
+	free(self);
+}
+
+/**
+ * Free all the reactors that are allocated with
+ * {@link #_lf_new_reactor(size_t)}.
+ */
+void _lf_free_all_reactors() {
+	struct allocation_record_t* head = _lf_reactors_to_free;
+	while (head != NULL) {
+		_lf_free_reactor((self_base_t*)head->allocated);
+		struct allocation_record_t* tmp = head->next;
+		free(head);
+		head = tmp;
+	}
+	_lf_reactors_to_free = NULL;
+}
+
+/**
  * Set the stop tag.
  * 
  * This function will always choose the minimum
@@ -638,6 +724,7 @@ event_t* _lf_get_new_event() {
     event_t* e = (event_t*)pqueue_pop(recycle_q);
     if (e == NULL) {
         e = (event_t*)calloc(1, sizeof(struct event_t));
+        if (e == NULL) error_print_and_exit("Out of memory!");
 #ifdef FEDERATED_DECENTRALIZED
         e->intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
 #endif
@@ -1807,4 +1894,8 @@ void termination() {
             printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
         }
     }
+    _lf_free_all_reactors();
+    free(_lf_tokens_with_ref_count);
+    free(_lf_is_present_fields);
+    free(_lf_is_present_fields_abbreviated);
 }
