@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  # Also allow running this workflow manually from the Actions tab.
+  workflow_dispatch:
+
+jobs:
+  unit-tests-single:
+    uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@main
+    with:
+      cmake-args: '-UNUMBER_OF_WORKERS'
+
+  unit-tests-multi:
+    uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@main
+    with:
+      cmake-args: '-DNUMBER_OF_WORKERS=4'
+
+  fetch-lf:
+    uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@master
+    with:
+      file: 'lingua-franca-ref.txt'
+  
+  lf-tests:
+    needs: fetch-lf
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
+    with:
+      runtime-ref: ${{ github.ref }}
+      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}

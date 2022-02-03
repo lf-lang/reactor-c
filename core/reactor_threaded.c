@@ -1544,8 +1544,3 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         return -1;
     }
 }
-
-
-int main(int argc, char* argv[]) {
-    return lf_reactor_c_main(argc, argv);
-}

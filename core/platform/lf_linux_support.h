@@ -1,4 +1,4 @@
-/* MacOS API support for the C target of Lingua Franca. */
+/* Linux API support for the C target of Lingua Franca. */
 
 /*************
 Copyright (c) 2021, The University of California at Berkeley.

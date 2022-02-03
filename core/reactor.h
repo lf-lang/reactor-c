@@ -324,12 +324,12 @@ typedef unsigned short int ushort;
  */
 typedef enum {defer, drop, replace} lf_spacing_policy_t;
 
- /* An enum that enables the C core library to
+/**
+ * An enum that enables the C core library to
  * ignore freeing the void* inside a token if the void*
  * value is garbage collected by an external controller
  */
 typedef enum {no=0, token_and_value, token_only} ok_to_free_t;
-
 
 /**
  * Status of a given port at a given logical time.
@@ -606,6 +606,30 @@ struct trigger_t {
                                         // Note: The physical_time_of_arrival is only passed down one level of the hierarchy. Default: NEVER.
 #endif
 };
+
+/**
+ * An allocation record that is used by a destructor for a reactor
+ * to free memory that has been dynamically allocated for the particular
+ * instance of the reactor.  This will be an element of linked list.
+ */
+typedef struct allocation_record_t {
+	void* allocated;
+	struct allocation_record_t *next;
+} allocation_record_t;
+
+/**
+ * The first element of every self struct defined in generated code
+ * will be a pointer to an allocation record, which is either NULL
+ * or the head of a NULL-terminated linked list of allocation records.
+ * Casting the self struct to this type enables access to this list
+ * by the function {@link _lf_free_reactor(self_base_t*)}. To allocate memory
+ * for the reactor that will be freed by that function, allocate the
+ * memory using {@link _lf_allocate(size_t,size_t,self_base_t*)}.
+ */
+typedef struct self_base_t {
+	struct allocation_record_t *allocations;
+} self_base_t;
+
 //  ======== Function Declarations ========  //
 
 /**
@@ -615,13 +639,13 @@ struct trigger_t {
  * since January 1, 1970, but it is actually platform dependent.
  * @return A time instant.
  */
-instant_t get_start_time();
+instant_t get_start_time(void);
 
 /**
  * Return the global STP offset on advancement of logical
  * time for federated execution.
  */
-interval_t get_stp_offset();
+interval_t get_stp_offset(void);
 
 /**
  * Set the global STP offset on advancement of logical
@@ -636,7 +660,7 @@ void set_stp_offset(interval_t offset);
  * Print a snapshot of the priority queues used during execution
  * (for debugging).
  */
-void print_snapshot();
+void print_snapshot(void);
 
 /**
  * Request a stop to execution as soon as possible.
@@ -646,31 +670,75 @@ void print_snapshot();
  * a later logical time determined by the RTI so that
  * all federates stop at the same logical time.
  */
-void request_stop();
+void request_stop(void);
+
+/**
+ * Allocate zeroed-out memory and record the allocated memory on
+ * the specified list so that it will be freed when calling
+ * {@link _lf_free(allocation_record_t**)}.
+ * @param count The number of items of size 'size' to accomodate.
+ * @param size The size of each item.
+ * @param head Pointer to the head of a list on which to record
+ *  the allocation, or NULL to not record it.
+ */
+void* _lf_allocate(
+		size_t count, size_t size, struct allocation_record_t** head);
+
+/**
+ * Free memory allocated using
+ * {@link _lf_allocate(size_t, size_t, allocation_record_t**)}
+ * and mark the list empty by setting `*head` to NULL.
+ * @param head Pointer to the head of a list on which to record
+ *  the allocation, or NULL to not record it.
+ */
+void _lf_free(struct allocation_record_t** head);
+
+/**
+ * Allocate memory for a new runtime instance of a reactor.
+ * This records the reactor on the list of reactors to be freed at
+ * termination of the program. If you plan to free the reactor before
+ * termination of the program, use
+ * {@link _lf_allocate(size_t, size_t, allocation_record_t**)}
+ * with a null last argument instead.
+ * @param size The size of the self struct, obtained with sizeof().
+ */
+void* _lf_new_reactor(size_t size);
+
+/**
+ * Free all the reactors that are allocated with
+ * {@link #_lf_new_reactor(size_t)}.
+ */
+void _lf_free_all_reactors();
+
+/**
+ * Free memory recorded on the allocations list of the specified reactor.
+ * @param self The self struct of the reactor.
+ */
+void _lf_free_reactor(struct self_base_t *self);
 
 /** 
  * Generated function that optionally sets default command-line options.
  */
-void _lf_set_default_command_line_options();
+void _lf_set_default_command_line_options(void);
 
 /** 
  * Generated function that resets outputs to be absent at the
  * start of a new time step.
  */
-void _lf_start_time_step();
+void _lf_start_time_step(void);
 
 /** 
  * Generated function that produces a table containing all triggers
  * (i.e., inputs, timers, and actions).
  */
-void _lf_initialize_trigger_objects();
+void _lf_initialize_trigger_objects(void);
 
 /**
  * Pop all events from event_q with timestamp equal to current_time, extract all
  * the reactions triggered by these events, and stick them into the reaction
  * queue.
  */
-void _lf_pop_events();
+void _lf_pop_events(void);
 
 /** 
  * Internal version of the schedule() function, used by generated 
@@ -685,24 +753,24 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t delay, lf_token_t* 
 /**
  * Function (to be code generated) to schedule timers.
  */
-void _lf_initialize_timers();
+void _lf_initialize_timers(void);
 
 /**
  * Function (to be code generated) to trigger startup reactions.
  */
-void _lf_trigger_startup_reactions();
+void _lf_trigger_startup_reactions(void);
 
 
 /**
  * Function (to be code generated) to terminate execution.
  * This will be invoked after all shutdown actions have completed.
  */
-void terminate_execution();
+void terminate_execution(void);
 
 /**
  * Function (to be code generated) to trigger shutdown reactions.
  */
-bool _lf_trigger_shutdown_reactions();
+bool _lf_trigger_shutdown_reactions(void);
 
 /**
  * Function (to be code generated) to handle mode changes.
@@ -736,7 +804,7 @@ trigger_handle_t _lf_schedule_int(void* action, interval_t extra_delay, int valu
  * Get a new event. If there is a recycled event available, use that.
  * If not, allocate a new one. In either case, all fields will be zero'ed out.
  */
-event_t* _lf_get_new_event();
+event_t* _lf_get_new_event(void);
 
 /**
  * Recycle the given event.
@@ -850,7 +918,7 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
  * For a federated execution, send a STOP_REQUEST message
  * to the RTI.
  */
-void _lf_fd_send_stop_request_to_rti();
+void _lf_fd_send_stop_request_to_rti(void);
 
 /**
  * Advance from the current tag to the next. If the given next_time is equal to
@@ -863,7 +931,7 @@ void _lf_advance_logical_time(instant_t next_time);
  * If multithreaded, notify workers that something has changed
  * on the reaction_q. Otherwise, do nothing.
  */
-void _lf_notify_workers();
+void _lf_notify_workers(void);
 
 /**
  * If multithreaded and the reaction is blocked by
@@ -871,7 +939,7 @@ void _lf_notify_workers();
  * Otherwise, return false.
  * @param reaction The reaction.
  */
-bool _lf_is_blocked_by_executing_reaction();
+bool _lf_is_blocked_by_executing_reaction(void);
 
 //  ******** Global Variables ********  //
 
