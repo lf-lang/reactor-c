@@ -2148,9 +2148,16 @@ _lf_suspended_event_t* _lf_remove_suspended_event(_lf_suspended_event_t* event) 
         _lf_unsused_suspended_events_head = event;
     }
 
-    // Adjust head
     if (_lf_suspended_events_head == event) {
-        _lf_suspended_events_head = next;
+        _lf_suspended_events_head = next; // Adjust head
+    } else {
+        _lf_suspended_event_t* predecessor = _lf_suspended_events_head;
+        while(predecessor->next != event && predecessor != NULL) {
+                predecessor = predecessor->next;
+        }
+        if (predecessor != NULL) {
+                predecessor->next = next; // Remove from linked list
+        }
     }
 
     return next;
@@ -2207,8 +2214,8 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
 
                                 DEBUG_PRINT("Modes: Re-enqueuing reset timer.");
                                 // Reschedule the timer with no additional delay.
-                                // This will take care of super dense time when offset is 0 and will apply the initial offset.
-                                _lf_schedule(timer, 0, NULL);
+                                // This will take care of super dense time when offset is 0.
+                                _lf_schedule(timer, event->trigger->offset, NULL);
                             }
                             // No further processing; drops all events upon reset (timer event was recreated by schedule and original can be removed here)
                         } else if (state->next_mode != state->active_mode && event->trigger != NULL) { // History transition to a different mode
