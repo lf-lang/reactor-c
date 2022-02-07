@@ -28,7 +28,7 @@ static volatile bool worker_working[NUMBER_OF_WORKERS] = { false };
 /**
  * @brief The reactions triggered by each worker.
  */
-static pqueue_t triggered_reactions_by_worker[NUMBER_OF_WORKERS];
+static pqueue_t* triggered_reactions_by_worker;
 
 /**
  * @brief Queue of triggered reactions.
@@ -50,20 +50,6 @@ static bool still_initializing = true;
 ////////////////////// Scheduler Private Functions ///////////////////////////
 
 static void enqueue_reactions_locked(int worker_number) {
-    // The following little dance happens because pqueue_empty_into requires more indirection than
-    //  is strictly necessary.
-    assert(worker_number != -1);
-    // pqueue_t* rqp = &reaction_q;
-    // pqueue_t* trbwp = triggered_reactions_by_worker + worker_number;
-    // pqueue_empty_into(&rqp, &trbwp);
-    // // The following violates an abstraction barrier. Oops!
-    // size_t temp_size = trbwp->size;
-    // void** temp_d = trbwp->d;
-    // reaction_q.size = rqp->size;
-    // reaction_q.d = rqp->d;
-    // assert(temp_size == 1);
-    // triggered_reactions_by_worker[worker_number].size = temp_size;
-    // triggered_reactions_by_worker[worker_number].d = temp_d;
     while (pqueue_size(triggered_reactions_by_worker + worker_number)) {
         reaction_t* next = pqueue_pop(triggered_reactions_by_worker + worker_number);
         assert(next->status == queued);
@@ -75,7 +61,7 @@ static void enqueue_reactions_locked(int worker_number) {
  * @brief Advance tag if needed.
  */
 static void advance_tag_if_needed_locked() {
-    while (!pqueue_size(&reaction_q)) {
+    while (!pqueue_size(&reaction_q) && !pqueue_size(triggered_reactions_by_worker - 1)) {
         for (int i = 0; i < NUMBER_OF_WORKERS; i++) {
             if (worker_working[i]) return;
         }
@@ -96,16 +82,15 @@ static void advance_tag_if_needed_locked() {
  * @brief Distribute the currently triggered reactions to the workers.
  */
 static void distribute_reactions_locked() {
-    // printf("%d ", pqueue_size(&reaction_q));
-    advance_tag_if_needed_locked();
+    printf("%d ", pqueue_size(&reaction_q));
     for (int i = 0; i < NUMBER_OF_WORKERS; i++) {
         printf("%d ", worker_working[i]);
     }
-    // printf("%d ", pqueue_size(&reaction_q));
-    // printf("\n");
+    printf("%d ", pqueue_size(&reaction_q));
+    printf("\n");
     for (int i = 0; pqueue_size(&reaction_q) && i < NUMBER_OF_WORKERS; i++) {
         if (!worker_assignments[i]) {
-            reaction_t* next = pqueue_pop(&reaction_q);
+            reaction_t* next = (reaction_t*) pqueue_pop(&reaction_q);
             if (next) {
                 if (LEVEL(next->index) != current_level) {
                     for (int j = 0; j < NUMBER_OF_WORKERS; j++) {
@@ -124,14 +109,6 @@ static void distribute_reactions_locked() {
     }
 }
 
-static void enqueue_single_reaction(reaction_t* reaction) {
-    assert(reaction->status == queued);
-    //lf_mutex_lock(&mutex);
-    pqueue_insert(&reaction_q, reaction);
-    printf("    ");
-    //lf_mutex_unlock(&mutex);
-}
-
 ///////////////////// Scheduler Init and Destroy API /////////////////////////
 
 /**
@@ -142,7 +119,9 @@ static void enqueue_single_reaction(reaction_t* reaction) {
  * @param number_of_workers Indicate how many workers this scheduler will be managing.
  */
 void lf_sched_init(size_t number_of_workers) {
-    for (int i = 0; i < NUMBER_OF_WORKERS; i++) {
+    triggered_reactions_by_worker =
+        (pqueue_t*) malloc(sizeof(pqueue_t) * (NUMBER_OF_WORKERS + 1)) + 1;
+    for (int i = -1; i < NUMBER_OF_WORKERS; i++) {
         triggered_reactions_by_worker[i] = *INITIALIZE_REACTION_Q;
     }
     reaction_q = *INITIALIZE_REACTION_Q;
@@ -157,6 +136,7 @@ void lf_sched_free() {
     for (int i = 0; i < NUMBER_OF_WORKERS; i++) {
         free(triggered_reactions_by_worker[i].d);
     }
+    free(triggered_reactions_by_worker - 1);
     free(reaction_q.d);
 }
 
@@ -174,6 +154,15 @@ reaction_t* busy_wait(int worker_number) {
 }
 #pragma GCC pop_options
 
+void distribute_startup_reactions() {
+    lf_mutex_lock(&mutex);
+    enqueue_reactions_locked(-1);
+    advance_tag_if_needed_locked();
+    enqueue_reactions_locked(-1);
+    distribute_reactions_locked();
+    lf_mutex_unlock(&mutex);
+}
+
 ///////////////////////// Scheduler Worker API ///////////////////////////////
 
 /**
@@ -189,8 +178,8 @@ reaction_t* busy_wait(int worker_number) {
  */
 reaction_t* lf_sched_get_ready_reaction(int worker_number) {
     assert(worker_number >= 0);
-    if (still_initializing) {  // FIXME: This use of a state variable is really hacky!
-        distribute_reactions_locked();
+    if (still_initializing) {
+        distribute_startup_reactions();
         still_initializing = false;
     }
     reaction_t* ret = busy_wait(worker_number);
@@ -215,6 +204,11 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
     enqueue_reactions_locked(worker_number);
     worker_working[worker_number] = false;
     worker_assignments[worker_number] = NULL;
+#ifdef FEDERATED
+    enqueue_reactions_locked(-1);
+#endif FEDERATED
+    advance_tag_if_needed_locked();
+    enqueue_reactions_locked(-1);
     // printf("(%d) ", worker_number);
     distribute_reactions_locked();
     lf_mutex_unlock(&mutex);
@@ -239,10 +233,6 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
 void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     assert(worker_number >= -1);
     if (lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
-        if (worker_number == -1) {
-            enqueue_single_reaction(reaction);
-        } else {
-            pqueue_insert(triggered_reactions_by_worker + worker_number, reaction);
-        }
+        pqueue_insert(triggered_reactions_by_worker + worker_number, reaction);
     }
 }
