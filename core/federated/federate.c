@@ -1274,16 +1274,16 @@ void enqueue_network_output_control_reactions(pqueue_t* reaction_q){
  * Enqueue network control reactions.
  */
 void enqueue_network_control_reactions(pqueue_t* reaction_q) {
+    enqueue_network_output_control_reactions(reaction_q);
 #ifdef FEDERATED_CENTRALIZED
     // If the granted tag is not provisional, there is no
-    // need for network control reactions
+    // need for network input control reactions
     if (compare_tags(_fed.last_TAG, get_current_tag()) != 0
     		|| _fed.is_last_TAG_provisional == false) {
         return;
     }
 #endif
     enqueue_network_input_control_reactions(reaction_q);
-    enqueue_network_output_control_reactions(reaction_q);
 }
 
 /**
