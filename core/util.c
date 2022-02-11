@@ -31,8 +31,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * whether a
  */
 
-#include "reactor.h"
 #include "util.h"
+#include "reactor.h"
 #include <errno.h>
 #include <stdbool.h>    // Defines bool
 #include <stdio.h>
