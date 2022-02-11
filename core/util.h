@@ -34,6 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define UTIL_H
 
 #include <stdarg.h>   // Defines va_list
+#include <stdbool.h>  // Defines bool
 
 /**
  * Holds generic statistical data

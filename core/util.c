@@ -34,7 +34,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 #include "reactor.h"
 #include <errno.h>
-#include <stdbool.h>    // Defines bool
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
