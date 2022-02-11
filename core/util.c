@@ -218,3 +218,20 @@ void register_print_function(print_message_function_t* function, int log_level) 
     print_message_level = log_level;
 }
 
+/**
+ * Check the deadline of the currently executing reaction against the
+ * current physical time. If the deadline has passed, invoke the deadline
+ * handler and return true. Otherwise, return false.
+ * 
+ * @param self The self struct of the reactor.
+ * @return true if the specified deadline has passed.
+ * @return false if the deadline has not passed yet.
+ */
+bool check_deadline(void* self) {
+	reaction_t* reaction = ((self_base_t*)self)->executing_reaction;
+	if (get_physical_time() > get_logical_time() + reaction->deadline) {
+		reaction->deadline_violation_handler(self);
+		return true;
+	}
+	return false;
+}

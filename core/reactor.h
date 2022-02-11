@@ -570,6 +570,7 @@ typedef struct allocation_record_t {
  */
 typedef struct self_base_t {
 	struct allocation_record_t *allocations;
+    struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
 } self_base_t;
 
 //  ======== Function Declarations ========  //
