@@ -877,6 +877,17 @@ void _lf_notify_workers(void);
  */
 bool _lf_is_blocked_by_executing_reaction(void);
 
+/**
+ * Check the deadline of the currently executing reaction against the
+ * current physical time. If the deadline has passed, invoke the deadline
+ * handler and return true. Otherwise, return false.
+ * 
+ * @param self The self struct of the reactor.
+ * @return true if the specified deadline has passed.
+ * @return false if the deadline has not passed yet.
+ */
+bool _lf_check_deadline(self_base_t* self);
+
 //  ******** Global Variables ********  //
 
 /**

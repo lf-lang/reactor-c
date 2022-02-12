@@ -252,4 +252,15 @@ trigger_handle_t schedule_copy(void* action, interval_t offset, void* value, int
  */
 trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* value, int length);
 
+/**
+ * Check the deadline of the currently executing reaction against the
+ * current physical time. If the deadline has passed, invoke the deadline
+ * handler and return true. Otherwise, return false.
+ * 
+ * @param self The self struct of the reactor.
+ * @return true if the specified deadline has passed.
+ * @return false if the deadline has not passed yet.
+ */
+bool check_deadline(void* self);
+
 #endif // CTARGET_H
