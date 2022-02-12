@@ -185,8 +185,7 @@ trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* valu
  * handler and return true. Otherwise, return false.
  * 
  * @param self The self struct of the reactor.
- * @return true if the specified deadline has passed.
- * @return false if the deadline has not passed yet.
+ * @return True if the specified deadline has passed and false otherwise.
  */
 bool check_deadline(void* self) {
 	return _lf_check_deadline((self_base_t*)self);

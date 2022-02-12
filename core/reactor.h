@@ -883,8 +883,7 @@ bool _lf_is_blocked_by_executing_reaction(void);
  * handler and return true. Otherwise, return false.
  * 
  * @param self The self struct of the reactor.
- * @return true if the specified deadline has passed.
- * @return false if the deadline has not passed yet.
+ * @return True if the specified deadline has passed and false otherwise.
  */
 bool _lf_check_deadline(self_base_t* self);
 

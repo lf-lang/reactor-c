@@ -1540,8 +1540,7 @@ lf_token_t* _lf_set_new_array_impl(lf_token_t* token, size_t length, int num_des
  * handler and return true. Otherwise, return false.
  * 
  * @param self The self struct of the reactor.
- * @return true if the specified deadline has passed.
- * @return false if the deadline has not passed yet.
+ * @return True if the specified deadline has passed and false otherwise.
  */
 bool _lf_check_deadline(self_base_t* self) {
 	reaction_t* reaction = self->executing_reaction;
