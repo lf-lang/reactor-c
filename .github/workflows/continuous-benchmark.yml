@@ -1,0 +1,70 @@
+name: Continuous Benchmarking
+
+
+on:
+  push:
+    branches: [continuous-benchmarking]
+
+    
+permissions:
+  contents: write
+  deployments: write
+
+
+jobs:
+  benchmark:
+    name: Run C benchmark and record results
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup Java JDK
+        uses: actions/setup-java@v1.4.3
+        with:
+          java-version: 14
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+
+      - name: Checkout Lingua Franca repository
+        uses: actions/checkout@v2
+        with:
+          repository: LDeng0205/lingua-franca
+          submodules: true
+        
+      - name: Checkout reactor-c repository
+        uses: actions/checkout@v2
+        with:
+          repository: lf-lang/reactor-c
+          path: org.lflang/src/lib/c/reactor-c
+
+      - name: Install Python dependencies
+        run: pip3 install -r benchmark/runner/requirements.txt  
+
+      - name: Build lfc
+        run: |
+          ./gradlew buildLfc
+
+      # LF BENCHMARK RUN
+      - name: Set LF_PATH
+        run: |
+          echo "LF_PATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+      - name: Run C micro pingpong benchmark
+        run: |
+          python3 benchmark/runner/run_benchmark_json.py -m test_mode=False iterations=1 benchmark=savina_micro_pingpong target=lf-c
+      
+      # Use continuous benchmark action to store result
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          name: Lingua Franca C target Benchmark
+          tool: customSmallerIsBetter
+          output-file-path: ./benchmark/runner/benchmark_result.json
+          # github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+          # Show alert with commit comment on detecting possible performance regression
+          alert-threshold: '120%' 
+          comment-on-alert: true
+          fail-on-alert: true
+          
