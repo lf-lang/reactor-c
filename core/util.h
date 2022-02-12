@@ -34,7 +34,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define UTIL_H
 
 #include <stdarg.h>   // Defines va_list
-#include <stdbool.h>  // Defines bool
 
 /**
  * Holds generic statistical data
@@ -211,16 +210,5 @@ typedef void(print_message_function_t)(char*, va_list);
  * @param log_level The level of messages to redirect.
  */
 void register_print_function(print_message_function_t* function, int log_level);
-
-/**
- * Check the deadline of the currently executing reaction against the
- * current physical time. If the deadline has passed, invoke the deadline
- * handler and return true. Otherwise, return false.
- * 
- * @param self The self struct of the reactor.
- * @return true if the specified deadline has passed.
- * @return false if the deadline has not passed yet.
- */
-bool check_deadline(void* self);
 
 #endif /* UTIL_H */
