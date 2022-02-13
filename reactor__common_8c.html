@@ -158,6 +158,8 @@ Functions</h2></td></tr>
 <tr class="separator:aaed2aef62e15386727c88c11b1737401"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9df90516cce7d8e01b46acf61db64b8f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a> (<a class="el" href="structlf__token__t.html">lf_token_t</a> *token, size_t length, int num_destinations)</td></tr>
 <tr class="separator:a9df90516cce7d8e01b46acf61db64b8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af6475b744acf535830988064e55dc799"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#af6475b744acf535830988064e55dc799">_lf_check_deadline</a> (<a class="el" href="structself__base__t.html">self_base_t</a> *self)</td></tr>
+<tr class="separator:af6475b744acf535830988064e55dc799"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a615a0670be544780678a1940a49c8d1e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a615a0670be544780678a1940a49c8d1e">schedule_output_reactions</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *reaction, int <a class="el" href="reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63">worker</a>)</td></tr>
 <tr class="separator:a615a0670be544780678a1940a49c8d1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab8b23ae956bad82624233eafa837affb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#ab8b23ae956bad82624233eafa837affb">writable_copy</a> (<a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
@@ -369,6 +371,32 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="af6475b744acf535830988064e55dc799" name="af6475b744acf535830988064e55dc799"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af6475b744acf535830988064e55dc799">&#9670;&nbsp;</a></span>_lf_check_deadline()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_check_deadline </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structself__base__t.html">self_base_t</a> *&#160;</td>
+          <td class="paramname"><em>self</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Check the deadline of the currently executing reaction against the current physical time. If the deadline has passed, invoke the deadline handler and return true. Otherwise, return false.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">self</td><td>The self struct of the reactor. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>True if the specified deadline has passed and false otherwise. </dd></dl>
 
 </div>
 </div>

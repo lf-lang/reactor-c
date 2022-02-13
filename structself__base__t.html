@@ -74,6 +74,8 @@ $(function() {
 Data Fields</h2></td></tr>
 <tr class="memitem:a851c71d2d9ce4ca9c1811283bcf5f2f9"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structallocation__record__t.html">allocation_record_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structself__base__t.html#a851c71d2d9ce4ca9c1811283bcf5f2f9">allocations</a></td></tr>
 <tr class="separator:a851c71d2d9ce4ca9c1811283bcf5f2f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2282568a7a814225eec8a2148e087f09"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structreaction__t.html">reaction_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structself__base__t.html#a2282568a7a814225eec8a2148e087f09">executing_reaction</a></td></tr>
+<tr class="separator:a2282568a7a814225eec8a2148e087f09"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >The first element of every self struct defined in generated code will be a pointer to an allocation record, which is either NULL or the head of a NULL-terminated linked list of allocation records. Casting the self struct to this type enables access to this list by the function <code><a class="el" href="reactor__common_8c.html#a19fb043a580467f2a8c14bae304db490">_lf_free_reactor(self_base_t*)</a></code>. To allocate memory for the reactor that will be freed by that function, allocate the memory using <code><a class="el" href="">_lf_allocate(size_t,size_t,self_base_t*)</a></code>. </p>
@@ -86,6 +88,20 @@ Data Fields</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">struct <a class="el" href="structallocation__record__t.html">allocation_record_t</a>* self_base_t::allocations</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a2282568a7a814225eec8a2148e087f09" name="a2282568a7a814225eec8a2148e087f09"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2282568a7a814225eec8a2148e087f09">&#9670;&nbsp;</a></span>executing_reaction</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct <a class="el" href="structreaction__t.html">reaction_t</a>* self_base_t::executing_reaction</td>
         </tr>
       </table>
 </div><div class="memdoc">
