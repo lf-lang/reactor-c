@@ -24,7 +24,7 @@ jobs:
     with:
       file: 'lingua-franca-ref.txt'
   
-  lf-tests:
+  lf-default:
     needs: fetch-lf
     uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
     with:
