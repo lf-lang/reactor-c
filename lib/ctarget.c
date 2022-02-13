@@ -178,3 +178,15 @@ trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* valu
     }
     return _lf_schedule_value(action, extra_delay, value, (size_t)length);
 }
+
+/**
+ * Check the deadline of the currently executing reaction against the
+ * current physical time. If the deadline has passed, invoke the deadline
+ * handler and return true. Otherwise, return false.
+ * 
+ * @param self The self struct of the reactor.
+ * @return True if the specified deadline has passed and false otherwise.
+ */
+bool check_deadline(void* self) {
+	return _lf_check_deadline((self_base_t*)self);
+}
