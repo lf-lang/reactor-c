@@ -30,3 +30,13 @@ jobs:
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+
+  lf-scheduler-tests:
+    needs: fetch-lf
+    matrix:
+      scheduler: [GEDF_NP, GEDF_NP_CI]
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
+    with:
+      runtime-ref: ${{ github.ref }}
+      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+      scheduler: ${{ matrix.scheduler }}
