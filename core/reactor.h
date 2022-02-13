@@ -572,6 +572,7 @@ typedef struct allocation_record_t {
  */
 typedef struct self_base_t {
 	struct allocation_record_t *allocations;
+	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
 } self_base_t;
 
 //  ======== Function Declarations ========  //
@@ -856,6 +857,16 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
  * to the RTI.
  */
 void _lf_fd_send_stop_request_to_rti(void);
+
+/**
+ * Check the deadline of the currently executing reaction against the
+ * current physical time. If the deadline has passed, invoke the deadline
+ * handler and return true. Otherwise, return false.
+ * 
+ * @param self The self struct of the reactor.
+ * @return True if the specified deadline has passed and false otherwise.
+ */
+bool _lf_check_deadline(self_base_t* self);
 
 //  ******** Global Variables ********  //
 

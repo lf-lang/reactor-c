@@ -1437,6 +1437,23 @@ lf_token_t* _lf_set_new_array_impl(lf_token_t* token, size_t length, int num_des
 }
 
 /**
+ * Check the deadline of the currently executing reaction against the
+ * current physical time. If the deadline has passed, invoke the deadline
+ * handler and return true. Otherwise, return false.
+ * 
+ * @param self The self struct of the reactor.
+ * @return True if the specified deadline has passed and false otherwise.
+ */
+bool _lf_check_deadline(self_base_t* self) {
+	reaction_t* reaction = self->executing_reaction;
+	if (get_physical_time() > get_logical_time() + reaction->deadline) {
+		reaction->deadline_violation_handler(self);
+		return true;
+	}
+	return false;
+}
+
+/**
  * For the specified reaction, if it has produced outputs, insert the
  * resulting triggered reactions into the reaction queue.
  * This procedure assumes the mutex lock is NOT held and grabs
