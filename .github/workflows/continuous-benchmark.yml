@@ -33,11 +33,11 @@ jobs:
           repository: LDeng0205/lingua-franca
           submodules: true
         
-      - name: Checkout reactor-c repository
-        uses: actions/checkout@v2
-        with:
-          repository: lf-lang/reactor-c
-          path: org.lflang/src/lib/c/reactor-c
+      # - name: Checkout reactor-c repository
+      #   uses: actions/checkout@v2
+      #   with:
+      #     repository: lf-lang/reactor-c
+      #     path: org.lflang/src/lib/c/reactor-c
 
       - name: Install Python dependencies
         run: pip3 install -r benchmark/runner/requirements.txt  
@@ -60,7 +60,7 @@ jobs:
         with:
           name: Lingua Franca C target Benchmark
           tool: customSmallerIsBetter
-          output-file-path: benchmark/runner/benchmark_result.json
+          output-file-path: /benchmark/runner/benchmark_result.json
           # github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
           # Show alert with commit comment on detecting possible performance regression
