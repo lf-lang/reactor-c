@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1644864423110,
+  "lastUpdate": 1644899009760,
   "repoUrl": "https://github.com/lf-lang/reactor-c",
   "entries": {
     "Lingua Franca C target Benchmark": [
@@ -190,6 +190,162 @@ window.BENCHMARK_DATA = {
           {
             "name": "Trapezoidal Approximation",
             "value": 662.898761,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "email": "arthurdeng0205@hotmail.com",
+            "name": "LDeng0205",
+            "username": "LDeng0205"
+          },
+          "committer": {
+            "email": "arthurdeng0205@hotmail.com",
+            "name": "LDeng0205",
+            "username": "LDeng0205"
+          },
+          "distinct": true,
+          "id": "a69f64f863077843d85f28dc10ca33aa0fc28bee",
+          "message": "tweaked workflow file",
+          "timestamp": "2022-02-14T20:18:53-08:00",
+          "tree_id": "d53ac6d8e218e3ca088f5285d610f16e93057bb7",
+          "url": "https://github.com/lf-lang/reactor-c/commit/a69f64f863077843d85f28dc10ca33aa0fc28bee"
+        },
+        "date": 1644899008764,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Bank Transaction",
+            "value": 315.120951,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Sleeping Barber",
+            "value": 82.960755,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Producer Consumer (bounded)",
+            "value": 1161.721197,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Cigarette Smokers",
+            "value": 1.987123,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Concurrent Dictionary",
+            "value": 154.107569,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Concurrent Sorted Linked List",
+            "value": 8261.016713,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Logistic Map Series",
+            "value": 503.885304,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Philosophers",
+            "value": 372.941621,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Big",
+            "value": 11944.541125,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Chameneos",
+            "value": 511.317465,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Counting Actor",
+            "value": 310.278019,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Fork Join (throughput)",
+            "value": 180.869306,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Ping Pong",
+            "value": 302.411056,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Thread Ring",
+            "value": 132.672118,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "All-Pairs Shortest Path",
+            "value": 231.704951,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "A-Star Search",
+            "value": 420.560253,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Filter Bank",
+            "value": 2643.906566,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "NQueens first N solutions",
+            "value": 279.344279,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Precise Pi Computation",
+            "value": 95.316186,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Radix Sort",
+            "value": 1043.535889,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Recursive Matrix Multiplication",
+            "value": 744.10844,
+            "unit": "ms",
+            "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
+          },
+          {
+            "name": "Trapezoidal Approximation",
+            "value": 553.253575,
             "unit": "ms",
             "extra": "Target: lf-c\nTotal Iterations: 1\nThreads: 2"
           }
