@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   benchmark:
-    name: Run C benchmark and record results
+    name: Run C Benchmarks
     runs-on: ubuntu-latest
 
     steps:
@@ -44,12 +44,12 @@ jobs:
       - name: Set LF_PATH
         run: |
           echo "LF_PATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
-      - name: Run C micro pingpong and count benchmark
+      - name: Run C Benchmarks
         run: |
           python3 benchmark/runner/run_benchmark_json.py -m test_mode=False iterations=1 benchmark="glob(*)" target=lf-c
       
       # Use continuous benchmark action to store result
-      - name: Store benchmark result
+      - name: Store Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Lingua Franca C target Benchmark
@@ -57,8 +57,9 @@ jobs:
           output-file-path: multirun/benchmark_result.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
+
           # Show alert with commit comment on detecting possible performance regression
-          alert-threshold: '120%' 
-          comment-on-alert: false
+          alert-threshold: '150%' 
+          comment-on-alert: true
           fail-on-alert: false
           
