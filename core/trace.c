@@ -30,7 +30,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * See trace.h file for instructions.
  */
 
-#include "util.h"
+#include "utils/util.h"
 #include "platform.h"
 
 /** Macro to use when access to trace file fails. */

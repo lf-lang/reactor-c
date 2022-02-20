@@ -38,6 +38,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //#include <assert.h>
 
 /**
+ * @brief Queue of triggered reactions at the current tag.
+ * 
+ */
+pqueue_t* reaction_q;
+
+/**
  * Unless the "fast" option is given, an LF program will wait until
  * physical time matches logical time before handling an event with
  * a given logical time. The amount of time is less than this given
@@ -143,11 +149,15 @@ void print_snapshot() {
 }
 
 /**
- * Put the specified reaction on the reaction queue.
- * This version does not acquire a mutex lock.
+ * Trigger 'reaction'.
+ * 
  * @param reaction The reaction.
+ * @param worker_number The ID of the worker that is making this call. 0 should be
+ *  used if there is only one worker (e.g., when the program is using the
+ *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
+ *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
-void _lf_enqueue_reaction(reaction_t* reaction) {
+void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
     // Do not enqueue this reaction twice.
     if (reaction->status == inactive) {
         DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
@@ -323,12 +333,6 @@ void request_stop() {
 }
 
 /**
- * Do nothing. This implementation is not multithreaded.
- */
-void _lf_notify_workers() {
-}
-
-/**
  * Return false.
  * @param reaction The reaction.
  */
@@ -367,6 +371,13 @@ int lf_reactor_c_main(int argc, char* argv[]) {
 
         DEBUG_PRINT("Initializing.");
         initialize(); // Sets start_time.
+
+        // Reaction queue ordered first by deadline, then by level.
+        // The index of the reaction holds the deadline in the 48 most significant bits,
+        // the level in the 16 least significant bits.
+        reaction_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
+                get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
+                
         current_tag = (tag_t){.time = start_time, .microstep = 0u};
         _lf_execution_started = true;
         _lf_trigger_startup_reactions();
@@ -382,6 +393,7 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         if (_lf_do_step()) {
             while (next() != 0);
         }
+        // pqueue_free(reaction_q); FIXME: This might be causing weird memory errors
         return 0;
     } else {
         return -1;

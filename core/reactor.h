@@ -58,8 +58,8 @@
 #include <time.h>
 #include <limits.h>
 #include <errno.h>
-#include "pqueue.h"
-#include "util.h"
+#include "utils/pqueue.h"
+#include "utils/util.h"
 #include "tag.h"       // Time-related functions.
 
 // The following file is also included, but must be included
@@ -265,7 +265,7 @@ do { \
  * upstream in the dependence graph execute before reactions
  * that are downstream.
  */
-#define LEVEL(index) (index & 0xFFFF)
+#define LEVEL(index) (index & 0xffffLL)
 
 /** Utility for finding the maximum of two values. */
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
@@ -450,7 +450,7 @@ typedef struct token_present_t {
  * The COMMON information is set in the constructor.
  * The fields marked RUNTIME have values that change
  * during execution.
- * Instances of this struct are put onto the reaction queue (reaction_q).
+ * Instances of this struct are put onto the reaction queue by the scheduler.
  */
 typedef struct reaction_t reaction_t;
 struct reaction_t {
@@ -482,6 +482,8 @@ struct reaction_t {
     bool is_a_control_reaction; // Indicates whether this reaction is a control reaction. Control
                                 // reactions will not set ports or actions and don't require scheduling
                                 // any output reactions. Default is false.
+    size_t worker_affinity;     // The worker number of the thread that scheduled this reaction. Used
+                                // as a suggestion to the scheduler.
     char* name;                 // If logging is set to LOG or higher, then this will
                                 // point to the full name of the reactor followed by
     							// the reaction number.
@@ -855,27 +857,6 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
  * to the RTI.
  */
 void _lf_fd_send_stop_request_to_rti(void);
-
-/**
- * Advance from the current tag to the next. If the given next_time is equal to
- * the current time, then increase the microstep. Otherwise, update the current
- * time and set the microstep to zero.
- */ 
-void _lf_advance_logical_time(instant_t next_time);
-
-/**
- * If multithreaded, notify workers that something has changed
- * on the reaction_q. Otherwise, do nothing.
- */
-void _lf_notify_workers(void);
-
-/**
- * If multithreaded and the reaction is blocked by
- * a currently executing reaction, return true.
- * Otherwise, return false.
- * @param reaction The reaction.
- */
-bool _lf_is_blocked_by_executing_reaction(void);
 
 /**
  * Check the deadline of the currently executing reaction against the

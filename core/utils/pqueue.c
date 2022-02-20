@@ -34,6 +34,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 #include "pqueue.h"
 #include "util.h"
@@ -157,6 +158,7 @@ void pqueue_free(pqueue_t *q) {
 }
 
 size_t pqueue_size(pqueue_t *q) {
+    if (!q) return 0;
     // Queue element 0 exists but doesn't count since it isn't used.
     return (q->size - 1);
 }
@@ -261,6 +263,7 @@ int pqueue_insert(pqueue_t *q, void *d) {
 }
 
 int pqueue_remove(pqueue_t *q, void *d) {
+    if (q->size == 1) return 0; // Nothing to remove
     size_t posn = q->getpos(d);
     q->d[posn] = q->d[--q->size];
     if (q->cmppri(q->getpri(d), q->getpri(q->d[posn])))
@@ -272,16 +275,45 @@ int pqueue_remove(pqueue_t *q, void *d) {
 }
 
 void* pqueue_pop(pqueue_t *q) {
-    void* head;
-    
     if (!q || q->size == 1)
         return NULL;
+
+    void* head;
         
     head = q->d[1];
     q->d[1] = q->d[--q->size];
     percolate_down(q, 1);
     
     return head;
+}
+
+/**
+ * @brief Empty 'src' into 'dest'.
+ * 
+ * As an optimization, this function might swap 'src' and 'dest'.
+ * 
+ * @param dest The queue to fill up
+ * @param src  The queue to empty
+ */
+void pqueue_empty_into(pqueue_t** dest, pqueue_t** src) {
+    assert(src);
+    assert(dest);
+    assert(*src);
+    assert(*dest);
+    void* item;
+    if ((*dest)->size >= (*src)->size) {
+        while ((item = pqueue_pop(*src))) {
+            pqueue_insert(*dest, item);
+        }
+    } else {
+        while ((item = pqueue_pop(*dest))) {
+            pqueue_insert(*src, item);
+        }
+
+        pqueue_t* tmp = *dest;
+        *dest = *src;
+        *src = tmp;
+    }
 }
 
 void* pqueue_peek(pqueue_t *q) {

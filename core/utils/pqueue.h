@@ -137,6 +137,16 @@ pqueue_change_priority(pqueue_t *q,
 void *pqueue_pop(pqueue_t *q);
 
 /**
+ * @brief Empty 'src' into 'dest'.
+ * 
+ * As an optimization, this function might swap 'src' and 'dest'.
+ * 
+ * @param dest The queue to fill up
+ * @param src  The queue to empty
+ */
+void pqueue_empty_into(pqueue_t** dest, pqueue_t** src);
+
+/**
  * Find the highest-ranking item with the same priority that matches the
  * supplied entry.
  * @param q the queue
