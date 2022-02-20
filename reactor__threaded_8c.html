@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: core/reactor_threaded.c File Reference</title>
+<title>reactor-c: core/threaded/reactor_threaded.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -62,7 +62,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_4270bfced15e0e73154b13468c7c9ad9.html">core</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_4270bfced15e0e73154b13468c7c9ad9.html">core</a></li><li class="navelem"><a class="el" href="dir_9409d006c5a5b89ee51387d0bee40656.html">threaded</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -75,8 +75,9 @@ $(function() {
   <div class="headertitle"><div class="title">reactor_threaded.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="reactor__common_8c.html">reactor_common.c</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="platform_8h_source.html">platform.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="reactor__common_8c.html">../reactor_common.c</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="platform_8h_source.html">../platform.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="scheduler_8h_source.html">scheduler.h</a>&quot;</code><br />
 <code>#include &lt;signal.h&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -86,6 +87,8 @@ Data Structures</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
+<tr class="memitem:a43fcdba4ed8864d210afd3f031b4e346"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a43fcdba4ed8864d210afd3f031b4e346">NUMBER_OF_WORKERS</a>&#160;&#160;&#160;1</td></tr>
+<tr class="separator:a43fcdba4ed8864d210afd3f031b4e346"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2759df05e92b68f74325190e9a6aca13"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a2759df05e92b68f74325190e9a6aca13">MAX_STALL_INTERVAL</a>&#160;&#160;&#160;<a class="el" href="tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8">MSEC</a>(1)</td></tr>
 <tr class="separator:a2759df05e92b68f74325190e9a6aca13"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a76d2b896dce8b5b2163d8640e700c36a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a76d2b896dce8b5b2163d8640e700c36a">MIN_WAIT_TIME</a>&#160;&#160;&#160;<a class="el" href="tag_8h.html#aa2aeaab0c2033d1db412c8021bff93fc">USEC</a>(10)</td></tr>
@@ -98,10 +101,10 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a351f84aa3eb871fe8f51e3a6f18e67f6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a351f84aa3eb871fe8f51e3a6f18e67f6">enqueue_network_input_control_reactions</a> (<a class="el" href="structpqueue__t.html">pqueue_t</a> *<a class="el" href="reactor__common_8c.html#ac78005c2cb229d6bec832088d9cdef10">reaction_q</a>)</td></tr>
-<tr class="separator:a351f84aa3eb871fe8f51e3a6f18e67f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a58c068ed5637620f62d0be0da850bbc3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a58c068ed5637620f62d0be0da850bbc3">enqueue_network_output_control_reactions</a> (<a class="el" href="structpqueue__t.html">pqueue_t</a> *<a class="el" href="reactor__common_8c.html#ac78005c2cb229d6bec832088d9cdef10">reaction_q</a>)</td></tr>
-<tr class="separator:a58c068ed5637620f62d0be0da850bbc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85a8a94cd5637607e88ef32abaa2dc5b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a85a8a94cd5637607e88ef32abaa2dc5b">enqueue_network_input_control_reactions</a> ()</td></tr>
+<tr class="separator:a85a8a94cd5637607e88ef32abaa2dc5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a892e175b19f257b58dec838106b898ad"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a892e175b19f257b58dec838106b898ad">enqueue_network_output_control_reactions</a> ()</td></tr>
+<tr class="separator:a892e175b19f257b58dec838106b898ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a88a24607cd2509ab4d625a054306492f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a88a24607cd2509ab4d625a054306492f">_lf_increment_global_tag_barrier_already_locked</a> (<a class="el" href="structtag__t.html">tag_t</a> future_tag)</td></tr>
 <tr class="separator:a88a24607cd2509ab4d625a054306492f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa67f3015ea5ee2a7885015202b75585e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#aa67f3015ea5ee2a7885015202b75585e">_lf_increment_global_tag_barrier</a> (<a class="el" href="structtag__t.html">tag_t</a> future_tag)</td></tr>
@@ -118,8 +121,6 @@ Functions</h2></td></tr>
 <tr class="separator:a8f772464d0281b57bfa40d2d40fd062c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad216e238632a5cbf4eed4817c1c5308f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ad216e238632a5cbf4eed4817c1c5308f">_lf_set_present</a> (<a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> *is_present_field)</td></tr>
 <tr class="separator:ad216e238632a5cbf4eed4817c1c5308f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad96dd94446ff66184dcf0f8f65cdb4f0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ad96dd94446ff66184dcf0f8f65cdb4f0">logical_tag_complete</a> (<a class="el" href="structtag__t.html">tag_t</a> tag_to_send)</td></tr>
-<tr class="separator:ad96dd94446ff66184dcf0f8f65cdb4f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad83fe9661682934029a42954b8fe6e2f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ad83fe9661682934029a42954b8fe6e2f">synchronize_with_other_federates</a> ()</td></tr>
 <tr class="separator:ad83fe9661682934029a42954b8fe6e2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aae38fdb4e79b2dc10d5f5c3131a423ae"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#aae38fdb4e79b2dc10d5f5c3131a423ae">wait_until</a> (<a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> logical_time_ns, lf_cond_t *condition)</td></tr>
@@ -132,26 +133,10 @@ Functions</h2></td></tr>
 <tr class="separator:a30de5114ba04269152b0fa25406b75f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af629769c213699f0e4c9360811ee7251"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#af629769c213699f0e4c9360811ee7251">request_stop</a> ()</td></tr>
 <tr class="separator:af629769c213699f0e4c9360811ee7251"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a92faef7f26ced82ad093c4876d6ab9bf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a92faef7f26ced82ad093c4876d6ab9bf">_lf_has_precedence_over</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *r1, <a class="el" href="structreaction__t.html">reaction_t</a> *r2)</td></tr>
-<tr class="separator:a92faef7f26ced82ad093c4876d6ab9bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a881c16f5335d6e3bcd7e073b07c0b4dc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a881c16f5335d6e3bcd7e073b07c0b4dc">_lf_is_blocked_by_executing_or_blocked_reaction</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *reaction)</td></tr>
-<tr class="separator:a881c16f5335d6e3bcd7e073b07c0b4dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9fde87828ffc8f3779c64cfcc29008e5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structreaction__t.html">reaction_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a9fde87828ffc8f3779c64cfcc29008e5">first_ready_reaction</a> ()</td></tr>
-<tr class="separator:a9fde87828ffc8f3779c64cfcc29008e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a90d13f45544346ea6623768358762d8f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a90d13f45544346ea6623768358762d8f">_lf_enqueue_reaction</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *reaction)</td></tr>
-<tr class="separator:a90d13f45544346ea6623768358762d8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad85dac0aa31333cb4fa1efb00f0cf907"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ad85dac0aa31333cb4fa1efb00f0cf907">_lf_notify_workers_locked</a> ()</td></tr>
-<tr class="separator:ad85dac0aa31333cb4fa1efb00f0cf907"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa46a83ed702e2c83d42625a8c78a9f50"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#aa46a83ed702e2c83d42625a8c78a9f50">_lf_notify_workers</a> ()</td></tr>
-<tr class="separator:aa46a83ed702e2c83d42625a8c78a9f50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef50e4963079f2716f35c8c92256bb4f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#aef50e4963079f2716f35c8c92256bb4f">_lf_trigger_reaction</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *reaction, int worker_number)</td></tr>
+<tr class="separator:aef50e4963079f2716f35c8c92256bb4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31c8ecdfd2be6749341fb93b679b1533"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a31c8ecdfd2be6749341fb93b679b1533">_lf_initialize_start_tag</a> ()</td></tr>
 <tr class="separator:a31c8ecdfd2be6749341fb93b679b1533"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acbd1ceaa09b7984ab43ee35e251243e4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#acbd1ceaa09b7984ab43ee35e251243e4">_lf_worker_should_stop_locked</a> ()</td></tr>
-<tr class="separator:acbd1ceaa09b7984ab43ee35e251243e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2a61756f607ba92930ea481f603d7cf8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a2a61756f607ba92930ea481f603d7cf8">_lf_worker_advance_tag_locked</a> (int worker_number)</td></tr>
-<tr class="separator:a2a61756f607ba92930ea481f603d7cf8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:addbd94a47aab30564ebec3ace1f6f642"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#addbd94a47aab30564ebec3ace1f6f642">_lf_worker_try_advance_tag_or_wait_locked</a> (int worker_number)</td></tr>
-<tr class="separator:addbd94a47aab30564ebec3ace1f6f642"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adae05d3398044fee1cbf7ed69c9baa4c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#adae05d3398044fee1cbf7ed69c9baa4c">_lf_worker_handle_deadline_violation_for_reaction</a> (int worker_number, <a class="el" href="structreaction__t.html">reaction_t</a> *reaction)</td></tr>
 <tr class="separator:adae05d3398044fee1cbf7ed69c9baa4c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e5bd68eed26abd46af9f4f33ef96549"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a6e5bd68eed26abd46af9f4f33ef96549">_lf_worker_handle_STP_violation_for_reaction</a> (int worker_number, <a class="el" href="structreaction__t.html">reaction_t</a> *reaction)</td></tr>
@@ -160,8 +145,8 @@ Functions</h2></td></tr>
 <tr class="separator:a0e72898f6ae7a130f5c09079c2174e20"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac6da3cf06b6db80c2c9a4cc5f4918d26"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ac6da3cf06b6db80c2c9a4cc5f4918d26">_lf_worker_invoke_reaction</a> (int worker_number, <a class="el" href="structreaction__t.html">reaction_t</a> *reaction)</td></tr>
 <tr class="separator:ac6da3cf06b6db80c2c9a4cc5f4918d26"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae20ceb083b14cbee85e91bad4ae56121"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ae20ceb083b14cbee85e91bad4ae56121">_lf_worker_do_work_locked</a> (int worker_number)</td></tr>
-<tr class="separator:ae20ceb083b14cbee85e91bad4ae56121"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9db809fd6b8ccf3f909ec6f4908e0788"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a9db809fd6b8ccf3f909ec6f4908e0788">_lf_worker_do_work</a> (int worker_number)</td></tr>
+<tr class="separator:a9db809fd6b8ccf3f909ec6f4908e0788"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a15b16453216ed29570af03009e7c7c63"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63">worker</a> (void *arg)</td></tr>
 <tr class="separator:a15b16453216ed29570af03009e7c7c63"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad96dc6cbe1d3365e52aad6aecbf036d8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ad96dc6cbe1d3365e52aad6aecbf036d8">print_snapshot</a> ()</td></tr>
@@ -173,30 +158,16 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a1d1f317f9855dde7aea91823087d29e0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a1d1f317f9855dde7aea91823087d29e0">number_of_idle_threads</a> = 0</td></tr>
-<tr class="separator:a1d1f317f9855dde7aea91823087d29e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a539865ef209f81fba78e6d6935fa023d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct__lf__tag__advancement__barrier.html">_lf_tag_advancement_barrier</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a539865ef209f81fba78e6d6935fa023d">_lf_global_tag_advancement_barrier</a> = {0, <a class="el" href="tag_8h.html#a33ccb2b8fb9f20ab29ea298b9051443a">FOREVER_TAG_INITIALIZER</a>}</td></tr>
 <tr class="separator:a539865ef209f81fba78e6d6935fa023d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1ff4912c9c181cbf07942698c4f74473"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpqueue__t.html">pqueue_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a1ff4912c9c181cbf07942698c4f74473">executing_q</a></td></tr>
-<tr class="separator:a1ff4912c9c181cbf07942698c4f74473"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae709eb5afb597ebc6b6e66e756b3cf62"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpqueue__t.html">pqueue_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ae709eb5afb597ebc6b6e66e756b3cf62">transfer_q</a></td></tr>
-<tr class="separator:ae709eb5afb597ebc6b6e66e756b3cf62"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab491fbef9a883a7cee19e074dba32661"><td class="memItemLeft" align="right" valign="top">lf_mutex_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ab491fbef9a883a7cee19e074dba32661">mutex</a></td></tr>
 <tr class="separator:ab491fbef9a883a7cee19e074dba32661"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ace65260efd42a7c5585e4dcaac5d357f"><td class="memItemLeft" align="right" valign="top">lf_cond_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ace65260efd42a7c5585e4dcaac5d357f">event_q_changed</a></td></tr>
 <tr class="separator:ace65260efd42a7c5585e4dcaac5d357f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a350d0aa3d1adc000f5b55b1b109f8407"><td class="memItemLeft" align="right" valign="top">lf_cond_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a350d0aa3d1adc000f5b55b1b109f8407">reaction_q_changed</a></td></tr>
-<tr class="separator:a350d0aa3d1adc000f5b55b1b109f8407"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8fd162b673e18bea16dca55832761489"><td class="memItemLeft" align="right" valign="top">lf_cond_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a8fd162b673e18bea16dca55832761489">executing_q_emptied</a></td></tr>
-<tr class="separator:a8fd162b673e18bea16dca55832761489"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae4ea7f94000cdbe956e448768fc0c91e"><td class="memItemLeft" align="right" valign="top">lf_cond_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ae4ea7f94000cdbe956e448768fc0c91e">global_tag_barrier_requestors_reached_zero</a></td></tr>
 <tr class="separator:ae4ea7f94000cdbe956e448768fc0c91e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a944c178b36ac9b6a9a69659f498d99e2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a944c178b36ac9b6a9a69659f498d99e2">_lf_advancing_time</a> = <a class="el" href="lf__windows__support_8h.html#a65e9886d74aaee76545e83dd09011727">false</a></td></tr>
-<tr class="separator:a944c178b36ac9b6a9a69659f498d99e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a76d8bd3f166632ed8f2990a1f29852cd"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a76d8bd3f166632ed8f2990a1f29852cd">worker_thread_count</a> = 0</td></tr>
 <tr class="separator:a76d8bd3f166632ed8f2990a1f29852cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a147f52e4b288a4d60e6b91638eaa32c2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a147f52e4b288a4d60e6b91638eaa32c2">_lf_logical_tag_completed</a> = <a class="el" href="lf__windows__support_8h.html#a65e9886d74aaee76545e83dd09011727">false</a></td></tr>
-<tr class="separator:a147f52e4b288a4d60e6b91638eaa32c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ada09213485755fbd39308ba197dbd816"><td class="memItemLeft" align="right" valign="top">lf_thread_t *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#ada09213485755fbd39308ba197dbd816">_lf_thread_ids</a></td></tr>
 <tr class="separator:ada09213485755fbd39308ba197dbd816"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -212,12 +183,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Runtime infrastructure for the threaded version of the C target of Lingua Franca.</p>
-<dl class="section author"><dt>Author</dt><dd>{Edward A. Lee <a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd>
-<dd>
-{Marten Lohstroh <a href="#" onclick="location.href='mai'+'lto:'+'mar'+'te'+'n@b'+'er'+'kel'+'ey'+'.ed'+'u'; return false;">marte<span class="obfuscator">.nosp@m.</span>n@be<span class="obfuscator">.nosp@m.</span>rkele<span class="obfuscator">.nosp@m.</span>y.ed<span class="obfuscator">.nosp@m.</span>u</a>} </dd>
-<dd>
-{Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} The maximum amount of time a worker thread should stall before checking the reaction queue again. This is not currently used. </dd></dl>
+<p >The maximum amount of time a worker thread should stall before checking the reaction queue again. This is not currently used. </p>
 
 </div>
 </div>
@@ -233,6 +199,26 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p >Unless the "fast" option is given, an LF program will wait until physical time matches logical time before handling an event with a given logical time. The amount of time is less than this given threshold, then no wait will occur. The purpose of this is to prevent unnecessary delays caused by simply setting up and performing the wait. </p>
+
+</div>
+</div>
+<a id="a43fcdba4ed8864d210afd3f031b4e346" name="a43fcdba4ed8864d210afd3f031b4e346"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a43fcdba4ed8864d210afd3f031b4e346">&#9670;&nbsp;</a></span>NUMBER_OF_WORKERS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define NUMBER_OF_WORKERS&#160;&#160;&#160;1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Runtime infrastructure for the threaded version of the C target of Lingua Franca.</p>
+<dl class="section author"><dt>Author</dt><dd>{Edward A. Lee <a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd>
+<dd>
+{Marten Lohstroh <a href="#" onclick="location.href='mai'+'lto:'+'mar'+'te'+'n@b'+'er'+'kel'+'ey'+'.ed'+'u'; return false;">marte<span class="obfuscator">.nosp@m.</span>n@be<span class="obfuscator">.nosp@m.</span>rkele<span class="obfuscator">.nosp@m.</span>y.ed<span class="obfuscator">.nosp@m.</span>u</a>} </dd>
+<dd>
+{Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd></dl>
 
 </div>
 </div>
@@ -269,65 +255,6 @@ Variables</h2></td></tr>
 <p >Decrement the total number of pending barrier requests for the global tag barrier. If the total number of requests reaches zero, this function resets the tag barrier to FOREVER_TAG and notifies all threads that are waiting on the barrier that the number of requests has reached zero.</p>
 <p >This function assumes that the caller already holds the mutex lock.</p>
 <dl class="section note"><dt>Note</dt><dd>This function is only useful in threaded applications to facilitate certain non-blocking functionalities such as receiving timed messages over the network or handling stop in the federated execution. </dd></dl>
-
-</div>
-</div>
-<a id="a90d13f45544346ea6623768358762d8f" name="a90d13f45544346ea6623768358762d8f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a90d13f45544346ea6623768358762d8f">&#9670;&nbsp;</a></span>_lf_enqueue_reaction()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void _lf_enqueue_reaction </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structreaction__t.html">reaction_t</a> *&#160;</td>
-          <td class="paramname"><em>reaction</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Put the specified reaction on the reaction queue. This version acquires a mutex lock. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">reaction</td><td>The reaction. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a92faef7f26ced82ad093c4876d6ab9bf" name="a92faef7f26ced82ad093c4876d6ab9bf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a92faef7f26ced82ad093c4876d6ab9bf">&#9670;&nbsp;</a></span>_lf_has_precedence_over()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_has_precedence_over </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structreaction__t.html">reaction_t</a> *&#160;</td>
-          <td class="paramname"><em>r1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structreaction__t.html">reaction_t</a> *&#160;</td>
-          <td class="paramname"><em>r2</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Return true if the first reaction has precedence over the second, false otherwise. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">r1</td><td>The first reaction. </td></tr>
-    <tr><td class="paramname">r2</td><td>The second reaction. </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>
@@ -407,31 +334,6 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a881c16f5335d6e3bcd7e073b07c0b4dc" name="a881c16f5335d6e3bcd7e073b07c0b4dc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a881c16f5335d6e3bcd7e073b07c0b4dc">&#9670;&nbsp;</a></span>_lf_is_blocked_by_executing_or_blocked_reaction()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_is_blocked_by_executing_or_blocked_reaction </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structreaction__t.html">reaction_t</a> *&#160;</td>
-          <td class="paramname"><em>reaction</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >If the reaction is blocked by a currently executing reaction, return true. Otherwise, return false. A reaction blocks the specified reaction if it has a level less than that of the specified reaction and it also has an overlapping chain ID, meaning that it is (possibly) upstream of the specified reaction. This function assumes the mutex is held because it accesses the executing_q. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">reaction</td><td>The reaction. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>true if this reaction is blocked, false otherwise. </dd></dl>
-
-</div>
-</div>
 <a id="a30de5114ba04269152b0fa25406b75f4" name="a30de5114ba04269152b0fa25406b75f4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a30de5114ba04269152b0fa25406b75f4">&#9670;&nbsp;</a></span>_lf_next_locked()</h2>
 
@@ -450,43 +352,6 @@ Variables</h2></td></tr>
 <p >If there is no event in the queue and the keepalive command-line option was not given, and this is not a federated execution with centralized coordination, set the stop tag to the current tag. If keepalive was given, then wait for either <a class="el" href="reactor__threaded_8c.html#af629769c213699f0e4c9360811ee7251">request_stop()</a> to be called or an event appears in the event queue and then return.</p>
 <p >Every time tag is advanced, it is checked against stop tag and if they are equal, shutdown reactions are triggered.</p>
 <p >This does not acquire the mutex lock. It assumes the lock is already held. </p>
-
-</div>
-</div>
-<a id="aa46a83ed702e2c83d42625a8c78a9f50" name="aa46a83ed702e2c83d42625a8c78a9f50"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa46a83ed702e2c83d42625a8c78a9f50">&#9670;&nbsp;</a></span>_lf_notify_workers()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void _lf_notify_workers </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Notify workers that something has changed on the reaction_q. Notification is performed only if there is a reaction on the reaction queue that is ready to execute and there is an idle worker thread. This function acquires the mutex lock. </p>
-
-</div>
-</div>
-<a id="ad85dac0aa31333cb4fa1efb00f0cf907" name="ad85dac0aa31333cb4fa1efb00f0cf907"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad85dac0aa31333cb4fa1efb00f0cf907">&#9670;&nbsp;</a></span>_lf_notify_workers_locked()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void _lf_notify_workers_locked </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Notify workers that something has changed on the reaction_q. Notification is performed only if there is a reaction on the reaction queue that is ready to execute and there is an idle worker thread. This function assumes the caller holds the mutex lock. </p>
 
 </div>
 </div>
@@ -631,6 +496,42 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="aef50e4963079f2716f35c8c92256bb4f" name="aef50e4963079f2716f35c8c92256bb4f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aef50e4963079f2716f35c8c92256bb4f">&#9670;&nbsp;</a></span>_lf_trigger_reaction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_trigger_reaction </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structreaction__t.html">reaction_t</a> *&#160;</td>
+          <td class="paramname"><em>reaction</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>worker_number</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Trigger 'reaction'.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">reaction</td><td>The reaction. </td></tr>
+    <tr><td class="paramname">worker_number</td><td>The ID of the worker that is making this call. 0 should be used if there is only one worker (e.g., when the program is using the unthreaded C runtime). -1 is used for an anonymous call in a context where a worker number does not make sense (e.g., the caller is not a worker thread). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a6392f1a7187ec9d36d35ad51bf06ded0" name="a6392f1a7187ec9d36d35ad51bf06ded0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6392f1a7187ec9d36d35ad51bf06ded0">&#9670;&nbsp;</a></span>_lf_wait_on_global_tag_barrier()</h2>
 
@@ -659,34 +560,14 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a2a61756f607ba92930ea481f603d7cf8" name="a2a61756f607ba92930ea481f603d7cf8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2a61756f607ba92930ea481f603d7cf8">&#9670;&nbsp;</a></span>_lf_worker_advance_tag_locked()</h2>
+<a id="a9db809fd6b8ccf3f909ec6f4908e0788" name="a9db809fd6b8ccf3f909ec6f4908e0788"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9db809fd6b8ccf3f909ec6f4908e0788">&#9670;&nbsp;</a></span>_lf_worker_do_work()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_worker_advance_tag_locked </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>worker_number</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Advance tag. This will also pop events for the newly acquired tag and put the triggered reactions on the reaction queue. This function assumes the caller holds the mutex lock.</p>
-<dl class="section return"><dt>Returns</dt><dd>should_exit True if the worker thread should exit. False otherwise. </dd></dl>
-
-</div>
-</div>
-<a id="ae20ceb083b14cbee85e91bad4ae56121" name="ae20ceb083b14cbee85e91bad4ae56121"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae20ceb083b14cbee85e91bad4ae56121">&#9670;&nbsp;</a></span>_lf_worker_do_work_locked()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void _lf_worker_do_work_locked </td>
+          <td class="memname">void _lf_worker_do_work </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>worker_number</em></td><td>)</td>
@@ -823,46 +704,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="acbd1ceaa09b7984ab43ee35e251243e4" name="acbd1ceaa09b7984ab43ee35e251243e4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acbd1ceaa09b7984ab43ee35e251243e4">&#9670;&nbsp;</a></span>_lf_worker_should_stop_locked()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_worker_should_stop_locked </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Return true if the worker should stop now; false otherwise. This function assumes the caller holds the mutex lock. </p>
-
-</div>
-</div>
-<a id="addbd94a47aab30564ebec3ace1f6f642" name="addbd94a47aab30564ebec3ace1f6f642"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#addbd94a47aab30564ebec3ace1f6f642">&#9670;&nbsp;</a></span>_lf_worker_try_advance_tag_or_wait_locked()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_worker_try_advance_tag_or_wait_locked </td>
-          <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>worker_number</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Advance tag if there are no reactions in the reaction queue or in progress. If there are such reactions or if another thread is already advancing the tag, wait until something on the reaction queue is changed. This function assumes the caller holds the mutex lock.</p>
-<dl class="section return"><dt>Returns</dt><dd>should_exit True if the worker thread should exit. False otherwise. </dd></dl>
-
-</div>
-</div>
-<a id="a351f84aa3eb871fe8f51e3a6f18e67f6" name="a351f84aa3eb871fe8f51e3a6f18e67f6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a351f84aa3eb871fe8f51e3a6f18e67f6">&#9670;&nbsp;</a></span>enqueue_network_input_control_reactions()</h2>
+<a id="a85a8a94cd5637607e88ef32abaa2dc5b" name="a85a8a94cd5637607e88ef32abaa2dc5b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a85a8a94cd5637607e88ef32abaa2dc5b">&#9670;&nbsp;</a></span>enqueue_network_input_control_reactions()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -870,8 +713,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void enqueue_network_input_control_reactions </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>reaction_q</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -880,8 +722,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a58c068ed5637620f62d0be0da850bbc3" name="a58c068ed5637620f62d0be0da850bbc3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a58c068ed5637620f62d0be0da850bbc3">&#9670;&nbsp;</a></span>enqueue_network_output_control_reactions()</h2>
+<a id="a892e175b19f257b58dec838106b898ad" name="a892e175b19f257b58dec838106b898ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a892e175b19f257b58dec838106b898ad">&#9670;&nbsp;</a></span>enqueue_network_output_control_reactions()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -889,37 +731,13 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void enqueue_network_output_control_reactions </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>reaction_q</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p >Enqueue network output control reactions that will send a PORT_ABSENT message to downstream federates if a given network output port is not present.</p>
 <p >Enqueue network output control reactions that will send a MSG_TYPE_PORT_ABSENT message to downstream federates if a given network output port is not present. </p>
-
-</div>
-</div>
-<a id="a9fde87828ffc8f3779c64cfcc29008e5" name="a9fde87828ffc8f3779c64cfcc29008e5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9fde87828ffc8f3779c64cfcc29008e5">&#9670;&nbsp;</a></span>first_ready_reaction()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structreaction__t.html">reaction_t</a> * first_ready_reaction </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Return the first ready (i.e., unblocked) reaction in the reaction queue if there is one. Return <code>NULL</code> if all pending reactions are blocked.</p>
-<p >The reaction queue is sorted by index, where a lower index appears earlier in the queue. The first reaction in the reaction queue is ready to execute if it is not blocked by any reaction that is currently executing in another thread. If that first reaction is blocked, then the second reaction is ready to execute if it is not blocked by any reaction that is currently executing (if it is blocked by the first reaction, then it is also blocked by a currently executing reaction because the first reaction is blocked).</p>
-<p >The upper 48 bits of the index are the deadline and the lower 16 bits denote a level in the precedence graph. Reactions that do not depend on any upstream reactions have level 0, and greater values indicate the length of the longest upstream path to a reaction with level 0. If a reaction has no specified deadline and is not upstream of any reaction with a specified deadline, then its deadline is the largest 48 bit number. Also, all reactions that precede a reaction r that has a deadline D are are assigned a deadline D' &lt;= D.</p>
-<p >A reaction r is blocked by an executing reaction e if e has a lower level and the chain ID of e overlaps (shares at least one bit) with the chain ID of r. If the two chain IDs share no bits, then we are assured that e is not upstream of r and hence cannot block r.</p>
-<p >This function assumes the mutex is held.</p>
-<dl class="section return"><dt>Returns</dt><dd>the first-ranked reaction that is ready to execute, NULL if there is none. </dd></dl>
 
 </div>
 </div>
@@ -969,30 +787,6 @@ Variables</h2></td></tr>
 <p >The main loop of the LF program.</p>
 <p >An unambiguous function name that can be called by external libraries.</p>
 <p >Note: In target languages that use the C core library, there should be an unambiguous way to execute the LF program's main function that will not conflict with other main functions that might get resolved and linked at compile time. </p>
-
-</div>
-</div>
-<a id="ad96dd94446ff66184dcf0f8f65cdb4f0" name="ad96dd94446ff66184dcf0f8f65cdb4f0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad96dd94446ff66184dcf0f8f65cdb4f0">&#9670;&nbsp;</a></span>logical_tag_complete()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void logical_tag_complete </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td>
-          <td class="paramname"><em>tag_to_send</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Placeholder for code-generated function that will, in a federated execution, be used to coordinate the advancement of tag. It will notify the runtime infrastructure (RTI) that all reactions at the specified logical tag have completed. This function should be called only while holding the mutex lock. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">tag_to_send</td><td>The tag to send. </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>
@@ -1167,21 +961,6 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
-<a id="a944c178b36ac9b6a9a69659f498d99e2" name="a944c178b36ac9b6a9a69659f498d99e2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a944c178b36ac9b6a9a69659f498d99e2">&#9670;&nbsp;</a></span>_lf_advancing_time</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_advancing_time = <a class="el" href="lf__windows__support_8h.html#a65e9886d74aaee76545e83dd09011727">false</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Indicator that a worker thread has already taken charge of advancing time. When another worker thread encouters a true value to this variable, it should wait for events to appear on the reaction queue rather than advance time. This variable should only be accessed while holding the mutex lock. </p>
-
-</div>
-</div>
 <a id="a539865ef209f81fba78e6d6935fa023d" name="a539865ef209f81fba78e6d6935fa023d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a539865ef209f81fba78e6d6935fa023d">&#9670;&nbsp;</a></span>_lf_global_tag_advancement_barrier</h2>
 
@@ -1194,20 +973,6 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p >Create a global tag barrier and initialize the barrier's semaphore to 0 and its horizon to FOREVER_TAG. </p>
-
-</div>
-</div>
-<a id="a147f52e4b288a4d60e6b91638eaa32c2" name="a147f52e4b288a4d60e6b91638eaa32c2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a147f52e4b288a4d60e6b91638eaa32c2">&#9670;&nbsp;</a></span>_lf_logical_tag_completed</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_logical_tag_completed = <a class="el" href="lf__windows__support_8h.html#a65e9886d74aaee76545e83dd09011727">false</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
 
 </div>
 </div>
@@ -1239,34 +1004,6 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a1ff4912c9c181cbf07942698c4f74473" name="a1ff4912c9c181cbf07942698c4f74473"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1ff4912c9c181cbf07942698c4f74473">&#9670;&nbsp;</a></span>executing_q</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structpqueue__t.html">pqueue_t</a>* executing_q</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a8fd162b673e18bea16dca55832761489" name="a8fd162b673e18bea16dca55832761489"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8fd162b673e18bea16dca55832761489">&#9670;&nbsp;</a></span>executing_q_emptied</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">lf_cond_t executing_q_emptied</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="ae4ea7f94000cdbe956e448768fc0c91e" name="ae4ea7f94000cdbe956e448768fc0c91e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae4ea7f94000cdbe956e448768fc0c91e">&#9670;&nbsp;</a></span>global_tag_barrier_requestors_reached_zero</h2>
 
@@ -1289,48 +1026,6 @@ Variables</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">lf_mutex_t mutex</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a1d1f317f9855dde7aea91823087d29e0" name="a1d1f317f9855dde7aea91823087d29e0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1d1f317f9855dde7aea91823087d29e0">&#9670;&nbsp;</a></span>number_of_idle_threads</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int number_of_idle_threads = 0</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a350d0aa3d1adc000f5b55b1b109f8407" name="a350d0aa3d1adc000f5b55b1b109f8407"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a350d0aa3d1adc000f5b55b1b109f8407">&#9670;&nbsp;</a></span>reaction_q_changed</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">lf_cond_t reaction_q_changed</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ae709eb5afb597ebc6b6e66e756b3cf62" name="ae709eb5afb597ebc6b6e66e756b3cf62"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae709eb5afb597ebc6b6e66e756b3cf62">&#9670;&nbsp;</a></span>transfer_q</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structpqueue__t.html">pqueue_t</a>* transfer_q</td>
         </tr>
       </table>
 </div><div class="memdoc">

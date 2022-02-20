@@ -100,6 +100,12 @@ Functions</h2></td></tr>
 <tr class="separator:ab5ad2a2c71548435b6072b31ac21a9c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a85cdea38a35554168aa2277d83f5a957"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vector_8h.html#a85cdea38a35554168aa2277d83f5a957">vector_pop</a> (<a class="el" href="structvector__t.html">vector_t</a> *v)</td></tr>
 <tr class="separator:a85cdea38a35554168aa2277d83f5a957"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a201cb1fd5299e01b6fdfb499d3008952"><td class="memItemLeft" align="right" valign="top">void **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vector_8h.html#a201cb1fd5299e01b6fdfb499d3008952">vector_at</a> (<a class="el" href="structvector__t.html">vector_t</a> *v, size_t idx)</td></tr>
+<tr class="memdesc:a201cb1fd5299e01b6fdfb499d3008952"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a pointer that is contained in the vector at 'idx'.  <a href="vector_8h.html#a201cb1fd5299e01b6fdfb499d3008952">More...</a><br /></td></tr>
+<tr class="separator:a201cb1fd5299e01b6fdfb499d3008952"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa8f4318bf03a7886169e85c151b6903"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vector_8h.html#aaa8f4318bf03a7886169e85c151b6903">vector_size</a> (<a class="el" href="structvector__t.html">vector_t</a> *v)</td></tr>
+<tr class="memdesc:aaa8f4318bf03a7886169e85c151b6903"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the size of the vector.  <a href="vector_8h.html#aaa8f4318bf03a7886169e85c151b6903">More...</a><br /></td></tr>
+<tr class="separator:aaa8f4318bf03a7886169e85c151b6903"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a41e7b0b4a43deefd94df37fd128de0bb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="vector_8h.html#a41e7b0b4a43deefd94df37fd128de0bb">vector_vote</a> (<a class="el" href="structvector__t.html">vector_t</a> *v)</td></tr>
 <tr class="separator:a41e7b0b4a43deefd94df37fd128de0bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -115,13 +121,57 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="section author"><dt>Author</dt><dd>Peter Donovan (<a href="#" onclick="location.href='mai'+'lto:'+'pet'+'er'+'don'+'ov'+'an@'+'be'+'rke'+'le'+'y.e'+'du'; return false;">peter<span class="obfuscator">.nosp@m.</span>dono<span class="obfuscator">.nosp@m.</span>van@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
-<dd>
-Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd></dl>
 
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="a201cb1fd5299e01b6fdfb499d3008952" name="a201cb1fd5299e01b6fdfb499d3008952"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a201cb1fd5299e01b6fdfb499d3008952">&#9670;&nbsp;</a></span>vector_at()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void ** vector_at </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structvector__t.html">vector_t</a> *&#160;</td>
+          <td class="paramname"><em>v</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>idx</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return a pointer that is contained in the vector at 'idx'. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">v</td><td>Any vector. </td></tr>
+    <tr><td class="paramname">idx</td><td>The index in the vector.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>NULL on error. A valid pointer to the element at 'idx' otherwise.</dd></dl>
+<p>Return a pointer that is contained in the vector at 'idx'.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">v</td><td>Any vector. </td></tr>
+    <tr><td class="paramname">idx</td><td>The index in the vector.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>NULL on error. A valid pointer to the element at 'idx' otherwise. </dd></dl>
+
+</div>
+</div>
 <a id="ab6ea681ea89fa128392d61ec7a516e31" name="ab6ea681ea89fa128392d61ec7a516e31"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab6ea681ea89fa128392d61ec7a516e31">&#9670;&nbsp;</a></span>vector_free()</h2>
 
@@ -163,7 +213,13 @@ Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'
 </div><div class="memdoc">
 <p >Allocate and initialize a new vector. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">initial_capacity</td><td>The desired initial capacity to allocate. Must be more than 0 </td></tr>
+    <tr><td class="paramname">initial_capacity</td><td>The desired initial capacity to allocate. Must be more than 0</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Allocate and initialize a new vector. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">initial_capacity</td><td>The desired initial capacity to allocate. </td></tr>
   </table>
   </dd>
 </dl>
@@ -275,6 +331,33 @@ Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="aaa8f4318bf03a7886169e85c151b6903" name="aaa8f4318bf03a7886169e85c151b6903"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaa8f4318bf03a7886169e85c151b6903">&#9670;&nbsp;</a></span>vector_size()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t vector_size </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structvector__t.html">vector_t</a> *&#160;</td>
+          <td class="paramname"><em>v</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Return the size of the vector. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">v</td><td>Any vector </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>size_t The size of the vector. </dd></dl>
 
 </div>
 </div>

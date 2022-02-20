@@ -83,8 +83,8 @@ $(function() {
 <code>#include &lt;time.h&gt;</code><br />
 <code>#include &lt;limits.h&gt;</code><br />
 <code>#include &lt;errno.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="pqueue_8h_source.html">pqueue.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="util_8h_source.html">util.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="pqueue_8h_source.html">utils/pqueue.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="util_8h_source.html">utils/util.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tag_8h_source.html">tag.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="trace_8h_source.html">trace.h</a>&quot;</code><br />
 </div>
@@ -131,7 +131,7 @@ Macros</h2></td></tr>
 <tr class="separator:a5f45a70cbab4e36efdc9efdcf37a7bb9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4aab573132838d44997ee99002d3e6d0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a4aab573132838d44997ee99002d3e6d0">DEADLINE</a>(index)&#160;&#160;&#160;(index &amp; 0x7FFFFFFFFFFF0000)</td></tr>
 <tr class="separator:a4aab573132838d44997ee99002d3e6d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6d86a8b9f2059af4b3f9f1862fdb2145"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a6d86a8b9f2059af4b3f9f1862fdb2145">LEVEL</a>(index)&#160;&#160;&#160;(index &amp; 0xFFFF)</td></tr>
+<tr class="memitem:a6d86a8b9f2059af4b3f9f1862fdb2145"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a6d86a8b9f2059af4b3f9f1862fdb2145">LEVEL</a>(index)&#160;&#160;&#160;(index &amp; 0xffffLL)</td></tr>
 <tr class="separator:a6d86a8b9f2059af4b3f9f1862fdb2145"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aff9931d7524c88e07743af6535b20761"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#aff9931d7524c88e07743af6535b20761">MAX</a>(X,  Y)&#160;&#160;&#160;(((X) &gt; (Y)) ? (X) : (Y))</td></tr>
 <tr class="separator:aff9931d7524c88e07743af6535b20761"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -254,12 +254,6 @@ Functions</h2></td></tr>
 <tr class="separator:acf2937acf3f9a8dfeb7af0152f31634e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e7d759bc02a2b6dabb262fde1793ef5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a4e7d759bc02a2b6dabb262fde1793ef5">_lf_fd_send_stop_request_to_rti</a> (void)</td></tr>
 <tr class="separator:a4e7d759bc02a2b6dabb262fde1793ef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abadead0c4f54963b062503cf6cb7ace7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#abadead0c4f54963b062503cf6cb7ace7">_lf_advance_logical_time</a> (<a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> next_time)</td></tr>
-<tr class="separator:abadead0c4f54963b062503cf6cb7ace7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a91f6189afbe191df0d4b0138eae15eed"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a91f6189afbe191df0d4b0138eae15eed">_lf_notify_workers</a> (void)</td></tr>
-<tr class="separator:a91f6189afbe191df0d4b0138eae15eed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0480c270d70168b41ce510540dc391ff"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a0480c270d70168b41ce510540dc391ff">_lf_is_blocked_by_executing_reaction</a> (void)</td></tr>
-<tr class="separator:a0480c270d70168b41ce510540dc391ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af6475b744acf535830988064e55dc799"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#af6475b744acf535830988064e55dc799">_lf_check_deadline</a> (<a class="el" href="structself__base__t.html">self_base_t</a> *self)</td></tr>
 <tr class="separator:af6475b744acf535830988064e55dc799"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -377,7 +371,7 @@ DESCRIPTION</h1>
 <div class="line">    out-&gt;token = token; \</div>
 <div class="line">    out-&gt;value = token-&gt;value; \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="areactor__common_8c_html_a96b4b8f74714eae0efcb699281c10f87"><div class="ttname"><a href="reactor__common_8c.html#a96b4b8f74714eae0efcb699281c10f87">_lf_initialize_token_with_value</a></div><div class="ttdeci">lf_token_t * _lf_initialize_token_with_value(lf_token_t *token, void *value, size_t length)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:615</div></div>
+<div class="ttc" id="areactor__common_8c_html_a96b4b8f74714eae0efcb699281c10f87"><div class="ttname"><a href="reactor__common_8c.html#a96b4b8f74714eae0efcb699281c10f87">_lf_initialize_token_with_value</a></div><div class="ttdeci">lf_token_t * _lf_initialize_token_with_value(lf_token_t *token, void *value, size_t length)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:519</div></div>
 </div><!-- fragment --><p >Version of set for output types given as 'type[]' where you want to send a previously dynamically allocated array.</p>
 <p >The deallocation is delegated to downstream reactors, which automatically deallocate when the reference count drops to zero. It also sets the corresponding _is_present variable in the self struct to true (which causes the object message to be sent). </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -412,7 +406,7 @@ DESCRIPTION</h1>
 <div class="line">    out-&gt;value = token-&gt;value; \</div>
 <div class="line">    out-&gt;token = token; \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="areactor__common_8c_html_a9df90516cce7d8e01b46acf61db64b8f"><div class="ttname"><a href="reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a></div><div class="ttdeci">lf_token_t * _lf_set_new_array_impl(lf_token_t *token, size_t length, int num_destinations)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1524</div></div>
+<div class="ttc" id="areactor__common_8c_html_a9df90516cce7d8e01b46acf61db64b8f"><div class="ttname"><a href="reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a></div><div class="ttdeci">lf_token_t * _lf_set_new_array_impl(lf_token_t *token, size_t length, int num_destinations)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1426</div></div>
 </div><!-- fragment --><p >Version of set() for output types given as 'type*' that allocates a new object of the type of the specified output port.</p>
 <p >This macro dynamically allocates enough memory to contain one instance of the output datatype and sets the variable named by the argument to point to the newly allocated memory. The user code can then populate it with whatever value it wishes to send.</p>
 <p >This macro also sets the corresponding _is_present variable in the self struct to true (which causes the object message to be sent), </p><dl class="params"><dt>Parameters</dt><dd>
@@ -614,7 +608,7 @@ DESCRIPTION</h1>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">index</td><td>)</td>
-          <td>&#160;&#160;&#160;(index &amp; 0xFFFF)</td>
+          <td>&#160;&#160;&#160;(index &amp; 0xffffLL)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -831,7 +825,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Reaction activation record to push onto the reaction queue. Some of the information in this struct is common among all instances of the reactor, and some is specific to each particular instance. These are marked below COMMON or INSTANCE accordingly. The COMMON information is set in the constructor. The fields marked RUNTIME have values that change during execution. Instances of this struct are put onto the reaction queue (reaction_q). </p>
+<p >Reaction activation record to push onto the reaction queue. Some of the information in this struct is common among all instances of the reactor, and some is specific to each particular instance. These are marked below COMMON or INSTANCE accordingly. The COMMON information is set in the constructor. The fields marked RUNTIME have values that change during execution. Instances of this struct are put onto the reaction queue by the scheduler. </p>
 
 </div>
 </div>
@@ -1014,32 +1008,6 @@ The absent and present fields need to be compatible with false and true respecti
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="abadead0c4f54963b062503cf6cb7ace7" name="abadead0c4f54963b062503cf6cb7ace7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abadead0c4f54963b062503cf6cb7ace7">&#9670;&nbsp;</a></span>_lf_advance_logical_time()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void _lf_advance_logical_time </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td>
-          <td class="paramname"><em>next_time</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Advance from the current tag to the next. If the given next_time is equal to the current time, then increase the microstep. Otherwise, update the current time and set the microstep to zero.</p>
-<p >Advance from the current tag to the next. If the given next_time is equal to the current time, then increase the microstep. Otherwise, update the current time and set the microstep to zero.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">next_time</td><td>The time step to advance to. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a id="afa9a756e5a6685531141bb4bfdc1f327" name="afa9a756e5a6685531141bb4bfdc1f327"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afa9a756e5a6685531141bb4bfdc1f327">&#9670;&nbsp;</a></span>_lf_allocate()</h2>
 
@@ -1308,36 +1276,6 @@ The absent and present fields need to be compatible with false and true respecti
 
 </div>
 </div>
-<a id="a0480c270d70168b41ce510540dc391ff" name="a0480c270d70168b41ce510540dc391ff"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0480c270d70168b41ce510540dc391ff">&#9670;&nbsp;</a></span>_lf_is_blocked_by_executing_reaction()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_is_blocked_by_executing_reaction </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >If multithreaded and the reaction is blocked by a currently executing reaction, return true. Otherwise, return false. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">reaction</td><td>The reaction.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>Return false. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">reaction</td><td>The reaction. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a id="a906a0d04740b6228fe3719624d11c14a" name="a906a0d04740b6228fe3719624d11c14a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a906a0d04740b6228fe3719624d11c14a">&#9670;&nbsp;</a></span>_lf_new_reactor()</h2>
 
@@ -1365,27 +1303,6 @@ The absent and present fields need to be compatible with false and true respecti
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="a91f6189afbe191df0d4b0138eae15eed" name="a91f6189afbe191df0d4b0138eae15eed"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a91f6189afbe191df0d4b0138eae15eed">&#9670;&nbsp;</a></span>_lf_notify_workers()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void _lf_notify_workers </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >If multithreaded, notify workers that something has changed on the reaction_q. Otherwise, do nothing.</p>
-<p >Do nothing. This implementation is not multithreaded.</p>
-<p >Notify workers that something has changed on the reaction_q. Notification is performed only if there is a reaction on the reaction queue that is ready to execute and there is an idle worker thread. This function acquires the mutex lock. </p>
 
 </div>
 </div>

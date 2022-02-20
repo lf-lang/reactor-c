@@ -77,8 +77,9 @@ $(function() {
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="reactor_8h_source.html">reactor.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tag_8c.html">tag.c</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="pqueue_8c.html">pqueue.c</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="util_8c.html">util.c</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="pqueue_8c.html">utils/pqueue.c</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="pqueue__support_8h_source.html">utils/pqueue_support.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="util_8c.html">utils/util.c</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
@@ -118,8 +119,8 @@ Functions</h2></td></tr>
 <tr class="separator:a75a5bf324229d35fb88541a04449c95b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a88c890be1f8d45461a6985cbfe6faa99"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor__common_8c.html#abe23a36a87d2f0c076da417eb0114c7e">token_freed</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a88c890be1f8d45461a6985cbfe6faa99">_lf_done_using</a> (<a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
 <tr class="separator:a88c890be1f8d45461a6985cbfe6faa99"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a90d13f45544346ea6623768358762d8f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a90d13f45544346ea6623768358762d8f">_lf_enqueue_reaction</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *reaction)</td></tr>
-<tr class="separator:a90d13f45544346ea6623768358762d8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aef50e4963079f2716f35c8c92256bb4f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#aef50e4963079f2716f35c8c92256bb4f">_lf_trigger_reaction</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *reaction, int worker_number)</td></tr>
+<tr class="separator:aef50e4963079f2716f35c8c92256bb4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad14a3abed525c815a41a4c273937e399"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#ad14a3abed525c815a41a4c273937e399">_lf_start_time_step</a> ()</td></tr>
 <tr class="separator:ad14a3abed525c815a41a4c273937e399"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acb98981bf2b49e5201d4233e785ac92f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#acb98981bf2b49e5201d4233e785ac92f">_lf_create_token</a> (size_t element_size)</td></tr>
@@ -211,8 +212,6 @@ Variables</h2></td></tr>
 <tr class="separator:af4b5bfd131da48f0fb95eab14e6e61c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5336de38071181906a15eccf873858fe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpqueue__t.html">pqueue_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a5336de38071181906a15eccf873858fe">event_q</a></td></tr>
 <tr class="separator:a5336de38071181906a15eccf873858fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac78005c2cb229d6bec832088d9cdef10"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpqueue__t.html">pqueue_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#ac78005c2cb229d6bec832088d9cdef10">reaction_q</a></td></tr>
-<tr class="separator:ac78005c2cb229d6bec832088d9cdef10"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a209e679d16efc35de4ffc5e1c68bafdf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpqueue__t.html">pqueue_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a209e679d16efc35de4ffc5e1c68bafdf">recycle_q</a></td></tr>
 <tr class="separator:a209e679d16efc35de4ffc5e1c68bafdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3015ddee9b93cc02c05fd721efb528a4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpqueue__t.html">pqueue_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a3015ddee9b93cc02c05fd721efb528a4">next_q</a></td></tr>
@@ -497,42 +496,6 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>NOT_FREED if nothing was freed, VALUE_FREED if the value was freed, and TOKEN_FREED if both the value and the token were freed. </dd></dl>
-
-</div>
-</div>
-<a id="a90d13f45544346ea6623768358762d8f" name="a90d13f45544346ea6623768358762d8f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a90d13f45544346ea6623768358762d8f">&#9670;&nbsp;</a></span>_lf_enqueue_reaction()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void _lf_enqueue_reaction </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structreaction__t.html">reaction_t</a> *&#160;</td>
-          <td class="paramname"><em>reaction</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Put the specified reaction on the reaction queue. This version is just a template. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">reaction</td><td>The reaction.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>Put the specified reaction on the reaction queue. This version does not acquire a mutex lock. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">reaction</td><td>The reaction.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>Put the specified reaction on the reaction queue. This version acquires a mutex lock. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">reaction</td><td>The reaction. </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>
@@ -1097,6 +1060,42 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="aef50e4963079f2716f35c8c92256bb4f" name="aef50e4963079f2716f35c8c92256bb4f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aef50e4963079f2716f35c8c92256bb4f">&#9670;&nbsp;</a></span>_lf_trigger_reaction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_trigger_reaction </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structreaction__t.html">reaction_t</a> *&#160;</td>
+          <td class="paramname"><em>reaction</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>worker_number</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Trigger 'reaction'.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">reaction</td><td>The reaction. </td></tr>
+    <tr><td class="paramname">worker_number</td><td>The ID of the worker that is making this call. 0 should be used if there is only one worker (e.g., when the program is using the unthreaded C runtime). -1 is used for an anonymous call in a context where a worker number does not make sense (e.g., the caller is not a worker thread). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="a0b3e914b48f5f90533eecbf63acdf8d9" name="a0b3e914b48f5f90533eecbf63acdf8d9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0b3e914b48f5f90533eecbf63acdf8d9">&#9670;&nbsp;</a></span>create_token()</h2>
 
@@ -1649,20 +1648,6 @@ Variables</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="structpqueue__t.html">pqueue_t</a>* next_q</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ac78005c2cb229d6bec832088d9cdef10" name="ac78005c2cb229d6bec832088d9cdef10"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac78005c2cb229d6bec832088d9cdef10">&#9670;&nbsp;</a></span>reaction_q</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structpqueue__t.html">pqueue_t</a>* reaction_q</td>
         </tr>
       </table>
 </div><div class="memdoc">

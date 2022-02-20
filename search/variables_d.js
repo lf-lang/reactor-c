@@ -5,14 +5,14 @@ var searchData=
   ['network_5fstat_5fsample_5findex_2',['network_stat_sample_index',['../structsocket__stat__t.html#a5782a45124508e912999a1e5a723e07d',1,'socket_stat_t']]],
   ['network_5fstat_5fsamples_3',['network_stat_samples',['../structsocket__stat__t.html#a334228438ef47a0f2befc117ee0d9d47',1,'socket_stat_t']]],
   ['next_4',['next',['../structevent__t.html#a51ac1505b09e624cf35376047e992126',1,'event_t::next()'],['../structallocation__record__t.html#ad4d48c8b6826fa989e498cd7e629fd6a',1,'allocation_record_t::next()'],['../structvector__t.html#a5fa7e662c81935085f83c4d248c53eea',1,'vector_t::next()'],['../structdeque__node__t.html#acb76ff2d2cf94776a57a57350554d110',1,'deque_node_t::next()'],['../struct__lf__sensor__message__t.html#a96731ca0567d1b00ef6f677a35a95228',1,'_lf_sensor_message_t::next()']]],
-  ['next_5fbuffer_5',['next_buffer',['../audio__loop__linux_8c.html#aa29555260d55b88cf8cb57a94a3e6b33',1,'next_buffer():&#160;audio_loop_linux.c'],['../audio__loop__mac_8c.html#aa29555260d55b88cf8cb57a94a3e6b33',1,'next_buffer():&#160;audio_loop_mac.c']]],
+  ['next_5fbuffer_5',['next_buffer',['../audio__loop__mac_8c.html#aa29555260d55b88cf8cb57a94a3e6b33',1,'next_buffer():&#160;audio_loop_mac.c'],['../audio__loop__linux_8c.html#aa29555260d55b88cf8cb57a94a3e6b33',1,'next_buffer():&#160;audio_loop_linux.c']]],
   ['next_5fbuffer_5fstart_5ftime_6',['next_buffer_start_time',['../audio__loop__mac_8c.html#a784b39be6414a39499da33247f5fccef',1,'next_buffer_start_time():&#160;audio_loop_mac.c'],['../audio__loop__linux_8c.html#a784b39be6414a39499da33247f5fccef',1,'next_buffer_start_time():&#160;audio_loop_linux.c']]],
   ['next_5fevent_7',['next_event',['../structfederate__t.html#a9ec221b4f8c6b9a36bc30943998e322d',1,'federate_t']]],
   ['next_5ffree_8',['next_free',['../structlf__token__t.html#a3b993d54120f7b0137785c99f7ddc118',1,'lf_token_t']]],
   ['next_5fq_9',['next_q',['../reactor__common_8c.html#a3015ddee9b93cc02c05fd721efb528a4',1,'reactor_common.c']]],
   ['note_5fcounter_10',['note_counter',['../audio__loop__mac_8c.html#ab2c16ae407fd99b96ec58edf6cf0c6d7',1,'note_counter():&#160;audio_loop_mac.c'],['../audio__loop__linux_8c.html#ab2c16ae407fd99b96ec58edf6cf0c6d7',1,'note_counter():&#160;audio_loop_linux.c']]],
   ['notes_11',['notes',['../audio__loop__mac_8c.html#aa289199cd513300864295dd003b671e2',1,'notes():&#160;audio_loop_mac.c'],['../audio__loop__linux_8c.html#aa289199cd513300864295dd003b671e2',1,'notes():&#160;audio_loop_linux.c']]],
-  ['num_5fchannels_12',['num_channels',['../structlf__wav__format__t.html#a94176b96fa481451960f8b727746a886',1,'lf_wav_format_t::num_channels()'],['../structlf__waveform__t.html#ac1821431ece937edd64e32209a793018',1,'lf_waveform_t::num_channels()']]],
+  ['num_5fchannels_12',['num_channels',['../structlf__waveform__t.html#ac1821431ece937edd64e32209a793018',1,'lf_waveform_t::num_channels()'],['../structlf__wav__format__t.html#a94176b96fa481451960f8b727746a886',1,'lf_wav_format_t::num_channels()']]],
   ['num_5fdownstream_13',['num_downstream',['../structfederate__t.html#a5818815895ea37489f73045167f91fe5',1,'federate_t']]],
   ['num_5ffeds_5fhandling_5fstop_14',['num_feds_handling_stop',['../struct_r_t_i__instance__t.html#aa4c4ac6c3b7d9bb27ba43c657247d49a',1,'RTI_instance_t']]],
   ['num_5ffeds_5fproposed_5fstart_15',['num_feds_proposed_start',['../struct_r_t_i__instance__t.html#a0a94ef1833837e0a8effdbdce15403c5',1,'RTI_instance_t']]],
@@ -20,8 +20,7 @@ var searchData=
   ['num_5fupstream_17',['num_upstream',['../structfederate__t.html#a1d82ef50c2cd3d4f82252350e04f273a',1,'federate_t']]],
   ['number_18',['number',['../structreaction__t.html#aab519d27f6f52545358a4f5da15f3a18',1,'reaction_t']]],
   ['number_5fof_5ffederates_19',['number_of_federates',['../struct_r_t_i__instance__t.html#a962fc3d8abb05cd5ce91d8982025a5b0',1,'RTI_instance_t']]],
-  ['number_5fof_5fidle_5fthreads_20',['number_of_idle_threads',['../reactor__threaded_8c.html#a1d1f317f9855dde7aea91823087d29e0',1,'reactor_threaded.c']]],
-  ['number_5fof_5finbound_5fp2p_5fconnections_21',['number_of_inbound_p2p_connections',['../structfederate__instance__t.html#a6b728a970ccb1ef778dbb9779582d2f2',1,'federate_instance_t']]],
-  ['number_5fof_5foutbound_5fp2p_5fconnections_22',['number_of_outbound_p2p_connections',['../structfederate__instance__t.html#a2edee0c930dc6f10437a5a58306a097c',1,'federate_instance_t']]],
-  ['number_5fof_5freactions_23',['number_of_reactions',['../structtrigger__t.html#a53bebeaf8708d9dbe859df99972fb667',1,'trigger_t']]]
+  ['number_5fof_5finbound_5fp2p_5fconnections_20',['number_of_inbound_p2p_connections',['../structfederate__instance__t.html#a6b728a970ccb1ef778dbb9779582d2f2',1,'federate_instance_t']]],
+  ['number_5fof_5foutbound_5fp2p_5fconnections_21',['number_of_outbound_p2p_connections',['../structfederate__instance__t.html#a2edee0c930dc6f10437a5a58306a097c',1,'federate_instance_t']]],
+  ['number_5fof_5freactions_22',['number_of_reactions',['../structtrigger__t.html#a53bebeaf8708d9dbe859df99972fb667',1,'trigger_t']]]
 ];

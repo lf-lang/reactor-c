@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: core/pqueue.c File Reference</title>
+<title>reactor-c: core/utils/pqueue.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -62,7 +62,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_4270bfced15e0e73154b13468c7c9ad9.html">core</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_4270bfced15e0e73154b13468c7c9ad9.html">core</a></li><li class="navelem"><a class="el" href="dir_182a39db29e4ad63eb633860d83c5a1d.html">utils</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -75,6 +75,7 @@ $(function() {
 <div class="textblock"><code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
+<code>#include &lt;assert.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="pqueue_8h_source.html">pqueue.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="util_8h_source.html">util.h</a>&quot;</code><br />
 </div><table class="memberdecls">
@@ -109,6 +110,9 @@ Functions</h2></td></tr>
 <tr class="separator:a9a509654dacb6be3d34ff7a4958ab4dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a66bce8cd2c2afa804405005798498823"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8c.html#a66bce8cd2c2afa804405005798498823">pqueue_pop</a> (<a class="el" href="structpqueue__t.html">pqueue_t</a> *q)</td></tr>
 <tr class="separator:a66bce8cd2c2afa804405005798498823"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa0f5e3d63138880461b1f04dc2d4f48a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8c.html#aa0f5e3d63138880461b1f04dc2d4f48a">pqueue_empty_into</a> (<a class="el" href="structpqueue__t.html">pqueue_t</a> **dest, <a class="el" href="structpqueue__t.html">pqueue_t</a> **src)</td></tr>
+<tr class="memdesc:aa0f5e3d63138880461b1f04dc2d4f48a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Empty 'src' into 'dest'.  <a href="pqueue_8c.html#aa0f5e3d63138880461b1f04dc2d4f48a">More...</a><br /></td></tr>
+<tr class="separator:aa0f5e3d63138880461b1f04dc2d4f48a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9ec5c03203b587dbb92f8d2a977aa7e4"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8c.html#a9ec5c03203b587dbb92f8d2a977aa7e4">pqueue_peek</a> (<a class="el" href="structpqueue__t.html">pqueue_t</a> *q)</td></tr>
 <tr class="separator:a9ec5c03203b587dbb92f8d2a977aa7e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:add0fae8523cca210f1574586e82cf7dd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8c.html#add0fae8523cca210f1574586e82cf7dd">pqueue_dump</a> (<a class="el" href="structpqueue__t.html">pqueue_t</a> *q, <a class="el" href="pqueue_8h.html#a884902da135214a6167f1536ad4ed4bc">pqueue_print_entry_f</a> print)</td></tr>
@@ -276,6 +280,44 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p >Dump the queue and it's internal structure. </p>
+
+</div>
+</div>
+<a id="aa0f5e3d63138880461b1f04dc2d4f48a" name="aa0f5e3d63138880461b1f04dc2d4f48a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa0f5e3d63138880461b1f04dc2d4f48a">&#9670;&nbsp;</a></span>pqueue_empty_into()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void pqueue_empty_into </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structpqueue__t.html">pqueue_t</a> **&#160;</td>
+          <td class="paramname"><em>dest</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structpqueue__t.html">pqueue_t</a> **&#160;</td>
+          <td class="paramname"><em>src</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Empty 'src' into 'dest'. </p>
+<p >As an optimization, this function might swap 'src' and 'dest'.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">dest</td><td>The queue to fill up </td></tr>
+    <tr><td class="paramname">src</td><td>The queue to empty </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

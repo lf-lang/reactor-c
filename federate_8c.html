@@ -87,6 +87,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="net__common_8h_source.html">net_common.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="reactor_8h_source.html">../reactor.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="platform_8h_source.html">../platform.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="scheduler_8h_source.html">../threaded/scheduler.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="clock-sync_8c.html">clock-sync.c</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="federate_8h_source.html">federate.h</a>&quot;</code><br />
 <code>#include &quot;regex.h&quot;</code><br />
@@ -103,10 +104,10 @@ Functions</h2></td></tr>
 <tr class="separator:a76f0bc068b7a7c4a30983172eea59767"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad6916d42278d4c199272aaa884a1e01f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#ad6916d42278d4c199272aaa884a1e01f">send_timed_message</a> (<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> additional_delay, int message_type, unsigned short port, unsigned short federate, const char *next_destination_str, size_t length, unsigned char *message)</td></tr>
 <tr class="separator:ad6916d42278d4c199272aaa884a1e01f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2c9ffe8e9c42d3c8c7e5bb170bfa6471"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a2c9ffe8e9c42d3c8c7e5bb170bfa6471">_lf_send_time</a> (unsigned char type, <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> time)</td></tr>
-<tr class="separator:a2c9ffe8e9c42d3c8c7e5bb170bfa6471"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa894b9efe5e8be30222d2d34b1c8c2be"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#aa894b9efe5e8be30222d2d34b1c8c2be">_lf_send_tag</a> (unsigned char type, <a class="el" href="structtag__t.html">tag_t</a> tag)</td></tr>
-<tr class="separator:aa894b9efe5e8be30222d2d34b1c8c2be"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afd4711eb58251a2226c8b4f8be7c0d32"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#afd4711eb58251a2226c8b4f8be7c0d32">_lf_send_time</a> (unsigned char type, <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> time, <a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> exit_on_error)</td></tr>
+<tr class="separator:afd4711eb58251a2226c8b4f8be7c0d32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab3855de7f23c702c8d98e6cd88e6be15"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#ab3855de7f23c702c8d98e6cd88e6be15">_lf_send_tag</a> (unsigned char type, <a class="el" href="structtag__t.html">tag_t</a> tag, <a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> exit_on_error)</td></tr>
+<tr class="separator:ab3855de7f23c702c8d98e6cd88e6be15"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab2743dda029c873192d2cbad5170c252"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#ab2743dda029c873192d2cbad5170c252">handle_p2p_connections_from_federates</a> (void *ignored)</td></tr>
 <tr class="separator:ab2743dda029c873192d2cbad5170c252"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab74e4453a091929855ab82a38074150e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#ab74e4453a091929855ab82a38074150e">_lf_close_outbound_socket</a> (int fed_id)</td></tr>
@@ -137,12 +138,12 @@ Functions</h2></td></tr>
 <tr class="separator:ad92ed203ebed8e9d8a3727d9b2583c56"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a123194949f44242acbab252bc1ffed4f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a759ba374f75ea0025b9af1bb35f14d7e">port_status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a123194949f44242acbab252bc1ffed4f">get_current_port_status</a> (int portID)</td></tr>
 <tr class="separator:a123194949f44242acbab252bc1ffed4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a351f84aa3eb871fe8f51e3a6f18e67f6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a351f84aa3eb871fe8f51e3a6f18e67f6">enqueue_network_input_control_reactions</a> (<a class="el" href="structpqueue__t.html">pqueue_t</a> *<a class="el" href="reactor__common_8c.html#ac78005c2cb229d6bec832088d9cdef10">reaction_q</a>)</td></tr>
-<tr class="separator:a351f84aa3eb871fe8f51e3a6f18e67f6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a58c068ed5637620f62d0be0da850bbc3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a58c068ed5637620f62d0be0da850bbc3">enqueue_network_output_control_reactions</a> (<a class="el" href="structpqueue__t.html">pqueue_t</a> *<a class="el" href="reactor__common_8c.html#ac78005c2cb229d6bec832088d9cdef10">reaction_q</a>)</td></tr>
-<tr class="separator:a58c068ed5637620f62d0be0da850bbc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae3810deff6321784705bf27c79a07d32"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#ae3810deff6321784705bf27c79a07d32">enqueue_network_control_reactions</a> (<a class="el" href="structpqueue__t.html">pqueue_t</a> *<a class="el" href="reactor__common_8c.html#ac78005c2cb229d6bec832088d9cdef10">reaction_q</a>)</td></tr>
-<tr class="separator:ae3810deff6321784705bf27c79a07d32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85a8a94cd5637607e88ef32abaa2dc5b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a85a8a94cd5637607e88ef32abaa2dc5b">enqueue_network_input_control_reactions</a> ()</td></tr>
+<tr class="separator:a85a8a94cd5637607e88ef32abaa2dc5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a892e175b19f257b58dec838106b898ad"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a892e175b19f257b58dec838106b898ad">enqueue_network_output_control_reactions</a> ()</td></tr>
+<tr class="separator:a892e175b19f257b58dec838106b898ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa295d4779f0b5929a9bff7226f29e521"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#aa295d4779f0b5929a9bff7226f29e521">enqueue_network_control_reactions</a> ()</td></tr>
+<tr class="separator:aa295d4779f0b5929a9bff7226f29e521"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a188ed34f9cf3a6d2ede7a033089bdd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a4a188ed34f9cf3a6d2ede7a033089bdd">send_port_absent_to_federate</a> (<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> additional_delay, unsigned short port_ID, unsigned short fed_ID)</td></tr>
 <tr class="separator:a4a188ed34f9cf3a6d2ede7a033089bdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af4e0b0634806dadc6bda729c63dc700f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#af4e0b0634806dadc6bda729c63dc700f">wait_until_port_status_known</a> (int port_ID, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> STP)</td></tr>
@@ -431,8 +432,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="aa894b9efe5e8be30222d2d34b1c8c2be" name="aa894b9efe5e8be30222d2d34b1c8c2be"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa894b9efe5e8be30222d2d34b1c8c2be">&#9670;&nbsp;</a></span>_lf_send_tag()</h2>
+<a id="ab3855de7f23c702c8d98e6cd88e6be15" name="ab3855de7f23c702c8d98e6cd88e6be15"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab3855de7f23c702c8d98e6cd88e6be15">&#9670;&nbsp;</a></span>_lf_send_tag()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -447,7 +448,13 @@ DESCRIPTION</h1>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td>
-          <td class="paramname"><em>tag</em>&#160;</td>
+          <td class="paramname"><em>tag</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td>
+          <td class="paramname"><em>exit_on_error</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -460,14 +467,15 @@ DESCRIPTION</h1>
   <table class="params">
     <tr><td class="paramname">type</td><td>The message type (MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LOGICAL_TAG_COMPLETE). </td></tr>
     <tr><td class="paramname">tag</td><td>The tag. </td></tr>
+    <tr><td class="paramname">exit_on_error</td><td>If set to true, exit the program if sending 'tag' fails. Print a soft error message otherwise </td></tr>
   </table>
   </dd>
 </dl>
 
 </div>
 </div>
-<a id="a2c9ffe8e9c42d3c8c7e5bb170bfa6471" name="a2c9ffe8e9c42d3c8c7e5bb170bfa6471"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2c9ffe8e9c42d3c8c7e5bb170bfa6471">&#9670;&nbsp;</a></span>_lf_send_time()</h2>
+<a id="afd4711eb58251a2226c8b4f8be7c0d32" name="afd4711eb58251a2226c8b4f8be7c0d32"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afd4711eb58251a2226c8b4f8be7c0d32">&#9670;&nbsp;</a></span>_lf_send_time()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -482,7 +490,13 @@ DESCRIPTION</h1>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td>
-          <td class="paramname"><em>time</em>&#160;</td>
+          <td class="paramname"><em>time</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td>
+          <td class="paramname"><em>exit_on_error</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -495,6 +509,7 @@ DESCRIPTION</h1>
   <table class="params">
     <tr><td class="paramname">type</td><td>The message type (MSG_TYPE_TIMESTAMP or MSG_TYPE_TIME_ADVANCE_NOTICE). </td></tr>
     <tr><td class="paramname">time</td><td>The time. </td></tr>
+    <tr><td class="paramname">exit_on_error</td><td>If set to true, exit the program if sending 'time' fails. Print a soft error message otherwise </td></tr>
   </table>
   </dd>
 </dl>
@@ -587,8 +602,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="ae3810deff6321784705bf27c79a07d32" name="ae3810deff6321784705bf27c79a07d32"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae3810deff6321784705bf27c79a07d32">&#9670;&nbsp;</a></span>enqueue_network_control_reactions()</h2>
+<a id="aa295d4779f0b5929a9bff7226f29e521" name="aa295d4779f0b5929a9bff7226f29e521"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa295d4779f0b5929a9bff7226f29e521">&#9670;&nbsp;</a></span>enqueue_network_control_reactions()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -596,8 +611,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="memname">void enqueue_network_control_reactions </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>reaction_q</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -606,8 +620,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a351f84aa3eb871fe8f51e3a6f18e67f6" name="a351f84aa3eb871fe8f51e3a6f18e67f6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a351f84aa3eb871fe8f51e3a6f18e67f6">&#9670;&nbsp;</a></span>enqueue_network_input_control_reactions()</h2>
+<a id="a85a8a94cd5637607e88ef32abaa2dc5b" name="a85a8a94cd5637607e88ef32abaa2dc5b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a85a8a94cd5637607e88ef32abaa2dc5b">&#9670;&nbsp;</a></span>enqueue_network_input_control_reactions()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -615,8 +629,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="memname">void enqueue_network_input_control_reactions </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>reaction_q</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -625,8 +638,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a58c068ed5637620f62d0be0da850bbc3" name="a58c068ed5637620f62d0be0da850bbc3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a58c068ed5637620f62d0be0da850bbc3">&#9670;&nbsp;</a></span>enqueue_network_output_control_reactions()</h2>
+<a id="a892e175b19f257b58dec838106b898ad" name="a892e175b19f257b58dec838106b898ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a892e175b19f257b58dec838106b898ad">&#9670;&nbsp;</a></span>enqueue_network_output_control_reactions()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -634,8 +647,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="memname">void enqueue_network_output_control_reactions </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>reaction_q</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>

@@ -8,6 +8,7 @@ var searchData=
   ['default_5fargv_5',['default_argv',['../reactor__common_8c.html#a079c42a8611d008395dba5af4911e85c',1,'reactor_common.c']]],
   ['default_5fwindow_6',['default_window',['../sensor__simulator_8c.html#a9029bf378e52a9f85a25eb0ba9095fe3',1,'sensor_simulator.c']]],
   ['digits_7',['digits',['../structmixed__radix__int__t.html#a0e7296e98823c245fa1e3d7b6b590e4d',1,'mixed_radix_int_t']]],
-  ['downstream_8',['downstream',['../structfederate__t.html#a70e3719658ccc1ed171389b566ec5631',1,'federate_t']]],
-  ['duration_9',['duration',['../reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'reactor_common.c']]]
+  ['done_5freactions_8',['done_reactions',['../struct__lf__sched__thread__info__t.html#a0aa63072819d25d22fdbc59bf55f39f6',1,'_lf_sched_thread_info_t']]],
+  ['downstream_9',['downstream',['../structfederate__t.html#a70e3719658ccc1ed171389b566ec5631',1,'federate_t']]],
+  ['duration_10',['duration',['../reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'reactor_common.c']]]
 ];
