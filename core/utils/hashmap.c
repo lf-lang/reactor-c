@@ -125,3 +125,9 @@ V HASHMAP(get)(HASHMAP(t)* hashmap, K key) {
     HASHMAP(entry_t)* read_from = HASHMAP(get_actual_address)(hashmap, key);
     return read_from->value; // Crash the program if the key cannot be found
 }
+
+V HASHMAP(get_or_else)(HASHMAP(t)* hashmap, K key, V or_else) {
+    assert(key != hashmap->nothing);
+    HASHMAP(entry_t)* read_from = HASHMAP(get_actual_address)(hashmap, key);
+    return read_from ? read_from->value : or_else;
+}

@@ -1,6 +1,3 @@
-/* Global Earliest Deadline First (GEDF) non-preemptive scheduler for the
-threaded runtime of the C target of Lingua Franca. */
-
 /*************
 Copyright (c) 2022, The University of Texas at Dallas.
 Copyright (c) 2022, The University of California at Berkeley.
@@ -28,7 +25,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /**
- * Global Earliest Deadline First (GEDF) non-preemptive scheduler for the
+ * Base priority-driven non-preemptive scheduler for the
  * threaded runtime of the C target of Lingua Franca.
  *
  * @author{Soroush Bateni <soroush@utdallas.edu>}
@@ -42,12 +39,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assert.h>
 
-#include "../platform.h"
-#include "../utils/pqueue_support.h"
-#include "../utils/semaphore.h"
-#include "scheduler.h"
-#include "scheduler_instance.h"
-#include "scheduler_sync_tag_advance.c"
+#include "../../platform.h"
+#include "../../utils/pqueue_support.h"
+#include "../../utils/semaphore.h"
+#include "../scheduler.h"
+#include "../scheduler_instance.h"
+#include "../scheduler_sync_tag_advance.c"
 
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;
@@ -221,9 +218,10 @@ void _lf_sched_wait_for_work(size_t worker_number) {
  * @param option Pointer to a `sched_params_t` struct containing additional
  *  scheduler parameters.
  */
-void lf_sched_init(
+void lf_sched_init_base(
     size_t number_of_workers, 
-    sched_params_t* params
+    sched_params_t* params,
+    pqueue_pri_t get_priority(void* a)
 ) {
     DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
     if(!init_sched_instance(&_lf_sched_instance, number_of_workers, params)) {
@@ -247,7 +245,7 @@ void lf_sched_init(
         }
         // Initialize the reaction queues
         ((pqueue_t**)_lf_sched_instance->_lf_sched_triggered_reactions)[i] =
-            pqueue_init(queue_size, in_reverse_order, get_reaction_index,
+            pqueue_init(queue_size, in_reverse_order, get_priority,
                         get_reaction_position, set_reaction_position,
                         reaction_matches, print_reaction);
         // Initialize the mutexes for the reaction queues
@@ -263,7 +261,7 @@ void lf_sched_init(
  *
  * This must be called when the scheduler is no longer needed.
  */
-void lf_sched_free() {
+void lf_sched_free_base() {
     // for (size_t j = 0; j <= _lf_sched_instance->max_reaction_level; j++) {
     //     pqueue_free(_lf_sched_instance->_lf_sched_triggered_reactions[j]);
     //     FIXME: This is causing weird memory errors.
@@ -284,7 +282,7 @@ void lf_sched_free() {
  * @return reaction_t* A reaction for the worker to execute. NULL if the calling
  * worker thread should exit.
  */
-reaction_t* lf_sched_get_ready_reaction(int worker_number) {
+reaction_t* lf_sched_get_ready_reaction_base(int worker_number) {
     // Iterate until the stop_tag is reached or reaction queue is empty
     while (!_lf_sched_instance->_lf_sched_should_stop) {
         // Need to lock the mutex for the current level
@@ -325,7 +323,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
  * finished executing 'done_reaction'.
  * @param done_reaction The reaction that is done.
  */
-void lf_sched_done_with_reaction(size_t worker_number,
+void lf_sched_done_with_reaction_base(size_t worker_number,
                                  reaction_t* done_reaction) {
     if (!lf_bool_compare_and_swap(&done_reaction->status, queued, inactive)) {
         error_print_and_exit("Unexpected reaction status: %d. Expected %d.",
@@ -349,7 +347,7 @@ void lf_sched_done_with_reaction(size_t worker_number,
  *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
-void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
+void lf_sched_trigger_reaction_base(reaction_t* reaction, int worker_number) {
     // Protect against putting a reaction twice on the reaction queue by
     // checking its status.
     if (reaction != NULL &&
