@@ -6,7 +6,7 @@ var searchData=
   ['_5flf_5fadvance_5flogical_5ftime_3',['_lf_advance_logical_time',['../reactor__common_8c.html#abadead0c4f54963b062503cf6cb7ace7',1,'reactor_common.c']]],
   ['_5flf_5fallocate_4',['_lf_allocate',['../reactor_8h.html#afa9a756e5a6685531141bb4bfdc1f327',1,'_lf_allocate(size_t count, size_t size, struct allocation_record_t **head):&#160;reactor_common.c'],['../reactor__common_8c.html#afa9a756e5a6685531141bb4bfdc1f327',1,'_lf_allocate(size_t count, size_t size, struct allocation_record_t **head):&#160;reactor_common.c']]],
   ['_5flf_5fbounded_5fnet_5',['_lf_bounded_NET',['../federate_8c.html#aa4e74edba14fe2d25b2f05c3497c1054',1,'federate.c']]],
-  ['_5flf_5fcheck_5fdeadline_6',['_lf_check_deadline',['../reactor_8h.html#af6475b744acf535830988064e55dc799',1,'_lf_check_deadline(self_base_t *self):&#160;reactor_common.c'],['../reactor__common_8c.html#af6475b744acf535830988064e55dc799',1,'_lf_check_deadline(self_base_t *self):&#160;reactor_common.c']]],
+  ['_5flf_5fcheck_5fdeadline_6',['_lf_check_deadline',['../reactor_8h.html#a6a6f96af2d1adbf71c57586a9078f248',1,'_lf_check_deadline(self_base_t *self, bool invoke_deadline_handler):&#160;reactor_common.c'],['../reactor__common_8c.html#a6a6f96af2d1adbf71c57586a9078f248',1,'_lf_check_deadline(self_base_t *self, bool invoke_deadline_handler):&#160;reactor_common.c']]],
   ['_5flf_5fclose_5finbound_5fsocket_7',['_lf_close_inbound_socket',['../federate_8c.html#a89f25989edc5bf8e0c8bf46efe9310d0',1,'federate.c']]],
   ['_5flf_5fclose_5foutbound_5fsocket_8',['_lf_close_outbound_socket',['../federate_8c.html#ab74e4453a091929855ab82a38074150e',1,'federate.c']]],
   ['_5flf_5fcreate_5fdummy_5fevent_9',['_lf_create_dummy_event',['../reactor_8h.html#a46845578328233d51b6bfb55e8724ee1',1,'reactor.h']]],

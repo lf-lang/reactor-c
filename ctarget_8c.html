@@ -85,8 +85,8 @@ Functions</h2></td></tr>
 <tr class="separator:a9bb637551e80f0245cc8cdb764605f6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ecdb5df31eef1cff7d639badc3e7ee8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget_8c.html#a0ecdb5df31eef1cff7d639badc3e7ee8">schedule_value</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, void *value, int length)</td></tr>
 <tr class="separator:a0ecdb5df31eef1cff7d639badc3e7ee8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af7f583b9672725a4c06b4c5612dae012"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget_8c.html#af7f583b9672725a4c06b4c5612dae012">check_deadline</a> (void *self)</td></tr>
-<tr class="separator:af7f583b9672725a4c06b4c5612dae012"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b54ecc29f72a5aad6733290adb14bf1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget_8c.html#a4b54ecc29f72a5aad6733290adb14bf1">check_deadline</a> (void *self, <a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> invoke_deadline_handler)</td></tr>
+<tr class="separator:a4b54ecc29f72a5aad6733290adb14bf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>)</dd></dl>
@@ -104,8 +104,8 @@ DESCRIPTION</h1>
 <p >Target-specific runtime functions for the C target language. This API layer can be used in conjunction with: target C;</p>
 <p >Note for target language developers. This is one way of developing a target language where the C core runtime is adopted. This file is a translation layer that implements Lingua Franca APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a template for future runtime developement for target languages. For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="af7f583b9672725a4c06b4c5612dae012" name="af7f583b9672725a4c06b4c5612dae012"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af7f583b9672725a4c06b4c5612dae012">&#9670;&nbsp;</a></span>check_deadline()</h2>
+<a id="a4b54ecc29f72a5aad6733290adb14bf1" name="a4b54ecc29f72a5aad6733290adb14bf1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b54ecc29f72a5aad6733290adb14bf1">&#9670;&nbsp;</a></span>check_deadline()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -114,15 +114,26 @@ DESCRIPTION</h1>
           <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> check_deadline </td>
           <td>(</td>
           <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>self</em></td><td>)</td>
+          <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td>
+          <td class="paramname"><em>invoke_deadline_handler</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Check the deadline of the currently executing reaction against the current physical time. If the deadline has passed, invoke the deadline handler and return true. Otherwise, return false.</p>
+<p >Check the deadline of the currently executing reaction against the current physical time. If the deadline has passed, invoke the deadline handler (if invoke_deadline_handler parameter is set true) and return true. Otherwise, return false.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">self</td><td>The self struct of the reactor. </td></tr>
+    <tr><td class="paramname">invoke_deadline_handler</td><td>When this is set true, also invoke deadline handler if the deadline has passed. </td></tr>
   </table>
   </dd>
 </dl>

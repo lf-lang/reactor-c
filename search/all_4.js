@@ -5,7 +5,7 @@ var searchData=
   ['capacity_2',['CAPACITY',['../vector__test_8c.html#a91fbe6020a4bbd73084f0681b9092479',1,'vector_test.c']]],
   ['capacity_5fto_5fsize_5fratio_5ffor_5fshrink_5fvote_3',['CAPACITY_TO_SIZE_RATIO_FOR_SHRINK_VOTE',['../vector_8c.html#a47660715b0e3258d408ae26c0f38fb2e',1,'vector.c']]],
   ['chain_5fid_4',['chain_id',['../structreaction__t.html#a17396c4b05ab4d58296b88ea0258b88f',1,'reaction_t']]],
-  ['check_5fdeadline_5',['check_deadline',['../ctarget_8c.html#af7f583b9672725a4c06b4c5612dae012',1,'check_deadline(void *self):&#160;ctarget.c'],['../ctarget_8h.html#af7f583b9672725a4c06b4c5612dae012',1,'check_deadline(void *self):&#160;ctarget.c']]],
+  ['check_5fdeadline_5',['check_deadline',['../ctarget_8c.html#a4b54ecc29f72a5aad6733290adb14bf1',1,'check_deadline(void *self, bool invoke_deadline_handler):&#160;ctarget.c'],['../ctarget_8h.html#a4b54ecc29f72a5aad6733290adb14bf1',1,'check_deadline(void *self, bool invoke_deadline_handler):&#160;ctarget.c']]],
   ['chunk_5fid_6',['chunk_id',['../structlf__wav__riff__t.html#a93ccb8149b52cb3b80a179193cd43400',1,'lf_wav_riff_t']]],
   ['chunk_5fsize_7',['chunk_size',['../structlf__wav__riff__t.html#ad5f29474dacb7ed656735d950842be58',1,'lf_wav_riff_t']]],
   ['clock_2dsync_2ec_8',['clock-sync.c',['../clock-sync_8c.html',1,'']]],
