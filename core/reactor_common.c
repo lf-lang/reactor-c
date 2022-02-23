@@ -1439,18 +1439,23 @@ lf_token_t* _lf_set_new_array_impl(lf_token_t* token, size_t length, int num_des
 /**
  * Check the deadline of the currently executing reaction against the
  * current physical time. If the deadline has passed, invoke the deadline
- * handler and return true. Otherwise, return false.
- * 
+ * handler (if invoke_deadline_handler parameter is set true) and return true.
+ * Otherwise, return false.
+ *
  * @param self The self struct of the reactor.
+ * @param invoke_deadline_handler When this is set true, also invoke deadline
+ *  handler if the deadline has passed.
  * @return True if the specified deadline has passed and false otherwise.
  */
-bool _lf_check_deadline(self_base_t* self) {
-	reaction_t* reaction = self->executing_reaction;
-	if (get_physical_time() > get_logical_time() + reaction->deadline) {
-		reaction->deadline_violation_handler(self);
-		return true;
-	}
-	return false;
+bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
+    reaction_t* reaction = self->executing_reaction;
+    if (get_physical_time() > get_logical_time() + reaction->deadline) {
+        if (invoke_deadline_handler) {
+            reaction->deadline_violation_handler(self);
+        }
+        return true;
+    }
+    return false;
 }
 
 /**
