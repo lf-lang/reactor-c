@@ -1448,14 +1448,14 @@ lf_token_t* _lf_set_new_array_impl(lf_token_t* token, size_t length, int num_des
  * @return True if the specified deadline has passed and false otherwise.
  */
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
-	reaction_t* reaction = self->executing_reaction;
-	if (get_physical_time() > get_logical_time() + reaction->deadline) {
-	    if (invoke_deadline_handler) {
-		    reaction->deadline_violation_handler(self);
-	    }
-		return true;
-	}
-	return false;
+    reaction_t* reaction = self->executing_reaction;
+    if (get_physical_time() > get_logical_time() + reaction->deadline) {
+        if (invoke_deadline_handler) {
+            reaction->deadline_violation_handler(self);
+        }
+        return true;
+    }
+    return false;
 }
 
 /**
