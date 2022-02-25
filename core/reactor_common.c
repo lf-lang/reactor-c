@@ -36,8 +36,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include "reactor.h"
 #include "tag.c"
-#include "pqueue.c"
-#include "util.c"
+#include "utils/pqueue.c"
+#include "utils/pqueue_support.h"
+#include "utils/util.c"
 
 /** 
  * Indicator of whether to wait for physical time to match logical time.
@@ -132,7 +133,7 @@ void reset_status_fields_on_input_port_triggers();
 /**
  * Enqueue network control reactions.
  */
-void enqueue_network_control_reactions(pqueue_t* reaction_q);
+void enqueue_network_control_reactions();
 
 /**
  * Determine the status of the port at the current logical time.
@@ -304,112 +305,11 @@ void set_stp_offset(interval_t offset) {
 /** Priority queues. */
 pqueue_t* event_q;     // For sorting by time.
 
-pqueue_t* reaction_q;  // For sorting by deadline.
 pqueue_t* recycle_q;   // For recycling malloc'd events.
 pqueue_t* next_q;      // For temporarily storing the next event lined 
                        // up in superdense time.
 
 trigger_handle_t _lf_handle = 1;
-
-// ********** Priority Queue Support Start
-
-/**
- * Return whether the first and second argument are given in reverse order.
- */
-static int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that) {
-    return (thiz > that);
-}
-
-/**
- * Return whether the first and second argument are given in reverse order.
- */
-static int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that) {
-    return false;
-}
-
-/**
- * Return whether or not the given events have matching triggers.
- */
-static int event_matches(void* next, void* curr) {
-    return (((event_t*)next)->trigger == ((event_t*)curr)->trigger);
-}
-
-/**
- * Return whether or not the given reaction_t pointers 
- * point to the same struct.
- */
-static int reaction_matches(void* next, void* curr) {
-    return (next == curr);
-}
-
-/**
- * Report a priority equal to the time of the given event.
- * Used for sorting pointers to event_t structs in the event queue.
- */
-static pqueue_pri_t get_event_time(void *a) {
-    return (pqueue_pri_t)(((event_t*) a)->time);
-}
-
-/**
- * Report a priority equal to the index of the given reaction.
- * Used for sorting pointers to reaction_t structs in the 
- * blocked and executing queues.
- */
-static pqueue_pri_t get_reaction_index(void *a) {
-    return ((reaction_t*) a)->index;
-}
-
-/**
- * Return the given event's position in the queue.
- */
-static size_t get_event_position(void *a) {
-    return ((event_t*) a)->pos;
-}
-
-/**
- * Return the given reaction's position in the queue.
- */
-static size_t get_reaction_position(void *a) {
-    return ((reaction_t*) a)->pos;
-}
-
-/**
- * Set the given event's position in the queue.
- */
-static void set_event_position(void *a, size_t pos) {
-    ((event_t*) a)->pos = pos;
-}
-
-/**
- * Return the given reaction's position in the queue.
- */
-static void set_reaction_position(void *a, size_t pos) {
-    ((reaction_t*) a)->pos = pos;
-}
-
-/**
- * Print some information about the given reaction.
- * 
- * DEBUG function only.
- */
-static void print_reaction(void *reaction) {
-	reaction_t *r = (reaction_t*)reaction;
-    DEBUG_PRINT("%s: chain_id:%llu, index: %llx, reaction: %p",
-    		r->name, r->chain_id, r->index, r);
-}
-
-/**
- * Print some information about the given event.
- * 
- * DEBUG function only.
- */
-static void print_event(void *event) {
-	event_t *e = (event_t*)event;
-    DEBUG_PRINT("time: %lld, trigger: %p, token: %p",
-			e->time, e->trigger, e->token);
-}
-
-// ********** Priority Queue Support End
 
 /**
  * Counter used to issue a warning if memory is
@@ -503,11 +403,15 @@ token_freed _lf_done_using(lf_token_t* token) {
 }
 
 /**
- * Put the specified reaction on the reaction queue.
- * This version is just a template.
+ * Trigger 'reaction'.
+ * 
  * @param reaction The reaction.
+ * @param worker_number The ID of the worker that is making this call. 0 should be
+ *  used if there is only one worker (e.g., when the program is using the
+ *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
+ *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
-void _lf_enqueue_reaction(reaction_t* reaction);
+void _lf_trigger_reaction(reaction_t* reaction, int worker_number);
 
 /**
  * Use tables to reset is_present fields to false,
@@ -731,16 +635,14 @@ void _lf_pop_events() {
 #ifdef MODAL_REACTORS
                 // Check if reaction is disabled by mode inactivity
                 if (!_lf_mode_is_active(reaction->mode)) {
-                        DEBUG_PRINT("Suppressing reaction %s due inactive mode.", reaction->name);
-                        continue; // Suppress reaction by preventing entering reaction queue
+                    DEBUG_PRINT("Suppressing reaction %s due inactive mode.", reaction->name);
+                    continue; // Suppress reaction by preventing entering reaction queue
                 }
 #endif
-
-                DEBUG_PRINT("Enqueing reaction %s.", reaction->name);
-                reaction->status = queued;
-                pqueue_insert(reaction_q, reaction);
+                DEBUG_PRINT("Triggering reaction %s.", reaction->name);
+                _lf_trigger_reaction(reaction, -1);
             } else {
-                DEBUG_PRINT("Reaction is already on the reaction_q: %s", reaction->name);
+                DEBUG_PRINT("Reaction is already triggered: %s", reaction->name);
             }
         }
 
@@ -790,7 +692,7 @@ void _lf_pop_events() {
 #ifdef FEDERATED
     // Insert network dependent reactions for network input and output ports into
     // the reaction queue
-    enqueue_network_control_reactions(reaction_q);
+    enqueue_network_control_reactions();
 #endif // FEDERATED
 
     DEBUG_PRINT("There are %d events deferred to the next microstep.", pqueue_size(next_q));
@@ -823,7 +725,7 @@ void _lf_initialize_timer(trigger_t* timer) {
 #endif
     if (timer->offset == 0) {
         for (int i = 0; i < timer->number_of_reactions; i++) {
-            _lf_enqueue_reaction(timer->reactions[i]);
+            _lf_trigger_reaction(timer->reactions[i], -1);
             tracepoint_schedule(timer, 0LL); // Trace even though schedule is not called.
         }
         if (timer->period == 0) {
@@ -1481,8 +1383,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
         // Do not enqueue this reaction twice.
         if (reaction->status == inactive) {
             reaction->is_STP_violated = is_STP_violated;
-            reaction->status = queued;
-            pqueue_insert(reaction_q, reaction);
+            _lf_trigger_reaction(reaction, -1);
             LOG_PRINT("Enqueued reaction %s at time %lld.", reaction->name, get_logical_time());
         }
     }
@@ -1589,18 +1490,23 @@ lf_token_t* _lf_set_new_array_impl(lf_token_t* token, size_t length, int num_des
 /**
  * Check the deadline of the currently executing reaction against the
  * current physical time. If the deadline has passed, invoke the deadline
- * handler and return true. Otherwise, return false.
- * 
+ * handler (if invoke_deadline_handler parameter is set true) and return true.
+ * Otherwise, return false.
+ *
  * @param self The self struct of the reactor.
+ * @param invoke_deadline_handler When this is set true, also invoke deadline
+ *  handler if the deadline has passed.
  * @return True if the specified deadline has passed and false otherwise.
  */
-bool _lf_check_deadline(self_base_t* self) {
-	reaction_t* reaction = self->executing_reaction;
-	if (get_physical_time() > get_logical_time() + reaction->deadline) {
-		reaction->deadline_violation_handler(self);
-		return true;
-	}
-	return false;
+bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
+    reaction_t* reaction = self->executing_reaction;
+    if (get_physical_time() > get_logical_time() + reaction->deadline) {
+        if (invoke_deadline_handler) {
+            reaction->deadline_violation_handler(self);
+        }
+        return true;
+    }
+    return false;
 }
 
 /**
@@ -1672,11 +1578,11 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
                                     // downstream reaction would be blocked because this reaction
                                     // remains on the executing queue. Hence, the optimization
                                     // is not valid. Put the candidate reaction on the queue.
-                                    _lf_enqueue_reaction(downstream_to_execute_now);
+                                    _lf_trigger_reaction(downstream_to_execute_now, worker);
                                     downstream_to_execute_now = NULL;
                                 }
                                 // Queue the reaction.
-                                _lf_enqueue_reaction(downstream_reaction);
+                                _lf_trigger_reaction(downstream_reaction, worker);
                             }
                         }
                     }
@@ -1764,10 +1670,6 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
         downstream_to_execute_now->is_STP_violated = false;
         DEBUG_PRINT("Finally, reset reaction's is_STP_violated field to false: %s",
         		downstream_to_execute_now->name);
-    } else if (num_downstream_reactions > 0) {
-        // If we are running a multithreaded setting, the following function
-        // may wake up other worker threads to execute the newly queued reactions.
-        _lf_notify_workers();
     }
 }
 
@@ -1989,13 +1891,7 @@ void initialize() {
     _lf_count_payload_allocations = 0;
     _lf_count_token_allocations = 0;
 
-    // Initialize our priority queues.
-
-    // Reaction queue ordered first by deadline, then by level.
-    // The index of the reaction holds the deadline in the 48 most significant bits,
-    // the level in the 16 least significant bits.
-    reaction_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
-            get_reaction_position, set_reaction_position, reaction_matches, print_reaction);    
+    // Initialize our priority queues.  
 
     event_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_reverse_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
@@ -2086,8 +1982,9 @@ void termination() {
 #ifdef MODAL_REACTORS
 
 /**
- * Checks if the given mode is currently considered active.
+ * Checks whether the given mode is currently considered active.
  * This includes checking all enclosing modes.
+ * If any of those is inactive, then so is this one.
  *
  * @param mode The mode instance to check.
  */

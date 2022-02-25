@@ -17,10 +17,8 @@ static void vector_resize(vector_t* v, size_t new_capacity);
 /**
  * Allocate and initialize a new vector.
  * @param initial_capacity The desired initial capacity to allocate.
- *  Must be more than 0
  */
 vector_t vector_new(size_t initial_capacity) {
-    assert(initial_capacity > 0);
     void** start = (void**) malloc(initial_capacity * sizeof(void*));
     assert(start);
     return (vector_t) {
@@ -89,6 +87,43 @@ void* vector_pop(vector_t* v) {
         return NULL;
     }
     return *(--v->next);
+}
+
+/**
+ * @brief Return a pointer of the vector element at 'idx'.
+ * 
+ * @param v Any vector.
+ * @param idx The index in the vector.
+ * 
+ * @return NULL on error. A valid pointer to the element at 'idx' otherwise.
+ */
+void** vector_at(vector_t* v, size_t idx) {
+    void** vector_position = v->start + idx;
+    if ((vector_position + 1) > v->next) {
+        v->next = vector_position + 1;
+    }
+    if (v->next >= v->end) {
+        v->votes_required++;
+        size_t new_size = (v->end - v->start) * SCALE_FACTOR;
+        // Find a size that includes idx
+        while (new_size <= idx) {
+            new_size *= SCALE_FACTOR;
+        }
+        vector_resize(v, new_size);
+    }
+    // Note: Can't re-use vector_position because v->start can move after
+    // resizing.
+    return v->start + idx;
+}
+
+/**
+ * @brief Return the size of the vector.
+ * 
+ * @param v Any vector
+ * @return size_t  The size of the vector.
+ */
+size_t vector_size(vector_t* v) {
+    return (v->next - v->start);
 }
 
 /**

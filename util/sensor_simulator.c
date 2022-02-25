@@ -34,7 +34,7 @@ See sensor_simulator.h.
 #include <ncurses.h>
 #include "sensor_simulator.h"
 #include "ctarget.h"
-#include "core/util.h"
+#include "core/utils/util.h"
 #include "core/platform.h"
 
 // Maximum number of milliseconds that wgetchr will block for.

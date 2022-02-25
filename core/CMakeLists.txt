@@ -48,14 +48,12 @@ add_subdirectory(utils)
 
 # List sources in this directory.
 set(SINGLE_THREADED_SOURCES reactor.c)
-set(MULTITHREADED_SOURCES reactor_threaded.c)
-set(GENERAL_SOURCES pqueue.c util.c mixed_radix.c)
 
 # Determine which sources to include.
 list(APPEND SOURCES ${GENERAL_SOURCES})
 if(NUMBER_OF_WORKERS)
     message(STATUS "Including sources for threaded runtime with ${NUMBER_OF_WORKERS} worker(s).")
-    list(APPEND SOURCES ${MULTITHREADED_SOURCES})
+    add_subdirectory(threaded)
 else()
     message(STATUS "Including sources for unthreaded runtime.")
     list(APPEND SOURCES ${SINGLE_THREADED_SOURCES})

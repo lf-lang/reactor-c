@@ -269,11 +269,14 @@ trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* valu
 /**
  * Check the deadline of the currently executing reaction against the
  * current physical time. If the deadline has passed, invoke the deadline
- * handler and return true. Otherwise, return false.
- * 
+ * handler (if invoke_deadline_handler parameter is set true) and return true.
+ * Otherwise, return false.
+ *
  * @param self The self struct of the reactor.
+ * @param invoke_deadline_handler When this is set true, also invoke deadline
+ *  handler if the deadline has passed.
  * @return True if the specified deadline has passed and false otherwise.
  */
-bool check_deadline(void* self);
+bool check_deadline(void* self, bool invoke_deadline_handler);
 
 #endif // CTARGET_H
