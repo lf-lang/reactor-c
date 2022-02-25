@@ -416,6 +416,8 @@ void lf_sched_done_with_reaction(size_t worker_number,
  *
  * If a worker number is not available (e.g., this function is not called by a
  * worker thread), -1 should be passed as the 'worker_number'.
+ * 
+ * This scheduler ignores the worker number.
  *
  * The scheduler will ensure that the same reaction is not triggered twice in
  * the same tag.
@@ -428,12 +430,10 @@ void lf_sched_done_with_reaction(size_t worker_number,
  *
  */
 void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
-    // Protect against putting a reaction twice in the reaction vectors by
-    // checking its status.
-    if (reaction != NULL &&
-        lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
-        DEBUG_PRINT("Scheduler: Enqueing reaction %s, which has level %lld.",
-                    reaction->name, LEVEL(reaction->index));
-        _lf_sched_insert_reaction(reaction);
+    if (reaction == NULL || !lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
+        return;
     }
+    DEBUG_PRINT("Scheduler: Enqueing reaction %s, which has level %lld.",
+            reaction->name, LEVEL(reaction->index));
+    _lf_sched_insert_reaction(reaction);
 }

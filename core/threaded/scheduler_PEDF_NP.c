@@ -656,22 +656,17 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  * 
  */
 void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
-    if (worker_number == -1) {
-        // The scheduler should handle this immediately
-        lf_mutex_lock(&mutex);
-        // Do not enqueue this reaction twice.
-        if (reaction != NULL && lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
-            DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
-                        reaction->name, reaction->index & 0xffffLL);
-            // Immediately put 'reaction' on the reaction queue.
-            pqueue_insert((pqueue_t*)_lf_sched_instance->_lf_sched_triggered_reactions, reaction);
-        }
-        lf_mutex_unlock(&mutex);
+    if (reaction == NULL || !lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
         return;
     }
-    if (reaction != NULL && lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
-        DEBUG_PRINT("Worker %d: Enqueuing downstream reaction %s, which has level %lld.",
-        		worker_number, reaction->name, reaction->index & 0xffffLL);
+    DEBUG_PRINT("Scheduler: Enqueing reaction %s, which has level %lld.",
+            reaction->name, LEVEL(reaction->index));
+    if (worker_number == -1) {
+        lf_mutex_lock(&mutex);
+        // Immediately put 'reaction' on the reaction queue.
+        pqueue_insert((pqueue_t*)_lf_sched_instance->_lf_sched_triggered_reactions, reaction);
+        lf_mutex_unlock(&mutex);
+    } else {
         reaction->worker_affinity = worker_number;
         // Note: The scheduler will check that we don't enqueue this reaction
         // twice when it is actually pushing it to the global reaction queue.
