@@ -24,9 +24,26 @@ jobs:
     with:
       file: 'lingua-franca-ref.txt'
   
-  lf-tests:
+  lf-default:
     needs: fetch-lf
     uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+
+  lf-gedf-np:
+    needs: fetch-lf
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@c-new-scheduler
+    with:
+      runtime-ref: ${{ github.ref }}
+      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+      scheduler: GEDF_NP
+      
+  lf-gedf-np-ci:
+    needs: fetch-lf
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@c-new-scheduler
+    with:
+      runtime-ref: ${{ github.ref }}
+      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+      scheduler: GEDF_NP_CI
+  
