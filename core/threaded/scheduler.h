@@ -52,21 +52,21 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * @brief Struct representing the most common scheduler parameters.
  *
- * @param max_reactions_per_level Optional. Default: NULL. An array of
+ * @param num_reactions_per_level Optional. Default: NULL. An array of
  *  non-negative integers, where each element represents a reaction level
  *  (corresponding to the index), and the value of the element represents the
  *  maximum number of reactions in the program for that level. For example,
- *  max_reactions_per_level = { 2, 3 } indicates that there will be a maximum of
+ *  num_reactions_per_level = { 2, 3 } indicates that there will be a maximum of
  *  2 reactions in the program with a level of 0, and a maximum of 3 reactions
  *  in the program with a level of 1. Can be NULL.
- * @param max_reactions_per_level_size Optional. The size of the
- * `max_reactions_per_level` array if it is not NULL. If set, it should be the
+ * @param num_reactions_per_level_size Optional. The size of the
+ * `num_reactions_per_level` array if it is not NULL. If set, it should be the
  * maximum level over all reactions in the program plus 1. If not set,
  * `DEFAULT_MAX_REACTION_LEVEL` will be used.
  */
 typedef struct {
-    size_t* max_reactions_per_level;
-    size_t max_reactions_per_level_size;
+    size_t* num_reactions_per_level;
+    size_t num_reactions_per_level_size;
 } sched_params_t;
 
 /**
