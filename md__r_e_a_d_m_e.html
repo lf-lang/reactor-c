@@ -93,7 +93,8 @@ Documentation</h2>
 </ul>
 <h2><a class="anchor" id="autotoc_md2"></a>
 Testing</h2>
-<p >To create a new test, write a C program with a file name ending in "test.c" in a subdirectory of the <code>test</code> directory.</p><ul>
+<p >The Github Actions tests for this repo will automatically run all the C Lingua Franca tests with each of the available schedulers. The version of the lingua-franca repo that is used to do this is specified by the lingua-franca-ref.txt file in this directory.</p>
+<p >To create a new test, write a C program with a file name ending in "test.c" in a subdirectory of the <code>test</code> directory. That file should contain a main and should return 0 if the test succeeds.</p><ul>
 <li>Tests in the <code>general</code> subdirectory will always be run.</li>
 <li>Tests in the <code>single-threaded</code> and <code>multithreaded</code> subdirectories will be run depending on parameters passed to <code>cmake</code>.</li>
 </ul>
