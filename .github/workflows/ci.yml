@@ -33,7 +33,7 @@ jobs:
 
   lf-gedf-np:
     needs: fetch-lf
-    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@c-new-scheduler
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
@@ -41,7 +41,7 @@ jobs:
       
   lf-gedf-np-ci:
     needs: fetch-lf
-    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@c-new-scheduler
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
