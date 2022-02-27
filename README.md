@@ -20,8 +20,10 @@ To generate and view documentation, follow the following steps:
   - `firefox _build/html/index.html`
 
 ## Testing
+The Github Actions tests for this repo will automatically run all the C Lingua Franca tests with each of the available schedulers. The version of the lingua-franca repo that is used to do this is specified by the lingua-franca-ref.txt file in this directory.
+
 To create a new test, write a C program with a file name ending in "test.c"
-in a subdirectory of the `test` directory.
+in a subdirectory of the `test` directory. That file should contain a main and should return 0 if the test succeeds.
 * Tests in the `general` subdirectory will always be run.
 * Tests in the `single-threaded` and `multithreaded` subdirectories will be run
 depending on parameters passed to `cmake`.

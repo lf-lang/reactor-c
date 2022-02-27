@@ -387,11 +387,11 @@ void lf_sched_init(
 
     size_t queue_size = INITIAL_REACT_QUEUE_SIZE;
     if (params != NULL) {
-        if (params->max_reactions_per_level != NULL) {
+        if (params->num_reactions_per_level != NULL) {
             // Recalculate the queue size
             queue_size = 0;
             for (size_t i = 0; i <= _lf_sched_instance->max_reaction_level; i++) {
-                queue_size += params->max_reactions_per_level[i];
+                queue_size += params->num_reactions_per_level[i];
             }
         }
     }

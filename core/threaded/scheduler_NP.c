@@ -270,14 +270,14 @@ void lf_sched_init(
 ) {
     DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
 
-    // This scheduler is unique in that it requires `max_reactions_per_level` to
+    // This scheduler is unique in that it requires `num_reactions_per_level` to
     // work correctly.
     if (init_sched_instance(&_lf_sched_instance, number_of_workers, params)) {
         // Scheduler has not been initialized before.
-        if (params == NULL || params->max_reactions_per_level == NULL) {
+        if (params == NULL || params->num_reactions_per_level == NULL) {
             error_print_and_exit(
                 "Scheduler: Internal error. The NP scheduler "
-                "requires params.max_reactions_per_level to be set.");
+                "requires params.num_reactions_per_level to be set.");
         }
     } else {
         // Already initialized
@@ -298,8 +298,8 @@ void lf_sched_init(
     size_t queue_size = INITIAL_REACT_QUEUE_SIZE;
     for (size_t i = 0; i <= _lf_sched_instance->max_reaction_level; i++) {
         if (params != NULL) {
-            if (params->max_reactions_per_level != NULL) {
-                queue_size = params->max_reactions_per_level[i];
+            if (params->num_reactions_per_level != NULL) {
+                queue_size = params->num_reactions_per_level[i];
             }
         }
         // Initialize the reaction vectors

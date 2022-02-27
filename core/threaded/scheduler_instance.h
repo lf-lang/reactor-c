@@ -165,14 +165,14 @@ bool init_sched_instance(
     }
     lf_mutex_unlock(&mutex);
 
-    if (params == NULL || params->max_reactions_per_level_size == 0) {
+    if (params == NULL || params->num_reactions_per_level_size == 0) {
         (*instance)->max_reaction_level = DEFAULT_MAX_REACTION_LEVEL;
     }
 
     if (params != NULL) {
-        if (params->max_reactions_per_level != NULL) {
+        if (params->num_reactions_per_level != NULL) {
             (*instance)->max_reaction_level =
-                params->max_reactions_per_level_size - 1;
+                params->num_reactions_per_level_size - 1;
         }
     }
 

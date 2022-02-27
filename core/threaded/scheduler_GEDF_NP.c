@@ -241,8 +241,8 @@ void lf_sched_init(
     size_t queue_size = INITIAL_REACT_QUEUE_SIZE;
     for (size_t i = 0; i <= _lf_sched_instance->max_reaction_level; i++) {
         if (params != NULL) {
-            if (params->max_reactions_per_level != NULL) {
-                queue_size = params->max_reactions_per_level[i];
+            if (params->num_reactions_per_level != NULL) {
+                queue_size = params->num_reactions_per_level[i];
             }
         }
         // Initialize the reaction queues
