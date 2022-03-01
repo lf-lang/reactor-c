@@ -158,6 +158,13 @@ void print_snapshot() {
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
 void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
+#ifdef MODAL_REACTORS
+    // Check if reaction is disabled by mode inactivity
+    if (!_lf_mode_is_active(reaction->mode)) {
+        DEBUG_PRINT("Suppressing downstream reaction %s due inactivity of mode %s.", reaction->name, reaction->mode->name);
+        return; // Suppress reaction by preventing entering reaction queue
+    }
+#endif
     // Do not enqueue this reaction twice.
     if (reaction->status == inactive) {
         DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
@@ -233,6 +240,11 @@ int _lf_do_step() {
         reaction->status = inactive;
     }
     
+#ifdef MODAL_REACTORS
+    // At the end of the step, perform mode transitions
+    _lf_handle_mode_changes();
+#endif
+
     // No more reactions should be blocked at this point.
     //assert(pqueue_size(blocked_q) == 0);
 

@@ -512,32 +512,19 @@ void lf_sched_done_with_reaction(size_t worker_number,
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
 void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
-    if (worker_number == -1) {
-        // The scheduler should handle this immediately
-        // Protect against putting a reaction twice on the reaction queue by
-        // checking its status.
-        if (reaction != NULL &&
-            lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
-            lf_mutex_lock(&mutex);
-            DEBUG_PRINT(
-                "Scheduler: Enqueing reaction %s, which has level %lld.",
-                reaction->name, LEVEL(reaction->index));
-            // Immediately put 'reaction' on the reaction queue.
-            pqueue_insert(
-                (pqueue_t*)_lf_sched_instance->_lf_sched_triggered_reactions,
-                (void*)reaction);
-            lf_mutex_unlock(&mutex);
-        }
+    if (reaction == NULL || !lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
         return;
     }
-    // Protect against putting a reaction twice on the reaction queue by
-    // checking its status.
-    if (reaction != NULL &&
-        lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
-        DEBUG_PRINT(
-            "Scheduler: Worker %d: Enqueuing reaction %s, which has level "
-            "%lld.",
-            worker_number, reaction->name, LEVEL(reaction->index));
+    DEBUG_PRINT("Scheduler: Enqueing reaction %s, which has level %lld.",
+            reaction->name, LEVEL(reaction->index));
+    if (worker_number == -1) {
+        lf_mutex_lock(&mutex);
+        // Immediately put 'reaction' on the reaction queue.
+        pqueue_insert(
+            (pqueue_t*)_lf_sched_instance->_lf_sched_triggered_reactions,
+            (void*)reaction);
+        lf_mutex_unlock(&mutex);
+    } else {
         reaction->worker_affinity = worker_number;
         // Note: The scheduler has already checked that we are not enqueueing
         // this reaction twice.

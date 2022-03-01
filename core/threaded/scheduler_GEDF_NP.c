@@ -350,12 +350,10 @@ void lf_sched_done_with_reaction(size_t worker_number,
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
 void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
-    // Protect against putting a reaction twice on the reaction queue by
-    // checking its status.
-    if (reaction != NULL &&
-        lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
-        DEBUG_PRINT("Scheduler: Enqueing reaction %s, which has level %lld.",
-                    reaction->name, LEVEL(reaction->index));
-        _lf_sched_insert_reaction(reaction);
+    if (reaction == NULL || !lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
+        return;
     }
+    DEBUG_PRINT("Scheduler: Enqueing reaction %s, which has level %lld.",
+            reaction->name, LEVEL(reaction->index));
+    _lf_sched_insert_reaction(reaction);
 }

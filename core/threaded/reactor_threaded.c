@@ -574,6 +574,11 @@ tag_t send_next_event_tag(tag_t tag, bool wait_for_reply) {
  * This does not acquire the mutex lock. It assumes the lock is already held.
  */
 void _lf_next_locked() {
+#ifdef MODAL_REACTORS
+    // Perform mode transitions
+    _lf_handle_mode_changes();
+#endif
+
     // Previous logical time is complete.
     tag_t next_tag = get_next_event_tag();
 
@@ -737,7 +742,17 @@ void request_stop() {
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
 void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
+#ifdef MODAL_REACTORS
+        // Check if reaction is disabled by mode inactivity
+        if (_lf_mode_is_active(reaction->mode)) {
+#endif
     lf_sched_trigger_reaction(reaction, worker_number);
+#ifdef MODAL_REACTORS
+        } else { // Suppress reaction by preventing entering reaction queue
+            DEBUG_PRINT("Suppressing downstream reaction %s due inactivity of mode %s.",
+            		reaction->name, reaction->mode->name);
+        }
+#endif
 }
 
 /**
