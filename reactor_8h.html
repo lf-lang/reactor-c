@@ -160,6 +160,8 @@ Typedefs</h2></td></tr>
 <tr class="separator:a973e404c4c1bd798a54501d0e1d640f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2c506d193748554de2ff32e5f7cee41e"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structtoken__present__t.html">token_present_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a2c506d193748554de2ff32e5f7cee41e">token_present_t</a></td></tr>
 <tr class="separator:a2c506d193748554de2ff32e5f7cee41e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17df34d9c9d092aa6a399512b6a023e4"><td class="memItemLeft" align="right" valign="top">typedef void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a17df34d9c9d092aa6a399512b6a023e4">reactor_mode_t</a></td></tr>
+<tr class="separator:a17df34d9c9d092aa6a399512b6a023e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1f0f71b6c8e0c54c65cbfaa154b40694"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structreaction__t.html">reaction_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a1f0f71b6c8e0c54c65cbfaa154b40694">reaction_t</a></td></tr>
 <tr class="separator:a1f0f71b6c8e0c54c65cbfaa154b40694"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a59f5f6b9c6023baebf9c49c328b639a1"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structevent__t.html">event_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a59f5f6b9c6023baebf9c49c328b639a1">event_t</a></td></tr>
@@ -371,7 +373,7 @@ DESCRIPTION</h1>
 <div class="line">    out-&gt;token = token; \</div>
 <div class="line">    out-&gt;value = token-&gt;value; \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="areactor__common_8c_html_a96b4b8f74714eae0efcb699281c10f87"><div class="ttname"><a href="reactor__common_8c.html#a96b4b8f74714eae0efcb699281c10f87">_lf_initialize_token_with_value</a></div><div class="ttdeci">lf_token_t * _lf_initialize_token_with_value(lf_token_t *token, void *value, size_t length)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:519</div></div>
+<div class="ttc" id="areactor__common_8c_html_a96b4b8f74714eae0efcb699281c10f87"><div class="ttname"><a href="reactor__common_8c.html#a96b4b8f74714eae0efcb699281c10f87">_lf_initialize_token_with_value</a></div><div class="ttdeci">lf_token_t * _lf_initialize_token_with_value(lf_token_t *token, void *value, size_t length)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:526</div></div>
 </div><!-- fragment --><p >Version of set for output types given as 'type[]' where you want to send a previously dynamically allocated array.</p>
 <p >The deallocation is delegated to downstream reactors, which automatically deallocate when the reference count drops to zero. It also sets the corresponding _is_present variable in the self struct to true (which causes the object message to be sent). </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -406,7 +408,7 @@ DESCRIPTION</h1>
 <div class="line">    out-&gt;value = token-&gt;value; \</div>
 <div class="line">    out-&gt;token = token; \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="areactor__common_8c_html_a9df90516cce7d8e01b46acf61db64b8f"><div class="ttname"><a href="reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a></div><div class="ttdeci">lf_token_t * _lf_set_new_array_impl(lf_token_t *token, size_t length, int num_destinations)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1426</div></div>
+<div class="ttc" id="areactor__common_8c_html_a9df90516cce7d8e01b46acf61db64b8f"><div class="ttname"><a href="reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a></div><div class="ttdeci">lf_token_t * _lf_set_new_array_impl(lf_token_t *token, size_t length, int num_destinations)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1477</div></div>
 </div><!-- fragment --><p >Version of set() for output types given as 'type*' that allocates a new object of the type of the specified output port.</p>
 <p >This macro dynamically allocates enough memory to contain one instance of the output datatype and sets the variable named by the argument to point to the newly allocated memory. The user code can then populate it with whatever value it wishes to send.</p>
 <p >This macro also sets the corresponding _is_present variable in the self struct to true (which causes the object message to be sent), </p><dl class="params"><dt>Parameters</dt><dd>
@@ -565,7 +567,13 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Macro for extracting the deadline from the index of a reaction. The reaction queue is sorted according to this index, and the use of the deadline here results in an earliest deadline first (EDF) scheduling poicy. </p>
+<p >Sets the next mode of a modal reactor. Same as SET for outputs, only the last value will have effect if invoked multiple times. Works only in reactions with the target mode declared as effect.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">mode</td><td>The target mode to set for activation. Macro for extracting the deadline from the index of a reaction. The reaction queue is sorted according to this index, and the use of the deadline here results in an earliest deadline first (EDF) scheduling poicy. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -826,6 +834,20 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p >Reaction activation record to push onto the reaction queue. Some of the information in this struct is common among all instances of the reactor, and some is specific to each particular instance. These are marked below COMMON or INSTANCE accordingly. The COMMON information is set in the constructor. The fields marked RUNTIME have values that change during execution. Instances of this struct are put onto the reaction queue by the scheduler. </p>
+
+</div>
+</div>
+<a id="a17df34d9c9d092aa6a399512b6a023e4" name="a17df34d9c9d092aa6a399512b6a023e4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a17df34d9c9d092aa6a399512b6a023e4">&#9670;&nbsp;</a></span>reactor_mode_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef void <a class="el" href="reactor_8h.html#a17df34d9c9d092aa6a399512b6a023e4">reactor_mode_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -1788,7 +1810,7 @@ The absent and present fields need to be compatible with false and true respecti
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Create a new token and initialize it. The value pointer will be NULL and the length will be 0. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Function (to be code generated) to handle mode changes. Create a new token and initialize it. The value pointer will be NULL and the length will be 0. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">element_size</td><td>The size of an element carried in the payload or 0 if there is no payload. </td></tr>
   </table>

@@ -394,7 +394,17 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Schedule an action to occur with the specified value and time offset with no payload (no value conveyed). See <a class="el" href="ctarget_8h.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a>, which this uses, for details.</p>
+<p >Sets the next mode of a modal reactor. Same as SET for outputs, only the last value will have effect if invoked multiple times. Works only in reactions with the target mode declared as effect.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">mode</td><td>The target mode to set for activation. Schedule an action to occur with the specified value and time offset with no payload (no value conveyed). See <a class="el" href="ctarget_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a>, which this uses, for details.</td></tr>
+    <tr><td class="paramname">action</td><td>Pointer to an action on the self struct. </td></tr>
+    <tr><td class="paramname">offset</td><td>The time offset over and above that in the action. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A handle to the event, or 0 if no event was scheduled, or -1 for error.</dd></dl>
+<p>Schedule an action to occur with the specified value and time offset with no payload (no value conveyed). See <a class="el" href="ctarget_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a>, which this uses, for details.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">action</td><td>Pointer to an action on the self struct. </td></tr>

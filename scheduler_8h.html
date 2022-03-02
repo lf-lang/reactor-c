@@ -309,6 +309,16 @@ Copyright (c) 2022, The University of California at Berkeley. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">reaction</td><td>The reaction to trigger at the current tag. </td></tr>
+    <tr><td class="paramname">worker_number</td><td>The ID of the worker that is making this call. 0 should be used if there is only one worker (e.g., when the program is using the unthreaded C runtime). -1 is used for an anonymous call in a context where a worker number does not make sense (e.g., the caller is not a worker thread).</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>If a worker number is not available (e.g., this function is not called by a worker thread), -1 should be passed as the 'worker_number'.</p>
+<p >This scheduler ignores the worker number.</p>
+<p >The scheduler will ensure that the same reaction is not triggered twice in the same tag.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">reaction</td><td>The reaction to trigger at the current tag. </td></tr>
     <tr><td class="paramname">worker_number</td><td>The ID of the worker that is making this call. 0 should be used if there is only one worker (e.g., when the program is using the unthreaded C runtime). -1 is used for an anonymous call in a context where a worker number does not make sense (e.g., the caller is not a worker thread). </td></tr>
   </table>
   </dd>
