@@ -101,8 +101,7 @@ bool _lf_sched_advance_tag_locked() {
     // _lf_next_locked() may block waiting for real time to pass or events to appear.
     // to appear on the event queue. Note that we already
     // hold the mutex lock.
-    tracepoint_worker_advancing_time_starts(); 
-    // FIXME: Tracing should be updated to support scheduler events
+    tracepoint_worker_advancing_time_starts();
     _lf_next_locked();
     tracepoint_worker_advancing_time_ends();
 
