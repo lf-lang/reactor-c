@@ -95,10 +95,10 @@ Macros</h2></td></tr>
 <tr class="separator:a00635edd06259391fe45fa81f2dd9cab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9dc20d411fb600c803f04572bde501ff"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trace_8h.html#a9dc20d411fb600c803f04572bde501ff">tracepoint_worker_wait_ends</a>(...)</td></tr>
 <tr class="separator:a9dc20d411fb600c803f04572bde501ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa22497584488a2a7e993a79aaf722b3f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trace_8h.html#aa22497584488a2a7e993a79aaf722b3f">tracepoint_worker_advancing_time_starts</a>(...)&#160;&#160;&#160;;</td></tr>
-<tr class="separator:aa22497584488a2a7e993a79aaf722b3f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a24b9a43858a553b3dcdd6adfaa3b0ace"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trace_8h.html#a24b9a43858a553b3dcdd6adfaa3b0ace">tracepoint_worker_advancing_time_ends</a>(...)&#160;&#160;&#160;;</td></tr>
-<tr class="separator:a24b9a43858a553b3dcdd6adfaa3b0ace"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2b43a4d257b235afe8066e4a3f1bfe7f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trace_8h.html#a2b43a4d257b235afe8066e4a3f1bfe7f">tracepoint_scheduler_advancing_time_starts</a>(...)&#160;&#160;&#160;;</td></tr>
+<tr class="separator:a2b43a4d257b235afe8066e4a3f1bfe7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac91dba72663dc0f17ce46d105ff3f511"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trace_8h.html#ac91dba72663dc0f17ce46d105ff3f511">tracepoint_scheduler_advancing_time_ends</a>(...)&#160;&#160;&#160;;</td></tr>
+<tr class="separator:ac91dba72663dc0f17ce46d105ff3f511"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a27e365336dc38cd3fec8741832c0e195"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trace_8h.html#a27e365336dc38cd3fec8741832c0e195">start_trace</a>(...)</td></tr>
 <tr class="separator:a27e365336dc38cd3fec8741832c0e195"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9c54cf0034978f2dd5b3521fc522d237"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trace_8h.html#a9c54cf0034978f2dd5b3521fc522d237">stop_trace</a>(...)</td></tr>
@@ -115,9 +115,9 @@ Enumerations</h2></td></tr>
 &#160;&#160;<a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453a1d509d2fbc0fe97dcc61aea8ba7b68c1">user_value</a>
 , <a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453a9c6849445ded286ba9f914d3b1decd2a">worker_wait_starts</a>
 , <a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453afa179671ba1508f1c16b10ffef3a17c6">worker_wait_ends</a>
-, <a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453ace85af852e92328c55f2fd15c01f9fb8">worker_advancing_time_starts</a>
+, <a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453a79e198f97731e9ea1f982ccb8db8f5d0">scheduler_advancing_time_starts</a>
 , <br />
-&#160;&#160;<a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453ab91c6be611bdcd2dffb716884a485c5e">worker_advancing_time_ends</a>
+&#160;&#160;<a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453a0422fad861a51f83258d104e6b34fdad">scheduler_advancing_time_ends</a>
 <br />
  }</td></tr>
 <tr class="separator:ab02e9e69539d60297cedb38c2193a453"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -272,6 +272,42 @@ DESCRIPTION</h1>
 
 </div>
 </div>
+<a id="ac91dba72663dc0f17ce46d105ff3f511" name="ac91dba72663dc0f17ce46d105ff3f511"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac91dba72663dc0f17ce46d105ff3f511">&#9670;&nbsp;</a></span>tracepoint_scheduler_advancing_time_ends</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define tracepoint_scheduler_advancing_time_ends</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em></td><td>)</td>
+          <td>&#160;&#160;&#160;;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a2b43a4d257b235afe8066e4a3f1bfe7f" name="a2b43a4d257b235afe8066e4a3f1bfe7f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2b43a4d257b235afe8066e4a3f1bfe7f">&#9670;&nbsp;</a></span>tracepoint_scheduler_advancing_time_starts</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define tracepoint_scheduler_advancing_time_starts</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em></td><td>)</td>
+          <td>&#160;&#160;&#160;;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a4eaa42638286bf2cfdfed4b45d4a1036" name="a4eaa42638286bf2cfdfed4b45d4a1036"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4eaa42638286bf2cfdfed4b45d4a1036">&#9670;&nbsp;</a></span>tracepoint_user_event</h2>
 
@@ -302,42 +338,6 @@ DESCRIPTION</h1>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>...</em></td><td>)</td>
           <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a24b9a43858a553b3dcdd6adfaa3b0ace" name="a24b9a43858a553b3dcdd6adfaa3b0ace"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a24b9a43858a553b3dcdd6adfaa3b0ace">&#9670;&nbsp;</a></span>tracepoint_worker_advancing_time_ends</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define tracepoint_worker_advancing_time_ends</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>...</em></td><td>)</td>
-          <td>&#160;&#160;&#160;;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aa22497584488a2a7e993a79aaf722b3f" name="aa22497584488a2a7e993a79aaf722b3f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa22497584488a2a7e993a79aaf722b3f">&#9670;&nbsp;</a></span>tracepoint_worker_advancing_time_starts</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define tracepoint_worker_advancing_time_starts</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><em>...</em></td><td>)</td>
-          <td>&#160;&#160;&#160;;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -401,8 +401,8 @@ DESCRIPTION</h1>
 <tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a1d509d2fbc0fe97dcc61aea8ba7b68c1" name="ab02e9e69539d60297cedb38c2193a453a1d509d2fbc0fe97dcc61aea8ba7b68c1"></a>user_value&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a9c6849445ded286ba9f914d3b1decd2a" name="ab02e9e69539d60297cedb38c2193a453a9c6849445ded286ba9f914d3b1decd2a"></a>worker_wait_starts&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453afa179671ba1508f1c16b10ffef3a17c6" name="ab02e9e69539d60297cedb38c2193a453afa179671ba1508f1c16b10ffef3a17c6"></a>worker_wait_ends&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453ace85af852e92328c55f2fd15c01f9fb8" name="ab02e9e69539d60297cedb38c2193a453ace85af852e92328c55f2fd15c01f9fb8"></a>worker_advancing_time_starts&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453ab91c6be611bdcd2dffb716884a485c5e" name="ab02e9e69539d60297cedb38c2193a453ab91c6be611bdcd2dffb716884a485c5e"></a>worker_advancing_time_ends&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a79e198f97731e9ea1f982ccb8db8f5d0" name="ab02e9e69539d60297cedb38c2193a453a79e198f97731e9ea1f982ccb8db8f5d0"></a>scheduler_advancing_time_starts&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a0422fad861a51f83258d104e6b34fdad" name="ab02e9e69539d60297cedb38c2193a453a0422fad861a51f83258d104e6b34fdad"></a>scheduler_advancing_time_ends&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
