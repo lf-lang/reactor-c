@@ -250,8 +250,8 @@ void stop_trace(void);
 #define tracepoint_user_value(...)
 #define tracepoint_worker_wait_starts(...)
 #define tracepoint_worker_wait_ends(...)
-#define tracepoint_worker_advancing_time_starts(...);
-#define tracepoint_worker_advancing_time_ends(...);
+#define tracepoint_scheduler_advancing_time_starts(...);
+#define tracepoint_scheduler_advancing_time_ends(...);
 
 #define start_trace(...)
 #define stop_trace(...)
