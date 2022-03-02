@@ -60,8 +60,8 @@ typedef enum {
     user_value,
     worker_wait_starts,
     worker_wait_ends,
-    worker_advancing_time_starts,
-    worker_advancing_time_ends
+    scheduler_advancing_time_starts,
+    scheduler_advancing_time_ends
 } trace_event_t;
 
 #ifdef LINGUA_FRANCA_TRACE
@@ -77,8 +77,8 @@ static const char* trace_event_names[] = {
         "User-defined valued event",
         "Worker wait starts",
         "Worker wait ends",
-        "Worker advancing time starts",
-        "Worker advancing time ends"
+        "Scheduler advancing time starts",
+        "Scheduler advancing time ends"
 };
 
 // FIXME: Target property should specify the capacity of the trace buffer.
@@ -225,18 +225,16 @@ void tracepoint_worker_wait_starts(int worker);
 void tracepoint_worker_wait_ends(int worker);
 
 /**
- * Trace the start of a worker waiting for logical time to advance or an event to
+ * Trace the start of the scheduler waiting for logical time to advance or an event to
  * appear on the event queue.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
-void tracepoint_worker_advancing_time_starts(int worker);
+void tracepoint_scheduler_advancing_time_starts();
 
 /**
- * Trace the end of a worker waiting for logical time to advance or an event to
+ * Trace the end of the scheduler waiting for logical time to advance or an event to
  * appear on the event queue.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
-void tracepoint_worker_advancing_time_ends(int worker);
+void tracepoint_scheduler_advancing_time_ends();
 
 void stop_trace(void);
 
@@ -252,8 +250,8 @@ void stop_trace(void);
 #define tracepoint_user_value(...)
 #define tracepoint_worker_wait_starts(...)
 #define tracepoint_worker_wait_ends(...)
-#define tracepoint_worker_advancing_time_starts(...);
-#define tracepoint_worker_advancing_time_ends(...);
+#define tracepoint_scheduler_advancing_time_starts(...);
+#define tracepoint_scheduler_advancing_time_ends(...);
 
 #define start_trace(...)
 #define stop_trace(...)
