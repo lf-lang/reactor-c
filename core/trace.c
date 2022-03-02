@@ -488,21 +488,19 @@ void tracepoint_worker_wait_ends(int worker) {
 }
 
 /**
- * Trace the start of a worker waiting for logical time to advance or an event to
+ * Trace the start of the scheduler waiting for logical time to advance or an event to
  * appear on the event queue.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
-void tracepoint_worker_advancing_time_starts(int worker) {
-    tracepoint(worker_advancing_time_starts, NULL, -1, worker, NULL, NULL, 0);
+void tracepoint_scheduler_advancing_time_starts() {
+    tracepoint(scheduler_advancing_time_starts, NULL, -1, -1, NULL, NULL, 0);
 }
 
 /**
- * Trace the end of a worker waiting for logical time to advance or an event to
+ * Trace the end of the scheduler waiting for logical time to advance or an event to
  * appear on the event queue.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
-void tracepoint_worker_advancing_time_ends(int worker) {
-    tracepoint(worker_advancing_time_ends, NULL, -1, worker, NULL, NULL, 0);
+void tracepoint_scheduler_advancing_time_ends() {
+    tracepoint(scheduler_advancing_time_ends, NULL, -1, -1, NULL, NULL, 0);
 }
 
 /**
