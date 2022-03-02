@@ -101,9 +101,9 @@ bool _lf_sched_advance_tag_locked() {
     // _lf_next_locked() may block waiting for real time to pass or events to appear.
     // to appear on the event queue. Note that we already
     // hold the mutex lock.
-    tracepoint_worker_advancing_time_starts();
+    tracepoint_scheduler_advancing_time_starts();
     _lf_next_locked();
-    tracepoint_worker_advancing_time_ends();
+    tracepoint_scheduler_advancing_time_ends();
 
     DEBUG_PRINT("Scheduler: Done waiting for _lf_next_locked().");
     return false;
