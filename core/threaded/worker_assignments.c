@@ -9,8 +9,8 @@ static reaction_t**** reactions_by_worker_by_level;
 static size_t** num_reactions_by_worker_by_level;
 static size_t* max_num_workers_by_level;
 static size_t* num_workers_by_level;
-static size_t num_levels;
-static size_t max_num_workers;
+size_t num_levels;
+size_t max_num_workers;
 
 // The following apply to the current level.
 static size_t current_level;
