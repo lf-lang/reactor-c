@@ -1,4 +1,5 @@
 
+#include <assert.h>
 #include "scheduler.h"
 
 static reaction_t**** reactions_by_worker_by_level;
