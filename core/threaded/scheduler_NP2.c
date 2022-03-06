@@ -12,8 +12,8 @@
 #include "scheduler.h"
 #include "../utils/pqueue_support.h"
 #include "scheduler_sync_tag_advance.c"
-#include "worker_assignments.h"
-#include "worker_states.h"
+#include "worker_assignments.c"
+#include "worker_states.c"
 
 #ifndef MAX_REACTION_LEVEL
 #define MAX_REACTION_LEVEL INITIAL_REACT_QUEUE_SIZE

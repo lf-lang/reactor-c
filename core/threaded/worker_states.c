@@ -1,4 +1,7 @@
 
+#ifndef WORKER_STATES
+#define WORKER_STATES
+
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
@@ -44,7 +47,7 @@ static size_t cond_of(size_t worker) {
     return ret;
 }
 
-void worker_states_init(size_t number_of_workers) {
+static void worker_states_init(size_t number_of_workers) {
     size_t greatest_worker_number = number_of_workers - 1;
     size_t num_conds = cond_of(greatest_worker_number) + 1;
     worker_conds = (lf_cond_t*) malloc(sizeof(lf_cond_t) * num_conds);
@@ -53,7 +56,7 @@ void worker_states_init(size_t number_of_workers) {
     }
 }
 
-void worker_states_free() {
+static void worker_states_free() {
     // FIXME: Why do the condition variables and mutexes not need to be freed?
     free(worker_conds);
 }
@@ -64,7 +67,7 @@ void worker_states_free() {
  * @param num_to_awaken The number of workers to awaken.
  * @return A snapshot of the level counter after awakening the workers.
  */
-size_t worker_states_awaken_locked(size_t num_to_awaken) {
+static size_t worker_states_awaken_locked(size_t num_to_awaken) {
     assert(num_to_awaken <= max_num_workers);
     num_awakened = num_to_awaken;
     size_t greatest_worker_number_to_awaken = num_to_awaken - 1;
@@ -81,7 +84,7 @@ size_t worker_states_awaken_locked(size_t num_to_awaken) {
  * 
  * This is intended to coordinate shutdown (without leaving any dangling threads behind).
  */
-void worker_states_never_sleep_again() {
+static void worker_states_never_sleep_again() {
     worker_states_sleep_forbidden = true;
     lf_mutex_lock(&mutex);
     worker_states_awaken_locked(max_num_workers);
@@ -98,7 +101,7 @@ void worker_states_never_sleep_again() {
  * @param level_counter_snapshot The value of the level counter at the time of the decision to
  * sleep.
  */
-void worker_states_sleep_and_unlock(size_t worker, size_t level_counter_snapshot) {
+static void worker_states_sleep_and_unlock(size_t worker, size_t level_counter_snapshot) {
     assert(worker < max_num_workers);
     size_t cond = cond_of(worker);
     if ((level_counter_snapshot == level_counter) & !worker_states_sleep_forbidden) {
@@ -108,3 +111,5 @@ void worker_states_sleep_and_unlock(size_t worker, size_t level_counter_snapshot
     }
     lf_mutex_unlock(&mutex);
 }
+
+#endif

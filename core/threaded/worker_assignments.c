@@ -1,4 +1,7 @@
 
+#ifndef WORKER_ASSIGNMENTS
+#define WORKER_ASSIGNMENTS
+
 #include <assert.h>
 #include "scheduler.h"
 
@@ -22,7 +25,7 @@ static size_t reactions_triggered_counter = 0;
 
 extern lf_mutex_t mutex;
 
-#include "data_collection.h"
+#include "data_collection.c"
 
 /**
  * @brief Set the level to be executed now. This function assumes that concurrent calls to it are
@@ -42,7 +45,7 @@ static void set_level(size_t level) {
     data_collection_start_level(current_level);
 }
 
-void worker_assignments_init(size_t number_of_workers, sched_params_t* params) {
+static void worker_assignments_init(size_t number_of_workers, sched_params_t* params) {
     num_levels = params->num_reactions_per_level_size;
     max_num_workers = number_of_workers;
     reactions_by_worker_by_level = (reaction_t****) malloc(sizeof(reaction_t***) * num_levels);
@@ -68,7 +71,7 @@ void worker_assignments_init(size_t number_of_workers, sched_params_t* params) {
     set_level(0);
 }
 
-void worker_assignments_free() {
+static void worker_assignments_free() {
     for (size_t level = 0; level < num_levels; level++) {
         for (size_t worker = 0; worker < max_num_workers_by_level[level]; worker++) {
             free(reactions_by_worker_by_level[level][worker]);
@@ -88,7 +91,7 @@ void worker_assignments_free() {
  * @param worker A worker requesting work.
  * @return reaction_t* A reaction to execute, or NULL if no such reaction exists.
  */
-reaction_t* worker_assignments_get_or_lock(size_t worker) {
+static reaction_t* worker_assignments_get_or_lock(size_t worker) {
     assert(worker >= 0);
     // assert(worker < num_workers);  // There are edge cases where this doesn't hold.
     assert(num_reactions_by_worker[worker] >= 0);
@@ -112,7 +115,7 @@ reaction_t* worker_assignments_get_or_lock(size_t worker) {
  * @return true If this is the last worker to finish working on the current level.
  * @return false If at least one other worker is still working on the current level.
  */
-bool worker_assignments_finished_with_level_locked(size_t worker) {
+static bool worker_assignments_finished_with_level_locked(size_t worker) {
     assert(worker >= 0);
     // assert(worker < num_workers);  // There are edge cases where this doesn't hold.
     assert(num_workers_busy > 0 || worker >= num_workers);
@@ -127,7 +130,7 @@ bool worker_assignments_finished_with_level_locked(size_t worker) {
  * 
  * @param reaction A reaction to be executed in the current tag.
  */
-void worker_assignments_put(reaction_t* reaction) {
+static void worker_assignments_put(reaction_t* reaction) {
     size_t level = LEVEL(reaction->index);
     assert(reaction != NULL);
     assert(level > current_level || current_level == 0);
@@ -147,7 +150,7 @@ void worker_assignments_put(reaction_t* reaction) {
  * 
  * @return size_t The number of workers that should currently be working.
  */
-size_t get_num_workers_busy() {
+static size_t get_num_workers_busy() {
     return num_workers_busy;
 }
 
@@ -156,7 +159,7 @@ size_t get_num_workers_busy() {
  * 
  * @return true If the level was already at the maximum and was reset to zero.
  */
-bool try_increment_level() {
+static bool try_increment_level() {
     assert(num_workers_busy == 0);
     if (current_level + 1 == num_levels) {
         data_collection_compute_number_of_workers(num_workers_by_level);
@@ -166,3 +169,5 @@ bool try_increment_level() {
     set_level(current_level + 1);
     return false;
 }
+
+#endif
