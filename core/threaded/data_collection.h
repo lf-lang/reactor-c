@@ -3,6 +3,7 @@
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
 
+#include <assert.h>
 #include "scheduler.h"
 
 static interval_t* start_times_by_level;
