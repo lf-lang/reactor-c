@@ -34,8 +34,6 @@ extern lf_mutex_t mutex;
  */
 static void advance_level_and_unlock(size_t worker) {
     if (try_increment_level()) {
-        // There is no need to actually acquire a lock here. Due to the use of an atomic to
-        // determine which worker advances level, only one worker can be doing this.
         if (_lf_sched_advance_tag_locked()) {
             should_stop = true;
             worker_states_never_sleep_again();
