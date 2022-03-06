@@ -19,6 +19,8 @@ static size_t num_workers;
 // correctness of this value. Race conditions when accessing this value are acceptable.
 static size_t reactions_triggered_counter = 0;
 
+extern lf_mutex_t mutex;
+
 /**
  * @brief Set the level to be executed now. This function assumes that concurrent calls to it are
  * impossible.
@@ -53,9 +55,8 @@ void worker_assignments_init(size_t number_of_workers, sched_params_t* params) {
         num_reactions_by_worker_by_level[level] = (size_t*) calloc(max_num_workers, sizeof(size_t));
         for (size_t worker = 0; worker < max_num_workers; worker++) {
             reactions_by_worker_by_level[level][worker] = (reaction_t**) malloc(
-                sizeof(reaction_t*) * (1 + ((worker < num_workers) ? num_reactions : 0))
+                sizeof(reaction_t*) * ((worker < num_workers) ? num_reactions : 0)
             );  // Warning: This wastes space.
-            reactions_by_worker_by_level[level][worker][0] = NULL;
         }
     }
     set_level(0);
@@ -74,20 +75,27 @@ void worker_assignments_free() {
 }
 
 /**
- * @brief Get a reaction for the given worker to execute. If no such reaction exists, consider the
- * given worker to be NOT BUSY. Workers that are not busy must not continue to request reactions.
+ * @brief Get a reaction for the given worker to execute. If no such reaction exists, claim the
+ * mutex.
  * 
  * @param worker A worker requesting work.
  * @return reaction_t* A reaction to execute, or NULL if no such reaction exists.
  */
-reaction_t* worker_assignments_get(size_t worker) {
+reaction_t* worker_assignments_get_or_lock(size_t worker) {
     assert(worker >= 0);
     // assert(worker < num_workers);  // There are edge cases where this doesn't hold.
     assert(num_reactions_by_worker[worker] >= 0);
-    // The following is correct because of the NULL that precedes each reactions array. Note that it
-    // temporarily leaves num_reactions_by_worker[worker] in an inconsistent state.
-    // printf("DEBUG: %ld %ld\n", worker, num_reactions_by_worker[worker]);
-    return reactions_by_worker[worker][num_reactions_by_worker[worker]--];
+    if (num_reactions_by_worker[worker]) {
+        reaction_t* ret = reactions_by_worker[worker][--num_reactions_by_worker[worker]];
+        // printf("%ld <- %p @ %lld\n", worker, ret, LEVEL(ret->index));
+        return ret;
+    }
+    lf_mutex_lock(&mutex);
+    if (!num_reactions_by_worker[worker]) {
+        return NULL;
+    }
+    lf_mutex_unlock(&mutex);
+    return reactions_by_worker[worker][--num_reactions_by_worker[worker]];
 }
 
 /**
@@ -97,13 +105,14 @@ reaction_t* worker_assignments_get(size_t worker) {
  * @return true If this is the last worker to finish working on the current level.
  * @return false If at least one other worker is still working on the current level.
  */
-bool worker_assignments_finished_with_level(size_t worker) {
+bool worker_assignments_finished_with_level_locked(size_t worker) {
     assert(worker >= 0);
     // assert(worker < num_workers);  // There are edge cases where this doesn't hold.
     assert(num_workers_busy > 0 || worker >= num_workers);
-    num_reactions_by_worker[worker] = 0;
-    bool ret = !lf_atomic_add_fetch(&num_workers_busy, -(worker < num_workers));
-    return ret;
+    assert(num_reactions_by_worker[worker] != 1);
+    assert(num_reactions_by_worker[worker] == (((size_t) 0) - 1) || num_reactions_by_worker[worker] == 0);
+    num_workers_busy -= worker < num_workers;
+    return !num_workers_busy;
 }
 
 /**
@@ -113,16 +122,17 @@ bool worker_assignments_finished_with_level(size_t worker) {
  */
 void worker_assignments_put(reaction_t* reaction) {
     size_t level = LEVEL(reaction->index);
+    assert(reaction != NULL);
     assert(level > current_level || current_level == 0);
     assert(level < num_levels);
     size_t worker = (reactions_triggered_counter++) % num_workers_by_level[level];
     assert(worker >= 0 && worker <= num_workers);
-    size_t num_preceding_reactions_plus_one = lf_atomic_add_fetch(
+    size_t num_preceding_reactions = lf_atomic_fetch_add(
         &num_reactions_by_worker_by_level[level][worker],
         1
     );
-    printf("%p -> %ld @ %ld\n", reaction, worker, level);
-    reactions_by_worker_by_level[level][worker][num_preceding_reactions_plus_one] = reaction;
+    // printf("%p -> %ld @ %ld[%ld]\n", reaction, worker, level, num_preceding_reactions);
+    reactions_by_worker_by_level[level][worker][num_preceding_reactions] = reaction;
 }
 
 /**

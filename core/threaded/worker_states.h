@@ -69,7 +69,6 @@ size_t worker_states_awaken_locked(size_t num_to_awaken) {
     size_t greatest_worker_number_to_awaken = num_to_awaken - 1;
     size_t max_cond = cond_of(greatest_worker_number_to_awaken);
     for (int cond = 0; cond <= max_cond; cond++) {
-        printf("DEBUG: broadcasting to cond %d.\n", cond);
         lf_cond_broadcast(worker_conds + cond);
     }
     size_t ret = ++level_counter;
@@ -98,19 +97,13 @@ void worker_states_never_sleep_again() {
  * @param level_counter_snapshot The value of the level counter at the time of the decision to
  * sleep.
  */
-void worker_states_sleep(size_t worker, size_t level_counter_snapshot) {
-    // printf("DEBUG: worker=%ld\n", worker);
+void worker_states_sleep_and_unlock(size_t worker, size_t level_counter_snapshot) {
     assert(worker < max_num_workers);
     size_t cond = cond_of(worker);
-    printf("DEBUG: %ld tries to get mutex so it can sleep.\n", worker);
-    lf_mutex_lock(&mutex);
-    printf("DEBUG: %ld has mutex and will try to sleep.\n", worker);
     if ((level_counter_snapshot == level_counter) & !worker_states_sleep_forbidden) {
         do {
-            printf("DEBUG: %ld is going to sleep with cond %ld.\n", worker, cond);
             lf_cond_wait(worker_conds + cond, &mutex);
         } while (worker >= num_awakened);
-        printf("DEBUG: %ld is awakened.\n", worker);
     }
     lf_mutex_unlock(&mutex);
 }

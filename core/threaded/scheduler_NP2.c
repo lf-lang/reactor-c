@@ -32,8 +32,7 @@ extern lf_mutex_t mutex;
  * Sleep thereafter if that is what the current worker ought to do.
  * @param worker The number of the calling worker.
  */
-static void advance_level(size_t worker) {
-    lf_mutex_lock(&mutex);  // FIXME: do this elsewhere?
+static void advance_level_and_unlock(size_t worker) {
     if (try_increment_level()) {
         // There is no need to actually acquire a lock here. Due to the use of an atomic to
         // determine which worker advances level, only one worker can be doing this.
@@ -46,10 +45,10 @@ static void advance_level(size_t worker) {
     }
     size_t num_workers_busy = get_num_workers_busy();
     size_t level_snapshot = worker_states_awaken_locked(num_workers_busy);
-    lf_mutex_unlock(&mutex);
-    if (num_workers_busy < worker && num_workers_busy) {
-        printf("DEBUG: %ld sleeps; others should be busy.\n", worker);
-        worker_states_sleep(worker, level_snapshot);
+    if (num_workers_busy < worker && num_workers_busy) {  // FIXME: Is this branch still necessary?
+        worker_states_sleep_and_unlock(worker, level_snapshot);
+    } else {
+        lf_mutex_unlock(&mutex);
     }
 }
 
@@ -74,24 +73,20 @@ void lf_sched_free() {
 reaction_t* lf_sched_get_ready_reaction(int worker_number) {
     assert(worker_number >= 0);
     reaction_t* ret;
-    while (!(ret = worker_assignments_get(worker_number))) {
-        printf("DEBUG: %d failed to get.\n", worker_number);
+    while (!(ret = worker_assignments_get_or_lock(worker_number))) {
+        // printf("%d failed to get.\n", worker_number);
         size_t level_counter_snapshot = level_counter;
-        if (worker_assignments_finished_with_level(worker_number)) {
+        if (worker_assignments_finished_with_level_locked(worker_number)) {
             // TODO: Advance level all the way to the next level with at least one reaction?
-            advance_level(worker_number);
-            printf("%d !\n", worker_number);
+            advance_level_and_unlock(worker_number);
+            // printf("%d !\n", worker_number);
         } else {
-            //printf("DEBUG: %d sleeps; finished early.\n", worker_number);
-            worker_states_sleep(worker_number, level_counter_snapshot);
+            worker_states_sleep_and_unlock(worker_number, level_counter_snapshot);
         }
         if (should_stop) {
-            //printf("DEBUG: %d should stop.\n", worker_number);
             return NULL;
         }
-        //printf("DEBUG: %d will try to get.\n", worker_number);
     }
-    printf("%d <- %p @ %ld\n", worker_number, ret, LEVEL(ret->index));
     return (reaction_t*) ret;
 }
 
