@@ -21,6 +21,8 @@ static size_t reactions_triggered_counter = 0;
 
 extern lf_mutex_t mutex;
 
+#include "data_collection.h"
+
 /**
  * @brief Set the level to be executed now. This function assumes that concurrent calls to it are
  * impossible.
@@ -30,11 +32,13 @@ extern lf_mutex_t mutex;
 static void set_level(size_t level) {
     assert(level < num_levels);
     assert(0 <= level);
+    data_collection_end_level(current_level);
     current_level = level;
     num_workers_busy = num_workers_by_level[level];
     num_reactions_by_worker = num_reactions_by_worker_by_level[level];
     reactions_by_worker = reactions_by_worker_by_level[level];
     num_workers = num_workers_by_level[level];
+    data_collection_start_level(current_level);
 }
 
 void worker_assignments_init(size_t number_of_workers, sched_params_t* params) {
@@ -59,6 +63,7 @@ void worker_assignments_init(size_t number_of_workers, sched_params_t* params) {
             );  // Warning: This wastes space.
         }
     }
+    data_collection_init(params);
     set_level(0);
 }
 
@@ -72,6 +77,7 @@ void worker_assignments_free() {
     }
     free(max_num_workers_by_level);
     free(num_workers_by_level);
+    data_collection_free();
 }
 
 /**
@@ -148,11 +154,11 @@ size_t get_num_workers_busy() {
  * @brief Increment the level currently being processed by the workers.
  * 
  * @return true If the level was already at the maximum and was reset to zero.
- * @return false Otherwise.
  */
 bool try_increment_level() {
     assert(num_workers_busy == 0);
     if (current_level + 1 == num_levels) {
+        data_collection_compute_number_of_workers(num_workers_by_level);
         set_level(0);
         return true;
     }
