@@ -2,6 +2,10 @@
 #ifndef WORKER_ASSIGNMENTS
 #define WORKER_ASSIGNMENTS
 
+#ifndef NUMBER_OF_WORKERS
+#define NUMBER_OF_WORKERS 1
+#endif // NUMBER_OF_WORKERS
+
 #include <assert.h>
 #include "scheduler.h"
 
@@ -25,7 +29,7 @@ static size_t reactions_triggered_counter = 0;
 
 extern lf_mutex_t mutex;
 
-#include "data_collection.c"
+#include "data_collection.h"
 
 /**
  * @brief Set the level to be executed now. This function assumes that concurrent calls to it are
