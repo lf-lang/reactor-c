@@ -9,8 +9,8 @@ static reaction_t**** reactions_by_worker_by_level;
 static size_t** num_reactions_by_worker_by_level;
 static size_t* max_num_workers_by_level;
 static size_t* num_workers_by_level;
-size_t num_levels;
-size_t max_num_workers;
+static size_t num_levels;
+static size_t max_num_workers;
 
 // The following apply to the current level.
 static size_t current_level;
@@ -41,7 +41,7 @@ static void set_level(size_t level) {
     if (collecting_data) data_collection_end_level(current_level);
     if (level == 0) {
         data_collection_counter++;
-        int shift = 2 << (data_collection_counter > 8);
+        int shift = 3 << (data_collection_counter > 8);
         collecting_data = data_collection_counter == (
             (data_collection_counter >> shift) << shift
         );
@@ -70,9 +70,9 @@ static void worker_assignments_init(size_t number_of_workers, sched_params_t* pa
             sizeof(reaction_t**) * max_num_workers
         );
         num_reactions_by_worker_by_level[level] = (size_t*) calloc(max_num_workers, sizeof(size_t));
-        for (size_t worker = 0; worker < max_num_workers; worker++) {
+        for (size_t worker = 0; worker < max_num_workers_by_level[level]; worker++) {
             reactions_by_worker_by_level[level][worker] = (reaction_t**) malloc(
-                sizeof(reaction_t*) * ((worker < num_workers) ? num_reactions : 0)
+                sizeof(reaction_t*) * num_reactions
             );  // Warning: This wastes space.
         }
     }
@@ -172,7 +172,7 @@ static size_t get_num_workers_busy() {
 static bool try_increment_level() {
     assert(num_workers_busy == 0);
     if (current_level + 1 == num_levels) {
-        data_collection_compute_number_of_workers(num_workers_by_level);
+        data_collection_compute_number_of_workers(num_workers_by_level, max_num_workers_by_level);
         set_level(0);
         return true;
     }

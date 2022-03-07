@@ -43,11 +43,16 @@ static void data_collection_end_level(size_t level) {
     }
 }
 
-static void data_collection_compute_number_of_workers(size_t* num_workers_by_level) {
+static void data_collection_compute_number_of_workers(
+    size_t* num_workers_by_level,
+    size_t* max_num_workers_by_level
+) {
     for (size_t level = 0; level < num_levels; level++) {
         size_t ideal_number_of_workers = execution_times_by_level[level] / OPTIMAL_NANOSECONDS_WORK;
+        size_t max_reasonable_num_workers = max_num_workers_by_level[level];
         num_workers_by_level[level] = (ideal_number_of_workers < 1) ? 1 : (
-            (ideal_number_of_workers > max_num_workers) ? max_num_workers : ideal_number_of_workers
+            (ideal_number_of_workers > max_reasonable_num_workers) ? max_reasonable_num_workers :
+            ideal_number_of_workers
         );
     }
 }
