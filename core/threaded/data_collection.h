@@ -14,7 +14,7 @@ static interval_t* execution_times_by_level;
 extern size_t num_levels;
 extern size_t max_num_workers;
 
-#define OPTIMAL_NANOSECONDS_WORK 65536
+#define OPTIMAL_NANOSECONDS_WORK 32768
 
 static void data_collection_init(sched_params_t* params) {
     start_times_by_level = (interval_t*) calloc(
