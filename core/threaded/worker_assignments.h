@@ -16,8 +16,6 @@ static size_t* num_workers_by_level;
 static size_t num_levels;
 static size_t max_num_workers;
 
-static bool collecting_data = true;
-
 // The following apply to the current level.
 static size_t current_level;
 static size_t num_workers_busy;
@@ -40,23 +38,15 @@ extern lf_mutex_t mutex;
  * @param level The new current level.
  */
 static void set_level(size_t level) {
-    static size_t data_collection_counter = 0;
     assert(level < num_levels);
     assert(0 <= level);
-    if (collecting_data) data_collection_end_level(current_level);
-    if (level == 0) {
-        data_collection_counter++;
-        int shift = 3 << (data_collection_counter > 8);
-        collecting_data = data_collection_counter == (
-            (data_collection_counter >> shift) << shift
-        );
-    }
+    data_collection_end_level(current_level, num_workers);
     current_level = level;
     num_workers_busy = num_workers_by_level[level];
     num_reactions_by_worker = num_reactions_by_worker_by_level[level];
     reactions_by_worker = reactions_by_worker_by_level[level];
     num_workers = num_workers_by_level[level];
-    if (collecting_data) data_collection_start_level(current_level);
+    data_collection_start_level(current_level);
 }
 
 static void worker_assignments_init(size_t number_of_workers, sched_params_t* params) {
@@ -177,7 +167,7 @@ static size_t get_num_workers_busy() {
 static bool try_increment_level() {
     assert(num_workers_busy == 0);
     if (current_level + 1 == num_levels) {
-        if (collecting_data) data_collection_compute_number_of_workers(num_workers_by_level, max_num_workers_by_level);
+        data_collection_compute_number_of_workers(num_workers_by_level, max_num_workers_by_level);
         set_level(0);
         return true;
     }
