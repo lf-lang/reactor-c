@@ -34,15 +34,24 @@ extern lf_mutex_t mutex;
  * @param level The new current level.
  */
 static void set_level(size_t level) {
+    static size_t data_collection_counter = 0;
+    static bool collecting_data = true;
     assert(level < num_levels);
     assert(0 <= level);
-    data_collection_end_level(current_level);
+    if (collecting_data) data_collection_end_level(current_level);
+    if (level == 0) {
+        data_collection_counter++;
+        int shift = 2 << (data_collection_counter > 8);
+        collecting_data = data_collection_counter == (
+            (data_collection_counter >> shift) << shift
+        );
+    }
     current_level = level;
     num_workers_busy = num_workers_by_level[level];
     num_reactions_by_worker = num_reactions_by_worker_by_level[level];
     reactions_by_worker = reactions_by_worker_by_level[level];
     num_workers = num_workers_by_level[level];
-    data_collection_start_level(current_level);
+    if (collecting_data) data_collection_start_level(current_level);
 }
 
 static void worker_assignments_init(size_t number_of_workers, sched_params_t* params) {
@@ -135,6 +144,7 @@ static void worker_assignments_put(reaction_t* reaction) {
     assert(reaction != NULL);
     assert(level > current_level || current_level == 0);
     assert(level < num_levels);
+    // TODO: Hashing by a pointer to the reaction will let us cheaply simulate ``worker affinity''.
     size_t worker = (reactions_triggered_counter++) % num_workers_by_level[level];
     assert(worker >= 0 && worker <= num_workers);
     size_t num_preceding_reactions = lf_atomic_fetch_add(
