@@ -2,9 +2,12 @@ name: Continuous Benchmarking
 
 
 on:
+  # pull_request: 
+  #   types:
+  #     - opened
   push:
     branches: [continuous-benchmarking]
-
+  
     
 permissions:
   contents: write
@@ -14,7 +17,7 @@ permissions:
 jobs:
   benchmark:
     name: Run C Benchmarks
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
 
     steps:
       - name: Setup Java JDK
@@ -31,7 +34,10 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: LDeng0205/lingua-franca
-          submodules: true
+      - name: Checkout current branch of reactor-c
+        uses: actions/checkout@v2
+        with:
+          path: org.lflang/src/lib/c/reactor-c
         
       - name: Install Python dependencies
         run: pip3 install -r benchmark/runner/requirements.txt  
@@ -59,7 +65,7 @@ jobs:
           auto-push: true
 
           # Show alert with commit comment on detecting possible performance regression
-          alert-threshold: '200%' 
+          alert-threshold: '120%' 
           comment-on-alert: false
           fail-on-alert: false
           
