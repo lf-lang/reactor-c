@@ -15,12 +15,14 @@ static interval_t* execution_times_mins;
 static size_t* execution_times_argmins;
 static size_t data_collection_counter = 0;
 static bool collecting_data = false;
+static bool completing_experiment = false;
 static int experimental_jitter = 0;
 
 extern size_t num_levels;
 extern size_t max_num_workers;
 
 #define OPTIMAL_NANOSECONDS_WORK 32768
+#define STOP_USING_OPTIMAL_NANOSECONDS_WORK 15
 
 static void data_collection_init(sched_params_t* params) {
     size_t num_levels = params->num_reactions_per_level_size;
@@ -51,7 +53,7 @@ static void data_collection_end_level(size_t level, size_t num_workers) {
         interval_t score = execution_times_by_level[level] + execution_times_by_level[
             (level + num_levels - 1) % num_levels
         ];
-        if (!execution_times_mins[level] | (score < execution_times_mins[level])) {
+        if (!execution_times_mins[level] | (score < execution_times_mins[level]) | (num_workers == execution_times_argmins[level])) {
             execution_times_mins[level] = score;
             execution_times_argmins[level] = num_workers;
         }
@@ -61,8 +63,23 @@ static void data_collection_end_level(size_t level, size_t num_workers) {
         int shift = (data_collection_counter > 8) << 3;
         size_t shifted = data_collection_counter >> shift;
         collecting_data = data_collection_counter == (shifted << shift);
-        experimental_jitter = ((int) (shifted % 3)) - 1;
+        if (collecting_data) {
+            experimental_jitter = ((int) (shifted % 3)) - 1;
+            completing_experiment = experimental_jitter;
+            // printf("%d\n", shifted % 3);
+        }
+        if (completing_experiment && !collecting_data) {
+            collecting_data = true;
+            experimental_jitter = 0;
+            completing_experiment = false;
+        }
     }
+}
+
+static size_t restrict_to_range(size_t start_inclusive, size_t end_inclusive, size_t value) {
+    if (value < start_inclusive) return start_inclusive;
+    if (value > end_inclusive) return end_inclusive;
+    return value;
 }
 
 static void data_collection_compute_number_of_workers(
@@ -71,13 +88,16 @@ static void data_collection_compute_number_of_workers(
 ) {
     if (!collecting_data) return;
     for (size_t level = 0; level < num_levels; level++) {
-        size_t ideal_number_of_workers = execution_times_by_level[level] / OPTIMAL_NANOSECONDS_WORK;
-        ideal_number_of_workers = (ideal_number_of_workers + execution_times_argmins[level]) >> 1;
-        ideal_number_of_workers += experimental_jitter;
+        size_t ideal_number_of_workers;
         size_t max_reasonable_num_workers = max_num_workers_by_level[level];
-        num_workers_by_level[level] = (ideal_number_of_workers < 1) ? 1 : (
-            (ideal_number_of_workers > max_reasonable_num_workers) ? max_reasonable_num_workers :
-            ideal_number_of_workers
+        if (data_collection_counter < STOP_USING_OPTIMAL_NANOSECONDS_WORK) {
+            ideal_number_of_workers = execution_times_by_level[level] / OPTIMAL_NANOSECONDS_WORK;
+        } else {
+            ideal_number_of_workers = execution_times_argmins[level] + experimental_jitter;
+        }
+        // printf("level=%ld, num_workers=%ld, jitter=%d\n", level, ideal_number_of_workers, experimental_jitter);
+        num_workers_by_level[level] = restrict_to_range(
+            1, max_reasonable_num_workers, ideal_number_of_workers
         );
     }
 }
