@@ -2083,22 +2083,30 @@ _lf_suspended_event_t* _lf_remove_suspended_event(_lf_suspended_event_t* event) 
  *              Enclosing mode must come before inner.
  * @param num_states The number of mode state.
  */
-void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mode_state_variable_reset_data_t reset_data[], int reset_data_size) {
+void _lf_process_mode_changes(
+		reactor_mode_state_t* states[],
+		int num_states, mode_state_variable_reset_data_t reset_data[],
+		int reset_data_size
+) {
     bool transition = false; // any mode change in this step
 
     // Detect mode changes (top down for hierarchical reset)
     for (int i = 0; i < num_states; i++) {
         reactor_mode_state_t* state = states[i];
         if (state != NULL) {
-            // Hierarchical reset: if this mode has parent that is entered in this step with a reset this reactor has to enter its initial mode
-            if (state->parent_mode != NULL &&
-                state->parent_mode->state != NULL &&
-                state->parent_mode->state->next_mode == state->parent_mode &&
-                state->parent_mode->state->mode_change == 1) {
-                // Reset to initial state
+            // Hierarchical reset: if this mode has parent that is entered in
+        	// this step with a reset this reactor has to enter its initial mode
+            if (state->parent_mode != NULL
+            		&& state->parent_mode->state != NULL
+					&& state->parent_mode->state->next_mode == state->parent_mode
+					&& state->parent_mode->state->mode_change == reset_transition
+            ){
+                // Reset to initial state.
                 state->next_mode = state->initial_mode;
-                state->mode_change = 1; // Enter with reset, to cascade it further down
-                DEBUG_PRINT("Modes: Hierarchical mode reset to %s when entering %s.", state->initial_mode->name, state->parent_mode->name);
+                // Enter with reset, to cascade it further down.
+                state->mode_change = reset_transition;
+                DEBUG_PRINT("Modes: Hierarchical mode reset to %s when entering %s.",
+                		state->initial_mode->name, state->parent_mode->name);
             }
 
             // Handle effect of entering next mode
@@ -2106,7 +2114,7 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
                 DEBUG_PRINT("Modes: Transition to %s.", state->next_mode->name);
                 transition = true;
 
-                if (state->mode_change == 1) {
+                if (state->mode_change == reset_transition) {
                     // Reset state variables
                     for (int i = 0; i < reset_data_size; i++) {
                         mode_state_variable_reset_data_t data = reset_data[i];
@@ -2122,7 +2130,7 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
                 while(suspended_event != NULL) {
                     event_t* event = suspended_event->event;
                     if (event != NULL && event->trigger != NULL && event->trigger->mode == state->next_mode) {
-                        if (state->mode_change == 1) { // Reset transition
+                        if (state->mode_change == reset_transition) { // Reset transition
                             if (event->trigger->is_timer) { // Only reset timers
                                 trigger_t* timer = event->trigger;
 
@@ -2176,7 +2184,7 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
                 // Apply transition
                 state->active_mode = state->next_mode;
                 state->next_mode = NULL;
-                state->mode_change = 0;
+                state->mode_change = no_transition;
             }
         }
 
