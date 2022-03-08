@@ -53,7 +53,7 @@ jobs:
           echo "LF_PATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
       - name: Run C Benchmarks
         run: |
-          python3 benchmark/runner/run_benchmark_json.py -m test_mode=False iterations=5 benchmark="glob(*)" target=lf-c continue_on_error=True
+          python3 benchmark/runner/run_benchmark.py -m test_mode=False iterations=5 benchmark="glob(*)" target=lf-c continue_on_error=True json=True
       
       # Use continuous benchmark action to store result
       - name: Store Benchmark Result
