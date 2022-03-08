@@ -56,7 +56,9 @@ static void set_level(size_t level) {
     num_reactions_by_worker = num_reactions_by_worker_by_level[level];
     reactions_by_worker = reactions_by_worker_by_level[level];
     num_workers = num_workers_by_level[level];
-    if (collecting_data) data_collection_start_level(current_level);
+    if (collecting_data) data_collection_start_level(
+        current_level, num_reactions_by_worker, num_workers
+    );
 }
 
 static void worker_assignments_init(size_t number_of_workers, sched_params_t* params) {
@@ -151,7 +153,7 @@ static void worker_assignments_put(reaction_t* reaction) {
     assert(level < num_levels);
     // TODO: Hashing by a pointer to the reaction will let us cheaply simulate ``worker affinity''.
     size_t worker = (reactions_triggered_counter++) % num_workers_by_level[level];
-    assert(worker >= 0 && worker <= num_workers);
+    assert(worker >= 0 && worker <= max_num_workers);
     size_t num_preceding_reactions = lf_atomic_fetch_add(
         &num_reactions_by_worker_by_level[level][worker],
         1
@@ -177,7 +179,7 @@ static size_t get_num_workers_busy() {
 static bool try_increment_level() {
     assert(num_workers_busy == 0);
     if (current_level + 1 == num_levels) {
-        if (collecting_data) data_collection_compute_number_of_workers(num_workers_by_level, max_num_workers_by_level);
+        if (collecting_data) data_collection_compute_number_of_workers(num_workers_by_level);
         set_level(0);
         return true;
     }
