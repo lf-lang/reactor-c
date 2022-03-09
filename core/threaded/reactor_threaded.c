@@ -1137,13 +1137,17 @@ int lf_reactor_c_main(int argc, char* argv[]) {
 
     if (process_args(default_argc, default_argv)
             && process_args(argc, argv)) {
-        if (_lf_number_of_threads == 0) {
+        
+        if (_lf_number_of_threads == 0u) {
             // If _lf_number_of_threads is 0, use the number of cores on the
-            // host machine.
+            // host machine. This can be overwritten in
+            // `_lf_initialize_trigger_objects` if the user has requested a
+            // specific number of workers.
             _lf_number_of_threads = lf_host_cores();
         }
-        lf_mutex_lock(&mutex); // Sets start_time
-        initialize();
+
+        lf_mutex_lock(&mutex);
+        initialize(); // Sets start_time
 
         info_print("---- Using %d workers.", _lf_number_of_threads);
         
