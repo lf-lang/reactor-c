@@ -1138,6 +1138,8 @@ int lf_reactor_c_main(int argc, char* argv[]) {
     if (process_args(default_argc, default_argv)
             && process_args(argc, argv)) {
         
+        // If _lf_number_of_threads is 0, it means that it was not provided on
+        // the command-line using the --threads argument.
         if (_lf_number_of_threads == 0u) {
             #if !defined(NUMBER_OF_WORKERS) || NUMBER_OF_WORKERS == 0
             // Use the number of cores on the host machine.
