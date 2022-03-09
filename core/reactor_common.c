@@ -52,7 +52,7 @@ bool fast = false;
  * By default, execution is not threaded and this variable will have value 0,
  * meaning that the execution is not threaded.
  */
-unsigned int _lf_number_of_threads = 0u;
+unsigned int _lf_number_of_workers = 0u;
 
 /** 
  * The logical time to elapse during execution, or -1 if no timeout time has
@@ -1719,7 +1719,7 @@ void usage(int argc, char* argv[]) {
     printf("   nsec, usec, msec, sec, minute, hour, day, week, or the plurals of those.\n\n");
     printf("  -k, --keepalive\n");
     printf("   Whether continue execution even when there are no events to process.\n\n");
-    printf("  -t, --threads <n>\n");
+    printf("  -w, --workers <n>\n");
     printf("   Executed in <n> threads if possible (optional feature).\n\n");
     printf("  -i, --id <n>\n");
     printf("   The ID of the federation that this reactor will join.\n\n");
@@ -1819,19 +1819,19 @@ int process_args(int argc, char* argv[]) {
             } else {
                 error_print("Invalid value for --keepalive: %s", keep_spec);
             }
-        } else if (strcmp(arg, "-t") == 0 || strcmp(arg, "--threads") == 0) {
+        } else if (strcmp(arg, "-t") == 0 || strcmp(arg, "--workers") == 0) {
             if (argc < i + 1) {
-                error_print("--threads needs an integer argument.s");
+                error_print("--workers needs an integer argument.s");
                 usage(argc, argv);
                 return 0;
             }
             char* threads_spec = argv[i++];
-            int num_threads = atoi(threads_spec);
-            if (num_threads <= 0) {
-                error_print("Invalid value for --threads: %s. Using 1.", threads_spec);
-                num_threads = 1;
+            int num_workers = atoi(threads_spec);
+            if (num_workers <= 0) {
+                error_print("Invalid value for --workers: %s. Using 1.", threads_spec);
+                num_workers = 1;
             }
-            _lf_number_of_threads = (unsigned int)num_threads;
+            _lf_number_of_workers = (unsigned int)num_workers;
         }
         #ifdef FEDERATED
           else if (strcmp(arg, "-i") == 0 || strcmp(arg, "--id") == 0) {

@@ -329,7 +329,7 @@ void start_trace(char* filename) {
     // Allocate an array of arrays of trace records, one per worker thread plus one
     // for the 0 thread (the main thread, or in an unthreaded program, the only
     // thread).
-    _lf_number_of_trace_buffers = _lf_number_of_threads + 1;
+    _lf_number_of_trace_buffers = _lf_number_of_workers + 1;
     _lf_trace_buffer = (trace_record_t**)malloc(sizeof(trace_record_t*) * _lf_number_of_trace_buffers);
     for (int i = 0; i < _lf_number_of_trace_buffers; i++) {
         _lf_trace_buffer[i] = (trace_record_t*)malloc(sizeof(trace_record_t) * TRACE_BUFFER_CAPACITY);
