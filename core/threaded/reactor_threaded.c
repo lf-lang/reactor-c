@@ -1091,7 +1091,7 @@ void start_threads() {
  * @brief Determine the number of workers.
  * 
  */
-determine_number_of_workers(){
+void determine_number_of_workers(void) {
     // If _lf_number_of_workers is 0, it means that it was not provided on
     // the command-line using the --threads argument.
     if (_lf_number_of_workers == 0u) {
@@ -1103,6 +1103,12 @@ determine_number_of_workers(){
         _lf_number_of_workers = NUMBER_OF_WORKERS;
         #endif
     }
+
+    #if defined(WORKERS_NEEDED_FOR_FEDERATE)
+    // Add the required number of workers needed for the proper function of
+    // federated execution
+    _lf_number_of_workers += WORKERS_NEEDED_FOR_FEDERATE;
+    #endif
 }
 
 /**
