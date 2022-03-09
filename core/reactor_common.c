@@ -249,7 +249,7 @@ void _lf_free_reactor(struct self_base_t *self) {
  * Free all the reactors that are allocated with
  * {@link #_lf_new_reactor(size_t)}.
  */
-void _lf_free_all_reactors() {
+void _lf_free_all_reactors(void) {
 	struct allocation_record_t* head = _lf_reactors_to_free;
 	while (head != NULL) {
 		_lf_free_reactor((self_base_t*)head->allocated);
@@ -1887,7 +1887,7 @@ int process_args(int argc, char* argv[]) {
  * Initialize the priority queues and set logical time to match
  * physical time. This also prints a message reporting the start time.
  */
-void initialize() {
+void initialize(void) {
     _lf_count_payload_allocations = 0;
     _lf_count_token_allocations = 0;
 
@@ -1926,7 +1926,7 @@ void initialize() {
  * memory allocated by set_new, set_new_array, or writable_copy
  * has not been freed.
  */
-void termination() {
+void termination(void) {
     // Invoke the code generated termination function.
     terminate_execution();
 

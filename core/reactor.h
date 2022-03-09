@@ -729,7 +729,7 @@ void* _lf_new_reactor(size_t size);
  * Free all the reactors that are allocated with
  * {@link #_lf_new_reactor(size_t)}.
  */
-void _lf_free_all_reactors();
+void _lf_free_all_reactors(void);
 
 /**
  * Free memory recorded on the allocations list of the specified reactor.

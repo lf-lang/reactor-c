@@ -37,7 +37,7 @@ struct timespec convert_ns_to_timespec(instant_t t) {
  * Calculate the necessary offset to bring _LF_CLOCK in parity with the epoch
  * time reported by CLOCK_REALTIME.
  */
-void calculate_epoch_offset() {
+void calculate_epoch_offset(void) {
     if (_LF_CLOCK == CLOCK_REALTIME) {
         // Set the epoch offset to zero (see tag.h)
         _lf_epoch_offset = 0LL;
