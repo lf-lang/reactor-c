@@ -35,6 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <windows.h>
 #include <process.h>
+#include <sysinfoapi.h>
 #include <errno.h>
 #include "lf_windows_support.h"
 #include "../platform.h"
@@ -56,6 +57,15 @@ double _lf_frequency_to_ns = 1.0;
 #define BILLION 1000000000
 
 #ifdef NUMBER_OF_WORKERS
+/**
+ * @brief Get the number of cores on the host machine.
+ */
+int lf_host_cores() {
+    SYSTEM_INFO sysinfo;
+    GetSystemInfo(&sysinfo);
+    return sysinfo.dwNumberOfProcessors;
+}
+
 #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
 
 /**

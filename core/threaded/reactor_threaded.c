@@ -1137,8 +1137,15 @@ int lf_reactor_c_main(int argc, char* argv[]) {
 
     if (process_args(default_argc, default_argv)
             && process_args(argc, argv)) {
+        if (_lf_number_of_threads == 0) {
+            // If _lf_number_of_threads is 0, use the number of cores on the
+            // host machine.
+            _lf_number_of_threads = lf_host_cores();
+        }
         lf_mutex_lock(&mutex); // Sets start_time
         initialize();
+
+        info_print("---- Using %d workers.", _lf_number_of_threads);
         
         // Initialize the scheduler
         lf_sched_init(
