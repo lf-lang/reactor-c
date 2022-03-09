@@ -22,7 +22,8 @@ extern size_t num_levels;
 extern size_t max_num_workers;
 
 #define OPTIMAL_NANOSECONDS_WORK 32768
-#define STOP_USING_OPTIMAL_NANOSECONDS_WORK 15
+#define STOP_USING_OPTIMAL_NANOSECONDS_WORK 5
+#define SLOW_EXPERIMENTS 256
 
 static void data_collection_init(sched_params_t* params) {
     size_t num_levels = params->num_reactions_per_level_size;
@@ -46,33 +47,28 @@ static void data_collection_start_level(size_t level) {
 
 static void data_collection_end_level(size_t level, size_t num_workers) {
     if (collecting_data && start_times_by_level[level]) {
-        execution_times_by_level[level] = (
-            3 * execution_times_by_level[level]
-            + get_physical_time() - start_times_by_level[level]
-        ) >> 2;
+        execution_times_by_level[level] = get_physical_time() - start_times_by_level[level];
         interval_t score = execution_times_by_level[level] + execution_times_by_level[
             (level + num_levels - 1) % num_levels
         ];
         if (!execution_times_mins[level] | (score < execution_times_mins[level]) | (num_workers == execution_times_argmins[level])) {
+            // printf(
+            //     "Argmin update: %ld(%ld) -> %ld(%ld) @ %ld\n",
+            //     execution_times_argmins[level], execution_times_mins[level],
+            //     num_workers, score,
+            //     level
+            // );
             execution_times_mins[level] = score;
             execution_times_argmins[level] = num_workers;
         }
     }
     if (level == 0) {
         data_collection_counter++;
-        int shift = (data_collection_counter > 8) << 3;
+        int shift = (data_collection_counter > SLOW_EXPERIMENTS) << 3;
         size_t shifted = data_collection_counter >> shift;
-        collecting_data = data_collection_counter == (shifted << shift);
-        if (collecting_data) {
-            experimental_jitter = ((int) (shifted % 3)) - 1;
-            completing_experiment = experimental_jitter;
-            // printf("%d\n", shifted % 3);
-        }
-        if (completing_experiment && !collecting_data) {
-            collecting_data = true;
-            experimental_jitter = 0;
-            completing_experiment = false;
-        }
+        completing_experiment = !completing_experiment & collecting_data;
+        collecting_data = completing_experiment | (data_collection_counter == (shifted << shift));
+        experimental_jitter = ((int) (shifted % 3)) - 1;
     }
 }
 
@@ -93,7 +89,9 @@ static void data_collection_compute_number_of_workers(
         if (data_collection_counter < STOP_USING_OPTIMAL_NANOSECONDS_WORK) {
             ideal_number_of_workers = execution_times_by_level[level] / OPTIMAL_NANOSECONDS_WORK;
         } else {
-            ideal_number_of_workers = execution_times_argmins[level] + experimental_jitter;
+            ideal_number_of_workers = execution_times_argmins[level];
+            if (!completing_experiment) ideal_number_of_workers += experimental_jitter;
+            // printf("Assigning %ld @ %ld.\n", ideal_number_of_workers, level);
         }
         // printf("level=%ld, num_workers=%ld, jitter=%d\n", level, ideal_number_of_workers, experimental_jitter);
         num_workers_by_level[level] = restrict_to_range(
