@@ -1097,7 +1097,7 @@ void determine_number_of_workers(void) {
     if (_lf_number_of_workers == 0u) {
         #if !defined(NUMBER_OF_WORKERS) || NUMBER_OF_WORKERS == 0
         // Use the number of cores on the host machine.
-        _lf_number_of_workers = lf_host_cores();
+        _lf_number_of_workers = lf_available_cores();
         #else
         // Use the provided number of workers by the user
         _lf_number_of_workers = NUMBER_OF_WORKERS;

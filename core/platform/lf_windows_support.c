@@ -60,7 +60,7 @@ double _lf_frequency_to_ns = 1.0;
 /**
  * @brief Get the number of cores on the host machine.
  */
-int lf_host_cores() {
+int lf_available_cores() {
     SYSTEM_INFO sysinfo;
     GetSystemInfo(&sysinfo);
     return sysinfo.dwNumberOfProcessors;

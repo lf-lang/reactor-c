@@ -14,6 +14,6 @@
 /**
  * @brief Get the number of cores on the host machine.
  */
-int lf_host_cores() {
+int lf_available_cores() {
     return (int)sysconf(_SC_NPROCESSORS_ONLN);
 }

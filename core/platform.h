@@ -93,7 +93,7 @@ typedef _microstep_t microstep_t;
 /**
  * @brief Get the number of cores on the host machine.
  */
-extern int lf_host_cores();
+extern int lf_available_cores();
 
 /**
  * Create a new thread, starting with execution of lf_thread
