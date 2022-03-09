@@ -1139,11 +1139,13 @@ int lf_reactor_c_main(int argc, char* argv[]) {
             && process_args(argc, argv)) {
         
         if (_lf_number_of_threads == 0u) {
-            // If _lf_number_of_threads is 0, use the number of cores on the
-            // host machine. This can be overwritten in
-            // `_lf_initialize_trigger_objects` if the user has requested a
-            // specific number of workers.
+            #if !defined(NUMBER_OF_WORKERS) || NUMBER_OF_WORKERS == 0
+            // Use the number of cores on the host machine.
             _lf_number_of_threads = lf_host_cores();
+            #else
+            // Use the provided number of workers by the user
+            _lf_number_of_threads = NUMBER_OF_WORKERS;
+            #endif
         }
 
         lf_mutex_lock(&mutex);
