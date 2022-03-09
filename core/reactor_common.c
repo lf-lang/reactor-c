@@ -49,8 +49,11 @@ bool fast = false;
 
 /**
  * The number of worker threads for threaded execution.
- * By default, execution is not threaded and this variable will have value 0,
- * meaning that the execution is not threaded.
+ * By default, execution is not threaded and this variable will have value 0.
+ * 
+ * If the execution is threaded, a value of 0 indicates that the runtime should
+ * decide on the number of workers (which will be decided based on the number of
+ * available cores on the host machine).
  */
 unsigned int _lf_number_of_workers = 0u;
 
