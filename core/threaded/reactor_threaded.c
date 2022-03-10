@@ -1080,11 +1080,35 @@ lf_thread_t* _lf_thread_ids;
 
 // Start threads in the thread pool.
 void start_threads() {
-    LOG_PRINT("Starting %u worker threads.", _lf_number_of_threads);
-    _lf_thread_ids = (lf_thread_t*)malloc(_lf_number_of_threads * sizeof(lf_thread_t));
-    for (unsigned int i = 0; i < _lf_number_of_threads; i++) {
+    LOG_PRINT("Starting %u worker threads.", _lf_number_of_workers);
+    _lf_thread_ids = (lf_thread_t*)malloc(_lf_number_of_workers * sizeof(lf_thread_t));
+    for (unsigned int i = 0; i < _lf_number_of_workers; i++) {
         lf_thread_create(&_lf_thread_ids[i], worker, NULL);
     }
+}
+
+/**
+ * @brief Determine the number of workers.
+ * 
+ */
+void determine_number_of_workers(void) {
+    // If _lf_number_of_workers is 0, it means that it was not provided on
+    // the command-line using the --workers argument.
+    if (_lf_number_of_workers == 0u) {
+        #if !defined(NUMBER_OF_WORKERS) || NUMBER_OF_WORKERS == 0
+        // Use the number of cores on the host machine.
+        _lf_number_of_workers = lf_available_cores();
+        #else
+        // Use the provided number of workers by the user
+        _lf_number_of_workers = NUMBER_OF_WORKERS;
+        #endif
+    }
+
+    #if defined(WORKERS_NEEDED_FOR_FEDERATE)
+    // Add the required number of workers needed for the proper function of
+    // federated execution
+    _lf_number_of_workers += WORKERS_NEEDED_FOR_FEDERATE;
+    #endif
 }
 
 /**
@@ -1137,12 +1161,17 @@ int lf_reactor_c_main(int argc, char* argv[]) {
 
     if (process_args(default_argc, default_argv)
             && process_args(argc, argv)) {
-        lf_mutex_lock(&mutex); // Sets start_time
-        initialize();
+        
+        determine_number_of_workers();
+
+        lf_mutex_lock(&mutex);
+        initialize(); // Sets start_time
+
+        info_print("---- Using %d workers.", _lf_number_of_workers);
         
         // Initialize the scheduler
         lf_sched_init(
-            (size_t)_lf_number_of_threads, 
+            (size_t)_lf_number_of_workers, 
             NULL);
 
         // Call the following function only once, rather than per worker thread (although 
@@ -1156,9 +1185,9 @@ int lf_reactor_c_main(int argc, char* argv[]) {
 
         // Wait for the worker threads to exit.
         void* worker_thread_exit_status = NULL;
-        DEBUG_PRINT("Number of threads: %d.", _lf_number_of_threads);
+        DEBUG_PRINT("Number of threads: %d.", _lf_number_of_workers);
         int ret = 0;
-        for (int i = 0; i < _lf_number_of_threads; i++) {
+        for (int i = 0; i < _lf_number_of_workers; i++) {
         	int failure = lf_thread_join(_lf_thread_ids[i], &worker_thread_exit_status);
         	if (failure) {
         		error_print("Failed to join thread listening for incoming messages: %s", strerror(failure));

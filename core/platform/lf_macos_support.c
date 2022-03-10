@@ -41,6 +41,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #include "lf_unix_clock_support.c"
+#include "lf_unix_syscall_support.c"
 
 /**
  * Pause execution for a number of nanoseconds.
