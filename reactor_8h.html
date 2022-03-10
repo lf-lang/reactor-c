@@ -263,8 +263,8 @@ Functions</h2></td></tr>
 Variables</h2></td></tr>
 <tr class="memitem:a39f588e1df453139dbb9a4157dda2027"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a39f588e1df453139dbb9a4157dda2027">_lf_global_time_STP_offset</a></td></tr>
 <tr class="separator:a39f588e1df453139dbb9a4157dda2027"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af74a2782bda0d66298d22d637ad964b5"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#af74a2782bda0d66298d22d637ad964b5">_lf_number_of_threads</a></td></tr>
-<tr class="separator:af74a2782bda0d66298d22d637ad964b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01fd0d1404992f7d875791a764a26925"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a01fd0d1404992f7d875791a764a26925">_lf_number_of_workers</a></td></tr>
+<tr class="separator:a01fd0d1404992f7d875791a764a26925"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
@@ -373,7 +373,7 @@ DESCRIPTION</h1>
 <div class="line">    out-&gt;token = token; \</div>
 <div class="line">    out-&gt;value = token-&gt;value; \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="areactor__common_8c_html_a96b4b8f74714eae0efcb699281c10f87"><div class="ttname"><a href="reactor__common_8c.html#a96b4b8f74714eae0efcb699281c10f87">_lf_initialize_token_with_value</a></div><div class="ttdeci">lf_token_t * _lf_initialize_token_with_value(lf_token_t *token, void *value, size_t length)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:526</div></div>
+<div class="ttc" id="areactor__common_8c_html_a96b4b8f74714eae0efcb699281c10f87"><div class="ttname"><a href="reactor__common_8c.html#a96b4b8f74714eae0efcb699281c10f87">_lf_initialize_token_with_value</a></div><div class="ttdeci">lf_token_t * _lf_initialize_token_with_value(lf_token_t *token, void *value, size_t length)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:529</div></div>
 </div><!-- fragment --><p >Version of set for output types given as 'type[]' where you want to send a previously dynamically allocated array.</p>
 <p >The deallocation is delegated to downstream reactors, which automatically deallocate when the reference count drops to zero. It also sets the corresponding _is_present variable in the self struct to true (which causes the object message to be sent). </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -408,7 +408,7 @@ DESCRIPTION</h1>
 <div class="line">    out-&gt;value = token-&gt;value; \</div>
 <div class="line">    out-&gt;token = token; \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="areactor__common_8c_html_a9df90516cce7d8e01b46acf61db64b8f"><div class="ttname"><a href="reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a></div><div class="ttdeci">lf_token_t * _lf_set_new_array_impl(lf_token_t *token, size_t length, int num_destinations)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1477</div></div>
+<div class="ttc" id="areactor__common_8c_html_a9df90516cce7d8e01b46acf61db64b8f"><div class="ttname"><a href="reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a></div><div class="ttdeci">lf_token_t * _lf_set_new_array_impl(lf_token_t *token, size_t length, int num_destinations)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1480</div></div>
 </div><!-- fragment --><p >Version of set() for output types given as 'type*' that allocates a new object of the type of the specified output port.</p>
 <p >This macro dynamically allocates enough memory to contain one instance of the output datatype and sets the variable named by the argument to point to the newly allocated memory. The user code can then populate it with whatever value it wishes to send.</p>
 <p >This macro also sets the corresponding _is_present variable in the self struct to true (which causes the object message to be sent), </p><dl class="params"><dt>Parameters</dt><dd>
@@ -1976,8 +1976,8 @@ The absent and present fields need to be compatible with false and true respecti
 
 </div>
 </div>
-<a id="af74a2782bda0d66298d22d637ad964b5" name="af74a2782bda0d66298d22d637ad964b5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af74a2782bda0d66298d22d637ad964b5">&#9670;&nbsp;</a></span>_lf_number_of_threads</h2>
+<a id="a01fd0d1404992f7d875791a764a26925" name="a01fd0d1404992f7d875791a764a26925"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a01fd0d1404992f7d875791a764a26925">&#9670;&nbsp;</a></span>_lf_number_of_workers</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1986,7 +1986,7 @@ The absent and present fields need to be compatible with false and true respecti
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">unsigned int _lf_number_of_threads</td>
+          <td class="memname">unsigned int _lf_number_of_workers</td>
         </tr>
       </table>
   </td>
@@ -1995,7 +1995,9 @@ The absent and present fields need to be compatible with false and true respecti
   </tr>
 </table>
 </div><div class="memdoc">
-<p >The number of worker threads for threaded execution. By default, execution is not threaded and this variable will have value 0, meaning that the execution is not threaded. </p>
+<p >The number of worker threads for threaded execution. By default, execution is not threaded and this variable will have value 0, meaning that the execution is not threaded.</p>
+<p >The number of worker threads for threaded execution. By default, execution is not threaded and this variable will have value 0.</p>
+<p >If the execution is threaded, a value of 0 indicates that the runtime should decide on the number of workers (which will be decided based on the number of available cores on the host machine). </p>
 
 </div>
 </div>

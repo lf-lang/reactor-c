@@ -15,7 +15,7 @@ var searchData=
   ['default_5fwindow_12',['default_window',['../sensor__simulator_8c.html#a9029bf378e52a9f85a25eb0ba9095fe3',1,'sensor_simulator.c']]],
   ['defer_13',['defer',['../reactor_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a893b1cf0de04eaf44a009fecabd16b90',1,'reactor.h']]],
   ['delay_5fstart_14',['DELAY_START',['../net__common_8h.html#a4b8c713b515dba0c86d9205dc0caf4ed',1,'net_common.h']]],
-  ['delay_5ftag_15',['delay_tag',['../tag_8c.html#a285bf3926110e2e1ee38febe34f69222',1,'delay_tag(tag_t tag, interval_t interval):&#160;tag.c'],['../tag_8h.html#a285bf3926110e2e1ee38febe34f69222',1,'delay_tag(tag_t tag, interval_t interval):&#160;tag.c']]],
+  ['delay_5ftag_15',['delay_tag',['../tag_8h.html#a285bf3926110e2e1ee38febe34f69222',1,'delay_tag(tag_t tag, interval_t interval):&#160;tag.c'],['../tag_8c.html#a285bf3926110e2e1ee38febe34f69222',1,'delay_tag(tag_t tag, interval_t interval):&#160;tag.c']]],
   ['deque_2ec_16',['deque.c',['../deque_8c.html',1,'']]],
   ['deque_2eh_17',['deque.h',['../deque_8h.html',1,'']]],
   ['deque_5finitialize_18',['deque_initialize',['../deque_8h.html#a0e4768355c448b3b0489d851271515bc',1,'deque_initialize(deque_t *d):&#160;deque.c'],['../deque_8c.html#a0e4768355c448b3b0489d851271515bc',1,'deque_initialize(deque_t *d):&#160;deque.c']]],
@@ -29,9 +29,10 @@ var searchData=
   ['deque_5fpush_5ffront_26',['deque_push_front',['../deque_8c.html#a19a0d218efcb14cc2c3d7b009a5d0f16',1,'deque_push_front(deque_t *d, void *value):&#160;deque.c'],['../deque_8h.html#a19a0d218efcb14cc2c3d7b009a5d0f16',1,'deque_push_front(deque_t *d, void *value):&#160;deque.c']]],
   ['deque_5fsize_27',['deque_size',['../deque_8c.html#ad7e6969a2e1a7e7529575558103d512d',1,'deque_size(deque_t *d):&#160;deque.c'],['../deque_8h.html#ad7e6969a2e1a7e7529575558103d512d',1,'deque_size(deque_t *d):&#160;deque.c']]],
   ['deque_5ft_28',['deque_t',['../structdeque__t.html',1,'deque_t'],['../deque_8h.html#afc1887f5ebd7da3ce7dfc73beb195598',1,'deque_t():&#160;deque.h']]],
-  ['digits_29',['digits',['../structmixed__radix__int__t.html#a0e7296e98823c245fa1e3d7b6b590e4d',1,'mixed_radix_int_t']]],
-  ['done_5freactions_30',['done_reactions',['../struct__lf__sched__thread__info__t.html#a0aa63072819d25d22fdbc59bf55f39f6',1,'_lf_sched_thread_info_t']]],
-  ['downstream_31',['downstream',['../structfederate__t.html#a70e3719658ccc1ed171389b566ec5631',1,'federate_t']]],
-  ['drop_32',['drop',['../reactor_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019',1,'reactor.h']]],
-  ['duration_33',['duration',['../reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'reactor_common.c']]]
+  ['determine_5fnumber_5fof_5fworkers_29',['determine_number_of_workers',['../reactor__threaded_8c.html#aff80c9b69d76f5dc1fb6c7c671de9708',1,'reactor_threaded.c']]],
+  ['digits_30',['digits',['../structmixed__radix__int__t.html#a0e7296e98823c245fa1e3d7b6b590e4d',1,'mixed_radix_int_t']]],
+  ['done_5freactions_31',['done_reactions',['../struct__lf__sched__thread__info__t.html#a0aa63072819d25d22fdbc59bf55f39f6',1,'_lf_sched_thread_info_t']]],
+  ['downstream_32',['downstream',['../structfederate__t.html#a70e3719658ccc1ed171389b566ec5631',1,'federate_t']]],
+  ['drop_33',['drop',['../reactor_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019',1,'reactor.h']]],
+  ['duration_34',['duration',['../reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'reactor_common.c']]]
 ];

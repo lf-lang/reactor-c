@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: core/platform/lf_linux_support.c File Reference</title>
+<title>reactor-c: core/platform/lf_unix_syscall_support.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -68,39 +68,43 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#func-members">Functions</a>  </div>
-  <div class="headertitle"><div class="title">lf_linux_support.c File Reference</div></div>
+  <div class="headertitle"><div class="title">lf_unix_syscall_support.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="lf__linux__support_8h_source.html">lf_linux_support.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="platform_8h_source.html">../platform.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="lf__unix__clock__support_8c.html">lf_unix_clock_support.c</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="lf__unix__syscall__support_8c.html">lf_unix_syscall_support.c</a>&quot;</code><br />
+
+<p>Platform support for syscalls in Unix-like systems.  
+<a href="#details">More...</a></p>
+<div class="textblock"><code>#include &lt;unistd.h&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a8363dad84fd8ae522f4c492f6f5732e1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__linux__support_8c.html#a8363dad84fd8ae522f4c492f6f5732e1">lf_nanosleep</a> (<a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> requested_time)</td></tr>
-<tr class="separator:a8363dad84fd8ae522f4c492f6f5732e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abe5a04985bd63ade71fc058f189d2545"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__unix__syscall__support_8c.html#abe5a04985bd63ade71fc058f189d2545">lf_available_cores</a> ()</td></tr>
+<tr class="memdesc:abe5a04985bd63ade71fc058f189d2545"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the number of cores on the host machine.  <a href="lf__unix__syscall__support_8c.html#abe5a04985bd63ade71fc058f189d2545">More...</a><br /></td></tr>
+<tr class="separator:abe5a04985bd63ade71fc058f189d2545"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Function Documentation</h2>
-<a id="a8363dad84fd8ae522f4c492f6f5732e1" name="a8363dad84fd8ae522f4c492f6f5732e1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8363dad84fd8ae522f4c492f6f5732e1">&#9670;&nbsp;</a></span>lf_nanosleep()</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p >Platform support for syscalls in Unix-like systems. </p>
+<dl class="section author"><dt>Author</dt><dd>Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd></dl>
+<dl class="section version"><dt>Version</dt><dd>0.1 </dd></dl>
+<dl class="section date"><dt>Date</dt><dd>2022-03-09</dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2022 The University of Texas at Dallas </dd></dl>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="abe5a04985bd63ade71fc058f189d2545" name="abe5a04985bd63ade71fc058f189d2545"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abe5a04985bd63ade71fc058f189d2545">&#9670;&nbsp;</a></span>lf_available_cores()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int lf_nanosleep </td>
+          <td class="memname">int lf_available_cores </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td>
-          <td class="paramname"><em>requested_time</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Linux API support for the C target of Lingua Franca.</p>
-<dl class="section author"><dt>Author</dt><dd>{Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} Pause execution for a number of nanoseconds.</dd></dl>
-<p>A Linux-specific clock_nanosleep is used underneath that is supposedly more accurate.</p>
-<dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. In case of failure, errno will be set appropriately (see <code>man 2 clock_nanosleep</code>). </dd></dl>
+
+<p>Get the number of cores on the host machine. </p>
 
 </div>
 </div>
