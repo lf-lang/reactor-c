@@ -1093,7 +1093,7 @@ void start_threads() {
  */
 void determine_number_of_workers(void) {
     // If _lf_number_of_workers is 0, it means that it was not provided on
-    // the command-line using the --threads argument.
+    // the command-line using the --workers argument.
     if (_lf_number_of_workers == 0u) {
         #if !defined(NUMBER_OF_WORKERS) || NUMBER_OF_WORKERS == 0
         // Use the number of cores on the host machine.
