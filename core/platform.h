@@ -91,6 +91,11 @@ typedef _microstep_t microstep_t;
 #ifdef NUMBER_OF_WORKERS
 
 /**
+ * @brief Get the number of cores on the host machine.
+ */
+extern int lf_available_cores();
+
+/**
  * Create a new thread, starting with execution of lf_thread
  * getting passed arguments. The new handle is stored in thread_id.
  *

@@ -943,7 +943,7 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
  * By default, execution is not threaded and this variable will have value 0,
  * meaning that the execution is not threaded.
  */
-extern unsigned int _lf_number_of_threads;
+extern unsigned int _lf_number_of_workers;
 
 #include "trace.h"
 
