@@ -14,46 +14,57 @@ permissions:
   deployments: write
 
 
-jobs:
+
+jobs: 
   benchmark:
     name: Run C Benchmarks
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Setup Java JDK
         uses: actions/setup-java@v1.4.3
         with:
           java-version: 14
-
+ 
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
 
+
+      - name: Checkout benchmark repository
+        uses: actions/checkout@v2
+        with:
+          repository: lf-lang/benchmarks-lingua-franca
+          ref: continuous-benchmark
+
       - name: Checkout Lingua Franca repository
         uses: actions/checkout@v2
         with:
           repository: lf-lang/lingua-franca
-          ref: continuous-benchmark
-      - name: Checkout current branch of reactor-c
+          path: lf
+
+      - name: Checkout current version of reactor-c
         uses: actions/checkout@v2
         with:
-          path: org.lflang/src/lib/c/reactor-c
-        
+          path: lf/org.lflang/src/lib/c/reactor-c
+
       - name: Install Python dependencies
-        run: pip3 install -r benchmark/runner/requirements.txt  
+        run: pip3 install -r runner/requirements.txt  
 
       - name: Build lfc
         run: |
+          cd lf
           ./gradlew buildLfc
 
-      # LF BENCHMARK RUN
-      - name: Set LF_PATH
+      - name: Set LF_PATH and LF_BENCHMARKS_PATH environmental variable
         run: |
-          echo "LF_PATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "LF_PATH=$GITHUB_WORKSPACE/lf" >> $GITHUB_ENV
+          echo "LF_BENCHMARKS_PATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+  
       - name: Run C Benchmarks
         run: |
-          python3 benchmark/runner/run_benchmark.py -m test_mode=False iterations=5 benchmark="glob(*)" target=lf-c continue_on_error=True json=True
+          python3 runner/run_benchmark.py -m test_mode=False iterations=5 benchmark="glob(*)" target=lf-c json=True
       
       # Use continuous benchmark action to store result
       - name: Store Benchmark Result
@@ -67,6 +78,6 @@ jobs:
 
           # Show alert with commit comment on detecting possible performance regression
           alert-threshold: '200%' 
-          comment-on-alert: true
+          comment-on-alert: false
           fail-on-alert: false
           
