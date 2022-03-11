@@ -18,7 +18,7 @@ permissions:
 jobs: 
   benchmark:
     name: Run C Benchmarks
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest #FIXME: change to self-hosted after russel is set up.
 
     steps:
       - name: Setup Java JDK
@@ -36,7 +36,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: lf-lang/benchmarks-lingua-franca
-          ref: continuous-benchmark
+          ref: continuous-benchmark # FIXME: delete this line after merge
 
       - name: Checkout Lingua Franca repository
         uses: actions/checkout@v2
@@ -64,7 +64,7 @@ jobs:
   
       - name: Run C Benchmarks
         run: |
-          python3 runner/run_benchmark.py -m test_mode=False iterations=5 benchmark="glob(*)" target=lf-c json=True
+          python3 runner/run_benchmark.py -m continue_on_error=True iterations=12 benchmark="glob(*)" target=lf-c json=True
       
       # Use continuous benchmark action to store result
       - name: Store Benchmark Result
@@ -77,7 +77,7 @@ jobs:
           auto-push: true
 
           # Show alert with commit comment on detecting possible performance regression
-          alert-threshold: '200%' 
+          alert-threshold: '200%' # FIXME: After russel is set up, lower the threshold and set alert/comment to true
           comment-on-alert: false
           fail-on-alert: false
           
