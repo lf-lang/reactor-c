@@ -489,7 +489,7 @@ typedef enum {no_transition, reset_transition, history_transition} lf_mode_chang
 
 /** A struct to store state of the modes in a reactor instance and/or its relation to enclosing modes. */
 struct reactor_mode_state_t {
-    reactor_mode_t* parent_mode;    // Pointer to the next enclosing mode (if exsits).
+    reactor_mode_t* parent_mode;    // Pointer to the next enclosing mode (if exists).
     reactor_mode_t* initial_mode;   // Pointer to the initial mode.
     reactor_mode_t* active_mode;    // Pointer to the currently active mode.
     reactor_mode_t* next_mode;      // Pointer to the next mode to activate at the end of this step (if set).
