@@ -718,7 +718,10 @@ void _lf_initialize_timer(trigger_t* timer) {
 
 #ifdef MODAL_REACTORS
     // Suspend all timer events that start in inactive mode
-    if (!_lf_mode_is_active(timer->mode) && (timer->offset != 0 || timer->period != 0)) {
+    if (!_lf_mode_is_active(timer->mode)) {
+        // FIXME: The following check might not be working as
+        // intended
+        // && (timer->offset != 0 || timer->period != 0)) {
         event_t* e = _lf_get_new_event();
         e->trigger = timer;
         e->time = get_logical_time() + timer->offset;
@@ -2087,9 +2090,12 @@ _lf_suspended_event_t* _lf_remove_suspended_event(_lf_suspended_event_t* event) 
  * @param num_states The number of mode state.
  */
 void _lf_process_mode_changes(
-		reactor_mode_state_t* states[],
-		int num_states, mode_state_variable_reset_data_t reset_data[],
-		int reset_data_size
+    reactor_mode_state_t* states[],
+    int num_states,
+    mode_state_variable_reset_data_t reset_data[],
+    int reset_data_size,
+    trigger_t* timer_triggers[],
+    int timer_triggers_size
 ) {
     bool transition = false; // any mode change in this step
 
@@ -2169,6 +2175,19 @@ void _lf_process_mode_changes(
                         suspended_event = _lf_remove_suspended_event(suspended_event);
                     } else {
                         suspended_event = suspended_event->next;
+                    }
+                }
+                
+                if (state->mode_change == reset_transition) { // Reset transition
+                    // Handle timers that have a period of 0. These timers will only trigger
+                    // once and will not be on the event_q after their initial triggering.
+                    // Therfore, the logic above cannot handle these timers. We need
+                    // to trigger these timers manually if there is a reset transition.
+                    for (int i = 0; i < timer_triggers_size; i++) {
+                        trigger_t* timer = timer_triggers[i];
+                        if (timer->period == 0 && timer->mode == state->next_mode) {
+                            _lf_schedule(timer, timer->offset, NULL);
+                        }
                     }
                 }
             }
