@@ -2088,6 +2088,10 @@ _lf_suspended_event_t* _lf_remove_suspended_event(_lf_suspended_event_t* event) 
  * @param state An array of mode state of modal reactor instance Must be ordered hierarchically.
  *              Enclosing mode must come before inner.
  * @param num_states The number of mode state.
+ * @param reset_data A list of initial values for reactor state variables.
+ * @param reset_data_size
+ * @param timer_triggers Array of pointers to timer triggers.
+ * @param timer_triggers_size
  */
 void _lf_process_mode_changes(
     reactor_mode_state_t* states[],
@@ -2181,7 +2185,7 @@ void _lf_process_mode_changes(
                 if (state->mode_change == reset_transition) { // Reset transition
                     // Handle timers that have a period of 0. These timers will only trigger
                     // once and will not be on the event_q after their initial triggering.
-                    // Therfore, the logic above cannot handle these timers. We need
+                    // Therefore, the logic above cannot handle these timers. We need
                     // to trigger these timers manually if there is a reset transition.
                     for (int i = 0; i < timer_triggers_size; i++) {
                         trigger_t* timer = timer_triggers[i];
