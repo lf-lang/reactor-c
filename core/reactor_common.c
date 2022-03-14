@@ -598,11 +598,13 @@ void _lf_pop_events() {
         }
     }
 
-    // Reset the modes for startup reactions
+    // Reset the should_trigger_startup flag for startup reactions that are
+    // going to be triggered in the current tag.
     for (int i = 0; i < _lf_startup_reactions_size; i++) {
         if (_lf_startup_reactions[i]->mode != NULL) {
-            // Reset the activation mode
-            _lf_startup_reactions[i]->mode->should_trigger_startup = false;
+            if (_lf_mode_is_active(_lf_startup_reactions[i]->mode)) {
+                _lf_startup_reactions[i]->mode->should_trigger_startup = false;
+            }
         }
     }
 #endif
@@ -2226,7 +2228,7 @@ void _lf_process_mode_changes(
 
     // Handle leaving active mode in all states
     if (transition) {
-        bool activated_at_least_one_mode_with_reset_transition = false;
+        bool should_trigger_startup_reactions_at_next_microstep = false;
         // Set new active mode and clear mode change flags
         for (int i = 0; i < num_states; i++) {
             reactor_mode_state_t* state = states[i];
@@ -2236,10 +2238,12 @@ void _lf_process_mode_changes(
 
                 // Apply transition
                 state->active_mode = state->next_mode;
-                if (state->mode_change == reset_transition) {
+                if (state->mode_change == reset_transition
+                        || state->active_mode->should_trigger_startup) {
                     state->active_mode->should_trigger_startup = true;
-                    activated_at_least_one_mode_with_reset_transition = true;
+                    should_trigger_startup_reactions_at_next_microstep = true;
                 }
+
                 state->next_mode = NULL;
                 state->mode_change = no_transition;
             }
@@ -2272,7 +2276,7 @@ void _lf_process_mode_changes(
             }
         }
 
-        if (activated_at_least_one_mode_with_reset_transition) {
+        if (should_trigger_startup_reactions_at_next_microstep) {
             // Insert a dummy event in the event queue for the next microstep to make
             // sure startup reactions (if any) can be triggered as soon as possible.
             pqueue_insert(event_q, _lf_create_dummy_events(NULL, current_tag.time, NULL, 1));
