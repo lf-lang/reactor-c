@@ -485,7 +485,7 @@ struct reactor_mode_t {
     reactor_mode_state_t* state;    // Pointer to a struct with the reactor's mode state. INSTANCE.
     string name;                    // Name of this mode.
     instant_t deactivation_time;    // Time when the mode was left.
-    lf_mode_change_type_t activation_mode; // Which transition was used to activate this mode (if any).
+    bool should_trigger_startup;    // Startup reactions should be triggered if this mode is active.
 };
 
 /** A struct to store state of the modes in a reactor instance and/or its relation to enclosing modes. */

@@ -591,12 +591,18 @@ void _lf_pop_events() {
         if (_lf_startup_reactions[i]->mode != NULL) {
             if(_lf_startup_reactions[i]->status == inactive
                     && _lf_mode_is_active(_lf_startup_reactions[i]->mode)
-                    && _lf_startup_reactions[i]->mode->activation_mode == reset_transition
+                    && _lf_startup_reactions[i]->mode->should_trigger_startup == true
             ) {
                 _lf_trigger_reaction(_lf_startup_reactions[i], -1);
             }
+        }
+    }
+
+    // Reset the modes for startup reactions
+    for (int i = 0; i < _lf_startup_reactions_size; i++) {
+        if (_lf_startup_reactions[i]->mode != NULL) {
             // Reset the activation mode
-            _lf_startup_reactions[i]->mode->activation_mode = no_transition;
+            _lf_startup_reactions[i]->mode->should_trigger_startup = false;
         }
     }
 #endif
@@ -2230,8 +2236,8 @@ void _lf_process_mode_changes(
 
                 // Apply transition
                 state->active_mode = state->next_mode;
-                state->active_mode->activation_mode = state->mode_change;
-                if (state->active_mode->activation_mode == reset_transition) {
+                if (state->mode_change == reset_transition) {
+                    state->active_mode->should_trigger_startup = true;
                     activated_at_least_one_mode_with_reset_transition = true;
                 }
                 state->next_mode = NULL;
