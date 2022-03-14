@@ -57,6 +57,10 @@ bool fast = false;
  */
 unsigned int _lf_number_of_workers = 0u;
 
+/** Array of pointers to all startup reactions in the program. */
+reaction_t** _lf_startup_reactions;
+int _lf_startup_reactions_size;
+
 /** 
  * The logical time to elapse during execution, or -1 if no timeout time has
  * been given. When the logical equal to start_time + duration has been
@@ -581,6 +585,22 @@ bool _lf_is_tag_after_stop_tag(tag_t tag) {
  * queue.
  */
 void _lf_pop_events() {
+#ifdef MODAL_REACTORS
+    // Handle startup reactions in modal reactors
+    for (int i = 0; i < _lf_startup_reactions_size; i++) {
+        if (_lf_startup_reactions[i]->mode != NULL) {
+            if(_lf_startup_reactions[i]->status == inactive
+                    && _lf_mode_is_active(_lf_startup_reactions[i]->mode)
+                    && _lf_startup_reactions[i]->mode->activation_mode == reset_transition
+            ) {
+                _lf_trigger_reaction(_lf_startup_reactions[i], -1);
+            }
+            // Reset the activation mode
+            _lf_startup_reactions[i]->mode->activation_mode = no_transition;
+        }
+    }
+#endif
+
     event_t* event = (event_t*)pqueue_peek(event_q);
     while(event != NULL && event->time == current_tag.time) {
         event = (event_t*)pqueue_pop(event_q);
@@ -2200,6 +2220,7 @@ void _lf_process_mode_changes(
 
     // Handle leaving active mode in all states
     if (transition) {
+        bool activated_at_least_one_mode_with_reset_transition = false;
         // Set new active mode and clear mode change flags
         for (int i = 0; i < num_states; i++) {
             reactor_mode_state_t* state = states[i];
@@ -2209,6 +2230,10 @@ void _lf_process_mode_changes(
 
                 // Apply transition
                 state->active_mode = state->next_mode;
+                state->active_mode->activation_mode = state->mode_change;
+                if (state->active_mode->activation_mode == reset_transition) {
+                    activated_at_least_one_mode_with_reset_transition = true;
+                }
                 state->next_mode = NULL;
                 state->mode_change = no_transition;
             }
@@ -2239,6 +2264,12 @@ void _lf_process_mode_changes(
 
                 free(delayed_removal);
             }
+        }
+
+        if (activated_at_least_one_mode_with_reset_transition) {
+            // Insert a dummy event in the event queue for the next microstep to make
+            // sure startup reactions (if any) can be triggered as soon as possible.
+            pqueue_insert(event_q, _lf_create_dummy_events(NULL, current_tag.time, NULL, 1));
         }
     }
 }

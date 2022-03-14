@@ -477,15 +477,16 @@ typedef struct reactor_mode_state_t reactor_mode_state_t;
 /** Typedef for mode_state_variable_reset_data_t struct, used for storing data for resetting state variables nested in modes. */
 typedef struct mode_state_variable_reset_data_t mode_state_variable_reset_data_t;
 
+/** Type of the mode change. */
+typedef enum {no_transition, reset_transition, history_transition} lf_mode_change_type_t;
+
 /** A struct to represent a single mode instace in a reactor instance. */
 struct reactor_mode_t {
     reactor_mode_state_t* state;    // Pointer to a struct with the reactor's mode state. INSTANCE.
     string name;                    // Name of this mode.
     instant_t deactivation_time;    // Time when the mode was left.
+    lf_mode_change_type_t activation_mode; // Which transition was used to activate this mode (if any).
 };
-
-/** Type of the mode change. */
-typedef enum {no_transition, reset_transition, history_transition} lf_mode_change_type_t;
 
 /** A struct to store state of the modes in a reactor instance and/or its relation to enclosing modes. */
 struct reactor_mode_state_t {
@@ -962,6 +963,10 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
  * meaning that the execution is not threaded.
  */
 extern unsigned int _lf_number_of_workers;
+
+/** Array of pointers to all startup reactions in the program. */
+extern reaction_t** _lf_startup_reactions;
+extern int _lf_startup_reactions_size;
 
 #include "trace.h"
 
