@@ -10,7 +10,7 @@ var searchData=
   ['init_5fsched_5finstance_7',['init_sched_instance',['../scheduler__instance_8h.html#ae393e1a34a51d36ed78a5c1f4d7fee50',1,'scheduler_instance.h']]],
   ['initial_5fevent_5fqueue_5fsize_8',['INITIAL_EVENT_QUEUE_SIZE',['../reactor_8h.html#a88789cadebf89616a6c179b429f64a72',1,'reactor.h']]],
   ['initial_5freact_5fqueue_5fsize_9',['INITIAL_REACT_QUEUE_SIZE',['../reactor_8h.html#ab90a33a3249c67258eed6ac36793bd39',1,'reactor.h']]],
-  ['initialize_10',['initialize',['../reactor__common_8c.html#a25a40b6614565f755233080a384c35f1',1,'reactor_common.c']]],
+  ['initialize_10',['initialize',['../reactor__common_8c.html#a9efe22aaead3a5e936b5df459de02eba',1,'reactor_common.c']]],
   ['initialize_5ffederate_11',['initialize_federate',['../rti_8c.html#a9569e1329c5a061249aae331a8e77403',1,'rti.c']]],
   ['input_5fthread_5fid_12',['input_thread_id',['../sensor__simulator_8c.html#aad25827853253f6f21b299697b5f9453',1,'sensor_simulator.c']]],
   ['instant_5ft_13',['instant_t',['../platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1',1,'platform.h']]],

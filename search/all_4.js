@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['calculate_5fepoch_5foffset_0',['calculate_epoch_offset',['../lf__unix__clock__support_8c.html#a1b0a8eaaff75fcae37d968ca5de88702',1,'lf_unix_clock_support.c']]],
+  ['calculate_5fepoch_5foffset_0',['calculate_epoch_offset',['../lf__unix__clock__support_8c.html#a3c5a1dbd80de5d5bf2a93c195df784c3',1,'lf_unix_clock_support.c']]],
   ['callback_1',['callback',['../audio__loop__mac_8c.html#a84211de54f3d6c0fa430f5a31291fcd0',1,'callback(void *ignored, AudioQueueRef queue, AudioQueueBufferRef buf_ref):&#160;audio_loop_mac.c'],['../audio__loop__linux_8c.html#a0aaba34d923e5940eba8f2857bd60ad4',1,'callback(snd_pcm_t *playback_handle, int16_t buf_ref[]):&#160;audio_loop_linux.c']]],
   ['capacity_2',['CAPACITY',['../vector__test_8c.html#a91fbe6020a4bbd73084f0681b9092479',1,'vector_test.c']]],
   ['capacity_5fto_5fsize_5fratio_5ffor_5fshrink_5fvote_3',['CAPACITY_TO_SIZE_RATIO_FOR_SHRINK_VOTE',['../vector_8c.html#a47660715b0e3258d408ae26c0f38fb2e',1,'vector.c']]],

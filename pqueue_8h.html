@@ -87,9 +87,9 @@ Data Structures</h2></td></tr>
 <tr class="separator:aa84f0100faf971295df5aed226c390a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a792d634f9284f7328c817ec4b8ed4230"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#a792d634f9284f7328c817ec4b8ed4230">pqueue_set_pri_f</a>) (void *a, <a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> pri)</td></tr>
 <tr class="separator:a792d634f9284f7328c817ec4b8ed4230"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1c3f02694b2a0ec19584c395a88bb6f9"><td class="memItemLeft" align="right" valign="top">typedef int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#a1c3f02694b2a0ec19584c395a88bb6f9">pqueue_cmp_pri_f</a>) (<a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> <a class="el" href="reactor_8c.html#a4311a28891c362d4d0dd4f748beba33b">next</a>, <a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> curr)</td></tr>
+<tr class="memitem:a1c3f02694b2a0ec19584c395a88bb6f9"><td class="memItemLeft" align="right" valign="top">typedef int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#a1c3f02694b2a0ec19584c395a88bb6f9">pqueue_cmp_pri_f</a>) (<a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> <a class="el" href="reactor_8c.html#a6967cbc8a4ce78b1049da429d172f90b">next</a>, <a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> curr)</td></tr>
 <tr class="separator:a1c3f02694b2a0ec19584c395a88bb6f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a664f0abcd86c8089468869aa3dc6e535"><td class="memItemLeft" align="right" valign="top">typedef int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#a664f0abcd86c8089468869aa3dc6e535">pqueue_eq_elem_f</a>) (void *<a class="el" href="reactor_8c.html#a4311a28891c362d4d0dd4f748beba33b">next</a>, void *curr)</td></tr>
+<tr class="memitem:a664f0abcd86c8089468869aa3dc6e535"><td class="memItemLeft" align="right" valign="top">typedef int(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#a664f0abcd86c8089468869aa3dc6e535">pqueue_eq_elem_f</a>) (void *<a class="el" href="reactor_8c.html#a6967cbc8a4ce78b1049da429d172f90b">next</a>, void *curr)</td></tr>
 <tr class="separator:a664f0abcd86c8089468869aa3dc6e535"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31ca7927983005bd7866021819ad7037"><td class="memItemLeft" align="right" valign="top">typedef size_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#a31ca7927983005bd7866021819ad7037">pqueue_get_pos_f</a>) (void *a)</td></tr>
 <tr class="separator:a31ca7927983005bd7866021819ad7037"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -139,7 +139,7 @@ Data Structures</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef int(* pqueue_cmp_pri_f) (<a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> <a class="el" href="reactor_8c.html#a4311a28891c362d4d0dd4f748beba33b">next</a>, <a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> curr)</td>
+          <td class="memname">typedef int(* pqueue_cmp_pri_f) (<a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> <a class="el" href="reactor_8c.html#a6967cbc8a4ce78b1049da429d172f90b">next</a>, <a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> curr)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -153,7 +153,7 @@ Data Structures</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef int(* pqueue_eq_elem_f) (void *<a class="el" href="reactor_8c.html#a4311a28891c362d4d0dd4f748beba33b">next</a>, void *curr)</td>
+          <td class="memname">typedef int(* pqueue_eq_elem_f) (void *<a class="el" href="reactor_8c.html#a6967cbc8a4ce78b1049da429d172f90b">next</a>, void *curr)</td>
         </tr>
       </table>
 </div><div class="memdoc">
