@@ -57,6 +57,10 @@ bool fast = false;
  */
 unsigned int _lf_number_of_workers = 0u;
 
+/** Array of pointers to all startup reactions in the program. */
+reaction_t** _lf_startup_reactions;
+int _lf_startup_reactions_size;
+
 /** 
  * The logical time to elapse during execution, or -1 if no timeout time has
  * been given. When the logical equal to start_time + duration has been
@@ -252,7 +256,7 @@ void _lf_free_reactor(struct self_base_t *self) {
  * Free all the reactors that are allocated with
  * {@link #_lf_new_reactor(size_t)}.
  */
-void _lf_free_all_reactors() {
+void _lf_free_all_reactors(void) {
 	struct allocation_record_t* head = _lf_reactors_to_free;
 	while (head != NULL) {
 		_lf_free_reactor((self_base_t*)head->allocated);
@@ -581,6 +585,30 @@ bool _lf_is_tag_after_stop_tag(tag_t tag) {
  * queue.
  */
 void _lf_pop_events() {
+#ifdef MODAL_REACTORS
+    // Handle startup reactions in modal reactors
+    for (int i = 0; i < _lf_startup_reactions_size; i++) {
+        if (_lf_startup_reactions[i]->mode != NULL) {
+            if(_lf_startup_reactions[i]->status == inactive
+                    && _lf_mode_is_active(_lf_startup_reactions[i]->mode)
+                    && _lf_startup_reactions[i]->mode->should_trigger_startup == true
+            ) {
+                _lf_trigger_reaction(_lf_startup_reactions[i], -1);
+            }
+        }
+    }
+
+    // Reset the should_trigger_startup flag for startup reactions that are
+    // going to be triggered in the current tag.
+    for (int i = 0; i < _lf_startup_reactions_size; i++) {
+        if (_lf_startup_reactions[i]->mode != NULL) {
+            if (_lf_mode_is_active(_lf_startup_reactions[i]->mode)) {
+                _lf_startup_reactions[i]->mode->should_trigger_startup = false;
+            }
+        }
+    }
+#endif
+
     event_t* event = (event_t*)pqueue_peek(event_q);
     while(event != NULL && event->time == current_tag.time) {
         event = (event_t*)pqueue_pop(event_q);
@@ -718,7 +746,10 @@ void _lf_initialize_timer(trigger_t* timer) {
 
 #ifdef MODAL_REACTORS
     // Suspend all timer events that start in inactive mode
-    if (!_lf_mode_is_active(timer->mode) && (timer->offset != 0 || timer->period != 0)) {
+    if (!_lf_mode_is_active(timer->mode)) {
+        // FIXME: The following check might not be working as
+        // intended
+        // && (timer->offset != 0 || timer->period != 0)) {
         event_t* e = _lf_get_new_event();
         e->trigger = timer;
         e->time = get_logical_time() + timer->offset;
@@ -1890,7 +1921,7 @@ int process_args(int argc, char* argv[]) {
  * Initialize the priority queues and set logical time to match
  * physical time. This also prints a message reporting the start time.
  */
-void initialize() {
+void initialize(void) {
     _lf_count_payload_allocations = 0;
     _lf_count_token_allocations = 0;
 
@@ -1929,7 +1960,7 @@ void initialize() {
  * memory allocated by set_new, set_new_array, or writable_copy
  * has not been freed.
  */
-void termination() {
+void termination(void) {
     // Invoke the code generated termination function.
     terminate_execution();
 
@@ -2085,23 +2116,38 @@ _lf_suspended_event_t* _lf_remove_suspended_event(_lf_suspended_event_t* event) 
  * @param state An array of mode state of modal reactor instance Must be ordered hierarchically.
  *              Enclosing mode must come before inner.
  * @param num_states The number of mode state.
+ * @param reset_data A list of initial values for reactor state variables.
+ * @param reset_data_size
+ * @param timer_triggers Array of pointers to timer triggers.
+ * @param timer_triggers_size
  */
-void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mode_state_variable_reset_data_t reset_data[], int reset_data_size) {
+void _lf_process_mode_changes(
+    reactor_mode_state_t* states[],
+    int num_states,
+    mode_state_variable_reset_data_t reset_data[],
+    int reset_data_size,
+    trigger_t* timer_triggers[],
+    int timer_triggers_size
+) {
     bool transition = false; // any mode change in this step
 
     // Detect mode changes (top down for hierarchical reset)
     for (int i = 0; i < num_states; i++) {
         reactor_mode_state_t* state = states[i];
         if (state != NULL) {
-            // Hierarchical reset: if this mode has parent that is entered in this step with a reset this reactor has to enter its initial mode
-            if (state->parent_mode != NULL &&
-                state->parent_mode->state != NULL &&
-                state->parent_mode->state->next_mode == state->parent_mode &&
-                state->parent_mode->state->mode_change == 1) {
-                // Reset to initial state
+            // Hierarchical reset: if this mode has parent that is entered in
+        	// this step with a reset this reactor has to enter its initial mode
+            if (state->parent_mode != NULL
+            		&& state->parent_mode->state != NULL
+					&& state->parent_mode->state->next_mode == state->parent_mode
+					&& state->parent_mode->state->mode_change == reset_transition
+            ){
+                // Reset to initial state.
                 state->next_mode = state->initial_mode;
-                state->mode_change = 1; // Enter with reset, to cascade it further down
-                DEBUG_PRINT("Modes: Hierarchical mode reset to %s when entering %s.", state->initial_mode->name, state->parent_mode->name);
+                // Enter with reset, to cascade it further down.
+                state->mode_change = reset_transition;
+                DEBUG_PRINT("Modes: Hierarchical mode reset to %s when entering %s.",
+                		state->initial_mode->name, state->parent_mode->name);
             }
 
             // Handle effect of entering next mode
@@ -2109,7 +2155,7 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
                 DEBUG_PRINT("Modes: Transition to %s.", state->next_mode->name);
                 transition = true;
 
-                if (state->mode_change == 1) {
+                if (state->mode_change == reset_transition) {
                     // Reset state variables
                     for (int i = 0; i < reset_data_size; i++) {
                         mode_state_variable_reset_data_t data = reset_data[i];
@@ -2125,7 +2171,7 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
                 while(suspended_event != NULL) {
                     event_t* event = suspended_event->event;
                     if (event != NULL && event->trigger != NULL && event->trigger->mode == state->next_mode) {
-                        if (state->mode_change == 1) { // Reset transition
+                        if (state->mode_change == reset_transition) { // Reset transition
                             if (event->trigger->is_timer) { // Only reset timers
                                 trigger_t* timer = event->trigger;
 
@@ -2163,12 +2209,26 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
                         suspended_event = suspended_event->next;
                     }
                 }
+                
+                if (state->mode_change == reset_transition) { // Reset transition
+                    // Handle timers that have a period of 0. These timers will only trigger
+                    // once and will not be on the event_q after their initial triggering.
+                    // Therefore, the logic above cannot handle these timers. We need
+                    // to trigger these timers manually if there is a reset transition.
+                    for (int i = 0; i < timer_triggers_size; i++) {
+                        trigger_t* timer = timer_triggers[i];
+                        if (timer->period == 0 && timer->mode == state->next_mode) {
+                            _lf_schedule(timer, timer->offset, NULL);
+                        }
+                    }
+                }
             }
         }
     }
 
     // Handle leaving active mode in all states
     if (transition) {
+        bool should_trigger_startup_reactions_at_next_microstep = false;
         // Set new active mode and clear mode change flags
         for (int i = 0; i < num_states; i++) {
             reactor_mode_state_t* state = states[i];
@@ -2178,8 +2238,14 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
 
                 // Apply transition
                 state->active_mode = state->next_mode;
+                if (state->mode_change == reset_transition
+                        || state->active_mode->should_trigger_startup) {
+                    state->active_mode->should_trigger_startup = true;
+                    should_trigger_startup_reactions_at_next_microstep = true;
+                }
+
                 state->next_mode = NULL;
-                state->mode_change = 0;
+                state->mode_change = no_transition;
             }
         }
 
@@ -2208,6 +2274,12 @@ void _lf_process_mode_changes(reactor_mode_state_t* states[], int num_states, mo
 
                 free(delayed_removal);
             }
+        }
+
+        if (should_trigger_startup_reactions_at_next_microstep) {
+            // Insert a dummy event in the event queue for the next microstep to make
+            // sure startup reactions (if any) can be triggered as soon as possible.
+            pqueue_insert(event_q, _lf_create_dummy_events(NULL, current_tag.time, NULL, 1));
         }
     }
 }

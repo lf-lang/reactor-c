@@ -247,6 +247,7 @@ do { \
 #endif
 
 
+#ifdef MODAL_REACTORS
 /**
  * Sets the next mode of a modal reactor. Same as SET for outputs, only
  * the last value will have effect if invoked multiple times.
@@ -254,11 +255,21 @@ do { \
  *
  * @param mode The target mode to set for activation.
  */
-#ifdef MODAL_REACTORS
-#define _LF_SET_MODE(mode) \
+#define _LF_SET_MODE(mode) _LF_SET_MODE_WITH_TYPE(mode, _lf_##mode##_change_type)
+
+/**
+ * Sets the next mode of a modal reactor with an explicit change type
+ * (reset or history, from the enum `lf_mode_change_type_t`).
+ * This macro is not meant to be used by LF programmers.
+ * It is used in Python.
+ *
+ * @param mode The target mode to set for activation.
+ * @param change_type The change type of the transition.
+ */
+#define _LF_SET_MODE_WITH_TYPE(mode, change_type) \
 do { \
-    self->_lf__mode_state.next_mode = mode; \
-    self->_lf__mode_state.mode_change = _lf_##mode##_change_type; \
+    ((self_base_t*)self)->_lf__mode_state.next_mode = mode; \
+    ((self_base_t*)self)->_lf__mode_state.mode_change = change_type; \
 } while(0)
 #endif
 
@@ -466,19 +477,24 @@ typedef struct reactor_mode_state_t reactor_mode_state_t;
 /** Typedef for mode_state_variable_reset_data_t struct, used for storing data for resetting state variables nested in modes. */
 typedef struct mode_state_variable_reset_data_t mode_state_variable_reset_data_t;
 
+/** Type of the mode change. */
+typedef enum {no_transition, reset_transition, history_transition} lf_mode_change_type_t;
+
 /** A struct to represent a single mode instace in a reactor instance. */
 struct reactor_mode_t {
     reactor_mode_state_t* state;    // Pointer to a struct with the reactor's mode state. INSTANCE.
     string name;                    // Name of this mode.
     instant_t deactivation_time;    // Time when the mode was left.
+    bool should_trigger_startup;    // Startup reactions should be triggered if this mode is active.
 };
+
 /** A struct to store state of the modes in a reactor instance and/or its relation to enclosing modes. */
 struct reactor_mode_state_t {
-    reactor_mode_t* parent_mode;    // Pointer to the next enclosing mode (if exsits).
+    reactor_mode_t* parent_mode;    // Pointer to the next enclosing mode (if exists).
     reactor_mode_t* initial_mode;   // Pointer to the initial mode.
     reactor_mode_t* active_mode;    // Pointer to the currently active mode.
     reactor_mode_t* next_mode;      // Pointer to the next mode to activate at the end of this step (if set).
-    char mode_change;               // A mode change type flag (0: no change, 1: reset, 2: history).
+    lf_mode_change_type_t mode_change;  // A mode change type flag.
 };
 /** A struct to store data for resetting state variables nested in modes. */
 struct mode_state_variable_reset_data_t {
@@ -631,6 +647,9 @@ typedef struct allocation_record_t {
 typedef struct self_base_t {
 	struct allocation_record_t *allocations;
 	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
+#ifdef MODAL_REACTORS
+    reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
+#endif
 } self_base_t;
 
 //  ======== Function Declarations ========  //
@@ -711,7 +730,7 @@ void* _lf_new_reactor(size_t size);
  * Free all the reactors that are allocated with
  * {@link #_lf_new_reactor(size_t)}.
  */
-void _lf_free_all_reactors();
+void _lf_free_all_reactors(void);
 
 /**
  * Free memory recorded on the allocations list of the specified reactor.
@@ -944,6 +963,10 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
  * meaning that the execution is not threaded.
  */
 extern unsigned int _lf_number_of_workers;
+
+/** Array of pointers to all startup reactions in the program. */
+extern reaction_t** _lf_startup_reactions;
+extern int _lf_startup_reactions_size;
 
 #include "trace.h"
 

@@ -180,7 +180,7 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
  * @return Returns 1 if the execution should continue and 0 if the execution
  *  should stop.
  */
-int _lf_do_step() {
+int _lf_do_step(void) {
     // Invoke reactions.
     while(pqueue_size(reaction_q) > 0) {
         // print_snapshot();
@@ -270,7 +270,7 @@ int _lf_do_step() {
 // Also return 0 if there are no more events in the queue and
 // the keepalive command-line option has not been given.
 // Otherwise, return 1.
-int next() {
+int next(void) {
     event_t* event = (event_t*)pqueue_peek(event_q);
     //pqueue_dump(event_q, event_q->prt);
     // If there is no next event and -keepalive has been specified
@@ -348,7 +348,7 @@ void request_stop() {
  * Return false.
  * @param reaction The reaction.
  */
-bool _lf_is_blocked_by_executing_reaction() {
+bool _lf_is_blocked_by_executing_reaction(void) {
     return false;
 }
 
