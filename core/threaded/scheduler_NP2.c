@@ -2,7 +2,6 @@
  * This is a non-priority-driven scheduler. See scheduler.h for documentation.
  */
 
-
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
@@ -33,7 +32,7 @@ extern lf_mutex_t mutex;
  * @param worker The number of the calling worker.
  */
 static void advance_level_and_unlock(size_t worker) {
-    if (try_increment_level()) {
+    if (try_advance_level()) {
         if (_lf_sched_advance_tag_locked()) {
             should_stop = true;
             worker_states_never_sleep_again();
@@ -75,7 +74,6 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
         // printf("%d failed to get.\n", worker_number);
         size_t level_counter_snapshot = level_counter;
         if (worker_assignments_finished_with_level_locked(worker_number)) {
-            // TODO: Advance level all the way to the next level with at least one reaction?
             advance_level_and_unlock(worker_number);
             // printf("%d !\n", worker_number);
         } else {

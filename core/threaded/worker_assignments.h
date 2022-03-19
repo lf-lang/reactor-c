@@ -160,19 +160,22 @@ static size_t get_num_workers_busy() {
 }
 
 /**
- * @brief Increment the level currently being processed by the workers.
+ * @brief Advance the level currently being processed by the workers.
  * 
  * @return true If the level was already at the maximum and was reset to zero.
  */
-static bool try_increment_level() {
+static bool try_advance_level() {
     assert(num_workers_busy == 0);
-    if (current_level + 1 == num_levels) {
-        data_collection_compute_number_of_workers(num_workers_by_level, max_num_workers_by_level);
-        set_level(0);
-        return true;
+    size_t max_level = num_levels - 1;
+    while (current_level < max_level) {
+        set_level(current_level + 1);
+        for (size_t i = 0; i < num_workers; i++) {
+            if (num_reactions_by_worker[i]) return false;
+        }
     }
-    set_level(current_level + 1);
-    return false;
+    data_collection_compute_number_of_workers(num_workers_by_level, max_num_workers_by_level);
+    set_level(0);
+    return true;
 }
 
 #endif
