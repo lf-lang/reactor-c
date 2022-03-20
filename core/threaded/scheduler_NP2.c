@@ -21,8 +21,6 @@
 static bool init_called = false;
 static bool should_stop = false;
 
-extern lf_mutex_t mutex;
-
 ///////////////////////// Scheduler Private Functions ///////////////////////////
 
 /**
@@ -36,7 +34,7 @@ static void advance_level_and_unlock(size_t worker) {
         if (_lf_sched_advance_tag_locked()) {
             should_stop = true;
             worker_states_never_sleep_again();
-            lf_mutex_unlock(&mutex);
+            worker_states_unlock(worker);
             return;
         }
     }
@@ -45,7 +43,7 @@ static void advance_level_and_unlock(size_t worker) {
     if (num_workers_busy < worker && num_workers_busy) {  // FIXME: Is this branch still necessary?
         worker_states_sleep_and_unlock(worker, level_snapshot);
     } else {
-        lf_mutex_unlock(&mutex);
+        worker_states_unlock(worker);
     }
 }
 

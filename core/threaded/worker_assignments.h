@@ -16,20 +16,25 @@ static size_t* num_workers_by_level;
 static size_t num_levels;
 static size_t max_num_workers;
 
-// The following apply to the current level.
+/** The following values apply to the current level. */
 static size_t current_level;
+/** The number of workers who still have not finished their work. */
 static size_t num_workers_busy;
+/** The number of reactions each worker still has to execute, indexed by worker. */
 static size_t* num_reactions_by_worker;
+/** The reactions to be executed, indexed by assigned worker. */
 static reaction_t*** reactions_by_worker;
+/** The total number of workers active, including those who have finished their work. */
 static size_t num_workers;
 
 // A counter of the number of reactions triggered. No function should depend on the precise
 // correctness of this value. Race conditions when accessing this value are acceptable.
 static size_t reactions_triggered_counter = 0;
 
-extern lf_mutex_t mutex;
-
 #include "data_collection.h"
+
+static void worker_states_lock(size_t worker);
+static void worker_states_unlock(size_t worker);
 
 /**
  * @brief Set the level to be executed now. This function assumes that concurrent calls to it are
@@ -104,11 +109,11 @@ static reaction_t* worker_assignments_get_or_lock(size_t worker) {
         // printf("%ld <- %p @ %lld\n", worker, ret, LEVEL(ret->index));
         return ret;
     }
-    lf_mutex_lock(&mutex);
+    worker_states_lock(worker);
     if (!num_reactions_by_worker[worker]) {
         return NULL;
     }
-    lf_mutex_unlock(&mutex);
+    worker_states_unlock(worker);
     return reactions_by_worker[worker][--num_reactions_by_worker[worker]];
 }
 

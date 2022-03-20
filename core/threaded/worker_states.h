@@ -20,12 +20,17 @@ extern size_t** num_reactions_by_worker_by_level;
 extern size_t max_num_workers;
 extern lf_mutex_t mutex;
 
+/** The number of non-waiting threads. */
+static volatile size_t num_loose_threads;
+/** Whether the mutex is held by each worker via this module's API. */
+static bool* mutex_held;
+
 /**
  * The level counter is a number that changes whenever the current level changes.
  *
- * This number must have a very long period in the sense that if it changes, the probability that it
- * is checked at a time in the future that is selected from some "reasonable" distribution, the
- * probability that it will have returned to the same value is vanishingly small.
+ * This number must have a very long period in the sense that if it changes and is checked at a time
+ * in the future that is selected from some "reasonable" distribution, the probability that it will
+ * have returned to the same value must be negligible.
  */
 static size_t level_counter = 0;
 
@@ -51,14 +56,17 @@ static void worker_states_init(size_t number_of_workers) {
     size_t greatest_worker_number = number_of_workers - 1;
     size_t num_conds = cond_of(greatest_worker_number) + 1;
     worker_conds = (lf_cond_t*) malloc(sizeof(lf_cond_t) * num_conds);
+    mutex_held = (bool*) malloc(sizeof(bool) * number_of_workers);
     for (int i = 0; i < num_conds; i++) {
         lf_cond_init(worker_conds + i);
     }
+    num_loose_threads = number_of_workers;
 }
 
 static void worker_states_free() {
     // FIXME: Why do the condition variables and mutexes not need to be freed?
     free(worker_conds);
+    free(mutex_held);
 }
 
 /**
@@ -72,10 +80,11 @@ static size_t worker_states_awaken_locked(size_t num_to_awaken) {
     num_awakened = num_to_awaken;
     size_t greatest_worker_number_to_awaken = num_to_awaken - 1;
     size_t max_cond = cond_of(greatest_worker_number_to_awaken);
+    size_t ret = ++level_counter;
+    // printf("Broadcasting to %ld workers.\n", num_to_awaken);
     for (int cond = 0; cond <= max_cond; cond++) {
         lf_cond_broadcast(worker_conds + cond);
     }
-    size_t ret = ++level_counter;
     return ret;
 }
 
@@ -91,6 +100,32 @@ static void worker_states_never_sleep_again() {
     lf_mutex_unlock(&mutex);
 }
 
+/** Lock the global mutex if needed. */
+static void worker_states_lock(size_t worker) {
+    assert(num_loose_threads > 0);
+    assert(num_loose_threads <= max_num_workers);
+    if (num_loose_threads > 1) {
+        // printf("%ld locking mutex.\n", worker);
+        lf_mutex_lock(&mutex);
+        // printf("%ld locked mutex.\n", worker);
+        assert(mutex_held[worker] == false);
+        mutex_held[worker] = true;
+    } else {
+        // printf("%ld not locking mutex.\n", worker);
+    }
+}
+
+/** Unlock the global mutex if needed. */
+static void worker_states_unlock(size_t worker) {
+    if (mutex_held[worker]) {
+        // printf("%ld unlocking mutex.\n", worker);
+        mutex_held[worker] = false;
+        lf_mutex_unlock(&mutex);
+    } else {
+        // printf("%ld not unlocking mutex.\n", worker);
+    }
+}
+
 /**
  * @brief Make the given worker go to sleep.
  *
@@ -103,12 +138,22 @@ static void worker_states_never_sleep_again() {
  */
 static void worker_states_sleep_and_unlock(size_t worker, size_t level_counter_snapshot) {
     assert(worker < max_num_workers);
+    assert(num_loose_threads <= max_num_workers);
+    if (!mutex_held[worker]) {
+        lf_mutex_lock(&mutex);
+    }
+    mutex_held[worker] = false;  // This will be true soon, upon call to lf_cond_wait.
+    // printf("%ld sleeping; nlt=%ld\n", worker, num_loose_threads);
     size_t cond = cond_of(worker);
     if ((level_counter_snapshot == level_counter) & !worker_states_sleep_forbidden) {
         do {
+            num_loose_threads--;
             lf_cond_wait(worker_conds + cond, &mutex);
+            num_loose_threads++;
         } while (worker >= num_awakened);
     }
+    // printf("%ld awakening; nlt=%ld\n", worker, num_loose_threads);
+    assert(mutex_held[worker] == false);  // This thread holds the mutex, but it did not report that.
     lf_mutex_unlock(&mutex);
 }
 
