@@ -1853,7 +1853,7 @@ int process_args(int argc, char* argv[]) {
             } else {
                 error_print("Invalid value for --keepalive: %s", keep_spec);
             }
-        } else if (strcmp(arg, "-t") == 0 || strcmp(arg, "--workers") == 0) {
+        } else if (strcmp(arg, "-w") == 0 || strcmp(arg, "--workers") == 0) {
             if (argc < i + 1) {
                 error_print("--workers needs an integer argument.s");
                 usage(argc, argv);
