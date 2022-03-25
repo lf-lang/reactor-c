@@ -57,12 +57,14 @@ static bool should_stop = false;
  * @param worker The number of the calling worker.
  */
 static void advance_level_and_unlock(size_t worker) {
+    // printf("%ld advance %ld\n", worker, current_level);
     if (try_advance_level()) {
         if (!fast && !mutex_held[worker]) {
             mutex_held[worker] = true;
             lf_mutex_lock(&mutex);
         }
         if (_lf_sched_advance_tag_locked()) {
+            printf("%ld end", worker);
             should_stop = true;
             worker_states_never_sleep_again(worker);
             worker_states_unlock(worker);

@@ -51,6 +51,24 @@ static void set_level(size_t level) {
     data_collection_start_level(current_level);
 }
 
+/**
+ * @brief Advance the level currently being processed by the workers.
+ * 
+ * @return true If the level was already at the maximum and was reset to zero.
+ */
+static bool try_advance_level() {
+    size_t max_level = num_levels - 1;
+    while (current_level < max_level) {
+        set_level(current_level + 1);
+        for (size_t i = 0; i < num_workers; i++) {
+            if (num_reactions_by_worker[i]) return false;
+        }
+    }
+    data_collection_end_tag(num_workers_by_level, max_num_workers_by_level);
+    set_level(0);
+    return true;
+}
+
 static void worker_assignments_init(size_t number_of_workers, sched_params_t* params) {
     num_levels = params->num_reactions_per_level_size;
     max_num_workers = number_of_workers;
@@ -93,7 +111,7 @@ static void worker_assignments_free() {
 /**
  * @brief Get a reaction for the given worker to execute. If no such reaction exists, claim the
  * mutex.
- * 
+ *
  * @param worker A worker requesting work.
  * @return reaction_t* A reaction to execute, or NULL if no such reaction exists.
  */
@@ -133,24 +151,6 @@ static void worker_assignments_put(reaction_t* reaction) {
     );
     // printf("%p -> %ld @ %ld[%ld]\n", reaction, worker, level, num_preceding_reactions);
     reactions_by_worker_by_level[level][worker][num_preceding_reactions] = reaction;
-}
-
-/**
- * @brief Advance the level currently being processed by the workers.
- * 
- * @return true If the level was already at the maximum and was reset to zero.
- */
-static bool try_advance_level() {
-    size_t max_level = num_levels - 1;
-    while (current_level < max_level) {
-        set_level(current_level + 1);
-        for (size_t i = 0; i < num_workers; i++) {
-            if (num_reactions_by_worker[i]) return false;
-        }
-    }
-    data_collection_compute_number_of_workers(num_workers_by_level, max_num_workers_by_level);
-    set_level(0);
-    return true;
 }
 
 #endif
