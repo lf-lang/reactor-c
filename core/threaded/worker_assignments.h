@@ -18,8 +18,6 @@ static size_t max_num_workers;
 
 /** The following values apply to the current level. */
 static size_t current_level;
-/** The number of workers who still have not finished their work. */
-static size_t num_workers_busy;
 /** The number of reactions each worker still has to execute, indexed by worker. */
 static size_t* num_reactions_by_worker;
 /** The reactions to be executed, indexed by assigned worker. */
@@ -47,7 +45,6 @@ static void set_level(size_t level) {
     assert(0 <= level);
     data_collection_end_level(current_level, num_workers);
     current_level = level;
-    num_workers_busy = num_workers_by_level[level];
     num_reactions_by_worker = num_reactions_by_worker_by_level[level];
     reactions_by_worker = reactions_by_worker_by_level[level];
     num_workers = num_workers_by_level[level];
@@ -118,23 +115,6 @@ static reaction_t* worker_assignments_get_or_lock(size_t worker) {
 }
 
 /**
- * @brief Record that worker is finished working on the current level.
- * 
- * @param worker The number of a worker.
- * @return true If this is the last worker to finish working on the current level.
- * @return false If at least one other worker is still working on the current level.
- */
-static bool worker_assignments_finished_with_level_locked(size_t worker) {
-    assert(worker >= 0);
-    // assert(worker < num_workers);  // There are edge cases where this doesn't hold.
-    assert(num_workers_busy > 0 || worker >= num_workers);
-    assert(num_reactions_by_worker[worker] != 1);
-    assert(num_reactions_by_worker[worker] == (((size_t) 0) - 1) || num_reactions_by_worker[worker] == 0);
-    num_workers_busy -= worker < num_workers;
-    return !num_workers_busy;
-}
-
-/**
  * @brief Trigger the given reaction.
  * 
  * @param reaction A reaction to be executed in the current tag.
@@ -156,21 +136,11 @@ static void worker_assignments_put(reaction_t* reaction) {
 }
 
 /**
- * @brief Get the number of workers that should currently be working.
- * 
- * @return size_t The number of workers that should currently be working.
- */
-static size_t get_num_workers_busy() {
-    return num_workers_busy;
-}
-
-/**
  * @brief Advance the level currently being processed by the workers.
  * 
  * @return true If the level was already at the maximum and was reset to zero.
  */
 static bool try_advance_level() {
-    assert(num_workers_busy == 0);
     size_t max_level = num_levels - 1;
     while (current_level < max_level) {
         set_level(current_level + 1);

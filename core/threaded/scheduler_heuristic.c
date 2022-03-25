@@ -1,3 +1,28 @@
+/*************
+Copyright (c) 2022, The University of California at Berkeley.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************/
+
 /**
  * This is a non-priority-driven scheduler. See scheduler.h for documentation.
  */
@@ -18,6 +43,8 @@
 #define MAX_REACTION_LEVEL INITIAL_REACT_QUEUE_SIZE
 #endif
 
+extern bool fast;
+
 static bool init_called = false;
 static bool should_stop = false;
 
@@ -31,20 +58,21 @@ static bool should_stop = false;
  */
 static void advance_level_and_unlock(size_t worker) {
     if (try_advance_level()) {
+        if (!fast && !mutex_held[worker]) {
+            mutex_held[worker] = true;
+            lf_mutex_lock(&mutex);
+        }
         if (_lf_sched_advance_tag_locked()) {
             should_stop = true;
-            worker_states_never_sleep_again();
+            worker_states_never_sleep_again(worker);
             worker_states_unlock(worker);
             return;
         }
     }
-    size_t num_workers_busy = get_num_workers_busy();
-    size_t level_snapshot = worker_states_awaken_locked(num_workers_busy);
-    if (num_workers_busy < worker && num_workers_busy) {  // FIXME: Is this branch still necessary?
-        worker_states_sleep_and_unlock(worker, level_snapshot);
-    } else {
-        worker_states_unlock(worker);
-    }
+    size_t num_workers_to_awaken = num_workers;
+    assert(num_workers_to_awaken > 0);
+    worker_states_awaken_locked(worker, num_workers_to_awaken);
+    worker_states_unlock(worker);
 }
 
 ///////////////////// Scheduler Init and Destroy API /////////////////////////
@@ -69,11 +97,10 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
     assert(worker_number >= 0);
     reaction_t* ret;
     while (!(ret = worker_assignments_get_or_lock(worker_number))) {
-        // printf("%d failed to get.\n", worker_number);
         size_t level_counter_snapshot = level_counter;
-        if (worker_assignments_finished_with_level_locked(worker_number)) {
-            advance_level_and_unlock(worker_number);
+        if (worker_states_finished_with_level_locked(worker_number)) {
             // printf("%d !\n", worker_number);
+            advance_level_and_unlock(worker_number);
         } else {
             worker_states_sleep_and_unlock(worker_number, level_counter_snapshot);
         }
