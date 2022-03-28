@@ -75,7 +75,7 @@ int get_fed_id() {
  * Internal implementation of the next few reporting functions.
  */
 void _lf_message_print(
-		int is_error, char* prefix, char* format, va_list args, int log_level
+		int is_error, const char* prefix, const char* format, va_list args, int log_level
 ) {
 	// The logging level may be set either by a LOG_LEVEL #define
 	// (which is code generated based on the logging target property)
@@ -129,7 +129,7 @@ void _lf_message_print(
  * where n is the federate ID.
  * The arguments are just like printf().
  */
-void info_print(char* format, ...) {
+void info_print(const char* format, ...) {
     va_list args;
     va_start (args, format);
     _lf_message_print(0, "", format, args, LOG_LEVEL_INFO);
@@ -144,7 +144,7 @@ void info_print(char* format, ...) {
  * where n is the federate ID.
  * The arguments are just like printf().
  */
-void log_print(char* format, ...) {
+void log_print(const char* format, ...) {
     va_list args;
     va_start (args, format);
     _lf_message_print(0, "LOG: ", format, args, LOG_LEVEL_LOG);
@@ -159,7 +159,7 @@ void log_print(char* format, ...) {
  * where n is the federate ID.
  * The arguments are just like printf().
  */
-void debug_print(char* format, ...) {
+void debug_print(const char* format, ...) {
     va_list args;
     va_start (args, format);
     _lf_message_print(0, "DEBUG: ", format, args, LOG_LEVEL_DEBUG);
@@ -170,7 +170,7 @@ void debug_print(char* format, ...) {
  * Report an error with the prefix "ERROR: " and a newline appended
  * at the end.  The arguments are just like printf().
  */
-void error_print(char* format, ...) {
+void error_print(const char* format, ...) {
     va_list args;
     va_start (args, format);
     _lf_message_print(1, "ERROR: ", format, args, LOG_LEVEL_ERROR);
@@ -181,7 +181,7 @@ void error_print(char* format, ...) {
  * Report a warning with the prefix "WARNING: " and a newline appended
  * at the end.  The arguments are just like printf().
  */
-void warning_print(char* format, ...) {
+void warning_print(const char* format, ...) {
     va_list args;
     va_start (args, format);
     _lf_message_print(1, "WARNING: ", format, args, LOG_LEVEL_WARNING);
@@ -193,7 +193,7 @@ void warning_print(char* format, ...) {
  * at the end, then exit with the failure code EXIT_FAILURE.
  * The arguments are just like printf().
  */
-void error_print_and_exit(char* format, ...) {
+void error_print_and_exit(const char* format, ...) {
     va_list args;
     va_start (args, format);
     _lf_message_print(1, "FATAL ERROR: ", format, args, LOG_LEVEL_ERROR);
