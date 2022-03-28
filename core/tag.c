@@ -329,7 +329,7 @@ size_t lf_readable_time(char* buffer, instant_t time) {
 			sprintf(buffer, ", ");
 			buffer += 2;
 		}
-		char* units = "nanoseconds";
+		const char* units = "nanoseconds";
 		if (time % MSEC(1) == (instant_t) 0) {
 			units = "milliseconds";
 			time = time % MSEC(1);
