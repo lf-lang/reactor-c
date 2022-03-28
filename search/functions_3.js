@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['debug_5fprint_0',['debug_print',['../util_8c.html#a8ad76364d50e7fec98ca5cf826a238f3',1,'debug_print(char *format,...):&#160;util.c'],['../util_8h.html#a8ad76364d50e7fec98ca5cf826a238f3',1,'debug_print(char *format,...):&#160;util.c']]],
+  ['debug_5fprint_0',['debug_print',['../util_8c.html#ae454cdf1e6c8d3be9256a937f11efa39',1,'debug_print(const char *format,...):&#160;util.c'],['../util_8h.html#ae454cdf1e6c8d3be9256a937f11efa39',1,'debug_print(const char *format,...):&#160;util.c']]],
   ['delay_5ftag_1',['delay_tag',['../tag_8c.html#a285bf3926110e2e1ee38febe34f69222',1,'delay_tag(tag_t tag, interval_t interval):&#160;tag.c'],['../tag_8h.html#a285bf3926110e2e1ee38febe34f69222',1,'delay_tag(tag_t tag, interval_t interval):&#160;tag.c']]],
   ['deque_5finitialize_2',['deque_initialize',['../deque_8c.html#a0e4768355c448b3b0489d851271515bc',1,'deque_initialize(deque_t *d):&#160;deque.c'],['../deque_8h.html#a0e4768355c448b3b0489d851271515bc',1,'deque_initialize(deque_t *d):&#160;deque.c']]],
   ['deque_5fis_5fempty_3',['deque_is_empty',['../deque_8c.html#ac22527818b92ea67851c2fd4a2790cb7',1,'deque_is_empty(deque_t *d):&#160;deque.c'],['../deque_8h.html#ac22527818b92ea67851c2fd4a2790cb7',1,'deque_is_empty(deque_t *d):&#160;deque.c']]],

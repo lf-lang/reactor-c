@@ -4,7 +4,7 @@ var searchData=
   ['wait_5funtil_1',['wait_until',['../reactor_8c.html#a88b3ac276258a9ff80943478b50c80ce',1,'wait_until(instant_t logical_time_ns):&#160;reactor.c'],['../reactor__threaded_8c.html#aae38fdb4e79b2dc10d5f5c3131a423ae',1,'wait_until(instant_t logical_time_ns, lf_cond_t *condition):&#160;reactor_threaded.c']]],
   ['wait_5funtil_5fport_5fstatus_5fknown_2',['wait_until_port_status_known',['../federate_8c.html#af4e0b0634806dadc6bda729c63dc700f',1,'wait_until_port_status_known(int port_ID, interval_t STP):&#160;federate.c'],['../federate_8h.html#a5ec362a10173f606cdd994fc6ba4e2e9',1,'wait_until_port_status_known(int portID, interval_t STP):&#160;federate.c']]],
   ['waiting_5ffor_5ftag_3',['waiting_for_TAG',['../structfederate__instance__t.html#a9812f0499dda0efd9f2718981be2e905',1,'federate_instance_t']]],
-  ['warning_5fprint_4',['warning_print',['../util_8c.html#a31c6c0670e0e0d97586def29f10bf7d4',1,'warning_print(char *format,...):&#160;util.c'],['../util_8h.html#a31c6c0670e0e0d97586def29f10bf7d4',1,'warning_print(char *format,...):&#160;util.c']]],
+  ['warning_5fprint_4',['warning_print',['../util_8c.html#a806b1f254e17b3e266b065094732470d',1,'warning_print(const char *format,...):&#160;util.c'],['../util_8h.html#a806b1f254e17b3e266b065094732470d',1,'warning_print(const char *format,...):&#160;util.c']]],
   ['wave_5ffile_5freader_2ec_5',['wave_file_reader.c',['../wave__file__reader_8c.html',1,'']]],
   ['wave_5ffile_5freader_2eh_6',['wave_file_reader.h',['../wave__file__reader_8h.html',1,'']]],
   ['waveform_7',['waveform',['../structnote.html#a03bc4ceb2310ccb5004584a1f619e047',1,'note::waveform()'],['../structlf__waveform__t.html#add06d5d0fc6b2337a8aa902736c28558',1,'lf_waveform_t::waveform()']]],

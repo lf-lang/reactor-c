@@ -84,7 +84,7 @@ var searchData=
   ['log_5flevel_5flog_81',['LOG_LEVEL_LOG',['../util_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd',1,'util.h']]],
   ['log_5flevel_5fwarning_82',['LOG_LEVEL_WARNING',['../util_8h.html#af539a66abed2a7a15e3443d70a3cf1e1',1,'util.h']]],
   ['log_5fprint_83',['LOG_PRINT',['../util_8h.html#a02ab3aea33a20e71b0f50923d3b222a7',1,'util.h']]],
-  ['log_5fprint_84',['log_print',['../util_8c.html#aca1b11267854044bfb09f5b172afa99a',1,'log_print(char *format,...):&#160;util.c'],['../util_8h.html#aca1b11267854044bfb09f5b172afa99a',1,'log_print(char *format,...):&#160;util.c']]],
+  ['log_5fprint_84',['log_print',['../util_8c.html#aa0a9fe73f6331b5aff2cd95a9677c6a1',1,'log_print(const char *format,...):&#160;util.c'],['../util_8h.html#aa0a9fe73f6331b5aff2cd95a9677c6a1',1,'log_print(const char *format,...):&#160;util.c']]],
   ['logical_5ftag_5fcomplete_85',['logical_tag_complete',['../scheduler__sync__tag__advance_8c.html#ad96dd94446ff66184dcf0f8f65cdb4f0',1,'logical_tag_complete(tag_t tag_to_send):&#160;src_gen_stub.c'],['../src__gen__stub_8c.html#ad96dd94446ff66184dcf0f8f65cdb4f0',1,'logical_tag_complete(tag_t tag_to_send):&#160;src_gen_stub.c']]],
   ['loop_5fthread_5fid_86',['loop_thread_id',['../audio__loop__linux_8c.html#a34f33cc639766b02125ec0fc19eff705',1,'loop_thread_id():&#160;audio_loop_linux.c'],['../audio__loop__mac_8c.html#a34f33cc639766b02125ec0fc19eff705',1,'loop_thread_id():&#160;audio_loop_mac.c']]],
   ['loop_5fthread_5fstarted_87',['loop_thread_started',['../audio__loop__linux_8c.html#ad31062a1d6536676ea4a0837a23ecb94',1,'loop_thread_started():&#160;audio_loop_linux.c'],['../audio__loop__mac_8c.html#ad31062a1d6536676ea4a0837a23ecb94',1,'loop_thread_started():&#160;audio_loop_mac.c']]]

@@ -8,7 +8,7 @@ var searchData=
   ['deadline_5',['DEADLINE',['../reactor_8h.html#a4aab573132838d44997ee99002d3e6d0',1,'reactor.h']]],
   ['deadline_5fviolation_5fhandler_6',['deadline_violation_handler',['../structreaction__t.html#a487aaa96abda17f7184c07ccd1e870b2',1,'reaction_t']]],
   ['debug_5fprint_7',['DEBUG_PRINT',['../util_8h.html#a0a27a0fa2f8d9461204242121941696c',1,'util.h']]],
-  ['debug_5fprint_8',['debug_print',['../util_8c.html#a8ad76364d50e7fec98ca5cf826a238f3',1,'debug_print(char *format,...):&#160;util.c'],['../util_8h.html#a8ad76364d50e7fec98ca5cf826a238f3',1,'debug_print(char *format,...):&#160;util.c']]],
+  ['debug_5fprint_8',['debug_print',['../util_8c.html#ae454cdf1e6c8d3be9256a937f11efa39',1,'debug_print(const char *format,...):&#160;util.c'],['../util_8h.html#ae454cdf1e6c8d3be9256a937f11efa39',1,'debug_print(const char *format,...):&#160;util.c']]],
   ['default_5fargc_9',['default_argc',['../reactor__common_8c.html#aab46895a3a4d1341a19b689a0ea902d1',1,'reactor_common.c']]],
   ['default_5fargv_10',['default_argv',['../reactor__common_8c.html#a079c42a8611d008395dba5af4911e85c',1,'reactor_common.c']]],
   ['default_5fmax_5freaction_5flevel_11',['DEFAULT_MAX_REACTION_LEVEL',['../scheduler_8h.html#a7c3f7c6b1c85f7572b42fa34fa853973',1,'scheduler.h']]],

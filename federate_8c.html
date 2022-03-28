@@ -980,7 +980,7 @@ DESCRIPTION</h1>
   </table>
   </dd>
 </dl>
-<p>Thread that listens for inputs from other federates. This thread listens for messages of type MSG_TYPE_P2P_MESSAGE, MSG_TYPE_P2P_TAGGED_MESSAGE, or MSG_TYPE_PORT_ABSENT (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="net__common_8h.html">net_common.h</a>) from the specified peer federate and calls the appropriate handling function for each message type. If an <a class="el" href="util_8h.html#aad9796c174f7ef5d226cd169f2520fd5">error</a> occurs or an EOF is received from the peer, then this procedure sets the corresponding socket in _fed.sockets_for_inbound_p2p_connections to -1 and returns, terminating the thread. </dd></dl>
+<p>Thread that listens for inputs from other federates. This thread listens for messages of type MSG_TYPE_P2P_MESSAGE, MSG_TYPE_P2P_TAGGED_MESSAGE, or MSG_TYPE_PORT_ABSENT (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="net__common_8h.html">net_common.h</a>) from the specified peer federate and calls the appropriate handling function for each message type. If an <a class="el" href="util_8h.html#a4866b2d37ffc80c5ba705d3fcd1e0ecf">error</a> occurs or an EOF is received from the peer, then this procedure sets the corresponding socket in _fed.sockets_for_inbound_p2p_connections to -1 and returns, terminating the thread. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">fed_id_ptr</td><td>A pointer to a uint16_t containing federate ID being listened to. This procedure frees the memory pointed to before returning. </td></tr>
