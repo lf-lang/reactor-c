@@ -25,10 +25,6 @@ static reaction_t*** reactions_by_worker;
 /** The total number of workers active, including those who have finished their work. */
 static size_t num_workers;
 
-// A counter of the number of reactions triggered. No function should depend on the precise
-// correctness of this value. Race conditions when accessing this value are acceptable.
-static size_t reactions_triggered_counter = 0;
-
 #include "data_collection.h"
 
 static void worker_states_lock(size_t worker);
@@ -142,8 +138,8 @@ static void worker_assignments_put(reaction_t* reaction) {
     assert(reaction != NULL);
     assert(level > current_level || current_level == 0);
     assert(level < num_levels);
-    // TODO: Hashing by a pointer to the reaction will let us cheaply simulate ``worker affinity''.
-    size_t worker = (reactions_triggered_counter++) % num_workers_by_level[level];
+    // TODO: Implement work stealing, for the following could lead to unfair work distribution.
+    size_t worker = ((size_t) reaction) % num_workers_by_level[level];
     assert(worker >= 0 && worker <= num_workers);
     size_t num_preceding_reactions = lf_atomic_fetch_add(
         &num_reactions_by_worker_by_level[level][worker],
