@@ -64,7 +64,7 @@ static void advance_level_and_unlock(size_t worker) {
             lf_mutex_lock(&mutex);
         }
         if (_lf_sched_advance_tag_locked()) {
-            printf("%ld end", worker);
+            // printf("%ld end", worker);
             should_stop = true;
             worker_states_never_sleep_again(worker);
             worker_states_unlock(worker);
