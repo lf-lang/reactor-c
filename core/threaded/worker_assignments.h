@@ -104,6 +104,15 @@ static void worker_assignments_free() {
     data_collection_free();
 }
 
+static reaction_t* get_reaction(size_t worker) {
+    int index = lf_atomic_add_fetch(num_reactions_by_worker + worker, -1);
+    if (index >= 0) {
+        return reactions_by_worker[worker][index];
+    }
+    num_reactions_by_worker[worker] = 0;
+    return NULL;
+}
+
 /**
  * @brief Get a reaction for the given worker to execute. If no such reaction exists, claim the
  * mutex.
@@ -115,17 +124,21 @@ static reaction_t* worker_assignments_get_or_lock(size_t worker) {
     assert(worker >= 0);
     // assert(worker < num_workers);  // There are edge cases where this doesn't hold.
     assert(num_reactions_by_worker[worker] >= 0);
-    if (num_reactions_by_worker[worker]) {
-        reaction_t* ret = reactions_by_worker[worker][--num_reactions_by_worker[worker]];
+    reaction_t* ret;
+    while (true) {
+        if ((ret = get_reaction(worker))) return ret;
+        if (worker < num_workers) {
+            for (size_t victim = (worker + 1) % num_workers; victim != worker; victim = (victim + 1) % num_workers) {
+                if ((ret = get_reaction(victim))) return ret;
+            }
+        }
         // printf("%ld <- %p @ %lld\n", worker, ret, LEVEL(ret->index));
-        return ret;
+        worker_states_lock(worker);
+        if (!num_reactions_by_worker[worker]) {
+            return NULL;
+        }
+        worker_states_unlock(worker);
     }
-    worker_states_lock(worker);
-    if (!num_reactions_by_worker[worker]) {
-        return NULL;
-    }
-    worker_states_unlock(worker);
-    return reactions_by_worker[worker][--num_reactions_by_worker[worker]];
 }
 
 /**

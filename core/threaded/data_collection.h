@@ -56,7 +56,6 @@ static void data_collection_end_level(size_t level, size_t num_workers) {
         if (!execution_times_by_num_workers_by_level[level][num_workers]) {
             execution_times_by_num_workers_by_level[level][num_workers]
                 = get_physical_time() - start_times_by_level[level];
-            printf("Initialize.\n");
         } else {
             interval_t prior_et = execution_times_by_num_workers_by_level[level][num_workers];
             execution_times_by_num_workers_by_level[level][num_workers] = (
