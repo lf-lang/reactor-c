@@ -71,6 +71,10 @@ int get_fed_id() {
 	return _lf_my_fed_id;
 }
 
+// GCC gives very annoying warnings here.
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsuggest-attribute=format"
+
 /**
  * Internal implementation of the next few reporting functions.
  */
@@ -120,6 +124,8 @@ void _lf_message_print(
 		free(message);
 	}
 }
+
+#pragma GCC diagnostic pop
 
 /**
  * Report an informational message on stdout with
