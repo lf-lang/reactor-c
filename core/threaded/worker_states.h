@@ -90,7 +90,6 @@ static void worker_states_awaken_locked(size_t worker, size_t num_to_awaken) {
     assert(num_to_awaken <= max_num_workers);
     if ((worker == 0) && (num_to_awaken <= 1)) {
         num_loose_threads = 1;
-        level_counter++;
         return;
     }
     size_t greatest_worker_number_to_awaken = num_to_awaken - 1;
