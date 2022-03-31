@@ -294,10 +294,14 @@ do { \
 #define LEVEL(index) (index & 0xffffLL)
 
 /** Utility for finding the maximum of two values. */
+#ifndef MAX
 #define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
+#endif
 
 /** Utility for finding the minimum of two values. */
+#ifndef MIN
 #define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
+#endif
 
 /**
  * Macro for determining whether two reactions are in the
