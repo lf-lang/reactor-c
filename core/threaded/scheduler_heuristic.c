@@ -98,8 +98,10 @@ void lf_sched_free() {
 reaction_t* lf_sched_get_ready_reaction(int worker_number) {
     assert(worker_number >= 0);
     reaction_t* ret;
-    while (!(ret = worker_assignments_get_or_lock(worker_number))) {
+    while (true) {
         size_t level_counter_snapshot = level_counter;
+        ret = worker_assignments_get_or_lock(worker_number);
+        if (ret) return ret;
         if (worker_states_finished_with_level_locked(worker_number)) {
             // printf("%d !\n", worker_number);
             advance_level_and_unlock(worker_number);
