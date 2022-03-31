@@ -153,7 +153,6 @@ static void worker_assignments_put(reaction_t* reaction) {
     assert(level < num_levels);
     // TODO: Implement work stealing, for the following could lead to unfair work distribution.
     size_t worker = ((size_t) reaction) % num_workers_by_level[level];
-    assert(worker >= 0 && worker <= num_workers);
     size_t num_preceding_reactions = lf_atomic_fetch_add(
         &num_reactions_by_worker_by_level[level][worker],
         1

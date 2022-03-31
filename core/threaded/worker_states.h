@@ -26,6 +26,8 @@ static volatile size_t num_awakened;
 /** Whether the mutex is held by each worker via this module's API. */
 static bool* mutex_held;
 
+extern bool fast;
+
 /**
  * The level counter is a number that changes whenever the current level changes.
  *
@@ -125,7 +127,7 @@ static void worker_states_lock(size_t worker) {
     assert(num_loose_threads <= max_num_workers);
     size_t lt = num_loose_threads;
     // printf("%ld sees %ld loose threads\n", worker, lt);
-    if (lt > 1) {
+    if (lt > 1 || !fast) {  // FIXME: Lock should be partially optimized out even when !fast
         // printf("%ld locking mutex.\n", worker);
         lf_mutex_lock(&mutex);
         // printf("%ld locked mutex.\n", worker);
@@ -158,10 +160,11 @@ static bool worker_states_finished_with_level_locked(size_t worker) {
     assert(worker >= 0);
     assert(num_loose_threads > 0);
     assert(num_reactions_by_worker[worker] != 1);
-    assert(num_reactions_by_worker[worker] == (((size_t) 0) - 1) || num_reactions_by_worker[worker] == 0);
+    assert(((int64_t) num_reactions_by_worker[worker]) <= 0);
     // Why use an atomic operation when we are supposed to be "as good as locked"? Because I took a
     // shortcut, and it wasn't perfect.
     size_t ret = lf_atomic_add_fetch(&num_loose_threads, -1);
+    assert(ret >= 0);
     // printf("worker=%ld, nlt=%ld\n", worker, ret);
     return !ret;
 }

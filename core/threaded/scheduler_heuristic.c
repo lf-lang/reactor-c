@@ -43,8 +43,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MAX_REACTION_LEVEL INITIAL_REACT_QUEUE_SIZE
 #endif
 
-extern bool fast;
-
 static bool init_called = false;
 static bool should_stop = false;
 
@@ -59,10 +57,6 @@ static bool should_stop = false;
 static void advance_level_and_unlock(size_t worker) {
     // printf("%ld advance %ld\n", worker, current_level);
     if (try_advance_level()) {
-        if (!fast && !mutex_held[worker]) {
-            mutex_held[worker] = true;
-            lf_mutex_lock(&mutex);
-        }
         if (_lf_sched_advance_tag_locked()) {
             // printf("%ld end", worker);
             should_stop = true;
