@@ -200,6 +200,13 @@ int _lf_do_step(void) {
         // at most once per logical time value. If the violation reaction triggers the
         // same reaction at the current time value, even if at a future superdense time,
         // then the reaction will be invoked and the violation reaction will not be invoked again.
+
+        // Shaokai: Here is where we should modify. Instead of checking whether the current reaction
+        // has a deadline, we check if there are deadlines have been violated.
+        // Note: Deadline violation detection should be done wrt both events and reactions.
+        // Step 1: push to deadline queue when an event is pushed to the event queue
+        // Step 2: before popping a reaction off the reaction queue,
+        //         check the deadline queue and invoke deadline handler if necessary.
         if (reaction->deadline > 0LL) {
             // Get the current physical time.
             instant_t physical_time = get_physical_time();
@@ -224,6 +231,7 @@ int _lf_do_step(void) {
                 }
             }
         }
+        
         
         if (!violation) {
             // Invoke the reaction function.

@@ -639,6 +639,7 @@ void _lf_pop_events() {
         for (int i = 0; i < event->trigger->number_of_reactions; i++) {
             reaction_t *reaction = event->trigger->reactions[i];
             // Do not enqueue this reaction twice.
+            // Shaokai: why would we enqueue a reaction twice?
             if (reaction->status == inactive) {
 #ifdef FEDERATED_DECENTRALIZED
                 // In federated execution, an intended tag that is not (NEVER, 0)
@@ -1048,6 +1049,8 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
                 tag.microstep == 0) {
             // Do not need a dummy event if we are scheduling at 1 microstep
             // in the future at current time or at microstep 0 in a future time.
+
+            // Shaokai: Here is where the timer should be inserted.
             pqueue_insert(event_q, e);
         } else {
             // Create a dummy event. Insert it into the queue, and let its next
@@ -1311,6 +1314,8 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     // same time will automatically be executed at the next microstep.
     LOG_PRINT("Inserting event in the event queue with elapsed time %lld.",
             e->time - start_time);
+
+    // Shaokai: Another place where timers should be inserted.
     pqueue_insert(event_q, e);
 
     tracepoint_schedule(trigger, e->time - current_tag.time);
