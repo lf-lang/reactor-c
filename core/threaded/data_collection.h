@@ -29,8 +29,8 @@ extern size_t max_num_workers;
 #define EXECUTION_TIME_MEMORY 15
 
 static void possible_nums_workers_init() {
-    // Start with 0 and end with a number strictly greater than max_num_workers.
-    size_t pnw_length = 2;
+    // Start with 0 and end with two numbers strictly greater than max_num_workers.
+    size_t pnw_length = 3;
     size_t temp = max_num_workers;
     while ((temp >>= 1)) pnw_length++;
     possible_nums_workers = malloc(pnw_length * sizeof(size_t));
