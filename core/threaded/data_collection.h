@@ -66,8 +66,9 @@ static void data_collection_init(sched_params_t* params) {
     for (size_t i = 0; i < num_levels; i++) {
         execution_times_argmins[i] = max_num_workers;
         execution_times_by_num_workers_by_level[i] = (interval_t*) calloc(
-            max_num_workers, sizeof(interval_t)
-        ) - 1;
+            max_num_workers + 1,  // Add 1 for 1-based indexing
+            sizeof(interval_t)
+        );
     }
     possible_nums_workers_init();
 }
@@ -75,7 +76,7 @@ static void data_collection_init(sched_params_t* params) {
 static void data_collection_free() {
     free(start_times_by_level);
     for (size_t i = 0; i < num_levels; i++) {
-        free(execution_times_by_num_workers_by_level[i] + 1);
+        free(execution_times_by_num_workers_by_level[i]);
     }
     free(execution_times_by_num_workers_by_level);
     free(possible_nums_workers);
