@@ -802,7 +802,7 @@ bool _lf_trigger_shutdown_reactions(void);
  * Function (to be code generated) to handle mode changes.
  */
 #ifdef MODAL_REACTORS
-void _lf_handle_mode_changes();
+void _lf_handle_mode_changes(void);
 #endif
 
 /**
