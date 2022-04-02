@@ -94,11 +94,13 @@ static void worker_states_awaken_locked(size_t worker, size_t num_to_awaken) {
     }
     size_t greatest_worker_number_to_awaken = num_to_awaken - 1;
     size_t max_cond = cond_of(greatest_worker_number_to_awaken);
-    // printf("%ld +-> %ld\n", worker, num_to_awaken);
+    // printf("%ld +-> %ld @ %ld\n", worker, num_to_awaken, current_level);
     if (!mutex_held[worker]) {
         mutex_held[worker] = true;
         lf_mutex_lock(&mutex);
     }
+    // The predicate of the condition variable depends on num_awakened and level_counter, so
+    // this is a critical section.
     num_loose_threads = cumsum_of_cond_of[max_cond];
     num_loose_threads += worker >= num_loose_threads;
     num_awakened = num_loose_threads;
@@ -187,7 +189,10 @@ static void worker_states_sleep_and_unlock(size_t worker, size_t level_counter_s
     mutex_held[worker] = false;  // This will be true soon, upon call to lf_cond_wait.
     // printf("%ld sleep; nlt=%ld\n", worker, num_loose_threads);
     size_t cond = cond_of(worker);
-    if ((level_counter_snapshot == level_counter) & !worker_states_sleep_forbidden) {
+    if (
+        ((level_counter_snapshot == level_counter) || worker >= num_awakened)
+        && !worker_states_sleep_forbidden
+    ) {
         do {
             lf_cond_wait(worker_conds + cond, &mutex);
         } while (level_counter_snapshot == level_counter || worker >= num_awakened);
