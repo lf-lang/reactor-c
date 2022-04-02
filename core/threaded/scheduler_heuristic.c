@@ -56,19 +56,30 @@ static bool should_stop = false;
  */
 static void advance_level_and_unlock(size_t worker) {
     // printf("%ld advance %ld\n", worker, current_level);
-    if (try_advance_level()) {
-        if (_lf_sched_advance_tag_locked()) {
-            // printf("%ld end", worker);
-            should_stop = true;
-            worker_states_never_sleep_again(worker);
+    size_t max_level = num_levels - 1;
+    while (true) {
+        if (current_level == max_level) {
+            data_collection_end_tag(num_workers_by_level, max_num_workers_by_level);
+            set_level(0);
+            if (_lf_sched_advance_tag_locked()) {
+                // printf("%ld end", worker);
+                should_stop = true;
+                worker_states_never_sleep_again(worker);
+                worker_states_unlock(worker);
+                return;
+            }
+        } else {
+            set_level(current_level + 1);
+        }
+        size_t total_num_reactions = get_num_reactions();
+        if (total_num_reactions) {
+            size_t num_workers_to_awaken = MIN(total_num_reactions, num_workers);
+            assert(num_workers_to_awaken > 0);
+            worker_states_awaken_locked(worker, num_workers_to_awaken);
             worker_states_unlock(worker);
             return;
         }
     }
-    size_t num_workers_to_awaken = num_workers;
-    assert(num_workers_to_awaken > 0);
-    worker_states_awaken_locked(worker, num_workers_to_awaken);
-    worker_states_unlock(worker);
 }
 
 ///////////////////// Scheduler Init and Destroy API /////////////////////////

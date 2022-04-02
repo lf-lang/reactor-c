@@ -46,23 +46,14 @@ static void set_level(size_t level) {
     num_workers = num_workers_by_level[level];
     data_collection_start_level(current_level);
 }
-
-/**
- * @brief Advance the level currently being processed by the workers.
- * 
- * @return true If the level was already at the maximum and was reset to zero.
- */
-static bool try_advance_level() {
-    size_t max_level = num_levels - 1;
-    while (current_level < max_level) {
-        set_level(current_level + 1);
-        for (size_t i = 0; i < num_workers; i++) {
-            if (num_reactions_by_worker[i]) return false;
-        }
+/** Return the total number of reactions enqueued on the current level. */
+static size_t get_num_reactions() {
+    size_t total_num_reactions = 0;
+    for (size_t i = 0; i < num_workers; i++) {
+        total_num_reactions += num_reactions_by_worker[i];
     }
-    data_collection_end_tag(num_workers_by_level, max_num_workers_by_level);
-    set_level(0);
-    return true;
+    // TODO: if num_workers was > total_num_reactions, report this to data_collection
+    return total_num_reactions;
 }
 
 static void worker_assignments_init(size_t number_of_workers, sched_params_t* params) {
