@@ -25,7 +25,6 @@ extern size_t num_levels;
 extern size_t max_num_workers;
 
 #define SLOW_EXPERIMENTS 256
-#define PARALLELISM_COST 20000
 #define EXECUTION_TIME_MEMORY 15
 
 static void possible_nums_workers_init() {
@@ -43,15 +42,27 @@ static void possible_nums_workers_init() {
     assert(temp > max_num_workers);
 }
 
+static int get_jitter(size_t current_state, interval_t execution_time) {
+    static const size_t parallelism_cost_max = 131072;
+    // The following handles the case where the current level really is just fluff:
+    // No parallelism needed, no work to be done.
+    if (execution_time < 16384 && current_state == 1) return 0;
+    int left_score = 65536;
+    int middle_score = 65536;
+    int right_score = 65536;
+    if (execution_time < parallelism_cost_max) left_score += parallelism_cost_max - execution_time;
+    int result = rand() % (left_score + middle_score + right_score);
+    if (result < left_score) return -1;
+    if (result < left_score + middle_score) return 0;
+    return 1;
+}
+
 /** Get the result of a state transition. */
-static size_t get_nums_workers_neighboring_state(size_t current_state) {
-    // TODO: There is a more efficient way to do this. However, this operation should be uncommon
-    // asymptotically.
-    size_t range = 1;
-    size_t jitter = ((int) (rand() % (2 * range + 1))) - range;
+static size_t get_nums_workers_neighboring_state(size_t current_state, interval_t execution_time) {
+    size_t jitter = get_jitter(current_state, execution_time);
     if (!jitter) return current_state;
     size_t i = 1;
-    while (possible_nums_workers[i] < current_state) i++;
+    while (possible_nums_workers[i] < current_state) i++; // TODO: There are more efficient ways to do this.
     return possible_nums_workers[i + jitter];
 }
 
@@ -115,16 +126,13 @@ static void compute_number_of_workers(
         interval_t this_execution_time = execution_times_by_num_workers_by_level[level][
             num_workers_by_level[level]
         ];
-        if (0 < this_execution_time && this_execution_time < PARALLELISM_COST && (rand() & 1)) {
-            num_workers_by_level[level] = 1;
-            continue;
-        }
         size_t ideal_number_of_workers;
         size_t max_reasonable_num_workers = max_num_workers_by_level[level];
         ideal_number_of_workers = execution_times_argmins[level];
         int range = 1;
         if (jitter) {
-            ideal_number_of_workers = get_nums_workers_neighboring_state(ideal_number_of_workers);
+            ideal_number_of_workers = get_nums_workers_neighboring_state(ideal_number_of_workers, this_execution_time);
+            // printf("%ld -> %ld @ %ld\n", execution_times_argmins[level], ideal_number_of_workers, level);
         }
         num_workers_by_level[level] = restrict_to_range(
             1, max_reasonable_num_workers, ideal_number_of_workers
@@ -139,7 +147,6 @@ static void compute_costs(size_t* num_workers_by_level) {
         interval_t score = execution_times_by_num_workers_by_level[level][
             num_workers_by_level[level]
         ];
-        if (num_workers_by_level[level] > 1) score += PARALLELISM_COST;
         if (
             !execution_times_mins[level]
             | (score < execution_times_mins[level])
