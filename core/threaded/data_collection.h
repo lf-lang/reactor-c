@@ -24,6 +24,7 @@ static size_t* possible_nums_workers;
 extern size_t num_levels;
 extern size_t max_num_workers;
 
+#define START_EXPERIMENTS 8
 #define SLOW_EXPERIMENTS 256
 #define EXECUTION_TIME_MEMORY 15
 
@@ -32,7 +33,7 @@ static void possible_nums_workers_init() {
     size_t pnw_length = 3;
     size_t temp = max_num_workers;
     while ((temp >>= 1)) pnw_length++;
-    possible_nums_workers = malloc(pnw_length * sizeof(size_t));
+    possible_nums_workers = (size_t*) malloc(pnw_length * sizeof(size_t));
     temp = 1;
     possible_nums_workers[0] = 0;
     for (int i = 1; i < pnw_length; i++) {
@@ -43,11 +44,11 @@ static void possible_nums_workers_init() {
 }
 
 static int get_jitter(size_t current_state, interval_t execution_time) {
-    static const size_t parallelism_cost_max = 131072;
+    static const size_t parallelism_cost_max = 114688;
     // The following handles the case where the current level really is just fluff:
     // No parallelism needed, no work to be done.
     if (execution_time < 16384 && current_state == 1) return 0;
-    int left_score = 65536;
+    int left_score = 16384;  // Want: For execution time = 65536, p(try left) = p(try right)
     int middle_score = 65536;
     int right_score = 65536;
     if (execution_time < parallelism_cost_max) left_score += parallelism_cost_max - execution_time;
@@ -175,7 +176,11 @@ static void data_collection_end_tag(
     size_t period = 2 + 128 * (data_collection_counter > SLOW_EXPERIMENTS);
     size_t state = data_collection_counter % period;
     if (state == 0) {
-        compute_number_of_workers(num_workers_by_level, max_num_workers_by_level, true);
+        compute_number_of_workers(
+            num_workers_by_level,
+            max_num_workers_by_level,
+            data_collection_counter > START_EXPERIMENTS
+        );
         collecting_data = true;
     } else if (state == 1) {
         compute_number_of_workers(num_workers_by_level, max_num_workers_by_level, false);
