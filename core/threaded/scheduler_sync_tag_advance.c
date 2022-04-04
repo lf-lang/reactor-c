@@ -68,10 +68,8 @@ bool _lf_logical_tag_completed = false;
  * This function assumes the caller holds the mutex lock.
  */
 bool _lf_sched_should_stop_locked() {
-    // If this is not the very first step, notify that the previous step is complete
-    // and check against the stop tag to see whether this is the last step.
+    // If this is not the very first step, check against the stop tag to see whether this is the last step.
     if (_lf_logical_tag_completed) {
-        logical_tag_complete(current_tag);
         // If we are at the stop tag, do not call _lf_next_locked()
         // to prevent advancing the logical time.
         if (compare_tags(current_tag, stop_tag) >= 0) {
@@ -90,6 +88,10 @@ bool _lf_sched_should_stop_locked() {
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
 bool _lf_sched_advance_tag_locked() {
+    // If this is not the very first step, notify that the previous step is complete.
+    if (_lf_logical_tag_completed) {
+        logical_tag_complete(current_tag);
+    }
 
     if (_lf_sched_should_stop_locked()) {
         return true;

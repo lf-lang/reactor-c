@@ -1793,7 +1793,8 @@ void handle_tagged_message(int socket, int fed_id) {
     // a message with intended_tag of 9 could arrive before the control reaction has had a chance
     // to exit. The port status is on the other hand changed in this thread, and thus,
     // can be checked in this scenario without this race condition. The message with 
-    // intended_tag of 9 in this case needs to wait one microstep to be processed.
+    // intended_tag of 9 in this case needs to wait one microstep to be
+    // processed.
     if (compare_tags(intended_tag, get_current_tag()) <= 0 &&                           
             action->is_a_control_reaction_waiting && // Check if a control reaction is waiting
             action->status == unknown                // Check if the status of the port is still unknown
@@ -2632,16 +2633,16 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
                 }
             }
         }
-        if(_lf_bounded_NET(&tag)) {
-            // Next tag is greater than physical time and this fed has downstream
-            // federates. Need to send TAN rather than NET.
-            // TAN does not include a microstep and expects no reply.
-            // It is sent to enable downstream federates to advance.
-            _lf_send_time(MSG_TYPE_TIME_ADVANCE_NOTICE, tag.time, wait_for_reply);
-            _fed.last_sent_NET = tag;
-            LOG_PRINT("Sent Time Advance Notice (TAN) %lld to RTI.",
-                    tag.time - get_start_time());
-        }
+
+        
+        // Next tag is greater than physical time and this fed has downstream
+        // federates. Need to send TAN rather than NET.
+        // TAN does not include a microstep and expects no reply.
+        // It is sent to enable downstream federates to advance.
+        _lf_send_time(MSG_TYPE_TIME_ADVANCE_NOTICE, tag.time, wait_for_reply);
+        _fed.last_sent_NET = tag;
+        DEBUG_PRINT("Sent Time Advance Notice (TAN) %lld to RTI.",
+                tag.time - get_start_time());
 
         if (!wait_for_reply) {
             LOG_PRINT("Not waiting physical time to advance further.");
