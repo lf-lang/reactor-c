@@ -807,20 +807,15 @@ void handle_time_advance_notice(federate_t* fed) {
     LOG_PRINT("RTI received from federate %d the Time Advance Notice (TAN) %lld.",
             fed->id, fed->time_advance - start_time);
 
-    // If the TAN is greater than the most recently received NET, then
-    // update the NET to match the TAN. The NET is a promise that, absent
-    // network inputs, the federate will not produce an output with tag
-    // less than the NET.
+    // Update the completed tag to match the TAN.
     tag_t ta = (tag_t) {.time = fed->time_advance, .microstep = 0};
-    if (compare_tags(ta, fed->next_event) > 0) {
-        fed->next_event = ta;
-        // We need to reply just as if this were a NET because it could unblock
-        // network input port control reactions.
-        // This is a side-effect of the combination of distributed cycles and
-        // physical actions in federates. FIXME: More explanation is needed.
-        if (fed->num_upstream > 0) {
-            send_advance_grant_if_safe(fed);
-        }
+    fed->completed = ta;
+    // We need to reply just as if this were a NET because it could unblock
+    // network input port control reactions.
+    // This is a side-effect of the combination of distributed cycles and
+    // physical actions in federates. FIXME: More explanation is needed.
+    if (fed->num_upstream > 0) {
+        send_advance_grant_if_safe(fed);
     }
 
     // Check downstream federates to see whether they should now be granted a TAG.
