@@ -1374,8 +1374,11 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
     // Check for STP violation in the centralized coordination, which is a 
     // critical error.
     if (is_STP_violated) {
+        tag_t tag = get_current_tag();
         error_print_and_exit("Attempted to insert reactions for a trigger that had violated the STP offset"
-                             " in centralized coordination.");
+                             " in centralized coordination. Intended tag: (%ld, %u). Current tag: (%ld, %u).",
+                             trigger->intended_tag.time - get_start_time(), trigger->intended_tag.microstep,
+                             tag.time - get_start_time(), tag.microstep);
     }
 #endif
 #endif

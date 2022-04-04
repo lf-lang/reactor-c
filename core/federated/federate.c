@@ -1142,6 +1142,12 @@ void update_last_known_status_on_input_ports(tag_t tag) {
         // we do not update the last known status tag.
         if (compare_tags(tag,
                 input_port_action->last_known_status_tag) >= 0) {
+            DEBUG_PRINT(
+                "Updating the last known status tag of port %d to (%ld, %u).",
+                i,
+                tag.time - get_start_time(), 
+                tag.microstep
+            );
             input_port_action->last_known_status_tag = tag;
             if (input_port_action->is_a_control_reaction_waiting) {
             	notify = true;
@@ -1183,6 +1189,12 @@ void update_last_known_status_on_input_port(tag_t tag, int port_id) {
                     // semantics in tag.h.
                     tag.microstep++;
                 }
+        DEBUG_PRINT(
+            "Updating the last known status tag of port %d to (%ld, %u).",
+            port_id,
+            tag.time - get_start_time(), 
+            tag.microstep
+        );
         input_port_action->last_known_status_tag = tag;
         // If any control reaction is waiting, notify them that the status has changed
         if (input_port_action->is_a_control_reaction_waiting) {
@@ -1601,7 +1613,7 @@ void handle_port_absent_message(int socket, int fed_id) {
     tag_t intended_tag = extract_tag(&(buffer[sizeof(uint16_t)+sizeof(uint16_t)]));
 
     LOG_PRINT("Handling port absent for tag (%lld, %u) for port %d.",
-            intended_tag.time - start_time,
+            intended_tag.time - get_start_time(),
             intended_tag.microstep,
             port_id, 
             fed_id
@@ -1712,7 +1724,7 @@ void handle_tagged_message(int socket, int fed_id) {
 
     if (action->is_physical) {
         // Messages sent on physical connections should be handled via handle_message().
-        warning_print("Received a timed message on a physical connection. Time stamp will be lost.");
+        error_print_and_exit("Received a timed message on a physical connection.");
     }
 
 #ifdef FEDERATED_DECENTRALIZED // Only applicable for federated programs with decentralized coordination
@@ -1789,7 +1801,15 @@ void handle_tagged_message(int socket, int fed_id) {
         // Since the message is intended for the current tag and a control reaction
         // was waiting for the message, trigger the corresponding reactions for this
         // message.
-        LOG_PRINT("Inserting reactions directly at tag (%lld, %u).", intended_tag.time - start_time, intended_tag.microstep);
+        tag_t current_tag = get_current_tag();
+        DEBUG_PRINT(
+            "Inserting reactions directly at tag (%lld, %u). "
+            "Current tag: (%ld, %u).", 
+            intended_tag.time - get_start_time(), 
+            intended_tag.microstep,
+            current_tag.time - get_start_time(),
+            current_tag.microstep
+        );
         action->intended_tag = intended_tag;
         _lf_insert_reactions_for_trigger(action, message_token);
 
@@ -2612,14 +2632,16 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
                 }
             }
         }
-        // Next tag is greater than physical time and this fed has downstream
-        // federates. Need to send TAN rather than NET.
-        // TAN does not include a microstep and expects no reply.
-        // It is sent to enable downstream federates to advance.
-        _lf_send_time(MSG_TYPE_TIME_ADVANCE_NOTICE, tag.time, wait_for_reply);
-        _fed.last_sent_NET = tag;
-        LOG_PRINT("Sent Time Advance Notice (TAN) %lld to RTI.",
-                tag.time - start_time);
+        if(_lf_bounded_NET(&tag)) {
+            // Next tag is greater than physical time and this fed has downstream
+            // federates. Need to send TAN rather than NET.
+            // TAN does not include a microstep and expects no reply.
+            // It is sent to enable downstream federates to advance.
+            _lf_send_time(MSG_TYPE_TIME_ADVANCE_NOTICE, tag.time, wait_for_reply);
+            _fed.last_sent_NET = tag;
+            LOG_PRINT("Sent Time Advance Notice (TAN) %lld to RTI.",
+                    tag.time - get_start_time());
+        }
 
         if (!wait_for_reply) {
             LOG_PRINT("Not waiting physical time to advance further.");
