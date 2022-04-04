@@ -1804,11 +1804,11 @@ void handle_tagged_message(int socket, int fed_id) {
         tag_t current_tag = get_current_tag();
         DEBUG_PRINT(
             "Inserting reactions directly at tag (%lld, %u). "
-            "Current tag: (%ld, %u).", 
-            intended_tag.time - get_start_time(), 
-            intended_tag.microstep,
+            "Intended tag: (%ld, %u).",
             current_tag.time - get_start_time(),
-            current_tag.microstep
+            current_tag.microstep, 
+            intended_tag.time - get_start_time(), 
+            intended_tag.microstep
         );
         action->intended_tag = intended_tag;
         _lf_insert_reactions_for_trigger(action, message_token);
