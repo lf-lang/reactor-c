@@ -826,10 +826,8 @@ void handle_time_advance_notice(federate_t* fed) {
     // Check downstream federates to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream federates have been visited.
-    for (int i = 0; i < fed->num_downstream; i++) {
-        federate_t* downstream = &_RTI.federates[fed->downstream[i]];
-        send_advance_grant_if_safe(downstream);
-    }
+    bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
+    send_downstream_advance_grants_if_safe(fed, visited);
 
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
