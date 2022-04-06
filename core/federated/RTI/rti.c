@@ -237,7 +237,7 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
     size_t message_size = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int64_t) + sizeof(uint32_t);
 
     read_from_socket_errexit(sending_federate->socket, message_size, &(buffer[1]), 
-                            " RTI failed ot read port absent message from federate %u.", 
+                            " RTI failed to read port absent message from federate %u.",
                             sending_federate->id);
 
     // Need to acquire the mutex lock to ensure that the thread handling
@@ -254,6 +254,20 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
         pthread_mutex_unlock(&_RTI.rti_mutex);
         warning_print("RTI: Destination federate %d is no longer connected. Dropping message.",
                 federate_id);
+        // FIXME: Do not exit!
+        error_print_and_exit("Fed status: next_event (%lld, %d), "
+        		"completed (%lld, %d), "
+        		"last_granted (%lld, %d), "
+        		"last_provisionally_granted (%lld, %d).",
+				_RTI.federates[federate_id].next_event.time - start_time,
+				_RTI.federates[federate_id].next_event.microstep,
+				_RTI.federates[federate_id].completed.time - start_time,
+				_RTI.federates[federate_id].completed.microstep,
+				_RTI.federates[federate_id].last_granted.time - start_time,
+				_RTI.federates[federate_id].last_granted.microstep,
+				_RTI.federates[federate_id].last_provisionally_granted.time - start_time,
+				_RTI.federates[federate_id].last_provisionally_granted.microstep
+		);
         return;
     }
 
@@ -330,6 +344,20 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
         pthread_mutex_unlock(&_RTI.rti_mutex);
         warning_print("RTI: Destination federate %d is no longer connected. Dropping message.",
                 federate_id);
+        // FIXME: Do not exit!
+        error_print_and_exit("Fed status: next_event (%lld, %d), "
+        		"completed (%lld, %d), "
+        		"last_granted (%lld, %d), "
+        		"last_provisionally_granted (%lld, %d).",
+				_RTI.federates[federate_id].next_event.time - start_time,
+				_RTI.federates[federate_id].next_event.microstep,
+				_RTI.federates[federate_id].completed.time - start_time,
+				_RTI.federates[federate_id].completed.microstep,
+				_RTI.federates[federate_id].last_granted.time - start_time,
+				_RTI.federates[federate_id].last_granted.microstep,
+				_RTI.federates[federate_id].last_provisionally_granted.time - start_time,
+				_RTI.federates[federate_id].last_provisionally_granted.microstep
+		);
         return;
     }
 
@@ -341,6 +369,10 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     // updated.
     if (compare_tags(_RTI.federates[federate_id].next_event, intended_tag) > 0) {
     	_RTI.federates[federate_id].next_event = intended_tag;
+    	// Flag the next_field as being the result of an in-transit message.
+    	// This will prevent overwriting the field until a LTC message is
+    	// received with at least as large a tag.
+    	_RTI.federates[federate_id].in_transit_message = true;
     }
 
     // Forward the message or message chunk.
@@ -764,25 +796,35 @@ void handle_next_event_tag(federate_t* fed) {
                                          // select() mechanism to read and process
                                          // federates' buffers in an orderly fashion
                                           
+    // Before overwriting next_event, if the current next_event value is due
+    // to a message in transit, then make sure an LTC has been received that is
+    // at least as large.
+    tag_t received_next_event = extract_tag(buffer);
+    if (!fed->in_transit_message || compare_tags(fed->completed, received_next_event) >= 0) {
+    	fed->next_event = received_next_event;
+    	fed->in_transit_message = false;
 
-    fed->next_event = extract_tag(buffer);
+		LOG_PRINT("RTI received from federate %d the Next Event Tag (NET) (%lld, %u).",
+				fed->id, fed->next_event.time - start_time,
+				fed->next_event.microstep);
 
-    LOG_PRINT("RTI received from federate %d the Next Event Tag (NET) (%lld, %u).",
-            fed->id, fed->next_event.time - start_time,
-            fed->next_event.microstep);
-                        
-    // Check to see whether we can reply now with a time advance grant.
-    // If the federate has no upstream federates, then it does not wait for
-    // nor expect a reply. It just proceeds to advance time.
-    if (fed->num_upstream > 0) {
-        send_advance_grant_if_safe(fed);
+		// Check to see whether we can reply now with a time advance grant.
+		// If the federate has no upstream federates, then it does not wait for
+		// nor expect a reply. It just proceeds to advance time.
+		if (fed->num_upstream > 0) {
+			send_advance_grant_if_safe(fed);
+		}
+		// Check downstream federates to see whether they should now be granted a TAG.
+		// To handle cycles, need to create a boolean array to keep
+		// track of which upstream federates have been visited.
+		bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
+		send_downstream_advance_grants_if_safe(fed, visited);
+    } else {
+		LOG_PRINT("RTI received from federate %d the Next Event Tag (NET) (%lld, %u), "
+				"but ignoring it because there is a message in transit to the federate.",
+				fed->id, fed->next_event.time - start_time,
+				fed->next_event.microstep);
     }
-    // Check downstream federates to see whether they should now be granted a TAG.
-    // To handle cycles, need to create a boolean array to keep
-    // track of which upstream federates have been visited.
-    bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
-    send_downstream_advance_grants_if_safe(fed, visited);
-
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
@@ -813,21 +855,30 @@ void handle_time_advance_notice(federate_t* fed) {
     // less than the NET.
     tag_t ta = (tag_t) {.time = fed->time_advance, .microstep = 0};
     if (compare_tags(ta, fed->next_event) > 0) {
-        fed->next_event = ta;
-        // We need to reply just as if this were a NET because it could unblock
-        // network input port control reactions.
-        // This is a side-effect of the combination of distributed cycles and
-        // physical actions in federates. FIXME: More explanation is needed.
-        if (fed->num_upstream > 0) {
-            send_advance_grant_if_safe(fed);
+        if (!fed->in_transit_message || compare_tags(fed->completed, ta) >= 0) {
+			fed->next_event = ta;
+			fed->in_transit_message = false;
+			// We need to reply just as if this were a NET because it could unblock
+			// network input port control reactions.
+			// This is a side-effect of the combination of distributed cycles and
+			// physical actions in federates. FIXME: More explanation is needed.
+			if (fed->num_upstream > 0) {
+				send_advance_grant_if_safe(fed);
+			}
+			// Check downstream federates to see whether they should now be granted a TAG.
+			// To handle cycles, need to create a boolean array to keep
+			// track of which upstream federates have been visited.
+			bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
+			send_downstream_advance_grants_if_safe(fed, visited);
+        } else {
+            LOG_PRINT("RTI ignoring TAN %lld from federate %d "
+            		"because a message is in transit to the federate.",
+                    fed->time_advance - start_time, fed->id);
         }
+    } else {
+    	warning_print("RTI: Federate %d has reported a NET ahead of physical time, "
+    			"but now it is sending a TAN, which indicates it shouldn't have.", fed->id);
     }
-
-    // Check downstream federates to see whether they should now be granted a TAG.
-    // To handle cycles, need to create a boolean array to keep
-    // track of which upstream federates have been visited.
-    bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
-    send_downstream_advance_grants_if_safe(fed, visited);
 
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
@@ -863,6 +914,7 @@ void _lf_rti_broadcast_stop_time_to_federates_already_locked() {
         if (compare_tags(_RTI.federates[i].next_event, _RTI.max_stop_tag) >= 0) {
         	// Need the next_event to be no greater than the stop tag.
         	_RTI.federates[i].next_event = _RTI.max_stop_tag;
+        	_RTI.federates[i].in_transit_message = false;
         }
         write_to_socket_errexit(_RTI.federates[i].socket, MSG_TYPE_STOP_GRANTED_LENGTH, outgoing_buffer,
                 "RTI failed to send MSG_TYPE_STOP_GRANTED message to federate %d.", _RTI.federates[i].id);
@@ -1360,6 +1412,8 @@ void handle_federate_resign(federate_t *my_fed) {
     
     // Indicate that there will no further events from this federate.
     my_fed->next_event = FOREVER_TAG;
+	my_fed->in_transit_message = false;
+
     my_fed->time_advance = FOREVER;
     
     // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
@@ -1845,6 +1899,7 @@ void initialize_federate(uint16_t id) {
     _RTI.federates[id].last_granted = NEVER_TAG;
     _RTI.federates[id].last_provisionally_granted = NEVER_TAG;
     _RTI.federates[id].next_event = NEVER_TAG;
+    _RTI.federates[id].in_transit_message = false;
     _RTI.federates[id].time_advance = NEVER;
     _RTI.federates[id].state = NOT_CONNECTED;
     _RTI.federates[id].upstream = NULL;

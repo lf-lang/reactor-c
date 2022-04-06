@@ -2585,6 +2585,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
         // What we do next depends on whether the NET has been bounded by
         // physical time or by an event on the event queue.
         if (!tag_bounded_by_physical_time) {
+        	// This if statement does not fall through but rather returns.
             // NET is not bounded by physical time or has no downstream federates.
             // Normal case.
             _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag, wait_for_reply);
@@ -2619,7 +2620,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
                 if (lf_cond_wait(&event_q_changed, &mutex) != 0) {
                     error_print("Wait error.");
                 }
-                // Either a TAG or PTAG arrived.
+                // Either a TAG or PTAG arrived or something appeared on the event queue.
                 if (!_fed.waiting_for_TAG) {
                     // _fed.last_TAG will have been set by the thread receiving the TAG message that
                     // set _fed.waiting_for_TAG to false.
@@ -2628,12 +2629,21 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
                 // Check whether the new event on the event queue requires sending a new NET.
                 tag_t next_tag = get_next_event_tag();
                 if (compare_tags(next_tag, tag) != 0) {
-                    _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag, wait_for_reply);
-                    _fed.last_sent_NET = next_tag;
+                	// The next tag may also have to be bounded by physical time.
+                	if (_lf_bounded_NET(&next_tag)) {
+                        _lf_send_time(MSG_TYPE_TIME_ADVANCE_NOTICE, next_tag.time, wait_for_reply);
+                        _fed.last_sent_NET = next_tag;
+                        DEBUG_PRINT("Sent Time Advance Notice (TAN) %lld to RTI.",
+                        		next_tag.time - get_start_time());
+                	} else {
+						_lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag, wait_for_reply);
+						_fed.last_sent_NET = next_tag;
+			            LOG_PRINT("Sent next event tag (NET) (%lld, %u) to RTI.",
+			            		next_tag.time - start_time, next_tag.microstep);
+                	}
                 }
             }
         }
-
         
         // Next tag is greater than physical time and this fed has downstream
         // federates. Need to send TAN rather than NET.
