@@ -142,7 +142,7 @@ static void worker_assignments_put(reaction_t* reaction) {
     assert(reaction != NULL);
     assert(level > current_level || current_level == 0);
     assert(level < num_levels);
-    // TODO: Implement work stealing, for the following could lead to unfair work distribution.
+    // TODO: Find some robust way to compute a hash from the reaction. This method here is wrong.
     size_t worker = ((size_t) reaction) % num_workers_by_level[level];
     size_t num_preceding_reactions = lf_atomic_fetch_add(
         &num_reactions_by_worker_by_level[level][worker],

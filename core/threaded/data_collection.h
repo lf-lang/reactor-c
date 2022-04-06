@@ -30,7 +30,7 @@ extern size_t max_num_workers;
 
 static void possible_nums_workers_init() {
     // Start with 0 and end with two numbers strictly greater than max_num_workers.
-    size_t pnw_length = 3;
+    size_t pnw_length = 4;
     size_t temp = max_num_workers;
     while ((temp >>= 1)) pnw_length++;
     possible_nums_workers = (size_t*) malloc(pnw_length * sizeof(size_t));
