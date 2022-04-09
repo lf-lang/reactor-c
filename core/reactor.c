@@ -44,6 +44,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 pqueue_t* reaction_q;
 
 /**
+ * @brief Queue of known deadlines. A deadline of a reaction
+ * is known as soon as the triggering event is enqueued.
+ */
+pqueue_t* deadline_q;
+
+/**
  * Unless the "fast" option is given, an LF program will wait until
  * physical time matches logical time before handling an event with
  * a given logical time. The amount of time is less than this given
@@ -200,13 +206,7 @@ int _lf_do_step(void) {
         // at most once per logical time value. If the violation reaction triggers the
         // same reaction at the current time value, even if at a future superdense time,
         // then the reaction will be invoked and the violation reaction will not be invoked again.
-
-        // Shaokai: Here is where we should modify. Instead of checking whether the current reaction
-        // has a deadline, we check if there are deadlines have been violated.
-        // Note: Deadline violation detection should be done wrt both events and reactions.
-        // Step 1: push to deadline queue when an event is pushed to the event queue
-        // Step 2: before popping a reaction off the reaction queue,
-        //         check the deadline queue and invoke deadline handler if necessary.
+        /*
         if (reaction->deadline > 0LL) {
             // Get the current physical time.
             instant_t physical_time = get_physical_time();
@@ -231,8 +231,39 @@ int _lf_do_step(void) {
                 }
             }
         }
+        */
         
+        // Shaokai: Here is where we should modify. Instead of checking whether the current reaction
+        // has a deadline, we check if there are deadlines have been violated.
+        // Note: Deadline violation detection should be done wrt both events and reactions.
+        // Step 1: push to deadline queue when an event is pushed to the event queue
+        // Step 2: before popping a reaction off the reaction queue,
+        //         check the deadline queue and invoke deadline handler if necessary.
+
+        // Check the deadline pqueue and see if the earliest deadline has been violated.
+        while (pqueue_peek(deadline_q)->expiration_time > get_physical_time()) {
+            LOG_PRINT("Deadline violation. Invoking deadline handler.");
+            // Pop the deadline and invoke the handler
+            deadline_t* violated_deadline = pqueue_pop(deadline_q);
+            reaction_t* missed_reaction = violated_deadline->reaction;
+
+            // If missed_reaction is the current reaction, set the violation flag
+            // to notify the code block below the while loop.
+            // If missed_reaction is not the current reaction,
+            // the current reaction can still execute normally.
+            if (missed_reaction == reaction) violation = true;
+
+            // Invoke the handler of missed_reaction, if there is one.
+            reaction_function_t handler = missed_reaction->deadline_violation_handler;
+            if (handler != NULL) {
+                (*handler)(missed_reaction->self);
+                // If the reaction produced outputs, put the resulting
+                // triggered reactions into the queue.
+                schedule_output_reactions(missed_reaction, 0);
+            }
+        }
         
+        // If the current reaction is not missed, execute the reaction.
         if (!violation) {
             // Invoke the reaction function.
             tracepoint_reaction_starts(reaction, 0); // 0 indicates unthreaded.
@@ -396,6 +427,10 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         // The index of the reaction holds the deadline in the 48 most significant bits,
         // the level in the 16 least significant bits.
         reaction_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
+                get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
+        
+        // Set the initialize size of the deadline queue to be the same as that of reaction_q.
+        deadline_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
                 get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
                 
         current_tag = (tag_t){.time = start_time, .microstep = 0u};
