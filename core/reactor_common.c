@@ -531,13 +531,13 @@ lf_token_t* create_token(size_t element_size) {
  *  field pointing to newly allocated memory.
  */
 lf_token_t* _lf_initialize_token_with_value(lf_token_t* token, void* value, size_t length) {
-    // assert(token != NULL);
+    assert(token != NULL);
 
     // If necessary, allocate memory for a new lf_token_t struct.
     // This assumes that the lf_token_t* in the self struct has been initialized to NULL.
     lf_token_t* result = token;
     DEBUG_PRINT("Initializing a token %p with ref_count %d.", token, token->ref_count);
-    if (token == NULL || token->ref_count > 0) {
+    if (token->ref_count > 0) {
         // The specified token is not available.
         result = create_token(token->element_size);
     }
@@ -561,7 +561,7 @@ lf_token_t* _lf_initialize_token_with_value(lf_token_t* token, void* value, size
  *  field pointing to newly allocated memory.
  */
 lf_token_t* _lf_initialize_token(lf_token_t* token, size_t length) {
-    // assert(token != NULL);
+    assert(token != NULL);
 
     // Allocate memory for storing the array.
     void* value = malloc(token->element_size * length);
