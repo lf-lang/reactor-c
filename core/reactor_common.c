@@ -378,9 +378,9 @@ token_freed _lf_done_using(lf_token_t* token) {
     if (token->ref_count == 0) {
         if (token->value != NULL) {
             // Count frees to issue a warning if this is never freed.
-            // Do not free the value field if it is garbage collected.
+            // Do not free the value field if it is garbage collected and token's ok_to_free field is not "token_and_value".
             _lf_count_payload_allocations--;
-            if(OK_TO_FREE != token_only) {
+            if(OK_TO_FREE != token_only && token->ok_to_free == token_and_value) {
                 DEBUG_PRINT("_lf_done_using: Freeing allocated memory for payload (token value): %p", token->value);
                 free(token->value);
             }
