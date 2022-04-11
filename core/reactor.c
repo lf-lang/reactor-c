@@ -241,7 +241,10 @@ int _lf_do_step(void) {
         //         check the deadline queue and invoke deadline handler if necessary.
 
         // Check the deadline pqueue and see if the earliest deadline has been violated.
-        while (pqueue_peek(deadline_q)->expiration_time > get_physical_time()) {
+        deadline_t* earliest_deadline = (deadline_t*) pqueue_peek(deadline_q);
+        // DEBUG_PRINT("The current earliest deadline");
+        print_deadline(earliest_deadline);
+        while (earliest_deadline != NULL && earliest_deadline->expiration_time < get_physical_time()) {
             LOG_PRINT("Deadline violation. Invoking deadline handler.");
             // Pop the deadline and invoke the handler
             deadline_t* violated_deadline = pqueue_pop(deadline_q);
@@ -261,6 +264,12 @@ int _lf_do_step(void) {
                 // triggered reactions into the queue.
                 schedule_output_reactions(missed_reaction, 0);
             }
+
+            // Free the previous deadline instance.
+            free(violated_deadline);
+
+            // Peek the next earliest deadline in the deadline queue.
+            earliest_deadline = (deadline_t*) pqueue_peek(deadline_q);
         }
         
         // If the current reaction is not missed, execute the reaction.
@@ -392,6 +401,16 @@ bool _lf_is_blocked_by_executing_reaction(void) {
 }
 
 /**
+ * @brief Set up a pending deadline for checking deadlines preemptively.
+ */
+void _lf_set_up_deadline(reaction_t* reaction, instant_t expiration_time) {
+    deadline_t* deadline = malloc(sizeof(deadline_t));
+    deadline->reaction = reaction;
+    deadline->expiration_time = expiration_time;
+    pqueue_insert(deadline_q, deadline);
+}
+
+/**
  * The main loop of the LF program.
  * 
  * An unambiguous function name that can be called
@@ -430,8 +449,8 @@ int lf_reactor_c_main(int argc, char* argv[]) {
                 get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
         
         // Set the initialize size of the deadline queue to be the same as that of reaction_q.
-        deadline_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
-                get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
+        deadline_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_order, get_deadline_expiration_time,
+                get_deadline_position, set_deadline_position, deadline_matches, print_deadline);
                 
         current_tag = (tag_t){.time = start_time, .microstep = 0u};
         _lf_execution_started = true;

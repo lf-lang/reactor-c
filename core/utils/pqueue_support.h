@@ -44,7 +44,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ********** Priority Queue Support Start
 
 /**
- * Return whether the first and second argument are given in reverse order.
+ * Return whether the first and second argument are given in order (smaller first).
+ */
+static int in_order(pqueue_pri_t thiz, pqueue_pri_t that) {
+    return (thiz < that);
+}
+
+/**
+ * Return whether the first and second argument are given in reverse order (larger first).
  */
 static int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that) {
     return (thiz > that);
@@ -73,6 +80,14 @@ static int reaction_matches(void* next, void* curr) {
 }
 
 /**
+ * Return whether or not the given deadline_t pointers 
+ * point to the same struct.
+ */
+static int deadline_matches(void* next, void* curr) {
+    return (next == curr);
+}
+
+/**
  * Report a priority equal to the time of the given event.
  * Used for sorting pointers to event_t structs in the event queue.
  */
@@ -90,6 +105,14 @@ static pqueue_pri_t get_reaction_index(void *a) {
 }
 
 /**
+ * Report a priority equal to the deadline expiration time of a reaction.
+ * Used for sorting pointers to deadline_t structs in the deadline queue.
+ */
+static pqueue_pri_t get_deadline_expiration_time(void *a) {
+    return ((deadline_t*) a)->expiration_time;
+}
+
+/**
  * Return the given event's position in the queue.
  */
 static size_t get_event_position(void *a) {
@@ -104,6 +127,13 @@ static size_t get_reaction_position(void *a) {
 }
 
 /**
+ * Return the given deadline's position in the queue.
+ */
+static size_t get_deadline_position(void *a) {
+    return ((deadline_t*) a)->pos;
+}
+
+/**
  * Set the given event's position in the queue.
  */
 static void set_event_position(void *a, size_t pos) {
@@ -111,10 +141,28 @@ static void set_event_position(void *a, size_t pos) {
 }
 
 /**
- * Return the given reaction's position in the queue.
+ * Set the given reaction's position in the queue.
  */
 static void set_reaction_position(void *a, size_t pos) {
     ((reaction_t*) a)->pos = pos;
+}
+
+/**
+ * Set the given deadline's position in the queue.
+ */
+static void set_deadline_position(void *a, size_t pos) {
+    ((deadline_t*) a)->pos = pos;
+}
+
+/**
+ * Print some information about the given event.
+ * 
+ * DEBUG function only.
+ */
+static void print_event(void *event) {
+	event_t *e = (event_t*)event;
+    DEBUG_PRINT("time: %lld, trigger: %p, token: %p",
+			e->time, e->trigger, e->token);
 }
 
 /**
@@ -133,10 +181,14 @@ static void print_reaction(void *reaction) {
  * 
  * DEBUG function only.
  */
-static void print_event(void *event) {
-	event_t *e = (event_t*)event;
-    DEBUG_PRINT("time: %lld, trigger: %p, token: %p",
-			e->time, e->trigger, e->token);
+static void print_deadline(void *deadline) {
+    deadline_t* d = (deadline_t*)deadline;
+	if (deadline != NULL) {
+        DEBUG_PRINT("expiration time: %lld, reaction: %p",
+			d->expiration_time, d->reaction);
+    } else {
+        DEBUG_PRINT("Empty deadline instance!");
+    }
 }
 
 // ********** Priority Queue Support End

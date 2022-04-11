@@ -1050,7 +1050,19 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
             // Do not need a dummy event if we are scheduling at 1 microstep
             // in the future at current time or at microstep 0 in a future time.
 
-            // Shaokai: Here is where the timer should be inserted.
+            // Check if this event triggers reactions with deadlines.
+            // If so, set up these deadlines.
+            DEBUG_PRINT("Adding deadlines.");
+            for (int i = 0; i < e->trigger->number_of_reactions; i++) {
+                instant_t deadline = e->trigger->reactions[i]->deadline;
+                if (deadline > 0LL) {
+                    instant_t expiration_time = e->time + deadline;
+                    DEBUG_PRINT("Deadline expires at %lld", expiration_time);
+                    _lf_set_up_deadline(e->trigger->reactions[i], expiration_time);
+                }
+            }
+
+            // Insert the event into the event queue.
             pqueue_insert(event_q, e);
         } else {
             // Create a dummy event. Insert it into the queue, and let its next

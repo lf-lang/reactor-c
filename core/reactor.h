@@ -561,6 +561,16 @@ struct reaction_t {
                                 // If enclosed in multiple, this will point to the innermost mode.
 };
 
+/** Typedef for deadline_t, used for storing pending deadlines. */
+typedef struct deadline_t deadline_t;
+
+/** The deadline struct to push onto the deadline queue. */
+struct deadline_t {
+    size_t pos;                 // Position in the priority queue.
+    reaction_t* reaction;        // The reaction that this deadline is assigned to.
+    instant_t expiration_time;  // The expiration time of the deadline.
+};
+
 /** Typedef for event_t struct, used for storing activation records. */
 typedef struct event_t event_t;
 
@@ -954,6 +964,11 @@ void _lf_fd_send_stop_request_to_rti(void);
  * @return True if the specified deadline has passed and false otherwise.
  */
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
+
+/**
+ * @brief Set up a pending deadline for checking deadlines preemptively.
+ */
+void _lf_set_up_deadline(reaction_t* reaction, instant_t expiration_time);
 
 //  ******** Global Variables ********  //
 
