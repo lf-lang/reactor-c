@@ -356,6 +356,57 @@ typedef enum token_freed {
     TOKEN_FREED    // The value and the token were freed.
 } token_freed;
 
+
+/**
+ * Determine which part of the token should be freed and 
+ * free each part correspondingly.
+ * 
+ * @param token Pointer to a token.
+ * @return NOT_FREED if nothing was freed, VALUE_FREED if the value
+ *  was freed, and TOKEN_FREED if both the value and the token were
+ *  freed.
+ */
+token_freed _lf_free_token(lf_token_t* token) {
+    if (token == NULL) {
+        return NOT_FREED;
+    }
+    token_freed result = NOT_FREED;
+    if (token->value != NULL) {
+        // Count frees to issue a warning if this is never freed.
+        // Do not free the value field if it is garbage collected and token's ok_to_free field is not "token_and_value".
+        _lf_count_payload_allocations--;
+        if (OK_TO_FREE != token_only && token->ok_to_free == token_and_value) {
+            DEBUG_PRINT("_lf_done_using: Freeing allocated memory for payload (token value): %p", token->value);
+            if (token->destructor == NULL) {
+                free(token->value);
+            } else {
+                token->destructor(token->value);
+            }
+        }
+        token->value = NULL;
+        result = VALUE_FREED;
+    }
+    // Tokens that are created at the start of execution and associated with
+    // output ports or actions are pointed to by those actions and output
+    // ports and should not be freed. They are expected to be reused instead.
+    if (token->ok_to_free) {
+        // Need to free the lf_token_t struct also.
+        if (_lf_token_recycling_bin_size < _LF_TOKEN_RECYCLING_BIN_SIZE_LIMIT) {
+            // Recycle instead of freeing.
+            token->next_free = _lf_token_recycling_bin;
+            _lf_token_recycling_bin = token;
+            _lf_token_recycling_bin_size++;
+        } else {
+            // Recycling bin is full.
+            free(token);
+        }
+        _lf_count_token_allocations--;
+        DEBUG_PRINT("_lf_done_using: Freeing allocated memory for token: %p", token);
+        result = TOKEN_FREED;
+    }
+    return result;
+}
+
 /**
  * Decrement the reference count of the specified token.
  * If the reference count hits 0, free the memory for the value
@@ -367,50 +418,16 @@ typedef enum token_freed {
  *  freed.
  */
 token_freed _lf_done_using(lf_token_t* token) {
-    token_freed result = NOT_FREED;
-    if (token == NULL) return result;
+    if (token == NULL) {
+        return NOT_FREED;
+    }
     if (token->ref_count == 0) {
         warning_print("Token being freed that has already been freed: %p", token);
         return NOT_FREED;
     }
     token->ref_count--;
     DEBUG_PRINT("_lf_done_using: ref_count = %d.", token->ref_count);
-    if (token->ref_count == 0) {
-        if (token->value != NULL) {
-            // Count frees to issue a warning if this is never freed.
-            // Do not free the value field if it is garbage collected and token's ok_to_free field is not "token_and_value".
-            _lf_count_payload_allocations--;
-            if(OK_TO_FREE != token_only && token->ok_to_free == token_and_value) {
-                DEBUG_PRINT("_lf_done_using: Freeing allocated memory for payload (token value): %p", token->value);
-                if (token->destructor == NULL) {
-                    free(token->value);
-                } else {
-                    token->destructor(token->value);
-                }
-            }
-            token->value = NULL;
-            result = VALUE_FREED;
-        }
-        // Tokens that are created at the start of execution and associated with
-        // output ports or actions are pointed to by those actions and output
-        // ports and should not be freed. They are expected to be reused instead.
-        if (token->ok_to_free) {
-            // Need to free the lf_token_t struct also.
-            if (_lf_token_recycling_bin_size < _LF_TOKEN_RECYCLING_BIN_SIZE_LIMIT) {
-                // Recycle instead of freeing.
-                token->next_free = _lf_token_recycling_bin;
-                _lf_token_recycling_bin = token;
-                _lf_token_recycling_bin_size++;
-            } else {
-                // Recycling bin is full.
-                free(token);
-            }
-            _lf_count_token_allocations--;
-            DEBUG_PRINT("_lf_done_using: Freeing allocated memory for token: %p", token);
-            result = TOKEN_FREED;
-        }
-    }
-    return result;
+    return token->ref_count == 0 ? _lf_free_token(token) : NOT_FREED;
 }
 
 /**
