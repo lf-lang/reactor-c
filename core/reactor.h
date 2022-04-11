@@ -967,8 +967,20 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
 
 /**
  * @brief Set up a pending deadline for checking deadlines preemptively.
+ * 
+ * @param reaction The reaction that holds this deadline.
+ * @param expiration_time The physical time instant at which the deadline
+ *  is violated (in other words, expires).
  */
 void _lf_set_up_deadline(reaction_t* reaction, instant_t expiration_time);
+
+/**
+ * @brief Check if the trigger contained in the event triggers
+ * reactions with deadlines. If so, set up the deadlines.
+ * 
+ * @param event The event to be analyzed
+ */
+void _lf_set_up_deadlines_based_on_event(event_t* e);
 
 //  ******** Global Variables ********  //
 

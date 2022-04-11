@@ -254,7 +254,13 @@ int _lf_do_step(void) {
             // to notify the code block below the while loop.
             // If missed_reaction is not the current reaction,
             // the current reaction can still execute normally.
-            if (missed_reaction == reaction) violation = true;
+            if (missed_reaction == reaction) {
+                violation = true;
+            } else {
+                // Mark the missed reaction as queued so that
+                // it will NOT be inserted into the reaction queue.
+                missed_reaction->status = queued;
+            }
 
             // Invoke the handler of missed_reaction, if there is one.
             reaction_function_t handler = missed_reaction->deadline_violation_handler;
@@ -402,6 +408,10 @@ bool _lf_is_blocked_by_executing_reaction(void) {
 
 /**
  * @brief Set up a pending deadline for checking deadlines preemptively.
+ * 
+ * @param reaction The reaction that holds this deadline.
+ * @param expiration_time The physical time instant at which the deadline
+ *  is violated (in other words, expires).
  */
 void _lf_set_up_deadline(reaction_t* reaction, instant_t expiration_time) {
     deadline_t* deadline = malloc(sizeof(deadline_t));

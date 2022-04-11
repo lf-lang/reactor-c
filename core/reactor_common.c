@@ -639,7 +639,6 @@ void _lf_pop_events() {
         for (int i = 0; i < event->trigger->number_of_reactions; i++) {
             reaction_t *reaction = event->trigger->reactions[i];
             // Do not enqueue this reaction twice.
-            // Shaokai: why would we enqueue a reaction twice?
             if (reaction->status == inactive) {
 #ifdef FEDERATED_DECENTRALIZED
                 // In federated execution, an intended tag that is not (NEVER, 0)
@@ -1052,19 +1051,17 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
 
             // Check if this event triggers reactions with deadlines.
             // If so, set up these deadlines.
-            DEBUG_PRINT("Adding deadlines.");
-            for (int i = 0; i < e->trigger->number_of_reactions; i++) {
-                instant_t deadline = e->trigger->reactions[i]->deadline;
-                if (deadline > 0LL) {
-                    instant_t expiration_time = e->time + deadline;
-                    DEBUG_PRINT("Deadline expires at %lld", expiration_time);
-                    _lf_set_up_deadline(e->trigger->reactions[i], expiration_time);
-                }
-            }
+            _lf_set_up_deadlines_based_on_event(e);
 
             // Insert the event into the event queue.
             pqueue_insert(event_q, e);
         } else {
+            DEBUG_PRINT("In the else branch.");
+
+            // Check if this event triggers reactions with deadlines.
+            // If so, set up these deadlines.
+            _lf_set_up_deadlines_based_on_event(e);
+
             // Create a dummy event. Insert it into the queue, and let its next
             // pointer point to the actual event.
             pqueue_insert(event_q, _lf_create_dummy_events(trigger, tag.time, e, relative_microstep));
@@ -1327,7 +1324,11 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     LOG_PRINT("Inserting event in the event queue with elapsed time %lld.",
             e->time - start_time);
 
-    // Shaokai: Another place where timers should be inserted.
+    // Check if this event triggers reactions with deadlines.
+    // If so, set up these deadlines.
+    _lf_set_up_deadlines_based_on_event(e);
+
+    // Insert the event into the event queue.
     pqueue_insert(event_q, e);
 
     tracepoint_schedule(trigger, e->time - current_tag.time);
@@ -1561,6 +1562,24 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
 }
 
 /**
+ * @brief Check if the trigger contained in the event triggers
+ * reactions with deadlines. If so, set up the deadlines.
+ * 
+ * @param event The event to be analyzed
+ */
+void _lf_set_up_deadlines_based_on_event(event_t* e) {
+    DEBUG_PRINT("Adding deadlines.");
+    for (int i = 0; i < e->trigger->number_of_reactions; i++) {
+        instant_t deadline = e->trigger->reactions[i]->deadline;
+        if (deadline > 0LL) {
+            instant_t expiration_time = e->time + deadline;
+            DEBUG_PRINT("Deadline expires at %lld", expiration_time);
+            _lf_set_up_deadline(e->trigger->reactions[i], expiration_time);
+        }
+    }
+}
+
+/**
  * For the specified reaction, if it has produced outputs, insert the
  * resulting triggered reactions into the reaction queue.
  * This procedure assumes the mutex lock is NOT held and grabs
@@ -1706,6 +1725,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
             }
         }
         if (!violation) {
+            DEBUG_PRINT("Optimization triggered.");
             // Invoke the downstream_reaction function.
             tracepoint_reaction_starts(downstream_to_execute_now, worker);
             downstream_to_execute_now->function(downstream_to_execute_now->self);
