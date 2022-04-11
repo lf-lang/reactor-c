@@ -382,7 +382,11 @@ token_freed _lf_done_using(lf_token_t* token) {
             _lf_count_payload_allocations--;
             if(OK_TO_FREE != token_only && token->ok_to_free == token_and_value) {
                 DEBUG_PRINT("_lf_done_using: Freeing allocated memory for payload (token value): %p", token->value);
-                free(token->value);
+                if (token->destructor == NULL) {
+                    free(token->value);
+                } else {
+                    token->destructor(token->value);
+                }
             }
             token->value = NULL;
             result = VALUE_FREED;
@@ -493,6 +497,7 @@ lf_token_t* _lf_create_token(size_t element_size) {
     token->length = 0;
     token->element_size = element_size;
     token->ref_count = 0;
+    token->destructor = NULL;
     token->ok_to_free = no;
     token->next_free = NULL;
     return token;

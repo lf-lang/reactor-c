@@ -452,6 +452,8 @@ typedef struct lf_token_t {
     size_t length;
     /** The number of input ports that have not already reacted to the message. */
     int ref_count;
+    /** The  */
+    void (*destructor) (void* value);
     /**
      * Indicator of whether this token is expected to be freed.
      * Tokens that are created at the start of execution and associated with output
