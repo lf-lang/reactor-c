@@ -47,7 +47,7 @@ extern int _lf_startup_reactions_size;
 extern pqueue_t* event_q;
 
 /**
- * Checks whether the given mode is currently considered active.
+ * Return true if the given mode is active.
  * This includes checking all enclosing modes.
  * If any of those is inactive, then so is this one.
  *
