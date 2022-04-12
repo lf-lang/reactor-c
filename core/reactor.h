@@ -120,7 +120,7 @@ do { \
  * @see lf_token_t
  */
 #ifndef __cplusplus
-#define _LF_SET_ARRAY(out, val, element_size, length) \
+#define _LF_SET_ARRAY(out, val, length) \
 do { \
     _lf_set_present(&out->is_present); \
     lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
@@ -129,7 +129,7 @@ do { \
     out->value = token->value; \
 } while(0)
 #else
-#define _LF_SET_ARRAY(out, val, element_size, length) \
+#define _LF_SET_ARRAY(out, val, length) \
 do { \
     _lf_set_present(&out->is_present); \
     lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \

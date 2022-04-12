@@ -81,7 +81,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param length The length of the array to send.
  * @see lf_token_t
  */
-#define SET_ARRAY(out, val, element_size, length) _LF_SET_ARRAY(out, val, element_size, length)
+#define SET_ARRAY(out, val, length) _LF_SET_ARRAY(out, val, length)
 
 /**
  * Version of set() for output types given as 'type*' that
