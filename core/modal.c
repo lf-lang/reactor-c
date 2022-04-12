@@ -80,7 +80,10 @@ bool _lf_mode_is_active(reactor_mode_t* mode) {
 }
 
 /**
- * Handle startup reactions in modal reactors.
+ * Trigger startup reactions in modal reactors that should be triggered.
+ * A startup reaction should be triggered if it is in an active mode and
+ * either it has never been triggered before or it has not been triggered
+ * since a reset transition was taken into the mode.
  * Startup reactions are triggered upon first entry and reentry with reset.
  */
 void _lf_handle_mode_startup_reactions() {
@@ -136,7 +139,7 @@ void _lf_add_suspended_event(event_t* event) {
 }
 
 /**
- * Removes the given node from the list of suspended events.
+ * Remove the given node from the list of suspended events and
  * Returns the next element in the list.
  */
 _lf_suspended_event_t* _lf_remove_suspended_event(_lf_suspended_event_t* event) {
@@ -171,10 +174,10 @@ _lf_suspended_event_t* _lf_remove_suspended_event(_lf_suspended_event_t* event) 
 }
 
 /**
- * Performs transitions in all modal reactors.
+ * Perform transitions in all modal reactors.
  *
- * @param state An array of mode state of modal reactor instance Must be ordered hierarchically.
- *              Enclosing mode must come before inner.
+ * @param state An array of mode state of modal reactor instance, which must be ordered hierarchically, where
+ *      an enclosing mode must come before the inner mode.
  * @param num_states The number of mode state.
  * @param reset_data A list of initial values for reactor state variables.
  * @param reset_data_size
@@ -345,7 +348,7 @@ void _lf_process_mode_changes(
 }
 
 /**
- * Releases internal data structures for modes.
+ * Release internal data structures for modes.
  * - Frees all suspended events.
  */
 void _lf_terminate_modal_reactors() {
