@@ -107,6 +107,33 @@ do { \
 } while(0)
 
 /**
+ * Set the specified output (or input of a contained reactor)
+ * to the specified dynamic value and frees the value if no
+ * port references it.
+ *
+ * This version is used for any dynamically allocated types.
+ * The *reference* to "val" is copied (shallow copy) to "out". 
+ *
+ * At the beginning of each timestep, if no port 
+ * references "val", the runtime will free "val".
+ * 
+ * If "destructor" is not NULL, destructor(val) is called.
+ * Otherwise, free(val) is called.
+ * 
+ * @param out The output port (by name) or input of a contained
+ *  reactor in form input_name.port_name.
+ * @param val The value to insert into the self struct.
+ * @param destructor The function pointer used to free "val" in
+ *                   the form of destructor(val).
+ *                   If NULL, free(val) is used instead.
+ */
+#define _LF_SET_DYNAMIC(out, val, destructor) \
+do { \
+    _LF_SET(out, val); \ 
+    out->token->destructor = destructor; \
+} while(0)
+
+/**
  * Version of set for output types given as 'type[]' where you
  * want to send a previously dynamically allocated array.
  *
