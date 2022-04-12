@@ -131,6 +131,7 @@ do { \
 do { \
     _LF_SET_ARRAY(out, val, 1); \
     out->token->destructor = dtor; \
+    out->token->ok_to_free = token_and_value; \
 } while(0)
 
 /**
