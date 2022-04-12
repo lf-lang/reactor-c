@@ -123,14 +123,14 @@ do { \
  * @param out The output port (by name) or input of a contained
  *  reactor in form input_name.port_name.
  * @param val The value to insert into the self struct.
- * @param destructor The function pointer used to free "val" in
- *                   the form of destructor(val).
- *                   If NULL, free(val) is used instead.
+ * @param dtor The function pointer used to free "val" in
+ *             the form of destructor(val).
+ *             If NULL, free(val) is used instead.
  */
-#define _LF_SET_DYNAMIC(out, val, destructor) \
+#define _LF_SET_DYNAMIC(out, val, dtor) \
 do { \
-    _LF_SET(out, val); \ 
-    out->token->destructor = destructor; \
+    _LF_SET_ARRAY(out, val, 1); \
+    out->token->destructor = dtor; \
 } while(0)
 
 /**

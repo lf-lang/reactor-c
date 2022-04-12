@@ -85,11 +85,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param out The output port (by name) or input of a contained
  *  reactor in form input_name.port_name.
  * @param val The value to insert into the self struct.
- * @param destructor The function pointer used to free "val" in
- *                   the form of destructor(val).
- *                   If NULL, free(val) is used instead.
+ * @param dtor The function pointer used to free "val" in
+ *             the form of destructor(val).
+ *             If NULL, free(val) is used instead.
  */
-#define SET_DYNAMIC(out, val, destructor) _LF_SET_DYNAMIC(out, val, destructor)
+#define SET_DYNAMIC(out, val, dtor) _LF_SET_DYNAMIC(out, val, dtor)
 
 /**
  * Version of set for output types given as 'type[]' where you
