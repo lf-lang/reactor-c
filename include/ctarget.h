@@ -70,24 +70,18 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * Set the specified output (or input of a contained reactor)
- * to the specified dynamic value and frees the value if no
- * port references it.
- *
- * This version is used for any dynamically allocated types.
- * The *reference* to "val" is copied (shallow copy) to "out". 
- *
- * At the beginning of each timestep, if no port 
- * references "val", the runtime will free "val".
- * 
- * If "destructor" is not NULL, destructor(val) is called.
- * Otherwise, free(val) is called.
+ * to the specified value. The value argument is a pointer
+ * to memory that the calling reaction has dynamically allocated.
+ * That memory will be automatically freed once all downstream
+ * reactions no longer need the value.
+ * If "destructor" is not NULL, then it is assumed to be a pointer
+ * to a function to use to free the memory. Otherwise, free() will be used.
  * 
  * @param out The output port (by name) or input of a contained
- *  reactor in form input_name.port_name.
- * @param val The value to insert into the self struct.
- * @param dtor The function pointer used to free "val" in
- *             the form of destructor(val).
- *             If NULL, free(val) is used instead.
+ *            reactor in form input_name.port_name.
+ * @param val A pointer to the value to set the port to.
+ * @param dtor A pointer to a void function that takes a pointer argument
+ *             or NULL to use the default void free(void*) function. 
  */
 #define SET_DYNAMIC(out, val, dtor) _LF_SET_DYNAMIC(out, val, dtor)
 
