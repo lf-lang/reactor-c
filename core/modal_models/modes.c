@@ -37,7 +37,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #ifdef MODAL_REACTORS
 
-#include "reactor.h"
+#include "modes.h"
+#include "../reactor.h"
 
 // Forward declaration of functions and variables supplied by reactor_common.c
 void _lf_trigger_reaction(reaction_t* reaction, int worker_number);
