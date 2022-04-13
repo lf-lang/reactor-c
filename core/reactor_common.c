@@ -40,10 +40,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "utils/pqueue.c"
 #include "utils/pqueue_support.h"
 #include "utils/util.c"
-
-#ifdef MODAL_REACTORS
 #include "modal_models/modes.c"
-#endif
 
 /** 
  * Indicator of whether to wait for physical time to match logical time.

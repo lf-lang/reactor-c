@@ -30,6 +30,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * Any mode related code will only work in the presence of the MODAL_REACTORS
  * definition.
+ * However, this header should be included regardless to provide definitions
+ * for mode-unaware pre-compilation.
  *
  * This file is intended for direct include in reactor.h augmenting certain type
  * definitions.

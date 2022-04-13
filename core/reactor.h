@@ -61,10 +61,7 @@
 #include "utils/pqueue.h"
 #include "utils/util.h"
 #include "tag.h"       // Time-related functions.
-
-#ifdef MODAL_REACTORS
-#include "modal_models/modes.h"
-#endif
+#include "modal_models/modes.h" // Modal model support
 
 // The following file is also included, but must be included
 // after its requirements are met, so the #include appears at
