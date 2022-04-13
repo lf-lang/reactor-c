@@ -15,7 +15,8 @@ static hashmap_object2int_entry_t mock[CAPACITY];
 static size_t mock_size = 0;
 
 void test_put(hashmap_object2int_t* h) {
-    void* key = (void*) rand();
+    void* key = NULL;
+    while (!key) key = (void*) (rand() % CAPACITY);
     int value = rand();
     hashmap_object2int_entry_t entry = (hashmap_object2int_entry_t) { .key = key, .value = value };
     hashmap_object2int_put(h, entry.key, entry.value);
@@ -48,7 +49,7 @@ void test_get(hashmap_object2int_t* h) {
 
 /**
  * @brief Run a randomly selected test on `h`.
- * 
+ *
  * @param h A hashmap.
  * @param distribution The desired probability distribution with
  * which each of two actions are performed, expressed as percents.
@@ -65,8 +66,6 @@ void run_test(hashmap_object2int_t* h, int* distribution) {
 }
 
 int main() {
-    // FIXME: This test is not robust! It does not rigorously test edge cases involving multiple
-    // uses of the same key.
     srand(RANDOM_SEED);
     for (int i = 0; i < N; i++) {
         int perturbed[2];
