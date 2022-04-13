@@ -224,7 +224,7 @@ void _lf_sensor_post_message(enum _lf_sensor_message_type type, char* body) {
  * Function to register to handle printing of messages in util.h/c.
  * This acquires the mutex lock.
  */
-void _lf_print_message_function(char* format, va_list args) {
+void _lf_print_message_function(const char* format, va_list args) {
 	if (_lf_sensor.log_file != NULL) {
 		// Write to a log file in addition to the window.
 		vfprintf(_lf_sensor.log_file, format, args);

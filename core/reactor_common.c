@@ -376,9 +376,9 @@ token_freed _lf_done_using(lf_token_t* token) {
     if (token->ref_count == 0) {
         if (token->value != NULL) {
             // Count frees to issue a warning if this is never freed.
-            // Do not free the value field if it is garbage collected.
+            // Do not free the value field if it is garbage collected and token's ok_to_free field is not "token_and_value".
             _lf_count_payload_allocations--;
-            if(OK_TO_FREE != token_only) {
+            if(OK_TO_FREE != token_only && token->ok_to_free == token_and_value) {
                 DEBUG_PRINT("_lf_done_using: Freeing allocated memory for payload (token value): %p", token->value);
                 free(token->value);
             }
@@ -529,13 +529,13 @@ lf_token_t* create_token(size_t element_size) {
  *  field pointing to newly allocated memory.
  */
 lf_token_t* _lf_initialize_token_with_value(lf_token_t* token, void* value, size_t length) {
-    // assert(token != NULL);
+    assert(token != NULL);
 
     // If necessary, allocate memory for a new lf_token_t struct.
     // This assumes that the lf_token_t* in the self struct has been initialized to NULL.
     lf_token_t* result = token;
     DEBUG_PRINT("Initializing a token %p with ref_count %d.", token, token->ref_count);
-    if (token == NULL || token->ref_count > 0) {
+    if (token->ref_count > 0) {
         // The specified token is not available.
         result = create_token(token->element_size);
     }
@@ -559,7 +559,7 @@ lf_token_t* _lf_initialize_token_with_value(lf_token_t* token, void* value, size
  *  field pointing to newly allocated memory.
  */
 lf_token_t* _lf_initialize_token(lf_token_t* token, size_t length) {
-    // assert(token != NULL);
+    assert(token != NULL);
 
     // Allocate memory for storing the array.
     void* value = malloc(token->element_size * length);
@@ -1831,7 +1831,7 @@ int process_args(int argc, char* argv[]) {
             } else {
                 error_print("Invalid value for --keepalive: %s", keep_spec);
             }
-        } else if (strcmp(arg, "-t") == 0 || strcmp(arg, "--workers") == 0) {
+        } else if (strcmp(arg, "-w") == 0 || strcmp(arg, "--workers") == 0) {
             if (argc < i + 1) {
                 error_print("--workers needs an integer argument.s");
                 usage(argc, argv);

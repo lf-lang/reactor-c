@@ -98,7 +98,7 @@ int get_fed_id(void);
  * where n is the federate ID.
  * The arguments are just like printf().
  */
-void info_print(char* format, ...);
+void info_print(const char* format, ...);
 
 /**
  * Report an log message on stdout with the prefix
@@ -108,7 +108,7 @@ void info_print(char* format, ...);
  * where n is the federate ID.
  * The arguments are just like printf().
  */
-void log_print(char* format, ...);
+void log_print(const char* format, ...);
 
 /**
  * A macro used to print useful logging information. It can be enabled
@@ -140,7 +140,7 @@ void log_print(char* format, ...);
  * where n is the federate ID.
  * The arguments are just like printf().
  */
-void debug_print(char* format, ...);
+void debug_print(const char* format, ...);
 
 /**
  * A macro used to print useful debug information. It can be enabled
@@ -168,26 +168,26 @@ void debug_print(char* format, ...);
  * specified message as a prefix, then exit with error code 1.
  * @param msg The prefix to the message.
  */
-void error(char *msg);
+void error(const char *msg);
 
 /**
  * Report an error with the prefix "ERROR: " and a newline appended
  * at the end.  The arguments are just like printf().
  */
-void error_print(char* format, ...);
+void error_print(const char* format, ...);
 
 /**
  * Report a warning with the prefix "WARNING: " and a newline appended
  * at the end.  The arguments are just like printf().
  */
-void warning_print(char* format, ...);
+void warning_print(const char* format, ...);
 
 /**
  * Report an error with the prefix "ERROR: " and a newline appended
  * at the end, then exit with the failure code EXIT_FAILURE.
  * The arguments are just like printf().
  */
-void error_print_and_exit(char* format, ...);
+void error_print_and_exit(const char* format, ...);
 
 /**
  * Message print function type. The arguments passed to one of
@@ -195,7 +195,7 @@ void error_print_and_exit(char* format, ...);
  * by a printf-style argument list collected into a va_list
  * (variable argument list).
  */
-typedef void(print_message_function_t)(char*, va_list);
+typedef void(print_message_function_t)(const char*, va_list);
 
 /**
  * Register a function to display messages. After calling this,
