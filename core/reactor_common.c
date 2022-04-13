@@ -42,7 +42,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "utils/util.c"
 
 #ifdef MODAL_REACTORS
-#include "modal.c"
+#include "modal_models/modes.c"
 #endif
 
 /** 
