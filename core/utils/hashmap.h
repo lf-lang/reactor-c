@@ -1,4 +1,7 @@
-
+/**
+ * @author Peter Donovan (peterdonovan@berkeley.edu)
+ * @brief Defines a default hashmap type.
+ */
 #define HASHMAP(token) hashmap_object2int ## _ ## token
 #define K void*
 #define V int

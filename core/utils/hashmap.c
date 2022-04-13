@@ -1,11 +1,14 @@
 /**
  * @author Peter Donovan (peterdonovan@berkeley.edu)
  * @brief Defines a generic, non-resizing hashmap data type.
- * 
- * Hashmaps are defined by redefining K, V, HASH_OF, and HASHMAP and including this file.
- * HASHMAP must be a function-like macro that prefixes tokens with the name of the hashmap.
- * For example, the hashmap data type is named HASHMAP(t) so that it is "t" prefixed with
- * the name of the hashmap, and the function names associated with the data type are similar.
+ *
+ * Hashmaps are defined by redefining K, V, HASH_OF, and HASHMAP, and including this file. A default
+ * hashmap type is defined in hashmap.h. See hashmap.h a
+ * - K and V must be the types of keys and values of the hashmap, respectively.
+ * - HASH_OF must be the hash of a key.
+ * - HASHMAP must be a function-like macro that prefixes tokens with the name of the hashmap.
+ *   For example, the hashmap data type is named HASHMAP(t) so that it is "t" prefixed with the
+ *   name of the hashmap, and the function names associated with the data type are similar.
  */
 
 #ifndef K
@@ -49,13 +52,16 @@ typedef struct HASHMAP(t) {
  */
 HASHMAP(t)* HASHMAP(new)(size_t capacity, K nothing);
 
-/**
- * @brief Free the given hashmap.
- */
+/** @brief Free all memory used by the given hashmap. */
 void HASHMAP(free)(HASHMAP(t)* hashmap);
 
+/** @brief Associate a value with the given key. */
 void HASHMAP(put)(HASHMAP(t)* hashmap, K key, V value);
 
+/**
+ * @brief Get the value associated with the given key.
+ * Precondition: The key must be present in the map.
+ */
 V HASHMAP(get)(HASHMAP(t)* hashmap, K key);
 
 /////////////////////////// Private helpers ///////////////////////////
@@ -102,7 +108,8 @@ HASHMAP(t)* HASHMAP(new)(size_t capacity, K nothing) {
     ret->entries = entries;
     ret->capacity = capacity;
     ret->num_entries = 0;
-    // A second nothing will be required if removal is to be supported.
+    // A second nothing may be required if removal is to be supported and we want to make removal
+    // a constant-time operation.
     ret->nothing = nothing;
     return ret;
 }
