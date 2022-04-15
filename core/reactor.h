@@ -103,7 +103,13 @@ void _lf_set_present(bool* is_present_field);
 #define _LF_SET(out, val) \
 do { \
     out->value = val; \
-    _lf_set_present(&out->is_present); \
+    if (out->token != NULL) { \
+        _LF_SET_ARRAY(out, val, 1); \
+        out->token->destructor = out->destructor; \
+        out->token->copy_constructor = out->copy_constructor; \
+    } else { \
+        _lf_set_present(&out->is_present); \
+    } \
 } while(0)
 
 /**
@@ -118,14 +124,17 @@ do { \
  * @param out The output port (by name) or input of a contained
  *            reactor in form input_name.port_name.
  * @param val A pointer to the value to set the port to.
+ * @param cpy_ctor A pointer to a void* function that takes a pointer argument
+ *                 or NULL to use the default '=' operator.
  * @param dtor A pointer to a void function that takes a pointer argument
  *             or NULL to use the default void free(void*) function. 
  */
-#define _LF_SET_DYNAMIC(out, val, dtor) \
+#define _LF_SET_DYNAMIC(out, val, cpy_ctor, dtor) \
 do { \
     _LF_SET_ARRAY(out, val, 1); \
     out->token->destructor = dtor; \
     out->token->ok_to_free = token_and_value; \
+    out->token->copy_constructor = cpy_ctor; \
 } while(0)
 
 /**
@@ -268,6 +277,15 @@ do { \
 } while(0)
 #endif
 
+#define _LF_SET_DESTRUCTOR(out, dtor) \
+do { \
+    out->destructor = dtor; \
+} while(0)
+
+#define _LF_SET_COPY_CONSTRUCTOR(in, cpy_ctor) \
+do { \
+    in->copy_constructor = cpy_ctor; \
+}
 
 #ifdef MODAL_REACTORS
 /**
@@ -476,6 +494,8 @@ typedef struct lf_token_t {
     int ref_count;
     /** The destructor or NULL to use the default free(). */
     void (*destructor) (void* value);
+    /** The copy constructor or NULL to use the default '=' operator. */
+    void* (*copy_constructor) (void* value);
     /**
      * Indicator of whether this token is expected to be freed.
      * Tokens that are created at the start of execution and associated with output

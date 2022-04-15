@@ -515,6 +515,7 @@ lf_token_t* _lf_create_token(size_t element_size) {
     token->element_size = element_size;
     token->ref_count = 0;
     token->destructor = NULL;
+    token->copy_constructor = NULL;
     token->ok_to_free = no;
     token->next_free = NULL;
     return token;

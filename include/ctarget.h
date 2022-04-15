@@ -80,10 +80,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param out The output port (by name) or input of a contained
  *            reactor in form input_name.port_name.
  * @param val A pointer to the value to set the port to.
+ * @param cpy_ctor A pointer to void* function that takes a pointer argument
+ *                 or NULL to use the default '=' operator.
  * @param dtor A pointer to a void function that takes a pointer argument
  *             or NULL to use the default void free(void*) function. 
  */
-#define SET_DYNAMIC(out, val, dtor) _LF_SET_DYNAMIC(out, val, dtor)
+#define SET_DYNAMIC(out, val, cpy_ctor, dtor) _LF_SET_DYNAMIC(out, val, cpy_ctor, dtor)
 
 /**
  * Version of set for output types given as 'type[]' where you
@@ -152,6 +154,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param token A pointer to token obtained from an input or action.
  */
 #define SET_TOKEN(out, newtoken) _LF_SET_TOKEN(out, newtoken)
+
+#define SET_DESTRUCTOR(out, dtor) _LF_SET_DESTRUCTOR(out, dtor)
+
+#define SET_COPY_CONSTRUCTOR(in, cpy_ctor) _LF_SET_COPY_CONSTRUCTOR(in, cpy_ctor)
 
 //////////////////////////////////////////////////////////////
 /////////////  SET_MODE Function (to switch a mode)
