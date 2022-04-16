@@ -102,12 +102,17 @@ void _lf_set_present(bool* is_present_field);
  */
 #define _LF_SET(out, val) \
 do { \
-    out->value = val; \
     if (out->token != NULL) { \
         _LF_SET_ARRAY(out, val, 1); \
-        out->token->destructor = out->destructor; \
-        out->token->copy_constructor = out->copy_constructor; \
+        out->token->ok_to_free = token_and_value; \
+        if (out->destructor != NULL) { \
+            out->token->destructor = out->destructor; \
+        } \
+        if (out->copy_constructor != NULL) { \
+            out->token->copy_constructor = out->copy_constructor; \
+        } \
     } else { \
+        out->value = val; \
         _lf_set_present(&out->is_present); \
     } \
 } while(0)
