@@ -102,8 +102,16 @@ void _lf_set_present(bool* is_present_field);
  */
 #define _LF_SET(out, val) \
 do { \
+    /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
+    /* even if it is a literal */ \
+    out->value = val; \
+    _lf_set_present(&out->is_present); \
     if (out->token != NULL) { \
-        _LF_SET_ARRAY(out, val, 1); \
+        /* The cast "*((void**) &out->value)" is a hack to make the code */ \
+        /* compile with non-token types where val is not a pointer. */ \
+        lf_token_t* token = _lf_initialize_token_with_value(out->token, *((void**) &out->value), 1); \
+        token->ref_count = out->num_destinations; \
+        out->token = token; \
         out->token->ok_to_free = token_and_value; \
         if (out->destructor != NULL) { \
             out->token->destructor = out->destructor; \
@@ -111,9 +119,6 @@ do { \
         if (out->copy_constructor != NULL) { \
             out->token->copy_constructor = out->copy_constructor; \
         } \
-    } else { \
-        out->value = val; \
-        _lf_set_present(&out->is_present); \
     } \
 } while(0)
 
