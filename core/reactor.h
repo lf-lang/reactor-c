@@ -123,31 +123,6 @@ do { \
 } while(0)
 
 /**
- * Set the specified output (or input of a contained reactor)
- * to the specified value. The value argument is a pointer
- * to memory that the calling reaction has dynamically allocated.
- * That memory will be automatically freed once all downstream
- * reactions no longer need the value.
- * If "destructor" is not NULL, then it is assumed to be a pointer
- * to a function to use to free the memory. Otherwise, free() will be used.
- * 
- * @param out The output port (by name) or input of a contained
- *            reactor in form input_name.port_name.
- * @param val A pointer to the value to set the port to.
- * @param cpy_ctor A pointer to a void* function that takes a pointer argument
- *                 or NULL to use the default '=' operator.
- * @param dtor A pointer to a void function that takes a pointer argument
- *             or NULL to use the default void free(void*) function. 
- */
-#define _LF_SET_DYNAMIC(out, val, cpy_ctor, dtor) \
-do { \
-    _LF_SET_ARRAY(out, val, 1); \
-    out->token->destructor = dtor; \
-    out->token->ok_to_free = token_and_value; \
-    out->token->copy_constructor = cpy_ctor; \
-} while(0)
-
-/**
  * Version of set for output types given as 'type[]' where you
  * want to send a previously dynamically allocated array.
  *

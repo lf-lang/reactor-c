@@ -56,36 +56,26 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Set the specified output (or input of a contained reactor)
  * to the specified value.
  *
- * This version is used for primitive types such as int,
- * double, etc. as well as the built-in types bool and string.
- * The value is copied and therefore the variable carrying the
+ * If the value argument is a primitive type such as int,
+ * double, etc. as well as the built-in types bool and string, 
+ * the value is copied and therefore the variable carrying the
  * value can be subsequently modified without changing the output.
- * This can also be used for structs with a type defined by a typedef
+ * This also applies to structs with a type defined by a typedef
  * so that the type designating string does not end in '*'.
+ * 
+ * If the value argument is a pointer
+ * to memory that the calling reaction has dynamically allocated,
+ * the memory will be automatically freed once all downstream
+ * reactions no longer need the value.
+ * If 'SET_DESTRUCTOR' is called on 'out', then that destructor
+ * will be used to free 'value'. 
+ * Otherwise, the default void free(void*) function is used.
+ * 
  * @param out The output port (by name) or input of a contained
  *  reactor in form input_name.port_name.
  * @param value The value to insert into the self struct.
  */
 #define SET(out, val) _LF_SET(out, val)
-
-/**
- * Set the specified output (or input of a contained reactor)
- * to the specified value. The value argument is a pointer
- * to memory that the calling reaction has dynamically allocated.
- * That memory will be automatically freed once all downstream
- * reactions no longer need the value.
- * If "destructor" is not NULL, then it is assumed to be a pointer
- * to a function to use to free the memory. Otherwise, free() will be used.
- * 
- * @param out The output port (by name) or input of a contained
- *            reactor in form input_name.port_name.
- * @param val A pointer to the value to set the port to.
- * @param cpy_ctor A pointer to void* function that takes a pointer argument
- *                 or NULL to use the default '=' operator.
- * @param dtor A pointer to a void function that takes a pointer argument
- *             or NULL to use the default void free(void*) function. 
- */
-#define SET_DYNAMIC(out, val, cpy_ctor, dtor) _LF_SET_DYNAMIC(out, val, cpy_ctor, dtor)
 
 /**
  * Version of set for output types given as 'type[]' where you
