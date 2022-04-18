@@ -1745,23 +1745,31 @@ lf_token_t* writable_copy(lf_token_t* token) {
     if (token->ref_count == 1) {
         DEBUG_PRINT("writable_copy: Avoided copy because reference count is %d.", token->ref_count);
         return token;
-   } else {
-        DEBUG_PRINT("writable_copy: Copying array because reference count is greater than 1. It is %d.", token->ref_count);
+    }
+    DEBUG_PRINT("writable_copy: Copying array because reference count is greater than 1. It is %d.", token->ref_count);
+    void* copy;
+    if (token->copy_constructor == NULL) {
+        DEBUG_PRINT("writable_copy: Copy constructor is NULL. Using default strategy.");
         size_t size = token->element_size * token->length;
         if (size == 0) {
             return token;
         }
-        void* copy = malloc(size);
+        copy = malloc(size);
         DEBUG_PRINT("Allocating memory for writable copy %p.", copy);
         memcpy(copy, token->value, size);
         // Count allocations to issue a warning if this is never freed.
-        _lf_count_payload_allocations++;
-        // Create a new, dynamically allocated token.
-        lf_token_t* result = create_token(token->element_size);
-        result->length = token->length;
-        result->value = copy;
-        return result;
+    } else {
+        DEBUG_PRINT("writable_copy: Copy constructor is not NULL. Using copy constructor.");
+        copy = token->copy_constructor(token->value);
     }
+    // Create a new, dynamically allocated token.
+    lf_token_t* result = create_token(token->element_size);
+    _lf_count_payload_allocations++;
+    result->length = token->length;
+    result->value = copy;
+    result->destructor = token->destructor;
+    result->copy_constructor = token->copy_constructor;
+    return result;
 }
 
 /**

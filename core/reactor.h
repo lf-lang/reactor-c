@@ -281,14 +281,15 @@ do { \
  * Set the destructor used to copy construct "token->value" received
  * by "in" if "in" is mutable.
  * 
- * @param in The input port
+ * @param out The output port (by name) or input of a contained
+ *            reactor in form input_name.port_name.
  * @param cpy_ctor A pointer to a void* function that takes a pointer argument
- *                 or NULL to use the default "=" operator.
+ *                 or NULL to use the memcpy operator.
  */
-#define _LF_SET_COPY_CONSTRUCTOR(in, cpy_ctor) \
+#define _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor) \
 do { \
-    in->copy_constructor = cpy_ctor; \
-}
+    out->copy_constructor = cpy_ctor; \
+} while(0)
 
 #ifdef MODAL_REACTORS
 /**
@@ -497,7 +498,7 @@ typedef struct lf_token_t {
     int ref_count;
     /** The destructor or NULL to use the default free(). */
     void (*destructor) (void* value);
-    /** The copy constructor or NULL to use the default '=' operator. */
+    /** The copy constructor or NULL to use memcpy. */
     void* (*copy_constructor) (void* value);
     /**
      * Indicator of whether this token is expected to be freed.
