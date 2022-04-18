@@ -262,11 +262,29 @@ do { \
 } while(0)
 #endif
 
+/**
+ * Set the destructor used to free "token->value" set on "out".
+ * That memory will be automatically freed once all downstream
+ * reactions no longer need the value.
+ * 
+ * @param out The output port (by name) or input of a contained
+ *            reactor in form input_name.port_name.
+ * @param dtor A pointer to a void function that takes a pointer argument
+ *             or NULL to use the default void free(void*) function. 
+ */
 #define _LF_SET_DESTRUCTOR(out, dtor) \
 do { \
     out->destructor = dtor; \
 } while(0)
 
+/**
+ * Set the destructor used to copy construct "token->value" received
+ * by "in" if "in" is mutable.
+ * 
+ * @param in The input port
+ * @param cpy_ctor A pointer to a void* function that takes a pointer argument
+ *                 or NULL to use the default "=" operator.
+ */
 #define _LF_SET_COPY_CONSTRUCTOR(in, cpy_ctor) \
 do { \
     in->copy_constructor = cpy_ctor; \
