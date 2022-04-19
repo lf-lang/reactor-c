@@ -91,6 +91,23 @@ void lf_semaphore_wait(semaphore_t* semaphore) {
 }
 
 /**
+ * @brief Wait on the 'semaphore' if count is NOT 0.
+ * 
+ * This version of "wait" is used for representing dependencies.
+ * A task can only proceed if the all the dependencies are fulfilled.
+ * 
+ * @param semaphore Instance of a semaphore.
+ */
+void lf_semaphore_wait2(semaphore_t* semaphore) {
+    assert(semaphore != NULL);
+    lf_mutex_lock(&semaphore->mutex);
+    while (semaphore->count != 0) {
+        lf_cond_wait(&semaphore->cond, &semaphore->mutex);
+    }
+    lf_mutex_unlock(&semaphore->mutex);
+}
+
+/**
  * @brief Destroy the 'semaphore'.
  * 
  * @param semaphore Instance of a semaphore.
