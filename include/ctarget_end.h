@@ -37,8 +37,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 
-#ifndef CTARGET_END_H
-#define CTARGET_END_H
+#ifdef CTARGET_MACROS
+#undef CTARGET_MACROS
 
 //////////////////////////////////////////////////////////////
 /////////////  SET Functions (to produce an output)
@@ -117,4 +117,4 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #undef SET_MODE
 #endif
 
-#endif // CTARGET_H
+#endif // CTARGET_MACROS

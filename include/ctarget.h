@@ -38,8 +38,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 
-#ifndef CTARGET_H
-#define CTARGET_H
+#ifndef CTARGET_MACROS
+#define CTARGET_MACROS
 
 #include "core/reactor.h"
 
@@ -205,8 +205,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #ifdef MODAL_REACTORS
 #define SET_MODE(mode) _LF_SET_MODE(mode)
-#endif
+#endif // MODAL_REACTORS
 
+#endif // CTARGET_MACROS
+
+
+#ifndef CTARGET_SCHEDULE_FUNCTIONS
+#define CTARGET_SCHEDULE_FUNCTIONS
 //////////////////////////////////////////////////////////////
 /////////////  Schedule Functions
  
@@ -336,4 +341,4 @@ trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* valu
  */
 bool check_deadline(void* self, bool invoke_deadline_handler);
 
-#endif // CTARGET_H
+#endif // CTARGET_SCHEDULE_FUNCTIONS
