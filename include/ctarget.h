@@ -41,8 +41,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CTARGET_MACROS
 #define CTARGET_MACROS
 
-#include "core/reactor.h"
-
 //////////////////////////////////////////////////////////////
 /////////////  SET Functions (to produce an output)
 
@@ -212,6 +210,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef CTARGET_SCHEDULE_FUNCTIONS
 #define CTARGET_SCHEDULE_FUNCTIONS
+#include "core/reactor.h"
 //////////////////////////////////////////////////////////////
 /////////////  Schedule Functions
  
