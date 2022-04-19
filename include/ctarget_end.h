@@ -1,9 +1,9 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
+ * @author Hou Seng Wong (housengw@berkeley.edu)
  *
  * @section LICENSE
-Copyright (c) 2020, The University of California at Berkeley.
+Copyright (c) 2022, The University of California at Berkeley.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
