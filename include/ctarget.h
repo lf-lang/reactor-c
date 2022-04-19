@@ -75,7 +75,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  reactor in form input_name.port_name.
  * @param value The value to insert into the self struct.
  */
-#define SET(out, val) _LF_SET(out, val)
+#define set(out, val) _LF_SET(out, val)
+#define SET(out, val) \
+        _Pragma ("Warning \"'SET' is deprecated. Use 'set' instead.\"") \
+        _LF_SET(out, val)
 
 /**
  * Version of set for output types given as 'type[]' where you
@@ -90,7 +93,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param length The length of the array to send.
  * @see lf_token_t
  */
-#define SET_ARRAY(out, val, length) _LF_SET_ARRAY(out, val, length)
+#define set_array(out, val, length) _LF_SET_ARRAY(out, val, length)
+#define SET_ARRAY(out, val, elem_size, length) \
+        _Pragma ("Warning \"'SET_ARRAY' is deprecated. Use 'set_array' instead.\"") \
+        _LF_SET_ARRAY(out, val, length)
 
 /**
  * Version of set() for output types given as 'type*' that
@@ -106,7 +112,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * struct to true (which causes the object message to be sent),
  * @param out The output port (by name).
  */
-#define SET_NEW(out) _LF_SET_NEW(out)
+#define set_new(out) _LF_SET_NEW(out)
+#define SET_NEW(out) \
+        _Pragma ("Warning \"'SET_NEW' is deprecated. Use 'set_new' instead.\"") \
+        _LF_SET_NEW(out)
 
 /**
  * Version of set() for output types given as 'type[]'.
@@ -121,7 +130,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param out The output port (by name).
  * @param len The length of the array to be sent.
  */
-#define SET_NEW_ARRAY(out, len) _LF_SET_NEW_ARRAY(out, len)
+#define set_new_array(out, len) _LF_SET_NEW_ARRAY(out, len)
+#define SET_NEW_ARRAY(out, len) \
+        _Pragma ("Warning \"'SET_NEW_ARRAY' is deprecated. Use 'set_new_array' instead.\"") \
+        _LF_SET_NEW_ARRAY(out, len)
 
 /**
  * Version of set() for output types given as 'type[number]'.
@@ -132,7 +144,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * after this is called.
  * @param out The output port (by name).
  */
-#define SET_PRESENT(out) _LF_SET_PRESENT(out)
+#define set_present(out) _LF_SET_PRESENT(out)
+#define SET_PRESENT(out) \
+        _Pragma ("Warning \"'SET_PRESENT' is deprecated. Use 'set_present' instead.\"") \
+        _LF_SET_PRESENT(out)
 
 /**
  * Version of set() for output types given as 'type*' or 'type[]' where you want
@@ -143,7 +158,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param out The output port (by name).
  * @param token A pointer to token obtained from an input or action.
  */
-#define SET_TOKEN(out, newtoken) _LF_SET_TOKEN(out, newtoken)
+#define set_token(out, newtoken) _LF_SET_TOKEN(out, newtoken)
+#define SET_TOKEN(out, newtoken) \
+        _Pragma ("Warning \"'SET_TOKEN' is deprecated. Use 'set_token' instead.\"") \
+        _LF_SET_TOKEN(out, newtoken)
 
 /**
  * Set the destructor used to free "token->value" set on "out".
@@ -155,7 +173,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param dtor A pointer to a void function that takes a pointer argument
  *             or NULL to use the default void free(void*) function. 
  */
-#define SET_DESTRUCTOR(out, dtor) _LF_SET_DESTRUCTOR(out, dtor)
+#define set_destructor(out, dtor) _LF_SET_DESTRUCTOR(out, dtor)
+#define SET_DESTRUCTOR(out, dtor) \
+        _Pragma ("Warning \"'SET_DESTRUCTOR' is deprecated. Use 'set_destructor' instead.\"") \
+        _LF_SET_DESTRUCTOR(out, dtor)
 
 
 /**
@@ -167,7 +188,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param cpy_ctor A pointer to a void* function that takes a pointer argument
  *                 or NULL to use the memcpy operator.
  */
-#define SET_COPY_CONSTRUCTOR(out, cpy_ctor) _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor)
+#define set_copy_constructor(out, cpy_ctor) _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor)
+#define SET_COPY_CONSTRUCTOR(out, cpy_ctor) \
+        _Pragma ("Warning \"'SET_COPY_CONSTRUCTOR' is deprecated. Use 'set_copy_constructor' instead.\"") \
+        _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor)
 
 //////////////////////////////////////////////////////////////
 /////////////  SET_MODE Function (to switch a mode)
