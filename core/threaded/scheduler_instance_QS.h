@@ -25,11 +25,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /**
- * @file scheduler_params.h
- * @author Soroush Bateni <soroush@utdallas.edu>
+ * @file scheduler_params_QS.h (modeled after scheduler_params.h)
+ * @author Shaokai Lin <shaokai@berkeley.edu>
  * @brief Scheduler parameters.
  *
- * Meant for book-keeping in the threaded schedulers in the reactor C runtime.
+ * Define the scheduler struct for the quasi-static scheduler.
  *
  * @copyright Copyright (c) 2022, The University of Texas at Dallas.
  * @copyright Copyright (c) 2022, The University of California at Berkeley.
@@ -45,6 +45,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h>
 #include "../utils/semaphore.h"
 #include "scheduler.h"
+#include "static_schedule.h"
 
 extern lf_mutex_t mutex;
 
@@ -60,31 +61,47 @@ typedef struct {
      * @brief Points to a read-only array of static schedules.
      * 
      */
-    uint32_t* _lf_sched_static_schedules;
+    const uint32_t*** static_schedules;
+
+    /**
+     * @brief Points to a read-only array of static schedules.
+     * 
+     */
+    const uint32_t** current_schedule;
 
     /**
      * @brief Points to a read-only array of lengths of the static schedules.
      * 
      */
-    uint32_t* _lf_sched_schedule_lengths;
+    const uint32_t** schedule_lengths;
+
+    /**
+     * @brief Points to an array of program counters for each worker.
+     * 
+     */
+    size_t* pc;
 
     /**
      * @brief Points to an array of semaphores, one for each reaction.
      * 
+     * The indices that correspond to different reactions can be stored
+     * in the reaction instances. The initial count of the semaphores
+     * should also be stored in the reaction instances (in reactor.c).
+     * 
      */
-    semaphore_t* _lf_sched_semaphores;
+    semaphore_t** semaphores;
 
     /**
      * @brief Indicate whether the program should stop
      *
      */
-    volatile bool _lf_sched_should_stop;
+    volatile bool should_stop;
 
     /**
      * @brief Number of workers that this scheduler is managing.
      *
      */
-    size_t _lf_sched_number_of_workers;
+    size_t number_of_workers;
 } _lf_sched_instance_t;
 
 /**
@@ -105,6 +122,29 @@ bool init_sched_instance(
     size_t number_of_workers,
     sched_params_t* params) {
 
+    // Check if the instance is already initialized
+    lf_mutex_lock(&mutex); // Safeguard against multiple threads calling this 
+                           // function.
+    if (*instance != NULL) {
+        // Already initialized
+        lf_mutex_unlock(&mutex);
+        return false;
+    } else {
+        *instance =
+            (_lf_sched_instance_t*)calloc(1, sizeof(_lf_sched_instance_t));
+    }
+
+    (*instance)->static_schedules = static_schedules;
+    (*instance)->current_schedule = NULL;
+    (*instance)->schedule_lengths = schedule_lengths;
+    (*instance)->pc = calloc(number_of_workers, sizeof(size_t));
+    (*instance)->semaphores = (semaphore_t**)malloc(number_of_workers * sizeof(semaphore_t*));
+    for (int w = 0; w < number_of_workers; w++) {
+        // FIXME: Get count from each reaction.
+        (*instance)->semaphores[w] = lf_semaphore_new();
+    }
+
+    lf_mutex_unlock(&mutex);
     return true;
 }
 
