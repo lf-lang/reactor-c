@@ -43,14 +43,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "core/reactor.h"
 //////////////////////////////////////////////////////////////
 /////////////  Schedule Functions
- 
-#ifdef __GNUC__
-#define DEPRECATED(X) X __attribute__((deprecated))
-#elif defined(_MSC_VER)
-#define DEPRECATED(X) __declspec(deprecated) X
-#else
-#define DEPRECATED(X) X
-#endif
 
 /**
  * Schedule an action to occur with the specified value and time offset
