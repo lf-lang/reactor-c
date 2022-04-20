@@ -72,13 +72,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  reactor in form input_name.port_name.
  * @param value The value to insert into the self struct.
  */
-#define set(out, val) _LF_SET(out, val)
+#define lf_set(out, val) _LF_SET(out, val)
 #define SET(out, val) \
-        _Pragma ("Warning \"'SET' is deprecated. Use 'set' instead.\"") \
+        _Pragma ("Warning \"'SET' is deprecated. Use 'lf_set' instead.\"") \
         _LF_SET(out, val)
 
 /**
- * Version of set for output types given as 'type[]' where you
+ * Version of lf_set for output types given as 'type[]' where you
  * want to send a previously dynamically allocated array.
  *
  * The deallocation is delegated to downstream reactors, which
@@ -90,13 +90,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param length The length of the array to send.
  * @see lf_token_t
  */
-#define set_array(out, val, length) _LF_SET_ARRAY(out, val, length)
+#define lf_set_array(out, val, length) _LF_SET_ARRAY(out, val, length)
 #define SET_ARRAY(out, val, elem_size, length) \
-        _Pragma ("Warning \"'SET_ARRAY' is deprecated. Use 'set_array' instead.\"") \
+        _Pragma ("Warning \"'SET_ARRAY' is deprecated. Use 'lf_set_array' instead.\"") \
         _LF_SET_ARRAY(out, val, length)
 
 /**
- * Version of set() for output types given as 'type*' that
+ * Version of lf_set() for output types given as 'type*' that
  * allocates a new object of the type of the specified output port.
  *
  * This macro dynamically allocates enough memory to contain one
@@ -109,13 +109,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * struct to true (which causes the object message to be sent),
  * @param out The output port (by name).
  */
-#define set_new(out) _LF_SET_NEW(out)
+#define lf_set_new(out) _LF_SET_NEW(out)
 #define SET_NEW(out) \
-        _Pragma ("Warning \"'SET_NEW' is deprecated. Use 'set_new' instead.\"") \
+        _Pragma ("Warning \"'SET_NEW' is deprecated. Use 'lf_set_new' instead.\"") \
         _LF_SET_NEW(out)
 
 /**
- * Version of set() for output types given as 'type[]'.
+ * Version of lf_set() for output types given as 'type[]'.
  *
  * This allocates a new array of the specified length,
  * sets the corresponding _is_present variable in the self struct to true
@@ -127,13 +127,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param out The output port (by name).
  * @param len The length of the array to be sent.
  */
-#define set_new_array(out, len) _LF_SET_NEW_ARRAY(out, len)
+#define lf_set_new_array(out, len) _LF_SET_NEW_ARRAY(out, len)
 #define SET_NEW_ARRAY(out, len) \
-        _Pragma ("Warning \"'SET_NEW_ARRAY' is deprecated. Use 'set_new_array' instead.\"") \
+        _Pragma ("Warning \"'SET_NEW_ARRAY' is deprecated. Use 'lf_set_new_array' instead.\"") \
         _LF_SET_NEW_ARRAY(out, len)
 
 /**
- * Version of set() for output types given as 'type[number]'.
+ * Version of lf_set() for output types given as 'type[number]'.
  *
  * This sets the _is_present variable corresponding to the specified output
  * to true (which causes the array message to be sent). The values in the
@@ -141,13 +141,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * after this is called.
  * @param out The output port (by name).
  */
-#define set_present(out) _LF_SET_PRESENT(out)
+#define lf_set_present(out) _LF_SET_PRESENT(out)
 #define SET_PRESENT(out) \
-        _Pragma ("Warning \"'SET_PRESENT' is deprecated. Use 'set_present' instead.\"") \
+        _Pragma ("Warning \"'SET_PRESENT' is deprecated. Use 'lf_set_present' instead.\"") \
         _LF_SET_PRESENT(out)
 
 /**
- * Version of set() for output types given as 'type*' or 'type[]' where you want
+ * Version of lf_set() for output types given as 'type*' or 'type[]' where you want
  * to forward an input or action without copying it.
  *
  * The deallocation of memory is delegated to downstream reactors, which
@@ -155,9 +155,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param out The output port (by name).
  * @param token A pointer to token obtained from an input or action.
  */
-#define set_token(out, newtoken) _LF_SET_TOKEN(out, newtoken)
+#define lf_set_token(out, newtoken) _LF_SET_TOKEN(out, newtoken)
 #define SET_TOKEN(out, newtoken) \
-        _Pragma ("Warning \"'SET_TOKEN' is deprecated. Use 'set_token' instead.\"") \
+        _Pragma ("Warning \"'SET_TOKEN' is deprecated. Use 'lf_set_token' instead.\"") \
         _LF_SET_TOKEN(out, newtoken)
 
 /**
@@ -170,9 +170,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param dtor A pointer to a void function that takes a pointer argument
  *             or NULL to use the default void free(void*) function. 
  */
-#define set_destructor(out, dtor) _LF_SET_DESTRUCTOR(out, dtor)
+#define lf_set_destructor(out, dtor) _LF_SET_DESTRUCTOR(out, dtor)
 #define SET_DESTRUCTOR(out, dtor) \
-        _Pragma ("Warning \"'SET_DESTRUCTOR' is deprecated. Use 'set_destructor' instead.\"") \
+        _Pragma ("Warning \"'SET_DESTRUCTOR' is deprecated. Use 'lf_set_destructor' instead.\"") \
         _LF_SET_DESTRUCTOR(out, dtor)
 
 
@@ -185,9 +185,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param cpy_ctor A pointer to a void* function that takes a pointer argument
  *                 or NULL to use the memcpy operator.
  */
-#define set_copy_constructor(out, cpy_ctor) _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor)
+#define lf_set_copy_constructor(out, cpy_ctor) _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor)
 #define SET_COPY_CONSTRUCTOR(out, cpy_ctor) \
-        _Pragma ("Warning \"'SET_COPY_CONSTRUCTOR' is deprecated. Use 'set_copy_constructor' instead.\"") \
+        _Pragma ("Warning \"'SET_COPY_CONSTRUCTOR' is deprecated. Use 'lf_set_copy_constructor' instead.\"") \
         _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor)
 
 //////////////////////////////////////////////////////////////
@@ -201,7 +201,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param mode The target mode to set for activation.
  */
 #ifdef MODAL_REACTORS
-#define SET_MODE(mode) _LF_SET_MODE(mode)
+#define lf_set_mode(mode) _LF_SET_MODE(mode)
+#define SET_MODE(mode) \
+        _Pragma ("Warning \"'SET_MODE' is deprecated. Use 'lf_set_mode' instead.\"") \
+        _LF_SET_MODE(mode)
 #endif // MODAL_REACTORS
 
 #endif // CTARGET_SET

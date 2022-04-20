@@ -53,40 +53,40 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Set the specified output (or input of a contained reactor)
  * to the specified value.
  */
-#undef set
+#undef lf_set
 #undef SET
 
 /**
- * Version of set for output types given as 'type[]' where you
+ * Version of lf_set for output types given as 'type[]' where you
  * want to send a previously dynamically allocated array.
  */
 #undef set_array
 #undef SET_ARRAY
 
 /**
- * Version of set() for output types given as 'type*' that
+ * Version of lf_set() for output types given as 'type*' that
  * allocates a new object of the type of the specified output port.
  */
-#undef set_new
+#undef lf_set_new
 #undef SET_NEW
 
 /**
- * Version of set() for output types given as 'type[]'.
+ * Version of lf_set() for output types given as 'type[]'.
  */
-#undef set_new_array
+#undef lf_set_new_array
 #undef SET_NEW_ARRAY
 
 /**
- * Version of set() for output types given as 'type[number]'.
+ * Version of lf_set() for output types given as 'type[number]'.
  */
-#undef set_present
+#undef lf_set_present
 #undef SET_PRESENT
 
 /**
- * Version of set() for output types given as 'type*' or 'type[]' where you want
+ * Version of lf_set() for output types given as 'type*' or 'type[]' where you want
  * to forward an input or action without copying it.
  */
-#undef set_token
+#undef lf_set_token
 #undef SET_TOKEN
 
 /**
@@ -94,7 +94,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * That memory will be automatically freed once all downstream
  * reactions no longer need the value.
  */
-#undef set_destructor
+#undef lf_set_destructor
 #undef SET_DESTRUCTOR
 
 
@@ -102,7 +102,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Set the destructor used to copy construct "token->value" received
  * by "in" if "in" is mutable.
  */
-#undef set_copy_constructor
+#undef lf_set_copy_constructor
 #undef SET_COPY_CONSTRUCTOR
 
 //////////////////////////////////////////////////////////////
@@ -114,6 +114,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Works only in reactions with the target mode declared as effect.
  */
 #ifdef MODAL_REACTORS
+#undef lf_set_mode
 #undef SET_MODE
 #endif
 
