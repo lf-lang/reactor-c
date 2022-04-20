@@ -83,7 +83,7 @@ interval_t _lf_global_test_physical_clock_offset = 0LL;
  * @param tag2
  * @return -1, 0, or 1 depending on the relation.
  */
-int compare_tags(tag_t tag1, tag_t tag2) {
+int lf_compare_tags(tag_t tag1, tag_t tag2) {
     if (tag1.time < tag2.time) {
         return -1;
     } else if (tag1.time > tag2.time) {
@@ -95,6 +95,13 @@ int compare_tags(tag_t tag1, tag_t tag2) {
     } else {
         return 0;
     }
+}
+
+/**
+ * @deprecated version of 'lf_compare_tags'
+ */
+int compare_tags(tag_t tag1, tag_t tag2) {
+	return lf_compare_tags(tag1, tag2);
 }
 
 /**
@@ -113,7 +120,7 @@ int compare_tags(tag_t tag1, tag_t tag2) {
  * @param tag The tag to increment.
  * @param interval The time interval.
  */
-tag_t delay_tag(tag_t tag, interval_t interval) {
+tag_t lf_delay_tag(tag_t tag, interval_t interval) {
 	if (tag.time == NEVER || interval == NEVER) return tag;
 	tag_t result = tag;
 	if (interval == 0LL) {
@@ -134,32 +141,69 @@ tag_t delay_tag(tag_t tag, interval_t interval) {
 }
 
 /**
+ * @deprecated version of 'lf_delay_tag'
+ */
+tag_t delay_tag(tag_t tag, interval_t interval) {
+	return lf_delay_tag(tag, interval);
+}
+
+/**
  * Return the elapsed logical time in nanoseconds since the start of execution.
  */
-interval_t get_elapsed_logical_time() {
+interval_t lf_elapsed_logical_time() {
     return current_tag.time - start_time;
+}
+
+/**
+ * @deprecated version of 'lf_elapsed_logical_time'
+ */
+interval_t get_elapsed_logical_time() {
+	return lf_elapsed_logical_time();
 }
 
 /**
  * Return the current tag, a logical time, microstep pair.
  */
-tag_t get_current_tag() {
+tag_t lf_current_tag() {
     return current_tag;
 }
 
 /**
+ * @deprecated version of 'lf_current_tag'
+ */
+tag_t get_current_tag() {
+	return lf_current_tag();
+}
+
+
+/**
  * Return the current logical time in nanoseconds since January 1, 1970.
  */
-instant_t get_logical_time() {
+instant_t lf_logical_time() {
     return current_tag.time;
+}
+
+/**
+ * @deprecated version of 'lf_logical_time'
+ */
+instant_t get_logical_time() {
+	return lf_logical_time();
 }
 
 /**
  * Return the current microstep.
  */
-microstep_t get_microstep() {
+microstep_t lf_microstep() {
     return current_tag.microstep;
 }
+
+/**
+ * @deprecated version of 'lf_microstep'
+ */
+microstep_t get_microstep() {
+	return lf_microstep();
+}
+
 
 /**
  * Stores the last reported absolute snapshot of the 
@@ -182,7 +226,7 @@ instant_t _lf_last_reported_unadjusted_physical_time_ns = NEVER;
  * Return the current physical time in nanoseconds since January 1, 1970,
  * adjusted by the global physical time offset.
  */
-instant_t get_physical_time() {
+instant_t lf_physical_time() {
     // Get the current clock value
     int result = lf_clock_gettime(&_lf_last_reported_unadjusted_physical_time_ns);
 
@@ -221,15 +265,28 @@ instant_t get_physical_time() {
 }
 
 /**
+ * @deprecated version of 'lf_physical_time'
+ */
+instant_t get_physical_time() {
+	return lf_physical_time();
+}
+
+/**
  * Return the physical time of the start of execution in nanoseconds. * 
  * On many platforms, this is the number of nanoseconds
  * since January 1, 1970, but it is actually platform dependent. * 
  * @return A time instant.
  */
-instant_t get_start_time() {
+instant_t lf_start_time() {
     return start_time;
 }
 
+/**
+ * @deprecated version of 'lf_start_time'
+ */
+instant_t get_start_time() {
+	return lf_start_time();
+}
 
 /**
  * Return the elapsed physical time in nanoseconds.
@@ -237,8 +294,15 @@ instant_t get_start_time() {
  * physical start time as measured by get_physical_time() when
  * the program was started.
  */
-instant_t get_elapsed_physical_time() {
+instant_t lf_elapsed_physical_time() {
     return get_physical_time() - physical_start_time;
+}
+
+/**
+ * @deprecated version of 'lf_elapsed_physical_time'
+ */
+instant_t get_elapsed_physical_time() {
+	return lf_elapsed_physical_time();
 }
 
 /**
@@ -247,8 +311,15 @@ instant_t get_elapsed_physical_time() {
  * and get_elpased_physical_time() will have this specified offset
  * added to what it would have returned before the call.
  */
-void set_physical_clock_offset(interval_t offset) {
+void lf_set_physical_clock_offset(interval_t offset) {
     _lf_global_test_physical_clock_offset += offset;
+}
+
+/**
+ * @deprecated version of 'lf_set_physical_clock_offset'
+ */
+void set_physical_clock_offset(interval_t offset) {
+	lf_set_physical_clock_offset(offset);
 }
 
 /**
@@ -404,18 +475,32 @@ size_t lf_comma_separated_time(char* buffer, instant_t time) {
  * variant.
  */
 #ifdef __cplusplus
-tag_t convert_volatile_tag_to_nonvolatile(tag_t volatile const& vtag) {
+tag_t lf_convert_volatile_tag_to_nonvolatile(tag_t volatile const& vtag) {
     tag_t non_volatile_tag;
     non_volatile_tag.time = vtag.time;
     non_volatile_tag.microstep = vtag.microstep;
     return non_volatile_tag;
+}
+
+/**
+ * @deprecated version of 'lf_convert_volatile_tag_to_nonvolatile'
+ */
+tag_t convert_volatile_tag_to_nonvolatile(tag_t volatile const& vtag) {
+	return lf_convert_volatile_tag_to_nonvolatile(vtag);
 }
 #else
 /**
  * @note This is an undefined behavior in C and should
  *  be used with utmost caution. See Section 6.7.2 of the C99 standard.
  */
-tag_t convert_volatile_tag_to_nonvolatile(tag_t volatile vtag) {
+tag_t lf_convert_volatile_tag_to_nonvolatile(tag_t volatile vtag) {
     return vtag;
+}
+
+/**
+ * @deprecated version of 'lf_convert_volatile_tag_to_nonvolatile'
+ */
+tag_t convert_volatile_tag_to_nonvolatile(tag_t volatile vtag) {
+	return lf_convert_volatile_tag_to_nonvolatile(vtag);
 }
 #endif
