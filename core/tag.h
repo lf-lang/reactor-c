@@ -94,7 +94,8 @@ typedef tag_t tag_interval_t;
  * @param tag2
  * @return -1, 0, or 1 depending on the relation.
  */
-int compare_tags(tag_t tag1, tag_t tag2);
+int lf_compare_tags(tag_t tag1, tag_t tag2);
+DEPRECATED(int compare_tags(tag_t tag1, tag_t tag2));
 
 /**
  * Delay a tag by the specified time interval to realize the "after" keyword.
@@ -112,14 +113,16 @@ int compare_tags(tag_t tag1, tag_t tag2);
  * @param tag The tag to increment.
  * @param interval The time interval.
  */
-tag_t delay_tag(tag_t tag, interval_t interval);
+tag_t lf_delay_tag(tag_t tag, interval_t interval);
+DEPRECATED(tag_t delay_tag(tag_t tag, interval_t interval));
 
 /**
  * Return the elapsed logical time in nanoseconds
  * since the start of execution.
  * @return A time interval.
  */
-interval_t get_elapsed_logical_time(void);
+interval_t lf_elapsed_logical_time(void);
+DEPRECATED(interval_t get_elapsed_logical_time(void));
 
 /**
  * Store into the specified buffer a string giving a human-readable
@@ -155,17 +158,20 @@ size_t lf_comma_separated_time(char* buffer, instant_t time);
  * 
  * @return A time instant.
  */
-instant_t get_logical_time(void);
+instant_t lf_logical_time(void);
+DEPRECATED(instant_t get_logical_time(void));
 
 /**
  * Return the current tag, a logical time, microstep pair.
  */
-tag_t get_current_tag(void);
+tag_t lf_current_tag(void);
+DEPRECATED(tag_t get_current_tag(void));
 
 /**
  * Return the current microstep.
  */
-microstep_t get_microstep(void);
+microstep_t lf_microstep(void);
+DEPRECATED(microstep_t get_microstep(void));
 
 /**
  * Global physical clock offset.
@@ -199,7 +205,8 @@ extern interval_t _lf_epoch_offset;
  * since January 1, 1970, but it is actually platform dependent.
  * @return A time instant.
  */
-instant_t get_physical_time(void);
+instant_t lf_physical_time(void);
+DEPRECATED(instant_t get_physical_time(void));
 
 /**
  * Return the elapsed physical time in nanoseconds.
@@ -207,7 +214,8 @@ instant_t get_physical_time(void);
  * physical start time as measured by get_physical_time(void) when
  * the program was started.
  */
-instant_t get_elapsed_physical_time(void);
+instant_t lf_elapsed_physical_time(void);
+DEPRECATED(instant_t get_elapsed_physical_time(void));
 
 /**
  * Set a fixed offset to the physical clock.
@@ -215,7 +223,8 @@ instant_t get_elapsed_physical_time(void);
  * and get_elpased_physical_time(void) will have this specified offset
  * added to what it would have returned before the call.
  */
-void set_physical_clock_offset(interval_t offset);
+void lf_set_physical_clock_offset(interval_t offset);
+DEPRECATED(void set_physical_clock_offset(interval_t offset));
 
 /**
  * Return the physical and logical time of the start of execution in nanoseconds.
@@ -223,20 +232,23 @@ void set_physical_clock_offset(interval_t offset);
  * since January 1, 1970, but it is actually platform dependent. 
  * @return A time instant.
  */
-instant_t get_start_time(void);
+instant_t lf_start_time(void);
+DEPRECATED(instant_t get_start_time(void));
 
 /**
  * For C++ compatibility, take a volatile tag_t and return a non-volatile
  * variant.
  */
 #ifdef __cplusplus
-tag_t convert_volatile_tag_to_nonvolatile(const volatile tag_t &vtag);
+tag_t lf_convert_volatile_tag_to_nonvolatile(const volatile tag_t &vtag);
+DEPRECATED(tag_t convert_volatile_tag_to_nonvolatile(const volatile tag_t &vtag));
 #else
 /**
  * @note This is an undefined behavior in C and should
  *  be used with utmost caution. See Section 6.7.2 of the C99 standard.
  */
-tag_t convert_volatile_tag_to_nonvolatile(tag_t volatile vtag);
+tag_t lf_convert_volatile_tag_to_nonvolatile(tag_t volatile vtag);
+DEPRECATED(tag_t convert_volatile_tag_to_nonvolatile(tag_t volatile vtag));
 #endif
 
 #endif // TAG_H
