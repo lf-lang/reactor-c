@@ -60,26 +60,22 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Version of lf_set for output types given as 'type[]' where you
  * want to send a previously dynamically allocated array.
  */
-#undef set_array
 #undef SET_ARRAY
 
 /**
  * Version of lf_set() for output types given as 'type*' that
  * allocates a new object of the type of the specified output port.
  */
-#undef lf_set_new
 #undef SET_NEW
 
 /**
  * Version of lf_set() for output types given as 'type[]'.
  */
-#undef lf_set_new_array
 #undef SET_NEW_ARRAY
 
 /**
  * Version of lf_set() for output types given as 'type[number]'.
  */
-#undef lf_set_present
 #undef SET_PRESENT
 
 /**
@@ -95,7 +91,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * reactions no longer need the value.
  */
 #undef lf_set_destructor
-#undef SET_DESTRUCTOR
 
 
 /**
@@ -103,7 +98,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * by "in" if "in" is mutable.
  */
 #undef lf_set_copy_constructor
-#undef SET_COPY_CONSTRUCTOR
 
 //////////////////////////////////////////////////////////////
 /////////////  SET_MODE Function (to switch a mode)

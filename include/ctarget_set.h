@@ -64,7 +64,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * to memory that the calling reaction has dynamically allocated,
  * the memory will be automatically freed once all downstream
  * reactions no longer need the value.
- * If 'SET_DESTRUCTOR' is called on 'out', then that destructor
+ * If 'lf_set_destructor' is called on 'out', then that destructor
  * will be used to free 'value'. 
  * Otherwise, the default void free(void*) function is used.
  * 
@@ -90,7 +90,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param length The length of the array to send.
  * @see lf_token_t
  */
-#define lf_set_array(out, val, length) _LF_SET_ARRAY(out, val, length)
 #define SET_ARRAY(out, val, elem_size, length) \
         _Pragma ("Warning \"'SET_ARRAY' is deprecated. Use 'lf_set_array' instead.\"") \
         _LF_SET_ARRAY(out, val, length)
@@ -109,7 +108,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * struct to true (which causes the object message to be sent),
  * @param out The output port (by name).
  */
-#define lf_set_new(out) _LF_SET_NEW(out)
 #define SET_NEW(out) \
         _Pragma ("Warning \"'SET_NEW' is deprecated. Use 'lf_set_new' instead.\"") \
         _LF_SET_NEW(out)
@@ -127,7 +125,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param out The output port (by name).
  * @param len The length of the array to be sent.
  */
-#define lf_set_new_array(out, len) _LF_SET_NEW_ARRAY(out, len)
 #define SET_NEW_ARRAY(out, len) \
         _Pragma ("Warning \"'SET_NEW_ARRAY' is deprecated. Use 'lf_set_new_array' instead.\"") \
         _LF_SET_NEW_ARRAY(out, len)
@@ -141,7 +138,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * after this is called.
  * @param out The output port (by name).
  */
-#define lf_set_present(out) _LF_SET_PRESENT(out)
 #define SET_PRESENT(out) \
         _Pragma ("Warning \"'SET_PRESENT' is deprecated. Use 'lf_set_present' instead.\"") \
         _LF_SET_PRESENT(out)
@@ -171,10 +167,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *             or NULL to use the default void free(void*) function. 
  */
 #define lf_set_destructor(out, dtor) _LF_SET_DESTRUCTOR(out, dtor)
-#define SET_DESTRUCTOR(out, dtor) \
-        _Pragma ("Warning \"'SET_DESTRUCTOR' is deprecated. Use 'lf_set_destructor' instead.\"") \
-        _LF_SET_DESTRUCTOR(out, dtor)
-
 
 /**
  * Set the destructor used to copy construct "token->value" received
@@ -186,9 +178,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *                 or NULL to use the memcpy operator.
  */
 #define lf_set_copy_constructor(out, cpy_ctor) _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor)
-#define SET_COPY_CONSTRUCTOR(out, cpy_ctor) \
-        _Pragma ("Warning \"'SET_COPY_CONSTRUCTOR' is deprecated. Use 'lf_set_copy_constructor' instead.\"") \
-        _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor)
 
 //////////////////////////////////////////////////////////////
 /////////////  SET_MODE Function (to switch a mode)
