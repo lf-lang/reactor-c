@@ -43,11 +43,16 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../platform.h"
 #include "../utils/semaphore.h"
 #include "scheduler.h"
-#include "scheduler_instance_QS.h"
+#include "scheduler_instance.h"
 #include "scheduler_sync_tag_advance.c"
+
+#include "static_schedule.h" // Generated
 
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;
+extern const int reaction_count;
+extern const inst_t** static_schedules[];
+extern const uint32_t* schedule_lengths[];
 
 /////////////////// Scheduler Variables and Structs /////////////////////////
 _lf_sched_instance_t* _lf_sched_instance;
@@ -84,7 +89,13 @@ void lf_sched_init(
         return;
     }
 
-    
+    // Initialize the QS-specific fields.
+    _lf_sched_instance->static_schedules = static_schedules;
+    _lf_sched_instance->current_schedule = NULL;
+    _lf_sched_instance->schedule_lengths = schedule_lengths;
+    _lf_sched_instance->pc = calloc(number_of_workers, sizeof(size_t));
+    // The entries will be filled in when reactions instantiate.
+    _lf_sched_instance->reaction_instances = calloc(reaction_count, sizeof(reaction_t*));
 }
 
 /**
@@ -93,7 +104,8 @@ void lf_sched_init(
  * This must be called when the scheduler is no longer needed.
  */
 void lf_sched_free() {
-    
+    free(_lf_sched_instance->pc);
+    free(_lf_sched_instance->reaction_instances);
 }
 
 ///////////////////// Scheduler Worker API (public) /////////////////////////
@@ -109,7 +121,7 @@ void lf_sched_free() {
  * worker thread should exit.
  */
 reaction_t* lf_sched_get_ready_reaction(int worker_number) {
-    
+    return NULL;
 }
 
 /**

@@ -132,6 +132,50 @@ typedef struct {
      *
      */
     volatile size_t _lf_sched_next_reaction_level;
+
+    ///////// Specific to the quasi-static scheduler /////////
+    /**
+     * @brief Points to a read-only array of static schedules.
+     * 
+     */
+    const uint32_t*** static_schedules;
+
+    /**
+     * @brief Points to a read-only array of static schedules.
+     * 
+     */
+    const uint32_t** current_schedule;
+
+    /**
+     * @brief Points to a read-only array of lengths of the static schedules.
+     * 
+     */
+    const uint32_t** schedule_lengths;
+
+    /**
+     * @brief Points to an array of program counters for each worker.
+     * 
+     */
+    size_t* pc;
+    
+    /**
+     * @brief Points to an array of pointers to reaction instances.
+     * 
+     * The indices are the reaction indices in inst_t.
+     */
+    reaction_t** reaction_instances;
+
+    /**
+     * @brief Points to an array of semaphores, one for each reaction.
+     * 
+     * The indices that correspond to different reactions can be stored
+     * in the reaction instances. The initial count of the semaphores
+     * should also be stored in the reaction instances (in reactor.c).
+     * 
+     */
+    // semaphore_t** semaphores;
+    // For anything that is "one for each reaction," we store it in the
+    // reaction struct
 } _lf_sched_instance_t;
 
 /**
@@ -165,6 +209,7 @@ bool init_sched_instance(
     }
     lf_mutex_unlock(&mutex);
 
+    // Shaokai: Why are these things in the critical section?
     if (params == NULL || params->num_reactions_per_level_size == 0) {
         (*instance)->max_reaction_level = DEFAULT_MAX_REACTION_LEVEL;
     }
