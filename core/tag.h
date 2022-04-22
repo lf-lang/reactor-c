@@ -2,6 +2,7 @@
  * @file
  * @author Edward A. Lee
  * @author Soroush Bateni
+ * @author Hou Seng (Steven) Wong
  *
  * @section LICENSE
 Copyright (c) 2020, The University of California at Berkeley.
@@ -98,11 +99,49 @@ int lf_compare_tags(tag_t tag1, tag_t tag2);
 DEPRECATED(int compare_tags(tag_t tag1, tag_t tag2));
 
 /**
+ * An enum for specifying the desired tag when calling "lf_tag"
+ */
+typedef enum _lf_time_type {
+    LF_LOGICAL,
+    LF_PHYSICAL,
+    LF_ELAPSED_LOGICAL,
+    LF_ELAPSED_PHYSICAL,
+    LF_START
+} lf_time_type;
+
+/**
+ * Get the tag specified by "type".
+ * 
+ * Example use cases:
+ * - Getting the starting tag:
+ * lf_tag(LF_START)
+ * 
+ * - Getting the elapsed physical time:
+ * lf_tag(LF_ELAPSED_PHYSICAL).time
+ * 
+ * - Getting the logical microstep
+ * lf_tag(LF_LOGICAL).microstep
+ * 
+ * @param type A field in an enum spcifying the tag type. 
+ *             See enum "lf_tag_type" above.
+ * @return The desired tag
+ */
+tag_t lf_tag(lf_time_type type);
+
+/**
+ * Get the time specified by "type".
+ * 
+ * @param type A field in an enum spcifying the tag type. 
+ *             See enum "lf_tag_type" above.
+ * @return The desired tag
+ */
+interval_t lf_time(lf_time_type type);
+
+/**
  * Return the elapsed logical time in nanoseconds
  * since the start of execution.
  * @return A time interval.
  */
-interval_t lf_elapsed_logical_time(void);
 DEPRECATED(interval_t get_elapsed_logical_time(void));
 
 /**
@@ -139,19 +178,16 @@ size_t lf_comma_separated_time(char* buffer, instant_t time);
  * 
  * @return A time instant.
  */
-instant_t lf_logical_time(void);
 DEPRECATED(instant_t get_logical_time(void));
 
 /**
  * Return the current tag, a logical time, microstep pair.
  */
-tag_t lf_current_tag(void);
 DEPRECATED(tag_t get_current_tag(void));
 
 /**
  * Return the current microstep.
  */
-microstep_t lf_microstep(void);
 DEPRECATED(microstep_t get_microstep(void));
 
 /**
@@ -186,7 +222,6 @@ extern interval_t _lf_epoch_offset;
  * since January 1, 1970, but it is actually platform dependent.
  * @return A time instant.
  */
-instant_t lf_physical_time(void);
 DEPRECATED(instant_t get_physical_time(void));
 
 /**
@@ -195,7 +230,6 @@ DEPRECATED(instant_t get_physical_time(void));
  * physical start time as measured by get_physical_time(void) when
  * the program was started.
  */
-instant_t lf_elapsed_physical_time(void);
 DEPRECATED(instant_t get_elapsed_physical_time(void));
 
 /**
@@ -213,7 +247,6 @@ DEPRECATED(void set_physical_clock_offset(interval_t offset));
  * since January 1, 1970, but it is actually platform dependent. 
  * @return A time instant.
  */
-instant_t lf_start_time(void);
 DEPRECATED(instant_t get_start_time(void));
 
 /**

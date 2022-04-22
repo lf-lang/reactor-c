@@ -2,6 +2,7 @@
  * @file
  * @author Edward A. Lee
  * @author Soroush Bateni
+ * @author Hou Seng (Steven) Wong
  *
  * @section LICENSE
 Copyright (c) 2020, The University of California at Berkeley.
@@ -142,59 +143,34 @@ tag_t _lf_delay_tag(tag_t tag, interval_t interval) {
 
 /**
  * Return the elapsed logical time in nanoseconds since the start of execution.
- */
-interval_t lf_elapsed_logical_time() {
-    return current_tag.time - start_time;
-}
-
-/**
- * @deprecated version of 'lf_elapsed_logical_time'
+ * @deprecated
  */
 interval_t get_elapsed_logical_time() {
-	return lf_elapsed_logical_time();
+	return lf_time(LF_ELAPSED_LOGICAL);
 }
 
 /**
  * Return the current tag, a logical time, microstep pair.
- */
-tag_t lf_current_tag() {
-    return current_tag;
-}
-
-/**
- * @deprecated version of 'lf_current_tag'
+ * @deprecated
  */
 tag_t get_current_tag() {
-	return lf_current_tag();
+	return lf_tag(LF_LOGICAL);
 }
-
 
 /**
  * Return the current logical time in nanoseconds since January 1, 1970.
- */
-instant_t lf_logical_time() {
-    return current_tag.time;
-}
-
-/**
- * @deprecated version of 'lf_logical_time'
+ * @deprecated
  */
 instant_t get_logical_time() {
-	return lf_logical_time();
+	return lf_time(LF_LOGICAL);
 }
 
 /**
  * Return the current microstep.
- */
-microstep_t lf_microstep() {
-    return current_tag.microstep;
-}
-
-/**
- * @deprecated version of 'lf_microstep'
+ * @deprecated
  */
 microstep_t get_microstep() {
-	return lf_microstep();
+	return lf_tag(LF_LOGICAL).microstep;
 }
 
 
@@ -219,7 +195,7 @@ instant_t _lf_last_reported_unadjusted_physical_time_ns = NEVER;
  * Return the current physical time in nanoseconds since January 1, 1970,
  * adjusted by the global physical time offset.
  */
-instant_t lf_physical_time() {
+instant_t _lf_physical_time() {
     // Get the current clock value
     int result = lf_clock_gettime(&_lf_last_reported_unadjusted_physical_time_ns);
 
@@ -258,10 +234,10 @@ instant_t lf_physical_time() {
 }
 
 /**
- * @deprecated version of 'lf_physical_time'
+ * @deprecated version of '_lf_physical_time'
  */
 instant_t get_physical_time() {
-	return lf_physical_time();
+	return lf_time(LF_PHYSICAL);
 }
 
 /**
@@ -269,16 +245,10 @@ instant_t get_physical_time() {
  * On many platforms, this is the number of nanoseconds
  * since January 1, 1970, but it is actually platform dependent. * 
  * @return A time instant.
- */
-instant_t lf_start_time() {
-    return start_time;
-}
-
-/**
- * @deprecated version of 'lf_start_time'
+ * @deprecated
  */
 instant_t get_start_time() {
-	return lf_start_time();
+	return lf_time(LF_START);
 }
 
 /**
@@ -286,16 +256,10 @@ instant_t get_start_time() {
  * This is the time returned by get_physical_time() minus the
  * physical start time as measured by get_physical_time() when
  * the program was started.
- */
-instant_t lf_elapsed_physical_time() {
-    return get_physical_time() - physical_start_time;
-}
-
-/**
- * @deprecated version of 'lf_elapsed_physical_time'
+ * @deprecated
  */
 instant_t get_elapsed_physical_time() {
-	return lf_elapsed_physical_time();
+	return lf_time(LF_ELAPSED_PHYSICAL);
 }
 
 /**
@@ -483,3 +447,73 @@ tag_t _lf_convert_volatile_tag_to_nonvolatile(tag_t volatile vtag) {
     return vtag;
 }
 #endif
+
+/**
+ * Get the tag specified by "type".
+ * 
+ * Example use cases:
+ * - Getting the starting tag:
+ * lf_tag(LF_START)
+ * 
+ * - Getting the elapsed physical time:
+ * lf_tag(LF_ELAPSED_PHYSICAL).time
+ * 
+ * - Getting the logical microstep
+ * lf_tag(LF_LOGICAL).microstep
+ * 
+ * @param type A field in an enum spcifying the tag type. 
+ *             See enum "lf_tag_type" above.
+ * @return The desired tag
+ */
+tag_t lf_tag(lf_time_type type) {
+	switch (type) {
+	case LF_LOGICAL:
+		return current_tag;
+	case LF_PHYSICAL:
+		return (tag_t) {
+			.time = lf_time(LF_PHYSICAL), 
+		    .microstep = current_tag.microstep
+		};
+	case LF_ELAPSED_LOGICAL:
+		return (tag_t) {
+			.time = lf_time(LF_ELAPSED_LOGICAL), 
+			.microstep = current_tag.microstep
+		};
+	case LF_ELAPSED_PHYSICAL:
+		return (tag_t) {
+			.time = lf_time(LF_ELAPSED_PHYSICAL), 
+			.microstep = current_tag.microstep
+		};
+	default:
+		return (tag_t) {
+			.time = NEVER,
+			.microstep = 0
+		};
+	}
+}
+
+
+/**
+ * Get the time specified by "type".
+ * 
+ * @param type A field in an enum spcifying the tag type. 
+ *             See enum "lf_tag_type" above.
+ * @return The desired tag
+ */
+interval_t lf_time(lf_time_type type) {
+	switch (type)
+	{
+	case LF_LOGICAL:
+		return current_tag.time;
+	case LF_PHYSICAL:
+		return _lf_physical_time();
+	case LF_ELAPSED_LOGICAL:
+		return current_tag.time - start_time;
+	case LF_ELAPSED_PHYSICAL:
+		return _lf_physical_time() - physical_start_time;
+	case LF_START:
+		return start_time;
+	default:
+		return NEVER;
+	}
+}
