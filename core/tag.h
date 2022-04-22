@@ -99,7 +99,7 @@ int lf_compare_tags(tag_t tag1, tag_t tag2);
 DEPRECATED(int compare_tags(tag_t tag1, tag_t tag2));
 
 /**
- * An enum for specifying the desired tag when calling "lf_tag"
+ * An enum for specifying the desired tag when calling "lf_time"
  */
 typedef enum _lf_time_type {
     LF_LOGICAL,
@@ -110,26 +110,22 @@ typedef enum _lf_time_type {
 } lf_time_type;
 
 /**
- * Get the tag specified by "type".
- * 
- * Example use cases:
- * - Getting the starting tag:
- * lf_tag(LF_START)
- * 
- * - Getting the elapsed physical time:
- * lf_tag(LF_ELAPSED_PHYSICAL).time
- * 
- * - Getting the logical microstep
- * lf_tag(LF_LOGICAL).microstep
- * 
- * @param type A field in an enum specifying the tag type. 
- *             See enum "lf_tag_type" above.
- * @return The desired tag
+ * Return the current tag, a logical time, microstep pair.
  */
-tag_t lf_tag(lf_time_type type);
+tag_t lf_tag();
 
 /**
  * Get the time specified by "type".
+ * 
+ * Example use cases:
+ * - Getting the starting time:
+ * lf_time(LF_START)
+ * 
+ * - Getting the elapsed physical time:
+ * lf_time(LF_ELAPSED_PHYSICAL)
+ * 
+ * - Getting the logical time
+ * lf_time(LF_LOGICAL)
  * 
  * @param type A field in an enum specifying the tag type. 
  *             See enum "lf_tag_type" above.

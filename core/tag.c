@@ -154,7 +154,7 @@ interval_t get_elapsed_logical_time() {
  * @deprecated
  */
 tag_t get_current_tag() {
-	return lf_tag(LF_LOGICAL);
+	return lf_tag();
 }
 
 /**
@@ -170,7 +170,7 @@ instant_t get_logical_time() {
  * @deprecated
  */
 microstep_t get_microstep() {
-	return lf_tag(LF_LOGICAL).microstep;
+	return lf_tag().microstep;
 }
 
 
@@ -449,52 +449,25 @@ tag_t _lf_convert_volatile_tag_to_nonvolatile(tag_t volatile vtag) {
 #endif
 
 /**
- * Get the tag specified by "type".
- * 
- * Example use cases:
- * - Getting the starting tag:
- * lf_tag(LF_START)
- * 
- * - Getting the elapsed physical time:
- * lf_tag(LF_ELAPSED_PHYSICAL).time
- * 
- * - Getting the logical microstep
- * lf_tag(LF_LOGICAL).microstep
- * 
- * @param type A field in an enum specifying the tag type. 
- *             See enum "lf_tag_type" above.
- * @return The desired tag
+ * Return the current tag, a logical time, microstep pair.
  */
-tag_t lf_tag(lf_time_type type) {
-    switch (type) {
-    case LF_LOGICAL:
-        return current_tag;
-    case LF_PHYSICAL:
-        return (tag_t) {
-            .time = lf_time(LF_PHYSICAL), 
-            .microstep = current_tag.microstep
-        };
-    case LF_ELAPSED_LOGICAL:
-        return (tag_t) {
-            .time = lf_time(LF_ELAPSED_LOGICAL), 
-            .microstep = current_tag.microstep
-        };
-    case LF_ELAPSED_PHYSICAL:
-        return (tag_t) {
-            .time = lf_time(LF_ELAPSED_PHYSICAL), 
-            .microstep = current_tag.microstep
-        };
-    default:
-        return (tag_t) {
-            .time = NEVER,
-            .microstep = 0
-        };
-    }
+tag_t lf_tag() {
+    return current_tag;
 }
 
 
 /**
  * Get the time specified by "type".
+ * 
+ * Example use cases:
+ * - Getting the starting time:
+ * lf_time(LF_START)
+ * 
+ * - Getting the elapsed physical time:
+ * lf_time(LF_ELAPSED_PHYSICAL)
+ * 
+ * - Getting the logical time
+ * lf_time(LF_LOGICAL)
  * 
  * @param type A field in an enum specifying the tag type. 
  *             See enum "lf_tag_type" above.
