@@ -480,7 +480,7 @@ tag_t transitive_next_event(federate_t* fed, tag_t candidate, bool visited[]) {
                 &_RTI.federates[fed->upstream[i]], result, visited);
 
         // Add the "after" delay of the connection to the result.
-        upstream_result = delay_tag(upstream_result, fed->upstream_delay[i]);
+        upstream_result = _lf_delay_tag(upstream_result, fed->upstream_delay[i]);
 
         // If the adjusted event time is less than the result so far, update the result.
         if (compare_tags(upstream_result, result) < 0) {
@@ -605,7 +605,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
         // Ignore this federate if it has resigned.
         if (upstream->state == NOT_CONNECTED) continue;
 
-        tag_t candidate = delay_tag(upstream->completed, fed->upstream_delay[j]);
+        tag_t candidate = _lf_delay_tag(upstream->completed, fed->upstream_delay[j]);
 
         if (compare_tags(candidate, min_upstream_completed) < 0) {
         	min_upstream_completed = candidate;
@@ -656,7 +656,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
         // Adjust by the "after" delay.
         // Note that "no delay" is encoded as NEVER,
         // whereas one microstep delay is encoded as 0LL.
-        tag_t candidate = delay_tag(upstream_next_event, fed->upstream_delay[j]);
+        tag_t candidate = _lf_delay_tag(upstream_next_event, fed->upstream_delay[j]);
         
         if (compare_tags(candidate, t_d) < 0) {
             t_d = candidate;

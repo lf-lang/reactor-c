@@ -120,7 +120,7 @@ int compare_tags(tag_t tag1, tag_t tag2) {
  * @param tag The tag to increment.
  * @param interval The time interval.
  */
-tag_t lf_delay_tag(tag_t tag, interval_t interval) {
+tag_t _lf_delay_tag(tag_t tag, interval_t interval) {
 	if (tag.time == NEVER || interval == NEVER) return tag;
 	tag_t result = tag;
 	if (interval == 0LL) {
@@ -138,13 +138,6 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval) {
 		result.microstep = 0;
 	}
 	return result;
-}
-
-/**
- * @deprecated version of 'lf_delay_tag'
- */
-tag_t delay_tag(tag_t tag, interval_t interval) {
-	return lf_delay_tag(tag, interval);
 }
 
 /**
@@ -475,32 +468,18 @@ size_t lf_comma_separated_time(char* buffer, instant_t time) {
  * variant.
  */
 #ifdef __cplusplus
-tag_t lf_convert_volatile_tag_to_nonvolatile(tag_t volatile const& vtag) {
+tag_t _lf_convert_volatile_tag_to_nonvolatile(tag_t volatile const& vtag) {
     tag_t non_volatile_tag;
     non_volatile_tag.time = vtag.time;
     non_volatile_tag.microstep = vtag.microstep;
     return non_volatile_tag;
-}
-
-/**
- * @deprecated version of 'lf_convert_volatile_tag_to_nonvolatile'
- */
-tag_t convert_volatile_tag_to_nonvolatile(tag_t volatile const& vtag) {
-	return lf_convert_volatile_tag_to_nonvolatile(vtag);
 }
 #else
 /**
  * @note This is an undefined behavior in C and should
  *  be used with utmost caution. See Section 6.7.2 of the C99 standard.
  */
-tag_t lf_convert_volatile_tag_to_nonvolatile(tag_t volatile vtag) {
+tag_t _lf_convert_volatile_tag_to_nonvolatile(tag_t volatile vtag) {
     return vtag;
-}
-
-/**
- * @deprecated version of 'lf_convert_volatile_tag_to_nonvolatile'
- */
-tag_t convert_volatile_tag_to_nonvolatile(tag_t volatile vtag) {
-	return lf_convert_volatile_tag_to_nonvolatile(vtag);
 }
 #endif

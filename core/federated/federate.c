@@ -371,7 +371,7 @@ int send_timed_message(interval_t additional_delay,
 
     // Apply the additional delay to the current tag and use that as the intended
     // tag of the outgoing message
-    tag_t current_message_intended_tag = delay_tag(get_current_tag(),
+    tag_t current_message_intended_tag = _lf_delay_tag(get_current_tag(),
                                                     additional_delay);
 
     // Next 8 + 4 will be the tag (timestamp, microstep)
@@ -1179,7 +1179,7 @@ void update_last_known_status_on_input_port(tag_t tag, int port_id) {
                 if (compare_tags(tag,
                         input_port_action->last_known_status_tag) == 0) {
                     // If the intended tag for an input port is equal to the last known status, we need
-                    // to increment the microstep. This is a direct result of the behavior of the delay_tag()
+                    // to increment the microstep. This is a direct result of the behavior of the _lf_delay_tag()
                     // semantics in tag.h.
                     tag.microstep++;
                 }
@@ -1327,7 +1327,7 @@ void send_port_absent_to_federate(interval_t additional_delay,
 
     // Apply the additional delay to the current tag and use that as the intended
     // tag of the outgoing message
-    tag_t current_message_intended_tag = delay_tag(get_current_tag(),
+    tag_t current_message_intended_tag = _lf_delay_tag(get_current_tag(),
                                                     additional_delay);
 
     LOG_PRINT("Sending port "
