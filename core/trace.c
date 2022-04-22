@@ -397,12 +397,12 @@ void tracepoint(
     _lf_trace_buffer[index][i].pointer = pointer;
     _lf_trace_buffer[index][i].reaction_number = reaction_number;
     _lf_trace_buffer[index][i].worker = worker;
-    _lf_trace_buffer[index][i].logical_time = get_logical_time();
-    _lf_trace_buffer[index][i].microstep = get_microstep();
+    _lf_trace_buffer[index][i].logical_time = lf_time(LF_LOGICAL);
+    _lf_trace_buffer[index][i].microstep = lf_tag().microstep;
     if (physical_time != NULL) {
         _lf_trace_buffer[index][i].physical_time = *physical_time;
     } else {
-        _lf_trace_buffer[index][i].physical_time = get_physical_time();
+        _lf_trace_buffer[index][i].physical_time = lf_time(LF_PHYSICAL);
     }
     _lf_trace_buffer_size[index]++;
     _lf_trace_buffer[index][i].trigger = trigger;

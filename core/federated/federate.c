@@ -1062,7 +1062,7 @@ instant_t get_start_time_from_rti(instant_t my_physical_time) {
 
     instant_t timestamp = extract_int64(&(buffer[1]));
     info_print("Starting timestamp is: %lld.", timestamp);
-    LOG_PRINT("Current physical time is: %lld.", get_physical_time());
+    LOG_PRINT("Current physical time is: %lld.", lf_time(LF_PHYSICAL));
 
     return timestamp;
 }
@@ -1499,7 +1499,7 @@ trigger_handle_t schedule_message_received_from_network_already_locked(
         error_print_and_exit("Received a message at tag (%lld, %u) that"
                                 " has a tag (%lld, %u) that has violated the STP offset. "
                                 "Centralized coordination should not have these types of messages.",
-                                current_tag.time - start_time, get_microstep(),
+                                current_tag.time - start_time, lf_tag().microstep,
                                 tag.time - start_time, tag.microstep);
 #else
         // Set the delay back to 0
@@ -1513,7 +1513,7 @@ trigger_handle_t schedule_message_received_from_network_already_locked(
         // In case the message is in the future, call
         // _lf_schedule_at_tag() so that the microstep is respected.
         LOG_PRINT("Received a message that is (%lld nanoseconds, %u microsteps) "
-                "in the future.", extra_delay, tag.microstep - get_microstep());
+                "in the future.", extra_delay, tag.microstep - lf_tag().microstep);
         return_value = _lf_schedule_at_tag(trigger, tag, token);
     }
     // Notify the main thread in case it is waiting for physical time to elapse.
@@ -1708,7 +1708,7 @@ void handle_tagged_message(int socket, int fed_id) {
     trigger_t* action = _lf_action_for_port(port_id);
 
     // Record the physical time of arrival of the message
-    action->physical_time_of_arrival = get_physical_time();
+    action->physical_time_of_arrival = lf_time(LF_PHYSICAL);
 
     if (action->is_physical) {
         // Messages sent on physical connections should be handled via handle_message().
@@ -1726,7 +1726,7 @@ void handle_tagged_message(int socket, int fed_id) {
     _lf_increment_global_tag_barrier(intended_tag);
 #endif
     LOG_PRINT("Received message with tag: (%lld, %u), Current tag: (%lld, %u).",
-            intended_tag.time - start_time, intended_tag.microstep, get_elapsed_logical_time(), get_microstep());
+            intended_tag.time - start_time, intended_tag.microstep, lf_time(LF_ELAPSED_LOGICAL), lf_tag().microstep);
 
     // Read the payload.
     // Allocate memory for the message contents.
@@ -2388,7 +2388,7 @@ void synchronize_with_other_federates() {
     // Advance Grant message to request for permission to execute. In the decentralized
     // coordination, either the after delay on the connection must be sufficiently large
     // enough or the STP offset must be set globally to an accurate value.
-    start_time = get_start_time_from_rti(get_physical_time());
+    start_time = get_start_time_from_rti(lf_time(LF_PHYSICAL));
 
     // Every federate starts out assuming that it has been granted a PTAG
     // at the start time, or if it has no upstream federates, a TAG.
@@ -2454,7 +2454,7 @@ bool _lf_bounded_NET(tag_t* tag) {
         // There is a physical action upstream of some output from this
         // federate, and there is at least one downstream federate.
         // Compare the tag to the current physical time.
-        instant_t physical_time = get_physical_time();
+        instant_t physical_time = lf_time(LF_PHYSICAL);
         if (physical_time + _fed.min_delay_from_physical_action_to_federate_output < tag->time) {
             // Can only promise up and not including this new time:
             tag->time = physical_time + _fed.min_delay_from_physical_action_to_federate_output - 1L;

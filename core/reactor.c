@@ -127,7 +127,7 @@ int wait_until(instant_t logical_time_ns) {
     int return_value = 0;
     if (!fast) {
         LOG_PRINT("Waiting for elapsed logical time %lld.", logical_time_ns - start_time);
-        interval_t ns_to_wait = logical_time_ns - get_physical_time();
+        interval_t ns_to_wait = logical_time_ns - lf_time(LF_PHYSICAL);
     
         if (ns_to_wait < MIN_WAIT_TIME) {
             DEBUG_PRINT("Wait time %lld is less than MIN_WAIT_TIME %lld. Skipping wait.",
@@ -202,7 +202,7 @@ int _lf_do_step(void) {
         // then the reaction will be invoked and the violation reaction will not be invoked again.
         if (reaction->deadline > 0LL) {
             // Get the current physical time.
-            instant_t physical_time = get_physical_time();
+            instant_t physical_time = lf_time(LF_PHYSICAL);
             // FIXME: These comments look outdated. We may need to update them.
             // Check for deadline violation.
             // There are currently two distinct deadline mechanisms:
@@ -287,7 +287,7 @@ int next(void) {
         next_tag.time = event->time;
         // Deduce the microstep
         if (next_tag.time == current_tag.time) {
-            next_tag.microstep = get_microstep() + 1;
+            next_tag.microstep = lf_tag().microstep + 1;
         } else {
             next_tag.microstep = 0;
         }

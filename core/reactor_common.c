@@ -775,7 +775,7 @@ void _lf_initialize_timer(trigger_t* timer) {
         // && (timer->offset != 0 || timer->period != 0)) {
         event_t* e = _lf_get_new_event();
         e->trigger = timer;
-        e->time = get_logical_time() + timer->offset;
+        e->time = lf_time(LF_LOGICAL) + timer->offset;
         _lf_add_suspended_event(e);
     	return;
     }
@@ -800,7 +800,7 @@ void _lf_initialize_timer(trigger_t* timer) {
     // Recycle event_t structs, if possible.    
     event_t* e = _lf_get_new_event();
     e->trigger = timer;
-    e->time = get_logical_time() + delay;
+    e->time = lf_time(LF_LOGICAL) + delay;
     // NOTE: No lock is being held. Assuming this only happens at startup.
     pqueue_insert(event_q, e);
     tracepoint_schedule(timer, delay); // Trace even though schedule is not called.
@@ -1174,7 +1174,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     // modify the intended time.
     if (trigger->is_physical) {
         // Get the current physical time and assign it as the intended time.
-        intended_time = get_physical_time() + delay;
+        intended_time = lf_time(LF_PHYSICAL) + delay;
     } else {
         // FIXME: We need to verify that we are executing within a reaction?
         // See reactor_threaded.
@@ -1277,7 +1277,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
                 default:
                     if (existing->time == current_tag.time &&
                             pqueue_find_equal_same_priority(event_q, existing) != NULL) {
-                        if (_lf_is_tag_after_stop_tag((tag_t){.time=existing->time,.microstep=get_microstep()+1})) {
+                        if (_lf_is_tag_after_stop_tag((tag_t){.time=existing->time,.microstep=lf_tag().microstep+1})) {
                             // Scheduling e will incur a microstep at timeout, 
                             // which is illegal.
                             _lf_recycle_event(e);
@@ -1441,7 +1441,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
         if (reaction->status == inactive) {
             reaction->is_STP_violated = is_STP_violated;
             _lf_trigger_reaction(reaction, -1);
-            LOG_PRINT("Enqueued reaction %s at time %lld.", reaction->name, get_logical_time());
+            LOG_PRINT("Enqueued reaction %s at time %lld.", reaction->name, lf_time(LF_LOGICAL));
         }
     }
 
@@ -1557,7 +1557,7 @@ lf_token_t* _lf_set_new_array_impl(lf_token_t* token, size_t length, int num_des
  */
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
     reaction_t* reaction = self->executing_reaction;
-    if (get_physical_time() > get_logical_time() + reaction->deadline) {
+    if (lf_time(LF_PHYSICAL) > lf_time(LF_LOGICAL) + reaction->deadline) {
         if (invoke_deadline_handler) {
             reaction->deadline_violation_handler(self);
         }
@@ -1694,7 +1694,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
 #endif
         if (downstream_to_execute_now->deadline > 0LL) {
             // Get the current physical time.
-            instant_t physical_time = get_physical_time();
+            instant_t physical_time = lf_time(LF_PHYSICAL);
             // Check for deadline violation.
             if (physical_time > current_tag.time + downstream_to_execute_now->deadline) {
                 // Deadline violation has occurred.
@@ -1969,7 +1969,7 @@ void initialize(void) {
     // Initialize the trigger table.
     _lf_initialize_trigger_objects();
 
-    physical_start_time = get_physical_time();
+    physical_start_time = lf_time(LF_PHYSICAL);
     current_tag.time = physical_start_time;
     start_time = current_tag.time;
 
@@ -2024,7 +2024,7 @@ void termination(void) {
     }
     // Print elapsed times.
     // If these are negative, then the program failed to start up.
-    interval_t elapsed_time = get_elapsed_logical_time();
+    interval_t elapsed_time = lf_time(LF_ELAPSED_LOGICAL);
     if (elapsed_time >= 0LL) {
         char time_buffer[29]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
         lf_comma_separated_time(time_buffer, elapsed_time);
@@ -2033,7 +2033,7 @@ void termination(void) {
         // If physical_start_time is 0, then execution didn't get far enough along
         // to initialize this.
         if (physical_start_time > 0LL) {
-        	lf_comma_separated_time(time_buffer, get_elapsed_physical_time());
+        	lf_comma_separated_time(time_buffer, lf_time(LF_ELAPSED_PHYSICAL));
             printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
         }
     }
@@ -2265,7 +2265,7 @@ void _lf_process_mode_changes(
             reactor_mode_state_t* state = states[i];
             if (state != NULL && state->next_mode != NULL) {
                 // Save time when mode was left to handle suspended events in the future
-                state->active_mode->deactivation_time = get_logical_time();
+                state->active_mode->deactivation_time = lf_time(LF_LOGICAL);
 
                 // Apply transition
                 state->active_mode = state->next_mode;
