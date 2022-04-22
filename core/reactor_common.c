@@ -912,7 +912,7 @@ void _lf_replace_token(event_t* event, lf_token_t* token) {
  */
 int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
 
-    tag_t current_logical_tag = get_current_tag();
+    tag_t current_logical_tag = lf_tag();
 
     DEBUG_PRINT("_lf_schedule_at_tag() called with tag (%lld, %u) at tag (%lld, %u).",
                   tag.time - start_time, tag.microstep,
@@ -1390,7 +1390,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
     // Check if the trigger has violated the STP offset
     bool is_STP_violated = false;
 #ifdef FEDERATED
-    if (lf_compare_tags(trigger->intended_tag, get_current_tag()) < 0) {
+    if (lf_compare_tags(trigger->intended_tag, lf_tag()) < 0) {
         is_STP_violated = true;
     }
 #ifdef FEDERATED_CENTRALIZED
@@ -2215,7 +2215,7 @@ void _lf_process_mode_changes(
                         } else if (state->next_mode != state->active_mode && event->trigger != NULL) { // History transition to a different mode
                             // Remaining time that the event would have been waiting before mode was left
                             instant_t local_remaining_delay = event->time - (state->next_mode->deactivation_time != 0 ? state->next_mode->deactivation_time : get_start_time());
-                            tag_t current_logical_tag = get_current_tag();
+                            tag_t current_logical_tag = lf_tag();
 
                             // Reschedule event with original local delay
                             DEBUG_PRINT("Modes: Re-enqueuing event with a suspended delay of %d (previous TTH: %u, Mode suspended at: %u).", local_remaining_delay, event->time, state->next_mode->deactivation_time);

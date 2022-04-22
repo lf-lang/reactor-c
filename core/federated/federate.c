@@ -371,7 +371,7 @@ int send_timed_message(interval_t additional_delay,
 
     // Apply the additional delay to the current tag and use that as the intended
     // tag of the outgoing message
-    tag_t current_message_intended_tag = _lf_delay_tag(get_current_tag(),
+    tag_t current_message_intended_tag = _lf_delay_tag(lf_tag(),
                                                     additional_delay);
 
     // Next 8 + 4 will be the tag (timestamp, microstep)
@@ -1233,13 +1233,13 @@ port_status_t get_current_port_status(int portID) {
         // The status of the trigger is absent.
         return absent;
     } else if (network_input_port_action->status == unknown
-    		&& lf_compare_tags(network_input_port_action->last_known_status_tag, get_current_tag()) >= 0) {
+    		&& lf_compare_tags(network_input_port_action->last_known_status_tag, lf_tag()) >= 0) {
         // We have a known status for this port in a future tag. Therefore, no event is going
         // to be present for this port at the current tag.
         set_network_port_status(portID, absent);
         return absent;
     } else if (_fed.is_last_TAG_provisional
-    		&& lf_compare_tags(_fed.last_TAG, get_current_tag()) > 0) {
+    		&& lf_compare_tags(_fed.last_TAG, lf_tag()) > 0) {
     	// In this case, a PTAG has been received with a larger tag than the current tag,
     	// which means that the input port is known to be absent.
         set_network_port_status(portID, absent);
@@ -1298,7 +1298,7 @@ void enqueue_network_control_reactions() {
 #ifdef FEDERATED_CENTRALIZED
     // If the granted tag is not provisional, there is no
     // need for network input control reactions
-    if (lf_compare_tags(_fed.last_TAG, get_current_tag()) != 0
+    if (lf_compare_tags(_fed.last_TAG, lf_tag()) != 0
     		|| _fed.is_last_TAG_provisional == false) {
         return;
     }
@@ -1327,7 +1327,7 @@ void send_port_absent_to_federate(interval_t additional_delay,
 
     // Apply the additional delay to the current tag and use that as the intended
     // tag of the outgoing message
-    tag_t current_message_intended_tag = _lf_delay_tag(get_current_tag(),
+    tag_t current_message_intended_tag = _lf_delay_tag(lf_tag(),
                                                     additional_delay);
 
     LOG_PRINT("Sending port "
@@ -1431,7 +1431,7 @@ void wait_until_port_status_known(int port_ID, interval_t STP) {
     // for the current tag could have been received in time 
     // but not the the body of the message.
     // Wait on the tag barrier based on the current tag. 
-    _lf_wait_on_global_tag_barrier(get_current_tag());
+    _lf_wait_on_global_tag_barrier(lf_tag());
 
     // Done waiting
     // If the status of the port is still unknown, assume it is absent.
@@ -1782,7 +1782,7 @@ void handle_tagged_message(int socket, int fed_id) {
     // to exit. The port status is on the other hand changed in this thread, and thus,
     // can be checked in this scenario without this race condition. The message with 
     // intended_tag of 9 in this case needs to wait one microstep to be processed.
-    if (lf_compare_tags(intended_tag, get_current_tag()) <= 0 &&                           
+    if (lf_compare_tags(intended_tag, lf_tag()) <= 0 &&                           
             action->is_a_control_reaction_waiting && // Check if a control reaction is waiting
             action->status == unknown                // Check if the status of the port is still unknown
     ) {
@@ -2077,7 +2077,7 @@ void handle_stop_granted_message() {
             received_stop_tag.time - start_time, received_stop_tag.microstep);
     
     // Sanity check.
-    tag_t current_tag = get_current_tag();
+    tag_t current_tag = lf_tag();
     if (lf_compare_tags(received_stop_tag, current_tag) <= 0) {
         error_print("RTI granted a MSG_TYPE_STOP_GRANTED tag that is equal to or less than this federate's current tag (%lld, %u). "
         		"Stopping at the next microstep instead.",

@@ -142,7 +142,7 @@ void _lf_increment_global_tag_barrier_already_locked(tag_t future_tag) {
         warning_print("Attempting to raise a barrier after the stop tag.");
         future_tag = stop_tag;
     }
-    tag_t current_tag = get_current_tag();
+    tag_t current_tag = lf_tag
     // Check to see if future_tag is actually in the future.
     if (lf_compare_tags(future_tag, current_tag) > 0) {
         // Future tag is actually in the future.
