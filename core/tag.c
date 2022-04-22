@@ -461,59 +461,59 @@ tag_t _lf_convert_volatile_tag_to_nonvolatile(tag_t volatile vtag) {
  * - Getting the logical microstep
  * lf_tag(LF_LOGICAL).microstep
  * 
- * @param type A field in an enum spcifying the tag type. 
+ * @param type A field in an enum specifying the tag type. 
  *             See enum "lf_tag_type" above.
  * @return The desired tag
  */
 tag_t lf_tag(lf_time_type type) {
-	switch (type) {
-	case LF_LOGICAL:
-		return current_tag;
-	case LF_PHYSICAL:
-		return (tag_t) {
-			.time = lf_time(LF_PHYSICAL), 
-		    .microstep = current_tag.microstep
-		};
-	case LF_ELAPSED_LOGICAL:
-		return (tag_t) {
-			.time = lf_time(LF_ELAPSED_LOGICAL), 
-			.microstep = current_tag.microstep
-		};
-	case LF_ELAPSED_PHYSICAL:
-		return (tag_t) {
-			.time = lf_time(LF_ELAPSED_PHYSICAL), 
-			.microstep = current_tag.microstep
-		};
-	default:
-		return (tag_t) {
-			.time = NEVER,
-			.microstep = 0
-		};
-	}
+    switch (type) {
+    case LF_LOGICAL:
+        return current_tag;
+    case LF_PHYSICAL:
+        return (tag_t) {
+            .time = lf_time(LF_PHYSICAL), 
+            .microstep = current_tag.microstep
+        };
+    case LF_ELAPSED_LOGICAL:
+        return (tag_t) {
+            .time = lf_time(LF_ELAPSED_LOGICAL), 
+            .microstep = current_tag.microstep
+        };
+    case LF_ELAPSED_PHYSICAL:
+        return (tag_t) {
+            .time = lf_time(LF_ELAPSED_PHYSICAL), 
+            .microstep = current_tag.microstep
+        };
+    default:
+        return (tag_t) {
+            .time = NEVER,
+            .microstep = 0
+        };
+    }
 }
 
 
 /**
  * Get the time specified by "type".
  * 
- * @param type A field in an enum spcifying the tag type. 
+ * @param type A field in an enum specifying the tag type. 
  *             See enum "lf_tag_type" above.
- * @return The desired tag
+ * @return The desired time
  */
-interval_t lf_time(lf_time_type type) {
-	switch (type)
-	{
-	case LF_LOGICAL:
-		return current_tag.time;
-	case LF_PHYSICAL:
-		return _lf_physical_time();
-	case LF_ELAPSED_LOGICAL:
-		return current_tag.time - start_time;
-	case LF_ELAPSED_PHYSICAL:
-		return _lf_physical_time() - physical_start_time;
-	case LF_START:
-		return start_time;
-	default:
-		return NEVER;
-	}
+instant_t lf_time(lf_time_type type) {
+    switch (type)
+    {
+    case LF_LOGICAL:
+        return current_tag.time;
+    case LF_PHYSICAL:
+        return _lf_physical_time();
+    case LF_ELAPSED_LOGICAL:
+        return current_tag.time - start_time;
+    case LF_ELAPSED_PHYSICAL:
+        return _lf_physical_time() - physical_start_time;
+    case LF_START:
+        return start_time;
+    default:
+        return NEVER;
+    }
 }

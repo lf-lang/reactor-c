@@ -122,7 +122,7 @@ typedef enum _lf_time_type {
  * - Getting the logical microstep
  * lf_tag(LF_LOGICAL).microstep
  * 
- * @param type A field in an enum spcifying the tag type. 
+ * @param type A field in an enum specifying the tag type. 
  *             See enum "lf_tag_type" above.
  * @return The desired tag
  */
@@ -131,11 +131,11 @@ tag_t lf_tag(lf_time_type type);
 /**
  * Get the time specified by "type".
  * 
- * @param type A field in an enum spcifying the tag type. 
+ * @param type A field in an enum specifying the tag type. 
  *             See enum "lf_tag_type" above.
- * @return The desired tag
+ * @return The desired time
  */
-interval_t lf_time(lf_time_type type);
+instant_t lf_time(lf_time_type type);
 
 /**
  * Return the elapsed logical time in nanoseconds
