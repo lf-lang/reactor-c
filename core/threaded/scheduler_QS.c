@@ -94,7 +94,7 @@ void lf_sched_init(
     _lf_sched_instance->current_schedule = NULL;
     _lf_sched_instance->schedule_lengths = schedule_lengths;
     _lf_sched_instance->pc = calloc(number_of_workers, sizeof(size_t));
-    // The entries will be filled in when reactions instantiate.
+    // TODO: The entries will be filled in when reactions instantiate in.
     _lf_sched_instance->reaction_instances = calloc(reaction_count, sizeof(reaction_t*));
 }
 
@@ -149,5 +149,5 @@ void lf_sched_done_with_reaction(size_t worker_number,
  *
  */
 void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
-    
+    // Shaokai: We might not need to do anything here.
 }

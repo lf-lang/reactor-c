@@ -144,7 +144,7 @@ typedef struct {
      * @brief Points to a read-only array of static schedules.
      * 
      */
-    const uint32_t** current_schedule;
+    const int current_schedule_index;
 
     /**
      * @brief Points to a read-only array of lengths of the static schedules.
