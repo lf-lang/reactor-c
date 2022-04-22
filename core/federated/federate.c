@@ -1140,7 +1140,7 @@ void update_last_known_status_on_input_ports(tag_t tag) {
         // connection), in which case, the last known status tag of the port
         // is in the future and should not be rolled back. So in that case,
         // we do not update the last known status tag.
-        if (compare_tags(tag,
+        if (lf_compare_tags(tag,
                 input_port_action->last_known_status_tag) >= 0) {
             input_port_action->last_known_status_tag = tag;
             if (input_port_action->is_a_control_reaction_waiting) {
@@ -1174,9 +1174,9 @@ void update_last_known_status_on_input_ports(tag_t tag) {
  */
 void update_last_known_status_on_input_port(tag_t tag, int port_id) {
     trigger_t* input_port_action = _lf_action_for_port(port_id);
-    if (compare_tags(tag,
+    if (lf_compare_tags(tag,
             input_port_action->last_known_status_tag) >= 0) {
-                if (compare_tags(tag,
+                if (lf_compare_tags(tag,
                         input_port_action->last_known_status_tag) == 0) {
                     // If the intended tag for an input port is equal to the last known status, we need
                     // to increment the microstep. This is a direct result of the behavior of the _lf_delay_tag()
@@ -1233,13 +1233,13 @@ port_status_t get_current_port_status(int portID) {
         // The status of the trigger is absent.
         return absent;
     } else if (network_input_port_action->status == unknown
-    		&& compare_tags(network_input_port_action->last_known_status_tag, get_current_tag()) >= 0) {
+    		&& lf_compare_tags(network_input_port_action->last_known_status_tag, get_current_tag()) >= 0) {
         // We have a known status for this port in a future tag. Therefore, no event is going
         // to be present for this port at the current tag.
         set_network_port_status(portID, absent);
         return absent;
     } else if (_fed.is_last_TAG_provisional
-    		&& compare_tags(_fed.last_TAG, get_current_tag()) > 0) {
+    		&& lf_compare_tags(_fed.last_TAG, get_current_tag()) > 0) {
     	// In this case, a PTAG has been received with a larger tag than the current tag,
     	// which means that the input port is known to be absent.
         set_network_port_status(portID, absent);
@@ -1298,7 +1298,7 @@ void enqueue_network_control_reactions() {
 #ifdef FEDERATED_CENTRALIZED
     // If the granted tag is not provisional, there is no
     // need for network input control reactions
-    if (compare_tags(_fed.last_TAG, get_current_tag()) != 0
+    if (lf_compare_tags(_fed.last_TAG, get_current_tag()) != 0
     		|| _fed.is_last_TAG_provisional == false) {
         return;
     }
@@ -1482,7 +1482,7 @@ trigger_handle_t schedule_message_received_from_network_already_locked(
     // of the message (timestamp, microstep) is
     // in the future relative to the tag of this
     // federate. By default, assume it is not.
-    bool message_tag_is_in_the_future = compare_tags(tag, current_tag) > 0;
+    bool message_tag_is_in_the_future = lf_compare_tags(tag, current_tag) > 0;
 
     // Assign the intended tag
     trigger->intended_tag = tag;
@@ -1610,7 +1610,7 @@ void handle_port_absent_message(int socket, int fed_id) {
     lf_mutex_lock(&mutex);
 #ifdef FEDERATED_DECENTRALIZED
     trigger_t* network_input_port_action = _lf_action_for_port(port_id);
-    if (compare_tags(intended_tag,
+    if (lf_compare_tags(intended_tag,
             network_input_port_action->last_known_status_tag) < 0) {
         lf_mutex_unlock(&mutex);
         error_print_and_exit("The following contract was violated for port absent messages: In-order "
@@ -1748,7 +1748,7 @@ void handle_tagged_message(int socket, int fed_id) {
 
     // Sanity checks
 #ifdef FEDERATED_DECENTRALIZED
-    if (compare_tags(intended_tag,
+    if (lf_compare_tags(intended_tag,
             action->last_known_status_tag) < 0) {        
         error_print_and_exit("The following contract was violated for a timed message: In-order "
                              "delivery of messages over a TCP socket. Had status for (%lld, %u), got "
@@ -1782,7 +1782,7 @@ void handle_tagged_message(int socket, int fed_id) {
     // to exit. The port status is on the other hand changed in this thread, and thus,
     // can be checked in this scenario without this race condition. The message with 
     // intended_tag of 9 in this case needs to wait one microstep to be processed.
-    if (compare_tags(intended_tag, get_current_tag()) <= 0 &&                           
+    if (lf_compare_tags(intended_tag, get_current_tag()) <= 0 &&                           
             action->is_a_control_reaction_waiting && // Check if a control reaction is waiting
             action->status == unknown                // Check if the status of the port is still unknown
     ) {
@@ -1807,7 +1807,7 @@ void handle_tagged_message(int socket, int fed_id) {
 
         // Before that, if the current time >= stop time, discard the message.
         // But only if the stop time is not equal to the start time!
-        if (compare_tags(current_tag, stop_tag) >= 0) {
+        if (lf_compare_tags(current_tag, stop_tag) >= 0) {
             lf_mutex_unlock(&mutex);
             warning_print("Received message too late. Already at stopping time. Discarding message.");
             return;
@@ -1865,7 +1865,7 @@ void handle_tag_advance_grant() {
 
     // It is possible for this federate to have received a PTAG
     // earlier with the same tag as this TAG.
-    if (compare_tags(TAG, _fed.last_TAG) >= 0) {
+    if (lf_compare_tags(TAG, _fed.last_TAG) >= 0) {
         _fed.last_TAG.time = TAG.time;
         _fed.last_TAG.microstep = TAG.microstep;
         _fed.is_last_TAG_provisional = false;
@@ -1894,7 +1894,7 @@ void handle_tag_advance_grant() {
  * @param tag_to_send The tag to send.
  */
 void _lf_logical_tag_complete(tag_t tag_to_send) {
-    int compare_with_last_tag = compare_tags(_fed.last_sent_LTC, tag_to_send);
+    int compare_with_last_tag = lf_compare_tags(_fed.last_sent_LTC, tag_to_send);
     if (compare_with_last_tag >= 0) {
         return;
     }
@@ -1937,8 +1937,8 @@ void handle_provisional_tag_advance_grant() {
     lf_mutex_lock(&mutex);
 
     // Sanity check
-    if (compare_tags(PTAG, _fed.last_TAG) < 0
-    		|| (compare_tags(PTAG, _fed.last_TAG) == 0 && !_fed.is_last_TAG_provisional)) {
+    if (lf_compare_tags(PTAG, _fed.last_TAG) < 0
+    		|| (lf_compare_tags(PTAG, _fed.last_TAG) == 0 && !_fed.is_last_TAG_provisional)) {
         lf_mutex_unlock(&mutex);
         error_print_and_exit("Received a PTAG (%lld, %d) that is equal or earlier "
         		"than an already received TAG (%lld, %d).",
@@ -1972,7 +1972,7 @@ void handle_provisional_tag_advance_grant() {
     instant_t dummy_event_time = PTAG.time;
     microstep_t dummy_event_relative_microstep = PTAG.microstep;
 
-    if (compare_tags(current_tag, PTAG) == 0) {
+    if (lf_compare_tags(current_tag, PTAG) == 0) {
     	// The current tag can equal the PTAG if we are at the start time
     	// or if this federate has been able to advance time to the current
     	// tag (e.g., it has no upstream federates). In either case, either
@@ -1981,7 +1981,7 @@ void handle_provisional_tag_advance_grant() {
     	// a LTC message shortly. In either case, there is nothing more to do.
    	    lf_mutex_unlock(&mutex);
     	return;
-    } else if (compare_tags(current_tag, PTAG) > 0) {
+    } else if (lf_compare_tags(current_tag, PTAG) > 0) {
     	// Current tag is greater than the PTAG.
     	// It could be that we have sent an LTC that crossed with the incoming
     	// PTAG or that we have advanced to a tag greater than the PTAG.
@@ -2078,7 +2078,7 @@ void handle_stop_granted_message() {
     
     // Sanity check.
     tag_t current_tag = get_current_tag();
-    if (compare_tags(received_stop_tag, current_tag) <= 0) {
+    if (lf_compare_tags(received_stop_tag, current_tag) <= 0) {
         error_print("RTI granted a MSG_TYPE_STOP_GRANTED tag that is equal to or less than this federate's current tag (%lld, %u). "
         		"Stopping at the next microstep instead.",
                 current_tag.time - start_time, current_tag.microstep);
@@ -2129,7 +2129,7 @@ void handle_stop_request_message() {
 
     // Encode the current logical time plus one microstep
     // or the requested tag_to_stop, whichever is bigger.
-    if (compare_tags(tag_to_stop, current_tag) <= 0) {
+    if (lf_compare_tags(tag_to_stop, current_tag) <= 0) {
     	// Can't stop at the requested tag. Make a counteroffer.
         tag_to_stop = current_tag;
         tag_to_stop.microstep++;
@@ -2541,7 +2541,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
 
         // If time advance (TAG or PTAG) has already been granted for this tag
         // or a larger tag, then return immediately.
-        if (compare_tags(_fed.last_TAG, tag) >= 0) {
+        if (lf_compare_tags(_fed.last_TAG, tag) >= 0) {
             DEBUG_PRINT("Granted tag (%lld, %u) because TAG or PTAG has been received.",
             		_fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
             return _fed.last_TAG;
@@ -2606,7 +2606,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
                 }
                 // Check whether the new event on the event queue requires sending a new NET.
                 tag_t next_tag = get_next_event_tag();
-                if (compare_tags(next_tag, tag) != 0) {
+                if (lf_compare_tags(next_tag, tag) != 0) {
                     _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag, wait_for_reply);
                     _fed.last_sent_NET = next_tag;
                 }

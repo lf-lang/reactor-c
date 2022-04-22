@@ -277,7 +277,7 @@ void _lf_free_all_reactors(void) {
  *  calling this function.
  */
 void _lf_set_stop_tag(tag_t tag) {
-    if (compare_tags(tag, stop_tag) < 0) {
+    if (lf_compare_tags(tag, stop_tag) < 0) {
         stop_tag = tag;
     }
 }
@@ -599,7 +599,7 @@ lf_token_t* _lf_initialize_token(lf_token_t* token, size_t length) {
  * @param tag The tag to check against stop tag
  */
 bool _lf_is_tag_after_stop_tag(tag_t tag) {
-    return (compare_tags(tag, stop_tag) > 0);
+    return (lf_compare_tags(tag, stop_tag) > 0);
 }
 
 /**
@@ -674,7 +674,7 @@ void _lf_pop_events() {
                     // the reaction can access the value.
                     event->trigger->intended_tag = event->intended_tag;
                     // And check if it is in the past compared to the current tag.
-                    if (compare_tags(event->intended_tag,
+                    if (lf_compare_tags(event->intended_tag,
                                     current_tag) < 0) {
                         // Mark the triggered reaction with a STP violation
                         reaction->is_STP_violated = true;
@@ -917,7 +917,7 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
     DEBUG_PRINT("_lf_schedule_at_tag() called with tag (%lld, %u) at tag (%lld, %u).",
                   tag.time - start_time, tag.microstep,
                   current_logical_tag.time - start_time, current_logical_tag.microstep);
-    if (compare_tags(tag, current_logical_tag) <= 0) {
+    if (lf_compare_tags(tag, current_logical_tag) <= 0) {
         warning_print("_lf_schedule_at_tag(): requested to schedule an event in the past.");
         return -1;
     }
@@ -1390,7 +1390,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
     // Check if the trigger has violated the STP offset
     bool is_STP_violated = false;
 #ifdef FEDERATED
-    if (compare_tags(trigger->intended_tag, get_current_tag()) < 0) {
+    if (lf_compare_tags(trigger->intended_tag, get_current_tag()) < 0) {
         is_STP_violated = true;
     }
 #ifdef FEDERATED_CENTRALIZED

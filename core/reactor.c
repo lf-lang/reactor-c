@@ -248,7 +248,7 @@ int _lf_do_step(void) {
     // No more reactions should be blocked at this point.
     //assert(pqueue_size(blocked_q) == 0);
 
-    if (compare_tags(current_tag, stop_tag) >= 0) {
+    if (lf_compare_tags(current_tag, stop_tag) >= 0) {
         return 0;
     }
 
@@ -318,7 +318,7 @@ int next(void) {
     // Advance current time to match that of the first event on the queue.
     _lf_advance_logical_time(next_tag.time);
 
-    if (compare_tags(current_tag, stop_tag) >= 0) {        
+    if (lf_compare_tags(current_tag, stop_tag) >= 0) {        
         _lf_trigger_shutdown_reactions();
     }
 
@@ -397,7 +397,7 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         // If the stop_tag is (0,0), also insert the shutdown
         // reactions. This can only happen if the timeout time
         // was set to 0.
-        if (compare_tags(current_tag, stop_tag) >= 0) {
+        if (lf_compare_tags(current_tag, stop_tag) >= 0) {
             _lf_trigger_shutdown_reactions(); // _lf_trigger_shutdown_reactions();
         }
         DEBUG_PRINT("Running the program's main loop.");

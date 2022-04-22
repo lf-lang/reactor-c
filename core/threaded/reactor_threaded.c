@@ -144,10 +144,10 @@ void _lf_increment_global_tag_barrier_already_locked(tag_t future_tag) {
     }
     tag_t current_tag = get_current_tag();
     // Check to see if future_tag is actually in the future.
-    if (compare_tags(future_tag, current_tag) > 0) {
+    if (lf_compare_tags(future_tag, current_tag) > 0) {
         // Future tag is actually in the future.
         // See whether it is smaller than any pre-existing barrier.
-        if (compare_tags(future_tag, _lf_global_tag_advancement_barrier.horizon) < 0) {
+        if (lf_compare_tags(future_tag, _lf_global_tag_advancement_barrier.horizon) < 0) {
             // The future tag is smaller than the current horizon of the barrier.
             // Therefore, we should prevent logical time from reaching the
             // future tag.
@@ -279,7 +279,7 @@ int _lf_wait_on_global_tag_barrier(tag_t proposed_tag) {
     // Wait until the global barrier semaphore on logical time is zero
     // and the proposed_time is larger than or equal to the horizon.
     while (_lf_global_tag_advancement_barrier.requestors > 0
-            && compare_tags(proposed_tag, _lf_global_tag_advancement_barrier.horizon) >= 0
+            && lf_compare_tags(proposed_tag, _lf_global_tag_advancement_barrier.horizon) >= 0
     ) {
         result = 1;
         LOG_PRINT("Waiting on barrier for tag (%lld, %u).", proposed_tag.time - start_time, proposed_tag.microstep);
@@ -590,7 +590,7 @@ void _lf_next_locked() {
     // federates. If an action triggers during that wait, it will unblock
     // and return with a time (typically) less than the next_time.
     tag_t grant_tag = send_next_event_tag(next_tag, true); // true means this blocks.
-    if (compare_tags(grant_tag, next_tag) < 0) {
+    if (lf_compare_tags(grant_tag, next_tag) < 0) {
         // RTI has granted tag advance to an earlier tag or the wait
         // for the RTI response was interrupted by a local physical action with
         // a tag earlier than requested.
@@ -644,7 +644,7 @@ void _lf_next_locked() {
     next_tag = get_next_event_tag();
 
     // If this (possibly new) next tag is past the stop time, return.
-    if (_lf_is_tag_after_stop_tag(next_tag)) { // compare_tags(tag, stop_tag) > 0
+    if (_lf_is_tag_after_stop_tag(next_tag)) { // lf_compare_tags(tag, stop_tag) > 0
         return;
     }
 
@@ -670,7 +670,7 @@ void _lf_next_locked() {
     // executed microstep 0 at the timeout time), then we are done. The above code prevents the next_tag
     // from exceeding the stop_tag, so we have to do further checks if
     // they are equal.
-    if (compare_tags(next_tag, stop_tag) >= 0 && compare_tags(current_tag, stop_tag) >= 0) {
+    if (lf_compare_tags(next_tag, stop_tag) >= 0 && lf_compare_tags(current_tag, stop_tag) >= 0) {
         // If we pop anything further off the event queue with this same time or larger,
         // then it will be assigned a tag larger than the stop tag.
         return;
@@ -684,7 +684,7 @@ void _lf_next_locked() {
     // Advance current time to match that of the first event on the queue.
     _lf_advance_logical_time(next_tag.time);
 
-    if (compare_tags(current_tag, stop_tag) >= 0) {
+    if (lf_compare_tags(current_tag, stop_tag) >= 0) {
         // Pop shutdown events
         DEBUG_PRINT("Scheduling shutdown reactions.");
         _lf_trigger_shutdown_reactions();
@@ -707,7 +707,7 @@ void _lf_next_locked() {
 void request_stop() {
     lf_mutex_lock(&mutex);
     // Check if already at the previous stop tag.
-    if (compare_tags(current_tag, stop_tag) >= 0) {
+    if (lf_compare_tags(current_tag, stop_tag) >= 0) {
         // If so, ignore the stop request since the program
         // is already stopping at the current tag.
         lf_mutex_unlock(&mutex);
@@ -783,7 +783,7 @@ void _lf_initialize_start_tag() {
     // If the stop_tag is (0,0), also insert the shutdown
     // reactions. This can only happen if the timeout time
     // was set to 0.
-    if (compare_tags(current_tag, stop_tag) >= 0) {
+    if (lf_compare_tags(current_tag, stop_tag) >= 0) {
         _lf_trigger_shutdown_reactions();
     }
 
