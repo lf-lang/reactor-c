@@ -1,7 +1,10 @@
 /**
  * @author Peter Donovan (peterdonovan@berkeley.edu)
- * @brief Defines a default hashmap type.
+ * @brief Defines a hashmap type that maps void pointers to integers.
+ *
+ * See hashmap.c for documentation on how to declare other hashmap types.
  */
+
 #define HASHMAP(token) hashmap_object2int ## _ ## token
 #define K void*
 #define V int
