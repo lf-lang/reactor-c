@@ -61,6 +61,7 @@
 #include "utils/pqueue.h"
 #include "utils/util.h"
 #include "tag.h"       // Time-related functions.
+#include "modal_models/modes.h" // Modal model support
 
 // The following file is also included, but must be included
 // after its requirements are met, so the #include appears at
@@ -291,32 +292,6 @@ do { \
     out->copy_constructor = cpy_ctor; \
 } while(0)
 
-#ifdef MODAL_REACTORS
-/**
- * Sets the next mode of a modal reactor. Same as SET for outputs, only
- * the last value will have effect if invoked multiple times.
- * Works only in reactions with the target mode declared as effect.
- *
- * @param mode The target mode to set for activation.
- */
-#define _LF_SET_MODE(mode) _LF_SET_MODE_WITH_TYPE(mode, _lf_##mode##_change_type)
-
-/**
- * Sets the next mode of a modal reactor with an explicit change type
- * (reset or history, from the enum `lf_mode_change_type_t`).
- * This macro is not meant to be used by LF programmers.
- * It is used in Python.
- *
- * @param mode The target mode to set for activation.
- * @param change_type The change type of the transition.
- */
-#define _LF_SET_MODE_WITH_TYPE(mode, change_type) \
-do { \
-    ((self_base_t*)self)->_lf__mode_state.next_mode = mode; \
-    ((self_base_t*)self)->_lf__mode_state.mode_change = change_type; \
-} while(0)
-#endif
-
 /**
  * Macro for extracting the deadline from the index of a reaction.
  * The reaction queue is sorted according to this index, and the
@@ -520,50 +495,6 @@ typedef struct token_present_t {
     bool reset_is_present; // True to set is_present to false after calling done_using().
 } token_present_t;
 
-
-#ifdef MODAL_REACTORS
-/** Typedef for reactor_mode_t struct, used for representing a mode. */
-typedef struct reactor_mode_t reactor_mode_t;
-/** Typedef for reactor_mode_state_t struct, used for storing modal state of reactor and/or its relation to enclosing modes. */
-typedef struct reactor_mode_state_t reactor_mode_state_t;
-/** Typedef for mode_state_variable_reset_data_t struct, used for storing data for resetting state variables nested in modes. */
-typedef struct mode_state_variable_reset_data_t mode_state_variable_reset_data_t;
-
-/** Type of the mode change. */
-typedef enum {no_transition, reset_transition, history_transition} lf_mode_change_type_t;
-
-/** A struct to represent a single mode instace in a reactor instance. */
-struct reactor_mode_t {
-    reactor_mode_state_t* state;    // Pointer to a struct with the reactor's mode state. INSTANCE.
-    string name;                    // Name of this mode.
-    instant_t deactivation_time;    // Time when the mode was left.
-    bool should_trigger_startup;    // Startup reactions should be triggered if this mode is active.
-};
-
-/** A struct to store state of the modes in a reactor instance and/or its relation to enclosing modes. */
-struct reactor_mode_state_t {
-    reactor_mode_t* parent_mode;    // Pointer to the next enclosing mode (if exists).
-    reactor_mode_t* initial_mode;   // Pointer to the initial mode.
-    reactor_mode_t* active_mode;    // Pointer to the currently active mode.
-    reactor_mode_t* next_mode;      // Pointer to the next mode to activate at the end of this step (if set).
-    lf_mode_change_type_t mode_change;  // A mode change type flag.
-};
-/** A struct to store data for resetting state variables nested in modes. */
-struct mode_state_variable_reset_data_t {
-    reactor_mode_t* mode;           // Pointer to the enclosing mode.
-    void* target;                   // Pointer to the target variable.
-    void* source;                   // Pointer to the data source.
-    size_t size;                    // The size of the variable.
-};
-#else
-/*
- * Reactions and triggers must have a mode pointer to set up connection to enclosing modes,
- * also when they are precompiled without modal reactors in order to later work in modal reactors.
- * Hence define mode type as void in the absence of modes to treat mode pointer as void pointers for that time being.
- */
-typedef void reactor_mode_t;
-#endif
-
 /**
  * Reaction activation record to push onto the reaction queue.
  * Some of the information in this struct is common among all instances
@@ -608,7 +539,7 @@ struct reaction_t {
                                 // as a suggestion to the scheduler.
     char* name;                 // If logging is set to LOG or higher, then this will
                                 // point to the full name of the reactor followed by
-    							// the reaction number.
+                                // the reaction number.
     reactor_mode_t* mode;       // The enclosing mode of this reaction (if exists).
                                 // If enclosed in multiple, this will point to the innermost mode.
 };
@@ -845,13 +776,6 @@ void terminate_execution(void);
  * Function (to be code generated) to trigger shutdown reactions.
  */
 bool _lf_trigger_shutdown_reactions(void);
-
-/**
- * Function (to be code generated) to handle mode changes.
- */
-#ifdef MODAL_REACTORS
-void _lf_handle_mode_changes(void);
-#endif
 
 /**
  * Create a new token and initialize it.

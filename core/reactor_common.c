@@ -33,12 +33,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Marten Lohstroh <marten@berkeley.edu>}
  *  @author{Mehrdad Niknami <mniknami@berkeley.edu>}
  *  @author{Soroush Bateni <soroush@utdallas.edu}
+ *  @author{Alexander Schulz-Rosengarten <als@informatik.uni-kiel.de>}
  */
 #include "reactor.h"
 #include "tag.c"
 #include "utils/pqueue.c"
 #include "utils/pqueue_support.h"
 #include "utils/util.c"
+#include "modal_models/modes.c"
 
 /** 
  * Indicator of whether to wait for physical time to match logical time.
@@ -172,13 +174,6 @@ parse_rti_code_t parse_rti_addr(char* rti_addr);
  * Sets the federation_id of this federate to fid.
  */
 void set_federation_id(char* fid);
-#endif
-
-// Forward declaration for mode related functions
-#ifdef MODAL_REACTORS
-bool _lf_mode_is_active(reactor_mode_t* mode);
-void _lf_add_suspended_event(event_t* event);
-void _lf_terminate_modal_reactors();
 #endif
 
 /**
@@ -609,27 +604,7 @@ bool _lf_is_tag_after_stop_tag(tag_t tag) {
  */
 void _lf_pop_events() {
 #ifdef MODAL_REACTORS
-    // Handle startup reactions in modal reactors
-    for (int i = 0; i < _lf_startup_reactions_size; i++) {
-        if (_lf_startup_reactions[i]->mode != NULL) {
-            if(_lf_startup_reactions[i]->status == inactive
-                    && _lf_mode_is_active(_lf_startup_reactions[i]->mode)
-                    && _lf_startup_reactions[i]->mode->should_trigger_startup == true
-            ) {
-                _lf_trigger_reaction(_lf_startup_reactions[i], -1);
-            }
-        }
-    }
-
-    // Reset the should_trigger_startup flag for startup reactions that are
-    // going to be triggered in the current tag.
-    for (int i = 0; i < _lf_startup_reactions_size; i++) {
-        if (_lf_startup_reactions[i]->mode != NULL) {
-            if (_lf_mode_is_active(_lf_startup_reactions[i]->mode)) {
-                _lf_startup_reactions[i]->mode->should_trigger_startup = false;
-            }
-        }
-    }
+    _lf_handle_mode_startup_reactions();
 #endif
 
     event_t* event = (event_t*)pqueue_peek(event_q);
@@ -652,7 +627,7 @@ void _lf_pop_events() {
         // If this event is associated with an incative it should haven been suspended and no longer on the event queue.
         // FIXME This should not be possible
         if (!_lf_mode_is_active(event->trigger->mode)) {
-                warning_print("Assumption violated. There is an event on the event queue that is associated to an inactive mode.");
+            warning_print("Assumption violated. There is an event on the event queue that is associated to an inactive mode.");
         }
 #endif
 
@@ -1430,11 +1405,11 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
         reaction_t* reaction = trigger->reactions[i];
 
 #ifdef MODAL_REACTORS
-    // Check if reaction is disabled by mode inactivity
-    if (!_lf_mode_is_active(reaction->mode)) {
-        DEBUG_PRINT("Suppressing reaction %s due inactivity of mode %s.", reaction->name, reaction->mode->name);
-        continue; // Suppress reaction by preventing entering reaction queue
-    }
+        // Check if reaction is disabled by mode inactivity
+        if (!_lf_mode_is_active(reaction->mode)) {
+            DEBUG_PRINT("Suppressing reaction %s due inactivity of mode %s.", reaction->name, reaction->mode->name);
+            continue; // Suppress reaction by preventing entering reaction queue
+        }
 #endif
 
         // Do not enqueue this reaction twice.
@@ -2042,301 +2017,3 @@ void termination(void) {
     free(_lf_is_present_fields);
     free(_lf_is_present_fields_abbreviated);
 }
-
-// Functions for handling modal reactors.
-#ifdef MODAL_REACTORS
-
-/**
- * Checks whether the given mode is currently considered active.
- * This includes checking all enclosing modes.
- * If any of those is inactive, then so is this one.
- *
- * @param mode The mode instance to check.
- */
-bool _lf_mode_is_active(reactor_mode_t* mode) {
-    /*
-     * This code could be optimized by introducing a cached activity indicator
-     * in all mode states. But for now: no premature optimization.
-     */
-    if (mode != NULL) {
-        //DEBUG_PRINT("Checking mode state of %s", mode->name);
-        reactor_mode_state_t* state = mode->state;
-        while (state != NULL) {
-            // If this or any parent mode is inactive, return inactive
-            if (state->active_mode != mode) {
-                //DEBUG_PRINT(" => Mode is inactive");
-                return false;
-            }
-            mode = state->parent_mode;
-            if (mode != NULL) {
-                state = mode->state;
-            } else {
-                state = NULL;
-            }
-        }
-        //DEBUG_PRINT(" => Mode is active");
-    }
-    return true;
-}
-
-// Linked list element for suspended events in inactive modes
-typedef struct _lf_suspended_event {
-    struct _lf_suspended_event* next;
-    event_t* event;
-} _lf_suspended_event_t;
-_lf_suspended_event_t* _lf_suspended_events_head = NULL; // Start of linked collection of suspended events (managed automatically!)
-int _lf_suspended_events_num = 0; // Number of suspended events (managed automatically!)
-_lf_suspended_event_t* _lf_unsused_suspended_events_head = NULL; // Internal collection of reusable list elements (managed automatically!)
-
-/**
- * Save the given event as suspended.
- */
-void _lf_add_suspended_event(event_t* event) {
-    _lf_suspended_event_t* new_suspended_event;
-    if (_lf_unsused_suspended_events_head != NULL) {
-        new_suspended_event = _lf_unsused_suspended_events_head;
-        _lf_unsused_suspended_events_head = _lf_unsused_suspended_events_head->next;
-    } else {
-        new_suspended_event = (_lf_suspended_event_t*) malloc(sizeof(_lf_suspended_event_t));
-    }
-
-    new_suspended_event->event = event;
-    new_suspended_event->next = _lf_suspended_events_head; // prepend
-    _lf_suspended_events_num++;
-
-    _lf_suspended_events_head = new_suspended_event;
-}
-
-/**
- * Removes the given node from the list of suspended events.
- * Returns the next element in the list.
- */
-_lf_suspended_event_t* _lf_remove_suspended_event(_lf_suspended_event_t* event) {
-    _lf_suspended_event_t* next = event->next;
-
-    // Clear content
-    event->event = NULL;
-    event->next = NULL;
-    _lf_suspended_events_num--;
-
-    // Store for recycling
-    if (_lf_unsused_suspended_events_head == NULL) {
-        _lf_unsused_suspended_events_head = event;
-    } else {
-        event->next = _lf_unsused_suspended_events_head;
-        _lf_unsused_suspended_events_head = event;
-    }
-
-    if (_lf_suspended_events_head == event) {
-        _lf_suspended_events_head = next; // Adjust head
-    } else {
-        _lf_suspended_event_t* predecessor = _lf_suspended_events_head;
-        while(predecessor->next != event && predecessor != NULL) {
-                predecessor = predecessor->next;
-        }
-        if (predecessor != NULL) {
-                predecessor->next = next; // Remove from linked list
-        }
-    }
-
-    return next;
-}
-
-/**
- * Performs transitions in all modal reactors.
- * @param state An array of mode state of modal reactor instance Must be ordered hierarchically.
- *              Enclosing mode must come before inner.
- * @param num_states The number of mode state.
- * @param reset_data A list of initial values for reactor state variables.
- * @param reset_data_size
- * @param timer_triggers Array of pointers to timer triggers.
- * @param timer_triggers_size
- */
-void _lf_process_mode_changes(
-    reactor_mode_state_t* states[],
-    int num_states,
-    mode_state_variable_reset_data_t reset_data[],
-    int reset_data_size,
-    trigger_t* timer_triggers[],
-    int timer_triggers_size
-) {
-    bool transition = false; // any mode change in this step
-
-    // Detect mode changes (top down for hierarchical reset)
-    for (int i = 0; i < num_states; i++) {
-        reactor_mode_state_t* state = states[i];
-        if (state != NULL) {
-            // Hierarchical reset: if this mode has parent that is entered in
-        	// this step with a reset this reactor has to enter its initial mode
-            if (state->parent_mode != NULL
-            		&& state->parent_mode->state != NULL
-					&& state->parent_mode->state->next_mode == state->parent_mode
-					&& state->parent_mode->state->mode_change == reset_transition
-            ){
-                // Reset to initial state.
-                state->next_mode = state->initial_mode;
-                // Enter with reset, to cascade it further down.
-                state->mode_change = reset_transition;
-                DEBUG_PRINT("Modes: Hierarchical mode reset to %s when entering %s.",
-                		state->initial_mode->name, state->parent_mode->name);
-            }
-
-            // Handle effect of entering next mode
-            if (state->next_mode != NULL) {
-                DEBUG_PRINT("Modes: Transition to %s.", state->next_mode->name);
-                transition = true;
-
-                if (state->mode_change == reset_transition) {
-                    // Reset state variables
-                    for (int i = 0; i < reset_data_size; i++) {
-                        mode_state_variable_reset_data_t data = reset_data[i];
-                        if (data.mode == state->next_mode) {
-                            DEBUG_PRINT("Modes: Reseting state variable.");
-                            memcpy(data.target, data.source, data.size);
-                        }
-                    }
-                }
-
-                // Reset/Reactivate previously suspended events of next state
-                _lf_suspended_event_t* suspended_event = _lf_suspended_events_head;
-                while(suspended_event != NULL) {
-                    event_t* event = suspended_event->event;
-                    if (event != NULL && event->trigger != NULL && event->trigger->mode == state->next_mode) {
-                        if (state->mode_change == reset_transition) { // Reset transition
-                            if (event->trigger->is_timer) { // Only reset timers
-                                trigger_t* timer = event->trigger;
-
-                                DEBUG_PRINT("Modes: Re-enqueuing reset timer.");
-                                // Reschedule the timer with no additional delay.
-                                // This will take care of super dense time when offset is 0.
-                                _lf_schedule(timer, event->trigger->offset, NULL);
-                            }
-                            // No further processing; drops all events upon reset (timer event was recreated by schedule and original can be removed here)
-                        } else if (state->next_mode != state->active_mode && event->trigger != NULL) { // History transition to a different mode
-                            // Remaining time that the event would have been waiting before mode was left
-                            instant_t local_remaining_delay = event->time - (state->next_mode->deactivation_time != 0 ? state->next_mode->deactivation_time : get_start_time());
-                            tag_t current_logical_tag = lf_tag();
-
-                            // Reschedule event with original local delay
-                            DEBUG_PRINT("Modes: Re-enqueuing event with a suspended delay of %d (previous TTH: %u, Mode suspended at: %u).", local_remaining_delay, event->time, state->next_mode->deactivation_time);
-                            tag_t schedule_tag = {.time = current_logical_tag.time + local_remaining_delay, .microstep = (local_remaining_delay == 0 ? current_logical_tag.microstep + 1 : 0)};
-                            _lf_schedule_at_tag(event->trigger, schedule_tag, event->token);
-
-                            if (event->next != NULL) {
-                                // The event has more events stacked up in super dense time, attach them to the newly created event.
-                                if (event->trigger->last->next == NULL) {
-                                    event->trigger->last->next = event->next;
-                                } else {
-                                    error_print("Modes: Cannot attach events stacked up in super dense to the just unsuspended root event.");
-                                }
-                            }
-                        }
-                        // A fresh event was created by schedule, hence, recycle old one
-                        _lf_recycle_event(event);
-
-                        // Remove suspended event and continue
-                        suspended_event = _lf_remove_suspended_event(suspended_event);
-                    } else {
-                        suspended_event = suspended_event->next;
-                    }
-                }
-                
-                if (state->mode_change == reset_transition) { // Reset transition
-                    // Handle timers that have a period of 0. These timers will only trigger
-                    // once and will not be on the event_q after their initial triggering.
-                    // Therefore, the logic above cannot handle these timers. We need
-                    // to trigger these timers manually if there is a reset transition.
-                    for (int i = 0; i < timer_triggers_size; i++) {
-                        trigger_t* timer = timer_triggers[i];
-                        if (timer->period == 0 && timer->mode == state->next_mode) {
-                            _lf_schedule(timer, timer->offset, NULL);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Handle leaving active mode in all states
-    if (transition) {
-        bool should_trigger_startup_reactions_at_next_microstep = false;
-        // Set new active mode and clear mode change flags
-        for (int i = 0; i < num_states; i++) {
-            reactor_mode_state_t* state = states[i];
-            if (state != NULL && state->next_mode != NULL) {
-                // Save time when mode was left to handle suspended events in the future
-                state->active_mode->deactivation_time = lf_time(LF_LOGICAL);
-
-                // Apply transition
-                state->active_mode = state->next_mode;
-                if (state->mode_change == reset_transition
-                        || state->active_mode->should_trigger_startup) {
-                    state->active_mode->should_trigger_startup = true;
-                    should_trigger_startup_reactions_at_next_microstep = true;
-                }
-
-                state->next_mode = NULL;
-                state->mode_change = no_transition;
-            }
-        }
-
-        // Retract all events from the event queue that are associated with now inactive modes
-        if (event_q != NULL) {
-            size_t q_size = pqueue_size(event_q);
-            if (q_size > 0) {
-                event_t** delayed_removal = (event_t**) calloc(q_size, sizeof(event_t*));
-                size_t delayed_removal_count = 0;
-
-                // Find events
-                for (int i = 0; i < q_size; i++) {
-                    event_t* event = (event_t*)event_q->d[i + 1]; // internal queue data structure omits index 0
-                    if (event != NULL && event->trigger != NULL && !_lf_mode_is_active(event->trigger->mode)) {
-                        delayed_removal[delayed_removal_count++] = event;
-                        // This will store the event including possibly those chained up in super dense time
-                        _lf_add_suspended_event(event);
-                    }
-                }
-
-                // Events are removed delayed in order to allow linear iteration over the queue
-                DEBUG_PRINT("Modes: Pulling %d events from the event queue to suspend them. %d events are now suspended.", delayed_removal_count, _lf_suspended_events_num);
-                for (int i = 0; i < delayed_removal_count; i++) {
-                    pqueue_remove(event_q, delayed_removal[i]);
-                }
-
-                free(delayed_removal);
-            }
-        }
-
-        if (should_trigger_startup_reactions_at_next_microstep) {
-            // Insert a dummy event in the event queue for the next microstep to make
-            // sure startup reactions (if any) can be triggered as soon as possible.
-            pqueue_insert(event_q, _lf_create_dummy_events(NULL, current_tag.time, NULL, 1));
-        }
-    }
-}
-
-/**
- * Releases internal data structures for modes.
- * - Frees all suspended events.
- */
-void _lf_terminate_modal_reactors() {
-    _lf_suspended_event_t* suspended_event = _lf_suspended_events_head;
-    while(suspended_event != NULL) {
-        _lf_recycle_event(suspended_event->event);
-        _lf_suspended_event_t* next = suspended_event->next;
-        free(suspended_event);
-        suspended_event = next;
-    }
-    _lf_suspended_events_head = NULL;
-    _lf_suspended_events_num = 0;
-
-    // Also free suspended_event elements stored for recycling
-    suspended_event = _lf_unsused_suspended_events_head;
-    while(suspended_event != NULL) {
-        _lf_suspended_event_t* next = suspended_event->next;
-        free(suspended_event);
-        suspended_event = next;
-    }
-    _lf_unsused_suspended_events_head = NULL;
-}
-#endif
