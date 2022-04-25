@@ -96,6 +96,9 @@ void lf_sched_init(
     _lf_sched_instance->pc = calloc(number_of_workers, sizeof(size_t));
     // TODO: The entries will be filled in when reactions instantiate in.
     _lf_sched_instance->reaction_instances = calloc(reaction_count, sizeof(reaction_t*));
+
+    _lf_sched_instance->_lf_sched_array_of_mutexes = calloc(reaction_count, sizeof(lf_mutex_t));
+    _lf_sched_instance->reaction_return_values = calloc(number_of_workers, sizeof(int));
 }
 
 /**
@@ -121,6 +124,30 @@ void lf_sched_free() {
  * worker thread should exit.
  */
 reaction_t* lf_sched_get_ready_reaction(int worker_number) {
+    // Execute the instructions
+    int pc = _lf_sched_instance->pc[worker_number];
+    int ret_value = _lf_sched_instance->reaction_return_values[worker_number];
+    inst_t* sch_base = _lf_sched_instance->static_schedules[_lf_sched_instance->current_schedule_index];
+    reaction_t* react_base = _lf_sched_instance->reaction_instances[_lf_sched_instance->current_schedule_index];
+    semaphore_t** sema_base = _lf_sched_instance->reaction_semaphore;
+    do {
+        pc += 1;
+        switch (sch_base[pc].id) {
+        case 'e': // Execute
+            _lf_sched_instance->pc[worker_number] = pc;
+            reaction_t* react = &react_base[sch_base[pc].op1];
+            if (react->status == queue) return react;
+            break;
+        case 'b': // Branch
+            pc = ret_value == sch_base[pc].op1 ? sch_base[pc].op2 : pc + 1;
+            break;
+        case 'w': // Wait
+            lf_semaphore_wait(&sema_base[sch_base[pc].op1][sch_base[pc].op2]);
+            break;
+        case 's': // Stop
+            return NULL;
+        }
+    } while (pc < _lf_sched_instance->schedule_lengths[worker_number]);
     return NULL;
 }
 
@@ -134,7 +161,10 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
  */
 void lf_sched_done_with_reaction(size_t worker_number,
                                  reaction_t* done_reaction) {
-    
+    semaphore_t** sema_base = _lf_sched_instance->reaction_semaphore;
+    _lf_sched_instance->reaction_return_values[worker_number] = done_reaction->output_produced[i];
+    lf_semaphore_release(&sema_base[_lf_sched_instance->current_schedule_index[worker_number]]
+        [_lf_sched_instance->pc[worker_number]]);
 }
 
 /**

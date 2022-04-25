@@ -147,6 +147,12 @@ typedef struct {
     const int current_schedule_index;
 
     /**
+     * @brief Return value of a reaction, indicating what output are generated.
+     *
+     */
+    const int* reaction_return_values;
+
+    /**
      * @brief Points to a read-only array of lengths of the static schedules.
      * 
      */
@@ -164,6 +170,13 @@ typedef struct {
      * The indices are the reaction indices in inst_t.
      */
     reaction_t** reaction_instances;
+    
+    /**
+     * @brief Points to an array of pointers to semaphore.
+     * 
+     * The indices are the reaction indices in inst_t, each corresponds to reaction_instances.
+     */
+    semaphore_t** reaction_semaphore;
 
     /**
      * @brief Points to an array of semaphores, one for each reaction.

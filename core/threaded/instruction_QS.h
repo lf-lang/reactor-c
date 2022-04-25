@@ -10,9 +10,9 @@
 #include "../reactor.h"
 
 typedef struct {
-    char inst;  // Exec, Wait, Stop
-    size_t nid; // Reaction ID.
-    size_t loc; // Location to jump to.
+    char inst;  // Exec, Wait, Stop, Branch
+    size_t op1; // Operand 1
+    size_t op2; // Operand 2
 } inst_t;
 
 #endif // SCHEDULER_QS
