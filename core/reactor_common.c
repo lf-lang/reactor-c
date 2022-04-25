@@ -1093,7 +1093,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
         // If schedule is called after stop_tag
         // This is a critical condition.
         _lf_done_using(token);
-        warning_print("schedule() called after stop tag.");
+        warning_print("lf_schedule() called after stop tag.");
         return 0;
     }
 

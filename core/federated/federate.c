@@ -2635,7 +2635,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
         // in the future.
         DEBUG_PRINT("Waiting for physical time to elapse or an event on the event queue.");
 
-        // The above call to _lf_bounded_NET called get_physical_time
+        // The above call to _lf_bounded_NET called lf_time(LF_PHYSICAL)
         // set _lf_last_reported_unadjusted_physical_time_ns, the
         // time obtained using CLOCK_REALTIME before adjustment for
         // clock synchronization. Since that is the clock used by

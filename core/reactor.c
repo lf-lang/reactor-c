@@ -305,7 +305,7 @@ int next(void) {
         DEBUG_PRINT("***** wait_until was interrupted.");
         // Sleep was interrupted.
         // FIXME: It is unclear what would cause this to occur in this unthreaded
-        // runtime since schedule() is not thread safe here and should not
+        // runtime since lf_schedule() is not thread safe here and should not
         // be called asynchronously. Perhaps in some runtime such as for a
         // PRET machine this will be supported, so here we handle this as
         // if an asynchronous call to schedule has occurred. In that case,

@@ -405,7 +405,7 @@ typedef enum {inactive = 0, queued, running} reaction_status_t;
 
 /**
  * Handles for scheduled triggers. These handles are returned
- * by schedule() functions. The intent is that the handle can be
+ * by lf_schedule() functions. The intent is that the handle can be
  * used to cancel a future scheduled event, but this is not
  * implemented yet.
  */
@@ -746,7 +746,7 @@ void _lf_initialize_trigger_objects(void);
 void _lf_pop_events(void);
 
 /** 
- * Internal version of the schedule() function, used by generated 
+ * Internal version of the lf_schedule() function, used by generated 
  * _lf_start_timers() function. 
  * @param trigger The action or timer to be triggered.
  * @param delay Offset of the event release.

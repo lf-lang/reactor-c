@@ -462,10 +462,10 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
             DEBUG_PRINT("-------- wait_until interrupted before timeout.");
 
             // Wait did not time out, which means that there
-            // may have been an asynchronous call to schedule().
+            // may have been an asynchronous call to lf_schedule().
             // Continue waiting.
             // Do not adjust current_tag.time here. If there was an asynchronous
-            // call to schedule(), it will have put an event on the event queue,
+            // call to lf_schedule(), it will have put an event on the event queue,
             // and current_tag.time will be set to that time when that event is pulled.
             return_value = false;
         } else {
@@ -831,7 +831,7 @@ void _lf_initialize_start_tag() {
             lf_time(LF_PHYSICAL) - start_time);
 
     // Reinitialize the physical start time to match the start_time.
-    // Otherwise, reports of get_elapsed_physical_time are not very meaningful
+    // Otherwise, reports of lf_time(LF_PHYSICAL) are not very meaningful
     // w.r.t. logical time.
     physical_start_time = start_time;
 #endif
