@@ -127,7 +127,7 @@ int wait_until(instant_t logical_time_ns) {
     int return_value = 0;
     if (!fast) {
         LOG_PRINT("Waiting for elapsed logical time %lld.", logical_time_ns - start_time);
-        interval_t ns_to_wait = logical_time_ns - get_physical_time();
+        interval_t ns_to_wait = logical_time_ns - lf_time(LF_PHYSICAL);
     
         if (ns_to_wait < MIN_WAIT_TIME) {
             DEBUG_PRINT("Wait time %lld is less than MIN_WAIT_TIME %lld. Skipping wait.",
@@ -202,7 +202,7 @@ int _lf_do_step(void) {
         // then the reaction will be invoked and the violation reaction will not be invoked again.
         if (reaction->deadline > 0LL) {
             // Get the current physical time.
-            instant_t physical_time = get_physical_time();
+            instant_t physical_time = lf_time(LF_PHYSICAL);
             // FIXME: These comments look outdated. We may need to update them.
             // Check for deadline violation.
             // There are currently two distinct deadline mechanisms:
@@ -248,7 +248,7 @@ int _lf_do_step(void) {
     // No more reactions should be blocked at this point.
     //assert(pqueue_size(blocked_q) == 0);
 
-    if (compare_tags(current_tag, stop_tag) >= 0) {
+    if (lf_compare_tags(current_tag, stop_tag) >= 0) {
         return 0;
     }
 
@@ -287,7 +287,7 @@ int next(void) {
         next_tag.time = event->time;
         // Deduce the microstep
         if (next_tag.time == current_tag.time) {
-            next_tag.microstep = get_microstep() + 1;
+            next_tag.microstep = lf_tag().microstep + 1;
         } else {
             next_tag.microstep = 0;
         }
@@ -318,7 +318,7 @@ int next(void) {
     // Advance current time to match that of the first event on the queue.
     _lf_advance_logical_time(next_tag.time);
 
-    if (compare_tags(current_tag, stop_tag) >= 0) {        
+    if (lf_compare_tags(current_tag, stop_tag) >= 0) {        
         _lf_trigger_shutdown_reactions();
     }
 
@@ -397,7 +397,7 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         // If the stop_tag is (0,0), also insert the shutdown
         // reactions. This can only happen if the timeout time
         // was set to 0.
-        if (compare_tags(current_tag, stop_tag) >= 0) {
+        if (lf_compare_tags(current_tag, stop_tag) >= 0) {
             _lf_trigger_shutdown_reactions(); // _lf_trigger_shutdown_reactions();
         }
         DEBUG_PRINT("Running the program's main loop.");

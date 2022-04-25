@@ -33,7 +33,7 @@ See sensor_simulator.h.
 #include <pthread.h>
 #include <ncurses.h>
 #include "sensor_simulator.h"
-#include "ctarget.h"
+#include "ctarget_schedule.h"
 #include "core/utils/util.h"
 #include "core/platform.h"
 

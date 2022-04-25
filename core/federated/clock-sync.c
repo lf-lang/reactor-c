@@ -218,7 +218,7 @@ void synchronize_initial_physical_clock_with_rti(int rti_socket_TCP) {
                 _lf_my_fed_id);
 
         // Get local physical time before doing anything else.
-        instant_t receive_time = get_physical_time();
+        instant_t receive_time = lf_time(LF_PHYSICAL);
 
         // Check that this is the T1 message.
         if (buffer[0] != MSG_TYPE_CLOCK_SYNC_T1) {
@@ -287,7 +287,7 @@ int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2
     // Measure the time _after_ the write on the assumption that the read
     // from the socket, which occurs before this function is called, takes
     // about the same amount of time as the write of the reply.
-    _lf_rti_socket_stat.local_delay = get_physical_time() - t2;
+    _lf_rti_socket_stat.local_delay = lf_time(LF_PHYSICAL) - t2;
     return 0;
 }
 
@@ -346,7 +346,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         // We can reuse the same buffer.
         ssize_t bytes_read = read_from_socket(socket, 1 + sizeof(instant_t), buffer);
 
-        instant_t r5 = get_physical_time();
+        instant_t r5 = lf_time(LF_PHYSICAL);
 
         if ((bytes_read < 1 + (ssize_t)sizeof(instant_t))
                 || buffer[0] != MSG_TYPE_CLOCK_SYNC_CODED_PROBE) {
@@ -380,7 +380,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         }
         // Apply a jitter attenuator to the estimated clock error to prevent
         // large jumps in the underlying clock.
-        // Note that estimated_clock_error is calculated using get_physical_time() which includes
+        // Note that estimated_clock_error is calculated using lf_time(LF_PHYSICAL) which includes
         // the _lf_global_physical_clock_offset adjustment.
         adjustment = estimated_clock_error / _LF_CLOCK_SYNC_ATTENUATION;
 
@@ -485,7 +485,7 @@ void* listen_to_rti_UDP_thread(void* args) {
         } while ((errno == EAGAIN || errno == EWOULDBLOCK) && bytes_read < message_size);
 
         // Get local physical time before doing anything else.
-        instant_t receive_time = get_physical_time();
+        instant_t receive_time = lf_time(LF_PHYSICAL);
 
         if (bytes_read < message_size) {
             // Either the socket has closed or the RTI has sent EOF.
