@@ -20,20 +20,20 @@ jobs:
       cmake-args: '-DNUMBER_OF_WORKERS=4'
 
   fetch-lf:
-    uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@deprecate-uppercase-set
+    uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@set-destructor-variant
     with:
       file: 'lingua-franca-ref.txt'
   
   lf-default:
     needs: fetch-lf
-    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@deprecate-uppercase-set
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@set-destructor-variant
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
 
   lf-gedf-np:
     needs: fetch-lf
-    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@deprecate-uppercase-set
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@set-destructor-variant
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
@@ -41,7 +41,7 @@ jobs:
       
   lf-gedf-np-ci:
     needs: fetch-lf
-    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@deprecate-uppercase-set
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@set-destructor-variant
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
