@@ -130,6 +130,11 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
     inst_t* sch_base = _lf_sched_instance->static_schedules[_lf_sched_instance->current_schedule_index];
     reaction_t* react_base = _lf_sched_instance->reaction_instances[_lf_sched_instance->current_schedule_index];
     semaphore_t** sema_base = _lf_sched_instance->reaction_semaphore;
+    
+    // If the instruction is Execute, return the reaction pointer and advance pc.
+    // If the instruction is Wait, block until the reaction is finished (by checking
+    // the semaphore) and process the next instruction until we process an Execute.
+    // If the instruction is Stop, return NULL.
     do {
         pc += 1;
         switch (sch_base[pc].id) {
@@ -154,6 +159,12 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
 /**
  * @brief Inform the scheduler that worker thread 'worker_number' is done
  * executing the 'done_reaction'.
+ * 
+ * Check if the reaction that we just executed produces any outputs
+ * (similar to how the schedule_output_reactions() function does it).
+ * If there are outputs, append them to an event queue (a linked list
+ * of linked list, with each outer linked list representing a list of
+ * signals present at some time step).
  *
  * @param worker_number The worker number for the worker thread that has
  * finished executing 'done_reaction'.
