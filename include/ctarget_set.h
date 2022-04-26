@@ -94,7 +94,7 @@ do { \
  */
 #define SET_ARRAY(out, val, elem_size, length) \
 do { \
-        _Pragma ("Warning \"'SET_ARRAY' is deprecated. Use 'lf_set_array' instead.\""); \
+        _Pragma ("Warning \"'SET_ARRAY' is deprecated.\""); \
         _LF_SET_ARRAY(out, val, length); \
 } while (0)
 
@@ -114,7 +114,7 @@ do { \
  */
 #define SET_NEW(out) \
 do { \
-        _Pragma ("Warning \"'SET_NEW' is deprecated. Use 'lf_set_new' instead.\""); \
+        _Pragma ("Warning \"'SET_NEW' is deprecated.\""); \
         _LF_SET_NEW(out); \
 } while (0)
 
@@ -133,7 +133,7 @@ do { \
  */
 #define SET_NEW_ARRAY(out, len) \
 do { \
-        _Pragma ("Warning \"'SET_NEW_ARRAY' is deprecated. Use 'lf_set_new_array' instead.\""); \
+        _Pragma ("Warning \"'SET_NEW_ARRAY' is deprecated.\""); \
         _LF_SET_NEW_ARRAY(out, len); \
 } while (0)
 
@@ -148,7 +148,7 @@ do { \
  */
 #define SET_PRESENT(out) \
 do { \
-        _Pragma ("Warning \"'SET_PRESENT' is deprecated. Use 'lf_set_present' instead.\""); \
+        _Pragma ("Warning \"'SET_PRESENT' is deprecated.\""); \
         _LF_SET_PRESENT(out); \
 } while (0)
 
