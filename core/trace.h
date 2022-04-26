@@ -155,7 +155,7 @@ void start_trace(char* filename);
  * @param reaction_number The index of the reaction or -1 if the trace is not of a reaction.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  * @param physical_time If the caller has already accessed physical time, provide it here.
- *  Otherwise, provide NULL. This argument avoids a second call to get_physical_time
+ *  Otherwise, provide NULL. This argument avoids a second call to lf_time(LF_PHYSICAL)
  *  and ensures that the physical time in the trace is the same as that used by the caller.
  * @param trigger Pointer to the trigger_t struct for calls to schedule or NULL otherwise.
  * @param extra_delay The extra delay passed to schedule(). If not relevant for this event

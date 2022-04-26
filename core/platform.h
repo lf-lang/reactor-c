@@ -246,4 +246,16 @@ extern int lf_clock_gettime(instant_t* t);
  */
 extern int lf_nanosleep(instant_t requested_time);
 
+
+/**
+ * Macros for marking function as deprecated
+ */
+#ifdef __GNUC__
+#define DEPRECATED(X) X __attribute__((deprecated))
+#elif defined(_MSC_VER)
+#define DEPRECATED(X) __declspec(deprecated) X
+#else
+#define DEPRECATED(X) X
+#endif
+
 #endif // PLATFORM_H

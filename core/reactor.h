@@ -103,8 +103,24 @@ void _lf_set_present(bool* is_present_field);
  */
 #define _LF_SET(out, val) \
 do { \
+    /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
+    /* even if it is a literal */ \
     out->value = val; \
     _lf_set_present(&out->is_present); \
+    if (out->token != NULL) { \
+        /* The cast "*((void**) &out->value)" is a hack to make the code */ \
+        /* compile with non-token types where val is not a pointer. */ \
+        lf_token_t* token = _lf_initialize_token_with_value(out->token, *((void**) &out->value), 1); \
+        token->ref_count = out->num_destinations; \
+        out->token = token; \
+        out->token->ok_to_free = token_and_value; \
+        if (out->destructor != NULL) { \
+            out->token->destructor = out->destructor; \
+        } \
+        if (out->copy_constructor != NULL) { \
+            out->token->copy_constructor = out->copy_constructor; \
+        } \
+    } \
 } while(0)
 
 /**
@@ -121,7 +137,7 @@ do { \
  * @see lf_token_t
  */
 #ifndef __cplusplus
-#define _LF_SET_ARRAY(out, val, element_size, length) \
+#define _LF_SET_ARRAY(out, val, length) \
 do { \
     _lf_set_present(&out->is_present); \
     lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
@@ -130,7 +146,7 @@ do { \
     out->value = token->value; \
 } while(0)
 #else
-#define _LF_SET_ARRAY(out, val, element_size, length) \
+#define _LF_SET_ARRAY(out, val, length) \
 do { \
     _lf_set_present(&out->is_present); \
     lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
@@ -248,6 +264,35 @@ do { \
 #endif
 
 /**
+ * Set the destructor used to free "token->value" set on "out".
+ * That memory will be automatically freed once all downstream
+ * reactions no longer need the value.
+ * 
+ * @param out The output port (by name) or input of a contained
+ *            reactor in form input_name.port_name.
+ * @param dtor A pointer to a void function that takes a pointer argument
+ *             or NULL to use the default void free(void*) function. 
+ */
+#define _LF_SET_DESTRUCTOR(out, dtor) \
+do { \
+    out->destructor = dtor; \
+} while(0)
+
+/**
+ * Set the destructor used to copy construct "token->value" received
+ * by "in" if "in" is mutable.
+ * 
+ * @param out The output port (by name) or input of a contained
+ *            reactor in form input_name.port_name.
+ * @param cpy_ctor A pointer to a void* function that takes a pointer argument
+ *                 or NULL to use the memcpy operator.
+ */
+#define _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor) \
+do { \
+    out->copy_constructor = cpy_ctor; \
+} while(0)
+
+/**
  * Macro for extracting the deadline from the index of a reaction.
  * The reaction queue is sorted according to this index, and the
  * use of the deadline here results in an earliest deadline first
@@ -360,7 +405,7 @@ typedef enum {inactive = 0, queued, running} reaction_status_t;
 
 /**
  * Handles for scheduled triggers. These handles are returned
- * by schedule() functions. The intent is that the handle can be
+ * by lf_schedule() functions. The intent is that the handle can be
  * used to cancel a future scheduled event, but this is not
  * implemented yet.
  */
@@ -426,6 +471,10 @@ typedef struct lf_token_t {
     size_t length;
     /** The number of input ports that have not already reacted to the message. */
     int ref_count;
+    /** The destructor or NULL to use the default free(). */
+    void (*destructor) (void* value);
+    /** The copy constructor or NULL to use memcpy. */
+    void* (*copy_constructor) (void* value);
     /**
      * Indicator of whether this token is expected to be freed.
      * Tokens that are created at the start of execution and associated with output
@@ -697,7 +746,7 @@ void _lf_initialize_trigger_objects(void);
 void _lf_pop_events(void);
 
 /** 
- * Internal version of the schedule() function, used by generated 
+ * Internal version of the lf_schedule() function, used by generated 
  * _lf_start_timers() function. 
  * @param trigger The action or timer to be triggered.
  * @param delay Offset of the event release.

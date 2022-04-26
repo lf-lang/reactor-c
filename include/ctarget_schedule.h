@@ -29,44 +29,46 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Target-specific runtime functions for the C target language.
  * This API layer can be used in conjunction with:
  *     target C;
- *
- * Note for target language developers. This is one way of developing a target language where
- * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca
- * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a
+ * 
+ * Note for target language developers. This is one way of developing a target language where 
+ * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca 
+ * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a 
  * template for future runtime developement for target languages.
  * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
  */
 
-#include "ctarget.h"
+
+#ifndef CTARGET_SCHEDULE
+#define CTARGET_SCHEDULE
+#include "core/reactor.h"
+//////////////////////////////////////////////////////////////
+/////////////  Schedule Functions
 
 /**
  * Schedule an action to occur with the specified value and time offset
  * with no payload (no value conveyed).
- * See schedule_token(), which this uses, for details.
- *
+ * See lf_schedule_token(), which this uses, for details.
+ * 
  * @param action Pointer to an action on the self struct.
  * @param offset The time offset over and above that in the action.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t schedule(void* action, interval_t offset) {
-    return _lf_schedule_token(action, offset, NULL);
-}
+trigger_handle_t lf_schedule(void* action, interval_t offset);
+DEPRECATED(trigger_handle_t schedule(void* action, interval_t offset));
 
 /**
  * Schedule the specified action with an integer value at a later logical
  * time that depends on whether the action is logical or physical and
  * what its parameter values are. This wraps a copy of the integer value
- * in a token. See schedule_token() for more details.
- *
+ * in a token. See lf_schedule_token() for more details.
+ * 
  * @param action The action to be triggered.
  * @param extra_delay Extra offset of the event release above that in the action.
  * @param value The value to send.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t schedule_int(void* action, interval_t extra_delay, int value)
-{
-    return _lf_schedule_int(action, extra_delay, value);
-}
+trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value);
+DEPRECATED(trigger_handle_t schedule_int(void* action, interval_t extra_delay, int value));
 
 /**
  * Schedule the specified action with the specified token as a payload.
@@ -118,9 +120,8 @@ trigger_handle_t schedule_int(void* action, interval_t extra_delay, int value)
  * @param token The token to carry the payload or null for no payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-    return _lf_schedule_token(action, extra_delay, token);
-}
+trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token);
+DEPRECATED(trigger_handle_t schedule_token(void* action, interval_t extra_delay, lf_token_t* token));
 
 /**
  * Schedule an action to occur with the specified value and time offset with a
@@ -128,8 +129,8 @@ trigger_handle_t schedule_token(void* action, interval_t extra_delay, lf_token_t
  * into newly allocated memory under the assumption that its size is given in
  * the trigger's token object's element_size field multiplied by the specified
  * length.
- *
- * See schedule_token(), which this uses, for details.
+ * 
+ * See lf_schedule_token(), which this uses, for details.
  *
  * @param action Pointer to an action on a self struct.
  * @param offset The time offset over and above that in the action.
@@ -138,25 +139,15 @@ trigger_handle_t schedule_token(void* action, interval_t extra_delay, lf_token_t
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for
  *  error.
  */
-trigger_handle_t schedule_copy(void* action, interval_t offset, void* value, int length) {
-    if (length < 0) {
-        error_print(
-            "schedule_copy():"
-            " Ignoring request to copy a value with a negative length (%d).",
-            length
-        );
-        return -1;
-    }
-    return _lf_schedule_copy(action, offset, value, (size_t)length);
-}
-
+trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, int length);
+DEPRECATED(trigger_handle_t schedule_copy(void* action, interval_t offset, void* value, int length));
 
 /**
- * Variant of schedule_token that creates a token to carry the specified value.
+ * Variant of lf_schedule_token that creates a token to carry the specified value.
  * The value is required to be malloc'd memory with a size equal to the
  * element_size of the specifies action times the length parameter.
  *
- * See schedule_token(), which this uses, for details.
+ * See lf_schedule_token(), which this uses, for details.
  *
  * @param action The action to be triggered.
  * @param extra_delay Extra offset of the event release above that in the
@@ -167,29 +158,21 @@ trigger_handle_t schedule_copy(void* action, interval_t offset, void* value, int
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for
  *  error.
  */
-trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* value, int length) {
-    if (length < 0) {
-        error_print(
-            "schedule_value():"
-            " Ignoring request to schedule an action with a value that has a negative length (%d).",
-            length
-        );
-        return -1;
-    }
-    return _lf_schedule_value(action, extra_delay, value, (size_t)length);
-}
+trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* value, int length);
+DEPRECATED(trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* value, int length));
 
 /**
  * Check the deadline of the currently executing reaction against the
  * current physical time. If the deadline has passed, invoke the deadline
  * handler (if invoke_deadline_handler parameter is set true) and return true.
  * Otherwise, return false.
- * 
+ *
  * @param self The self struct of the reactor.
  * @param invoke_deadline_handler When this is set true, also invoke deadline
  *  handler if the deadline has passed.
  * @return True if the specified deadline has passed and false otherwise.
  */
-bool check_deadline(void* self, bool invoke_deadline_handler) {
-	return _lf_check_deadline((self_base_t*)self, invoke_deadline_handler);
-}
+bool lf_check_deadline(void* self, bool invoke_deadline_handler);
+DEPRECATED(bool check_deadline(void* self, bool invoke_deadline_handler));
+
+#endif // CTARGET_SCHEDULE

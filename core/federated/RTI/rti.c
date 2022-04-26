@@ -339,7 +339,7 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     // is a promise that is valid only in the absence of network inputs,
     // and now there is a network input. Hence, the promise needs to be
     // updated.
-    if (compare_tags(_RTI.federates[federate_id].next_event, intended_tag) > 0) {
+    if (lf_compare_tags(_RTI.federates[federate_id].next_event, intended_tag) > 0) {
     	_RTI.federates[federate_id].next_event = intended_tag;
     }
 
@@ -400,8 +400,8 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
  */
 void send_tag_advance_grant(federate_t* fed, tag_t tag) {
     if (fed->state == NOT_CONNECTED
-    		|| compare_tags(tag, fed->last_granted) <= 0
-			|| compare_tags(tag, fed->last_provisionally_granted) < 0
+    		|| lf_compare_tags(tag, fed->last_granted) <= 0
+			|| lf_compare_tags(tag, fed->last_provisionally_granted) < 0
     ) {
         return;
     }
@@ -463,7 +463,7 @@ tag_t transitive_next_event(federate_t* fed, tag_t candidate, bool visited[]) {
     tag_t result = fed->next_event;
 
     // If the candidate is less than this federate's next_event, use the candidate.
-    if (compare_tags(candidate, result) < 0) {
+    if (lf_compare_tags(candidate, result) < 0) {
         result = candidate;
     }
 
@@ -480,14 +480,14 @@ tag_t transitive_next_event(federate_t* fed, tag_t candidate, bool visited[]) {
                 &_RTI.federates[fed->upstream[i]], result, visited);
 
         // Add the "after" delay of the connection to the result.
-        upstream_result = delay_tag(upstream_result, fed->upstream_delay[i]);
+        upstream_result = _lf_delay_tag(upstream_result, fed->upstream_delay[i]);
 
         // If the adjusted event time is less than the result so far, update the result.
-        if (compare_tags(upstream_result, result) < 0) {
+        if (lf_compare_tags(upstream_result, result) < 0) {
             result = upstream_result;
         }
     }
-    if (compare_tags(result, fed->completed) < 0) {
+    if (lf_compare_tags(result, fed->completed) < 0) {
         result = fed->completed;
     }
     return result;
@@ -507,8 +507,8 @@ tag_t transitive_next_event(federate_t* fed, tag_t candidate, bool visited[]) {
  */
 void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
     if (fed->state == NOT_CONNECTED
-    		|| compare_tags(tag, fed->last_granted) <= 0
-			|| compare_tags(tag, fed->last_provisionally_granted) <= 0
+    		|| lf_compare_tags(tag, fed->last_granted) <= 0
+			|| lf_compare_tags(tag, fed->last_provisionally_granted) <= 0
 			|| (tag.time == start_time && tag.microstep == 0) // PTAG at (0,0) is implicit
     ) {
         return;
@@ -558,7 +558,7 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
             // a TAG or PTAG should have already been granted,
             // in which case, another will not be sent. But it
             // may not have been already granted.
-            if (compare_tags(upstream_next_event, tag) >= 0) {
+            if (lf_compare_tags(upstream_next_event, tag) >= 0) {
             	send_provisional_tag_advance_grant(upstream, tag);
             }
         }
@@ -605,9 +605,9 @@ bool send_advance_grant_if_safe(federate_t* fed) {
         // Ignore this federate if it has resigned.
         if (upstream->state == NOT_CONNECTED) continue;
 
-        tag_t candidate = delay_tag(upstream->completed, fed->upstream_delay[j]);
+        tag_t candidate = _lf_delay_tag(upstream->completed, fed->upstream_delay[j]);
 
-        if (compare_tags(candidate, min_upstream_completed) < 0) {
+        if (lf_compare_tags(candidate, min_upstream_completed) < 0) {
         	min_upstream_completed = candidate;
         }
     }
@@ -615,7 +615,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
             "(adjusted by after delay).",
             fed->id,
             min_upstream_completed.time - start_time, min_upstream_completed.microstep);
-    if (compare_tags(min_upstream_completed, fed->last_granted) > 0) {
+    if (lf_compare_tags(min_upstream_completed, fed->last_granted) > 0) {
     	send_tag_advance_grant(fed, min_upstream_completed);
     	return true;
     }
@@ -656,9 +656,9 @@ bool send_advance_grant_if_safe(federate_t* fed) {
         // Adjust by the "after" delay.
         // Note that "no delay" is encoded as NEVER,
         // whereas one microstep delay is encoded as 0LL.
-        tag_t candidate = delay_tag(upstream_next_event, fed->upstream_delay[j]);
+        tag_t candidate = _lf_delay_tag(upstream_next_event, fed->upstream_delay[j]);
         
-        if (compare_tags(candidate, t_d) < 0) {
+        if (lf_compare_tags(candidate, t_d) < 0) {
             t_d = candidate;
         }
     }
@@ -666,7 +666,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
     LOG_PRINT("Earliest next event upstream has tag (%lld, %u).",
             t_d.time - start_time, t_d.microstep);
 
-    if (compare_tags(t_d, FOREVER_TAG) == 0) {
+    if (lf_compare_tags(t_d, FOREVER_TAG) == 0) {
     	// Upstream federates are all done.
         LOG_PRINT("Upstream federates are all done. Granting tag advance.");
     	send_tag_advance_grant(fed, FOREVER_TAG);
@@ -678,9 +678,9 @@ bool send_advance_grant_if_safe(federate_t* fed) {
     	send_tag_advance_grant(fed, FOREVER_TAG);
     	return true;
 	} else if (
-		compare_tags(t_d, fed->next_event) >= 0      // The federate has something to do.
-		&& compare_tags(t_d, fed->last_provisionally_granted) > 0  // The grant is not redundant.
-    	&& compare_tags(t_d, fed->last_granted) > 0  // The grant is not redundant.
+		lf_compare_tags(t_d, fed->next_event) >= 0      // The federate has something to do.
+		&& lf_compare_tags(t_d, fed->last_provisionally_granted) > 0  // The grant is not redundant.
+    	&& lf_compare_tags(t_d, fed->last_granted) > 0  // The grant is not redundant.
 	) {
     	LOG_PRINT("Earliest upstream message time for fed %d is (%lld, %u) "
             	"(adjusted by after delay). Granting provisional tag advance.",
@@ -812,7 +812,7 @@ void handle_time_advance_notice(federate_t* fed) {
     // network inputs, the federate will not produce an output with tag
     // less than the NET.
     tag_t ta = (tag_t) {.time = fed->time_advance, .microstep = 0};
-    if (compare_tags(ta, fed->next_event) > 0) {
+    if (lf_compare_tags(ta, fed->next_event) > 0) {
         fed->next_event = ta;
         // We need to reply just as if this were a NET because it could unblock
         // network input port control reactions.
@@ -860,7 +860,7 @@ void _lf_rti_broadcast_stop_time_to_federates_already_locked() {
         if (_RTI.federates[i].state == NOT_CONNECTED) {
             continue;
         }
-        if (compare_tags(_RTI.federates[i].next_event, _RTI.max_stop_tag) >= 0) {
+        if (lf_compare_tags(_RTI.federates[i].next_event, _RTI.max_stop_tag) >= 0) {
         	// Need the next_event to be no greater than the stop tag.
         	_RTI.federates[i].next_event = _RTI.max_stop_tag;
         }
@@ -930,7 +930,7 @@ void handle_stop_request_message(federate_t* fed) {
     tag_t proposed_stop_tag = extract_tag(buffer);
 
     // Update the maximum stop tag received from federates
-    if (compare_tags(proposed_stop_tag, _RTI.max_stop_tag) > 0) {
+    if (lf_compare_tags(proposed_stop_tag, _RTI.max_stop_tag) > 0) {
         _RTI.max_stop_tag = proposed_stop_tag;
     }
 
@@ -993,7 +993,7 @@ void handle_stop_request_reply(federate_t* fed) {
     // Acquire the mutex lock so that we can change the state of the RTI
     pthread_mutex_lock(&_RTI.rti_mutex);
     // If the federate has not requested stop before, count the reply
-    if (compare_tags(federate_stop_tag, _RTI.max_stop_tag) > 0) {
+    if (lf_compare_tags(federate_stop_tag, _RTI.max_stop_tag) > 0) {
         _RTI.max_stop_tag = federate_stop_tag;
     }
     mark_federate_requesting_stop(fed);
@@ -1163,7 +1163,7 @@ void send_physical_clock(unsigned char message_type, federate_t* fed, socket_typ
     }
     unsigned char buffer[sizeof(int64_t) + 1];
     buffer[0] = message_type;
-    int64_t current_physical_time = get_physical_time();
+    int64_t current_physical_time = lf_time(LF_PHYSICAL);
     encode_int64(current_physical_time, &(buffer[1]));
     
     // Send the message
@@ -1240,7 +1240,7 @@ void* clock_synchronization_thread(void* noargs) {
 
     // Wait until the start time before starting clock synchronization.
     // The above wait ensures that start_time has been set.
-    interval_t ns_to_wait = start_time - get_physical_time();
+    interval_t ns_to_wait = start_time - lf_time(LF_PHYSICAL);
 
     if (ns_to_wait > 0LL) {
         struct timespec wait_time = {ns_to_wait / BILLION, ns_to_wait % BILLION};
