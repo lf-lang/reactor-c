@@ -118,6 +118,8 @@ Functions</h2></td></tr>
 <tr class="separator:a54be08fbc7990c2d8082a31cbbf6e019"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a75a5bf324229d35fb88541a04449c95b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a75a5bf324229d35fb88541a04449c95b">set_stp_offset</a> (<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset)</td></tr>
 <tr class="separator:a75a5bf324229d35fb88541a04449c95b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2798a92c59a1d46b602298cdbd187ab1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor__common_8c.html#abe23a36a87d2f0c076da417eb0114c7e">token_freed</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a2798a92c59a1d46b602298cdbd187ab1">_lf_free_token</a> (<a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
+<tr class="separator:a2798a92c59a1d46b602298cdbd187ab1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a88c890be1f8d45461a6985cbfe6faa99"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor__common_8c.html#abe23a36a87d2f0c076da417eb0114c7e">token_freed</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a88c890be1f8d45461a6985cbfe6faa99">_lf_done_using</a> (<a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
 <tr class="separator:a88c890be1f8d45461a6985cbfe6faa99"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aef50e4963079f2716f35c8c92256bb4f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#aef50e4963079f2716f35c8c92256bb4f">_lf_trigger_reaction</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *reaction, int worker_number)</td></tr>
@@ -582,6 +584,32 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="a2798a92c59a1d46b602298cdbd187ab1" name="a2798a92c59a1d46b602298cdbd187ab1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2798a92c59a1d46b602298cdbd187ab1">&#9670;&nbsp;</a></span>_lf_free_token()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="reactor__common_8c.html#abe23a36a87d2f0c076da417eb0114c7e">token_freed</a> _lf_free_token </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td>
+          <td class="paramname"><em>token</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Determine which part of the token should be freed and free each part correspondingly.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">token</td><td>Pointer to a token. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>NOT_FREED if nothing was freed, VALUE_FREED if the value was freed, and TOKEN_FREED if both the value and the token were freed. </dd></dl>
+
+</div>
+</div>
 <a id="aeaa7db644ec69c067d3d6aadd2da9d81" name="aeaa7db644ec69c067d3d6aadd2da9d81"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aeaa7db644ec69c067d3d6aadd2da9d81">&#9670;&nbsp;</a></span>_lf_get_new_event()</h2>
 
@@ -891,7 +919,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Schedule the specified trigger at current_tag.time plus the offset of the specified trigger plus the delay. See <a class="el" href="ctarget_8h.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a> in <a class="el" href="reactor_8h.html">reactor.h</a> for details. This is the internal implementation shared by both the threaded and non-threaded versions.</p>
+<p >Schedule the specified trigger at current_tag.time plus the offset of the specified trigger plus the delay. See <a class="el" href="ctarget__schedule_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a> in <a class="el" href="reactor_8h.html">reactor.h</a> for details. This is the internal implementation shared by both the threaded and non-threaded versions.</p>
 <p >The value is required to be either NULL or a pointer to a token wrapping the payload. The token carries a reference count, and when the reference count decrements to 0, the will be freed. Hence, it is essential that the payload be in memory allocated using malloc.</p>
 <p >There are three conditions under which this function will not actually put an event on the event queue and decrement the reference count of the token (if there is one), which could result in the payload being freed. In all three cases, this function returns 0. Otherwise, it returns a handle to the scheduled trigger, which is an integer greater than 0.</p>
 <p >The first condition is that a stop has been requested and the trigger offset plus the extra delay is greater than zero. The second condition is that the trigger offset plus the extra delay is greater that the requested stop time (timeout). The third condition is that the trigger argument is null.</p>
@@ -1329,7 +1357,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Return a writable copy of the specified token. If the reference count is 1, this returns the original token rather than a copy. The reference count will still be 1. If the size of the token payload is zero, this also returns the original token. Otherwise, this returns a new token with a reference count of 0. To ensure that the allocated memory is not leaked, this new token must be either passed to an output using set_token() or scheduled with a action using <a class="el" href="ctarget_8h.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a>. </p>
+<p >Return a writable copy of the specified token. If the reference count is 1, this returns the original token rather than a copy. The reference count will still be 1. If the size of the token payload is zero, this also returns the original token. Otherwise, this returns a new token with a reference count of 0. To ensure that the allocated memory is not leaked, this new token must be either passed to an output using set_token() or scheduled with a action using <a class="el" href="ctarget__schedule_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a>. </p>
 
 </div>
 </div>

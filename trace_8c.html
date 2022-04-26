@@ -439,9 +439,9 @@ DESCRIPTION</h1>
     <tr><td class="paramname">pointer</td><td>The identifying pointer. </td></tr>
     <tr><td class="paramname">reaction_number</td><td>The number of the reaction or -1 if the trace is not of a reaction or the reaction number if not known. </td></tr>
     <tr><td class="paramname">worker</td><td>The thread number of the worker thread or 0 for unthreaded execution or -1 for an unknown thread. </td></tr>
-    <tr><td class="paramname">physical_time</td><td>If the caller has already accessed physical time, provide it here. Otherwise, provide NULL. This argument avoids a second call to get_physical_time and ensures that the physical time in the trace is the same as that used by the caller. </td></tr>
+    <tr><td class="paramname">physical_time</td><td>If the caller has already accessed physical time, provide it here. Otherwise, provide NULL. This argument avoids a second call to lf_time(LF_PHYSICAL) and ensures that the physical time in the trace is the same as that used by the caller. </td></tr>
     <tr><td class="paramname">trigger</td><td>Pointer to the <a class="el" href="structtrigger__t.html">trigger_t</a> struct for calls to schedule or NULL otherwise. </td></tr>
-    <tr><td class="paramname">extra_delay</td><td>The extra delay passed to <a class="el" href="ctarget_8h.html#a1aa6f173caae6390db0a1900245667ef">schedule()</a>. If not relevant for this event type, pass 0. </td></tr>
+    <tr><td class="paramname">extra_delay</td><td>The extra delay passed to <a class="el" href="ctarget__schedule_8c.html#a1aa6f173caae6390db0a1900245667ef">schedule()</a>. If not relevant for this event type, pass 0. </td></tr>
   </table>
   </dd>
 </dl>
@@ -546,7 +546,7 @@ DESCRIPTION</h1>
 <p >Trace a call to schedule. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">trigger</td><td>Pointer to the <a class="el" href="structtrigger__t.html">trigger_t</a> struct for the trigger. </td></tr>
-    <tr><td class="paramname">extra_delay</td><td>The extra delay passed to <a class="el" href="ctarget_8h.html#a1aa6f173caae6390db0a1900245667ef">schedule()</a>. </td></tr>
+    <tr><td class="paramname">extra_delay</td><td>The extra delay passed to <a class="el" href="ctarget__schedule_8c.html#a1aa6f173caae6390db0a1900245667ef">schedule()</a>. </td></tr>
   </table>
   </dd>
 </dl>

@@ -70,6 +70,7 @@ $(function() {
 <a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
+<a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">tag.h File Reference</div></div>
@@ -142,35 +143,52 @@ Macros</h2></td></tr>
 Typedefs</h2></td></tr>
 <tr class="memitem:a9921069499ea65eecb0aeed778a5b92c"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a9921069499ea65eecb0aeed778a5b92c">tag_interval_t</a></td></tr>
 <tr class="separator:a9921069499ea65eecb0aeed778a5b92c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a539cb1f14e3d921ab80f600e999c32cb"><td class="memItemLeft" align="right" valign="top">typedef enum <a class="el" href="tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5">_lf_time_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a539cb1f14e3d921ab80f600e999c32cb">lf_time_type</a></td></tr>
+<tr class="separator:a539cb1f14e3d921ab80f600e999c32cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:a2d07c34cb48cd21da0a0c307126d7fb5"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5">_lf_time_type</a> { <br />
+&#160;&#160;<a class="el" href="tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5ab1f08a6adfd28e90aa0f627d90dec650">LF_LOGICAL</a>
+, <a class="el" href="tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5adf8c05057e7f5f50eda89617a74527cf">LF_PHYSICAL</a>
+, <a class="el" href="tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5a86f2ac8e0f11d68a3e0e987d5170d45d">LF_ELAPSED_LOGICAL</a>
+, <a class="el" href="tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5a39d908dfd47bc4426d8e185fcd6bfadc">LF_ELAPSED_PHYSICAL</a>
+, <br />
+&#160;&#160;<a class="el" href="tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5a3bec17b3914ed04bcaed9a1b52fcda5e">LF_START</a>
+<br />
+ }</td></tr>
+<tr class="separator:a2d07c34cb48cd21da0a0c307126d7fb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a6f9d6db9250698b048f5f118b0308e47"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a6f9d6db9250698b048f5f118b0308e47">compare_tags</a> (<a class="el" href="structtag__t.html">tag_t</a> tag1, <a class="el" href="structtag__t.html">tag_t</a> tag2)</td></tr>
-<tr class="separator:a6f9d6db9250698b048f5f118b0308e47"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a285bf3926110e2e1ee38febe34f69222"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a285bf3926110e2e1ee38febe34f69222">delay_tag</a> (<a class="el" href="structtag__t.html">tag_t</a> tag, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> interval)</td></tr>
-<tr class="separator:a285bf3926110e2e1ee38febe34f69222"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a11eb47527949be03e51d622684461e26"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a11eb47527949be03e51d622684461e26">get_elapsed_logical_time</a> (void)</td></tr>
-<tr class="separator:a11eb47527949be03e51d622684461e26"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9b807bd8236d000967f34eea7b445aa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#af9b807bd8236d000967f34eea7b445aa">lf_compare_tags</a> (<a class="el" href="structtag__t.html">tag_t</a> tag1, <a class="el" href="structtag__t.html">tag_t</a> tag2)</td></tr>
+<tr class="separator:af9b807bd8236d000967f34eea7b445aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adedc73da8778b2c4ee108d62ca4459b8"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#adedc73da8778b2c4ee108d62ca4459b8">DEPRECATED</a> (int <a class="el" href="tag_8c.html#a6f9d6db9250698b048f5f118b0308e47">compare_tags</a>(<a class="el" href="structtag__t.html">tag_t</a> tag1, <a class="el" href="structtag__t.html">tag_t</a> tag2))</td></tr>
+<tr class="separator:adedc73da8778b2c4ee108d62ca4459b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a578a919fbb78cb28be3e41c9aa769c8a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a578a919fbb78cb28be3e41c9aa769c8a">lf_tag</a> ()</td></tr>
+<tr class="separator:a578a919fbb78cb28be3e41c9aa769c8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94b12875cb420c823e15fd89cd3716ea"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a94b12875cb420c823e15fd89cd3716ea">lf_time</a> (<a class="el" href="tag_8h.html#a539cb1f14e3d921ab80f600e999c32cb">lf_time_type</a> type)</td></tr>
+<tr class="separator:a94b12875cb420c823e15fd89cd3716ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a900b1fbe7da7be900d333c58729dbd0f"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a900b1fbe7da7be900d333c58729dbd0f">DEPRECATED</a> (<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> <a class="el" href="tag_8c.html#a23e91eb69aca986b03aba4ce86923102">get_elapsed_logical_time</a>(void))</td></tr>
+<tr class="separator:a900b1fbe7da7be900d333c58729dbd0f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a43509483b3e9886acd002c7d7b6482c8"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a43509483b3e9886acd002c7d7b6482c8">lf_readable_time</a> (char *buffer, <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> time)</td></tr>
 <tr class="separator:a43509483b3e9886acd002c7d7b6482c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae956f1688a3893b44cf4bced3c13ef9a"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ae956f1688a3893b44cf4bced3c13ef9a">lf_comma_separated_time</a> (char *buffer, <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> time)</td></tr>
 <tr class="separator:ae956f1688a3893b44cf4bced3c13ef9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5a3b562d072762c3f893f68cba18e2db"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a5a3b562d072762c3f893f68cba18e2db">get_logical_time</a> (void)</td></tr>
-<tr class="separator:a5a3b562d072762c3f893f68cba18e2db"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2dc93e17f7b4261a2cafdd8b72a7155c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a2dc93e17f7b4261a2cafdd8b72a7155c">get_current_tag</a> (void)</td></tr>
-<tr class="separator:a2dc93e17f7b4261a2cafdd8b72a7155c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a00e26ec1f42679dea24ad66658caebe6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#aff94b88998d5bf37870fb520ad82526d">microstep_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a00e26ec1f42679dea24ad66658caebe6">get_microstep</a> (void)</td></tr>
-<tr class="separator:a00e26ec1f42679dea24ad66658caebe6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1d68638beb8be2c5c06fbd66b82dcb0d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a1d68638beb8be2c5c06fbd66b82dcb0d">get_physical_time</a> (void)</td></tr>
-<tr class="separator:a1d68638beb8be2c5c06fbd66b82dcb0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aac551c68515892eb986266c242ba055a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#aac551c68515892eb986266c242ba055a">get_elapsed_physical_time</a> (void)</td></tr>
-<tr class="separator:aac551c68515892eb986266c242ba055a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac45b5d21dac66de7986c99f7db1b577b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ac45b5d21dac66de7986c99f7db1b577b">set_physical_clock_offset</a> (<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset)</td></tr>
-<tr class="separator:ac45b5d21dac66de7986c99f7db1b577b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeaab3add9dfc2a0e41d346e856c4687e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#aeaab3add9dfc2a0e41d346e856c4687e">get_start_time</a> (void)</td></tr>
-<tr class="separator:aeaab3add9dfc2a0e41d346e856c4687e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3dc06a20d8902397916c0784e3a956c7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a3dc06a20d8902397916c0784e3a956c7">convert_volatile_tag_to_nonvolatile</a> (<a class="el" href="structtag__t.html">tag_t</a> volatile vtag)</td></tr>
-<tr class="separator:a3dc06a20d8902397916c0784e3a956c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a522685f267bd87999296327e85c04290"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a522685f267bd87999296327e85c04290">DEPRECATED</a> (<a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> <a class="el" href="tag_8c.html#a9da5960071964c9c2bdb602526da0565">get_logical_time</a>(void))</td></tr>
+<tr class="separator:a522685f267bd87999296327e85c04290"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab7eba3addb517d976caecec830c24930"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ab7eba3addb517d976caecec830c24930">DEPRECATED</a> (<a class="el" href="structtag__t.html">tag_t</a> <a class="el" href="tag_8c.html#a284eab9a62e22fa3a64d36d301d0195d">get_current_tag</a>(void))</td></tr>
+<tr class="separator:ab7eba3addb517d976caecec830c24930"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:affa6d283127d1ee57dd9b6e103513d77"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#affa6d283127d1ee57dd9b6e103513d77">DEPRECATED</a> (<a class="el" href="platform_8h.html#aff94b88998d5bf37870fb520ad82526d">microstep_t</a> <a class="el" href="tag_8c.html#af413f18a3d52672f4ba984cc92e4efe5">get_microstep</a>(void))</td></tr>
+<tr class="separator:affa6d283127d1ee57dd9b6e103513d77"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a209c8df88a5ef884e0cf51d4727cda"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a3a209c8df88a5ef884e0cf51d4727cda">lf_set_physical_clock_offset</a> (<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset)</td></tr>
+<tr class="separator:a3a209c8df88a5ef884e0cf51d4727cda"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a221633b7cccbf21da3443d43cf037c21"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a221633b7cccbf21da3443d43cf037c21">DEPRECATED</a> (void <a class="el" href="tag_8c.html#ac45b5d21dac66de7986c99f7db1b577b">set_physical_clock_offset</a>(<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset))</td></tr>
+<tr class="separator:a221633b7cccbf21da3443d43cf037c21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae100cec052125d78384bd740d6f7e142"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ae100cec052125d78384bd740d6f7e142">_lf_delay_tag</a> (<a class="el" href="structtag__t.html">tag_t</a> tag, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> interval)</td></tr>
+<tr class="separator:ae100cec052125d78384bd740d6f7e142"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7ffa6446464d5a939e848bb9a41ceab7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a7ffa6446464d5a939e848bb9a41ceab7">_lf_convert_volatile_tag_to_nonvolatile</a> (<a class="el" href="structtag__t.html">tag_t</a> volatile vtag)</td></tr>
+<tr class="separator:a7ffa6446464d5a939e848bb9a41ceab7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -184,7 +202,9 @@ Variables</h2></td></tr>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee </dd>
 <dd>
-Soroush Bateni</dd></dl>
+Soroush Bateni </dd>
+<dd>
+Hou Seng (Steven) Wong</dd></dl>
 <h1><a class="anchor" id="LICENSE"></a>
 LICENSE</h1>
 <p >Copyright (c) 2020, The University of California at Berkeley.</p>
@@ -621,6 +641,21 @@ DESCRIPTION</h1>
 </div>
 </div>
 <h2 class="groupheader">Typedef Documentation</h2>
+<a id="a539cb1f14e3d921ab80f600e999c32cb" name="a539cb1f14e3d921ab80f600e999c32cb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a539cb1f14e3d921ab80f600e999c32cb">&#9670;&nbsp;</a></span>lf_time_type</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef enum <a class="el" href="tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5">_lf_time_type</a> <a class="el" href="tag_8h.html#a539cb1f14e3d921ab80f600e999c32cb">lf_time_type</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >An enum for specifying the desired tag when calling "lf_time" </p>
+
+</div>
+</div>
 <a id="a9921069499ea65eecb0aeed778a5b92c" name="a9921069499ea65eecb0aeed778a5b92c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9921069499ea65eecb0aeed778a5b92c">&#9670;&nbsp;</a></span>tag_interval_t</h2>
 
@@ -636,51 +671,38 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<h2 class="groupheader">Function Documentation</h2>
-<a id="a6f9d6db9250698b048f5f118b0308e47" name="a6f9d6db9250698b048f5f118b0308e47"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6f9d6db9250698b048f5f118b0308e47">&#9670;&nbsp;</a></span>compare_tags()</h2>
+<h2 class="groupheader">Enumeration Type Documentation</h2>
+<a id="a2d07c34cb48cd21da0a0c307126d7fb5" name="a2d07c34cb48cd21da0a0c307126d7fb5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2d07c34cb48cd21da0a0c307126d7fb5">&#9670;&nbsp;</a></span>_lf_time_type</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int compare_tags </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td>
-          <td class="paramname"><em>tag1</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td>
-          <td class="paramname"><em>tag2</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
+          <td class="memname">enum <a class="el" href="tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5">_lf_time_type</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Compare two tags. Return -1 if the first is less than the second, 0 if they are equal, and +1 if the first is greater than the second. A tag is greater than another if its time is greater or if its time is equal and its microstep is greater. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">tag1</td><td></td></tr>
-    <tr><td class="paramname">tag2</td><td></td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>-1, 0, or 1 depending on the relation. </dd></dl>
+<p >An enum for specifying the desired tag when calling "lf_time" </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a2d07c34cb48cd21da0a0c307126d7fb5ab1f08a6adfd28e90aa0f627d90dec650" name="a2d07c34cb48cd21da0a0c307126d7fb5ab1f08a6adfd28e90aa0f627d90dec650"></a>LF_LOGICAL&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2d07c34cb48cd21da0a0c307126d7fb5adf8c05057e7f5f50eda89617a74527cf" name="a2d07c34cb48cd21da0a0c307126d7fb5adf8c05057e7f5f50eda89617a74527cf"></a>LF_PHYSICAL&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2d07c34cb48cd21da0a0c307126d7fb5a86f2ac8e0f11d68a3e0e987d5170d45d" name="a2d07c34cb48cd21da0a0c307126d7fb5a86f2ac8e0f11d68a3e0e987d5170d45d"></a>LF_ELAPSED_LOGICAL&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2d07c34cb48cd21da0a0c307126d7fb5a39d908dfd47bc4426d8e185fcd6bfadc" name="a2d07c34cb48cd21da0a0c307126d7fb5a39d908dfd47bc4426d8e185fcd6bfadc"></a>LF_ELAPSED_PHYSICAL&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a2d07c34cb48cd21da0a0c307126d7fb5a3bec17b3914ed04bcaed9a1b52fcda5e" name="a2d07c34cb48cd21da0a0c307126d7fb5a3bec17b3914ed04bcaed9a1b52fcda5e"></a>LF_START&#160;</td><td class="fielddoc"></td></tr>
+</table>
 
 </div>
 </div>
-<a id="a3dc06a20d8902397916c0784e3a956c7" name="a3dc06a20d8902397916c0784e3a956c7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3dc06a20d8902397916c0784e3a956c7">&#9670;&nbsp;</a></span>convert_volatile_tag_to_nonvolatile()</h2>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="a7ffa6446464d5a939e848bb9a41ceab7" name="a7ffa6446464d5a939e848bb9a41ceab7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7ffa6446464d5a939e848bb9a41ceab7">&#9670;&nbsp;</a></span>_lf_convert_volatile_tag_to_nonvolatile()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structtag__t.html">tag_t</a> convert_volatile_tag_to_nonvolatile </td>
+          <td class="memname"><a class="el" href="structtag__t.html">tag_t</a> _lf_convert_volatile_tag_to_nonvolatile </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structtag__t.html">tag_t</a> volatile&#160;</td>
           <td class="paramname"><em>vtag</em></td><td>)</td>
@@ -692,14 +714,14 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a285bf3926110e2e1ee38febe34f69222" name="a285bf3926110e2e1ee38febe34f69222"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a285bf3926110e2e1ee38febe34f69222">&#9670;&nbsp;</a></span>delay_tag()</h2>
+<a id="ae100cec052125d78384bd740d6f7e142" name="ae100cec052125d78384bd740d6f7e142"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae100cec052125d78384bd740d6f7e142">&#9670;&nbsp;</a></span>_lf_delay_tag()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structtag__t.html">tag_t</a> delay_tag </td>
+          <td class="memname"><a class="el" href="structtag__t.html">tag_t</a> _lf_delay_tag </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td>
           <td class="paramname"><em>tag</em>, </td>
@@ -729,97 +751,77 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a2dc93e17f7b4261a2cafdd8b72a7155c" name="a2dc93e17f7b4261a2cafdd8b72a7155c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2dc93e17f7b4261a2cafdd8b72a7155c">&#9670;&nbsp;</a></span>get_current_tag()</h2>
+<a id="a522685f267bd87999296327e85c04290" name="a522685f267bd87999296327e85c04290"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a522685f267bd87999296327e85c04290">&#9670;&nbsp;</a></span>DEPRECATED() <span class="overload">[1/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structtag__t.html">tag_t</a> get_current_tag </td>
+          <td class="memname">DEPRECATED </td>
           <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Return the current tag, a logical time, microstep pair. </p>
-
-</div>
-</div>
-<a id="a11eb47527949be03e51d622684461e26" name="a11eb47527949be03e51d622684461e26"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a11eb47527949be03e51d622684461e26">&#9670;&nbsp;</a></span>get_elapsed_logical_time()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> get_elapsed_logical_time </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Return the elapsed logical time in nanoseconds since the start of execution. </p><dl class="section return"><dt>Returns</dt><dd>A time interval.</dd></dl>
-<p>Return the elapsed logical time in nanoseconds since the start of execution. </p>
-
-</div>
-</div>
-<a id="aac551c68515892eb986266c242ba055a" name="aac551c68515892eb986266c242ba055a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aac551c68515892eb986266c242ba055a">&#9670;&nbsp;</a></span>get_elapsed_physical_time()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> get_elapsed_physical_time </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Return the elapsed physical time in nanoseconds. This is the time returned by <a class="el" href="tag_8c.html#a84d52b3843db3b4fcb932326d6b288c4">get_physical_time(void)</a> minus the physical start time as measured by <a class="el" href="tag_8c.html#a84d52b3843db3b4fcb932326d6b288c4">get_physical_time(void)</a> when the program was started.</p>
-<p >Return the elapsed physical time in nanoseconds. This is the time returned by <a class="el" href="tag_8c.html#a84d52b3843db3b4fcb932326d6b288c4">get_physical_time()</a> minus the physical start time as measured by <a class="el" href="tag_8c.html#a84d52b3843db3b4fcb932326d6b288c4">get_physical_time()</a> when the program was started. </p>
-
-</div>
-</div>
-<a id="a5a3b562d072762c3f893f68cba18e2db" name="a5a3b562d072762c3f893f68cba18e2db"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5a3b562d072762c3f893f68cba18e2db">&#9670;&nbsp;</a></span>get_logical_time()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> get_logical_time </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> &#160;</td>
+          <td class="paramname"><em>get_logical_time</em>void</td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p >Return the current logical time in nanoseconds. On many platforms, this is the number of nanoseconds since January 1, 1970, but it is actually platform dependent.</p>
 <dl class="section return"><dt>Returns</dt><dd>A time instant.</dd></dl>
-<p>Return the current logical time in nanoseconds since January 1, 1970. </p>
+<p>Return the current physical time in nanoseconds. On many platforms, this is the number of nanoseconds since January 1, 1970, but it is actually platform dependent. </p><dl class="section return"><dt>Returns</dt><dd>A time instant.</dd></dl>
+<p>Return the elapsed physical time in nanoseconds. This is the time returned by <a class="el" href="tag_8c.html#a84d52b3843db3b4fcb932326d6b288c4">get_physical_time(void)</a> minus the physical start time as measured by <a class="el" href="tag_8c.html#a84d52b3843db3b4fcb932326d6b288c4">get_physical_time(void)</a> when the program was started.</p>
+<p >Return the physical and logical time of the start of execution in nanoseconds. On many platforms, this is the number of nanoseconds since January 1, 1970, but it is actually platform dependent. </p><dl class="section return"><dt>Returns</dt><dd>A time instant. </dd></dl>
 
 </div>
 </div>
-<a id="a00e26ec1f42679dea24ad66658caebe6" name="a00e26ec1f42679dea24ad66658caebe6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a00e26ec1f42679dea24ad66658caebe6">&#9670;&nbsp;</a></span>get_microstep()</h2>
+<a id="adedc73da8778b2c4ee108d62ca4459b8" name="adedc73da8778b2c4ee108d62ca4459b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adedc73da8778b2c4ee108d62ca4459b8">&#9670;&nbsp;</a></span>DEPRECATED() <span class="overload">[2/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#aff94b88998d5bf37870fb520ad82526d">microstep_t</a> get_microstep </td>
+          <td class="memname">DEPRECATED </td>
           <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">int &#160;</td>
+          <td class="paramname"><em>compare_tags</em>tag_t tag1, tag_t tag2</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a900b1fbe7da7be900d333c58729dbd0f" name="a900b1fbe7da7be900d333c58729dbd0f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a900b1fbe7da7be900d333c58729dbd0f">&#9670;&nbsp;</a></span>DEPRECATED() <span class="overload">[3/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">DEPRECATED </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> &#160;</td>
+          <td class="paramname"><em>get_elapsed_logical_time</em>void</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Return the elapsed logical time in nanoseconds since the start of execution. </p><dl class="section return"><dt>Returns</dt><dd>A time interval. </dd></dl>
+
+</div>
+</div>
+<a id="affa6d283127d1ee57dd9b6e103513d77" name="affa6d283127d1ee57dd9b6e103513d77"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#affa6d283127d1ee57dd9b6e103513d77">&#9670;&nbsp;</a></span>DEPRECATED() <span class="overload">[4/6]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">DEPRECATED </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="platform_8h.html#aff94b88998d5bf37870fb520ad82526d">microstep_t</a> &#160;</td>
+          <td class="paramname"><em>get_microstep</em>void</td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -828,42 +830,40 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a1d68638beb8be2c5c06fbd66b82dcb0d" name="a1d68638beb8be2c5c06fbd66b82dcb0d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1d68638beb8be2c5c06fbd66b82dcb0d">&#9670;&nbsp;</a></span>get_physical_time()</h2>
+<a id="ab7eba3addb517d976caecec830c24930" name="ab7eba3addb517d976caecec830c24930"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab7eba3addb517d976caecec830c24930">&#9670;&nbsp;</a></span>DEPRECATED() <span class="overload">[5/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> get_physical_time </td>
+          <td class="memname">DEPRECATED </td>
           <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="structtag__t.html">tag_t</a> &#160;</td>
+          <td class="paramname"><em>get_current_tag</em>void</td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Return the current physical time in nanoseconds. On many platforms, this is the number of nanoseconds since January 1, 1970, but it is actually platform dependent. </p><dl class="section return"><dt>Returns</dt><dd>A time instant.</dd></dl>
-<p>Return the current physical time in nanoseconds since January 1, 1970, adjusted by the global physical time offset. </p>
+<p >Return the current tag, a logical time, microstep pair. </p>
 
 </div>
 </div>
-<a id="aeaab3add9dfc2a0e41d346e856c4687e" name="aeaab3add9dfc2a0e41d346e856c4687e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeaab3add9dfc2a0e41d346e856c4687e">&#9670;&nbsp;</a></span>get_start_time()</h2>
+<a id="a221633b7cccbf21da3443d43cf037c21" name="a221633b7cccbf21da3443d43cf037c21"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a221633b7cccbf21da3443d43cf037c21">&#9670;&nbsp;</a></span>DEPRECATED() <span class="overload">[6/6]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> get_start_time </td>
+          <td class="memname">DEPRECATED </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">void &#160;</td>
+          <td class="paramname"><em>set_physical_clock_offset</em>interval_t offset</td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Return the physical and logical time of the start of execution in nanoseconds. On many platforms, this is the number of nanoseconds since January 1, 1970, but it is actually platform dependent. </p><dl class="section return"><dt>Returns</dt><dd>A time instant.</dd></dl>
-<p>Return the physical time of the start of execution in nanoseconds. * On many platforms, this is the number of nanoseconds since January 1, 1970, but it is actually platform dependent. * </p><dl class="section return"><dt>Returns</dt><dd>A time instant. </dd></dl>
 
 </div>
 </div>
@@ -911,6 +911,42 @@ DESCRIPTION</h1>
 
 </div>
 </div>
+<a id="af9b807bd8236d000967f34eea7b445aa" name="af9b807bd8236d000967f34eea7b445aa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af9b807bd8236d000967f34eea7b445aa">&#9670;&nbsp;</a></span>lf_compare_tags()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lf_compare_tags </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td>
+          <td class="paramname"><em>tag1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td>
+          <td class="paramname"><em>tag2</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Compare two tags. Return -1 if the first is less than the second, 0 if they are equal, and +1 if the first is greater than the second. A tag is greater than another if its time is greater or if its time is equal and its microstep is greater. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">tag1</td><td></td></tr>
+    <tr><td class="paramname">tag2</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>-1, 0, or 1 depending on the relation. </dd></dl>
+
+</div>
+</div>
 <a id="a43509483b3e9886acd002c7d7b6482c8" name="a43509483b3e9886acd002c7d7b6482c8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a43509483b3e9886acd002c7d7b6482c8">&#9670;&nbsp;</a></span>lf_readable_time()</h2>
 
@@ -948,14 +984,14 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="ac45b5d21dac66de7986c99f7db1b577b" name="ac45b5d21dac66de7986c99f7db1b577b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac45b5d21dac66de7986c99f7db1b577b">&#9670;&nbsp;</a></span>set_physical_clock_offset()</h2>
+<a id="a3a209c8df88a5ef884e0cf51d4727cda" name="a3a209c8df88a5ef884e0cf51d4727cda"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3a209c8df88a5ef884e0cf51d4727cda">&#9670;&nbsp;</a></span>lf_set_physical_clock_offset()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void set_physical_clock_offset </td>
+          <td class="memname">void lf_set_physical_clock_offset </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td>
           <td class="paramname"><em>offset</em></td><td>)</td>
@@ -965,6 +1001,68 @@ DESCRIPTION</h1>
 </div><div class="memdoc">
 <p >Set a fixed offset to the physical clock. After calling this, the value returned by <a class="el" href="tag_8c.html#a84d52b3843db3b4fcb932326d6b288c4">get_physical_time(void)</a> and get_elpased_physical_time(void) will have this specified offset added to what it would have returned before the call.</p>
 <p >Set a fixed offset to the physical clock. After calling this, the value returned by <a class="el" href="tag_8c.html#a84d52b3843db3b4fcb932326d6b288c4">get_physical_time()</a> and get_elpased_physical_time() will have this specified offset added to what it would have returned before the call. </p>
+
+</div>
+</div>
+<a id="a578a919fbb78cb28be3e41c9aa769c8a" name="a578a919fbb78cb28be3e41c9aa769c8a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a578a919fbb78cb28be3e41c9aa769c8a">&#9670;&nbsp;</a></span>lf_tag()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structtag__t.html">tag_t</a> lf_tag </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Return the current tag, a logical time, microstep pair. </p>
+
+</div>
+</div>
+<a id="a94b12875cb420c823e15fd89cd3716ea" name="a94b12875cb420c823e15fd89cd3716ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a94b12875cb420c823e15fd89cd3716ea">&#9670;&nbsp;</a></span>lf_time()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> lf_time </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="tag_8h.html#a539cb1f14e3d921ab80f600e999c32cb">lf_time_type</a>&#160;</td>
+          <td class="paramname"><em>type</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Get the time specified by "type".</p>
+<p >Example use cases:</p><ul>
+<li>Getting the starting time: lf_time(LF_START)</li>
+<li>Getting the elapsed physical time: lf_time(LF_ELAPSED_PHYSICAL)</li>
+<li>Getting the logical time lf_time(LF_LOGICAL)</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">type</td><td>A field in an enum specifying the tag type. See enum "lf_tag_type" above. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The desired time</dd></dl>
+<p>Get the time specified by "type".</p>
+<p >Example use cases:</p><ul>
+<li>Getting the starting time: lf_time(LF_START)</li>
+<li>Getting the elapsed physical time: lf_time(LF_ELAPSED_PHYSICAL)</li>
+<li>Getting the logical time lf_time(LF_LOGICAL)</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">type</td><td>A field in an enum specifying the time type. See enum "lf_time_type" above. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The desired time </dd></dl>
 
 </div>
 </div>

@@ -1125,7 +1125,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Version of <a class="el" href="ctarget_8h.html#a0ecdb5df31eef1cff7d639badc3e7ee8">schedule_value()</a> similar to that in <a class="el" href="reactor__common_8c.html">reactor_common.c</a> except that it does not acquire the mutex lock and has a special behavior during startup where it can inject reactions to the reaction queue if execution has not started yet. It is also responsible for setting the intended tag of the network message based on the calculated delay. This function assumes that the caller holds the mutex lock.</p>
+<p >Version of <a class="el" href="ctarget__schedule_8c.html#a0ecdb5df31eef1cff7d639badc3e7ee8">schedule_value()</a> similar to that in <a class="el" href="reactor__common_8c.html">reactor_common.c</a> except that it does not acquire the mutex lock and has a special behavior during startup where it can inject reactions to the reaction queue if execution has not started yet. It is also responsible for setting the intended tag of the network message based on the calculated delay. This function assumes that the caller holds the mutex lock.</p>
 <p >This is used for handling incoming timed messages to a federate.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -1574,8 +1574,8 @@ DESCRIPTION</h1>
 <div class="line">        .triggers_for_network_input_control_reactions_size = 0,</div>
 <div class="line">        .trigger_for_network_output_control_reactions = NULL</div>
 <div class="line">}</div>
-<div class="ttc" id="astructtag__t_html"><div class="ttname"><a href="structtag__t.html">tag_t</a></div><div class="ttdef"><b>Definition:</b> tag.h:76</div></div>
-<div class="ttc" id="atag_8h_html_a9e5c19968af97bd64f46650ec8732318"><div class="ttname"><a href="tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></div><div class="ttdeci">#define NEVER</div><div class="ttdef"><b>Definition:</b> tag.h:60</div></div>
+<div class="ttc" id="astructtag__t_html"><div class="ttname"><a href="structtag__t.html">tag_t</a></div><div class="ttdef"><b>Definition:</b> tag.h:77</div></div>
+<div class="ttc" id="atag_8h_html_a9e5c19968af97bd64f46650ec8732318"><div class="ttname"><a href="tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></div><div class="ttdeci">#define NEVER</div><div class="ttdef"><b>Definition:</b> tag.h:61</div></div>
 </div><!-- fragment --><p >The state of this federate instance. </p>
 
 </div>

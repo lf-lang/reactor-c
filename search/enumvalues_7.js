@@ -1,6 +1,8 @@
 var searchData=
 [
-  ['no_0',['no',['../reactor_8h.html#a174f339edecd4463df25e673366a2b16a8fe4a05f1addc1b9a4aae17d7b166646',1,'reactor.h']]],
-  ['not_5fconnected_1',['NOT_CONNECTED',['../rti_8h.html#a7a2e496e8d9be587cc662640a4251b23a96c582a5af213ca7fb34f970d83875f5',1,'rti.h']]],
-  ['not_5ffreed_2',['NOT_FREED',['../reactor__common_8c.html#abe23a36a87d2f0c076da417eb0114c7ea3d7522b54086645e077eb70e78731c5c',1,'reactor_common.c']]]
+  ['lf_5felapsed_5flogical_0',['LF_ELAPSED_LOGICAL',['../tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5a86f2ac8e0f11d68a3e0e987d5170d45d',1,'tag.h']]],
+  ['lf_5felapsed_5fphysical_1',['LF_ELAPSED_PHYSICAL',['../tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5a39d908dfd47bc4426d8e185fcd6bfadc',1,'tag.h']]],
+  ['lf_5flogical_2',['LF_LOGICAL',['../tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5ab1f08a6adfd28e90aa0f627d90dec650',1,'tag.h']]],
+  ['lf_5fphysical_3',['LF_PHYSICAL',['../tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5adf8c05057e7f5f50eda89617a74527cf',1,'tag.h']]],
+  ['lf_5fstart_4',['LF_START',['../tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5a3bec17b3914ed04bcaed9a1b52fcda5e',1,'tag.h']]]
 ];

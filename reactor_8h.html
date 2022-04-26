@@ -120,8 +120,8 @@ Macros</h2></td></tr>
 <tr class="separator:ab90a33a3249c67258eed6ac36793bd39"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af5f7e281be573bc680ed652ad54f5386"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#af5f7e281be573bc680ed652ad54f5386">_LF_SET</a>(out,  val)</td></tr>
 <tr class="separator:af5f7e281be573bc680ed652ad54f5386"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8a4001d12854ff4675f7d119dfb0b952"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a8a4001d12854ff4675f7d119dfb0b952">_LF_SET_ARRAY</a>(out,  val,  element_size,  length)</td></tr>
-<tr class="separator:a8a4001d12854ff4675f7d119dfb0b952"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ade8db75c1a1f095de1246663fa86b941"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#ade8db75c1a1f095de1246663fa86b941">_LF_SET_ARRAY</a>(out,  val,  length)</td></tr>
+<tr class="separator:ade8db75c1a1f095de1246663fa86b941"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae6d69be73768b3d144a524fa87f0d069"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#ae6d69be73768b3d144a524fa87f0d069">_LF_SET_NEW</a>(out)</td></tr>
 <tr class="separator:ae6d69be73768b3d144a524fa87f0d069"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a64c4d124085ac4279bac7158ad144218"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a64c4d124085ac4279bac7158ad144218">_LF_SET_NEW_ARRAY</a>(out,  len)</td></tr>
@@ -130,6 +130,10 @@ Macros</h2></td></tr>
 <tr class="separator:a26960b6a12ebe9eff3f276c2b07096ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5f45a70cbab4e36efdc9efdcf37a7bb9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a5f45a70cbab4e36efdc9efdcf37a7bb9">_LF_SET_TOKEN</a>(out,  newtoken)</td></tr>
 <tr class="separator:a5f45a70cbab4e36efdc9efdcf37a7bb9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acec0cd036d176324a861cf2a2dfb5e1e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#acec0cd036d176324a861cf2a2dfb5e1e">_LF_SET_DESTRUCTOR</a>(out,  dtor)</td></tr>
+<tr class="separator:acec0cd036d176324a861cf2a2dfb5e1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a96ed6842ba6557e9b755f85627fbc600"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a96ed6842ba6557e9b755f85627fbc600">_LF_SET_COPY_CONSTRUCTOR</a>(out,  cpy_ctor)</td></tr>
+<tr class="separator:a96ed6842ba6557e9b755f85627fbc600"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4aab573132838d44997ee99002d3e6d0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a4aab573132838d44997ee99002d3e6d0">DEADLINE</a>(index)&#160;&#160;&#160;(index &amp; 0x7FFFFFFFFFFF0000)</td></tr>
 <tr class="separator:a4aab573132838d44997ee99002d3e6d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d86a8b9f2059af4b3f9f1862fdb2145"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a6d86a8b9f2059af4b3f9f1862fdb2145">LEVEL</a>(index)&#160;&#160;&#160;(index &amp; 0xffffLL)</td></tr>
@@ -318,9 +322,27 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> { \</div>
+<div class="line">    <span class="comment">/* We need to assign &quot;val&quot; to &quot;out-&gt;value&quot; since we need to give &quot;val&quot; an address */</span> \</div>
+<div class="line">    <span class="comment">/* even if it is a literal */</span> \</div>
 <div class="line">    out-&gt;value = val; \</div>
 <div class="line">    _lf_set_present(&amp;out-&gt;is_present); \</div>
+<div class="line">    if (out-&gt;token != NULL) { \</div>
+<div class="line">        <span class="comment">/* The cast &quot;*((void**) &amp;out-&gt;value)&quot; is a hack to make the code */</span> \</div>
+<div class="line">        <span class="comment">/* compile with non-token types where val is not a pointer. */</span> \</div>
+<div class="line">        lf_token_t* token = <a class="code hl_function" href="reactor__common_8c.html#a96b4b8f74714eae0efcb699281c10f87">_lf_initialize_token_with_value</a>(out-&gt;token, *((<span class="keywordtype">void</span>**) &amp;out-&gt;value), 1); \</div>
+<div class="line">        token-&gt;ref_count = out-&gt;num_destinations; \</div>
+<div class="line">        out-&gt;token = token; \</div>
+<div class="line">        out-&gt;token-&gt;ok_to_free = <a class="code hl_enumvalue" href="reactor_8h.html#a174f339edecd4463df25e673366a2b16aad3aafaeae035f5d1c986b0b59e77458">token_and_value</a>; \</div>
+<div class="line">        if (out-&gt;destructor != NULL) { \</div>
+<div class="line">            out-&gt;token-&gt;destructor = out-&gt;destructor; \</div>
+<div class="line">        } \</div>
+<div class="line">        if (out-&gt;copy_constructor != NULL) { \</div>
+<div class="line">            out-&gt;token-&gt;copy_constructor = out-&gt;copy_constructor; \</div>
+<div class="line">        } \</div>
+<div class="line">    } \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
+<div class="ttc" id="areactor_8h_html_a174f339edecd4463df25e673366a2b16aad3aafaeae035f5d1c986b0b59e77458"><div class="ttname"><a href="reactor_8h.html#a174f339edecd4463df25e673366a2b16aad3aafaeae035f5d1c986b0b59e77458">token_and_value</a></div><div class="ttdeci">@ token_and_value</div><div class="ttdef"><b>Definition:</b> reactor.h:366</div></div>
+<div class="ttc" id="areactor__common_8c_html_a96b4b8f74714eae0efcb699281c10f87"><div class="ttname"><a href="reactor__common_8c.html#a96b4b8f74714eae0efcb699281c10f87">_lf_initialize_token_with_value</a></div><div class="ttdeci">lf_token_t * _lf_initialize_token_with_value(lf_token_t *token, void *value, size_t length)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:551</div></div>
 </div><!-- fragment --><p >Set the specified output (or input of a contained reactor) to the specified value.</p>
 <p >This version is used for primitive types such as int, double, etc. as well as the built-in types bool and string. The value is copied and therefore the variable carrying the value can be subsequently modified without changing the output. This can also be used for structs with a type defined by a typedef so that the type designating string does not end in '*'. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -332,8 +354,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a8a4001d12854ff4675f7d119dfb0b952" name="a8a4001d12854ff4675f7d119dfb0b952"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8a4001d12854ff4675f7d119dfb0b952">&#9670;&nbsp;</a></span>_LF_SET_ARRAY</h2>
+<a id="ade8db75c1a1f095de1246663fa86b941" name="ade8db75c1a1f095de1246663fa86b941"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ade8db75c1a1f095de1246663fa86b941">&#9670;&nbsp;</a></span>_LF_SET_ARRAY</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -349,12 +371,6 @@ DESCRIPTION</h1>
           <td></td>
           <td class="paramtype">&#160;</td>
           <td class="paramname">val, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">element_size, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -376,7 +392,6 @@ DESCRIPTION</h1>
 <div class="line">    out-&gt;token = token; \</div>
 <div class="line">    out-&gt;value = token-&gt;value; \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="areactor__common_8c_html_a96b4b8f74714eae0efcb699281c10f87"><div class="ttname"><a href="reactor__common_8c.html#a96b4b8f74714eae0efcb699281c10f87">_lf_initialize_token_with_value</a></div><div class="ttdeci">lf_token_t * _lf_initialize_token_with_value(lf_token_t *token, void *value, size_t length)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:528</div></div>
 </div><!-- fragment --><p >Version of set for output types given as 'type[]' where you want to send a previously dynamically allocated array.</p>
 <p >The deallocation is delegated to downstream reactors, which automatically deallocate when the reference count drops to zero. It also sets the corresponding _is_present variable in the self struct to true (which causes the object message to be sent). </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -387,6 +402,84 @@ DESCRIPTION</h1>
   </dd>
 </dl>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="structlf__token__t.html">lf_token_t</a> </dd></dl>
+
+</div>
+</div>
+<a id="a96ed6842ba6557e9b755f85627fbc600" name="a96ed6842ba6557e9b755f85627fbc600"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a96ed6842ba6557e9b755f85627fbc600">&#9670;&nbsp;</a></span>_LF_SET_COPY_CONSTRUCTOR</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define _LF_SET_COPY_CONSTRUCTOR</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">out, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">cpy_ctor&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> { \</div>
+<div class="line">    out-&gt;copy_constructor = cpy_ctor; \</div>
+<div class="line">} <span class="keywordflow">while</span>(0)</div>
+</div><!-- fragment --><p >Set the destructor used to copy construct "token-&gt;value" received by "in" if "in" is mutable.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">out</td><td>The output port (by name) or input of a contained reactor in form input_name.port_name. </td></tr>
+    <tr><td class="paramname">cpy_ctor</td><td>A pointer to a void* function that takes a pointer argument or NULL to use the memcpy operator. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="acec0cd036d176324a861cf2a2dfb5e1e" name="acec0cd036d176324a861cf2a2dfb5e1e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acec0cd036d176324a861cf2a2dfb5e1e">&#9670;&nbsp;</a></span>_LF_SET_DESTRUCTOR</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define _LF_SET_DESTRUCTOR</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">out, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">dtor&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> { \</div>
+<div class="line">    out-&gt;destructor = dtor; \</div>
+<div class="line">} <span class="keywordflow">while</span>(0)</div>
+</div><!-- fragment --><p >Set the destructor used to free "token-&gt;value" set on "out". That memory will be automatically freed once all downstream reactions no longer need the value.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">out</td><td>The output port (by name) or input of a contained reactor in form input_name.port_name. </td></tr>
+    <tr><td class="paramname">dtor</td><td>A pointer to a void function that takes a pointer argument or NULL to use the default void free(void*) function. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -411,7 +504,7 @@ DESCRIPTION</h1>
 <div class="line">    out-&gt;value = token-&gt;value; \</div>
 <div class="line">    out-&gt;token = token; \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="areactor__common_8c_html_a9df90516cce7d8e01b46acf61db64b8f"><div class="ttname"><a href="reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a></div><div class="ttdeci">lf_token_t * _lf_set_new_array_impl(lf_token_t *token, size_t length, int num_destinations)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1486</div></div>
+<div class="ttc" id="areactor__common_8c_html_a9df90516cce7d8e01b46acf61db64b8f"><div class="ttname"><a href="reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a></div><div class="ttdeci">lf_token_t * _lf_set_new_array_impl(lf_token_t *token, size_t length, int num_destinations)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1509</div></div>
 </div><!-- fragment --><p >Version of set() for output types given as 'type*' that allocates a new object of the type of the specified output port.</p>
 <p >This macro dynamically allocates enough memory to contain one instance of the output datatype and sets the variable named by the argument to point to the newly allocated memory. The user code can then populate it with whatever value it wishes to send.</p>
 <p >This macro also sets the corresponding _is_present variable in the self struct to true (which causes the object message to be sent), </p><dl class="params"><dt>Parameters</dt><dd>
@@ -890,7 +983,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Handles for scheduled triggers. These handles are returned by <a class="el" href="ctarget_8h.html#a1aa6f173caae6390db0a1900245667ef">schedule()</a> functions. The intent is that the handle can be used to cancel a future scheduled event, but this is not implemented yet. </p>
+<p >Handles for scheduled triggers. These handles are returned by <a class="el" href="ctarget__schedule_8h.html#a6778eef97447cf0ba1f0afa8ba3a8dca">lf_schedule()</a> functions. The intent is that the handle can be used to cancel a future scheduled event, but this is not implemented yet. </p>
 
 </div>
 </div>
@@ -1393,7 +1486,7 @@ The absent and present fields need to be compatible with false and true respecti
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Internal version of the <a class="el" href="ctarget_8h.html#a1aa6f173caae6390db0a1900245667ef">schedule()</a> function, used by generated _lf_start_timers() function. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Internal version of the <a class="el" href="ctarget__schedule_8h.html#a6778eef97447cf0ba1f0afa8ba3a8dca">lf_schedule()</a> function, used by generated _lf_start_timers() function. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">trigger</td><td>The action or timer to be triggered. </td></tr>
     <tr><td class="paramname">delay</td><td>Offset of the event release. </td></tr>
@@ -1402,7 +1495,7 @@ The absent and present fields need to be compatible with false and true respecti
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A handle to the event, or 0 if no event was scheduled, or -1 for error.</dd></dl>
-<p>Schedule the specified trigger at current_tag.time plus the offset of the specified trigger plus the delay. See <a class="el" href="ctarget_8h.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a> in <a class="el" href="reactor_8h.html">reactor.h</a> for details. This is the internal implementation shared by both the threaded and non-threaded versions.</p>
+<p>Schedule the specified trigger at current_tag.time plus the offset of the specified trigger plus the delay. See <a class="el" href="ctarget__schedule_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a> in <a class="el" href="reactor_8h.html">reactor.h</a> for details. This is the internal implementation shared by both the threaded and non-threaded versions.</p>
 <p >The value is required to be either NULL or a pointer to a token wrapping the payload. The token carries a reference count, and when the reference count decrements to 0, the will be freed. Hence, it is essential that the payload be in memory allocated using malloc.</p>
 <p >There are three conditions under which this function will not actually put an event on the event queue and decrement the reference count of the token (if there is one), which could result in the payload being freed. In all three cases, this function returns 0. Otherwise, it returns a handle to the scheduled trigger, which is an integer greater than 0.</p>
 <p >The first condition is that a stop has been requested and the trigger offset plus the extra delay is greater than zero. The second condition is that the trigger offset plus the extra delay is greater that the requested stop time (timeout). The third condition is that the trigger argument is null.</p>
@@ -1558,7 +1651,7 @@ The absent and present fields need to be compatible with false and true respecti
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Schedule the specified action with an integer value at a later logical time that depends on whether the action is logical or physical and what its parameter values are. This wraps a copy of the integer value in a token. See <a class="el" href="ctarget_8h.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a> for more details. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Schedule the specified action with an integer value at a later logical time that depends on whether the action is logical or physical and what its parameter values are. This wraps a copy of the integer value in a token. See <a class="el" href="ctarget__schedule_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a> for more details. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">action</td><td>The action to be triggered. </td></tr>
     <tr><td class="paramname">extra_delay</td><td>Extra offset of the event release above that in the action. </td></tr>
@@ -1829,6 +1922,7 @@ The absent and present fields need to be compatible with false and true respecti
 </div><div class="memdoc">
 <p >Return the time of the start of execution in nanoseconds. This is both the starting physical and starting logical time. On many platforms, this is the number of nanoseconds since January 1, 1970, but it is actually platform dependent. </p><dl class="section return"><dt>Returns</dt><dd>A time instant.</dd></dl>
 <p>Return the physical time of the start of execution in nanoseconds. * On many platforms, this is the number of nanoseconds since January 1, 1970, but it is actually platform dependent. * </p><dl class="section return"><dt>Returns</dt><dd>A time instant. </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000007">Deprecated:</a></b></dt><dd></dd></dl>
 
 </div>
 </div>

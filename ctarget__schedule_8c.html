@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: lib/ctarget.c File Reference</title>
+<title>reactor-c: lib/ctarget_schedule.c File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -68,24 +68,36 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#func-members">Functions</a>  </div>
-  <div class="headertitle"><div class="title">ctarget.c File Reference</div></div>
+  <div class="headertitle"><div class="title">ctarget_schedule.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="ctarget_8h_source.html">ctarget.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="ctarget__schedule_8h_source.html">ctarget_schedule.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a1aa6f173caae6390db0a1900245667ef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget_8c.html#a1aa6f173caae6390db0a1900245667ef">schedule</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset)</td></tr>
+<tr class="memitem:a6778eef97447cf0ba1f0afa8ba3a8dca"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget__schedule_8c.html#a6778eef97447cf0ba1f0afa8ba3a8dca">lf_schedule</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset)</td></tr>
+<tr class="separator:a6778eef97447cf0ba1f0afa8ba3a8dca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1aa6f173caae6390db0a1900245667ef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget__schedule_8c.html#a1aa6f173caae6390db0a1900245667ef">schedule</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset)</td></tr>
 <tr class="separator:a1aa6f173caae6390db0a1900245667ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adf022d8e930473c8ec282178a6ac7446"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget_8c.html#adf022d8e930473c8ec282178a6ac7446">schedule_int</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, int value)</td></tr>
+<tr class="memitem:a073ea4406a084a24e71b65936ba39e36"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget__schedule_8c.html#a073ea4406a084a24e71b65936ba39e36">lf_schedule_int</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, int value)</td></tr>
+<tr class="separator:a073ea4406a084a24e71b65936ba39e36"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf022d8e930473c8ec282178a6ac7446"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget__schedule_8c.html#adf022d8e930473c8ec282178a6ac7446">schedule_int</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, int value)</td></tr>
 <tr class="separator:adf022d8e930473c8ec282178a6ac7446"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a738008e8a7b26ec1319c6375700e2e35"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, <a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
+<tr class="memitem:abe3fd30bf6a2689fdb3ec03b4e2f47d1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget__schedule_8c.html#abe3fd30bf6a2689fdb3ec03b4e2f47d1">lf_schedule_token</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, <a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
+<tr class="separator:abe3fd30bf6a2689fdb3ec03b4e2f47d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a738008e8a7b26ec1319c6375700e2e35"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget__schedule_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, <a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
 <tr class="separator:a738008e8a7b26ec1319c6375700e2e35"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9bb637551e80f0245cc8cdb764605f6e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget_8c.html#a9bb637551e80f0245cc8cdb764605f6e">schedule_copy</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset, void *value, int length)</td></tr>
+<tr class="memitem:a6121900834a3152ccd57fe3366a82d9a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget__schedule_8c.html#a6121900834a3152ccd57fe3366a82d9a">lf_schedule_copy</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset, void *value, int length)</td></tr>
+<tr class="separator:a6121900834a3152ccd57fe3366a82d9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9bb637551e80f0245cc8cdb764605f6e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget__schedule_8c.html#a9bb637551e80f0245cc8cdb764605f6e">schedule_copy</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset, void *value, int length)</td></tr>
 <tr class="separator:a9bb637551e80f0245cc8cdb764605f6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0ecdb5df31eef1cff7d639badc3e7ee8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget_8c.html#a0ecdb5df31eef1cff7d639badc3e7ee8">schedule_value</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, void *value, int length)</td></tr>
+<tr class="memitem:a986bb1be3a9e4f71e5b5dde30d9dc6ad"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget__schedule_8c.html#a986bb1be3a9e4f71e5b5dde30d9dc6ad">lf_schedule_value</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, void *value, int length)</td></tr>
+<tr class="separator:a986bb1be3a9e4f71e5b5dde30d9dc6ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ecdb5df31eef1cff7d639badc3e7ee8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget__schedule_8c.html#a0ecdb5df31eef1cff7d639badc3e7ee8">schedule_value</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, void *value, int length)</td></tr>
 <tr class="separator:a0ecdb5df31eef1cff7d639badc3e7ee8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4b54ecc29f72a5aad6733290adb14bf1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget_8c.html#a4b54ecc29f72a5aad6733290adb14bf1">check_deadline</a> (void *self, <a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> invoke_deadline_handler)</td></tr>
+<tr class="memitem:ab3a04dd0a1581844829b28686b6b3c53"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget__schedule_8c.html#ab3a04dd0a1581844829b28686b6b3c53">lf_check_deadline</a> (void *self, <a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> invoke_deadline_handler)</td></tr>
+<tr class="separator:ab3a04dd0a1581844829b28686b6b3c53"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b54ecc29f72a5aad6733290adb14bf1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="ctarget__schedule_8c.html#a4b54ecc29f72a5aad6733290adb14bf1">check_deadline</a> (void *self, <a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> invoke_deadline_handler)</td></tr>
 <tr class="separator:a4b54ecc29f72a5aad6733290adb14bf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -129,6 +141,35 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000015">Deprecated:</a></b></dt><dd>version of 'lf_check_deadline' </dd></dl>
+
+</div>
+</div>
+<a id="ab3a04dd0a1581844829b28686b6b3c53" name="ab3a04dd0a1581844829b28686b6b3c53"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab3a04dd0a1581844829b28686b6b3c53">&#9670;&nbsp;</a></span>lf_check_deadline()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> lf_check_deadline </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td>
+          <td class="paramname"><em>invoke_deadline_handler</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 <p >Check the deadline of the currently executing reaction against the current physical time. If the deadline has passed, invoke the deadline handler (if invoke_deadline_handler parameter is set true) and return true. Otherwise, return false.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -141,14 +182,14 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a1aa6f173caae6390db0a1900245667ef" name="a1aa6f173caae6390db0a1900245667ef"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1aa6f173caae6390db0a1900245667ef">&#9670;&nbsp;</a></span>schedule()</h2>
+<a id="a6778eef97447cf0ba1f0afa8ba3a8dca" name="a6778eef97447cf0ba1f0afa8ba3a8dca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6778eef97447cf0ba1f0afa8ba3a8dca">&#9670;&nbsp;</a></span>lf_schedule()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> schedule </td>
+          <td class="memname"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> lf_schedule </td>
           <td>(</td>
           <td class="paramtype">void *&#160;</td>
           <td class="paramname"><em>action</em>, </td>
@@ -166,7 +207,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Schedule an action to occur with the specified value and time offset with no payload (no value conveyed). See <a class="el" href="ctarget_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a>, which this uses, for details.</p>
+<p >Schedule an action to occur with the specified value and time offset with no payload (no value conveyed). See <a class="el" href="ctarget__schedule_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a>, which this uses, for details.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">action</td><td>Pointer to an action on the self struct. </td></tr>
@@ -178,14 +219,14 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a9bb637551e80f0245cc8cdb764605f6e" name="a9bb637551e80f0245cc8cdb764605f6e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9bb637551e80f0245cc8cdb764605f6e">&#9670;&nbsp;</a></span>schedule_copy()</h2>
+<a id="a6121900834a3152ccd57fe3366a82d9a" name="a6121900834a3152ccd57fe3366a82d9a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6121900834a3152ccd57fe3366a82d9a">&#9670;&nbsp;</a></span>lf_schedule_copy()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> schedule_copy </td>
+          <td class="memname"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> lf_schedule_copy </td>
           <td>(</td>
           <td class="paramtype">void *&#160;</td>
           <td class="paramname"><em>action</em>, </td>
@@ -216,7 +257,7 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p >Schedule an action to occur with the specified value and time offset with a copy of the specified value. If the value is non-null, then it will be copied into newly allocated memory under the assumption that its size is given in the trigger's token object's element_size field multiplied by the specified length.</p>
-<p >See <a class="el" href="ctarget_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a>, which this uses, for details.</p>
+<p >See <a class="el" href="ctarget__schedule_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a>, which this uses, for details.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">action</td><td>Pointer to an action on a self struct. </td></tr>
@@ -230,14 +271,14 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="adf022d8e930473c8ec282178a6ac7446" name="adf022d8e930473c8ec282178a6ac7446"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adf022d8e930473c8ec282178a6ac7446">&#9670;&nbsp;</a></span>schedule_int()</h2>
+<a id="a073ea4406a084a24e71b65936ba39e36" name="a073ea4406a084a24e71b65936ba39e36"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a073ea4406a084a24e71b65936ba39e36">&#9670;&nbsp;</a></span>lf_schedule_int()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> schedule_int </td>
+          <td class="memname"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> lf_schedule_int </td>
           <td>(</td>
           <td class="paramtype">void *&#160;</td>
           <td class="paramname"><em>action</em>, </td>
@@ -261,7 +302,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Schedule the specified action with an integer value at a later logical time that depends on whether the action is logical or physical and what its parameter values are. This wraps a copy of the integer value in a token. See <a class="el" href="ctarget_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a> for more details.</p>
+<p >Schedule the specified action with an integer value at a later logical time that depends on whether the action is logical or physical and what its parameter values are. This wraps a copy of the integer value in a token. See <a class="el" href="ctarget__schedule_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a> for more details.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">action</td><td>The action to be triggered. </td></tr>
@@ -274,14 +315,14 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a738008e8a7b26ec1319c6375700e2e35" name="a738008e8a7b26ec1319c6375700e2e35"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a738008e8a7b26ec1319c6375700e2e35">&#9670;&nbsp;</a></span>schedule_token()</h2>
+<a id="abe3fd30bf6a2689fdb3ec03b4e2f47d1" name="abe3fd30bf6a2689fdb3ec03b4e2f47d1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abe3fd30bf6a2689fdb3ec03b4e2f47d1">&#9670;&nbsp;</a></span>lf_schedule_token()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> schedule_token </td>
+          <td class="memname"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> lf_schedule_token </td>
           <td>(</td>
           <td class="paramtype">void *&#160;</td>
           <td class="paramname"><em>action</em>, </td>
@@ -324,6 +365,198 @@ DESCRIPTION</h1>
 
 </div>
 </div>
+<a id="a986bb1be3a9e4f71e5b5dde30d9dc6ad" name="a986bb1be3a9e4f71e5b5dde30d9dc6ad"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a986bb1be3a9e4f71e5b5dde30d9dc6ad">&#9670;&nbsp;</a></span>lf_schedule_value()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> lf_schedule_value </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>action</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td>
+          <td class="paramname"><em>extra_delay</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>length</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Variant of schedule_token that creates a token to carry the specified value. The value is required to be malloc'd memory with a size equal to the element_size of the specifies action times the length parameter.</p>
+<p >See <a class="el" href="ctarget__schedule_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a>, which this uses, for details.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">action</td><td>The action to be triggered. </td></tr>
+    <tr><td class="paramname">extra_delay</td><td>Extra offset of the event release above that in the action. </td></tr>
+    <tr><td class="paramname">value</td><td>Dynamically allocated memory containing the value to send. </td></tr>
+    <tr><td class="paramname">length</td><td>The length of the array, if it is an array, or 1 for a scalar and 0 for no payload. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>A handle to the event, or 0 if no event was scheduled, or -1 for error. </dd></dl>
+
+</div>
+</div>
+<a id="a1aa6f173caae6390db0a1900245667ef" name="a1aa6f173caae6390db0a1900245667ef"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1aa6f173caae6390db0a1900245667ef">&#9670;&nbsp;</a></span>schedule()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> schedule </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>action</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td>
+          <td class="paramname"><em>offset</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000010">Deprecated:</a></b></dt><dd>version of 'lf_schedule' </dd></dl>
+
+</div>
+</div>
+<a id="a9bb637551e80f0245cc8cdb764605f6e" name="a9bb637551e80f0245cc8cdb764605f6e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9bb637551e80f0245cc8cdb764605f6e">&#9670;&nbsp;</a></span>schedule_copy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> schedule_copy </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>action</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td>
+          <td class="paramname"><em>offset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>length</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000013">Deprecated:</a></b></dt><dd>version of 'lf_schedule_copy' </dd></dl>
+
+</div>
+</div>
+<a id="adf022d8e930473c8ec282178a6ac7446" name="adf022d8e930473c8ec282178a6ac7446"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adf022d8e930473c8ec282178a6ac7446">&#9670;&nbsp;</a></span>schedule_int()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> schedule_int </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>action</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td>
+          <td class="paramname"><em>extra_delay</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>value</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000011">Deprecated:</a></b></dt><dd>version of 'lf_schedule_int' </dd></dl>
+
+</div>
+</div>
+<a id="a738008e8a7b26ec1319c6375700e2e35" name="a738008e8a7b26ec1319c6375700e2e35"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a738008e8a7b26ec1319c6375700e2e35">&#9670;&nbsp;</a></span>schedule_token()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> schedule_token </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>action</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td>
+          <td class="paramname"><em>extra_delay</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td>
+          <td class="paramname"><em>token</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000012">Deprecated:</a></b></dt><dd>version of 'lf_schedule_token' </dd></dl>
+
+</div>
+</div>
 <a id="a0ecdb5df31eef1cff7d639badc3e7ee8" name="a0ecdb5df31eef1cff7d639badc3e7ee8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0ecdb5df31eef1cff7d639badc3e7ee8">&#9670;&nbsp;</a></span>schedule_value()</h2>
 
@@ -361,18 +594,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Variant of schedule_token that creates a token to carry the specified value. The value is required to be malloc'd memory with a size equal to the element_size of the specifies action times the length parameter.</p>
-<p >See <a class="el" href="ctarget_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a>, which this uses, for details.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">action</td><td>The action to be triggered. </td></tr>
-    <tr><td class="paramname">extra_delay</td><td>Extra offset of the event release above that in the action. </td></tr>
-    <tr><td class="paramname">value</td><td>Dynamically allocated memory containing the value to send. </td></tr>
-    <tr><td class="paramname">length</td><td>The length of the array, if it is an array, or 1 for a scalar and 0 for no payload. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A handle to the event, or 0 if no event was scheduled, or -1 for error. </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000014">Deprecated:</a></b></dt><dd>version of 'lf_schedule_value' </dd></dl>
 
 </div>
 </div>
