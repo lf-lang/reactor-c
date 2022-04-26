@@ -1735,6 +1735,9 @@ lf_token_t* writable_copy(lf_token_t* token) {
         // Count allocations to issue a warning if this is never freed.
     } else {
         DEBUG_PRINT("writable_copy: Copy constructor is not NULL. Using copy constructor.");
+        if (token->destructor == NULL) {
+            warning_print("writable_copy: Using non-default copy constructor without setting destructor. Potential memory leak.");
+        }
         copy = token->copy_constructor(token->value);
     }
     // Create a new, dynamically allocated token.

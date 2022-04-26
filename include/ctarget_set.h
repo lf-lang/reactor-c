@@ -74,8 +74,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define lf_set(out, val) _LF_SET(out, val)
 #define SET(out, val) \
-        _Pragma ("Warning \"'SET' is deprecated. Use 'lf_set' instead.\"") \
-        _LF_SET(out, val)
+do { \
+        _Pragma ("Warning \"'SET' is deprecated. Use 'lf_set' instead.\""); \
+        _LF_SET(out, val); \
+} while (0)
 
 /**
  * Version of lf_set for output types given as 'type[]' where you
@@ -91,8 +93,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @see lf_token_t
  */
 #define SET_ARRAY(out, val, elem_size, length) \
-        _Pragma ("Warning \"'SET_ARRAY' is deprecated. Use 'lf_set_array' instead.\"") \
-        _LF_SET_ARRAY(out, val, length)
+do { \
+        _Pragma ("Warning \"'SET_ARRAY' is deprecated. Use 'lf_set_array' instead.\""); \
+        _LF_SET_ARRAY(out, val, length); \
+} while (0)
 
 /**
  * Version of lf_set() for output types given as 'type*' that
@@ -109,8 +113,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param out The output port (by name).
  */
 #define SET_NEW(out) \
-        _Pragma ("Warning \"'SET_NEW' is deprecated. Use 'lf_set_new' instead.\"") \
-        _LF_SET_NEW(out)
+do { \
+        _Pragma ("Warning \"'SET_NEW' is deprecated. Use 'lf_set_new' instead.\""); \
+        _LF_SET_NEW(out); \
+} while (0)
 
 /**
  * Version of lf_set() for output types given as 'type[]'.
@@ -126,8 +132,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param len The length of the array to be sent.
  */
 #define SET_NEW_ARRAY(out, len) \
-        _Pragma ("Warning \"'SET_NEW_ARRAY' is deprecated. Use 'lf_set_new_array' instead.\"") \
-        _LF_SET_NEW_ARRAY(out, len)
+do { \
+        _Pragma ("Warning \"'SET_NEW_ARRAY' is deprecated. Use 'lf_set_new_array' instead.\""); \
+        _LF_SET_NEW_ARRAY(out, len); \
+} while (0)
 
 /**
  * Version of lf_set() for output types given as 'type[number]'.
@@ -139,8 +147,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param out The output port (by name).
  */
 #define SET_PRESENT(out) \
-        _Pragma ("Warning \"'SET_PRESENT' is deprecated. Use 'lf_set_present' instead.\"") \
-        _LF_SET_PRESENT(out)
+do { \
+        _Pragma ("Warning \"'SET_PRESENT' is deprecated. Use 'lf_set_present' instead.\""); \
+        _LF_SET_PRESENT(out); \
+} while (0)
 
 /**
  * Version of lf_set() for output types given as 'type*' or 'type[]' where you want
@@ -153,8 +163,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define lf_set_token(out, newtoken) _LF_SET_TOKEN(out, newtoken)
 #define SET_TOKEN(out, newtoken) \
-        _Pragma ("Warning \"'SET_TOKEN' is deprecated. Use 'lf_set_token' instead.\"") \
-        _LF_SET_TOKEN(out, newtoken)
+do { \
+        _Pragma ("Warning \"'SET_TOKEN' is deprecated. Use 'lf_set_token' instead.\""); \
+        _LF_SET_TOKEN(out, newtoken); \
+} while (0)
 
 /**
  * Set the destructor used to free "token->value" set on "out".
@@ -192,8 +204,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef MODAL_REACTORS
 #define lf_set_mode(mode) _LF_SET_MODE(mode)
 #define SET_MODE(mode) \
-        _Pragma ("Warning \"'SET_MODE' is deprecated. Use 'lf_set_mode' instead.\"") \
-        _LF_SET_MODE(mode)
+do { \
+        _Pragma ("Warning \"'SET_MODE' is deprecated. Use 'lf_set_mode' instead.\""); \
+        _LF_SET_MODE(mode); \
+} while (0)
 #endif // MODAL_REACTORS
 
 #endif // CTARGET_SET

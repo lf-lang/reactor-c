@@ -102,7 +102,7 @@ int lf_compare_tags(tag_t tag1, tag_t tag2) {
  * @deprecated version of 'lf_compare_tags'
  */
 int compare_tags(tag_t tag1, tag_t tag2) {
-	return lf_compare_tags(tag1, tag2);
+    return lf_compare_tags(tag1, tag2);
 }
 
 /**
@@ -122,23 +122,23 @@ int compare_tags(tag_t tag1, tag_t tag2) {
  * @param interval The time interval.
  */
 tag_t _lf_delay_tag(tag_t tag, interval_t interval) {
-	if (tag.time == NEVER || interval == NEVER) return tag;
-	tag_t result = tag;
-	if (interval == 0LL) {
-		// Note that unsigned variables will wrap on overflow.
-		// This is probably the only reasonable thing to do with overflowing
-		// microsteps.
-		result.microstep++;
-	} else {
-		// Note that overflow in C is undefined for signed variables.
-		if (FOREVER - interval < result.time) {
-			result.time = FOREVER;
-		} else {
-			result.time += interval;
-		}
-		result.microstep = 0;
-	}
-	return result;
+    if (tag.time == NEVER || interval == NEVER) return tag;
+    tag_t result = tag;
+    if (interval == 0LL) {
+        // Note that unsigned variables will wrap on overflow.
+        // This is probably the only reasonable thing to do with overflowing
+        // microsteps.
+        result.microstep++;
+    } else {
+        // Note that overflow in C is undefined for signed variables.
+        if (FOREVER - interval < result.time) {
+            result.time = FOREVER;
+        } else {
+            result.time += interval;
+        }
+        result.microstep = 0;
+    }
+    return result;
 }
 
 /**
@@ -146,7 +146,7 @@ tag_t _lf_delay_tag(tag_t tag, interval_t interval) {
  * @deprecated
  */
 interval_t get_elapsed_logical_time() {
-	return lf_time(LF_ELAPSED_LOGICAL);
+    return lf_time(LF_ELAPSED_LOGICAL);
 }
 
 /**
@@ -154,7 +154,7 @@ interval_t get_elapsed_logical_time() {
  * @deprecated
  */
 tag_t get_current_tag() {
-	return lf_tag();
+    return lf_tag();
 }
 
 /**
@@ -162,7 +162,7 @@ tag_t get_current_tag() {
  * @deprecated
  */
 instant_t get_logical_time() {
-	return lf_time(LF_LOGICAL);
+    return lf_time(LF_LOGICAL);
 }
 
 /**
@@ -170,7 +170,7 @@ instant_t get_logical_time() {
  * @deprecated
  */
 microstep_t get_microstep() {
-	return lf_tag().microstep;
+    return lf_tag().microstep;
 }
 
 
@@ -237,7 +237,7 @@ instant_t _lf_physical_time() {
  * @deprecated version of '_lf_physical_time'
  */
 instant_t get_physical_time() {
-	return lf_time(LF_PHYSICAL);
+    return lf_time(LF_PHYSICAL);
 }
 
 /**
@@ -248,7 +248,7 @@ instant_t get_physical_time() {
  * @deprecated
  */
 instant_t get_start_time() {
-	return lf_time(LF_START);
+    return lf_time(LF_START);
 }
 
 /**
@@ -259,7 +259,7 @@ instant_t get_start_time() {
  * @deprecated
  */
 instant_t get_elapsed_physical_time() {
-	return lf_time(LF_ELAPSED_PHYSICAL);
+    return lf_time(LF_ELAPSED_PHYSICAL);
 }
 
 /**
@@ -276,7 +276,7 @@ void lf_set_physical_clock_offset(interval_t offset) {
  * @deprecated version of 'lf_set_physical_clock_offset'
  */
 void set_physical_clock_offset(interval_t offset) {
-	lf_set_physical_clock_offset(offset);
+    lf_set_physical_clock_offset(offset);
 }
 
 /**
@@ -294,85 +294,85 @@ void set_physical_clock_offset(interval_t offset) {
  * @return The number of characters written (not counting the null terminator).
  */
 size_t lf_readable_time(char* buffer, instant_t time) {
-	char* original_buffer = buffer;
-	bool lead = false; // Set to true when first clause has been printed.
-	if (time > WEEKS(1)) {
-		lead = true;
-		size_t printed = lf_comma_separated_time(buffer, time / WEEKS(1));
-		time = time % WEEKS(1);
-		buffer += printed;
-		sprintf(buffer, " weeks");
-		buffer += 6;
-	}
-	if (time > DAYS(1)) {
-		if (lead == true) {
-			sprintf(buffer, ", ");
-			buffer += 2;
-		}
-		lead = true;
-		size_t printed = lf_comma_separated_time(buffer, time / DAYS(1));
-		time = time % DAYS(1);
-		buffer += printed;
-		sprintf(buffer, " days");
-		buffer += 5;
-	}
-	if (time > HOURS(1)) {
-		if (lead == true) {
-			sprintf(buffer, ", ");
-			buffer += 2;
-		}
-		lead = true;
-		size_t printed = lf_comma_separated_time(buffer, time / HOURS(1));
-		time = time % HOURS(1);
-		buffer += printed;
-		sprintf(buffer, " hours");
-		buffer += 6;
-	}
-	if (time > MINUTES(1)) {
-		if (lead == true) {
-			sprintf(buffer, ", ");
-			buffer += 2;
-		}
-		lead = true;
-		size_t printed = lf_comma_separated_time(buffer, time / MINUTES(1));
-		time = time % MINUTES(1);
-		buffer += printed;
-		sprintf(buffer, " minutes");
-		buffer += 8;
-	}
-	if (time > SECONDS(1)) {
-		if (lead == true) {
-			sprintf(buffer, ", ");
-			buffer += 2;
-		}
-		lead = true;
-		size_t printed = lf_comma_separated_time(buffer, time / SECONDS(1));
-		time = time % SECONDS(1);
-		buffer += printed;
-		sprintf(buffer, " seconds");
-		buffer += 8;
-	}
-	if (time > (instant_t)0) {
-		if (lead == true) {
-			sprintf(buffer, ", ");
-			buffer += 2;
-		}
-		const char* units = "nanoseconds";
-		if (time % MSEC(1) == (instant_t) 0) {
-			units = "milliseconds";
-			time = time % MSEC(1);
-		} else if (time % USEC(1) == (instant_t) 0) {
-			units = "microseconds";
-			time = time % USEC(1);
-		}
-		size_t printed = lf_comma_separated_time(buffer, time);
-		buffer += printed;
-		sprintf(buffer, " %s", units);
-		buffer += strlen(units) + 1;
-	} else {
-		sprintf(buffer, "0");
-	}
-	return (buffer - original_buffer);
+    char* original_buffer = buffer;
+    bool lead = false; // Set to true when first clause has been printed.
+    if (time > WEEKS(1)) {
+        lead = true;
+        size_t printed = lf_comma_separated_time(buffer, time / WEEKS(1));
+        time = time % WEEKS(1);
+        buffer += printed;
+        sprintf(buffer, " weeks");
+        buffer += 6;
+    }
+    if (time > DAYS(1)) {
+        if (lead == true) {
+            sprintf(buffer, ", ");
+            buffer += 2;
+        }
+        lead = true;
+        size_t printed = lf_comma_separated_time(buffer, time / DAYS(1));
+        time = time % DAYS(1);
+        buffer += printed;
+        sprintf(buffer, " days");
+        buffer += 5;
+    }
+    if (time > HOURS(1)) {
+        if (lead == true) {
+            sprintf(buffer, ", ");
+            buffer += 2;
+        }
+        lead = true;
+        size_t printed = lf_comma_separated_time(buffer, time / HOURS(1));
+        time = time % HOURS(1);
+        buffer += printed;
+        sprintf(buffer, " hours");
+        buffer += 6;
+    }
+    if (time > MINUTES(1)) {
+        if (lead == true) {
+            sprintf(buffer, ", ");
+            buffer += 2;
+        }
+        lead = true;
+        size_t printed = lf_comma_separated_time(buffer, time / MINUTES(1));
+        time = time % MINUTES(1);
+        buffer += printed;
+        sprintf(buffer, " minutes");
+        buffer += 8;
+    }
+    if (time > SECONDS(1)) {
+        if (lead == true) {
+            sprintf(buffer, ", ");
+            buffer += 2;
+        }
+        lead = true;
+        size_t printed = lf_comma_separated_time(buffer, time / SECONDS(1));
+        time = time % SECONDS(1);
+        buffer += printed;
+        sprintf(buffer, " seconds");
+        buffer += 8;
+    }
+    if (time > (instant_t)0) {
+        if (lead == true) {
+            sprintf(buffer, ", ");
+            buffer += 2;
+        }
+        const char* units = "nanoseconds";
+        if (time % MSEC(1) == (instant_t) 0) {
+            units = "milliseconds";
+            time = time % MSEC(1);
+        } else if (time % USEC(1) == (instant_t) 0) {
+            units = "microseconds";
+            time = time % USEC(1);
+        }
+        size_t printed = lf_comma_separated_time(buffer, time);
+        buffer += printed;
+        sprintf(buffer, " %s", units);
+        buffer += strlen(units) + 1;
+    } else {
+        sprintf(buffer, "0");
+    }
+    return (buffer - original_buffer);
 }
 
 /**
@@ -386,7 +386,7 @@ size_t lf_readable_time(char* buffer, instant_t time) {
  *  the null terminator).
  */
 size_t lf_comma_separated_time(char* buffer, instant_t time) {
-	size_t result = 0; // The number of characters printed.
+    size_t result = 0; // The number of characters printed.
     // If the number is zero, print it and return.
     if (time == (instant_t)0) {
         sprintf(buffer, "0");
@@ -394,9 +394,9 @@ size_t lf_comma_separated_time(char* buffer, instant_t time) {
     }
     // If the number is negative, print a minus sign.
     if (time < (instant_t)0) {
-    	sprintf(buffer, "-");
-    	buffer++;
-    	result++;
+        sprintf(buffer, "-");
+        buffer++;
+        result++;
     }
     int count = 0;
     // Assume the time value is no larger than 64 bits.
@@ -469,8 +469,8 @@ tag_t lf_tag() {
  * - Getting the logical time
  * lf_time(LF_LOGICAL)
  * 
- * @param type A field in an enum specifying the tag type. 
- *             See enum "lf_tag_type" above.
+ * @param type A field in an enum specifying the time type. 
+ *             See enum "lf_time_type" above.
  * @return The desired time
  */
 instant_t lf_time(lf_time_type type) {
