@@ -381,7 +381,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         // Apply a jitter attenuator to the estimated clock error to prevent
         // large jumps in the underlying clock.
         // Note that estimated_clock_error is calculated using lf_time_physical() which includes
-        // the _lf_global_physical_clock_offset adjustment.
+        // the _lf_time_physical_clock_offset adjustment.
         adjustment = estimated_clock_error / _LF_CLOCK_SYNC_ATTENUATION;
 
         // FIXME: Adjust drift.
@@ -427,7 +427,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         // which means we can now adjust the clock offset.
         // For the AVG algorithm, history is a running average and can be directly
         // applied                                                 
-        _lf_global_physical_clock_offset += _lf_rti_socket_stat.history;
+        _lf_time_physical_clock_offset += _lf_rti_socket_stat.history;
         // @note AVG and SD will be zero if collect-stats is set to false
         LOG_PRINT("Clock sync:"
                     " New offset: %lld."
@@ -436,12 +436,12 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
                     " (SD): %lld."
                     " Local round trip delay: %lld."
                     " Test offset: %lld.",
-                    _lf_global_physical_clock_offset,
+                    _lf_time_physical_clock_offset,
                     network_round_trip_delay,
                     stats.average,
                     stats.standard_deviation,
                     _lf_rti_socket_stat.local_delay,
-                    _lf_global_test_physical_clock_offset);
+                    _lf_time_test_physical_clock_offset);
         // Reset the stats
         reset_socket_stat(&_lf_rti_socket_stat);
         // Set the last instant at which the clocks were synchronized

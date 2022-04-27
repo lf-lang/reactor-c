@@ -58,7 +58,7 @@ instant_t start_time = NEVER;
  * Initially set according to the RTI's clock in federated
  * programs.
  */
-interval_t _lf_global_physical_clock_offset = 0LL;
+interval_t _lf_time_physical_clock_offset = 0LL;
 
 /**
  * A measure of calculating the drift between the federate's
@@ -72,7 +72,7 @@ interval_t _lf_global_physical_clock_drift = 0LL;
  * This offset is especially useful to test clock synchronization on the
  * same machine.
  */
-interval_t _lf_global_test_physical_clock_offset = 0LL;
+interval_t _lf_time_test_physical_clock_offset = 0LL;
 
 /**
  * Stores the last reported absolute snapshot of the 
@@ -85,7 +85,7 @@ instant_t _lf_last_reported_physical_time_ns = 0LL;
  * when accessed by get_physical_time(). This will be an epoch time
  * (number of nanoseconds since Jan. 1, 1970), as reported when
  * you call lf_clock_gettime(CLOCK_REALTIME, ...). This differs from
- * _lf_last_reported_physical_time_ns by _lf_global_physical_clock_offset
+ * _lf_last_reported_physical_time_ns by _lf_time_physical_clock_offset
  * plus any calculated drift adjustement, which are adjustments made
  * by clock synchronization.
  */
@@ -218,10 +218,10 @@ instant_t _lf_physical_time() {
     
     // Adjust the reported clock with the appropriate offsets
     instant_t adjusted_clock_ns = _lf_last_reported_unadjusted_physical_time_ns
-            + _lf_global_physical_clock_offset;
+            + _lf_time_physical_clock_offset;
 
     // Apply the test offset
-    adjusted_clock_ns += _lf_global_test_physical_clock_offset;
+    adjusted_clock_ns += _lf_time_test_physical_clock_offset;
 
     // if (_lf_global_physical_clock_drift != 0LL
     //         && _lf_last_clock_sync_instant != 0LL) {
@@ -241,7 +241,7 @@ instant_t _lf_physical_time() {
     DEBUG_PRINT("Physical time: %lld. Elapsed: %lld. Offset: %lld",
             _lf_last_reported_physical_time_ns,
             _lf_last_reported_physical_time_ns - start_time,
-            _lf_global_physical_clock_offset + _lf_global_test_physical_clock_offset);
+            _lf_time_physical_clock_offset + _lf_time_test_physical_clock_offset);
 
     return _lf_last_reported_physical_time_ns;
 }
@@ -329,7 +329,7 @@ instant_t _lf_time(_lf_time_type type) {
  * added to what it would have returned before the call.
  */
 void lf_set_physical_clock_offset(interval_t offset) {
-    _lf_global_test_physical_clock_offset += offset;
+    _lf_time_test_physical_clock_offset += offset;
 }
 
 /**

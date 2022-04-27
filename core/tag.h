@@ -76,7 +76,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Initially set according to the RTI's clock in federated
  * programs.
  */
-extern interval_t _lf_global_physical_clock_offset;
+extern interval_t _lf_time_physical_clock_offset;
 
 /**
  * A test offset that is applied to the clock.
@@ -84,7 +84,7 @@ extern interval_t _lf_global_physical_clock_offset;
  * This offset is especially useful to test clock synchronization on the
  * same machine.
  */
-extern interval_t _lf_global_test_physical_clock_offset;
+extern interval_t _lf_time_test_physical_clock_offset;
 
 /**
  * Offset to _LF_CLOCK that would convert it
@@ -95,7 +95,7 @@ extern interval_t _lf_global_test_physical_clock_offset;
  * For CLOCK_MONOTONIC, it is the difference between those
  * clocks at the start of the execution.
  */
-extern interval_t _lf_epoch_offset;
+extern interval_t _lf_time_epoch_offset;
 
 /**
  * A tag is a time, microstep pair.
