@@ -72,6 +72,32 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define BILLION 1000000000LL
 
 /**
+ * Global physical clock offset.
+ * Initially set according to the RTI's clock in federated
+ * programs.
+ */
+extern interval_t _lf_time_physical_clock_offset;
+
+/**
+ * A test offset that is applied to the clock.
+ * The clock synchronization algorithm must correct for this offset.
+ * This offset is especially useful to test clock synchronization on the
+ * same machine.
+ */
+extern interval_t _lf_time_test_physical_clock_offset;
+
+/**
+ * Offset to _LF_CLOCK that would convert it
+ * to epoch time. This is applied to the physical clock
+ * to get a more meaningful and universal time.
+ * 
+ * For CLOCK_REALTIME, this offset is always zero.
+ * For CLOCK_MONOTONIC, it is the difference between those
+ * clocks at the start of the execution.
+ */
+extern interval_t _lf_time_epoch_offset;
+
+/**
  * A tag is a time, microstep pair.
  */
 typedef struct {
@@ -95,19 +121,8 @@ typedef tag_t tag_interval_t;
  * @param tag2
  * @return -1, 0, or 1 depending on the relation.
  */
-int lf_compare_tags(tag_t tag1, tag_t tag2);
+int lf_tag_compare(tag_t tag1, tag_t tag2);
 DEPRECATED(int compare_tags(tag_t tag1, tag_t tag2));
-
-/**
- * An enum for specifying the desired tag when calling "lf_time"
- */
-typedef enum _lf_time_type {
-    LF_LOGICAL,
-    LF_PHYSICAL,
-    LF_ELAPSED_LOGICAL,
-    LF_ELAPSED_PHYSICAL,
-    LF_START
-} lf_time_type;
 
 /**
  * Return the current tag, a logical time, microstep pair.
@@ -115,30 +130,15 @@ typedef enum _lf_time_type {
 tag_t lf_tag();
 
 /**
- * Get the time specified by "type".
- * 
- * Example use cases:
- * - Getting the starting time:
- * lf_time(LF_START)
- * 
- * - Getting the elapsed physical time:
- * lf_time(LF_ELAPSED_PHYSICAL)
- * 
- * - Getting the logical time
- * lf_time(LF_LOGICAL)
- * 
- * @param type A field in an enum specifying the tag type. 
- *             See enum "lf_tag_type" above.
- * @return The desired time
+ * Return the current tag, a logical time, microstep pair.
  */
-instant_t lf_time(lf_time_type type);
+DEPRECATED(tag_t get_current_tag(void));
 
 /**
- * Return the elapsed logical time in nanoseconds
- * since the start of execution.
- * @return A time interval.
+ * Return the current microstep.
  */
-DEPRECATED(interval_t get_elapsed_logical_time(void));
+DEPRECATED(microstep_t get_microstep(void));
+
 
 /**
  * Store into the specified buffer a string giving a human-readable
@@ -168,49 +168,52 @@ size_t lf_readable_time(char* buffer, instant_t time);
 size_t lf_comma_separated_time(char* buffer, instant_t time);
 
 /**
+ * An enum for specifying the desired tag when calling "lf_time"
+ */
+typedef enum _lf_time_type {
+    LF_LOGICAL,
+    LF_PHYSICAL,
+    LF_ELAPSED_LOGICAL,
+    LF_ELAPSED_PHYSICAL,
+    LF_START
+} _lf_time_type;
+
+/**
+ * Get the time specified by "type".
+ * 
+ * Example use cases:
+ * - Getting the starting time:
+ * lf_time_start()
+ * 
+ * - Getting the elapsed physical time:
+ * lf_time_physical_elapsed()
+ * 
+ * - Getting the logical time
+ * lf_time_logical()
+ * 
+ * @param type A field in an enum specifying the time type. 
+ *             See enum "lf_time_type" above.
+ * @return The desired time
+ */
+instant_t _lf_time(_lf_time_type type);
+
+/**
  * Return the current logical time in nanoseconds.
  * On many platforms, this is the number of nanoseconds
  * since January 1, 1970, but it is actually platform dependent.
  * 
  * @return A time instant.
  */
+instant_t lf_time_logical(void);
 DEPRECATED(instant_t get_logical_time(void));
 
 /**
- * Return the current tag, a logical time, microstep pair.
+ * Return the elapsed logical time in nanoseconds
+ * since the start of execution.
+ * @return A time interval.
  */
-DEPRECATED(tag_t get_current_tag(void));
-
-/**
- * Return the current microstep.
- */
-DEPRECATED(microstep_t get_microstep(void));
-
-/**
- * Global physical clock offset.
- * Initially set according to the RTI's clock in federated
- * programs.
- */
-extern interval_t _lf_global_physical_clock_offset;
-
-/**
- * A test offset that is applied to the clock.
- * The clock synchronization algorithm must correct for this offset.
- * This offset is especially useful to test clock synchronization on the
- * same machine.
- */
-extern interval_t _lf_global_test_physical_clock_offset;
-
-/**
- * Offset to _LF_CLOCK that would convert it
- * to epoch time. This is applied to the physical clock
- * to get a more meaningful and universal time.
- * 
- * For CLOCK_REALTIME, this offset is always zero.
- * For CLOCK_MONOTONIC, it is the difference between those
- * clocks at the start of the execution.
- */
-extern interval_t _lf_epoch_offset;
+interval_t lf_time_logical_elapsed(void);
+DEPRECATED(interval_t get_elapsed_logical_time(void));
 
 /**
  * Return the current physical time in nanoseconds.
@@ -218,6 +221,7 @@ extern interval_t _lf_epoch_offset;
  * since January 1, 1970, but it is actually platform dependent.
  * @return A time instant.
  */
+instant_t lf_time_physical(void);
 DEPRECATED(instant_t get_physical_time(void));
 
 /**
@@ -226,7 +230,17 @@ DEPRECATED(instant_t get_physical_time(void));
  * physical start time as measured by get_physical_time(void) when
  * the program was started.
  */
+instant_t lf_time_physical_elapsed(void);
 DEPRECATED(instant_t get_elapsed_physical_time(void));
+
+/**
+ * Return the physical and logical time of the start of execution in nanoseconds.
+ * On many platforms, this is the number of nanoseconds
+ * since January 1, 1970, but it is actually platform dependent. 
+ * @return A time instant.
+ */
+instant_t lf_time_start(void);
+DEPRECATED(instant_t get_start_time(void));
 
 /**
  * Set a fixed offset to the physical clock.
@@ -236,14 +250,6 @@ DEPRECATED(instant_t get_elapsed_physical_time(void));
  */
 void lf_set_physical_clock_offset(interval_t offset);
 DEPRECATED(void set_physical_clock_offset(interval_t offset));
-
-/**
- * Return the physical and logical time of the start of execution in nanoseconds.
- * On many platforms, this is the number of nanoseconds
- * since January 1, 1970, but it is actually platform dependent. 
- * @return A time instant.
- */
-DEPRECATED(instant_t get_start_time(void));
 
 /**
  * Delay a tag by the specified time interval to realize the "after" keyword.

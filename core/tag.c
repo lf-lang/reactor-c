@@ -58,7 +58,7 @@ instant_t start_time = NEVER;
  * Initially set according to the RTI's clock in federated
  * programs.
  */
-interval_t _lf_global_physical_clock_offset = 0LL;
+interval_t _lf_time_physical_clock_offset = 0LL;
 
 /**
  * A measure of calculating the drift between the federate's
@@ -72,7 +72,47 @@ interval_t _lf_global_physical_clock_drift = 0LL;
  * This offset is especially useful to test clock synchronization on the
  * same machine.
  */
-interval_t _lf_global_test_physical_clock_offset = 0LL;
+interval_t _lf_time_test_physical_clock_offset = 0LL;
+
+/**
+ * Stores the last reported absolute snapshot of the 
+ * physical clock.
+ */
+instant_t _lf_last_reported_physical_time_ns = 0LL;
+
+/**
+ * Records the most recent time reported by the physical clock
+ * when accessed by get_physical_time(). This will be an epoch time
+ * (number of nanoseconds since Jan. 1, 1970), as reported when
+ * you call lf_clock_gettime(CLOCK_REALTIME, ...). This differs from
+ * _lf_last_reported_physical_time_ns by _lf_time_physical_clock_offset
+ * plus any calculated drift adjustement, which are adjustments made
+ * by clock synchronization.
+ */
+instant_t _lf_last_reported_unadjusted_physical_time_ns = NEVER;
+
+/**
+ * Return the current tag, a logical time, microstep pair.
+ */
+tag_t lf_tag() {
+    return current_tag;
+}
+
+/**
+ * Return the current tag, a logical time, microstep pair.
+ * @deprecated
+ */
+tag_t get_current_tag() {
+    return lf_tag();
+}
+
+/**
+ * Return the current microstep.
+ * @deprecated
+ */
+microstep_t get_microstep() {
+    return lf_tag().microstep;
+}
 
 /**
  * Compare two tags. Return -1 if the first is less than
@@ -84,7 +124,7 @@ interval_t _lf_global_test_physical_clock_offset = 0LL;
  * @param tag2
  * @return -1, 0, or 1 depending on the relation.
  */
-int lf_compare_tags(tag_t tag1, tag_t tag2) {
+int lf_tag_compare(tag_t tag1, tag_t tag2) {
     if (tag1.time < tag2.time) {
         return -1;
     } else if (tag1.time > tag2.time) {
@@ -99,10 +139,10 @@ int lf_compare_tags(tag_t tag1, tag_t tag2) {
 }
 
 /**
- * @deprecated version of 'lf_compare_tags'
+ * @deprecated version of 'lf_tag_compare'
  */
 int compare_tags(tag_t tag1, tag_t tag2) {
-    return lf_compare_tags(tag1, tag2);
+    return lf_tag_compare(tag1, tag2);
 }
 
 /**
@@ -142,54 +182,27 @@ tag_t _lf_delay_tag(tag_t tag, interval_t interval) {
 }
 
 /**
- * Return the elapsed logical time in nanoseconds since the start of execution.
- * @deprecated
- */
-interval_t get_elapsed_logical_time() {
-    return lf_time(LF_ELAPSED_LOGICAL);
-}
-
-/**
- * Return the current tag, a logical time, microstep pair.
- * @deprecated
- */
-tag_t get_current_tag() {
-    return lf_tag();
-}
-
-/**
  * Return the current logical time in nanoseconds since January 1, 1970.
- * @deprecated
  */
-instant_t get_logical_time() {
-    return lf_time(LF_LOGICAL);
+instant_t lf_time_logical() {
+    return _lf_time(LF_LOGICAL);
 }
+/**
+ * @deprecated version of "lf_time_logical"
+ */
+instant_t get_logical_time() { return lf_time_logical(); }
 
 /**
- * Return the current microstep.
- * @deprecated
+ * Return the elapsed logical time in nanoseconds since the start of execution.
  */
-microstep_t get_microstep() {
-    return lf_tag().microstep;
+interval_t lf_time_logical_elapsed() {
+    return _lf_time(LF_ELAPSED_LOGICAL);
 }
-
-
 /**
- * Stores the last reported absolute snapshot of the 
- * physical clock.
+ * @deprecated version of "lf_time_logical_elapsed"
  */
-instant_t _lf_last_reported_physical_time_ns = 0LL;
+interval_t get_elapsed_logical_time() { return lf_time_logical_elapsed(); }
 
-/**
- * Records the most recent time reported by the physical clock
- * when accessed by get_physical_time(). This will be an epoch time
- * (number of nanoseconds since Jan. 1, 1970), as reported when
- * you call lf_clock_gettime(CLOCK_REALTIME, ...). This differs from
- * _lf_last_reported_physical_time_ns by _lf_global_physical_clock_offset
- * plus any calculated drift adjustement, which are adjustments made
- * by clock synchronization.
- */
-instant_t _lf_last_reported_unadjusted_physical_time_ns = NEVER;
 
 /**
  * Return the current physical time in nanoseconds since January 1, 1970,
@@ -205,10 +218,10 @@ instant_t _lf_physical_time() {
     
     // Adjust the reported clock with the appropriate offsets
     instant_t adjusted_clock_ns = _lf_last_reported_unadjusted_physical_time_ns
-            + _lf_global_physical_clock_offset;
+            + _lf_time_physical_clock_offset;
 
     // Apply the test offset
-    adjusted_clock_ns += _lf_global_test_physical_clock_offset;
+    adjusted_clock_ns += _lf_time_test_physical_clock_offset;
 
     // if (_lf_global_physical_clock_drift != 0LL
     //         && _lf_last_clock_sync_instant != 0LL) {
@@ -228,38 +241,85 @@ instant_t _lf_physical_time() {
     DEBUG_PRINT("Physical time: %lld. Elapsed: %lld. Offset: %lld",
             _lf_last_reported_physical_time_ns,
             _lf_last_reported_physical_time_ns - start_time,
-            _lf_global_physical_clock_offset + _lf_global_test_physical_clock_offset);
+            _lf_time_physical_clock_offset + _lf_time_test_physical_clock_offset);
 
     return _lf_last_reported_physical_time_ns;
 }
 
 /**
- * @deprecated version of '_lf_physical_time'
+ * Return the current physical time in nanoseconds since January 1, 1970,
+ * adjusted by the global physical time offset.
  */
-instant_t get_physical_time() {
-    return lf_time(LF_PHYSICAL);
+instant_t lf_time_physical() {
+    return _lf_time(LF_PHYSICAL);
 }
-
 /**
- * Return the physical time of the start of execution in nanoseconds. * 
- * On many platforms, this is the number of nanoseconds
- * since January 1, 1970, but it is actually platform dependent. * 
- * @return A time instant.
- * @deprecated
+ * @deprecated version of "lf_time_physical"
  */
-instant_t get_start_time() {
-    return lf_time(LF_START);
-}
+instant_t get_physical_time() { return lf_time_physical(); }
 
 /**
  * Return the elapsed physical time in nanoseconds.
  * This is the time returned by get_physical_time() minus the
  * physical start time as measured by get_physical_time() when
  * the program was started.
- * @deprecated
  */
-instant_t get_elapsed_physical_time() {
-    return lf_time(LF_ELAPSED_PHYSICAL);
+instant_t lf_time_physical_elapsed() {
+    return _lf_time(LF_ELAPSED_PHYSICAL);
+}
+/**
+ * @deprecated version of "lf_time_physical_elapsed"
+ */
+instant_t get_elapsed_physical_time() { return lf_time_physical_elapsed(); }
+
+/**
+ * Return the physical time of the start of execution in nanoseconds. * 
+ * On many platforms, this is the number of nanoseconds
+ * since January 1, 1970, but it is actually platform dependent. * 
+ * @return A time instant.
+ */
+instant_t lf_time_start(void) {
+    return _lf_time(LF_START);
+}
+/**
+ * @deprecated version of "lf_time_start"
+ */
+instant_t get_start_time() { return lf_time_start(); }
+
+
+/**
+ * Get the time specified by "type".
+ * 
+ * Example use cases:
+ * - Getting the starting time:
+ * lf_time_start()
+ * 
+ * - Getting the elapsed physical time:
+ * lf_time_physical_elapsed()
+ * 
+ * - Getting the logical time
+ * lf_time_logical()
+ * 
+ * @param type A field in an enum specifying the time type. 
+ *             See enum "lf_time_type" above.
+ * @return The desired time
+ */
+instant_t _lf_time(_lf_time_type type) {
+    switch (type)
+    {
+    case LF_LOGICAL:
+        return current_tag.time;
+    case LF_PHYSICAL:
+        return _lf_physical_time();
+    case LF_ELAPSED_LOGICAL:
+        return current_tag.time - start_time;
+    case LF_ELAPSED_PHYSICAL:
+        return _lf_physical_time() - physical_start_time;
+    case LF_START:
+        return start_time;
+    default:
+        return NEVER;
+    }
 }
 
 /**
@@ -269,7 +329,7 @@ instant_t get_elapsed_physical_time() {
  * added to what it would have returned before the call.
  */
 void lf_set_physical_clock_offset(interval_t offset) {
-    _lf_global_test_physical_clock_offset += offset;
+    _lf_time_test_physical_clock_offset += offset;
 }
 
 /**
@@ -447,46 +507,3 @@ tag_t _lf_convert_volatile_tag_to_nonvolatile(tag_t volatile vtag) {
     return vtag;
 }
 #endif
-
-/**
- * Return the current tag, a logical time, microstep pair.
- */
-tag_t lf_tag() {
-    return current_tag;
-}
-
-
-/**
- * Get the time specified by "type".
- * 
- * Example use cases:
- * - Getting the starting time:
- * lf_time(LF_START)
- * 
- * - Getting the elapsed physical time:
- * lf_time(LF_ELAPSED_PHYSICAL)
- * 
- * - Getting the logical time
- * lf_time(LF_LOGICAL)
- * 
- * @param type A field in an enum specifying the time type. 
- *             See enum "lf_time_type" above.
- * @return The desired time
- */
-instant_t lf_time(lf_time_type type) {
-    switch (type)
-    {
-    case LF_LOGICAL:
-        return current_tag.time;
-    case LF_PHYSICAL:
-        return _lf_physical_time();
-    case LF_ELAPSED_LOGICAL:
-        return current_tag.time - start_time;
-    case LF_ELAPSED_PHYSICAL:
-        return _lf_physical_time() - physical_start_time;
-    case LF_START:
-        return start_time;
-    default:
-        return NEVER;
-    }
-}

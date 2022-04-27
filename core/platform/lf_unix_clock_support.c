@@ -8,7 +8,7 @@
  * For CLOCK_MONOTONIC, it is the difference between those
  * clocks at the start of the execution.
  */
-interval_t _lf_epoch_offset = 0LL;
+interval_t _lf_time_epoch_offset = 0LL;
 
 /**
  * Convert a _lf_time_spec_t ('tp') to an instant_t representation in
@@ -40,9 +40,9 @@ struct timespec convert_ns_to_timespec(instant_t t) {
 void calculate_epoch_offset(void) {
     if (_LF_CLOCK == CLOCK_REALTIME) {
         // Set the epoch offset to zero (see tag.h)
-        _lf_epoch_offset = 0LL;
+        _lf_time_epoch_offset = 0LL;
     } else {
-        // Initialize _lf_epoch_offset to the difference between what is
+        // Initialize _lf_time_epoch_offset to the difference between what is
         // reported by whatever clock LF is using (e.g. CLOCK_MONOTONIC) and
         // what is reported by CLOCK_REALTIME.
         struct timespec physical_clock_snapshot, real_time_start;
@@ -54,7 +54,7 @@ void calculate_epoch_offset(void) {
         clock_gettime(CLOCK_REALTIME, &real_time_start);
         long long real_time_start_ns = convert_timespec_to_ns(real_time_start);
 
-        _lf_epoch_offset = real_time_start_ns - physical_clock_snapshot_ns;
+        _lf_time_epoch_offset = real_time_start_ns - physical_clock_snapshot_ns;
     }
 }
 
@@ -84,8 +84,8 @@ int lf_clock_gettime(instant_t* t) {
     instant_t tp_in_ns = convert_timespec_to_ns(tp);
 
     // We need to apply the epoch offset if it is not zero
-    if (_lf_epoch_offset != 0) {
-        tp_in_ns += _lf_epoch_offset;
+    if (_lf_time_epoch_offset != 0) {
+        tp_in_ns += _lf_time_epoch_offset;
     }
     
     if (t == NULL) {
