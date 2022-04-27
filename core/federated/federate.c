@@ -1726,7 +1726,7 @@ void handle_tagged_message(int socket, int fed_id) {
     _lf_increment_global_tag_barrier(intended_tag);
 #endif
     LOG_PRINT("Received message with tag: (%lld, %u), Current tag: (%lld, %u).",
-            intended_tag.time - start_time, intended_tag.microstep, lf_time_elapsed_logical(), lf_tag().microstep);
+            intended_tag.time - start_time, intended_tag.microstep, lf_time_logical_elapsed(), lf_tag().microstep);
 
     // Read the payload.
     // Allocate memory for the message contents.

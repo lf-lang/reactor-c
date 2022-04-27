@@ -195,13 +195,13 @@ instant_t get_logical_time() { return lf_time_logical(); }
 /**
  * Return the elapsed logical time in nanoseconds since the start of execution.
  */
-interval_t lf_time_elapsed_logical() {
+interval_t lf_time_logical_elapsed() {
     return _lf_time(LF_ELAPSED_LOGICAL);
 }
 /**
- * @deprecated version of "lf_time_elapsed_logical"
+ * @deprecated version of "lf_time_logical_elapsed"
  */
-interval_t get_elapsed_logical_time() { return lf_time_elapsed_logical(); }
+interval_t get_elapsed_logical_time() { return lf_time_logical_elapsed(); }
 
 
 /**
@@ -264,13 +264,13 @@ instant_t get_physical_time() { return lf_time_physical(); }
  * physical start time as measured by get_physical_time() when
  * the program was started.
  */
-instant_t lf_time_elapsed_physical() {
+instant_t lf_time_physical_elapsed() {
     return _lf_time(LF_ELAPSED_PHYSICAL);
 }
 /**
- * @deprecated version of "lf_time_elapsed_physical"
+ * @deprecated version of "lf_time_physical_elapsed"
  */
-instant_t get_elapsed_physical_time() { return lf_time_elapsed_physical(); }
+instant_t get_elapsed_physical_time() { return lf_time_physical_elapsed(); }
 
 /**
  * Return the physical time of the start of execution in nanoseconds. * 
@@ -295,7 +295,7 @@ instant_t get_start_time() { return lf_time_start(); }
  * lf_time_start()
  * 
  * - Getting the elapsed physical time:
- * lf_time_elapsed_physical()
+ * lf_time_physical_elapsed()
  * 
  * - Getting the logical time
  * lf_time_logical()

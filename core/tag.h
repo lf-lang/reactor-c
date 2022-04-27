@@ -186,7 +186,7 @@ typedef enum _lf_time_type {
  * lf_time_start()
  * 
  * - Getting the elapsed physical time:
- * lf_time_elapsed_physical()
+ * lf_time_physical_elapsed()
  * 
  * - Getting the logical time
  * lf_time_logical()
@@ -212,7 +212,7 @@ DEPRECATED(instant_t get_logical_time(void));
  * since the start of execution.
  * @return A time interval.
  */
-interval_t lf_time_elapsed_logical(void);
+interval_t lf_time_logical_elapsed(void);
 DEPRECATED(interval_t get_elapsed_logical_time(void));
 
 /**
@@ -230,7 +230,7 @@ DEPRECATED(instant_t get_physical_time(void));
  * physical start time as measured by get_physical_time(void) when
  * the program was started.
  */
-instant_t lf_time_elapsed_physical(void);
+instant_t lf_time_physical_elapsed(void);
 DEPRECATED(instant_t get_elapsed_physical_time(void));
 
 /**
