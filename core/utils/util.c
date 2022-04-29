@@ -67,7 +67,7 @@ int print_message_level = -1;
 /**
  * Return the federate ID or -1 if this program is not part of a federation.
  */
-int get_fed_id() {
+int lf_fed_id() {
 	return _lf_my_fed_id;
 }
 
@@ -129,11 +129,18 @@ void _lf_message_print(
  * where n is the federate ID.
  * The arguments are just like printf().
  */
-void info_print(const char* format, ...) {
-    va_list args;
+void lf_print(const char* format, ...) {
+	va_list args;
     va_start (args, format);
+    lf_vprint(format, args);
+	va_end (args);
+}
+
+/**
+ * varargs alternative of "lf_print"
+ */
+void lf_vprint(const char* format, va_list args) {
     _lf_message_print(0, "", format, args, LOG_LEVEL_INFO);
-    va_end (args);
 }
 
 /**
@@ -144,12 +151,20 @@ void info_print(const char* format, ...) {
  * where n is the federate ID.
  * The arguments are just like printf().
  */
-void log_print(const char* format, ...) {
-    va_list args;
+void lf_print_log(const char* format, ...) {
+	va_list args;
     va_start (args, format);
-    _lf_message_print(0, "LOG: ", format, args, LOG_LEVEL_LOG);
-    va_end (args);
+	lf_vprint_log(format, args);
+	va_end (args);
 }
+
+/**
+ * varargs alternative of "lf_print_log"
+ */
+void lf_vprint_log(const char* format, va_list args) {
+    _lf_message_print(0, "LOG: ", format, args, LOG_LEVEL_LOG);
+}
+
 
 /**
  * Report an debug message on stdout with the prefix
@@ -159,33 +174,54 @@ void log_print(const char* format, ...) {
  * where n is the federate ID.
  * The arguments are just like printf().
  */
-void debug_print(const char* format, ...) {
+void lf_print_debug(const char* format, ...) {
     va_list args;
     va_start (args, format);
-    _lf_message_print(0, "DEBUG: ", format, args, LOG_LEVEL_DEBUG);
+    lf_vprint_debug(format, args);
     va_end (args);
+}
+
+/**
+ * varargs alternative of "lf_print_debug"
+ */
+void lf_vprint_debug(const char* format, va_list args) {
+    _lf_message_print(0, "DEBUG: ", format, args, LOG_LEVEL_DEBUG);
 }
 
 /**
  * Report an error with the prefix "ERROR: " and a newline appended
  * at the end.  The arguments are just like printf().
  */
-void error_print(const char* format, ...) {
+void lf_print_error(const char* format, ...) {
     va_list args;
     va_start (args, format);
-    _lf_message_print(1, "ERROR: ", format, args, LOG_LEVEL_ERROR);
+    lf_vprint_error(format, args);
     va_end (args);
+}
+
+/**
+ * varargs alternative of "lf_print_error"
+ */
+void lf_vprint_error(const char* format, va_list args) {
+    _lf_message_print(1, "ERROR: ", format, args, LOG_LEVEL_ERROR);
 }
 
 /**
  * Report a warning with the prefix "WARNING: " and a newline appended
  * at the end.  The arguments are just like printf().
  */
-void warning_print(const char* format, ...) {
+void lf_print_warning(const char* format, ...) {
     va_list args;
     va_start (args, format);
-    _lf_message_print(1, "WARNING: ", format, args, LOG_LEVEL_WARNING);
+    lf_vprint_warning(format, args);
     va_end (args);
+}
+
+/**
+ * varargs alternative of "lf_print_warning"
+ */
+void lf_vprint_warning(const char* format, va_list args) {
+    _lf_message_print(1, "WARNING: ", format, args, LOG_LEVEL_WARNING);
 }
 
 /**
@@ -193,12 +229,19 @@ void warning_print(const char* format, ...) {
  * at the end, then exit with the failure code EXIT_FAILURE.
  * The arguments are just like printf().
  */
-void error_print_and_exit(const char* format, ...) {
+void lf_print_error_and_exit(const char* format, ...) {
     va_list args;
     va_start (args, format);
-    _lf_message_print(1, "FATAL ERROR: ", format, args, LOG_LEVEL_ERROR);
+    lf_vprint_error_and_exit(format, args);
     va_end (args);
     exit(EXIT_FAILURE);
+}
+
+/**
+ * varargs alternative of "lf_print_error_and_exit"
+ */
+void lf_vprint_error_and_exit(const char* format, va_list args) {
+    _lf_message_print(1, "FATAL ERROR: ", format, args, LOG_LEVEL_ERROR);
 }
 
 /**
@@ -213,7 +256,7 @@ void error_print_and_exit(const char* format, ...) {
  *  to using printf.
  * @param log_level The level of messages to redirect.
  */
-void register_print_function(print_message_function_t* function, int log_level) {
+void _lf_register_print_function(print_message_function_t* function, int log_level) {
     print_message_function = function;
     print_message_level = log_level;
 }
