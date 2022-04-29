@@ -1542,6 +1542,20 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
 }
 
 /**
+ * Invoke the given reaction
+ *
+ * @param reaction The reaction that has just executed.
+ * @param worker The thread number of the worker thread or 0 for unthreaded execution (for tracing).
+ */
+void _lf_invoke_reaction(reaction_t* reaction, int worker) {
+    tracepoint_reaction_starts(reaction, worker);
+    ((self_base_t*) reaction->self)->executing_reaction = reaction;
+    reaction->function(reaction->self);
+    ((self_base_t*) reaction->self)->executing_reaction = NULL;
+    tracepoint_reaction_ends(reaction, worker);
+}
+
+/**
  * For the specified reaction, if it has produced outputs, insert the
  * resulting triggered reactions into the reaction queue.
  * This procedure assumes the mutex lock is NOT held and grabs
@@ -1688,9 +1702,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
         }
         if (!violation) {
             // Invoke the downstream_reaction function.
-            tracepoint_reaction_starts(downstream_to_execute_now, worker);
-            downstream_to_execute_now->function(downstream_to_execute_now->self);
-            tracepoint_reaction_ends(downstream_to_execute_now, worker);
+            _lf_invoke_reaction(downstream_to_execute_now, worker);
 
             // If the downstream_reaction produced outputs, put the resulting triggered
             // reactions into the queue (or execute them directly, if possible).
