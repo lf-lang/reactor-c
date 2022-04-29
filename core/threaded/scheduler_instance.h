@@ -45,6 +45,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../utils/semaphore.h"
 #include "scheduler.h"
 
+#ifdef SCHEDULER_QS
+#include "scheduler_QS.h"
+#endif
+
 extern lf_mutex_t mutex;
 
 
@@ -133,24 +137,21 @@ typedef struct {
      */
     volatile size_t _lf_sched_next_reaction_level;
 
+#ifdef SCHEDULER_QS
     ///////// Specific to the quasi-static scheduler /////////
     /**
      * @brief Points to a read-only array of static schedules.
      * 
      */
-    const uint32_t*** static_schedules;
+    const inst_t*** static_schedules;
 
     /**
-     * @brief Points to a read-only array of static schedules.
+     * @brief An index that points to the current static schedules.
+     * 
+     * If there is one generic schedule, the index remains 0.
      * 
      */
-    const int current_schedule_index;
-
-    /**
-     * @brief Return value of a reaction, indicating what output are generated.
-     *
-     */
-    const int* reaction_return_values;
+    int current_schedule_index;
 
     /**
      * @brief Points to a read-only array of lengths of the static schedules.
@@ -172,23 +173,16 @@ typedef struct {
     reaction_t** reaction_instances;
     
     /**
-     * @brief Points to an array of pointers to semaphore.
+     * @brief Points to an array of pointers to scheduler semaphores,
+     * which enable a worker to wait for another worker to finish an instruction.
      * 
-     * The indices are the reaction indices in inst_t, each corresponds to reaction_instances.
+     * The semaphores are assigned by the compiler, and they have initial counts
+     * of 0 (acquired). When the worker process a "notify [semaphore id]",
+     * the semaphore is released and unblocks waiting threads. The indicies are
+     * semaphore IDs.
      */
-    semaphore_t** reaction_semaphore;
-
-    /**
-     * @brief Points to an array of semaphores, one for each reaction.
-     * 
-     * The indices that correspond to different reactions can be stored
-     * in the reaction instances. The initial count of the semaphores
-     * should also be stored in the reaction instances (in reactor.c).
-     * 
-     */
-    // semaphore_t** semaphores;
-    // For anything that is "one for each reaction," we store it in the
-    // reaction struct
+    semaphore_t** semaphores;
+#endif
 } _lf_sched_instance_t;
 
 /**
