@@ -106,4 +106,66 @@ void lf_print_error_and_exit(const char* format, ...);
 DEPRECATED(void error_print_and_exit(const char* format, ...));
 
 
+/**
+ * Register a function to display messages. After calling this,
+ * all messages passed to the above print functions will be
+ * printed using the specified function rather than printf
+ * if their log level is greater than the specified level.
+ * The level should be one of LOG_LEVEL_ERROR, LOG_LEVEL_WARNING,
+ * LOG_LEVEL_INFO, LOG_LEVEL_LOG, or LOG_LEVEL_DEBUG.
+ *
+ * @param function The print message function or NULL to revert
+ *  to using printf.
+ * @param log_level The level of messages to redirect.
+ */
+void lf_register_print_function(print_message_function_t* function, int log_level);
+DEPRECATED(void register_print_function(print_message_function_t* function, int log_level));
+
+/**
+ * A macro used to print useful debug information. It can be enabled
+ * by setting the target property 'logging' to 'DEBUG' or
+ * by defining LOG_LEVEL to 2 in the top-level preamble.
+ * The input to this macro is exactly like printf: (format, ...).
+ * "DEBUG: " is prepended to the beginning of the message
+ * and a newline is appended to the end of the message.
+ *
+ * @note This macro is non-empty even if LOG_LEVEL is not defined in
+ * user-code. This is to ensure that the compiler will still parse
+ * the predicate inside (...) to prevent LF_PRINT_DEBUG statements
+ * to fall out of sync with the rest of the code. This should have
+ * a negligible impact on performance if compiler optimization
+ * (e.g., -O2 for gcc) is used as long as the arguments passed to
+ * it do not themselves incur significant overhead to evaluate.
+ * 
+ * @deprecated
+ */
+#define DEBUG_PRINT(format, ...) \
+            do { if(LOG_LEVEL >= LOG_LEVEL_DEBUG) { \
+                    debug_print(format, ##__VA_ARGS__); \
+                } } while (0)
+
+/**
+ * A macro used to print useful logging information. It can be enabled
+ * by setting the target property 'logging' to 'LOG' or
+ * by defining LOG_LEVEL to LOG_LEVEL_LOG or
+ * LOG_LEVEL_DEBUG in the top-level preamble.
+ * The input to this macro is exactly like printf: (format, ...).
+ * "LOG: " is prepended to the beginning of the message
+ * and a newline is appended to the end of the message.
+ *
+ * @note This macro is non-empty even if LOG_LEVEL is not defined in
+ * user-code. This is to ensure that the compiler will still parse
+ * the predicate inside (...) to prevent LF_PRINT_LOG statements
+ * to fall out of sync with the rest of the code. This should have
+ * a negligible impact on performance if compiler optimization
+ * (e.g., -O2 for gcc) is used as long as the arguments passed to
+ * it do not themselves incur significant overhead to evaluate.
+ * 
+ * @deprecated
+ */
+#define LOG_PRINT(format, ...) \
+            do { if(LOG_LEVEL >= LOG_LEVEL_LOG) { \
+                    log_print(format, ##__VA_ARGS__); \
+                } } while (0)
+
 #endif // CTARGET_UTIL

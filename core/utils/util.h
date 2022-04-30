@@ -239,6 +239,6 @@ typedef void(print_message_function_t)(const char*, va_list);
  *  to using printf.
  * @param log_level The level of messages to redirect.
  */
-void _lf_register_print_function(print_message_function_t* function, int log_level);
+void lf_register_print_function(print_message_function_t* function, int log_level);
 
 #endif /* UTIL_H */

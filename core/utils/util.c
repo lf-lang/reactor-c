@@ -256,7 +256,7 @@ void lf_vprint_error_and_exit(const char* format, va_list args) {
  *  to using printf.
  * @param log_level The level of messages to redirect.
  */
-void _lf_register_print_function(print_message_function_t* function, int log_level) {
+void lf_register_print_function(print_message_function_t* function, int log_level) {
     print_message_function = function;
     print_message_level = log_level;
 }

@@ -108,3 +108,10 @@ void error_print_and_exit(const char* format, ...) {
     va_end (args);
     exit(EXIT_FAILURE);
 }
+
+/**
+ * @deprecated version of "lf_register_print_function"
+ */
+void register_print_function(print_message_function_t* function, int log_level) {
+    lf_register_print_function(function, log_level);
+}
