@@ -227,9 +227,7 @@ int _lf_do_step(void) {
         
         if (!violation) {
             // Invoke the reaction function.
-            tracepoint_reaction_starts(reaction, 0); // 0 indicates unthreaded.
-            reaction->function(reaction->self);
-            tracepoint_reaction_ends(reaction, 0);
+            _lf_invoke_reaction(reaction, 0);   // 0 indicates unthreaded.
 
             // If the reaction produced outputs, put the resulting triggered
             // reactions into the queue.
