@@ -164,6 +164,8 @@ Functions</h2></td></tr>
 <tr class="separator:a9df90516cce7d8e01b46acf61db64b8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6a6f96af2d1adbf71c57586a9078f248"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a6a6f96af2d1adbf71c57586a9078f248">_lf_check_deadline</a> (<a class="el" href="structself__base__t.html">self_base_t</a> *self, <a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> invoke_deadline_handler)</td></tr>
 <tr class="separator:a6a6f96af2d1adbf71c57586a9078f248"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6043f620d4c10e7aed87f64499212ecf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a6043f620d4c10e7aed87f64499212ecf">_lf_invoke_reaction</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *reaction, int <a class="el" href="reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63">worker</a>)</td></tr>
+<tr class="separator:a6043f620d4c10e7aed87f64499212ecf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a615a0670be544780678a1940a49c8d1e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a615a0670be544780678a1940a49c8d1e">schedule_output_reactions</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *reaction, int <a class="el" href="reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63">worker</a>)</td></tr>
 <tr class="separator:a615a0670be544780678a1940a49c8d1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab8b23ae956bad82624233eafa837affb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#ab8b23ae956bad82624233eafa837affb">writable_copy</a> (<a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
@@ -763,6 +765,42 @@ Variables</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>1 if successful, or 0 if no new reaction was scheduled because the function was called incorrectly. </dd></dl>
+
+</div>
+</div>
+<a id="a6043f620d4c10e7aed87f64499212ecf" name="a6043f620d4c10e7aed87f64499212ecf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6043f620d4c10e7aed87f64499212ecf">&#9670;&nbsp;</a></span>_lf_invoke_reaction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_invoke_reaction </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="structreaction__t.html">reaction_t</a> *&#160;</td>
+          <td class="paramname"><em>reaction</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>worker</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Invoke the given reaction</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">reaction</td><td>The reaction that has just executed. </td></tr>
+    <tr><td class="paramname">worker</td><td>The thread number of the worker thread or 0 for unthreaded execution (for tracing). </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
