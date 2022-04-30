@@ -124,7 +124,7 @@ static void set_reaction_position(void *a, size_t pos) {
  */
 static void print_reaction(void *reaction) {
 	reaction_t *r = (reaction_t*)reaction;
-    DEBUG_PRINT("%s: chain_id:%llu, index: %llx, reaction: %p",
+    LF_PRINT_DEBUG("%s: chain_id:%llu, index: %llx, reaction: %p",
     		r->name, r->chain_id, r->index, r);
 }
 
@@ -135,7 +135,7 @@ static void print_reaction(void *reaction) {
  */
 static void print_event(void *event) {
 	event_t *e = (event_t*)event;
-    DEBUG_PRINT("time: %lld, trigger: %p, token: %p",
+    LF_PRINT_DEBUG("time: %lld, trigger: %p, token: %p",
 			e->time, e->trigger, e->token);
 }
 

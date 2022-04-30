@@ -47,7 +47,7 @@ typedef struct lf_stat_ll {
 
 /**
  * A handy macro that can concatenate three strings.
- * Useful in the DEBUG_PRINT macro and error_print
+ * Useful in the LF_PRINT_DEBUG macro and lf_print_error
  * functions that want to concatenate a "DEBUG: " or
  * "ERROR: " to the beginning of the message and a 
  * new line format \n at the end.
@@ -58,11 +58,11 @@ typedef struct lf_stat_ll {
  * LOG_LEVEL is set in generated code to 0 through 4 if the target
  * logging property is error, warning, info, log, or debug.
  * The default level is info (2). Currently, 0, 1, and 2 are
- * treated identically and error_print, warning_print, and info_print
+ * treated identically and lf_print_error, lf_print_warning, and lf_print
  * all result in printed output.
  * If log is set (3), then LOG_DEBUG messages
  * will be printed as well.
- * If debug is set (4), the DEBUG_PRINT messages will
+ * If debug is set (4), the LF_PRINT_DEBUG messages will
  * be printed as well.
  */
 #define LOG_LEVEL_ERROR 0
@@ -131,7 +131,7 @@ void lf_vprint_log(const char* format, va_list args);
  *
  * @note This macro is non-empty even if LOG_LEVEL is not defined in
  * user-code. This is to ensure that the compiler will still parse
- * the predicate inside (...) to prevent LOG_PRINT statements
+ * the predicate inside (...) to prevent LF_PRINT_LOG statements
  * to fall out of sync with the rest of the code. This should have
  * a negligible impact on performance if compiler optimization
  * (e.g., -O2 for gcc) is used as long as the arguments passed to
@@ -139,7 +139,7 @@ void lf_vprint_log(const char* format, va_list args);
  */
 #define LF_PRINT_LOG(format, ...) \
             do { if(LOG_LEVEL >= LOG_LEVEL_LOG) { \
-                    log_print(format, ##__VA_ARGS__); \
+                    lf_print_log(format, ##__VA_ARGS__); \
                 } } while (0)
 
 /**
@@ -167,7 +167,7 @@ void lf_vprint_debug(const char* format, va_list args);
  *
  * @note This macro is non-empty even if LOG_LEVEL is not defined in
  * user-code. This is to ensure that the compiler will still parse
- * the predicate inside (...) to prevent DEBUG_PRINT statements
+ * the predicate inside (...) to prevent LF_PRINT_DEBUG statements
  * to fall out of sync with the rest of the code. This should have
  * a negligible impact on performance if compiler optimization
  * (e.g., -O2 for gcc) is used as long as the arguments passed to
@@ -175,7 +175,7 @@ void lf_vprint_debug(const char* format, va_list args);
  */
 #define LF_PRINT_DEBUG(format, ...) \
             do { if(LOG_LEVEL >= LOG_LEVEL_DEBUG) { \
-                    debug_print(format, ##__VA_ARGS__); \
+                    lf_print_debug(format, ##__VA_ARGS__); \
                 } } while (0)
 
 /**

@@ -255,7 +255,7 @@ void lf_initialize_clock() {
     if (_lf_use_performance_counter) {
         _lf_frequency_to_ns = (double)performance_frequency.QuadPart / BILLION;
     } else {
-        error_print(
+        lf_print_error(
             "High resolution performance counter is not supported on this machine.");
         _lf_frequency_to_ns = 0.01;
     }
@@ -284,7 +284,7 @@ int lf_clock_gettime(instant_t* t) {
     if (_lf_use_performance_counter) {
         int result = QueryPerformanceCounter(&windows_time);
         if ( result == 0) {
-            error_print("lf_clock_gettime(): Failed to read the value of the physical clock.");
+            lf_print_error("lf_clock_gettime(): Failed to read the value of the physical clock.");
             return result;
         }
     } else {

@@ -349,12 +349,12 @@ void start_trace(char* filename) {
 
     // In case the user forgets to stop to the trace in wrapup.
     if (atexit(stop_trace) != 0) {
-        warning_print("Failed to register stop_trace function for execution upon termination.");
+        lf_print_warning("Failed to register stop_trace function for execution upon termination.");
     }
 
     lf_thread_create(&_lf_flush_trace_thread, flush_trace, NULL);
 
-    DEBUG_PRINT("Started tracing.");
+    LF_PRINT_DEBUG("Started tracing.");
 }
 
 /**
@@ -537,5 +537,5 @@ void stop_trace() {
 
     fclose(_lf_trace_file);
     _lf_trace_file = NULL;
-    DEBUG_PRINT("Stopped tracing.");
+    LF_PRINT_DEBUG("Stopped tracing.");
 }

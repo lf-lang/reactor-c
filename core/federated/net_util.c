@@ -95,8 +95,8 @@ ssize_t read_from_socket_errexit(
     va_list args;
 	// Error checking first
     if (socket < 0 && format != NULL) {
-		error_print("Socket is no longer open.");
-        error_print_and_exit(format, args);
+		lf_print_error("Socket is no longer open.");
+        lf_print_error_and_exit(format, args);
 	}
     ssize_t bytes_read = 0;
     while (bytes_read < (ssize_t)num_bytes) {
@@ -104,15 +104,15 @@ ssize_t read_from_socket_errexit(
         if(more <= 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
             // The error code set by the socket indicates
             // that we should try again (@see man errno).
-            DEBUG_PRINT("Reading from socket was blocked. Will try again.");
+            LF_PRINT_DEBUG("Reading from socket was blocked. Will try again.");
             continue;
         } else if (more <= 0) {
             if (format != NULL) {
                 shutdown(socket, SHUT_RDWR);
                 close(socket);
-                error_print("Read %d bytes, but expected %d.",
+                lf_print_error("Read %d bytes, but expected %d.",
                 		more + bytes_read, num_bytes);
-                error_print_and_exit(format, args);
+                lf_print_error_and_exit(format, args);
             } else if (more == 0) {
                 // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
             	// upon receiving a zero length packet or an error, we can close the socket.
@@ -178,7 +178,7 @@ ssize_t write_to_socket_errexit_with_mutex(
         if (more <= 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
                     // The error code set by the socket indicates
                     // that we should try again (@see man errno).
-            DEBUG_PRINT("Writing to socket was blocked. Will try again.");
+            LF_PRINT_DEBUG("Writing to socket was blocked. Will try again.");
             continue;
         } else if (more <= 0) {
             if (format != NULL) {
@@ -187,8 +187,8 @@ ssize_t write_to_socket_errexit_with_mutex(
             	if (mutex != NULL) {
             		lf_mutex_unlock(mutex);
             	}
-                error_print(format, args);
-                error_print_and_exit("Code %d: %s.", errno, strerror(errno));
+                lf_print_error(format, args);
+                lf_print_error_and_exit("Code %d: %s.", errno, strerror(errno));
             }
             return more;
         }
@@ -494,7 +494,7 @@ void extract_header(
     // The next four bytes are the message length.
     int32_t local_length_signed = extract_int32(&(buffer[sizeof(uint16_t) + sizeof(uint16_t)]));
     if (local_length_signed < 0) {
-        error_print_and_exit(
+        lf_print_error_and_exit(
             "Received an invalid message length (%d) from federate %d.", 
             local_length_signed, 
             *federate_id
@@ -579,7 +579,7 @@ bool match_regex(char* str, char* regex) {
     bool valid = false;
 
     if (regcomp(&regex_compiled, regex, REG_EXTENDED)) {
-        error_print("Could not compile regex to parse RTI address");
+        lf_print_error("Could not compile regex to parse RTI address");
         return valid;
     }
 
@@ -642,7 +642,7 @@ bool validate_user(char* user) {
 bool extract_match_group(char* rti_addr, char* dest, regmatch_t group, int max_len, int min_len, char* err_msg) {
     size_t size = group.rm_eo - group.rm_so;
     if (size > max_len || size < min_len) {
-        error_print(err_msg);
+        lf_print_error(err_msg);
         return false;
     }
     strncpy(dest, &rti_addr[group.rm_so], size);
@@ -689,14 +689,14 @@ void extract_rti_addr_info(char* rti_addr, rti_addr_info_t* rti_addr_info) {
     regmatch_t group_array[max_groups];
 
     if (regcomp(&regex_compiled, regex_str, REG_EXTENDED)) {
-        error_print("Could not compile regex to parse RTI address");
+        lf_print_error("Could not compile regex to parse RTI address");
         return;
     }
 
     if (regexec(&regex_compiled, rti_addr, max_groups, group_array, 0) == 0) {
         // Check for matched username. group_array[0] is the entire matched string.
         for (int i = 1; i < max_groups; i++) {
-            DEBUG_PRINT("runtime rti_addr regex: so: %d   eo: %d\n", group_array[i].rm_so, group_array[i].rm_eo);
+            LF_PRINT_DEBUG("runtime rti_addr regex: so: %d   eo: %d\n", group_array[i].rm_so, group_array[i].rm_eo);
         }
         if (!extract_match_groups(rti_addr, rti_addr_strs, rti_addr_flags, group_array, gids, max_lens, min_lens, err_msgs)) {
             memset(rti_addr_info, 0, sizeof(rti_addr_info_t));

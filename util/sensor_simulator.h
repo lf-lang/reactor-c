@@ -51,7 +51,7 @@ an array of strings to print and the width of the window to use to display
 characters using the `show_tick` function.
 
 To print messages to the screen, rather than using printf(), you should use
-the messaging functions in util.h, such as info_print(). Otherwise, your messages
+the messaging functions in util.h, such as lf_print(). Otherwise, your messages
 will be printed over other information.
 */
 

@@ -86,13 +86,13 @@ _lf_sched_thread_info_t* _lf_sched_threads_info;
  */
 static inline void _lf_sched_distribute_ready_reaction_locked(
     reaction_t* ready_reaction) {
-    DEBUG_PRINT("Scheduler: Trying to distribute reaction %s.",
+    LF_PRINT_DEBUG("Scheduler: Trying to distribute reaction %s.",
                 ready_reaction->name);
     ready_reaction->status = running;
     if (pqueue_insert(
             (pqueue_t*)_lf_sched_instance->_lf_sched_executing_reactions,
             ready_reaction) != 0) {
-        error_print_and_exit("Could not add reaction to the executing queue.");
+        lf_print_error_and_exit("Could not add reaction to the executing queue.");
     }
 }
 
@@ -164,7 +164,7 @@ bool _lf_is_blocked_by_executing_or_blocked_reaction(reaction_t* reaction) {
                               _lf_sched_instance->_lf_sched_executing_reactions)
                 ->d[i];
         if (_lf_has_precedence_over(running, reaction)) {
-            DEBUG_PRINT("Reaction %s is blocked by executing reaction %s.",
+            LF_PRINT_DEBUG("Reaction %s is blocked by executing reaction %s.",
                         reaction->name, running->name);
             return true;
         }
@@ -177,7 +177,7 @@ bool _lf_is_blocked_by_executing_or_blocked_reaction(reaction_t* reaction) {
                               _lf_sched_instance->_lf_sched_transfer_reactions)
                 ->d[i];
         if (_lf_has_precedence_over(blocked, reaction)) {
-            DEBUG_PRINT("Reaction %s is blocked by blocked reaction %s.",
+            LF_PRINT_DEBUG("Reaction %s is blocked by blocked reaction %s.",
                         reaction->name, blocked->name);
             return true;
         }
@@ -231,7 +231,7 @@ int _lf_sched_distribute_ready_reactions_locked() {
         (pqueue_t**)&_lf_sched_instance->_lf_sched_triggered_reactions,
         (pqueue_t**)&_lf_sched_instance->_lf_sched_transfer_reactions);
 
-    DEBUG_PRINT("Scheduler: Distributed %d reactions.", reactions_distributed);
+    LF_PRINT_DEBUG("Scheduler: Distributed %d reactions.", reactions_distributed);
     return reactions_distributed;
 }
 
@@ -245,7 +245,7 @@ void _lf_sched_notify_workers() {
         MIN(_lf_sched_instance->_lf_sched_number_of_idle_workers,
             pqueue_size(
                 (pqueue_t*)_lf_sched_instance->_lf_sched_executing_reactions));
-    DEBUG_PRINT("Notifying %d workers.", workers_to_awaken);
+    LF_PRINT_DEBUG("Notifying %d workers.", workers_to_awaken);
     lf_atomic_fetch_add(&_lf_sched_instance->_lf_sched_number_of_idle_workers,
                         -1 * workers_to_awaken);
     if (workers_to_awaken > 1) {
@@ -279,10 +279,10 @@ bool _lf_sched_try_advance_tag_and_distribute() {
                (pqueue_t*)_lf_sched_instance->_lf_sched_triggered_reactions) ==
            0) {
         // Nothing more happening at this tag.
-        DEBUG_PRINT("Scheduler: Advancing tag.");
+        LF_PRINT_DEBUG("Scheduler: Advancing tag.");
         // This worker thread will take charge of advancing tag.
         if (_lf_sched_advance_tag_locked()) {
-            DEBUG_PRINT("Scheduler: Reached stop tag.");
+            LF_PRINT_DEBUG("Scheduler: Reached stop tag.");
             return_value = true;
             break;
         }
@@ -320,7 +320,7 @@ void _lf_sched_signal_stop() {
  */
 void _lf_sched_update_triggered_reactions(size_t worker_number) {
     lf_mutex_lock(&mutex);
-    DEBUG_PRINT("Scheduler: Emptying the output reaction queue of Worker %d.",
+    LF_PRINT_DEBUG("Scheduler: Emptying the output reaction queue of Worker %d.",
                 worker_number);
     pqueue_empty_into(
         (pqueue_t**)&_lf_sched_instance->_lf_sched_triggered_reactions,
@@ -349,7 +349,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
                             1) ==
         _lf_sched_instance->_lf_sched_number_of_workers) {
         // Last thread to go idle
-        DEBUG_PRINT("Scheduler: Worker %d is the last idle thread.",
+        LF_PRINT_DEBUG("Scheduler: Worker %d is the last idle thread.",
                     worker_number);
         // Call on the scheduler to distribute work or advance tag.
         if (_lf_sched_try_advance_tag_and_distribute()) {
@@ -379,7 +379,7 @@ void lf_sched_init(
     size_t number_of_workers, 
     sched_params_t* params
 ) {
-    DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
+    LF_PRINT_DEBUG("Scheduler: Initializing with %d workers", number_of_workers);
     if(!init_sched_instance(&_lf_sched_instance, number_of_workers, params)) {
         // Already initialized
         return;
@@ -395,7 +395,7 @@ void lf_sched_init(
             }
         }
     }
-    DEBUG_PRINT("Scheduler: Adopting a queue size of %u.", queue_size);
+    LF_PRINT_DEBUG("Scheduler: Adopting a queue size of %u.", queue_size);
 
     _lf_sched_instance->_lf_sched_array_of_mutexes =
         (lf_mutex_t*)calloc(1, sizeof(lf_mutex_t));
@@ -469,7 +469,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
             return reaction_to_return;
         }
 
-        DEBUG_PRINT("Worker %d is out of ready reactions.", worker_number);
+        LF_PRINT_DEBUG("Worker %d is out of ready reactions.", worker_number);
 
         // Ask the scheduler for more work and wait
         tracepoint_worker_wait_starts(worker_number);
@@ -492,7 +492,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
 void lf_sched_done_with_reaction(size_t worker_number,
                                  reaction_t* done_reaction) {
     if (!lf_bool_compare_and_swap(&done_reaction->status, running, inactive)) {
-        error_print_and_exit("Unexpected reaction status: %d. Expected %d.",
+        lf_print_error_and_exit("Unexpected reaction status: %d. Expected %d.",
                              done_reaction->status, running);
     }
 }
@@ -517,7 +517,7 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     if (reaction == NULL || !lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
         return;
     }
-    DEBUG_PRINT("Scheduler: Enqueing reaction %s, which has level %lld.",
+    LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld.",
             reaction->name, LEVEL(reaction->index));
     if (worker_number == -1) {
         lf_mutex_lock(&mutex);

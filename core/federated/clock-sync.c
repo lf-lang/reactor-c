@@ -154,7 +154,7 @@ ushort setup_clock_synchronization_with_rti() {
         _lf_rti_socket_UDP,
         (struct sockaddr *) &federate_UDP_addr,
         sizeof(federate_UDP_addr)) < 0) {
-            error_print_and_exit("Failed to bind its UDP socket: %s.",
+            lf_print_error_and_exit("Failed to bind its UDP socket: %s.",
                                     strerror(errno));
     }
     // Retrieve the port number that was assigned by the operating system
@@ -162,25 +162,25 @@ ushort setup_clock_synchronization_with_rti() {
     if (getsockname(_lf_rti_socket_UDP, (struct sockaddr *)&federate_UDP_addr, &addr_length) == -1) {
         // FIXME: Send 0 UDP_PORT message instead of exiting.
         // That will disable clock synchronization.
-        error_print_and_exit("Failed to retrieve UDP port: %s.",
+        lf_print_error_and_exit("Failed to retrieve UDP port: %s.",
                                 strerror(errno));
     }
-    DEBUG_PRINT("Assigned UDP port number %u to its socket.", ntohs(federate_UDP_addr.sin_port));
+    LF_PRINT_DEBUG("Assigned UDP port number %u to its socket.", ntohs(federate_UDP_addr.sin_port));
 
     port_to_return = ntohs(federate_UDP_addr.sin_port);
 
     // Set the option for this socket to reuse the same address
     int option_value = 1; 
     if (setsockopt(_lf_rti_socket_UDP, SOL_SOCKET, SO_REUSEADDR, &option_value, sizeof(int)) < 0) {
-        error_print("Failed to set SO_REUSEADDR option on the socket: %s.", strerror(errno));
+        lf_print_error("Failed to set SO_REUSEADDR option on the socket: %s.", strerror(errno));
     }
     // Set the timeout on the UDP socket so that read and write operations don't block for too long
     struct timeval timeout_time = {.tv_sec = UDP_TIMEOUT_TIME / BILLION, .tv_usec = (UDP_TIMEOUT_TIME % BILLION) / 1000}; 
     if (setsockopt(_lf_rti_socket_UDP, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_time, sizeof(timeout_time)) < 0) {
-        error_print("Failed to set SO_RCVTIMEO option on the socket: %s.", strerror(errno));
+        lf_print_error("Failed to set SO_RCVTIMEO option on the socket: %s.", strerror(errno));
     }
     if (setsockopt(_lf_rti_socket_UDP, SOL_SOCKET, SO_SNDTIMEO, (const char*)&timeout_time, sizeof(timeout_time)) < 0) {
-        error_print("Failed to set SO_SNDTIMEO option on the socket: %s.", strerror(errno));
+        lf_print_error("Failed to set SO_SNDTIMEO option on the socket: %s.", strerror(errno));
     }
 #else // No runtime clock synchronization. Send port -1 or 0 instead.
 #ifdef _LF_CLOCK_SYNC_INITIAL
@@ -206,7 +206,7 @@ ushort setup_clock_synchronization_with_rti() {
  * @param rti_socket_TCP The rti's socket
  */
 void synchronize_initial_physical_clock_with_rti(int rti_socket_TCP) {
-    DEBUG_PRINT("Waiting for initial clock synchronization messages from the RTI.");
+    LF_PRINT_DEBUG("Waiting for initial clock synchronization messages from the RTI.");
 
     size_t message_size = 1 + sizeof(instant_t);
     unsigned char buffer[message_size];
@@ -222,13 +222,13 @@ void synchronize_initial_physical_clock_with_rti(int rti_socket_TCP) {
 
         // Check that this is the T1 message.
         if (buffer[0] != MSG_TYPE_CLOCK_SYNC_T1) {
-            error_print_and_exit("Initial clock sync: Expected T1 message from RTI. Got %x.", buffer[0]);
+            lf_print_error_and_exit("Initial clock sync: Expected T1 message from RTI. Got %x.", buffer[0]);
         }
         // Handle the message and send a reply T3 message.
         // NOTE: No need to acquire the mutex lock during initialization because only
         // one thread is running.
         if (handle_T1_clock_sync_message(buffer, rti_socket_TCP, receive_time) != 0) {
-            error_print_and_exit("Initial clock sync: Failed to send T3 reply to RTI.");
+            lf_print_error_and_exit("Initial clock sync: Failed to send T3 reply to RTI.");
         }
 
         // Next message from the RTI is required to be MSG_TYPE_CLOCK_SYNC_T4
@@ -238,14 +238,14 @@ void synchronize_initial_physical_clock_with_rti(int rti_socket_TCP) {
 
         // Check that this is the T4 message.
         if (buffer[0] != MSG_TYPE_CLOCK_SYNC_T4) {
-            error_print_and_exit("Federate %d expected T4 message from RTI. Got %x.", _lf_my_fed_id, buffer[0]);
+            lf_print_error_and_exit("Federate %d expected T4 message from RTI. Got %x.", _lf_my_fed_id, buffer[0]);
         }
 
         // Handle the message.
         handle_T4_clock_sync_message(buffer, rti_socket_TCP, receive_time);
     }
 
-    LOG_PRINT("Finished initial clock synchronization with the RTI.");
+    LF_PRINT_LOG("Finished initial clock synchronization with the RTI.");
 }
 
 /**
@@ -263,7 +263,7 @@ int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2
     // Extract the payload
     instant_t t1 = extract_int64(&(buffer[1]));
 
-    DEBUG_PRINT("Received T1 message with time payload %lld from RTI at local time %lld.",
+    LF_PRINT_DEBUG("Received T1 message with time payload %lld from RTI at local time %lld.",
                 t1, t2);
 
     // Store snapshots of remote (master) and local physical clock
@@ -278,9 +278,9 @@ int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2
     encode_int32(_lf_my_fed_id, &(reply_buffer[1]));
 
     // Write the reply to the socket.
-    DEBUG_PRINT("Sending T3 message to RTI.");
+    LF_PRINT_DEBUG("Sending T3 message to RTI.");
     if (write_to_socket(socket, 1 + sizeof(int), reply_buffer) != 1 + sizeof(int)) {
-        error_print("Clock sync: Failed to send T3 message to RTI.");
+        lf_print_error("Clock sync: Failed to send T3 message to RTI.");
         return -1;
     }
 
@@ -314,7 +314,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
     // Extract the payload
     instant_t t4 = extract_int64(&(buffer[1]));
 
-    DEBUG_PRINT("Clock sync: Received T4 message with time payload %lld from RTI at local time %lld. "
+    LF_PRINT_DEBUG("Clock sync: Received T4 message with time payload %lld from RTI at local time %lld. "
             "(difference %lld)",
             t4, r4, r4 - t4);
 
@@ -334,7 +334,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
             network_round_trip_delay/2
             - (_lf_rti_socket_stat.local_physical_clock_snapshot_T2
             - _lf_rti_socket_stat.remote_physical_clock_snapshot_T1);
-    DEBUG_PRINT("Clock sync: Estimated clock error: %lld.", estimated_clock_error);
+    LF_PRINT_DEBUG("Clock sync: Estimated clock error: %lld.", estimated_clock_error);
 
     // The adjustment to the clock offset (to be calculated)
     interval_t adjustment = 0;
@@ -350,7 +350,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
 
         if ((bytes_read < 1 + (ssize_t)sizeof(instant_t))
                 || buffer[0] != MSG_TYPE_CLOCK_SYNC_CODED_PROBE) {
-            warning_print("Clock sync: Did not get the expected coded probe message from the RTI. "
+            lf_print_warning("Clock sync: Did not get the expected coded probe message from the RTI. "
                     "Skipping clock synchronization round.");
             return;
         }
@@ -361,16 +361,16 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         // against the difference in time at this federate of receiving these two message.
         interval_t coded_probe_distance = llabs((r5 - r4) - (t5 - t4));
 
-        DEBUG_PRINT("Clock sync: Received code probe that reveals a time discrepancy between "
+        LF_PRINT_DEBUG("Clock sync: Received code probe that reveals a time discrepancy between "
                 "messages of %lld.",
                 coded_probe_distance);
 
         // Check against the guard band.
         if (coded_probe_distance >= CLOCK_SYNC_GUARD_BAND) {
             // Discard this clock sync cycle
-            LOG_PRINT("Clock sync: Skipping the current clock synchronization cycle "
+            LF_PRINT_LOG("Clock sync: Skipping the current clock synchronization cycle "
                     "due to impure coded probes.");
-            LOG_PRINT("Clock sync: Coded probe packet stats: "
+            LF_PRINT_LOG("Clock sync: Coded probe packet stats: "
                     "Distance: %lld. r5 - r4 = %lld. t5 - t4 = %lld.",
                     coded_probe_distance,
                     r5 - r4,
@@ -402,7 +402,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
 #endif
     
     // FIXME: Enable alternative regression mechanism here.
-    DEBUG_PRINT("Clock sync: Adjusting clock offset running average by %lld.",
+    LF_PRINT_DEBUG("Clock sync: Adjusting clock offset running average by %lld.",
             adjustment/_LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL);
     // Calculate the running average
     _lf_rti_socket_stat.history += adjustment/_LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL;
@@ -416,7 +416,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         // Issue a warning if standard deviation is high in data
         if (stats.standard_deviation >= CLOCK_SYNC_GUARD_BAND) {
             // Reset the stats
-            LOG_PRINT("Clock sync: Large standard deviation detected in network delays (%lld) for the current period."
+            LF_PRINT_LOG("Clock sync: Large standard deviation detected in network delays (%lld) for the current period."
                         " Clock synchronization offset might not be accurate.",
                         stats.standard_deviation);
             reset_socket_stat(&_lf_rti_socket_stat);
@@ -429,7 +429,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         // applied                                                 
         _lf_time_physical_clock_offset += _lf_rti_socket_stat.history;
         // @note AVG and SD will be zero if collect-stats is set to false
-        LOG_PRINT("Clock sync:"
+        LF_PRINT_LOG("Clock sync:"
                     " New offset: %lld."
                     " Round trip delay to RTI (now): %lld."
                     " (AVG): %lld."
@@ -490,11 +490,11 @@ void* listen_to_rti_UDP_thread(void* args) {
         if (bytes_read < message_size) {
             // Either the socket has closed or the RTI has sent EOF.
             // Exit the thread to halt clock synchronization.
-            error_print("Clock sync: UDP socket to RTI is broken: %s. Clock sync is now disabled.",
+            lf_print_error("Clock sync: UDP socket to RTI is broken: %s. Clock sync is now disabled.",
                     strerror(errno));
             break;
         }
-        DEBUG_PRINT("Clock sync: Received UDP message %u from RTI on port %u.",
+        LF_PRINT_DEBUG("Clock sync: Received UDP message %u from RTI on port %u.",
                 buffer[0], ntohs(RTI_UDP_addr.sin_port));
 
         // Handle the message
@@ -511,7 +511,7 @@ void* listen_to_rti_UDP_thread(void* args) {
                         && connect(_lf_rti_socket_UDP,
                         (struct sockaddr*)&RTI_UDP_addr,
                         RTI_UDP_addr_length) < 0) {
-                    error_print("Clock sync: Federate %d failed to register RTI's UDP reply address. "
+                    lf_print_error("Clock sync: Federate %d failed to register RTI's UDP reply address. "
                             "Clock synchronization has stopped.",
                             _lf_my_fed_id);
                     break;
@@ -524,7 +524,7 @@ void* listen_to_rti_UDP_thread(void* args) {
                 }
             } else {
                 // Waiting for a T1 message, but received something else. Discard message.
-                warning_print("Clock sync: Received %u message from RTI, but waiting for %u (T1). "
+                lf_print_warning("Clock sync: Received %u message from RTI, but waiting for %u (T1). "
                         "Discarding the message.",
                         buffer[0],
 						MSG_TYPE_CLOCK_SYNC_T1);
@@ -534,7 +534,7 @@ void* listen_to_rti_UDP_thread(void* args) {
             handle_T4_clock_sync_message(buffer, _lf_rti_socket_UDP, receive_time);
             waiting_for_T1 = true;
         } else {
-            warning_print("Clock sync: Received from RTI an unexpected UDP message type: %u. "
+            lf_print_warning("Clock sync: Received from RTI an unexpected UDP message type: %u. "
                     "Discarding the message and skipping this round.",
                     buffer[0]);
             // Ignore further clock sync messages until we get a T1.
