@@ -26,8 +26,8 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  * @section DESCRIPTION
- * Undefining the macros in the ctarget_set.h
- * Refer to ctarget_set.h for details of the macros
+ * Undefining the macros in the ctarget/set.h
+ * Refer to ctarget/set.h for details of the macros
  * 
  * Note for target language developers. This is one way of developing a target language where 
  * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca 
