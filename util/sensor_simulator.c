@@ -34,6 +34,7 @@ See sensor_simulator.h.
 #include <ncurses.h>
 #include "sensor_simulator.h"
 #include "ctarget/schedule.h"
+#include "ctarget/util.h"
 #include "core/utils/util.h"
 #include "core/platform.h"
 
