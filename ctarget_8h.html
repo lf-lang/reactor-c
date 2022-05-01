@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: include/ctarget_set_undef.h File Reference</title>
+<title>reactor-c: include/ctarget/ctarget.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -62,20 +62,22 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_d7c1942a6d771188638c7ba00acb9cca.html">ctarget</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
-  <div class="headertitle"><div class="title">ctarget_set_undef.h File Reference</div></div>
+  <div class="headertitle"><div class="title">ctarget.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-
-<p><a href="ctarget__set__undef_8h_source.html">Go to the source code of this file.</a></p>
+<div class="textblock"><code>#include &quot;<a class="el" href="schedule_8h_source.html">schedule.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="include_2ctarget_2util_8h_source.html">util.h</a>&quot;</code><br />
+</div>
+<p><a href="ctarget_8h_source.html">Go to the source code of this file.</a></p>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><dl class="section author"><dt>Author</dt><dd>Hou Seng Wong (<a href="#" onclick="location.href='mai'+'lto:'+'hou'+'se'+'ngw'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">house<span class="obfuscator">.nosp@m.</span>ngw@<span class="obfuscator">.nosp@m.</span>berke<span class="obfuscator">.nosp@m.</span>ley.<span class="obfuscator">.nosp@m.</span>edu</a>)</dd></dl>
+<div class="textblock"><dl class="section author"><dt>Author</dt><dd>Hou Seng (Steven) Wong (<a href="#" onclick="location.href='mai'+'lto:'+'hou'+'se'+'ngw'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">house<span class="obfuscator">.nosp@m.</span>ngw@<span class="obfuscator">.nosp@m.</span>berke<span class="obfuscator">.nosp@m.</span>ley.<span class="obfuscator">.nosp@m.</span>edu</a>)</dd></dl>
 <h1><a class="anchor" id="LICENSE"></a>
 LICENSE</h1>
-<p >Copyright (c) 2022, The University of California at Berkeley.</p>
+<p >Copyright (c) 2020, The University of California at Berkeley.</p>
 <p >Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
 <ol type="1">
 <li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
@@ -84,7 +86,7 @@ LICENSE</h1>
 <p >THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 <h1><a class="anchor" id="DESCRIPTION"></a>
 DESCRIPTION</h1>
-<p >Undefining the macros in the <a class="el" href="ctarget__set_8h.html">ctarget_set.h</a> Refer to <a class="el" href="ctarget__set_8h.html">ctarget_set.h</a> for details of the macros</p>
+<p >Target-specific runtime functions for the C target language. This API layer can be used in conjunction with: target C;</p>
 <p >Note for target language developers. This is one way of developing a target language where the C core runtime is adopted. This file is a translation layer that implements Lingua Franca APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a template for future runtime developement for target languages. For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend. </p>
 </div></div><!-- contents -->
 <!-- start footer part -->

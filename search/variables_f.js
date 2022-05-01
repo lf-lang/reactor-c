@@ -12,8 +12,8 @@ var searchData=
   ['prev_9',['prev',['../structdeque__node__t.html#af0b3f351d6dab10d51b9f79092ee17f6',1,'deque_node_t']]],
   ['print_5fcursor_5fx_10',['print_cursor_x',['../sensor__simulator_8c.html#ae11de240a0625454193034e0172da442',1,'sensor_simulator.c']]],
   ['print_5fcursor_5fy_11',['print_cursor_y',['../sensor__simulator_8c.html#a52cac6a72ccf7e4b4cfa4f8c6780abeb',1,'sensor_simulator.c']]],
-  ['print_5fmessage_5ffunction_12',['print_message_function',['../util_8c.html#a57a22a0e1b00db1d40d5fcb8dde330f7',1,'util.c']]],
-  ['print_5fmessage_5flevel_13',['print_message_level',['../util_8c.html#ac5ad67ecd4813c09ec8e2a2ec8904057',1,'util.c']]],
+  ['print_5fmessage_5ffunction_12',['print_message_function',['../core_2utils_2util_8c.html#a57a22a0e1b00db1d40d5fcb8dde330f7',1,'util.c']]],
+  ['print_5fmessage_5flevel_13',['print_message_level',['../core_2utils_2util_8c.html#ac5ad67ecd4813c09ec8e2a2ec8904057',1,'util.c']]],
   ['print_5fwindow_14',['print_window',['../sensor__simulator_8c.html#a9553b3dfcfccb994a2df43aa3ff1f53e',1,'sensor_simulator.c']]],
   ['print_5fwindow_5fheight_15',['print_window_height',['../sensor__simulator_8c.html#a8d610b74b6930e1f1620d21638a71f6d',1,'sensor_simulator.c']]],
   ['prt_16',['prt',['../structpqueue__t.html#aeb48e61916a065bb67c7dc3cc963ffeb',1,'pqueue_t']]]

@@ -16,6 +16,6 @@ var searchData=
   ['user_5fspecified_5fport_13',['user_specified_port',['../struct_r_t_i__instance__t.html#a448e81fcfc0ad12dc4617ae7ca0cce99',1,'RTI_instance_t']]],
   ['user_5fvalue_14',['user_value',['../trace_8h.html#ab02e9e69539d60297cedb38c2193a453a1d509d2fbc0fe97dcc61aea8ba7b68c1',1,'trace.h']]],
   ['ushort_15',['ushort',['../reactor_8h.html#a3fa7784c89589b49764048e9909d0e07',1,'reactor.h']]],
-  ['util_2ec_16',['util.c',['../util_8c.html',1,'']]],
-  ['util_2eh_17',['util.h',['../util_8h.html',1,'']]]
+  ['util_2ec_16',['util.c',['../core_2utils_2util_8c.html',1,'(Global Namespace)'],['../lib_2ctarget_2util_8c.html',1,'(Global Namespace)']]],
+  ['util_2eh_17',['util.h',['../core_2utils_2util_8h.html',1,'(Global Namespace)'],['../include_2ctarget_2util_8h.html',1,'(Global Namespace)']]]
 ];

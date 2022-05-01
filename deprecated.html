@@ -66,10 +66,18 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><dl class="reflist">
-<dt>Global <a class="el" href="ctarget__schedule_8c.html#a4b54ecc29f72a5aad6733290adb14bf1">check_deadline</a>  (void *self, bool invoke_deadline_handler)</dt>
-<dd><a class="anchor" id="_deprecated000015"></a>version of 'lf_check_deadline'  </dd>
+<dt>Global <a class="el" href="schedule_8c.html#a4b54ecc29f72a5aad6733290adb14bf1">check_deadline</a>  (void *self, bool invoke_deadline_handler)</dt>
+<dd><a class="anchor" id="_deprecated000017"></a>version of 'lf_check_deadline'  </dd>
 <dt>Global <a class="el" href="tag_8c.html#a6f9d6db9250698b048f5f118b0308e47">compare_tags</a>  (<a class="el" href="structtag__t.html">tag_t</a> tag1, <a class="el" href="structtag__t.html">tag_t</a> tag2)</dt>
 <dd><a class="anchor" id="_deprecated000003"></a>version of 'lf_tag_compare'  </dd>
+<dt>Global <a class="el" href="lib_2ctarget_2util_8c.html#ae454cdf1e6c8d3be9256a937f11efa39">debug_print</a>  (const char *format,...)</dt>
+<dd><a class="anchor" id="_deprecated000020"></a>version of "lf_print_debug"  </dd>
+<dt>Global <a class="el" href="include_2ctarget_2util_8h.html#a0a27a0fa2f8d9461204242121941696c">DEBUG_PRINT</a>  (format,...)</dt>
+<dd><a class="anchor" id="_deprecated000010"></a>  </dd>
+<dt>Global <a class="el" href="lib_2ctarget_2util_8c.html#a7b2de9d0c89be7f10599c286c2f46ca3">error_print</a>  (const char *format,...)</dt>
+<dd><a class="anchor" id="_deprecated000021"></a>version of "lf_print_error"  </dd>
+<dt>Global <a class="el" href="lib_2ctarget_2util_8c.html#a4ec366f788b64beb83889b702fe7cc08">error_print_and_exit</a>  (const char *format,...)</dt>
+<dd><a class="anchor" id="_deprecated000023"></a>version of "lf_print_error_and_exit"  </dd>
 <dt>Global <a class="el" href="tag_8c.html#a284eab9a62e22fa3a64d36d301d0195d">get_current_tag</a>  ()</dt>
 <dd><a class="anchor" id="_deprecated000001"></a>  </dd>
 <dt>Global <a class="el" href="tag_8c.html#a23e91eb69aca986b03aba4ce86923102">get_elapsed_logical_time</a>  ()</dt>
@@ -84,18 +92,28 @@ $(function() {
 <dd><a class="anchor" id="_deprecated000006"></a>version of "lf_time_physical"  </dd>
 <dt>Global <a class="el" href="tag_8c.html#a8b4f2e4e87e43670217c0c53099ae2f5">get_start_time</a>  ()</dt>
 <dd><a class="anchor" id="_deprecated000008"></a>version of "lf_time_start"  </dd>
-<dt>Global <a class="el" href="ctarget__schedule_8c.html#a1aa6f173caae6390db0a1900245667ef">schedule</a>  (void *action, interval_t offset)</dt>
-<dd><a class="anchor" id="_deprecated000010"></a>version of 'lf_schedule'  </dd>
-<dt>Global <a class="el" href="ctarget__schedule_8c.html#a9bb637551e80f0245cc8cdb764605f6e">schedule_copy</a>  (void *action, interval_t offset, void *value, int length)</dt>
-<dd><a class="anchor" id="_deprecated000013"></a>version of 'lf_schedule_copy'  </dd>
-<dt>Global <a class="el" href="ctarget__schedule_8c.html#adf022d8e930473c8ec282178a6ac7446">schedule_int</a>  (void *action, interval_t extra_delay, int value)</dt>
-<dd><a class="anchor" id="_deprecated000011"></a>version of 'lf_schedule_int'  </dd>
-<dt>Global <a class="el" href="ctarget__schedule_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token</a>  (void *action, interval_t extra_delay, <a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</dt>
-<dd><a class="anchor" id="_deprecated000012"></a>version of 'lf_schedule_token'  </dd>
-<dt>Global <a class="el" href="ctarget__schedule_8c.html#a0ecdb5df31eef1cff7d639badc3e7ee8">schedule_value</a>  (void *action, interval_t extra_delay, void *value, int length)</dt>
-<dd><a class="anchor" id="_deprecated000014"></a>version of 'lf_schedule_value'  </dd>
+<dt>Global <a class="el" href="lib_2ctarget_2util_8c.html#acf006c072c804ca8a20668b6e7e45dba">info_print</a>  (const char *format,...)</dt>
+<dd><a class="anchor" id="_deprecated000018"></a>version of "lf_print"  </dd>
+<dt>Global <a class="el" href="include_2ctarget_2util_8h.html#a02ab3aea33a20e71b0f50923d3b222a7">LOG_PRINT</a>  (format,...)</dt>
+<dd><a class="anchor" id="_deprecated000011"></a>  </dd>
+<dt>Global <a class="el" href="lib_2ctarget_2util_8c.html#aa0a9fe73f6331b5aff2cd95a9677c6a1">log_print</a>  (const char *format,...)</dt>
+<dd><a class="anchor" id="_deprecated000019"></a>version of "lf_print_log"  </dd>
+<dt>Global <a class="el" href="lib_2ctarget_2util_8c.html#ad8d354f663642349063c0ab241cdbb70">register_print_function</a>  (print_message_function_t *function, int log_level)</dt>
+<dd><a class="anchor" id="_deprecated000024"></a>version of "lf_register_print_function"  </dd>
+<dt>Global <a class="el" href="schedule_8c.html#a1aa6f173caae6390db0a1900245667ef">schedule</a>  (void *action, interval_t offset)</dt>
+<dd><a class="anchor" id="_deprecated000012"></a>version of 'lf_schedule'  </dd>
+<dt>Global <a class="el" href="schedule_8c.html#a9bb637551e80f0245cc8cdb764605f6e">schedule_copy</a>  (void *action, interval_t offset, void *value, int length)</dt>
+<dd><a class="anchor" id="_deprecated000015"></a>version of 'lf_schedule_copy'  </dd>
+<dt>Global <a class="el" href="schedule_8c.html#adf022d8e930473c8ec282178a6ac7446">schedule_int</a>  (void *action, interval_t extra_delay, int value)</dt>
+<dd><a class="anchor" id="_deprecated000013"></a>version of 'lf_schedule_int'  </dd>
+<dt>Global <a class="el" href="schedule_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token</a>  (void *action, interval_t extra_delay, <a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</dt>
+<dd><a class="anchor" id="_deprecated000014"></a>version of 'lf_schedule_token'  </dd>
+<dt>Global <a class="el" href="schedule_8c.html#a0ecdb5df31eef1cff7d639badc3e7ee8">schedule_value</a>  (void *action, interval_t extra_delay, void *value, int length)</dt>
+<dd><a class="anchor" id="_deprecated000016"></a>version of 'lf_schedule_value'  </dd>
 <dt>Global <a class="el" href="tag_8c.html#ac45b5d21dac66de7986c99f7db1b577b">set_physical_clock_offset</a>  (interval_t offset)</dt>
-<dd><a class="anchor" id="_deprecated000009"></a>version of 'lf_set_physical_clock_offset' </dd>
+<dd><a class="anchor" id="_deprecated000009"></a>version of 'lf_set_physical_clock_offset'  </dd>
+<dt>Global <a class="el" href="lib_2ctarget_2util_8c.html#a806b1f254e17b3e266b065094732470d">warning_print</a>  (const char *format,...)</dt>
+<dd><a class="anchor" id="_deprecated000022"></a>version of "lf_print_warning" </dd>
 </dl>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->

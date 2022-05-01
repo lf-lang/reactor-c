@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.3"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: include/ctarget_set.h Source File</title>
+<title>reactor-c: include/ctarget/set.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -62,14 +62,14 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_d7c1942a6d771188638c7ba00acb9cca.html">ctarget</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
-  <div class="headertitle"><div class="title">ctarget_set.h</div></div>
+  <div class="headertitle"><div class="title">set.h</div></div>
 </div><!--header-->
 <div class="contents">
-<a href="ctarget__set_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span> </div>
+<a href="set_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span> </div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#ifndef CTARGET_SET</span></div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">#define CTARGET_SET</span></div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
@@ -80,47 +80,47 @@ $(function() {
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span><span class="comment">// problems with if ... else statements that do not use braces around the</span></div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="comment">// two branches.</span></div>
 <div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span> </div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno"><a class="line" href="ctarget__set_8h.html#aef602f51d34bbd214643161e425d909d">   75</a></span><span class="preprocessor">#define lf_set(out, val) _LF_SET(out, val)</span></div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno"><a class="line" href="ctarget__set_8h.html#ae766d7bbeaee4ea6917191b7012bc960">   76</a></span><span class="preprocessor">#define SET(out, val) \</span></div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno"><a class="line" href="set_8h.html#aef602f51d34bbd214643161e425d909d">   75</a></span><span class="preprocessor">#define lf_set(out, val) _LF_SET(out, val)</span></div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno"><a class="line" href="set_8h.html#ae766d7bbeaee4ea6917191b7012bc960">   76</a></span><span class="preprocessor">#define SET(out, val) \</span></div>
 <div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span><span class="preprocessor">do { \</span></div>
 <div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span><span class="preprocessor">        _Pragma (&quot;Warning \&quot;&#39;SET&#39; is deprecated. Use &#39;lf_set&#39; instead.\&quot;&quot;</span>); \</div>
 <div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>        _LF_SET(out, val); \</div>
 <div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>} while (0)</div>
 <div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno"><a class="line" href="ctarget__set_8h.html#a55773f43328c76b05c41e12d80f7597c">   95</a></span><span class="preprocessor">#define SET_ARRAY(out, val, elem_size, length) \</span></div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno"><a class="line" href="set_8h.html#a55773f43328c76b05c41e12d80f7597c">   95</a></span><span class="preprocessor">#define SET_ARRAY(out, val, elem_size, length) \</span></div>
 <div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span><span class="preprocessor">do { \</span></div>
 <div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span><span class="preprocessor">        _Pragma (&quot;Warning \&quot;&#39;SET_ARRAY&#39; is deprecated.\&quot;&quot;</span>); \</div>
 <div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>        _LF_SET_ARRAY(out, val, length); \</div>
 <div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>} while (0)</div>
 <div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span> </div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno"><a class="line" href="ctarget__set_8h.html#ac4add0e6067a7dec70daf3f69f86ea7b">  115</a></span><span class="preprocessor">#define SET_NEW(out) \</span></div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno"><a class="line" href="set_8h.html#ac4add0e6067a7dec70daf3f69f86ea7b">  115</a></span><span class="preprocessor">#define SET_NEW(out) \</span></div>
 <div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span><span class="preprocessor">do { \</span></div>
 <div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span><span class="preprocessor">        _Pragma (&quot;Warning \&quot;&#39;SET_NEW&#39; is deprecated.\&quot;&quot;</span>); \</div>
 <div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>        _LF_SET_NEW(out); \</div>
 <div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>} while (0)</div>
 <div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span> </div>
-<div class="line"><a id="l00134" name="l00134"></a><span class="lineno"><a class="line" href="ctarget__set_8h.html#a09848dd9d5f27043a324d1deea54ce73">  134</a></span><span class="preprocessor">#define SET_NEW_ARRAY(out, len) \</span></div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno"><a class="line" href="set_8h.html#a09848dd9d5f27043a324d1deea54ce73">  134</a></span><span class="preprocessor">#define SET_NEW_ARRAY(out, len) \</span></div>
 <div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span><span class="preprocessor">do { \</span></div>
 <div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span><span class="preprocessor">        _Pragma (&quot;Warning \&quot;&#39;SET_NEW_ARRAY&#39; is deprecated.\&quot;&quot;</span>); \</div>
 <div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>        _LF_SET_NEW_ARRAY(out, len); \</div>
 <div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span>} while (0)</div>
 <div class="line"><a id="l00139" name="l00139"></a><span class="lineno">  139</span> </div>
-<div class="line"><a id="l00149" name="l00149"></a><span class="lineno"><a class="line" href="ctarget__set_8h.html#aae3aee7c6d3295bc671851f5bb7cf5be">  149</a></span><span class="preprocessor">#define SET_PRESENT(out) \</span></div>
+<div class="line"><a id="l00149" name="l00149"></a><span class="lineno"><a class="line" href="set_8h.html#aae3aee7c6d3295bc671851f5bb7cf5be">  149</a></span><span class="preprocessor">#define SET_PRESENT(out) \</span></div>
 <div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span><span class="preprocessor">do { \</span></div>
 <div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span><span class="preprocessor">        _Pragma (&quot;Warning \&quot;&#39;SET_PRESENT&#39; is deprecated.\&quot;&quot;</span>); \</div>
 <div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span>        _LF_SET_PRESENT(out); \</div>
 <div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>} while (0)</div>
 <div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span> </div>
-<div class="line"><a id="l00164" name="l00164"></a><span class="lineno"><a class="line" href="ctarget__set_8h.html#a1aa76760517d7100306d59b92fd41a26">  164</a></span><span class="preprocessor">#define lf_set_token(out, newtoken) _LF_SET_TOKEN(out, newtoken)</span></div>
-<div class="line"><a id="l00165" name="l00165"></a><span class="lineno"><a class="line" href="ctarget__set_8h.html#aabca482a436b71f743253b204953cbe4">  165</a></span><span class="preprocessor">#define SET_TOKEN(out, newtoken) \</span></div>
+<div class="line"><a id="l00164" name="l00164"></a><span class="lineno"><a class="line" href="set_8h.html#a1aa76760517d7100306d59b92fd41a26">  164</a></span><span class="preprocessor">#define lf_set_token(out, newtoken) _LF_SET_TOKEN(out, newtoken)</span></div>
+<div class="line"><a id="l00165" name="l00165"></a><span class="lineno"><a class="line" href="set_8h.html#aabca482a436b71f743253b204953cbe4">  165</a></span><span class="preprocessor">#define SET_TOKEN(out, newtoken) \</span></div>
 <div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span><span class="preprocessor">do { \</span></div>
 <div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span><span class="preprocessor">        _Pragma (&quot;Warning \&quot;&#39;SET_TOKEN&#39; is deprecated. Use &#39;lf_set_token&#39; instead.\&quot;&quot;</span>); \</div>
 <div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>        _LF_SET_TOKEN(out, newtoken); \</div>
 <div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>} while (0)</div>
 <div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span> </div>
-<div class="line"><a id="l00181" name="l00181"></a><span class="lineno"><a class="line" href="ctarget__set_8h.html#af4b2874af3da2bb85edfb3f0a57028a1">  181</a></span><span class="preprocessor">#define lf_set_destructor(out, dtor) _LF_SET_DESTRUCTOR(out, dtor)</span></div>
+<div class="line"><a id="l00181" name="l00181"></a><span class="lineno"><a class="line" href="set_8h.html#af4b2874af3da2bb85edfb3f0a57028a1">  181</a></span><span class="preprocessor">#define lf_set_destructor(out, dtor) _LF_SET_DESTRUCTOR(out, dtor)</span></div>
 <div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span> </div>
-<div class="line"><a id="l00192" name="l00192"></a><span class="lineno"><a class="line" href="ctarget__set_8h.html#aa515ab9df816c6ac8a450def4dc02f40">  192</a></span><span class="preprocessor">#define lf_set_copy_constructor(out, cpy_ctor) _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor)</span></div>
+<div class="line"><a id="l00192" name="l00192"></a><span class="lineno"><a class="line" href="set_8h.html#aa515ab9df816c6ac8a450def4dc02f40">  192</a></span><span class="preprocessor">#define lf_set_copy_constructor(out, cpy_ctor) _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor)</span></div>
 <div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span> </div>
 <div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span> </div>
 <div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span><span class="preprocessor">#ifdef MODAL_REACTORS</span></div>

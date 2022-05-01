@@ -37,7 +37,7 @@ var searchData=
   ['num_5fupstream_34',['num_upstream',['../structfederate__t.html#a1d82ef50c2cd3d4f82252350e04f273a',1,'federate_t']]],
   ['number_35',['number',['../structreaction__t.html#aab519d27f6f52545358a4f5da15f3a18',1,'reaction_t']]],
   ['number_5fof_5ffederates_36',['number_of_federates',['../struct_r_t_i__instance__t.html#a962fc3d8abb05cd5ce91d8982025a5b0',1,'RTI_instance_t']]],
-  ['number_5fof_5ffederates_37',['NUMBER_OF_FEDERATES',['../util_8c.html#af58c457e08491f7cfd5a0a46940e11ad',1,'NUMBER_OF_FEDERATES():&#160;util.c'],['../net__util_8c.html#af58c457e08491f7cfd5a0a46940e11ad',1,'NUMBER_OF_FEDERATES():&#160;net_util.c']]],
+  ['number_5fof_5ffederates_37',['NUMBER_OF_FEDERATES',['../core_2utils_2util_8c.html#af58c457e08491f7cfd5a0a46940e11ad',1,'NUMBER_OF_FEDERATES():&#160;util.c'],['../net__util_8c.html#af58c457e08491f7cfd5a0a46940e11ad',1,'NUMBER_OF_FEDERATES():&#160;net_util.c']]],
   ['number_5fof_5finbound_5fp2p_5fconnections_38',['number_of_inbound_p2p_connections',['../structfederate__instance__t.html#a6b728a970ccb1ef778dbb9779582d2f2',1,'federate_instance_t']]],
   ['number_5fof_5foutbound_5fp2p_5fconnections_39',['number_of_outbound_p2p_connections',['../structfederate__instance__t.html#a2edee0c930dc6f10437a5a58306a097c',1,'federate_instance_t']]],
   ['number_5fof_5freactions_40',['number_of_reactions',['../structtrigger__t.html#a53bebeaf8708d9dbe859df99972fb667',1,'trigger_t']]],

@@ -79,7 +79,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="tag_8c.html">tag.c</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="pqueue_8c.html">utils/pqueue.c</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="pqueue__support_8h_source.html">utils/pqueue_support.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="util_8c.html">utils/util.c</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="core_2utils_2util_8c.html">utils/util.c</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="modes_8c.html">modal_models/modes.c</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
@@ -957,7 +957,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Schedule the specified trigger at current_tag.time plus the offset of the specified trigger plus the delay. See <a class="el" href="ctarget__schedule_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a> in <a class="el" href="reactor_8h.html">reactor.h</a> for details. This is the internal implementation shared by both the threaded and non-threaded versions.</p>
+<p >Schedule the specified trigger at current_tag.time plus the offset of the specified trigger plus the delay. See <a class="el" href="schedule_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a> in <a class="el" href="reactor_8h.html">reactor.h</a> for details. This is the internal implementation shared by both the threaded and non-threaded versions.</p>
 <p >The value is required to be either NULL or a pointer to a token wrapping the payload. The token carries a reference count, and when the reference count decrements to 0, the will be freed. Hence, it is essential that the payload be in memory allocated using malloc.</p>
 <p >There are three conditions under which this function will not actually put an event on the event queue and decrement the reference count of the token (if there is one), which could result in the payload being freed. In all three cases, this function returns 0. Otherwise, it returns a handle to the scheduled trigger, which is an integer greater than 0.</p>
 <p >The first condition is that a stop has been requested and the trigger offset plus the extra delay is greater than zero. The second condition is that the trigger offset plus the extra delay is greater that the requested stop time (timeout). The third condition is that the trigger argument is null.</p>
@@ -1395,7 +1395,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Return a writable copy of the specified token. If the reference count is 1, this returns the original token rather than a copy. The reference count will still be 1. If the size of the token payload is zero, this also returns the original token. Otherwise, this returns a new token with a reference count of 0. To ensure that the allocated memory is not leaked, this new token must be either passed to an output using set_token() or scheduled with a action using <a class="el" href="ctarget__schedule_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a>. </p>
+<p >Return a writable copy of the specified token. If the reference count is 1, this returns the original token rather than a copy. The reference count will still be 1. If the size of the token payload is zero, this also returns the original token. Otherwise, this returns a new token with a reference count of 0. To ensure that the allocated memory is not leaked, this new token must be either passed to an output using set_token() or scheduled with a action using <a class="el" href="schedule_8c.html#a738008e8a7b26ec1319c6375700e2e35">schedule_token()</a>. </p>
 
 </div>
 </div>
