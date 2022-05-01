@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['random_5fseed_0',['RANDOM_SEED',['../vector__test_8c.html#a990edf51308a42b583fde55e2b9bedb7',1,'vector_test.c']]],
-  ['register_5fuser_5ftrace_5fevent_1',['register_user_trace_event',['../trace_8h.html#a93b33b5ac0d1091ac118ab464bf3a7d0',1,'trace.h']]],
-  ['required_5fvotes_5fto_5fshrink_2',['REQUIRED_VOTES_TO_SHRINK',['../vector_8c.html#a58da1f3b4ceade930a44415416bc624a',1,'vector.c']]]
+  ['port_5fknocking_5fretry_5finterval_0',['PORT_KNOCKING_RETRY_INTERVAL',['../net__common_8h.html#a98427377c5c05d575a91f0b144bf7c74',1,'net_common.h']]],
+  ['port_5frange_5flimit_1',['PORT_RANGE_LIMIT',['../net__common_8h.html#aff81692fc67e6f7838d9d1cff402d7f6',1,'net_common.h']]]
 ];
