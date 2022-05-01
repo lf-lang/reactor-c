@@ -39,7 +39,7 @@ void test_get(hashmap_object2int_t* h) {
                 break;
             }
         }
-        error_print_and_exit(
+        lf_print_error_and_exit(
             "Expected %d but got %d when getting from a hashmap.\n",
             desired.value,
             found
@@ -70,7 +70,7 @@ int main() {
     for (int i = 0; i < N; i++) {
         int perturbed[2];
         perturb(distribution, 2, perturbed);
-        DEBUG_PRINT(
+        LF_PRINT_DEBUG(
             "Distribution: %d, %d",
             perturbed[0], perturbed[1]
         );
