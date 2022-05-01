@@ -105,6 +105,6 @@ bool _lf_sched_advance_tag_locked() {
     _lf_next_locked();
     tracepoint_scheduler_advancing_time_ends();
 
-    DEBUG_PRINT("Scheduler: Done waiting for _lf_next_locked().");
+    LF_PRINT_DEBUG("Scheduler: Done waiting for _lf_next_locked().");
     return false;
 }

@@ -21,7 +21,7 @@ static int distribution[4] = {30, 50, 5, 15};
  * @param x Any pointer.
  */
 void test_push(vector_t* v) {
-    DEBUG_PRINT("push.");
+    LF_PRINT_DEBUG("push.");
     void* x = mock + rand();
     vector_push(v, x);
     mock[mock_size++] = x;
@@ -33,13 +33,13 @@ void test_push(vector_t* v) {
  * @param v A vector.
  */
 void test_pop(vector_t* v) {
-    DEBUG_PRINT("pop.");
+    LF_PRINT_DEBUG("pop.");
     void* expected;
     void* found;
     if (mock_size && (
         (found = vector_pop(v)) != (expected = mock[--mock_size])
     )) {
-        error_print_and_exit(
+        lf_print_error_and_exit(
             "Expected %p but got %p while popping from a vector.",
             expected, found
         );
@@ -53,7 +53,7 @@ void test_pop(vector_t* v) {
  * @return The number of items pushed to `v`.
  */
 int test_pushall(vector_t* v) {
-    DEBUG_PRINT("pushall.");
+    LF_PRINT_DEBUG("pushall.");
     int count = rand() % MAX_PUSHALL;
     void** mock_start = mock + mock_size;
     for (int i = 0; i < count; i++) {
@@ -73,7 +73,7 @@ void test_random_access(vector_t* v) {
     if (mock_size) {
         int idx = rand() % mock_size;
         if (v->start[idx] != mock[idx]) {
-            error_print_and_exit(
+            lf_print_error_and_exit(
                 "Expected %p but got %p while randomly accessing a vector.",
                 mock[idx], v->start[idx]
             );
@@ -87,7 +87,7 @@ void test_random_access(vector_t* v) {
  * @param v A vector.
  */
 void test_vote(vector_t* v) {
-    DEBUG_PRINT("vote.");
+    LF_PRINT_DEBUG("vote.");
     vector_vote(v);
 }
 
@@ -121,7 +121,7 @@ int main() {
     for (int i = 0; i < N; i++) {
         int perturbed[4];
         perturb(distribution, 4, perturbed);
-        DEBUG_PRINT(
+        LF_PRINT_DEBUG(
             "Distribution: %d, %d, %d, %d",
             perturbed[0], perturbed[1], perturbed[2], perturbed[3]
         );

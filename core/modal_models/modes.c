@@ -60,12 +60,12 @@ bool _lf_mode_is_active(reactor_mode_t* mode) {
      * in all mode states. But for now: no premature optimization.
      */
     if (mode != NULL) {
-        //DEBUG_PRINT("Checking mode state of %s", mode->name);
+        //LF_PRINT_DEBUG("Checking mode state of %s", mode->name);
         reactor_mode_state_t* state = mode->state;
         while (state != NULL) {
             // If this or any parent mode is inactive, return inactive
             if (state->active_mode != mode) {
-                //DEBUG_PRINT(" => Mode is inactive");
+                //LF_PRINT_DEBUG(" => Mode is inactive");
                 return false;
             }
             mode = state->parent_mode;
@@ -75,7 +75,7 @@ bool _lf_mode_is_active(reactor_mode_t* mode) {
                 state = NULL;
             }
         }
-        //DEBUG_PRINT(" => Mode is active");
+        //LF_PRINT_DEBUG(" => Mode is active");
     }
     return true;
 }
@@ -210,13 +210,13 @@ void _lf_process_mode_changes(
                 state->next_mode = state->initial_mode;
                 // Enter with reset, to cascade it further down.
                 state->mode_change = reset_transition;
-                DEBUG_PRINT("Modes: Hierarchical mode reset to %s when entering %s.",
+                LF_PRINT_DEBUG("Modes: Hierarchical mode reset to %s when entering %s.",
                         state->initial_mode->name, state->parent_mode->name);
             }
 
             // Handle effect of entering next mode
             if (state->next_mode != NULL) {
-                DEBUG_PRINT("Modes: Transition to %s.", state->next_mode->name);
+                LF_PRINT_DEBUG("Modes: Transition to %s.", state->next_mode->name);
                 transition = true;
 
                 if (state->mode_change == reset_transition) {
@@ -224,7 +224,7 @@ void _lf_process_mode_changes(
                     for (int i = 0; i < reset_data_size; i++) {
                         mode_state_variable_reset_data_t data = reset_data[i];
                         if (data.mode == state->next_mode) {
-                            DEBUG_PRINT("Modes: Reseting state variable.");
+                            LF_PRINT_DEBUG("Modes: Reseting state variable.");
                             memcpy(data.target, data.source, data.size);
                         }
                     }
@@ -239,7 +239,7 @@ void _lf_process_mode_changes(
                             if (event->trigger->is_timer) { // Only reset timers
                                 trigger_t* timer = event->trigger;
 
-                                DEBUG_PRINT("Modes: Re-enqueuing reset timer.");
+                                LF_PRINT_DEBUG("Modes: Re-enqueuing reset timer.");
                                 // Reschedule the timer with no additional delay.
                                 // This will take care of super dense time when offset is 0.
                                 _lf_schedule(timer, event->trigger->offset, NULL);
@@ -251,7 +251,7 @@ void _lf_process_mode_changes(
                             tag_t current_logical_tag = lf_tag();
 
                             // Reschedule event with original local delay
-                            DEBUG_PRINT("Modes: Re-enqueuing event with a suspended delay of %d (previous TTH: %u, Mode suspended at: %u).", local_remaining_delay, event->time, state->next_mode->deactivation_time);
+                            LF_PRINT_DEBUG("Modes: Re-enqueuing event with a suspended delay of %d (previous TTH: %u, Mode suspended at: %u).", local_remaining_delay, event->time, state->next_mode->deactivation_time);
                             tag_t schedule_tag = {.time = current_logical_tag.time + local_remaining_delay, .microstep = (local_remaining_delay == 0 ? current_logical_tag.microstep + 1 : 0)};
                             _lf_schedule_at_tag(event->trigger, schedule_tag, event->token);
 
@@ -260,7 +260,7 @@ void _lf_process_mode_changes(
                                 if (event->trigger->last->next == NULL) {
                                     event->trigger->last->next = event->next;
                                 } else {
-                                    error_print("Modes: Cannot attach events stacked up in super dense to the just unsuspended root event.");
+                                    lf_print_error("Modes: Cannot attach events stacked up in super dense to the just unsuspended root event.");
                                 }
                             }
                         }
@@ -331,7 +331,7 @@ void _lf_process_mode_changes(
                 }
 
                 // Events are removed delayed in order to allow linear iteration over the queue
-                DEBUG_PRINT("Modes: Pulling %d events from the event queue to suspend them. %d events are now suspended.", delayed_removal_count, _lf_suspended_events_num);
+                LF_PRINT_DEBUG("Modes: Pulling %d events from the event queue to suspend them. %d events are now suspended.", delayed_removal_count, _lf_suspended_events_num);
                 for (int i = 0; i < delayed_removal_count; i++) {
                     pqueue_remove(event_q, delayed_removal[i]);
                 }

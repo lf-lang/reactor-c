@@ -10,30 +10,30 @@ on:
 
 jobs:
   unit-tests-single:
-    uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@main
+    uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@prefix-print
     with:
       cmake-args: '-UNUMBER_OF_WORKERS'
 
   unit-tests-multi:
-    uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@main
+    uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@prefix-print
     with:
       cmake-args: '-DNUMBER_OF_WORKERS=4'
 
   fetch-lf:
-    uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@set-destructor-variant
+    uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@prefix-print
     with:
       file: 'lingua-franca-ref.txt'
   
   lf-default:
     needs: fetch-lf
-    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@set-destructor-variant
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@prefix-print
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
 
   lf-gedf-np:
     needs: fetch-lf
-    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@set-destructor-variant
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@prefix-print
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
@@ -41,7 +41,7 @@ jobs:
       
   lf-gedf-np-ci:
     needs: fetch-lf
-    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@set-destructor-variant
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@prefix-print
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}

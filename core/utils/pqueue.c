@@ -49,7 +49,7 @@
  */ 
 void* find_equal(pqueue_t *q, void *e, int pos, pqueue_pri_t max) {
     if (pos < 0) {
-        error_print_and_exit("find_equal() called with a negative pos index.");
+        lf_print_error_and_exit("find_equal() called with a negative pos index.");
     }
 
     // Stop the recursion when we've reached the end of the 
@@ -86,7 +86,7 @@ void* find_equal(pqueue_t *q, void *e, int pos, pqueue_pri_t max) {
  */ 
 void* find_equal_same_priority(pqueue_t *q, void *e, int pos) {
     if (pos < 0) {
-        error_print_and_exit("find_equal_same_priority() called with a negative pos index.");
+        lf_print_error_and_exit("find_equal_same_priority() called with a negative pos index.");
     }
 
     // Stop the recursion when we've reached the end of the 
@@ -327,9 +327,9 @@ void* pqueue_peek(pqueue_t *q) {
 void pqueue_dump(pqueue_t *q, pqueue_print_entry_f print) {
     size_t i;
 
-    DEBUG_PRINT("posn\tleft\tright\tparent\tmaxchild\t...");
+    LF_PRINT_DEBUG("posn\tleft\tright\tparent\tmaxchild\t...");
     for (i = 1; i < q->size ;i++) {
-        DEBUG_PRINT("%zu\t%zu\t%zu\t%zu\t%ul\t",
+        LF_PRINT_DEBUG("%zu\t%zu\t%zu\t%zu\t%ul\t",
                 i,
                 LF_LEFT(i), LF_RIGHT(i), LF_PARENT(i),
                 (unsigned int)maxchild(q, i));
@@ -359,12 +359,12 @@ void pqueue_print(pqueue_t *q, pqueue_print_entry_f print) {
 
 static int subtree_is_valid(pqueue_t *q, int pos) {
     if (pos < 0) {
-        error_print_and_exit("subtree_is_valid() called with a negative pos index.");
+        lf_print_error_and_exit("subtree_is_valid() called with a negative pos index.");
     }
 
     int left_pos = LF_LEFT(pos);
     if (left_pos < 0) {
-        error_print_and_exit("subtree_is_valid(): index overflow detected.");
+        lf_print_error_and_exit("subtree_is_valid(): index overflow detected.");
     }
 
     if ((size_t)left_pos < q->size) {
@@ -377,7 +377,7 @@ static int subtree_is_valid(pqueue_t *q, int pos) {
 
     int right_pos = LF_RIGHT(pos);
     if (right_pos < 0) {
-        error_print_and_exit("subtree_is_valid(): index overflow detected.");
+        lf_print_error_and_exit("subtree_is_valid(): index overflow detected.");
     }
     if ((size_t)right_pos < q->size) {
         /* has a right child */

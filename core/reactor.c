@@ -86,10 +86,10 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
         return _lf_schedule_token(action, offset, NULL);
     }
     if (trigger == NULL || trigger->token == NULL || trigger->token->element_size <= 0) {
-        error_print("schedule: Invalid trigger or element size.");
+        lf_print_error("schedule: Invalid trigger or element size.");
         return -1;
     }
-    DEBUG_PRINT("schedule_copy: Allocating memory for payload (token value): %p.", trigger);
+    LF_PRINT_DEBUG("schedule_copy: Allocating memory for payload (token value): %p.", trigger);
     // Initialize token with an array size of length and a reference count of 0.
     lf_token_t* token = _lf_initialize_token(trigger->token, length);
     // Copy the value into the newly allocated memory.
@@ -126,11 +126,11 @@ void _lf_set_present(bool* is_present_field) {
 int wait_until(instant_t logical_time_ns) {
     int return_value = 0;
     if (!fast) {
-        LOG_PRINT("Waiting for elapsed logical time %lld.", logical_time_ns - start_time);
+        LF_PRINT_LOG("Waiting for elapsed logical time %lld.", logical_time_ns - start_time);
         interval_t ns_to_wait = logical_time_ns - lf_time_physical();
     
         if (ns_to_wait < MIN_WAIT_TIME) {
-            DEBUG_PRINT("Wait time %lld is less than MIN_WAIT_TIME %lld. Skipping wait.",
+            LF_PRINT_DEBUG("Wait time %lld is less than MIN_WAIT_TIME %lld. Skipping wait.",
                 ns_to_wait, MIN_WAIT_TIME);
             return return_value;
         }
@@ -142,9 +142,9 @@ int wait_until(instant_t logical_time_ns) {
 
 void print_snapshot() {
     if(LOG_LEVEL > LOG_LEVEL_LOG) {
-        DEBUG_PRINT(">>> START Snapshot");
+        LF_PRINT_DEBUG(">>> START Snapshot");
         pqueue_dump(reaction_q, reaction_q->prt);
-        DEBUG_PRINT(">>> END Snapshot");
+        LF_PRINT_DEBUG(">>> END Snapshot");
     }
 }
 
@@ -161,13 +161,13 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
 #ifdef MODAL_REACTORS
     // Check if reaction is disabled by mode inactivity
     if (!_lf_mode_is_active(reaction->mode)) {
-        DEBUG_PRINT("Suppressing downstream reaction %s due inactivity of mode %s.", reaction->name, reaction->mode->name);
+        LF_PRINT_DEBUG("Suppressing downstream reaction %s due inactivity of mode %s.", reaction->name, reaction->mode->name);
         return; // Suppress reaction by preventing entering reaction queue
     }
 #endif
     // Do not enqueue this reaction twice.
     if (reaction->status == inactive) {
-        DEBUG_PRINT("Enqueing downstream reaction %s, which has level %lld.",
+        LF_PRINT_DEBUG("Enqueing downstream reaction %s, which has level %lld.",
         		reaction->name, reaction->index & 0xffffLL);
         reaction->status = queued;
         pqueue_insert(reaction_q, reaction);
@@ -187,7 +187,7 @@ int _lf_do_step(void) {
         reaction_t* reaction = (reaction_t*)pqueue_pop(reaction_q);
         reaction->status = running;
         
-        LOG_PRINT("Invoking reaction %s at elapsed logical tag (%lld, %d).",
+        LF_PRINT_LOG("Invoking reaction %s at elapsed logical tag (%lld, %d).",
         		reaction->name,
                 current_tag.time - start_time, current_tag.microstep);
 
@@ -211,7 +211,7 @@ int _lf_do_step(void) {
             // They can have different deadlines, so we have to check both.
             // Handle the local deadline first.
             if (physical_time > current_tag.time + reaction->deadline) {
-                LOG_PRINT("Deadline violation. Invoking deadline handler.");
+                LF_PRINT_LOG("Deadline violation. Invoking deadline handler.");
                 // Deadline violation has occurred.
                 violation = true;
                 // Invoke the local handler, if there is one.
@@ -296,11 +296,11 @@ int next(void) {
         next_tag = stop_tag;
     }
 
-    LOG_PRINT("Next event (elapsed) time is %lld.", next_tag.time - start_time);
+    LF_PRINT_LOG("Next event (elapsed) time is %lld.", next_tag.time - start_time);
     // Wait until physical time >= event.time.
     // The wait_until function will advance current_tag.time.
     if (wait_until(next_tag.time) != 0) {
-        DEBUG_PRINT("***** wait_until was interrupted.");
+        LF_PRINT_DEBUG("***** wait_until was interrupted.");
         // Sleep was interrupted.
         // FIXME: It is unclear what would cause this to occur in this unthreaded
         // runtime since lf_schedule() is not thread safe here and should not
@@ -366,20 +366,20 @@ int lf_reactor_c_main(int argc, char* argv[]) {
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
 
-    DEBUG_PRINT("Processing command line arguments.");
+    LF_PRINT_DEBUG("Processing command line arguments.");
     if (process_args(default_argc, default_argv)
             && process_args(argc, argv)) {
-        DEBUG_PRINT("Processed command line arguments.");
-        DEBUG_PRINT("Registering the termination function.");
+        LF_PRINT_DEBUG("Processed command line arguments.");
+        LF_PRINT_DEBUG("Registering the termination function.");
         if (atexit(termination) != 0) {
-            warning_print("Failed to register termination function!");
+            lf_print_warning("Failed to register termination function!");
         }
         // The above handles only "normal" termination (via a call to exit).
         // As a consequence, we need to also trap ctrl-C, which issues a SIGINT,
         // and cause it to call exit.
         signal(SIGINT, exit);
 
-        DEBUG_PRINT("Initializing.");
+        LF_PRINT_DEBUG("Initializing.");
         initialize(); // Sets start_time.
 
         // Reaction queue ordered first by deadline, then by level.
@@ -398,7 +398,7 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         if (lf_tag_compare(current_tag, stop_tag) >= 0) {
             _lf_trigger_shutdown_reactions(); // _lf_trigger_shutdown_reactions();
         }
-        DEBUG_PRINT("Running the program's main loop.");
+        LF_PRINT_DEBUG("Running the program's main loop.");
         // Handle reactions triggered at time (T,m).
         if (_lf_do_step()) {
             while (next() != 0);

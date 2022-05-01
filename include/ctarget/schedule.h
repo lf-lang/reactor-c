@@ -40,7 +40,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef CTARGET_SCHEDULE
 #define CTARGET_SCHEDULE
-#include "core/reactor.h"
+#include "../core/reactor.h"
 //////////////////////////////////////////////////////////////
 /////////////  Schedule Functions
 

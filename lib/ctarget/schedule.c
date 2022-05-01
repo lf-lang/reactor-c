@@ -37,7 +37,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
  */
 
-#include "ctarget_schedule.h"
+#include "schedule.h"
 
 /**
  * Schedule an action to occur with the specified value and time offset
@@ -162,7 +162,7 @@ trigger_handle_t schedule_token(void* action, interval_t extra_delay, lf_token_t
  */
 trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, int length) {
     if (length < 0) {
-        error_print(
+        lf_print_error(
             "schedule_copy():"
             " Ignoring request to copy a value with a negative length (%d).",
             length
@@ -198,7 +198,7 @@ trigger_handle_t schedule_copy(void* action, interval_t offset, void* value, int
  */
 trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* value, int length) {
     if (length < 0) {
-        error_print(
+        lf_print_error(
             "schedule_value():"
             " Ignoring request to schedule an action with a value that has a negative length (%d).",
             length

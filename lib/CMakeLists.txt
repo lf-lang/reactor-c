@@ -1,4 +1,4 @@
-set(SOURCES ctarget_schedule.c)
+set(SOURCES ctarget/schedule.c)
 
-add_library(lib ctarget_schedule.c)
-target_include_directories(lib PRIVATE ${PROJECT_SOURCE_DIR}/include)
+add_library(lib ctarget/schedule.c)
+target_include_directories(lib PRIVATE ${PROJECT_SOURCE_DIR}/include/ctarget)
