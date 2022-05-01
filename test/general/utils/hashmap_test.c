@@ -16,7 +16,7 @@ static size_t mock_size = 0;
 
 void test_put(hashmap_object2int_t* h) {
     void* key = NULL;
-    while (!key) key = (void*) (rand() % CAPACITY);
+    while (!key) key = NULL + (rand() % CAPACITY);  // Generate a dummy pointer.
     int value = rand();
     hashmap_object2int_entry_t entry = (hashmap_object2int_entry_t) { .key = key, .value = value };
     hashmap_object2int_put(h, entry.key, entry.value);
