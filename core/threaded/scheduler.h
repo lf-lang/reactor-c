@@ -67,6 +67,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 typedef struct {
     size_t* num_reactions_per_level;
     size_t num_reactions_per_level_size;
+    reaction_t** reaction_instances;
 } sched_params_t;
 
 /**

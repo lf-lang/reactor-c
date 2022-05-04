@@ -46,7 +46,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler_instance.h"
 #include "scheduler_sync_tag_advance.c"
 
-#include "../schedule.h" // Generated
+#include "../../schedule.h" // Generated
 
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;
@@ -168,7 +168,7 @@ void lf_sched_init(
     if (init_sched_instance(&_lf_sched_instance, number_of_workers, params)) {
         // Scheduler has not been initialized before.
         if (params == NULL) {
-            error_print_and_exit(
+            lf_print_error_and_exit(
                 "Scheduler: Internal error. The NP scheduler "
                 "requires params to be set.");
         }
@@ -287,7 +287,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
 void lf_sched_done_with_reaction(size_t worker_number,
                                  reaction_t* done_reaction) {
     if (!lf_bool_compare_and_swap(&done_reaction->status, queued, inactive)) {
-        error_print_and_exit("Unexpected reaction status: %d. Expected %d.",
+        lf_print_error_and_exit("Unexpected reaction status: %d. Expected %d.",
                              done_reaction->status, queued);
     }
 }
