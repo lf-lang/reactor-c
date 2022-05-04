@@ -46,7 +46,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler_instance.h"
 #include "scheduler_sync_tag_advance.c"
 
-#include "static_schedule.h" // Generated
+#include "../schedule.h" // Generated
 
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;
@@ -69,10 +69,10 @@ void _lf_sched_notify_workers() {
     // Note: All threads are idle. Therefore, there is no need to lock the mutex
     // while accessing the index for the current level.
     size_t workers_to_awaken = _lf_sched_instance->_lf_sched_number_of_workers;
-    DEBUG_PRINT("Scheduler: Notifying %d workers.", workers_to_awaken);
+    LF_PRINT_DEBUG("Scheduler: Notifying %d workers.", workers_to_awaken);
 
     _lf_sched_instance->_lf_sched_number_of_idle_workers -= workers_to_awaken;
-    DEBUG_PRINT("Scheduler: New number of idle workers: %u.",
+    LF_PRINT_DEBUG("Scheduler: New number of idle workers: %u.",
                 _lf_sched_instance->_lf_sched_number_of_idle_workers);
     
     if (workers_to_awaken > 1) {
@@ -110,15 +110,15 @@ void _lf_sched_wait_for_work(size_t worker_number) {
                             1) ==
         _lf_sched_instance->_lf_sched_number_of_workers) {
         // Last thread to go idle
-        DEBUG_PRINT("Scheduler: Worker %d is the last idle thread.",
+        LF_PRINT_DEBUG("Scheduler: Worker %d is the last idle thread.",
                     worker_number);
 
         lf_mutex_lock(&mutex);
         // Nothing more happening at this tag.
-        DEBUG_PRINT("Scheduler: Advancing tag.");
+        LF_PRINT_DEBUG("Scheduler: Advancing tag.");
         // This worker thread will take charge of advancing tag.
         if (_lf_sched_advance_tag_locked()) {
-            DEBUG_PRINT("Scheduler: Reached stop tag.");
+            LF_PRINT_DEBUG("Scheduler: Reached stop tag.");
             _lf_sched_signal_stop();
         }
         lf_mutex_unlock(&mutex);
@@ -131,7 +131,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
         _lf_sched_notify_workers();
     } else {
         // Not the last thread to become idle. Wait for work to be released.
-        DEBUG_PRINT(
+        LF_PRINT_DEBUG(
             "Scheduler: Worker %d is trying to acquire the scheduling "
             "semaphore.",
             worker_number);
@@ -140,7 +140,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
         lf_cond_wait(&_lf_sched_instance->_lf_sched_semaphore->cond, &_lf_sched_instance->_lf_sched_semaphore->mutex);
         lf_mutex_unlock(&_lf_sched_instance->_lf_sched_semaphore->mutex);
         
-        DEBUG_PRINT("Scheduler: Worker %d acquired the scheduling semaphore.",
+        LF_PRINT_DEBUG("Scheduler: Worker %d acquired the scheduling semaphore.",
                     worker_number);
     }
 }
@@ -161,7 +161,7 @@ void lf_sched_init(
     size_t number_of_workers, 
     sched_params_t* params
 ) {
-    DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
+    LF_PRINT_DEBUG("Scheduler: Initializing with %d workers", number_of_workers);
 
     // This scheduler is unique in that it requires `num_reactions_per_level` to
     // work correctly.
@@ -196,7 +196,7 @@ void lf_sched_init(
  * This must be called when the scheduler is no longer needed.
  */
 void lf_sched_free() {
-    DEBUG_PRINT("Freeing the pointers in the scheduler struct.");
+    LF_PRINT_DEBUG("Freeing the pointers in the scheduler struct.");
     free(_lf_sched_instance->pc);
     for (int i = 0; i < num_semaphores; i++) {
         lf_semaphore_destroy(_lf_sched_instance->semaphores[i]);
@@ -218,7 +218,7 @@ void lf_sched_free() {
  * worker thread should exit.
  */
 reaction_t* lf_sched_get_ready_reaction(int worker_number) {
-    DEBUG_PRINT("Worker %d inside lf_sched_get_ready_reaction", worker_number);
+    LF_PRINT_DEBUG("Worker %d inside lf_sched_get_ready_reaction", worker_number);
     // Execute the instructions
     size_t* pc = &_lf_sched_instance->pc[worker_number];
     int schedule_index = _lf_sched_instance->current_schedule_index;
@@ -233,7 +233,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
     reaction_t* returned_reaction = NULL;
     bool loop_done = false;
     while (*pc < _lf_sched_instance->schedule_lengths[schedule_index][worker_number] && !loop_done) {
-        DEBUG_PRINT("Current instruction for worker %d: %c %zu", worker_number, current_schedule[*pc].inst, current_schedule[*pc].op);
+        LF_PRINT_DEBUG("Current instruction for worker %d: %c %zu", worker_number, current_schedule[*pc].inst, current_schedule[*pc].op);
         switch (current_schedule[*pc].inst) {
         case 'e': // Execute 
         {
@@ -242,7 +242,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
                 returned_reaction = react;
                 loop_done = true;
             } else
-                DEBUG_PRINT("Worker %d skip execution", worker_number);
+                LF_PRINT_DEBUG("Worker %d skip execution", worker_number);
             *pc += 1;
             break;
         }
@@ -255,7 +255,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
             *pc += 1;
             break;
         case 's': // Stop
-            DEBUG_PRINT("Worker %d reaches a stop instruction", worker_number);
+            LF_PRINT_DEBUG("Worker %d reaches a stop instruction", worker_number);
             // Check if the worker is the last worker to reach stop.
             // If so, this worker thread will take charge of advancing tag.
             // Ask the scheduler for more work and wait
@@ -266,7 +266,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
             break;
         }
     };
-    DEBUG_PRINT("Worker %d leaves lf_sched_get_ready_reaction", worker_number);
+    LF_PRINT_DEBUG("Worker %d leaves lf_sched_get_ready_reaction", worker_number);
     return returned_reaction;
 }
 
