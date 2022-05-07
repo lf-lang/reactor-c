@@ -704,7 +704,7 @@ void _lf_next_locked() {
  * a later logical time determined by the RTI so that
  * all federates stop at the same logical time.
  */
-void request_stop() {
+void _lf_request_stop() {
     lf_mutex_lock(&mutex);
     // Check if already at the previous stop tag.
     if (_lf_tag_compare(current_tag, stop_tag) >= 0) {
@@ -1060,7 +1060,7 @@ void* worker(void* arg) {
  * If DEBUG logging is enabled, prints the status of the event queue,
  * the reaction queue, and the executing queue.
  */
-void print_snapshot() {
+void _lf_print_snapshot() {
     if(LOG_LEVEL > LOG_LEVEL_LOG) {
         LF_PRINT_DEBUG(">>> START Snapshot");
         LF_PRINT_DEBUG("Pending:");

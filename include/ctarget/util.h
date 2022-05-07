@@ -168,4 +168,40 @@ DEPRECATED(void register_print_function(print_message_function_t* function, int 
                     log_print(format, ##__VA_ARGS__); \
                 } } while (0)
 
+
+/**
+ * Return the global STP offset on advancement of logical
+ * time for federated execution.
+ */
+interval_t lf_get_stp_offset(void);
+DEPRECATED(interval_t get_stp_offset(void));
+
+/**
+ * Set the global STP offset on advancement of logical
+ * time for federated execution.
+ * 
+ * @param offset A positive time value to be applied
+ *  as the STP offset.
+ */
+void lf_set_stp_offset(interval_t offset);
+DEPRECATED(void set_stp_offset(interval_t offset));
+
+/**
+ * Print a snapshot of the priority queues used during execution
+ * (for debugging).
+ */
+void lf_print_snapshot(void);
+DEPRECATED(void print_snapshot(void));
+
+/**
+ * Request a stop to execution as soon as possible.
+ * In a non-federated execution, this will occur
+ * at the conclusion of the current logical time.
+ * In a federated execution, it will likely occur at
+ * a later logical time determined by the RTI so that
+ * all federates stop at the same logical time.
+ */
+void lf_request_stop(void);
+DEPRECATED(void request_stop(void));
+
 #endif // CTARGET_UTIL

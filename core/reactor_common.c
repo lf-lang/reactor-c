@@ -284,7 +284,7 @@ void _lf_set_stop_tag(tag_t tag) {
  * Return the global STP offset on advancement of logical
  * time for federated execution.
  */
-interval_t get_stp_offset() {
+interval_t _lf_get_stp_offset() {
     return _lf_global_time_STP_offset;
 }
 
@@ -295,7 +295,7 @@ interval_t get_stp_offset() {
  * @param offset A positive time value to be applied
  *  as the STP offset.
  */
-void set_stp_offset(interval_t offset) {
+void _lf_set_stp_offset(interval_t offset) {
     if (offset > 0LL) {
         _lf_global_time_STP_offset = offset;
     }
