@@ -439,8 +439,8 @@ typedef struct trigger_t trigger_t;
 /**
  * Global STP offset uniformly applied to advancement of each 
  * time step in federated execution. This can be retrieved in 
- * user code by calling get_stp_offset() and adjusted by 
- * calling set_stp_offset(interval_t offset).
+ * user code by calling _lf_get_stp_offset() and adjusted by 
+ * calling _lf_set_stp_offset(interval_t offset).
  */
 extern interval_t _lf_global_time_STP_offset;
 

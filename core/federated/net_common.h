@@ -402,9 +402,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_LOGICAL_TAG_COMPLETE 9
 
-/////////// Messages used in request_stop() ///////////////
+/////////// Messages used in _lf_request_stop() ///////////////
 //// Overview of the algorithm:
-////  When any federate calls request_stop(), it will
+////  When any federate calls _lf_request_stop(), it will
 ////  send a MSG_TYPE_STOP_REQUEST message to the RTI, which will then
 ////  forward a MSG_TYPE_STOP_REQUEST message
 ////  to any federate that has not yet provided a stop time to the RTI. The federates will reply
@@ -480,7 +480,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     encode_int32((int32_t)microstep, &(buffer[1 + sizeof(instant_t)])); \
 } while(0)
 
-/////////// End of request_stop() messages ////////////////
+/////////// End of _lf_request_stop() messages ////////////////
 
 /**
  * Byte identifying a address query message, sent by a federate to RTI

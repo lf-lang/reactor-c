@@ -79,7 +79,7 @@ bool _lf_execution_started = false;
 /**
  * The tag at which the Lingua Franca program should stop.
  * It will be initially set to timeout if it is set. However,
- * starvation or calling request_stop() can also alter the stop_tag by moving it
+ * starvation or calling _lf_request_stop() can also alter the stop_tag by moving it
  * earlier.
  * 
  * FIXME: This variable might need to be volatile
@@ -127,8 +127,8 @@ int _lf_tokens_with_ref_count_size = 0;
 /**
  * Global STP offset uniformly applied to advancement of each
  * time step in federated execution. This can be retrieved in
- * user code by calling get_stp_offset() and adjusted by
- * calling set_stp_offset(interval_t offset).
+ * user code by calling _lf_get_stp_offset() and adjusted by
+ * calling _lf_set_stp_offset(interval_t offset).
  */
 interval_t _lf_global_time_STP_offset = 0LL;
 
