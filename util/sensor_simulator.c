@@ -257,13 +257,13 @@ void* _lf_sensor_read_input(void* ignored) {
             // because a _lf_sensor_trigger_table entry, once assigned a value, becomes
             // immutable.
             if (c == '\n' && _lf_sensor_sensor_newline_trigger != NULL) {
-                schedule_copy(_lf_sensor_sensor_newline_trigger, 0, &c, 1);
+                lf_schedule_copy(_lf_sensor_sensor_newline_trigger, 0, &c, 1);
             } else if (c - 32 >= 0 && c - 32 < LF_SENSOR_TRIGGER_TABLE_SIZE && _lf_sensor_trigger_table[c-32] != NULL) {
-                schedule_copy(_lf_sensor_trigger_table[c-32], 0, &c, 1);
+                lf_schedule_copy(_lf_sensor_trigger_table[c-32], 0, &c, 1);
             }
             // Any key trigger triggers after specific keys.
             if (_lf_sensor_any_key_trigger != NULL) {
-                schedule_copy(_lf_sensor_any_key_trigger, 0, &c, 1);
+                lf_schedule_copy(_lf_sensor_any_key_trigger, 0, &c, 1);
             }
         }
     }
