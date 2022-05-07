@@ -1096,6 +1096,14 @@ void determine_number_of_workers(void) {
         #if !defined(NUMBER_OF_WORKERS) || NUMBER_OF_WORKERS == 0
         // Use the number of cores on the host machine.
         _lf_number_of_workers = lf_available_cores();
+
+        // If reaction graph breadth is available. Cap number of workers
+        #if defined(LF_REACTION_GRAPH_BREADTH)
+        if (LF_REACTION_GRAPH_BREADTH < _lf_number_of_workers) {
+            _lf_number_of_workers = LF_REACTION_GRAPH_BREADTH;
+        }
+        #endif
+
         #else
         // Use the provided number of workers by the user
         _lf_number_of_workers = NUMBER_OF_WORKERS;
