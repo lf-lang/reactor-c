@@ -318,7 +318,7 @@ void* _lf_sensor_simulator_thread(void* ignored) {
     	// Show all messages in the queue.
 		while (_lf_sensor.message_q != NULL) {
 			if (_lf_sensor.message_q->type == _lf_sensor_close_windows) {
-			    register_print_function(NULL, -1);
+			    lf_register_print_function(NULL, -1);
 			    endwin();
 			    lf_mutex_unlock(&_lf_sensor_mutex);
 				return NULL;
@@ -368,7 +368,7 @@ void* _lf_sensor_simulator_thread(void* ignored) {
  * End ncurses control of the terminal.
  */
 void end_sensor_simulator() {
-    register_print_function(NULL, -1);
+    lf_register_print_function(NULL, -1);
 	_lf_sensor_post_message(_lf_sensor_close_windows, NULL);
 
 	void* thread_return;
@@ -432,7 +432,7 @@ int start_sensor_simulator(
     	}
     	// Register the print function before starting the thread.
     	// Subsequent print messages will go into the queue.
-        register_print_function(&_lf_print_message_function, log_level);
+        lf_register_print_function(&_lf_print_message_function, log_level);
 
         // FIXME: Is this needed? Users should call end_sensor_simulator in
         // a shutdown reaction.
