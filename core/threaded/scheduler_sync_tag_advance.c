@@ -74,7 +74,7 @@ bool _lf_sched_should_stop_locked() {
         logical_tag_complete(current_tag);
         // If we are at the stop tag, do not call _lf_next_locked()
         // to prevent advancing the logical time.
-        if (lf_tag_compare(current_tag, stop_tag) >= 0) {
+        if (_lf_tag_compare(current_tag, stop_tag) >= 0) {
             return true;
         }
     }

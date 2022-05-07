@@ -171,13 +171,13 @@ typedef enum _lf_time_type {
  * 
  * Example use cases:
  * - Getting the starting time:
- * lf_time_start()
+ * _lf_time(LF_START)
  * 
  * - Getting the elapsed physical time:
- * lf_time_physical_elapsed()
+ * _lf_time(LF_ELAPSED_PHYSICAL)
  * 
  * - Getting the logical time
- * lf_time_logical()
+ * _lf_time(LF_LOGICAL)
  * 
  * @param type A field in an enum specifying the time type. 
  *             See enum "lf_time_type" above.
