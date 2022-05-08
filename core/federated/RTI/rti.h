@@ -94,7 +94,7 @@ typedef struct federate_t {
                                 // server of the federate.
     bool requested_stop;    // Indicates that the federate has requested stop or has replied
                             // to a request for stop from the RTI. Used to prevent double-counting
-                            // a federate when handling _lf_request_stop().
+                            // a federate when handling lf_request_stop().
 } federate_t;
 
 /**

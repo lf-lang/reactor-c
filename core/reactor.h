@@ -439,8 +439,8 @@ typedef struct trigger_t trigger_t;
 /**
  * Global STP offset uniformly applied to advancement of each 
  * time step in federated execution. This can be retrieved in 
- * user code by calling _lf_get_stp_offset() and adjusted by 
- * calling _lf_set_stp_offset(interval_t offset).
+ * user code by calling lf_get_stp_offset() and adjusted by 
+ * calling lf_set_stp_offset(interval_t offset).
  */
 extern interval_t _lf_global_time_STP_offset;
 
@@ -641,7 +641,7 @@ typedef struct self_base_t {
  * Return the global STP offset on advancement of logical
  * time for federated execution.
  */
-interval_t _lf_get_stp_offset(void);
+interval_t lf_get_stp_offset(void);
 
 /**
  * Set the global STP offset on advancement of logical
@@ -650,13 +650,13 @@ interval_t _lf_get_stp_offset(void);
  * @param offset A positive time value to be applied
  *  as the STP offset.
  */
-void _lf_set_stp_offset(interval_t offset);
+void lf_set_stp_offset(interval_t offset);
 
 /**
  * Print a snapshot of the priority queues used during execution
  * (for debugging).
  */
-void _lf_print_snapshot(void);
+void lf_print_snapshot(void);
 
 /**
  * Request a stop to execution as soon as possible.
@@ -666,7 +666,7 @@ void _lf_print_snapshot(void);
  * a later logical time determined by the RTI so that
  * all federates stop at the same logical time.
  */
-void _lf_request_stop(void);
+void lf_request_stop(void);
 
 /**
  * Allocate zeroed-out memory and record the allocated memory on
