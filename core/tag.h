@@ -191,7 +191,7 @@ instant_t _lf_time(_lf_time_type type);
  * and get_elpased_physical_time() will have this specified offset
  * added to what it would have returned before the call.
  */
-void _lf_set_physical_clock_offset(interval_t offset);
+void lf_set_physical_clock_offset(interval_t offset);
 
 /**
  * Delay a tag by the specified time interval to realize the "after" keyword.
