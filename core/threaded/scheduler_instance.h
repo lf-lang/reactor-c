@@ -100,6 +100,14 @@ typedef struct {
     lf_mutex_t* _lf_sched_array_of_mutexes;
 
     /**
+     * @brief An array of conditional variable.
+     *
+     * Can be used to avoid race conditions. Schedulers are allowed to
+     * initialize as many conditional as they deem fit.
+     */
+    lf_cond_t* _lf_sched_array_of_conds;
+
+    /**
      * @brief An array of atomic indexes.
      *
      * Can be used to avoid race conditions. Schedulers are allowed to to use as

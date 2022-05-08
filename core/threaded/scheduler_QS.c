@@ -78,9 +78,10 @@ void _lf_sched_notify_workers() {
     if (workers_to_awaken > 1) {
         // Notify all the workers except the worker thread that has called this
         // function.
-        lf_mutex_lock(&_lf_sched_instance->_lf_sched_semaphore->mutex);
-        lf_cond_broadcast(&_lf_sched_instance->_lf_sched_semaphore->cond);
-        lf_mutex_unlock(&_lf_sched_instance->_lf_sched_semaphore->mutex);
+        // lf_mutex_lock(&_lf_sched_instance->_lf_sched_semaphore->mutex);
+        // lf_cond_broadcast(&_lf_sched_instance->_lf_sched_semaphore->cond);
+        // lf_mutex_unlock(&_lf_sched_instance->_lf_sched_semaphore->mutex);
+        lf_cond_broadcast(&_lf_sched_instance->_lf_sched_array_of_conds[0]);
     }
     
 }
@@ -106,14 +107,17 @@ void _lf_sched_signal_stop() {
 void _lf_sched_wait_for_work(size_t worker_number) {
     // Increment the number of idle workers by 1 and check if this is the last
     // worker thread to become idle.
-    if (lf_atomic_add_fetch(&_lf_sched_instance->_lf_sched_number_of_idle_workers,
-                            1) ==
+    LF_PRINT_DEBUG(
+        "Scheduler: Worker %d is trying to acquire the scheduling "
+        "semaphore.",
+        worker_number);
+    lf_mutex_lock(&mutex);
+    if (_lf_sched_instance->_lf_sched_number_of_idle_workers++ ==
         _lf_sched_instance->_lf_sched_number_of_workers) {
         // Last thread to go idle
         LF_PRINT_DEBUG("Scheduler: Worker %d is the last idle thread.",
                     worker_number);
 
-        lf_mutex_lock(&mutex);
         // Nothing more happening at this tag.
         LF_PRINT_DEBUG("Scheduler: Advancing tag.");
         // This worker thread will take charge of advancing tag.
@@ -121,28 +125,25 @@ void _lf_sched_wait_for_work(size_t worker_number) {
             LF_PRINT_DEBUG("Scheduler: Reached stop tag.");
             _lf_sched_signal_stop();
         }
-        lf_mutex_unlock(&mutex);
 
         // Reset all the PCs to 0.
         for (int w = 0; w < _lf_sched_instance->_lf_sched_number_of_workers; w++) {
             _lf_sched_instance->pc[w] = 0;
         }
-
+        
         _lf_sched_notify_workers();
     } else {
         // Not the last thread to become idle. Wait for work to be released.
-        LF_PRINT_DEBUG(
-            "Scheduler: Worker %d is trying to acquire the scheduling "
-            "semaphore.",
-            worker_number);
         // Wait for the last thread to signal the condition variable.
-        lf_mutex_lock(&_lf_sched_instance->_lf_sched_semaphore->mutex);
-        lf_cond_wait(&_lf_sched_instance->_lf_sched_semaphore->cond, &_lf_sched_instance->_lf_sched_semaphore->mutex);
-        lf_mutex_unlock(&_lf_sched_instance->_lf_sched_semaphore->mutex);
+        // lf_mutex_lock(&_lf_sched_instance->_lf_sched_semaphore->mutex);
+        // lf_cond_wait(&_lf_sched_instance->_lf_sched_semaphore->cond, &_lf_sched_instance->_lf_sched_semaphore->mutex);
+        // lf_mutex_unlock(&_lf_sched_instance->_lf_sched_semaphore->mutex);
+        lf_cond_wait(&_lf_sched_instance->_lf_sched_array_of_conds[0], &mutex);
         
         LF_PRINT_DEBUG("Scheduler: Worker %d acquired the scheduling semaphore.",
                     worker_number);
     }
+    lf_mutex_unlock(&mutex);
 }
 
 ///////////////////// Scheduler Init and Destroy API /////////////////////////
@@ -183,6 +184,10 @@ void lf_sched_init(
     _lf_sched_instance->schedule_lengths = &schedule_lengths[0];
     _lf_sched_instance->pc = calloc(number_of_workers, sizeof(size_t));
     _lf_sched_instance->reaction_instances = params->reaction_instances;
+    // _lf_sched_instance->_lf_sched_array_of_mutexes = (mutex_t*) calloc(1, sizeof(mutex_t));
+    // lf_mutex_init(&_lf_sched_instance->_lf_sched_array_of_mutexes[0]);
+    _lf_sched_instance->_lf_sched_array_of_conds = (lf_cond*) calloc(1, sizeof(lf_cond));
+    lf_cond_init(&_lf_sched_instance->_lf_sched_array_of_conds[0]);
     // Populate semaphores.
     _lf_sched_instance->semaphores = calloc(num_semaphores, sizeof(semaphore_t));
     for (int i = 0; i < num_semaphores; i++) {
@@ -203,6 +208,8 @@ void lf_sched_free() {
     }
     free(_lf_sched_instance->semaphores);
     free(_lf_sched_instance->reaction_instances);
+    // free(_lf_sched_instance->_lf_sched_array_of_mutexes);
+    free(_lf_sched_instance->_lf_sched_array_of_conds);
 }
 
 ///////////////////// Scheduler Worker API (public) /////////////////////////
