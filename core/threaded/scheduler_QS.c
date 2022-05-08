@@ -112,7 +112,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
         "semaphore.",
         worker_number);
     lf_mutex_lock(&mutex);
-    if (_lf_sched_instance->_lf_sched_number_of_idle_workers++ ==
+    if (++_lf_sched_instance->_lf_sched_number_of_idle_workers ==
         _lf_sched_instance->_lf_sched_number_of_workers) {
         // Last thread to go idle
         LF_PRINT_DEBUG("Scheduler: Worker %d is the last idle thread.",
@@ -186,7 +186,7 @@ void lf_sched_init(
     _lf_sched_instance->reaction_instances = params->reaction_instances;
     // _lf_sched_instance->_lf_sched_array_of_mutexes = (mutex_t*) calloc(1, sizeof(mutex_t));
     // lf_mutex_init(&_lf_sched_instance->_lf_sched_array_of_mutexes[0]);
-    _lf_sched_instance->_lf_sched_array_of_conds = (lf_cond*) calloc(1, sizeof(lf_cond));
+    _lf_sched_instance->_lf_sched_array_of_conds = (lf_cond_t*) calloc(1, sizeof(lf_cond_t));
     lf_cond_init(&_lf_sched_instance->_lf_sched_array_of_conds[0]);
     // Populate semaphores.
     _lf_sched_instance->semaphores = calloc(num_semaphores, sizeof(semaphore_t));
