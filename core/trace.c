@@ -398,7 +398,7 @@ void tracepoint(
     _lf_trace_buffer[index][i].reaction_number = reaction_number;
     _lf_trace_buffer[index][i].worker = worker;
     _lf_trace_buffer[index][i].logical_time = _lf_time(LF_LOGICAL);
-    _lf_trace_buffer[index][i].microstep = _lf_tag().microstep;
+    _lf_trace_buffer[index][i].microstep = lf_tag().microstep;
     if (physical_time != NULL) {
         _lf_trace_buffer[index][i].physical_time = *physical_time;
     } else {

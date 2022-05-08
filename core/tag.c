@@ -94,7 +94,7 @@ instant_t _lf_last_reported_unadjusted_physical_time_ns = NEVER;
 /**
  * Return the current tag, a logical time, microstep pair.
  */
-tag_t _lf_tag() {
+tag_t lf_tag() {
     return current_tag;
 }
 
@@ -108,7 +108,7 @@ tag_t _lf_tag() {
  * @param tag2
  * @return -1, 0, or 1 depending on the relation.
  */
-int _lf_tag_compare(tag_t tag1, tag_t tag2) {
+int lf_tag_compare(tag_t tag1, tag_t tag2) {
     if (tag1.time < tag2.time) {
         return -1;
     } else if (tag1.time > tag2.time) {

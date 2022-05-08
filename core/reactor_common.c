@@ -272,7 +272,7 @@ void _lf_free_all_reactors(void) {
  *  calling this function.
  */
 void _lf_set_stop_tag(tag_t tag) {
-    if (_lf_tag_compare(tag, stop_tag) < 0) {
+    if (lf_tag_compare(tag, stop_tag) < 0) {
         stop_tag = tag;
     }
 }
@@ -594,7 +594,7 @@ lf_token_t* _lf_initialize_token(lf_token_t* token, size_t length) {
  * @param tag The tag to check against stop tag
  */
 bool _lf_is_tag_after_stop_tag(tag_t tag) {
-    return (_lf_tag_compare(tag, stop_tag) > 0);
+    return (lf_tag_compare(tag, stop_tag) > 0);
 }
 
 /**
@@ -649,7 +649,7 @@ void _lf_pop_events() {
                     // the reaction can access the value.
                     event->trigger->intended_tag = event->intended_tag;
                     // And check if it is in the past compared to the current tag.
-                    if (_lf_tag_compare(event->intended_tag,
+                    if (lf_tag_compare(event->intended_tag,
                                     current_tag) < 0) {
                         // Mark the triggered reaction with a STP violation
                         reaction->is_STP_violated = true;
@@ -887,12 +887,12 @@ void _lf_replace_token(event_t* event, lf_token_t* token) {
  */
 int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
 
-    tag_t current_logical_tag = _lf_tag();
+    tag_t current_logical_tag = lf_tag();
 
     LF_PRINT_DEBUG("_lf_schedule_at_tag() called with tag (%lld, %u) at tag (%lld, %u).",
                   tag.time - start_time, tag.microstep,
                   current_logical_tag.time - start_time, current_logical_tag.microstep);
-    if (_lf_tag_compare(tag, current_logical_tag) <= 0) {
+    if (lf_tag_compare(tag, current_logical_tag) <= 0) {
         lf_print_warning("_lf_schedule_at_tag(): requested to schedule an event in the past.");
         return -1;
     }
@@ -1252,7 +1252,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
                 default:
                     if (existing->time == current_tag.time &&
                             pqueue_find_equal_same_priority(event_q, existing) != NULL) {
-                        if (_lf_is_tag_after_stop_tag((tag_t){.time=existing->time,.microstep=_lf_tag().microstep+1})) {
+                        if (_lf_is_tag_after_stop_tag((tag_t){.time=existing->time,.microstep=lf_tag().microstep+1})) {
                             // Scheduling e will incur a microstep at timeout, 
                             // which is illegal.
                             _lf_recycle_event(e);
@@ -1365,7 +1365,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
     // Check if the trigger has violated the STP offset
     bool is_STP_violated = false;
 #ifdef FEDERATED
-    if (_lf_tag_compare(trigger->intended_tag, _lf_tag()) < 0) {
+    if (lf_tag_compare(trigger->intended_tag, lf_tag()) < 0) {
         is_STP_violated = true;
     }
 #ifdef FEDERATED_CENTRALIZED

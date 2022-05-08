@@ -114,7 +114,7 @@ typedef tag_t tag_interval_t;
 /**
  * Return the current tag, a logical time, microstep pair.
  */
-tag_t _lf_tag();
+tag_t lf_tag();
 
 /**
  * Compare two tags. Return -1 if the first is less than
@@ -126,7 +126,7 @@ tag_t _lf_tag();
  * @param tag2
  * @return -1, 0, or 1 depending on the relation.
  */
-int _lf_tag_compare(tag_t tag1, tag_t tag2);
+int lf_tag_compare(tag_t tag1, tag_t tag2);
 
 /**
  * Store into the specified buffer a string giving a human-readable
