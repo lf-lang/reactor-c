@@ -425,7 +425,7 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
 #endif
     if (!fast) {
         // Get physical time as adjusted by clock synchronization offset.
-        instant_t current_physical_time = _lf_time(LF_PHYSICAL);
+        instant_t current_physical_time = lf_time_physical();
         // We want to wait until that adjusted time matches the logical time.
         interval_t ns_to_wait = wait_until_time_ns - current_physical_time;
         // We should not wait if that adjusted time is already ahead
@@ -474,7 +474,7 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
             // Unfortunately, at least on Macs, pthread_cond_timedwait appears
             // to be implemented incorrectly and it returns well short of the target
             // time.  Check for this condition and wait again if necessary.
-            interval_t ns_to_wait = wait_until_time_ns - _lf_time(LF_PHYSICAL);
+            interval_t ns_to_wait = wait_until_time_ns - lf_time_physical();
             // We should not wait if that adjusted time is already ahead
             // of logical time.
             if (ns_to_wait < MIN_WAIT_TIME) {
@@ -485,7 +485,7 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
             return wait_until(wait_until_time_ns, condition);
         }
 
-        LF_PRINT_DEBUG("-------- Returned from wait, having waited %lld ns.", _lf_time(LF_PHYSICAL) - current_physical_time);
+        LF_PRINT_DEBUG("-------- Returned from wait, having waited %lld ns.", lf_time_physical() - current_physical_time);
     }
     return return_value;
 }
@@ -649,7 +649,7 @@ void _lf_next_locked() {
     }
 
     LF_PRINT_DEBUG("Physical time is ahead of next tag time by %lld. This should be small unless -fast is used.",
-                _lf_time(LF_PHYSICAL) - next_tag.time);
+                lf_time_physical() - next_tag.time);
     
 #ifdef FEDERATED
     // In federated execution (at least under decentralized coordination),
@@ -828,10 +828,10 @@ void _lf_initialize_start_tag() {
     while (!wait_until(start_time, &event_q_changed)) {}
     LF_PRINT_DEBUG("Done waiting for start time %lld.", start_time);
     LF_PRINT_DEBUG("Physical time is ahead of current time by %lld. This should be small.",
-            _lf_time(LF_PHYSICAL) - start_time);
+            lf_time_physical() - start_time);
 
     // Reinitialize the physical start time to match the start_time.
-    // Otherwise, reports of _lf_time(LF_PHYSICAL) are not very meaningful
+    // Otherwise, reports of lf_time_physical() are not very meaningful
     // w.r.t. logical time.
     physical_start_time = start_time;
 #endif
@@ -873,7 +873,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(int worker_number, reacti
     // then the reaction will be invoked and the violation reaction will not be invoked again.
     if (reaction->deadline > 0LL) {
         // Get the current physical time.
-        instant_t physical_time = _lf_time(LF_PHYSICAL);
+        instant_t physical_time = lf_time_physical();
         // Check for deadline violation.
         if (physical_time > current_tag.time + reaction->deadline) {
             // Deadline violation has occurred.

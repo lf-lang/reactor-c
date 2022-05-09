@@ -1163,7 +1163,7 @@ void send_physical_clock(unsigned char message_type, federate_t* fed, socket_typ
     }
     unsigned char buffer[sizeof(int64_t) + 1];
     buffer[0] = message_type;
-    int64_t current_physical_time = _lf_time(LF_PHYSICAL);
+    int64_t current_physical_time = lf_time_physical();
     encode_int64(current_physical_time, &(buffer[1]));
     
     // Send the message
@@ -1240,7 +1240,7 @@ void* clock_synchronization_thread(void* noargs) {
 
     // Wait until the start time before starting clock synchronization.
     // The above wait ensures that start_time has been set.
-    interval_t ns_to_wait = start_time - _lf_time(LF_PHYSICAL);
+    interval_t ns_to_wait = start_time - lf_time_physical();
 
     if (ns_to_wait > 0LL) {
         struct timespec wait_time = {ns_to_wait / BILLION, ns_to_wait % BILLION};

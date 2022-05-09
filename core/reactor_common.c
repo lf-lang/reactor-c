@@ -750,7 +750,7 @@ void _lf_initialize_timer(trigger_t* timer) {
         // && (timer->offset != 0 || timer->period != 0)) {
         event_t* e = _lf_get_new_event();
         e->trigger = timer;
-        e->time = _lf_time(LF_LOGICAL) + timer->offset;
+        e->time = lf_time_logical() + timer->offset;
         _lf_add_suspended_event(e);
     	return;
     }
@@ -775,7 +775,7 @@ void _lf_initialize_timer(trigger_t* timer) {
     // Recycle event_t structs, if possible.    
     event_t* e = _lf_get_new_event();
     e->trigger = timer;
-    e->time = _lf_time(LF_LOGICAL) + delay;
+    e->time = lf_time_logical() + delay;
     // NOTE: No lock is being held. Assuming this only happens at startup.
     pqueue_insert(event_q, e);
     tracepoint_schedule(timer, delay); // Trace even though schedule is not called.
@@ -1149,7 +1149,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     // modify the intended time.
     if (trigger->is_physical) {
         // Get the current physical time and assign it as the intended time.
-        intended_time = _lf_time(LF_PHYSICAL) + delay;
+        intended_time = lf_time_physical() + delay;
     } else {
         // FIXME: We need to verify that we are executing within a reaction?
         // See reactor_threaded.
@@ -1416,7 +1416,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
         if (reaction->status == inactive) {
             reaction->is_STP_violated = is_STP_violated;
             _lf_trigger_reaction(reaction, -1);
-            LF_PRINT_LOG("Enqueued reaction %s at time %lld.", reaction->name, _lf_time(LF_LOGICAL));
+            LF_PRINT_LOG("Enqueued reaction %s at time %lld.", reaction->name, lf_time_logical());
         }
     }
 
@@ -1532,7 +1532,7 @@ lf_token_t* _lf_set_new_array_impl(lf_token_t* token, size_t length, int num_des
  */
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
     reaction_t* reaction = self->executing_reaction;
-    if (_lf_time(LF_PHYSICAL) > _lf_time(LF_LOGICAL) + reaction->deadline) {
+    if (lf_time_physical() > lf_time_logical() + reaction->deadline) {
         if (invoke_deadline_handler) {
             reaction->deadline_violation_handler(self);
         }
@@ -1683,7 +1683,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
 #endif
         if (downstream_to_execute_now->deadline > 0LL) {
             // Get the current physical time.
-            instant_t physical_time = _lf_time(LF_PHYSICAL);
+            instant_t physical_time = lf_time_physical();
             // Check for deadline violation.
             if (physical_time > current_tag.time + downstream_to_execute_now->deadline) {
                 // Deadline violation has occurred.
@@ -1959,7 +1959,7 @@ void initialize(void) {
     // Initialize the trigger table.
     _lf_initialize_trigger_objects();
 
-    physical_start_time = _lf_time(LF_PHYSICAL);
+    physical_start_time = lf_time_physical();
     current_tag.time = physical_start_time;
     start_time = current_tag.time;
 
@@ -2014,7 +2014,7 @@ void termination(void) {
     }
     // Print elapsed times.
     // If these are negative, then the program failed to start up.
-    interval_t elapsed_time = _lf_time(LF_ELAPSED_LOGICAL);
+    interval_t elapsed_time = lf_time_logical_elapsed();
     if (elapsed_time >= 0LL) {
         char time_buffer[29]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
         lf_comma_separated_time(time_buffer, elapsed_time);
@@ -2023,7 +2023,7 @@ void termination(void) {
         // If physical_start_time is 0, then execution didn't get far enough along
         // to initialize this.
         if (physical_start_time > 0LL) {
-        	lf_comma_separated_time(time_buffer, _lf_time(LF_ELAPSED_PHYSICAL));
+        	lf_comma_separated_time(time_buffer, lf_time_physical_elapsed());
             printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
         }
     }

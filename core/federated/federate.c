@@ -1062,7 +1062,7 @@ instant_t get_start_time_from_rti(instant_t my_physical_time) {
 
     instant_t timestamp = extract_int64(&(buffer[1]));
     lf_print("Starting timestamp is: %lld.", timestamp);
-    LF_PRINT_LOG("Current physical time is: %lld.", _lf_time(LF_PHYSICAL));
+    LF_PRINT_LOG("Current physical time is: %lld.", lf_time_physical());
 
     return timestamp;
 }
@@ -1708,7 +1708,7 @@ void handle_tagged_message(int socket, int fed_id) {
     trigger_t* action = _lf_action_for_port(port_id);
 
     // Record the physical time of arrival of the message
-    action->physical_time_of_arrival = _lf_time(LF_PHYSICAL);
+    action->physical_time_of_arrival = lf_time_physical();
 
     if (action->is_physical) {
         // Messages sent on physical connections should be handled via handle_message().
@@ -1726,7 +1726,7 @@ void handle_tagged_message(int socket, int fed_id) {
     _lf_increment_global_tag_barrier(intended_tag);
 #endif
     LF_PRINT_LOG("Received message with tag: (%lld, %u), Current tag: (%lld, %u).",
-            intended_tag.time - start_time, intended_tag.microstep, _lf_time(LF_ELAPSED_LOGICAL), lf_tag().microstep);
+            intended_tag.time - start_time, intended_tag.microstep, lf_time_logical_elapsed(), lf_tag().microstep);
 
     // Read the payload.
     // Allocate memory for the message contents.
@@ -2388,7 +2388,7 @@ void synchronize_with_other_federates() {
     // Advance Grant message to request for permission to execute. In the decentralized
     // coordination, either the after delay on the connection must be sufficiently large
     // enough or the STP offset must be set globally to an accurate value.
-    start_time = get_start_time_from_rti(_lf_time(LF_PHYSICAL));
+    start_time = get_start_time_from_rti(lf_time_physical());
 
     // Every federate starts out assuming that it has been granted a PTAG
     // at the start time, or if it has no upstream federates, a TAG.
@@ -2454,7 +2454,7 @@ bool _lf_bounded_NET(tag_t* tag) {
         // There is a physical action upstream of some output from this
         // federate, and there is at least one downstream federate.
         // Compare the tag to the current physical time.
-        instant_t physical_time = _lf_time(LF_PHYSICAL);
+        instant_t physical_time = lf_time_physical();
         if (physical_time + _fed.min_delay_from_physical_action_to_federate_output < tag->time) {
             // Can only promise up and not including this new time:
             tag->time = physical_time + _fed.min_delay_from_physical_action_to_federate_output - 1L;
@@ -2635,7 +2635,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
         // in the future.
         LF_PRINT_DEBUG("Waiting for physical time to elapse or an event on the event queue.");
 
-        // The above call to _lf_bounded_NET called _lf_time(LF_PHYSICAL)
+        // The above call to _lf_bounded_NET called lf_time_physical()
         // set _lf_last_reported_unadjusted_physical_time_ns, the
         // time obtained using CLOCK_REALTIME before adjustment for
         // clock synchronization. Since that is the clock used by

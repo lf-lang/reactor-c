@@ -109,7 +109,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * is an estimate L of the one-way latency.  The estimated clock error
  * E is therefore L - (T2 - T1). Over several cycles, the average value of E
  * becomes the initial offset for the
- * clock at the federate. Henceforth, when _lf_time(LF_PHYSICAL) is
+ * clock at the federate. Henceforth, when lf_time_physical() is
  * called, the offset will be added to whatever the physical clock says.
  *
  * If clock synchronization is enabled, then the federate will also
