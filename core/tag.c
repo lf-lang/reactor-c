@@ -201,6 +201,18 @@ instant_t _lf_physical_time() {
 }
 
 /**
+ * An enum for specifying the desired tag when calling "lf_time"
+ */
+typedef enum _lf_time_type {
+    LF_LOGICAL,
+    LF_PHYSICAL,
+    LF_ELAPSED_LOGICAL,
+    LF_ELAPSED_PHYSICAL,
+    LF_START
+} _lf_time_type;
+
+
+/**
  * Get the time specified by "type".
  * 
  * Example use cases:
@@ -233,6 +245,50 @@ instant_t _lf_time(_lf_time_type type) {
     default:
         return NEVER;
     }
+}
+
+/**
+ * Return the current logical time in nanoseconds since January 1, 1970.
+ */
+instant_t lf_time_logical(void) {
+    return _lf_time(LF_LOGICAL);
+}
+
+/**
+ * Return the elapsed logical time in nanoseconds since the start of execution.
+ */
+interval_t lf_time_logical_elapsed(void) {
+    return _lf_time(LF_ELAPSED_LOGICAL);
+}
+
+
+/**
+ * Return the current physical time in nanoseconds since January 1, 1970,
+ * adjusted by the global physical time offset.
+ */
+instant_t lf_time_physical(void) {
+    return _lf_time(LF_PHYSICAL);
+}
+
+/**
+ * Return the elapsed physical time in nanoseconds.
+ * This is the time returned by get_physical_time() minus the
+ * physical start time as measured by get_physical_time() when
+ * the program was started.
+ */
+instant_t lf_time_physical_elapsed(void) {
+    return _lf_time(LF_ELAPSED_PHYSICAL);
+}
+
+
+/**
+ * Return the physical time of the start of execution in nanoseconds. * 
+ * On many platforms, this is the number of nanoseconds
+ * since January 1, 1970, but it is actually platform dependent. * 
+ * @return A time instant.
+ */
+instant_t lf_time_start(void) {
+    return _lf_time(LF_START);
 }
 
 /**
