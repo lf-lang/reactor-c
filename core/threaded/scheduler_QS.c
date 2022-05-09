@@ -130,6 +130,11 @@ void _lf_sched_wait_for_work(size_t worker_number) {
         for (int w = 0; w < _lf_sched_instance->_lf_sched_number_of_workers; w++) {
             _lf_sched_instance->pc[w] = 0;
         }
+        // Reset all the semaphores.
+        for (int i = 0; i < num_semaphores; i++) {
+            _lf_sched_instance->semaphores[i]->count = 0 ;
+        }
+
         
         _lf_sched_notify_workers();
     } else {
@@ -144,6 +149,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
                     worker_number);
     }
     lf_mutex_unlock(&mutex);
+   // _lf_sched_notify_workers();
 }
 
 ///////////////////// Scheduler Init and Destroy API /////////////////////////
