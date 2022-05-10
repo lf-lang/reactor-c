@@ -76,7 +76,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="reactor_8h_source.html">reactor.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="tag_8c.html">tag.c</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="core_2tag_8c.html">tag.c</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="pqueue_8c.html">utils/pqueue.c</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="pqueue__support_8h_source.html">utils/pqueue_support.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="core_2utils_2util_8c.html">utils/util.c</a>&quot;</code><br />
@@ -114,10 +114,10 @@ Functions</h2></td></tr>
 <tr class="separator:ae911181dab92c081386aae7addc645e7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae7e27b8e8e57c4d024a0db52043034df"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#ae7e27b8e8e57c4d024a0db52043034df">_lf_set_stop_tag</a> (<a class="el" href="structtag__t.html">tag_t</a> tag)</td></tr>
 <tr class="separator:ae7e27b8e8e57c4d024a0db52043034df"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a54be08fbc7990c2d8082a31cbbf6e019"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a54be08fbc7990c2d8082a31cbbf6e019">get_stp_offset</a> ()</td></tr>
-<tr class="separator:a54be08fbc7990c2d8082a31cbbf6e019"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a75a5bf324229d35fb88541a04449c95b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a75a5bf324229d35fb88541a04449c95b">set_stp_offset</a> (<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset)</td></tr>
-<tr class="separator:a75a5bf324229d35fb88541a04449c95b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01b4bb56c6e243d25b369211a4925b93"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a01b4bb56c6e243d25b369211a4925b93">lf_get_stp_offset</a> ()</td></tr>
+<tr class="separator:a01b4bb56c6e243d25b369211a4925b93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7354a8f02313a836f25c9e76168991ab"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a7354a8f02313a836f25c9e76168991ab">lf_set_stp_offset</a> (<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset)</td></tr>
+<tr class="separator:a7354a8f02313a836f25c9e76168991ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2798a92c59a1d46b602298cdbd187ab1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor__common_8c.html#abe23a36a87d2f0c076da417eb0114c7e">token_freed</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a2798a92c59a1d46b602298cdbd187ab1">_lf_free_token</a> (<a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
 <tr class="separator:a2798a92c59a1d46b602298cdbd187ab1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a88c890be1f8d45461a6985cbfe6faa99"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor__common_8c.html#abe23a36a87d2f0c076da417eb0114c7e">token_freed</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a88c890be1f8d45461a6985cbfe6faa99">_lf_done_using</a> (<a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
@@ -193,7 +193,7 @@ Variables</h2></td></tr>
 <tr class="separator:a8079fdfadf07cba8a660c9c25cb9dc77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abac6e1f16371ec26c509b7ad375d6334"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#abac6e1f16371ec26c509b7ad375d6334">_lf_execution_started</a> = <a class="el" href="lf__windows__support_8h.html#a65e9886d74aaee76545e83dd09011727">false</a></td></tr>
 <tr class="separator:abac6e1f16371ec26c509b7ad375d6334"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a007aadaac39cca4ce69656a91b5e236c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a007aadaac39cca4ce69656a91b5e236c">stop_tag</a> = <a class="el" href="tag_8h.html#a33ccb2b8fb9f20ab29ea298b9051443a">FOREVER_TAG_INITIALIZER</a></td></tr>
+<tr class="memitem:a007aadaac39cca4ce69656a91b5e236c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a007aadaac39cca4ce69656a91b5e236c">stop_tag</a> = <a class="el" href="core_2tag_8h.html#a33ccb2b8fb9f20ab29ea298b9051443a">FOREVER_TAG_INITIALIZER</a></td></tr>
 <tr class="separator:a007aadaac39cca4ce69656a91b5e236c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e69bf5802b3968ed00af688cc7a8006"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a3e69bf5802b3968ed00af688cc7a8006">keepalive_specified</a> = <a class="el" href="lf__windows__support_8h.html#a65e9886d74aaee76545e83dd09011727">false</a></td></tr>
 <tr class="separator:a3e69bf5802b3968ed00af688cc7a8006"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1205,25 +1205,6 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a54be08fbc7990c2d8082a31cbbf6e019" name="a54be08fbc7990c2d8082a31cbbf6e019"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a54be08fbc7990c2d8082a31cbbf6e019">&#9670;&nbsp;</a></span>get_stp_offset()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> get_stp_offset </td>
-          <td>(</td>
-          <td class="paramtype">void&#160;</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Return the global STP offset on advancement of logical time for federated execution. </p>
-
-</div>
-</div>
 <a id="a9efe22aaead3a5e936b5df459de02eba" name="a9efe22aaead3a5e936b5df459de02eba"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9efe22aaead3a5e936b5df459de02eba">&#9670;&nbsp;</a></span>initialize()</h2>
 
@@ -1240,6 +1221,50 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p >Initialize the priority queues and set logical time to match physical time. This also prints a message reporting the start time. </p>
+
+</div>
+</div>
+<a id="a01b4bb56c6e243d25b369211a4925b93" name="a01b4bb56c6e243d25b369211a4925b93"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a01b4bb56c6e243d25b369211a4925b93">&#9670;&nbsp;</a></span>lf_get_stp_offset()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> lf_get_stp_offset </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Return the global STP offset on advancement of logical time for federated execution. </p>
+
+</div>
+</div>
+<a id="a7354a8f02313a836f25c9e76168991ab" name="a7354a8f02313a836f25c9e76168991ab"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7354a8f02313a836f25c9e76168991ab">&#9670;&nbsp;</a></span>lf_set_stp_offset()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void lf_set_stp_offset </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td>
+          <td class="paramname"><em>offset</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Set the global STP offset on advancement of logical time for federated execution.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">offset</td><td>A positive time value to be applied as the STP offset. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1301,31 +1326,6 @@ Variables</h2></td></tr>
   <table class="params">
     <tr><td class="paramname">reaction</td><td>The reaction that has just executed. </td></tr>
     <tr><td class="paramname">worker</td><td>The thread number of the worker thread or 0 for unthreaded execution (for tracing). </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a75a5bf324229d35fb88541a04449c95b" name="a75a5bf324229d35fb88541a04449c95b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a75a5bf324229d35fb88541a04449c95b">&#9670;&nbsp;</a></span>set_stp_offset()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void set_stp_offset </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td>
-          <td class="paramname"><em>offset</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Set the global STP offset on advancement of logical time for federated execution.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">offset</td><td>A positive time value to be applied as the STP offset. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1426,7 +1426,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Global STP offset uniformly applied to advancement of each time step in federated execution. This can be retrieved in user code by calling <a class="el" href="reactor__common_8c.html#a54be08fbc7990c2d8082a31cbbf6e019">get_stp_offset()</a> and adjusted by calling <a class="el" href="reactor__common_8c.html#a75a5bf324229d35fb88541a04449c95b">set_stp_offset(interval_t offset)</a>. </p>
+<p >Global STP offset uniformly applied to advancement of each time step in federated execution. This can be retrieved in user code by calling <a class="el" href="reactor__common_8c.html#a01b4bb56c6e243d25b369211a4925b93">lf_get_stp_offset()</a> and adjusted by calling <a class="el" href="reactor__common_8c.html#a7354a8f02313a836f25c9e76168991ab">lf_set_stp_offset(interval_t offset)</a>. </p>
 
 </div>
 </div>
@@ -1792,11 +1792,11 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structtag__t.html">tag_t</a> stop_tag = <a class="el" href="tag_8h.html#a33ccb2b8fb9f20ab29ea298b9051443a">FOREVER_TAG_INITIALIZER</a></td>
+          <td class="memname"><a class="el" href="structtag__t.html">tag_t</a> stop_tag = <a class="el" href="core_2tag_8h.html#a33ccb2b8fb9f20ab29ea298b9051443a">FOREVER_TAG_INITIALIZER</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >The tag at which the Lingua Franca program should stop. It will be initially set to timeout if it is set. However, starvation or calling <a class="el" href="reactor_8c.html#af629769c213699f0e4c9360811ee7251">request_stop()</a> can also alter the stop_tag by moving it earlier.</p>
+<p >The tag at which the Lingua Franca program should stop. It will be initially set to timeout if it is set. However, starvation or calling <a class="el" href="reactor_8c.html#aa217496c12cb5b53dad3d91e203cc323">lf_request_stop()</a> can also alter the stop_tag by moving it earlier.</p>
 <p >FIXME: This variable might need to be volatile </p>
 
 </div>

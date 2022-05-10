@@ -88,7 +88,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="core_2utils_2util_8c.html">utils/util.c</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="net__util_8c.html">net_util.c</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="net__common_8h_source.html">net_common.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="tag_8c.html">tag.c</a>&quot;</code><br />
+<code>#include &quot;tag.c&quot;</code><br />
 <code>#include &quot;<a class="el" href="rti_8h_source.html">rti.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
@@ -1299,7 +1299,7 @@ DESCRIPTION</h1>
 <div class="line">    .rti_mutex = PTHREAD_MUTEX_INITIALIZER,</div>
 <div class="line">    .received_start_times = PTHREAD_COND_INITIALIZER,</div>
 <div class="line">    .sent_start_time = PTHREAD_COND_INITIALIZER,</div>
-<div class="line">    .max_stop_tag = <a class="code hl_define" href="tag_8h.html#afc2f39e1818a6a8b68ca46e7c9dc2704">NEVER_TAG</a>,</div>
+<div class="line">    .max_stop_tag = <a class="code hl_define" href="core_2tag_8h.html#afc2f39e1818a6a8b68ca46e7c9dc2704">NEVER_TAG</a>,</div>
 <div class="line">    .max_start_time = 0LL,</div>
 <div class="line">    .number_of_federates = 0,</div>
 <div class="line">    .num_feds_proposed_start = 0,</div>
@@ -1312,12 +1312,12 @@ DESCRIPTION</h1>
 <div class="line">    .final_port_UDP = UINT16_MAX,</div>
 <div class="line">    .socket_descriptor_UDP = -1,</div>
 <div class="line">    .clock_sync_global_status = <a class="code hl_enumvalue" href="rti_8h.html#a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558">clock_sync_init</a>,</div>
-<div class="line">    .clock_sync_period_ns = <a class="code hl_define" href="tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8">MSEC</a>(10),</div>
+<div class="line">    .clock_sync_period_ns = <a class="code hl_define" href="core_2tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8">MSEC</a>(10),</div>
 <div class="line">    .clock_sync_exchanges_per_interval = 10</div>
 <div class="line">}</div>
+<div class="ttc" id="acore_2tag_8h_html_a673a8ebab8ec621a1cf731871dd170c8"><div class="ttname"><a href="core_2tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8">MSEC</a></div><div class="ttdeci">#define MSEC(t)</div><div class="ttdef"><b>Definition:</b> tag.h:45</div></div>
+<div class="ttc" id="acore_2tag_8h_html_afc2f39e1818a6a8b68ca46e7c9dc2704"><div class="ttname"><a href="core_2tag_8h.html#afc2f39e1818a6a8b68ca46e7c9dc2704">NEVER_TAG</a></div><div class="ttdeci">#define NEVER_TAG</div><div class="ttdef"><b>Definition:</b> tag.h:64</div></div>
 <div class="ttc" id="arti_8h_html_a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558"><div class="ttname"><a href="rti_8h.html#a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558">clock_sync_init</a></div><div class="ttdeci">@ clock_sync_init</div><div class="ttdef"><b>Definition:</b> rti.h:105</div></div>
-<div class="ttc" id="atag_8h_html_a673a8ebab8ec621a1cf731871dd170c8"><div class="ttname"><a href="tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8">MSEC</a></div><div class="ttdeci">#define MSEC(t)</div><div class="ttdef"><b>Definition:</b> tag.h:45</div></div>
-<div class="ttc" id="atag_8h_html_afc2f39e1818a6a8b68ca46e7c9dc2704"><div class="ttname"><a href="tag_8h.html#afc2f39e1818a6a8b68ca46e7c9dc2704">NEVER_TAG</a></div><div class="ttdeci">#define NEVER_TAG</div><div class="ttdef"><b>Definition:</b> tag.h:64</div></div>
 </div><!-- fragment --><p >The state of this RTI instance. </p>
 
 </div>

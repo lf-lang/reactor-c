@@ -841,7 +841,7 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p >Handle a MSG_TYPE_STOP_GRANTED message from the RTI.</p>
-<p >This function removes the global barrier on logical time raised when <a class="el" href="reactor_8c.html#af629769c213699f0e4c9360811ee7251">request_stop()</a> was called.</p>
+<p >This function removes the global barrier on logical time raised when <a class="el" href="reactor_8c.html#aa217496c12cb5b53dad3d91e203cc323">lf_request_stop()</a> was called.</p>
 <p >This function assumes the caller does not hold the mutex lock, therefore, it acquires it. </p>
 
 </div>
@@ -1561,21 +1561,21 @@ DESCRIPTION</h1>
 <div class="line">        .inbound_p2p_handling_thread_id = 0,</div>
 <div class="line">        .server_socket = -1,</div>
 <div class="line">        .server_port = -1,</div>
-<div class="line">        .last_TAG = {.time = <a class="code hl_define" href="tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a>, .microstep = 0u},</div>
+<div class="line">        .last_TAG = {.time = <a class="code hl_define" href="core_2tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a>, .microstep = 0u},</div>
 <div class="line">        .is_last_TAG_provisional = <span class="keyword">false</span>,</div>
 <div class="line">        .waiting_for_TAG = <span class="keyword">false</span>,</div>
 <div class="line">        .has_upstream = <span class="keyword">false</span>,</div>
 <div class="line">        .has_downstream = <span class="keyword">false</span>,</div>
 <div class="line">        .sent_a_stop_request_to_rti = <span class="keyword">false</span>,</div>
-<div class="line">        .last_sent_LTC = (<a class="code hl_struct" href="structtag__t.html">tag_t</a>) {.time = <a class="code hl_define" href="tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a>, .microstep = 0u},</div>
-<div class="line">        .last_sent_NET = (<a class="code hl_struct" href="structtag__t.html">tag_t</a>) {.time = <a class="code hl_define" href="tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a>, .microstep = 0u},</div>
-<div class="line">        .min_delay_from_physical_action_to_federate_output = <a class="code hl_define" href="tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a>,</div>
+<div class="line">        .last_sent_LTC = (<a class="code hl_struct" href="structtag__t.html">tag_t</a>) {.time = <a class="code hl_define" href="core_2tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a>, .microstep = 0u},</div>
+<div class="line">        .last_sent_NET = (<a class="code hl_struct" href="structtag__t.html">tag_t</a>) {.time = <a class="code hl_define" href="core_2tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a>, .microstep = 0u},</div>
+<div class="line">        .min_delay_from_physical_action_to_federate_output = <a class="code hl_define" href="core_2tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a>,</div>
 <div class="line">        .triggers_for_network_input_control_reactions = NULL,</div>
 <div class="line">        .triggers_for_network_input_control_reactions_size = 0,</div>
 <div class="line">        .trigger_for_network_output_control_reactions = NULL</div>
 <div class="line">}</div>
+<div class="ttc" id="acore_2tag_8h_html_a9e5c19968af97bd64f46650ec8732318"><div class="ttname"><a href="core_2tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></div><div class="ttdeci">#define NEVER</div><div class="ttdef"><b>Definition:</b> tag.h:61</div></div>
 <div class="ttc" id="astructtag__t_html"><div class="ttname"><a href="structtag__t.html">tag_t</a></div><div class="ttdef"><b>Definition:</b> tag.h:103</div></div>
-<div class="ttc" id="atag_8h_html_a9e5c19968af97bd64f46650ec8732318"><div class="ttname"><a href="tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></div><div class="ttdeci">#define NEVER</div><div class="ttdef"><b>Definition:</b> tag.h:61</div></div>
 </div><!-- fragment --><p >The state of this federate instance. </p>
 
 </div>

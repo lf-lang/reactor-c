@@ -110,7 +110,7 @@ Functions</h2></td></tr>
           <td class="memname">#define DEPRECATED</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname">X                              </td><td>)</td>
+          <td class="paramname">X                                   </td><td>)</td>
           <td>&#160;&#160;&#160;X</td>
         </tr>
       </table>
@@ -183,7 +183,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p >Fetch the value of an internal (and platform-specific) physical clock and store it in <code>t</code>.</p>
-<p >Ideally, the underlying platform clock should be monotonic. However, the core lib tries to enforce monotonicity at higher level APIs (see <a class="el" href="tag_8h.html">tag.h</a>).</p>
+<p >Ideally, the underlying platform clock should be monotonic. However, the core lib tries to enforce monotonicity at higher level APIs (see tag.h).</p>
 <dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure</dd></dl>
 <p>Fetch the value of _LF_CLOCK (see <a class="el" href="lf__linux__support_8h.html">lf_linux_support.h</a>) and store it in tp. The timestamp value in 't' will always be epoch time, which is the number of nanoseconds since January 1st, 1970.</p>
 <dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. In case of failure, errno will be set appropriately (see <code>man 2 clock_gettime</code>).</dd></dl>
