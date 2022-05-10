@@ -565,7 +565,7 @@ tag_t send_next_event_tag(tag_t tag, bool wait_for_reply) {
  * If there is no event in the queue and the keepalive command-line option was
  * not given, and this is not a federated execution with centralized coordination,
  * set the stop tag to the current tag.
- * If keepalive was given, then wait for either request_stop()
+ * If keepalive was given, then wait for either lf_request_stop()
  * to be called or an event appears in the event queue and then return.
  *
  * Every time tag is advanced, it is checked against stop tag and if they are
@@ -631,7 +631,7 @@ void _lf_next_locked() {
     while (!wait_until(next_tag.time, &event_q_changed)) {
         LF_PRINT_DEBUG("_lf_next_locked(): Wait until time interrupted.");
         // Sleep was interrupted.  Check for a new next_event.
-        // The interruption could also have been due to a call to request_stop().
+        // The interruption could also have been due to a call to lf_request_stop().
         next_tag = get_next_event_tag();
 
         // If this (possibly new) next tag is past the stop time, return.
@@ -704,7 +704,7 @@ void _lf_next_locked() {
  * a later logical time determined by the RTI so that
  * all federates stop at the same logical time.
  */
-void request_stop() {
+void lf_request_stop() {
     lf_mutex_lock(&mutex);
     // Check if already at the previous stop tag.
     if (lf_tag_compare(current_tag, stop_tag) >= 0) {
@@ -991,7 +991,7 @@ void _lf_worker_do_work(int worker_number) {
     // Obtain a reaction from the scheduler that is ready to execute
     // (i.e., it is not blocked by concurrently executing reactions
     // that it depends on).
-    // print_snapshot(); // This is quite verbose (but very useful in debugging reaction deadlocks).
+    // lf_print_snapshot(); // This is quite verbose (but very useful in debugging reaction deadlocks).
     reaction_t* current_reaction_to_execute = NULL;
     while ((current_reaction_to_execute = 
             lf_sched_get_ready_reaction(worker_number)) 
@@ -1060,7 +1060,7 @@ void* worker(void* arg) {
  * If DEBUG logging is enabled, prints the status of the event queue,
  * the reaction queue, and the executing queue.
  */
-void print_snapshot() {
+void lf_print_snapshot() {
     if(LOG_LEVEL > LOG_LEVEL_LOG) {
         LF_PRINT_DEBUG(">>> START Snapshot");
         LF_PRINT_DEBUG("Pending:");

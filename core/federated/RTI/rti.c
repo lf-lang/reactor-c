@@ -944,7 +944,7 @@ void handle_stop_request_message(federate_t* fed) {
     if (_RTI.num_feds_handling_stop == _RTI.number_of_federates) {
         // We now have information about the stop time of all
         // federates. This is extremely unlikely, but it can occur
-        // all federates call request_stop() at the same tag.
+        // all federates call lf_request_stop() at the same tag.
         pthread_mutex_unlock(&_RTI.rti_mutex);    
         return;
     }

@@ -2055,7 +2055,7 @@ void _lf_fd_send_stop_request_to_rti() {
  * Handle a MSG_TYPE_STOP_GRANTED message from the RTI.
  * 
  * This function removes the global barrier on
- * logical time raised when request_stop() was
+ * logical time raised when lf_request_stop() was
  * called.
  * 
  * This function assumes the caller does not hold
@@ -2156,7 +2156,7 @@ void handle_stop_request_message() {
     // because we are sending it to the RTI
     _lf_increment_global_tag_barrier_already_locked(tag_to_stop);
 
-    // A subsequent call to request_stop will be a no-op.
+    // A subsequent call to lf_request_stop will be a no-op.
     _fed.sent_a_stop_request_to_rti = true;
 
     lf_mutex_unlock(&mutex);

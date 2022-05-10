@@ -44,7 +44,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * For definition of up-to-date util functions, please refer to util.c in
  * the core files folder.
  */
-#include "util.h"
+#include "../include/ctarget/util.h"
 #include <stdarg.h>   // Defines va_list
 #include "stdlib.h"
 
@@ -114,4 +114,33 @@ void error_print_and_exit(const char* format, ...) {
  */
 void register_print_function(print_message_function_t* function, int log_level) {
     lf_register_print_function(function, log_level);
+}
+
+/**
+ * @deprecated version of "lf_get_stp_offset"
+ */
+interval_t get_stp_offset(void) {
+    return lf_get_stp_offset();
+}
+
+/**
+ * @deprecated version of "lf_set_stp_offset"
+ */
+void set_stp_offset(interval_t offset) {
+    lf_set_stp_offset(offset);
+}
+
+/**
+ * @deprecated version of "lf_print_snapshot"
+ */
+void print_snapshot(void) {
+    lf_print_snapshot();
+}
+
+
+/**
+ * @deprecated version of "lf_request_stop"
+ */
+void request_stop(void) {
+    lf_request_stop();
 }

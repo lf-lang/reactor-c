@@ -47,5 +47,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "schedule.h"
 #include "util.h"
+#include "tag.h"
+#include "time.h"
 
 #endif // CTARGET
