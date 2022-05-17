@@ -146,8 +146,8 @@ Functions</h2></td></tr>
 <tr class="separator:aa295d4779f0b5929a9bff7226f29e521"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4a188ed34f9cf3a6d2ede7a033089bdd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a4a188ed34f9cf3a6d2ede7a033089bdd">send_port_absent_to_federate</a> (<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> additional_delay, unsigned short port_ID, unsigned short fed_ID)</td></tr>
 <tr class="separator:a4a188ed34f9cf3a6d2ede7a033089bdd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af4e0b0634806dadc6bda729c63dc700f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#af4e0b0634806dadc6bda729c63dc700f">wait_until_port_status_known</a> (int port_ID, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> STP)</td></tr>
-<tr class="separator:af4e0b0634806dadc6bda729c63dc700f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea52b96de746d6c6d8dea34d6a25ea04"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#aea52b96de746d6c6d8dea34d6a25ea04">wait_until_port_status_known</a> (int port_ID, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> STAA)</td></tr>
+<tr class="separator:aea52b96de746d6c6d8dea34d6a25ea04"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7e7ce364ced211e3892f71c47cff125c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a7e7ce364ced211e3892f71c47cff125c">schedule_message_received_from_network_already_locked</a> (<a class="el" href="structtrigger__t.html">trigger_t</a> *trigger, <a class="el" href="structtag__t.html">tag_t</a> tag, <a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
 <tr class="separator:a7e7ce364ced211e3892f71c47cff125c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad48351e45d74393e322780dfeabad776"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#ad48351e45d74393e322780dfeabad776">_lf_request_close_inbound_socket</a> (int fed_id)</td></tr>
@@ -1501,8 +1501,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="af4e0b0634806dadc6bda729c63dc700f" name="af4e0b0634806dadc6bda729c63dc700f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af4e0b0634806dadc6bda729c63dc700f">&#9670;&nbsp;</a></span>wait_until_port_status_known()</h2>
+<a id="aea52b96de746d6c6d8dea34d6a25ea04" name="aea52b96de746d6c6d8dea34d6a25ea04"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea52b96de746d6c6d8dea34d6a25ea04">&#9670;&nbsp;</a></span>wait_until_port_status_known()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1517,7 +1517,7 @@ DESCRIPTION</h1>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td>
-          <td class="paramname"><em>STP</em>&#160;</td>
+          <td class="paramname"><em>STAA</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1527,12 +1527,12 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p >Wait until the status of network port "port_ID" is known.</p>
-<p >In decentralized coordination mode, the wait time is capped by "STP", after which the status of the port is presumed to be absent.</p>
+<p >In decentralized coordination mode, the wait time is capped by STAA + STA, after which the status of the port is presumed to be absent.</p>
 <p >This function assumes the holder does not hold a mutex.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">port_ID</td><td>The ID of the network port </td></tr>
-    <tr><td class="paramname">STP</td><td>The STP offset of the port </td></tr>
+    <tr><td class="paramname">STAA</td><td>The safe-to-assume-absent threshold for the port </td></tr>
   </table>
   </dd>
 </dl>

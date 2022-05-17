@@ -100,8 +100,8 @@ Typedefs</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:a1050d75d3d2a6a00effec4e07d7ad031"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8h.html#a1050d75d3d2a6a00effec4e07d7ad031">synchronize_with_other_federates</a> (void)</td></tr>
 <tr class="separator:a1050d75d3d2a6a00effec4e07d7ad031"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5ec362a10173f606cdd994fc6ba4e2e9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8h.html#a5ec362a10173f606cdd994fc6ba4e2e9">wait_until_port_status_known</a> (int portID, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> STP)</td></tr>
-<tr class="separator:a5ec362a10173f606cdd994fc6ba4e2e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a64023b2373d1b7d76435afb2dcbf41a5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8h.html#a64023b2373d1b7d76435afb2dcbf41a5">wait_until_port_status_known</a> (int portID, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> STAA)</td></tr>
+<tr class="separator:a64023b2373d1b7d76435afb2dcbf41a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>)</dd></dl>
@@ -184,8 +184,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a5ec362a10173f606cdd994fc6ba4e2e9" name="a5ec362a10173f606cdd994fc6ba4e2e9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5ec362a10173f606cdd994fc6ba4e2e9">&#9670;&nbsp;</a></span>wait_until_port_status_known()</h2>
+<a id="a64023b2373d1b7d76435afb2dcbf41a5" name="a64023b2373d1b7d76435afb2dcbf41a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a64023b2373d1b7d76435afb2dcbf41a5">&#9670;&nbsp;</a></span>wait_until_port_status_known()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -200,7 +200,7 @@ DESCRIPTION</h1>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td>
-          <td class="paramname"><em>STP</em>&#160;</td>
+          <td class="paramname"><em>STAA</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -209,22 +209,13 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Wait until the status of network port "portID" can be determined.</p>
-<p >In decentralized coordination mode, the wait time is capped by "STP", after which the status of the port is presumed to be absent.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">portID</td><td>The ID of the network port </td></tr>
-    <tr><td class="paramname">STP</td><td>The STP offset of the port</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>Wait until the status of network port "port_ID" is known.</p>
-<p >In decentralized coordination mode, the wait time is capped by "STP", after which the status of the port is presumed to be absent.</p>
+<p >Wait until the status of network port "port_ID" is known.</p>
+<p >In decentralized coordination mode, the wait time is capped by STAA + STA, after which the status of the port is presumed to be absent.</p>
 <p >This function assumes the holder does not hold a mutex.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">port_ID</td><td>The ID of the network port </td></tr>
-    <tr><td class="paramname">STP</td><td>The STP offset of the port </td></tr>
+    <tr><td class="paramname">STAA</td><td>The safe-to-assume-absent threshold for the port </td></tr>
   </table>
   </dd>
 </dl>
