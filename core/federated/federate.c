@@ -1704,7 +1704,7 @@ void handle_tagged_message(int socket, int fed_id) {
     assert(_lf_my_fed_id == federate_id);
     LF_PRINT_DEBUG("Receiving message to port %d of length %d.", port_id, length);
 
-    // Get the triggering action for the corerponding port
+    // Get the triggering action for the corresponding port
     trigger_t* action = _lf_action_for_port(port_id);
 
     // Record the physical time of arrival of the message
@@ -1715,7 +1715,8 @@ void handle_tagged_message(int socket, int fed_id) {
         lf_print_warning("Received a timed message on a physical connection. Time stamp will be lost.");
     }
 
-#ifdef FEDERATED_DECENTRALIZED // Only applicable for federated programs with decentralized coordination
+#ifdef FEDERATED_DECENTRALIZED
+    // Only applicable for federated programs with decentralized coordination:
     // For logical connections in decentralized coordination,
     // increment the barrier to prevent advancement of tag beyond
     // the received tag if possible. The following function call
@@ -1726,7 +1727,8 @@ void handle_tagged_message(int socket, int fed_id) {
     _lf_increment_global_tag_barrier(intended_tag);
 #endif
     LF_PRINT_LOG("Received message with tag: (%lld, %u), Current tag: (%lld, %u).",
-            intended_tag.time - start_time, intended_tag.microstep, lf_time_logical_elapsed(), lf_tag().microstep);
+            intended_tag.time - start_time, intended_tag.microstep,
+			lf_time_logical_elapsed(), lf_tag().microstep);
 
     // Read the payload.
     // Allocate memory for the message contents.
@@ -1765,7 +1767,7 @@ void handle_tagged_message(int socket, int fed_id) {
     // FIXME: It might be enough to just check this field and not the status at all
     update_last_known_status_on_input_port(intended_tag, port_id);
 
-    // Check if reactions need to be inserted directly into the reaction
+    // Check whether reactions need to be inserted directly into the reaction
     // queue or a call to schedule is needed. This checks if the intended
     // tag of the message is for the current tag or a tag that is already
     // passed and if any control reaction is waiting on this port.
@@ -1773,8 +1775,8 @@ void handle_tagged_message(int socket, int fed_id) {
     // would need to exit because only one message can be processed per tag,
     // and that message is going to be a tardy message. The actual tardiness
     // handling is done inside _lf_insert_reactions_for_trigger.
-    // To prevent multiple procesing of messages per tag, we also need to check
-    // the port status.
+    // To prevent multiple processing of messages per tag,
+    // we also need to check the port status.
     // For example, there could be a case where current tag is 
     // 10 with a control reaction waiting, and a message has arrived with intended_tag 8.
     // This message will eventually cause the control reaction to exit, but before that,
@@ -1789,7 +1791,8 @@ void handle_tagged_message(int socket, int fed_id) {
         // Since the message is intended for the current tag and a control reaction
         // was waiting for the message, trigger the corresponding reactions for this
         // message.
-        LF_PRINT_LOG("Inserting reactions directly at tag (%lld, %u).", intended_tag.time - start_time, intended_tag.microstep);
+        LF_PRINT_LOG("Inserting reactions directly at tag (%lld, %u).",
+        		intended_tag.time - start_time, intended_tag.microstep);
         action->intended_tag = intended_tag;
         _lf_insert_reactions_for_trigger(action, message_token);
 
@@ -1807,7 +1810,7 @@ void handle_tagged_message(int socket, int fed_id) {
 
         // Before that, if the current time >= stop time, discard the message.
         // But only if the stop time is not equal to the start time!
-        if (lf_tag_compare(current_tag, stop_tag) >= 0) {
+        if (lf_tag_compare(lf_tag(), stop_tag) >= 0) {
             lf_mutex_unlock(&mutex);
             lf_print_warning("Received message too late. Already at stopping time. Discarding message.");
             return;
