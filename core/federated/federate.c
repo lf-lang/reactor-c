@@ -1361,15 +1361,15 @@ void send_port_absent_to_federate(interval_t additional_delay,
 /**
  * Wait until the status of network port "port_ID" is known.
  * 
- * In decentralized coordination mode, the wait time is capped by "STP",
+ * In decentralized coordination mode, the wait time is capped by STAA + STA,
  * after which the status of the port is presumed to be absent.
  * 
  * This function assumes the holder does not hold a mutex.
  * 
  * @param port_ID The ID of the network port
- * @param STP The STP offset of the port
+ * @param STAA The safe-to-assume-absent threshold for the port
  */
-void wait_until_port_status_known(int port_ID, interval_t STP) {            
+void wait_until_port_status_known(int port_ID, interval_t STAA) {            
     // Need to lock the mutex to prevent
     // a race condition with the network
     // receiver logic.
@@ -1396,12 +1396,12 @@ void wait_until_port_status_known(int port_ID, interval_t STP) {
     interval_t wait_until_time = FOREVER;
 #ifdef FEDERATED_DECENTRALIZED // Only applies to decentralized coordination
     // The wait time for port status in the decentralized 
-    // coordination is capped by the STP offset assigned 
-    // to the port.
-    wait_until_time = current_tag.time + STP;
+    // coordination is capped by the STAA offset assigned 
+    // to the port plus the global STA offset for this federate.
+    wait_until_time = current_tag.time + STAA + _lf_fed_STA_offset;
 #endif
 
-    // Perform the wait, unless the STP is zero.
+    // Perform the wait, unless the STAA is zero.
     if (wait_until_time != current_tag.time) {
         LF_PRINT_LOG("------ Waiting until time %lldns for network input port %d at tag (%llu, %d).",
                 wait_until_time,
