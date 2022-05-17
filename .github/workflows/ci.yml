@@ -20,7 +20,7 @@ jobs:
       cmake-args: '-DNUMBER_OF_WORKERS=4'
 
   fetch-lf:
-    uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@more-lf-prefix
+    uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@master
     with:
       file: 'lingua-franca-ref.txt'
   
