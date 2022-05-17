@@ -1397,7 +1397,7 @@ void wait_until_port_status_known(int port_ID, interval_t STAA) {
 #ifdef FEDERATED_DECENTRALIZED // Only applies to decentralized coordination
     // The wait time for port status in the decentralized 
     // coordination is capped by the STAA offset assigned 
-    // to the port plus the global STAA offset for this federate.
+    // to the port plus the global STA offset for this federate.
     wait_until_time = current_tag.time + STAA + _lf_fed_STA_offset;
 #endif
 
