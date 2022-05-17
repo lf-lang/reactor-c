@@ -924,11 +924,12 @@ bool _lf_worker_handle_STP_violation_for_reaction(int worker_number, reaction_t*
     if (reaction->is_STP_violated == true) {
         reaction_function_t handler = reaction->STP_handler;
         LF_PRINT_LOG("STP violation detected.");
+        // There is a violation
+        violation_occurred = true;
+
         // Invoke the STP handler if there is one.
         if (handler != NULL) {
-            LF_PRINT_LOG("Worker %d: Invoking tardiness handler.", worker_number);
-            // There is a violation
-            violation_occurred = true;
+            LF_PRINT_LOG("Worker %d: Invoking STP violation handler.", worker_number);
             (*handler)(reaction->self);
             
             // If the reaction produced outputs, put the resulting
@@ -937,6 +938,10 @@ bool _lf_worker_handle_STP_violation_for_reaction(int worker_number, reaction_t*
             
             // Reset the is_STP_violated because it has been dealt with
             reaction->is_STP_violated = false;
+        } else {
+        	// The intended tag cannot be respected and there is no handler.
+        	// Print an error message and return true.
+        	lf_print_error("Safe-to-process violation occurred! Discarding message.");
         }
     }
     return violation_occurred;

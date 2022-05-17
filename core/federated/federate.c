@@ -1463,7 +1463,6 @@ void wait_until_port_status_known(int port_ID, interval_t STAA) {
  * 
  * This is used for handling incoming timed messages to a federate.
  * 
- * 
  * @param action The action or timer to be triggered.
  * @param tag The tag of the message received over the network.
  * @param value Dynamically allocated memory containing the value to send.
@@ -1792,7 +1791,7 @@ void handle_tagged_message(int socket, int fed_id) {
         // was waiting for the message, trigger the corresponding reactions for this
         // message.
         LF_PRINT_LOG("Inserting reactions directly at tag (%lld, %u).",
-        		intended_tag.time - start_time, intended_tag.microstep);
+        		lf_tag().time - start_time, lf_tag().microstep);
         action->intended_tag = intended_tag;
         _lf_insert_reactions_for_trigger(action, message_token);
 
@@ -1812,7 +1811,11 @@ void handle_tagged_message(int socket, int fed_id) {
         // But only if the stop time is not equal to the start time!
         if (lf_tag_compare(lf_tag(), stop_tag) >= 0) {
             lf_mutex_unlock(&mutex);
-            lf_print_warning("Received message too late. Already at stopping time. Discarding message.");
+            lf_print_error("Received message too late. Already at stop tag.\n"
+            		"Current tag is (%lld, %u) and intended tag is (%lld, %u).\n"
+            		"Discarding message.",
+					lf_tag().time - start_time, lf_tag().microstep,
+					intended_tag.time - start_time, intended_tag.microstep);
             return;
         }
         
