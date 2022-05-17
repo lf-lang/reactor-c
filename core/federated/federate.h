@@ -254,14 +254,16 @@ typedef struct federation_metadata_t {
 void synchronize_with_other_federates(void);
 
 /**
- * Wait until the status of network port "portID" can be determined.
+ * Wait until the status of network port "port_ID" is known.
  * 
- * In decentralized coordination mode, the wait time is capped by "STP",
+ * In decentralized coordination mode, the wait time is capped by STAA + STA,
  * after which the status of the port is presumed to be absent.
  * 
- * @param portID The ID of the network port
- * @param STP The STP offset of the port
+ * This function assumes the holder does not hold a mutex.
+ * 
+ * @param port_ID The ID of the network port
+ * @param STAA The safe-to-assume-absent threshold for the port
  */
-void wait_until_port_status_known(int portID, interval_t STP);
+void wait_until_port_status_known(int portID, interval_t STAA);
 
 #endif // FEDERATE_H
