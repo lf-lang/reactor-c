@@ -987,6 +987,8 @@ void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
     // If the reaction produced outputs, put the resulting triggered
     // reactions into the queue or execute them immediately.
     schedule_output_reactions(reaction, worker_number);
+
+    reaction->is_STP_violated = false;
 }
 
 /**
