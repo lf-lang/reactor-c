@@ -945,7 +945,7 @@ bool _lf_worker_handle_STP_violation_for_reaction(int worker_number, reaction_t*
         	// execute anyway.
         	lf_print_error("STP violation occurred in a trigger to reaction %d, "
         			"and there is no handler.\n**** Invoking reaction at the wrong tag!",
-					reaction->number);
+					reaction->number + 1); // +1 to align with diagram numbering.
         }
     }
     return violation_occurred;
