@@ -924,24 +924,28 @@ bool _lf_worker_handle_STP_violation_for_reaction(int worker_number, reaction_t*
     if (reaction->is_STP_violated == true) {
         reaction_function_t handler = reaction->STP_handler;
         LF_PRINT_LOG("STP violation detected.");
-        // There is a violation
-        violation_occurred = true;
 
         // Invoke the STP handler if there is one.
         if (handler != NULL) {
             LF_PRINT_LOG("Worker %d: Invoking STP violation handler.", worker_number);
+            // There is a violation
+            violation_occurred = true;
             (*handler)(reaction->self);
             
             // If the reaction produced outputs, put the resulting
             // triggered reactions into the queue or execute them directly if possible.
             schedule_output_reactions(reaction, worker_number);
-            
+
             // Reset the is_STP_violated because it has been dealt with
             reaction->is_STP_violated = false;
         } else {
         	// The intended tag cannot be respected and there is no handler.
         	// Print an error message and return true.
-        	lf_print_error("Safe-to-process violation occurred! Discarding message.");
+        	// NOTE: STP violations are ignored for control reactions, which need to
+        	// execute anyway.
+        	lf_print_error("STP violation occurred in a trigger to reaction %d, "
+        			"and there is no handler.\n**** Invoking reaction at the wrong tag!",
+					reaction->number);
         }
     }
     return violation_occurred;
