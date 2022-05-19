@@ -126,7 +126,7 @@ int _lf_tokens_with_ref_count_size = 0;
  * user code by calling lf_get_stp_offset() and adjusted by
  * calling lf_set_stp_offset(interval_t offset).
  */
-interval_t _lf_global_time_STP_offset = 0LL;
+interval_t _lf_fed_STA_offset = 0LL;
 
 #ifdef FEDERATED
 /**
@@ -281,7 +281,7 @@ void _lf_set_stop_tag(tag_t tag) {
  * time for federated execution.
  */
 interval_t lf_get_stp_offset() {
-    return _lf_global_time_STP_offset;
+    return _lf_fed_STA_offset;
 }
 
 /**
@@ -293,7 +293,7 @@ interval_t lf_get_stp_offset() {
  */
 void lf_set_stp_offset(interval_t offset) {
     if (offset > 0LL) {
-        _lf_global_time_STP_offset = offset;
+        _lf_fed_STA_offset = offset;
     }
 }
 

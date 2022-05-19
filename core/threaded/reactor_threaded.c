@@ -412,15 +412,15 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
     LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time %lld", logical_time_ns);
     bool return_value = true;
     interval_t wait_until_time_ns = logical_time_ns;
-#ifdef FEDERATED_DECENTRALIZED // Only apply the STP offset if coordination is decentralized
-    // Apply the STP offset to the logical time
+#ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized
+    // Apply the STA to the logical time
     // Prevent an overflow
-    if (wait_until_time_ns < FOREVER - _lf_global_time_STP_offset) {
+    if (wait_until_time_ns < FOREVER - _lf_fed_STA_offset) {
         // If wait_time is not forever
-        LF_PRINT_DEBUG("Adding STP offset %lld to wait until time %lld.",
-                _lf_global_time_STP_offset,
+        LF_PRINT_DEBUG("Adding STA %lld to wait until time %lld.",
+                _lf_fed_STA_offset,
                 wait_until_time_ns - start_time);
-        wait_until_time_ns += _lf_global_time_STP_offset;
+        wait_until_time_ns += _lf_fed_STA_offset;
     }
 #endif
     if (!fast) {
@@ -819,10 +819,10 @@ void _lf_initialize_start_tag() {
     // the required waiting time. Second, this call releases the mutex lock and allows
     // other threads (specifically, federate threads that handle incoming p2p messages 
     // from other federates) to hold the lock and possibly raise a tag barrier. This is 
-    // especially useful if an STP offset is set properly because the federate will get
-    // a chance to process incoming messages while utilizing the STP offset.
-    LF_PRINT_LOG("Waiting for start time %lld plus STP offset %lld.",
-            start_time, _lf_global_time_STP_offset);
+    // especially useful if an STA is set properly because the federate will get
+    // a chance to process incoming messages while utilizing the STA.
+    LF_PRINT_LOG("Waiting for start time %lld plus STA %lld.",
+            start_time, _lf_fed_STA_offset);
     // Ignore interrupts to this wait. We don't want to start executing until
     // physical time matches or exceeds the logical start time.
     while (!wait_until(start_time, &event_q_changed)) {}

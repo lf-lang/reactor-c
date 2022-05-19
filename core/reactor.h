@@ -442,7 +442,7 @@ typedef struct trigger_t trigger_t;
  * user code by calling lf_get_stp_offset() and adjusted by 
  * calling lf_set_stp_offset(interval_t offset).
  */
-extern interval_t _lf_global_time_STP_offset;
+extern interval_t _lf_fed_STA_offset;
 
 /**
  * Token type for dynamically allocated arrays and structs sent as messages.
