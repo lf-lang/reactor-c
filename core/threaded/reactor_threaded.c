@@ -803,7 +803,7 @@ void _lf_initialize_start_tag() {
     // this seems to be to insert control reactions for all federates at
     // (0,0), which causes all federates, even those without any startup
     // or timer events at (0,0) to wait on all of their input ports and send
-    // an absent message on all of their output ports. This inadvertantly causes
+    // an absent message on all of their output ports. This inadvertently causes
     // extra messages going back and forth for (0,0).
     enqueue_network_input_control_reactions();
     enqueue_network_output_control_reactions();

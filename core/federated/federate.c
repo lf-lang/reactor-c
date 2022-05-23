@@ -1254,6 +1254,11 @@ port_status_t get_current_port_status(int portID) {
  * or absent.
  */
 void enqueue_network_input_control_reactions() {
+    if (!_fed.has_upstream) {
+        // This federate is not connected to any upstream federates via a zero-delay
+        // logical connection. No need to trigger network input control reactions.
+        return;
+    }
     for (int i = 0; i < _fed.triggers_for_network_input_control_reactions_size; i++) {
         // Reaction 0 should always be the network input control reaction
         if (get_current_port_status(i) == unknown) {
@@ -1273,6 +1278,11 @@ void enqueue_network_input_control_reactions() {
  * message to downstream federates if a given network output port is not present.
  */
 void enqueue_network_output_control_reactions(){
+    if (!_fed.has_downstream) {
+        // This federate is not connected to any downstream federates via a zero-delay
+        // logical connection. No need to trigger network output control reactions.
+        return;
+    }
     LF_PRINT_DEBUG("Enqueueing output control reactions.");
     if (_fed.trigger_for_network_output_control_reactions == NULL) {
         // There are no network output control reactions
