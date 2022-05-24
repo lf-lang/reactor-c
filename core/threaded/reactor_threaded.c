@@ -788,16 +788,6 @@ void _lf_initialize_start_tag() {
     }
 
 #ifdef FEDERATED
-    // Each federate has a valid event at the start tag (which is the current
-    // tag). Inform the RTI of this if needed.
-    send_next_event_tag(current_tag, true);
-
-    // Depending on RTI's answer, if any, enqueue network control reactions,
-    // which will selectively block reactions that depend on network input ports
-    // until they receive further instructions (to unblock) from the RTI or the
-    // upstream federates.
-    enqueue_network_control_reactions();
-
     // Call wait_until if federated. This is required because the startup procedure
     // in synchronize_with_other_federates() can decide on a new start_time that is 
     // larger than the current physical time.
@@ -824,6 +814,16 @@ void _lf_initialize_start_tag() {
     // Otherwise, reports of lf_time_physical() are not very meaningful
     // w.r.t. logical time.
     physical_start_time = start_time;
+
+    // Each federate has a valid event at the start tag (which is the current
+    // tag). Inform the RTI of this if needed.
+    send_next_event_tag(current_tag, true);
+
+    // Depending on RTI's answer, if any, enqueue network control reactions,
+    // which will selectively block reactions that depend on network input ports
+    // until they receive further instructions (to unblock) from the RTI or the
+    // upstream federates.
+    enqueue_network_control_reactions();
 #endif
 
 #ifdef FEDERATED_DECENTRALIZED
