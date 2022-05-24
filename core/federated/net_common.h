@@ -178,7 +178,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Under centralized coordination, each federate will send a
  * `MSG_TYPE_NEXT_EVENT_TAG` to the RTI with the start tag. That is to say that
  * each federate has a valid event at the start tag (start time, 0) and it will
- * inform the RTI of this event just like any other subsequent event.
+ * inform the RTI of this event.
  * Subsequently, at the conclusion of each tag, each federate will send a
  * `MSG_TYPE_LOGICAL_TAG_COMPLETE` followed by a `MSG_TYPE_NEXT_EVENT_TAG` (see
  * the comment for each message for further explanation). Each federate would

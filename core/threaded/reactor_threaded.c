@@ -815,7 +815,7 @@ void _lf_initialize_start_tag() {
     // w.r.t. logical time.
     physical_start_time = start_time;
 
-    // Each federate has a valid event at the start tag (which is the current
+    // Each federate executes the start tag (which is the current
     // tag). Inform the RTI of this if needed.
     send_next_event_tag(current_tag, true);
 
