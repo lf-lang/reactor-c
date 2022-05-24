@@ -1256,8 +1256,9 @@ port_status_t get_current_port_status(int portID) {
 void enqueue_network_input_control_reactions() {
 #ifdef FEDERATED_CENTRALIZED
     if (!_fed.has_upstream) {
-        // This federate is not connected to any upstream federates via a zero-delay
-        // logical connection. No need to trigger network input control reactions.
+        // This federate is not connected to any upstream federates via a
+        // logical connection. No need to trigger network input control
+        // reactions.
         return;
     }
 #endif
@@ -1282,8 +1283,9 @@ void enqueue_network_input_control_reactions() {
 void enqueue_network_output_control_reactions(){
 #ifdef FEDERATED_CENTRALIZED
     if (!_fed.has_downstream) {
-        // This federate is not connected to any downstream federates via a zero-delay
-        // logical connection. No need to trigger network output control reactions.
+        // This federate is not connected to any downstream federates via a
+        // logical connection. No need to trigger network output control
+        // reactions.
         return;
     }
 #endif
