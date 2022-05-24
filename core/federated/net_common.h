@@ -156,7 +156,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Physical connections also use the above P2P sockets between
  * federates even if the coordination is centralized.
  *
- * Peer-to-peer sockets can be closed by the downstream federate.
+ * Note: Peer-to-peer sockets can be closed by the downstream federate.
  * For example, when a downstream federate reaches its stop time, then
  * it will stop accepting physical messages. To achieve an orderly shutdown,
  * the downstream federate sends a MSG_TYPE_CLOSE_REQUEST message to the upstream
@@ -168,7 +168,28 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * decentralized and the messages arrive after the STP offset of the
  * downstream federate (i.e., they are "tardy").
  *
- * FIXME: What happens after this?
+ * Afterward, the federates and the RTI decide on a common start time by having
+ * each federate report a reading of its physical clock to the RTI on a
+ * `MSG_TYPE_TIMESTAMP`. The RTI broadcasts the maximum of these readings plus
+ * `DELAY_START` to all federates as the start time, again on a `MSG_TYPE_TIMESTAMP`.
+ * 
+ * The next step depends on the coordination type. 
+ * 
+ * Under centralized coordination, each federate will send a
+ * `MSG_TYPE_NEXT_EVENT_TAG` to the RTI with the start tag. That is to say that
+ * each federate has a valid event at the start tag (start time, 0) and it will
+ * inform the RTI of this event just like any other subsequent event.
+ * Subsequently, at the conclusion of each tag, each federate will send a
+ * `MSG_TYPE_LOGICAL_TAG_COMPLETE` followed by a `MSG_TYPE_NEXT_EVENT_TAG` (see
+ * the comment for each message for further explanation). Each federate would
+ * have to wait for a `MSG_TYPE_TAG_ADVANCE_GRANT` or a
+ * `MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT` before it can advance to a
+ * particular tag.
+ * 
+ * Under decentralized coordination, the coordination is governed by STA and
+ * STAAs, as further explained in https://doi.org/10.48550/arXiv.2109.07771.
+ * 
+ * FIXME: Expand this. Explain control reactions.
  *
  */
 

@@ -788,25 +788,15 @@ void _lf_initialize_start_tag() {
     }
 
 #ifdef FEDERATED
-    // Insert network dependent reactions for network input ports into
-    // the reaction queue to prevent reactions from executing at (0,0)
-    // incorrectly.
-    // At (0,0), events are not currently handled through the event_q.
-    // Instead, any reaction triggered by an event at (0,0) (e.g., by
-    // a startup event) is directly inserted into the reaction_q. 
-    // On the other hand, the typical NET/TAG procedure of the centralized
-    // coordination uses events coming off of the event queue. With the
-    // current implementation, therefore, federates will send a NET(0,0)
-    // only if they have timers and startup events. If a federate has no
-    // initial event at (0,0), and later receives a message with intended
-    // tag of (0,0), it will not send a NET. For now, the best remedy for
-    // this seems to be to insert control reactions for all federates at
-    // (0,0), which causes all federates, even those without any startup
-    // or timer events at (0,0) to wait on all of their input ports and send
-    // an absent message on all of their output ports. This inadvertently causes
-    // extra messages going back and forth for (0,0).
-    enqueue_network_input_control_reactions();
-    enqueue_network_output_control_reactions();
+    // Each federate has a valid event at the start tag (which is the current
+    // tag). Inform the RTI of this if needed.
+    send_next_event_tag(current_tag, true);
+
+    // Depending on RTI's answer, if any, enqueue network control reactions,
+    // which will selectively block reactions that depend on network input ports
+    // until they receive further instructions (to unblock) from the RTI or the
+    // upstream federates.
+    enqueue_network_control_reactions();
 
     // Call wait_until if federated. This is required because the startup procedure
     // in synchronize_with_other_federates() can decide on a new start_time that is 

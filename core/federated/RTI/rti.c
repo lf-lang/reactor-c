@@ -509,7 +509,6 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
     if (fed->state == NOT_CONNECTED
     		|| lf_tag_compare(tag, fed->last_granted) <= 0
 			|| lf_tag_compare(tag, fed->last_provisionally_granted) <= 0
-			|| (tag.time == start_time && tag.microstep == 0) // PTAG at (0,0) is implicit
     ) {
         return;
     }

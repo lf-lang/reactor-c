@@ -1254,11 +1254,13 @@ port_status_t get_current_port_status(int portID) {
  * or absent.
  */
 void enqueue_network_input_control_reactions() {
+#ifdef FEDERATED_CENTRALIZED
     if (!_fed.has_upstream) {
         // This federate is not connected to any upstream federates via a zero-delay
         // logical connection. No need to trigger network input control reactions.
         return;
     }
+#endif
     for (int i = 0; i < _fed.triggers_for_network_input_control_reactions_size; i++) {
         // Reaction 0 should always be the network input control reaction
         if (get_current_port_status(i) == unknown) {
@@ -1278,11 +1280,13 @@ void enqueue_network_input_control_reactions() {
  * message to downstream federates if a given network output port is not present.
  */
 void enqueue_network_output_control_reactions(){
+#ifdef FEDERATED_CENTRALIZED
     if (!_fed.has_downstream) {
         // This federate is not connected to any downstream federates via a zero-delay
         // logical connection. No need to trigger network output control reactions.
         return;
     }
+#endif
     LF_PRINT_DEBUG("Enqueueing output control reactions.");
     if (_fed.trigger_for_network_output_control_reactions == NULL) {
         // There are no network output control reactions
@@ -2402,15 +2406,6 @@ void synchronize_with_other_federates() {
     // coordination, either the after delay on the connection must be sufficiently large
     // enough or the STP offset must be set globally to an accurate value.
     start_time = get_start_time_from_rti(lf_time_physical());
-
-    // Every federate starts out assuming that it has been granted a PTAG
-    // at the start time, or if it has no upstream federates, a TAG.
-    _fed.last_TAG = (tag_t){.time = start_time, .microstep = 0u};
-    if (_fed.has_upstream) {
-    	_fed.is_last_TAG_provisional = true;
-    } else {
-    	_fed.is_last_TAG_provisional = false;
-    }
 
     if (duration >= 0LL) {
         // A duration has been specified. Recalculate the stop time.
