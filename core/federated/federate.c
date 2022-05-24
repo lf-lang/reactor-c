@@ -1786,7 +1786,8 @@ void handle_tagged_message(int socket, int fed_id) {
     // Check whether reactions need to be inserted directly into the reaction
     // queue or a call to schedule is needed. This checks if the intended
     // tag of the message is for the current tag or a tag that is already
-    // passed and if any control reaction is waiting on this port.
+    // passed and if any control reaction is waiting on this port (or the
+    // execution hasn't even started).
     // If the tag is intended for a tag that is passed, the control reactions
     // would need to exit because only one message can be processed per tag,
     // and that message is going to be a tardy message. The actual tardiness
@@ -1800,9 +1801,10 @@ void handle_tagged_message(int socket, int fed_id) {
     // to exit. The port status is on the other hand changed in this thread, and thus,
     // can be checked in this scenario without this race condition. The message with 
     // intended_tag of 9 in this case needs to wait one microstep to be processed.
-    if (lf_tag_compare(intended_tag, lf_tag()) <= 0 &&                           
-            action->is_a_control_reaction_waiting && // Check if a control reaction is waiting
-            action->status == unknown                // Check if the status of the port is still unknown
+    if (lf_tag_compare(intended_tag, lf_tag()) <= 0 && // The event is meant for the current or a previous tag.                          
+            ((action->is_a_control_reaction_waiting && // Check if a control reaction is waiting and
+             action->status == unknown) ||             // if the status of the port is still unknown.
+             (_lf_execution_started == false))         // Or, execution hasn't even started, so it's safe to handle this event.
     ) {
         // Since the message is intended for the current tag and a control reaction
         // was waiting for the message, trigger the corresponding reactions for this
