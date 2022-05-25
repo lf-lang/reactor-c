@@ -405,6 +405,12 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag) {
     ) {
         return;
     }
+    // Need to make sure that the destination federate's thread has already
+    // sent the starting MSG_TYPE_TIMESTAMP message.
+    while (_RTI.federates[fed->id].state == PENDING) {
+        // Need to wait here.
+        pthread_cond_wait(&_RTI.sent_start_time, &_RTI.rti_mutex);
+    }
     size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
     unsigned char buffer[message_length];
     buffer[0] = MSG_TYPE_TAG_ADVANCE_GRANT;
@@ -509,9 +515,14 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
     if (fed->state == NOT_CONNECTED
     		|| lf_tag_compare(tag, fed->last_granted) <= 0
 			|| lf_tag_compare(tag, fed->last_provisionally_granted) <= 0
-			|| (tag.time == start_time && tag.microstep == 0) // PTAG at (0,0) is implicit
     ) {
         return;
+    }
+    // Need to make sure that the destination federate's thread has already
+    // sent the starting MSG_TYPE_TIMESTAMP message.
+    while (_RTI.federates[fed->id].state == PENDING) {
+        // Need to wait here.
+        pthread_cond_wait(&_RTI.sent_start_time, &_RTI.rti_mutex);
     }
     size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
     unsigned char buffer[message_length];
