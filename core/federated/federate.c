@@ -1254,6 +1254,14 @@ port_status_t get_current_port_status(int portID) {
  * or absent.
  */
 void enqueue_network_input_control_reactions() {
+#ifdef FEDERATED_CENTRALIZED
+    if (!_fed.has_upstream) {
+        // This federate is not connected to any upstream federates via a
+        // logical connection. No need to trigger network input control
+        // reactions.
+        return;
+    }
+#endif
     for (int i = 0; i < _fed.triggers_for_network_input_control_reactions_size; i++) {
         // Reaction 0 should always be the network input control reaction
         if (get_current_port_status(i) == unknown) {
@@ -1273,6 +1281,14 @@ void enqueue_network_input_control_reactions() {
  * message to downstream federates if a given network output port is not present.
  */
 void enqueue_network_output_control_reactions(){
+#ifdef FEDERATED_CENTRALIZED
+    if (!_fed.has_downstream) {
+        // This federate is not connected to any downstream federates via a
+        // logical connection. No need to trigger network output control
+        // reactions.
+        return;
+    }
+#endif
     LF_PRINT_DEBUG("Enqueueing output control reactions.");
     if (_fed.trigger_for_network_output_control_reactions == NULL) {
         // There are no network output control reactions
@@ -1770,7 +1786,8 @@ void handle_tagged_message(int socket, int fed_id) {
     // Check whether reactions need to be inserted directly into the reaction
     // queue or a call to schedule is needed. This checks if the intended
     // tag of the message is for the current tag or a tag that is already
-    // passed and if any control reaction is waiting on this port.
+    // passed and if any control reaction is waiting on this port (or the
+    // execution hasn't even started).
     // If the tag is intended for a tag that is passed, the control reactions
     // would need to exit because only one message can be processed per tag,
     // and that message is going to be a tardy message. The actual tardiness
@@ -1784,9 +1801,10 @@ void handle_tagged_message(int socket, int fed_id) {
     // to exit. The port status is on the other hand changed in this thread, and thus,
     // can be checked in this scenario without this race condition. The message with 
     // intended_tag of 9 in this case needs to wait one microstep to be processed.
-    if (lf_tag_compare(intended_tag, lf_tag()) <= 0 &&                           
-            action->is_a_control_reaction_waiting && // Check if a control reaction is waiting
-            action->status == unknown                // Check if the status of the port is still unknown
+    if (lf_tag_compare(intended_tag, lf_tag()) <= 0 && // The event is meant for the current or a previous tag.                          
+            ((action->is_a_control_reaction_waiting && // Check if a control reaction is waiting and
+             action->status == unknown) ||             // if the status of the port is still unknown.
+             (_lf_execution_started == false))         // Or, execution hasn't even started, so it's safe to handle this event.
     ) {
         // Since the message is intended for the current tag and a control reaction
         // was waiting for the message, trigger the corresponding reactions for this
@@ -2392,15 +2410,6 @@ void synchronize_with_other_federates() {
     // coordination, either the after delay on the connection must be sufficiently large
     // enough or the STP offset must be set globally to an accurate value.
     start_time = get_start_time_from_rti(lf_time_physical());
-
-    // Every federate starts out assuming that it has been granted a PTAG
-    // at the start time, or if it has no upstream federates, a TAG.
-    _fed.last_TAG = (tag_t){.time = start_time, .microstep = 0u};
-    if (_fed.has_upstream) {
-    	_fed.is_last_TAG_provisional = true;
-    } else {
-    	_fed.is_last_TAG_provisional = false;
-    }
 
     if (duration >= 0LL) {
         // A duration has been specified. Recalculate the stop time.
