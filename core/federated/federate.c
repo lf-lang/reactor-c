@@ -1142,7 +1142,7 @@ void update_last_known_status_on_input_ports(tag_t tag) {
         // we do not update the last known status tag.
         if (lf_tag_compare(tag,
                 input_port_action->last_known_status_tag) >= 0) {
-            DEBUG_PRINT(
+            LF_PRINT_DEBUG(
                 "Updating the last known status tag of port %d to (%ld, %u).",
                 i,
                 tag.time - lf_time_start(), 
@@ -1189,7 +1189,7 @@ void update_last_known_status_on_input_port(tag_t tag, int port_id) {
                     // semantics in tag.h.
                     tag.microstep++;
                 }
-        DEBUG_PRINT(
+        LF_PRINT_DEBUG(
             "Updating the last known status tag of port %d to (%ld, %u).",
             port_id,
             tag.time - lf_time_start(), 
@@ -2643,12 +2643,12 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
                 	if (_lf_bounded_NET(&next_tag)) {
                         _lf_send_time(MSG_TYPE_TIME_ADVANCE_NOTICE, next_tag.time, wait_for_reply);
                         _fed.last_sent_NET = next_tag;
-                        DEBUG_PRINT("Sent Time Advance Notice (TAN) %lld to RTI.",
-                        		next_tag.time - get_start_time());
+                        LF_PRINT_DEBUG("Sent Time Advance Notice (TAN) %lld to RTI.",
+                        		next_tag.time - lf_time_start());
                 	} else {
 						_lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag, wait_for_reply);
 						_fed.last_sent_NET = next_tag;
-			            LOG_PRINT("Sent next event tag (NET) (%lld, %u) to RTI.",
+			            LF_PRINT_LOG("Sent next event tag (NET) (%lld, %u) to RTI.",
 			            		next_tag.time - start_time, next_tag.microstep);
                 	}
                 }
