@@ -109,7 +109,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * is an estimate L of the one-way latency.  The estimated clock error
  * E is therefore L - (T2 - T1). Over several cycles, the average value of E
  * becomes the initial offset for the
- * clock at the federate. Henceforth, when get_physical_time() is
+ * clock at the federate. Henceforth, when lf_time_physical() is
  * called, the offset will be added to whatever the physical clock says.
  *
  * If clock synchronization is enabled, then the federate will also
@@ -156,7 +156,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Physical connections also use the above P2P sockets between
  * federates even if the coordination is centralized.
  *
- * Peer-to-peer sockets can be closed by the downstream federate.
+ * Note: Peer-to-peer sockets can be closed by the downstream federate.
  * For example, when a downstream federate reaches its stop time, then
  * it will stop accepting physical messages. To achieve an orderly shutdown,
  * the downstream federate sends a MSG_TYPE_CLOSE_REQUEST message to the upstream
@@ -168,7 +168,28 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * decentralized and the messages arrive after the STP offset of the
  * downstream federate (i.e., they are "tardy").
  *
- * FIXME: What happens after this?
+ * Afterward, the federates and the RTI decide on a common start time by having
+ * each federate report a reading of its physical clock to the RTI on a
+ * `MSG_TYPE_TIMESTAMP`. The RTI broadcasts the maximum of these readings plus
+ * `DELAY_START` to all federates as the start time, again on a `MSG_TYPE_TIMESTAMP`.
+ * 
+ * The next step depends on the coordination type. 
+ * 
+ * Under centralized coordination, each federate will send a
+ * `MSG_TYPE_NEXT_EVENT_TAG` to the RTI with the start tag. That is to say that
+ * each federate has a valid event at the start tag (start time, 0) and it will
+ * inform the RTI of this event.
+ * Subsequently, at the conclusion of each tag, each federate will send a
+ * `MSG_TYPE_LOGICAL_TAG_COMPLETE` followed by a `MSG_TYPE_NEXT_EVENT_TAG` (see
+ * the comment for each message for further explanation). Each federate would
+ * have to wait for a `MSG_TYPE_TAG_ADVANCE_GRANT` or a
+ * `MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT` before it can advance to a
+ * particular tag.
+ * 
+ * Under decentralized coordination, the coordination is governed by STA and
+ * STAAs, as further explained in https://doi.org/10.48550/arXiv.2109.07771.
+ * 
+ * FIXME: Expand this. Explain control reactions.
  *
  */
 
@@ -402,9 +423,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_LOGICAL_TAG_COMPLETE 9
 
-/////////// Messages used in request_stop() ///////////////
+/////////// Messages used in lf_request_stop() ///////////////
 //// Overview of the algorithm:
-////  When any federate calls request_stop(), it will
+////  When any federate calls lf_request_stop(), it will
 ////  send a MSG_TYPE_STOP_REQUEST message to the RTI, which will then
 ////  forward a MSG_TYPE_STOP_REQUEST message
 ////  to any federate that has not yet provided a stop time to the RTI. The federates will reply
@@ -480,7 +501,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     encode_int32((int32_t)microstep, &(buffer[1 + sizeof(instant_t)])); \
 } while(0)
 
-/////////// End of request_stop() messages ////////////////
+/////////// End of lf_request_stop() messages ////////////////
 
 /**
  * Byte identifying a address query message, sent by a federate to RTI

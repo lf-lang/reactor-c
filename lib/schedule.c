@@ -37,7 +37,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
  */
 
-#include "ctarget.h"
+#include "../include/ctarget/schedule.h"
 
 /**
  * Schedule an action to occur with the specified value and time offset
@@ -48,8 +48,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param offset The time offset over and above that in the action.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t schedule(void* action, interval_t offset) {
+trigger_handle_t lf_schedule(void* action, interval_t offset) {
     return _lf_schedule_token(action, offset, NULL);
+}
+
+/**
+ * @deprecated version of 'lf_schedule'
+ */
+trigger_handle_t schedule(void* action, interval_t offset) {
+    return lf_schedule(action, offset);
 }
 
 /**
@@ -63,9 +70,17 @@ trigger_handle_t schedule(void* action, interval_t offset) {
  * @param value The value to send.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t schedule_int(void* action, interval_t extra_delay, int value)
+trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value)
 {
     return _lf_schedule_int(action, extra_delay, value);
+}
+
+/**
+ * @deprecated version of 'lf_schedule_int'
+ */
+trigger_handle_t schedule_int(void* action, interval_t extra_delay, int value)
+{
+    return lf_schedule_int(action, extra_delay, value);
 }
 
 /**
@@ -118,8 +133,15 @@ trigger_handle_t schedule_int(void* action, interval_t extra_delay, int value)
  * @param token The token to carry the payload or null for no payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
+trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
     return _lf_schedule_token(action, extra_delay, token);
+}
+
+/**
+ * @deprecated version of 'lf_schedule_token'
+ */
+trigger_handle_t schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
+    return lf_schedule_token(action, extra_delay, token);
 }
 
 /**
@@ -138,9 +160,9 @@ trigger_handle_t schedule_token(void* action, interval_t extra_delay, lf_token_t
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for
  *  error.
  */
-trigger_handle_t schedule_copy(void* action, interval_t offset, void* value, int length) {
+trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, int length) {
     if (length < 0) {
-        error_print(
+        lf_print_error(
             "schedule_copy():"
             " Ignoring request to copy a value with a negative length (%d).",
             length
@@ -148,6 +170,13 @@ trigger_handle_t schedule_copy(void* action, interval_t offset, void* value, int
         return -1;
     }
     return _lf_schedule_copy(action, offset, value, (size_t)length);
+}
+
+/**
+ * @deprecated version of 'lf_schedule_copy'
+ */
+trigger_handle_t schedule_copy(void* action, interval_t offset, void* value, int length) {
+    return lf_schedule_copy(action, offset, value, length);
 }
 
 
@@ -167,9 +196,9 @@ trigger_handle_t schedule_copy(void* action, interval_t offset, void* value, int
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for
  *  error.
  */
-trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* value, int length) {
+trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* value, int length) {
     if (length < 0) {
-        error_print(
+        lf_print_error(
             "schedule_value():"
             " Ignoring request to schedule an action with a value that has a negative length (%d).",
             length
@@ -178,6 +207,14 @@ trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* valu
     }
     return _lf_schedule_value(action, extra_delay, value, (size_t)length);
 }
+
+/**
+ * @deprecated version of 'lf_schedule_value'
+ */
+trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* value, int length) {
+    return lf_schedule_value(action, extra_delay, value, length);
+}
+
 
 /**
  * Check the deadline of the currently executing reaction against the
@@ -190,6 +227,13 @@ trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* valu
  *  handler if the deadline has passed.
  * @return True if the specified deadline has passed and false otherwise.
  */
-bool check_deadline(void* self, bool invoke_deadline_handler) {
+bool lf_check_deadline(void* self, bool invoke_deadline_handler) {
 	return _lf_check_deadline((self_base_t*)self, invoke_deadline_handler);
+}
+
+/**
+ * @deprecated version of 'lf_check_deadline'
+ */
+bool check_deadline(void* self, bool invoke_deadline_handler) {
+	return lf_check_deadline(self, invoke_deadline_handler);
 }

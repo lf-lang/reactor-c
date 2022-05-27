@@ -61,6 +61,7 @@
 #include "utils/pqueue.h"
 #include "utils/util.h"
 #include "tag.h"       // Time-related functions.
+#include "modal_models/modes.h" // Modal model support
 
 // The following file is also included, but must be included
 // after its requirements are met, so the #include appears at
@@ -102,8 +103,24 @@ void _lf_set_present(bool* is_present_field);
  */
 #define _LF_SET(out, val) \
 do { \
+    /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
+    /* even if it is a literal */ \
     out->value = val; \
     _lf_set_present(&out->is_present); \
+    if (out->token != NULL) { \
+        /* The cast "*((void**) &out->value)" is a hack to make the code */ \
+        /* compile with non-token types where val is not a pointer. */ \
+        lf_token_t* token = _lf_initialize_token_with_value(out->token, *((void**) &out->value), 1); \
+        token->ref_count = out->num_destinations; \
+        out->token = token; \
+        out->token->ok_to_free = token_and_value; \
+        if (out->destructor != NULL) { \
+            out->token->destructor = out->destructor; \
+        } \
+        if (out->copy_constructor != NULL) { \
+            out->token->copy_constructor = out->copy_constructor; \
+        } \
+    } \
 } while(0)
 
 /**
@@ -120,7 +137,7 @@ do { \
  * @see lf_token_t
  */
 #ifndef __cplusplus
-#define _LF_SET_ARRAY(out, val, element_size, length) \
+#define _LF_SET_ARRAY(out, val, length) \
 do { \
     _lf_set_present(&out->is_present); \
     lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
@@ -129,7 +146,7 @@ do { \
     out->value = token->value; \
 } while(0)
 #else
-#define _LF_SET_ARRAY(out, val, element_size, length) \
+#define _LF_SET_ARRAY(out, val, length) \
 do { \
     _lf_set_present(&out->is_present); \
     lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
@@ -246,32 +263,34 @@ do { \
 } while(0)
 #endif
 
-
-#ifdef MODAL_REACTORS
 /**
- * Sets the next mode of a modal reactor. Same as SET for outputs, only
- * the last value will have effect if invoked multiple times.
- * Works only in reactions with the target mode declared as effect.
- *
- * @param mode The target mode to set for activation.
+ * Set the destructor used to free "token->value" set on "out".
+ * That memory will be automatically freed once all downstream
+ * reactions no longer need the value.
+ * 
+ * @param out The output port (by name) or input of a contained
+ *            reactor in form input_name.port_name.
+ * @param dtor A pointer to a void function that takes a pointer argument
+ *             or NULL to use the default void free(void*) function. 
  */
-#define _LF_SET_MODE(mode) _LF_SET_MODE_WITH_TYPE(mode, _lf_##mode##_change_type)
-
-/**
- * Sets the next mode of a modal reactor with an explicit change type
- * (reset or history, from the enum `lf_mode_change_type_t`).
- * This macro is not meant to be used by LF programmers.
- * It is used in Python.
- *
- * @param mode The target mode to set for activation.
- * @param change_type The change type of the transition.
- */
-#define _LF_SET_MODE_WITH_TYPE(mode, change_type) \
+#define _LF_SET_DESTRUCTOR(out, dtor) \
 do { \
-    ((self_base_t*)self)->_lf__mode_state.next_mode = mode; \
-    ((self_base_t*)self)->_lf__mode_state.mode_change = change_type; \
+    out->destructor = dtor; \
 } while(0)
-#endif
+
+/**
+ * Set the destructor used to copy construct "token->value" received
+ * by "in" if "in" is mutable.
+ * 
+ * @param out The output port (by name) or input of a contained
+ *            reactor in form input_name.port_name.
+ * @param cpy_ctor A pointer to a void* function that takes a pointer argument
+ *                 or NULL to use the memcpy operator.
+ */
+#define _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor) \
+do { \
+    out->copy_constructor = cpy_ctor; \
+} while(0)
 
 /**
  * Macro for extracting the deadline from the index of a reaction.
@@ -386,7 +405,7 @@ typedef enum {inactive = 0, queued, running} reaction_status_t;
 
 /**
  * Handles for scheduled triggers. These handles are returned
- * by schedule() functions. The intent is that the handle can be
+ * by lf_schedule() functions. The intent is that the handle can be
  * used to cancel a future scheduled event, but this is not
  * implemented yet.
  */
@@ -420,10 +439,10 @@ typedef struct trigger_t trigger_t;
 /**
  * Global STP offset uniformly applied to advancement of each 
  * time step in federated execution. This can be retrieved in 
- * user code by calling get_stp_offset() and adjusted by 
- * calling set_stp_offset(interval_t offset).
+ * user code by calling lf_get_stp_offset() and adjusted by 
+ * calling lf_set_stp_offset(interval_t offset).
  */
-extern interval_t _lf_global_time_STP_offset;
+extern interval_t _lf_fed_STA_offset;
 
 /**
  * Token type for dynamically allocated arrays and structs sent as messages.
@@ -452,6 +471,10 @@ typedef struct lf_token_t {
     size_t length;
     /** The number of input ports that have not already reacted to the message. */
     int ref_count;
+    /** The destructor or NULL to use the default free(). */
+    void (*destructor) (void* value);
+    /** The copy constructor or NULL to use memcpy. */
+    void* (*copy_constructor) (void* value);
     /**
      * Indicator of whether this token is expected to be freed.
      * Tokens that are created at the start of execution and associated with output
@@ -471,50 +494,6 @@ typedef struct token_present_t {
                            // for both ports and actions.
     bool reset_is_present; // True to set is_present to false after calling done_using().
 } token_present_t;
-
-
-#ifdef MODAL_REACTORS
-/** Typedef for reactor_mode_t struct, used for representing a mode. */
-typedef struct reactor_mode_t reactor_mode_t;
-/** Typedef for reactor_mode_state_t struct, used for storing modal state of reactor and/or its relation to enclosing modes. */
-typedef struct reactor_mode_state_t reactor_mode_state_t;
-/** Typedef for mode_state_variable_reset_data_t struct, used for storing data for resetting state variables nested in modes. */
-typedef struct mode_state_variable_reset_data_t mode_state_variable_reset_data_t;
-
-/** Type of the mode change. */
-typedef enum {no_transition, reset_transition, history_transition} lf_mode_change_type_t;
-
-/** A struct to represent a single mode instace in a reactor instance. */
-struct reactor_mode_t {
-    reactor_mode_state_t* state;    // Pointer to a struct with the reactor's mode state. INSTANCE.
-    string name;                    // Name of this mode.
-    instant_t deactivation_time;    // Time when the mode was left.
-    bool should_trigger_startup;    // Startup reactions should be triggered if this mode is active.
-};
-
-/** A struct to store state of the modes in a reactor instance and/or its relation to enclosing modes. */
-struct reactor_mode_state_t {
-    reactor_mode_t* parent_mode;    // Pointer to the next enclosing mode (if exists).
-    reactor_mode_t* initial_mode;   // Pointer to the initial mode.
-    reactor_mode_t* active_mode;    // Pointer to the currently active mode.
-    reactor_mode_t* next_mode;      // Pointer to the next mode to activate at the end of this step (if set).
-    lf_mode_change_type_t mode_change;  // A mode change type flag.
-};
-/** A struct to store data for resetting state variables nested in modes. */
-struct mode_state_variable_reset_data_t {
-    reactor_mode_t* mode;           // Pointer to the enclosing mode.
-    void* target;                   // Pointer to the target variable.
-    void* source;                   // Pointer to the data source.
-    size_t size;                    // The size of the variable.
-};
-#else
-/*
- * Reactions and triggers must have a mode pointer to set up connection to enclosing modes,
- * also when they are precompiled without modal reactors in order to later work in modal reactors.
- * Hence define mode type as void in the absence of modes to treat mode pointer as void pointers for that time being.
- */
-typedef void reactor_mode_t;
-#endif
 
 /**
  * Reaction activation record to push onto the reaction queue.
@@ -560,7 +539,7 @@ struct reaction_t {
                                 // as a suggestion to the scheduler.
     char* name;                 // If logging is set to LOG or higher, then this will
                                 // point to the full name of the reactor followed by
-    							// the reaction number.
+                                // the reaction number.
     reactor_mode_t* mode;       // The enclosing mode of this reaction (if exists).
                                 // If enclosed in multiple, this will point to the innermost mode.
 };
@@ -659,19 +638,10 @@ typedef struct self_base_t {
 //  ======== Function Declarations ========  //
 
 /**
- * Return the time of the start of execution in nanoseconds.
- * This is both the starting physical and starting logical time.
- * On many platforms, this is the number of nanoseconds
- * since January 1, 1970, but it is actually platform dependent.
- * @return A time instant.
- */
-instant_t get_start_time(void);
-
-/**
  * Return the global STP offset on advancement of logical
  * time for federated execution.
  */
-interval_t get_stp_offset(void);
+interval_t lf_get_stp_offset(void);
 
 /**
  * Set the global STP offset on advancement of logical
@@ -680,13 +650,13 @@ interval_t get_stp_offset(void);
  * @param offset A positive time value to be applied
  *  as the STP offset.
  */
-void set_stp_offset(interval_t offset);
+void lf_set_stp_offset(interval_t offset);
 
 /**
  * Print a snapshot of the priority queues used during execution
  * (for debugging).
  */
-void print_snapshot(void);
+void lf_print_snapshot(void);
 
 /**
  * Request a stop to execution as soon as possible.
@@ -696,7 +666,7 @@ void print_snapshot(void);
  * a later logical time determined by the RTI so that
  * all federates stop at the same logical time.
  */
-void request_stop(void);
+void lf_request_stop(void);
 
 /**
  * Allocate zeroed-out memory and record the allocated memory on
@@ -767,7 +737,7 @@ void _lf_initialize_trigger_objects(void);
 void _lf_pop_events(void);
 
 /** 
- * Internal version of the schedule() function, used by generated 
+ * Internal version of the lf_schedule() function, used by generated 
  * _lf_start_timers() function. 
  * @param trigger The action or timer to be triggered.
  * @param delay Offset of the event release.
@@ -797,13 +767,6 @@ void terminate_execution(void);
  * Function (to be code generated) to trigger shutdown reactions.
  */
 bool _lf_trigger_shutdown_reactions(void);
-
-/**
- * Function (to be code generated) to handle mode changes.
- */
-#ifdef MODAL_REACTORS
-void _lf_handle_mode_changes(void);
-#endif
 
 /**
  * Create a new token and initialize it.

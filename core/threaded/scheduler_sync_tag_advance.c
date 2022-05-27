@@ -72,7 +72,7 @@ bool _lf_sched_should_stop_locked() {
     if (_lf_logical_tag_completed) {
         // If we are at the stop tag, do not call _lf_next_locked()
         // to prevent advancing the logical time.
-        if (compare_tags(current_tag, stop_tag) >= 0) {
+        if (lf_tag_compare(current_tag, stop_tag) >= 0) {
             return true;
         }
     }
@@ -107,6 +107,6 @@ bool _lf_sched_advance_tag_locked() {
     _lf_next_locked();
     tracepoint_scheduler_advancing_time_ends();
 
-    DEBUG_PRINT("Scheduler: Done waiting for _lf_next_locked().");
+    LF_PRINT_DEBUG("Scheduler: Done waiting for _lf_next_locked().");
     return false;
 }

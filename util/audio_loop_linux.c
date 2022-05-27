@@ -143,7 +143,7 @@ int callback (snd_pcm_t *playback_handle,  int16_t buf_ref[]) {
     
     // Reinsert this same audio buffer at the end of the queue.
     if ((error_number = snd_pcm_writei(playback_handle, buf_ref, AUDIO_BUFFER_SIZE)) < 0) {
-        error_print("Writing to sound buffer failed: %s", snd_strerror(error_number));
+        lf_print_error("Writing to sound buffer failed: %s", snd_strerror(error_number));
     }
 
     // In case the other thread is waiting for this event, notify
@@ -168,53 +168,53 @@ void* run_audio_loop(void* ignored) {
     int buffer_size_bytes = AUDIO_BUFFER_SIZE * 4 * NUM_CHANNELS;
 
     if ((error_number = snd_pcm_open(&playback_handle, device_name, SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
-        error_print_and_exit("Cannot open audio device %s (%s)\n",
+        lf_print_error_and_exit("Cannot open audio device %s (%s)\n",
                 AUDIO_DEVICE,
              snd_strerror(error_number));
     }
 
     if ((error_number = snd_pcm_hw_params_malloc(&hw_params)) < 0) {
-        error_print_and_exit("Cannot allocate hardware parameter structure (%s)\n",
+        lf_print_error_and_exit("Cannot allocate hardware parameter structure (%s)\n",
              snd_strerror(error_number));
     }
 
     if ((error_number = snd_pcm_hw_params_any(playback_handle, hw_params)) < 0) {
-        error_print_and_exit("Cannot initialize hardware parameter structure (%s)\n",
+        lf_print_error_and_exit("Cannot initialize hardware parameter structure (%s)\n",
              snd_strerror(error_number));
     }
 
     if ((error_number = snd_pcm_hw_params_set_access(playback_handle, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
-        error_print_and_exit("Cannot set access type (%s)\n",
+        lf_print_error_and_exit("Cannot set access type (%s)\n",
              snd_strerror(error_number));
     }
 
     if ((error_number = snd_pcm_hw_params_set_format(playback_handle, hw_params, SND_PCM_FORMAT_S16_LE)) < 0) {
-        error_print_and_exit("Cannot set sample format (%s)\n",
+        lf_print_error_and_exit("Cannot set sample format (%s)\n",
              snd_strerror(error_number));
     }
 
     if ((error_number = snd_pcm_hw_params_set_rate_near(playback_handle, hw_params, &sample_rate, 0)) < 0) {
-        error_print_and_exit("Cannot set sample rate (%s)\n",
+        lf_print_error_and_exit("Cannot set sample rate (%s)\n",
              snd_strerror(error_number));
     }
     // FIXME: check sample rate
 
     if ((error_number = snd_pcm_hw_params_set_channels(playback_handle, hw_params, NUM_CHANNELS)) < 0) {
-        error_print_and_exit("Cannot set channel count (%s)\n",
+        lf_print_error_and_exit("Cannot set channel count (%s)\n",
              snd_strerror(error_number));
     }
     snd_pcm_uframes_t periods = buffer_size_bytes / AUDIO_BUFFER_SIZE;
     if ((error_number = snd_pcm_hw_params_set_periods(playback_handle, hw_params, periods, 0)) < 0) {
-        error_print_and_exit("Cannot set channel count (%s)\n",
+        lf_print_error_and_exit("Cannot set channel count (%s)\n",
              snd_strerror(error_number));
     }
     snd_pcm_uframes_t size = buffer_size_bytes;
     if ((error_number = snd_pcm_hw_params_set_buffer_size_near(playback_handle, hw_params, &size)) < 0) {
-        error_print_and_exit("Cannot set channel count (%s)\n",
+        lf_print_error_and_exit("Cannot set channel count (%s)\n",
              snd_strerror(error_number));
     }
     if ((error_number = snd_pcm_hw_params(playback_handle, hw_params)) < 0) {
-        error_print_and_exit("Cannot set parameters (%s)\n",
+        lf_print_error_and_exit("Cannot set parameters (%s)\n",
              snd_strerror(error_number));
     }
 
@@ -226,23 +226,23 @@ void* run_audio_loop(void* ignored) {
     */
 
     if ((error_number = snd_pcm_sw_params_malloc(&sw_params)) < 0) {
-        error_print_and_exit("Cannot allocate software parameters structure (%s)\n",
+        lf_print_error_and_exit("Cannot allocate software parameters structure (%s)\n",
              snd_strerror (error_number));
     }
     if ((error_number = snd_pcm_sw_params_current(playback_handle, sw_params)) < 0) {
-        error_print_and_exit("Cannot initialize software parameters structure (%s)\n",
+        lf_print_error_and_exit("Cannot initialize software parameters structure (%s)\n",
              snd_strerror (error_number));
     }
     if ((error_number = snd_pcm_sw_params_set_avail_min(playback_handle, sw_params, buffer_size_bytes)) < 0) {
-        error_print_and_exit("Cannot set minimum available count (%s)\n",
+        lf_print_error_and_exit("Cannot set minimum available count (%s)\n",
              snd_strerror (error_number));
     }
     if ((error_number = snd_pcm_sw_params_set_start_threshold(playback_handle, sw_params, AUDIO_BUFFER_SIZE)) < 0) {
-        error_print_and_exit("Cannot set start mode (%s)\n",
+        lf_print_error_and_exit("Cannot set start mode (%s)\n",
              snd_strerror (error_number));
     }
     if ((error_number = snd_pcm_sw_params(playback_handle, sw_params)) < 0) {
-        error_print_and_exit("Cannot set software parameters (%s)\n",
+        lf_print_error_and_exit("Cannot set software parameters (%s)\n",
              snd_strerror (error_number));
     }
 
@@ -254,7 +254,7 @@ void* run_audio_loop(void* ignored) {
     */
 
     if ((error_number = snd_pcm_prepare(playback_handle)) < 0) {
-        error_print_and_exit("Cannot prepare audio interface for use (%s)\n",
+        lf_print_error_and_exit("Cannot prepare audio interface for use (%s)\n",
              snd_strerror (error_number));
     }
 
@@ -269,7 +269,7 @@ void* run_audio_loop(void* ignored) {
         */
 
         if ((error_number = snd_pcm_wait(playback_handle, BUFFER_DURATION_NS/1000)) < 0) {
-            error_print("Poll failed (%s)\n", strerror(errno));
+            lf_print_error("Poll failed (%s)\n", strerror(errno));
             break;
         }
 
@@ -277,10 +277,10 @@ void* run_audio_loop(void* ignored) {
 
         if ((frames_to_deliver = snd_pcm_avail_update(playback_handle)) < 0) {
             if (frames_to_deliver == -EPIPE) {
-                error_print("An xrun occured\n");
+                lf_print_error("An xrun occured\n");
                 continue;
             } else {
-                error_print("Unknown ALSA avail update return value (%d)\n",
+                lf_print_error("Unknown ALSA avail update return value (%d)\n",
                      frames_to_deliver);
                 break;
             }
@@ -392,7 +392,7 @@ int lf_play_audio_waveform(lf_waveform_t* waveform, float emphasis, instant_t st
     // occur.
     while (index_offset >= AUDIO_BUFFER_SIZE) {
         pthread_cond_wait(&lf_audio_cond, &lf_audio_mutex);
-        time_offset = get_logical_time() - next_buffer_start_time;
+        time_offset = lf_time_logical() - next_buffer_start_time;
         index_offset = (time_offset * SAMPLE_RATE) / BILLION;
     }
     

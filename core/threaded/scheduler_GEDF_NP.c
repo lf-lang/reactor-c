@@ -64,11 +64,11 @@ _lf_sched_instance_t* _lf_sched_instance;
  */
 static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
     size_t reaction_level = LEVEL(reaction->index);
-    DEBUG_PRINT("Scheduler: Trying to lock the mutex for level %d.",
+    LF_PRINT_DEBUG("Scheduler: Trying to lock the mutex for level %d.",
                 reaction_level);
     lf_mutex_lock(
         &_lf_sched_instance->_lf_sched_array_of_mutexes[reaction_level]);
-    DEBUG_PRINT("Scheduler: Locked the mutex for level %d.", reaction_level);
+    LF_PRINT_DEBUG("Scheduler: Locked the mutex for level %d.", reaction_level);
     pqueue_insert(((pqueue_t**)_lf_sched_instance
                        ->_lf_sched_triggered_reactions)[reaction_level],
                   (void*)reaction);
@@ -116,9 +116,9 @@ void _lf_sched_notify_workers() {
     size_t workers_to_awaken =
         MIN(_lf_sched_instance->_lf_sched_number_of_idle_workers,
             pqueue_size((pqueue_t*)_lf_sched_instance->_lf_sched_executing_reactions));
-    DEBUG_PRINT("Scheduler: Notifying %d workers.", workers_to_awaken);
+    LF_PRINT_DEBUG("Scheduler: Notifying %d workers.", workers_to_awaken);
     _lf_sched_instance->_lf_sched_number_of_idle_workers -= workers_to_awaken;
-    DEBUG_PRINT("Scheduler: New number of idle workers: %u.",
+    LF_PRINT_DEBUG("Scheduler: New number of idle workers: %u.",
                 _lf_sched_instance->_lf_sched_number_of_idle_workers);
     if (workers_to_awaken > 1) {
         // Notify all the workers except the worker thread that has called this
@@ -157,10 +157,10 @@ void _lf_sched_try_advance_tag_and_distribute() {
             _lf_sched_instance->_lf_sched_next_reaction_level = 0;
             lf_mutex_lock(&mutex);
             // Nothing more happening at this tag.
-            DEBUG_PRINT("Scheduler: Advancing tag.");
+            LF_PRINT_DEBUG("Scheduler: Advancing tag.");
             // This worker thread will take charge of advancing tag.
             if (_lf_sched_advance_tag_locked()) {
-                DEBUG_PRINT("Scheduler: Reached stop tag.");
+                LF_PRINT_DEBUG("Scheduler: Reached stop tag.");
                 _lf_sched_signal_stop();
                 lf_mutex_unlock(&mutex);
                 break;
@@ -192,19 +192,19 @@ void _lf_sched_wait_for_work(size_t worker_number) {
                             1) ==
         _lf_sched_instance->_lf_sched_number_of_workers) {
         // Last thread to go idle
-        DEBUG_PRINT("Scheduler: Worker %d is the last idle thread.",
+        LF_PRINT_DEBUG("Scheduler: Worker %d is the last idle thread.",
                     worker_number);
         // Call on the scheduler to distribute work or advance tag.
         _lf_sched_try_advance_tag_and_distribute();
     } else {
         // Not the last thread to become idle.
         // Wait for work to be released.
-        DEBUG_PRINT(
+        LF_PRINT_DEBUG(
             "Scheduler: Worker %d is trying to acquire the scheduling "
             "semaphore.",
             worker_number);
         lf_semaphore_acquire(_lf_sched_instance->_lf_sched_semaphore);
-        DEBUG_PRINT("Scheduler: Worker %d acquired the scheduling semaphore.",
+        LF_PRINT_DEBUG("Scheduler: Worker %d acquired the scheduling semaphore.",
                     worker_number);
     }
 }
@@ -225,7 +225,7 @@ void lf_sched_init(
     size_t number_of_workers, 
     sched_params_t* params
 ) {
-    DEBUG_PRINT("Scheduler: Initializing with %d workers", number_of_workers);
+    LF_PRINT_DEBUG("Scheduler: Initializing with %d workers", number_of_workers);
     if(!init_sched_instance(&_lf_sched_instance, number_of_workers, params)) {
         // Already initialized
         return;
@@ -290,12 +290,12 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
         // Need to lock the mutex for the current level
         size_t current_level =
             _lf_sched_instance->_lf_sched_next_reaction_level - 1;
-        DEBUG_PRINT(
+        LF_PRINT_DEBUG(
             "Scheduler: Worker %d trying to lock the mutex for level %d.",
             worker_number, current_level);
         lf_mutex_lock(
             &_lf_sched_instance->_lf_sched_array_of_mutexes[current_level]);
-        DEBUG_PRINT("Scheduler: Worker %d locked the mutex for level %d.",
+        LF_PRINT_DEBUG("Scheduler: Worker %d locked the mutex for level %d.",
                     worker_number, current_level);
         reaction_t* reaction_to_return = (reaction_t*)pqueue_pop(
             (pqueue_t*)_lf_sched_instance->_lf_sched_executing_reactions);
@@ -307,7 +307,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
             return reaction_to_return;
         }
 
-        DEBUG_PRINT("Worker %d is out of ready reactions.", worker_number);
+        LF_PRINT_DEBUG("Worker %d is out of ready reactions.", worker_number);
 
         // Ask the scheduler for more work and wait
         tracepoint_worker_wait_starts(worker_number);
@@ -330,7 +330,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
 void lf_sched_done_with_reaction(size_t worker_number,
                                  reaction_t* done_reaction) {
     if (!lf_bool_compare_and_swap(&done_reaction->status, queued, inactive)) {
-        error_print_and_exit("Unexpected reaction status: %d. Expected %d.",
+        lf_print_error_and_exit("Unexpected reaction status: %d. Expected %d.",
                              done_reaction->status, queued);
     }
 }
@@ -355,7 +355,7 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     if (reaction == NULL || !lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
         return;
     }
-    DEBUG_PRINT("Scheduler: Enqueing reaction %s, which has level %lld.",
+    LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld.",
             reaction->name, LEVEL(reaction->index));
     _lf_sched_insert_reaction(reaction);
 }

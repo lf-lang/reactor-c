@@ -127,7 +127,7 @@ int write_trace_header() {
         lf_mutex_lock(&_lf_trace_mutex);
         // The first item in the header is the start time.
         // This is both the starting physical time and the starting logical time.
-        instant_t start_time = get_start_time();
+        instant_t start_time = lf_time_start();
         // printf("DEBUG: Start time written to trace file is %lld.\n", start_time);
         size_t items_written = fwrite(
                 &start_time,
@@ -349,12 +349,12 @@ void start_trace(char* filename) {
 
     // In case the user forgets to stop to the trace in wrapup.
     if (atexit(stop_trace) != 0) {
-        warning_print("Failed to register stop_trace function for execution upon termination.");
+        lf_print_warning("Failed to register stop_trace function for execution upon termination.");
     }
 
     lf_thread_create(&_lf_flush_trace_thread, flush_trace, NULL);
 
-    DEBUG_PRINT("Started tracing.");
+    LF_PRINT_DEBUG("Started tracing.");
 }
 
 /**
@@ -368,7 +368,7 @@ void start_trace(char* filename) {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution
  *  or -1 for an unknown thread.
  * @param physical_time If the caller has already accessed physical time, provide it here.
- *  Otherwise, provide NULL. This argument avoids a second call to get_physical_time
+ *  Otherwise, provide NULL. This argument avoids a second call to lf_time_physical()
  *  and ensures that the physical time in the trace is the same as that used by the caller.
  * @param trigger Pointer to the trigger_t struct for calls to schedule or NULL otherwise.
  * @param extra_delay The extra delay passed to schedule(). If not relevant for this event
@@ -397,12 +397,12 @@ void tracepoint(
     _lf_trace_buffer[index][i].pointer = pointer;
     _lf_trace_buffer[index][i].reaction_number = reaction_number;
     _lf_trace_buffer[index][i].worker = worker;
-    _lf_trace_buffer[index][i].logical_time = get_logical_time();
-    _lf_trace_buffer[index][i].microstep = get_microstep();
+    _lf_trace_buffer[index][i].logical_time = lf_time_logical();
+    _lf_trace_buffer[index][i].microstep = lf_tag().microstep;
     if (physical_time != NULL) {
         _lf_trace_buffer[index][i].physical_time = *physical_time;
     } else {
-        _lf_trace_buffer[index][i].physical_time = get_physical_time();
+        _lf_trace_buffer[index][i].physical_time = lf_time_physical();
     }
     _lf_trace_buffer_size[index]++;
     _lf_trace_buffer[index][i].trigger = trigger;
@@ -537,5 +537,5 @@ void stop_trace() {
 
     fclose(_lf_trace_file);
     _lf_trace_file = NULL;
-    DEBUG_PRINT("Stopped tracing.");
+    LF_PRINT_DEBUG("Stopped tracing.");
 }

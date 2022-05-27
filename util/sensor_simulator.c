@@ -33,7 +33,7 @@ See sensor_simulator.h.
 #include <pthread.h>
 #include <ncurses.h>
 #include "sensor_simulator.h"
-#include "ctarget.h"
+#include "include/ctarget/ctarget.h"
 #include "core/utils/util.h"
 #include "core/platform.h"
 
@@ -257,13 +257,13 @@ void* _lf_sensor_read_input(void* ignored) {
             // because a _lf_sensor_trigger_table entry, once assigned a value, becomes
             // immutable.
             if (c == '\n' && _lf_sensor_sensor_newline_trigger != NULL) {
-                schedule_copy(_lf_sensor_sensor_newline_trigger, 0, &c, 1);
+                lf_schedule_copy(_lf_sensor_sensor_newline_trigger, 0, &c, 1);
             } else if (c - 32 >= 0 && c - 32 < LF_SENSOR_TRIGGER_TABLE_SIZE && _lf_sensor_trigger_table[c-32] != NULL) {
-                schedule_copy(_lf_sensor_trigger_table[c-32], 0, &c, 1);
+                lf_schedule_copy(_lf_sensor_trigger_table[c-32], 0, &c, 1);
             }
             // Any key trigger triggers after specific keys.
             if (_lf_sensor_any_key_trigger != NULL) {
-                schedule_copy(_lf_sensor_any_key_trigger, 0, &c, 1);
+                lf_schedule_copy(_lf_sensor_any_key_trigger, 0, &c, 1);
             }
         }
     }
@@ -282,7 +282,7 @@ void* _lf_sensor_simulator_thread(void* ignored) {
         endwin();
     }
     // Initialize ncurses.
-    DEBUG_PRINT("Initializing ncurses.");
+    LF_PRINT_DEBUG("Initializing ncurses.");
     initscr();
     start_color();     // Allow colors.
     noecho();          // Don't echo input
@@ -307,7 +307,7 @@ void* _lf_sensor_simulator_thread(void* ignored) {
     // This thread is exclusively responsible for producing output.
     int result = lf_thread_create(&_lf_sensor.input_thread_id, &_lf_sensor_read_input, NULL);
     if (result != 0) {
-        error_print("Failed to start sensor simulator input listener!");
+        lf_print_error("Failed to start sensor simulator input listener!");
     }
 
     while(_lf_sensor.thread_created != 0) {
@@ -318,7 +318,7 @@ void* _lf_sensor_simulator_thread(void* ignored) {
     	// Show all messages in the queue.
 		while (_lf_sensor.message_q != NULL) {
 			if (_lf_sensor.message_q->type == _lf_sensor_close_windows) {
-			    register_print_function(NULL, -1);
+			    lf_register_print_function(NULL, -1);
 			    endwin();
 			    lf_mutex_unlock(&_lf_sensor_mutex);
 				return NULL;
@@ -368,7 +368,7 @@ void* _lf_sensor_simulator_thread(void* ignored) {
  * End ncurses control of the terminal.
  */
 void end_sensor_simulator() {
-    register_print_function(NULL, -1);
+    lf_register_print_function(NULL, -1);
 	_lf_sensor_post_message(_lf_sensor_close_windows, NULL);
 
 	void* thread_return;
@@ -432,19 +432,19 @@ int start_sensor_simulator(
     	}
     	// Register the print function before starting the thread.
     	// Subsequent print messages will go into the queue.
-        register_print_function(&_lf_print_message_function, log_level);
+        lf_register_print_function(&_lf_print_message_function, log_level);
 
         // FIXME: Is this needed? Users should call end_sensor_simulator in
         // a shutdown reaction.
         if (atexit(end_sensor_simulator) != 0) {
-            warning_print("sensor_simulator: Failed to register end_sensor_simulator function!");
+            lf_print_warning("sensor_simulator: Failed to register end_sensor_simulator function!");
         }
 
         // ncurses is not thread safe, so create a one thread that does all
         // the writing to the window and one that does all the reading.
         result = lf_thread_create(&_lf_sensor.output_thread_id, &_lf_sensor_simulator_thread, NULL);
         if (result != 0) {
-            error_print("Failed to start sensor simulator!");
+            lf_print_error("Failed to start sensor simulator!");
         }
     }
     return result;
