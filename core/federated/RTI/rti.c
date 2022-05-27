@@ -255,7 +255,7 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
         lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
                 federate_id);
         // FIXME: Do not exit!
-        error_print_and_exit("Fed status: next_event (%lld, %d), "
+        lf_print_error_and_exit("Fed status: next_event (%lld, %d), "
         		"completed (%lld, %d), "
         		"last_granted (%lld, %d), "
         		"last_provisionally_granted (%lld, %d).",
@@ -345,7 +345,7 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
         lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
                 federate_id);
         // FIXME: Do not exit!
-        error_print_and_exit("Fed status: next_event (%lld, %d), "
+        lf_print_error_and_exit("Fed status: next_event (%lld, %d), "
         		"completed (%lld, %d), "
         		"last_granted (%lld, %d), "
         		"last_provisionally_granted (%lld, %d).",
@@ -882,12 +882,12 @@ void handle_time_advance_notice(federate_t* fed) {
 			bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
 			send_downstream_advance_grants_if_safe(fed, visited);
         } else {
-            LOG_PRINT("RTI ignoring TAN %lld from federate %d "
+            LF_PRINT_LOG("RTI ignoring TAN %lld from federate %d "
             		"because a message is in transit to the federate.",
                     fed->time_advance - start_time, fed->id);
         }
     } else {
-    	warning_print("RTI: Federate %d has reported a NET ahead of physical time, "
+    	lf_print_warning("RTI: Federate %d has reported a NET ahead of physical time, "
     			"but now it is sending a TAN, which indicates it shouldn't have.", fed->id);
     }
 
