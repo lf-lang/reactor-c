@@ -359,20 +359,6 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
         return;
     }
 
-    // If the destination federate has previously sent a NET that is larger
-    // than the indended tag of this message, then reset that NET to be equal
-    // to the indended tag of this message.  This is needed because the NET
-    // is a promise that is valid only in the absence of network inputs,
-    // and now there is a network input. Hence, the promise needs to be
-    // updated.
-    if (lf_tag_compare(_RTI.federates[federate_id].next_event, intended_tag) > 0) {
-    	_RTI.federates[federate_id].next_event = intended_tag;
-    	// Flag the next_field as being the result of an in-transit message.
-    	// This will prevent overwriting the field until a LTC message is
-    	// received with at least as large a tag.
-    	_RTI.federates[federate_id].in_transit_message = true;
-    }
-
     // Forward the message or message chunk.
     int destination_socket = _RTI.federates[federate_id].socket;
 
@@ -805,35 +791,24 @@ void handle_next_event_tag(federate_t* fed) {
                                          // select() mechanism to read and process
                                          // federates' buffers in an orderly fashion
                                           
-    // Before overwriting next_event, if the current next_event value is due
-    // to a message in transit, then make sure an LTC has been received that is
-    // at least as large.
-    tag_t received_next_event = extract_tag(buffer);
-    if (!fed->in_transit_message || lf_tag_compare(fed->completed, received_next_event) >= 0) {
-    	fed->next_event = received_next_event;
-    	fed->in_transit_message = false;
+    fed->next_event = extract_tag(buffer);
 
-		LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) (%lld, %u).",
-				fed->id, fed->next_event.time - start_time,
-				fed->next_event.microstep);
+    LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) (%lld, %u).",
+            fed->id, fed->next_event.time - start_time,
+            fed->next_event.microstep);
 
-		// Check to see whether we can reply now with a time advance grant.
-		// If the federate has no upstream federates, then it does not wait for
-		// nor expect a reply. It just proceeds to advance time.
-		if (fed->num_upstream > 0) {
-			send_advance_grant_if_safe(fed);
-		}
-		// Check downstream federates to see whether they should now be granted a TAG.
-		// To handle cycles, need to create a boolean array to keep
-		// track of which upstream federates have been visited.
-		bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
-		send_downstream_advance_grants_if_safe(fed, visited);
-    } else {
-		LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) (%lld, %u), "
-				"but ignoring it because there is a message in transit to the federate.",
-				fed->id, fed->next_event.time - start_time,
-				fed->next_event.microstep);
+    // Check to see whether we can reply now with a time advance grant.
+    // If the federate has no upstream federates, then it does not wait for
+    // nor expect a reply. It just proceeds to advance time.
+    if (fed->num_upstream > 0) {
+        send_advance_grant_if_safe(fed);
     }
+    // Check downstream federates to see whether they should now be granted a TAG.
+    // To handle cycles, need to create a boolean array to keep
+    // track of which upstream federates have been visited.
+    bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
+    send_downstream_advance_grants_if_safe(fed, visited);
+
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
@@ -864,30 +839,21 @@ void handle_time_advance_notice(federate_t* fed) {
     // less than the NET.
     tag_t ta = (tag_t) {.time = fed->time_advance, .microstep = 0};
     if (lf_tag_compare(ta, fed->next_event) > 0) {
-        if (!fed->in_transit_message || lf_tag_compare(fed->completed, ta) >= 0) {
-			fed->next_event = ta;
-			fed->in_transit_message = false;
-			// We need to reply just as if this were a NET because it could unblock
-			// network input port control reactions.
-			// This is a side-effect of the combination of distributed cycles and
-			// physical actions in federates. FIXME: More explanation is needed.
-			if (fed->num_upstream > 0) {
-				send_advance_grant_if_safe(fed);
-			}
-			// Check downstream federates to see whether they should now be granted a TAG.
-			// To handle cycles, need to create a boolean array to keep
-			// track of which upstream federates have been visited.
-			bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
-			send_downstream_advance_grants_if_safe(fed, visited);
-        } else {
-            LF_PRINT_LOG("RTI ignoring TAN %lld from federate %d "
-            		"because a message is in transit to the federate.",
-                    fed->time_advance - start_time, fed->id);
+        fed->next_event = ta;
+        // We need to reply just as if this were a NET because it could unblock
+        // network input port control reactions.
+        // This is a side-effect of the combination of distributed cycles and
+        // physical actions in federates. FIXME: More explanation is needed.
+        if (fed->num_upstream > 0) {
+            send_advance_grant_if_safe(fed);
         }
-    } else {
-    	lf_print_warning("RTI: Federate %d has reported a NET ahead of physical time, "
-    			"but now it is sending a TAN, which indicates it shouldn't have.", fed->id);
     }
+
+    // Check downstream federates to see whether they should now be granted a TAG.
+    // To handle cycles, need to create a boolean array to keep
+    // track of which upstream federates have been visited.
+    bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
+    send_downstream_advance_grants_if_safe(fed, visited);
 
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
@@ -1421,7 +1387,6 @@ void handle_federate_resign(federate_t *my_fed) {
     
     // Indicate that there will no further events from this federate.
     my_fed->next_event = FOREVER_TAG;
-	my_fed->in_transit_message = false;
 
     my_fed->time_advance = FOREVER;
     
@@ -1908,7 +1873,6 @@ void initialize_federate(uint16_t id) {
     _RTI.federates[id].last_granted = NEVER_TAG;
     _RTI.federates[id].last_provisionally_granted = NEVER_TAG;
     _RTI.federates[id].next_event = NEVER_TAG;
-    _RTI.federates[id].in_transit_message = false;
     _RTI.federates[id].time_advance = NEVER;
     _RTI.federates[id].state = NOT_CONNECTED;
     _RTI.federates[id].upstream = NULL;
