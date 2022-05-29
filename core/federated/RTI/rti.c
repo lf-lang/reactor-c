@@ -254,8 +254,7 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
         pthread_mutex_unlock(&_RTI.rti_mutex);
         lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
                 federate_id);
-        // FIXME: Do not exit!
-        lf_print_error_and_exit("Fed status: next_event (%lld, %d), "
+        LF_PRINT_LOG("Fed status: next_event (%lld, %d), "
         		"completed (%lld, %d), "
         		"last_granted (%lld, %d), "
         		"last_provisionally_granted (%lld, %d).",
@@ -344,8 +343,7 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
         pthread_mutex_unlock(&_RTI.rti_mutex);
         lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
                 federate_id);
-        // FIXME: Do not exit!
-        lf_print_error_and_exit("Fed status: next_event (%lld, %d), "
+        LF_PRINT_LOG("Fed status: next_event (%lld, %d), "
         		"completed (%lld, %d), "
         		"last_granted (%lld, %d), "
         		"last_provisionally_granted (%lld, %d).",
