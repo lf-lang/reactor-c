@@ -88,10 +88,7 @@ bool _lf_sched_should_stop_locked() {
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
 bool _lf_sched_advance_tag_locked() {
-    // If this is not the very first step, notify that the previous step is complete.
-    if (_lf_logical_tag_completed) {
-        logical_tag_complete(current_tag);
-    }
+    logical_tag_complete(current_tag);
 
     if (_lf_sched_should_stop_locked()) {
         return true;

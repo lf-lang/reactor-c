@@ -290,118 +290,6 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
 }
 
 /** 
- * Handle a timed message being received from a federate by the RTI to relay to another federate.
- * 
- * This function assumes the caller does not hold the mutex.
- * 
- * @param sending_federate The sending federate.
- * @param buffer The buffer to read into (the first byte is already there).
- */
-void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
-    size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t) + sizeof(int64_t) + sizeof(uint32_t);
-    // Read the header, minus the first byte which has already been read.
-    read_from_socket_errexit(sending_federate->socket, header_size - 1, &(buffer[1]), "RTI failed to read the timed message header from remote federate.");
-    // Extract the header information. of the sender
-    uint16_t reactor_port_id;
-    uint16_t federate_id;
-    size_t length;
-    tag_t intended_tag;
-    // Extract information from the header.
-    extract_timed_header(&(buffer[1]), &reactor_port_id, &federate_id, &length, &intended_tag);
-
-    size_t total_bytes_to_read = length + header_size;
-    size_t bytes_to_read = length;
-
-    if (FED_COM_BUFFER_SIZE < header_size + 1) {
-        lf_print_error_and_exit("Buffer size (%d) is not large enough to "
-            "read the header plus one byte.",
-            FED_COM_BUFFER_SIZE);
-    }
-
-    // Cut up the payload in chunks.
-    if (bytes_to_read > FED_COM_BUFFER_SIZE - header_size) {
-        bytes_to_read = FED_COM_BUFFER_SIZE - header_size;
-    }
-
-    LF_PRINT_LOG("RTI received message from federate %d for federate %u port %u. Forwarding.",
-            sending_federate->id, federate_id, reactor_port_id);
-
-    read_from_socket_errexit(sending_federate->socket, bytes_to_read, &(buffer[header_size]),
-                     "RTI failed to read timed message from federate %d.", federate_id);
-    size_t bytes_read = bytes_to_read + header_size;
-    // Following only works for string messages.
-    // LF_PRINT_DEBUG("Message received by RTI: %s.", buffer + header_size);
-
-    // Need to acquire the mutex lock to ensure that the thread handling
-    // messages coming from the socket connected to the destination does not
-    // issue a TAG before this message has been forwarded.
-    pthread_mutex_lock(&_RTI.rti_mutex);
-
-    // If the destination federate is no longer connected, issue a warning
-    // and return.
-    if (_RTI.federates[federate_id].state == NOT_CONNECTED) {
-        pthread_mutex_unlock(&_RTI.rti_mutex);
-        lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
-                federate_id);
-        LF_PRINT_LOG("Fed status: next_event (%lld, %d), "
-        		"completed (%lld, %d), "
-        		"last_granted (%lld, %d), "
-        		"last_provisionally_granted (%lld, %d).",
-				_RTI.federates[federate_id].next_event.time - start_time,
-				_RTI.federates[federate_id].next_event.microstep,
-				_RTI.federates[federate_id].completed.time - start_time,
-				_RTI.federates[federate_id].completed.microstep,
-				_RTI.federates[federate_id].last_granted.time - start_time,
-				_RTI.federates[federate_id].last_granted.microstep,
-				_RTI.federates[federate_id].last_provisionally_granted.time - start_time,
-				_RTI.federates[federate_id].last_provisionally_granted.microstep
-		);
-        return;
-    }
-
-    // Forward the message or message chunk.
-    int destination_socket = _RTI.federates[federate_id].socket;
-
-    LF_PRINT_DEBUG(
-        "RTI forwarding message to port %d of federate %d of length %d.", 
-        reactor_port_id, 
-        federate_id, 
-        length
-    );
-
-    // Need to make sure that the destination federate's thread has already
-    // sent the starting MSG_TYPE_TIMESTAMP message.
-    while (_RTI.federates[federate_id].state == PENDING) {
-        // Need to wait here.
-        pthread_cond_wait(&_RTI.sent_start_time, &_RTI.rti_mutex);
-    }
-    write_to_socket_errexit(destination_socket, bytes_read, buffer,
-            "RTI failed to forward message to federate %d.", federate_id);
-
-    // The message length may be longer than the buffer,
-    // in which case we have to handle it in chunks.
-    size_t total_bytes_read = bytes_read;
-    while (total_bytes_read < total_bytes_to_read) {
-        LF_PRINT_DEBUG("Forwarding message in chunks.");
-        bytes_to_read = total_bytes_to_read - total_bytes_read;
-        if (bytes_to_read > FED_COM_BUFFER_SIZE) {
-            bytes_to_read = FED_COM_BUFFER_SIZE;
-        }
-        read_from_socket_errexit(sending_federate->socket, bytes_to_read, buffer,
-                "RTI failed to read message chunks.");
-        total_bytes_read += bytes_to_read;
-
-        // FIXME: a mutex needs to be held for this so that other threads
-        // do not write to destination_socket and cause interleaving. However,
-        // holding the _RTI.rti_mutex might be very expensive. Instead, each outgoing
-        // socket should probably have its own mutex.
-        write_to_socket_errexit(destination_socket, bytes_to_read, buffer,
-                "RTI failed to send message chunks.");
-    }
-    pthread_mutex_unlock(&_RTI.rti_mutex);
-}
-
-/** 
  * Send a tag advance grant (TAG) message to the specified federate.
  * Do not send it if a previously sent PTAG was greater or if a
  * previously sent TAG was greater or equal.
@@ -739,6 +627,145 @@ void send_downstream_advance_grants_if_safe(federate_t* fed, bool visited[]) {
 	}
 }
 
+
+/** 
+ * Handle a timed message being received from a federate by the RTI to relay to another federate.
+ * 
+ * This function assumes the caller does not hold the mutex.
+ * 
+ * @param sending_federate The sending federate.
+ * @param buffer The buffer to read into (the first byte is already there).
+ */
+void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
+    size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t) + sizeof(int64_t) + sizeof(uint32_t);
+    // Read the header, minus the first byte which has already been read.
+    read_from_socket_errexit(sending_federate->socket, header_size - 1, &(buffer[1]), "RTI failed to read the timed message header from remote federate.");
+    // Extract the header information. of the sender
+    uint16_t reactor_port_id;
+    uint16_t federate_id;
+    size_t length;
+    tag_t intended_tag;
+    // Extract information from the header.
+    extract_timed_header(&(buffer[1]), &reactor_port_id, &federate_id, &length, &intended_tag);
+
+    size_t total_bytes_to_read = length + header_size;
+    size_t bytes_to_read = length;
+
+    if (FED_COM_BUFFER_SIZE < header_size + 1) {
+        lf_print_error_and_exit("Buffer size (%d) is not large enough to "
+            "read the header plus one byte.",
+            FED_COM_BUFFER_SIZE);
+    }
+
+    // Cut up the payload in chunks.
+    if (bytes_to_read > FED_COM_BUFFER_SIZE - header_size) {
+        bytes_to_read = FED_COM_BUFFER_SIZE - header_size;
+    }
+
+    LF_PRINT_LOG("RTI received message from federate %d for federate %u port %u. Forwarding.",
+            sending_federate->id, federate_id, reactor_port_id);
+
+    read_from_socket_errexit(sending_federate->socket, bytes_to_read, &(buffer[header_size]),
+                     "RTI failed to read timed message from federate %d.", federate_id);
+    size_t bytes_read = bytes_to_read + header_size;
+    // Following only works for string messages.
+    // LF_PRINT_DEBUG("Message received by RTI: %s.", buffer + header_size);
+
+    // Need to acquire the mutex lock to ensure that the thread handling
+    // messages coming from the socket connected to the destination does not
+    // issue a TAG before this message has been forwarded.
+    pthread_mutex_lock(&_RTI.rti_mutex);
+
+    // If the destination federate is no longer connected, issue a warning
+    // and return.
+    if (_RTI.federates[federate_id].state == NOT_CONNECTED) {
+        pthread_mutex_unlock(&_RTI.rti_mutex);
+        lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
+                federate_id);
+        LF_PRINT_LOG("Fed status: next_event (%lld, %d), "
+        		"completed (%lld, %d), "
+        		"last_granted (%lld, %d), "
+        		"last_provisionally_granted (%lld, %d).",
+				_RTI.federates[federate_id].next_event.time - start_time,
+				_RTI.federates[federate_id].next_event.microstep,
+				_RTI.federates[federate_id].completed.time - start_time,
+				_RTI.federates[federate_id].completed.microstep,
+				_RTI.federates[federate_id].last_granted.time - start_time,
+				_RTI.federates[federate_id].last_granted.microstep,
+				_RTI.federates[federate_id].last_provisionally_granted.time - start_time,
+				_RTI.federates[federate_id].last_provisionally_granted.microstep
+		);
+        return;
+    }
+
+    // Forward the message or message chunk.
+    int destination_socket = _RTI.federates[federate_id].socket;
+
+    LF_PRINT_DEBUG(
+        "RTI forwarding message to port %d of federate %d of length %d.", 
+        reactor_port_id, 
+        federate_id, 
+        length
+    );
+
+    // Need to make sure that the destination federate's thread has already
+    // sent the starting MSG_TYPE_TIMESTAMP message.
+    while (_RTI.federates[federate_id].state == PENDING) {
+        // Need to wait here.
+        pthread_cond_wait(&_RTI.sent_start_time, &_RTI.rti_mutex);
+    }
+
+    write_to_socket_errexit(destination_socket, bytes_read, buffer,
+            "RTI failed to forward message to federate %d.", federate_id);
+
+    // The message length may be longer than the buffer,
+    // in which case we have to handle it in chunks.
+    size_t total_bytes_read = bytes_read;
+    while (total_bytes_read < total_bytes_to_read) {
+        LF_PRINT_DEBUG("Forwarding message in chunks.");
+        bytes_to_read = total_bytes_to_read - total_bytes_read;
+        if (bytes_to_read > FED_COM_BUFFER_SIZE) {
+            bytes_to_read = FED_COM_BUFFER_SIZE;
+        }
+        read_from_socket_errexit(sending_federate->socket, bytes_to_read, buffer,
+                "RTI failed to read message chunks.");
+        total_bytes_read += bytes_to_read;
+
+        // FIXME: a mutex needs to be held for this so that other threads
+        // do not write to destination_socket and cause interleaving. However,
+        // holding the _RTI.rti_mutex might be very expensive. Instead, each outgoing
+        // socket should probably have its own mutex.
+        write_to_socket_errexit(destination_socket, bytes_to_read, buffer,
+                "RTI failed to send message chunks.");
+    }
+
+
+
+    // If the destination federate has previously sent a NET that is larger
+    // than the intended tag of this message, then reset that NET to be equal
+    // to the intended tag of this message.  This is needed because the NET
+    // is a promise that is valid only in the absence of network inputs,
+    // and now there is a network input. Hence, the promise needs to be
+    // updated.
+    if (lf_tag_compare(_RTI.federates[federate_id].next_event, intended_tag) > 0) {
+       _RTI.federates[federate_id].next_event = intended_tag;
+
+        // Check to see whether we can reply now with a time advance grant.
+        // If the federate has no upstream federates, then it does not wait for
+        // nor expect a reply. It just proceeds to advance time.
+        if (_RTI.federates[federate_id].num_upstream > 0) {
+            send_advance_grant_if_safe(&_RTI.federates[federate_id]);
+        }
+        // Check downstream federates to see whether they should now be granted a TAG.
+        // To handle cycles, need to create a boolean array to keep
+        // track of which upstream federates have been visited.
+        bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
+        send_downstream_advance_grants_if_safe(&_RTI.federates[federate_id], visited);
+    }
+    
+    pthread_mutex_unlock(&_RTI.rti_mutex);
+}
+
 /**
  * Handle a logical tag complete (LTC) message. @see
  * MSG_TYPE_LOGICAL_TAG_COMPLETE in rti.h.
@@ -790,12 +817,32 @@ void handle_next_event_tag(federate_t* fed) {
                                          // it might be more efficient to use a
                                          // select() mechanism to read and process
                                          // federates' buffers in an orderly fashion
-                                          
-    fed->next_event = extract_tag(buffer);
 
-    LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) (%lld, %u).",
-            fed->id, fed->next_event.time - start_time,
-            fed->next_event.microstep);
+    // If the fed->next_event is smaller than this NET message, we need to
+    // verify that the federate has already completed the previously promised
+    // fed->next_event. Otherwise, we ignore this NET. This scenario can happen
+    // when there is a message in-transit to the federate, and we have recorded
+    // the tag of that in-transit message as the federate's next event, but the
+    // message hasn't yet been delivered.
+    tag_t intended_tag = extract_tag(buffer);
+    if (lf_tag_compare(intended_tag, fed->next_event) <= 0 || 
+         lf_tag_compare(fed->completed, fed->next_event) >= 0) {
+            fed->next_event = intended_tag;
+
+            LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) (%ld, %u).",
+                    fed->id, fed->next_event.time - start_time,
+                    fed->next_event.microstep);
+    } else {
+        lf_print_error("RTI received from federate %d the Next Event Tag (NET) (%ld, %u), "
+                "but it is ignoring it since there is a message still in transit to federate %d. "
+                "Current recorded NET: (%ld, %u), LTC: (%ld, %u).",
+                fed->id, intended_tag.time - lf_time_start(), intended_tag.microstep,
+                fed->id,
+                fed->next_event.time - lf_time_start(),
+                fed->next_event.microstep, 
+                fed->completed.time - lf_time_start(),
+                fed->completed.microstep);
+    }
 
     // Check to see whether we can reply now with a time advance grant.
     // If the federate has no upstream federates, then it does not wait for
@@ -838,7 +885,14 @@ void handle_time_advance_notice(federate_t* fed) {
     // network inputs, the federate will not produce an output with tag
     // less than the NET.
     tag_t ta = (tag_t) {.time = fed->time_advance, .microstep = 0};
-    if (lf_tag_compare(ta, fed->next_event) > 0) {
+    // If the fed->next_event is smaller than this TAN message, we need to
+    // verify that the federate has already completed the previously promised
+    // fed->next_event. Otherwise, we ignore this TAN. This scenario can happen
+    // when there is a message in-transit to the federate, and we have recorded
+    // the tag of that in-transit message as the federate's next event, but the
+    // message hasn't yet been delivered.
+    if (lf_tag_compare(ta, fed->next_event) <= 0 || 
+         lf_tag_compare(fed->completed, fed->next_event) >= 0) {
         fed->next_event = ta;
         // We need to reply just as if this were a NET because it could unblock
         // network input port control reactions.
@@ -847,6 +901,16 @@ void handle_time_advance_notice(federate_t* fed) {
         if (fed->num_upstream > 0) {
             send_advance_grant_if_safe(fed);
         }
+    } else {
+        lf_print_error("RTI received from federate %d a Time Advance Notice (TAN) (%ld, %u), "
+                "but it is ignoring it since there is a message still in transit to federate %d. "
+                "Current recorded NET: (%ld, %u), LTC: (%ld, %u).",
+                fed->id, ta.time - lf_time_start(), ta.microstep,
+                fed->id,
+                fed->next_event.time - lf_time_start(),
+                fed->next_event.microstep, 
+                fed->completed.time - lf_time_start(),
+                fed->completed.microstep);
     }
 
     // Check downstream federates to see whether they should now be granted a TAG.
