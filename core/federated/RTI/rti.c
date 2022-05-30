@@ -531,10 +531,14 @@ bool send_advance_grant_if_safe(federate_t* fed) {
         LF_PRINT_LOG("All upstream federates are finished. Sending TAG(FOREVER).");
         send_tag_advance_grant(fed, FOREVER_TAG);
         return true;
-    } else if (lf_tag_compare(t_d, fed->next_event) > 0     // The federate has something to do.
-        && lf_tag_compare(t_d, fed->last_provisionally_granted) >= 0  // The grant is not redundant.
+    } else if (
+        lf_tag_compare(t_d, fed->next_event) > 0       // The federate has something to do.
+        && lf_tag_compare(t_d, fed->last_provisionally_granted) >= 0  // The grant is not redundant 
+                                                                      // (equal is important to override any previous
+                                                                      // PTAGs).
         && lf_tag_compare(t_d, fed->last_granted) > 0  // The grant is not redundant.
     ) {
+        // All upstream federates have events with a larger tag than fed, so it is safe to send a TAG.
         LF_PRINT_LOG("Earliest upstream message time for fed %d is (%ld, %u) "
                 "(adjusted by after delay). Granting tag advance for (%ld, %u).",
                 fed->id,
@@ -547,6 +551,8 @@ bool send_advance_grant_if_safe(federate_t* fed) {
         && lf_tag_compare(t_d, fed->last_provisionally_granted) > 0  // The grant is not redundant.
         && lf_tag_compare(t_d, fed->last_granted) > 0  // The grant is not redundant.
     ) {
+        // Some upstream federate has an event that has the same tag as fed's next event, so we can only provisionally
+        // grant a TAG (via a PTAG).
         LF_PRINT_LOG("Earliest upstream message time for fed %d is (%lld, %u) "
             "(adjusted by after delay). Granting provisional tag advance.",
             fed->id,
