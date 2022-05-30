@@ -521,35 +521,35 @@ bool send_advance_grant_if_safe(federate_t* fed) {
             t_d.time - start_time, t_d.microstep);
 
     if (lf_tag_compare(t_d, FOREVER_TAG) == 0) {
-    	// Upstream federates are all done.
+        // Upstream federates are all done.
         LF_PRINT_LOG("Upstream federates are all done. Granting tag advance.");
-    	send_tag_advance_grant(fed, FOREVER_TAG);
-    	return true;
+        send_tag_advance_grant(fed, FOREVER_TAG);
+        return true;
     }
 
-	if (t_d.time == FOREVER) {
-    	LF_PRINT_LOG("All upstream federates are finished. Sending TAG(FOREVER).");
-    	send_tag_advance_grant(fed, FOREVER_TAG);
-    	return true;
-	} else if (lf_tag_compare(t_d, fed->next_event) > 0) {
-    	LF_PRINT_LOG("Earliest upstream message time for fed %d is (%ld, %u) "
-            	"(adjusted by after delay). Granting tag advance for (%ld, %u).",
-            	fed->id,
-            	t_d.time - lf_time_start(), t_d.microstep,
+    if (t_d.time == FOREVER) {
+        LF_PRINT_LOG("All upstream federates are finished. Sending TAG(FOREVER).");
+        send_tag_advance_grant(fed, FOREVER_TAG);
+        return true;
+    } else if (lf_tag_compare(t_d, fed->next_event) > 0) {
+        LF_PRINT_LOG("Earliest upstream message time for fed %d is (%ld, %u) "
+                "(adjusted by after delay). Granting tag advance for (%ld, %u).",
+                fed->id,
+                t_d.time - lf_time_start(), t_d.microstep,
                 fed->next_event.time - lf_time_start(),
                 fed->next_event.microstep);
-    	send_tag_advance_grant(fed, fed->next_event);
+        send_tag_advance_grant(fed, fed->next_event);
     } else if (
         lf_tag_compare(t_d, fed->next_event) >= 0      // The federate has something to do.
-		&& lf_tag_compare(t_d, fed->last_provisionally_granted) > 0  // The grant is not redundant.
-    	&& lf_tag_compare(t_d, fed->last_granted) > 0  // The grant is not redundant.
-	) {
-    	LF_PRINT_LOG("Earliest upstream message time for fed %d is (%lld, %u) "
-            	"(adjusted by after delay). Granting provisional tag advance.",
-            	fed->id,
-            	t_d.time - start_time, t_d.microstep);
+        && lf_tag_compare(t_d, fed->last_provisionally_granted) > 0  // The grant is not redundant.
+        && lf_tag_compare(t_d, fed->last_granted) > 0  // The grant is not redundant.
+    ) {
+        LF_PRINT_LOG("Earliest upstream message time for fed %d is (%lld, %u) "
+            "(adjusted by after delay). Granting provisional tag advance.",
+            fed->id,
+            t_d.time - start_time, t_d.microstep);
 
-    	send_provisional_tag_advance_grant(fed, t_d);
+        send_provisional_tag_advance_grant(fed, t_d);
     }
 	return false;
 }
