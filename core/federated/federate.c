@@ -2643,6 +2643,9 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
                 	if (_lf_bounded_NET(&next_tag)) {
                         _lf_send_time(MSG_TYPE_TIME_ADVANCE_NOTICE, next_tag.time, wait_for_reply);
                         _fed.last_sent_NET = next_tag;
+                    	event_t* dummy = _lf_create_dummy_events(
+                		    NULL, tag.time, NULL, 0);
+                	    pqueue_insert(event_q, dummy);
                         LF_PRINT_DEBUG("Sent Time Advance Notice (TAN) %lld to RTI.",
                         		next_tag.time - lf_time_start());
                 	} else {
@@ -2661,6 +2664,9 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
         // It is sent to enable downstream federates to advance.
         _lf_send_time(MSG_TYPE_TIME_ADVANCE_NOTICE, tag.time, wait_for_reply);
         _fed.last_sent_NET = tag;
+    	event_t* dummy = _lf_create_dummy_events(
+		    NULL, tag.time, NULL, 0);
+	    pqueue_insert(event_q, dummy);
         LF_PRINT_DEBUG("Sent Time Advance Notice (TAN) %lld to RTI.",
                 tag.time - lf_time_start());
 
