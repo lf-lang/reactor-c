@@ -58,6 +58,7 @@
 #include <time.h>
 #include <limits.h>
 #include <errno.h>
+#include <stdbool.h> // not included in stdio on riscv platform
 #include "utils/pqueue.h"
 #include "utils/util.h"
 #include "tag.h"       // Time-related functions.
