@@ -1,3 +1,31 @@
+/*************
+Copyright (c) 2022, The University of California at Berkeley.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************/
+
+/**
+ * Management of worker wakefulness and locking.
+ * @author{Peter Donovan <peterdonovan@berkeley.edu>}
+ */
 
 #ifndef WORKER_STATES
 #define WORKER_STATES
@@ -94,7 +122,6 @@ static void worker_states_awaken_locked(size_t worker, size_t num_to_awaken) {
     }
     size_t greatest_worker_number_to_awaken = num_to_awaken - 1;
     size_t max_cond = cond_of(greatest_worker_number_to_awaken);
-    // printf("%ld +-> %ld @ %ld\n", worker, num_to_awaken, current_level);
     if (!mutex_held[worker]) {
         mutex_held[worker] = true;
         lf_mutex_lock(&mutex);
@@ -112,7 +139,6 @@ static void worker_states_awaken_locked(size_t worker, size_t num_to_awaken) {
 
 /**
  * @brief Wake up all workers and forbid them from ever sleeping again.
- * 
  * This is intended to coordinate shutdown (without leaving any dangling threads behind).
  */
 static void worker_states_never_sleep_again(size_t worker) {
@@ -127,27 +153,18 @@ static void worker_states_lock(size_t worker) {
     assert(num_loose_threads > 0);
     assert(num_loose_threads <= max_num_workers);
     size_t lt = num_loose_threads;
-    // printf("%ld sees %ld loose threads\n", worker, lt);
     if (lt > 1 || !fast) {  // FIXME: Lock should be partially optimized out even when !fast
-        // printf("%ld locking mutex.\n", worker);
         lf_mutex_lock(&mutex);
-        // printf("%ld locked mutex.\n", worker);
         assert(mutex_held[worker] == false);
         mutex_held[worker] = true;
-    } else {
-        // printf("%ld not locking mutex.\n", worker);
     }
 }
 
 /** Unlock the global mutex if needed. */
 static void worker_states_unlock(size_t worker) {
-    if (mutex_held[worker]) {
-        // printf("%ld unlocking mutex.\n", worker);
-        mutex_held[worker] = false;
-        lf_mutex_unlock(&mutex);
-    } else {
-        // printf("%ld not unlocking mutex.\n", worker);
-    }
+    if (!mutex_held[worker]) return;
+    mutex_held[worker] = false;
+    lf_mutex_unlock(&mutex);
 }
 
 /**
@@ -163,10 +180,9 @@ static bool worker_states_finished_with_level_locked(size_t worker) {
     assert(num_reactions_by_worker[worker] != 1);
     assert(((int64_t) num_reactions_by_worker[worker]) <= 0);
     // Why use an atomic operation when we are supposed to be "as good as locked"? Because I took a
-    // shortcut, and it wasn't perfect.
+    // shortcut, and the shortcut was imperfect.
     size_t ret = lf_atomic_add_fetch(&num_loose_threads, -1);
     assert(ret >= 0);
-    // printf("worker=%ld, nlt=%ld\n", worker, ret);
     return !ret;
 }
 
@@ -187,7 +203,6 @@ static void worker_states_sleep_and_unlock(size_t worker, size_t level_counter_s
         lf_mutex_lock(&mutex);
     }
     mutex_held[worker] = false;  // This will be true soon, upon call to lf_cond_wait.
-    // printf("%ld sleep; nlt=%ld\n", worker, num_loose_threads);
     size_t cond = cond_of(worker);
     if (
         ((level_counter_snapshot == level_counter) || worker >= num_awakened)
@@ -197,7 +212,6 @@ static void worker_states_sleep_and_unlock(size_t worker, size_t level_counter_s
             lf_cond_wait(worker_conds + cond, &mutex);
         } while (level_counter_snapshot == level_counter || worker >= num_awakened);
     }
-    // printf("%ld wake; nlt=%ld\n", worker, num_loose_threads);
     assert(mutex_held[worker] == false);  // This thread holds the mutex, but it did not report that.
     lf_mutex_unlock(&mutex);
 }

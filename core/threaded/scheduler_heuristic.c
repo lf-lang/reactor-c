@@ -49,20 +49,16 @@ static bool should_stop = false;
 ///////////////////////// Scheduler Private Functions ///////////////////////////
 
 /**
- * @brief Increment the level currently being executed, and the tag if need be.
- * 
- * Sleep thereafter if that is what the current worker ought to do.
+ * @brief Increment the level currently being executed, and the tag if necessary.
  * @param worker The number of the calling worker.
  */
 static void advance_level_and_unlock(size_t worker) {
-    // printf("%ld advance %ld\n", worker, current_level);
     size_t max_level = num_levels - 1;
     while (true) {
         if (current_level == max_level) {
             data_collection_end_tag(num_workers_by_level, max_num_workers_by_level);
             set_level(0);
             if (_lf_sched_advance_tag_locked()) {
-                // printf("%ld end", worker);
                 should_stop = true;
                 worker_states_never_sleep_again(worker);
                 worker_states_unlock(worker);
@@ -108,7 +104,6 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
         ret = worker_assignments_get_or_lock(worker_number);
         if (ret) return ret;
         if (worker_states_finished_with_level_locked(worker_number)) {
-            // printf("%d !\n", worker_number);
             advance_level_and_unlock(worker_number);
         } else {
             worker_states_sleep_and_unlock(worker_number, level_counter_snapshot);

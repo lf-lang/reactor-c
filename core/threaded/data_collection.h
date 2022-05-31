@@ -1,3 +1,31 @@
+/*************
+Copyright (c) 2022, The University of California at Berkeley.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************/
+
+/**
+ * Scheduling-related data collection and analysis that is performed at run-time.
+ * @author{Peter Donovan <peterdonovan@berkeley.edu>}
+ */
 
 #ifndef DATA_COLLECTION
 #define DATA_COLLECTION
@@ -15,21 +43,26 @@ static interval_t* execution_times_mins;
 static size_t* execution_times_argmins;
 static size_t data_collection_counter = 0;
 static bool collecting_data = false;
+
 /**
  * A monotonically increasing sequence of numbers of workers, the first and last elements of which
- * are too large or small to be realizable.
+ * are too large or small to represent valid states of the system (i.e., state transitions to them
+ * are instantaneously reflected).
  */
 static size_t* possible_nums_workers;
 
 extern size_t num_levels;
 extern size_t max_num_workers;
+instant_t lf_time_physical(void);
 
 #define START_EXPERIMENTS 8
 #define SLOW_EXPERIMENTS 256
 #define EXECUTION_TIME_MEMORY 15
 
+/** @brief Initialize the possible_nums_workers array. */
 static void possible_nums_workers_init() {
-    // Start with 0 and end with two numbers strictly greater than max_num_workers.
+    // Start with 0 and end with two numbers strictly greater than max_num_workers. This must start
+    // at 4 because the first two and last two entries are not counted.
     size_t pnw_length = 4;
     size_t temp = max_num_workers;
     while ((temp >>= 1)) pnw_length++;
@@ -43,6 +76,14 @@ static void possible_nums_workers_init() {
     assert(temp > max_num_workers);
 }
 
+/**
+ * @brief Return a random integer in the interval [-1, +1] representing whether the number of
+ * workers used on a certain level should increase, decrease, or remain the same, with a probability
+ * distribution possibly dependent on the parameters.
+ * @param current_state The index currently used by this level in the possible_nums_workers array.
+ * @param execution_time An estimate of the execution time of the level in the case for which we
+ * would like to optimize.
+ */
 static int get_jitter(size_t current_state, interval_t execution_time) {
     static const size_t parallelism_cost_max = 114688;
     // The following handles the case where the current level really is just fluff:
@@ -58,7 +99,7 @@ static int get_jitter(size_t current_state, interval_t execution_time) {
     return 1;
 }
 
-/** Get the result of a state transition. */
+/** @brief Get the number of workers resulting from a random state transition. */
 static size_t get_nums_workers_neighboring_state(size_t current_state, interval_t execution_time) {
     size_t jitter = get_jitter(current_state, execution_time);
     if (!jitter) return current_state;
@@ -94,13 +135,15 @@ static void data_collection_free() {
     free(possible_nums_workers);
 }
 
+/** @brief Record that the execution of the given level is beginning. */
 static void data_collection_start_level(size_t level) {
-    if (collecting_data) start_times_by_level[level] = get_physical_time();
+    if (collecting_data) start_times_by_level[level] = lf_time_physical();
 }
 
+/** @brief Record that the execution of the given level has completed. */
 static void data_collection_end_level(size_t level, size_t num_workers) {
     if (collecting_data && start_times_by_level[level]) {
-        interval_t dt = get_physical_time() - start_times_by_level[level];
+        interval_t dt = lf_time_physical() - start_times_by_level[level];
         if (!execution_times_by_num_workers_by_level[level][num_workers]) {
             execution_times_by_num_workers_by_level[level][num_workers] = MAX(
                 dt,
@@ -118,6 +161,14 @@ static size_t restrict_to_range(size_t start_inclusive, size_t end_inclusive, si
     return value;
 }
 
+/**
+ * @brief Update num_workers_by_level in-place.
+ * @param num_workers_by_level The number of workers that should be used to execute each level.
+ * @param max_num_workers_by_level The maximum possible number of workers that could reasonably be
+ * assigned to each level.
+ * @param jitter Whether the possibility of state transitions to numbers of workers that are not
+ * (yet) empirically optimal is desired.
+ */
 static void compute_number_of_workers(
     size_t* num_workers_by_level,
     size_t* max_num_workers_by_level,
@@ -132,17 +183,21 @@ static void compute_number_of_workers(
         ideal_number_of_workers = execution_times_argmins[level];
         int range = 1;
         if (jitter) {
-            ideal_number_of_workers = get_nums_workers_neighboring_state(ideal_number_of_workers, this_execution_time);
-            // printf("%ld -> %ld @ %ld\n", execution_times_argmins[level], ideal_number_of_workers, level);
+            ideal_number_of_workers = get_nums_workers_neighboring_state(
+                ideal_number_of_workers, this_execution_time
+            );
         }
         num_workers_by_level[level] = restrict_to_range(
             1, max_reasonable_num_workers, ideal_number_of_workers
         );
-        // printf("level=%ld, jitter=%d, inow=%ld, mrnw=%ld, result=%ld\n",
-        // level, jitter, ideal_number_of_workers, max_reasonable_num_workers, num_workers_by_level[level]);
     }
 }
 
+/**
+ * @brief Update minimum and argmin (wrt number of workers used) execution times according the most
+ * recent execution times recorded.
+ * @param num_workers_by_level The number of workers most recently used to execute each level.
+ */
 static void compute_costs(size_t* num_workers_by_level) {
     for (size_t level = 0; level < num_levels; level++) {
         interval_t score = execution_times_by_num_workers_by_level[level][
@@ -153,18 +208,18 @@ static void compute_costs(size_t* num_workers_by_level) {
             | (score < execution_times_mins[level])
             | (num_workers_by_level[level] == execution_times_argmins[level])
         ) {
-            if (num_workers_by_level[level] != execution_times_argmins[level]) printf(
-                "Argmin update: %ld(%ld) -> %ld(%ld) @ %ld\n",
-                execution_times_argmins[level], execution_times_mins[level],
-                num_workers_by_level[level], score,
-                level
-            );
             execution_times_mins[level] = score;
             execution_times_argmins[level] = num_workers_by_level[level];
         }
     }
 }
 
+/**
+ * @brief Record that the execution of a tag has completed.
+ * @param num_workers_by_level The number of workers used to execute each level of the tag.
+ * @param max_num_workers_by_level The maximum number of workers that could reasonably be used to
+ * execute each level, for any tag.
+ */
 static void data_collection_end_tag(
     size_t* num_workers_by_level,
     size_t* max_num_workers_by_level

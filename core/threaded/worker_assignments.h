@@ -1,3 +1,31 @@
+/*************
+Copyright (c) 2022, The University of California at Berkeley.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************/
+
+/**
+ * Assign reactions to workers.
+ * @author{Peter Donovan <peterdonovan@berkeley.edu>}
+ */
 
 #ifndef WORKER_ASSIGNMENTS
 #define WORKER_ASSIGNMENTS
@@ -33,7 +61,6 @@ static void worker_states_unlock(size_t worker);
 /**
  * @brief Set the level to be executed now. This function assumes that concurrent calls to it are
  * impossible.
- * 
  * @param level The new current level.
  */
 static void set_level(size_t level) {
@@ -44,15 +71,20 @@ static void set_level(size_t level) {
     num_reactions_by_worker = num_reactions_by_worker_by_level[level];
     reactions_by_worker = reactions_by_worker_by_level[level];
     num_workers = num_workers_by_level[level];
+    // TODO: Experiment with not recording that the level is starting in the case that there is
+    // nothing to execute. We need not optimize for the case when there is nothing to execute
+    // because that case is not merely optimized, but is optimized out (we do not bother with
+    // executing nothing).
     data_collection_start_level(current_level);
 }
-/** Return the total number of reactions enqueued on the current level. */
+
+/** @brief Return the total number of reactions enqueued on the current level. */
 static size_t get_num_reactions() {
     size_t total_num_reactions = 0;
     for (size_t i = 0; i < num_workers; i++) {
         total_num_reactions += num_reactions_by_worker[i];
     }
-    // TODO: if num_workers was > total_num_reactions, report this to data_collection
+    // TODO: if num_workers was > total_num_reactions, report this to data_collection?
     return total_num_reactions;
 }
 
@@ -95,6 +127,11 @@ static void worker_assignments_free() {
     data_collection_free();
 }
 
+/**
+ * @brief Return a reaction that has been assigned to the given worker, or NULL if no such reaction
+ * exists.
+ * @param worker The number of a worker needing work.
+ */
 static reaction_t* get_reaction(size_t worker) {
     int index = lf_atomic_add_fetch(num_reactions_by_worker + worker, -1);
     if (index >= 0) {
@@ -107,7 +144,6 @@ static reaction_t* get_reaction(size_t worker) {
 /**
  * @brief Get a reaction for the given worker to execute. If no such reaction exists, claim the
  * mutex.
- *
  * @param worker A worker requesting work.
  * @return reaction_t* A reaction to execute, or NULL if no such reaction exists.
  */
@@ -123,7 +159,6 @@ static reaction_t* worker_assignments_get_or_lock(size_t worker) {
                 if ((ret = get_reaction(victim))) return ret;
             }
         }
-        // printf("%ld <- %p @ %lld\n", worker, ret, LEVEL(ret->index));
         worker_states_lock(worker);
         if (!num_reactions_by_worker[worker]) {
             return NULL;
@@ -134,7 +169,6 @@ static reaction_t* worker_assignments_get_or_lock(size_t worker) {
 
 /**
  * @brief Trigger the given reaction.
- * 
  * @param reaction A reaction to be executed in the current tag.
  */
 static void worker_assignments_put(reaction_t* reaction) {
@@ -143,6 +177,9 @@ static void worker_assignments_put(reaction_t* reaction) {
     assert(level > current_level || current_level == 0);
     assert(level < num_levels);
     // Source: https://xorshift.di.unimi.it/splitmix64.c
+    // FIXME: This is probably not the most efficient way to get the randomness that we need because
+    // it is designed to give an entire word of randomness, whereas we only need
+    // ~log2(num_workers_by_level[level]) bits of randomness.
     uint64_t hash = (uint64_t) reaction;
     hash = (hash ^ (hash >> 30)) * 0xbf58476d1ce4e5b9;
     hash = (hash ^ (hash >> 27)) * 0x94d049bb133111eb;
@@ -152,7 +189,6 @@ static void worker_assignments_put(reaction_t* reaction) {
         &num_reactions_by_worker_by_level[level][worker],
         1
     );
-    // printf("%p -> %ld @ %ld[%ld]\n", reaction, worker, level, num_preceding_reactions);
     reactions_by_worker_by_level[level][worker][num_preceding_reactions] = reaction;
 }
 
