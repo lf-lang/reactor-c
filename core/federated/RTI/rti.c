@@ -905,7 +905,6 @@ void _lf_rti_broadcast_stop_time_to_federates_already_locked() {
         if (lf_tag_compare(_RTI.federates[i].next_event, _RTI.max_stop_tag) >= 0) {
             // Need the next_event to be no greater than the stop tag.
             _RTI.federates[i].next_event = _RTI.max_stop_tag;
-            _RTI.federates[i].in_transit_message = false;
         }
         write_to_socket_errexit(_RTI.federates[i].socket, MSG_TYPE_STOP_GRANTED_LENGTH, outgoing_buffer,
                 "RTI failed to send MSG_TYPE_STOP_GRANTED message to federate %d.", _RTI.federates[i].id);
