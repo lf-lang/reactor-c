@@ -10,6 +10,7 @@ XLEN ?= 64
 
 src_dir = ./core/spike/
 support_file = ./core/platform/lf_spike_support.c
+other_files = $(wildcard ./lib/*.c)
 
 RISCV_PREFIX ?= riscv$(XLEN)-unknown-elf-
 RISCV_GCC ?= $(RISCV_PREFIX)gcc
@@ -28,7 +29,7 @@ RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump --disassemble-all --disassemble-zeroes -
 
 incs  += -I $(src_dir)common
 
-demo.riscv: $(wildcard ./*.c) $(support_file) $(wildcard $(src_dir)common/*.c) $(wildcard $(src_dir)common/*.S)
+demo.riscv: $(wildcard ./*.c) $(support_file) $(other_files) $(wildcard $(src_dir)common/*.c) $(wildcard $(src_dir)common/*.S)
 	$(RISCV_GCC) $(incs) $(RISCV_GCC_OPTS) $(RISCV_LINK_OPTS) -o $@ $^
 
 demo.dump: demo.riscv
