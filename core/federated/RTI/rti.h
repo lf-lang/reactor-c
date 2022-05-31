@@ -77,7 +77,6 @@ typedef struct federate_t {
     tag_t last_provisionally_granted;      // The maximum PTAG that has been provisionally granted (or NEVER if none granted)
     tag_t next_event;       // Most recent NET received from the federate (or NEVER if none received).
     bool in_transit_message;// Indicator that next_event was set by the RTI because of a message destined to the federate.
-    instant_t time_advance; // Most recent TAN received from the federate (or NEVER if none received).
     fed_state_t state;      // State of the federate.
     int* upstream;          // Array of upstream federate ids.
     interval_t* upstream_delay;    // Minimum delay on connections from upstream federates.

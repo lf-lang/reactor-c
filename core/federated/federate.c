@@ -2500,14 +2500,16 @@ bool _lf_bounded_NET(tag_t* tag) {
 
 /** 
  * If this federate depends on upstream federates or sends data to downstream
- * federates, then send to the RTI either a NET or a TAN, depending on whether
- * there are network outputs that depend on physical actions. If there are no
- * such outputs, then send next event tag (NET), which will give the tag of
- * the earliest event on the event queue, or, if the queue is empty, the timeout
+ * federates, then send to the RTI a NET, which will give the tag of the
+ * earliest event on the event queue, or, if the queue is empty, the timeout
  * time, or, if there is no timeout, FOREVER.
+ * 
+ * If there are network outputs that
+ * depend on physical actions, then insert a dummy event to ensure this federate
+ * advances its tag so that downstream federates can make progress.
  *
- * A NET or TAN is a promise saying that, absent network inputs, this federate will
- * not produce an output message with tag earlier than the NET value or (TAN,0).
+ * A NET is a promise saying that, absent network inputs, this federate will
+ * not produce an output message with tag earlier than the NET value.
  *
  * If there are upstream federates, then after sending a NET, this will block
  * until either the RTI grants the advance to the requested time or the wait
@@ -2519,17 +2521,17 @@ bool _lf_bounded_NET(tag_t* tag) {
  * If the federate has neither upstream nor downstream federates, then this
  * returns the specified tag immediately without sending anything to the RTI.
  *
- * If there is at least one physical action somewhere in the federate that
- * can trigger an output to a downstream federate, then the NET is required
- * to be less than the current physical time. If physical time is less than
- * the earliest event in the event queue (or the event queue is empty), then
- * this function will send a Time Advance Notice (TAN) message instead of NET.
- * That message does not require a response from the RTI. The TAN message will
- * be sent repeatedly as physical time advances with the time interval between
- * messages controlled by the target parameter
- * coordination-options: {advance-message-interval timevalue}.
- * It will switch back to sending a NET message if and when its event queue
- * has an event with a timestamp less than physical time.
+ * If there is at least one physical action somewhere in the federate that can
+ * trigger an output to a downstream federate, then the NET is required to be
+ * less than the current physical time. If physical time is less than the
+ * earliest event in the event queue (or the event queue is empty), then this
+ * function will insert a dummy event with a tag equal to the current physical
+ * time (and a microstep of 0). This will enforce advancement of tag for this
+ * federate and causes a NET message to be sent repeatedly as physical time
+ * advances with the time interval between messages controlled by the target
+ * parameter coordination-options: {advance-message-interval timevalue}. It will
+ * stop creating dummy events if and when its event queue has an event with a
+ * timestamp less than physical time.
  *
  * If wait_for_reply is false, then this function will simply send the
  * specified tag and return that tag immediately. This is useful when a
@@ -2639,37 +2641,20 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
                 // Check whether the new event on the event queue requires sending a new NET.
                 tag_t next_tag = get_next_event_tag();
                 if (lf_tag_compare(next_tag, tag) != 0) {
-                	// The next tag may also have to be bounded by physical time.
-                	if (_lf_bounded_NET(&next_tag)) {
-                        _lf_send_time(MSG_TYPE_TIME_ADVANCE_NOTICE, next_tag.time, wait_for_reply);
-                        _fed.last_sent_NET = next_tag;
-                        // Create a dummy event (FIXME: This should be sufficient. No need to also send a TAN because
-                        // the dummy event will result in a NET).
-                    	event_t* dummy = _lf_create_dummy_events(NULL, next_tag.time, NULL, 0);
-                	    pqueue_insert(event_q, dummy);
-                        LF_PRINT_DEBUG("Sent Time Advance Notice (TAN) %lld to RTI.",
-                        		next_tag.time - lf_time_start());
-                	} else {
-						_lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag, wait_for_reply);
-						_fed.last_sent_NET = next_tag;
-			            LF_PRINT_LOG("Sent next event tag (NET) (%lld, %u) to RTI.",
-			            		next_tag.time - start_time, next_tag.microstep);
-                	}
+					_lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag, wait_for_reply);
+					_fed.last_sent_NET = next_tag;
+		            LF_PRINT_LOG("Sent next event tag (NET) (%lld, %u) to RTI.",
+		            		next_tag.time - start_time, next_tag.microstep);
                 }
             }
         }
         
-        // Next tag is greater than physical time and this fed has downstream
-        // federates. Need to send TAN rather than NET.
-        // TAN does not include a microstep and expects no reply.
-        // It is sent to enable downstream federates to advance.
-        _lf_send_time(MSG_TYPE_TIME_ADVANCE_NOTICE, tag.time, wait_for_reply);
-        _fed.last_sent_NET = tag;
-        // Create a dummy event (FIXME: This should be sufficient. No need to also send a TAN because
-        // the dummy event will result in a NET).
+        // Create a dummy event that will force this federate to advance time and subsequently enable progress for
+        // downstream federates.
     	event_t* dummy = _lf_create_dummy_events(NULL, tag.time, NULL, 0);
 	    pqueue_insert(event_q, dummy);
-        LF_PRINT_DEBUG("Sent Time Advance Notice (TAN) %lld to RTI.",
+
+        LF_PRINT_DEBUG("Inserted a dummy event for tag (%ld, %u).",
                 tag.time - lf_time_start());
 
         if (!wait_for_reply) {
@@ -2677,13 +2662,9 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
             return tag;
         }
 
-        // This federate should repeatedly send TAN messages
-        // to the RTI so that downstream federates can advance time until
-        // it has a candidate event that it can process.
-        // Before sending the next message, we need to wait some time so
-        // that we don't overwhelm the network and the RTI.
-        // That amount of time will be no greater than ADVANCE_MESSAGE_INTERVAL
-        // in the future.
+        // This federate should repeatedly advance its tag to ensure downstream federates can make progress.
+        // Before advancing to the next tag, we need to wait some time so that we don't overwhelm the network and the
+        // RTI. That amount of time will be no greater than ADVANCE_MESSAGE_INTERVAL in the future.
         LF_PRINT_DEBUG("Waiting for physical time to elapse or an event on the event queue.");
 
         // The above call to _lf_bounded_NET called lf_time_physical()
@@ -2707,7 +2688,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
         // Either the timeout expired or the wait was interrupted by an event being
         // put onto the event queue. In either case, we can just loop around.
         // The next iteration will determine whether another
-        // TAN should be sent or a NET.
+        // NET should be sent or not.
         tag = get_next_event_tag();
     }
 }

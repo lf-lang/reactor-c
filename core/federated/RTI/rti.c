@@ -280,7 +280,6 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag) {
 /** 
  * Find the earliest tag at which the specified federate may
  * experience its next event. This is the least next event tag (NET)
- * or time advance notice (TAN)
  * of the specified federate and (transitively) upstream federates
  * (with delays of the connections added). For upstream federates,
  * we assume (conservatively) that federate upstream of those
@@ -308,7 +307,6 @@ tag_t transitive_next_event(federate_t* fed, tag_t candidate, bool visited[]) {
     }
 
     visited[fed->id] = true;
-    // Note that NET already takes into account any TAN messages received.
     tag_t result = fed->next_event;
 
     // If the candidate is less than this federate's next_event, use the candidate.
@@ -421,7 +419,7 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
 
 /** 
  * Determine whether the specified federate fed is eligible for a tag advance grant,
- * (TAG) and, if so, send it one. This is called upon receiving a LTC, TAN, NET
+ * (TAG) and, if so, send it one. This is called upon receiving a LTC, NET
  * or resign from an upstream federate.
  *
  * This function calculates the minimum M over
@@ -441,7 +439,7 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
  *
  * This should be called whenever an immediately upstream federate sends to
  * the RTI an LTC (Logical Tag Complete), or when a transitive upstream
- * federate sends a TAN (Time Advance Notice) or a NET (Next Event Tag) message.
+ * federate sends a NET (Next Event Tag) message.
  * It is also called when an upstream federate resigns from the federation.
  *
  * This function assumes that the caller holds the mutex lock.
@@ -873,60 +871,6 @@ void handle_next_event_tag(federate_t* fed) {
                 fed->completed.time - lf_time_start(),
                 fed->completed.microstep);
     }
-    pthread_mutex_unlock(&_RTI.rti_mutex);
-}
-
-/**
- * Handle a time advance notice (TAN) message. @see MSG_TYPE_TIME_ADVANCE_NOTICE
- * in rti.h.
- * 
- * This function assumes the caller does not hold the mutex.
- * 
- * @param fed The federate sending a TAN message.
- */
-void handle_time_advance_notice(federate_t* fed) {
-    unsigned char buffer[sizeof(int64_t)];
-    read_from_socket_errexit(fed->socket, sizeof(int64_t), buffer, 
-            "RTI failed to read the content of the time advance notice from federate %d.", fed->id);
-
-    // Acquire a mutex lock to ensure that this state does change while a
-    // message is in transport or being used to determine a TAG.
-    pthread_mutex_lock(&_RTI.rti_mutex);
-
-    fed->time_advance = extract_int64(buffer);
-    LF_PRINT_LOG("RTI received from federate %d the Time Advance Notice (TAN) %lld.",
-            fed->id, fed->time_advance - start_time);
-
-    // If the TAN is greater than the most recently received NET, then
-    // update the NET to match the TAN. The NET is a promise that, absent
-    // network inputs, the federate will not produce an output with tag
-    // less than the NET.
-    tag_t ta = (tag_t) {.time = fed->time_advance, .microstep = 0};
-    // If the fed->next_event is smaller than this TAN message, we need to
-    // verify that the federate has already completed the previously promised
-    // fed->next_event. Otherwise, we ignore this TAN. This scenario can happen
-    // when there is a message in-transit to the federate, and we have recorded
-    // the tag of that in-transit message as the federate's next event, but the
-    // message hasn't yet been delivered.
-    if (lf_tag_compare(ta, fed->next_event) <= 0 || 
-         lf_tag_compare(fed->completed, fed->next_event) >= 0) {
-        // We need to reply just as if this were a NET because it could unblock
-        // network input port control reactions.
-        // This is a side-effect of the combination of distributed cycles and
-        // physical actions in federates. FIXME: More explanation is needed.
-        update_federate_next_event_tag_locked(fed->id, ta);
-    } else {
-        lf_print_error("RTI received from federate %d a Time Advance Notice (TAN) (%ld, %u), "
-                "but it is ignoring it since there is a message still in transit to federate %d. "
-                "Current recorded NET: (%ld, %u), LTC: (%ld, %u).",
-                fed->id, ta.time - lf_time_start(), ta.microstep,
-                fed->id,
-                fed->next_event.time - lf_time_start(),
-                fed->next_event.microstep, 
-                fed->completed.time - lf_time_start(),
-                fed->completed.microstep);
-    }
-
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
@@ -1459,8 +1403,6 @@ void handle_federate_resign(federate_t *my_fed) {
     
     // Indicate that there will no further events from this federate.
     my_fed->next_event = FOREVER_TAG;
-
-    my_fed->time_advance = FOREVER;
     
     // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
     // the close should happen when receiving a 0 length message from the other end.
@@ -1528,9 +1470,6 @@ void* federate_thread_TCP(void* fed) {
                 break;
             case MSG_TYPE_NEXT_EVENT_TAG:
                 handle_next_event_tag(my_fed);
-                break;
-            case MSG_TYPE_TIME_ADVANCE_NOTICE:
-                handle_time_advance_notice(my_fed);
                 break;
             case MSG_TYPE_LOGICAL_TAG_COMPLETE:
                 handle_logical_tag_complete(my_fed);
@@ -1945,7 +1884,6 @@ void initialize_federate(uint16_t id) {
     _RTI.federates[id].last_granted = NEVER_TAG;
     _RTI.federates[id].last_provisionally_granted = NEVER_TAG;
     _RTI.federates[id].next_event = NEVER_TAG;
-    _RTI.federates[id].time_advance = NEVER;
     _RTI.federates[id].state = NOT_CONNECTED;
     _RTI.federates[id].upstream = NULL;
     _RTI.federates[id].upstream_delay = NULL;
