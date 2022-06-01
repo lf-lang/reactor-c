@@ -41,8 +41,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 static lf_cond_t* worker_conds;
 static size_t* cumsum_of_cond_of;
 
-static bool worker_states_sleep_forbidden = false;
-
 extern size_t current_level;
 extern size_t** num_reactions_by_worker_by_level;
 extern size_t max_num_workers;
@@ -137,17 +135,6 @@ static void worker_states_awaken_locked(size_t worker, size_t num_to_awaken) {
     }
 }
 
-/**
- * @brief Wake up all workers and forbid them from ever sleeping again.
- * This is intended to coordinate shutdown (without leaving any dangling threads behind).
- */
-static void worker_states_never_sleep_again(size_t worker) {
-    worker_states_sleep_forbidden = true;
-    lf_mutex_lock(&mutex);
-    worker_states_awaken_locked(worker, max_num_workers);
-    lf_mutex_unlock(&mutex);
-}
-
 /** Lock the global mutex if needed. */
 static void worker_states_lock(size_t worker) {
     assert(num_loose_threads > 0);
@@ -206,7 +193,6 @@ static void worker_states_sleep_and_unlock(size_t worker, size_t level_counter_s
     size_t cond = cond_of(worker);
     if (
         ((level_counter_snapshot == level_counter) || worker >= num_awakened)
-        && !worker_states_sleep_forbidden
     ) {
         do {
             lf_cond_wait(worker_conds + cond, &mutex);

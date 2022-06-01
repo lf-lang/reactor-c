@@ -60,7 +60,7 @@ static void advance_level_and_unlock(size_t worker) {
             set_level(0);
             if (_lf_sched_advance_tag_locked()) {
                 should_stop = true;
-                worker_states_never_sleep_again(worker);
+                worker_states_awaken_locked(worker, max_num_workers);
                 worker_states_unlock(worker);
                 return;
             }
