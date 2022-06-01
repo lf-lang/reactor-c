@@ -175,7 +175,7 @@ static bool worker_states_finished_with_level_locked(size_t worker) {
     // Why use an atomic operation when we are supposed to be "as good as locked"? Because I took a
     // shortcut, and the shortcut was imperfect.
     size_t ret = lf_atomic_add_fetch(&num_loose_threads, -1);
-    assert(ret >= 0);
+    assert(ret <= max_num_workers);  // Check for underflow
     return !ret;
 }
 
