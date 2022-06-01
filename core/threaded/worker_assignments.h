@@ -37,11 +37,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assert.h>
 #include "scheduler.h"
 
+/** The queued reactions. */
 static reaction_t**** reactions_by_worker_by_level;
+/** The number of queued reactions currently assigned to each worker at each level. */
 static size_t** num_reactions_by_worker_by_level;
+/** The maximum number of workers that could possibly be kept simultaneously busy at each level. */
 static size_t* max_num_workers_by_level;
+/** The number of workers that will be used to execute each level. */
 static size_t* num_workers_by_level;
+/** The number of levels. */
 static size_t num_levels;
+/** The maximum number of workers that can be used to execute any level. */
 static size_t max_num_workers;
 
 /** The following values apply to the current level. */

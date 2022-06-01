@@ -38,20 +38,26 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler.h"
 #include "../platform.h"
 
+/** An array of condition variables, each corresponding to a group of workers. */
 static lf_cond_t* worker_conds;
-static size_t* cumsum_of_cond_of;
-
-extern size_t current_level;
-extern size_t** num_reactions_by_worker_by_level;
-extern size_t max_num_workers;
-extern lf_mutex_t mutex;
-
+/** The cumsum of the sizes of the groups of workers corresponding to each successive cond. */
+static size_t* cumsum_of_worker_group_sizes;
 /** The number of non-waiting threads. */
 static volatile size_t num_loose_threads;
+/** The number of threads that were awakened for the purpose of executing the current level. */
 static volatile size_t num_awakened;
 /** Whether the mutex is held by each worker via this module's API. */
 static bool* mutex_held;
 
+/** See worker_assignments.h for documentation. */
+extern size_t current_level;
+extern size_t** num_reactions_by_worker_by_level;
+extern size_t max_num_workers;
+
+/** See reactor_threaded.c for documentation. */
+extern lf_mutex_t mutex;
+
+/** See reactor_common.c for documentation. */
 extern bool fast;
 
 /**
@@ -85,13 +91,13 @@ static void worker_states_init(size_t number_of_workers) {
     size_t greatest_worker_number = number_of_workers - 1;
     size_t num_conds = cond_of(greatest_worker_number) + 1;
     worker_conds = (lf_cond_t*) malloc(sizeof(lf_cond_t) * num_conds);
-    cumsum_of_cond_of = (size_t*) calloc(num_conds, sizeof(size_t));
+    cumsum_of_worker_group_sizes = (size_t*) calloc(num_conds, sizeof(size_t));
     mutex_held = (bool*) malloc(sizeof(bool) * number_of_workers);
     for (int i = 0; i < number_of_workers; i++) {
-        cumsum_of_cond_of[cond_of(i)]++;
+        cumsum_of_worker_group_sizes[cond_of(i)]++;
     }
     for (int i = 1; i < num_conds; i++) {
-        cumsum_of_cond_of[i] += cumsum_of_cond_of[i - 1];
+        cumsum_of_worker_group_sizes[i] += cumsum_of_worker_group_sizes[i - 1];
     }
     for (int i = 0; i < num_conds; i++) {
         lf_cond_init(worker_conds + i);
@@ -126,7 +132,7 @@ static void worker_states_awaken_locked(size_t worker, size_t num_to_awaken) {
     }
     // The predicate of the condition variable depends on num_awakened and level_counter, so
     // this is a critical section.
-    num_loose_threads = cumsum_of_cond_of[max_cond];
+    num_loose_threads = cumsum_of_worker_group_sizes[max_cond];
     num_loose_threads += worker >= num_loose_threads;
     num_awakened = num_loose_threads;
     level_counter++;
