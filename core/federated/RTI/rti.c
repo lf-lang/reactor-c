@@ -523,12 +523,6 @@ bool send_advance_grant_if_safe(federate_t* fed) {
         LF_PRINT_LOG("Upstream federates are all done. Granting tag advance.");
         send_tag_advance_grant(fed, FOREVER_TAG);
         return true;
-    }
-
-    if (t_d.time == FOREVER) {
-        LF_PRINT_LOG("All upstream federates are finished. Sending TAG(FOREVER).");
-        send_tag_advance_grant(fed, FOREVER_TAG);
-        return true;
     } else if (
         lf_tag_compare(t_d, fed->next_event) > 0       // The federate has something to do.
         && lf_tag_compare(t_d, fed->last_provisionally_granted) >= 0  // The grant is not redundant 
@@ -703,8 +697,9 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
         bytes_to_read = FED_COM_BUFFER_SIZE - header_size;
     }
 
-    LF_PRINT_LOG("RTI received message from federate %d for federate %u port %u. Forwarding.",
-            sending_federate->id, federate_id, reactor_port_id);
+    LF_PRINT_LOG("RTI received message from federate %d for federate %u port %u with intended tag (%ld, %u). Forwarding.",
+            sending_federate->id, federate_id, reactor_port_id,
+            intended_tag.time - lf_time_start(), intended_tag.microstep);
 
     read_from_socket_errexit(sending_federate->socket, bytes_to_read, &(buffer[header_size]),
                      "RTI failed to read timed message from federate %d.", federate_id);
@@ -786,7 +781,7 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     // is a promise that is valid only in the absence of network inputs,
     // and now there is a network input. Hence, the promise needs to be
     // updated.
-    if (lf_tag_compare(_RTI.federates[federate_id].next_event, intended_tag) > 0) {
+    if (lf_tag_compare(_RTI.federates[federate_id].next_event, intended_tag) >= 0) {
         update_federate_next_event_tag_locked(federate_id, intended_tag);
     }
 
@@ -855,11 +850,12 @@ void handle_next_event_tag(federate_t* fed) {
     if (lf_tag_compare(intended_tag, fed->next_event) <= 0 || 
          lf_tag_compare(fed->completed, fed->next_event) >= 0) {
 
+
+        update_federate_next_event_tag_locked(fed->id, intended_tag);
+
         LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) (%ld, %u).",
                 fed->id, fed->next_event.time - start_time,
                 fed->next_event.microstep);
-
-        update_federate_next_event_tag_locked(fed->id, intended_tag);
     } else {
         lf_print_error("RTI received from federate %d the Next Event Tag (NET) (%ld, %u), "
                 "but it is ignoring it since there is a message still in transit to federate %d. "
