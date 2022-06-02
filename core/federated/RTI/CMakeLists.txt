@@ -43,7 +43,13 @@ include_directories(${CoreLib}/platform)
 include_directories(${CoreLib}/federated)
 
 # Declare a new executable target and list all its sources
-add_executable(RTI rti.c ${LF_PLATFORM_FILE})
+add_executable(
+    RTI 
+    rti.c 
+    ${LF_PLATFORM_FILE} 
+    ${CoreLib}/utils/pqueue.c 
+    message_record/message_record.c
+)
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
     # Set the LOG_LEVEL to 4 to get DEBUG messages

@@ -518,12 +518,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
     LF_PRINT_LOG("Earliest next event upstream has tag (%lld, %u).",
             t_d.time - start_time, t_d.microstep);
 
-    if (lf_tag_compare(t_d, FOREVER_TAG) == 0) {
-        // Upstream federates are all done.
-        LF_PRINT_LOG("Upstream federates are all done. Granting tag advance.");
-        send_tag_advance_grant(fed, FOREVER_TAG);
-        return true;
-    } else if (
+    if (
         lf_tag_compare(t_d, fed->next_event) > 0       // The federate has something to do.
         && lf_tag_compare(t_d, fed->last_provisionally_granted) >= 0  // The grant is not redundant 
                                                                       // (equal is important to override any previous
@@ -578,6 +573,9 @@ void send_downstream_advance_grants_if_safe(federate_t* fed, bool visited[]) {
 /**
  * @brief Update the next event tag of federate `federate_id`.
  * 
+ * It will update the recorded next event tag of federate `federate_id` to the minimum of `next_event_tag` and the
+ * minimum tag of in-transit messages (if any) to the federate.
+ * 
  * Will try to see if the RTI can grant new TAG or PTAG messages to any
  * downstream federates based on this new next event tag.
  * 
@@ -587,7 +585,23 @@ void send_downstream_advance_grants_if_safe(federate_t* fed, bool visited[]) {
  * @param next_event_tag The next event tag for `federate_id`.
  */
 void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_event_tag) {
-   _RTI.federates[federate_id].next_event = next_event_tag;
+    tag_t min_in_transit_tag = get_minimum_in_transit_message_tag(_RTI.federates[federate_id].in_transit_message_tags);
+    if (lf_tag_compare(
+            min_in_transit_tag,
+            next_event_tag
+        ) < 0
+    ) {
+        next_event_tag = min_in_transit_tag;
+    }
+
+    _RTI.federates[federate_id].next_event = next_event_tag;
+
+    LF_PRINT_DEBUG(
+       "RTI: Updated the recorded next event tag for federate %d to (%ld, %u).",
+       federate_id,
+       next_event_tag.time - lf_time_start(),
+       next_event_tag.microstep
+    );
 
     // Check to see whether we can reply now with a time advance grant.
     // If the federate has no upstream federates, then it does not wait for
@@ -744,6 +758,34 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
         length
     );
 
+    // Record this in-transit message in federate's in-transit message queue.
+    if (lf_tag_compare(_RTI.federates[federate_id].completed, intended_tag) < 0) {
+        // Add a record of this message to the list of in-transit messages to this federate.
+        add_in_transit_message_record(
+            _RTI.federates[federate_id].in_transit_message_tags, 
+            intended_tag
+        );
+        LF_PRINT_DEBUG(
+            "RTI: Adding a message with tag (%ld, %u) to the list of in-transit messages for federate %d.",
+            intended_tag.time - lf_time_start(),
+            intended_tag.microstep,
+            federate_id
+        );
+    } else {
+        lf_print_error(
+            "RTI: Federate %d has already completed tag (%ld, %u) "
+            "but there is an in-transit message with tag (%ld, %u) from federate %d. "
+            "This is going to cause an STP violation under centralized coordination.",
+            federate_id,
+            _RTI.federates[federate_id].completed.time - lf_time_start(),
+            _RTI.federates[federate_id].completed.microstep,
+            intended_tag.time - lf_time_start(),
+            intended_tag.microstep,
+            sending_federate->id
+        );
+        // FIXME: Drop the federate?
+    }
+
     // Need to make sure that the destination federate's thread has already
     // sent the starting MSG_TYPE_TIMESTAMP message.
     while (_RTI.federates[federate_id].state == PENDING) {
@@ -774,16 +816,8 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
         write_to_socket_errexit(destination_socket, bytes_to_read, buffer,
                 "RTI failed to send message chunks.");
     }
-
-    // If the destination federate has previously sent a NET that is larger
-    // than the intended tag of this message, then reset that NET to be equal
-    // to the intended tag of this message.  This is needed because the NET
-    // is a promise that is valid only in the absence of network inputs,
-    // and now there is a network input. Hence, the promise needs to be
-    // updated.
-    if (lf_tag_compare(_RTI.federates[federate_id].next_event, intended_tag) >= 0) {
-        update_federate_next_event_tag_locked(federate_id, intended_tag);
-    }
+    
+    update_federate_next_event_tag_locked(federate_id, intended_tag);
 
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
@@ -809,6 +843,9 @@ void handle_logical_tag_complete(federate_t* fed) {
 
     LF_PRINT_LOG("RTI received from federate %d the Logical Tag Complete (LTC) (%lld, %u).",
                 fed->id, fed->completed.time - start_time, fed->completed.microstep);
+
+    // See if we can remove any of the recorded in-transit messages for this.
+    clean_in_transit_message_record_up_to_tag(fed->in_transit_message_tags, fed->completed);
 
     // Check downstream federates to see whether they should now be granted a TAG.
     for (int i = 0; i < fed->num_downstream; i++) {
@@ -838,35 +875,17 @@ void handle_next_event_tag(federate_t* fed) {
     pthread_mutex_lock(&_RTI.rti_mutex); // FIXME: Instead of using a mutex,
                                          // it might be more efficient to use a
                                          // select() mechanism to read and process
-                                         // federates' buffers in an orderly fashion
+                                         // federates' buffers in an orderly fashion.
 
-    // If the fed->next_event is smaller than this NET message, we need to
-    // verify that the federate has already completed the previously promised
-    // fed->next_event. Otherwise, we ignore this NET. This scenario can happen
-    // when there is a message in-transit to the federate, and we have recorded
-    // the tag of that in-transit message as the federate's next event, but the
-    // message hasn't yet been delivered.
+
     tag_t intended_tag = extract_tag(buffer);
-    if (lf_tag_compare(intended_tag, fed->next_event) <= 0 || 
-         lf_tag_compare(fed->completed, fed->next_event) >= 0) {
-
-
-        update_federate_next_event_tag_locked(fed->id, intended_tag);
-
-        LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) (%ld, %u).",
-                fed->id, fed->next_event.time - start_time,
-                fed->next_event.microstep);
-    } else {
-        lf_print_error("RTI received from federate %d the Next Event Tag (NET) (%ld, %u), "
-                "but it is ignoring it since there is a message still in transit to federate %d. "
-                "Current recorded NET: (%ld, %u), LTC: (%ld, %u).",
-                fed->id, intended_tag.time - lf_time_start(), intended_tag.microstep,
-                fed->id,
-                fed->next_event.time - lf_time_start(),
-                fed->next_event.microstep, 
-                fed->completed.time - lf_time_start(),
-                fed->completed.microstep);
-    }
+    LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) (%ld, %u).",
+        fed->id, fed->next_event.time - start_time,
+        fed->next_event.microstep);
+    update_federate_next_event_tag_locked(
+        fed->id, 
+        intended_tag
+    );
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
@@ -1879,6 +1898,7 @@ void initialize_federate(uint16_t id) {
     _RTI.federates[id].last_granted = NEVER_TAG;
     _RTI.federates[id].last_provisionally_granted = NEVER_TAG;
     _RTI.federates[id].next_event = NEVER_TAG;
+    _RTI.federates[id].in_transit_message_tags = initialize_in_transit_message_q();
     _RTI.federates[id].state = NOT_CONNECTED;
     _RTI.federates[id].upstream = NULL;
     _RTI.federates[id].upstream_delay = NULL;
@@ -1941,6 +1961,7 @@ void wait_for_federates(int socket_descriptor) {
     for (int i = 0; i < _RTI.number_of_federates; i++) {
         lf_print("RTI: Waiting for thread handling federate %d.", _RTI.federates[i].id);
         pthread_join(_RTI.federates[i].thread_id, &thread_exit_status);
+        free_in_transit_message_q(_RTI.federates[i].in_transit_message_tags);
         lf_print("RTI: Federate %d thread exited.", _RTI.federates[i].id);
     }
 
