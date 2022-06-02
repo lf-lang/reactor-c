@@ -61,7 +61,7 @@ void free_in_transit_message_q(in_transit_message_record_q_t queue);
 /**
  * @brief Add a record of the in-transit message.
  * 
- * @param queue The queue to add to (of type `in_transit_message_record_q`.
+ * @param queue The queue to add to (of type `in_transit_message_record_q`).
  * @param tag The tag of the in-transit message.
  * @return 0 on success.
  */
@@ -70,7 +70,7 @@ int add_in_transit_message_record(in_transit_message_record_q_t queue, tag_t tag
 /**
  * @brief Clean the record of in-transit messages up to and including `tag`.
  * 
- * @param queue The queue to clean (of type `in_transit_message_record_q`.
+ * @param queue The queue to clean (of type `in_transit_message_record_q`).
  * @param tag Will clean all messages with tags <= tag.
  */
 void clean_in_transit_message_record_up_to_tag(in_transit_message_record_q_t queue, tag_t tag);

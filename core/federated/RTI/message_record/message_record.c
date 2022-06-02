@@ -79,7 +79,7 @@ void free_in_transit_message_q(in_transit_message_record_q_t queue) {
 /**
  * @brief Add a record of the in-transit message.
  * 
- * @param queue The queue to add to (of type `in_transit_message_record_q_t`.
+ * @param queue The queue to add to (of type `in_transit_message_record_q_t`).
  * @param tag The tag of the in-transit message.
  * @return 0 on success.
  */
@@ -95,7 +95,7 @@ int add_in_transit_message_record(in_transit_message_record_q_t queue, tag_t tag
 /**
  * @brief Clean the record of in-transit messages up to and including `tag`.
  * 
- * @param queue The queue to clean (of type `in_transit_message_record_q_t`.
+ * @param queue The queue to clean (of type `in_transit_message_record_q_t`).
  * @param tag Will clean all messages with tags <= tag.
  */
 void clean_in_transit_message_record_up_to_tag(in_transit_message_record_q_t queue, tag_t tag) {
@@ -148,12 +148,6 @@ tag_t get_minimum_in_transit_message_tag(in_transit_message_record_q_t queue) {
             ) <= 0
         ) {
             minimum_tag = head_of_in_transit_messages->tag;
-
-            LF_PRINT_DEBUG(
-                "RTI: Removed a message with tag (%ld, %u) from the list of in-transit messages.",
-                head_of_in_transit_messages->tag.time - lf_time_start(),
-                head_of_in_transit_messages->tag.microstep
-            );
         } else if (head_of_in_transit_messages->tag.time > minimum_tag.time) {
             break;
         }
@@ -165,6 +159,12 @@ tag_t get_minimum_in_transit_message_tag(in_transit_message_record_q_t queue) {
     }
     // Empty the transfer queue (which holds messages with equal time but larger microstep) into the main queue.
     pqueue_empty_into(&queue->main_queue, &queue->transfer_queue);
+
+    LF_PRINT_DEBUG(
+        "RTI: Minimum tag of all in-transit messages: (%ld, %u).",
+        head_of_in_transit_messages->tag.time - lf_time_start(),
+        head_of_in_transit_messages->tag.microstep
+    );
 
     return minimum_tag;
 }
