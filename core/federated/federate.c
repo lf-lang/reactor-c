@@ -2041,16 +2041,18 @@ void handle_provisional_tag_advance_grant() {
         dummy_event_relative_microstep -= current_tag.microstep;
     }
     // We now know current_tag < PTAG.
-    // Schedule a dummy event at the specified time and (relative) microstep.
-       LF_PRINT_DEBUG("At tag (%lld, %d), inserting into the event queue a dummy event "
-               "with time %lld and (relative) microstep %d.",
-            current_tag.time - start_time, current_tag.microstep,
-            dummy_event_time - start_time, dummy_event_relative_microstep);
 
-       // Dummy event points to a NULL trigger and NULL real event.
-    event_t* dummy = _lf_create_dummy_events(
-            NULL, dummy_event_time, NULL, dummy_event_relative_microstep);
-    pqueue_insert(event_q, dummy);
+    if (dummy_event_time != FOREVER) {
+        // Schedule a dummy event at the specified time and (relative) microstep.
+        LF_PRINT_DEBUG("At tag (%lld, %d), inserting into the event queue a dummy event "
+               "with time %lld and (relative) microstep %d.",
+        current_tag.time - start_time, current_tag.microstep,
+        dummy_event_time - start_time, dummy_event_relative_microstep);
+        // Dummy event points to a NULL trigger and NULL real event.
+        event_t* dummy = _lf_create_dummy_events(
+                NULL, dummy_event_time, NULL, dummy_event_relative_microstep);
+        pqueue_insert(event_q, dummy);
+    }
 
     lf_mutex_unlock(&mutex);
 }
@@ -2234,6 +2236,7 @@ void terminate_execution() {
     }
     lf_mutex_unlock(&outbound_socket_mutex);
 
+    LF_PRINT_DEBUG("Requesting closing of incoming P2P sockets.");
     // Request closing the incoming P2P sockets.
     for (int i=0; i < NUMBER_OF_FEDERATES; i++) {
         if (_lf_request_close_inbound_socket(i) == 0) {
@@ -2242,6 +2245,7 @@ void terminate_execution() {
         }
     }
 
+    LF_PRINT_DEBUG("Waiting for inbound p2p socket listener threads.");
     // Wait for each inbound socket listener thread to close.
     if (_fed.number_of_inbound_p2p_connections > 0) {
         LF_PRINT_LOG("Waiting for %d threads listening for incoming messages to exit.",
@@ -2252,9 +2256,11 @@ void terminate_execution() {
         }
     }
 
+    LF_PRINT_DEBUG("Waiting for RTI's socket listener threads.");
     // Wait for the thread listening for messages from the RTI to close.
     lf_thread_join(_fed.RTI_socket_listener, NULL);
 
+    LF_PRINT_DEBUG("Freeing memory occupied by the federate.");
     free(_fed.inbound_socket_listeners);
     free(federation_metadata.rti_host);
     free(federation_metadata.rti_user);
@@ -2649,10 +2655,12 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
             }
         }
         
-        // Create a dummy event that will force this federate to advance time and subsequently enable progress for
-        // downstream federates.
-        event_t* dummy = _lf_create_dummy_events(NULL, tag.time, NULL, 0);
-        pqueue_insert(event_q, dummy);
+        if (tag.time != FOREVER) {
+            // Create a dummy event that will force this federate to advance time and subsequently enable progress for
+            // downstream federates.
+            event_t* dummy = _lf_create_dummy_events(NULL, tag.time, NULL, 0);
+            pqueue_insert(event_q, dummy);
+        }
 
         LF_PRINT_DEBUG("Inserted a dummy event for tag (%ld, %u).",
                 tag.time - lf_time_start());
