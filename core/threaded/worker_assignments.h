@@ -139,12 +139,29 @@ static void worker_assignments_free() {
  * @param worker The number of a worker needing work.
  */
 static reaction_t* get_reaction(size_t worker) {
+#ifndef FEDERATED
     int index = lf_atomic_add_fetch(num_reactions_by_worker + worker, -1);
     if (index >= 0) {
         return reactions_by_worker[worker][index];
     }
     num_reactions_by_worker[worker] = 0;
     return NULL;
+#else
+    int old_num_reactions;
+    int current_num_reactions = num_reactions_by_worker[worker];
+    int index;
+    do {
+        old_num_reactions = current_num_reactions;
+        if (old_num_reactions <= 0) return NULL;
+    } while (
+        (current_num_reactions = __sync_val_compare_and_swap(
+            num_reactions_by_worker + worker,
+            old_num_reactions,
+            (index = old_num_reactions - 1)
+        )) != old_num_reactions
+    );
+    return reactions_by_worker[worker][index];
+#endif
 }
 
 /**
