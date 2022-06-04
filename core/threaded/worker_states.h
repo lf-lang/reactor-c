@@ -92,7 +92,7 @@ static void worker_states_init(size_t number_of_workers) {
     size_t num_conds = cond_of(greatest_worker_number) + 1;
     worker_conds = (lf_cond_t*) malloc(sizeof(lf_cond_t) * num_conds);
     cumsum_of_worker_group_sizes = (size_t*) calloc(num_conds, sizeof(size_t));
-    mutex_held = (bool*) malloc(sizeof(bool) * number_of_workers);
+    mutex_held = (bool*) calloc(number_of_workers, sizeof(bool));
     for (int i = 0; i < number_of_workers; i++) {
         cumsum_of_worker_group_sizes[cond_of(i)]++;
     }
@@ -148,7 +148,7 @@ static void worker_states_lock(size_t worker) {
     size_t lt = num_loose_threads;
     if (lt > 1 || !fast) {  // FIXME: Lock should be partially optimized out even when !fast
         lf_mutex_lock(&mutex);
-        assert(mutex_held[worker] == false);
+        assert(!mutex_held[worker]);
         mutex_held[worker] = true;
     }
 }
@@ -204,7 +204,7 @@ static void worker_states_sleep_and_unlock(size_t worker, size_t level_counter_s
             lf_cond_wait(worker_conds + cond, &mutex);
         } while (level_counter_snapshot == level_counter || worker >= num_awakened);
     }
-    assert(mutex_held[worker] == false);  // This thread holds the mutex, but it did not report that.
+    assert(!mutex_held[worker]);  // This thread holds the mutex, but it did not report that.
     lf_mutex_unlock(&mutex);
 }
 
