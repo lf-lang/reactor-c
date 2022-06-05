@@ -197,7 +197,9 @@ static reaction_t* worker_assignments_get_or_lock(size_t worker) {
 static void worker_assignments_put(reaction_t* reaction) {
     size_t level = LEVEL(reaction->index);
     assert(reaction != NULL);
+#ifndef FEDERATED
     assert(level > current_level || current_level == 0);
+#endif
     assert(level < num_levels);
     // Source: https://xorshift.di.unimi.it/splitmix64.c
     // FIXME: This is probably not the most efficient way to get the randomness that we need because
