@@ -154,7 +154,7 @@ static reaction_t* get_reaction(size_t worker) {
         old_num_reactions = current_num_reactions;
         if (old_num_reactions <= 0) return NULL;
     } while (
-        (current_num_reactions = __sync_val_compare_and_swap(
+        (current_num_reactions = lf_val_compare_and_swap(
             num_reactions_by_worker + worker,
             old_num_reactions,
             (index = old_num_reactions - 1)
