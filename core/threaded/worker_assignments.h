@@ -147,6 +147,8 @@ static reaction_t* get_reaction(size_t worker) {
     num_reactions_by_worker[worker] = 0;
     return NULL;
 #else
+    // This is necessary for federated programs because reactions may be inserted into the current
+    // level.
     int old_num_reactions;
     int current_num_reactions = num_reactions_by_worker[worker];
     int index;
@@ -178,7 +180,11 @@ static reaction_t* worker_assignments_get_or_lock(size_t worker) {
     while (true) {
         if ((ret = get_reaction(worker))) return ret;
         if (worker < num_workers) {
-            for (size_t victim = (worker + 1) % num_workers; victim != worker; victim = (victim + 1) % num_workers) {
+            for (
+                size_t victim = (worker + 1) % num_workers;
+                victim != worker;
+                victim = (victim + 1) % num_workers
+            ) {
                 if ((ret = get_reaction(victim))) return ret;
             }
         }
@@ -202,7 +208,7 @@ static void worker_assignments_put(reaction_t* reaction) {
 #endif
     assert(level < num_levels);
     // Source: https://xorshift.di.unimi.it/splitmix64.c
-    // FIXME: This is probably not the most efficient way to get the randomness that we need because
+    // TODO: This is probably not the most efficient way to get the randomness that we need because
     // it is designed to give an entire word of randomness, whereas we only need
     // ~log2(num_workers_by_level[level]) bits of randomness.
     uint64_t hash = (uint64_t) reaction;

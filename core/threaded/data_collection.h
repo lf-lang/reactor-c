@@ -104,7 +104,8 @@ static size_t get_nums_workers_neighboring_state(size_t current_state, interval_
     size_t jitter = get_jitter(current_state, execution_time);
     if (!jitter) return current_state;
     size_t i = 1;
-    while (possible_nums_workers[i] < current_state) i++; // TODO: There are more efficient ways to do this.
+    // TODO: There are more efficient ways to do this.
+    while (possible_nums_workers[i] < current_state) i++;
     return possible_nums_workers[i + jitter];
 }
 

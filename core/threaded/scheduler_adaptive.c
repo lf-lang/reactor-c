@@ -25,6 +25,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * This is a non-priority-driven scheduler. See scheduler.h for documentation.
+ * @author{Peter Donovan <peterdonovan@berkeley.edu>}
  */
 
 #ifndef NUMBER_OF_WORKERS
@@ -123,7 +124,6 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
 
 void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     assert(worker_number >= -1);
-    if (reaction == NULL) return; // FIXME: When does this happen again? In federated execution?
     if (!lf_bool_compare_and_swap(&reaction->status, inactive, queued)) return;
     worker_assignments_put(reaction);
 }
