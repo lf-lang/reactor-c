@@ -861,7 +861,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(int worker_number, reacti
     // at most once per logical time value. If the violation reaction triggers the
     // same reaction at the current time value, even if at a future superdense time,
     // then the reaction will be invoked and the violation reaction will not be invoked again.
-    if (reaction->deadline > 0LL) {
+    if (reaction->deadline >= 0LL) {
         // Get the current physical time.
         instant_t physical_time = lf_time_physical();
         // Check for deadline violation.
