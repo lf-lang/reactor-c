@@ -865,7 +865,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(int worker_number, reacti
         // Get the current physical time.
         instant_t physical_time = lf_time_physical();
         // Check for deadline violation.
-        if (physical_time > current_tag.time + reaction->deadline) {
+        if (reaction->deadline == 0 || physical_time > current_tag.time + reaction->deadline) {
             // Deadline violation has occurred.
             violation_occurred = true;
             // Invoke the local handler, if there is one.
