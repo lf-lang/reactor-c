@@ -1162,6 +1162,10 @@ int lf_reactor_c_main(int argc, char* argv[]) {
 
         lf_mutex_lock(&mutex);
         initialize(); // Sets start_time
+#ifdef MODAL_REACTORS
+        // Set up modal infrastructure
+        _lf_initialize_modes();
+#endif
 
         lf_print("---- Using %d workers.", _lf_number_of_workers);
         

@@ -59,10 +59,6 @@ bool fast = false;
  */
 unsigned int _lf_number_of_workers = 0u;
 
-/** Array of pointers to all startup reactions in the program. */
-reaction_t** _lf_startup_reactions;
-int _lf_startup_reactions_size;
-
 /** 
  * The logical time to elapse during execution, or -1 if no timeout time has
  * been given. When the logical equal to start_time + duration has been
@@ -604,7 +600,7 @@ bool _lf_is_tag_after_stop_tag(tag_t tag) {
  */
 void _lf_pop_events() {
 #ifdef MODAL_REACTORS
-    _lf_handle_mode_startup_reactions();
+    _lf_handle_mode_triggered_reactions();
 #endif
 
     event_t* event = (event_t*)pqueue_peek(event_q);
