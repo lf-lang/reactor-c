@@ -290,10 +290,6 @@ Variables</h2></td></tr>
 <tr class="separator:a48f58a9d22ac5303d3c0f0278c49e7ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a01fd0d1404992f7d875791a764a26925"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2core_2reactor_8h.html#a01fd0d1404992f7d875791a764a26925">_lf_number_of_workers</a></td></tr>
 <tr class="separator:a01fd0d1404992f7d875791a764a26925"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1211ca2b5b848ae700471d1ab0177709"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structreaction__t.html">reaction_t</a> **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2core_2reactor_8h.html#a1211ca2b5b848ae700471d1ab0177709">_lf_startup_reactions</a></td></tr>
-<tr class="separator:a1211ca2b5b848ae700471d1ab0177709"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a565a9ac648fb05c803b1d7fffe2dedd2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2core_2reactor_8h.html#a565a9ac648fb05c803b1d7fffe2dedd2">_lf_startup_reactions_size</a></td></tr>
-<tr class="separator:a565a9ac648fb05c803b1d7fffe2dedd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
@@ -364,7 +360,7 @@ DESCRIPTION</h1>
 <div class="line">    } \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
 <div class="ttc" id="acore_2reactor_8h_html_a174f339edecd4463df25e673366a2b16aad3aafaeae035f5d1c986b0b59e77458"><div class="ttname"><a href="core_2reactor_8h.html#a174f339edecd4463df25e673366a2b16aad3aafaeae035f5d1c986b0b59e77458">token_and_value</a></div><div class="ttdeci">@ token_and_value</div><div class="ttdef"><b>Definition:</b> reactor.h:366</div></div>
-<div class="ttc" id="acore_2reactor__common_8c_html_a96b4b8f74714eae0efcb699281c10f87"><div class="ttname"><a href="core_2reactor__common_8c.html#a96b4b8f74714eae0efcb699281c10f87">_lf_initialize_token_with_value</a></div><div class="ttdeci">lf_token_t * _lf_initialize_token_with_value(lf_token_t *token, void *value, size_t length)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:551</div></div>
+<div class="ttc" id="acore_2reactor__common_8c_html_a96b4b8f74714eae0efcb699281c10f87"><div class="ttname"><a href="core_2reactor__common_8c.html#a96b4b8f74714eae0efcb699281c10f87">_lf_initialize_token_with_value</a></div><div class="ttdeci">lf_token_t * _lf_initialize_token_with_value(lf_token_t *token, void *value, size_t length)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:547</div></div>
 </div><!-- fragment --><p >Set the specified output (or input of a contained reactor) to the specified value.</p>
 <p >This version is used for primitive types such as int, double, etc. as well as the built-in types bool and string. The value is copied and therefore the variable carrying the value can be subsequently modified without changing the output. This can also be used for structs with a type defined by a typedef so that the type designating string does not end in '*'. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -526,7 +522,7 @@ DESCRIPTION</h1>
 <div class="line">    out-&gt;value = token-&gt;value; \</div>
 <div class="line">    out-&gt;token = token; \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="acore_2reactor__common_8c_html_a9df90516cce7d8e01b46acf61db64b8f"><div class="ttname"><a href="core_2reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a></div><div class="ttdeci">lf_token_t * _lf_set_new_array_impl(lf_token_t *token, size_t length, int num_destinations)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1513</div></div>
+<div class="ttc" id="acore_2reactor__common_8c_html_a9df90516cce7d8e01b46acf61db64b8f"><div class="ttname"><a href="core_2reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a></div><div class="ttdeci">lf_token_t * _lf_set_new_array_impl(lf_token_t *token, size_t length, int num_destinations)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1509</div></div>
 </div><!-- fragment --><p >Version of set() for output types given as 'type*' that allocates a new object of the type of the specified output port.</p>
 <p >This macro dynamically allocates enough memory to contain one instance of the output datatype and sets the variable named by the argument to point to the newly allocated memory. The user code can then populate it with whatever value it wishes to send.</p>
 <p >This macro also sets the corresponding _is_present variable in the self struct to true (which causes the object message to be sent), </p><dl class="params"><dt>Parameters</dt><dd>
@@ -2085,51 +2081,6 @@ The absent and present fields need to be compatible with false and true respecti
 <p >The number of worker threads for threaded execution. By default, execution is not threaded and this variable will have value 0, meaning that the execution is not threaded.</p>
 <p >The number of worker threads for threaded execution. By default, execution is not threaded and this variable will have value 0.</p>
 <p >If the execution is threaded, a value of 0 indicates that the runtime should decide on the number of workers (which will be decided based on the number of available cores on the host machine). </p>
-
-</div>
-</div>
-<a id="a1211ca2b5b848ae700471d1ab0177709" name="a1211ca2b5b848ae700471d1ab0177709"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1211ca2b5b848ae700471d1ab0177709">&#9670;&nbsp;</a></span>_lf_startup_reactions</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structreaction__t.html">reaction_t</a>** _lf_startup_reactions</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p >Array of pointers to all startup reactions in the program. </p>
-
-</div>
-</div>
-<a id="a565a9ac648fb05c803b1d7fffe2dedd2" name="a565a9ac648fb05c803b1d7fffe2dedd2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a565a9ac648fb05c803b1d7fffe2dedd2">&#9670;&nbsp;</a></span>_lf_startup_reactions_size</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">int _lf_startup_reactions_size</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
 
 </div>
 </div>
