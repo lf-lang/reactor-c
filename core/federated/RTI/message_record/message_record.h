@@ -37,26 +37,24 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @brief Queue to keep a record of in-transit messages.
  * 
  */
-struct in_transit_message_record_q {
+typedef struct {
     pqueue_t* main_queue;       // The primary queue.
     pqueue_t* transfer_queue;   // Queue used for housekeeping.
-};
-
-typedef struct in_transit_message_record_q* in_transit_message_record_q_t;
+} in_transit_message_record_q_t;
 
 /**
  * @brief Initialize the in-transit message record queue.
  * 
  * @return in_transit_message_record_q 
  */
-in_transit_message_record_q_t initialize_in_transit_message_q();
+in_transit_message_record_q_t* initialize_in_transit_message_q();
 
 /**
  * @brief Free the memory occupied by the `queue`.
  * 
  * @param queue The queue to free.
  */
-void free_in_transit_message_q(in_transit_message_record_q_t queue);
+void free_in_transit_message_q(in_transit_message_record_q_t* queue);
 
 /**
  * @brief Add a record of the in-transit message.
@@ -65,7 +63,7 @@ void free_in_transit_message_q(in_transit_message_record_q_t queue);
  * @param tag The tag of the in-transit message.
  * @return 0 on success.
  */
-int add_in_transit_message_record(in_transit_message_record_q_t queue, tag_t tag);
+int add_in_transit_message_record(in_transit_message_record_q_t* queue, tag_t tag);
 
 /**
  * @brief Clean the record of in-transit messages up to and including `tag`.
@@ -73,7 +71,7 @@ int add_in_transit_message_record(in_transit_message_record_q_t queue, tag_t tag
  * @param queue The queue to clean (of type `in_transit_message_record_q`).
  * @param tag Will clean all messages with tags <= tag.
  */
-void clean_in_transit_message_record_up_to_tag(in_transit_message_record_q_t queue, tag_t tag);
+void clean_in_transit_message_record_up_to_tag(in_transit_message_record_q_t* queue, tag_t tag);
 
 /**
  * @brief Get the minimum tag of all currently recorded in-transit messages.
@@ -81,6 +79,6 @@ void clean_in_transit_message_record_up_to_tag(in_transit_message_record_q_t que
  * @param queue The queue to search in (of type `in_transit_message_record_q`).
  * @return tag_t The minimum tag of all currently recorded in-transit messages. Return `FOREVER_TAG` if the queue is empty.
  */
-tag_t get_minimum_in_transit_message_tag(in_transit_message_record_q_t queue);
+tag_t get_minimum_in_transit_message_tag(in_transit_message_record_q_t* queue);
 
 #endif // RTI_MESSAGE_RECORD_H
