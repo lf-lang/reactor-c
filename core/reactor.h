@@ -931,10 +931,6 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
  */
 extern unsigned int _lf_number_of_workers;
 
-/** Array of pointers to all startup reactions in the program. */
-extern reaction_t** _lf_startup_reactions;
-extern int _lf_startup_reactions_size;
-
 #include "trace.h"
 
 #endif /* REACTOR_H */
