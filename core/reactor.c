@@ -200,7 +200,7 @@ int _lf_do_step(void) {
         // at most once per logical time value. If the violation reaction triggers the
         // same reaction at the current time value, even if at a future superdense time,
         // then the reaction will be invoked and the violation reaction will not be invoked again.
-        if (reaction->deadline > 0LL) {
+        if (reaction->deadline >= 0LL) {
             // Get the current physical time.
             instant_t physical_time = lf_time_physical();
             // FIXME: These comments look outdated. We may need to update them.
@@ -210,7 +210,7 @@ int _lf_do_step(void) {
             // container deadlines are defined in the container.
             // They can have different deadlines, so we have to check both.
             // Handle the local deadline first.
-            if (physical_time > current_tag.time + reaction->deadline) {
+            if (reaction->deadline == 0 || physical_time > current_tag.time + reaction->deadline) {
                 LF_PRINT_LOG("Deadline violation. Invoking deadline handler.");
                 // Deadline violation has occurred.
                 violation = true;

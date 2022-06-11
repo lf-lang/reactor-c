@@ -1681,11 +1681,11 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
             }
         }
 #endif
-        if (downstream_to_execute_now->deadline > 0LL) {
+        if (downstream_to_execute_now->deadline >= 0LL) {
             // Get the current physical time.
             instant_t physical_time = lf_time_physical();
             // Check for deadline violation.
-            if (physical_time > current_tag.time + downstream_to_execute_now->deadline) {
+            if (downstream_to_execute_now->deadline == 0 || physical_time > current_tag.time + downstream_to_execute_now->deadline) {
                 // Deadline violation has occurred.
                 violation = true;
                 // Invoke the local handler, if there is one.
