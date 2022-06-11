@@ -368,32 +368,20 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_TAGGED_MESSAGE 5
 
 /** 
- * Byte identifying a next event tag (NET) message sent from a federate
- * in centralized coordination.
- * The next eight bytes will be the timestamp.
- * The next four bytes will be the microstep.
- * This message from a federate tells the RTI the tag of the earliest event 
- * on that federate's event queue. In other words, absent any further inputs 
- * from other federates, this will be the least tag of the next set of
- * reactions on that federate. If the event queue is empty and a timeout
- * time has been specified, then the timeout time will be sent. If there is
- * no timeout time, then FOREVER will be sent. Note that this message should
- * not be sent if there are physical actions and the earliest event on the event
- * queue has a tag that is ahead of physical time (or the queue is empty).
- * In that case, send TAN instead.
+ * Byte identifying a next event tag (NET) message sent from a federate in
+ * centralized coordination. The next eight bytes will be the timestamp. The
+ * next four bytes will be the microstep. This message from a federate tells the
+ * RTI the tag of the earliest event on that federate's event queue. In other
+ * words, absent any further inputs from other federates, this will be the least
+ * tag of the next set of reactions on that federate. If the event queue is
+ * empty and a timeout time has been specified, then the timeout time will be
+ * sent. If there is no timeout time, then FOREVER will be sent. Note that if
+ * there are physical actions and the earliest event on the event queue has a
+ * tag that is ahead of physical time (or the queue is empty), the federate
+ * should try to regularly advance its tag (and thus send NET messages) to make
+ * sure downstream federates can make progress.
  */
 #define MSG_TYPE_NEXT_EVENT_TAG 6
-
-/**
- * Byte identifying a time advance notice (TAN) message sent from
- * a federate in centralized coordination.  This message is used by
- * a federate that has outputs that are directly or indirectly
- * triggered by a physical action to notify the RTI that its physical
- * time has advanced and that it will produce no outputs with
- * timestamps less than the specified timestamp.
- * The next eight bytes will be the timestamp.
- */
-#define MSG_TYPE_TIME_ADVANCE_NOTICE 253
 
 /** 
  * Byte identifying a time advance grant (TAG) sent by the RTI to a federate
