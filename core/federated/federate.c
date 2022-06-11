@@ -1828,6 +1828,7 @@ void handle_tagged_message(int socket, int fed_id) {
             intended_tag.time - lf_time_start(), 
             intended_tag.microstep
         );
+        action->intended_tag = intended_tag;
         _lf_insert_reactions_for_trigger(action, message_token);
 
         // Set the status of the port as present here to inform the network input
