@@ -97,10 +97,6 @@ Functions</h2></td></tr>
 <tr class="separator:a97ac8c4d61e522fc3587a7469bdc7afb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acde4076cd96817debe76e74fca261c70"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2_r_t_i_2rti_8c.html#acde4076cd96817debe76e74fca261c70">create_server</a> (int32_t specified_port, uint16_t port, <a class="el" href="core_2federated_2_r_t_i_2rti_8h.html#a54c375e3893ff5969d20df65b90c8335">socket_type_t</a> socket_type)</td></tr>
 <tr class="separator:acde4076cd96817debe76e74fca261c70"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6696c6969eb341c48269c2da6cec0caf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2_r_t_i_2rti_8c.html#a6696c6969eb341c48269c2da6cec0caf">handle_port_absent_message</a> (<a class="el" href="structfederate__t.html">federate_t</a> *sending_federate, unsigned char *buffer)</td></tr>
-<tr class="separator:a6696c6969eb341c48269c2da6cec0caf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afc6a599f3f5b9cf66a147b0f9ca657c8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2_r_t_i_2rti_8c.html#afc6a599f3f5b9cf66a147b0f9ca657c8">handle_timed_message</a> (<a class="el" href="structfederate__t.html">federate_t</a> *sending_federate, unsigned char *buffer)</td></tr>
-<tr class="separator:afc6a599f3f5b9cf66a147b0f9ca657c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2c94ce50b24ed5cc0bfce3d548d8e59f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2_r_t_i_2rti_8c.html#a2c94ce50b24ed5cc0bfce3d548d8e59f">send_tag_advance_grant</a> (<a class="el" href="structfederate__t.html">federate_t</a> *fed, <a class="el" href="structtag__t.html">tag_t</a> tag)</td></tr>
 <tr class="separator:a2c94ce50b24ed5cc0bfce3d548d8e59f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa067d8ff2e12b42f8c1f011758231be1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2_r_t_i_2rti_8c.html#aa067d8ff2e12b42f8c1f011758231be1">transitive_next_event</a> (<a class="el" href="structfederate__t.html">federate_t</a> *fed, <a class="el" href="structtag__t.html">tag_t</a> candidate, <a class="el" href="core_2platform_2lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> visited[])</td></tr>
@@ -111,12 +107,17 @@ Functions</h2></td></tr>
 <tr class="separator:a70e4672b8d5c3b0e42bbb0c17d01cccd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a05299fb2838277ff1f030448c9cf1ad8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2_r_t_i_2rti_8c.html#a05299fb2838277ff1f030448c9cf1ad8">send_downstream_advance_grants_if_safe</a> (<a class="el" href="structfederate__t.html">federate_t</a> *fed, <a class="el" href="core_2platform_2lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> visited[])</td></tr>
 <tr class="separator:a05299fb2838277ff1f030448c9cf1ad8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7190c8d1000afb0a5e8898011d041917"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2_r_t_i_2rti_8c.html#a7190c8d1000afb0a5e8898011d041917">update_federate_next_event_tag_locked</a> (uint16_t federate_id, <a class="el" href="structtag__t.html">tag_t</a> next_event_tag)</td></tr>
+<tr class="memdesc:a7190c8d1000afb0a5e8898011d041917"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the next event tag of federate <code>federate_id</code>.  <a href="core_2federated_2_r_t_i_2rti_8c.html#a7190c8d1000afb0a5e8898011d041917">More...</a><br /></td></tr>
+<tr class="separator:a7190c8d1000afb0a5e8898011d041917"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6696c6969eb341c48269c2da6cec0caf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2_r_t_i_2rti_8c.html#a6696c6969eb341c48269c2da6cec0caf">handle_port_absent_message</a> (<a class="el" href="structfederate__t.html">federate_t</a> *sending_federate, unsigned char *buffer)</td></tr>
+<tr class="separator:a6696c6969eb341c48269c2da6cec0caf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afc6a599f3f5b9cf66a147b0f9ca657c8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2_r_t_i_2rti_8c.html#afc6a599f3f5b9cf66a147b0f9ca657c8">handle_timed_message</a> (<a class="el" href="structfederate__t.html">federate_t</a> *sending_federate, unsigned char *buffer)</td></tr>
+<tr class="separator:afc6a599f3f5b9cf66a147b0f9ca657c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6bba97c8acc2b80259f8b94b01e1697d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2_r_t_i_2rti_8c.html#a6bba97c8acc2b80259f8b94b01e1697d">handle_logical_tag_complete</a> (<a class="el" href="structfederate__t.html">federate_t</a> *fed)</td></tr>
 <tr class="separator:a6bba97c8acc2b80259f8b94b01e1697d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a77dee2c405d4fe62278a1cf972272bd2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2_r_t_i_2rti_8c.html#a77dee2c405d4fe62278a1cf972272bd2">handle_next_event_tag</a> (<a class="el" href="structfederate__t.html">federate_t</a> *fed)</td></tr>
 <tr class="separator:a77dee2c405d4fe62278a1cf972272bd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2933ca68bad3d299217a22106b120a61"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2_r_t_i_2rti_8c.html#a2933ca68bad3d299217a22106b120a61">handle_time_advance_notice</a> (<a class="el" href="structfederate__t.html">federate_t</a> *fed)</td></tr>
-<tr class="separator:a2933ca68bad3d299217a22106b120a61"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4d99ea51641cde8d7d65c06e43581f19"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2_r_t_i_2rti_8c.html#a4d99ea51641cde8d7d65c06e43581f19">_lf_rti_broadcast_stop_time_to_federates_already_locked</a> ()</td></tr>
 <tr class="separator:a4d99ea51641cde8d7d65c06e43581f19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a76bea17520db7f471b8a04d20c7db5f5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2_r_t_i_2rti_8c.html#a76bea17520db7f471b8a04d20c7db5f5">handle_stop_request_message</a> (<a class="el" href="structfederate__t.html">federate_t</a> *fed)</td></tr>
@@ -578,32 +579,6 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a2933ca68bad3d299217a22106b120a61" name="a2933ca68bad3d299217a22106b120a61"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2933ca68bad3d299217a22106b120a61">&#9670;&nbsp;</a></span>handle_time_advance_notice()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void handle_time_advance_notice </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structfederate__t.html">federate_t</a> *&#160;</td>
-          <td class="paramname"><em>fed</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Handle a time advance notice (TAN) message. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="include_2core_2federated_2net__common_8h.html#a7980004274145ed361ca5d25eb743773">MSG_TYPE_TIME_ADVANCE_NOTICE</a> in rti.h.</dd></dl>
-<p>This function assumes the caller does not hold the mutex.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">fed</td><td>The federate sending a TAN message. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a id="afc6a599f3f5b9cf66a147b0f9ca657c8" name="afc6a599f3f5b9cf66a147b0f9ca657c8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afc6a599f3f5b9cf66a147b0f9ca657c8">&#9670;&nbsp;</a></span>handle_timed_message()</h2>
 
@@ -945,10 +920,10 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Determine whether the specified federate fed is eligible for a tag advance grant, (TAG) and, if so, send it one. This is called upon receiving a LTC, TAN, NET or resign from an upstream federate.</p>
+<p >Determine whether the specified federate fed is eligible for a tag advance grant, (TAG) and, if so, send it one. This is called upon receiving a LTC, NET or resign from an upstream federate.</p>
 <p >This function calculates the minimum M over all upstream federates of the "after" delay plus the most recently received LTC from that federate. If M is greater than the most recently sent TAG to fed or greater than or equal to the most recently sent PTAG, then send a TAG(M) to fed and return.</p>
 <p >If the above conditions do not result in sending a TAG, then find the minimum M of the earliest possible future message from upstream federates. This is calculated by transitively looking at the most recently received NET message from upstream federates. If M is greater than the NET of the federate fed or the most recently sent PTAG to that federate, then send TAG to the federate with tag equal to the NET of fed or the PTAG. If M is equal to the NET of the federate, then send PTAG(M).</p>
-<p >This should be called whenever an immediately upstream federate sends to the RTI an LTC (Logical Tag Complete), or when a transitive upstream federate sends a TAN (Time Advance Notice) or a NET (Next Event Tag) message. It is also called when an upstream federate resigns from the federation.</p>
+<p >This should be called whenever an immediately upstream federate sends to the RTI an LTC (Logical Tag Complete), or when a transitive upstream federate sends a NET (Next Event Tag) message. It is also called when an upstream federate resigns from the federation.</p>
 <p >This function assumes that the caller holds the mutex lock.</p>
 <dl class="section return"><dt>Returns</dt><dd>True if the TAG message is sent and false otherwise. </dd></dl>
 
@@ -1202,13 +1177,53 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Find the earliest tag at which the specified federate may experience its next event. This is the least next event tag (NET) or time advance notice (TAN) of the specified federate and (transitively) upstream federates (with delays of the connections added). For upstream federates, we assume (conservatively) that federate upstream of those may also send an event. The result will never be less than the completion time of the federate (which may be NEVER, if the federate has not yet completed a logical time).</p>
+<p >Find the earliest tag at which the specified federate may experience its next event. This is the least next event tag (NET) of the specified federate and (transitively) upstream federates (with delays of the connections added). For upstream federates, we assume (conservatively) that federate upstream of those may also send an event. The result will never be less than the completion time of the federate (which may be NEVER, if the federate has not yet completed a logical time).</p>
 <p >FIXME: This could be made less conservative by building at code generation time a causality interface table indicating which outputs can be triggered by which inputs. For now, we assume any output can be triggered by any input.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">fed</td><td>The federate. </td></tr>
     <tr><td class="paramname">candidate</td><td>A candidate tag (for the first invocation, this should be fed-&gt;next_event). </td></tr>
     <tr><td class="paramname">visited</td><td>An array of booleans indicating which federates have been visited (for the first invocation, this should be an array of falses of size _RTI.number_of_federates). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a7190c8d1000afb0a5e8898011d041917" name="a7190c8d1000afb0a5e8898011d041917"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7190c8d1000afb0a5e8898011d041917">&#9670;&nbsp;</a></span>update_federate_next_event_tag_locked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void update_federate_next_event_tag_locked </td>
+          <td>(</td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>federate_id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td>
+          <td class="paramname"><em>next_event_tag</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Update the next event tag of federate <code>federate_id</code>. </p>
+<p >It will update the recorded next event tag of federate <code>federate_id</code> to the minimum of <code>next_event_tag</code> and the minimum tag of in-transit messages (if any) to the federate.</p>
+<p >Will try to see if the RTI can grant new TAG or PTAG messages to any downstream federates based on this new next event tag.</p>
+<p >This function assumes that the caller is holding the _RTI.rti_mutex.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">federate_id</td><td>The id of the federate that needs to be updated. </td></tr>
+    <tr><td class="paramname">next_event_tag</td><td>The next event tag for <code>federate_id</code>. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1315,7 +1330,7 @@ DESCRIPTION</h1>
 <div class="line">    .clock_sync_period_ns = <a class="code hl_define" href="core_2tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8">MSEC</a>(10),</div>
 <div class="line">    .clock_sync_exchanges_per_interval = 10</div>
 <div class="line">}</div>
-<div class="ttc" id="acore_2federated_2_r_t_i_2rti_8h_html_a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558"><div class="ttname"><a href="core_2federated_2_r_t_i_2rti_8h.html#a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558">clock_sync_init</a></div><div class="ttdeci">@ clock_sync_init</div><div class="ttdef"><b>Definition:</b> rti.h:105</div></div>
+<div class="ttc" id="acore_2federated_2_r_t_i_2rti_8h_html_a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558"><div class="ttname"><a href="core_2federated_2_r_t_i_2rti_8h.html#a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558">clock_sync_init</a></div><div class="ttdeci">@ clock_sync_init</div><div class="ttdef"><b>Definition:</b> rti.h:108</div></div>
 <div class="ttc" id="acore_2tag_8h_html_a673a8ebab8ec621a1cf731871dd170c8"><div class="ttname"><a href="core_2tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8">MSEC</a></div><div class="ttdeci">#define MSEC(t)</div><div class="ttdef"><b>Definition:</b> tag.h:45</div></div>
 <div class="ttc" id="acore_2tag_8h_html_afc2f39e1818a6a8b68ca46e7c9dc2704"><div class="ttname"><a href="core_2tag_8h.html#afc2f39e1818a6a8b68ca46e7c9dc2704">NEVER_TAG</a></div><div class="ttdeci">#define NEVER_TAG</div><div class="ttdef"><b>Definition:</b> tag.h:64</div></div>
 </div><!-- fragment --><p >The state of this RTI instance. </p>

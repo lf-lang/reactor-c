@@ -117,8 +117,6 @@ Macros</h2></td></tr>
 <tr class="separator:a2922af172f2e95bc73bd0675a4107b3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af662a6a84cd64cddad92e20e26af877e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2net__common_8h.html#af662a6a84cd64cddad92e20e26af877e">MSG_TYPE_NEXT_EVENT_TAG</a>&#160;&#160;&#160;6</td></tr>
 <tr class="separator:af662a6a84cd64cddad92e20e26af877e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7980004274145ed361ca5d25eb743773"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2net__common_8h.html#a7980004274145ed361ca5d25eb743773">MSG_TYPE_TIME_ADVANCE_NOTICE</a>&#160;&#160;&#160;253</td></tr>
-<tr class="separator:a7980004274145ed361ca5d25eb743773"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a94fe2c510160682b2c0ffc00b35e0ad5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2net__common_8h.html#a94fe2c510160682b2c0ffc00b35e0ad5">MSG_TYPE_TAG_ADVANCE_GRANT</a>&#160;&#160;&#160;7</td></tr>
 <tr class="separator:a94fe2c510160682b2c0ffc00b35e0ad5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9a9bb60d4df1ba581a29319850097cc2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2federated_2net__common_8h.html#a9a9bb60d4df1ba581a29319850097cc2">MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT</a>&#160;&#160;&#160;8</td></tr>
@@ -291,7 +289,7 @@ LICENSE</h1>
 <div class="line">    assert(microstep &gt;= 0); \</div>
 <div class="line">    encode_int32((int32_t)microstep, &amp;(buffer[1 + <span class="keyword">sizeof</span>(<a class="code hl_typedef" href="core_2platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>)])); \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="acore_2federated_2net__common_8h_html_aad37dd00423e88f213ca7d7d238bce2e"><div class="ttname"><a href="core_2federated_2net__common_8h.html#aad37dd00423e88f213ca7d7d238bce2e">MSG_TYPE_STOP_GRANTED</a></div><div class="ttdeci">#define MSG_TYPE_STOP_GRANTED</div><div class="ttdef"><b>Definition:</b> net_common.h:495</div></div>
+<div class="ttc" id="acore_2federated_2net__common_8h_html_aad37dd00423e88f213ca7d7d238bce2e"><div class="ttname"><a href="core_2federated_2net__common_8h.html#aad37dd00423e88f213ca7d7d238bce2e">MSG_TYPE_STOP_GRANTED</a></div><div class="ttdeci">#define MSG_TYPE_STOP_GRANTED</div><div class="ttdef"><b>Definition:</b> net_common.h:483</div></div>
 <div class="ttc" id="acore_2platform_8h_html_a0c4810f46596400a763cfe99b3cfa7b1"><div class="ttname"><a href="core_2platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a></div><div class="ttdeci">_instant_t instant_t</div><div class="ttdef"><b>Definition:</b> platform.h:79</div></div>
 </div><!-- fragment -->
 </div>
@@ -333,7 +331,7 @@ LICENSE</h1>
 <div class="line">    assert(microstep &gt;= 0); \</div>
 <div class="line">    encode_int32((int32_t)microstep, &amp;(buffer[1 + <span class="keyword">sizeof</span>(<a class="code hl_typedef" href="core_2platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>)])); \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="acore_2federated_2net__common_8h_html_a8588a57a3ae81bf33c740dfc57103a23"><div class="ttname"><a href="core_2federated_2net__common_8h.html#a8588a57a3ae81bf33c740dfc57103a23">MSG_TYPE_STOP_REQUEST</a></div><div class="ttdeci">#define MSG_TYPE_STOP_REQUEST</div><div class="ttdef"><b>Definition:</b> net_common.h:462</div></div>
+<div class="ttc" id="acore_2federated_2net__common_8h_html_a8588a57a3ae81bf33c740dfc57103a23"><div class="ttname"><a href="core_2federated_2net__common_8h.html#a8588a57a3ae81bf33c740dfc57103a23">MSG_TYPE_STOP_REQUEST</a></div><div class="ttdeci">#define MSG_TYPE_STOP_REQUEST</div><div class="ttdef"><b>Definition:</b> net_common.h:450</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -374,7 +372,7 @@ LICENSE</h1>
 <div class="line">    assert(microstep &gt;= 0); \</div>
 <div class="line">    encode_int32((int32_t)microstep, &amp;(buffer[1 + <span class="keyword">sizeof</span>(<a class="code hl_typedef" href="core_2platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>)])); \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="acore_2federated_2net__common_8h_html_adbe10e103635ee7ec4bca3226ccebc56"><div class="ttname"><a href="core_2federated_2net__common_8h.html#adbe10e103635ee7ec4bca3226ccebc56">MSG_TYPE_STOP_REQUEST_REPLY</a></div><div class="ttdeci">#define MSG_TYPE_STOP_REQUEST_REPLY</div><div class="ttdef"><b>Definition:</b> net_common.h:479</div></div>
+<div class="ttc" id="acore_2federated_2net__common_8h_html_adbe10e103635ee7ec4bca3226ccebc56"><div class="ttname"><a href="core_2federated_2net__common_8h.html#adbe10e103635ee7ec4bca3226ccebc56">MSG_TYPE_STOP_REQUEST_REPLY</a></div><div class="ttdeci">#define MSG_TYPE_STOP_REQUEST_REPLY</div><div class="ttdef"><b>Definition:</b> net_common.h:467</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -651,7 +649,7 @@ LICENSE</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Byte identifying a next event tag (NET) message sent from a federate in centralized coordination. The next eight bytes will be the timestamp. The next four bytes will be the microstep. This message from a federate tells the RTI the tag of the earliest event on that federate's event queue. In other words, absent any further inputs from other federates, this will be the least tag of the next set of reactions on that federate. If the event queue is empty and a timeout time has been specified, then the timeout time will be sent. If there is no timeout time, then FOREVER will be sent. Note that this message should not be sent if there are physical actions and the earliest event on the event queue has a tag that is ahead of physical time (or the queue is empty). In that case, send TAN instead. </p>
+<p >Byte identifying a next event tag (NET) message sent from a federate in centralized coordination. The next eight bytes will be the timestamp. The next four bytes will be the microstep. This message from a federate tells the RTI the tag of the earliest event on that federate's event queue. In other words, absent any further inputs from other federates, this will be the least tag of the next set of reactions on that federate. If the event queue is empty and a timeout time has been specified, then the timeout time will be sent. If there is no timeout time, then FOREVER will be sent. Note that if there are physical actions and the earliest event on the event queue has a tag that is ahead of physical time (or the queue is empty), the federate should try to regularly advance its tag (and thus send NET messages) to make sure downstream federates can make progress. </p>
 
 </div>
 </div>
@@ -882,21 +880,6 @@ LICENSE</h1>
 </div><div class="memdoc">
 <p >Byte identifying a timestamped message to forward to another federate. The next two bytes will be the ID of the destination reactor port. The next two bytes are the destination federate ID. The four bytes after that will be the length of the message. The next eight bytes will be the timestamp of the message. The next four bytes will be the microstep of the message. The remaining bytes are the message.</p>
 <p >With centralized coordination, all such messages flow through the RTI. With decentralized coordination, tagged messages are sent peer-to-peer between federates and are marked with MSG_TYPE_P2P_TAGGED_MESSAGE. </p>
-
-</div>
-</div>
-<a id="a7980004274145ed361ca5d25eb743773" name="a7980004274145ed361ca5d25eb743773"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7980004274145ed361ca5d25eb743773">&#9670;&nbsp;</a></span>MSG_TYPE_TIME_ADVANCE_NOTICE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define MSG_TYPE_TIME_ADVANCE_NOTICE&#160;&#160;&#160;253</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Byte identifying a time advance notice (TAN) message sent from a federate in centralized coordination. This message is used by a federate that has outputs that are directly or indirectly triggered by a physical action to notify the RTI that its physical time has advanced and that it will produce no outputs with timestamps less than the specified timestamp. The next eight bytes will be the timestamp. </p>
 
 </div>
 </div>

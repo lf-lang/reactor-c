@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['sched_5fparams_5ft_0',['sched_params_t',['../structsched__params__t.html',1,'']]],
-  ['self_5fbase_5ft_1',['self_base_t',['../structself__base__t.html',1,'']]],
-  ['semaphore_5ft_2',['semaphore_t',['../structsemaphore__t.html',1,'']]],
-  ['socket_5fstat_5ft_3',['socket_stat_t',['../structsocket__stat__t.html',1,'']]]
+  ['reaction_5ft_0',['reaction_t',['../structreaction__t.html',1,'']]],
+  ['rti_5faddr_5finfo_5ft_1',['rti_addr_info_t',['../structrti__addr__info__t.html',1,'']]],
+  ['rti_5finstance_5ft_2',['RTI_instance_t',['../struct_r_t_i__instance__t.html',1,'']]]
 ];
