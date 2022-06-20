@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['deque_2ec_0',['deque.c',['../deque_8c.html',1,'']]],
-  ['deque_2eh_1',['deque.h',['../deque_8h.html',1,'']]]
+  ['data_5fcollection_2eh_0',['data_collection.h',['../core_2threaded_2data__collection_8h.html',1,'(Global Namespace)'],['../include_2core_2threaded_2data__collection_8h.html',1,'(Global Namespace)']]],
+  ['deque_2ec_1',['deque.c',['../deque_8c.html',1,'']]],
+  ['deque_2eh_2',['deque.h',['../deque_8h.html',1,'']]]
 ];
