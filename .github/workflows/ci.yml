@@ -23,7 +23,7 @@ jobs:
     uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@master
     with:
       file: 'lingua-franca-ref.txt'
-  
+
   lf-default:
     needs: fetch-lf
     uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
@@ -38,7 +38,7 @@ jobs:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
       scheduler: GEDF_NP
-      
+
   lf-gedf-np-ci:
     needs: fetch-lf
     uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
@@ -46,4 +46,11 @@ jobs:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
       scheduler: GEDF_NP_CI
-  
+
+  lf-adaptive:
+    needs: fetch-lf
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
+    with:
+      runtime-ref: ${{ github.ref }}
+      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+      scheduler: adaptive
