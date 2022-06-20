@@ -200,7 +200,7 @@ int _lf_do_step(void) {
         // at most once per logical time value. If the violation reaction triggers the
         // same reaction at the current time value, even if at a future superdense time,
         // then the reaction will be invoked and the violation reaction will not be invoked again.
-        if (reaction->deadline > 0LL) {
+        if (reaction->deadline >= 0LL) {
             // Get the current physical time.
             instant_t physical_time = lf_time_physical();
             // FIXME: These comments look outdated. We may need to update them.
@@ -210,7 +210,7 @@ int _lf_do_step(void) {
             // container deadlines are defined in the container.
             // They can have different deadlines, so we have to check both.
             // Handle the local deadline first.
-            if (physical_time > current_tag.time + reaction->deadline) {
+            if (reaction->deadline == 0 || physical_time > current_tag.time + reaction->deadline) {
                 LF_PRINT_LOG("Deadline violation. Invoking deadline handler.");
                 // Deadline violation has occurred.
                 violation = true;
@@ -381,6 +381,10 @@ int lf_reactor_c_main(int argc, char* argv[]) {
 
         LF_PRINT_DEBUG("Initializing.");
         initialize(); // Sets start_time.
+#ifdef MODAL_REACTORS
+        // Set up modal infrastructure
+        _lf_initialize_modes();
+#endif
 
         // Reaction queue ordered first by deadline, then by level.
         // The index of the reaction holds the deadline in the 48 most significant bits,
@@ -396,7 +400,7 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         // reactions. This can only happen if the timeout time
         // was set to 0.
         if (lf_tag_compare(current_tag, stop_tag) >= 0) {
-            _lf_trigger_shutdown_reactions(); // _lf_trigger_shutdown_reactions();
+            _lf_trigger_shutdown_reactions();
         }
         LF_PRINT_DEBUG("Running the program's main loop.");
         // Handle reactions triggered at time (T,m).

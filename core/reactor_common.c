@@ -59,10 +59,6 @@ bool fast = false;
  */
 unsigned int _lf_number_of_workers = 0u;
 
-/** Array of pointers to all startup reactions in the program. */
-reaction_t** _lf_startup_reactions;
-int _lf_startup_reactions_size;
-
 /** 
  * The logical time to elapse during execution, or -1 if no timeout time has
  * been given. When the logical equal to start_time + duration has been
@@ -604,7 +600,7 @@ bool _lf_is_tag_after_stop_tag(tag_t tag) {
  */
 void _lf_pop_events() {
 #ifdef MODAL_REACTORS
-    _lf_handle_mode_startup_reactions();
+    _lf_handle_mode_triggered_reactions();
 #endif
 
     event_t* event = (event_t*)pqueue_peek(event_q);
@@ -1372,11 +1368,11 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
     // Check for STP violation in the centralized coordination, which is a 
     // critical error.
     if (is_STP_violated) {
-        lf_print_error_and_exit("Attempted to insert reactions for a trigger that had violated the STP offset"
-                             " in centralized coordination. Intended tag: (%ld, %u). Current tag: (%ld, %u).",
-                             trigger->intended_tag.time - lf_time_start(),
+        lf_print_error_and_exit("Attempted to insert reactions for a trigger that had an intended tag that was in the past. "
+                             "This should not happen under centralized coordination. Intended tag: (%ld, %u). Current tag: (%ld, %u).",
+                             trigger->intended_tag.time - lf_time_start(), 
                              trigger->intended_tag.microstep,
-                             lf_time_logical_elapsed(),
+                             lf_time_logical_elapsed(), 
                              lf_tag().microstep);
     }
 #endif
@@ -1685,11 +1681,11 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
             }
         }
 #endif
-        if (downstream_to_execute_now->deadline > 0LL) {
+        if (downstream_to_execute_now->deadline >= 0LL) {
             // Get the current physical time.
             instant_t physical_time = lf_time_physical();
             // Check for deadline violation.
-            if (physical_time > current_tag.time + downstream_to_execute_now->deadline) {
+            if (downstream_to_execute_now->deadline == 0 || physical_time > current_tag.time + downstream_to_execute_now->deadline) {
                 // Deadline violation has occurred.
                 violation = true;
                 // Invoke the local handler, if there is one.

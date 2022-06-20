@@ -40,76 +40,25 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "modes.h"
 #include "../reactor.h"
 
+// Bit masks for the internally used flags on modes
+#define _LF_MODE_FLAG_MASK_ACTIVE        (1 << 0)
+#define _LF_MODE_FLAG_MASK_NEEDS_STARTUP (1 << 1)
+#define _LF_MODE_FLAG_MASK_HAD_STARTUP   (1 << 2)
+#define _LF_MODE_FLAG_MASK_NEEDS_RESET   (1 << 3)
+
+// ----------------------------------------------------------------------------
+
 // Forward declaration of functions and variables supplied by reactor_common.c
 void _lf_trigger_reaction(reaction_t* reaction, int worker_number);
 event_t* _lf_create_dummy_events(trigger_t* trigger, instant_t time, event_t* next, microstep_t offset);
-extern reaction_t** _lf_startup_reactions;
-extern int _lf_startup_reactions_size;
 extern pqueue_t* event_q;
 
-/**
- * Return true if the given mode is active.
- * This includes checking all enclosing modes.
- * If any of those is inactive, then so is this one.
- *
- * @param mode The mode instance to check.
- */
-bool _lf_mode_is_active(reactor_mode_t* mode) {
-    /*
-     * This code could be optimized by introducing a cached activity indicator
-     * in all mode states. But for now: no premature optimization.
-     */
-    if (mode != NULL) {
-        //LF_PRINT_DEBUG("Checking mode state of %s", mode->name);
-        reactor_mode_state_t* state = mode->state;
-        while (state != NULL) {
-            // If this or any parent mode is inactive, return inactive
-            if (state->active_mode != mode) {
-                //LF_PRINT_DEBUG(" => Mode is inactive");
-                return false;
-            }
-            mode = state->parent_mode;
-            if (mode != NULL) {
-                state = mode->state;
-            } else {
-                state = NULL;
-            }
-        }
-        //LF_PRINT_DEBUG(" => Mode is active");
-    }
-    return true;
-}
+// ----------------------------------------------------------------------------
 
-/**
- * Trigger startup reactions in modal reactors that should be triggered.
- * A startup reaction should be triggered if it is in an active mode and
- * either it has never been triggered before or it has not been triggered
- * since a reset transition was taken into the mode.
- * Startup reactions are triggered upon first entry and reentry with reset.
- */
-void _lf_handle_mode_startup_reactions() {
-    // Handle startup reactions in modal reactors
-    for (int i = 0; i < _lf_startup_reactions_size; i++) {
-        if (_lf_startup_reactions[i]->mode != NULL) {
-            if(_lf_startup_reactions[i]->status == inactive
-                    && _lf_mode_is_active(_lf_startup_reactions[i]->mode)
-                    && _lf_startup_reactions[i]->mode->should_trigger_startup == true
-            ) {
-                _lf_trigger_reaction(_lf_startup_reactions[i], -1);
-            }
-        }
-    }
+// Global variable to communicate mode triggered reactions
+uint8_t _lf_mode_triggered_reactions_request = 0;
 
-    // Reset the should_trigger_startup flag for startup reactions that are
-    // going to be triggered in the current tag.
-    for (int i = 0; i < _lf_startup_reactions_size; i++) {
-        if (_lf_startup_reactions[i]->mode != NULL) {
-            if (_lf_mode_is_active(_lf_startup_reactions[i]->mode)) {
-                _lf_startup_reactions[i]->mode->should_trigger_startup = false;
-            }
-        }
-    }
-}
+// ----------------------------------------------------------------------------
 
 // Linked list element for suspended events in inactive modes
 typedef struct _lf_suspended_event {
@@ -174,20 +123,222 @@ _lf_suspended_event_t* _lf_remove_suspended_event(_lf_suspended_event_t* event) 
     return next;
 }
 
+// ----------------------------------------------------------------------------
+
+/**
+ * Return true if the given mode is active.
+ * This includes checking all enclosing modes.
+ * If any of those is inactive, then so is this one.
+ *
+ * @param mode The mode instance to check.
+ */
+bool _lf_mode_is_active(reactor_mode_t* mode) {
+    if (mode != NULL) {
+        // Use cached value (redundant data structure)
+        return mode->flags & _LF_MODE_FLAG_MASK_ACTIVE;
+    }
+    return true;
+}
+
+/**
+ * Fallback implementation of _lf_mode_is_active.
+ * Does not rely on cached activity flag.
+ * (More reliable; for debugging).
+ *
+ * @param mode The mode instance to check.
+ */
+bool _lf_mode_is_active_fallback(reactor_mode_t* mode) {
+    if (mode != NULL) {
+        LF_PRINT_DEBUG("Checking mode state of %s", mode->name);
+        reactor_mode_state_t* state = mode->state;
+        while (state != NULL) {
+            // If this or any parent mode is inactive, return inactive
+            if (state->current_mode != mode) {
+                LF_PRINT_DEBUG(" => Mode is inactive");
+                return false;
+            }
+            mode = state->parent_mode;
+            if (mode != NULL) {
+                state = mode->state;
+            } else {
+                state = NULL;
+            }
+        }
+        LF_PRINT_DEBUG(" => Mode is active");
+    }
+    return true;
+}
+
+/**
+ * Initialize internal data structures and caches for modes.
+ * Must be invoked only once before any execution.
+ * Must be invoked before startup reactions are triggered.
+ *
+ * @param state An array of all mode states of modal reactor instance
+ * @param states_size
+ */
+void _lf_initialize_mode_states(reactor_mode_state_t* states[], int states_size) {
+    LF_PRINT_DEBUG("Modes: Initialization");
+    // Initialize all modes (top down for correct active flags)
+    for (int i = 0; i < states_size; i++) {
+        reactor_mode_state_t* state = states[i];
+        if (state != NULL && _lf_mode_is_active(state->parent_mode)) {
+            // If there is no enclosing mode or the parent is marked active,
+            // then activate the active mode (same as initial at this point)
+            // and request startup.
+            state->current_mode->flags |= _LF_MODE_FLAG_MASK_ACTIVE | _LF_MODE_FLAG_MASK_NEEDS_STARTUP;
+        }
+    }
+    // Register execution of special triggers
+    _lf_mode_triggered_reactions_request |= _LF_MODE_FLAG_MASK_NEEDS_STARTUP;
+}
+
+/**
+ * Handles the triggering of startup and reset reactions INSIDE modes.
+ * A startup reaction will be triggered once upon first entry of mode.
+ * Reset reactions are triggered when a mode is entered via a reset transition.
+ * Shutdown reactions are triggered at program's end for those mode that had a
+ * startup and will bypass mode inactivity.
+ *
+ * This function is supposed to be call from the generated functions:
+ * - _lf_trigger_startup_reactions()
+ * - _lf_handle_mode_triggered_reactions()
+ *
+ * The generated functions must handle all startup/shutdown reactions outside
+ * of modes, as these are excluded here.
+ *
+ * Bookkeeping and triggering of reaction is internally connected via flags set by
+ * _lf_initialize_mode_states and _lf_process_mode_changes.
+ *
+ * @param startup_reactions An array of all startup reactions
+ * @param startup_reactions_size
+ * @param reset_reactions An array of all reset reactions
+ * @param reset_reactions_size
+ * @param state An array of all mode states of modal reactor instance
+ * @param states_size
+ *
+ */
+void _lf_handle_mode_startup_reset_reactions(
+        reaction_t** startup_reactions,
+        int startup_reactions_size,
+        reaction_t** reset_reactions,
+        int reset_reactions_size,
+        reactor_mode_state_t* states[],
+        int states_size
+) {
+    // Handle startup reactions
+    if (_lf_mode_triggered_reactions_request & _LF_MODE_FLAG_MASK_NEEDS_STARTUP) {
+        if (startup_reactions != NULL) {
+            for (int i = 0; i < startup_reactions_size; i++) {
+                reaction_t* reaction = startup_reactions[i];
+                if (reaction->mode != NULL) {
+                    if(reaction->status == inactive
+                            && _lf_mode_is_active(reaction->mode)
+                            && reaction->mode->flags & _LF_MODE_FLAG_MASK_NEEDS_STARTUP
+                    ) {
+                        // Trigger reaction if not already triggered, is active,
+                        // and requires startup
+                        _lf_trigger_reaction(reaction, -1);
+                    }
+                }
+            }
+        }
+    }
+
+    // Handle reset reactions
+    if (_lf_mode_triggered_reactions_request & _LF_MODE_FLAG_MASK_NEEDS_RESET) {
+        if (reset_reactions != NULL) {
+            for (int i = 0; i < reset_reactions_size; i++) {
+                reaction_t* reaction = reset_reactions[i];
+                if (reaction->mode != NULL) {
+                    if(reaction->status == inactive
+                            && _lf_mode_is_active(reaction->mode)
+                            && reaction->mode->flags & _LF_MODE_FLAG_MASK_NEEDS_RESET
+                    ) {
+                        // Trigger reaction if not already triggered, is active,
+                        // and requires reset
+                        _lf_trigger_reaction(reaction, -1);
+                    }
+                }
+            }
+        }
+    }
+
+    // Reset the flags in all active modes.
+    // Hence, register that a mode had a startup even if there are no startup
+    // reactions to make sure that shutdown is executed properly.
+    for (int i = 0; i < states_size; i++) {
+        reactor_mode_state_t* state = states[i];
+        if (state != NULL && _lf_mode_is_active(state->current_mode)) {
+            // Clear and save execution of startup for shutdown
+            if (state->current_mode->flags & _LF_MODE_FLAG_MASK_NEEDS_STARTUP) {
+                state->current_mode->flags |= _LF_MODE_FLAG_MASK_HAD_STARTUP;
+                state->current_mode->flags &= ~_LF_MODE_FLAG_MASK_NEEDS_STARTUP;
+            }
+
+            // Clear reset flag
+            state->current_mode->flags &= ~_LF_MODE_FLAG_MASK_NEEDS_RESET;
+        }
+    }
+
+    // Clear request
+    _lf_mode_triggered_reactions_request = 0;
+}
+
+/**
+ * Handles the triggering of shutdown reactions INSIDE modes.
+ * Shutdown reactions are triggered at program's end for those modes that had a
+ * startup and will bypass mode inactivity.
+ *
+ * This function is supposed to be call from the generated function:
+ * - _lf_trigger_shutdown_reactions()
+ *
+ * The generated functions must handle all shutdown reactions outside
+ * of modes, as these are excluded here.
+ *
+ * @param shutdown_reactions An array of all shutdown reactions
+ * @param shutdown_reactions_size
+ *
+ */
+void _lf_handle_mode_shutdown_reactions(
+        reaction_t** shutdown_reactions,
+        int shutdown_reactions_size
+) {
+    if (shutdown_reactions != NULL) {
+        for (int i = 0; i < shutdown_reactions_size; i++) {
+            reaction_t* reaction = shutdown_reactions[i];
+            if (reaction->mode != NULL) {
+                if (reaction->mode->flags & _LF_MODE_FLAG_MASK_HAD_STARTUP) { // if mode had startup
+                    // Release the reaction from its association with the mode.
+                    // This will effectively bypass the mode activity check.
+                    // This assumes that the reaction will never be trigger/used after shutdown.
+                    // If that is not the case, a temporary bypassing mechanism should be implemented.
+                    reaction->mode = NULL;
+
+                    if(reaction->status == inactive) {
+                        // Trigger reaction if not already triggered
+                        _lf_trigger_reaction(reaction, -1);
+                    }
+                }
+            }
+        }
+    }
+}
+
 /**
  * Perform transitions in all modal reactors.
  *
- * @param state An array of mode state of modal reactor instance, which must be ordered hierarchically, where
- *      an enclosing mode must come before the inner mode.
- * @param num_states The number of mode state.
- * @param reset_data A list of initial values for reactor state variables.
+ * @param state An array of all mode states in modal reactor instances,
+ *      which must be ordered hierarchically, where an enclosing mode must come before the inner mode.
+ * @param states_size
+ * @param reset_data A list of initial values for reactor state variables that should be automatically reset.
  * @param reset_data_size
  * @param timer_triggers Array of pointers to timer triggers.
  * @param timer_triggers_size
  */
 void _lf_process_mode_changes(
     reactor_mode_state_t* states[],
-    int num_states,
+    int states_size,
     mode_state_variable_reset_data_t reset_data[],
     int reset_data_size,
     trigger_t* timer_triggers[],
@@ -196,7 +347,7 @@ void _lf_process_mode_changes(
     bool transition = false; // any mode change in this step
 
     // Detect mode changes (top down for hierarchical reset)
-    for (int i = 0; i < num_states; i++) {
+    for (int i = 0; i < states_size; i++) {
         reactor_mode_state_t* state = states[i];
         if (state != NULL) {
             // Hierarchical reset: if this mode has parent that is entered in
@@ -220,12 +371,25 @@ void _lf_process_mode_changes(
                 transition = true;
 
                 if (state->mode_change == reset_transition) {
-                    // Reset state variables
+                    // Reset state variables (if explicitly requested for automatic reset).
+                    // The generated code will not register all state variables by default.
+                    // Usually the reset trigger is used.
                     for (int i = 0; i < reset_data_size; i++) {
                         mode_state_variable_reset_data_t data = reset_data[i];
                         if (data.mode == state->next_mode) {
                             LF_PRINT_DEBUG("Modes: Reseting state variable.");
                             memcpy(data.target, data.source, data.size);
+                        }
+                    }
+
+                    // Handle timers that have a period of 0. These timers will only trigger
+                    // once and will not be on the event_q after their initial triggering.
+                    // Therefore, the logic above cannot handle these timers. We need
+                    // to trigger these timers manually if there is a reset transition.
+                    for (int i = 0; i < timer_triggers_size; i++) {
+                        trigger_t* timer = timer_triggers[i];
+                        if (timer->period == 0 && timer->mode == state->next_mode) {
+                            _lf_schedule(timer, timer->offset, NULL);
                         }
                     }
                 }
@@ -245,7 +409,7 @@ void _lf_process_mode_changes(
                                 _lf_schedule(timer, event->trigger->offset, NULL);
                             }
                             // No further processing; drops all events upon reset (timer event was recreated by schedule and original can be removed here)
-                        } else if (state->next_mode != state->active_mode && event->trigger != NULL) { // History transition to a different mode
+                        } else if (state->next_mode != state->current_mode && event->trigger != NULL) { // History transition to a different mode
                             // Remaining time that the event would have been waiting before mode was left
                             instant_t local_remaining_delay = event->time - (state->next_mode->deactivation_time != 0 ? state->next_mode->deactivation_time : lf_time_start());
                             tag_t current_logical_tag = lf_tag();
@@ -273,43 +437,59 @@ void _lf_process_mode_changes(
                         suspended_event = suspended_event->next;
                     }
                 }
-
-                if (state->mode_change == reset_transition) { // Reset transition
-                    // Handle timers that have a period of 0. These timers will only trigger
-                    // once and will not be on the event_q after their initial triggering.
-                    // Therefore, the logic above cannot handle these timers. We need
-                    // to trigger these timers manually if there is a reset transition.
-                    for (int i = 0; i < timer_triggers_size; i++) {
-                        trigger_t* timer = timer_triggers[i];
-                        if (timer->period == 0 && timer->mode == state->next_mode) {
-                            _lf_schedule(timer, timer->offset, NULL);
-                        }
-                    }
-                }
             }
         }
     }
 
     // Handle leaving active mode in all states
     if (transition) {
-        bool should_trigger_startup_reactions_at_next_microstep = false;
         // Set new active mode and clear mode change flags
-        for (int i = 0; i < num_states; i++) {
+        // (top down for correct active flags)
+        for (int i = 0; i < states_size; i++) {
             reactor_mode_state_t* state = states[i];
-            if (state != NULL && state->next_mode != NULL) {
-                // Save time when mode was left to handle suspended events in the future
-                state->active_mode->deactivation_time = lf_time_logical();
+            if (state != NULL) {
+                // Clear cached active flag on active state, because
+                // parent activity might have changed or active state may change.
+                state->current_mode->flags &= ~_LF_MODE_FLAG_MASK_ACTIVE;
 
-                // Apply transition
-                state->active_mode = state->next_mode;
-                if (state->mode_change == reset_transition
-                        || state->active_mode->should_trigger_startup) {
-                    state->active_mode->should_trigger_startup = true;
-                    should_trigger_startup_reactions_at_next_microstep = true;
+                // Apply transition effect
+                if (state->next_mode != NULL) {
+                    // Save time when mode was left to handle suspended events in the future
+                    state->current_mode->deactivation_time = lf_time_logical();
+
+                    // Apply transition
+                    state->current_mode = state->next_mode;
+
+                    // Trigger startup reactions if entered first time
+                    if (!(state->current_mode->flags & _LF_MODE_FLAG_MASK_HAD_STARTUP)) {
+                        state->current_mode->flags |= _LF_MODE_FLAG_MASK_NEEDS_STARTUP;
+                    }
+
+                    // Trigger reset reactions
+                    if (state->mode_change == reset_transition) {
+                        state->current_mode->flags |= _LF_MODE_FLAG_MASK_NEEDS_RESET;
+                    } else {
+                        // Needs to be cleared because flag could be there from previous
+                        // entry (with subsequent inactivity) which is now obsolete
+                        state->current_mode->flags &= ~_LF_MODE_FLAG_MASK_NEEDS_RESET;
+                    }
+
+                    state->next_mode = NULL;
+                    state->mode_change = no_transition;
                 }
 
-                state->next_mode = NULL;
-                state->mode_change = no_transition;
+                // Compute new cached activity flag
+                if (_lf_mode_is_active(state->parent_mode)) {
+                    // If there is no enclosing or the parent is marked active,
+                    // then set active flag on active mode
+                    state->current_mode->flags |= _LF_MODE_FLAG_MASK_ACTIVE;
+
+                    // Register execution of special triggers
+                    // This is not done when setting the flag because actual triggering
+                    // might be delayed by parent mode inactivity.
+                    _lf_mode_triggered_reactions_request |= state->current_mode->flags &
+                            (_LF_MODE_FLAG_MASK_NEEDS_STARTUP | _LF_MODE_FLAG_MASK_NEEDS_RESET);
+                }
             }
         }
 
@@ -340,9 +520,9 @@ void _lf_process_mode_changes(
             }
         }
 
-        if (should_trigger_startup_reactions_at_next_microstep) {
+        if (_lf_mode_triggered_reactions_request) {
             // Insert a dummy event in the event queue for the next microstep to make
-            // sure startup reactions (if any) can be triggered as soon as possible.
+            // sure startup/reset reactions (if any) are triggered as soon as possible.
             pqueue_insert(event_q, _lf_create_dummy_events(NULL, current_tag.time, NULL, 1));
         }
     }

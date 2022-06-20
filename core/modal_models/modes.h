@@ -76,10 +76,19 @@ do { \
 //// Forward declaration for generated code.
 
 /**
+ * Function (to be code generated) to initialize modes.
+ */
+void _lf_initialize_modes(void);
+
+/**
  * Function (to be code generated) to handle mode changes.
  */
 void _lf_handle_mode_changes(void);
 
+/**
+ * Function (to be code generated) to handle mode triggered reactions.
+ */
+void _lf_handle_mode_triggered_reactions(void);
 
 ////////////////////////////////////////////////////////////
 //// Type definitions for modal infrastructure.
@@ -99,14 +108,14 @@ struct reactor_mode_t {
     reactor_mode_state_t* state;    // Pointer to a struct with the reactor's mode state. INSTANCE.
     char* name;                     // Name of this mode.
     instant_t deactivation_time;    // Time when the mode was left.
-    bool should_trigger_startup;    // Startup reactions should be triggered if this mode is active.
+    uint8_t flags;                  // Bit vector for several internal flags related to the mode.
 };
 
 /** A struct to store state of the modes in a reactor instance and/or its relation to enclosing modes. */
 struct reactor_mode_state_t {
     reactor_mode_t* parent_mode;    // Pointer to the next enclosing mode (if exists).
     reactor_mode_t* initial_mode;   // Pointer to the initial mode.
-    reactor_mode_t* active_mode;    // Pointer to the currently active mode.
+    reactor_mode_t* current_mode;   // Pointer to the currently active mode (only locally active).
     reactor_mode_t* next_mode;      // Pointer to the next mode to activate at the end of this step (if set).
     lf_mode_change_type_t mode_change;  // A mode change type flag.
 };

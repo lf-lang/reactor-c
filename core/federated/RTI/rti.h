@@ -35,6 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define RTI_H
 
 #include "reactor.h"
+#include "message_record/message_record.h"
 
 /////////////////////////////////////////////
 //// Data structures
@@ -76,7 +77,9 @@ typedef struct federate_t {
     tag_t last_granted;     // The maximum TAG that has been granted so far (or NEVER if none granted)
     tag_t last_provisionally_granted;      // The maximum PTAG that has been provisionally granted (or NEVER if none granted)
     tag_t next_event;       // Most recent NET received from the federate (or NEVER if none received).
-    instant_t time_advance; // Most recent TAN received from the federate (or NEVER if none received).
+    in_transit_message_record_q_t* in_transit_message_tags; // Record of in-transit messages to this federate that are not 
+                                                            // yet processed. This record is ordered based on the time
+                                                            // value of each message for a more efficient access. 
     fed_state_t state;      // State of the federate.
     int* upstream;          // Array of upstream federate ids.
     interval_t* upstream_delay;    // Minimum delay on connections from upstream federates.
