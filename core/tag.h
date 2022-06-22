@@ -37,6 +37,27 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform.h"
 #include "limits.h"
 
+#ifdef GRAN_MICRO
+/* Conversion of time to nanoseconds. */
+#define NSEC(t) (t / 1000L)
+#define NSECS(t) (t / 1000L)
+#define USEC(t) (t * 1L)
+#define USECS(t) (t * 1L)
+#define MSEC(t) (t * 1000L)
+#define MSECS(t) (t * 1000L)
+#define SEC(t) (t * 1000000L)
+#define SECS(t) (t * 1000000L)
+#define SECOND(t)  (t * 1000000000L)
+#define SECONDS(t) (t * 1000000000L)
+#define MINUTE(t)  (t * 1000000000L)
+#define MINUTES(t) (t * 1000000000L)
+#define HOUR(t)   (t * 60000000000L)
+#define HOURS(t)  (t * 60000000000L)
+#define DAY(t)  (t * 3600000000000L)
+#define DAYS(t) (t * 3600000000000L)
+#define WEEK(t)   (t * 86400000000000L)
+#define WEEKS(t)  (t * 86400000000000L)
+#else
 /* Conversion of time to nanoseconds. */
 #define NSEC(t) (t * 1LL)
 #define NSECS(t) (t * 1LL)
@@ -56,6 +77,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define DAYS(t)  (t * 86400000000000LL)
 #define WEEK(t)  (t * 604800000000000LL)
 #define WEEKS(t) (t * 604800000000000LL)
+#endif
+
 
 // Commonly used time values.
 #define NEVER LLONG_MIN
