@@ -2379,6 +2379,7 @@ void* listen_to_rti_TCP(void* args) {
             // EOF received.
             lf_print("Connection to the RTI closed with an EOF.");
             _fed.socket_TCP_RTI = -1;
+            exit(1);
             return NULL;
         }
         switch (buffer[0]) {

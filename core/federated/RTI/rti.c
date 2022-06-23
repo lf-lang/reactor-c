@@ -1382,6 +1382,21 @@ void* clock_synchronization_thread(void* noargs) {
     }
     return NULL;
 }
+/**
+ * A function to disconnect all TCP sockets with federates
+ */
+void disconnect_all() {
+    pthread_mutex_lock(&_RTI.rti_mutex);
+    for (int i = 0; i < _RTI.number_of_federates; i++) {
+        if (!_RTI.federates[i].state == NOT_CONNECTED) {
+            _RTI.federates[i].state = NOT_CONNECTED;
+            _RTI.federates[i].next_event = FOREVER_TAG;
+            shutdown(_RTI.federates[i].socket, SHUT_WR);
+        }
+    }
+    pthread_mutex_unlock(&_RTI.rti_mutex);
+}
+
 
 /**
  * A function to handle messages labeled
@@ -1410,33 +1425,37 @@ void* clock_synchronization_thread(void* noargs) {
  * @param my_fed The federate sending a MSG_TYPE_RESIGN message.
  **/
 void handle_federate_resign(federate_t *my_fed) {
-    // Nothing more to do. Close the socket and exit.
-    pthread_mutex_lock(&_RTI.rti_mutex);
-    my_fed->state = NOT_CONNECTED;
-    // FIXME: The following results in spurious error messages.
-    // mark_federate_requesting_stop(my_fed);
-    
-    // Indicate that there will no further events from this federate.
-    my_fed->next_event = FOREVER_TAG;
-    
-    // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
-    // the close should happen when receiving a 0 length message from the other end.
-    // Here, we just signal the other side that no further writes to the socket are
-    // forthcoming, which should result in the other end getting a zero-length reception.
-    shutdown(my_fed->socket, SHUT_WR);
-    // Do not close because this results in an error on the other side rather than
-    // an orderly shutdown.
-    // close(my_fed->socket); //  from unistd.h
-    
-    lf_print("Federate %d has resigned.", my_fed->id);
-    
-    // Check downstream federates to see whether they should now be granted a TAG.
-    // To handle cycles, need to create a boolean array to keep
-    // track of which upstream federates have been visited.
-    bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
-    send_downstream_advance_grants_if_safe(my_fed, visited);
+    // Nothing more to do. Close all socket and exit.
+    lf_print("Federate %d has resigned. Exiting all threads.", my_fed->id);
+    disconnect_all();
 
-    pthread_mutex_unlock(&_RTI.rti_mutex);
+    // // Nothing more to do. Close the socket and exit.
+    // pthread_mutex_lock(&_RTI.rti_mutex);
+    // my_fed->state = NOT_CONNECTED;
+    // // FIXME: The following results in spurious error messages.
+    // // mark_federate_requesting_stop(my_fed);
+    
+    // // Indicate that there will no further events from this federate.
+    // my_fed->next_event = FOREVER_TAG;
+    
+    // // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
+    // // the close should happen when receiving a 0 length message from the other end.
+    // // Here, we just signal the other side that no further writes to the socket are
+    // // forthcoming, which should result in the other end getting a zero-length reception.
+    // shutdown(my_fed->socket, SHUT_WR);
+    // // Do not close because this results in an error on the other side rather than
+    // // an orderly shutdown.
+    // // close(my_fed->socket); //  from unistd.h
+    
+    // lf_print("Federate %d has resigned.", my_fed->id);
+    
+    // // Check downstream federates to see whether they should now be granted a TAG.
+    // // To handle cycles, need to create a boolean array to keep
+    // // track of which upstream federates have been visited.
+    // bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
+    // send_downstream_advance_grants_if_safe(my_fed, visited);
+
+    // pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
 /** 
@@ -1458,11 +1477,15 @@ void* federate_thread_TCP(void* fed) {
         ssize_t bytes_read = read_from_socket(my_fed->socket, 1, buffer);
         if (bytes_read < 1) {
             // Socket is closed
-            lf_print_warning("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->id);
-            my_fed->state = NOT_CONNECTED;
-            my_fed->socket = -1;
-            // FIXME: We need better error handling here, but this is probably not the right thing to do.
-            // mark_federate_requesting_stop(my_fed);
+            lf_print_warning("RTI: Socket to federate %d is closed. Exiting all threads.", my_fed->id);
+            disconnect_all();
+
+            // // Socket is closed
+            // lf_print_warning("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->id);
+            // my_fed->state = NOT_CONNECTED;
+            // my_fed->socket = -1;
+            // // FIXME: We need better error handling here, but this is probably not the right thing to do.
+            // // mark_federate_requesting_stop(my_fed);
             break;
         }
         LF_PRINT_DEBUG("RTI: Received message type %u from federate %d.", buffer[0], my_fed->id);
