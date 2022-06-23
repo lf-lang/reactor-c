@@ -1470,7 +1470,6 @@ void* federate_thread_TCP(void* fed) {
     // This does not constrain the message size because messages
     // are forwarded piece by piece.
     unsigned char buffer[FED_COM_BUFFER_SIZE];
-
     // Listen for messages from the federate.
     while (my_fed->state != NOT_CONNECTED) {
         // Read no more than one byte to get the message type.
@@ -1591,7 +1590,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
     } else {
         // Received federate ID.
         fed_id = extract_uint16(buffer + 1);
-        LF_PRINT_DEBUG("RTI received federate ID: %d.", fed_id);
+        LF_PRINT_DEBUG("RTI received federate ID: %d.", fed_id);        
 
         // Read the federation ID.  First read the length, which is one byte.
         size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 1];
@@ -1606,7 +1605,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
         federation_id_received[federation_id_length] = 0;
 
         LF_PRINT_DEBUG("RTI received federation ID: %s.", federation_id_received);
-
+      
         // Compare the received federation ID to mine.
         if (strncmp(_RTI.federation_id, federation_id_received, federation_id_length) != 0) {
             // Federation IDs do not match. Send back a MSG_TYPE_REJECT message.
@@ -1630,7 +1629,6 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
             }
         }
     }
-
     // The MSG_TYPE_FED_IDS message has the right federation ID.
     // Assign the address information for federate.
     // The IP address is stored here as an in_addr struct (in .server_ip_addr) that can be useful
@@ -1765,7 +1763,6 @@ int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id) {
     } else {
         if (_RTI.clock_sync_global_status >= clock_sync_init) {// If no initial clock sync, no need perform initial clock sync.
             uint16_t federate_UDP_port_number = extract_uint16(&(response[1]));
-
             // A port number of UINT16_MAX means initial clock sync should not be performed.
             if (federate_UDP_port_number != UINT16_MAX) {
                 // Perform the initialization clock synchronization with the federate.
@@ -1773,7 +1770,6 @@ int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id) {
                 for (int i=0; i < _RTI.clock_sync_exchanges_per_interval; i++) {
                     // Send the RTI's current physical time T1 to the federate.
                     send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, &_RTI.federates[fed_id], TCP);
-
                     // Listen for reply message, which should be T3.
                     size_t message_size = 1 + sizeof(int32_t);
                     unsigned char buffer[message_size];
@@ -1884,7 +1880,7 @@ void connect_to_federates(int socket_descriptor) {
  * federations who are attempting to join the wrong federation.
  * @param nothing Nothing needed here.
  */
-void* respond_to_erroneous_connections(void* nothing) {
+void* respond_to_new_connections(void* nothing) {
     while (true) {
         // Wait for an incoming connection request.
         struct sockaddr client_fd;
@@ -1898,13 +1894,29 @@ void* respond_to_erroneous_connections(void* nothing) {
             return NULL;
         }
 
-        lf_print_error("RTI received an unexpected connection request. Federation is running.");
-        unsigned char response[2];
-        response[0] = MSG_TYPE_REJECT;
-        response[1] = FEDERATION_ID_DOES_NOT_MATCH;
-        // Ignore errors on this response.
-        write_to_socket_errexit(socket_id, 2, response,
-                 "RTI failed to write FEDERATION_ID_DOES_NOT_MATCH to erroneous incoming connection.");
+        if (_RTI.num_feds_proposed_start == _RTI.number_of_federates) {
+            lf_print_error("RTI received an unexpected connection request. Federation is running.");
+            unsigned char response[2];
+            response[0] = MSG_TYPE_REJECT;
+            response[1] = FEDERATION_ID_DOES_NOT_MATCH;
+            // Ignore errors on this response.
+            write_to_socket_errexit(socket_id, 2, response,
+                    "RTI failed to write FEDERATION_ID_DOES_NOT_MATCH to erroneous incoming connection.");    
+        } else {
+            int32_t fed_id = receive_and_check_fed_id_message(socket_id, (struct sockaddr_in*)&client_fd);
+            if (fed_id >= 0
+                    && receive_connection_information(socket_id, (uint16_t)fed_id)
+                    && receive_udp_message_and_set_up_clock_sync(socket_id, (uint16_t)fed_id)) {
+
+                // Create a thread to communicate with the federate.
+                // This has to be done after clock synchronization is finished
+                // or that thread may end up attempting to handle incoming clock
+                // synchronization messages.
+                pthread_create(&(_RTI.federates[fed_id].thread_id), NULL, federate_thread_TCP, &(_RTI.federates[fed_id]));
+                continue;
+            }
+        }
+
         // Close the socket.
         close(socket_id);
     }
@@ -1978,15 +1990,17 @@ void wait_for_federates(int socket_descriptor) {
     // In case some other federation's federates are trying to join the wrong
     // federation, need to respond. Start a separate thread to do that.
     pthread_t responder_thread;
-    pthread_create(&responder_thread, NULL, respond_to_erroneous_connections, NULL);
+    pthread_create(&responder_thread, NULL, respond_to_new_connections, NULL);
 
     // Wait for federate threads to exit.
     void* thread_exit_status;
     for (int i = 0; i < _RTI.number_of_federates; i++) {
-        lf_print("RTI: Waiting for thread handling federate %d.", _RTI.federates[i].id);
-        pthread_join(_RTI.federates[i].thread_id, &thread_exit_status);
-        free_in_transit_message_q(_RTI.federates[i].in_transit_message_tags);
-        lf_print("RTI: Federate %d thread exited.", _RTI.federates[i].id);
+        if (!_RTI.federates[i].state == NOT_CONNECTED){
+            lf_print("RTI: Waiting for thread handling federate %d.", _RTI.federates[i].id);
+            pthread_join(_RTI.federates[i].thread_id, &thread_exit_status);
+            free_in_transit_message_q(_RTI.federates[i].in_transit_message_tags);
+            lf_print("RTI: Federate %d thread exited.", _RTI.federates[i].id);
+        }
     }
 
     _RTI.all_federates_exited = true;
