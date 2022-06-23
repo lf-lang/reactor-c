@@ -75,6 +75,7 @@ RTI_instance_t _RTI = {
     .max_stop_tag = NEVER_TAG,
     .max_start_time = 0LL,
     .number_of_federates = 0,
+    .num_feds_min = 0,
     .num_feds_proposed_start = 0,
     .num_feds_handling_stop = 0,
     .all_federates_exited = false,
@@ -1161,13 +1162,13 @@ void handle_timestamp(federate_t *my_fed) {
     if (timestamp > _RTI.max_start_time) {
         _RTI.max_start_time = timestamp;
     }
-    if (_RTI.num_feds_proposed_start == _RTI.number_of_federates) {
-        // All federates have proposed a start time.
+    if (_RTI.num_feds_proposed_start == _RTI.num_feds_min) {
+        // Minimum federates have proposed a start time.
         pthread_cond_broadcast(&_RTI.received_start_times);
     } else {
         // Some federates have not yet proposed a start time.
         // wait for a notification.
-        while (_RTI.num_feds_proposed_start < _RTI.number_of_federates) {
+        while (_RTI.num_feds_proposed_start < _RTI.num_feds_min) {
             // FIXME: Should have a timeout here?
             pthread_cond_wait(&_RTI.received_start_times, &_RTI.rti_mutex);
         }
@@ -1798,7 +1799,7 @@ int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id) {
  * @param socket_descriptor The socket on which to accept connections.
  */
 void connect_to_federates(int socket_descriptor) {
-    for (int i = 0; i < _RTI.number_of_federates; i++) {
+    for (int i = 0; i < _RTI.num_feds_min; i++) {
         // Wait for an incoming connection request.
         struct sockaddr client_fd;
         uint32_t client_length = sizeof(client_fd);
@@ -1835,8 +1836,8 @@ void connect_to_federates(int socket_descriptor) {
             i--;
         }
     }
-    // All federates have connected.
-    LF_PRINT_DEBUG("All federates have connected to RTI.");
+    // Minimum federates have connected.
+    LF_PRINT_DEBUG("Minimum federates for execution have connected to RTI.");
 
     if (_RTI.clock_sync_global_status >= clock_sync_on) {
         // Create the thread that performs periodic PTP clock synchronization sessions
@@ -1946,8 +1947,8 @@ void wait_for_federates(int socket_descriptor) {
     // Wait for connections from federates and create a thread for each.
     connect_to_federates(socket_descriptor);
 
-    // All federates have connected.
-    lf_print("RTI: All expected federates have connected. Starting execution.");
+    // Minimum federates have connected.
+    lf_print("RTI: Minimum federates have connected. Starting execution.");
 
     // The socket server will not continue to accept connections after all the federates
     // have joined.
@@ -2036,6 +2037,8 @@ void usage(int argc, char* argv[]) {
     printf("  -p, --port <n>\n");
     printf("   The port number to use for the RTI. Must be larger than 0 and smaller than %d. Default is %d.\n\n", UINT16_MAX, STARTING_PORT);
     printf("  -c, --clock_sync [off|init|on] [period <n>] [exchanges-per-interval <n>]\n");
+    printf("  --min_fed <n>\n");
+    printf("   Minimum number of federates required for execution.\n\n");
     printf("   The status of clock synchronization for this federate.\n");
     printf("       - off: Clock synchronization is off.\n");
     printf("       - init (default): Clock synchronization is done only during startup.\n");
@@ -2185,6 +2188,21 @@ int process_args(int argc, char* argv[]) {
            }
            i++;
            i += process_clock_sync_args((argc-i), &argv[i]);
+        } else if (strcmp(argv[i], "--min_fed") == 0) {
+            if (argc < i + 2) {
+                fprintf(stderr, "Error: --min_fed needs an integer argument.\n");
+                usage(argc, argv);
+                return 0;
+            }
+            i++;
+            long num_min_federates = strtol(argv[i], NULL, 10);
+            if (num_min_federates == 0L || num_min_federates == LONG_MAX ||  num_min_federates == LONG_MIN) {
+                fprintf(stderr, "Error: --min_fed needs a valid positive integer argument.\n");
+                usage(argc, argv);
+                return 0;
+            }
+            _RTI.num_feds_min = (int32_t)num_min_federates; // FIXME: Loses numbers on 64-bit machines
+            printf("RTI: Minimum number of federates for execution: %d\n", _RTI.num_feds_min);                       
         } else if (strcmp(argv[i], " ") == 0) {
             // Tolerate spaces
             continue;

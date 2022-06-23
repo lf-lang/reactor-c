@@ -135,6 +135,9 @@ typedef struct RTI_instance_t {
     // Maximum start time seen so far from the federates.
     int64_t max_start_time;
 
+    // Minimum number of federates required for execution.
+    int num_feds_min;
+
     // Number of federates that have proposed start times.
     int num_feds_proposed_start;
 
