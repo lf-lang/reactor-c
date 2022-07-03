@@ -45,7 +45,8 @@ instant_t ns_to_microsec(instant_t time){
 int lf_nanosleep(instant_t requested_time) {
     unsigned int microsec = (unsigned int) requested_time;
     if(microsec < 3){
-        delayMicroseconds(3); //Warning: Needs to be >= 3 for precision reasons
+        Serial.print("Cannot set delay under 3 microseconds due to precision problems");
+        return -1;
     }
     else if(microsec <= 16383){
         delayMicroseconds(microsec);
