@@ -32,19 +32,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_arduino_support.h"
 #include "../platform.h"
 
-#include "lf_arduino_platforms.h"
-
-#ifdef BOARD 
-#include "Arduino.h"
-#endif 
-
 instant_t ns_to_microsec(instant_t time){
     return (time / 1000) - ((time / 1000) % 4);
 }
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * Pause execution for a number of nanoseconds.
@@ -89,7 +79,3 @@ int lf_clock_gettime(instant_t* t) {
     *t = micros();
     return 0;
 }
-
-#ifdef __cplusplus
-}
-#endif
