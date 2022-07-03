@@ -511,7 +511,7 @@ struct reaction_t {
     void* self;    // Pointer to a struct with the reactor's state. INSTANCE.
     int number;    // The number of the reaction in the reactor (0 is the first reaction).
     index_t index; // Inverse priority determined by dependency analysis. INSTANCE.
-    #if defined(32_BIT_MODE)
+    #ifdef BIT_32
     unsigned long chain_id; // Binary encoding of the branches that this reaction has upstream in the dependency graph. INSTANCE.
     #else
     unsigned long long chain_id; // Binary encoding of the branches that this reaction has upstream in the dependency graph. INSTANCE.

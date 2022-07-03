@@ -274,7 +274,11 @@ int next(void) {
     // If there is no next event and -keepalive has been specified
     // on the command line, then we will wait the maximum time possible.
     // FIXME: is LLONG_MAX different from FOREVER?
+    #ifdef BIT_32
+    tag_t next_tag = { .time = LONG_MAX, .microstep = UINT_MAX};
+    #else 
     tag_t next_tag = { .time = LLONG_MAX, .microstep = UINT_MAX};
+    #endif
     if (event == NULL) {
         // No event in the queue.
         if (!keepalive_specified) { // FIXME: validator should issue a warning for unthreaded implementation
