@@ -32,7 +32,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_arduino_support.h"
 #include "../platform.h"
 
-instant_t ns_to_microsec(instant_t time){
+instant_t ns_to_microsec(instant_t time) {
     return (time / 1000) - ((time / 1000) % 4);
 }
 
@@ -44,13 +44,14 @@ instant_t ns_to_microsec(instant_t time){
  */
 int lf_nanosleep(instant_t requested_time) {
     unsigned int microsec = (unsigned int) requested_time;
-    if(microsec < 3){
+    if(microsec < 3) {
         Serial.print("Cannot set delay under 3 microseconds due to precision problems");
         return -1;
     }
-    else if(microsec <= 16383){
+    else if(microsec <= 16383) {
         delayMicroseconds(microsec);
-    }else{
+    }
+    else {
         delay(microsec / 1000);
     }
     return 0;

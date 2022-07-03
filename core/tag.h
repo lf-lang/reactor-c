@@ -82,20 +82,20 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef BIT_32
 #define NEVER LONG_MIN
 #define FOREVER LONG_MAX
-#define NEVER_TAG (tag_t){ .time = LONG_MIN, .microstep = 0u }
+#define NEVER_TAG (tag_t) { .time = LONG_MIN, .microstep = 0u }
 // Need a separate initializer expression to comply with some C compilers
 #define NEVER_TAG_INITIALIZER { LONG_MIN,  0u }
-#define FOREVER_TAG (tag_t){ .time = LONG_MAX, .microstep = UINT_MAX }
+#define FOREVER_TAG (tag_t) { .time = LONG_MAX, .microstep = UINT_MAX }
 // Need a separate initializer expression to comply with some C compilers
 #define FOREVER_TAG_INITIALIZER { LONG_MAX,  UINT_MAX }
 
 #else
 #define NEVER LLONG_MIN
 #define FOREVER LLONG_MAX
-#define NEVER_TAG (tag_t){ .time = LLONG_MIN, .microstep = 0u }
+#define NEVER_TAG (tag_t) { .time = LLONG_MIN, .microstep = 0u }
 // Need a separate initializer expression to comply with some C compilers
 #define NEVER_TAG_INITIALIZER { LLONG_MIN,  0u }
-#define FOREVER_TAG (tag_t){ .time = LLONG_MAX, .microstep = UINT_MAX }
+#define FOREVER_TAG (tag_t) { .time = LLONG_MAX, .microstep = UINT_MAX }
 // Need a separate initializer expression to comply with some C compilers
 #define FOREVER_TAG_INITIALIZER { LLONG_MAX,  UINT_MAX }
 #endif
