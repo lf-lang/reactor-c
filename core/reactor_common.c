@@ -1556,6 +1556,28 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
 }
 
 /**
+ * Given an array of pointers to port structs, return the index of the
+ * first channel with index greater than or equal to the start argument
+ * that is present. Return -1 if either none is present or the port
+ * is not a multiport.
+ * @param port An array of pointers to port structs, which will be cast to
+ *  pointers to bool on the assumption that the first field of the struct
+ *  is the is_present bool.
+ * @param start The index of the channel at which to start checking for
+ *  presence.
+ * @param width The width of the multiport (or a negative number if not
+ *  a multiport).
+ */
+int _lf_input_iterator_impl(bool** port, size_t start, int width) {
+	if (width < 0 || start >= width) return -1;
+	while(start < width) {
+		if (*port[start]) return start;
+		start++;
+	}
+	return -1;
+}
+
+/**
  * For the specified reaction, if it has produced outputs, insert the
  * resulting triggered reactions into the reaction queue.
  * This procedure assumes the mutex lock is NOT held and grabs

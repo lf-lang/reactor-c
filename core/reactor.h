@@ -922,6 +922,35 @@ void _lf_fd_send_stop_request_to_rti(void);
  */
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
 
+/**
+ * Given an array of pointers to port structs, return the index of the
+ * first channel with index greater than or equal to the start argument
+ * that is present. Return -1 if either none is present or the port
+ * is not a multiport.
+ * @param port An array of pointers to port structs, which will be cast to
+ *  pointers to bool on the assumption that the first field of the struct
+ *  is the is_present bool.
+ * @param start The index of the channel at which to start checking for
+ *  presence.
+ * @param width The width of the multiport (or a negative number if not
+ *  a multiport).
+ */
+int _lf_input_iterator_impl(bool** port, size_t start, int width);
+
+/**
+ * Macro for iterating over an input multiport.
+ * The first argument is the port name and the second is the index
+ * of the channel at which to start checking for present inputs.
+ * This returns the first index of a channel greater than or equal
+ * to the start at which an input is present.
+ * If there is no such channel or the input is not a multiport,
+ * then this return -1.
+ */
+#define lf_input_iterator(in, start) (_lf_input_iterator_impl( \
+               (bool**)&self->_lf_ ## in, \
+               start, \
+               self->_lf_ ## in ## _width))
+
 //  ******** Global Variables ********  //
 
 /**
