@@ -922,6 +922,32 @@ void _lf_fd_send_stop_request_to_rti(void);
  */
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
 
+////////////////////////////////////////////////////////////
+//// Macros and functions optimized for sparse I/O through multiports.
+
+/**
+ * Set the specified channel of the specified multiport
+ * to the specified value.  This is just like
+ *
+ *    lf_set(out[channel], val);
+ *
+ * except that by making the channel explicit, this can be optimized
+ * to work well with lf_input_iterator(). In particular, reading an
+ * input multiport will no longer iterating over all the channels to
+ * determine which are present if few enough of them are present.
+ *
+ * It is an error to use this for a port that is not a multiport.
+ *
+ * @param out The output port (by name) or input of a contained
+ *  reactor in form input_name.port_name.
+ * @param channel The channel to write to.
+ * @param value The value to send.
+ */
+#define lf_set_channel(out, channel, value) \
+	do { \
+		_LF_SET(out[channel], value); \
+	} while (0)
+
 /**
  * Given an array of pointers to port structs, return the index of the
  * first channel with index greater than or equal to the start argument
@@ -947,7 +973,7 @@ int _lf_input_iterator_impl(bool** port, size_t start, int width);
  * then this return -1.
  */
 #define lf_input_iterator(in, start) (_lf_input_iterator_impl( \
-               (bool**)&self->_lf_ ## in, \
+               (bool**)self->_lf_ ## in, \
                start, \
                self->_lf_ ## in ## _width))
 

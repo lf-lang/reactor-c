@@ -1569,9 +1569,8 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
  *  a multiport).
  */
 int _lf_input_iterator_impl(bool** port, size_t start, int width) {
-	if (width < 0 || start >= width) return -1;
 	while(start < width) {
-		if (*port[start]) return start;
+		if (*(port[start])) return start;
 		start++;
 	}
 	return -1;
