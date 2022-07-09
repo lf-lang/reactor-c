@@ -58,6 +58,12 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+/** Threshold for width of multiport s.t. sparse reading is supported. */
+#define LF_SPARSE_WIDTH_THRESHOLD 10
+
+/** Number of inputs that can be accepted before the input is no longer sparse. */
+#define LF_SPARSE_WIDTH_CAPACITY 2
+
 typedef struct lf_sparse_io_record_t lf_sparse_io_record_t;
 
 /**
