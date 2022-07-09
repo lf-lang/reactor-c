@@ -2,11 +2,8 @@ name: Continuous Benchmarking
 
 
 on:
-  pull_request: 
-    types:
-      - opened
-  push:
-    branches: [continuous-benchmarking]
+  pull_request:
+  workflow_dispatch:
   
     
 permissions:
