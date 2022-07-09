@@ -224,7 +224,6 @@ bool init_sched_instance(
     }
     lf_mutex_unlock(&mutex);
 
-    // Shaokai: Why are these things in the critical section?
     if (params == NULL || params->num_reactions_per_level_size == 0) {
         (*instance)->max_reaction_level = DEFAULT_MAX_REACTION_LEVEL;
     }

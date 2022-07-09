@@ -62,7 +62,8 @@ _lf_sched_instance_t* _lf_sched_instance;
 /**
  * @brief If there is work to be done, notify workers individually.
  *
- * This assumes that the caller is not holding any thread mutexes.
+ * This currently assumes that the caller IS holding any thread mutexes.
+ * FIXME: Does the caller need to hold the mutex here?
  */
 void _lf_sched_notify_workers() {    
     // Calculate the number of workers that we need to wake up, which is the
@@ -78,12 +79,9 @@ void _lf_sched_notify_workers() {
     if (workers_to_awaken > 1) {
         // Notify all the workers except the worker thread that has called this
         // function.
-        // lf_mutex_lock(&_lf_sched_instance->_lf_sched_semaphore->mutex);
-        // lf_cond_broadcast(&_lf_sched_instance->_lf_sched_semaphore->cond);
-        // lf_mutex_unlock(&_lf_sched_instance->_lf_sched_semaphore->mutex);
+        // FIXME: Use lf_semaphore_release here.
         lf_cond_broadcast(&_lf_sched_instance->_lf_sched_array_of_conds[0]);
-    }
-    
+    }   
 }
 
 /**
@@ -111,9 +109,16 @@ void _lf_sched_wait_for_work(size_t worker_number) {
         "Scheduler: Worker %d is trying to acquire the scheduling "
         "semaphore.",
         worker_number);
+
+    // FIXME: There might be a better place to lock the mutex.
     lf_mutex_lock(&mutex);
+    
     if (++_lf_sched_instance->_lf_sched_number_of_idle_workers ==
         _lf_sched_instance->_lf_sched_number_of_workers) {
+        
+        // FIXME: Check if we can lock the mutex here.
+        // If not, find out why this could create deadlocks.
+        
         // Last thread to go idle
         LF_PRINT_DEBUG("Scheduler: Worker %d is the last idle thread.",
                     worker_number);
@@ -126,6 +131,8 @@ void _lf_sched_wait_for_work(size_t worker_number) {
             _lf_sched_signal_stop();
         }
 
+        // FIXME: Check if we can unlock the mutex here.
+
         // Reset all the PCs to 0.
         for (int w = 0; w < _lf_sched_instance->_lf_sched_number_of_workers; w++) {
             _lf_sched_instance->pc[w] = 0;
@@ -134,22 +141,21 @@ void _lf_sched_wait_for_work(size_t worker_number) {
         for (int i = 0; i < num_semaphores; i++) {
             _lf_sched_instance->semaphores[i]->count = 0 ;
         }
-
-        
+        // Wake up all the idle workers to do work at the new time tag.
         _lf_sched_notify_workers();
+
     } else {
         // Not the last thread to become idle. Wait for work to be released.
         // Wait for the last thread to signal the condition variable.
-        // lf_mutex_lock(&_lf_sched_instance->_lf_sched_semaphore->mutex);
-        // lf_cond_wait(&_lf_sched_instance->_lf_sched_semaphore->cond, &_lf_sched_instance->_lf_sched_semaphore->mutex);
-        // lf_mutex_unlock(&_lf_sched_instance->_lf_sched_semaphore->mutex);
+        // FIXME: Should the index of _lf_sched_array_of_conds be the worker number?
         lf_cond_wait(&_lf_sched_instance->_lf_sched_array_of_conds[0], &mutex);
         
         LF_PRINT_DEBUG("Scheduler: Worker %d acquired the scheduling semaphore.",
                     worker_number);
     }
+
+    // FIXME: There might be a better place to unlock the mutex.
     lf_mutex_unlock(&mutex);
-   // _lf_sched_notify_workers();
 }
 
 ///////////////////// Scheduler Init and Destroy API /////////////////////////
@@ -190,10 +196,13 @@ void lf_sched_init(
     _lf_sched_instance->schedule_lengths = &schedule_lengths[0];
     _lf_sched_instance->pc = calloc(number_of_workers, sizeof(size_t));
     _lf_sched_instance->reaction_instances = params->reaction_instances;
+    
+    // FIXME: This is not in the original design. Investigate.
     // _lf_sched_instance->_lf_sched_array_of_mutexes = (mutex_t*) calloc(1, sizeof(mutex_t));
     // lf_mutex_init(&_lf_sched_instance->_lf_sched_array_of_mutexes[0]);
     _lf_sched_instance->_lf_sched_array_of_conds = (lf_cond_t*) calloc(1, sizeof(lf_cond_t));
     lf_cond_init(&_lf_sched_instance->_lf_sched_array_of_conds[0]);
+    
     // Populate semaphores.
     _lf_sched_instance->semaphores = calloc(num_semaphores, sizeof(semaphore_t));
     for (int i = 0; i < num_semaphores; i++) {
@@ -214,6 +223,8 @@ void lf_sched_free() {
     }
     free(_lf_sched_instance->semaphores);
     free(_lf_sched_instance->reaction_instances);
+
+    // FIXME: Do we need _lf_sched_array_of_conds?
     // free(_lf_sched_instance->_lf_sched_array_of_mutexes);
     free(_lf_sched_instance->_lf_sched_array_of_conds);
 }
