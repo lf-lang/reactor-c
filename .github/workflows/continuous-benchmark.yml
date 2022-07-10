@@ -4,36 +4,29 @@ name: Continuous Benchmarking
 on:
   pull_request:
   workflow_dispatch:
-  
-    
+
+
 permissions:
   contents: write
   deployments: write
 
 
-
-jobs: 
+jobs:
   benchmark:
     name: Run C Benchmarks
     runs-on: ubuntu-latest #FIXME: change to self-hosted after russel is set up.
 
     steps:
-      - name: Setup Java JDK
-        uses: actions/setup-java@v1.4.3
-        with:
-          java-version: 14
- 
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
 
-
       - name: Checkout benchmark repository
         uses: actions/checkout@v2
         with:
           repository: lf-lang/benchmarks-lingua-franca
-          ref: continuous-benchmark # FIXME: delete this line after merge
+          ref: cb # FIXME: delete this line after merge
 
       - name: Checkout Lingua Franca repository
         uses: actions/checkout@v2
@@ -41,13 +34,16 @@ jobs:
           repository: lf-lang/lingua-franca
           path: lf
 
+      - name: Prepare LF build environment
+        uses: ./lf/.github/actions/prepare-build-env
+
       - name: Checkout current version of reactor-c
         uses: actions/checkout@v2
         with:
           path: lf/org.lflang/src/lib/c/reactor-c
 
       - name: Install Python dependencies
-        run: pip3 install -r runner/requirements.txt  
+        run: pip3 install -r runner/requirements.txt
 
       - name: Build lfc
         run: |
@@ -58,18 +54,21 @@ jobs:
         run: |
           echo "LF_PATH=$GITHUB_WORKSPACE/lf" >> $GITHUB_ENV
           echo "LF_BENCHMARKS_PATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
-  
+
       - name: Run C Benchmarks
         run: |
-          python3 runner/run_benchmark.py -m continue_on_error=True iterations=12 benchmark="glob(*)" target=lf-c json=True
-      
+          python3 runner/run_benchmark.py -m continue_on_error=True iterations=12 benchmark="glob(*)" target=lf-c
+
+      - name: Collect results
+        run: python3 runner/collect_results.py latest continuous_benchmarking_results.json
+
       # Use continuous benchmark action to store result
       - name: Store Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1
         with:
           name: Lingua Franca C target Benchmark
           tool: customSmallerIsBetter
-          output-file-path: multirun/benchmark_result.json
+          output-file-path: continuous_benchmarking_results.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
 
@@ -77,4 +76,3 @@ jobs:
           alert-threshold: '200%' # FIXME: After russel is set up, lower the threshold and set alert/comment to true
           comment-on-alert: false
           fail-on-alert: false
-          
