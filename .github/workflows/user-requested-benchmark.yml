@@ -1,0 +1,53 @@
+name: User-requested benchmarks
+on:
+  issue_comment:
+    types: [created]
+  push:  # TODO: Remove this when this is in the default branch.
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        required: true
+        type: number
+jobs:
+  run_benchmarks:
+    runs-on: ubuntu-latest
+    name: Post benchmark results in a PR.
+    steps:
+      - name: Checkout benchmark repository
+        uses: actions/checkout@v2
+        with:
+          repository: lf-lang/benchmarks-lingua-franca
+          ref: cb # FIXME: delete this line after merge
+
+      - name: Set up workspace
+        uses: lf-lang/reactor-c/.github/actions/set-up-workspace@continuous-benchmarking
+
+      - name: Run C Benchmarks
+        # run: |
+        #   ./runner/run_benchmark.py -m continue_on_error=True iterations=12 \
+        #     benchmark="glob(*)" target=lf-c size=fast \
+        #     target.params.scheduler=GEDF_NP,NP,adaptive threads=1,3,6,12,24
+        run: |  # DEBUG
+          ./runner/run_benchmark.py -m continue_on_error=True iterations=12 \
+            benchmark="savina_parallelism_recmatmul" target=lf-c size=fast \
+            target.params.scheduler=NP,adaptive threads=1,3,0
+        shell: bash
+
+      - name: Collect benchmark results
+        run: |
+          ./runner/collect_results.py latest latest-benchmark-results.csv
+        shell: bash
+
+      - name: Make figure
+        run: |
+          ./runner/make-graphics.py latest-benchmark-results.csv latest-benchmark-results.png --uri
+        shell: bash
+        id: figure
+
+      - name: Comment PR
+        uses: thollander/actions-comment-pull-request@v1
+        with:
+          message: |
+            ![Visualization of the benchmark results.](${{ steps.figure.outputs.DATA_URI }})
+          pr_number: 51 # ${{ inputs.pr_number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

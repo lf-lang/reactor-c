@@ -2,6 +2,8 @@ name: Continuous Benchmarking
 
 
 on:
+  push:
+    branches: [continuous-benchmarking] #FIXME: delete this line before merge
   pull_request:
   workflow_dispatch:
 
@@ -17,48 +19,20 @@ jobs:
     runs-on: ubuntu-latest #FIXME: change to self-hosted after russel is set up.
 
     steps:
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 3.8
-
       - name: Checkout benchmark repository
         uses: actions/checkout@v2
         with:
           repository: lf-lang/benchmarks-lingua-franca
           ref: cb # FIXME: delete this line after `cb` is merged.
 
-      - name: Checkout Lingua Franca repository
-        uses: actions/checkout@v2
-        with:
-          repository: lf-lang/lingua-franca
-          path: lf
-
-      - name: Prepare LF build environment
-        uses: ./lf/.github/actions/prepare-build-env
-
-      - name: Checkout current version of reactor-c
-        uses: actions/checkout@v2
-        with:
-          path: lf/org.lflang/src/lib/c/reactor-c
-
-      - name: Install Python dependencies
-        run: pip3 install -r runner/requirements.txt
-
-      - name: Build lfc
-        run: |
-          cd lf
-          ./gradlew buildLfc
-
-      - name: Set LF_PATH and LF_BENCHMARKS_PATH environmental variable
-        run: |
-          echo "LF_PATH=$GITHUB_WORKSPACE/lf" >> $GITHUB_ENV
-          echo "LF_BENCHMARKS_PATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+      - name: Set up workspace
+        uses: ./.github/actions/set-up-workspace
 
       - name: Run C Benchmarks (multithreaded)
         run: |
-          python3 runner/run_benchmark.py -m continue_on_error=True iterations=12 problem_size=small \
-            benchmark="glob(*)" target=lf-c target.params.scheduler=GEDF_NP,NP,adaptive threads=0
+          python3 runner/run_benchmark.py -m continue_on_error=True iterations=12 \
+            benchmark="glob(*)" target=lf-c problem_size=small \
+            target.params.scheduler=GEDF_NP,NP,adaptive threads=0
 
       - name: Collect results
         run: python3 runner/collect_results.py continuous-benchmarking-results-multi-threaded.json

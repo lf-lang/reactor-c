@@ -1,0 +1,40 @@
+
+name: Set up workspace
+description: Check out repositories, download software, install LFC, etc.
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Checkout Lingua Franca repository
+      uses: actions/checkout@v2
+      with:
+        repository: lf-lang/lingua-franca
+        path: lf
+
+    - name: Prepare LF build environment
+      uses: ./lf/.github/actions/prepare-build-env
+
+    - name: Checkout current version of reactor-c
+      uses: actions/checkout@v2
+      with:
+        path: lf/org.lflang/src/lib/c/reactor-c
+
+    - name: Install Python dependencies
+      run: pip3 install -r runner/requirements.txt
+      shell: bash
+
+    - name: Build lfc
+      run: |
+        cd lf
+        ./gradlew buildLfc
+      shell: bash
+
+    - name: Set LF_PATH and LF_BENCHMARKS_PATH environmental variable
+      run: |
+        echo "LF_PATH=$GITHUB_WORKSPACE/lf" >> $GITHUB_ENV
+        echo "LF_BENCHMARKS_PATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+      shell: bash
