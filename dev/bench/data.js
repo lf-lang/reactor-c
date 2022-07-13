@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1657747866274,
+  "lastUpdate": 1657748869494,
   "repoUrl": "https://github.com/lf-lang/reactor-c",
   "entries": {
     "Lingua Franca C target Benchmark": [
@@ -762,6 +762,158 @@ window.BENCHMARK_DATA = {
           {
             "name": "Sleeping Barber ()",
             "value": 32.92725000000001,
+            "unit": "ms",
+            "extra": "Target: Sleeping Barber\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "lf-lang",
+            "username": "lf-lang"
+          },
+          "committer": {
+            "name": "lf-lang",
+            "username": "lf-lang"
+          },
+          "id": "3ac8ecf1711f8610615a70400f52f4ac8c8b01bc",
+          "message": "Continuous benchmarking",
+          "timestamp": "2022-06-08T21:36:19Z",
+          "url": "https://github.com/lf-lang/reactor-c/pull/51/commits/3ac8ecf1711f8610615a70400f52f4ac8c8b01bc"
+        },
+        "date": 1657748868300,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Logistic Map Series ()",
+            "value": 38.45025,
+            "unit": "ms",
+            "extra": "Target: Logistic Map Series\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "A-Star Search ()",
+            "value": 30.441461538461542,
+            "unit": "ms",
+            "extra": "Target: A-Star Search\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Filter Bank ()",
+            "value": 3715.5047500000005,
+            "unit": "ms",
+            "extra": "Target: Filter Bank\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "NQueens first N solutions ()",
+            "value": 526.1371666666666,
+            "unit": "ms",
+            "extra": "Target: NQueens first N solutions\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Concurrent Dictionary ()",
+            "value": 61.833666666666666,
+            "unit": "ms",
+            "extra": "Target: Concurrent Dictionary\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Radix Sort ()",
+            "value": 317.05025,
+            "unit": "ms",
+            "extra": "Target: Radix Sort\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Big ()",
+            "value": 5127.323666666666,
+            "unit": "ms",
+            "extra": "Target: Big\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Producer Consumer (bounded) ()",
+            "value": 2150.804,
+            "unit": "ms",
+            "extra": "Target: Producer Consumer (bounded)\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Concurrent Sorted Linked List ()",
+            "value": 8303.449999999999,
+            "unit": "ms",
+            "extra": "Target: Concurrent Sorted Linked List\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Fork Join (throughput) ()",
+            "value": 19.382416666666668,
+            "unit": "ms",
+            "extra": "Target: Fork Join (throughput)\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Counting Actor ()",
+            "value": 99.69466666666666,
+            "unit": "ms",
+            "extra": "Target: Counting Actor\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Precise Pi Computation ()",
+            "value": 173.30575,
+            "unit": "ms",
+            "extra": "Target: Precise Pi Computation\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Chameneos ()",
+            "value": 90.89316666666666,
+            "unit": "ms",
+            "extra": "Target: Chameneos\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Philosophers ()",
+            "value": 34.11716666666666,
+            "unit": "ms",
+            "extra": "Target: Philosophers\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Trapezoidal Approximation ()",
+            "value": 1093.63475,
+            "unit": "ms",
+            "extra": "Target: Trapezoidal Approximation\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Bank Transaction ()",
+            "value": 601.8730833333334,
+            "unit": "ms",
+            "extra": "Target: Bank Transaction\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Ping Pong ()",
+            "value": 122.88975,
+            "unit": "ms",
+            "extra": "Target: Ping Pong\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "All-Pairs Shortest Path ()",
+            "value": 828.1707499999999,
+            "unit": "ms",
+            "extra": "Target: All-Pairs Shortest Path\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Recursive Matrix Multiplication ()",
+            "value": 1387.6864166666667,
+            "unit": "ms",
+            "extra": "Target: Recursive Matrix Multiplication\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Cigarette Smokers ()",
+            "value": 0.8346666666666667,
+            "unit": "ms",
+            "extra": "Target: Cigarette Smokers\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Thread Ring ()",
+            "value": 31.75733333333333,
+            "unit": "ms",
+            "extra": "Target: Thread Ring\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
+          },
+          {
+            "name": "Sleeping Barber ()",
+            "value": 32.65008333333333,
             "unit": "ms",
             "extra": "Target: Sleeping Barber\nTotal Iterations: 12\nThreads: 2\nScheduler: NP"
           }
