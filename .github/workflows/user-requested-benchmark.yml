@@ -38,16 +38,43 @@ jobs:
           ./runner/collect_results.py latest latest-benchmark-results.csv
         shell: bash
 
+      - name: Checkout repository for saving graphics
+        uses: actions/checkout@v2
+        with:
+          repository: lf-lang/benchmarks-lingua-franca
+          ref: graphics
+          path: graphics-repo
+          fetch-depth: 0  # History is required for push
+
       - name: Make figure
         run: |
-          ./runner/make-graphics.py latest-benchmark-results.csv latest-benchmark-results.png --uri
+          OUTPUT_DIR=runner/images/$(date -I)
+          SHA=${{ github.sha }}
+          OUTPUT_FILE=$OUTPUT_DIR/${SHA:0:7}.png
+          mkdir -p graphics-repo/$OUTPUT_DIR
+          ./runner/make-graphics.py latest-benchmark-results.csv graphics-repo/$OUTPUT_FILE
+          echo "::set-output name=output_file::$OUTPUT_FILE"
         shell: bash
         id: figure
+
+      - name: Commit figure
+        run: |
+          cd graphics-repo
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git add ${{ steps.figure.outputs.OUTPUT_FILE }}
+          git commit -m "benchmark ${{ github.sha }}"
+
+      - name: Push figure
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: graphics
 
       - name: Comment PR
         uses: thollander/actions-comment-pull-request@v1
         with:
           message: |
-            ![Visualization of the benchmark results.](${{ steps.figure.outputs.DATA_URI }})
+            ![Visualization of the benchmark results.](https://raw.githubusercontent.com/lf-lang/benchmarks-lingua-franca/graphics/${{ steps.figure.outputs.OUTPUT_FILE }})
           pr_number: 51 # ${{ inputs.pr_number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
