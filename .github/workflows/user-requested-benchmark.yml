@@ -5,10 +5,11 @@ on:
     types: [created]
   push:  # TODO: Remove this when this is in the default branch.
   workflow_dispatch:
-    inputs:
-      pr_number:
-        required: true
-        type: number
+
+env:  # TODO: Do not hard-code these!
+  PR_NUMBER: 91
+  SCHEDULER: NP
+  FEATURE_BRANCH: automated-full-benchmark
 
 permissions:
   contents: write
@@ -33,36 +34,37 @@ jobs:
           repository: lf-lang/reactor-c
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 0  # It will be necessary to push to this repo
-          ref: automated-full-benchmark # FIXME: delete this line after merge
+          ref: graphics
           path: reactor-c
 
       - name: Set up workspace
         uses: lf-lang/reactor-c/.github/actions/set-up-workspace@automated-full-benchmark
 
-      - name: Run C Benchmarks
-        # run: |
-        #   ./runner/run_benchmark.py -m continue_on_error=True iterations=12 \
-        #     benchmark="glob(*)" target=lf-c size=fast \
-        #     target.params.scheduler=GEDF_NP,NP,adaptive threads=1,3,6,12,24
-        run: |  # DEBUG
-          ./runner/run_benchmark.py -m continue_on_error=True iterations=12 \
-            benchmark="savina_parallelism_recmatmul" target=lf-c size=fast \
-            target.params.scheduler=NP,adaptive threads=1,3,0
-        shell: bash
+      - name: Run C Benchmarks (feature branch)
+        id: benchmarks-feature
+        uses: lf-lang/reactor-c/.github/actions/run-benchmarks@automated-full-benchmark
+        with:
+          scheduler: ${{ env.SCHEDULER }}
+          runtime-ref: ${{ env.FEATURE_BRANCH }}
 
-      - name: Collect benchmark results
-        run: |
-          ./runner/collect_results.py latest latest-benchmark-results.csv
-        shell: bash
+      - name: Run C Benchmarks (main branch)
+        id: benchmarks-main
+        uses: lf-lang/reactor-c/.github/actions/run-benchmarks@automated-full-benchmark
+        with:
+          scheduler: GEDF_NP,NP,adaptive
+          runtime-ref: main
 
       - name: Make figure
         run: |
           OUTPUT_DIR=images/$(date -I)
+          echo "Figure will be created in $OUTPUT_DIR"
           SHA=${{ github.sha }}
-          OUTPUT_FILE=$OUTPUT_DIR/${SHA:0:7}.png
+          OUTPUT_FILE=$OUTPUT_DIR/$SCHEDULER-$FEATURE_BRANCH-${SHA:0:7}.png
+          echo "Figure will be named $OUTPUT_FILE"
           mkdir -p reactor-c/$OUTPUT_DIR
-          ./runner/make-graphics.py latest-benchmark-results.csv reactor-c/$OUTPUT_FILE
-          echo "::set-output name=output_file::$OUTPUT_FILE"
+          ./runner/make-graphics.py ${{ steps.benchmarks-feature.outputs.output-file }} \
+            ${{ steps.benchmarks-main.outputs.output-file }} reactor-c/$OUTPUT_FILE
+          echo "::set-output name=output-file::$OUTPUT_FILE"
         shell: bash
         id: figure
 
@@ -72,8 +74,7 @@ jobs:
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           git fetch
-          git switch graphics
-          git add ${{ steps.figure.outputs.OUTPUT_FILE }}
+          git add ${{ steps.figure.outputs.output-file }}
           git commit -m "benchmark ${{ github.sha }}"
           git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | \
             xargs -L1 git config --unset-all
@@ -85,6 +86,6 @@ jobs:
         uses: thollander/actions-comment-pull-request@v1
         with:
           message: |
-            ![Visualization of the benchmark results.](https://raw.githubusercontent.com/lf-lang/reactor-c/graphics/${{ steps.figure.outputs.OUTPUT_FILE }})
-          pr_number: 91 # ${{ inputs.pr_number }}
+            ![Visualization of the benchmark results.](https://raw.githubusercontent.com/lf-lang/reactor-c/graphics/${{ steps.figure.outputs.output-file }})
+          pr_number: ${{ env.PR_NUMBER }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -14,23 +14,14 @@ runs:
       with:
         repository: lf-lang/lingua-franca
         path: lf
+        fetch-depth: 0  # We may need to check out older refs
+        submodules: recursive
 
     - name: Prepare LF build environment
       uses: ./lf/.github/actions/prepare-build-env
 
-    - name: Checkout current version of reactor-c
-      uses: actions/checkout@v2
-      with:
-        path: lf/org.lflang/src/lib/c/reactor-c
-
     - name: Install Python dependencies
       run: pip3 install -r runner/requirements.txt
-      shell: bash
-
-    - name: Build lfc
-      run: |
-        cd lf
-        ./gradlew buildLfc
       shell: bash
 
     - name: Set LF_PATH and LF_BENCHMARKS_PATH environmental variable
