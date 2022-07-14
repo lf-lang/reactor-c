@@ -26,7 +26,7 @@ jobs:
           repository: lf-lang/benchmarks-lingua-franca
           token: ${{ secrets.GITHUB_TOKEN }}
           fetch-depth: 1
-          ref: automated-full-benchmark # FIXME: delete this line after merge
+          ref: automated-full-benchmark  # FIXME: delete this line after merge
 
       - name: Checkout reactor-c
         uses: actions/checkout@v2
@@ -62,19 +62,21 @@ jobs:
           OUTPUT_FILE=$OUTPUT_DIR/$SCHEDULER-$FEATURE_BRANCH-${SHA:0:7}.png
           echo "Figure will be named $OUTPUT_FILE"
           mkdir -p reactor-c/$OUTPUT_DIR
-          ./runner/make-graphics.py ${{ steps.benchmarks-feature.outputs.output-file }} \
-            ${{ steps.benchmarks-main.outputs.output-file }} reactor-c/$OUTPUT_FILE
+          ./runner/make-graphics.py reactor-c/${{ steps.benchmarks-feature.outputs.output-file }} \
+            reactor-c/${{ steps.benchmarks-main.outputs.output-file }} reactor-c/$OUTPUT_FILE
           echo "::set-output name=output-file::$OUTPUT_FILE"
         shell: bash
         id: figure
 
-      - name: Commit figure
+      - name: Commit figure and output files
         run: |
           cd reactor-c
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           git fetch
           git add ${{ steps.figure.outputs.output-file }}
+          git add ${{ steps.benchmarks-feature.outputs.output-file }}
+          git add ${{ steps.benchmarks-main.outputs.output-file }}
           git commit -m "benchmark ${{ github.sha }}"
           git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | \
             xargs -L1 git config --unset-all
