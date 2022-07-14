@@ -57,7 +57,7 @@ jobs:
 
       - name: Run C Benchmarks (multithreaded)
         run: |
-          python3 runner/run_benchmark.py -m continue_on_error=True iterations=12 \
+          python3 runner/run_benchmark.py -m continue_on_error=True iterations=12 size=fast \
             benchmark="glob(*)" target=lf-c target.params.scheduler=GEDF_NP,NP,adaptive threads=0
 
       - name: Collect results
@@ -80,7 +80,7 @@ jobs:
 
       - name: Run C Benchmarks (unthreaded)
         run: |
-          python3 runner/run_benchmark.py -m continue_on_error=True iterations=12 \
+          python3 runner/run_benchmark.py -m continue_on_error=True iterations=12 size=fast \
             benchmark="glob(*)" target=lf-c-unthreaded
 
       - name: Collect results
