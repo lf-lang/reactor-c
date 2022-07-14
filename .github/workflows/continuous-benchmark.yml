@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: lf-lang/benchmarks-lingua-franca
-          ref: cb # FIXME: delete this line after `cb` is merged.
+          ref: automated-full-benchmark # FIXME: delete this line after merge
 
       - name: Set up workspace
         uses: ./.github/actions/set-up-workspace
