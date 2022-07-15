@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest #FIXME: change to self-hosted after russel is set up.
 
     steps:
-      - name: Setup Python
+      - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: lf-lang/benchmarks-lingua-franca
-          ref: cb # FIXME: delete this line after merge
+          ref: cb # FIXME: delete this line after `cb` is merged.
 
       - name: Checkout Lingua Franca repository
         uses: actions/checkout@v2
@@ -63,7 +63,6 @@ jobs:
       - name: Collect results
         run: python3 runner/collect_results.py latest continuous-benchmarking-results-multi-threaded.json
 
-      # Use continuous benchmark action to store result
       - name: Store Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1
         with:
@@ -72,7 +71,7 @@ jobs:
           output-file-path: continuous-benchmarking-results-multi-threaded.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
-          alert-threshold: '200%' # FIXME: After russel is set up, lower the threshold and set alert/comment to true
+          alert-threshold: '200%' # FIXME: After russel is set up, lower the threshold
           comment-on-alert: true
           fail-on-alert: false
 
@@ -84,7 +83,6 @@ jobs:
       - name: Collect results
         run: python3 runner/collect_results.py latest continuous-benchmarking-results-single-threaded.json
 
-      # Use continuous benchmark action to store result
       - name: Store Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1
         with:
@@ -93,8 +91,6 @@ jobs:
           output-file-path: continuous-benchmarking-results-single-threaded.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
-
-          # Show alert with commit comment on detecting possible performance regression
-          alert-threshold: '200%' # FIXME: After russel is set up, lower the threshold and set alert/comment to true
+          alert-threshold: '200%' # FIXME: After russel is set up, lower the threshold
           comment-on-alert: true
           fail-on-alert: false
