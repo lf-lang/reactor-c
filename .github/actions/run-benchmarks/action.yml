@@ -8,6 +8,9 @@ inputs:
   runtime-ref:
     type: string
     required: true
+  target:
+    type: string
+    default: c  # As in, "reactor-c"
 
 
 outputs:
@@ -20,18 +23,21 @@ runs:
   using: "composite"
   steps:
     - name: Check out requested branches
+      id: check-out
       run: |
         echo $(ls)
         echo "Checking out ${{ inputs.runtime-ref }}"
-        cd lf/org.lflang/src/lib/c/reactor-c && \
+        SUBMODULE_DIR=org.lflang/src/lib/${{ inputs.target }}/reactor-${{ inputs.target }}
+        cd lf/$SUBMODULE_DIR && \
             git checkout ${{ inputs.runtime-ref }} && cd ../../../../..
-        git checkout $(cat org.lflang/src/lib/c/reactor-c/lingua-franca-ref.txt)
+        git checkout $(cat $SUBMODULE_DIR/lingua-franca-ref.txt)
+        echo "::set-output name=submodule-dir::$SUBMODULE_DIR"
         cd ..
       shell: bash
     - name: Compute output file
       id: compute-output-file
       run: |
-        SHA=$(cd lf/org.lflang/src/lib/c/reactor-c && \
+        SHA=$(cd lf/${{ steps.check-out.outputs.submodule-dir }} && \
           git rev-parse --short=7 HEAD && cd ../../../../../..)
         BRANCH=${{ inputs.runtime-ref }}
         OUTPUT_DIR=csvs/$(date -I)
@@ -62,8 +68,8 @@ runs:
       #     target.params.scheduler=GEDF_NP,NP,adaptive threads=1,3,6,12,24
       run: |  # DEBUG
         ./runner/run_benchmark.py -m continue_on_error=True iterations=12 \
-          benchmark="savina_concurrency_cigsmok" target=lf-c size=fast \
-          target.params.scheduler=${{ inputs.scheduler }} threads=1,3
+          benchmark="savina_concurrency_cigsmok" target=lf-${{ inputs.target }} size=fast \
+          ++target.params.scheduler=${{ inputs.scheduler }} threads=1,3
       shell: bash
       if: ${{ ! steps.compute-output-file.outputs.file-already-exists }}
 

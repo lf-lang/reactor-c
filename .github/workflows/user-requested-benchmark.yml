@@ -54,6 +54,14 @@ jobs:
           scheduler: GEDF_NP,NP,adaptive
           runtime-ref: main
 
+      - name: Run C++ Benchmarks (main branch)
+        id: benchmarks-main-cpp
+        uses: lf-lang/reactor-c/.github/actions/run-benchmarks@automated-full-benchmark
+        with:
+          scheduler: default
+          runtime-ref: master
+          target: cpp
+
       - name: Make figure
         run: |
           OUTPUT_DIR=images/$(date -I)
@@ -62,8 +70,11 @@ jobs:
           OUTPUT_FILE=$OUTPUT_DIR/$SCHEDULER-$FEATURE_BRANCH-${SHA:0:7}.png
           echo "Figure will be named $OUTPUT_FILE"
           mkdir -p reactor-c/$OUTPUT_DIR
-          ./runner/make-graphics.py reactor-c/${{ steps.benchmarks-feature.outputs.output-file }} \
-            reactor-c/${{ steps.benchmarks-main.outputs.output-file }} reactor-c/$OUTPUT_FILE
+          ./runner/make-graphics.py \
+            reactor-c/${{ steps.benchmarks-feature.outputs.output-file }} \
+            reactor-c/${{ steps.benchmarks-main.outputs.output-file }} \
+            reactor-c/${{ steps.benchmarks-main-cpp.outputs.output-file }} \
+            reactor-c/$OUTPUT_FILE
           echo "::set-output name=output-file::$OUTPUT_FILE"
         shell: bash
         id: figure
@@ -77,6 +88,7 @@ jobs:
           git add ${{ steps.figure.outputs.output-file }}
           git add ${{ steps.benchmarks-feature.outputs.output-file }}
           git add ${{ steps.benchmarks-main.outputs.output-file }}
+          git add ${{ steps.benchmarks-main-cpp.outputs.output-file }}
           git commit -m "benchmark ${{ github.sha }}"
           git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | \
             xargs -L1 git config --unset-all
