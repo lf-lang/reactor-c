@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1657849667649,
+  "lastUpdate": 1657860010627,
   "repoUrl": "https://github.com/lf-lang/reactor-c",
   "entries": {
     "Lingua Franca C target Benchmark": [
@@ -5116,6 +5116,422 @@ window.BENCHMARK_DATA = {
             "value": 40.53158333333334,
             "unit": "ms",
             "extra": "Target: Sleeping Barber\nTotal Iterations: 12\nThreads: 2"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "lf-lang",
+            "username": "lf-lang"
+          },
+          "committer": {
+            "name": "lf-lang",
+            "username": "lf-lang"
+          },
+          "id": "d7bb751b1b32dbe51243cab2da2081f075e3f902",
+          "message": "Continuous benchmarking",
+          "timestamp": "2022-06-08T21:36:19Z",
+          "url": "https://github.com/lf-lang/reactor-c/pull/51/commits/d7bb751b1b32dbe51243cab2da2081f075e3f902"
+        },
+        "date": 1657860009835,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Thread Ring (scheduler=NP)",
+            "value": 32.4555,
+            "unit": "ms",
+            "extra": "Target: Thread Ring\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Thread Ring (scheduler=GEDF_NP)",
+            "value": 31.50508333333333,
+            "unit": "ms",
+            "extra": "Target: Thread Ring\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Thread Ring (scheduler=adaptive)",
+            "value": 31.71575,
+            "unit": "ms",
+            "extra": "Target: Thread Ring\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Ping Pong (scheduler=NP)",
+            "value": 37.092666666666666,
+            "unit": "ms",
+            "extra": "Target: Ping Pong\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Ping Pong (scheduler=GEDF_NP)",
+            "value": 36.965833333333336,
+            "unit": "ms",
+            "extra": "Target: Ping Pong\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Ping Pong (scheduler=adaptive)",
+            "value": 37.20833333333333,
+            "unit": "ms",
+            "extra": "Target: Ping Pong\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Chameneos (scheduler=NP)",
+            "value": 89.878,
+            "unit": "ms",
+            "extra": "Target: Chameneos\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Chameneos (scheduler=GEDF_NP)",
+            "value": 92.68941666666666,
+            "unit": "ms",
+            "extra": "Target: Chameneos\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Chameneos (scheduler=adaptive)",
+            "value": 95.85674999999999,
+            "unit": "ms",
+            "extra": "Target: Chameneos\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Producer Consumer (bounded) (scheduler=NP)",
+            "value": 215.0485,
+            "unit": "ms",
+            "extra": "Target: Producer Consumer (bounded)\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Producer Consumer (bounded) (scheduler=GEDF_NP)",
+            "value": 215.17533333333336,
+            "unit": "ms",
+            "extra": "Target: Producer Consumer (bounded)\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Producer Consumer (bounded) (scheduler=adaptive)",
+            "value": 215.53824999999998,
+            "unit": "ms",
+            "extra": "Target: Producer Consumer (bounded)\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "A-Star Search (scheduler=NP)",
+            "value": 29.705846153846153,
+            "unit": "ms",
+            "extra": "Target: A-Star Search\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "A-Star Search (scheduler=GEDF_NP)",
+            "value": 29.89361538461538,
+            "unit": "ms",
+            "extra": "Target: A-Star Search\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "A-Star Search (scheduler=adaptive)",
+            "value": 30.154846153846158,
+            "unit": "ms",
+            "extra": "Target: A-Star Search\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Fork Join (throughput) (scheduler=NP)",
+            "value": 18.97575,
+            "unit": "ms",
+            "extra": "Target: Fork Join (throughput)\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Fork Join (throughput) (scheduler=GEDF_NP)",
+            "value": 19.098666666666663,
+            "unit": "ms",
+            "extra": "Target: Fork Join (throughput)\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Fork Join (throughput) (scheduler=adaptive)",
+            "value": 18.983833333333333,
+            "unit": "ms",
+            "extra": "Target: Fork Join (throughput)\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Radix Sort (scheduler=NP)",
+            "value": 131.05225,
+            "unit": "ms",
+            "extra": "Target: Radix Sort\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Radix Sort (scheduler=GEDF_NP)",
+            "value": 126.9295,
+            "unit": "ms",
+            "extra": "Target: Radix Sort\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Radix Sort (scheduler=adaptive)",
+            "value": 127.99983333333336,
+            "unit": "ms",
+            "extra": "Target: Radix Sort\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Concurrent Sorted Linked List (scheduler=NP)",
+            "value": 224.96624999999997,
+            "unit": "ms",
+            "extra": "Target: Concurrent Sorted Linked List\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Concurrent Sorted Linked List (scheduler=GEDF_NP)",
+            "value": 224.9428333333333,
+            "unit": "ms",
+            "extra": "Target: Concurrent Sorted Linked List\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Concurrent Sorted Linked List (scheduler=adaptive)",
+            "value": 224.96416666666667,
+            "unit": "ms",
+            "extra": "Target: Concurrent Sorted Linked List\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Big (scheduler=NP)",
+            "value": 132.95708333333332,
+            "unit": "ms",
+            "extra": "Target: Big\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Big (scheduler=GEDF_NP)",
+            "value": 125.96641666666669,
+            "unit": "ms",
+            "extra": "Target: Big\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Big (scheduler=adaptive)",
+            "value": 129.60008333333332,
+            "unit": "ms",
+            "extra": "Target: Big\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Sleeping Barber (scheduler=NP)",
+            "value": 32.36600000000001,
+            "unit": "ms",
+            "extra": "Target: Sleeping Barber\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Sleeping Barber (scheduler=GEDF_NP)",
+            "value": 32.39525,
+            "unit": "ms",
+            "extra": "Target: Sleeping Barber\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Sleeping Barber (scheduler=adaptive)",
+            "value": 32.369166666666665,
+            "unit": "ms",
+            "extra": "Target: Sleeping Barber\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Logistic Map Series (scheduler=NP)",
+            "value": 37.626916666666666,
+            "unit": "ms",
+            "extra": "Target: Logistic Map Series\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Logistic Map Series (scheduler=GEDF_NP)",
+            "value": 38.011250000000004,
+            "unit": "ms",
+            "extra": "Target: Logistic Map Series\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Logistic Map Series (scheduler=adaptive)",
+            "value": 38.168416666666666,
+            "unit": "ms",
+            "extra": "Target: Logistic Map Series\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Trapezoidal Approximation (scheduler=NP)",
+            "value": 136.77091666666666,
+            "unit": "ms",
+            "extra": "Target: Trapezoidal Approximation\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Trapezoidal Approximation (scheduler=GEDF_NP)",
+            "value": 135.38858333333332,
+            "unit": "ms",
+            "extra": "Target: Trapezoidal Approximation\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Trapezoidal Approximation (scheduler=adaptive)",
+            "value": 136.85299999999998,
+            "unit": "ms",
+            "extra": "Target: Trapezoidal Approximation\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Bank Transaction (scheduler=NP)",
+            "value": 171.8613333333334,
+            "unit": "ms",
+            "extra": "Target: Bank Transaction\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Bank Transaction (scheduler=GEDF_NP)",
+            "value": 169.91241666666664,
+            "unit": "ms",
+            "extra": "Target: Bank Transaction\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Bank Transaction (scheduler=adaptive)",
+            "value": 171.0995833333333,
+            "unit": "ms",
+            "extra": "Target: Bank Transaction\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Recursive Matrix Multiplication (scheduler=NP)",
+            "value": 173.98616666666666,
+            "unit": "ms",
+            "extra": "Target: Recursive Matrix Multiplication\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Recursive Matrix Multiplication (scheduler=GEDF_NP)",
+            "value": 173.7865833333333,
+            "unit": "ms",
+            "extra": "Target: Recursive Matrix Multiplication\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Recursive Matrix Multiplication (scheduler=adaptive)",
+            "value": 173.57775,
+            "unit": "ms",
+            "extra": "Target: Recursive Matrix Multiplication\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Cigarette Smokers (scheduler=NP)",
+            "value": 0.8364166666666666,
+            "unit": "ms",
+            "extra": "Target: Cigarette Smokers\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Cigarette Smokers (scheduler=GEDF_NP)",
+            "value": 0.8300833333333334,
+            "unit": "ms",
+            "extra": "Target: Cigarette Smokers\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Cigarette Smokers (scheduler=adaptive)",
+            "value": 0.8303333333333333,
+            "unit": "ms",
+            "extra": "Target: Cigarette Smokers\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Filter Bank (scheduler=NP)",
+            "value": 173.51250000000002,
+            "unit": "ms",
+            "extra": "Target: Filter Bank\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Filter Bank (scheduler=GEDF_NP)",
+            "value": 172.61891666666668,
+            "unit": "ms",
+            "extra": "Target: Filter Bank\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Filter Bank (scheduler=adaptive)",
+            "value": 172.61341666666667,
+            "unit": "ms",
+            "extra": "Target: Filter Bank\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "All-Pairs Shortest Path (scheduler=NP)",
+            "value": 239.515,
+            "unit": "ms",
+            "extra": "Target: All-Pairs Shortest Path\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "All-Pairs Shortest Path (scheduler=GEDF_NP)",
+            "value": 239.98799999999997,
+            "unit": "ms",
+            "extra": "Target: All-Pairs Shortest Path\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "All-Pairs Shortest Path (scheduler=adaptive)",
+            "value": 239.23233333333334,
+            "unit": "ms",
+            "extra": "Target: All-Pairs Shortest Path\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Precise Pi Computation (scheduler=NP)",
+            "value": 128.895,
+            "unit": "ms",
+            "extra": "Target: Precise Pi Computation\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Precise Pi Computation (scheduler=GEDF_NP)",
+            "value": 128.92591666666667,
+            "unit": "ms",
+            "extra": "Target: Precise Pi Computation\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Precise Pi Computation (scheduler=adaptive)",
+            "value": 128.73675000000003,
+            "unit": "ms",
+            "extra": "Target: Precise Pi Computation\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "NQueens first N solutions (scheduler=NP)",
+            "value": 527.6362499999999,
+            "unit": "ms",
+            "extra": "Target: NQueens first N solutions\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "NQueens first N solutions (scheduler=GEDF_NP)",
+            "value": 524.9051666666668,
+            "unit": "ms",
+            "extra": "Target: NQueens first N solutions\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "NQueens first N solutions (scheduler=adaptive)",
+            "value": 525.6553333333335,
+            "unit": "ms",
+            "extra": "Target: NQueens first N solutions\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Philosophers (scheduler=NP)",
+            "value": 34.25625,
+            "unit": "ms",
+            "extra": "Target: Philosophers\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Philosophers (scheduler=GEDF_NP)",
+            "value": 34.47350000000001,
+            "unit": "ms",
+            "extra": "Target: Philosophers\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Philosophers (scheduler=adaptive)",
+            "value": 34.00483333333333,
+            "unit": "ms",
+            "extra": "Target: Philosophers\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Counting Actor (scheduler=NP)",
+            "value": 98.28341666666665,
+            "unit": "ms",
+            "extra": "Target: Counting Actor\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Counting Actor (scheduler=GEDF_NP)",
+            "value": 98.35199999999999,
+            "unit": "ms",
+            "extra": "Target: Counting Actor\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Counting Actor (scheduler=adaptive)",
+            "value": 98.72916666666667,
+            "unit": "ms",
+            "extra": "Target: Counting Actor\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
+          },
+          {
+            "name": "Concurrent Dictionary (scheduler=NP)",
+            "value": 62.37841666666667,
+            "unit": "ms",
+            "extra": "Target: Concurrent Dictionary\nTotal Iterations: 12\nThreads: 4\nScheduler: NP"
+          },
+          {
+            "name": "Concurrent Dictionary (scheduler=GEDF_NP)",
+            "value": 62.058416666666666,
+            "unit": "ms",
+            "extra": "Target: Concurrent Dictionary\nTotal Iterations: 12\nThreads: 4\nScheduler: GEDF_NP"
+          },
+          {
+            "name": "Concurrent Dictionary (scheduler=adaptive)",
+            "value": 62.05875,
+            "unit": "ms",
+            "extra": "Target: Concurrent Dictionary\nTotal Iterations: 12\nThreads: 4\nScheduler: adaptive"
           }
         ]
       }
