@@ -1,0 +1,4 @@
+,benchmark,target,total_iterations,threads,rounds,smokers,scheduler,min_time_ms,max_time_ms,median_time_ms,mean_time_ms
+0,Cigarette Smokers,lf-c,12,24,1000,200,NP,2.236,2.321,2.2525,2.26125
+1,Cigarette Smokers,lf-c,12,3,1000,200,NP,2.234,2.377,2.2560000000000002,2.26625
+2,Cigarette Smokers,lf-c,12,6,1000,200,NP,2.241,2.925,2.2535,2.312583333333333
