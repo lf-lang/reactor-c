@@ -1,0 +1,7 @@
+,benchmark,target,total_iterations,threads,rounds,smokers,scheduler,min_time_ms,max_time_ms,median_time_ms,mean_time_ms
+0,Cigarette Smokers,lf-c,12,1,1000,200,adaptive,1.803,2.205,2.0765000000000002,2.0611666666666664
+1,Cigarette Smokers,lf-c,12,1,1000,200,NP,1.737,2.15,2.0404999999999998,2.0070000000000006
+2,Cigarette Smokers,lf-c,12,12,1000,200,adaptive,1.954,3.32,2.1185,2.2185833333333336
+3,Cigarette Smokers,lf-c,12,1,1000,200,GEDF_NP,1.807,2.662,2.237,2.292583333333333
+4,Cigarette Smokers,lf-c,12,12,1000,200,NP,1.804,2.164,2.0265,2.0050833333333333
+5,Cigarette Smokers,lf-c,12,12,1000,200,GEDF_NP,2.183,2.277,2.2305,2.229916666666667
