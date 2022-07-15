@@ -61,15 +61,15 @@ jobs:
             benchmark="glob(*)" target=lf-c target.params.scheduler=GEDF_NP,NP,adaptive threads=0
 
       - name: Collect results
-        run: python3 runner/collect_results.py latest continuous_benchmarking_results.json
+        run: python3 runner/collect_results.py latest continuous-benchmarking-results-multi-threaded.json
 
       # Use continuous benchmark action to store result
       - name: Store Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: Lingua Franca C target Benchmark
+          name: Lingua Franca C Benchmark -- Multithreaded
           tool: customSmallerIsBetter
-          output-file-path: continuous_benchmarking_results.json
+          output-file-path: continuous-benchmarking-results-multi-threaded.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
 
@@ -84,15 +84,15 @@ jobs:
             benchmark="glob(*)" target=lf-c-unthreaded
 
       - name: Collect results
-        run: python3 runner/collect_results.py latest continuous_benchmarking_results.json
+        run: python3 runner/collect_results.py latest continuous-benchmarking-results-single-threaded.json
 
       # Use continuous benchmark action to store result
       - name: Store Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1
         with:
-          name: Lingua Franca C target Benchmark
+          name: Lingua Franca C Benchmark -- Single-Threaded
           tool: customSmallerIsBetter
-          output-file-path: continuous_benchmarking_results.json
+          output-file-path: continuous-benchmarking-results-single-threaded.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
 
