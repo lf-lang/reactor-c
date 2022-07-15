@@ -42,8 +42,10 @@ runs:
         git config --global user.name "github-actions[bot]"
         git fetch
         git add ${{ inputs.csv-files }} ${{ steps.figure.outputs.output-file }}
-        git commit -m "benchmark ${{ github.sha }}"
-        git push https://token:${{ inputs.token }}@github.com/lf-lang/reactor-c.git
+        if [[ $(git status) != *"nothing to commit"* ]]; then
+          git commit -m "benchmark ${{ github.sha }}"
+          git push https://token:${{ inputs.token }}@github.com/lf-lang/reactor-c.git
+        fi
         cd ..
       shell: bash
 
