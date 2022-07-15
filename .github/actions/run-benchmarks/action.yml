@@ -14,6 +14,11 @@ inputs:
     type: string  # Provide a comma-separated list without spaces.
     description: The number of workers to be used by the scheduler.
     required: true
+  iterations:
+    type: number
+    description: The number of iterations with which to run each benchmark.
+    required: false
+    default: 12
 
 
 outputs:
@@ -66,9 +71,17 @@ runs:
 
     - name: Run benchmarks
       run: |
-        ./runner/run_benchmark.py -m continue_on_error=True iterations=12 \
-          benchmark="glob(*)" target=lf-${{ inputs.target }} size=fast \
-          ++target.params.scheduler=${{ inputs.scheduler }} threads=${{ inputs.num-workers }}
+        # Allow at most 1 second per iteration. This will result in timeouts on runtime versions
+        # that are an order of magnitude slower than the unthreaded C runtime.
+        ./runner/run_benchmark.py -m \
+          continue_on_error=True \
+          timeout=${{ inputs.iterations }} \
+          iterations=${{ inputs.iterations }} \
+          benchmark="glob(*)" \
+          target=lf-${{ inputs.target }} \
+          size=fast \
+          ++target.params.scheduler=${{ inputs.scheduler }} \
+          threads=${{ inputs.num-workers }}
       shell: bash
       if: ${{ ! steps.compute-output-file.outputs.file-already-exists }}
 
