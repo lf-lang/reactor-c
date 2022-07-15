@@ -6,7 +6,7 @@ inputs:
     required: true
   token:
     type: string
-    description: Personal access token  # FIXME: This should be truly a PAT, not secrets.GITHUB_TOKEN
+    description: Personal access token
     required: true
   id:
     type: string
@@ -16,6 +16,11 @@ inputs:
     description: Whether this is the last run of this workflow to edit the same comment.
     type: boolean
     default: false
+  repo-for-saving-data:
+    description: |
+      The directory name of the repository where graphs and CSVs from benchmarks should be saved.
+    type: string
+    default: benchmarks-lingua-franca
 
 runs:
   using: "composite"
@@ -27,8 +32,8 @@ runs:
         SHA=${{ github.sha }}
         OUTPUT_FILE=$OUTPUT_DIR/$SCHEDULER-$FEATURE_BRANCH-${{ inputs.id }}-${SHA:0:7}.png
         echo "Figure will be named $OUTPUT_FILE"
-        mkdir -p reactor-c/$OUTPUT_DIR
-        cd reactor-c
+        mkdir -p ${{ inputs.repo-for-saving-data }}/$OUTPUT_DIR
+        cd ${{ inputs.repo-for-saving-data }}
         ../runner/make-graphics.py ${{ inputs.csv-files }} $OUTPUT_FILE
         cd ..
         echo "::set-output name=output-file::$OUTPUT_FILE"
@@ -37,14 +42,14 @@ runs:
 
     - name: Commit figure and output files
       run: |
-        cd reactor-c
+        cd ${{ inputs.repo-for-saving-data }}
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions[bot]"
         git fetch
         git add ${{ inputs.csv-files }} ${{ steps.figure.outputs.output-file }}
         if [[ $(git status) != *"nothing to commit"* ]]; then
           git commit -m "benchmark ${{ github.sha }}"
-          git push https://token:${{ inputs.token }}@github.com/lf-lang/reactor-c.git
+          git push https://token:${{ inputs.token }}@github.com/lf-lang/${{ inputs.repo-for-saving-data }}.git
         fi
         cd ..
       shell: bash
@@ -57,7 +62,7 @@ runs:
 
           Results so far:
 
-          ![Visualization of the benchmark results.](https://raw.githubusercontent.com/lf-lang/reactor-c/graphics/${{ steps.figure.outputs.output-file }})
+          ![Visualization of the benchmark results.](https://raw.githubusercontent.com/lf-lang/${{ inputs.repo-for-saving-data }}/saved-benchmark-results/${{ steps.figure.outputs.output-file }})
         comment_includes: ${{ github.sha }}
         pr_number: ${{ env.PR_NUMBER }}
         GITHUB_TOKEN: ${{ inputs.token }}
@@ -69,7 +74,7 @@ runs:
         message: |
           :heavy_check_mark: Finished running benchmarks from ${{ github.sha }}.
 
-          ![Visualization of the benchmark results.](https://raw.githubusercontent.com/lf-lang/reactor-c/graphics/${{ steps.figure.outputs.output-file }})
+          ![Visualization of the benchmark results.](https://raw.githubusercontent.com/lf-lang/${{ inputs.repo-for-saving-data }}/saved-benchmark-results/${{ steps.figure.outputs.output-file }})
         comment_includes: ${{ github.sha }}
         pr_number: ${{ env.PR_NUMBER }}
         GITHUB_TOKEN: ${{ inputs.token }}

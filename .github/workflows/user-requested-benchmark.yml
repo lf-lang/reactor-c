@@ -28,14 +28,14 @@ jobs:
           fetch-depth: 1
           ref: automated-full-benchmark  # FIXME: delete this line after merge
 
-      - name: Checkout reactor-c
+      - name: Checkout benchmarks-lingua-franca
         uses: actions/checkout@v2
         with:
-          repository: lf-lang/reactor-c
-          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: lf-lang/benchmarks-lingua-franca
+          token: ${{ secrets.PAT_FOR_PUSHING_BENCHMARK_RESULTS }}
           fetch-depth: 0  # It will be necessary to push to this repo
-          ref: graphics
-          path: reactor-c
+          ref: saved-benchmark-results
+          path: benchmarks-lingua-franca
 
       - name: Set up workspace
         uses: lf-lang/reactor-c/.github/actions/set-up-workspace@automated-full-benchmark
@@ -52,7 +52,7 @@ jobs:
         uses: lf-lang/reactor-c/.github/actions/visualize-save-upload@automated-full-benchmark
         with:
           csv-files: ${{ steps.run-benchmarks-1.outputs.output-files }}
-          token: ${{ secrets.GITHUB_TOKEN }}  # FIXME: Should be a PAT
+          token: ${{ secrets.PAT_FOR_PUSHING_BENCHMARK_RESULTS }}
           id: 1
 
       - name: Run Benchmarks Part 2
@@ -67,7 +67,7 @@ jobs:
         uses: lf-lang/reactor-c/.github/actions/visualize-save-upload@automated-full-benchmark
         with:
           csv-files: "${{ steps.run-benchmarks-1.outputs.output-files }} ${{ steps.run-benchmarks-2.outputs.output-files }}"
-          token: ${{ secrets.GITHUB_TOKEN }}  # FIXME: Should be a PAT
+          token: ${{ secrets.PAT_FOR_PUSHING_BENCHMARK_RESULTS }}
           id: 2
 
       - name: Run Benchmarks Part 3
@@ -82,6 +82,6 @@ jobs:
         uses: lf-lang/reactor-c/.github/actions/visualize-save-upload@automated-full-benchmark
         with:
           csv-files: "${{ steps.run-benchmarks-1.outputs.output-files }} ${{ steps.run-benchmarks-2.outputs.output-files }} ${{ steps.run-benchmarks-3.outputs.output-files }}"
-          token: ${{ secrets.GITHUB_TOKEN }}  # FIXME: Should be a PAT
+          token: ${{ secrets.PAT_FOR_PUSHING_BENCHMARK_RESULTS }}
           id: 3
           finalize: true
