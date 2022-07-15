@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1657868130048,
+  "lastUpdate": 1657868258645,
   "repoUrl": "https://github.com/lf-lang/reactor-c",
   "entries": {
     "Lingua Franca C target Benchmark": [
@@ -8900,6 +8900,158 @@ window.BENCHMARK_DATA = {
             "value": 63.031000000000006,
             "unit": "ms",
             "extra": "Target: Concurrent Dictionary\nTotal Iterations: 12\nThreads: 0\nScheduler: adaptive"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "lf-lang",
+            "username": "lf-lang"
+          },
+          "committer": {
+            "name": "lf-lang",
+            "username": "lf-lang"
+          },
+          "id": "dd98802221b55602b1cd06a202368da2b755b242",
+          "message": "Continuous benchmarking",
+          "timestamp": "2022-06-08T21:36:19Z",
+          "url": "https://github.com/lf-lang/reactor-c/pull/51/commits/dd98802221b55602b1cd06a202368da2b755b242"
+        },
+        "date": 1657868257819,
+        "tool": "customSmallerIsBetter",
+        "benches": [
+          {
+            "name": "Logistic Map Series",
+            "value": 37.85308333333333,
+            "unit": "ms",
+            "extra": "Target: Logistic Map Series\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "A-Star Search",
+            "value": 31.08230769230769,
+            "unit": "ms",
+            "extra": "Target: A-Star Search\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Filter Bank",
+            "value": 172.352,
+            "unit": "ms",
+            "extra": "Target: Filter Bank\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "NQueens first N solutions",
+            "value": 525.4535,
+            "unit": "ms",
+            "extra": "Target: NQueens first N solutions\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Concurrent Dictionary",
+            "value": 63.89216666666666,
+            "unit": "ms",
+            "extra": "Target: Concurrent Dictionary\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Radix Sort",
+            "value": 126.86308333333335,
+            "unit": "ms",
+            "extra": "Target: Radix Sort\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Big",
+            "value": 137.59191666666663,
+            "unit": "ms",
+            "extra": "Target: Big\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Producer Consumer (bounded)",
+            "value": 216.35466666666665,
+            "unit": "ms",
+            "extra": "Target: Producer Consumer (bounded)\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Concurrent Sorted Linked List",
+            "value": 225.04316666666668,
+            "unit": "ms",
+            "extra": "Target: Concurrent Sorted Linked List\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Fork Join (throughput)",
+            "value": 18.92316666666667,
+            "unit": "ms",
+            "extra": "Target: Fork Join (throughput)\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Counting Actor",
+            "value": 98.35816666666666,
+            "unit": "ms",
+            "extra": "Target: Counting Actor\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Precise Pi Computation",
+            "value": 128.50066666666666,
+            "unit": "ms",
+            "extra": "Target: Precise Pi Computation\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Chameneos",
+            "value": 95.48158333333333,
+            "unit": "ms",
+            "extra": "Target: Chameneos\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Philosophers",
+            "value": 33.989749999999994,
+            "unit": "ms",
+            "extra": "Target: Philosophers\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Trapezoidal Approximation",
+            "value": 136.8285,
+            "unit": "ms",
+            "extra": "Target: Trapezoidal Approximation\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Bank Transaction",
+            "value": 203.19825000000003,
+            "unit": "ms",
+            "extra": "Target: Bank Transaction\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Ping Pong",
+            "value": 36.93966666666666,
+            "unit": "ms",
+            "extra": "Target: Ping Pong\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "All-Pairs Shortest Path",
+            "value": 240.7566666666667,
+            "unit": "ms",
+            "extra": "Target: All-Pairs Shortest Path\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Recursive Matrix Multiplication",
+            "value": 176.63041666666666,
+            "unit": "ms",
+            "extra": "Target: Recursive Matrix Multiplication\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Cigarette Smokers",
+            "value": 0.8381666666666666,
+            "unit": "ms",
+            "extra": "Target: Cigarette Smokers\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Thread Ring",
+            "value": 31.65325,
+            "unit": "ms",
+            "extra": "Target: Thread Ring\nTotal Iterations: 12\nThreads: 2"
+          },
+          {
+            "name": "Sleeping Barber",
+            "value": 32.70333333333334,
+            "unit": "ms",
+            "extra": "Target: Sleeping Barber\nTotal Iterations: 12\nThreads: 2"
           }
         ]
       }
