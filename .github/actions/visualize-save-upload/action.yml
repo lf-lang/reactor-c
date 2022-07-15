@@ -8,6 +8,14 @@ inputs:
     type: string
     description: Personal access token  # FIXME: This should be truly a PAT, not secrets.GITHUB_TOKEN
     required: true
+  id:
+    type: string
+    description: String that can be used in a file name to distinguish this from other similar runs.
+    required: true
+  finalize:
+    description: Whether this is the last run of this workflow to edit the same comment.
+    type: boolean
+    default: false
 
 runs:
   using: "composite"
@@ -17,7 +25,7 @@ runs:
         OUTPUT_DIR=images/$(date -I)
         echo "Figure will be created in $OUTPUT_DIR"
         SHA=${{ github.sha }}
-        OUTPUT_FILE=$OUTPUT_DIR/$SCHEDULER-$FEATURE_BRANCH-${SHA:0:7}.png
+        OUTPUT_FILE=$OUTPUT_DIR/$SCHEDULER-$FEATURE_BRANCH-${{ inputs.id }}-${SHA:0:7}.png
         echo "Figure will be named $OUTPUT_FILE"
         mkdir -p reactor-c/$OUTPUT_DIR
         cd reactor-c
@@ -35,8 +43,6 @@ runs:
         git fetch
         git add ${{ inputs.csv-files }} ${{ steps.figure.outputs.output-file }}
         git commit -m "benchmark ${{ github.sha }}"
-        git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | \
-          xargs -L1 git config --unset-all
         git push https://token:${{ inputs.token }}@github.com/lf-lang/reactor-c.git
         cd ..
       shell: bash
@@ -45,6 +51,24 @@ runs:
       uses: thollander/actions-comment-pull-request@v1
       with:
         message: |
+          Running benchmarks from commit ${{ github.sha }}...
+
+          Results so far:
+
           ![Visualization of the benchmark results.](https://raw.githubusercontent.com/lf-lang/reactor-c/graphics/${{ steps.figure.outputs.output-file }})
+        comment_includes: ${{ github.sha }}
         pr_number: ${{ env.PR_NUMBER }}
         GITHUB_TOKEN: ${{ inputs.token }}
+      if: ${{ inputs.finalize == 'false' }}
+
+    - name: Finalize Comment
+      uses: thollander/actions-comment-pull-request@v1
+      with:
+        message: |
+          :heavy_check_mark: Finished running benchmarks from ${{ github.sha }}.
+
+          ![Visualization of the benchmark results.](https://raw.githubusercontent.com/lf-lang/reactor-c/graphics/${{ steps.figure.outputs.output-file }})
+        comment_includes: ${{ github.sha }}
+        pr_number: ${{ env.PR_NUMBER }}
+        GITHUB_TOKEN: ${{ inputs.token }}
+      if: ${{ inputs.finalize == 'true' }}

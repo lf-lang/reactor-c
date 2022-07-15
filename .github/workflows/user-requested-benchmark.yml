@@ -40,15 +40,48 @@ jobs:
       - name: Set up workspace
         uses: lf-lang/reactor-c/.github/actions/set-up-workspace@automated-full-benchmark
 
-      - name: Run Benchmarks
-        id: run-benchmarks
+      - name: Run Benchmarks Part 1
+        id: run-benchmarks-1
         uses: lf-lang/reactor-c/.github/actions/run-benchmarks-all-runtime-versions@automated-full-benchmark
         with:
           scheduler: ${{ env.SCHEDULER }}
           feature-branch: ${{ env.FEATURE_BRANCH }}
+          num-workers: 1,12
 
       - name: Visualize, Save, and Upload
         uses: lf-lang/reactor-c/.github/actions/visualize-save-upload@automated-full-benchmark
         with:
-          csv-files: ${{ steps.run-benchmarks.outputs.output-files }}
+          csv-files: ${{ steps.run-benchmarks-1.outputs.output-files }}
           token: ${{ secrets.GITHUB_TOKEN }}  # FIXME: Should be a PAT
+          id: 1
+
+      - name: Run Benchmarks Part 2
+        id: run-benchmarks-2
+        uses: lf-lang/reactor-c/.github/actions/run-benchmarks-all-runtime-versions@automated-full-benchmark
+        with:
+          scheduler: ${{ env.SCHEDULER }}
+          feature-branch: ${{ env.FEATURE_BRANCH }}
+          num-workers: 3,6,24
+
+      - name: Visualize, Save, and Upload
+        uses: lf-lang/reactor-c/.github/actions/visualize-save-upload@automated-full-benchmark
+        with:
+          csv-files: "${{ steps.run-benchmarks-1.outputs.output-files }} ${{ steps.run-benchmarks-2.outputs.output-files }}"
+          token: ${{ secrets.GITHUB_TOKEN }}  # FIXME: Should be a PAT
+          id: 2
+
+      - name: Run Benchmarks Part 3
+        id: run-benchmarks-3
+        uses: lf-lang/reactor-c/.github/actions/run-benchmarks-all-runtime-versions@automated-full-benchmark
+        with:
+          scheduler: ${{ env.SCHEDULER }}
+          feature-branch: ${{ env.FEATURE_BRANCH }}
+          num-workers: 2,4,9,18
+
+      - name: Visualize, Save, and Upload
+        uses: lf-lang/reactor-c/.github/actions/visualize-save-upload@automated-full-benchmark
+        with:
+          csv-files: "${{ steps.run-benchmarks-1.outputs.output-files }} ${{ steps.run-benchmarks-2.outputs.output-files }} ${{ steps.run-benchmarks-3.outputs.output-files }}"
+          token: ${{ secrets.GITHUB_TOKEN }}  # FIXME: Should be a PAT
+          id: 3
+          finalize: true

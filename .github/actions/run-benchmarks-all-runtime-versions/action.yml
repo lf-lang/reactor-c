@@ -7,6 +7,10 @@ inputs:
   feature-branch:
     type: string
     required: true
+  num-workers:
+    type: string  # Provide a comma-separated list without spaces.
+    description: The number of workers to be used by the scheduler.
+    required: true
 
 
 outputs:
@@ -24,6 +28,8 @@ runs:
       with:
         scheduler: ${{ inputs.scheduler }}
         runtime-ref: ${{ inputs.feature-branch }}
+        target: c
+        num-workers: ${{ inputs.num-workers }}
 
     - name: Run C Benchmarks (main branch)
       id: benchmarks-main
@@ -31,6 +37,8 @@ runs:
       with:
         scheduler: GEDF_NP,NP,adaptive
         runtime-ref: main
+        target: c
+        num-workers: ${{ inputs.num-workers }}
 
     - name: Run C++ Benchmarks (main branch)
       id: benchmarks-main-cpp
@@ -39,6 +47,7 @@ runs:
         scheduler: default
         runtime-ref: master
         target: cpp
+        num-workers: ${{ inputs.num-workers }}
     
     - name: List Output Files
       id: list-output-files

@@ -10,7 +10,10 @@ inputs:
     required: true
   target:
     type: string
-    default: c  # As in, "reactor-c"
+  num-workers:
+    type: string  # Provide a comma-separated list without spaces.
+    description: The number of workers to be used by the scheduler.
+    required: true
 
 
 outputs:
@@ -43,7 +46,7 @@ runs:
         BRANCH=${{ inputs.runtime-ref }}
         OUTPUT_DIR=csvs/$(date -I)
         mkdir -p reactor-c/$OUTPUT_DIR
-        OUTPUT_FILE=$OUTPUT_DIR/${{ inputs.scheduler }}-$BRANCH-${SHA:0:7}.csv
+        OUTPUT_FILE=$OUTPUT_DIR/${{ inputs.scheduler }}-${{ inputs.num-workers }}-$BRANCH-${SHA:0:7}.csv
         echo "::set-output name=output-file::$OUTPUT_FILE"
         if [ -f reactor-c/$OUTPUT_FILE ]; then
           echo "The benchmark will not be run because results for that commit are already saved at $OUTPUT_FILE."
@@ -62,15 +65,10 @@ runs:
       if: ${{ ! steps.compute-output-file.outputs.file-already-exists }}
 
     - name: Run benchmarks
-      # TODO: Run all benchmarks with several numbers of threads
-      # run: |
-      #   ./runner/run_benchmark.py -m continue_on_error=True iterations=12 \
-      #     benchmark="glob(*)" target=lf-c size=fast \
-      #     target.params.scheduler=GEDF_NP,NP,adaptive threads=1,3,6,12,24
-      run: |  # DEBUG
+      run: |
         ./runner/run_benchmark.py -m continue_on_error=True iterations=12 \
-          benchmark="savina_concurrency_cigsmok" target=lf-${{ inputs.target }} size=fast \
-          ++target.params.scheduler=${{ inputs.scheduler }} threads=1,3
+          benchmark="glob(*)" target=lf-${{ inputs.target }} size=fast \
+          ++target.params.scheduler=${{ inputs.scheduler }} threads=${{ inputs.num-workers }}
       shell: bash
       if: ${{ ! steps.compute-output-file.outputs.file-already-exists }}
 
