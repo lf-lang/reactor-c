@@ -1,0 +1,50 @@
+name: Run benchmarks for all runtime versions
+
+inputs:
+  scheduler:
+    type: string  # A comma-separated list (no spaces!) is allowed.
+    required: true
+  feature-branch:
+    type: string
+    required: true
+
+
+outputs:
+  output-files:
+    description: "The CSV files summarizing all benchmark results, separated by spaces"
+    value: ${{ steps.list-output-files.outputs.output-files }}
+
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run C Benchmarks (feature branch)
+      id: benchmarks-feature
+      uses: lf-lang/reactor-c/.github/actions/run-benchmarks@automated-full-benchmark
+      with:
+        scheduler: ${{ inputs.scheduler }}
+        runtime-ref: ${{ inputs.feature-branch }}
+
+    - name: Run C Benchmarks (main branch)
+      id: benchmarks-main
+      uses: lf-lang/reactor-c/.github/actions/run-benchmarks@automated-full-benchmark
+      with:
+        scheduler: GEDF_NP,NP,adaptive
+        runtime-ref: main
+
+    - name: Run C++ Benchmarks (main branch)
+      id: benchmarks-main-cpp
+      uses: lf-lang/reactor-c/.github/actions/run-benchmarks@automated-full-benchmark
+      with:
+        scheduler: default
+        runtime-ref: master
+        target: cpp
+    
+    - name: List Output Files
+      id: list-output-files
+      run: |
+        echo "::set-output name=output-files::\
+          ${{ steps.benchmarks-feature.outputs.output-file }} \
+          ${{ steps.benchmarks-main.outputs.output-file }} \
+          ${{ steps.benchmarks-main-cpp.outputs.output-file }}"
+      shell: bash

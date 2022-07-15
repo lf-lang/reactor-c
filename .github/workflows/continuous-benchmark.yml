@@ -28,6 +28,13 @@ jobs:
       - name: Set up workspace
         uses: lf-lang/reactor-c/.github/actions/set-up-workspace@automated-full-benchmark
 
+      - name: Update LFC
+        run: |
+          cd lf
+          ./gradlew buildLfc
+          cd ..
+        shell: bash
+
       - name: Run C Benchmarks (multithreaded)
         run: |
           python3 runner/run_benchmark.py -m continue_on_error=True iterations=12 \

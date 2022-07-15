@@ -34,6 +34,7 @@ runs:
         echo "::set-output name=submodule-dir::$SUBMODULE_DIR"
         cd ..
       shell: bash
+
     - name: Compute output file
       id: compute-output-file
       run: |
