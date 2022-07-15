@@ -19,6 +19,11 @@ inputs:
     description: The number of iterations with which to run each benchmark.
     required: false
     default: 12
+  repo-for-saving-data:
+    description: |
+      The directory name of the repository where graphs and CSVs from benchmarks should be saved.
+    type: string
+    default: benchmarks-lingua-franca
 
 
 outputs:
@@ -48,16 +53,18 @@ runs:
       run: |
         SHA=$(cd lf/${{ steps.check-out.outputs.submodule-dir }} && \
           git rev-parse --short=7 HEAD && cd ../../../../../..)
-        BRANCH=${{ inputs.runtime-ref }}
         OUTPUT_DIR=csvs/$(date -I)
-        mkdir -p reactor-c/$OUTPUT_DIR
-        OUTPUT_FILE=$OUTPUT_DIR/${{ inputs.scheduler }}-${{ inputs.num-workers }}-$BRANCH-${SHA:0:7}.csv
-        echo "::set-output name=output-file::$OUTPUT_FILE"
-        if [ -f reactor-c/$OUTPUT_FILE ]; then
+        mkdir -p ${{ inputs.repo-for-saving-data }}/csvs
+        OUTPUT_FILENAME=${{ inputs.scheduler }}-${{ inputs.num-workers }}-${{ inputs.runtime-ref }}-${SHA:0:7}.csv
+        EXISTING_FILE=$(find ${{ inputs.repo-for-saving-data }}/csvs -name $OUTPUT_FILENAME | head -n 1)
+        if [[ -z $EXISTING_FILE ]]; then
+          mkdir -p ${{ inputs.repo-for-saving-data }}/$OUTPUT_DIR
+          echo "The collected benchmark results will be saved to $OUTPUT_FILE."
+          echo "::set-output name=output-file::$OUTPUT_DIR/$OUTPUT_FILENAME"
+        else
           echo "The benchmark will not be run because results for that commit are already saved at $OUTPUT_FILE."
           echo "::set-output name=file-already-exists::true"
-        else
-          echo "The collected benchmark results will be saved to $OUTPUT_FILE."
+          echo "::set-output name=output-file::$EXISTING_FILE"
         fi
       shell: bash
 
@@ -88,6 +95,6 @@ runs:
     - name: Collect benchmark results
       id: collect-results
       run: |
-        ./runner/collect_results.py latest reactor-c/${{ steps.compute-output-file.outputs.output-file }}
+        ./runner/collect_results.py latest ${{ inputs.repo-for-saving-data }}/${{ steps.compute-output-file.outputs.output-file }}
       shell: bash
       if: ${{ ! steps.compute-output-file.outputs.file-already-exists }}
