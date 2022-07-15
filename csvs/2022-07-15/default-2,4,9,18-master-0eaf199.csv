@@ -1,0 +1,5 @@
+,benchmark,target,total_iterations,threads,rounds,smokers,runtime_version,extra_args,scheduler,min_time_ms,max_time_ms,median_time_ms,mean_time_ms
+0,Cigarette Smokers,lf-cpp,12,9,1000,200,master,[],default,9.04227,11.2921,9.04597,9.234655833333333
+1,Cigarette Smokers,lf-cpp,12,2,1000,200,master,[],default,8.99428,9.74208,9.007275,9.073984166666666
+2,Cigarette Smokers,lf-cpp,12,18,1000,200,master,[],default,9.05769,9.2021,9.07239,9.0816575
+3,Cigarette Smokers,lf-cpp,12,4,1000,200,master,[],default,9.02698,9.16378,9.056280000000001,9.06038

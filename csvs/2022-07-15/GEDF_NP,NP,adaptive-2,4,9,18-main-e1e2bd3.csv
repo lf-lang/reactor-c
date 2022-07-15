@@ -1,0 +1,13 @@
+,benchmark,target,total_iterations,threads,rounds,smokers,scheduler,min_time_ms,max_time_ms,median_time_ms,mean_time_ms
+0,Cigarette Smokers,lf-c,12,9,1000,200,NP,1.727,1.81,1.7385000000000002,1.7429166666666667
+1,Cigarette Smokers,lf-c,12,2,1000,200,NP,1.729,1.781,1.736,1.7438333333333336
+2,Cigarette Smokers,lf-c,12,2,1000,200,adaptive,1.74,1.85,1.7425000000000002,1.75525
+3,Cigarette Smokers,lf-c,12,9,1000,200,GEDF_NP,1.843,1.906,1.851,1.8605833333333335
+4,Cigarette Smokers,lf-c,12,4,1000,200,NP,1.729,1.796,1.7365,1.7449999999999999
+5,Cigarette Smokers,lf-c,12,18,1000,200,adaptive,2.008,2.836,2.0505,2.1126666666666667
+6,Cigarette Smokers,lf-c,12,9,1000,200,adaptive,1.79,3.093,1.8039999999999998,1.9237499999999998
+7,Cigarette Smokers,lf-c,12,4,1000,200,adaptive,1.763,2.904,1.776,1.87575
+8,Cigarette Smokers,lf-c,12,18,1000,200,NP,1.73,1.794,1.7325,1.74475
+9,Cigarette Smokers,lf-c,12,2,1000,200,GEDF_NP,1.844,1.918,1.851,1.8581666666666665
+10,Cigarette Smokers,lf-c,12,18,1000,200,GEDF_NP,1.843,1.891,1.8535,1.8585
+11,Cigarette Smokers,lf-c,12,4,1000,200,GEDF_NP,1.845,1.922,1.8505,1.861
