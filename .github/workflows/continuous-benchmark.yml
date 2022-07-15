@@ -72,9 +72,7 @@ jobs:
           output-file-path: continuous-benchmarking-results-multi-threaded.json
           github-token: ${{ secrets.GITHUB_TOKEN }}
           auto-push: true
-
-          # Show alert with commit comment on detecting possible performance regression
-          alert-threshold: '100%' # FIXME: After russel is set up, lower the threshold and set alert/comment to true
+          alert-threshold: '200%' # FIXME: After russel is set up, lower the threshold and set alert/comment to true
           comment-on-alert: true
           fail-on-alert: false
 
@@ -97,6 +95,6 @@ jobs:
           auto-push: true
 
           # Show alert with commit comment on detecting possible performance regression
-          alert-threshold: '100%' # FIXME: After russel is set up, lower the threshold and set alert/comment to true
+          alert-threshold: '200%' # FIXME: After russel is set up, lower the threshold and set alert/comment to true
           comment-on-alert: true
           fail-on-alert: false
