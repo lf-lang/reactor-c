@@ -1,0 +1,50 @@
+name: Visualize, Save, and Upload Benchmark Results
+
+inputs:
+  csv-files:
+    type: string
+    required: true
+  token:
+    type: string
+    description: Personal access token  # FIXME: This should be truly a PAT, not secrets.GITHUB_TOKEN
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Make figure
+      run: |
+        OUTPUT_DIR=images/$(date -I)
+        echo "Figure will be created in $OUTPUT_DIR"
+        SHA=${{ github.sha }}
+        OUTPUT_FILE=$OUTPUT_DIR/$SCHEDULER-$FEATURE_BRANCH-${SHA:0:7}.png
+        echo "Figure will be named $OUTPUT_FILE"
+        mkdir -p reactor-c/$OUTPUT_DIR
+        cd reactor-c
+        ../runner/make-graphics.py ${{ inputs.csv-files }} $OUTPUT_FILE
+        cd ..
+        echo "::set-output name=output-file::$OUTPUT_FILE"
+      shell: bash
+      id: figure
+
+    - name: Commit figure and output files
+      run: |
+        cd reactor-c
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --global user.name "github-actions[bot]"
+        git fetch
+        git add ${{ inputs.csv-files }} ${{ steps.figure.outputs.output-file }}
+        git commit -m "benchmark ${{ github.sha }}"
+        git config -l | grep 'http\..*\.extraheader' | cut -d= -f1 | \
+          xargs -L1 git config --unset-all
+        git push https://token:${{ inputs.token }}@github.com/lf-lang/reactor-c.git
+        cd ..
+      shell: bash
+
+    - name: Comment PR
+      uses: thollander/actions-comment-pull-request@v1
+      with:
+        message: |
+          ![Visualization of the benchmark results.](https://raw.githubusercontent.com/lf-lang/reactor-c/graphics/${{ steps.figure.outputs.output-file }})
+        pr_number: ${{ env.PR_NUMBER }}
+        GITHUB_TOKEN: ${{ inputs.token }}
