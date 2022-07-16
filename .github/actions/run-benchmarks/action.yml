@@ -24,6 +24,11 @@ inputs:
       The directory name of the repository where graphs and CSVs from benchmarks should be saved.
     type: string
     default: benchmarks-lingua-franca
+  errors-file:
+    description: |
+      The file in which to write any error messages.
+    type: string
+    default: errors.txt
 
 
 outputs:
@@ -56,13 +61,15 @@ runs:
         OUTPUT_DIR=csvs/$(date -I)
         mkdir -p ${{ inputs.repo-for-saving-data }}/csvs
         OUTPUT_FILENAME=${{ inputs.scheduler }}-${{ inputs.num-workers }}-${{ inputs.runtime-ref }}-${SHA:0:7}.csv
-        EXISTING_FILE=$(find ${{ inputs.repo-for-saving-data }}/csvs -name $OUTPUT_FILENAME | head -n 1)
+        cd ${{ inputs.repo-for-saving-data }}
+        EXISTING_FILE=$(find ./csvs -name $OUTPUT_FILENAME | head -n 1)
+        cd ..
         if [[ -z $EXISTING_FILE ]]; then
           mkdir -p ${{ inputs.repo-for-saving-data }}/$OUTPUT_DIR
           echo "The collected benchmark results will be saved to $OUTPUT_FILE."
           echo "::set-output name=output-file::$OUTPUT_DIR/$OUTPUT_FILENAME"
         else
-          echo "The benchmark will not be run because results for that commit are already saved at $OUTPUT_FILE."
+          echo "The benchmark will not be run because results for that commit are already saved at $EXISTING_FILE."
           echo "::set-output name=file-already-exists::true"
           echo "::set-output name=output-file::$EXISTING_FILE"
         fi
@@ -88,7 +95,9 @@ runs:
           target=lf-${{ inputs.target }} \
           size=fast \
           ++target.params.scheduler=${{ inputs.scheduler }} \
-          threads=${{ inputs.num-workers }}
+          threads=${{ inputs.num-workers }} \
+          | tee >(grep "\[ERROR\]" >> ${{ inputs.errors-file }})
+        echo "::set-output name=output-file::$EXISTING_FILE"
       shell: bash
       if: ${{ ! steps.compute-output-file.outputs.file-already-exists }}
 

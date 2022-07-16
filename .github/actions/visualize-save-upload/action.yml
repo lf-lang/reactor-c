@@ -46,7 +46,7 @@ runs:
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --global user.name "github-actions[bot]"
         git fetch
-        git add ${{ inputs.csv-files }} ${{ steps.figure.outputs.output-file }}
+        git add -f ${{ inputs.csv-files }} ${{ steps.figure.outputs.output-file }}
         if [[ $(git status) != *"nothing to commit"* ]]; then
           git commit -m "benchmark ${{ github.sha }}"
           git push https://token:${{ inputs.token }}@github.com/lf-lang/${{ inputs.repo-for-saving-data }}.git
@@ -54,11 +54,23 @@ runs:
         cd ..
       shell: bash
 
+    - name: Compute error messages
+      id: compute-error-messages
+      run: |
+        echo $(ls)
+        if [ -f errors.txt ]; then
+          ERROR_MESSAGES=$(cat errors.txt)
+          echo "The benchmark runner reported the following errors:\n$ERROR_MESSAGES"
+          echo "::set-output name=error-messages::Error messages: $ERROR_MESSAGES"
+        fi
+      shell: bash
+
     - name: Comment PR
       uses: thollander/actions-comment-pull-request@v1
       with:
         message: |
           Running benchmarks from commit ${{ github.sha }}...
+          ${{ steps.compute-error-messages.outputs.error-messages }}
 
           Results so far:
 
@@ -73,6 +85,7 @@ runs:
       with:
         message: |
           :heavy_check_mark: Finished running benchmarks from ${{ github.sha }}.
+          ${{ steps.compute-error-messages.outputs.error-messages }}
 
           ![Visualization of the benchmark results.](https://raw.githubusercontent.com/lf-lang/${{ inputs.repo-for-saving-data }}/saved-benchmark-results/${{ steps.figure.outputs.output-file }})
         comment_includes: ${{ github.sha }}

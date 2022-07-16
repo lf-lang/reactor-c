@@ -29,3 +29,9 @@ runs:
         echo "LF_PATH=$GITHUB_WORKSPACE/lf" >> $GITHUB_ENV
         echo "LF_BENCHMARKS_PATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
       shell: bash
+
+    - name: Install eu-stack
+      run: |
+        sudo apt-get update
+        sudo apt-get install elfutils
+      shell: bash
