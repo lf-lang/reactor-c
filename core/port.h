@@ -32,14 +32,16 @@
  * before this optimization, it was necessary for a reactor to test each
  * channel for presence each time a reaction was triggered by the multiport.
  * If few of the input channels are present, this can be very inefficient.
- * To more efficiently handle this situation, reactor authors should use
+ * To more efficiently handle this situation, reactor authors should
+ * annotate the input port with the "@sparse" annotation and use
  * lf_input_iterator() to read from an input multiport.
  *
  * The way this works is that for each input multiport p1 that is wide enough to
  * benefit from this optimization a struct s of type lf_sparse_io_record will
- * be dynamically allocated.  Each input port struct within the multiport
- * will be given a pointer to s.  Each output port struct that
- * has p1 as a destination will also be given a pointer to s unless it
+ * be dynamically allocated and a pointer to this struct will be put on the
+ * self struct in a field named "portname__sparse".  Each input port struct
+ * within the multiport will be given a pointer to s.  Each output port struct
+ * that has p1 as a destination will also be given a pointer to s unless it
  * already has a pointer to an s of another input multiport.
  * In addition, the output port struct will have a record of the input
  * channel it is writing to.  Then, when lf_set() is called, the
@@ -57,12 +59,16 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include "utils/vector.h"
 
 /** Threshold for width of multiport s.t. sparse reading is supported. */
 #define LF_SPARSE_WIDTH_THRESHOLD 10
 
-/** Number of inputs that can be accepted before the input is no longer sparse. */
-#define LF_SPARSE_WIDTH_CAPACITY 2
+/**
+ * Divide LF_SPARSE_WIDTH_THRESHOLD by this number to get the capacity of a
+ * sparse input record for a multiport.
+ */
+#define LF_SPARSE_CAPACITY_DIVIDER 10
 
 typedef struct lf_sparse_io_record_t lf_sparse_io_record_t;
 
@@ -88,6 +94,14 @@ struct lf_port_base_t {
 	lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
 	int destination_channel;              // -1 if there is no destination.
 };
+
+/**
+ * A vector of pointers to the size fields of instances of
+ * lf_sparse_io_record_t so that these can be set to 0 between iterations.
+ * The start field of this struct will be NULL initially, so calling
+ * vector_new(_lf_sparse_io_record_sizes) will be necessary to use this.
+ */
+struct vector_t _lf_sparse_io_record_sizes;
 
 /**
  * Set the specified channel of the specified multiport

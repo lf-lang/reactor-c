@@ -32,6 +32,7 @@
  * 
  */
 #include "port.h"
+#include <stdio.h>
 
 /**
  * Given an array of pointers to port structs, return the index of the
@@ -47,6 +48,7 @@
 int _lf_input_iterator_impl(lf_port_base_t** port, size_t start, int width) {
 	// NOTE: Synchronization is not required because all writers must have
 	// completed by the time this is invoked.
+	if (width < 0 || start >= width) return -1;
 	if (port[start]->sparse_record
 			&& port[start]->sparse_record->size >= 0) {
 		// Sparse record is enabled and ready to use.
