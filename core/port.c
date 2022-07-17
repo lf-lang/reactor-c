@@ -35,6 +35,22 @@
 #include <stdio.h>
 
 /**
+ * Compare two integers pointed to. Return -1 if a < b, 0 if a == b,
+ * and 1 if a > b.
+ * @param a Pointer to the first integer.
+ * @param b Pointer to the second integer.
+ */
+int compare_ints(const void* a, const void* b) {
+	if (*(int*)a < *(int*)b) {
+		return -1;
+	} else if (*(int*)a > *(int*)b) {
+		return 1;
+	} else {
+		return 0;
+	}
+}
+
+/**
  * Given an array of pointers to port structs, return an iterator
  * that can be used to iterate over the present channels.
  * @param port An array of pointers to port structs.
@@ -51,9 +67,18 @@ lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t** port, int w
 			.width = width
 	};
 	if (width <= 0) return result;
-	if (port[0]->sparse_record) {
+	if (port[0]->sparse_record && port[0]->sparse_record->size >= 0) {
 		// Sparse record is enabled and ready to use.
 		if (port[0]->sparse_record->size > 0) {
+			// Need to sort it first (if the length is greater than 1).
+			if (port[0]->sparse_record->size > 1) {
+				qsort(
+						port[0]->sparse_record->present_channels,
+						port[0]->sparse_record->size,
+						sizeof(int),
+						&compare_ints
+				);
+			}
 			result.next = port[0]->sparse_record->present_channels[0];
 		}
 		return result;
@@ -64,6 +89,7 @@ lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t** port, int w
 		if (port[start]->is_present) {
 			result.idx = start;
 			result.next = start;
+			return result;
 		}
 		start++;
 	}
@@ -79,7 +105,8 @@ lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t** port, int w
 void lf_multiport_iterator_advance(lf_multiport_iterator_t* iterator) {
 	// If the iterator is already exhausted, return.
 	if (iterator->next < 0 || iterator->width <= 0) return;
-	if (iterator->port[iterator->idx]->sparse_record) {
+	if (iterator->port[iterator->idx]->sparse_record
+			&& iterator->port[iterator->idx]->sparse_record->size >= 0) {
 		// Sparse record is enabled and ready to use.
 		iterator->idx++;
 		if (iterator->idx >= iterator->port[iterator->idx]->sparse_record->size) {
