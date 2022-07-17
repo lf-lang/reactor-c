@@ -94,6 +94,8 @@ void* vector_pop(vector_t* v) {
  * This can be used to set the value of the element or to read it.
  * If the index is past the end of the vector, then the vector
  * is automatically expanded and filled with NULL pointers as needed.
+ * If no element at `idx` has been previous set, then the value
+ * pointed to by the returned pointer will be NULL.
  * 
  * @param v The vector.
  * @param idx The index into the vector.
