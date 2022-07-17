@@ -90,12 +90,17 @@ void* vector_pop(vector_t* v) {
 }
 
 /**
- * @brief Return a pointer of the vector element at 'idx'.
+ * Return a pointer to where the vector element at 'idx' is stored.
+ * This can be used to set the value of the element or to read it.
+ * If the index is past the end of the vector, then the vector
+ * is automatically expanded and filled with NULL pointers as needed.
+ * If no element at `idx` has been previously set, then the value
+ * pointed to by the returned pointer will be NULL.
  * 
- * @param v Any vector.
- * @param idx The index in the vector.
+ * @param v The vector.
+ * @param idx The index into the vector.
  * 
- * @return NULL on error. A valid pointer to the element at 'idx' otherwise.
+ * @return A pointer to the element at 'idx', which is itself a pointer.
  */
 void** vector_at(vector_t* v, size_t idx) {
     void** vector_position = v->start + idx;
