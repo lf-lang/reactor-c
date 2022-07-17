@@ -35,37 +35,71 @@
 #include <stdio.h>
 
 /**
- * Given an array of pointers to port structs, return the index of the
- * first channel with index greater than or equal to the start argument
- * that is present. Return -1 if either none is present or the port
- * is not a multiport.
+ * Given an array of pointers to port structs, return an iterator
+ * that can be used to iterate over the present channels.
  * @param port An array of pointers to port structs.
- * @param start The index of the channel at which to start checking for
- *  presence.
  * @param width The width of the multiport (or a negative number if not
  *  a multiport).
  */
-int _lf_input_iterator_impl(lf_port_base_t** port, size_t start, int width) {
+lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t** port, int width) {
 	// NOTE: Synchronization is not required because all writers must have
 	// completed by the time this is invoked.
-	if (width < 0 || start >= width) return -1;
-	if (port[start]->sparse_record
-			&& port[start]->sparse_record->size >= 0) {
+	struct lf_multiport_iterator_t result = (lf_multiport_iterator_t) {
+			.next = -1,
+			.idx = 0,
+			.port = port,
+			.width = width
+	};
+	if (width <= 0) return result;
+	if (port[0]->sparse_record) {
 		// Sparse record is enabled and ready to use.
-		int next = 0;
-		while (next < port[start]->sparse_record->size) {
-			if (port[start]->sparse_record->present_channels[next] >= start) {
-				return port[start]->sparse_record->present_channels[next];
-			}
-			next++;
+		if (port[0]->sparse_record->size > 0) {
+			result.next = port[0]->sparse_record->present_channels[0];
 		}
-		// None present greater than or equal to start.
-		return -1;
+		return result;
 	}
 	// Fallback is to iterate over all port structs representing channels.
+	int start = 0;
 	while(start < width) {
-		if (port[start]->is_present) return start;
+		if (port[start]->is_present) {
+			result.idx = start;
+			result.next = start;
+		}
 		start++;
 	}
-	return -1;
+	return result;
+}
+
+/**
+ * Update the specified iterator so that its 'next' field points to the
+ * channel number of the next present input on the multiport or has value
+ * -1 if there are no more present channels.
+ * @param iterator The iterator.
+ */
+void lf_multiport_iterator_advance(lf_multiport_iterator_t* iterator) {
+	// If the iterator is already exhausted, return.
+	if (iterator->next < 0 || iterator->width <= 0) return;
+	if (iterator->port[iterator->idx]->sparse_record) {
+		// Sparse record is enabled and ready to use.
+		iterator->idx++;
+		if (iterator->idx >= iterator->port[iterator->idx]->sparse_record->size) {
+			// No more present channels.
+			iterator->next = -1;
+		} else {
+			iterator->next = iterator->port[iterator->idx]->
+					sparse_record->present_channels[iterator->idx];
+		}
+	} else {
+		// Fallback is to iterate over all port structs representing channels.
+		int start = iterator->next + 1;
+		while(start < iterator->width) {
+			if (iterator->port[start]->is_present) {
+				iterator->next = start;
+				return;
+			}
+			start++;
+		}
+		// No more present channels found.
+		iterator->next = -1;
+	}
 }
