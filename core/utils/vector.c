@@ -90,6 +90,33 @@ void* vector_pop(vector_t* v) {
 }
 
 /**
+ * @brief Return a pointer of the vector element at 'idx'.
+ * 
+ * @param v Any vector.
+ * @param idx The index in the vector.
+ * 
+ * @return NULL on error. A valid pointer to the element at 'idx' otherwise.
+ */
+void** vector_at(vector_t* v, size_t idx) {
+    void** vector_position = v->start + idx;
+    if ((vector_position + 1) > v->next) {
+        v->next = vector_position + 1;
+    }
+    if (v->next >= v->end) {
+        v->votes_required++;
+        size_t new_size = (v->end - v->start) * SCALE_FACTOR;
+        // Find a size that includes idx
+        while (new_size <= idx) {
+            new_size *= SCALE_FACTOR;
+        }
+        vector_resize(v, new_size);
+    }
+    // Note: Can't re-use vector_position because v->start can move after
+    // resizing.
+    return v->start + idx;
+}
+
+/**
  * @brief Return the size of the vector.
  * 
  * @param v Any vector
