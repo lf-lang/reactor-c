@@ -27,27 +27,39 @@
  *
  * @section DESCRIPTION
  *
- * Header file for macros, functions, and structs for optimized sparse I/O
- * through multiports. When reading from a wide input multiport,
+ * This header file is for macros, functions, and structs for optimized sparse
+ * input through multiports. When reading from a wide input multiport,
  * before this optimization, it was necessary for a reactor to test each
  * channel for presence each time a reaction was triggered by the multiport.
  * If few of the input channels are present, this can be very inefficient.
  * To more efficiently handle this situation, reactor authors should
  * annotate the input port with the "@sparse" annotation and use
- * lf_multiport_iterator() to read from an input multiport.
+ * lf_multiport_iterator() to read from an input multiport. For example:
  *
- * The way this works is that for each input multiport p1 that is wide enough to
- * benefit from this optimization, a struct s of type lf_sparse_io_record will
+ * ```
+ *     @sparse
+ *     input[100] in:int;
+ *     reaction(in) {=
+ *         struct lf_multiport_iterator_t i = lf_multiport_iterator(in_ping);
+ *         while(i.next >= 0) {
+ *             // Input channel i.next is present.
+ *             printf("Received %d on channel %d.\n", in[i.next]->value, i.next);
+ *             lf_multiport_iterator_advance(&i);
+ *         }
+ *     =}
+ * ```
+ *
+ * The `lf_multiport_iterator_t` struct has a field `next` that initially
+ * indicates the first channel number with a present input. The
+ * `lf_multiport_iterator_advance` increments the `next` field to the next
+ * channel number with a present input, or to -1 when there are no more
+ * channels with present inputs.
+ *
+ * The way this works is that for each input multiport p1 that is marked
+ * @sparse, a struct s of type `lf_sparse_io_record_t` will
  * be dynamically allocated and a pointer to this struct will be put on the
  * self struct in a field named "portname__sparse".  Each port channel struct
  * within the multiport will be given a pointer to s.
- *
- * To read from the input port, use lf_multiport_iterator() to create a
- * struct of type lf_multiport_iterator_t. The 'next' field of this struct
- * has the index of the first channel that has a present input (or it has
- * value -1 if no channel has a present input). The function
- * lf_multiport_iterator_advance() is then used to update this struct
- * to point to the next channel that has a present input.
  */
 
 #ifndef PORT_H
