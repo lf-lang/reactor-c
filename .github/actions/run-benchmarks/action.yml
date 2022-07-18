@@ -95,6 +95,7 @@ runs:
           target=lf-${{ inputs.target }} \
           size=fast \
           ++target.params.scheduler=${{ inputs.scheduler }} \
+          ++stacktrace=True \
           threads=${{ inputs.num-workers }} \
           | tee >(grep "\[ERROR\]" >> ${{ inputs.errors-file }})
         echo "::set-output name=output-file::$EXISTING_FILE"
