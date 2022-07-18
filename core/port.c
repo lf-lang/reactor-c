@@ -35,15 +35,15 @@
 #include <stdio.h>
 
 /**
- * Compare two integers pointed to. Return -1 if a < b, 0 if a == b,
+ * Compare two non-negative integers pointed to. Return -1 if a < b, 0 if a == b,
  * and 1 if a > b.
  * @param a Pointer to the first integer.
  * @param b Pointer to the second integer.
  */
-int compare_ints(const void* a, const void* b) {
-	if (*(int*)a < *(int*)b) {
+int compare_sizes(const void* a, const void* b) {
+	if (*(size_t*)a < *(size_t*)b) {
 		return -1;
-	} else if (*(int*)a > *(int*)b) {
+	} else if (*(size_t*)a > *(size_t*)b) {
 		return 1;
 	} else {
 		return 0;
@@ -73,10 +73,10 @@ lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t** port, int w
 			// Need to sort it first (if the length is greater than 1).
 			if (port[0]->sparse_record->size > 1) {
 				qsort(
-						port[0]->sparse_record->present_channels,
-						port[0]->sparse_record->size,
-						sizeof(int),
-						&compare_ints
+						&port[0]->sparse_record->present_channels[0],
+						(size_t)port[0]->sparse_record->size,
+						sizeof(size_t),
+						&compare_sizes
 				);
 			}
 			result.next = port[0]->sparse_record->present_channels[0];
