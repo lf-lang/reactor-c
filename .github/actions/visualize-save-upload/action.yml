@@ -59,9 +59,11 @@ runs:
       run: |
         echo $(ls)
         if [ -f errors.txt ]; then
-          ERROR_MESSAGES=$(cat errors.txt)
-          echo "The benchmark runner reported the following errors:\n$ERROR_MESSAGES"
-          echo "::set-output name=error-messages::Error messages: $ERROR_MESSAGES"
+          ERROR_MESSAGES="The benchmark runner reported the following errors:"$'\n'"$(cat errors.txt)"
+          echo "$ERROR_MESSAGES"
+          echo 'ERROR_MESSAGES<<EOF' >> $GITHUB_ENV
+          echo "$ERROR_MESSAGES" >> $GITHUB_ENV
+          echo 'EOF' >> $GITHUB_ENV
         fi
       shell: bash
 
@@ -70,7 +72,7 @@ runs:
       with:
         message: |
           Running benchmarks from commit ${{ github.sha }}...
-          ${{ steps.compute-error-messages.outputs.error-messages }}
+          ${{ env.ERROR_MESSAGES }}
 
           Results so far:
 
@@ -85,7 +87,7 @@ runs:
       with:
         message: |
           :heavy_check_mark: Finished running benchmarks from ${{ github.sha }}.
-          ${{ steps.compute-error-messages.outputs.error-messages }}
+          ${{ env.ERROR_MESSAGES }}
 
           ![Visualization of the benchmark results.](https://raw.githubusercontent.com/lf-lang/${{ inputs.repo-for-saving-data }}/saved-benchmark-results/${{ steps.figure.outputs.output-file }})
         comment_includes: ${{ github.sha }}
