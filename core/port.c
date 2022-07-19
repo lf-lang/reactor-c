@@ -35,6 +35,14 @@
 #include <stdio.h>
 
 /**
+ * A vector of pointers to the size fields of instances of
+ * lf_sparse_io_record_t so that these can be set to 0 between iterations.
+ * The start field of this struct will be NULL initially, so calling
+ * vector_new(_lf_sparse_io_record_sizes) will be necessary to use this.
+ */
+struct vector_t _lf_sparse_io_record_sizes;
+
+/**
  * Compare two non-negative integers pointed to. Return -1 if a < b, 0 if a == b,
  * and 1 if a > b.
  * @param a Pointer to the first integer.

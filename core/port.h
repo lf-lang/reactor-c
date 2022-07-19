@@ -123,7 +123,7 @@ typedef struct lf_multiport_iterator_t {
  * The start field of this struct will be NULL initially, so calling
  * vector_new(_lf_sparse_io_record_sizes) will be necessary to use this.
  */
-struct vector_t _lf_sparse_io_record_sizes;
+extern struct vector_t _lf_sparse_io_record_sizes;
 
 /**
  * Given an array of pointers to port structs, return an iterator
