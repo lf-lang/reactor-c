@@ -381,8 +381,11 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         // The above handles only "normal" termination (via a call to exit).
         // As a consequence, we need to also trap ctrl-C, which issues a SIGINT,
         // and cause it to call exit.
+        // We wrap this statement since certain Arduino flavors don't support signals.
+        #ifndef ARDUINO
         signal(SIGINT, exit);
-
+        #endif
+        
         LF_PRINT_DEBUG("Initializing.");
         initialize(); // Sets start_time.
 #ifdef MODAL_REACTORS
