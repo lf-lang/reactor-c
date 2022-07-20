@@ -31,6 +31,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "lf_arduino_support.h"
 #include "../platform.h"
+#include "Arduino.h"
 
 instant_t ns_to_microsec(instant_t time) {
     return (time / 1000) - ((time / 1000) % 4);
