@@ -57,11 +57,11 @@ jobs:
 
       - name: Run C Benchmarks (multithreaded)
         run: |
-          python3 runner/run_benchmark.py -m continue_on_error=True iterations=12 size=fast \
+          python3 runner/run_benchmark.py -m continue_on_error=True iterations=12 problem_size=small \
             benchmark="glob(*)" target=lf-c target.params.scheduler=GEDF_NP,NP,adaptive threads=0
 
       - name: Collect results
-        run: python3 runner/collect_results.py latest continuous-benchmarking-results-multi-threaded.json
+        run: python3 runner/collect_results.py continuous-benchmarking-results-multi-threaded.json
 
       - name: Store Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1
@@ -77,11 +77,11 @@ jobs:
 
       - name: Run C Benchmarks (unthreaded)
         run: |
-          python3 runner/run_benchmark.py -m continue_on_error=True iterations=12 size=fast \
+          python3 runner/run_benchmark.py -m continue_on_error=True iterations=12 problem_size=small \
             benchmark="glob(*)" target=lf-c-unthreaded
 
       - name: Collect results
-        run: python3 runner/collect_results.py latest continuous-benchmarking-results-single-threaded.json
+        run: python3 runner/collect_results.py continuous-benchmarking-results-single-threaded.json
 
       - name: Store Benchmark Result
         uses: benchmark-action/github-action-benchmark@v1
