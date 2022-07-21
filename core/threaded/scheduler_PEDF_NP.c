@@ -43,7 +43,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../platform.h"
 #include "../utils/pqueue_support.h"
 #include "../utils/semaphore.c"
-#include "../utils/vector.c"
+#include "../utils/vector.h"
 #include "scheduler_instance.h"
 #include "scheduler_sync_tag_advance.c"
 
