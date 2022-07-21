@@ -65,6 +65,12 @@ list(JOIN SOURCES ", " PRINTABLE_SOURCE_LIST)
 message(STATUS "Including the following sources: " ${PRINTABLE_SOURCE_LIST})
 add_library(core ${SOURCES})
 
+if(MSVC)
+  target_compile_options(core PRIVATE /W4 /WX)
+else()
+  target_compile_options(core PRIVATE -Wall -Wextra -Wpedantic)
+endif()
+
 # Link threading library if necessary.
 if(NUMBER_OF_WORKERS)
     find_package(Threads REQUIRED)
