@@ -118,9 +118,9 @@ typedef struct lf_multiport_iterator_t {
  * A vector of pointers to the size fields of instances of
  * lf_sparse_io_record_t so that these can be set to 0 between iterations.
  * The start field of this struct will be NULL initially, so calling
- * vector_new(lf_sparse_io_record_sizes) will be necessary to use this.
+ * vector_new(sparse_io_record_sizes) will be necessary to use this.
  */
-extern struct vector_t lf_sparse_io_record_sizes;
+extern struct vector_t sparse_io_record_sizes;
 
 /**
  * Given an array of pointers to port structs, return an iterator

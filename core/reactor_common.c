@@ -467,12 +467,12 @@ void _lf_start_time_step() {
         *is_present_fields[i] = false;
     }
     // Reset sparse IO record sizes to 0, if any.
-    if (lf_sparse_io_record_sizes.start != NULL) {
-    	for (size_t i = 0; i < vector_size(&lf_sparse_io_record_sizes); i++) {
+    if (sparse_io_record_sizes.start != NULL) {
+    	for (size_t i = 0; i < vector_size(&sparse_io_record_sizes); i++) {
     		// NOTE: vector_at does not return the element at
     		// the index, but rather returns a pointer to that element, which is
     		// itself a pointer.
-    		int** size = (int**)vector_at(&lf_sparse_io_record_sizes, i);
+    		int** size = (int**)vector_at(&sparse_io_record_sizes, i);
     		if (size != NULL && *size != NULL) {
     			**size = 0;
     		}
