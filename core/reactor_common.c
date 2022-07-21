@@ -42,6 +42,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "utils/pqueue_support.h"
 #include "utils/util.c"
 #include "modal_models/modes.c"
+#include "port.h"
 
 /** 
  * Indicator of whether to wait for physical time to match logical time.
