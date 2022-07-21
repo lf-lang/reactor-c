@@ -47,7 +47,7 @@ add_subdirectory(platform)
 add_subdirectory(utils)
 
 # List sources in this directory.
-set(SINGLE_THREADED_SOURCES reactor.c)
+set(SINGLE_THREADED_SOURCES reactor.c port.c)
 
 # Determine which sources to include.
 list(APPEND SOURCES ${GENERAL_SOURCES})
