@@ -88,6 +88,12 @@
 void _lf_set_present(bool* is_present_field);
 
 /**
+ * @brief Forward declaration for the executable preamble;
+ * 
+ */
+void _lf_executable_preamble();
+
+/**
  * Set the specified output (or input of a contained reactor)
  * to the specified value.
  *

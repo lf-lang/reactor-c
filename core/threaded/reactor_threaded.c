@@ -768,6 +768,8 @@ void _lf_initialize_start_tag() {
     // Add reactions invoked at tag (0,0) (including startup reactions) to the reaction queue
     _lf_trigger_startup_reactions(); 
 
+    _lf_executable_preamble();
+
 #ifdef FEDERATED
     // Reset status fields before talking to the RTI to set network port
     // statuses to unknown
