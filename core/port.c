@@ -70,7 +70,7 @@ lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t** port, int w
 	// completed by the time this is invoked.
 	struct lf_multiport_iterator_t result = (lf_multiport_iterator_t) {
 			.next = -1,
-			.idx = 0,
+			.idx = -1, // Indicate that lf_multiport_next() has not been called.
 			.port = port,
 			.width = width
 	};
@@ -95,7 +95,6 @@ lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t** port, int w
 	int start = 0;
 	while(start < width) {
 		if (port[start]->is_present) {
-			result.idx = start;
 			result.next = start;
 			return result;
 		}
@@ -105,36 +104,44 @@ lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t** port, int w
 }
 
 /**
- * Update the specified iterator so that its 'next' field points to the
- * channel number of the next present input on the multiport or has value
- * -1 if there are no more present channels.
+ * Return the channel number of the next present input on the multiport
+ * or -1 if there are no more present channels.
  * @param iterator The iterator.
  */
-void lf_multiport_iterator_advance(lf_multiport_iterator_t* iterator) {
+int lf_multiport_next(lf_multiport_iterator_t* iterator) {
+	// If the iterator has not been used, return next.
+	if (iterator->idx < 0) {
+		iterator->idx = 0;
+		return iterator->next;
+	}
 	// If the iterator is already exhausted, return.
-	if (iterator->next < 0 || iterator->width <= 0) return;
-	if (iterator->port[iterator->idx]->sparse_record
-			&& iterator->port[iterator->idx]->sparse_record->size >= 0) {
+	if (iterator->next < 0 || iterator->width <= 0) {
+		return -1;
+	}
+	struct lf_sparse_io_record_t* sparse_record
+			= iterator->port[iterator->idx]->sparse_record;
+	if (sparse_record && sparse_record->size >= 0) {
 		// Sparse record is enabled and ready to use.
 		iterator->idx++;
-		if (iterator->idx >= iterator->port[iterator->idx]->sparse_record->size) {
+		if (iterator->idx >= sparse_record->size) {
 			// No more present channels.
 			iterator->next = -1;
 		} else {
-			iterator->next = iterator->port[iterator->idx]->
-					sparse_record->present_channels[iterator->idx];
+			iterator->next = sparse_record->present_channels[iterator->idx];
 		}
+		return iterator->next;
 	} else {
-		// Fallback is to iterate over all port structs representing channels.
+		// Fall back to iterate over all port structs representing channels.
 		int start = iterator->next + 1;
 		while(start < iterator->width) {
 			if (iterator->port[start]->is_present) {
 				iterator->next = start;
-				return;
+				return iterator->next;
 			}
 			start++;
 		}
 		// No more present channels found.
 		iterator->next = -1;
+		return iterator->next;
 	}
 }

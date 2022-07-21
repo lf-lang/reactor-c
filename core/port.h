@@ -40,20 +40,20 @@
  *     @sparse
  *     input[100] in:int;
  *     reaction(in) {=
- *         struct lf_multiport_iterator_t i = lf_multiport_iterator(in_ping);
- *         while(i.next >= 0) {
- *             // Input channel i.next is present.
- *             printf("Received %d on channel %d.\n", in[i.next]->value, i.next);
- *             lf_multiport_iterator_advance(&i);
+ *         struct lf_multiport_iterator_t i = lf_multiport_iterator(in);
+ *         int channel = lf_multiport_next(&i);
+ *         while(channel >= 0) {
+ *             printf("Received %d on channel %d.\n", in[channel]->value, channel);
+ *             channel = lf_multiport_next(&i);
  *         }
  *     =}
  * ```
  *
- * The `lf_multiport_iterator_t` struct has a field `next` that initially
- * indicates the first channel number with a present input. The
- * `lf_multiport_iterator_advance` increments the `next` field to the next
- * channel number with a present input, or to -1 when there are no more
- * channels with present inputs.
+ * The `lf_multiport_iterator()` function constructs an iterator (which is
+ * a struct) that can be passed to the `lf_multiport_next()` function to
+ * obtain the first channel number with a present input. Subsequent calls
+ * to `lf_multiport_next()` return the next channel index that is present
+ * until there are no more, at which point they return -1.
  *
  * The way this works is that for each input multiport p1 that is marked
  * @sparse, a struct s of type `lf_sparse_io_record_t` will
@@ -102,16 +102,13 @@ typedef struct lf_port_base_t {
 /**
  * An iterator over a record of the subset of channels of a multiport that
  * have present inputs.  To use this, create an iterator using the function
- * lf_multiport_iterator(). That function returns a struct with a next
- * field that, if non-negative, indicates the next channel number of a present
- * input. To advance to the next channel with a present input, call
- * lf_multiport_iterator_advance(), which will update the next field.
- * When next becomes negative, then you have iterated over all the present
- * inputs.
+ * lf_multiport_iterator(). That function returns a struct that can be
+ * passed to the lf_multiport_next() function to obtain the next channel
+ * number of a present input (or -1 if there is no next present input).
  */
 typedef struct lf_multiport_iterator_t {
 	int next;
-	size_t idx; // Index in the record of next.
+	int idx; // Index in the record of next or -1 if lf_multiport_next has not been called.
 	lf_port_base_t** port;
 	int width;
 } lf_multiport_iterator_t;
@@ -145,12 +142,11 @@ lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t** port, int w
                self->_lf_ ## in ## _width))
 
 /**
- * Update the specified iterator so that its 'next' field points to the
- * channel number of the next present input on the multiport or has value
- * -1 if there are no more present channels.
+ * Return the channel number of the next present input on the multiport
+ * or -1 if there are no more present channels.
  * @param iterator The iterator.
  */
-void lf_multiport_iterator_advance(lf_multiport_iterator_t* iterator);
+int lf_multiport_next(lf_multiport_iterator_t* iterator);
 
 #endif /* PORT_H */
 /** @} */
