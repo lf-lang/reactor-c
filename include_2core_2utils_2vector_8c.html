@@ -99,7 +99,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a85cdea38a35554168aa2277d83f5a957"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2core_2utils_2vector_8c.html#a85cdea38a35554168aa2277d83f5a957">vector_pop</a> (<a class="el" href="structvector__t.html">vector_t</a> *v)</td></tr>
 <tr class="separator:a85cdea38a35554168aa2277d83f5a957"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a201cb1fd5299e01b6fdfb499d3008952"><td class="memItemLeft" align="right" valign="top">void **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2core_2utils_2vector_8c.html#a201cb1fd5299e01b6fdfb499d3008952">vector_at</a> (<a class="el" href="structvector__t.html">vector_t</a> *v, size_t idx)</td></tr>
-<tr class="memdesc:a201cb1fd5299e01b6fdfb499d3008952"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a pointer of the vector element at 'idx'.  <a href="include_2core_2utils_2vector_8c.html#a201cb1fd5299e01b6fdfb499d3008952">More...</a><br /></td></tr>
 <tr class="separator:a201cb1fd5299e01b6fdfb499d3008952"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaa8f4318bf03a7886169e85c151b6903"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2core_2utils_2vector_8c.html#aaa8f4318bf03a7886169e85c151b6903">vector_size</a> (<a class="el" href="structvector__t.html">vector_t</a> *v)</td></tr>
 <tr class="memdesc:aaa8f4318bf03a7886169e85c151b6903"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the size of the vector.  <a href="include_2core_2utils_2vector_8c.html#aaa8f4318bf03a7886169e85c151b6903">More...</a><br /></td></tr>
@@ -179,17 +178,15 @@ Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>Return a pointer of the vector element at 'idx'. </p>
-<p >Return a pointer that is contained in the vector at 'idx'.</p>
+<p >Return a pointer to where the vector element at 'idx' is stored. This can be used to set the value of the element or to read it. If the index is past the end of the vector, then the vector is automatically expanded and filled with NULL pointers as needed. If no element at <code>idx</code> has been previously set, then the value pointed to by the returned pointer will be NULL.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">v</td><td>Any vector. </td></tr>
-    <tr><td class="paramname">idx</td><td>The index in the vector.</td></tr>
+    <tr><td class="paramname">v</td><td>The vector. </td></tr>
+    <tr><td class="paramname">idx</td><td>The index into the vector.</td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>NULL on error. A valid pointer to the element at 'idx' otherwise. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A pointer to the element at 'idx', which is itself a pointer. </dd></dl>
 
 </div>
 </div>
