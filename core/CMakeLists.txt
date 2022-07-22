@@ -63,7 +63,7 @@ endif(NUMBER_OF_WORKERS)
 # Create the library "core".
 list(JOIN SOURCES ", " PRINTABLE_SOURCE_LIST)
 message(STATUS "Including the following sources: " ${PRINTABLE_SOURCE_LIST})
-add_library(core ${SOURCES})
+add_library(core STATIC ${SOURCES})
 
 if(MSVC)
   target_compile_options(core PRIVATE /W4 /WX)
