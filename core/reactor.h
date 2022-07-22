@@ -69,270 +69,6 @@
 // then end.
 // #include "trace.h"
 
-//  ======== Macros ========  //
-#define CONSTRUCTOR(classname) (new_ ## classname)
-#define SELF_STRUCT_T(classname) (classname ## _self_t)
-
-// FIXME: May want these to application dependent, hence code generated.
-#define INITIAL_EVENT_QUEUE_SIZE 10
-#define INITIAL_REACT_QUEUE_SIZE 10
-
-////////////////////////////////////////////////////////////
-//// Macros for producing outputs.
-
-// NOTE: According to the "Swallowing the Semicolon" section on this page:
-//    https://gcc.gnu.org/onlinedocs/gcc-3.0.1/cpp_3.html
-// the following macros should use an odd do-while construct to avoid
-// problems with if ... else statements that do not use braces around the
-// two branches.
-
-void _lf_set_present(lf_port_base_t* port);
-
-/**
- * Set the specified output (or input of a contained reactor)
- * to the specified value.
- *
- * This version is used for primitive types such as int,
- * double, etc. as well as the built-in types bool and string.
- * The value is copied and therefore the variable carrying the
- * value can be subsequently modified without changing the output.
- * This can also be used for structs with a type defined by a typedef
- * so that the type designating string does not end in '*'.
- * @param out The output port (by name) or input of a contained
- *  reactor in form input_name.port_name.
- * @param value The value to insert into the self struct.
- */
-#define _LF_SET(out, val) \
-do { \
-    /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
-    /* even if it is a literal */ \
-    out->value = val; \
-    _lf_set_present((lf_port_base_t*)out); \
-    if (out->token != NULL) { \
-        /* The cast "*((void**) &out->value)" is a hack to make the code */ \
-        /* compile with non-token types where val is not a pointer. */ \
-        lf_token_t* token = _lf_initialize_token_with_value(out->token, *((void**) &out->value), 1); \
-        token->ref_count = out->num_destinations; \
-        out->token = token; \
-        out->token->ok_to_free = token_and_value; \
-        if (out->destructor != NULL) { \
-            out->token->destructor = out->destructor; \
-        } \
-        if (out->copy_constructor != NULL) { \
-            out->token->copy_constructor = out->copy_constructor; \
-        } \
-    } \
-} while(0)
-
-/**
- * Version of set for output types given as 'type[]' where you
- * want to send a previously dynamically allocated array.
- *
- * The deallocation is delegated to downstream reactors, which
- * automatically deallocate when the reference count drops to zero.
- * It also sets the corresponding _is_present variable in the self
- * struct to true (which causes the object message to be sent).
- * @param out The output port (by name).
- * @param val The array to send (a pointer to the first element).
- * @param length The length of the array to send.
- * @see lf_token_t
- */
-#ifndef __cplusplus
-#define _LF_SET_ARRAY(out, val, length) \
-do { \
-    _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
-    token->ref_count = out->num_destinations; \
-    out->token = token; \
-    out->value = token->value; \
-} while(0)
-#else
-#define _LF_SET_ARRAY(out, val, length) \
-do { \
-    _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
-    token->ref_count = out->num_destinations; \
-    out->token = token; \
-    out->value = static_cast<decltype(out->value)>(token->value); \
-} while(0)
-#endif
-
-/**
- * Version of set() for output types given as 'type*' that
- * allocates a new object of the type of the specified output port.
- *
- * This macro dynamically allocates enough memory to contain one
- * instance of the output datatype and sets the variable named
- * by the argument to point to the newly allocated memory.
- * The user code can then populate it with whatever value it
- * wishes to send.
- *
- * This macro also sets the corresponding _is_present variable in the self
- * struct to true (which causes the object message to be sent),
- * @param out The output port (by name).
- */
-#ifndef __cplusplus
-#define _LF_SET_NEW(out) \
-do { \
-    _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
-    out->value = token->value; \
-    out->token = token; \
-} while(0)
-#else
-#define _LF_SET_NEW(out) \
-do { \
-    _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
-    out->value = static_cast<decltype(out->value)>(token->value); \
-    out->token = token; \
-} while(0)
-#endif // __cplusplus
-
-/**
- * Version of set() for output types given as 'type[]'.
- *
- * This allocates a new array of the specified length,
- * sets the corresponding _is_present variable in the self struct to true
- * (which causes the array message to be sent), and sets the variable
- * given by the first argument to point to the new array so that the
- * user code can populate the array. The freeing of the dynamically
- * allocated array will be handled automatically
- * when the last downstream reader of the message has finished.
- * @param out The output port (by name).
- * @param length The length of the array to be sent.
- */
-#ifndef __cplusplus
-#define _LF_SET_NEW_ARRAY(out, len) \
-do { \
-    _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
-    out->value = token->value; \
-    out->token = token; \
-    out->length = len; \
-} while(0)
-#else
-#define _LF_SET_NEW_ARRAY(out, len) \
-do { \
-    _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
-    out->value = static_cast<decltype(out->value)>(token->value); \
-    out->token = token; \
-    out->length = len; \
-} while(0)
-#endif
-/**
- * Version of set() for output types given as 'type[number]'.
- *
- * This sets the _is_present variable corresponding to the specified output
- * to true (which causes the array message to be sent). The values in the
- * output are normally written directly to the array or struct before or
- * after this is called.
- * @param out The output port (by name).
- */
-#define lf_set_present(out) \
-do { \
-    _lf_set_present((lf_port_base_t*)out); \
-} while(0)
-
-/**
- * Version of set() for output types given as 'type*' or 'type[]' where you want
- * to forward an input or action without copying it.
- *
- * The deallocation of memory is delegated to downstream reactors, which
- * automatically deallocate when the reference count drops to zero.
- * @param out The output port (by name).
- * @param token A pointer to token obtained from an input or action.
- */
-#ifndef __cplusplus
-#define _LF_SET_TOKEN(out, newtoken) \
-do { \
-    _lf_set_present((lf_port_base_t*)out); \
-    out->value = newtoken->value; \
-    out->token = newtoken; \
-    newtoken->ref_count += out->num_destinations; \
-    out->length = newtoken->length; \
-} while(0)
-#else
-#define _LF_SET_TOKEN(out, newtoken) \
-do { \
-    _lf_set_present((lf_port_base_t*)out); \
-    out->value = static_cast<decltype(out->value)>(newtoken->value); \
-    out->token = newtoken; \
-    newtoken->ref_count += out->num_destinations; \
-    out->length = newtoken->length; \
-} while(0)
-#endif
-
-/**
- * Set the destructor used to free "token->value" set on "out".
- * That memory will be automatically freed once all downstream
- * reactions no longer need the value.
- * 
- * @param out The output port (by name) or input of a contained
- *            reactor in form input_name.port_name.
- * @param dtor A pointer to a void function that takes a pointer argument
- *             or NULL to use the default void free(void*) function. 
- */
-#define _LF_SET_DESTRUCTOR(out, dtor) \
-do { \
-    out->destructor = dtor; \
-} while(0)
-
-/**
- * Set the destructor used to copy construct "token->value" received
- * by "in" if "in" is mutable.
- * 
- * @param out The output port (by name) or input of a contained
- *            reactor in form input_name.port_name.
- * @param cpy_ctor A pointer to a void* function that takes a pointer argument
- *                 or NULL to use the memcpy operator.
- */
-#define _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor) \
-do { \
-    out->copy_constructor = cpy_ctor; \
-} while(0)
-
-/**
- * Macro for extracting the deadline from the index of a reaction.
- * The reaction queue is sorted according to this index, and the
- * use of the deadline here results in an earliest deadline first
- * (EDF) scheduling poicy.
- */
-#define DEADLINE(index) (index & 0x7FFFFFFFFFFF0000)
-
-/**
- * Macro for extracting the level from the index of a reaction.
- * A reaction that has no upstream reactions has level 0.
- * Other reactions have a level that is the length of the longest
- * upstream chain to a reaction with level 0 (inclusive).
- * This is used, along with the deadline, to sort reactions
- * in the reaction queue. It ensures that reactions that are
- * upstream in the dependence graph execute before reactions
- * that are downstream.
- */
-#define LEVEL(index) (index & 0xffffLL)
-
-/** Utility for finding the maximum of two values. */
-#ifndef MAX
-#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
-#endif
-
-/** Utility for finding the minimum of two values. */
-#ifndef MIN
-#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
-#endif
-
-/**
- * Macro for determining whether two reactions are in the
- * same chain (one depends on the other). This is conservative.
- * If it returns false, then they are surely not in the same chain,
- * but if it returns true, they may be in the same chain.
- * This is in reactor_threaded.c to execute reactions in parallel
- * on multiple cores even if their levels are different.
- */
-#define OVERLAPPING(chain1, chain2) ((chain1 & chain2) != 0)
-
 //  ======== Type definitions ========  //
 
 /**
@@ -635,6 +371,356 @@ typedef struct self_base_t {
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif
 } self_base_t;
+
+//  ======== Macros ========  //
+#define CONSTRUCTOR(classname) (new_ ## classname)
+#define SELF_STRUCT_T(classname) (classname ## _self_t)
+
+// FIXME: May want these to application dependent, hence code generated.
+#define INITIAL_EVENT_QUEUE_SIZE 10
+#define INITIAL_REACT_QUEUE_SIZE 10
+
+/**
+ * Prototype for the internal API. @see reactor_common.c
+ **/
+lf_token_t* _lf_initialize_token_with_value(lf_token_t* token, void* value, size_t length);
+
+////////////////////////////////////////////////////////////
+//// Global variables :(
+
+/** 
+ * Indicator of whether to wait for physical time to match logical time.
+ * By default, execution will wait. The command-line argument -fast will
+ * eliminate the wait and allow logical time to exceed physical time.
+ */ 
+bool fast = false;
+
+/**
+ * The number of worker threads for threaded execution.
+ * By default, execution is not threaded and this variable will have value 0.
+ * 
+ * If the execution is threaded, a value of 0 indicates that the runtime should
+ * decide on the number of workers (which will be decided based on the number of
+ * available cores on the host machine).
+ */
+unsigned int _lf_number_of_workers = 0u;
+
+/** 
+ * The logical time to elapse during execution, or -1 if no timeout time has
+ * been given. When the logical equal to start_time + duration has been
+ * reached, execution will terminate.
+ */
+instant_t duration = -1LL;
+
+/**
+ * Indicates whether or not the execution
+ * has started.
+ */
+bool _lf_execution_started = false;
+
+/**
+ * The tag at which the Lingua Franca program should stop.
+ * It will be initially set to timeout if it is set. However,
+ * starvation or calling lf_request_stop() can also alter the stop_tag by moving it
+ * earlier.
+ * 
+ * FIXME: This variable might need to be volatile
+ */
+tag_t stop_tag = FOREVER_TAG_INITIALIZER;
+
+/** Indicator of whether the keepalive command-line option was given. */
+bool keepalive_specified = false;
+
+// Define the array of pointers to the _is_present fields of all the
+// self structs that need to be reinitialized at the start of each time step.
+// NOTE: This may have to be resized for a mutation.
+bool** _lf_is_present_fields = NULL;
+int _lf_is_present_fields_size = 0;
+
+// Define an array of pointers to the _is_present fields
+// that have been set to true during the execution of a tag
+// so that at the conclusion of the tag, these fields can be reset to
+// false. Usually, this list will have fewer records than will
+// _lf_is_present_fields, allowing for some time to be saved.
+// However, it is possible for it to have more records if some ports
+// are set multiple times at the same tag. In such cases, we fall back
+// to resetting all is_present fields at the start of the next time
+// step.
+bool** _lf_is_present_fields_abbreviated = NULL;
+int _lf_is_present_fields_abbreviated_size = 0;
+
+// Define the array of pointers to the intended_tag fields of all
+// ports and actions that need to be reinitialized at the start
+// of each time step.
+tag_t** _lf_intended_tag_fields = NULL;
+int _lf_intended_tag_fields_size = 0;
+
+// Define the array of pointers to the token fields of all the
+// actions and inputs that need to have their reference counts
+// decremented at the start of each time step.
+// NOTE: This may have to be resized for a mutation.
+token_present_t* _lf_tokens_with_ref_count = NULL;
+// Dynamically created list of tokens that are copies made
+// as a result of mutable inputs. These need to also have
+// _lf_done_using() called on them at the start of the next time step.
+lf_token_t* _lf_more_tokens_with_ref_count = NULL;
+int _lf_tokens_with_ref_count_size = 0;
+
+////////////////////////////////////////////////////////////
+//// Macros for producing outputs.
+
+// NOTE: According to the "Swallowing the Semicolon" section on this page:
+//    https://gcc.gnu.org/onlinedocs/gcc-3.0.1/cpp_3.html
+// the following macros should use an odd do-while construct to avoid
+// problems with if ... else statements that do not use braces around the
+// two branches.
+
+void _lf_set_present(lf_port_base_t* port);
+
+/**
+ * Set the specified output (or input of a contained reactor)
+ * to the specified value.
+ *
+ * This version is used for primitive types such as int,
+ * double, etc. as well as the built-in types bool and string.
+ * The value is copied and therefore the variable carrying the
+ * value can be subsequently modified without changing the output.
+ * This can also be used for structs with a type defined by a typedef
+ * so that the type designating string does not end in '*'.
+ * @param out The output port (by name) or input of a contained
+ *  reactor in form input_name.port_name.
+ * @param value The value to insert into the self struct.
+ */
+#define _LF_SET(out, val) \
+do { \
+    /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
+    /* even if it is a literal */ \
+    out->value = val; \
+    _lf_set_present((lf_port_base_t*)out); \
+    if (out->token != NULL) { \
+        /* The cast "*((void**) &out->value)" is a hack to make the code */ \
+        /* compile with non-token types where val is not a pointer. */ \
+        lf_token_t* token = _lf_initialize_token_with_value(out->token, *((void**) &out->value), 1); \
+        token->ref_count = out->num_destinations; \
+        out->token = token; \
+        out->token->ok_to_free = token_and_value; \
+        if (out->destructor != NULL) { \
+            out->token->destructor = out->destructor; \
+        } \
+        if (out->copy_constructor != NULL) { \
+            out->token->copy_constructor = out->copy_constructor; \
+        } \
+    } \
+} while(0)
+
+/**
+ * Version of set for output types given as 'type[]' where you
+ * want to send a previously dynamically allocated array.
+ *
+ * The deallocation is delegated to downstream reactors, which
+ * automatically deallocate when the reference count drops to zero.
+ * It also sets the corresponding _is_present variable in the self
+ * struct to true (which causes the object message to be sent).
+ * @param out The output port (by name).
+ * @param val The array to send (a pointer to the first element).
+ * @param length The length of the array to send.
+ * @see lf_token_t
+ */
+#ifndef __cplusplus
+#define _LF_SET_ARRAY(out, val, length) \
+do { \
+    _lf_set_present((lf_port_base_t*)out); \
+    lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
+    token->ref_count = out->num_destinations; \
+    out->token = token; \
+    out->value = token->value; \
+} while(0)
+#else
+#define _LF_SET_ARRAY(out, val, length) \
+do { \
+    _lf_set_present((lf_port_base_t*)out)(&out->is_present); \
+    lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
+    token->ref_count = out->num_destinations; \
+    out->token = token; \
+    out->value = static_cast<decltype(out->value)>(token->value); \
+} while(0)
+#endif
+
+/**
+ * Version of set() for output types given as 'type*' that
+ * allocates a new object of the type of the specified output port.
+ *
+ * This macro dynamically allocates enough memory to contain one
+ * instance of the output datatype and sets the variable named
+ * by the argument to point to the newly allocated memory.
+ * The user code can then populate it with whatever value it
+ * wishes to send.
+ *
+ * This macro also sets the corresponding _is_present variable in the self
+ * struct to true (which causes the object message to be sent),
+ * @param out The output port (by name).
+ */
+#ifndef __cplusplus
+#define _LF_SET_NEW(out) \
+do { \
+    _lf_set_present((lf_port_base_t*)out); \
+    lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
+    out->value = token->value; \
+    out->token = token; \
+} while(0)
+#else
+#define _LF_SET_NEW(out) \
+do { \
+    _lf_set_present((lf_port_base_t*)out); \
+    lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
+    out->value = static_cast<decltype(out->value)>(token->value); \
+    out->token = token; \
+} while(0)
+#endif // __cplusplus
+
+/**
+ * Version of set() for output types given as 'type[]'.
+ *
+ * This allocates a new array of the specified length,
+ * sets the corresponding _is_present variable in the self struct to true
+ * (which causes the array message to be sent), and sets the variable
+ * given by the first argument to point to the new array so that the
+ * user code can populate the array. The freeing of the dynamically
+ * allocated array will be handled automatically
+ * when the last downstream reader of the message has finished.
+ * @param out The output port (by name).
+ * @param length The length of the array to be sent.
+ */
+#ifndef __cplusplus
+#define _LF_SET_NEW_ARRAY(out, len) \
+do { \
+    _lf_set_present((lf_port_base_t*)out); \
+    lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
+    out->value = token->value; \
+    out->token = token; \
+    out->length = len; \
+} while(0)
+#else
+#define _LF_SET_NEW_ARRAY(out, len) \
+do { \
+    _lf_set_present((lf_port_base_t*)out); \
+    lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
+    out->value = static_cast<decltype(out->value)>(token->value); \
+    out->token = token; \
+    out->length = len; \
+} while(0)
+#endif
+/**
+ * Version of set() for output types given as 'type[number]'.
+ *
+ * This sets the _is_present variable corresponding to the specified output
+ * to true (which causes the array message to be sent). The values in the
+ * output are normally written directly to the array or struct before or
+ * after this is called.
+ * @param out The output port (by name).
+ */
+#define lf_set_present(out) \
+do { \
+    _lf_set_present((lf_port_base_t*)out); \
+} while(0)
+
+/**
+ * Version of set() for output types given as 'type*' or 'type[]' where you want
+ * to forward an input or action without copying it.
+ *
+ * The deallocation of memory is delegated to downstream reactors, which
+ * automatically deallocate when the reference count drops to zero.
+ * @param out The output port (by name).
+ * @param token A pointer to token obtained from an input or action.
+ */
+#ifndef __cplusplus
+#define _LF_SET_TOKEN(out, newtoken) \
+do { \
+    _lf_set_present((lf_port_base_t*)out); \
+    out->value = newtoken->value; \
+    out->token = newtoken; \
+    newtoken->ref_count += out->num_destinations; \
+    out->length = newtoken->length; \
+} while(0)
+#else
+#define _LF_SET_TOKEN(out, newtoken) \
+do { \
+    _lf_set_present((lf_port_base_t*)out); \
+    out->value = static_cast<decltype(out->value)>(newtoken->value); \
+    out->token = newtoken; \
+    newtoken->ref_count += out->num_destinations; \
+    out->length = newtoken->length; \
+} while(0)
+#endif
+
+/**
+ * Set the destructor used to free "token->value" set on "out".
+ * That memory will be automatically freed once all downstream
+ * reactions no longer need the value.
+ * 
+ * @param out The output port (by name) or input of a contained
+ *            reactor in form input_name.port_name.
+ * @param dtor A pointer to a void function that takes a pointer argument
+ *             or NULL to use the default void free(void*) function. 
+ */
+#define _LF_SET_DESTRUCTOR(out, dtor) \
+do { \
+    out->destructor = dtor; \
+} while(0)
+
+/**
+ * Set the destructor used to copy construct "token->value" received
+ * by "in" if "in" is mutable.
+ * 
+ * @param out The output port (by name) or input of a contained
+ *            reactor in form input_name.port_name.
+ * @param cpy_ctor A pointer to a void* function that takes a pointer argument
+ *                 or NULL to use the memcpy operator.
+ */
+#define _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor) \
+do { \
+    out->copy_constructor = cpy_ctor; \
+} while(0)
+
+/**
+ * Macro for extracting the deadline from the index of a reaction.
+ * The reaction queue is sorted according to this index, and the
+ * use of the deadline here results in an earliest deadline first
+ * (EDF) scheduling poicy.
+ */
+#define DEADLINE(index) (index & 0x7FFFFFFFFFFF0000)
+
+/**
+ * Macro for extracting the level from the index of a reaction.
+ * A reaction that has no upstream reactions has level 0.
+ * Other reactions have a level that is the length of the longest
+ * upstream chain to a reaction with level 0 (inclusive).
+ * This is used, along with the deadline, to sort reactions
+ * in the reaction queue. It ensures that reactions that are
+ * upstream in the dependence graph execute before reactions
+ * that are downstream.
+ */
+#define LEVEL(index) (index & 0xffffLL)
+
+/** Utility for finding the maximum of two values. */
+#ifndef MAX
+#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
+#endif
+
+/** Utility for finding the minimum of two values. */
+#ifndef MIN
+#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
+#endif
+
+/**
+ * Macro for determining whether two reactions are in the
+ * same chain (one depends on the other). This is conservative.
+ * If it returns false, then they are surely not in the same chain,
+ * but if it returns true, they may be in the same chain.
+ * This is in reactor_threaded.c to execute reactions in parallel
+ * on multiple cores even if their levels are different.
+ */
+#define OVERLAPPING(chain1, chain2) ((chain1 & chain2) != 0)
 
 //  ======== Function Declarations ========  //
 
