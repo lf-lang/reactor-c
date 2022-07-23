@@ -35,7 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * the included defines _instant_t to be. All platform-independent code
  * in Lingua Franca, therefore, should use the type instant_t for time
  * values.
- *  
+ *
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  */
 
@@ -44,20 +44,20 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
    // Windows platforms
-   #include "platform/lf_windows_support.h"
+   #include "core/platform/lf_windows_support.h"
 #elif __APPLE__
     // Apple platforms
-    #include "platform/lf_macos_support.h"
+    #include "core/platform/lf_macos_support.h"
 #elif __linux__
     // Linux
-    #include "platform/lf_linux_support.h"
+    #include "core/platform/lf_linux_support.h"
 #elif __unix__ // all unices not caught above
     // Unix
-    #include "platform/lf_POSIX_threads_support.h"
+    #include "core/platform/lf_POSIX_threads_support.h"
 #elif defined(_POSIX_VERSION)
     // POSIX
-    #include "platform/lf_POSIX_threads_support.h"
-#elif defined(__riscv) || defined(__riscv__) 
+    #include "core/platform/lf_POSIX_threads_support.h"
+#elif defined(__riscv) || defined(__riscv__)
     // RISC-V (see https://github.com/riscv/riscv-toolchain-conventions)
     #error "RISC-V not supported"
 #else
@@ -108,67 +108,67 @@ extern int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), vo
  * Make calling thread wait for termination of the thread.  The
  * exit status of the thread is stored in thread_return, if thread_return
  * is not NULL.
- * 
+ *
  * @return 0 on success, platform-specific error number otherwise.
  */
 extern int lf_thread_join(lf_thread_t thread, void** thread_return);
 
 /**
  * Initialize a mutex.
- * 
+ *
  * @return 0 on success, platform-specific error number otherwise.
  */
 extern int lf_mutex_init(lf_mutex_t* mutex);
 
 /**
  * Lock a mutex.
- * 
+ *
  * @return 0 on success, platform-specific error number otherwise.
  */
 extern int lf_mutex_lock(lf_mutex_t* mutex);
 
-/** 
+/**
  * Unlock a mutex.
- * 
+ *
  * @return 0 on success, platform-specific error number otherwise.
  */
 extern int lf_mutex_unlock(lf_mutex_t* mutex);
 
 
-/** 
+/**
  * Initialize a conditional variable.
- * 
+ *
  * @return 0 on success, platform-specific error number otherwise.
  */
 extern int lf_cond_init(lf_cond_t* cond);
 
-/** 
+/**
  * Wake up all threads waiting for condition variable cond.
- * 
+ *
  * @return 0 on success, platform-specific error number otherwise.
  */
 extern int lf_cond_broadcast(lf_cond_t* cond);
 
-/** 
+/**
  * Wake up one thread waiting for condition variable cond.
- * 
+ *
  * @return 0 on success, platform-specific error number otherwise.
  */
 extern int lf_cond_signal(lf_cond_t* cond);
 
-/** 
+/**
  * Wait for condition variable "cond" to be signaled or broadcast.
  * "mutex" is assumed to be locked before.
- * 
+ *
  * @return 0 on success, platform-specific error number otherwise.
  */
 extern int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex);
 
-/** 
+/**
  * Block current thread on the condition variable until condition variable
  * pointed by "cond" is signaled or time pointed by "absolute_time_ns" in
  * nanoseconds is reached.
- * 
+ *
  * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
  *  number otherwise.
  */
@@ -245,19 +245,19 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
 extern void lf_initialize_clock(void);
 
 /**
- * Fetch the value of an internal (and platform-specific) physical clock and 
+ * Fetch the value of an internal (and platform-specific) physical clock and
  * store it in `t`.
- * 
+ *
  * Ideally, the underlying platform clock should be monotonic. However, the
  * core lib tries to enforce monotonicity at higher level APIs (see tag.h).
- * 
+ *
  * @return 0 for success, or -1 for failure
  */
 extern int lf_clock_gettime(instant_t* t);
 
 /**
  * Pause execution for a number of nanoseconds.
- * 
+ *
  * @return 0 for success, or -1 for failure.
  */
 extern int lf_nanosleep(instant_t requested_time);

@@ -89,7 +89,7 @@ int lf_clock_gettime(instant_t* t) {
     if (_lf_time_epoch_offset != 0) {
         tp_in_ns += _lf_time_epoch_offset;
     }
-    
+
     if (t == NULL) {
         // The t argument address references invalid memory
         errno = EFAULT;

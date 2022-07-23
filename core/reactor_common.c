@@ -28,20 +28,22 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Runtime infrastructure for the C target of Lingua Franca.
  * This file contains resources that are shared by the threaded and
  * non-threaded versions of the C runtime.
- *  
+ *
  *  @author{Edward A. Lee <eal@berkeley.edu>}
  *  @author{Marten Lohstroh <marten@berkeley.edu>}
  *  @author{Mehrdad Niknami <mniknami@berkeley.edu>}
  *  @author{Soroush Bateni <soroush@utdallas.edu}
  *  @author{Alexander Schulz-Rosengarten <als@informatik.uni-kiel.de>}
  */
+#include <assert.h>
+
 #include "reactor.h"
 #include "tag.c"
-#include "utils/pqueue.c"
-#include "utils/vector.c"
-#include "utils/util.c"
-#include "modal_models/modes.c"
-#include "port.c"
+#include "utils/pqueue.h"
+#include "utils/vector.h"
+#include "utils/util.h"
+#include "modal_models/modes.h"
+#include "port.h"
 
 
 ////////////////////////////////////////////////////////////
@@ -149,13 +151,13 @@ void enqueue_network_control_reactions();
  * Determine the status of the port at the current logical time.
  * If successful, return true. If the status cannot be determined
  * at this moment, return false.
- * 
+ *
  * @param portID the ID of the port to determine status for
  */
 port_status_t determine_port_status_if_possible(int portID);
 
 /**
- * A helper enum for the returned status code of parse_rti_addr.  
+ * A helper enum for the returned status code of parse_rti_addr.
  */
 typedef enum parse_rti_code_t {
     SUCCESS,
@@ -265,10 +267,10 @@ void _lf_free_all_reactors(void) {
 
 /**
  * Set the stop tag.
- * 
+ *
  * This function will always choose the minimum
  * of the provided tag and stop_tag
- * 
+ *
  * @note In threaded programs, the mutex must be locked before
  *  calling this function.
  */
@@ -292,7 +294,7 @@ interval_t lf_get_stp_offset() {
 /**
  * Set the global STP offset on advancement of logical
  * time for federated execution.
- * 
+ *
  * @param offset A positive time value to be applied
  *  as the STP offset.
  */
@@ -309,7 +311,7 @@ void lf_set_stp_offset(interval_t offset) {
 pqueue_t* event_q;     // For sorting by time.
 
 pqueue_t* recycle_q;   // For recycling malloc'd events.
-pqueue_t* next_q;      // For temporarily storing the next event lined 
+pqueue_t* next_q;      // For temporarily storing the next event lined
                        // up in superdense time.
 
 trigger_handle_t _lf_handle = 1;
@@ -354,9 +356,9 @@ typedef enum token_freed {
 
 
 /**
- * Determine which part of the token should be freed and 
+ * Determine which part of the token should be freed and
  * free each part correspondingly.
- * 
+ *
  * @param token Pointer to a token.
  * @return NOT_FREED if nothing was freed, VALUE_FREED if the value
  *  was freed, and TOKEN_FREED if both the value and the token were
@@ -428,7 +430,7 @@ token_freed _lf_done_using(lf_token_t* token) {
 
 /**
  * Trigger 'reaction'.
- * 
+ *
  * @param reaction The reaction.
  * @param worker_number The ID of the worker that is making this call. 0 should be
  *  used if there is only one worker (e.g., when the program is using the
@@ -536,7 +538,7 @@ lf_token_t* _lf_create_token(size_t element_size) {
  * @param element_size The size of an element carried in the payload or
  *  0 if there is no payload.
  * @return A new or recycled lf_token_t struct.
- * 
+ *
  * @note For multithreaded applications, the caller must hold
  *  the mutex lock because it accesses global variables.
  */
@@ -604,7 +606,7 @@ lf_token_t* _lf_initialize_token(lf_token_t* token, size_t length) {
 
 /**
  * A helper function that returns true if the provided tag is after stop tag.
- * 
+ *
  * @param tag The tag to check against stop tag
  */
 bool _lf_is_tag_after_stop_tag(tag_t tag) {
@@ -624,7 +626,7 @@ void _lf_pop_events() {
     event_t* event = (event_t*)pqueue_peek(event_q);
     while(event != NULL && event->time == current_tag.time) {
         event = (event_t*)pqueue_pop(event_q);
-        
+
         if (event->is_dummy) {
         	LF_PRINT_DEBUG("Popped dummy event from the event queue.");
         	if (event->next != NULL) {
@@ -719,7 +721,7 @@ void _lf_pop_events() {
 
         // Mark the trigger present.
         event->trigger->status = present;
-        
+
         // If this event points to a next event, insert it into the next queue.
         if (event->next != NULL) {
             // Insert the next event into the next queue.
@@ -727,7 +729,7 @@ void _lf_pop_events() {
         }
 
         _lf_recycle_event(event);
-        
+
         // Peek at the next event in the event queue.
         event = (event_t*)pqueue_peek(event_q);
     };
@@ -750,8 +752,8 @@ void _lf_pop_events() {
 /**
  * Initialize the given timer.
  * If this timer has a zero offset, enqueue the reactions it triggers.
- * If this timer is to trigger reactions at a _future_ tag as well, 
- * schedule it accordingly. 
+ * If this timer is to trigger reactions at a _future_ tag as well,
+ * schedule it accordingly.
  */
 void _lf_initialize_timer(trigger_t* timer) {
     interval_t delay = 0;
@@ -786,7 +788,7 @@ void _lf_initialize_timer(trigger_t* timer) {
     }
 
     // Get an event_t struct to put on the event queue.
-    // Recycle event_t structs, if possible.    
+    // Recycle event_t structs, if possible.
     event_t* e = _lf_get_new_event();
     e->trigger = timer;
     e->time = lf_time_logical() + delay;
@@ -800,7 +802,7 @@ void _lf_initialize_timer(trigger_t* timer) {
  * If not, allocate a new one. In either case, all fields will be zero'ed out.
  */
 event_t* _lf_get_new_event() {
-    // Recycle event_t structs, if possible.    
+    // Recycle event_t structs, if possible.
     event_t* e = (event_t*)pqueue_pop(recycle_q);
     if (e == NULL) {
         e = (event_t*)calloc(1, sizeof(struct event_t));
@@ -877,10 +879,10 @@ void _lf_replace_token(event_t* event, lf_token_t* token) {
  * Schedule events at a specific tag (time, microstep), provided
  * that the tag is in the future relative to the current tag.
  * The input time values are absolute.
- * 
+ *
  * If there is an event found at the requested tag, the payload
  * is replaced and 0 is returned.
- * 
+ *
  * Note that this function is an internal API that must
  * be called with tags that are in order for a given
  * trigger. This means that the following order is illegal:
@@ -889,13 +891,13 @@ void _lf_replace_token(event_t* event, lf_token_t* token) {
  * where bigger_tag > smaller_tag. This function is primarily
  * used for network communication (which is assumed to be
  * in order).
- * 
+ *
  * This function assumes the caller holds the mutex lock.
  *
  * @param trigger The trigger to be invoked at a later logical time.
  * @param tag Logical tag of the event
  * @param token The token wrapping the payload or NULL for no payload.
- * 
+ *
  * @return 1 for success, 0 if no new event was scheduled (instead, the payload was updated),
  *  or -1 for error (the tag is equal to or less than the current tag).
  */
@@ -922,11 +924,11 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
         _lf_done_using(token);
         return -1;
     }
-    
+
     event_t* e = _lf_get_new_event();
     // Set the event time
     e->time = tag.time;
-    
+
     tracepoint_schedule(trigger, tag.time - current_logical_tag.time);
 
     // Make sure the event points to this trigger so when it is
@@ -945,10 +947,10 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
     if (found != NULL) {
         if (tag.microstep == 0u) {
                 // The microstep is 0, which means that the event is being scheduled
-                // at a future time and at the beginning of the skip list of events 
+                // at a future time and at the beginning of the skip list of events
                 // at that time.
                 // In case the event is a dummy event
-                // convert it to a real event.                
+                // convert it to a real event.
                 found->is_dummy = false;
                 switch (trigger->policy) {
                     case drop:
@@ -969,7 +971,7 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
                         // Adding a microstep to the original
                         // intended tag.
                         if (_lf_is_tag_after_stop_tag((tag_t) {.time=found->time,.microstep=1})) {
-                            // Scheduling e will incur a microstep after the stop tag, 
+                            // Scheduling e will incur a microstep after the stop tag,
                             // which is illegal.
                             _lf_recycle_event(e);
                             return 0;
@@ -1037,7 +1039,7 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
                         // Adding a microstep to the original
                         // intended tag.
                         if (_lf_is_tag_after_stop_tag((tag_t){.time=found->time,.microstep=microstep_of_found+1})) {
-                            // Scheduling e will incur a microstep at timeout, 
+                            // Scheduling e will incur a microstep at timeout,
                             // which is illegal.
                             _lf_recycle_event(e);
                             return 0;
@@ -1118,7 +1120,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
 
     LF_PRINT_DEBUG("_lf_schedule: scheduling trigger %p with delay %lld and token %p.",
             trigger, extra_delay, token);
-    
+
 	// The trigger argument could be null, meaning that nothing is triggered.
     // Doing this after incrementing the reference count ensures that the
     // payload will be freed, if there is one.
@@ -1147,7 +1149,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     interval_t min_spacing = trigger->period;
 
     event_t* e = _lf_get_new_event();
-    
+
     // Initialize the next pointer.
     e->next = NULL;
 
@@ -1186,7 +1188,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     // set by the network stack (or the default, which is (NEVER,0))
     e->intended_tag = trigger->intended_tag;
 #endif
-    
+
     event_t* existing = (event_t*)(trigger->last);
     // Check for conflicts (a queued event with the same trigger and time).
     if (trigger->period < 0) {
@@ -1214,12 +1216,12 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
             return(0); // FIXME: return value
         }
         // If there are not conflicts, schedule as usual. If intended time is
-        // equal to the current logical time, the event will effectively be 
+        // equal to the current logical time, the event will effectively be
         // scheduled at the next microstep.
-    } else if (!trigger->is_timer && existing != NULL) { 
+    } else if (!trigger->is_timer && existing != NULL) {
         // There exists a previously scheduled event. It determines the
         // earliest time at which the new event can be scheduled.
-        // Check to see whether the event is too early. 
+        // Check to see whether the event is too early.
         instant_t earliest_time = existing->time + min_spacing;
         LF_PRINT_DEBUG("There is a previously scheduled event; earliest possible time "
                 "with min spacing: %lld",
@@ -1230,7 +1232,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
             switch(trigger->policy) {
                 case drop:
                     LF_PRINT_DEBUG("Policy is drop. Dropping the event.");
-                    if (min_spacing > 0 || 
+                    if (min_spacing > 0 ||
                             pqueue_find_equal_same_priority(event_q, existing) != NULL) {
                         // Recycle the new event and the token.
                         if (existing->token != token) {
@@ -1253,7 +1255,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
                     if (existing->time > current_tag.time ||
                             (existing->time == current_tag.time &&
                             pqueue_find_equal_same_priority(event_q, existing) != NULL)) {
-                        // Recycle the existing token and the new event                        
+                        // Recycle the existing token and the new event
                         // and update the token of the existing event.
                         _lf_replace_token(existing, token);
                         _lf_recycle_event(e);
@@ -1267,7 +1269,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
                     if (existing->time == current_tag.time &&
                             pqueue_find_equal_same_priority(event_q, existing) != NULL) {
                         if (_lf_is_tag_after_stop_tag((tag_t){.time=existing->time,.microstep=lf_tag().microstep+1})) {
-                            // Scheduling e will incur a microstep at timeout, 
+                            // Scheduling e will incur a microstep at timeout,
                             // which is illegal.
                             _lf_recycle_event(e);
                             return 0;
@@ -1308,7 +1310,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
         _lf_recycle_event(e);
         return(0);
     }
-    
+
     // Store a pointer to the current event in order to check the min spacing
     // between this and the following event. Only necessary for actions
     // that actually specify a min spacing.
@@ -1339,8 +1341,8 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
 }
 
 /**
- * Insert reactions triggered by trigger to the reaction queue... 
- * 
+ * Insert reactions triggered by trigger to the reaction queue...
+ *
  * @param trigger The trigger
  * @param token The token wrapping the payload or NULL for no payload.
  * @return 1 if successful, or 0 if no new reaction was scheduled because the function
@@ -1355,7 +1357,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
 	    _lf_done_using(token);
 	    return 0;
 	}
-    
+
     // Check to see if the trigger is not a timer
     // and not a physical action
     if (trigger->is_timer || trigger->is_physical) {
@@ -1383,14 +1385,14 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
         is_STP_violated = true;
     }
 #ifdef FEDERATED_CENTRALIZED
-    // Check for STP violation in the centralized coordination, which is a 
+    // Check for STP violation in the centralized coordination, which is a
     // critical error.
     if (is_STP_violated) {
         lf_print_error_and_exit("Attempted to insert reactions for a trigger that had an intended tag that was in the past. "
                              "This should not happen under centralized coordination. Intended tag: (%ld, %u). Current tag: (%ld, %u).",
-                             trigger->intended_tag.time - lf_time_start(), 
+                             trigger->intended_tag.time - lf_time_start(),
                              trigger->intended_tag.microstep,
-                             lf_time_logical_elapsed(), 
+                             lf_time_logical_elapsed(),
                              lf_tag().microstep);
     }
 #endif
@@ -1416,7 +1418,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
 
     // Mark the trigger present.
     trigger->status = present;
-    
+
     // Push the corresponding reactions for this trigger
     // onto the reaction queue.
     for (int i = 0; i < trigger->number_of_reactions; i++) {
@@ -1461,9 +1463,9 @@ trigger_t* _lf_action_to_trigger(void* action) {
  * Advance from the current tag to the next. If the given next_time is equal to
  * the current time, then increase the microstep. Otherwise, update the current
  * time and set the microstep to zero.
- * 
+ *
  * @param next_time The time step to advance to.
- */ 
+ */
 void _lf_advance_logical_time(instant_t next_time) {
     // FIXME: The following checks that _lf_advance_logical_time()
     // is being called correctly. Namely, check if logical time
@@ -1478,7 +1480,7 @@ void _lf_advance_logical_time(instant_t next_time) {
     if (next_event != NULL) {
         if (next_time > next_event->time) {
             lf_print_error_and_exit("_lf_advance_logical_time(): Attempted to move time to %lld, which is "
-                    "past the head of the event queue, %lld.", 
+                    "past the head of the event queue, %lld.",
                     next_time - start_time, next_event->time - start_time);
         }
     }
@@ -1661,7 +1663,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
         // If the is_STP_violated for the reaction is true,
         // an input trigger to this reaction has been triggered at a later
         // logical time than originally anticipated. In this case, a special
-        // STP handler will be invoked.             
+        // STP handler will be invoked.
         // FIXME: Note that the STP handler will be invoked
         // at most once per logical time value. If the STP handler triggers the
         // same reaction at the current time value, even if at a future superdense time,
@@ -1670,7 +1672,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
         // be disallowed.
         // @note The STP handler and the deadline handler are not mutually exclusive.
         //  In other words, both can be invoked for a reaction if it is triggered late
-        //  in logical time (STP offset is violated) and also misses the constraint on 
+        //  in logical time (STP offset is violated) and also misses the constraint on
         //  physical time (deadline).
         // @note In absence of a STP handler, the is_STP_violated will be passed down the reaction
         //  chain until it is dealt with in a downstream STP handler.
@@ -1690,7 +1692,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
                 // If the reaction produced outputs, put the resulting
                 // triggered reactions into the queue or execute them directly if possible.
                 schedule_output_reactions(downstream_to_execute_now, worker);
-                
+
                 // Reset the tardiness because it has been dealt with in the
                 // STP handler
                 downstream_to_execute_now->is_STP_violated = false;
@@ -1726,7 +1728,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
             // reactions into the queue (or execute them directly, if possible).
             schedule_output_reactions(downstream_to_execute_now, worker);
         }
-            
+
         // Reset the is_STP_violated because it has been passed
         // down the chain
         downstream_to_execute_now->is_STP_violated = false;
@@ -1944,7 +1946,7 @@ int process_args(int argc, char* argv[]) {
                 return 0;
             }
         }
-        #endif 
+        #endif
           else if (strcmp(arg, "--ros-args") == 0) {
     	      // FIXME: Ignore ROS arguments for now
         } else {
@@ -1964,7 +1966,7 @@ void initialize(void) {
     _lf_count_payload_allocations = 0;
     _lf_count_token_allocations = 0;
 
-    // Initialize our priority queues.  
+    // Initialize our priority queues.
 
     event_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_reverse_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
@@ -1987,7 +1989,7 @@ void initialize(void) {
 
     printf("---- Start execution at time %s---- plus %ld nanoseconds.\n",
             ctime(&physical_time_timespec.tv_sec), physical_time_timespec.tv_nsec);
-    
+
     if (duration >= 0LL) {
         // A duration has been specified. Calculate the stop time.
         _lf_set_stop_tag((tag_t) {.time = current_tag.time + duration, .microstep = 0});

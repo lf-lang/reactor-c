@@ -58,11 +58,11 @@
 #include <time.h>
 #include <limits.h>
 #include <errno.h>
-#include "utils/pqueue.h"
-#include "utils/util.h"
-#include "tag.h"       // Time-related functions.
-#include "modal_models/modes.h" // Modal model support
-#include "port.h"
+#include "core/utils/pqueue.h"
+#include "core/utils/util.h"
+#include "core/tag.h"       // Time-related functions.
+#include "core/modal_models/modes.h" // Modal model support
+#include "core/port.h"
 
 // The following file is also included, but must be included
 // after its requirements are met, so the #include appears at
@@ -74,7 +74,7 @@
 /**
  * ushort type. Redefine here for portability if sys/types.h is not included.
  * @see sys/types.h
- * 
+ *
  * @note using sizeof(ushort) should be okay but not sizeof ushort.
  */
 #ifndef _SYS_TYPES_H
@@ -104,11 +104,11 @@ typedef enum {no=0, token_and_value, token_only} ok_to_free_t;
 
 /**
  * Status of a given port at a given logical time.
- * 
+ *
  * If the value is 'present', it is an indicator that the port is present at the given logical time.
  * If the value is 'absent', it is an indicator that the port is absent at the given logical time.
  * If the value is 'unknown', it is unknown whether the port is present or absent (e.g., in a distributed application).
- * 
+ *
  * @note For non-network ports, unknown is unused.
  * @note The absent and present fields need to be compatible with false and true
  *  respectively because for non-network ports, the status can either be present
@@ -133,7 +133,7 @@ typedef enum {inactive = 0, queued, running} reaction_status_t;
 /**
  * The flag OK_TO_FREE is used to indicate whether
  * the void* in toke_t should be freed or not.
- */ 
+ */
 #ifdef _LF_GARBAGE_COLLECTED
 #define OK_TO_FREE token_only
 #else
@@ -174,9 +174,9 @@ typedef void(*reaction_function_t)(void*);
 typedef struct trigger_t trigger_t;
 
 /**
- * Global STP offset uniformly applied to advancement of each 
- * time step in federated execution. This can be retrieved in 
- * user code by calling lf_get_stp_offset() and adjusted by 
+ * Global STP offset uniformly applied to advancement of each
+ * time step in federated execution. This can be retrieved in
+ * user code by calling lf_get_stp_offset() and adjusted by
  * calling lf_set_stp_offset(interval_t offset).
  */
 extern interval_t _lf_fed_STA_offset;
@@ -316,18 +316,18 @@ struct trigger_t {
     port_status_t status;     // Determines the status of the port at the current logical time. Therefore, this
                               // value needs to be reset at the beginning of each logical time.
                               //
-                              // This status is especially needed for the distributed execution because the receiver logic will need 
-                              // to know what it should do if it receives a message with 'intended tag = current tag' from another 
-                              // federate. 
-                              // - If status is 'unknown', it means that the federate has still no idea what the status of 
+                              // This status is especially needed for the distributed execution because the receiver logic will need
+                              // to know what it should do if it receives a message with 'intended tag = current tag' from another
+                              // federate.
+                              // - If status is 'unknown', it means that the federate has still no idea what the status of
                               //   this port is and thus has refrained from executing any reaction that has that port as its input.
                               //   This means that the receiver logic can directly inject the triggered reactions into the reaction
                               //   queue at the current logical time.
-                              // - If the status is absent, it means that the federate has assumed that the port is 'absent' 
+                              // - If the status is absent, it means that the federate has assumed that the port is 'absent'
                               //   for the current logical time. Therefore, receiving a message with 'intended tag = current tag'
-                              //   is an error that should be handled, for example, as a violation of the STP offset in the decentralized 
-                              //   coordination. 
-                              // - Finally, if status is 'present', then this is an error since multiple 
+                              //   is an error that should be handled, for example, as a violation of the STP offset in the decentralized
+                              //   coordination.
+                              // - Finally, if status is 'present', then this is an error since multiple
                               //   downstream messages have been produced for the same port for the same logical time.
     reactor_mode_t* mode;     // The enclosing mode of this reaction (if exists).
                               // If enclosed in multiple, this will point to the innermost mode.
@@ -576,11 +576,11 @@ do { \
  * Set the destructor used to free "token->value" set on "out".
  * That memory will be automatically freed once all downstream
  * reactions no longer need the value.
- * 
+ *
  * @param out The output port (by name) or input of a contained
  *            reactor in form input_name.port_name.
  * @param dtor A pointer to a void function that takes a pointer argument
- *             or NULL to use the default void free(void*) function. 
+ *             or NULL to use the default void free(void*) function.
  */
 #define _LF_SET_DESTRUCTOR(out, dtor) \
 do { \
@@ -590,7 +590,7 @@ do { \
 /**
  * Set the destructor used to copy construct "token->value" received
  * by "in" if "in" is mutable.
- * 
+ *
  * @param out The output port (by name) or input of a contained
  *            reactor in form input_name.port_name.
  * @param cpy_ctor A pointer to a void* function that takes a pointer argument
@@ -652,7 +652,7 @@ interval_t lf_get_stp_offset(void);
 /**
  * Set the global STP offset on advancement of logical
  * time for federated execution.
- * 
+ *
  * @param offset A positive time value to be applied
  *  as the STP offset.
  */
@@ -718,18 +718,18 @@ void _lf_free_all_reactors(void);
  */
 void _lf_free_reactor(struct self_base_t *self);
 
-/** 
+/**
  * Generated function that optionally sets default command-line options.
  */
 void _lf_set_default_command_line_options(void);
 
-/** 
+/**
  * Generated function that resets outputs to be absent at the
  * start of a new time step.
  */
 void _lf_start_time_step(void);
 
-/** 
+/**
  * Generated function that produces a table containing all triggers
  * (i.e., inputs, timers, and actions).
  */
@@ -742,9 +742,9 @@ void _lf_initialize_trigger_objects(void);
  */
 void _lf_pop_events(void);
 
-/** 
- * Internal version of the lf_schedule() function, used by generated 
- * _lf_start_timers() function. 
+/**
+ * Internal version of the lf_schedule() function, used by generated
+ * _lf_start_timers() function.
  * @param trigger The action or timer to be triggered.
  * @param delay Offset of the event release.
  * @param token The token payload.
@@ -813,14 +813,14 @@ void _lf_recycle_event(event_t* e);
  * Schedule events at a specific tag (time, microstep), provided
  * that the tag is in the future relative to the current tag.
  * The input time values are absolute.
- * 
+ *
  * If there is an event found at the requested tag, the payload
  * is replaced and 0 is returned.
  *
  * @param trigger The trigger to be invoked at a later logical time.
  * @param tag Logical tag of the event
  * @param token The token wrapping the payload or NULL for no payload.
- * 
+ *
  * @return 1 for success, 0 if no new event was scheduled (instead, the payload was updated), or -1 for error.
  */
 int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token);
