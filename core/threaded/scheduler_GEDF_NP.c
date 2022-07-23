@@ -42,9 +42,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assert.h>
 
-#include "../platform.h"
-#include "../utils/pqueue_support.h"
-#include "../utils/semaphore.h"
+#include "core/platform.h"
+#include "core/utils/pqueue.h"
+#include "core/utils/semaphore.h"
 #include "scheduler.h"
 #include "scheduler_instance.h"
 #include "scheduler_sync_tag_advance.c"
@@ -222,7 +222,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
  *  scheduler parameters.
  */
 void lf_sched_init(
-    size_t number_of_workers, 
+    size_t number_of_workers,
     sched_params_t* params
 ) {
     LF_PRINT_DEBUG("Scheduler: Initializing with %zu workers", number_of_workers);

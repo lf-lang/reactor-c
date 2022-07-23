@@ -35,7 +35,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assert.h>
 
 #include "scheduler.h"
-#include "../utils/pqueue_support.h"
 #include "scheduler_sync_tag_advance.c"
 #include "worker_assignments.h"
 #include "worker_states.h"

@@ -58,11 +58,11 @@
 #include <time.h>
 #include <limits.h>
 #include <errno.h>
-#include "utils/pqueue.h"
-#include "utils/util.h"
-#include "tag.h"       // Time-related functions.
-#include "modal_models/modes.h" // Modal model support
-#include "port.h"
+#include "core/utils/pqueue.h"
+#include "core/utils/util.h"
+#include "core/tag.h"       // Time-related functions.
+#include "core/modal_models/modes.h" // Modal model support
+#include "core/port.h"
 
 // The following file is also included, but must be included
 // after its requirements are met, so the #include appears at

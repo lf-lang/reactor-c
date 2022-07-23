@@ -34,8 +34,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TAG_H
 #define TAG_H
 
-#include "platform.h"
-#include "limits.h"
+#include <limits.h>
+
+#include "core/platform.h"
 
 /* Conversion of time to nanoseconds. */
 #define NSEC(t) (t * 1LL)
@@ -90,7 +91,7 @@ extern interval_t _lf_time_test_physical_clock_offset;
  * Offset to _LF_CLOCK that would convert it
  * to epoch time. This is applied to the physical clock
  * to get a more meaningful and universal time.
- * 
+ *
  * For CLOCK_REALTIME, this offset is always zero.
  * For CLOCK_MONOTONIC, it is the difference between those
  * clocks at the start of the execution.
@@ -133,7 +134,7 @@ int lf_tag_compare(tag_t tag1, tag_t tag2);
  * Return the current logical time in nanoseconds.
  * On many platforms, this is the number of nanoseconds
  * since January 1, 1970, but it is actually platform dependent.
- * 
+ *
  * @return A time instant.
  */
 instant_t lf_time_logical(void);
@@ -167,7 +168,7 @@ instant_t lf_time_physical_elapsed(void);
 /**
  * Return the physical and logical time of the start of execution in nanoseconds.
  * On many platforms, this is the number of nanoseconds
- * since January 1, 1970, but it is actually platform dependent. 
+ * since January 1, 1970, but it is actually platform dependent.
  * @return A time instant.
  */
 instant_t lf_time_start(void);
