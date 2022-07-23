@@ -34,6 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @copyright Copyright (c) 2022, The University of California at Berkeley.
  */
 
+#include "core/threaded/scheduler_sync_tag_advance.h"
 
 /////////////////// External Variables /////////////////////////
 extern tag_t current_tag;
@@ -61,7 +62,7 @@ void logical_tag_complete(tag_t tag_to_send);
 /**
  * @brief Indicator that execution of at least one tag has completed.
  */
-bool _lf_logical_tag_completed = false;
+static bool _lf_logical_tag_completed = false;
 
 /**
  * Return true if the worker should stop now; false otherwise.

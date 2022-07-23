@@ -54,7 +54,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
 trigger_handle_t lf_schedule(void* action, interval_t offset);
-DEPRECATED(trigger_handle_t schedule(void* action, interval_t offset));
 
 /**
  * Schedule the specified action with an integer value at a later logical
@@ -68,7 +67,6 @@ DEPRECATED(trigger_handle_t schedule(void* action, interval_t offset));
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
 trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value);
-DEPRECATED(trigger_handle_t schedule_int(void* action, interval_t extra_delay, int value));
 
 /**
  * Schedule the specified action with the specified token as a payload.
@@ -121,7 +119,6 @@ DEPRECATED(trigger_handle_t schedule_int(void* action, interval_t extra_delay, i
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
 trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token);
-DEPRECATED(trigger_handle_t schedule_token(void* action, interval_t extra_delay, lf_token_t* token));
 
 /**
  * Schedule an action to occur with the specified value and time offset with a
@@ -140,7 +137,6 @@ DEPRECATED(trigger_handle_t schedule_token(void* action, interval_t extra_delay,
  *  error.
  */
 trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, int length);
-DEPRECATED(trigger_handle_t schedule_copy(void* action, interval_t offset, void* value, int length));
 
 /**
  * Variant of lf_schedule_token that creates a token to carry the specified value.
@@ -159,7 +155,6 @@ DEPRECATED(trigger_handle_t schedule_copy(void* action, interval_t offset, void*
  *  error.
  */
 trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* value, int length);
-DEPRECATED(trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* value, int length));
 
 /**
  * Check the deadline of the currently executing reaction against the
@@ -173,6 +168,5 @@ DEPRECATED(trigger_handle_t schedule_value(void* action, interval_t extra_delay,
  * @return True if the specified deadline has passed and false otherwise.
  */
 bool lf_check_deadline(void* self, bool invoke_deadline_handler);
-DEPRECATED(bool check_deadline(void* self, bool invoke_deadline_handler));
 
 #endif // CTARGET_SCHEDULE

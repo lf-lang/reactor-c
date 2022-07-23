@@ -1,6 +1,8 @@
 #include <time.h>
 #include <errno.h>
 
+#include "core/platform/lf_unix_clock_support.h"
+
 /**
  * Offset to _LF_CLOCK that would convert it
  * to epoch time.

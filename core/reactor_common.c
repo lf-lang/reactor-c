@@ -40,10 +40,91 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.c"
 #include "utils/pqueue.c"
 #include "utils/vector.c"
-#include "utils/pqueue_support.h"
 #include "utils/util.c"
 #include "modal_models/modes.c"
 #include "port.c"
+
+
+////////////////////////////////////////////////////////////
+//// Global variables :(
+
+/**
+ * Indicator of whether to wait for physical time to match logical time.
+ * By default, execution will wait. The command-line argument -fast will
+ * eliminate the wait and allow logical time to exceed physical time.
+ */
+bool fast = false;
+
+/**
+ * The number of worker threads for threaded execution.
+ * By default, execution is not threaded and this variable will have value 0.
+ *
+ * If the execution is threaded, a value of 0 indicates that the runtime should
+ * decide on the number of workers (which will be decided based on the number of
+ * available cores on the host machine).
+ */
+unsigned int _lf_number_of_workers = 0u;
+
+/**
+ * The logical time to elapse during execution, or -1 if no timeout time has
+ * been given. When the logical equal to start_time + duration has been
+ * reached, execution will terminate.
+ */
+instant_t duration = -1LL;
+
+/**
+ * Indicates whether or not the execution
+ * has started.
+ */
+bool _lf_execution_started = false;
+
+/**
+ * The tag at which the Lingua Franca program should stop.
+ * It will be initially set to timeout if it is set. However,
+ * starvation or calling lf_request_stop() can also alter the stop_tag by moving it
+ * earlier.
+ *
+ * FIXME: This variable might need to be volatile
+ */
+tag_t stop_tag = FOREVER_TAG_INITIALIZER;
+
+/** Indicator of whether the keepalive command-line option was given. */
+bool keepalive_specified = false;
+
+// Define the array of pointers to the _is_present fields of all the
+// self structs that need to be reinitialized at the start of each time step.
+// NOTE: This may have to be resized for a mutation.
+bool** _lf_is_present_fields = NULL;
+int _lf_is_present_fields_size = 0;
+
+// Define an array of pointers to the _is_present fields
+// that have been set to true during the execution of a tag
+// so that at the conclusion of the tag, these fields can be reset to
+// false. Usually, this list will have fewer records than will
+// _lf_is_present_fields, allowing for some time to be saved.
+// However, it is possible for it to have more records if some ports
+// are set multiple times at the same tag. In such cases, we fall back
+// to resetting all is_present fields at the start of the next time
+// step.
+bool** _lf_is_present_fields_abbreviated = NULL;
+int _lf_is_present_fields_abbreviated_size = 0;
+
+// Define the array of pointers to the intended_tag fields of all
+// ports and actions that need to be reinitialized at the start
+// of each time step.
+tag_t** _lf_intended_tag_fields = NULL;
+int _lf_intended_tag_fields_size = 0;
+
+// Define the array of pointers to the token fields of all the
+// actions and inputs that need to have their reference counts
+// decremented at the start of each time step.
+// NOTE: This may have to be resized for a mutation.
+token_present_t* _lf_tokens_with_ref_count = NULL;
+// Dynamically created list of tokens that are copies made
+// as a result of mutable inputs. These need to also have
+// _lf_done_using() called on them at the start of the next time step.
+lf_token_t* _lf_more_tokens_with_ref_count = NULL;
+int _lf_tokens_with_ref_count_size = 0;
 
 /**
  * Global STP offset uniformly applied to advancement of each

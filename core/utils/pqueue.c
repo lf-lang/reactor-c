@@ -21,12 +21,12 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * 
+ *
  * Modified by Marten Lohstroh (May, 2019).
- * Changes: 
+ * Changes:
  * - Require implementation of a pqueue_eq_elem_f function to determine
  *   whether two elements are equal or not; and
- * - The provided pqueue_eq_elem_f implementation is used to test and 
+ * - The provided pqueue_eq_elem_f implementation is used to test and
  *   search for equal elements present in the queue; and
  * - Removed capability to reassign priorities.
  */
@@ -35,9 +35,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include <stdbool.h>
 
 #include "pqueue.h"
 #include "util.h"
+#include "core/reactor.h"
 
 #define LF_LEFT(i)   ((i) << 1)
 #define LF_RIGHT(i)  (((i) << 1) + 1)
@@ -46,13 +48,13 @@
 /**
  * Find an element in the queue that matches the given element up to
  * and including the given maximum priority.
- */ 
+ */
 void* find_equal(pqueue_t *q, void *e, int pos, pqueue_pri_t max) {
     if (pos < 0) {
         lf_print_error_and_exit("find_equal() called with a negative pos index.");
     }
 
-    // Stop the recursion when we've reached the end of the 
+    // Stop the recursion when we've reached the end of the
     // queue. This has to be done before accessing the queue
     // to avoid segmentation fault.
     if (!q || (size_t)pos >= q->size) {
@@ -66,12 +68,12 @@ void* find_equal(pqueue_t *q, void *e, int pos, pqueue_pri_t max) {
     if (!curr || q->cmppri(q->getpri(curr), max)) {
         return NULL;
     }
-    
+
     if (q->eqelem(curr, e)) {
         return curr;
     } else {
         rval = find_equal(q, e, LF_LEFT(pos), max);
-        if (rval) 
+        if (rval)
             return rval;
         else
             return find_equal(q, e, LF_RIGHT(pos), max);
@@ -83,19 +85,19 @@ void* find_equal(pqueue_t *q, void *e, int pos, pqueue_pri_t max) {
  * Find an element in the queue that matches the given element up to
  * but not including the given maximum priority. The matching element
  * has to _also_ have the same priority.
- */ 
+ */
 void* find_equal_same_priority(pqueue_t *q, void *e, int pos) {
     if (pos < 0) {
         lf_print_error_and_exit("find_equal_same_priority() called with a negative pos index.");
     }
 
-    // Stop the recursion when we've reached the end of the 
+    // Stop the recursion when we've reached the end of the
     // queue. This has to be done before accessing the queue
     // to avoid segmentation fault.
     if (!q || (size_t)pos >= q->size) {
         return NULL;
     }
-    
+
     void* rval;
     void* curr = q->d[pos];
 
@@ -104,15 +106,15 @@ void* find_equal_same_priority(pqueue_t *q, void *e, int pos) {
     if (!curr || q->cmppri(q->getpri(curr), q->getpri(e))) {
         return NULL;
     }
-    
+
     if (q->getpri(curr) == q->getpri(e) && q->eqelem(curr, e)) {
         return curr;
     } else {
         rval = find_equal_same_priority(q, e, LF_LEFT(pos));
-        if (rval) 
+        if (rval)
             return rval;
         else
-            return find_equal_same_priority(q, e, LF_RIGHT(pos));   
+            return find_equal_same_priority(q, e, LF_RIGHT(pos));
     }
 
     // for (int i=1; i < q->size; i++) {
@@ -170,7 +172,7 @@ static size_t maxchild(pqueue_t *q, size_t i) {
         return 0;
 
     if ((child_node+1) < q->size &&
-        (q->cmppri(q->getpri(q->d[child_node]), q->getpri(q->d[child_node+1])))) 
+        (q->cmppri(q->getpri(q->d[child_node]), q->getpri(q->d[child_node+1]))))
         child_node++; /* use right child instead of left */
 
     return child_node;
@@ -226,16 +228,6 @@ int pqueue_insert(pqueue_t *q, void *d) {
 
     if (!q) return 1;
 
-    // printf("==Before insert==\n");
-    // pqueue_dump(q, stdout, q->prt);
-
-    // for(int i=1; i < q->size; i++) {
-    //     if (d == q->d[i]) {
-    //         printf("Duplicate found!\n");
-    //         exit(1);
-    //     }
-    // }
-
     /* allocate more memory if necessary */
     if (q->size >= q->avail) {
         newsize = q->size + q->step;
@@ -248,16 +240,6 @@ int pqueue_insert(pqueue_t *q, void *d) {
     i = q->size++;
     q->d[i] = d;
     bubble_up(q, i);
-
-    // printf("==After insert==\n");
-    // pqueue_dump(q, stdout, q->prt);
-
-
-    // NOTE: Only use this for debugging!
-    // if (!pqueue_is_valid(q)) {
-    //     pqueue_dump(q, stdout, q->prt);
-    //     exit(1);
-    // }
 
     return 0;
 }
@@ -279,19 +261,19 @@ void* pqueue_pop(pqueue_t *q) {
         return NULL;
 
     void* head;
-        
+
     head = q->d[1];
     q->d[1] = q->d[--q->size];
     percolate_down(q, 1);
-    
+
     return head;
 }
 
 /**
  * @brief Empty 'src' into 'dest'.
- * 
+ *
  * As an optimization, this function might swap 'src' and 'dest'.
- * 
+ *
  * @param dest The queue to fill up
  * @param src  The queue to empty
  */
@@ -339,7 +321,7 @@ void pqueue_dump(pqueue_t *q, pqueue_print_entry_f print) {
 
 void pqueue_print(pqueue_t *q, pqueue_print_entry_f print) {
     pqueue_t *dup;
-	void *e;
+    void *e;
 
     dup = pqueue_init(q->size,
                       q->cmppri, q->getpri,
@@ -351,7 +333,7 @@ void pqueue_print(pqueue_t *q, pqueue_print_entry_f print) {
     memcpy(dup->d, q->d, (q->size * sizeof(void *)));
 
     while ((e = pqueue_pop(dup)))
-		print(e);
+        print(e);
 
     pqueue_free(dup);
 }
@@ -391,4 +373,102 @@ static int subtree_is_valid(pqueue_t *q, int pos) {
 
 int pqueue_is_valid(pqueue_t *q) {
     return subtree_is_valid(q, 1);
+}
+
+// ********** Priority Queue Support Start
+
+/**
+ * Return whether the first and second argument are given in reverse order.
+ */
+int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that) {
+    return (thiz > that);
+}
+
+/**
+ * Return false (0) regardless of reaction order.
+ */
+int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that) {
+    return false;
+}
+
+/**
+ * Return whether or not the given events have matching triggers.
+ */
+int event_matches(void* next, void* curr) {
+    return (((event_t*)next)->trigger == ((event_t*)curr)->trigger);
+}
+
+/**
+ * Return whether or not the given reaction_t pointers
+ * point to the same struct.
+ */
+int reaction_matches(void* next, void* curr) {
+    return (next == curr);
+}
+
+/**
+ * Report a priority equal to the time of the given event.
+ * Used for sorting pointers to event_t structs in the event queue.
+ */
+pqueue_pri_t get_event_time(void *a) {
+    return (pqueue_pri_t)(((event_t*) a)->time);
+}
+
+/**
+ * Report a priority equal to the index of the given reaction.
+ * Used for sorting pointers to reaction_t structs in the
+ * blocked and executing queues.
+ */
+pqueue_pri_t get_reaction_index(void *a) {
+    return ((reaction_t*) a)->index;
+}
+
+/**
+ * Return the given event's position in the queue.
+ */
+size_t get_event_position(void *a) {
+    return ((event_t*) a)->pos;
+}
+
+/**
+ * Return the given reaction's position in the queue.
+ */
+size_t get_reaction_position(void *a) {
+    return ((reaction_t*) a)->pos;
+}
+
+/**
+ * Set the given event's position in the queue.
+ */
+void set_event_position(void *a, size_t pos) {
+    ((event_t*) a)->pos = pos;
+}
+
+/**
+ * Return the given reaction's position in the queue.
+ */
+void set_reaction_position(void *a, size_t pos) {
+    ((reaction_t*) a)->pos = pos;
+}
+
+/**
+ * Print some information about the given reaction.
+ *
+ * DEBUG function only.
+ */
+void print_reaction(void *reaction) {
+    reaction_t *r = (reaction_t*)reaction;
+    LF_PRINT_DEBUG("%s: chain_id:%llu, index: %llx, reaction: %p",
+            r->name, r->chain_id, r->index, r);
+}
+
+/**
+ * Print some information about the given event.
+ *
+ * DEBUG function only.
+ */
+void print_event(void *event) {
+    event_t *e = (event_t*)event;
+    LF_PRINT_DEBUG("time: " PRINTF_TIME ", trigger: %p, token: %p",
+            e->time, e->trigger, e->token);
 }

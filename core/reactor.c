@@ -24,14 +24,15 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
-/** Runtime infrastructure for the non-threaded version of the C target
- *  of Lingua Franca.
- *  
- *  @author{Edward A. Lee <eal@berkeley.edu>}
- *  @author{Marten Lohstroh <marten@berkeley.edu>}
- *  @author{Soroush Bateni <soroush@utdallas.edu>}
+/**
+ * Runtime infrastructure for the non-threaded version of the C target
+ * of Lingua Franca.
+ *
+ * @author{Edward A. Lee <eal@berkeley.edu>}
+ * @author{Marten Lohstroh <marten@berkeley.edu>}
+ * @author{Soroush Bateni <soroush@utdallas.edu>}
  */
-
+#include "core/reactor.h"
 #include "reactor_common.c"
 #include "platform.h"
 #include <signal.h> // To trap ctrl-c and invoke termination().
