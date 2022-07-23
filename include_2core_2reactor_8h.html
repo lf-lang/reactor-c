@@ -87,6 +87,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="include_2core_2utils_2util_8h_source.html">utils/util.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="include_2core_2tag_8h_source.html">tag.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="include_2core_2modal__models_2modes_8h_source.html">modal_models/modes.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="include_2core_2port_8h_source.html">port.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="include_2core_2trace_8h_source.html">trace.h</a>&quot;</code><br />
 </div>
 <p><a href="include_2core_2reactor_8h_source.html">Go to the source code of this file.</a></p>
@@ -126,8 +127,8 @@ Macros</h2></td></tr>
 <tr class="separator:ae6d69be73768b3d144a524fa87f0d069"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a64c4d124085ac4279bac7158ad144218"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2core_2reactor_8h.html#a64c4d124085ac4279bac7158ad144218">_LF_SET_NEW_ARRAY</a>(out,  len)</td></tr>
 <tr class="separator:a64c4d124085ac4279bac7158ad144218"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a26960b6a12ebe9eff3f276c2b07096ab"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2core_2reactor_8h.html#a26960b6a12ebe9eff3f276c2b07096ab">_LF_SET_PRESENT</a>(out)</td></tr>
-<tr class="separator:a26960b6a12ebe9eff3f276c2b07096ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5c1e2963a361057f0b249b95f40a8f8d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2core_2reactor_8h.html#a5c1e2963a361057f0b249b95f40a8f8d">lf_set_present</a>(out)</td></tr>
+<tr class="separator:a5c1e2963a361057f0b249b95f40a8f8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5f45a70cbab4e36efdc9efdcf37a7bb9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2core_2reactor_8h.html#a5f45a70cbab4e36efdc9efdcf37a7bb9">_LF_SET_TOKEN</a>(out,  newtoken)</td></tr>
 <tr class="separator:a5f45a70cbab4e36efdc9efdcf37a7bb9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acec0cd036d176324a861cf2a2dfb5e1e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2core_2reactor_8h.html#acec0cd036d176324a861cf2a2dfb5e1e">_LF_SET_DESTRUCTOR</a>(out,  dtor)</td></tr>
@@ -223,8 +224,8 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ad216e238632a5cbf4eed4817c1c5308f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2core_2reactor_8h.html#ad216e238632a5cbf4eed4817c1c5308f">_lf_set_present</a> (<a class="el" href="core_2platform_2lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> *is_present_field)</td></tr>
-<tr class="separator:ad216e238632a5cbf4eed4817c1c5308f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69cf8a450070f4a9bd475145a6701340"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2core_2reactor_8h.html#a69cf8a450070f4a9bd475145a6701340">_lf_set_present</a> (<a class="el" href="structlf__port__base__t.html">lf_port_base_t</a> *port)</td></tr>
+<tr class="separator:a69cf8a450070f4a9bd475145a6701340"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7bca70211dd5f68beea197df4e4a17b8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="core_2platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2core_2reactor_8h.html#a7bca70211dd5f68beea197df4e4a17b8">lf_get_stp_offset</a> (void)</td></tr>
 <tr class="separator:a7bca70211dd5f68beea197df4e4a17b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7354a8f02313a836f25c9e76168991ab"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2core_2reactor_8h.html#a7354a8f02313a836f25c9e76168991ab">lf_set_stp_offset</a> (<a class="el" href="core_2platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset)</td></tr>
@@ -343,7 +344,7 @@ DESCRIPTION</h1>
 <div class="line">    <span class="comment">/* We need to assign &quot;val&quot; to &quot;out-&gt;value&quot; since we need to give &quot;val&quot; an address */</span> \</div>
 <div class="line">    <span class="comment">/* even if it is a literal */</span> \</div>
 <div class="line">    out-&gt;value = val; \</div>
-<div class="line">    _lf_set_present(&amp;out-&gt;is_present); \</div>
+<div class="line">    _lf_set_present((<a class="code hl_struct" href="structlf__port__base__t.html">lf_port_base_t</a>*)out); \</div>
 <div class="line">    if (out-&gt;token != NULL) { \</div>
 <div class="line">        <span class="comment">/* The cast &quot;*((void**) &amp;out-&gt;value)&quot; is a hack to make the code */</span> \</div>
 <div class="line">        <span class="comment">/* compile with non-token types where val is not a pointer. */</span> \</div>
@@ -359,8 +360,9 @@ DESCRIPTION</h1>
 <div class="line">        } \</div>
 <div class="line">    } \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="acore_2reactor_8h_html_a174f339edecd4463df25e673366a2b16aad3aafaeae035f5d1c986b0b59e77458"><div class="ttname"><a href="core_2reactor_8h.html#a174f339edecd4463df25e673366a2b16aad3aafaeae035f5d1c986b0b59e77458">token_and_value</a></div><div class="ttdeci">@ token_and_value</div><div class="ttdef"><b>Definition:</b> reactor.h:366</div></div>
-<div class="ttc" id="acore_2reactor__common_8c_html_a96b4b8f74714eae0efcb699281c10f87"><div class="ttname"><a href="core_2reactor__common_8c.html#a96b4b8f74714eae0efcb699281c10f87">_lf_initialize_token_with_value</a></div><div class="ttdeci">lf_token_t * _lf_initialize_token_with_value(lf_token_t *token, void *value, size_t length)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:547</div></div>
+<div class="ttc" id="acore_2reactor_8h_html_a174f339edecd4463df25e673366a2b16aad3aafaeae035f5d1c986b0b59e77458"><div class="ttname"><a href="core_2reactor_8h.html#a174f339edecd4463df25e673366a2b16aad3aafaeae035f5d1c986b0b59e77458">token_and_value</a></div><div class="ttdeci">@ token_and_value</div><div class="ttdef"><b>Definition:</b> reactor.h:367</div></div>
+<div class="ttc" id="acore_2reactor__common_8c_html_a96b4b8f74714eae0efcb699281c10f87"><div class="ttname"><a href="core_2reactor__common_8c.html#a96b4b8f74714eae0efcb699281c10f87">_lf_initialize_token_with_value</a></div><div class="ttdeci">lf_token_t * _lf_initialize_token_with_value(lf_token_t *token, void *value, size_t length)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:562</div></div>
+<div class="ttc" id="astructlf__port__base__t_html"><div class="ttname"><a href="structlf__port__base__t.html">lf_port_base_t</a></div><div class="ttdef"><b>Definition:</b> port.h:96</div></div>
 </div><!-- fragment --><p >Set the specified output (or input of a contained reactor) to the specified value.</p>
 <p >This version is used for primitive types such as int, double, etc. as well as the built-in types bool and string. The value is copied and therefore the variable carrying the value can be subsequently modified without changing the output. This can also be used for structs with a type defined by a typedef so that the type designating string does not end in '*'. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -404,7 +406,7 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> { \</div>
-<div class="line">    _lf_set_present(&amp;out-&gt;is_present); \</div>
+<div class="line">    _lf_set_present((<a class="code hl_struct" href="structlf__port__base__t.html">lf_port_base_t</a>*)out); \</div>
 <div class="line">    lf_token_t* token = <a class="code hl_function" href="core_2reactor__common_8c.html#a96b4b8f74714eae0efcb699281c10f87">_lf_initialize_token_with_value</a>(out-&gt;token, val, length); \</div>
 <div class="line">    token-&gt;ref_count = out-&gt;num_destinations; \</div>
 <div class="line">    out-&gt;token = token; \</div>
@@ -517,12 +519,12 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> { \</div>
-<div class="line">    _lf_set_present(&amp;out-&gt;is_present); \</div>
+<div class="line">    _lf_set_present((<a class="code hl_struct" href="structlf__port__base__t.html">lf_port_base_t</a>*)out); \</div>
 <div class="line">    lf_token_t* token = <a class="code hl_function" href="core_2reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a>(out-&gt;token, 1, out-&gt;num_destinations); \</div>
 <div class="line">    out-&gt;value = token-&gt;value; \</div>
 <div class="line">    out-&gt;token = token; \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="acore_2reactor__common_8c_html_a9df90516cce7d8e01b46acf61db64b8f"><div class="ttname"><a href="core_2reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a></div><div class="ttdeci">lf_token_t * _lf_set_new_array_impl(lf_token_t *token, size_t length, int num_destinations)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1509</div></div>
+<div class="ttc" id="acore_2reactor__common_8c_html_a9df90516cce7d8e01b46acf61db64b8f"><div class="ttname"><a href="core_2reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a></div><div class="ttdeci">lf_token_t * _lf_set_new_array_impl(lf_token_t *token, size_t length, int num_destinations)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1524</div></div>
 </div><!-- fragment --><p >Version of set() for output types given as 'type*' that allocates a new object of the type of the specified output port.</p>
 <p >This macro dynamically allocates enough memory to contain one instance of the output datatype and sets the variable named by the argument to point to the newly allocated memory. The user code can then populate it with whatever value it wishes to send.</p>
 <p >This macro also sets the corresponding _is_present variable in the self struct to true (which causes the object message to be sent), </p><dl class="params"><dt>Parameters</dt><dd>
@@ -560,7 +562,7 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> { \</div>
-<div class="line">    _lf_set_present(&amp;out-&gt;is_present); \</div>
+<div class="line">    _lf_set_present((<a class="code hl_struct" href="structlf__port__base__t.html">lf_port_base_t</a>*)out); \</div>
 <div class="line">    lf_token_t* token = <a class="code hl_function" href="core_2reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a>(out-&gt;token, len, out-&gt;num_destinations); \</div>
 <div class="line">    out-&gt;value = token-&gt;value; \</div>
 <div class="line">    out-&gt;token = token; \</div>
@@ -571,34 +573,6 @@ DESCRIPTION</h1>
   <table class="params">
     <tr><td class="paramname">out</td><td>The output port (by name). </td></tr>
     <tr><td class="paramname">length</td><td>The length of the array to be sent. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a26960b6a12ebe9eff3f276c2b07096ab" name="a26960b6a12ebe9eff3f276c2b07096ab"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a26960b6a12ebe9eff3f276c2b07096ab">&#9670;&nbsp;</a></span>_LF_SET_PRESENT</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define _LF_SET_PRESENT</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">out</td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> { \</div>
-<div class="line">    _lf_set_present(&amp;out-&gt;is_present); \</div>
-<div class="line">} <span class="keywordflow">while</span>(0)</div>
-</div><!-- fragment --><p >Version of set() for output types given as 'type[number]'.</p>
-<p >This sets the _is_present variable corresponding to the specified output to true (which causes the array message to be sent). The values in the output are normally written directly to the array or struct before or after this is called. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">out</td><td>The output port (by name). </td></tr>
   </table>
   </dd>
 </dl>
@@ -631,7 +605,7 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> { \</div>
-<div class="line">    _lf_set_present(&amp;out-&gt;is_present); \</div>
+<div class="line">    _lf_set_present((<a class="code hl_struct" href="structlf__port__base__t.html">lf_port_base_t</a>*)out); \</div>
 <div class="line">    out-&gt;value = newtoken-&gt;value; \</div>
 <div class="line">    out-&gt;token = newtoken; \</div>
 <div class="line">    newtoken-&gt;ref_count += out-&gt;num_destinations; \</div>
@@ -729,6 +703,34 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p >Macro for extracting the level from the index of a reaction. A reaction that has no upstream reactions has level 0. Other reactions have a level that is the length of the longest upstream chain to a reaction with level 0 (inclusive). This is used, along with the deadline, to sort reactions in the reaction queue. It ensures that reactions that are upstream in the dependence graph execute before reactions that are downstream. </p>
+
+</div>
+</div>
+<a id="a5c1e2963a361057f0b249b95f40a8f8d" name="a5c1e2963a361057f0b249b95f40a8f8d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5c1e2963a361057f0b249b95f40a8f8d">&#9670;&nbsp;</a></span>lf_set_present</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define lf_set_present</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">out</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> { \</div>
+<div class="line">    _lf_set_present((<a class="code hl_struct" href="structlf__port__base__t.html">lf_port_base_t</a>*)out); \</div>
+<div class="line">} <span class="keywordflow">while</span>(0)</div>
+</div><!-- fragment --><p >Version of set() for output types given as 'type[number]'.</p>
+<p >This sets the _is_present variable corresponding to the specified output to true (which causes the array message to be sent). The values in the output are normally written directly to the array or struct before or after this is called. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">out</td><td>The output port (by name). </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -1817,8 +1819,8 @@ The absent and present fields need to be compatible with false and true respecti
 
 </div>
 </div>
-<a id="ad216e238632a5cbf4eed4817c1c5308f" name="ad216e238632a5cbf4eed4817c1c5308f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad216e238632a5cbf4eed4817c1c5308f">&#9670;&nbsp;</a></span>_lf_set_present()</h2>
+<a id="a69cf8a450070f4a9bd475145a6701340" name="a69cf8a450070f4a9bd475145a6701340"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a69cf8a450070f4a9bd475145a6701340">&#9670;&nbsp;</a></span>_lf_set_present()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1826,15 +1828,15 @@ The absent and present fields need to be compatible with false and true respecti
         <tr>
           <td class="memname">void _lf_set_present </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="core_2platform_2lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> *&#160;</td>
-          <td class="paramname"><em>is_present_field</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="structlf__port__base__t.html">lf_port_base_t</a> *&#160;</td>
+          <td class="paramname"><em>port</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Mark the given is_present field as true. This is_present field will later be cleaned up by _lf_start_time_step. This assumes that the mutex is not held. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Mark the given port's is_present field as true. This is_present field will later be cleaned up by _lf_start_time_step. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">is_present_field</td><td>A pointer to the is_present field that must be set. </td></tr>
+    <tr><td class="paramname">port</td><td>A pointer to the port struct. </td></tr>
   </table>
   </dd>
 </dl>

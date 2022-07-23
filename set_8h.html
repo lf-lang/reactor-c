@@ -431,9 +431,10 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> { \</div>
-<div class="line">        _Pragma (<span class="stringliteral">&quot;Warning \&quot;&#39;SET_PRESENT&#39; is deprecated.\&quot;&quot;</span>); \</div>
-<div class="line">        _LF_SET_PRESENT(out); \</div>
+<div class="line">    _Pragma (<span class="stringliteral">&quot;Warning \&quot;&#39;SET_PRESENT&#39; is deprecated.\&quot;&quot;</span>); \</div>
+<div class="line">    _lf_set_present((<a class="code hl_struct" href="structlf__port__base__t.html">lf_port_base_t</a>*)out); \</div>
 <div class="line">} <span class="keywordflow">while</span> (0)</div>
+<div class="ttc" id="astructlf__port__base__t_html"><div class="ttname"><a href="structlf__port__base__t.html">lf_port_base_t</a></div><div class="ttdef"><b>Definition:</b> port.h:96</div></div>
 </div><!-- fragment --><p >Version of <a class="el" href="set_8h.html#aef602f51d34bbd214643161e425d909d">lf_set()</a> for output types given as 'type[number]'.</p>
 <p >This sets the _is_present variable corresponding to the specified output to true (which causes the array message to be sent). The values in the output are normally written directly to the array or struct before or after this is called. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">

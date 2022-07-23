@@ -7,9 +7,10 @@ var searchData=
   ['default_5fargc_4',['default_argc',['../core_2reactor__common_8c.html#aab46895a3a4d1341a19b689a0ea902d1',1,'default_argc():&#160;reactor_common.c'],['../include_2core_2reactor__common_8c.html#aab46895a3a4d1341a19b689a0ea902d1',1,'default_argc():&#160;reactor_common.c']]],
   ['default_5fargv_5',['default_argv',['../core_2reactor__common_8c.html#a079c42a8611d008395dba5af4911e85c',1,'default_argv():&#160;reactor_common.c'],['../include_2core_2reactor__common_8c.html#a079c42a8611d008395dba5af4911e85c',1,'default_argv():&#160;reactor_common.c']]],
   ['default_5fwindow_6',['default_window',['../sensor__simulator_8c.html#a9029bf378e52a9f85a25eb0ba9095fe3',1,'sensor_simulator.c']]],
-  ['destructor_7',['destructor',['../structlf__token__t.html#a1fbbe25b8aae633a41428eadff844166',1,'lf_token_t']]],
-  ['digits_8',['digits',['../structmixed__radix__int__t.html#a0c1797fef4c4b693348366a2f8a3eaee',1,'mixed_radix_int_t']]],
-  ['done_5freactions_9',['done_reactions',['../struct__lf__sched__thread__info__t.html#a0aa63072819d25d22fdbc59bf55f39f6',1,'_lf_sched_thread_info_t']]],
-  ['downstream_10',['downstream',['../structfederate__t.html#a5ff7eb616c2e4115062d3bba1e3ce1cf',1,'federate_t']]],
-  ['duration_11',['duration',['../core_2reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration():&#160;reactor_common.c'],['../include_2core_2reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration():&#160;reactor_common.c']]]
+  ['destination_5fchannel_7',['destination_channel',['../structlf__port__base__t.html#ab7734e3cdd562ad5f6ad94f97e095822',1,'lf_port_base_t']]],
+  ['destructor_8',['destructor',['../structlf__token__t.html#a1fbbe25b8aae633a41428eadff844166',1,'lf_token_t']]],
+  ['digits_9',['digits',['../structmixed__radix__int__t.html#a0c1797fef4c4b693348366a2f8a3eaee',1,'mixed_radix_int_t']]],
+  ['done_5freactions_10',['done_reactions',['../struct__lf__sched__thread__info__t.html#a0aa63072819d25d22fdbc59bf55f39f6',1,'_lf_sched_thread_info_t']]],
+  ['downstream_11',['downstream',['../structfederate__t.html#a5ff7eb616c2e4115062d3bba1e3ce1cf',1,'federate_t']]],
+  ['duration_12',['duration',['../core_2reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration():&#160;reactor_common.c'],['../include_2core_2reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration():&#160;reactor_common.c']]]
 ];
