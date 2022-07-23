@@ -42,8 +42,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
 
-#include "../utils/semaphore.h"
-#include "scheduler.h"
+#include "core/utils/semaphore.h"
+#include "core/threaded/scheduler.h"
 
 extern lf_mutex_t mutex;
 

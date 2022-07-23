@@ -53,13 +53,6 @@ trigger_handle_t lf_schedule(void* action, interval_t offset) {
 }
 
 /**
- * @deprecated version of 'lf_schedule'
- */
-trigger_handle_t schedule(void* action, interval_t offset) {
-    return lf_schedule(action, offset);
-}
-
-/**
  * Schedule the specified action with an integer value at a later logical
  * time that depends on whether the action is logical or physical and
  * what its parameter values are. This wraps a copy of the integer value
@@ -73,14 +66,6 @@ trigger_handle_t schedule(void* action, interval_t offset) {
 trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value)
 {
     return _lf_schedule_int(action, extra_delay, value);
-}
-
-/**
- * @deprecated version of 'lf_schedule_int'
- */
-trigger_handle_t schedule_int(void* action, interval_t extra_delay, int value)
-{
-    return lf_schedule_int(action, extra_delay, value);
 }
 
 /**
@@ -135,13 +120,6 @@ trigger_handle_t schedule_int(void* action, interval_t extra_delay, int value)
  */
 trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
     return _lf_schedule_token(action, extra_delay, token);
-}
-
-/**
- * @deprecated version of 'lf_schedule_token'
- */
-trigger_handle_t schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-    return lf_schedule_token(action, extra_delay, token);
 }
 
 /**

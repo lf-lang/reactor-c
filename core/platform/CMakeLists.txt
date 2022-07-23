@@ -1,4 +1,19 @@
-include(Platform.cmake)
+# Check which system we are running on to select the correct platform support
+# file and assign the file's path to LF_PLATFORM_FILE
+set(LF_PLATFORM_FILES lf_C11_threads_support.c)
+set(LF_UNIX_FILES lf_POSIX_threads_support.c lf_unix_clock_support.c)
 
-set(GENERAL_SOURCES ${LF_PLATFORM_FILE})
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    list(APPEND LF_PLATFORM_FILES lf_linux_support.c ${LF_UNIX_FILES})
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
+    list(APPEND LF_PLATFORM_FILES lf_macos_support.c ${LF_UNIX_FILES})
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    list(APPEND LF_PLATFORM_FILES lf_windows_support.c)
+    list(APPEND CMAKE_SYSTEM_VERSION 10.0)
+    message("Using Windows SDK version ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")
+else()
+    message(FATAL_ERROR "Your platform is not supported! The C target supports Linux, MacOS and Windows.")
+endif()
+
+set(GENERAL_SOURCES ${LF_PLATFORM_FILES})
 add_sources_to_parent(GENERAL_SOURCES "" "")

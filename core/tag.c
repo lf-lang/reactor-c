@@ -34,6 +34,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.h"
 #include "platform.h"
 
+// Global variables :(
+
 /**
  * Current time in nanoseconds since January 1, 1970
  * This is not in scope for reactors.

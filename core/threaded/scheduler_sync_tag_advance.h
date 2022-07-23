@@ -1,7 +1,6 @@
-/* MacOS API support for the C target of Lingua Franca. */
-
 /*************
-Copyright (c) 2021, The University of California at Berkeley.
+Copyright (c) 2022, The University of Texas at Dallas.
+Copyright (c) 2022, The University of California at Berkeley.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -24,36 +23,14 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
-/** Linux API support for the C target of Lingua Franca.
- *  
- *  @author{Soroush Bateni <soroush@utdallas.edu>}
- */
+#include "core/tag.h"
 
-#include "lf_linux_support.h"
-#include "../platform.h"
+/////////////////// External Variables /////////////////////////
+extern tag_t current_tag;
+extern tag_t stop_tag;
 
-#ifdef NUMBER_OF_WORKERS
-#if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
-#include "lf_POSIX_threads_support.c"
-#else
-#include "lf_C11_threads_support.c"
-#endif
-#endif
-
-#include "lf_unix_clock_support.h"
-#include "lf_unix_syscall_support.c"
-
-/**
- * Pause execution for a number of nanoseconds.
- *
- * A Linux-specific clock_nanosleep is used underneath that is supposedly more
- * accurate.
- *
- * @return 0 for success, or -1 for failure. In case of failure, errno will be
- *  set appropriately (see `man 2 clock_nanosleep`).
- */
-int lf_nanosleep(instant_t requested_time) {
-    const struct timespec tp = convert_ns_to_timespec(requested_time);
-    struct timespec remaining;
-    return clock_nanosleep(_LF_CLOCK, 0, (const struct timespec*)&tp, (struct timespec*)&remaining);
-}
+/////////////////// External Functions /////////////////////////
+void _lf_next_locked();
+void logical_tag_complete(tag_t tag_to_send);
+bool _lf_sched_should_stop_locked();
+bool _lf_sched_advance_tag_locked();

@@ -229,4 +229,14 @@ tag_t _lf_convert_volatile_tag_to_nonvolatile(tag_t volatile const& vtag);
 tag_t _lf_convert_volatile_tag_to_nonvolatile(tag_t volatile vtag);
 #endif
 
+// Global variables :(
+extern tag_t current_tag;
+extern instant_t physical_start_time;
+extern instant_t start_time;
+extern interval_t _lf_time_physical_clock_offset;
+extern interval_t _lf_global_physical_clock_drift;
+extern interval_t _lf_time_test_physical_clock_offset;
+extern instant_t _lf_last_reported_physical_time_ns;
+extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
+
 #endif // TAG_H

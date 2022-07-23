@@ -47,7 +47,8 @@ add_subdirectory(platform)
 add_subdirectory(utils)
 
 # List sources in this directory.
-set(SINGLE_THREADED_SOURCES reactor.c)
+list(APPEND SINGLE_THREADED_SOURCES reactor.c)
+list(APPEND GENERAL_SOURCES tag.c port.c)
 
 # Determine which sources to include.
 list(APPEND SOURCES ${GENERAL_SOURCES})
@@ -63,6 +64,8 @@ endif(NUMBER_OF_WORKERS)
 list(JOIN SOURCES ", " PRINTABLE_SOURCE_LIST)
 message(STATUS "Including the following sources: " ${PRINTABLE_SOURCE_LIST})
 add_library(core ${SOURCES})
+
+target_include_directories(core PUBLIC ../include)
 
 # Link threading library if necessary.
 if(NUMBER_OF_WORKERS)
