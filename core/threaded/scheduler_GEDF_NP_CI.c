@@ -40,14 +40,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
 
+#include <assert.h>
+
 #include "core/platform.h"
 #include "core/utils/pqueue.h"
 #include "core/utils/semaphore.h"
 #include "core/utils/vector.h"
 #include "scheduler.h"
 #include "scheduler_instance.h"
-#include "scheduler_sync_tag_advance.c"
-#include <assert.h>
+#include "scheduler_sync_tag_advance.h"
 
 #ifndef MAX_REACTION_LEVEL
 #define MAX_REACTION_LEVEL INITIAL_REACT_QUEUE_SIZE

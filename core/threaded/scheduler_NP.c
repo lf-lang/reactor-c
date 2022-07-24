@@ -46,7 +46,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "core/utils/semaphore.h"
 #include "core/threaded/scheduler.h"
 #include "core/threaded/scheduler_instance.h"
-#include "core/threaded/scheduler_sync_tag_advance.c"
+#include "core/threaded/scheduler_sync_tag_advance.h"
 
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;

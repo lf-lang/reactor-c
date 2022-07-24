@@ -35,7 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assert.h>
 
 #include "scheduler.h"
-#include "scheduler_sync_tag_advance.c"
+#include "scheduler_sync_tag_advance.h"
 #include "worker_assignments.h"
 #include "worker_states.h"
 
