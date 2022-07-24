@@ -68,6 +68,7 @@ lf_token_t* _lf_initialize_token_with_value(lf_token_t* token, void* value, size
 lf_token_t* _lf_initialize_token(lf_token_t* token, size_t length);
 bool _lf_is_tag_after_stop_tag(tag_t tag);
 void _lf_pop_events();
+void _lf_initialize_timer(trigger_t* timer);
 void _lf_recycle_event(event_t* e);
 event_t* _lf_create_dummy_events(
     trigger_t* trigger,

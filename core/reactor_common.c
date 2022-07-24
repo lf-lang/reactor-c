@@ -729,7 +729,7 @@ static event_t* _lf_get_new_event() {
  * If this timer is to trigger reactions at a _future_ tag as well,
  * schedule it accordingly.
  */
-static void _lf_initialize_timer(trigger_t* timer) {
+void _lf_initialize_timer(trigger_t* timer) {
     interval_t delay = 0;
 
 #ifdef MODAL_REACTORS

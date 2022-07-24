@@ -29,12 +29,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author Edward A. Lee <eal@berkeley.edu>
  * @author Marten Lohstroh <marten@berkeley.edu>
  * @brief API used to advance tag globally.
- * 
+ *
  * @copyright Copyright (c) 2022, The University of Texas at Dallas.
  * @copyright Copyright (c) 2022, The University of California at Berkeley.
  */
 
 #include "core/threaded/scheduler_sync_tag_advance.h"
+#include "core/trace.h"
+#include "core/utils/util.h"
 
 /////////////////// External Variables /////////////////////////
 extern tag_t current_tag;
@@ -44,12 +46,12 @@ extern tag_t stop_tag;
 /**
  * Placeholder for function that will advance tag and initially fill the
  * reaction queue.
- * 
+ *
  * This does not acquire the mutex lock. It assumes the lock is already held.
  */
 void _lf_next_locked();
 
-/** 
+/**
  * Placeholder for code-generated function that will, in a federated
  * execution, be used to coordinate the advancement of tag. It will notify
  * the runtime infrastructure (RTI) that all reactions at the specified
@@ -83,9 +85,9 @@ bool _lf_sched_should_stop_locked() {
 /**
  * Advance tag. This will also pop events for the newly acquired tag and put
  * the triggered reactions on the '_lf_sched_vector_of_reaction_qs'.
- * 
+ *
  * This function assumes the caller holds the 'mutex' lock.
- * 
+ *
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
 bool _lf_sched_advance_tag_locked() {
