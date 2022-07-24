@@ -37,7 +37,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <assert.h>
 
-#include "reactor.h"
+#include "core/reactor.h"
+#include "core/reactor_common.h"
 #include "core/tag.h"
 #include "core/utils/pqueue.h"
 #include "core/utils/vector.h"
@@ -134,50 +135,6 @@ int _lf_tokens_with_ref_count_size = 0;
  * calling lf_set_stp_offset(interval_t offset).
  */
 interval_t _lf_fed_STA_offset = 0LL;
-
-#ifdef FEDERATED
-/**
- * Reset absent fields on network input ports.
- * @note Defined in federate.c
- */
-void reset_status_fields_on_input_port_triggers();
-
-/**
- * Enqueue network control reactions.
- */
-void enqueue_network_control_reactions();
-
-/**
- * Determine the status of the port at the current logical time.
- * If successful, return true. If the status cannot be determined
- * at this moment, return false.
- *
- * @param portID the ID of the port to determine status for
- */
-port_status_t determine_port_status_if_possible(int portID);
-
-/**
- * A helper enum for the returned status code of parse_rti_addr.
- */
-typedef enum parse_rti_code_t {
-    SUCCESS,
-    INVALID_PORT,
-    INVALID_HOST,
-    INVALID_USER,
-    FAILED_TO_PARSE
-} parse_rti_code_t;
-
-/**
- * Parse the address of the RTI and store them into the global federation_metadata struct.
- * @return a parse_rti_code_t indicating the result of the parse.
- */
-parse_rti_code_t parse_rti_addr(char* rti_addr);
-
-/**
- * Sets the federation_id of this federate to fid.
- */
-void set_federation_id(char* fid);
-#endif
 
 /**
  * Allocate memory using calloc (so the allocated memory is zeroed out)
@@ -310,11 +267,11 @@ void lf_set_stp_offset(interval_t offset) {
 /** Priority queues. */
 pqueue_t* event_q;     // For sorting by time.
 
-pqueue_t* recycle_q;   // For recycling malloc'd events.
-pqueue_t* next_q;      // For temporarily storing the next event lined
+static pqueue_t* recycle_q;   // For recycling malloc'd events.
+static pqueue_t* next_q;      // For temporarily storing the next event lined
                        // up in superdense time.
 
-trigger_handle_t _lf_handle = 1;
+static trigger_handle_t _lf_handle = 1;
 
 /**
  * Counter used to issue a warning if memory is
@@ -336,10 +293,10 @@ static int _lf_count_token_allocations;
  * When a token is freed, this pointer will be updated to point to it.
  * Freed tokens are chained using their next_free field.
  */
-lf_token_t* _lf_token_recycling_bin = NULL;
+static lf_token_t* _lf_token_recycling_bin = NULL;
 
 /** Count of the number of tokens in the recycling bin. */
-int _lf_token_recycling_bin_size = 0;
+static int _lf_token_recycling_bin_size = 0;
 
 /**
  * To allow a system to recover from burst of activity, the token recycling
@@ -364,7 +321,7 @@ typedef enum token_freed {
  *  was freed, and TOKEN_FREED if both the value and the token were
  *  freed.
  */
-token_freed _lf_free_token(lf_token_t* token) {
+static token_freed _lf_free_token(lf_token_t* token) {
     if (token == NULL) {
         return NOT_FREED;
     }
@@ -415,7 +372,7 @@ token_freed _lf_free_token(lf_token_t* token) {
  *  was freed, and TOKEN_FREED if both the value and the token were
  *  freed.
  */
-token_freed _lf_done_using(lf_token_t* token) {
+static token_freed _lf_done_using(lf_token_t* token) {
     if (token == NULL) {
         return NOT_FREED;
     }
@@ -750,12 +707,29 @@ void _lf_pop_events() {
 }
 
 /**
+ * Get a new event. If there is a recycled event available, use that.
+ * If not, allocate a new one. In either case, all fields will be zero'ed out.
+ */
+static event_t* _lf_get_new_event() {
+    // Recycle event_t structs, if possible.
+    event_t* e = (event_t*)pqueue_pop(recycle_q);
+    if (e == NULL) {
+        e = (event_t*)calloc(1, sizeof(struct event_t));
+        if (e == NULL) lf_print_error_and_exit("Out of memory!");
+#ifdef FEDERATED_DECENTRALIZED
+        e->intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
+#endif
+    }
+    return e;
+}
+
+/**
  * Initialize the given timer.
  * If this timer has a zero offset, enqueue the reactions it triggers.
  * If this timer is to trigger reactions at a _future_ tag as well,
  * schedule it accordingly.
  */
-void _lf_initialize_timer(trigger_t* timer) {
+static void _lf_initialize_timer(trigger_t* timer) {
     interval_t delay = 0;
 
 #ifdef MODAL_REACTORS
@@ -795,23 +769,6 @@ void _lf_initialize_timer(trigger_t* timer) {
     // NOTE: No lock is being held. Assuming this only happens at startup.
     pqueue_insert(event_q, e);
     tracepoint_schedule(timer, delay); // Trace even though schedule is not called.
-}
-
-/**
- * Get a new event. If there is a recycled event available, use that.
- * If not, allocate a new one. In either case, all fields will be zero'ed out.
- */
-event_t* _lf_get_new_event() {
-    // Recycle event_t structs, if possible.
-    event_t* e = (event_t*)pqueue_pop(recycle_q);
-    if (e == NULL) {
-        e = (event_t*)calloc(1, sizeof(struct event_t));
-        if (e == NULL) lf_print_error_and_exit("Out of memory!");
-#ifdef FEDERATED_DECENTRALIZED
-        e->intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
-#endif
-    }
-    return e;
 }
 
 /**
@@ -866,7 +823,7 @@ event_t* _lf_create_dummy_events(trigger_t* trigger, instant_t time, event_t* ne
  * @param event The event.
  * @param token The token.
  */
-void _lf_replace_token(event_t* event, lf_token_t* token) {
+static void _lf_replace_token(event_t* event, lf_token_t* token) {
     if (event->token != token) {
         // Free the existing token, if any
         _lf_done_using(event->token);
@@ -1748,7 +1705,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
  * either passed to an output using set_token() or scheduled with a action
  * using schedule_token().
  */
-lf_token_t* writable_copy(lf_token_t* token) {
+static lf_token_t* writable_copy(lf_token_t* token) {
     LF_PRINT_DEBUG("writable_copy: Requesting writable copy of token %p with reference count %d.", token, token->ref_count);
     if (token->ref_count == 1) {
         LF_PRINT_DEBUG("writable_copy: Avoided copy because reference count is %d.", token->ref_count);
@@ -1786,7 +1743,7 @@ lf_token_t* writable_copy(lf_token_t* token) {
 /**
  * Print a usage message.
  */
-void usage(int argc, char* argv[]) {
+static void usage(int argc, char* argv[]) {
     printf("\nCommand-line arguments: \n\n");
     printf("  -f, --fast [true | false]\n");
     printf("   Whether to wait for physical time to match logical time.\n\n");

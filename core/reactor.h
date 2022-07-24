@@ -798,34 +798,6 @@ lf_token_t* create_token(size_t element_size);
 trigger_handle_t _lf_schedule_int(void* action, interval_t extra_delay, int value);
 
 /**
- * Get a new event. If there is a recycled event available, use that.
- * If not, allocate a new one. In either case, all fields will be zero'ed out.
- */
-event_t* _lf_get_new_event(void);
-
-/**
- * Recycle the given event.
- * Zero it out and pushed it onto the recycle queue.
- */
-void _lf_recycle_event(event_t* e);
-
-/**
- * Schedule events at a specific tag (time, microstep), provided
- * that the tag is in the future relative to the current tag.
- * The input time values are absolute.
- *
- * If there is an event found at the requested tag, the payload
- * is replaced and 0 is returned.
- *
- * @param trigger The trigger to be invoked at a later logical time.
- * @param tag Logical tag of the event
- * @param token The token wrapping the payload or NULL for no payload.
- *
- * @return 1 for success, 0 if no new event was scheduled (instead, the payload was updated), or -1 for error.
- */
-int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token);
-
-/**
  * Create a dummy event to be used as a spacer in the event queue.
  */
 event_t* _lf_create_dummy_event(trigger_t* trigger, instant_t time, event_t* next, unsigned int offset);
@@ -929,36 +901,6 @@ void _lf_fd_send_stop_request_to_rti(void);
  * @return True if the specified deadline has passed and false otherwise.
  */
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
-
-//  ******** Global Variables :( ********  //
-
-/**
- * The number of worker threads for threaded execution.
- * By default, execution is not threaded and this variable will have value 0,
- * meaning that the execution is not threaded.
- */
-extern unsigned int _lf_number_of_workers;
-
-extern bool fast;
-extern unsigned int _lf_number_of_workers;
-extern instant_t duration;
-extern bool _lf_execution_started;
-extern tag_t stop_tag;
-extern bool keepalive_specified;
-extern bool** _lf_is_present_fields;
-extern int _lf_is_present_fields_size;
-extern bool** _lf_is_present_fields_abbreviated;
-extern int _lf_is_present_fields_abbreviated_size;
-extern tag_t** _lf_intended_tag_fields;
-extern int _lf_intended_tag_fields_size;
-extern token_present_t* _lf_tokens_with_ref_count;
-extern lf_token_t* _lf_more_tokens_with_ref_count;
-extern int _lf_tokens_with_ref_count_size;
-
-extern pqueue_t* event_q;
-
-extern int default_argc;
-extern char** default_argv;
 
 #include "trace.h"
 

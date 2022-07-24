@@ -44,6 +44,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "net_util.c"   // Defines network functions.
 #include "net_common.h" // Defines message types, etc.
 #include "../reactor.h"    // Defines instant_t.
+#include "../reactor_common.h"
 #include "../platform.h"
 #include "../threaded/scheduler.h"
 #include "clock-sync.c" // Defines clock synchronization functions.
@@ -94,12 +95,12 @@ federation_metadata_t federation_metadata = {
 };
 
 
-/** 
+/**
  * Thread that listens for inputs from other federates.
  * This thread listens for messages of type MSG_TYPE_P2P_TAGGED_MESSAGE
- * from the specified peer federate and calls schedule to 
- * schedule an event. If an error occurs or an EOF is received 
- * from the peer, then this procedure returns, terminating the 
+ * from the specified peer federate and calls schedule to
+ * schedule an event. If an error occurs or an EOF is received
+ * from the peer, then this procedure returns, terminating the
  * thread.
  * @param fed_id_ptr A pointer to a uint16_t containing federate ID being listened to.
  *  This procedure frees the memory pointed to before returning.
@@ -116,7 +117,7 @@ void* listen_to_federates(void* args);
  */
 void send_neighbor_structure_to_RTI(int rti_socket);
 
-/** 
+/**
  * Create a server to listen to incoming physical
  * connections from remote federates. This function
  * only handles the creation of the server socket.
@@ -124,20 +125,20 @@ void send_neighbor_structure_to_RTI(int rti_socket);
  * sent to the RTI by sending an MSG_TYPE_ADDRESS_ADVERTISEMENT message
  * (@see net_common.h). This function expects no response
  * from the RTI.
- * 
+ *
  * If a port is specified by the user, that will be used
  * as the only possibility for the server. This function
  * will fail if that port is not available. If a port is not
  * specified, the STARTING_PORT (@see net_common.h) will be used.
- * The function will keep incrementing the port in this case 
+ * The function will keep incrementing the port in this case
  * until the number of tries reaches PORT_RANGE_LIMIT.
- * 
+ *
  * @note This function is similar to create_server(...) in rti.c.
  * However, it contains specific log messages for the peer to
- * peer connections between federates. It also additionally 
+ * peer connections between federates. It also additionally
  * sends an address advertisement (MSG_TYPE_ADDRESS_ADVERTISEMENT) message to the
  * RTI informing it of the port.
- * 
+ *
  * @param specified_port The specified port by the user.
  */
 void create_server(int specified_port) {
@@ -230,11 +231,11 @@ void create_server(int specified_port) {
  *
  * If the socket connection to the remote federate or the RTI has been broken,
  * then this returns 0 without sending. Otherwise, it returns 1.
- * 
+ *
  * @note This function is similar to send_timed_message() except that it
  *  does not deal with time and timed_messages.
- * 
- * @param message_type The type of the message being sent. 
+ *
+ * @param message_type The type of the message being sent.
  *  Currently can be MSG_TYPE_TAGGED_MESSAGE for messages sent via
  *  RTI or MSG_TYPE_P2P_TAGGED_MESSAGE for messages sent between
  *  federates.
@@ -300,13 +301,13 @@ int send_message(int message_type,
     return 1;
 }
 
-/** 
+/**
  * Send the specified timestamped message to the specified port in the
  * specified federate via the RTI or directly to a federate depending on
  * the given socket. The timestamp is calculated as current_logical_time +
  * additional delay which is greater than or equal to zero.
- * The port should be an input port of a reactor in 
- * the destination federate. This version does include the timestamp 
+ * The port should be an input port of a reactor in
+ * the destination federate. This version does include the timestamp
  * in the message. The caller can reuse or free the memory after this returns.
  *
  * If the socket connection to the remote federate or the RTI has been broken,
@@ -314,15 +315,15 @@ int send_message(int message_type,
  *
  * This method assumes that the caller does not hold the outbound_socket_mutex lock,
  * which it acquires to perform the send.
- * 
+ *
  * @note This function is similar to send_message() except that it
  *   sends timed messages and also contains logics related to time.
- * 
+ *
  * @param additional_delay The offset applied to the timestamp
  *  using after. The additional delay will be greater or equal to zero
  *  if an after is used on the connection. If no after is given in the
  *  program, -1 is passed.
- * @param message_type The type of the message being sent. 
+ * @param message_type The type of the message being sent.
  *  Currently can be MSG_TYPE_TAGGED_MESSAGE for messages sent via
  *  RTI or MSG_TYPE_P2P_TAGGED_MESSAGE for messages sent between
  *  federates.
@@ -376,7 +377,7 @@ int send_timed_message(interval_t additional_delay,
 
     // Next 8 + 4 will be the tag (timestamp, microstep)
     encode_tag(
-        &(header_buffer[buffer_head]), 
+        &(header_buffer[buffer_head]),
         current_message_intended_tag
     );
     buffer_head += sizeof(int64_t) + sizeof(uint32_t);
@@ -416,7 +417,7 @@ int send_timed_message(interval_t additional_delay,
     return 1;
 }
 
-/** 
+/**
  * Send a time to the RTI.
  * This is not synchronized.
  * It assumes the caller is.
@@ -489,7 +490,7 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
         if (!exit_on_error) {
             lf_print_error("Failed to send tag " PRINTF_TAG " to the RTI."
                             " Error code %d: %s",
-                            tag.time - start_time, 
+                            tag.time - start_time,
                             tag.microstep,
                             errno,
                             strerror(errno)
@@ -501,7 +502,7 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
             lf_mutex_unlock(&outbound_socket_mutex);
             lf_print_error_and_exit("Failed to send tag " PRINTF_TAG " to the RTI."
                                     " Error code %d: %s",
-                                    tag.time - start_time, 
+                                    tag.time - start_time,
                                     tag.microstep,
                                     errno,
                                     strerror(errno)
@@ -671,12 +672,12 @@ void* listen_for_upstream_messages_from_downstream_federates(void* fed_id_ptr) {
 
 /**
  * Connect to the federate with the specified id. This established
- * connection will then be used in functions such as send_timed_message() 
- * to send messages directly to the specified federate. 
+ * connection will then be used in functions such as send_timed_message()
+ * to send messages directly to the specified federate.
  * This function first sends an MSG_TYPE_ADDRESS_QUERY message to the RTI to obtain
- * the IP address and port number of the specified federate. It then attempts 
+ * the IP address and port number of the specified federate. It then attempts
  * to establish a socket connection to the specified federate.
- * If this fails, the program exits. If it succeeds, it sets element [id] of 
+ * If this fails, the program exits. If it succeeds, it sets element [id] of
  * the _fed.sockets_for_outbound_p2p_connections global array to
  * refer to the socket for communicating directly with the federate.
  * @param remote_federate_id The ID of the remote federate.
@@ -1032,7 +1033,7 @@ void connect_to_rti(char* hostname, int port) {
     }
 }
 
-/** 
+/**
  * Send the specified timestamp to the RTI and wait for a response.
  * The specified timestamp should be current physical time of the
  * federate, and the response will be the designated start time for
@@ -1080,7 +1081,7 @@ trigger_t* _lf_action_for_port(int port_id);
 
 /**
  * Set the status of network port with id portID.
- * 
+ *
  * @param portID The network port ID
  * @param status The network port status (port_status_t)
  */
@@ -1124,7 +1125,7 @@ bool is_input_control_reaction_blocked() {
  * have been received by those ports. If any update occurs and if
  * there are control reactions blocked, then this broadcasts a
  * signal to potentially unblock those control reactions.
- * 
+ *
  * This assumes the caller holds the mutex.
  *
  * @param tag The tag on which the latest status of network input
@@ -1145,7 +1146,7 @@ void update_last_known_status_on_input_ports(tag_t tag) {
             LF_PRINT_DEBUG(
                 "Updating the last known status tag of port %d to " PRINTF_TAG ".",
                 i,
-                tag.time - lf_time_start(), 
+                tag.time - lf_time_start(),
                 tag.microstep
             );
             input_port_action->last_known_status_tag = tag;
@@ -1173,7 +1174,7 @@ void update_last_known_status_on_input_ports(tag_t tag) {
  *
  * This function assumes the caller holds the mutex, and, if the tag
  * actually increases, it notifies the waiting control reaction if there is one.
- * 
+ *
  * @param tag The tag on which the latest status of network input
  *  ports is known.
  * @param portID The port ID
@@ -1192,7 +1193,7 @@ void update_last_known_status_on_input_port(tag_t tag, int port_id) {
         LF_PRINT_DEBUG(
             "Updating the last known status tag of port %d to " PRINTF_TAG ".",
             port_id,
-            tag.time - lf_time_start(), 
+            tag.time - lf_time_start(),
             tag.microstep
         );
         input_port_action->last_known_status_tag = tag;
@@ -1209,7 +1210,7 @@ void update_last_known_status_on_input_port(tag_t tag, int port_id) {
 
 /**
  * Reset the status fields on network input ports to unknown.
- * 
+ *
  * @note This function must be called at the beginning of each
  *  logical time.
  */
@@ -1338,7 +1339,7 @@ void enqueue_network_control_reactions() {
  * Send a port absent message to federate with fed_ID, informing the
  * remote federate that the current federate will not produce an event
  * on this network port at the current logical time.
- * 
+ *
  * @param additional_delay The offset applied to the timestamp
  *  using after. The additional delay will be greater or equal to zero
  *  if an after is used on the connection. If no after is given in the
@@ -1347,7 +1348,7 @@ void enqueue_network_control_reactions() {
  * @param fed_ID The fed ID of the receiving federate.
  */
 void send_port_absent_to_federate(interval_t additional_delay,
-                                    unsigned short port_ID, 
+                                    unsigned short port_ID,
                                   unsigned short fed_ID) {
     // Construct the message
     size_t message_length = 1 + sizeof(port_ID) + sizeof(fed_ID) + sizeof(instant_t) + sizeof(microstep_t);
@@ -1368,7 +1369,7 @@ void send_port_absent_to_federate(interval_t additional_delay,
     encode_uint16(port_ID, &(buffer[1]));
     encode_uint16(fed_ID, &(buffer[1+sizeof(port_ID)]));
     encode_tag(&(buffer[1+sizeof(port_ID)+sizeof(fed_ID)]), current_message_intended_tag);
-    
+
     lf_mutex_lock(&outbound_socket_mutex);
 #ifdef FEDERATED_CENTRALIZED
     // Send the absent message through the RTI
@@ -1388,16 +1389,16 @@ void send_port_absent_to_federate(interval_t additional_delay,
 
 /**
  * Wait until the status of network port "port_ID" is known.
- * 
+ *
  * In decentralized coordination mode, the wait time is capped by STAA + STA,
  * after which the status of the port is presumed to be absent.
- * 
+ *
  * This function assumes the holder does not hold a mutex.
- * 
+ *
  * @param port_ID The ID of the network port
  * @param STAA The safe-to-assume-absent threshold for the port
  */
-void wait_until_port_status_known(int port_ID, interval_t STAA) {            
+void wait_until_port_status_known(int port_ID, interval_t STAA) {
     // Need to lock the mutex to prevent
     // a race condition with the network
     // receiver logic.
@@ -1418,13 +1419,13 @@ void wait_until_port_status_known(int port_ID, interval_t STAA) {
     // the RTI can determine the port status and send a TAG
     // replacing the PTAG it sent earlier or until a port absent
     // message has been sent by an upstream federate for this port
-    // with a tag greater than the current tag. The federate will 
-    // block here FOREVER, until one of the aforementioned 
+    // with a tag greater than the current tag. The federate will
+    // block here FOREVER, until one of the aforementioned
     // conditions is met.
     interval_t wait_until_time = FOREVER;
 #ifdef FEDERATED_DECENTRALIZED // Only applies to decentralized coordination
-    // The wait time for port status in the decentralized 
-    // coordination is capped by the STAA offset assigned 
+    // The wait time for port status in the decentralized
+    // coordination is capped by the STAA offset assigned
     // to the port plus the global STA offset for this federate.
     wait_until_time = current_tag.time + STAA + _lf_fed_STA_offset;
 #endif
@@ -1456,9 +1457,9 @@ void wait_until_port_status_known(int port_ID, interval_t STAA) {
 
 #ifdef FEDERATED_DECENTRALIZED // Only applies in decentralized coordination
     // The wait has timed out. However, a message header
-    // for the current tag could have been received in time 
+    // for the current tag could have been received in time
     // but not the the body of the message.
-    // Wait on the tag barrier based on the current tag. 
+    // Wait on the tag barrier based on the current tag.
     _lf_wait_on_global_tag_barrier(lf_tag());
 
     // Done waiting
@@ -1485,12 +1486,12 @@ void wait_until_port_status_known(int port_ID, interval_t STAA) {
  * except that it does not acquire the mutex lock and has a special
  * behavior during startup where it can inject reactions to the reaction
  * queue if execution has not started yet.
- * It is also responsible for setting the intended tag of the 
+ * It is also responsible for setting the intended tag of the
  * network message based on the calculated delay.
  * This function assumes that the caller holds the mutex lock.
- * 
+ *
  * This is used for handling incoming timed messages to a federate.
- * 
+ *
  * @param action The action or timer to be triggered.
  * @param tag The tag of the message received over the network.
  * @param value Dynamically allocated memory containing the value to send.
@@ -1604,7 +1605,7 @@ void _lf_close_inbound_socket(int fed_id) {
     }
 }
 
-/** 
+/**
  * Handle a port absent message received from a remote federate.
  * This just sets the last known status tag of the port specified
  * in the message.
@@ -1630,7 +1631,7 @@ void handle_port_absent_message(int socket, int fed_id) {
     LF_PRINT_LOG("Handling port absent for tag " PRINTF_TAG " for port %hu of fed %d.",
             intended_tag.time - lf_time_start(),
             intended_tag.microstep,
-            port_id, 
+            port_id,
             fed_id
     );
 
@@ -1648,7 +1649,7 @@ void handle_port_absent_message(int socket, int fed_id) {
                              intended_tag.time - start_time,
                              intended_tag.microstep);
     }
-#endif // In centralized coordination, a TAG message from the RTI 
+#endif // In centralized coordination, a TAG message from the RTI
        // can set the last_known_status_tag to a future tag where messages
        // have not arrived yet.
     // Set the mutex status as absent
@@ -1658,7 +1659,7 @@ void handle_port_absent_message(int socket, int fed_id) {
 
 /**
  * Handle a message being received from a remote federate.
- * 
+ *
  * This function assumes the caller does not hold the mutex lock.
  * @param socket The socket to read the message from
  * @param buffer The buffer to read
@@ -1702,7 +1703,7 @@ void handle_message(int socket, int fed_id) {
  * This will read the tag encoded in the header
  * and calculate an offset to pass to the schedule function.
  * This function assumes the caller does not hold the mutex lock.
- * Instead of holding the mutex lock, this function calls 
+ * Instead of holding the mutex lock, this function calls
  * _lf_increment_global_tag_barrier with the tag carried in
  * the message header as an argument. This ensures that the current tag
  * will not advance to the tag of the message if it is in the future, or
@@ -1778,7 +1779,7 @@ void handle_tagged_message(int socket, int fed_id) {
     // Sanity checks
 #ifdef FEDERATED_DECENTRALIZED
     if (lf_tag_compare(intended_tag,
-            action->last_known_status_tag) < 0) {        
+            action->last_known_status_tag) < 0) {
         lf_print_error_and_exit("The following contract was violated for a timed message: In-order "
                              "delivery of messages over a TCP socket. Had status for " PRINTF_TAG ", got "
                              "timed message with intended tag " PRINTF_TAG ".",
@@ -1787,7 +1788,7 @@ void handle_tagged_message(int socket, int fed_id) {
                              intended_tag.time - start_time,
                              intended_tag.microstep);
     }
-#endif // In centralized coordination, a TAG message from the RTI 
+#endif // In centralized coordination, a TAG message from the RTI
        // can set the last_known_status_tag to a future tag where messages
        // have not arrived yet.
 
@@ -1805,14 +1806,14 @@ void handle_tagged_message(int socket, int fed_id) {
     // handling is done inside _lf_insert_reactions_for_trigger.
     // To prevent multiple processing of messages per tag,
     // we also need to check the port status.
-    // For example, there could be a case where current tag is 
+    // For example, there could be a case where current tag is
     // 10 with a control reaction waiting, and a message has arrived with intended_tag 8.
     // This message will eventually cause the control reaction to exit, but before that,
     // a message with intended_tag of 9 could arrive before the control reaction has had a chance
     // to exit. The port status is on the other hand changed in this thread, and thus,
-    // can be checked in this scenario without this race condition. The message with 
+    // can be checked in this scenario without this race condition. The message with
     // intended_tag of 9 in this case needs to wait one microstep to be processed.
-    if (lf_tag_compare(intended_tag, lf_tag()) <= 0 && // The event is meant for the current or a previous tag.                          
+    if (lf_tag_compare(intended_tag, lf_tag()) <= 0 && // The event is meant for the current or a previous tag.
             ((action->is_a_control_reaction_waiting && // Check if a control reaction is waiting and
              action->status == unknown) ||             // if the status of the port is still unknown.
              (_lf_execution_started == false))         // Or, execution hasn't even started, so it's safe to handle this event.
@@ -1824,8 +1825,8 @@ void handle_tagged_message(int socket, int fed_id) {
             "Inserting reactions directly at tag " PRINTF_TAG ". "
             "Intended tag: " PRINTF_TAG ".",
             lf_tag().time - lf_time_start(),
-            lf_tag().microstep, 
-            intended_tag.time - lf_time_start(), 
+            lf_tag().microstep,
+            intended_tag.time - lf_time_start(),
             intended_tag.microstep
         );
         action->intended_tag = intended_tag;
@@ -1835,7 +1836,7 @@ void handle_tagged_message(int socket, int fed_id) {
         // control reactions know that they no longer need to block. The reason for
         // that is because the network receiver reaction is now in the reaction queue
         // keeping the precedence order intact.
-        set_network_port_status(port_id, present);        
+        set_network_port_status(port_id, present);
         // Port is now present. Therefore, notify the network input control reactions to
         // stop waiting and re-check the port status.
         lf_cond_broadcast(&port_status_changed);
@@ -1854,7 +1855,7 @@ void handle_tagged_message(int socket, int fed_id) {
 					intended_tag.time - start_time, intended_tag.microstep);
             return;
         }
-        
+
         LF_PRINT_LOG("Calling schedule with tag " PRINTF_TAG ".", intended_tag.time - start_time, intended_tag.microstep);
         schedule_message_received_from_network_already_locked(action, intended_tag, message_token);
     }
@@ -1885,7 +1886,7 @@ void handle_tagged_message(int socket, int fed_id) {
  *
  * This function assumes the caller does not hold the mutex lock,
  * which it acquires.
- * 
+ *
  * @note This function is very similar to handle_provisinal_tag_advance_grant() except that
  *  it sets last_TAG_was_provisional to false.
  */
@@ -1960,14 +1961,14 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
  *
  * This function assumes the caller does not hold the mutex lock,
  * which it acquires.
- * 
+ *
  * @note This function is similar to handle_tag_advance_grant() except that
  *  it sets last_TAG_was_provisional to true and also it does not update the
  *  last known tag for input ports.
  */
 void handle_provisional_tag_advance_grant() {
     size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
-    unsigned char buffer[bytes_to_read];    
+    unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
             "Failed to read provisional tag advance grant from RTI.");
     tag_t PTAG = extract_tag(buffer);
@@ -2059,13 +2060,13 @@ void handle_provisional_tag_advance_grant() {
     lf_mutex_unlock(&mutex);
 }
 
-/** 
+/**
  * Send a MSG_TYPE_STOP_REQUEST message to the RTI with payload equal
  * to the current tag plus one microstep.
- * 
+ *
  * This function raises a global barrier on
  * logical tag at the current tag.
- * 
+ *
  * This function assumes the caller holds the mutex lock.
  */
 void _lf_fd_send_stop_request_to_rti() {
@@ -2088,26 +2089,26 @@ void _lf_fd_send_stop_request_to_rti() {
         lf_mutex_unlock(&outbound_socket_mutex);
         return;
     }
-    write_to_socket_errexit_with_mutex(_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH, 
+    write_to_socket_errexit_with_mutex(_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH,
             buffer, &outbound_socket_mutex,
             "Failed to send stop time " PRINTF_TIME " to the RTI.", current_tag.time - start_time);
     lf_mutex_unlock(&outbound_socket_mutex);
     _fed.sent_a_stop_request_to_rti = true;
 }
 
-/** 
+/**
  * Handle a MSG_TYPE_STOP_GRANTED message from the RTI.
- * 
+ *
  * This function removes the global barrier on
  * logical time raised when lf_request_stop() was
  * called.
- * 
+ *
  * This function assumes the caller does not hold
  * the mutex lock, therefore, it acquires it.
  */
 void handle_stop_granted_message() {
     size_t bytes_to_read = MSG_TYPE_STOP_GRANTED_LENGTH - 1;
-    unsigned char buffer[bytes_to_read];    
+    unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
             "Failed to read stop granted from RTI.");
 
@@ -2119,7 +2120,7 @@ void handle_stop_granted_message() {
 
     LF_PRINT_LOG("Received from RTI a MSG_TYPE_STOP_GRANTED message with elapsed tag " PRINTF_TAG ".",
             received_stop_tag.time - start_time, received_stop_tag.microstep);
-    
+
     // Sanity check.
     tag_t current_tag = lf_tag();
     if (lf_tag_compare(received_stop_tag, current_tag) <= 0) {
@@ -2145,13 +2146,13 @@ void handle_stop_granted_message() {
 
 /**
  * Handle a MSG_TYPE_STOP_REQUEST message from the RTI.
- * 
+ *
  * This function assumes the caller does not hold
  * the mutex lock, therefore, it acquires it.
  */
 void handle_stop_request_message() {
     size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
-    unsigned char buffer[bytes_to_read];    
+    unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
             "Failed to read stop request from RTI.");
 
@@ -2268,13 +2269,13 @@ void terminate_execution() {
     free(federation_metadata.rti_user);
 }
 
-/** 
+/**
  * Thread that listens for inputs from other federates.
  * This thread listens for messages of type MSG_TYPE_P2P_MESSAGE,
  * MSG_TYPE_P2P_TAGGED_MESSAGE, or MSG_TYPE_PORT_ABSENT (@see net_common.h) from the specified
  * peer federate and calls the appropriate handling function for
  * each message type. If an error occurs or an EOF is received
- * from the peer, then this procedure sets the corresponding 
+ * from the peer, then this procedure sets the corresponding
  * socket in _fed.sockets_for_inbound_p2p_connections
  * to -1 and returns, terminating the thread.
  * @param fed_id_ptr A pointer to a uint16_t containing federate ID being listened to.
@@ -2337,7 +2338,7 @@ void* listen_to_federates(void* fed_id_ptr) {
     return NULL;
 }
 
-/** 
+/**
  * Thread that listens for TCP inputs from the RTI.
  *  When a physical message arrives, this calls schedule.
  */
@@ -2365,15 +2366,15 @@ void* listen_to_rti_TCP(void* args) {
                 _fed.socket_TCP_RTI = -1;
                 return NULL;
             } else {
-                lf_print_error("Socket connection to the RTI has been broken" 
+                lf_print_error("Socket connection to the RTI has been broken"
                                     " with error %d: %s. The RTI should"
                                     " close connections with an EOF first."
-                                    " Considering this a soft error.", 
-                                    errno, 
+                                    " Considering this a soft error.",
+                                    errno,
                                     strerror(errno));
                 // FIXME: If this happens, possibly a new RTI must be elected.
                 _fed.socket_TCP_RTI = -1;
-                return NULL;                   
+                return NULL;
             }
         } else if (bytes_read == 0) {
             // EOF received.
@@ -2412,9 +2413,9 @@ void* listen_to_rti_TCP(void* args) {
     return NULL;
 }
 
-/** 
+/**
  * Synchronize the start with other federates via the RTI.
- * This assumes that a connection to the RTI is already made 
+ * This assumes that a connection to the RTI is already made
  * and _fed.socket_TCP_RTI is valid. It then sends the current logical
  * time to the RTI and waits for the RTI to respond with a specified
  * time. It starts a thread to listen for messages from the RTI.
@@ -2423,7 +2424,7 @@ void* listen_to_rti_TCP(void* args) {
  * and then returns. If --fast was specified, then this does
  * not wait for physical time to match the logical start time
  * returned by the RTI.
- * 
+ *
  * FIXME: Possibly should be renamed
  */
 void synchronize_with_other_federates() {
@@ -2442,7 +2443,7 @@ void synchronize_with_other_federates() {
         // A duration has been specified. Recalculate the stop time.
        stop_tag = ((tag_t) {.time = start_time + duration, .microstep = 0});
     }
-    
+
     // Start a thread to listen for incoming TCP messages from the RTI.
     // @note Up until this point, the federate has been listening for messages
     //  from the RTI in a sequential manner in the main thread. From now on, a
@@ -2506,12 +2507,12 @@ bool _lf_bounded_NET(tag_t* tag) {
     return false;
 }
 
-/** 
+/**
  * If this federate depends on upstream federates or sends data to downstream
  * federates, then send to the RTI a NET, which will give the tag of the
  * earliest event on the event queue, or, if the queue is empty, the timeout
  * time, or, if there is no timeout, FOREVER.
- * 
+ *
  * If there are network outputs that
  * depend on physical actions, then insert a dummy event to ensure this federate
  * advances its tag so that downstream federates can make progress.
@@ -2656,7 +2657,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
                 }
             }
         }
-        
+
         if (tag.time != FOREVER) {
             // Create a dummy event that will force this federate to advance time and subsequently enable progress for
             // downstream federates.
