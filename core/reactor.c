@@ -33,6 +33,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  */
 #include "core/reactor.h"
+#include "core/reactor_common.h"
 #include "platform.h"
 #include <signal.h> // To trap ctrl-c and invoke termination().
 //#include <assert.h>

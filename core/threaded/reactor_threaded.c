@@ -36,6 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif // NUMBER_OF_WORKERS
 
 #include "core/reactor.h"
+#include "core/reactor_common.h"
 #include "core/tag.h"
 #include "core/platform.h"
 #include "scheduler.h"
