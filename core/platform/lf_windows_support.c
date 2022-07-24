@@ -25,11 +25,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /** Windows API support for the C target of Lingua Franca.
- *  
+ *
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
- * 
+ *
  * All functions return 0 on success.
- * 
+ *
  * @see https://gist.github.com/Soroosh129/127d1893fa4c1da6d3e1db33381bb273
  */
 
@@ -38,8 +38,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sysinfoapi.h>
 #include <errno.h>
 #include "lf_windows_support.h"
-#include "../platform.h"
-#include "../utils/util.h"
+#include "core/platform.h"
+#include "core/util.h"
 #include <time.h>
 
 /**
@@ -72,7 +72,7 @@ int lf_available_cores() {
 /**
  * Create a new thread, starting with execution of lf_thread
  * getting passed arguments. The new handle is stored in thread.
- * 
+ *
  * @return 0 on success, errno otherwise.
  */
 int lf_thread_create(_lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
@@ -89,10 +89,10 @@ int lf_thread_create(_lf_thread_t* thread, void *(*lf_thread) (void *), void* ar
  * Make calling thread wait for termination of the thread.  The
  * exit status of the thread is stored in thread_return, if thread_return
  * is not NULL.
- * 
+ *
  * @return 0 on success, EINVAL otherwise.
  */
-int lf_thread_join(_lf_thread_t thread, void** thread_return) {    
+int lf_thread_join(_lf_thread_t thread, void** thread_return) {
     DWORD retvalue = WaitForSingleObject(thread, INFINITE);
     if(retvalue == WAIT_FAILED){
         return EINVAL;
@@ -102,7 +102,7 @@ int lf_thread_join(_lf_thread_t thread, void** thread_return) {
 
 /**
  * Initialize a critical section.
- * 
+ *
  * @return 0 on success, 1 otherwise.
  */
 int lf_mutex_init(_lf_critical_section_t* critical_section) {
@@ -115,15 +115,15 @@ int lf_mutex_init(_lf_critical_section_t* critical_section) {
     }
 }
 
-/** 
+/**
  * Lock a critical section.
- * 
+ *
  * From https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-entercriticalsection:
  *    "This function can raise EXCEPTION_POSSIBLE_DEADLOCK if a wait operation on the critical section times out.
- *     The timeout interval is specified by the following registry value: 
+ *     The timeout interval is specified by the following registry value:
  *     HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\CriticalSectionTimeout.
  *     Do not handle a possible deadlock exception; instead, debug the application."
- * 
+ *
  * @return 0
  */
 int lf_mutex_lock(_lf_critical_section_t* critical_section) {
@@ -133,9 +133,9 @@ int lf_mutex_lock(_lf_critical_section_t* critical_section) {
     return 0;
 }
 
-/** 
+/**
  * Leave a critical_section.
- * 
+ *
  * @return 0
  */
 int lf_mutex_unlock(_lf_critical_section_t* critical_section) {
@@ -144,9 +144,9 @@ int lf_mutex_unlock(_lf_critical_section_t* critical_section) {
     return 0;
 }
 
-/** 
+/**
  * Initialize a conditional variable.
- * 
+ *
  * @return 0
  */
 int lf_cond_init(_lf_cond_t* cond) {
@@ -155,9 +155,9 @@ int lf_cond_init(_lf_cond_t* cond) {
     return 0;
 }
 
-/** 
+/**
  * Wake up all threads waiting for condition variable cond.
- * 
+ *
  * @return 0
  */
 int lf_cond_broadcast(_lf_cond_t* cond) {
@@ -166,9 +166,9 @@ int lf_cond_broadcast(_lf_cond_t* cond) {
     return 0;
 }
 
-/** 
+/**
  * Wake up one thread waiting for condition variable cond.
- * 
+ *
  * @return 0
  */
 int lf_cond_signal(_lf_cond_t* cond) {
@@ -177,10 +177,10 @@ int lf_cond_signal(_lf_cond_t* cond) {
     return 0;
 }
 
-/** 
+/**
  * Wait for condition variable "cond" to be signaled or broadcast.
  * "mutex" is assumed to be locked before.
- * 
+ *
  * @return 0 on success, 1 otherwise.
  */
 int lf_cond_wait(_lf_cond_t* cond, _lf_critical_section_t* critical_section) {
@@ -188,8 +188,8 @@ int lf_cond_wait(_lf_cond_t* cond, _lf_critical_section_t* critical_section) {
     // and non-zero on success.
     int return_value =
      (int)SleepConditionVariableCS(
-         (PCONDITION_VARIABLE)cond, 
-         (PCRITICAL_SECTION)critical_section, 
+         (PCONDITION_VARIABLE)cond,
+         (PCRITICAL_SECTION)critical_section,
          INFINITE
      );
      switch (return_value) {
@@ -197,7 +197,7 @@ int lf_cond_wait(_lf_cond_t* cond, _lf_critical_section_t* critical_section) {
             // Error
             return 1;
             break;
-        
+
         default:
             // Success
             return 0;
@@ -205,11 +205,11 @@ int lf_cond_wait(_lf_cond_t* cond, _lf_critical_section_t* critical_section) {
      }
 }
 
-/** 
+/**
  * Block current thread on the condition variable until condition variable
  * pointed by "cond" is signaled or time pointed by "absolute_time_ns" in
  * nanoseconds is reached.
- * 
+ *
  * @return 0 on success and LF_TIMEOUT on timeout, 1 otherwise.
  */
 int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section, instant_t absolute_time_ns) {
@@ -220,8 +220,8 @@ int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section
 
     int return_value =
      (int)SleepConditionVariableCS(
-         (PCONDITION_VARIABLE)cond, 
-         (PCRITICAL_SECTION)critical_section, 
+         (PCONDITION_VARIABLE)cond,
+         (PCRITICAL_SECTION)critical_section,
          relative_time_ms
      );
      switch (return_value) {
@@ -232,7 +232,7 @@ int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section
             }
             return 1;
             break;
-        
+
         default:
             // Success
             return 0;
@@ -242,14 +242,14 @@ int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section
 
 
 #else
-#include "lf_C11_threads_support.c"
+#include "core/platform/lf_C11_threads_support.h"
 #endif
 #endif
 
 /**
  * Initialize the LF clock.
  */
-void lf_initialize_clock() {    
+void lf_initialize_clock() {
     // Check if the performance counter is available
     LARGE_INTEGER performance_frequency;
     _lf_use_performance_counter = QueryPerformanceFrequency(&performance_frequency);
@@ -272,7 +272,7 @@ void lf_initialize_clock() {
  *  set to EINVAL or EFAULT.
  */
 int lf_clock_gettime(instant_t* t) {
-    // Adapted from gclib/GResUsage.cpp 
+    // Adapted from gclib/GResUsage.cpp
     // (https://github.com/gpertea/gclib/blob/8aee376774ccb2f3bd3f8e3bf1c9df1528ac7c5b/GResUsage.cpp)
     // License: https://github.com/gpertea/gclib/blob/master/LICENSE.txt
     int result = -1;
@@ -303,7 +303,7 @@ int lf_clock_gettime(instant_t* t) {
  * Pause execution for a number of nanoseconds.
  *
  * @return 0 for success, or -1 for failure. In case of failure, errno will be
- *  set to 
+ *  set to
  *   - EINTR: The sleep was interrupted by a signal handler
  *   - EINVAL: All other errors
  */

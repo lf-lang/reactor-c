@@ -29,10 +29,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Target-specific runtime functions for the C target language.
  * This API layer can be used in conjunction with:
  *     target C;
- * 
- * Note for target language developers. This is one way of developing a target language where 
- * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca 
- * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a 
+ *
+ * Note for target language developers. This is one way of developing a target language where
+ * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca
+ * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a
  * template for future runtime developement for target languages.
  * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
  */
@@ -40,8 +40,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef CTARGET_UTIL
 #define CTARGET_UTIL
-#include "../core/reactor.h"
-#include "../core/utils/util.h"
+#include "core/reactor.h"
 
 //////////////////////////////////////////////////////////////
 /////////////  Util Functions
@@ -97,7 +96,7 @@ DEPRECATED(void register_print_function(print_message_function_t* function, int 
  * a negligible impact on performance if compiler optimization
  * (e.g., -O2 for gcc) is used as long as the arguments passed to
  * it do not themselves incur significant overhead to evaluate.
- * 
+ *
  * @deprecated
  */
 #define DEBUG_PRINT(format, ...) \
@@ -121,7 +120,7 @@ DEPRECATED(void register_print_function(print_message_function_t* function, int 
  * a negligible impact on performance if compiler optimization
  * (e.g., -O2 for gcc) is used as long as the arguments passed to
  * it do not themselves incur significant overhead to evaluate.
- * 
+ *
  * @deprecated
  */
 #define LOG_PRINT(format, ...) \

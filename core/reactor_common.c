@@ -38,12 +38,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assert.h>
 
 #include "reactor.h"
-#include "tag.c"
-#include "utils/pqueue.h"
-#include "utils/vector.h"
-#include "utils/util.h"
-#include "modal_models/modes.h"
-#include "port.h"
+#include "core/tag.h"
+#include "core/utils/pqueue.h"
+#include "core/utils/vector.h"
+#include "core/utils/util.h"
+#include "core/modal_models/modes.h"
+#include "core/port.h"
 
 
 ////////////////////////////////////////////////////////////
