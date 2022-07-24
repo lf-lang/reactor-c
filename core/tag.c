@@ -31,7 +31,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Implementation file for tag functions for Lingua Franca programs.
  */
 
+#include <stdio.h>
+#include <string.h>
+
 #include "core/tag.h"
+#include "core/utils/util.h"
 
 // Global variables :(
 

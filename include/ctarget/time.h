@@ -1,7 +1,7 @@
 #ifndef CTARGET_TIME
 #define CTARGET_TIME
 
-#include "../core/reactor.h"
+#include "core/reactor.h"
 
 /**
  * @deprecated version of "lf_time_logical"

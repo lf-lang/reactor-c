@@ -1,7 +1,7 @@
 #ifndef CTARGET_TAG
 #define CTARGET_TAG
 
-#include "../core/reactor.h"
+#include "core/reactor.h"
 
 /**
  * Compare two tags. Return -1 if the first is less than
