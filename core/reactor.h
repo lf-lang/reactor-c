@@ -62,6 +62,7 @@
 #include "utils/util.h"
 #include "tag.h"       // Time-related functions.
 #include "modal_models/modes.h" // Modal model support
+#include "port.h"
 
 // The following file is also included, but must be included
 // after its requirements are met, so the #include appears at
@@ -85,7 +86,7 @@
 // problems with if ... else statements that do not use braces around the
 // two branches.
 
-void _lf_set_present(bool* is_present_field);
+void _lf_set_present(lf_port_base_t* port);
 
 /**
  * Set the specified output (or input of a contained reactor)
@@ -106,7 +107,7 @@ do { \
     /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
     /* even if it is a literal */ \
     out->value = val; \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     if (out->token != NULL) { \
         /* The cast "*((void**) &out->value)" is a hack to make the code */ \
         /* compile with non-token types where val is not a pointer. */ \
@@ -139,7 +140,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_ARRAY(out, val, length) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
     token->ref_count = out->num_destinations; \
     out->token = token; \
@@ -148,7 +149,7 @@ do { \
 #else
 #define _LF_SET_ARRAY(out, val, length) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
     token->ref_count = out->num_destinations; \
     out->token = token; \
@@ -173,7 +174,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW(out) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
     out->value = token->value; \
     out->token = token; \
@@ -181,7 +182,7 @@ do { \
 #else
 #define _LF_SET_NEW(out) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
     out->value = static_cast<decltype(out->value)>(token->value); \
     out->token = token; \
@@ -204,7 +205,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
     out->value = token->value; \
     out->token = token; \
@@ -213,7 +214,7 @@ do { \
 #else
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
     out->value = static_cast<decltype(out->value)>(token->value); \
     out->token = token; \
@@ -229,9 +230,9 @@ do { \
  * after this is called.
  * @param out The output port (by name).
  */
-#define _LF_SET_PRESENT(out) \
+#define lf_set_present(out) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
 } while(0)
 
 /**
@@ -246,7 +247,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     out->value = newtoken->value; \
     out->token = newtoken; \
     newtoken->ref_count += out->num_destinations; \
@@ -255,7 +256,7 @@ do { \
 #else
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
     out->token = newtoken; \
     newtoken->ref_count += out->num_destinations; \
