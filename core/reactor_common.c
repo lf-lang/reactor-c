@@ -1618,6 +1618,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
                             		downstream_reaction->is_STP_violated, downstream_reaction->name);
                         }
 #endif
+#ifndef SCHEDULER_QS // Include the optimization (downstream_to_execute_now) if QS scheduler is not in use.
                         if (downstream_reaction != NULL && downstream_reaction != downstream_to_execute_now) {
                             num_downstream_reactions++;
                             // If there is exactly one downstream reaction that is enabled by this
@@ -1646,11 +1647,16 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
                                 _lf_trigger_reaction(downstream_reaction, worker);
                             }
                         }
+#else // If QS scheduler is used, exclude the optimization so that it does not affect quasi-static scheduling.
+                        // Queue the reaction.
+                        _lf_trigger_reaction(downstream_reaction, worker);
+#endif // SCHEDULER_QS
                     }
                 }
             }
         }
     }
+#ifndef SCHEDULER_QS // Exclude the optimization so that it does not affect quasi-static scheduling.
     if (downstream_to_execute_now != NULL) {
         LF_PRINT_LOG("Worker %d: Optimizing and executing downstream reaction now: %s", worker, downstream_to_execute_now->name);
         bool violation = false;
@@ -1730,6 +1736,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
         LF_PRINT_DEBUG("Finally, reset reaction's is_STP_violated field to false: %s",
         		downstream_to_execute_now->name);
     }
+#endif // SCHEDULER_QS
 }
 
 /**
