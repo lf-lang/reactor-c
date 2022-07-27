@@ -37,7 +37,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform.h"
 #include "limits.h"
 
-#ifdef GRAN_MICRO
+#ifdef MICROSECOND_TIME
 /* Conversion of time to microseconds. */
 #define NSEC(t) (t / 1000L)
 #define NSECS(t) (t / 1000L)
@@ -88,7 +88,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define FOREVER_TAG (tag_t) { .time = LONG_MAX, .microstep = UINT_MAX }
 // Need a separate initializer expression to comply with some C compilers
 #define FOREVER_TAG_INITIALIZER { LONG_MAX,  UINT_MAX }
-
 #else
 #define NEVER LLONG_MIN
 #define FOREVER LLONG_MAX

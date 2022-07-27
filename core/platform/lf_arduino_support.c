@@ -33,15 +33,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../platform.h"
 #include "Arduino.h"
 
-instant_t ns_to_microsec(instant_t time) {
-    return (time / 1000) - ((time / 1000) % 4);
-}
-
 /**
- * Pause execution for a number of nanoseconds.
+ * Pause execution for a number of microseconds.
+ *
+ * This function works very accurately in the range 3 microseconds and up to 16383.
+ * We cannot assure that delayMicroseconds will perform precisely for smaller delay-times.
+ * Larger delay times may actually delay for an extremely brief time.
  *
  * @return 0 for success, or -1 for failure. In case of failure, errno will be
- *  set appropriately (see `man 2 clock_nanosleep`).
+ *  set appropriately.
  */
 int lf_nanosleep(instant_t requested_time) {
     unsigned int microsec = (unsigned int) requested_time;
@@ -59,17 +59,17 @@ int lf_nanosleep(instant_t requested_time) {
 }
 
 /**
- * Initialize the LF clock.
+ * Initialize the LF clock. Arduino auto-initializes its clock, so we don't do anything.
  */
 void lf_initialize_clock() {}
 
 /**
- * Fetch the value of _LF_CLOCK (see lf_linux_support.h) and store it in tp. The
- * timestamp value in 't' will always be epoch time, which is the number of
- * nanoseconds since January 1st, 1970.
+ * Fetch the value of _LF_CLOCK (see lf_arduino_support.h) and store it in t. The
+ * timestamp value in 't' will be physical Arduino time in microseconds,
+ * which starts once Arduino boots up.
  *
  * @return 0 for success, or -1 for failure. In case of failure, errno will be
- *  set appropriately (see `man 2 clock_gettime`).
+ *  set appropriately.
  */
 int lf_clock_gettime(instant_t* t) {
     

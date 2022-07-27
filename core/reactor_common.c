@@ -1984,13 +1984,21 @@ void initialize(void) {
     start_time = current_tag.time;
 
     #ifdef BIT_32
-    LF_PRINT_DEBUG("Start time: %ldns", start_time);
+        #ifdef MICROSECOND_TIME
+            LF_PRINT_DEBUG("Start time: %ldus", start_time);
+        #else
+            LF_PRINT_DEBUG("Start time: %ldns", start_time);
+        #endif
     #else
-    LF_PRINT_DEBUG("Start time: %lldns", start_time);
+        #ifdef MICROSECOND_TIME
+            LF_PRINT_DEBUG("Start time: %ldus", start_time);
+        #else
+            LF_PRINT_DEBUG("Start time: %ldns", start_time);
+        #endif
     #endif
 
     #ifdef ARDUINO
-    printf("---- Start execution at time %ld\n", physical_start_time);
+    printf("---- Start execution at time %ldus\n", physical_start_time);
     #else
     struct timespec physical_time_timespec = {physical_start_time / BILLION, physical_start_time % BILLION};
 
