@@ -38,7 +38,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "limits.h"
 
 #ifdef GRAN_MICRO
-/* Conversion of time to nanoseconds. */
+/* Conversion of time to microseconds. */
 #define NSEC(t) (t / 1000L)
 #define NSECS(t) (t / 1000L)
 #define USEC(t) (t * 1L)
