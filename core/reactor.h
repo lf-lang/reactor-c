@@ -512,7 +512,11 @@ struct reaction_t {
     void* self;    // Pointer to a struct with the reactor's state. INSTANCE.
     int number;    // The number of the reaction in the reactor (0 is the first reaction).
     index_t index; // Inverse priority determined by dependency analysis. INSTANCE.
+    #ifdef BIT_32 //Need this wrapper to allow 32 bit systems (i.e. Arduino's AVR Build System) that lack 64 bit support to compile.
+    unsigned long chain_id; // Binary encoding of the branches that this reaction has upstream in the dependency graph. INSTANCE.
+    #else
     unsigned long long chain_id; // Binary encoding of the branches that this reaction has upstream in the dependency graph. INSTANCE.
+    #endif
     size_t pos;       // Current position in the priority queue. RUNTIME.
     reaction_t* last_enabling_reaction; // The last enabling reaction, or NULL if there is none. Used for optimization. INSTANCE.
     size_t num_outputs;  // Number of outputs that may possibly be produced by this function. COMMON.
