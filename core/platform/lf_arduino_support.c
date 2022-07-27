@@ -1,7 +1,7 @@
 /* Arduino Platform API support for the C target of Lingua Franca. */
 
 /*************
-Copyright (c) 2021, The University of California at Berkeley.
+Copyright (c) 2022, The University of California at Berkeley.
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 1. Redistributions of source code must retain the above copyright notice,
