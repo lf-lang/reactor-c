@@ -40,14 +40,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * We cannot assure that delayMicroseconds will perform precisely for smaller delay-times.
  * Larger delay times may actually delay for an extremely brief time.
  *
- * @return 0 for success, or -1 for failure. In case of failure, errno will be
- *  set appropriately.
+ * @return 0 always.
  */
 int lf_nanosleep(instant_t requested_time) {
     unsigned int microsec = (unsigned int) requested_time;
     if(microsec < 3) {
-        Serial.print("Cannot set delay under 3 microseconds due to precision problems");
-        return -1;
+        return 0;
     }
     else if(microsec <= 16383) {
         delayMicroseconds(microsec);
