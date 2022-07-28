@@ -23,6 +23,9 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
+#ifndef SCHEDULER_SYNC_TAG_ADVANCE_H
+#define SCHEDULER_SYNC_TAG_ADVANCE_H
+
 #include "core/tag.h"
 
 /////////////////// External Variables /////////////////////////
@@ -34,3 +37,5 @@ void _lf_next_locked();
 void logical_tag_complete(tag_t tag_to_send);
 bool _lf_sched_should_stop_locked();
 bool _lf_sched_advance_tag_locked();
+
+#endif

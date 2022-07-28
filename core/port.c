@@ -29,9 +29,9 @@
  *
  * Header file for macros, functions, and structs for optimized sparse I/O
  * through multiports.
- * 
  */
 #include "port.h"
+#include "core/utils/vector.h"
 #include <stdio.h>
 
 /**
