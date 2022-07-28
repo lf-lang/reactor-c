@@ -95,19 +95,6 @@ lf_cond_t event_q_changed;
 lf_cond_t global_tag_barrier_requestors_reached_zero;
 
 /**
- * Enqueue network input control reactions that determine if the trigger for a
- * given network input port is going to be present at the current logical time
- * or absent.
- */
-void enqueue_network_input_control_reactions();
-
-/**
- * Enqueue network output control reactions that will send a PORT_ABSENT
- * message to downstream federates if a given network output port is not present.
- */
-void enqueue_network_output_control_reactions();
-
-/**
  * Raise a barrier to prevent the current tag from advancing to or
  * beyond the value of the future_tag argument, if possible.
  * If the current tag is already at or beyond future_tag, then

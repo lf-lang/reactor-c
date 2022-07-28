@@ -33,6 +33,7 @@ define(_LF_CLOCK_SYNC_COLLECT_STATS)
 define(_LF_CLOCK_SYNC_ON)
 define(LOG_LEVEL)
 define(SCHEDULER)
+define(MODAL_REACTORS)
 define(FEDERATED)
 define(FEDERATED_CENTRALIZED)
 define(FEDERATED_DECENTRALIZED)
@@ -43,16 +44,17 @@ define(ADVANCE_MESSAGE_INTERVAL)
 define(LINGUA_FRANCA_TRACE)
 message(STATUS "")
 
-# Add sources from subdirectories.
-add_subdirectory(platform)
-add_subdirectory(utils)
-
 # List sources in this directory.
 list(APPEND SINGLE_THREADED_SOURCES reactor.c)
 list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c)
 
-# Determine which sources to include.
-list(APPEND SOURCES ${GENERAL_SOURCES})
+
+# Add sources from subdirectories.
+add_subdirectory(platform)
+add_subdirectory(utils)
+if (DEFINED MODAL_REACTORS)
+    add_subdirectory(modal_models)
+endif()
 if(DEFINED NUMBER_OF_WORKERS)
     message(STATUS "Including sources for threaded runtime with ${NUMBER_OF_WORKERS} worker(s).")
     add_subdirectory(threaded)
@@ -60,6 +62,8 @@ else()
     message(STATUS "Including sources for unthreaded runtime.")
     list(APPEND SOURCES ${SINGLE_THREADED_SOURCES})
 endif()
+
+list(APPEND SOURCES ${GENERAL_SOURCES})
 
 # Create the library "core".
 list(JOIN SOURCES ", " PRINTABLE_SOURCE_LIST)

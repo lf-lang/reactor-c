@@ -47,6 +47,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TRACE_H
 #define TRACE_H
 
+#include "core/reactor.h"
+
 /**
  * Trace event types. If you update this, be sure to update the
  * string representation below. Also, create a tracepoint function
