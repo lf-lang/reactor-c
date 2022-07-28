@@ -207,17 +207,6 @@ instant_t _lf_physical_time() {
     return _lf_last_reported_physical_time_ns;
 }
 
-/**
- * An enum for specifying the desired tag when calling "lf_time"
- */
-typedef enum _lf_time_type {
-    LF_LOGICAL,
-    LF_PHYSICAL,
-    LF_ELAPSED_LOGICAL,
-    LF_ELAPSED_PHYSICAL,
-    LF_START
-} _lf_time_type;
-
 
 /**
  * Get the time specified by "type".

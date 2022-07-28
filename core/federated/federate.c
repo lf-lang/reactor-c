@@ -46,6 +46,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../reactor.h"    // Defines instant_t.
 #include "../reactor_common.h"
 #include "../platform.h"
+#include "../threaded/reactor_threaded.h"
 #include "../threaded/scheduler.h"
 #include "clock-sync.c" // Defines clock synchronization functions.
 #include "federate.h"   // Defines federate_instance_t

@@ -39,6 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "modes.h"
 #include "core/reactor.h"
+#include "core/reactor_common.h"
 
 // Bit masks for the internally used flags on modes
 #define _LF_MODE_FLAG_MASK_ACTIVE        (1 << 0)

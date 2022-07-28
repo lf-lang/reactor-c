@@ -44,6 +44,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef MODAL_REACTORS
 
+#include <stddef.h>
+#include "core/reactor.h"
+#include "core/platform.h"
+
 ////////////////////////////////////////////////////////////
 //// Macros for setting modes.
 
@@ -70,25 +74,6 @@ do { \
     ((self_base_t*)self)->_lf__mode_state.next_mode = mode; \
     ((self_base_t*)self)->_lf__mode_state.mode_change = change_type; \
 } while(0)
-
-
-////////////////////////////////////////////////////////////
-//// Forward declaration for generated code.
-
-/**
- * Function (to be code generated) to initialize modes.
- */
-void _lf_initialize_modes(void);
-
-/**
- * Function (to be code generated) to handle mode changes.
- */
-void _lf_handle_mode_changes(void);
-
-/**
- * Function (to be code generated) to handle mode triggered reactions.
- */
-void _lf_handle_mode_triggered_reactions(void);
 
 ////////////////////////////////////////////////////////////
 //// Type definitions for modal infrastructure.
@@ -126,6 +111,57 @@ struct mode_state_variable_reset_data_t {
     void* source;                   // Pointer to the data source.
     size_t size;                    // The size of the variable.
 };
+
+
+////////////////////////////////////////////////////////////
+//// Forward declaration for generated code.
+
+/**
+ * Function (to be code generated) to initialize modes.
+ */
+void _lf_initialize_modes(void);
+
+/**
+ * Function (to be code generated) to handle mode changes.
+ */
+void _lf_handle_mode_changes(void);
+
+/**
+ * Function (to be code generated) to handle mode triggered reactions.
+ */
+void _lf_handle_mode_triggered_reactions(void);
+
+bool _lf_mode_is_active(reactor_mode_t* mode);
+
+void _lf_initialize_mode_states(reactor_mode_state_t* states[], int states_size);
+
+// void _lf_process_mode_changes(
+//     reactor_mode_state_t* states[],
+//     int states_size,
+//     mode_state_variable_reset_data_t reset_data[],
+//     int reset_data_size,
+//     trigger_t* timer_triggers[],
+//     int timer_triggers_size
+// );
+
+// TODO: Break apart reactor.h so that we can include the event_t typedef without cyclic includes
+// void _lf_add_suspended_event(event_t* event);
+
+// void _lf_handle_mode_startup_reset_reactions(
+//         reaction_t** startup_reactions,
+//         int startup_reactions_size,
+//         reaction_t** reset_reactions,
+//         int reset_reactions_size,
+//         reactor_mode_state_t* states[],
+//         int states_size
+// );
+
+// void _lf_handle_mode_shutdown_reactions(
+//         reaction_t** shutdown_reactions,
+//         int shutdown_reactions_size
+// )
+
+void _lf_terminate_modal_reactors();
 
 #else /* IF NOT MODAL_REACTORS */
 

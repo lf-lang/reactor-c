@@ -43,8 +43,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "core/utils/pqueue.h"
 #include "core/utils/vector.h"
 #include "core/utils/util.h"
-#include "core/modal_models/modes.h"
 #include "core/port.h"
+#ifdef MODAL_REACTORS
+#include "core/modal_models/modes.h"
+#endif
 
 
 ////////////////////////////////////////////////////////////
@@ -1705,7 +1707,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
  * either passed to an output using set_token() or scheduled with a action
  * using schedule_token().
  */
-static lf_token_t* writable_copy(lf_token_t* token) {
+lf_token_t* writable_copy(lf_token_t* token) {
     LF_PRINT_DEBUG("writable_copy: Requesting writable copy of token %p with reference count %d.", token, token->ref_count);
     if (token->ref_count == 1) {
         LF_PRINT_DEBUG("writable_copy: Avoided copy because reference count is %d.", token->ref_count);

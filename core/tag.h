@@ -129,6 +129,23 @@ tag_t lf_tag();
  */
 int lf_tag_compare(tag_t tag1, tag_t tag2);
 
+tag_t _lf_delay_tag(tag_t tag, interval_t interval);
+
+instant_t _lf_physical_time();
+
+/**
+ * An enum for specifying the desired tag when calling "lf_time"
+ */
+typedef enum _lf_time_type {
+    LF_LOGICAL,
+    LF_PHYSICAL,
+    LF_ELAPSED_LOGICAL,
+    LF_ELAPSED_PHYSICAL,
+    LF_START
+} _lf_time_type;
+
+instant_t _lf_time(_lf_time_type type);
+
 
 /**
  * Return the current logical time in nanoseconds.
