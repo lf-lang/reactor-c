@@ -1938,6 +1938,10 @@ int process_args(int argc, char* argv[]) {
     return 1;
 }
 
+#ifndef EXECUTABLE_PREAMBLE
+void _lf_executable_preamble() {}
+#endif // EXECUTABLE_PREAMBLE
+
 /**
  * Initialize the priority queues and set logical time to match
  * physical time. This also prints a message reporting the start time.
@@ -1959,7 +1963,6 @@ void initialize(void) {
     // Initialize the trigger table.
     _lf_initialize_trigger_objects();
 
-    // Run the executable preamble
     _lf_executable_preamble();
 
     physical_start_time = lf_time_physical();

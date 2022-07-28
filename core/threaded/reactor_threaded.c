@@ -755,10 +755,6 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
 #endif
 }
 
-#ifndef EXECUTABLE_PREAMBLE
-void _lf_executable_preamble() {}
-#endif // EXECUTABLE_PREAMBLE
-
 /**
  * Perform the necessary operations before tag (0,0) can be processed.
  * 
