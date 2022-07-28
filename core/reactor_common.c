@@ -1959,6 +1959,9 @@ void initialize(void) {
     // Initialize the trigger table.
     _lf_initialize_trigger_objects();
 
+    // Run the executable preamble
+    _lf_executable_preamble();
+
     physical_start_time = lf_time_physical();
     current_tag.time = physical_start_time;
     start_time = current_tag.time;
