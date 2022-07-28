@@ -43,10 +43,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../platform.h"
 #include "../utils/pqueue_support.h"
 #include "../utils/semaphore.h"
-#include "../utils/vector.c"
+#include "../utils/vector.h"
 #include "scheduler.h"
 #include "scheduler_instance.h"
 #include "scheduler_sync_tag_advance.c"
+#include <assert.h>
 
 #ifndef MAX_REACTION_LEVEL
 #define MAX_REACTION_LEVEL INITIAL_REACT_QUEUE_SIZE

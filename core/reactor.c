@@ -99,19 +99,32 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
 }
 
 /**
- * Mark the given is_present field as true. This is_present field
+ * Mark the given port's is_present field as true. This is_present field
  * will later be cleaned up by _lf_start_time_step.
- * This assumes that the mutex is not held.
- * @param is_present_field A pointer to the is_present field that
- * must be set.
+ * @param port A pointer to the port struct.
  */
-void _lf_set_present(bool* is_present_field) {
+void _lf_set_present(lf_port_base_t* port) {
+	bool* is_present_field = &port->is_present;
     if (_lf_is_present_fields_abbreviated_size < _lf_is_present_fields_size) {
         _lf_is_present_fields_abbreviated[_lf_is_present_fields_abbreviated_size]
             = is_present_field;
     }
     _lf_is_present_fields_abbreviated_size++;
     *is_present_field = true;
+
+    // Support for sparse destination multiports.
+    if(port->sparse_record
+    		&& port->destination_channel >= 0
+			&& port->sparse_record->size >= 0) {
+    	int next = port->sparse_record->size++;
+    	if (next >= port->sparse_record->capacity) {
+    		// Buffer is full. Have to revert to the classic iteration.
+    		port->sparse_record->size = -1;
+    	} else {
+    		port->sparse_record->present_channels[next]
+				  = port->destination_channel;
+    	}
+    }
 }
 
 /**
