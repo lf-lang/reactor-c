@@ -419,7 +419,7 @@ typedef int trigger_handle_t;
  * being consumed downstream, use type char*.
  */
 #ifndef string
-typedef char* string;
+typedef const char* string;
 #else
 #warning "string typedef has been previously given."
 #endif
@@ -538,7 +538,7 @@ struct reaction_t {
                                 // any output reactions. Default is false.
     size_t worker_affinity;     // The worker number of the thread that scheduled this reaction. Used
                                 // as a suggestion to the scheduler.
-    char* name;                 // If logging is set to LOG or higher, then this will
+    const char* name;           // If logging is set to LOG or higher, then this will
                                 // point to the full name of the reactor followed by
                                 // the reaction number.
     reactor_mode_t* mode;       // The enclosing mode of this reaction (if exists).
