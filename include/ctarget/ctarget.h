@@ -29,10 +29,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Target-specific runtime functions for the C target language.
  * This API layer can be used in conjunction with:
  *     target C;
- * 
- * Note for target language developers. This is one way of developing a target language where 
- * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca 
- * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a 
+ *
+ * Note for target language developers. This is one way of developing a target language where
+ * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca
+ * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a
  * template for future runtime developement for target languages.
  * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
  */
@@ -42,11 +42,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define CTARGET
 
 /**
- * This file includes all ctarget-related header files. 
+ * This file includes all ctarget-related header files.
  */
 
 #include "schedule.h"
+<<<<<<< HEAD
 #include "deprecated.h" // Deprecated print functions.
+=======
+>>>>>>> [build] Delete deprecated print functions.
 #include "tag.h"
 #include "time.h"
 
