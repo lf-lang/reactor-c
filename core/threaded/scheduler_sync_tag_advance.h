@@ -26,6 +26,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef SCHEDULER_SYNC_TAG_ADVANCE_H
 #define SCHEDULER_SYNC_TAG_ADVANCE_H
 
+#include <stdbool.h>
+
 #include "core/tag.h"
 
 /////////////////// External Variables /////////////////////////
