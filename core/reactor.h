@@ -314,13 +314,13 @@ do { \
 #define LEVEL(index) (index & 0xffffLL)
 
 /** Utility for finding the maximum of two values. */
-#ifndef MAX
-#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
+#ifndef LF_MAX
+#define LF_MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 #endif
 
 /** Utility for finding the minimum of two values. */
-#ifndef MIN
-#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
+#ifndef LF_MIN
+#define LF_MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #endif
 
 /**

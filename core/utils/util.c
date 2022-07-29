@@ -71,12 +71,19 @@ int lf_fed_id() {
 	return _lf_my_fed_id;
 }
 
+// Declaration needed to attach attributes to suppress warnings of the form:
+// "warning: function '_lf_message_print' might be a candidate for 'gnu_printf'
+// format attribute [-Wsuggest-attribute=format]"
+void _lf_message_print(
+		int is_error, const char* prefix, const char* format, va_list args, int log_level
+) __attribute__ ((format (printf, 3, 0)));
+
 /**
  * Internal implementation of the next few reporting functions.
  */
 void _lf_message_print(
 		int is_error, const char* prefix, const char* format, va_list args, int log_level
-) {
+) {  // Disable warnings about format check.
 	// The logging level may be set either by a LOG_LEVEL #define
 	// (which is code generated based on the logging target property)
 	// or by a register_print_function() call. Honor both. If neither

@@ -98,12 +98,12 @@ int lf_fed_id(void);
  * where n is the federate ID.
  * The arguments are just like printf().
  */
-void lf_print(const char* format, ...);
+void lf_print(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
 
 /**
  * varargs alternative of "lf_print"
  */
-void lf_vprint(const char* format, va_list args);
+void lf_vprint(const char* format, va_list args) __attribute__ ((format (printf, 1, 0)));
 
 /**
  * Report an log message on stdout with the prefix
@@ -113,12 +113,12 @@ void lf_vprint(const char* format, va_list args);
  * where n is the federate ID.
  * The arguments are just like printf().
  */
-void lf_print_log(const char* format, ...);
+void lf_print_log(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
 
 /**
  * varargs alternative of "lf_print_log"
  */
-void lf_vprint_log(const char* format, va_list args);
+void lf_vprint_log(const char* format, va_list args) __attribute__ ((format (printf, 1, 0)));
 
 /**
  * A macro used to print useful logging information. It can be enabled
@@ -150,12 +150,12 @@ void lf_vprint_log(const char* format, va_list args);
  * where n is the federate ID.
  * The arguments are just like printf().
  */
-void lf_print_debug(const char* format, ...);
+void lf_print_debug(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
 
 /**
  * varargs alternative of "lf_print_debug"
  */
-void lf_vprint_debug(const char* format, va_list args);
+void lf_vprint_debug(const char* format, va_list args) __attribute__ ((format (printf, 1, 0)));
 
 /**
  * A macro used to print useful debug information. It can be enabled
@@ -189,35 +189,35 @@ void error(const char *msg);
  * Report an error with the prefix "ERROR: " and a newline appended
  * at the end.  The arguments are just like printf().
  */
-void lf_print_error(const char* format, ...);
+void lf_print_error(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
 
 /**
  * varargs alternative of "lf_print_error"
  */
-void lf_vprint_error(const char* format, va_list args);
+void lf_vprint_error(const char* format, va_list args) __attribute__ ((format (printf, 1, 0)));
 
 /**
  * Report a warning with the prefix "WARNING: " and a newline appended
  * at the end.  The arguments are just like printf().
  */
-void lf_print_warning(const char* format, ...);
+void lf_print_warning(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
 
 /**
  * varargs alternative of "lf_print_warning"
  */
-void lf_vprint_warning(const char* format, va_list args);
+void lf_vprint_warning(const char* format, va_list args) __attribute__ ((format (printf, 1, 0)));
 
 /**
  * Report an error with the prefix "ERROR: " and a newline appended
  * at the end, then exit with the failure code EXIT_FAILURE.
  * The arguments are just like printf().
  */
-void lf_print_error_and_exit(const char* format, ...);
+void lf_print_error_and_exit(const char* format, ...) __attribute__ ((format (printf, 1, 2)));
 
 /**
  * varargs alternative of "lf_print_error_and_exit"
  */
-void lf_vprint_error_and_exit(const char* format, va_list args);
+void lf_vprint_error_and_exit(const char* format, va_list args) __attribute__ ((format (printf, 1, 0)));
 
 /**
  * Message print function type. The arguments passed to one of

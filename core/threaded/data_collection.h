@@ -146,7 +146,7 @@ static void data_collection_end_level(size_t level, size_t num_workers) {
     if (collecting_data && start_times_by_level[level]) {
         interval_t dt = lf_time_physical() - start_times_by_level[level];
         if (!execution_times_by_num_workers_by_level[level][num_workers]) {
-            execution_times_by_num_workers_by_level[level][num_workers] = MAX(
+            execution_times_by_num_workers_by_level[level][num_workers] = LF_MAX(
                 dt,
                 2 * execution_times_by_num_workers_by_level[level][execution_times_argmins[level]]
             );

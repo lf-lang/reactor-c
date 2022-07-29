@@ -243,7 +243,7 @@ int _lf_sched_distribute_ready_reactions_locked() {
  */
 void _lf_sched_notify_workers() {
     size_t workers_to_awaken =
-        MIN(_lf_sched_instance->_lf_sched_number_of_idle_workers,
+        LF_MIN(_lf_sched_instance->_lf_sched_number_of_idle_workers,
             pqueue_size(
                 (pqueue_t*)_lf_sched_instance->_lf_sched_executing_reactions));
     LF_PRINT_DEBUG("Notifying %d workers.", workers_to_awaken);

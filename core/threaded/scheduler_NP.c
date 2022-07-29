@@ -149,7 +149,7 @@ void _lf_sched_notify_workers() {
     // Note: All threads are idle. Therefore, there is no need to lock the mutex
     // while accessing the index for the current level.
     size_t workers_to_awaken =
-        MIN(_lf_sched_instance->_lf_sched_number_of_idle_workers,
+        LF_MIN(_lf_sched_instance->_lf_sched_number_of_idle_workers,
             _lf_sched_instance->_lf_sched_indexes[
                 _lf_sched_instance->_lf_sched_next_reaction_level - 1 // Current 
                                                                       // reaction
