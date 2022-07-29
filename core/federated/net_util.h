@@ -40,9 +40,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <sys/socket.h>
 #include <sys/types.h>
-#include "../platform.h"  // defines lf_mutex_t
-#include "../tag.h"       // Defines tag_t
 #include <regex.h>
+#include <stdbool.h>
+
+#include "../platform.h"
+#include "../tag.h"
 
 #define HOST_LITTLE_ENDIAN 1
 #define HOST_BIG_ENDIAN 2
@@ -276,7 +278,7 @@ void extract_timed_header(
  *
  * The tag is transmitted as a 64-bit (8 byte) signed integer for time and a
  * 32-bit (4 byte) unsigned integer for microstep.
- * 
+ *
  * @param buffer The buffer to read from.
  * @return The extracted tag.
  */
@@ -286,9 +288,9 @@ tag_t extract_tag(
 
 /**
  * Encode tag information into buffer.
- * 
+ *
  * Buffer must have been allocated externally.
- * 
+ *
  * @param buffer The buffer to encode into.
  * @param tag The tag to encode into 'buffer'.
  */
@@ -348,12 +350,12 @@ bool extract_match_group(char* rti_addr, char* dest, regmatch_t group, int max_l
  * Extract match groups from the rti_addr regex.
  * @return true if success, else false.
  */
-bool extract_match_groups(char* rti_addr, char** rti_addr_strs, bool** rti_addr_flags, regmatch_t* group_array, 
+bool extract_match_groups(char* rti_addr, char** rti_addr_strs, bool** rti_addr_flags, regmatch_t* group_array,
                           int* gids, int* max_lens, int* min_lens, char** err_msgs);
 
 
 /**
- * Extract the host, port and user from rti_addr.  
+ * Extract the host, port and user from rti_addr.
  */
 void extract_rti_addr_info(char* rti_addr, rti_addr_info_t* rti_addr_info);
 
