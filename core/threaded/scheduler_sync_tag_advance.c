@@ -52,16 +52,6 @@ extern tag_t stop_tag;
 void _lf_next_locked();
 
 /**
- * Placeholder for code-generated function that will, in a federated
- * execution, be used to coordinate the advancement of tag. It will notify
- * the runtime infrastructure (RTI) that all reactions at the specified
- * logical tag have completed. This function should be called only while
- * holding the mutex lock.
- * @param tag_to_send The tag to send.
- */
-void logical_tag_complete(tag_t tag_to_send);
-
-/**
  * @brief Indicator that execution of at least one tag has completed.
  */
 static bool _lf_logical_tag_completed = false;

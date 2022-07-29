@@ -45,9 +45,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "core/platform.h"
 #include "core/utils/pqueue.h"
 #include "core/utils/semaphore.h"
-#include "scheduler.h"
-#include "scheduler_instance.h"
-#include "scheduler_sync_tag_advance.h"
+#include "core/threaded/scheduler.h"
+#include "core/threaded/scheduler_instance.h"
+#include "core/threaded/scheduler_sync_tag_advance.h"
 
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;
