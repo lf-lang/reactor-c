@@ -41,7 +41,7 @@
  * vector_new(_lf_sparse_io_record_sizes) will be necessary to use this.
  */
 // Initialize explicitly to work around Clang bug.
-vector_t _lf_sparse_io_record_sizes = (vector_t) { 0 };
+vector_t _lf_sparse_io_record_sizes = (vector_t) { NULL, NULL, NULL, 0, 0 };
 
 /**
  * Compare two non-negative integers pointed to. Return -1 if a < b, 0 if a == b,
