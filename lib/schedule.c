@@ -150,13 +150,6 @@ trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, 
     return _lf_schedule_copy(action, offset, value, (size_t)length);
 }
 
-/**
- * @deprecated version of 'lf_schedule_copy'
- */
-trigger_handle_t schedule_copy(void* action, interval_t offset, void* value, int length) {
-    return lf_schedule_copy(action, offset, value, length);
-}
-
 
 /**
  * Variant of schedule_token that creates a token to carry the specified value.
@@ -186,20 +179,13 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
     return _lf_schedule_value(action, extra_delay, value, (size_t)length);
 }
 
-/**
- * @deprecated version of 'lf_schedule_value'
- */
-trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* value, int length) {
-    return lf_schedule_value(action, extra_delay, value, length);
-}
-
 
 /**
  * Check the deadline of the currently executing reaction against the
  * current physical time. If the deadline has passed, invoke the deadline
  * handler (if invoke_deadline_handler parameter is set true) and return true.
  * Otherwise, return false.
- * 
+ *
  * @param self The self struct of the reactor.
  * @param invoke_deadline_handler When this is set true, also invoke deadline
  *  handler if the deadline has passed.
@@ -207,11 +193,4 @@ trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* valu
  */
 bool lf_check_deadline(void* self, bool invoke_deadline_handler) {
 	return _lf_check_deadline((self_base_t*)self, invoke_deadline_handler);
-}
-
-/**
- * @deprecated version of 'lf_check_deadline'
- */
-bool check_deadline(void* self, bool invoke_deadline_handler) {
-	return lf_check_deadline(self, invoke_deadline_handler);
 }
