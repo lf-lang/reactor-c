@@ -29,9 +29,9 @@
  *
  * Header file for macros, functions, and structs for optimized sparse I/O
  * through multiports.
- * 
  */
 #include "port.h"
+#include "core/utils/vector.h"
 #include <stdio.h>
 
 /**
@@ -40,7 +40,8 @@
  * The start field of this struct will be NULL initially, so calling
  * vector_new(_lf_sparse_io_record_sizes) will be necessary to use this.
  */
-struct vector_t _lf_sparse_io_record_sizes;
+// Initialize explicitly to work around Clang bug.
+vector_t _lf_sparse_io_record_sizes = (vector_t) { NULL, NULL, NULL, 0, 0 };
 
 /**
  * Compare two non-negative integers pointed to. Return -1 if a < b, 0 if a == b,

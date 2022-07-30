@@ -24,22 +24,23 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
-/** Runtime infrastructure for the non-threaded version of the C target
- *  of Lingua Franca.
- *  
- *  @author{Edward A. Lee <eal@berkeley.edu>}
- *  @author{Marten Lohstroh <marten@berkeley.edu>}
- *  @author{Soroush Bateni <soroush@utdallas.edu>}
+/**
+ * Runtime infrastructure for the non-threaded version of the C target
+ * of Lingua Franca.
+ *
+ * @author{Edward A. Lee <eal@berkeley.edu>}
+ * @author{Marten Lohstroh <marten@berkeley.edu>}
+ * @author{Soroush Bateni <soroush@utdallas.edu>}
  */
-
-#include "reactor_common.c"
+#include "core/reactor.h"
+#include "core/reactor_common.h"
 #include "platform.h"
 #include <signal.h> // To trap ctrl-c and invoke termination().
 //#include <assert.h>
 
 /**
  * @brief Queue of triggered reactions at the current tag.
- * 
+ *
  */
 pqueue_t* reaction_q;
 
@@ -135,13 +136,13 @@ void _lf_set_present(lf_port_base_t* port) {
  * interrupted, then advance current_tag.time by the specified logical_delay.
  * Return 0 if time advanced to the time of the event and -1 if the wait
  * was interrupted or if the timeout time was reached.
- */ 
+ */
 int wait_until(instant_t logical_time_ns) {
     int return_value = 0;
     if (!fast) {
         LF_PRINT_LOG("Waiting for elapsed logical time %lld.", logical_time_ns - start_time);
         interval_t ns_to_wait = logical_time_ns - lf_time_physical();
-    
+
         if (ns_to_wait < MIN_WAIT_TIME) {
             LF_PRINT_DEBUG("Wait time %lld is less than MIN_WAIT_TIME %lld. Skipping wait.",
                 ns_to_wait, MIN_WAIT_TIME);
@@ -163,7 +164,7 @@ void lf_print_snapshot() {
 
 /**
  * Trigger 'reaction'.
- * 
+ *
  * @param reaction The reaction.
  * @param worker_number The ID of the worker that is making this call. 0 should be
  *  used if there is only one worker (e.g., when the program is using the
@@ -189,7 +190,7 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
 
 /**
  * Execute all the reactions in the reaction queue at the current tag.
- * 
+ *
  * @return Returns 1 if the execution should continue and 0 if the execution
  *  should stop.
  */
@@ -199,7 +200,7 @@ int _lf_do_step(void) {
         // lf_print_snapshot();
         reaction_t* reaction = (reaction_t*)pqueue_pop(reaction_q);
         reaction->status = running;
-        
+
         LF_PRINT_LOG("Invoking reaction %s at elapsed logical tag (%lld, %d).",
         		reaction->name,
                 current_tag.time - start_time, current_tag.microstep);
@@ -237,7 +238,7 @@ int _lf_do_step(void) {
                 }
             }
         }
-        
+
         if (!violation) {
             // Invoke the reaction function.
             _lf_invoke_reaction(reaction, 0);   // 0 indicates unthreaded.
@@ -250,7 +251,7 @@ int _lf_do_step(void) {
         //  current tag, so it is safe to conclude that it is now inactive.
         reaction->status = inactive;
     }
-    
+
 #ifdef MODAL_REACTORS
     // At the end of the step, perform mode transitions
     _lf_handle_mode_changes();
@@ -303,7 +304,7 @@ int next(void) {
             next_tag.microstep = 0;
         }
     }
-    
+
     if (_lf_is_tag_after_stop_tag(next_tag)) {
         // Cannot process events after the stop tag.
         next_tag = stop_tag;
@@ -329,14 +330,14 @@ int next(void) {
     // Advance current time to match that of the first event on the queue.
     _lf_advance_logical_time(next_tag.time);
 
-    if (lf_tag_compare(current_tag, stop_tag) >= 0) {        
+    if (lf_tag_compare(current_tag, stop_tag) >= 0) {
         _lf_trigger_shutdown_reactions();
     }
 
     // Invoke code that must execute before starting a new logical time round,
     // such as initializing outputs to be absent.
     _lf_start_time_step();
-    
+
     // Pop all events from event_q with timestamp equal to current_tag.time,
     // extract all the reactions triggered by these events, and
     // stick them into the reaction queue.
@@ -365,10 +366,10 @@ bool _lf_is_blocked_by_executing_reaction(void) {
 
 /**
  * The main loop of the LF program.
- * 
+ *
  * An unambiguous function name that can be called
  * by external libraries.
- * 
+ *
  * Note: In target languages that use the C core library,
  * there should be an unambiguous way to execute the LF
  * program's main function that will not conflict with
@@ -404,11 +405,11 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         // the level in the 16 least significant bits.
         reaction_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
                 get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
-                
+
         current_tag = (tag_t){.time = start_time, .microstep = 0u};
         _lf_execution_started = true;
         _lf_trigger_startup_reactions();
-        _lf_initialize_timers(); 
+        _lf_initialize_timers();
         // If the stop_tag is (0,0), also insert the shutdown
         // reactions. This can only happen if the timeout time
         // was set to 0.

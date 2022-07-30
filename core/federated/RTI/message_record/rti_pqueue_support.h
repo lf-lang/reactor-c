@@ -4,7 +4,7 @@
  * @brief Header-only support functions for pqueue (in the RTI).
  * @version 0.1
  * @date 2022-06-02
- * 
+ *
  * @copyright Copyright (c) 2022, The University of California at Berkeley.
 
 Redistribution and use in source and binary forms, with or without modification,
@@ -38,34 +38,19 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ********** Priority Queue Support Start
 /**
  * @brief Represent an in-transit message.
- * 
+ *
  */
 typedef struct in_transit_message_record {
     tag_t tag;      // Tag of the in-transit message.
     size_t pos;     // Position in the priority queue.
 } in_transit_message_record_t;
 
-
-/**
- * Return whether the first and second argument are given in reverse order.
- */
-static int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that) {
-    return (thiz > that);
-}
-
-/**
- * Return false (0) regardless of tag order.
- */
-static int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that) {
-    return false;
-}
-
 /**
  * Return whether or not the given `in_transit_message_record_t` types have the same tag.
  */
 static int tags_match(void* next, void* curr) {
     return (lf_tag_compare(
-                ((in_transit_message_record_t*)next)->tag, 
+                ((in_transit_message_record_t*)next)->tag,
                 ((in_transit_message_record_t*)curr)->tag
             ) == 0);
 }
@@ -94,7 +79,7 @@ static void set_message_record_position(void *a, size_t pos) {
 
 /**
  * Print some information about the given in-transit message.
- * 
+ *
  * DEBUG function only.
  */
 static void print_message_record(void *message) {

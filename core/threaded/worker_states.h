@@ -36,7 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assert.h>
 #include "scheduler.h"
-#include "../platform.h"
+#include "core/platform.h"
 
 /** An array of condition variables, each corresponding to a group of workers. */
 static lf_cond_t* worker_conds;
@@ -71,9 +71,9 @@ static size_t level_counter = 0;
 
 /**
  * @brief Return the index of the condition variable used by worker.
- * 
+ *
  * This function is nondecreasing, and the least element of its image is zero.
- * 
+ *
  * @param worker A worker number.
  * @return size_t The index of the condition variable used by worker.
  */
@@ -113,7 +113,7 @@ static void worker_states_free() {
 
 /**
  * @brief Awaken the workers scheduled to work on the current level.
- * 
+ *
  * @param worker The calling worker.
  * @param num_to_awaken The number of workers to awaken.
  * @return A snapshot of the level counter after awakening the workers.

@@ -38,7 +38,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef LF_SCHEDULER_H
 #define LF_SCHEDULER_H
 
-#include "../reactor.h"
+#include "core/reactor.h"
 
 /**
  * @brief Default value that is assumed to be the maximum reaction level in the

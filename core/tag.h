@@ -34,8 +34,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TAG_H
 #define TAG_H
 
-#include "platform.h"
-#include "limits.h"
+#include <limits.h>
+
+#include "core/platform.h"
 
 /* Conversion of time to nanoseconds. */
 #define NSEC(t) (t * 1LL)
@@ -90,7 +91,7 @@ extern interval_t _lf_time_test_physical_clock_offset;
  * Offset to _LF_CLOCK that would convert it
  * to epoch time. This is applied to the physical clock
  * to get a more meaningful and universal time.
- * 
+ *
  * For CLOCK_REALTIME, this offset is always zero.
  * For CLOCK_MONOTONIC, it is the difference between those
  * clocks at the start of the execution.
@@ -128,12 +129,29 @@ tag_t lf_tag();
  */
 int lf_tag_compare(tag_t tag1, tag_t tag2);
 
+tag_t _lf_delay_tag(tag_t tag, interval_t interval);
+
+instant_t _lf_physical_time();
+
+/**
+ * An enum for specifying the desired tag when calling "lf_time"
+ */
+typedef enum _lf_time_type {
+    LF_LOGICAL,
+    LF_PHYSICAL,
+    LF_ELAPSED_LOGICAL,
+    LF_ELAPSED_PHYSICAL,
+    LF_START
+} _lf_time_type;
+
+instant_t _lf_time(_lf_time_type type);
+
 
 /**
  * Return the current logical time in nanoseconds.
  * On many platforms, this is the number of nanoseconds
  * since January 1, 1970, but it is actually platform dependent.
- * 
+ *
  * @return A time instant.
  */
 instant_t lf_time_logical(void);
@@ -167,7 +185,7 @@ instant_t lf_time_physical_elapsed(void);
 /**
  * Return the physical and logical time of the start of execution in nanoseconds.
  * On many platforms, this is the number of nanoseconds
- * since January 1, 1970, but it is actually platform dependent. 
+ * since January 1, 1970, but it is actually platform dependent.
  * @return A time instant.
  */
 instant_t lf_time_start(void);
@@ -228,5 +246,15 @@ tag_t _lf_convert_volatile_tag_to_nonvolatile(tag_t volatile const& vtag);
  */
 tag_t _lf_convert_volatile_tag_to_nonvolatile(tag_t volatile vtag);
 #endif
+
+// Global variables :(
+extern tag_t current_tag;
+extern instant_t physical_start_time;
+extern instant_t start_time;
+extern interval_t _lf_time_physical_clock_offset;
+extern interval_t _lf_global_physical_clock_drift;
+extern interval_t _lf_time_test_physical_clock_offset;
+extern instant_t _lf_last_reported_physical_time_ns;
+extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
 
 #endif // TAG_H

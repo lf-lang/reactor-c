@@ -31,8 +31,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Implementation file for tag functions for Lingua Franca programs.
  */
 
-#include "tag.h"
-#include "platform.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
+
+#include "core/tag.h"
+#include "core/utils/util.h"
+
+// Global variables :(
 
 /**
  * Current time in nanoseconds since January 1, 1970
@@ -75,7 +81,7 @@ interval_t _lf_global_physical_clock_drift = 0LL;
 interval_t _lf_time_test_physical_clock_offset = 0LL;
 
 /**
- * Stores the last reported absolute snapshot of the 
+ * Stores the last reported absolute snapshot of the
  * physical clock.
  */
 instant_t _lf_last_reported_physical_time_ns = 0LL;
@@ -169,7 +175,7 @@ instant_t _lf_physical_time() {
     if (result != 0) {
         lf_print_error("Failed to read the physical clock.");
     }
-    
+
     // Adjust the reported clock with the appropriate offsets
     instant_t adjusted_clock_ns = _lf_last_reported_unadjusted_physical_time_ns
             + _lf_time_physical_clock_offset;
@@ -185,13 +191,13 @@ instant_t _lf_physical_time() {
     //     adjusted_clock_ns += drift;
     //     LF_PRINT_DEBUG("Physical time adjusted for clock drift by %lld.", drift);
     // }
-    
+
     // Check if the clock has progressed since the last reported value
     // This ensures that the clock is monotonic
     if (adjusted_clock_ns > _lf_last_reported_physical_time_ns) {
         _lf_last_reported_physical_time_ns = adjusted_clock_ns;
     }
-    
+
     LF_PRINT_DEBUG("Physical time: %lld. Elapsed: %lld. Offset: %lld",
             _lf_last_reported_physical_time_ns,
             _lf_last_reported_physical_time_ns - start_time,
@@ -200,32 +206,21 @@ instant_t _lf_physical_time() {
     return _lf_last_reported_physical_time_ns;
 }
 
-/**
- * An enum for specifying the desired tag when calling "lf_time"
- */
-typedef enum _lf_time_type {
-    LF_LOGICAL,
-    LF_PHYSICAL,
-    LF_ELAPSED_LOGICAL,
-    LF_ELAPSED_PHYSICAL,
-    LF_START
-} _lf_time_type;
-
 
 /**
  * Get the time specified by "type".
- * 
+ *
  * Example use cases:
  * - Getting the starting time:
  * _lf_time(LF_START)
- * 
+ *
  * - Getting the elapsed physical time:
  * _lf_time(LF_ELAPSED_PHYSICAL)
- * 
+ *
  * - Getting the logical time
  * _lf_time(LF_LOGICAL)
- * 
- * @param type A field in an enum specifying the time type. 
+ *
+ * @param type A field in an enum specifying the time type.
  *             See enum "lf_time_type" above.
  * @return The desired time
  */
@@ -282,9 +277,9 @@ instant_t lf_time_physical_elapsed(void) {
 
 
 /**
- * Return the physical time of the start of execution in nanoseconds. * 
+ * Return the physical time of the start of execution in nanoseconds. *
  * On many platforms, this is the number of nanoseconds
- * since January 1, 1970, but it is actually platform dependent. * 
+ * since January 1, 1970, but it is actually platform dependent. *
  * @return A time instant.
  */
 instant_t lf_time_start(void) {

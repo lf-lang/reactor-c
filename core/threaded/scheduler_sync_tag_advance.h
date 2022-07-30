@@ -1,7 +1,6 @@
-/* MacOS API support for the C target of Lingua Franca. */
-
 /*************
-Copyright (c) 2021, The University of California at Berkeley.
+Copyright (c) 2022, The University of Texas at Dallas.
+Copyright (c) 2022, The University of California at Berkeley.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -24,29 +23,29 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
-/** MacOS API support for the C target of Lingua Franca.
- *
- *  @author{Soroush Bateni <soroush@utdallas.edu>}
+#ifndef SCHEDULER_SYNC_TAG_ADVANCE_H
+#define SCHEDULER_SYNC_TAG_ADVANCE_H
+
+#include <stdbool.h>
+
+#include "core/tag.h"
+
+/////////////////// External Variables /////////////////////////
+extern tag_t current_tag;
+extern tag_t stop_tag;
+
+/////////////////// External Functions /////////////////////////
+void _lf_next_locked();
+/**
+ * Placeholder for code-generated function that will, in a federated
+ * execution, be used to coordinate the advancement of tag. It will notify
+ * the runtime infrastructure (RTI) that all reactions at the specified
+ * logical tag have completed. This function should be called only while
+ * holding the mutex lock.
+ * @param tag_to_send The tag to send.
  */
+void logical_tag_complete(tag_t tag_to_send);
+bool _lf_sched_should_stop_locked();
+bool _lf_sched_advance_tag_locked();
 
-#ifndef LF_MACOS_SUPPORT_H
-#define LF_MACOS_SUPPORT_H
-
-#ifdef NUMBER_OF_WORKERS
-#if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
-#include "lf_POSIX_threads_support.h"
-#else
-#include "lf_C11_threads_support.h"
 #endif
-#endif
-
-#include <stdint.h> // For fixed-width integral types
-#include <time.h>   // For CLOCK_MONOTONIC
-
-// Use 64-bit times and 32-bit unsigned microsteps
-#include "lf_tag_64_32.h"
-
-// The underlying physical clock for MacOS
-#define _LF_CLOCK CLOCK_MONOTONIC
-
-#endif // LF_MACOS_SUPPORT_H
