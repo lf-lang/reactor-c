@@ -76,7 +76,7 @@ int lf_fed_id() {
 // format attribute [-Wsuggest-attribute=format]"
 void _lf_message_print(
 		int is_error, const char* prefix, const char* format, va_list args, int log_level
-) __attribute__ ((format (printf, 3, 0)));
+) attribute_format_printf(3, 0);
 
 /**
  * Internal implementation of the next few reporting functions.
