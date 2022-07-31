@@ -1023,8 +1023,6 @@ void connect_to_rti(char* hostname, int port) {
                 encode_uint16(udp_port, &(UDP_port_number[1]));
                 write_to_socket_errexit(_fed.socket_TCP_RTI, 1 + sizeof(uint16_t), UDP_port_number,
                             "Failed to send the UDP port number to the RTI.");
-
-                synchronize_initial_physical_clock_with_rti(_fed.socket_TCP_RTI);
             } else {
                 lf_print_error_and_exit("Received unexpected response %u from the RTI (see net_common.h).",
                         response);
