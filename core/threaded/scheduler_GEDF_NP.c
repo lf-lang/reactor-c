@@ -114,7 +114,7 @@ void _lf_sched_notify_workers() {
     // while accessing the executing queue (which is pointing to one of the
     // reaction queues).
     size_t workers_to_awaken =
-        MIN(_lf_sched_instance->_lf_sched_number_of_idle_workers,
+        LF_MIN(_lf_sched_instance->_lf_sched_number_of_idle_workers,
             pqueue_size((pqueue_t*)_lf_sched_instance->_lf_sched_executing_reactions));
     LF_PRINT_DEBUG("Scheduler: Notifying %d workers.", workers_to_awaken);
     _lf_sched_instance->_lf_sched_number_of_idle_workers -= workers_to_awaken;

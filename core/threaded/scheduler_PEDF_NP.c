@@ -160,7 +160,7 @@ static inline bool _lf_sched_distribute_ready_reaction(reaction_t* ready_reactio
     bool target_thread_found = false;
     // Start with the preferred worker for the ready reaction or the balancing
     // index, whichever is larger.
-    size_t worker_id = MAX(ready_reaction->worker_affinity, _lf_sched_balancing_index);
+    size_t worker_id = LF_MAX(ready_reaction->worker_affinity, _lf_sched_balancing_index);
     // Rotate through all the workers once.
     for(size_t i=0; i<_lf_sched_instance->_lf_sched_number_of_workers; i++) {
         // Go over all the workers to see if anyone is idle.

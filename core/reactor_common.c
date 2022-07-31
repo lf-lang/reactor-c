@@ -441,7 +441,7 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number);
  * counts between time steps and at the end of execution.
  */
 void _lf_start_time_step() {
-    LF_PRINT_LOG("--------- Start time step at tag (%lld, %u).", current_tag.time - start_time, current_tag.microstep);
+    LF_PRINT_LOG("--------- Start time step at tag (%lld, %lu).", current_tag.time - start_time, current_tag.microstep);
     for(int i = 0; i < _lf_tokens_with_ref_count_size; i++) {
         if (*(_lf_tokens_with_ref_count[i].status) == present) {
             if (_lf_tokens_with_ref_count[i].reset_is_present
@@ -472,9 +472,9 @@ void _lf_start_time_step() {
     		// NOTE: vector_at does not return the element at
     		// the index, but rather returns a pointer to that element, which is
     		// itself a pointer.
-    		int** size = (int**)vector_at(&_lf_sparse_io_record_sizes, i);
-    		if (size != NULL && *size != NULL) {
-    			**size = 0;
+    		int** sizep = (int**)vector_at(&_lf_sparse_io_record_sizes, i);
+    		if (sizep != NULL && *sizep != NULL) {
+    			**sizep = 0;
     		}
     	}
     }
@@ -900,7 +900,7 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
 
     tag_t current_logical_tag = lf_tag();
 
-    LF_PRINT_DEBUG("_lf_schedule_at_tag() called with tag (%lld, %u) at tag (%lld, %u).",
+    LF_PRINT_DEBUG("_lf_schedule_at_tag() called with tag (%lld, %lu) at tag (%lld, %lu).",
                   tag.time - start_time, tag.microstep,
                   current_logical_tag.time - start_time, current_logical_tag.microstep);
     if (lf_tag_compare(tag, current_logical_tag) <= 0) {
@@ -1489,7 +1489,7 @@ void _lf_advance_logical_time(instant_t next_time) {
     } else {
         lf_print_error_and_exit("_lf_advance_logical_time(): Attempted to move tag back in time.");
     }
-    LF_PRINT_LOG("Advanced (elapsed) tag to (%lld, %u)", next_time - start_time, current_tag.microstep);
+    LF_PRINT_LOG("Advanced (elapsed) tag to (%lld, %lu)", next_time - start_time, current_tag.microstep);
 }
 
 /**

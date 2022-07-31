@@ -116,7 +116,7 @@ void _lf_set_present(lf_port_base_t* port) {
     if(port->sparse_record
     		&& port->destination_channel >= 0
 			&& port->sparse_record->size >= 0) {
-    	int next = port->sparse_record->size++;
+    	size_t next = port->sparse_record->size++;
     	if (next >= port->sparse_record->capacity) {
     		// Buffer is full. Have to revert to the classic iteration.
     		port->sparse_record->size = -1;
@@ -200,7 +200,7 @@ int _lf_do_step(void) {
         reaction_t* reaction = (reaction_t*)pqueue_pop(reaction_q);
         reaction->status = running;
         
-        LF_PRINT_LOG("Invoking reaction %s at elapsed logical tag (%lld, %d).",
+        LF_PRINT_LOG("Invoking reaction %s at elapsed logical tag (%lld, %lu).",
         		reaction->name,
                 current_tag.time - start_time, current_tag.microstep);
 
