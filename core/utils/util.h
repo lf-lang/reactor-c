@@ -39,8 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // This only works with gcc.
 // The arguments are the position of the format string (starting with 1)
 // and the start of the remaining arguments, or 0 for vprintf style functions.
-// #ifdef __GNUC__
-#ifdef UTIL_H
+#ifdef __GNUC__
 #define attribute_format_printf(f, s) __attribute__((format (printf, f, s)))
 #else
 #define attribute_format_printf(f, s)
