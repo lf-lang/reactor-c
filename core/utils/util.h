@@ -35,15 +35,16 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdarg.h>   // Defines va_list
 
-// To silence warnings about a function being a candidate for format checking.
-// This only works with gcc.
+// To silence warnings about a function being a candidate for format checking
+// with gcc, add an attribute.
 // The arguments are the position of the format string (starting with 1)
 // and the start of the remaining arguments, or 0 for vprintf style functions.
-#ifdef __GNUC__
+#if defined(__GNUC__)
 #define attribute_format_printf(f, s) __attribute__((format (printf, f, s)))
 #else
 #define attribute_format_printf(f, s)
 #endif
+
 /**
  * Holds generic statistical data
  */
