@@ -531,7 +531,7 @@ void* handle_p2p_connections_from_federates(void* ignored) {
         // FIXME: Error handling here is too harsh maybe?
         if (socket_id < 0 && errno != EAGAIN && errno != EWOULDBLOCK) {
             lf_print_error("A fatal error occurred while accepting a new socket. "
-                        "Federate %d will not accept connections anymore.");
+                        "Federate will not accept connections anymore.");
             return NULL;
         }
         LF_PRINT_LOG("Accepted new connection from remote federate.");
@@ -787,7 +787,7 @@ void connect_to_federate(uint16_t remote_federate_id) {
                             remote_federate_id, CONNECT_NUM_RETRIES);
                 return;
             }
-            lf_print_warning("Could not connect to federate %d. Will try again every %d nanoseconds.\n",
+            lf_print_warning("Could not connect to federate %d. Will try again every %lld nanoseconds.\n",
                    remote_federate_id, ADDRESS_QUERY_RETRY_INTERVAL);
             // Wait CONNECT_RETRY_INTERVAL seconds.
             struct timespec wait_time = {0L, ADDRESS_QUERY_RETRY_INTERVAL};
@@ -1143,7 +1143,7 @@ void update_last_known_status_on_input_ports(tag_t tag) {
         if (lf_tag_compare(tag,
                 input_port_action->last_known_status_tag) >= 0) {
             LF_PRINT_DEBUG(
-                "Updating the last known status tag of port %d to (%ld, %u).",
+                "Updating the last known status tag of port %d to (%lld, %u).",
                 i,
                 tag.time - lf_time_start(), 
                 tag.microstep
@@ -1190,7 +1190,7 @@ void update_last_known_status_on_input_port(tag_t tag, int port_id) {
                     tag.microstep++;
                 }
         LF_PRINT_DEBUG(
-            "Updating the last known status tag of port %d to (%ld, %u).",
+            "Updating the last known status tag of port %d to (%lld, %u).",
             port_id,
             tag.time - lf_time_start(), 
             tag.microstep
@@ -1627,7 +1627,7 @@ void handle_port_absent_message(int socket, int fed_id) {
     // unsigned short federate_id = extract_uint16(&(buffer[sizeof(uint16_t)]));
     tag_t intended_tag = extract_tag(&(buffer[sizeof(uint16_t)+sizeof(uint16_t)]));
 
-    LF_PRINT_LOG("Handling port absent for tag (%lld, %u) for port %d.",
+    LF_PRINT_LOG("Handling port absent for tag (%lld, %u) for port %hu of fed %d.",
             intended_tag.time - lf_time_start(),
             intended_tag.microstep,
             port_id, 
@@ -1679,7 +1679,7 @@ void handle_message(int socket, int fed_id) {
     extract_header(buffer, &port_id, &federate_id, &length);
     // Check if the message is intended for this federate
     assert(_lf_my_fed_id == federate_id);
-    LF_PRINT_DEBUG("Receiving message to port %d of length %d.", port_id, length);
+    LF_PRINT_DEBUG("Receiving message to port %d of length %zu.", port_id, length);
 
     // Get the triggering action for the corerponding port
     trigger_t* action = _lf_action_for_port(port_id);
@@ -1690,7 +1690,7 @@ void handle_message(int socket, int fed_id) {
     read_from_socket_errexit(socket, length, message_contents,
             "Failed to read message body.");
 
-    LF_PRINT_LOG("Message received by federate: %s. Length: %d.", message_contents, length);
+    LF_PRINT_LOG("Message received by federate: %s. Length: %zu.", message_contents, length);
 
     LF_PRINT_DEBUG("Calling schedule for message received on a physical connection.");
     _lf_schedule_value(&action, 0, message_contents, length);
@@ -1729,7 +1729,7 @@ void handle_tagged_message(int socket, int fed_id) {
     extract_timed_header(buffer, &port_id, &federate_id, &length, &intended_tag);
     // Check if the message is intended for this federate
     assert(_lf_my_fed_id == federate_id);
-    LF_PRINT_DEBUG("Receiving message to port %d of length %d.", port_id, length);
+    LF_PRINT_DEBUG("Receiving message to port %d of length %zu.", port_id, length);
 
     // Get the triggering action for the corresponding port
     trigger_t* action = _lf_action_for_port(port_id);
@@ -1822,7 +1822,7 @@ void handle_tagged_message(int socket, int fed_id) {
         // message.
         LF_PRINT_LOG(
             "Inserting reactions directly at tag (%lld, %u). "
-            "Intended tag: (%ld, %u).",
+            "Intended tag: (%lld, %u).",
             lf_tag().time - lf_time_start(),
             lf_tag().microstep, 
             intended_tag.time - lf_time_start(), 
@@ -2664,7 +2664,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
             pqueue_insert(event_q, dummy);
         }
 
-        LF_PRINT_DEBUG("Inserted a dummy event for tag (%ld, %u).",
+        LF_PRINT_DEBUG("Inserted a dummy event for logical time %lld.",
                 tag.time - lf_time_start());
 
         if (!wait_for_reply) {

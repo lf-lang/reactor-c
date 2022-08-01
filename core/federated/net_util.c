@@ -110,7 +110,7 @@ ssize_t read_from_socket_errexit(
             if (format != NULL) {
                 shutdown(socket, SHUT_RDWR);
                 close(socket);
-                lf_print_error("Read %d bytes, but expected %d.",
+                lf_print_error("Read %ld bytes, but expected %zu.",
                 		more + bytes_read, num_bytes);
                 lf_print_error_and_exit(format, args);
             } else if (more == 0) {
@@ -642,7 +642,7 @@ bool validate_user(char* user) {
 bool extract_match_group(char* rti_addr, char* dest, regmatch_t group, int max_len, int min_len, char* err_msg) {
     size_t size = group.rm_eo - group.rm_so;
     if (size > max_len || size < min_len) {
-        lf_print_error(err_msg);
+        lf_print_error("%s", err_msg);
         return false;
     }
     strncpy(dest, &rti_addr[group.rm_so], size);
@@ -696,7 +696,7 @@ void extract_rti_addr_info(char* rti_addr, rti_addr_info_t* rti_addr_info) {
     if (regexec(&regex_compiled, rti_addr, max_groups, group_array, 0) == 0) {
         // Check for matched username. group_array[0] is the entire matched string.
         for (int i = 1; i < max_groups; i++) {
-            LF_PRINT_DEBUG("runtime rti_addr regex: so: %d   eo: %d\n", group_array[i].rm_so, group_array[i].rm_eo);
+            LF_PRINT_DEBUG("runtime rti_addr regex: so: %lld   eo: %lld\n", group_array[i].rm_so, group_array[i].rm_eo);
         }
         if (!extract_match_groups(rti_addr, rti_addr_strs, rti_addr_flags, group_array, gids, max_lens, min_lens, err_msgs)) {
             memset(rti_addr_info, 0, sizeof(rti_addr_info_t));

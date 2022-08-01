@@ -538,7 +538,7 @@ tag_t get_next_event_tag() {
     if (_lf_is_tag_after_stop_tag(next_tag)) {
         next_tag = stop_tag;
     }
-    LF_PRINT_LOG("Earliest event on the event queue (or stop time if empty) is (%lld, %u). Event queue has size %d.",
+    LF_PRINT_LOG("Earliest event on the event queue (or stop time if empty) is (%lld, %u). Event queue has size %zu.",
             next_tag.time - start_time, next_tag.microstep, pqueue_size(event_q));
     return next_tag;
 }
@@ -1082,7 +1082,7 @@ void lf_print_snapshot() {
         LF_PRINT_DEBUG("Pending:");
         // pqueue_dump(reaction_q, print_reaction); FIXME: reaction_q is not
         // accessible here
-        LF_PRINT_DEBUG("Event queue size: %d. Contents:",
+        LF_PRINT_DEBUG("Event queue size: %zu. Contents:",
                         pqueue_size(event_q));
         pqueue_dump(event_q, print_reaction); 
         LF_PRINT_DEBUG(">>> END Snapshot");
@@ -1219,7 +1219,7 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         		lf_print_error("Failed to join thread listening for incoming messages: %s", strerror(failure));
         	}
         	if (worker_thread_exit_status != NULL) {
-                lf_print_error("---- Worker %d reports error code %p", worker_thread_exit_status);
+                lf_print_error("---- Worker %d reports error code %p", i, worker_thread_exit_status);
                 ret = 1;
         	}
         }

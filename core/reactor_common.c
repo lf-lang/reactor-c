@@ -441,7 +441,7 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number);
  * counts between time steps and at the end of execution.
  */
 void _lf_start_time_step() {
-    LF_PRINT_LOG("--------- Start time step at tag (%lld, %lu).", current_tag.time - start_time, current_tag.microstep);
+    LF_PRINT_LOG("--------- Start time step at tag (%lld, %u).", current_tag.time - start_time, current_tag.microstep);
     for(int i = 0; i < _lf_tokens_with_ref_count_size; i++) {
         if (*(_lf_tokens_with_ref_count[i].status) == present) {
             if (_lf_tokens_with_ref_count[i].reset_is_present
@@ -735,7 +735,7 @@ void _lf_pop_events() {
     enqueue_network_control_reactions();
 #endif // FEDERATED
 
-    LF_PRINT_DEBUG("There are %d events deferred to the next microstep.", pqueue_size(next_q));
+    LF_PRINT_DEBUG("There are %zu events deferred to the next microstep.", pqueue_size(next_q));
 
     // After populating the reaction queue, see if there are things on the
     // next queue to put back into the event queue.
@@ -900,7 +900,7 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
 
     tag_t current_logical_tag = lf_tag();
 
-    LF_PRINT_DEBUG("_lf_schedule_at_tag() called with tag (%lld, %lu) at tag (%lld, %lu).",
+    LF_PRINT_DEBUG("_lf_schedule_at_tag() called with tag (%lld, %u) at tag (%lld, %u).",
                   tag.time - start_time, tag.microstep,
                   current_logical_tag.time - start_time, current_logical_tag.microstep);
     if (lf_tag_compare(tag, current_logical_tag) <= 0) {
@@ -1489,7 +1489,7 @@ void _lf_advance_logical_time(instant_t next_time) {
     } else {
         lf_print_error_and_exit("_lf_advance_logical_time(): Attempted to move tag back in time.");
     }
-    LF_PRINT_LOG("Advanced (elapsed) tag to (%lld, %lu)", next_time - start_time, current_tag.microstep);
+    LF_PRINT_LOG("Advanced (elapsed) tag to (%lld, %u)", next_time - start_time, current_tag.microstep);
 }
 
 /**
@@ -1598,12 +1598,12 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
     bool inherited_STP_violation = reaction->is_STP_violated;
     LF_PRINT_LOG("Reaction %s has STP violation status: %d.", reaction->name, reaction->is_STP_violated);
 #endif
-    LF_PRINT_DEBUG("There are %d outputs from reaction %s.", reaction->num_outputs, reaction->name);
+    LF_PRINT_DEBUG("There are %zu outputs from reaction %s.", reaction->num_outputs, reaction->name);
     for (size_t i=0; i < reaction->num_outputs; i++) {
         if (reaction->output_produced[i] != NULL && *(reaction->output_produced[i])) {
-            LF_PRINT_DEBUG("Output %d has been produced.", i);
+            LF_PRINT_DEBUG("Output %zu has been produced.", i);
             trigger_t** triggerArray = (reaction->triggers)[i];
-            LF_PRINT_DEBUG("There are %d trigger arrays associated with output %d.", reaction->triggered_sizes[i], i);
+            LF_PRINT_DEBUG("There are %zu trigger arrays associated with output %d.", reaction->triggered_sizes[i], i);
             for (int j=0; j < reaction->triggered_sizes[i]; j++) {
                 trigger_t* trigger = triggerArray[j];
                 if (trigger != NULL) {
