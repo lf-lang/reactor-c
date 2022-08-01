@@ -42,9 +42,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // NOTE: For some weird reason, the C compiler used in the Windows CI has
 // __GNUC__ defined but is not gcc. So we have to exclude Windows.
 #if defined(__GNUC__)
-#define attribute_format_printf(f, s) __attribute__((format (printf, f, s)))
+#define ATTRIBUTE_FORMAT_PRINTF(f, s) __attribute__((format (printf, f, s)))
 #else
-#define attribute_format_printf(f, s)
+#define ATTRIBUTE_FORMAT_PRINTF(f, s)
 #endif
 
 /**
@@ -110,12 +110,12 @@ int lf_fed_id(void);
  * where n is the federate ID.
  * The arguments are just like printf().
  */
-void lf_print(const char* format, ...) attribute_format_printf(1, 2);
+void lf_print(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 /**
  * varargs alternative of "lf_print"
  */
-void lf_vprint(const char* format, va_list args)  attribute_format_printf(1, 0);
+void lf_vprint(const char* format, va_list args)  ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
 /**
  * Report an log message on stdout with the prefix
@@ -125,12 +125,12 @@ void lf_vprint(const char* format, va_list args)  attribute_format_printf(1, 0);
  * where n is the federate ID.
  * The arguments are just like printf().
  */
-void lf_print_log(const char* format, ...) attribute_format_printf(1, 2);
+void lf_print_log(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 /**
  * varargs alternative of "lf_print_log"
  */
-void lf_vprint_log(const char* format, va_list args) attribute_format_printf(1, 0);
+void lf_vprint_log(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
 /**
  * A macro used to print useful logging information. It can be enabled
@@ -162,12 +162,12 @@ void lf_vprint_log(const char* format, va_list args) attribute_format_printf(1, 
  * where n is the federate ID.
  * The arguments are just like printf().
  */
-void lf_print_debug(const char* format, ...) attribute_format_printf(1, 2);
+void lf_print_debug(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 /**
  * varargs alternative of "lf_print_debug"
  */
-void lf_vprint_debug(const char* format, va_list args) attribute_format_printf(1, 0);
+void lf_vprint_debug(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
 /**
  * A macro used to print useful debug information. It can be enabled
@@ -201,36 +201,36 @@ void error(const char *msg);
  * Report an error with the prefix "ERROR: " and a newline appended
  * at the end.  The arguments are just like printf().
  */
-void lf_print_error(const char* format, ...) attribute_format_printf(1, 2);
+void lf_print_error(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 /**
  * varargs alternative of "lf_print_error"
  */
-void lf_vprint_error(const char* format, va_list args) attribute_format_printf(1, 0);
+void lf_vprint_error(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
 /**
  * Report a warning with the prefix "WARNING: " and a newline appended
  * at the end.  The arguments are just like printf().
  */
-void lf_print_warning(const char* format, ...) attribute_format_printf(1, 2);
+void lf_print_warning(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 /**
  * varargs alternative of "lf_print_warning"
  */
-void lf_vprint_warning(const char* format, va_list args) attribute_format_printf(1, 0);
+void lf_vprint_warning(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
 /**
  * Report an error with the prefix "ERROR: " and a newline appended
  * at the end, then exit with the failure code EXIT_FAILURE.
  * The arguments are just like printf().
  */
-void lf_print_error_and_exit(const char* format, ...) attribute_format_printf(1, 2);
+void lf_print_error_and_exit(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 /**
  * varargs alternative of "lf_print_error_and_exit"
  */
 void lf_vprint_error_and_exit(const char* format, va_list args)
-		attribute_format_printf(1, 0);
+		ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
 /**
  * Message print function type. The arguments passed to one of
