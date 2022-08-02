@@ -856,6 +856,24 @@ void connect_to_federate(uint16_t remote_federate_id) {
     }
 }
 
+void perform_hmac_authentication(int rti_socket) {
+    LF_PRINT_LOG("Connected to an RTI. Performing HAMC-based authentication.");
+    unsigned char buffer[1 + RTI_HELLO_LENGTH];
+    read_from_socket_errexit(rti_socket, 1 + RTI_HELLO_LENGTH, buffer, "Failed to read RTI hello.");
+
+    if (buffer[0] != MSG_TYPE_RTI_HELLO) {
+        lf_print_error_and_exit("Received unexpected response %u from the RTI (see net_common.h).",
+                buffer[0]);
+    }
+    
+    char hex_buffer[RTI_HELLO_LENGTH * 2 + 1];
+    for (int i = 0; i < RTI_HELLO_LENGTH; i++) {
+        sprintf(&hex_buffer[i * 2], "%x", buffer[1 + i]);
+    }
+    hex_buffer[RTI_HELLO_LENGTH * 2] = '\0';
+    LF_PRINT_LOG("Nonce received from RTI : %s", hex_buffer);
+}
+
 /**
  * Connect to the RTI at the specified host and port and return
  * the socket descriptor for the connection. If this fails, the
@@ -895,6 +913,9 @@ void connect_to_rti(char* hostname, int port) {
     }
     int result = -1;
     int count_retries = 0;
+
+    // See https://github.com/lf-lang/lingua-franca/issues/1146 for more information.
+    bool use_hmac_authentication = true;
 
     while (result < 0) {
         // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
@@ -963,6 +984,10 @@ void connect_to_rti(char* hostname, int port) {
             // Send a MSG_TYPE_FED_IDS message and wait for a reply.
             // Notify the RTI of the ID of this federate and its federation.
             unsigned char buffer[4];
+
+            if (use_hmac_authentication) {
+                perform_hmac_authentication(_fed.socket_TCP_RTI);
+            }
 
             LF_PRINT_LOG("Connected to an RTI. Sending federation ID for authentication.");
 
