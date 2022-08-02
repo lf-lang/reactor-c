@@ -39,8 +39,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // with gcc, add an attribute.
 // The arguments are the position of the format string (starting with 1)
 // and the start of the remaining arguments, or 0 for vprintf style functions.
-// NOTE: For some weird reason, the C compiler used in the Windows CI has
-// __GNUC__ defined but is not gcc. So we have to exclude Windows.
 #if defined(__GNUC__)
 #define ATTRIBUTE_FORMAT_PRINTF(f, s) __attribute__((format (printf, f, s)))
 #else
