@@ -331,6 +331,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_FED_IDS 1
 
 /**
+ * Byte identifying a message from an RTI to a federate containing
+ * a 8-byte nonce.
+ * The next eight bytes are a 8-byte random nonce.
+ */
+#define MSG_TYPE_RTI_HELLO 100
+#define RTI_HELLO_LENGTH 8
+
+#define MSG_TYPE_AUTHENTICATED_FED_IDS 101
+
+
+/**
  * Byte identifying a timestamp message, which is 64 bits long.
  * Each federate sends its starting physical time as a message of this
  * type, and the RTI broadcasts to all the federates the starting logical
