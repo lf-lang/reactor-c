@@ -63,6 +63,11 @@ target_compile_definitions(RTI PUBLIC NUMBER_OF_WORKERS)
 find_package(Threads REQUIRED)
 target_link_libraries(RTI Threads::Threads)
 
+# Find OpenSSL and link to it
+find_package(OpenSSL REQUIRED)
+target_link_libraries(RTI OpenSSL::SSL)
+
+
 install(
     TARGETS RTI
     DESTINATION bin
