@@ -58,6 +58,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <strings.h>    // Defines bzero().
 #include <assert.h>
 #include <sys/wait.h>   // Defines wait() for process to change state.
+#include <openssl/rand.h> // For secure random number generation.
 #include "platform.h"   // Platform-specific types and functions
 #include "utils/util.c" // Defines print functions (e.g., lf_print).
 #include "net_util.c"   // Defines network functions.
@@ -1790,6 +1791,18 @@ int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id) {
     return 1;
 }
 
+/**
+ * Send RTI hello message for authenticated joining of federation.
+ * 
+ * @param socket Socket for the incoming federate tryting to authenticate.
+ */
+void send_rti_hello(int socket) {
+    size_t message_length = 1 + RTI_HELLO_LENGTH;
+    unsigned char buffer[message_length];
+    buffer[0] = MSG_TYPE_RTI_HELLO;
+    RAND_bytes(&(buffer[1]), RTI_HELLO_LENGTH);
+    ssize_t bytes_written = write_to_socket(socket, message_length, buffer);
+}
 
 /**
  * Wait for one incoming connection request from each federate,
@@ -1817,6 +1830,10 @@ void connect_to_federates(int socket_descriptor) {
                 continue;
             }
         }
+
+        // Send RTI hello including a nounce.
+        // If authenticated hello is required.
+        send_rti_hello(socket_id);
 
         // The first message from the federate should contain its ID and the federation ID.
         int32_t fed_id = receive_and_check_fed_id_message(socket_id, (struct sockaddr_in*)&client_fd);
