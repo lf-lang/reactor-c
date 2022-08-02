@@ -415,7 +415,8 @@ void _lf_process_mode_changes(
                             tag_t current_logical_tag = lf_tag();
 
                             // Reschedule event with original local delay
-                            LF_PRINT_DEBUG("Modes: Re-enqueuing event with a suspended delay of %d (previous TTH: %u, Mode suspended at: %u).", local_remaining_delay, event->time, state->next_mode->deactivation_time);
+                            LF_PRINT_DEBUG("Modes: Re-enqueuing event with a suspended delay of %lld (previous TTH: %lld, Mode suspended at: %lld).",
+                            		local_remaining_delay, event->time, state->next_mode->deactivation_time);
                             tag_t schedule_tag = {.time = current_logical_tag.time + local_remaining_delay, .microstep = (local_remaining_delay == 0 ? current_logical_tag.microstep + 1 : 0)};
                             _lf_schedule_at_tag(event->trigger, schedule_tag, event->token);
 
@@ -511,7 +512,8 @@ void _lf_process_mode_changes(
                 }
 
                 // Events are removed delayed in order to allow linear iteration over the queue
-                LF_PRINT_DEBUG("Modes: Pulling %d events from the event queue to suspend them. %d events are now suspended.", delayed_removal_count, _lf_suspended_events_num);
+                LF_PRINT_DEBUG("Modes: Pulling %zu events from the event queue to suspend them. %d events are now suspended.",
+                		delayed_removal_count, _lf_suspended_events_num);
                 for (int i = 0; i < delayed_removal_count; i++) {
                     pqueue_remove(event_q, delayed_removal[i]);
                 }

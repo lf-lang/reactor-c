@@ -1603,7 +1603,8 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
         if (reaction->output_produced[i] != NULL && *(reaction->output_produced[i])) {
             LF_PRINT_DEBUG("Output %zu has been produced.", i);
             trigger_t** triggerArray = (reaction->triggers)[i];
-            LF_PRINT_DEBUG("There are %zu trigger arrays associated with output %d.", reaction->triggered_sizes[i], i);
+            LF_PRINT_DEBUG("There are %d trigger arrays associated with output %zu.",
+            		reaction->triggered_sizes[i], i);
             for (int j=0; j < reaction->triggered_sizes[i]; j++) {
                 trigger_t* trigger = triggerArray[j];
                 if (trigger != NULL) {
