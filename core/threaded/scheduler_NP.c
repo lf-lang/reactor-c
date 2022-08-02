@@ -99,7 +99,7 @@ static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
         reaction_q_level_index
     );
     ((reaction_t***)_lf_sched_instance->_lf_sched_triggered_reactions)[reaction_level][reaction_q_level_index] = reaction;
-    LF_PRINT_DEBUG("Scheduler: Index for level %d is at %d.", reaction_level,
+    LF_PRINT_DEBUG("Scheduler: Index for level %zu is at %d.", reaction_level,
                 reaction_q_level_index);
 #ifdef FEDERATED
     if (reaction_level == current_level) {
@@ -364,7 +364,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
             &_lf_sched_instance->_lf_sched_indexes[current_level], -1);
         if (current_level_q_index >= 0) {
             LF_PRINT_DEBUG(
-                "Scheduler: Worker %zu popping reaction with level %zu, index "
+                "Scheduler: Worker %d popping reaction with level %zu, index "
                 "for level: %d.",
                 worker_number, current_level, current_level_q_index
             );
