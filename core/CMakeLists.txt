@@ -73,5 +73,5 @@ target_include_directories(core PUBLIC ../include)
 # Link threading library if necessary.
 if(NUMBER_OF_WORKERS)
     find_package(Threads REQUIRED)
-    target_link_libraries(${CoreLib} Threads::Threads)
+    target_link_libraries(core Threads::Threads)
 endif(NUMBER_OF_WORKERS)

@@ -88,7 +88,7 @@ instant_t _lf_last_reported_physical_time_ns = 0LL;
 
 /**
  * Records the most recent time reported by the physical clock
- * when accessed by get_physical_time(). This will be an epoch time
+ * when accessed by lf_time_physical(). This will be an epoch time
  * (number of nanoseconds since Jan. 1, 1970), as reported when
  * you call lf_clock_gettime(CLOCK_REALTIME, ...). This differs from
  * _lf_last_reported_physical_time_ns by _lf_time_physical_clock_offset
@@ -269,8 +269,8 @@ instant_t lf_time_physical(void) {
 
 /**
  * Return the elapsed physical time in nanoseconds.
- * This is the time returned by get_physical_time() minus the
- * physical start time as measured by get_physical_time() when
+ * This is the time returned by lf_time_physical() minus the
+ * physical start time as measured by lf_time_physical() when
  * the program was started.
  */
 instant_t lf_time_physical_elapsed(void) {
@@ -290,7 +290,7 @@ instant_t lf_time_start(void) {
 
 /**
  * Set a fixed offset to the physical clock.
- * After calling this, the value returned by get_physical_time()
+ * After calling this, the value returned by lf_time_physical()
  * and get_elpased_physical_time() will have this specified offset
  * added to what it would have returned before the call.
  */
