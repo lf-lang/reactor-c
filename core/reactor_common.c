@@ -139,6 +139,20 @@ int _lf_tokens_with_ref_count_size = 0;
 interval_t _lf_fed_STA_offset = 0LL;
 
 /**
+ * A vector of pointers to the size fields of instances of
+ * lf_sparse_io_record_t so that these can be set to 0 between iterations.
+ * The start field of this struct will be NULL initially, so calling
+ * vector_new(_lf_sparse_io_record_sizes) will be necessary to use this.
+ */
+// FIXME: The original call to vector_new appears to never have been implemented.
+// Fortunately if it is initialized to all zeros, we avoid undefined behavior.
+// This is a bit of a hack.
+static vector_t _lf_sparse_io_record_sizes = (vector_t) {
+    .start=NULL, .next=NULL, .end=NULL, .votes=0, .votes_required=0
+};
+
+
+/**
  * Allocate memory using calloc (so the allocated memory is zeroed out)
  * and record the allocated memory on the specified self struct so that
  * it will be freed when calling {@link free_reactor(self_base_t)}.

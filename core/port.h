@@ -113,8 +113,6 @@ typedef struct lf_multiport_iterator_t {
 	int width;
 } lf_multiport_iterator_t;
 
-extern struct vector_t _lf_sparse_io_record_sizes;
-
 /**
  * Given an array of pointers to port structs, return an iterator
  * that can be used to iterate over the present channels.
