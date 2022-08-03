@@ -147,8 +147,8 @@ interval_t _lf_fed_STA_offset = 0LL;
 // FIXME: The original call to vector_new appears to never have been implemented.
 // Fortunately if it is initialized to all zeros, we avoid undefined behavior.
 // This is a bit of a hack.
-static vector_t _lf_sparse_io_record_sizes = (vector_t) {
-    .start=NULL, .next=NULL, .end=NULL, .votes=0, .votes_required=0
+vector_t _lf_sparse_io_record_sizes = {
+    NULL, NULL, NULL, 0, 0
 };
 
 

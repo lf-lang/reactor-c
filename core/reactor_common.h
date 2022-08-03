@@ -27,6 +27,7 @@ extern int _lf_intended_tag_fields_size;
 extern token_present_t* _lf_tokens_with_ref_count;
 extern lf_token_t* _lf_more_tokens_with_ref_count;
 extern int _lf_tokens_with_ref_count_size;
+extern vector_t _lf_sparse_io_record_sizes;
 
 extern pqueue_t* event_q;
 
