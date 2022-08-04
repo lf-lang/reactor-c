@@ -52,6 +52,9 @@ message(STATUS "")
 
 if (DEFINED NUMBER_OF_WORKERS OR DEFINED LINGUA_FRANCA_TRACE)
   set(MULTITHREADED TRUE)
+  if (NOT DEFINED NUMBER_OF_WORKERS)
+      add_compile_definitions(NUMBER_OF_WORKERS=0)
+  endif()
 endif()
 
 # List sources in this directory.
