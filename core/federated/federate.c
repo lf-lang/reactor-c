@@ -30,27 +30,28 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The main entry point is synchronize_with_other_federates().
  */
 
+#include <arpa/inet.h>  // inet_ntop & inet_pton
+#include <assert.h>
+#include <errno.h>      // Defined perror(), errno
+#include <netdb.h>      // Defines gethostbyname().
+#include <netinet/in.h> // Defines struct sockaddr_in
+#include <regex.h>
+#include <signal.h>     // Defines sigaction.
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>      // Defined perror(), errno
-#include <sys/socket.h>
-#include <netinet/in.h> // Defines struct sockaddr_in
-#include <arpa/inet.h>  // inet_ntop & inet_pton
-#include <unistd.h>     // Defines read(), write(), and close()
-#include <netdb.h>      // Defines gethostbyname().
 #include <strings.h>    // Defines bzero().
-#include <assert.h>
-#include <signal.h>     // Defines sigaction.
-#include "net_util.c"   // Defines network functions.
-#include "net_common.h" // Defines message types, etc.
-#include "../reactor.h"    // Defines instant_t.
-#include "../reactor_common.h"
-#include "../platform.h"
-#include "../threaded/reactor_threaded.h"
-#include "../threaded/scheduler.h"
-#include "clock-sync.c" // Defines clock synchronization functions.
-#include "federate.h"   // Defines federate_instance_t
-#include "regex.h"
+#include <sys/socket.h>
+#include <unistd.h>     // Defines read(), write(), and close()
+
+#include "clock-sync.c"
+#include "federate.h"
+#include "lf_types.h"
+#include "net_common.h"
+#include "net_util.c"
+#include "platform.h"
+#include "reactor_common.h"
+#include "reactor_threaded.h"
+#include "scheduler.h"
 
 // Error messages.
 char* ERROR_SENDING_HEADER = "ERROR sending header information to federate via RTI";

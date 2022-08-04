@@ -36,17 +36,19 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Alexander Schulz-Rosengarten <als@informatik.uni-kiel.de>}
  */
 #include <assert.h>
+#include <stdio.h>
 
-#include "core/reactor.h"
-#include "core/reactor_common.h"
-#include "core/tag.h"
-#include "core/utils/pqueue.h"
-#include "core/utils/vector.h"
-#include "core/utils/util.h"
-#include "core/port.h"
+#include "lf_types.h"
 #ifdef MODAL_REACTORS
-#include "core/modal_models/modes.h"
+#include "modes.h"
 #endif
+#include "port.h"
+#include "pqueue.h"
+#include "reactor_common.h"
+#include "tag.h"
+#include "trace.h"
+#include "util.h"
+#include "vector.h"
 
 
 ////////////////////////////////////////////////////////////

@@ -30,9 +30,10 @@
  * Header file for macros, functions, and structs for optimized sparse I/O
  * through multiports.
  */
-#include "port.h"
-#include "core/utils/vector.h"
 #include <stdio.h>
+
+#include "port.h"
+#include "vector.h"
 
 /**
  * Compare two non-negative integers pointed to. Return -1 if a < b, 0 if a == b,

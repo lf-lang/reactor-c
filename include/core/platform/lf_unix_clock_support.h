@@ -1,7 +1,7 @@
 #include <time.h>
 #include <errno.h>
 
-#include "core/reactor.h"
+#include "lf_types.h"
 
 extern interval_t _lf_time_epoch_offset;
 extern instant_t convert_timespec_to_ns(struct timespec tp);

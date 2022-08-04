@@ -39,7 +39,7 @@
 
 #include "pqueue.h"
 #include "util.h"
-#include "core/reactor.h"
+#include "lf_types.h"
 
 #define LF_LEFT(i)   ((i) << 1)
 #define LF_RIGHT(i)  (((i) << 1) + 1)

@@ -30,8 +30,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * See trace.h file for instructions.
  */
 
-#include "utils/util.h"
+#include <errno.h>
+#include <stdio.h>
+
 #include "platform.h"
+#include "reactor_common.h"
+#include "trace.h"
+#include "util.h"
 
 /** Macro to use when access to trace file fails. */
 #define _LF_TRACE_FAILURE(trace_file) \

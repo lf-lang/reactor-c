@@ -24,6 +24,11 @@ macro(define X)
     endif(DEFINED ${X})
 endmacro()
 
+# FIXME: May want these to be application dependent, hence passed as
+# parameters to Cmake.
+add_compile_definitions(INITIAL_EVENT_QUEUE_SIZE=10)
+add_compile_definitions(INITIAL_REACT_QUEUE_SIZE=10)
+
 message(STATUS "Applying preprocessor definitions...")
 define(_LF_CLOCK_SYNC_INITIAL)
 define(_LF_CLOCK_SYNC_PERIOD_NS)
@@ -52,6 +57,9 @@ endif()
 # List sources in this directory.
 list(APPEND SINGLE_THREADED_SOURCES reactor.c)
 list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c)
+if (DEFINED LINGUA_FRANCA_TRACE)
+  list(APPEND GENERAL_SOURCES trace.c)
+endif()
 
 
 # Add sources from subdirectories.
@@ -74,6 +82,13 @@ message(STATUS "Including the following sources: " ${PRINTABLE_SOURCE_LIST})
 add_library(core ${SOURCES})
 
 target_include_directories(core PUBLIC ../include)
+target_include_directories(core PUBLIC ../include/core)
+target_include_directories(core PUBLIC ../include/core/federated)
+target_include_directories(core PUBLIC ../include/core/platform)
+target_include_directories(core PUBLIC ../include/core/modal_models)
+target_include_directories(core PUBLIC ../include/core/threaded)
+target_include_directories(core PUBLIC ../include/core/utils)
+
 if(MULTITHREADED)
     find_package(Threads REQUIRED)
     target_link_libraries(core Threads::Threads)

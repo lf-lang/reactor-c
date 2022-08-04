@@ -31,12 +31,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Implementation file for tag functions for Lingua Franca programs.
  */
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
-#include <stdbool.h>
 
-#include "core/tag.h"
-#include "core/utils/util.h"
+#include "tag.h"
+#include "util.h"
 
 // Global variables :(
 

@@ -36,7 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <limits.h>
 
-#include "core/platform.h"
+#include "platform.h"
 
 /* Conversion of time to nanoseconds. */
 #define NSEC(t) (t * 1LL)

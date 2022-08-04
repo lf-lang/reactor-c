@@ -46,10 +46,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "schedule.h"
-<<<<<<< HEAD
-#include "deprecated.h" // Deprecated print functions.
-=======
->>>>>>> [build] Delete deprecated print functions.
 #include "tag.h"
 #include "time.h"
 

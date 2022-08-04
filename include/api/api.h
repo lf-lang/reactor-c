@@ -1,6 +1,7 @@
 /**
  * @file
  * @author Edward A. Lee (eal@berkeley.edu)
+ * @author Hou Seng (Steven) Wong (housengw@berkeley.edu)
  *
  * @section LICENSE
 Copyright (c) 2020, The University of California at Berkeley.
@@ -26,21 +27,17 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  * @section DESCRIPTION
- * Target-specific runtime functions for the C target language.
- * This API layer can be used in conjunction with:
- *     target C;
  *
- * Note for target language developers. This is one way of developing a target language where
- * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca
- * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a
- * template for future runtime developement for target languages.
- * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
+ * This file is a translation layer that implements Lingua Franca
+ * APIs which interact with the internal _lf_SET and _lf_schedule APIs.
  */
 
+#ifndef API_H
+#define API_H
 
-#ifndef CTARGET_SCHEDULE
-#define CTARGET_SCHEDULE
-#include "core/reactor.h"
+#include "lf_types.h"
+#include "tag.h"
+
 //////////////////////////////////////////////////////////////
 /////////////  Schedule Functions
 
@@ -169,4 +166,21 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
  */
 bool lf_check_deadline(void* self, bool invoke_deadline_handler);
 
-#endif // CTARGET_SCHEDULE
+/**
+ * Compare two tags. Return -1 if the first is less than
+ * the second, 0 if they are equal, and +1 if the first is
+ * greater than the second. A tag is greater than another if
+ * its time is greater or if its time is equal and its microstep
+ * is greater.
+ * @param tag1
+ * @param tag2
+ * @return -1, 0, or 1 depending on the relation.
+ */
+int lf_tag_compare(tag_t tag1, tag_t tag2);
+
+/**
+ * Return the current tag, a logical time, microstep pair.
+ */
+tag_t lf_tag();
+
+#endif // API_H

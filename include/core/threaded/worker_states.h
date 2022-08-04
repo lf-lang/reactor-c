@@ -36,7 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assert.h>
 #include "scheduler.h"
-#include "core/platform.h"
+#include "platform.h"
 
 /** An array of condition variables, each corresponding to a group of workers. */
 static lf_cond_t* worker_conds;

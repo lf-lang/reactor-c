@@ -38,8 +38,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sysinfoapi.h>
 #include <errno.h>
 #include "lf_windows_support.h"
-#include "core/platform.h"
-#include "core/util.h"
+#include "platform.h"
+#include "util.h"
 #include <time.h>
 
 /**
@@ -242,7 +242,7 @@ int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section
 
 
 #else
-#include "core/platform/lf_C11_threads_support.h"
+#include "lf_C11_threads_support.h"
 #endif
 #endif
 

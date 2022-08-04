@@ -47,7 +47,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stddef.h>
 #include <stdbool.h>
 
-#include "core/platform.h"
+#include "platform.h"
 
 ////////////////////////////////////////////////////////////
 //// Macros for setting modes.

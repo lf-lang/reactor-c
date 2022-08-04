@@ -35,13 +35,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
 
-#include "core/reactor.h"
-#include "core/reactor_common.h"
-#include "core/tag.h"
-#include "core/platform.h"
-#include "scheduler.h"
 #include <signal.h>
+#include <string.h>
 
+#include "lf_types.h"
+#include "platform.h"
+#include "reactor_common.h"
+#include "scheduler.h"
+#include "tag.h"
 
 /**
  * The maximum amount of time a worker thread should stall

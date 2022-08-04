@@ -30,7 +30,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  */
 
-#include "core/utils/semaphore.h"
+#include "semaphore.h"
 #include <assert.h>
 
 /**

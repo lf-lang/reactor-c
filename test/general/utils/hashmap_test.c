@@ -1,9 +1,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "core/utils/hashmap.h"
+#include "hashmap.h"
 #include "rand_utils.h"
-#include "core/utils/util.h"
+#include "util.h"
 
 #define CAPACITY 100
 #define N 5000

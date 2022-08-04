@@ -42,11 +42,15 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assert.h>
 
-#include "core/platform.h"
-#include "core/utils/semaphore.h"
-#include "core/threaded/scheduler.h"
-#include "core/threaded/scheduler_instance.h"
-#include "core/threaded/scheduler_sync_tag_advance.h"
+#include "platform.h"
+#include "scheduler_instance.h"
+#include "scheduler_sync_tag_advance.h"
+#include "scheduler.h"
+#include "semaphore.h"
+#ifdef LINGUA_FRANCA_TRACE
+#include "trace.h"
+#endif
+#include "util.h"
 
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;
@@ -387,9 +391,13 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
         LF_PRINT_DEBUG("Worker %d is out of ready reactions.", worker_number);
 
         // Ask the scheduler for more work and wait
+#ifdef LINGUA_FRANCA_TRACE
         tracepoint_worker_wait_starts(worker_number);
+#endif
         _lf_sched_wait_for_work(worker_number);
+#ifdef LINGUA_FRANCA_TRACE
         tracepoint_worker_wait_ends(worker_number);
+#endif
     }
 
     // It's time for the worker thread to stop and exit.

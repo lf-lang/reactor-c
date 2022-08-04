@@ -44,19 +44,19 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
    // Windows platforms
-   #include "core/platform/lf_windows_support.h"
+   #include "lf_windows_support.h"
 #elif __APPLE__
     // Apple platforms
-    #include "core/platform/lf_macos_support.h"
+    #include "lf_macos_support.h"
 #elif __linux__
     // Linux
-    #include "core/platform/lf_linux_support.h"
+    #include "lf_linux_support.h"
 #elif __unix__ // all unices not caught above
     // Unix
-    #include "core/platform/lf_POSIX_threads_support.h"
+    #include "lf_POSIX_threads_support.h"
 #elif defined(_POSIX_VERSION)
     // POSIX
-    #include "core/platform/lf_POSIX_threads_support.h"
+    #include "lf_POSIX_threads_support.h"
 #elif defined(__riscv) || defined(__riscv__)
     // RISC-V (see https://github.com/riscv/riscv-toolchain-conventions)
     #error "RISC-V not supported"

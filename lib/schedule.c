@@ -37,7 +37,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
  */
 
-#include "../include/ctarget/schedule.h"
+#include "api.h"
+#include "reactor.h"
 
 /**
  * Schedule an action to occur with the specified value and time offset

@@ -30,17 +30,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "lf_linux_support.h"
-#include "core/platform.h"
+#include "platform.h"
 
 #ifdef NUMBER_OF_WORKERS
 #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
-#include "core/platform/lf_POSIX_threads_support.h"  // (Not C++11 or later) or no threads support
+#include "lf_POSIX_threads_support.h"  // (Not C++11 or later) or no threads support
 #else
-#include "core/platform/lf_C11_threads_support.h"
+#include "lf_C11_threads_support.h"
 #endif
 #endif
 
-#include "core/platform/lf_unix_clock_support.h"
+#include "lf_unix_clock_support.h"
 
 /**
  * Pause execution for a number of nanoseconds.

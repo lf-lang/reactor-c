@@ -39,13 +39,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
 
-#include "scheduler.h"
-#include "core/platform.h"
-#include "core/utils/pqueue.h"
-#include "core/utils/semaphore.h"
-#include "core/utils/vector.h"
+#include "platform.h"
+#include "pqueue.h"
 #include "scheduler_instance.h"
 #include "scheduler_sync_tag_advance.h"
+#include "scheduler.h"
+#include "semaphore.h"
+#include "vector.h"
 
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;

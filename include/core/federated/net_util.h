@@ -76,6 +76,8 @@ ssize_t read_from_socket_errexit(
 		unsigned char* buffer,
 		char* format, ...);
 
+ssize_t write_to_socket(int socket, size_t num_bytes, unsigned char* buffer);
+
 /**
  * Read the specified number of bytes from the specified socket into the
  * specified buffer. If a disconnect occurs during this

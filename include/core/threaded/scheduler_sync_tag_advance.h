@@ -28,7 +28,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdbool.h>
 
-#include "core/tag.h"
+#include "tag.h"
 
 /////////////////// External Variables /////////////////////////
 extern tag_t current_tag;

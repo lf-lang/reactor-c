@@ -42,8 +42,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
 
-#include "core/utils/semaphore.h"
-#include "core/threaded/scheduler.h"
+#include "semaphore.h"
+#include "scheduler.h"
 
 extern lf_mutex_t mutex;
 
@@ -73,7 +73,7 @@ typedef struct {
      *
      * FIXME: specific comment
      */
-    semaphore_t* _lf_sched_semaphore; 
+    semaphore_t* _lf_sched_semaphore;
 
     /**
      * @brief Indicate whether the program should stop
@@ -136,10 +136,10 @@ typedef struct {
 
 /**
  * @brief Initialize `instance` using the provided information.
- * 
+ *
  * No-op if `instance` is already initialized (i.e., not NULL).
  * This function assumes that mutex is allowed to be recursively locked.
- * 
+ *
  * @param instance The `_lf_sched_instance_t` object to initialize.
  * @param number_of_workers  Number of workers in the program.
  * @param params Reference to scheduler parameters in the form of a
@@ -153,7 +153,7 @@ bool init_sched_instance(
     sched_params_t* params) {
 
     // Check if the instance is already initialized
-    lf_mutex_lock(&mutex); // Safeguard against multiple threads calling this 
+    lf_mutex_lock(&mutex); // Safeguard against multiple threads calling this
                            // function.
     if (*instance != NULL) {
         // Already initialized

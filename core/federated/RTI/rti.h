@@ -34,7 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef RTI_H
 #define RTI_H
 
-#include "reactor.h"
+#include "lf_types.h"
 #include "message_record/message_record.h"
 
 /////////////////////////////////////////////
@@ -71,15 +71,15 @@ typedef struct federate_t {
     pthread_t thread_id;    // The ID of the thread handling communication with this federate.
     int socket;             // The TCP socket descriptor for communicating with this federate.
     struct sockaddr_in UDP_addr;           // The UDP address for the federate.
-    bool clock_synchronization_enabled;    // Indicates the status of clock synchronization 
+    bool clock_synchronization_enabled;    // Indicates the status of clock synchronization
                                            // for this federate. Enabled by default.
     tag_t completed;        // The largest logical tag completed by the federate (or NEVER if no LTC has been received).
     tag_t last_granted;     // The maximum TAG that has been granted so far (or NEVER if none granted)
     tag_t last_provisionally_granted;      // The maximum PTAG that has been provisionally granted (or NEVER if none granted)
     tag_t next_event;       // Most recent NET received from the federate (or NEVER if none received).
-    in_transit_message_record_q_t* in_transit_message_tags; // Record of in-transit messages to this federate that are not 
+    in_transit_message_record_q_t* in_transit_message_tags; // Record of in-transit messages to this federate that are not
                                                             // yet processed. This record is ordered based on the time
-                                                            // value of each message for a more efficient access. 
+                                                            // value of each message for a more efficient access.
     fed_state_t state;      // State of the federate.
     int* upstream;          // Array of upstream federate ids.
     interval_t* upstream_delay;    // Minimum delay on connections from upstream federates.

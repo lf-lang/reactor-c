@@ -35,7 +35,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif // NUMBER_OF_WORKERS
 
 #include <assert.h>
+
 #include "scheduler.h"
+#include "util.h"
 
 static interval_t* start_times_by_level;
 static interval_t** execution_times_by_num_workers_by_level;

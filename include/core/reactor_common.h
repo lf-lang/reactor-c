@@ -1,13 +1,13 @@
 #ifndef REACTOR_COMMON_H
 #define REACTOR_COMMON_H
 
-#include "reactor.h"
-#include "core/tag.h"
-#include "core/utils/pqueue.h"
-#include "core/utils/vector.h"
-#include "core/utils/util.h"
-#include "core/modal_models/modes.h"
-#include "core/port.h"
+#include "lf_types.h"
+#include "tag.h"
+#include "pqueue.h"
+#include "vector.h"
+#include "util.h"
+#include "modes.h"
+#include "port.h"
 
 
 //  ******** Global Variables :( ********  //
@@ -19,6 +19,7 @@ extern bool _lf_execution_started;
 extern tag_t stop_tag;
 extern bool keepalive_specified;
 extern bool** _lf_is_present_fields;
+extern interval_t _lf_fed_STA_offset;
 extern int _lf_is_present_fields_size;
 extern bool** _lf_is_present_fields_abbreviated;
 extern int _lf_is_present_fields_abbreviated_size;

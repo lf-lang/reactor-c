@@ -32,11 +32,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  */
-#include "core/reactor.h"
-#include "core/reactor_common.h"
-#include "platform.h"
 #include <signal.h> // To trap ctrl-c and invoke termination().
-//#include <assert.h>
+#include <assert.h>
+
+#include "lf_types.h"
+#include "platform.h"
+#include "reactor_common.h"
 
 /**
  * @brief Queue of triggered reactions at the current tag.
@@ -258,7 +259,7 @@ int _lf_do_step(void) {
 #endif
 
     // No more reactions should be blocked at this point.
-    //assert(pqueue_size(blocked_q) == 0);
+    assert(pqueue_size(blocked_q) == 0);
 
     if (lf_tag_compare(current_tag, stop_tag) >= 0) {
         return 0;
