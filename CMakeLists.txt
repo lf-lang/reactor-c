@@ -21,6 +21,13 @@ set(CoreLib core)
 set(PlatformLib platform)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
+include_directories(${CMAKE_SOURCE_DIR}/include/core)
+include_directories(${CMAKE_SOURCE_DIR}/include/core/federated)
+include_directories(${CMAKE_SOURCE_DIR}/include/core/modal_models)
+include_directories(${CMAKE_SOURCE_DIR}/include/core/platform)
+include_directories(${CMAKE_SOURCE_DIR}/include/core/threaded)
+include_directories(${CMAKE_SOURCE_DIR}/include/core/utils)
+include_directories(${CMAKE_SOURCE_DIR}/include/api)
 
 enable_testing()
 add_subdirectory(${Test})

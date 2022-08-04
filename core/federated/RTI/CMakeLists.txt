@@ -38,10 +38,19 @@ else()
   message(FATAL_ERROR "Your platform is not supported! RTI supports Linux and MacOS.")
 endif()
 
+# The following should not be done
 include_directories(${CoreLib}/..)
 include_directories(${CoreLib})
-include_directories(${CoreLib}/platform)
 include_directories(${CoreLib}/federated)
+include_directories(${CoreLib}/platform)
+include_directories(${CoreLib}/utils)
+
+set(IncludeDir ../../../include/core)
+include_directories(${IncludeDir})
+include_directories(${IncludeDir}/federated)
+include_directories(${IncludeDir}/modal_models)
+include_directories(${IncludeDir}/platform)
+include_directories(${IncludeDir}/utils)
 
 # Declare a new executable target and list all its sources
 add_executable(

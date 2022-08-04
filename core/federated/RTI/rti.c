@@ -59,11 +59,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assert.h>
 #include <sys/wait.h>   // Defines wait() for process to change state.
 
-#include "../../platform.h"   // Platform-specific types and functions
-#include "../../utils/util.c" // Defines print functions (e.g., lf_print).
-#include "../net_util.c"   // Defines network functions.
-#include "../../../include/core/federated/net_common.h" // Defines message types, etc. Includes <pthread.h> and "reactor.h".
-#include "../../tag.c"        // Time-related types and functions.
+#include "platform.h"   // Platform-specific types and functions
+#include "util.c" // Defines print functions (e.g., lf_print).
+#include "net_util.c"   // Defines network functions.
+#include "net_common.h" // Defines message types, etc. Includes <pthread.h> and "reactor.h".
+#include "tag.c"        // Time-related types and functions.
 #include "rti.h"
 
 /**

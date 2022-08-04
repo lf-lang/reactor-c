@@ -33,7 +33,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  */
 #include <signal.h> // To trap ctrl-c and invoke termination().
-#include <assert.h>
 
 #include "lf_types.h"
 #include "platform.h"
@@ -257,9 +256,6 @@ int _lf_do_step(void) {
     // At the end of the step, perform mode transitions
     _lf_handle_mode_changes();
 #endif
-
-    // No more reactions should be blocked at this point.
-    assert(pqueue_size(blocked_q) == 0);
 
     if (lf_tag_compare(current_tag, stop_tag) >= 0) {
         return 0;
