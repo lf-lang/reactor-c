@@ -457,7 +457,7 @@ do { \
 #else
 #define _LF_SET_ARRAY(out, val, length) \
 do { \
-    _lf_set_present((lf_port_base_t*)out)(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
     token->ref_count = out->num_destinations; \
     out->token = token; \
