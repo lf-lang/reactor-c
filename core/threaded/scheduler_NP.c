@@ -77,11 +77,11 @@ static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
     // ensure that all worker threads are idle, and thus, none are triggering
     // reactions (and therefore calling this function).
     if (reaction_level == current_level) {
-        LF_PRINT_DEBUG("Scheduler: Trying to lock the mutex for level %d.",
+        LF_PRINT_DEBUG("Scheduler: Trying to lock the mutex for level %zu.",
                     reaction_level);
         lf_mutex_lock(
             &_lf_sched_instance->_lf_sched_array_of_mutexes[reaction_level]);
-        LF_PRINT_DEBUG("Scheduler: Locked the mutex for level %d.", reaction_level);
+        LF_PRINT_DEBUG("Scheduler: Locked the mutex for level %zu.", reaction_level);
     }
     // The level index for the current level can sometimes become negative. Set
     // it back to zero before adding a reaction (otherwise worker threads will

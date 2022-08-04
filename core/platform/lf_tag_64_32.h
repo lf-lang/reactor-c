@@ -27,7 +27,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Define PRINTF_TIME and PRINTF_MICROSTEP, which are the printf
 // codes (like the d in %d to print an int) for time and microsteps.
 // To use these, specify the printf as follows:
-//     printf("%" PRINTF_TIME "\n", time_value);
+//     printf("Time: " PRINTF_TIME "\n", time_value);
 // On most platforms, time is an signed 64-bit number (int64_t) and
 // the microstep is an unsigned 32-bit number (uint32_t).
 // Sadly, in C, there is no portable to print such numbers using
@@ -40,13 +40,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // PRINTF_TIME and PRINTF_MICROSTEP directly in the same file that
 // defines the types _instant_t, _interval_t, and _microstep_t.
 #include <inttypes.h>
-#define PRINTF_TIME PRId64
-#define PRINTF_MICROSTEP PRIu32
+#define PRINTF_TIME "%" PRId64
+#define PRINTF_MICROSTEP "%" PRIu32
 
 // For convenience, the following string can be inserted in a printf
 // format for printing both time and microstep as follows:
 //     printf("Tag is " PRINTF_TAG "\n", time_value, microstep);
-#define PRINTF_TAG "(%" PRINTF_TIME ", %" PRINTF_MICROSTEP ")"
+#define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
 
 /**
  * Time instant. Both physical and logical times are represented
