@@ -35,6 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif // NUMBER_OF_WORKERS
 
 #include <assert.h>
+#include <stdlib.h>
 
 #include "scheduler.h"
 #include "util.h"

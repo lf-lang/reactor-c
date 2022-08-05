@@ -35,8 +35,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif // NUMBER_OF_WORKERS
 
 #include <assert.h>
-#include "scheduler.h"
+#include <stdlib.h>
+
 #include "platform.h"
+#include "scheduler.h"
 
 /** An array of condition variables, each corresponding to a group of workers. */
 static lf_cond_t* worker_conds;
