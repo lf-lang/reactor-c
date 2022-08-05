@@ -87,7 +87,8 @@ lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t** port, int w
 						&compare_sizes
 				);
 			}
-			result.next = port[0]->sparse_record->present_channels[0];
+			// NOTE: Following cast is unsafe if there more than 2^31 channels.
+			result.next = (int)port[0]->sparse_record->present_channels[0];
 		}
 		return result;
 	}
@@ -127,7 +128,8 @@ int lf_multiport_next(lf_multiport_iterator_t* iterator) {
 			// No more present channels.
 			iterator->next = -1;
 		} else {
-			iterator->next = sparse_record->present_channels[iterator->idx];
+			// NOTE: Following cast is unsafe if there more than 2^31 channels.
+			iterator->next = (int)sparse_record->present_channels[iterator->idx];
 		}
 		return iterator->next;
 	} else {
