@@ -143,7 +143,7 @@ int wait_until(instant_t logical_time_ns) {
         interval_t ns_to_wait = logical_time_ns - lf_time_physical();
     
         if (ns_to_wait < MIN_WAIT_TIME) {
-            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_WAIT_TIME " PRINTF_TIME ". Skipping wait.",
+            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_WAIT_TIME %lld. Skipping wait.",
                 ns_to_wait, MIN_WAIT_TIME);
             return return_value;
         }
