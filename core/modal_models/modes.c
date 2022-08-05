@@ -415,7 +415,8 @@ void _lf_process_mode_changes(
                             tag_t current_logical_tag = lf_tag();
 
                             // Reschedule event with original local delay
-                            LF_PRINT_DEBUG("Modes: Re-enqueuing event with a suspended delay of %lld (previous TTH: %lld, Mode suspended at: %lld).",
+                            LF_PRINT_DEBUG("Modes: Re-enqueuing event with a suspended delay of " PRINTF_TIME
+                            		" (previous TTH: " PRINTF_TIME ", Mode suspended at: " PRINTF_TIME ").",
                             		local_remaining_delay, event->time, state->next_mode->deactivation_time);
                             tag_t schedule_tag = {.time = current_logical_tag.time + local_remaining_delay, .microstep = (local_remaining_delay == 0 ? current_logical_tag.microstep + 1 : 0)};
                             _lf_schedule_at_tag(event->trigger, schedule_tag, event->token);
