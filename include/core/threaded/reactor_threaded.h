@@ -15,6 +15,7 @@ void enqueue_network_input_control_reactions();
  */
 void enqueue_network_output_control_reactions();
 void _lf_increment_global_tag_barrier_already_locked(tag_t future_tag);
+void _lf_increment_global_tag_barrier(tag_t future_tag);
 void _lf_decrement_global_tag_barrier_locked();
 int _lf_wait_on_global_tag_barrier(tag_t proposed_tag);
 void synchronize_with_other_federates();

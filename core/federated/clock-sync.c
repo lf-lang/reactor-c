@@ -31,6 +31,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <errno.h>
+#include <math.h>
 
 #include "clock-sync.h"
 #include "net_common.h"
