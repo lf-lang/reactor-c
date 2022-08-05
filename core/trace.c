@@ -32,6 +32,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <errno.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "platform.h"
 #include "reactor_common.h"
