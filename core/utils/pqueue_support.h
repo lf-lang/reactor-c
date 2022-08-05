@@ -135,7 +135,7 @@ static void print_reaction(void *reaction) {
  */
 static void print_event(void *event) {
 	event_t *e = (event_t*)event;
-    LF_PRINT_DEBUG("time: %lld, trigger: %p, token: %p",
+    LF_PRINT_DEBUG("time: " PRINTF_TIME ", trigger: %p, token: %p",
 			e->time, e->trigger, e->token);
 }
 
