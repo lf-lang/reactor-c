@@ -32,6 +32,9 @@ See sensor_simulator.h.
 
 #include <pthread.h>
 #include <ncurses.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "sensor_simulator.h"
 #include "include/api/api.h"
 #include "util.h"
