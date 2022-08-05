@@ -48,6 +48,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdbool.h>
 
 #include "platform.h"
+#include "lf_types.h"
 
 ////////////////////////////////////////////////////////////
 //// Macros for setting modes.
@@ -136,31 +137,30 @@ bool _lf_mode_is_active(reactor_mode_t* mode);
 
 void _lf_initialize_mode_states(reactor_mode_state_t* states[], int states_size);
 
-// void _lf_process_mode_changes(
-//     reactor_mode_state_t* states[],
-//     int states_size,
-//     mode_state_variable_reset_data_t reset_data[],
-//     int reset_data_size,
-//     trigger_t* timer_triggers[],
-//     int timer_triggers_size
-// );
+void _lf_process_mode_changes(
+    reactor_mode_state_t* states[],
+    int states_size,
+    mode_state_variable_reset_data_t reset_data[],
+    int reset_data_size,
+    trigger_t* timer_triggers[],
+    int timer_triggers_size
+);
 
-// TODO: Break apart reactor.h so that we can include the event_t typedef without cyclic includes
-// void _lf_add_suspended_event(event_t* event);
+void _lf_add_suspended_event(event_t* event);
 
-// void _lf_handle_mode_startup_reset_reactions(
-//         reaction_t** startup_reactions,
-//         int startup_reactions_size,
-//         reaction_t** reset_reactions,
-//         int reset_reactions_size,
-//         reactor_mode_state_t* states[],
-//         int states_size
-// );
+void _lf_handle_mode_startup_reset_reactions(
+        reaction_t** startup_reactions,
+        int startup_reactions_size,
+        reaction_t** reset_reactions,
+        int reset_reactions_size,
+        reactor_mode_state_t* states[],
+        int states_size
+);
 
-// void _lf_handle_mode_shutdown_reactions(
-//         reaction_t** shutdown_reactions,
-//         int shutdown_reactions_size
-// )
+void _lf_handle_mode_shutdown_reactions(
+        reaction_t** shutdown_reactions,
+        int shutdown_reactions_size
+);
 
 void _lf_terminate_modal_reactors();
 
