@@ -41,6 +41,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_types.h"
 #include "platform.h"
 #include "reactor_common.h"
+#include "reactor.h"
 #include "scheduler.h"
 #include "tag.h"
 

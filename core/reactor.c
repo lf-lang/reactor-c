@@ -33,7 +33,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  */
 #include <signal.h> // To trap ctrl-c and invoke termination().
+#include <string.h>
 
+#include "reactor.h"
 #include "lf_types.h"
 #include "platform.h"
 #include "reactor_common.h"
