@@ -50,6 +50,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform.h"
 #include "lf_types.h"
 
+typedef struct event_t event_t;
+typedef struct reaction_t reaction_t;
+typedef struct trigger_t trigger_t;
+
 ////////////////////////////////////////////////////////////
 //// Macros for setting modes.
 
