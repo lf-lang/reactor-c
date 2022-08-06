@@ -9,12 +9,13 @@ var searchData=
   ['allocated_6',['allocated',['../structallocation__record__t.html#a77855cef552e7f3fe8a87e88f8661c9f',1,'allocation_record_t']]],
   ['allocation_5frecord_5ft_7',['allocation_record_t',['../structallocation__record__t.html',1,'allocation_record_t'],['../core_2reactor_8h.html#a416845ec4469b3186de047c32402f5e8',1,'allocation_record_t():&#160;reactor.h'],['../include_2core_2reactor_8h.html#a416845ec4469b3186de047c32402f5e8',1,'allocation_record_t():&#160;reactor.h']]],
   ['allocations_8',['allocations',['../structself__base__t.html#a124bf806130153f60c2b91e518736bfb',1,'self_base_t']]],
-  ['audio_5fbuffer_5fsize_9',['AUDIO_BUFFER_SIZE',['../audio__loop_8h.html#a1d48237cb63c5ae67aab6d00cc64afb6',1,'audio_loop.h']]],
-  ['audio_5fdevice_10',['AUDIO_DEVICE',['../audio__loop__linux_8c.html#ad4fb01232c5d7bf6036bb14780bfe09e',1,'audio_loop_linux.c']]],
-  ['audio_5fformat_11',['audio_format',['../structlf__wav__format__t.html#a52979bb4f51994d359760876aa1c9db8',1,'lf_wav_format_t']]],
-  ['audio_5floop_2eh_12',['audio_loop.h',['../audio__loop_8h.html',1,'']]],
-  ['audio_5floop_5flinux_2ec_13',['audio_loop_linux.c',['../audio__loop__linux_8c.html',1,'']]],
-  ['audio_5floop_5fmac_2ec_14',['audio_loop_mac.c',['../audio__loop__mac_8c.html',1,'']]],
-  ['avail_15',['avail',['../structpqueue__t.html#a2edc2359d1420efc7031677ecd19c1ec',1,'pqueue_t']]],
-  ['average_16',['average',['../structlf__stat__ll.html#a33b66435c85f8a8297e3d39f6d3be218',1,'lf_stat_ll']]]
+  ['attribute_5fformat_5fprintf_9',['ATTRIBUTE_FORMAT_PRINTF',['../core_2utils_2util_8h.html#a1e753fbf3551d4a04cd45c04b5a90867',1,'ATTRIBUTE_FORMAT_PRINTF():&#160;util.h'],['../include_2core_2utils_2util_8h.html#a1e753fbf3551d4a04cd45c04b5a90867',1,'ATTRIBUTE_FORMAT_PRINTF():&#160;util.h']]],
+  ['audio_5fbuffer_5fsize_10',['AUDIO_BUFFER_SIZE',['../audio__loop_8h.html#a1d48237cb63c5ae67aab6d00cc64afb6',1,'audio_loop.h']]],
+  ['audio_5fdevice_11',['AUDIO_DEVICE',['../audio__loop__linux_8c.html#ad4fb01232c5d7bf6036bb14780bfe09e',1,'audio_loop_linux.c']]],
+  ['audio_5fformat_12',['audio_format',['../structlf__wav__format__t.html#a52979bb4f51994d359760876aa1c9db8',1,'lf_wav_format_t']]],
+  ['audio_5floop_2eh_13',['audio_loop.h',['../audio__loop_8h.html',1,'']]],
+  ['audio_5floop_5flinux_2ec_14',['audio_loop_linux.c',['../audio__loop__linux_8c.html',1,'']]],
+  ['audio_5floop_5fmac_2ec_15',['audio_loop_mac.c',['../audio__loop__mac_8c.html',1,'']]],
+  ['avail_16',['avail',['../structpqueue__t.html#a2edc2359d1420efc7031677ecd19c1ec',1,'pqueue_t']]],
+  ['average_17',['average',['../structlf__stat__ll.html#a33b66435c85f8a8297e3d39f6d3be218',1,'lf_stat_ll']]]
 ];

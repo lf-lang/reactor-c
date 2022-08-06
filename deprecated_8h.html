@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.4"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: include/ctarget/util.h File Reference</title>
+<title>reactor-c: include/ctarget/deprecated.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -69,31 +69,32 @@ $(function() {
   <div class="summary">
 <a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
-  <div class="headertitle"><div class="title">util.h File Reference</div></div>
+  <div class="headertitle"><div class="title">deprecated.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="include_2core_2reactor_8h_source.html">../core/reactor.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="include_2core_2utils_2util_8h_source.html">../core/utils/util.h</a>&quot;</code><br />
 </div>
-<p><a href="include_2ctarget_2util_8h_source.html">Go to the source code of this file.</a></p>
+<p><a href="deprecated_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a0a27a0fa2f8d9461204242121941696c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2ctarget_2util_8h.html#a0a27a0fa2f8d9461204242121941696c">DEBUG_PRINT</a>(format, ...)</td></tr>
+<tr class="memitem:a0a27a0fa2f8d9461204242121941696c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="deprecated_8h.html#a0a27a0fa2f8d9461204242121941696c">DEBUG_PRINT</a>(format, ...)</td></tr>
 <tr class="separator:a0a27a0fa2f8d9461204242121941696c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a02ab3aea33a20e71b0f50923d3b222a7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2ctarget_2util_8h.html#a02ab3aea33a20e71b0f50923d3b222a7">LOG_PRINT</a>(format, ...)</td></tr>
+<tr class="memitem:a02ab3aea33a20e71b0f50923d3b222a7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="deprecated_8h.html#a02ab3aea33a20e71b0f50923d3b222a7">LOG_PRINT</a>(format, ...)</td></tr>
 <tr class="separator:a02ab3aea33a20e71b0f50923d3b222a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ada36eab57717d2fc256bb2009bfc7a15"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2ctarget_2util_8h.html#ada36eab57717d2fc256bb2009bfc7a15">DEPRECATED</a> (void <a class="el" href="lib_2util_8c.html#acf006c072c804ca8a20668b6e7e45dba">info_print</a>(const char *format,...))</td></tr>
-<tr class="separator:ada36eab57717d2fc256bb2009bfc7a15"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6b8516d82cfd7ba4c6168fa4a437db10"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2ctarget_2util_8h.html#a6b8516d82cfd7ba4c6168fa4a437db10">DEPRECATED</a> (void <a class="el" href="lib_2util_8c.html#ad8d354f663642349063c0ab241cdbb70">register_print_function</a>(<a class="el" href="include_2core_2utils_2util_8h.html#ab9801384959efff8fc8683228518fd68">print_message_function_t</a> *function, int log_level))</td></tr>
+<tr class="memitem:ad474b7cd6e46a890abe4d42b039e3fb4"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="deprecated_8h.html#ad474b7cd6e46a890abe4d42b039e3fb4">DEPRECATED</a> (void <a class="el" href="lib_2util_8c.html#acf006c072c804ca8a20668b6e7e45dba">info_print</a>(const char *format,...) <a class="el" href="include_2core_2utils_2util_8h.html#a1e753fbf3551d4a04cd45c04b5a90867">ATTRIBUTE_FORMAT_PRINTF</a>(1, 2))</td></tr>
+<tr class="separator:ad474b7cd6e46a890abe4d42b039e3fb4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6b8516d82cfd7ba4c6168fa4a437db10"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="deprecated_8h.html#a6b8516d82cfd7ba4c6168fa4a437db10">DEPRECATED</a> (void <a class="el" href="lib_2util_8c.html#ad8d354f663642349063c0ab241cdbb70">register_print_function</a>(<a class="el" href="include_2core_2utils_2util_8h.html#a1917df59f183af6181ebafdf50877246">print_message_function_t</a> *function, int log_level))</td></tr>
 <tr class="separator:a6b8516d82cfd7ba4c6168fa4a437db10"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9bba305dcf41c3ab5f80fe2eb14f439a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2ctarget_2util_8h.html#a9bba305dcf41c3ab5f80fe2eb14f439a">DEPRECATED</a> (<a class="el" href="core_2platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> <a class="el" href="lib_2util_8c.html#a26d345d87fb4d4927d2e5f0a1143e1be">get_stp_offset</a>(void))</td></tr>
+<tr class="memitem:a9bba305dcf41c3ab5f80fe2eb14f439a"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="deprecated_8h.html#a9bba305dcf41c3ab5f80fe2eb14f439a">DEPRECATED</a> (<a class="el" href="core_2platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> <a class="el" href="lib_2util_8c.html#a26d345d87fb4d4927d2e5f0a1143e1be">get_stp_offset</a>(void))</td></tr>
 <tr class="separator:a9bba305dcf41c3ab5f80fe2eb14f439a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6942a230a0db363d94cf09b4c54ee01b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2ctarget_2util_8h.html#a6942a230a0db363d94cf09b4c54ee01b">DEPRECATED</a> (void <a class="el" href="lib_2util_8c.html#a75a5bf324229d35fb88541a04449c95b">set_stp_offset</a>(<a class="el" href="core_2platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset))</td></tr>
+<tr class="memitem:a6942a230a0db363d94cf09b4c54ee01b"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="deprecated_8h.html#a6942a230a0db363d94cf09b4c54ee01b">DEPRECATED</a> (void <a class="el" href="lib_2util_8c.html#a75a5bf324229d35fb88541a04449c95b">set_stp_offset</a>(<a class="el" href="core_2platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset))</td></tr>
 <tr class="separator:a6942a230a0db363d94cf09b4c54ee01b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a475512dcc4025d0eb44c9120d5f11ab6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="include_2ctarget_2util_8h.html#a475512dcc4025d0eb44c9120d5f11ab6">DEPRECATED</a> (void <a class="el" href="lib_2util_8c.html#afd41621b799f40ef1ad8c21e1ea5a81c">print_snapshot</a>(void))</td></tr>
+<tr class="memitem:a475512dcc4025d0eb44c9120d5f11ab6"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="deprecated_8h.html#a475512dcc4025d0eb44c9120d5f11ab6">DEPRECATED</a> (void <a class="el" href="lib_2util_8c.html#afd41621b799f40ef1ad8c21e1ea5a81c">print_snapshot</a>(void))</td></tr>
 <tr class="separator:a475512dcc4025d0eb44c9120d5f11ab6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -140,11 +141,11 @@ DESCRIPTION</h1>
 <b>Value:</b><div class="fragment"><div class="line">            <span class="keywordflow">do</span> { <span class="keywordflow">if</span>(<a class="code hl_define" href="core_2utils_2util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a> &gt;= <a class="code hl_define" href="core_2utils_2util_8h.html#a130224df8c6bf22a688e3cb74a45689a">LOG_LEVEL_DEBUG</a>) { \</div>
 <div class="line">                    debug_print(format, ##__VA_ARGS__); \</div>
 <div class="line">                } } <span class="keywordflow">while</span> (0)</div>
-<div class="ttc" id="acore_2utils_2util_8h_html_a0b87e0d3bf5853bcbb0b66a7c48fdc05"><div class="ttname"><a href="core_2utils_2util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a></div><div class="ttdeci">#define LOG_LEVEL</div><div class="ttdef"><b>Definition:</b> util.h:77</div></div>
-<div class="ttc" id="acore_2utils_2util_8h_html_a130224df8c6bf22a688e3cb74a45689a"><div class="ttname"><a href="core_2utils_2util_8h.html#a130224df8c6bf22a688e3cb74a45689a">LOG_LEVEL_DEBUG</a></div><div class="ttdeci">#define LOG_LEVEL_DEBUG</div><div class="ttdef"><b>Definition:</b> util.h:72</div></div>
+<div class="ttc" id="acore_2utils_2util_8h_html_a0b87e0d3bf5853bcbb0b66a7c48fdc05"><div class="ttname"><a href="core_2utils_2util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a></div><div class="ttdeci">#define LOG_LEVEL</div><div class="ttdef"><b>Definition:</b> util.h:87</div></div>
+<div class="ttc" id="acore_2utils_2util_8h_html_a130224df8c6bf22a688e3cb74a45689a"><div class="ttname"><a href="core_2utils_2util_8h.html#a130224df8c6bf22a688e3cb74a45689a">LOG_LEVEL_DEBUG</a></div><div class="ttdeci">#define LOG_LEVEL_DEBUG</div><div class="ttdef"><b>Definition:</b> util.h:82</div></div>
 </div><!-- fragment --><p >A macro used to print useful debug information. It can be enabled by setting the target property 'logging' to 'DEBUG' or by defining LOG_LEVEL to 2 in the top-level preamble. The input to this macro is exactly like printf: (format, ...). "DEBUG: " is prepended to the beginning of the message and a newline is appended to the end of the message.</p>
 <dl class="section note"><dt>Note</dt><dd>This macro is non-empty even if LOG_LEVEL is not defined in user-code. This is to ensure that the compiler will still parse the predicate inside (...) to prevent LF_PRINT_DEBUG statements to fall out of sync with the rest of the code. This should have a negligible impact on performance if compiler optimization (e.g., -O2 for gcc) is used as long as the arguments passed to it do not themselves incur significant overhead to evaluate.</dd></dl>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000014">Deprecated:</a></b></dt><dd></dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000008">Deprecated:</a></b></dt><dd></dd></dl>
 
 </div>
 </div>
@@ -176,10 +177,10 @@ DESCRIPTION</h1>
 <b>Value:</b><div class="fragment"><div class="line">            <span class="keywordflow">do</span> { <span class="keywordflow">if</span>(<a class="code hl_define" href="core_2utils_2util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a> &gt;= <a class="code hl_define" href="core_2utils_2util_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd">LOG_LEVEL_LOG</a>) { \</div>
 <div class="line">                    log_print(format, ##__VA_ARGS__); \</div>
 <div class="line">                } } <span class="keywordflow">while</span> (0)</div>
-<div class="ttc" id="acore_2utils_2util_8h_html_a8b58cabecd61bfd1b706be9cb992e0bd"><div class="ttname"><a href="core_2utils_2util_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd">LOG_LEVEL_LOG</a></div><div class="ttdeci">#define LOG_LEVEL_LOG</div><div class="ttdef"><b>Definition:</b> util.h:71</div></div>
+<div class="ttc" id="acore_2utils_2util_8h_html_a8b58cabecd61bfd1b706be9cb992e0bd"><div class="ttname"><a href="core_2utils_2util_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd">LOG_LEVEL_LOG</a></div><div class="ttdeci">#define LOG_LEVEL_LOG</div><div class="ttdef"><b>Definition:</b> util.h:81</div></div>
 </div><!-- fragment --><p >A macro used to print useful logging information. It can be enabled by setting the target property 'logging' to 'LOG' or by defining LOG_LEVEL to LOG_LEVEL_LOG or LOG_LEVEL_DEBUG in the top-level preamble. The input to this macro is exactly like printf: (format, ...). "LOG: " is prepended to the beginning of the message and a newline is appended to the end of the message.</p>
 <dl class="section note"><dt>Note</dt><dd>This macro is non-empty even if LOG_LEVEL is not defined in user-code. This is to ensure that the compiler will still parse the predicate inside (...) to prevent LF_PRINT_LOG statements to fall out of sync with the rest of the code. This should have a negligible impact on performance if compiler optimization (e.g., -O2 for gcc) is used as long as the arguments passed to it do not themselves incur significant overhead to evaluate.</dd></dl>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000015">Deprecated:</a></b></dt><dd></dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000009">Deprecated:</a></b></dt><dd></dd></dl>
 
 </div>
 </div>
@@ -199,12 +200,12 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000016">Deprecated:</a></b></dt><dd>version of "lf_get_stp_offset" </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000010">Deprecated:</a></b></dt><dd>version of "lf_get_stp_offset" </dd></dl>
 
 </div>
 </div>
-<a id="ada36eab57717d2fc256bb2009bfc7a15" name="ada36eab57717d2fc256bb2009bfc7a15"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ada36eab57717d2fc256bb2009bfc7a15">&#9670;&nbsp;</a></span>DEPRECATED() <span class="overload">[2/5]</span></h2>
+<a id="ad474b7cd6e46a890abe4d42b039e3fb4" name="ad474b7cd6e46a890abe4d42b039e3fb4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad474b7cd6e46a890abe4d42b039e3fb4">&#9670;&nbsp;</a></span>DEPRECATED() <span class="overload">[2/5]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -213,17 +214,17 @@ DESCRIPTION</h1>
           <td class="memname">DEPRECATED </td>
           <td>(</td>
           <td class="paramtype">void &#160;</td>
-          <td class="paramname"><em>info_print</em>const char *format,...</td><td>)</td>
+          <td class="paramname"><em>info_print</em>const char *format,...) ATTRIBUTE_FORMAT_PRINTF(1, 2</td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000007">Deprecated:</a></b></dt><dd>version of "lf_print" </dd></dl>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000008">Deprecated:</a></b></dt><dd>version of "lf_print_log" </dd></dl>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000009">Deprecated:</a></b></dt><dd>version of "lf_print_debug" </dd></dl>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000010">Deprecated:</a></b></dt><dd>version of "lf_print_error" </dd></dl>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000011">Deprecated:</a></b></dt><dd>version of "lf_print_warning" </dd></dl>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000012">Deprecated:</a></b></dt><dd>version of "lf_print_error_and_exit" </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>version of "lf_print" </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000002">Deprecated:</a></b></dt><dd>version of "lf_print_log" </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000003">Deprecated:</a></b></dt><dd>version of "lf_print_debug" </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000004">Deprecated:</a></b></dt><dd>version of "lf_print_error" </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000005">Deprecated:</a></b></dt><dd>version of "lf_print_warning" </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000006">Deprecated:</a></b></dt><dd>version of "lf_print_error_and_exit" </dd></dl>
 
 </div>
 </div>
@@ -242,8 +243,8 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000018">Deprecated:</a></b></dt><dd>version of "lf_print_snapshot" </dd></dl>
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000019">Deprecated:</a></b></dt><dd>version of "lf_request_stop" </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000012">Deprecated:</a></b></dt><dd>version of "lf_print_snapshot" </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000013">Deprecated:</a></b></dt><dd>version of "lf_request_stop" </dd></dl>
 
 </div>
 </div>
@@ -262,7 +263,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000013">Deprecated:</a></b></dt><dd>version of "lf_register_print_function" </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000007">Deprecated:</a></b></dt><dd>version of "lf_register_print_function" </dd></dl>
 
 </div>
 </div>
@@ -281,7 +282,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000017">Deprecated:</a></b></dt><dd>version of "lf_set_stp_offset" </dd></dl>
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000011">Deprecated:</a></b></dt><dd>version of "lf_set_stp_offset" </dd></dl>
 
 </div>
 </div>
