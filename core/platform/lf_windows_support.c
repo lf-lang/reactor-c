@@ -39,6 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 #include "lf_windows_support.h"
 #include "../platform.h"
+#include "../utils/util.h"
 #include <time.h>
 
 /**
@@ -319,7 +320,7 @@ int lf_nanosleep(instant_t requested_time) {
     * A negative number indicates relative time to wait.
     * The requested relative time must be in number of 100 nanoseconds.
     */
-    li.QuadPart = -1 * (requested_time / 100.0);
+    li.QuadPart = -1 * (requested_time / 100);
     if(!SetWaitableTimer(timer, &li, 0, NULL, NULL, FALSE)){
         CloseHandle(timer);
         return FALSE;
