@@ -71,7 +71,7 @@ add_subdirectory(utils)
 add_subdirectory(modal_models)
 if(MULTITHREADED)
     message(STATUS "Including sources for threaded runtime with \
-${NUMBER_OF_WORKERS} worker(s) with scheduler={SCHEDULER} and \
+${NUMBER_OF_WORKERS} worker(s) with scheduler=${SCHEDULER} and \
 tracing=${LINGUA_FRANCA_TRACE}.")
     add_subdirectory(threaded)
 else()
