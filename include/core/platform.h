@@ -64,7 +64,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error "Platform not supported"
 #endif
 
-#ifdef NUMBER_OF_WORKERS
+#if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
 #define LF_TIMEOUT _LF_TIMEOUT
 
 typedef _lf_mutex_t lf_mutex_t;          // Type to hold handle to a mutex
