@@ -121,9 +121,6 @@ struct object_description_t {
     char* description; // A NULL terminated string.
 };
 
-extern object_description_t _lf_trace_object_descriptions[];
-extern int _lf_trace_object_descriptions_size;
-
 /**
  * Register a trace object.
  * @param pointer1 Pointer that identifies the object, typically to a reactor self struct.
