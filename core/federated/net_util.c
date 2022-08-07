@@ -110,8 +110,8 @@ ssize_t read_from_socket_errexit(
             if (format != NULL) {
                 shutdown(socket, SHUT_RDWR);
                 close(socket);
-                lf_print_error("Read %ld bytes, but expected %zu.",
-                		more + bytes_read, num_bytes);
+                lf_print_error("Read %ld bytes, but expected %zu. errno=%d",
+                        more + bytes_read, num_bytes, errno);
                 lf_print_error_and_exit(format, args);
             } else if (more == 0) {
                 // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
