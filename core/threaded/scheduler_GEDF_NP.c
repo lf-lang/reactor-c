@@ -48,9 +48,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler_sync_tag_advance.h"
 #include "scheduler.h"
 #include "semaphore.h"
-#ifdef LINGUA_FRANCA_TRACE
 #include "trace.h"
-#endif
 #include "util.h"
 
 /////////////////// External Variables /////////////////////////
@@ -295,11 +293,11 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
         size_t current_level =
             _lf_sched_instance->_lf_sched_next_reaction_level - 1;
         LF_PRINT_DEBUG(
-            "Scheduler: Worker %zu trying to lock the mutex for level %zu.",
+            "Scheduler: Worker %d trying to lock the mutex for level %zu.",
             worker_number, current_level);
         lf_mutex_lock(
             &_lf_sched_instance->_lf_sched_array_of_mutexes[current_level]);
-        LF_PRINT_DEBUG("Scheduler: Worker %zu locked the mutex for level %d.",
+        LF_PRINT_DEBUG("Scheduler: Worker %d locked the mutex for level %d.",
                     worker_number, current_level);
         reaction_t* reaction_to_return = (reaction_t*)pqueue_pop(
             (pqueue_t*)_lf_sched_instance->_lf_sched_executing_reactions);
@@ -311,16 +309,12 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
             return reaction_to_return;
         }
 
-        LF_PRINT_DEBUG("Worker %zu is out of ready reactions.", worker_number);
+        LF_PRINT_DEBUG("Worker %d is out of ready reactions.", worker_number);
 
         // Ask the scheduler for more work and wait
-#ifdef LINGUA_FRANCA_TRACE
         tracepoint_worker_wait_starts(worker_number);
-#endif
         _lf_sched_wait_for_work(worker_number);
-#ifdef LINGUA_FRANCA_TRACE
         tracepoint_worker_wait_ends(worker_number);
-#endif
     }
 
     // It's time for the worker thread to stop and exit.

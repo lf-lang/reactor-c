@@ -35,9 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "scheduler_sync_tag_advance.h"
-#ifdef LINGUA_FRANCA_TRACE
 #include "trace.h"
-#endif
 #include "util.h"
 
 /////////////////// External Variables /////////////////////////
@@ -94,13 +92,9 @@ bool _lf_sched_advance_tag_locked() {
     // Advance time.
     // _lf_next_locked() may block waiting for real time to pass or events to appear.
     // to appear on the event queue. Note that we already
-#ifdef LINGUA_FRANCA_TRACE
     tracepoint_scheduler_advancing_time_starts();
-#endif
     _lf_next_locked();
-#ifdef LINGUA_FRANCA_TRACE
     tracepoint_scheduler_advancing_time_ends();
-#endif
 
     LF_PRINT_DEBUG("Scheduler: Done waiting for _lf_next_locked().");
     return false;
