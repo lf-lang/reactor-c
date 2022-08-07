@@ -50,17 +50,18 @@ define(TARGET_FILES_DIRECTORY)
 message(STATUS "")
 
 if (DEFINED NUMBER_OF_WORKERS OR DEFINED LINGUA_FRANCA_TRACE)
-  set(MULTITHREADED TRUE)
-  if (NOT DEFINED NUMBER_OF_WORKERS)
-      add_compile_definitions(NUMBER_OF_WORKERS=0)
-  endif()
+    set(MULTITHREADED TRUE)
+    if (NOT DEFINED NUMBER_OF_WORKERS)
+        add_compile_definitions(NUMBER_OF_WORKERS=0)
+    endif()
 endif()
 
 # List sources in this directory.
 list(APPEND SINGLE_THREADED_SOURCES reactor.c)
 list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c)
 if (DEFINED LINGUA_FRANCA_TRACE)
-  list(APPEND GENERAL_SOURCES trace.c)
+    message(STATUS "Including sources specific to tracing.")
+    list(APPEND GENERAL_SOURCES trace.c)
 endif()
 
 
@@ -69,7 +70,9 @@ add_subdirectory(platform)
 add_subdirectory(utils)
 add_subdirectory(modal_models)
 if(MULTITHREADED)
-    message(STATUS "Including sources for threaded runtime with ${NUMBER_OF_WORKERS} worker(s).")
+    message(STATUS "Including sources for threaded runtime with \
+${NUMBER_OF_WORKERS} worker(s) with scheduler={SCHEDULER} and \
+tracing=${LINGUA_FRANCA_TRACE}.")
     add_subdirectory(threaded)
 else()
     message(STATUS "Including sources for unthreaded runtime.")
