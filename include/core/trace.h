@@ -243,6 +243,7 @@ void stop_trace(void);
 #else
 
 // empty definition in case we compile without tracing
+#define _lf_register_trace_event(...)
 #define register_user_trace_event(...)
 #define tracepoint(...)
 #define tracepoint_reaction_starts(...)
