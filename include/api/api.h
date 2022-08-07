@@ -38,6 +38,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_types.h"
 #include "tag.h"
 
+/**
+ * Define a macro to suppress warnings about unused variables.
+ * Apparently, it is sufficient to just cast to void.
+ */
+#define SUPPRESS_UNUSED_WARNING(x) (void)(x)
+
 //////////////////////////////////////////////////////////////
 /////////////  Schedule Functions
 
