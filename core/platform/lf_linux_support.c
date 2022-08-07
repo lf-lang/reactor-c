@@ -32,7 +32,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_linux_support.h"
 #include "platform.h"
 
-#ifdef NUMBER_OF_WORKERS
+#if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
 #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
 #include "lf_POSIX_threads_support.h"  // (Not C++11 or later) or no threads support
 #else

@@ -57,7 +57,7 @@ double _lf_frequency_to_ns = 1.0;
 
 #define BILLION 1000000000
 
-#ifdef NUMBER_OF_WORKERS
+#if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
 /**
  * @brief Get the number of cores on the host machine.
  */

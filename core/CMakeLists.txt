@@ -49,13 +49,6 @@ define(SCHEDULER)
 define(TARGET_FILES_DIRECTORY)
 message(STATUS "")
 
-if (DEFINED NUMBER_OF_WORKERS OR DEFINED LINGUA_FRANCA_TRACE)
-    set(MULTITHREADED TRUE)
-    if (NOT DEFINED NUMBER_OF_WORKERS)
-        add_compile_definitions(NUMBER_OF_WORKERS=0)
-    endif()
-endif()
-
 # List sources in this directory.
 list(APPEND SINGLE_THREADED_SOURCES reactor.c)
 list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c)
@@ -69,7 +62,7 @@ endif()
 add_subdirectory(platform)
 add_subdirectory(utils)
 add_subdirectory(modal_models)
-if(MULTITHREADED)
+if(DEFINED NUMBER_OF_WORKERS)
     message(STATUS "Including sources for threaded runtime with \
 ${NUMBER_OF_WORKERS} worker(s) with scheduler=${SCHEDULER} and \
 tracing=${LINGUA_FRANCA_TRACE}.")
@@ -94,7 +87,7 @@ target_include_directories(core PUBLIC ../include/core/modal_models)
 target_include_directories(core PUBLIC ../include/core/threaded)
 target_include_directories(core PUBLIC ../include/core/utils)
 
-if(MULTITHREADED)
+if(DEFINED NUMBER_OF_WORKERS OR DEFINED LINGUA_FRANCA_TRACE)
     find_package(Threads REQUIRED)
     target_link_libraries(core Threads::Threads)
 endif()
