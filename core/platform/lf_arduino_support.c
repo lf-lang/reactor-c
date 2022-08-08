@@ -36,7 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Pause execution for a number of microseconds.
  *
- * This function works very accurately in the range 3 microseconds and up to 16383.
+ * This function works very accurately in the range from 3 to 16383 microseconds.
  * We cannot assure that delayMicroseconds will perform precisely for smaller delay-times.
  * Larger delay times may actually delay for an extremely brief time.
  *
