@@ -90,6 +90,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 #endif
 
+#define PRINTF_TIME "%" PRIu32
+#define PRINTF_MICROSTEP "%" PRIu32
+#define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
+
 /**
  * Time instant. Both physical and logical times are represented
  * using this typedef.
