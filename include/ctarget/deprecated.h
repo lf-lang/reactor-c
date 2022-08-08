@@ -41,6 +41,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef CTARGET_UTIL
 #define CTARGET_UTIL
 #include "../core/reactor.h"
+#include "../core/utils/util.h"
 
 //////////////////////////////////////////////////////////////
 /////////////  Util Functions
@@ -48,32 +49,32 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * @deprecated version of "lf_print"
  */
-DEPRECATED(void info_print(const char* format, ...));
+DEPRECATED(void info_print(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2));
 
 /**
  * @deprecated version of "lf_print_log"
  */
-DEPRECATED(void log_print(const char* format, ...));
+DEPRECATED(void log_print(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2));
 
 /**
  * @deprecated version of "lf_print_debug"
  */
-DEPRECATED(void debug_print(const char* format, ...));
+DEPRECATED(void debug_print(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2));
 
 /**
  * @deprecated version of "lf_print_error"
  */
-DEPRECATED(void error_print(const char* format, ...));
+DEPRECATED(void error_print(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2));
 
 /**
  * @deprecated version of "lf_print_warning"
  */
-DEPRECATED(void warning_print(const char* format, ...));
+DEPRECATED(void warning_print(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2));
 
 /**
  * @deprecated version of "lf_print_error_and_exit"
  */
-DEPRECATED(void error_print_and_exit(const char* format, ...));
+DEPRECATED(void error_print_and_exit(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2));
 
 
 /**

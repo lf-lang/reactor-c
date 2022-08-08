@@ -44,7 +44,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * For definition of up-to-date util functions, please refer to util.c in
  * the core files folder.
  */
-#include "../include/ctarget/util.h"
+#include "../include/ctarget/deprecated.h"
 #include <stdarg.h>   // Defines va_list
 #include "stdlib.h"
 

@@ -116,7 +116,7 @@ void _lf_set_present(lf_port_base_t* port) {
     if(port->sparse_record
     		&& port->destination_channel >= 0
 			&& port->sparse_record->size >= 0) {
-    	int next = port->sparse_record->size++;
+    	size_t next = port->sparse_record->size++;
     	if (next >= port->sparse_record->capacity) {
     		// Buffer is full. Have to revert to the classic iteration.
     		port->sparse_record->size = -1;
@@ -139,11 +139,11 @@ void _lf_set_present(lf_port_base_t* port) {
 int wait_until(instant_t logical_time_ns) {
     int return_value = 0;
     if (!fast) {
-        LF_PRINT_LOG("Waiting for elapsed logical time %lld.", logical_time_ns - start_time);
+        LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", logical_time_ns - start_time);
         interval_t ns_to_wait = logical_time_ns - lf_time_physical();
     
         if (ns_to_wait < MIN_WAIT_TIME) {
-            LF_PRINT_DEBUG("Wait time %lld is less than MIN_WAIT_TIME %lld. Skipping wait.",
+            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_WAIT_TIME %lld. Skipping wait.",
                 ns_to_wait, MIN_WAIT_TIME);
             return return_value;
         }
@@ -200,7 +200,7 @@ int _lf_do_step(void) {
         reaction_t* reaction = (reaction_t*)pqueue_pop(reaction_q);
         reaction->status = running;
         
-        LF_PRINT_LOG("Invoking reaction %s at elapsed logical tag (%lld, %d).",
+        LF_PRINT_LOG("Invoking reaction %s at elapsed logical tag " PRINTF_TAG ".",
         		reaction->name,
                 current_tag.time - start_time, current_tag.microstep);
 
@@ -313,7 +313,7 @@ int next(void) {
         next_tag = stop_tag;
     }
 
-    LF_PRINT_LOG("Next event (elapsed) time is %lld.", next_tag.time - start_time);
+    LF_PRINT_LOG("Next event (elapsed) time is " PRINTF_TIME ".", next_tag.time - start_time);
     // Wait until physical time >= event.time.
     // The wait_until function will advance current_tag.time.
     if (wait_until(next_tag.time) != 0) {
