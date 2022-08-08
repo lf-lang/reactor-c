@@ -1,6 +1,3 @@
-// Arduino does not support threading
-// Assuming single thread; no mutex
-
 /* Arduino Platform API support for the C target of Lingua Franca. */
 
 /*************
