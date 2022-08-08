@@ -103,16 +103,6 @@ typedef enum {absent = false, present = true, unknown} port_status_t;
 typedef enum {inactive = 0, queued, running} reaction_status_t;
 
 /**
- * The flag OK_TO_FREE is used to indicate whether
- * the void* in toke_t should be freed or not.
- */
-#ifdef _LF_GARBAGE_COLLECTED
-#define OK_TO_FREE token_only
-#else
-#define OK_TO_FREE token_and_value
-#endif
-
-/**
  * Handles for scheduled triggers. These handles are returned
  * by lf_schedule() functions. The intent is that the handle can be
  * used to cancel a future scheduled event, but this is not

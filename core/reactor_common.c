@@ -53,6 +53,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vector.h"
 
 
+/**
+ * The flag OK_TO_FREE is used to indicate whether
+ * the void* in token_t should be freed or not.
+ */
+#ifdef _LF_GARBAGE_COLLECTED
+#define OK_TO_FREE token_only
+#else
+#define OK_TO_FREE token_and_value
+#endif
+
+
 ////////////////////////////////////////////////////////////
 //// Global variables :(
 
