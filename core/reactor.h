@@ -512,7 +512,7 @@ struct reaction_t {
     void* self;    // Pointer to a struct with the reactor's state. INSTANCE.
     int number;    // The number of the reaction in the reactor (0 is the first reaction).
     index_t index; // Inverse priority determined by dependency analysis. INSTANCE.
-    #ifdef BIT_32 //Need this wrapper to allow 32 bit systems (i.e. Arduino's AVR Build System) that lack 64 bit support to compile.
+    #ifdef BIT_32 // Use a reduced width for chain IDs on 32-bit systems.
     unsigned long chain_id; // Binary encoding of the branches that this reaction has upstream in the dependency graph. INSTANCE.
     #else
     unsigned long long chain_id; // Binary encoding of the branches that this reaction has upstream in the dependency graph. INSTANCE.
