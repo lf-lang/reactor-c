@@ -114,6 +114,11 @@ typedef struct {
     void* _lf_sched_transfer_reactions;
 
     /**
+     * @brief Hold currently executing reaction in the order of let value.
+     */
+    void* _lf_sched_execution_times;
+
+    /**
      * @brief Number of workers that this scheduler is managing.
      *
      */

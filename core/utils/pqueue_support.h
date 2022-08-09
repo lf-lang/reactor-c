@@ -44,6 +44,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // ********** Priority Queue Support Start
 
 /**
+ * Return whether the first and second argument are given in correct order.
+ */
+static int in_correct_order(pqueue_pri_t thiz, pqueue_pri_t that) {
+    return (thiz < that);
+}
+
+/**
  * Return whether the first and second argument are given in reverse order.
  */
 static int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that) {
@@ -87,6 +94,13 @@ static pqueue_pri_t get_event_time(void *a) {
  */
 static pqueue_pri_t get_reaction_index(void *a) {
     return ((reaction_t*) a)->index;
+}
+
+/**
+ * Report a priority equal to the timestamp of the end of the given reaction.
+ */
+static pqueue_pri_t get_reaction_end_timestamp(void *a) {
+    return ((reaction_t*) a)->end_timestamp;
 }
 
 /**
