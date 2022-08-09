@@ -263,7 +263,7 @@ int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2
     // Extract the payload
     instant_t t1 = extract_int64(&(buffer[1]));
 
-    LF_PRINT_DEBUG("Received T1 message with time payload %lld from RTI at local time %lld.",
+    LF_PRINT_DEBUG("Received T1 message with time payload " PRINTF_TIME " from RTI at local time " PRINTF_TIME ".",
                 t1, t2);
 
     // Store snapshots of remote (master) and local physical clock
@@ -314,8 +314,9 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
     // Extract the payload
     instant_t t4 = extract_int64(&(buffer[1]));
 
-    LF_PRINT_DEBUG("Clock sync: Received T4 message with time payload %lld from RTI at local time %lld. "
-            "(difference %lld)",
+    LF_PRINT_DEBUG("Clock sync: Received T4 message with time payload " PRINTF_TIME
+    		" from RTI at local time " PRINTF_TIME ". "
+            "(difference " PRINTF_TIME ")",
             t4, r4, r4 - t4);
 
     // Calculate the round trip delay from T1 to T4:
@@ -334,7 +335,8 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
             network_round_trip_delay/2
             - (_lf_rti_socket_stat.local_physical_clock_snapshot_T2
             - _lf_rti_socket_stat.remote_physical_clock_snapshot_T1);
-    LF_PRINT_DEBUG("Clock sync: Estimated clock error: %lld.", estimated_clock_error);
+    LF_PRINT_DEBUG("Clock sync: Estimated clock error: " PRINTF_TIME ".",
+    		estimated_clock_error);
 
     // The adjustment to the clock offset (to be calculated)
     interval_t adjustment = 0;
@@ -362,7 +364,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         interval_t coded_probe_distance = llabs((r5 - r4) - (t5 - t4));
 
         LF_PRINT_DEBUG("Clock sync: Received code probe that reveals a time discrepancy between "
-                "messages of %lld.",
+                "messages of " PRINTF_TIME ".",
                 coded_probe_distance);
 
         // Check against the guard band.
@@ -371,7 +373,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
             LF_PRINT_LOG("Clock sync: Skipping the current clock synchronization cycle "
                     "due to impure coded probes.");
             LF_PRINT_LOG("Clock sync: Coded probe packet stats: "
-                    "Distance: %lld. r5 - r4 = %lld. t5 - t4 = %lld.",
+                    "Distance: " PRINTF_TIME ". r5 - r4 = " PRINTF_TIME ". t5 - t4 = " PRINTF_TIME ".",
                     coded_probe_distance,
                     r5 - r4,
                     t5 - t4);
@@ -402,7 +404,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
 #endif
     
     // FIXME: Enable alternative regression mechanism here.
-    LF_PRINT_DEBUG("Clock sync: Adjusting clock offset running average by %lld.",
+    LF_PRINT_DEBUG("Clock sync: Adjusting clock offset running average by " PRINTF_TIME ".",
             adjustment/_LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL);
     // Calculate the running average
     _lf_rti_socket_stat.history += adjustment/_LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL;
@@ -416,7 +418,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         // Issue a warning if standard deviation is high in data
         if (stats.standard_deviation >= CLOCK_SYNC_GUARD_BAND) {
             // Reset the stats
-            LF_PRINT_LOG("Clock sync: Large standard deviation detected in network delays (%lld) for the current period."
+            LF_PRINT_LOG("Clock sync: Large standard deviation detected in network delays (" PRINTF_TIME ") for the current period."
                         " Clock synchronization offset might not be accurate.",
                         stats.standard_deviation);
             reset_socket_stat(&_lf_rti_socket_stat);
@@ -430,12 +432,12 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         _lf_time_physical_clock_offset += _lf_rti_socket_stat.history;
         // @note AVG and SD will be zero if collect-stats is set to false
         LF_PRINT_LOG("Clock sync:"
-                    " New offset: %lld."
-                    " Round trip delay to RTI (now): %lld."
-                    " (AVG): %lld."
-                    " (SD): %lld."
-                    " Local round trip delay: %lld."
-                    " Test offset: %lld.",
+                    " New offset: " PRINTF_TIME "."
+                    " Round trip delay to RTI (now): " PRINTF_TIME "."
+                    " (AVG): " PRINTF_TIME "."
+                    " (SD): " PRINTF_TIME "."
+                    " Local round trip delay: " PRINTF_TIME "."
+                    " Test offset: " PRINTF_TIME ".",
                     _lf_time_physical_clock_offset,
                     network_round_trip_delay,
                     stats.average,
