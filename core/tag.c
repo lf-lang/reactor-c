@@ -308,7 +308,8 @@ void lf_set_physical_clock_offset(interval_t offset) {
  * where each `x` is a string of numbers with commas inserted if needed
  * every three numbers and `unit` is nanoseconds, microseconds, or
  * milliseconds.
- * @param buffer The buffer into which to write the string.
+ * @param buffer The buffer into which to write the string, having a length of
+ * at least 58 characters.
  * @param time The time to write.
  * @return The number of characters written (not counting the null terminator).
  */
@@ -320,60 +321,60 @@ size_t lf_readable_time(char* buffer, instant_t time) {
         size_t printed = lf_comma_separated_time(buffer, time / WEEKS(1));
         time = time % WEEKS(1);
         buffer += printed;
-        sprintf(buffer, " weeks");
+        snprintf(buffer, 7, " weeks");
         buffer += 6;
     }
     if (time > DAYS(1)) {
         if (lead == true) {
-            sprintf(buffer, ", ");
+            snprintf(buffer, 3, ", ");
             buffer += 2;
         }
         lead = true;
         size_t printed = lf_comma_separated_time(buffer, time / DAYS(1));
         time = time % DAYS(1);
         buffer += printed;
-        sprintf(buffer, " days");
+        snprintf(buffer, 6, " days");
         buffer += 5;
     }
     if (time > HOURS(1)) {
         if (lead == true) {
-            sprintf(buffer, ", ");
+            snprintf(buffer, 3, ", ");
             buffer += 2;
         }
         lead = true;
         size_t printed = lf_comma_separated_time(buffer, time / HOURS(1));
         time = time % HOURS(1);
         buffer += printed;
-        sprintf(buffer, " hours");
+        snprintf(buffer, 7, " hours");
         buffer += 6;
     }
     if (time > MINUTES(1)) {
         if (lead == true) {
-            sprintf(buffer, ", ");
+            snprintf(buffer, 3, ", ");
             buffer += 2;
         }
         lead = true;
         size_t printed = lf_comma_separated_time(buffer, time / MINUTES(1));
         time = time % MINUTES(1);
         buffer += printed;
-        sprintf(buffer, " minutes");
+        snprintf(buffer, 9, " minutes");
         buffer += 8;
     }
     if (time > SECONDS(1)) {
         if (lead == true) {
-            sprintf(buffer, ", ");
+            snprintf(buffer, 3, ", ");
             buffer += 2;
         }
         lead = true;
         size_t printed = lf_comma_separated_time(buffer, time / SECONDS(1));
         time = time % SECONDS(1);
         buffer += printed;
-        sprintf(buffer, " seconds");
+        snprintf(buffer, 9, " seconds");
         buffer += 8;
     }
     if (time > (instant_t)0) {
         if (lead == true) {
-            sprintf(buffer, ", ");
+            snprintf(buffer, 3, ", ");
             buffer += 2;
         }
         const char* units = "nanoseconds";
@@ -386,10 +387,10 @@ size_t lf_readable_time(char* buffer, instant_t time) {
         }
         size_t printed = lf_comma_separated_time(buffer, time);
         buffer += printed;
-        sprintf(buffer, " %s", units);
+        snprintf(buffer, 14, " %s", units);
         buffer += strlen(units) + 1;
     } else {
-        sprintf(buffer, "0");
+        snprintf(buffer, 2, "0");
     }
     return (buffer - original_buffer);
 }
@@ -399,7 +400,8 @@ size_t lf_readable_time(char* buffer, instant_t time) {
  * into the specified buffer. Ideally, this would use the locale to
  * use periods if appropriate, but I haven't found a sufficiently portable
  * way to do that.
- * @param buffer A buffer long enough to contain a string like "-9,223,372,036,854,775,807".
+ * @param buffer A buffer long enough to contain a 27-character string like
+ * "-9,223,372,036,854,775,807".
  * @param time A time value.
  * @return The number of characters written into the buffer (not including
  *  the null terminator).
@@ -408,12 +410,12 @@ size_t lf_comma_separated_time(char* buffer, instant_t time) {
     size_t result = 0; // The number of characters printed.
     // If the number is zero, print it and return.
     if (time == (instant_t)0) {
-        sprintf(buffer, "0");
+        snprintf(buffer, 2, "0");
         return 1;
     }
     // If the number is negative, print a minus sign.
     if (time < (instant_t)0) {
-        sprintf(buffer, "-");
+        snprintf(buffer, 2, "-");
         buffer++;
         result++;
     }
@@ -426,7 +428,7 @@ size_t lf_comma_separated_time(char* buffer, instant_t time) {
     }
     // Highest order clause should not be filled with zeros.
     instant_t to_print = clauses[--count] % 1000;
-    sprintf(buffer, "%lld", (long long)to_print);
+    snprintf(buffer, 4, "%lld", (long long)to_print);
     if (to_print >= 100LL) {
         buffer += 3;
         result += 3;
@@ -439,7 +441,7 @@ size_t lf_comma_separated_time(char* buffer, instant_t time) {
     }
     while (count-- > 0) {
         to_print = clauses[count] % 1000LL;
-        sprintf(buffer, ",%03lld", (long long)to_print);
+        snprintf(buffer, 5, ",%03lld", (long long)to_print);
         buffer += 4;
         result += 4;
     }
