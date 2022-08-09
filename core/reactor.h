@@ -542,6 +542,9 @@ struct reaction_t {
                                 // the reaction number.
     reactor_mode_t* mode;       // The enclosing mode of this reaction (if exists).
                                 // If enclosed in multiple, this will point to the innermost mode.
+    interval_t min_delay;       // The minimum delay of this reaction.
+    instant_t  end_timestamp;   // The timestamp which indicates the end of this reaction.
+                                // It is updated when the reaction is triggered.
 };
 
 /** Typedef for event_t struct, used for storing activation records. */

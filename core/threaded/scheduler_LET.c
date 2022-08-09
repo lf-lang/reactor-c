@@ -1,4 +1,4 @@
-/* Global Earliest Deadline First (GEDF) non-preemptive scheduler with chain ID
+/* Logical Execution Time (LET) non-preemptive scheduler
 for the threaded runtime of the C target of Lingua Franca. */
 
 /*************
@@ -28,13 +28,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /**
- * Global Earliest Deadline First (GEDF) non-preemptive scheduler with chain ID
+ * Logical Execution Time (LET) non-preemptive scheduler
  * for the threaded runtime of the C target of Lingua Franca.
  *
- * @author{Soroush Bateni <soroush@utdallas.edu>}
- * @author{Edward A. Lee <eal@berkeley.edu>}
- * @author{Marten Lohstroh <marten@berkeley.edu>}
- */
+*/
 
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
@@ -191,21 +188,6 @@ bool _lf_is_blocked_by_executing_or_blocked_reaction(reaction_t* reaction) {
 }
 
 /**
- * @brief advance time if the picked reaction is LET reaction
- * 
- */
-void _lf_sched_time_advance_LET(reaction_t* reaction) {
-    pqueue_insert((pqueue_t*)_lf_sched_instance->_lf_sched_execution_times, (void *)reaction->let);
-    int min_delay = pqueue_peek((reaction_t*)pqueue_peek((pqueue_t*)_lf_sched_instance->_lf_sched_execution_times)))->let;
-    if (min_delay > 0) {
-        
-        _lf_sched_advance_tag_locked();
-        pqueue_substract((pqueue_t*)_lf_sched_instance->_lf_sched_execution_times, min_delay);
-    }
-}
-
-
-/**
  * @brief Distribute any reaction that is ready to execute to idle worker
  * thread(s).
  *
@@ -228,8 +210,9 @@ int _lf_sched_distribute_ready_reactions_locked() {
         // Set the reaction aside if it is blocked, either by another
         // blocked reaction or by a reaction that is currently executing.
         if (!_lf_is_blocked_by_executing_or_blocked_reaction(r)) {
+            // Update end_timestamp of the reaction
+            r->end_timestamp = ((tag_t) current_tag).time + r->min_delay;
             _lf_sched_distribute_ready_reaction_locked(r);
-            _lf_sched_time_advance_LET(r);
             reactions_distributed++;
             continue;
         }
@@ -428,13 +411,8 @@ void lf_sched_init(
         set_reaction_position, reaction_matches, print_reaction);
     // Create a queue on which to put reactions that are currently executing.
     _lf_sched_instance->_lf_sched_executing_reactions = pqueue_init(
-        queue_size, in_reverse_order, get_reaction_index, get_reaction_position,
-        set_reaction_position, reaction_matches, print_reaction);
-    _lf_sched_instance->_lf_sched_execution_times = pqueue_init(
         queue_size, in_correct_order, get_reaction_end_timestamp, get_reaction_position,
         set_reaction_position, reaction_matches, print_reaction);
-
-
 
     _lf_sched_threads_info = (_lf_sched_thread_info_t*)calloc(
         _lf_sched_instance->_lf_sched_number_of_workers,
@@ -486,7 +464,11 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
         lf_mutex_unlock(&_lf_sched_instance->_lf_sched_array_of_mutexes[0]);
 
         if (reaction_to_return != NULL) {
-            // Got a reaction
+            // Advance time
+            while(((tag_t)current_tag).time < reaction_to_return->end_timestamp) {
+                _lf_sched_advance_tag_locked();
+            }
+            // Return the reaction
             return reaction_to_return;
         }
 
