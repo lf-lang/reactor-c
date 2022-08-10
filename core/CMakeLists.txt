@@ -91,5 +91,5 @@ target_include_directories(core PUBLIC ../include/core/utils)
 
 if(DEFINED NUMBER_OF_WORKERS OR DEFINED LINGUA_FRANCA_TRACE)
     find_package(Threads REQUIRED)
-    target_link_libraries(core Threads::Threads)
+    target_link_libraries(core PUBLIC Threads::Threads)
 endif()
