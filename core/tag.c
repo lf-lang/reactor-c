@@ -428,7 +428,7 @@ size_t lf_comma_separated_time(char* buffer, instant_t time) {
     }
     // Highest order clause should not be filled with zeros.
     instant_t to_print = clauses[--count] % 1000;
-    snprintf(buffer, 4, "%lld", (long long)to_print);
+    snprintf(buffer, 5, "%lld", (long long)to_print);
     if (to_print >= 100LL) {
         buffer += 3;
         result += 3;
@@ -441,7 +441,7 @@ size_t lf_comma_separated_time(char* buffer, instant_t time) {
     }
     while (count-- > 0) {
         to_print = clauses[count] % 1000LL;
-        snprintf(buffer, 5, ",%03lld", (long long)to_print);
+        snprintf(buffer, 8, ",%03lld", (long long)to_print);
         buffer += 4;
         result += 4;
     }
