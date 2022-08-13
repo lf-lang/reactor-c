@@ -1987,20 +1987,20 @@ void initialize(void) {
 
     #ifdef BIT_32
         #ifdef MICROSECOND_TIME
-            LF_PRINT_DEBUG("Start time: %ldus", start_time);
+            LF_PRINT_DEBUG("Start time: " PRINTF_TIME "us", start_time);
         #else
-            LF_PRINT_DEBUG("Start time: %ldns", start_time);
+            LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
         #endif
     #else
         #ifdef MICROSECOND_TIME
-            LF_PRINT_DEBUG("Start time: %ldus", start_time);
+            LF_PRINT_DEBUG("Start time: " PRINTF_TIME "us", start_time);
         #else
-            LF_PRINT_DEBUG("Start time: %ldns", start_time);
+            LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
         #endif
     #endif
 
     #ifdef ARDUINO
-    printf("---- Start execution at time %ldus\n", physical_start_time);
+    printf("---- Start execution at time " PRINTF_TIME "us\n", physical_start_time);
     #else
     struct timespec physical_time_timespec = {physical_start_time / BILLION, physical_start_time % BILLION};
 
