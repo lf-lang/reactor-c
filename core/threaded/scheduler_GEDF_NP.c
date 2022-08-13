@@ -64,11 +64,11 @@ _lf_sched_instance_t* _lf_sched_instance;
  */
 static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
     size_t reaction_level = LEVEL(reaction->index);
-    LF_PRINT_DEBUG("Scheduler: Trying to lock the mutex for level %d.",
+    LF_PRINT_DEBUG("Scheduler: Trying to lock the mutex for level %zu.",
                 reaction_level);
     lf_mutex_lock(
         &_lf_sched_instance->_lf_sched_array_of_mutexes[reaction_level]);
-    LF_PRINT_DEBUG("Scheduler: Locked the mutex for level %d.", reaction_level);
+    LF_PRINT_DEBUG("Scheduler: Locked the mutex for level %zu.", reaction_level);
     pqueue_insert(((pqueue_t**)_lf_sched_instance
                        ->_lf_sched_triggered_reactions)[reaction_level],
                   (void*)reaction);
@@ -116,9 +116,9 @@ void _lf_sched_notify_workers() {
     size_t workers_to_awaken =
         LF_MIN(_lf_sched_instance->_lf_sched_number_of_idle_workers,
             pqueue_size((pqueue_t*)_lf_sched_instance->_lf_sched_executing_reactions));
-    LF_PRINT_DEBUG("Scheduler: Notifying %d workers.", workers_to_awaken);
+    LF_PRINT_DEBUG("Scheduler: Notifying %zu workers.", workers_to_awaken);
     _lf_sched_instance->_lf_sched_number_of_idle_workers -= workers_to_awaken;
-    LF_PRINT_DEBUG("Scheduler: New number of idle workers: %u.",
+    LF_PRINT_DEBUG("Scheduler: New number of idle workers: %zu.",
                 _lf_sched_instance->_lf_sched_number_of_idle_workers);
     if (workers_to_awaken > 1) {
         // Notify all the workers except the worker thread that has called this
@@ -192,7 +192,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
                             1) ==
         _lf_sched_instance->_lf_sched_number_of_workers) {
         // Last thread to go idle
-        LF_PRINT_DEBUG("Scheduler: Worker %d is the last idle thread.",
+        LF_PRINT_DEBUG("Scheduler: Worker %zu is the last idle thread.",
                     worker_number);
         // Call on the scheduler to distribute work or advance tag.
         _lf_sched_try_advance_tag_and_distribute();
@@ -200,11 +200,11 @@ void _lf_sched_wait_for_work(size_t worker_number) {
         // Not the last thread to become idle.
         // Wait for work to be released.
         LF_PRINT_DEBUG(
-            "Scheduler: Worker %d is trying to acquire the scheduling "
+            "Scheduler: Worker %zu is trying to acquire the scheduling "
             "semaphore.",
             worker_number);
         lf_semaphore_acquire(_lf_sched_instance->_lf_sched_semaphore);
-        LF_PRINT_DEBUG("Scheduler: Worker %d acquired the scheduling semaphore.",
+        LF_PRINT_DEBUG("Scheduler: Worker %zu acquired the scheduling semaphore.",
                     worker_number);
     }
 }
@@ -225,7 +225,7 @@ void lf_sched_init(
     size_t number_of_workers, 
     sched_params_t* params
 ) {
-    LF_PRINT_DEBUG("Scheduler: Initializing with %d workers", number_of_workers);
+    LF_PRINT_DEBUG("Scheduler: Initializing with %zu workers", number_of_workers);
     if(!init_sched_instance(&_lf_sched_instance, number_of_workers, params)) {
         // Already initialized
         return;
@@ -291,11 +291,11 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
         size_t current_level =
             _lf_sched_instance->_lf_sched_next_reaction_level - 1;
         LF_PRINT_DEBUG(
-            "Scheduler: Worker %d trying to lock the mutex for level %d.",
+            "Scheduler: Worker %zu trying to lock the mutex for level %zu.",
             worker_number, current_level);
         lf_mutex_lock(
             &_lf_sched_instance->_lf_sched_array_of_mutexes[current_level]);
-        LF_PRINT_DEBUG("Scheduler: Worker %d locked the mutex for level %d.",
+        LF_PRINT_DEBUG("Scheduler: Worker %zu locked the mutex for level %d.",
                     worker_number, current_level);
         reaction_t* reaction_to_return = (reaction_t*)pqueue_pop(
             (pqueue_t*)_lf_sched_instance->_lf_sched_executing_reactions);
@@ -307,7 +307,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
             return reaction_to_return;
         }
 
-        LF_PRINT_DEBUG("Worker %d is out of ready reactions.", worker_number);
+        LF_PRINT_DEBUG("Worker %zu is out of ready reactions.", worker_number);
 
         // Ask the scheduler for more work and wait
         tracepoint_worker_wait_starts(worker_number);

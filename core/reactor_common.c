@@ -1847,7 +1847,12 @@ int process_args(int argc, const char* argv[]) {
             }
             const char* time_spec = argv[i++];
             const char* units = argv[i++];
+
+            #ifdef BIT_32
+            duration = atol(time_spec);
+            #else
             duration = atoll(time_spec);
+            #endif
             // A parse error returns 0LL, so check to see whether that is what is meant.
             if (duration == 0LL && strncmp(time_spec, "0", 1) != 0) {
                 // Parse error.
@@ -1980,13 +1985,28 @@ void initialize(void) {
     current_tag.time = physical_start_time;
     start_time = current_tag.time;
 
-    LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
+    #ifdef BIT_32
+        #ifdef MICROSECOND_TIME
+            LF_PRINT_DEBUG("Start time: %ldus", start_time);
+        #else
+            LF_PRINT_DEBUG("Start time: %ldns", start_time);
+        #endif
+    #else
+        #ifdef MICROSECOND_TIME
+            LF_PRINT_DEBUG("Start time: %ldus", start_time);
+        #else
+            LF_PRINT_DEBUG("Start time: %ldns", start_time);
+        #endif
+    #endif
 
+    #ifdef ARDUINO
+    printf("---- Start execution at time %ldus\n", physical_start_time);
+    #else
     struct timespec physical_time_timespec = {physical_start_time / BILLION, physical_start_time % BILLION};
 
     printf("---- Start execution at time %s---- plus %ld nanoseconds.\n",
             ctime(&physical_time_timespec.tv_sec), physical_time_timespec.tv_nsec);
-    
+    #endif
     if (duration >= 0LL) {
         // A duration has been specified. Calculate the stop time.
         _lf_set_stop_tag((tag_t) {.time = current_tag.time + duration, .microstep = 0});

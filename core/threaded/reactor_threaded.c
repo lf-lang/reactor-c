@@ -446,7 +446,7 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
         // We should not wait if that adjusted time is already ahead
         // of logical time.
         if (ns_to_wait < MIN_WAIT_TIME) {
-            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_WAIT_TIME " PRINTF_TIME ". Skipping wait.",
+            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_WAIT_TIME %lld. Skipping wait.",
                 ns_to_wait, MIN_WAIT_TIME);
             return return_value;
         }
@@ -467,7 +467,8 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
             unadjusted_wait_until_time_ns = _lf_last_reported_unadjusted_physical_time_ns + ns_to_wait;
         }
         LF_PRINT_DEBUG("-------- Clock offset is " PRINTF_TIME " ns.", current_physical_time - _lf_last_reported_unadjusted_physical_time_ns);
-        LF_PRINT_DEBUG("-------- Waiting " PRINTF_TIME " ns for physical time to match logical time %llu.", ns_to_wait,
+        LF_PRINT_DEBUG("-------- Waiting " PRINTF_TIME " ns for physical time to match logical time " PRINTF_TIME ".",
+        		ns_to_wait,
                 logical_time_ns - start_time);
 
         // lf_cond_timedwait returns 0 if it is awakened before the timeout.
