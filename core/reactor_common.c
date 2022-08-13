@@ -1782,7 +1782,7 @@ lf_token_t* writable_copy(lf_token_t* token) {
 /**
  * Print a usage message.
  */
-void usage(int argc, char* argv[]) {
+void usage(int argc, const char* argv[]) {
     printf("\nCommand-line arguments: \n\n");
     printf("  -f, --fast [true | false]\n");
     printf("   Whether to wait for physical time to match logical time.\n\n");
@@ -1810,7 +1810,7 @@ void usage(int argc, char* argv[]) {
 // Some options given in the target directive are provided here as
 // default command-line options.
 int default_argc = 0;
-char** default_argv = NULL;
+const char** default_argv = NULL;
 
 
 /**
@@ -1818,17 +1818,17 @@ char** default_argv = NULL;
  * understood, then print a usage message and return 0. Otherwise, return 1.
  * @return 1 if the arguments processed successfully, 0 otherwise.
  */
-int process_args(int argc, char* argv[]) {
+int process_args(int argc, const char* argv[]) {
     int i = 1;
     while (i < argc) {
-        char* arg = argv[i++];
+        const char* arg = argv[i++];
         if (strcmp(arg, "-f") == 0 || strcmp(arg, "--fast") == 0) {
             if (argc < i + 1) {
                 lf_print_error("--fast needs a boolean.");
                 usage(argc, argv);
                 return 0;
             }
-            char* fast_spec = argv[i++];
+            const char* fast_spec = argv[i++];
             if (strcmp(fast_spec, "true") == 0) {
                 fast = true;
             } else if (strcmp(fast_spec, "false") == 0) {
@@ -1845,8 +1845,8 @@ int process_args(int argc, char* argv[]) {
                 usage(argc, argv);
                 return 0;
             }
-            char* time_spec = argv[i++];
-            char* units = argv[i++];
+            const char* time_spec = argv[i++];
+            const char* units = argv[i++];
             duration = atoll(time_spec);
             // A parse error returns 0LL, so check to see whether that is what is meant.
             if (duration == 0LL && strncmp(time_spec, "0", 1) != 0) {
@@ -1883,7 +1883,7 @@ int process_args(int argc, char* argv[]) {
                 usage(argc, argv);
                 return 0;
             }
-            char* keep_spec = argv[i++];
+            const char* keep_spec = argv[i++];
             if (strcmp(keep_spec, "true") == 0) {
                 keepalive_specified = true;
             } else if (strcmp(keep_spec, "false") == 0) {
@@ -1897,7 +1897,7 @@ int process_args(int argc, char* argv[]) {
                 usage(argc, argv);
                 return 0;
             }
-            char* threads_spec = argv[i++];
+            const char* threads_spec = argv[i++];
             int num_workers = atoi(threads_spec);
             if (num_workers <= 0) {
                 lf_print_error("Invalid value for --workers: %s. Using 1.", threads_spec);
