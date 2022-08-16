@@ -62,6 +62,7 @@
 #include "utils/util.h"
 #include "tag.h"       // Time-related functions.
 #include "modal_models/modes.h" // Modal model support
+#include "port.h"
 
 // The following file is also included, but must be included
 // after its requirements are met, so the #include appears at
@@ -85,7 +86,7 @@
 // problems with if ... else statements that do not use braces around the
 // two branches.
 
-void _lf_set_present(bool* is_present_field);
+void _lf_set_present(lf_port_base_t* port);
 
 /**
  * Set the specified output (or input of a contained reactor)
@@ -106,7 +107,7 @@ do { \
     /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
     /* even if it is a literal */ \
     out->value = val; \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     if (out->token != NULL) { \
         /* The cast "*((void**) &out->value)" is a hack to make the code */ \
         /* compile with non-token types where val is not a pointer. */ \
@@ -139,7 +140,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_ARRAY(out, val, length) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
     token->ref_count = out->num_destinations; \
     out->token = token; \
@@ -148,7 +149,7 @@ do { \
 #else
 #define _LF_SET_ARRAY(out, val, length) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
     token->ref_count = out->num_destinations; \
     out->token = token; \
@@ -173,7 +174,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW(out) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
     out->value = token->value; \
     out->token = token; \
@@ -181,7 +182,7 @@ do { \
 #else
 #define _LF_SET_NEW(out) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
     out->value = static_cast<decltype(out->value)>(token->value); \
     out->token = token; \
@@ -204,7 +205,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
     out->value = token->value; \
     out->token = token; \
@@ -213,7 +214,7 @@ do { \
 #else
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
     out->value = static_cast<decltype(out->value)>(token->value); \
     out->token = token; \
@@ -229,9 +230,9 @@ do { \
  * after this is called.
  * @param out The output port (by name).
  */
-#define _LF_SET_PRESENT(out) \
+#define lf_set_present(out) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
 } while(0)
 
 /**
@@ -246,7 +247,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     out->value = newtoken->value; \
     out->token = newtoken; \
     newtoken->ref_count += out->num_destinations; \
@@ -255,7 +256,7 @@ do { \
 #else
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    _lf_set_present(&out->is_present); \
+    _lf_set_present((lf_port_base_t*)out); \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
     out->token = newtoken; \
     newtoken->ref_count += out->num_destinations; \
@@ -313,13 +314,13 @@ do { \
 #define LEVEL(index) (index & 0xffffLL)
 
 /** Utility for finding the maximum of two values. */
-#ifndef MAX
-#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
+#ifndef LF_MAX
+#define LF_MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 #endif
 
 /** Utility for finding the minimum of two values. */
-#ifndef MIN
-#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
+#ifndef LF_MIN
+#define LF_MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #endif
 
 /**
@@ -418,7 +419,7 @@ typedef int trigger_handle_t;
  * being consumed downstream, use type char*.
  */
 #ifndef string
-typedef char* string;
+typedef const char* string;
 #else
 #warning "string typedef has been previously given."
 #endif
@@ -511,7 +512,11 @@ struct reaction_t {
     void* self;    // Pointer to a struct with the reactor's state. INSTANCE.
     int number;    // The number of the reaction in the reactor (0 is the first reaction).
     index_t index; // Inverse priority determined by dependency analysis. INSTANCE.
+    #ifdef BIT_32 // Use a reduced width for chain IDs on 32-bit systems.
+    unsigned long chain_id; // Binary encoding of the branches that this reaction has upstream in the dependency graph. INSTANCE.
+    #else
     unsigned long long chain_id; // Binary encoding of the branches that this reaction has upstream in the dependency graph. INSTANCE.
+    #endif
     size_t pos;       // Current position in the priority queue. RUNTIME.
     reaction_t* last_enabling_reaction; // The last enabling reaction, or NULL if there is none. Used for optimization. INSTANCE.
     size_t num_outputs;  // Number of outputs that may possibly be produced by this function. COMMON.
@@ -537,7 +542,7 @@ struct reaction_t {
                                 // any output reactions. Default is false.
     size_t worker_affinity;     // The worker number of the thread that scheduled this reaction. Used
                                 // as a suggestion to the scheduler.
-    char* name;                 // If logging is set to LOG or higher, then this will
+    const char* name;           // If logging is set to LOG or higher, then this will
                                 // point to the full name of the reactor followed by
                                 // the reaction number.
     reactor_mode_t* mode;       // The enclosing mode of this reaction (if exists).

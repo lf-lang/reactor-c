@@ -43,10 +43,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../platform.h"
 #include "../utils/pqueue_support.h"
 #include "../utils/semaphore.h"
-#include "../utils/vector.c"
+#include "../utils/vector.h"
 #include "scheduler.h"
 #include "scheduler_instance.h"
 #include "scheduler_sync_tag_advance.c"
+#include <assert.h>
 
 #ifndef MAX_REACTION_LEVEL
 #define MAX_REACTION_LEVEL INITIAL_REACT_QUEUE_SIZE
@@ -242,10 +243,10 @@ int _lf_sched_distribute_ready_reactions_locked() {
  */
 void _lf_sched_notify_workers() {
     size_t workers_to_awaken =
-        MIN(_lf_sched_instance->_lf_sched_number_of_idle_workers,
+        LF_MIN(_lf_sched_instance->_lf_sched_number_of_idle_workers,
             pqueue_size(
                 (pqueue_t*)_lf_sched_instance->_lf_sched_executing_reactions));
-    LF_PRINT_DEBUG("Notifying %d workers.", workers_to_awaken);
+    LF_PRINT_DEBUG("Notifying %zu workers.", workers_to_awaken);
     lf_atomic_fetch_add(&_lf_sched_instance->_lf_sched_number_of_idle_workers,
                         -1 * workers_to_awaken);
     if (workers_to_awaken > 1) {
@@ -320,7 +321,7 @@ void _lf_sched_signal_stop() {
  */
 void _lf_sched_update_triggered_reactions(size_t worker_number) {
     lf_mutex_lock(&mutex);
-    LF_PRINT_DEBUG("Scheduler: Emptying the output reaction queue of Worker %d.",
+    LF_PRINT_DEBUG("Scheduler: Emptying the output reaction queue of Worker %zu.",
                 worker_number);
     pqueue_empty_into(
         (pqueue_t**)&_lf_sched_instance->_lf_sched_triggered_reactions,
@@ -349,7 +350,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
                             1) ==
         _lf_sched_instance->_lf_sched_number_of_workers) {
         // Last thread to go idle
-        LF_PRINT_DEBUG("Scheduler: Worker %d is the last idle thread.",
+        LF_PRINT_DEBUG("Scheduler: Worker %zu is the last idle thread.",
                     worker_number);
         // Call on the scheduler to distribute work or advance tag.
         if (_lf_sched_try_advance_tag_and_distribute()) {
@@ -379,7 +380,7 @@ void lf_sched_init(
     size_t number_of_workers, 
     sched_params_t* params
 ) {
-    LF_PRINT_DEBUG("Scheduler: Initializing with %d workers", number_of_workers);
+    LF_PRINT_DEBUG("Scheduler: Initializing with %zu workers", number_of_workers);
     if(!init_sched_instance(&_lf_sched_instance, number_of_workers, params)) {
         // Already initialized
         return;
@@ -395,7 +396,7 @@ void lf_sched_init(
             }
         }
     }
-    LF_PRINT_DEBUG("Scheduler: Adopting a queue size of %u.", queue_size);
+    LF_PRINT_DEBUG("Scheduler: Adopting a queue size of %zu.", queue_size);
 
     _lf_sched_instance->_lf_sched_array_of_mutexes =
         (lf_mutex_t*)calloc(1, sizeof(lf_mutex_t));

@@ -35,12 +35,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Soroush Bateni <soroush@utdallas.edu}
  *  @author{Alexander Schulz-Rosengarten <als@informatik.uni-kiel.de>}
  */
+
 #include "reactor.h"
 #include "tag.c"
 #include "utils/pqueue.c"
+#include "utils/vector.c"
 #include "utils/pqueue_support.h"
 #include "utils/util.c"
 #include "modal_models/modes.c"
+#include "port.c"
 
 /** 
  * Indicator of whether to wait for physical time to match logical time.
@@ -439,7 +442,7 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number);
  * counts between time steps and at the end of execution.
  */
 void _lf_start_time_step() {
-    LF_PRINT_LOG("--------- Start time step at tag (%lld, %u).", current_tag.time - start_time, current_tag.microstep);
+    LF_PRINT_LOG("--------- Start time step at tag " PRINTF_TAG ".", current_tag.time - start_time, current_tag.microstep);
     for(int i = 0; i < _lf_tokens_with_ref_count_size; i++) {
         if (*(_lf_tokens_with_ref_count[i].status) == present) {
             if (_lf_tokens_with_ref_count[i].reset_is_present
@@ -464,6 +467,19 @@ void _lf_start_time_step() {
     for(int i = 0; i < size; i++) {
         *is_present_fields[i] = false;
     }
+    // Reset sparse IO record sizes to 0, if any.
+    if (_lf_sparse_io_record_sizes.start != NULL) {
+    	for (size_t i = 0; i < vector_size(&_lf_sparse_io_record_sizes); i++) {
+    		// NOTE: vector_at does not return the element at
+    		// the index, but rather returns a pointer to that element, which is
+    		// itself a pointer.
+    		int** sizep = (int**)vector_at(&_lf_sparse_io_record_sizes, i);
+    		if (sizep != NULL && *sizep != NULL) {
+    			**sizep = 0;
+    		}
+    	}
+    }
+
 #ifdef FEDERATED_DECENTRALIZED
     for (int i = 0; i < _lf_is_present_fields_size; i++) {
         // FIXME: For now, an intended tag of (NEVER, 0)
@@ -649,7 +665,7 @@ void _lf_pop_events() {
                                     current_tag) < 0) {
                         // Mark the triggered reaction with a STP violation
                         reaction->is_STP_violated = true;
-                        LF_PRINT_LOG("Trigger %p has violated the reaction's STP offset. Intended tag: (%lld, %u). Current tag: (%lld, %u)",
+                        LF_PRINT_LOG("Trigger %p has violated the reaction's STP offset. Intended tag: " PRINTF_TAG ". Current tag: " PRINTF_TAG,
                                     event->trigger,
                                     event->intended_tag.time - start_time, event->intended_tag.microstep,
                                     current_tag.time - start_time, current_tag.microstep);
@@ -720,7 +736,7 @@ void _lf_pop_events() {
     enqueue_network_control_reactions();
 #endif // FEDERATED
 
-    LF_PRINT_DEBUG("There are %d events deferred to the next microstep.", pqueue_size(next_q));
+    LF_PRINT_DEBUG("There are %zu events deferred to the next microstep.", pqueue_size(next_q));
 
     // After populating the reaction queue, see if there are things on the
     // next queue to put back into the event queue.
@@ -885,7 +901,7 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
 
     tag_t current_logical_tag = lf_tag();
 
-    LF_PRINT_DEBUG("_lf_schedule_at_tag() called with tag (%lld, %u) at tag (%lld, %u).",
+    LF_PRINT_DEBUG("_lf_schedule_at_tag() called with tag " PRINTF_TAG " at tag " PRINTF_TAG ".",
                   tag.time - start_time, tag.microstep,
                   current_logical_tag.time - start_time, current_logical_tag.microstep);
     if (lf_tag_compare(tag, current_logical_tag) <= 0) {
@@ -1094,11 +1110,11 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     }
 
     if (extra_delay < 0LL) {
-        lf_print_warning("schedule called with a negative extra_delay %lld. Replacing with zero.", extra_delay);
+        lf_print_warning("schedule called with a negative extra_delay " PRINTF_TIME ". Replacing with zero.", extra_delay);
         extra_delay = 0LL;
     }
 
-    LF_PRINT_DEBUG("_lf_schedule: scheduling trigger %p with delay %lld and token %p.",
+    LF_PRINT_DEBUG("_lf_schedule: scheduling trigger %p with delay " PRINTF_TIME " and token %p.",
             trigger, extra_delay, token);
     
 	// The trigger argument could be null, meaning that nothing is triggered.
@@ -1124,7 +1140,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     	delay += trigger->offset;
     }
     interval_t intended_time = current_tag.time + delay;
-    LF_PRINT_DEBUG("_lf_schedule: current_tag.time = %lld. Total logical delay = %lld",
+    LF_PRINT_DEBUG("_lf_schedule: current_tag.time = " PRINTF_TIME ". Total logical delay = " PRINTF_TIME "",
             current_tag.time, delay);
     interval_t min_spacing = trigger->period;
 
@@ -1156,8 +1172,8 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
         // - we have eliminated the possibility to have a negative additional delay; and
         // - we detect the asynchronous use of logical actions
         if (intended_time < current_tag.time) {
-            lf_print_warning("Attempting to schedule an event earlier than current time by %lld nsec! "
-                    "Revising to the current time %lld.",
+            lf_print_warning("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
+                    "Revising to the current time " PRINTF_TIME ".",
                     current_tag.time - intended_time, current_tag.time);
             intended_time = current_tag.time;
         }
@@ -1204,7 +1220,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
         // Check to see whether the event is too early. 
         instant_t earliest_time = existing->time + min_spacing;
         LF_PRINT_DEBUG("There is a previously scheduled event; earliest possible time "
-                "with min spacing: %lld",
+                "with min spacing: " PRINTF_TIME,
                 earliest_time);
         // If the event is early, see which policy applies.
         if (earliest_time >= intended_time) {
@@ -1272,8 +1288,8 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     // FIXME: This is a development assertion and might
     // not be necessary for end-user LF programs
     if (intended_time < current_tag.time) {
-        lf_print_error("Attempting to schedule an event earlier than current time by %lld nsec! "
-                "Revising to the current time %lld.",
+        lf_print_error("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
+                "Revising to the current time " PRINTF_TIME ".",
                 current_tag.time - intended_time, current_tag.time);
         intended_time = current_tag.time;
     }
@@ -1283,7 +1299,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
 
     // Do not schedule events if if the event time is past the stop time
     // (current microsteps are checked earlier).
-    LF_PRINT_DEBUG("Comparing event with elapsed time %lld against stop time %lld.", e->time - start_time, stop_tag.time - start_time);
+    LF_PRINT_DEBUG("Comparing event with elapsed time " PRINTF_TIME " against stop time " PRINTF_TIME ".", e->time - start_time, stop_tag.time - start_time);
     if (e->time > stop_tag.time) {
         LF_PRINT_DEBUG("_lf_schedule: event time is past the timeout. Discarding event.");
         _lf_done_using(token);
@@ -1303,7 +1319,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     // and any new events added at this tag will go into the reaction_q
     // rather than the event_q, so anything put in the event_q with this
     // same time will automatically be executed at the next microstep.
-    LF_PRINT_LOG("Inserting event in the event queue with elapsed time %lld.",
+    LF_PRINT_LOG("Inserting event in the event queue with elapsed time " PRINTF_TIME ".",
             e->time - start_time);
     pqueue_insert(event_q, e);
 
@@ -1369,7 +1385,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
     // critical error.
     if (is_STP_violated) {
         lf_print_error_and_exit("Attempted to insert reactions for a trigger that had an intended tag that was in the past. "
-                             "This should not happen under centralized coordination. Intended tag: (%ld, %u). Current tag: (%ld, %u).",
+                             "This should not happen under centralized coordination. Intended tag: " PRINTF_TAG ". Current tag: " PRINTF_TAG ").",
                              trigger->intended_tag.time - lf_time_start(), 
                              trigger->intended_tag.microstep,
                              lf_time_logical_elapsed(), 
@@ -1416,7 +1432,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
         if (reaction->status == inactive) {
             reaction->is_STP_violated = is_STP_violated;
             _lf_trigger_reaction(reaction, -1);
-            LF_PRINT_LOG("Enqueued reaction %s at time %lld.", reaction->name, lf_time_logical());
+            LF_PRINT_LOG("Enqueued reaction %s at time " PRINTF_TIME ".", reaction->name, lf_time_logical());
         }
     }
 
@@ -1459,8 +1475,8 @@ void _lf_advance_logical_time(instant_t next_time) {
     event_t* next_event = (event_t*)pqueue_peek(event_q);
     if (next_event != NULL) {
         if (next_time > next_event->time) {
-            lf_print_error_and_exit("_lf_advance_logical_time(): Attempted to move time to %lld, which is "
-                    "past the head of the event queue, %lld.", 
+            lf_print_error_and_exit("_lf_advance_logical_time(): Attempted to move time to " PRINTF_TIME ", which is "
+                    "past the head of the event queue, " PRINTF_TIME ".",
                     next_time - start_time, next_event->time - start_time);
         }
     }
@@ -1474,7 +1490,7 @@ void _lf_advance_logical_time(instant_t next_time) {
     } else {
         lf_print_error_and_exit("_lf_advance_logical_time(): Attempted to move tag back in time.");
     }
-    LF_PRINT_LOG("Advanced (elapsed) tag to (%lld, %u)", next_time - start_time, current_tag.microstep);
+    LF_PRINT_LOG("Advanced (elapsed) tag to " PRINTF_TAG, next_time - start_time, current_tag.microstep);
 }
 
 /**
@@ -1583,12 +1599,13 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
     bool inherited_STP_violation = reaction->is_STP_violated;
     LF_PRINT_LOG("Reaction %s has STP violation status: %d.", reaction->name, reaction->is_STP_violated);
 #endif
-    LF_PRINT_DEBUG("There are %d outputs from reaction %s.", reaction->num_outputs, reaction->name);
+    LF_PRINT_DEBUG("There are %zu outputs from reaction %s.", reaction->num_outputs, reaction->name);
     for (size_t i=0; i < reaction->num_outputs; i++) {
         if (reaction->output_produced[i] != NULL && *(reaction->output_produced[i])) {
-            LF_PRINT_DEBUG("Output %d has been produced.", i);
+            LF_PRINT_DEBUG("Output %zu has been produced.", i);
             trigger_t** triggerArray = (reaction->triggers)[i];
-            LF_PRINT_DEBUG("There are %d trigger arrays associated with output %d.", reaction->triggered_sizes[i], i);
+            LF_PRINT_DEBUG("There are %d trigger arrays associated with output %zu.",
+            		reaction->triggered_sizes[i], i);
             for (int j=0; j < reaction->triggered_sizes[i]; j++) {
                 trigger_t* trigger = triggerArray[j];
                 if (trigger != NULL) {
@@ -1830,7 +1847,12 @@ int process_args(int argc, char* argv[]) {
             }
             char* time_spec = argv[i++];
             char* units = argv[i++];
+
+            #ifdef BIT_32
+            duration = atol(time_spec);
+            #else
             duration = atoll(time_spec);
+            #endif
             // A parse error returns 0LL, so check to see whether that is what is meant.
             if (duration == 0LL && strncmp(time_spec, "0", 1) != 0) {
                 // Parse error.
@@ -1963,13 +1985,28 @@ void initialize(void) {
     current_tag.time = physical_start_time;
     start_time = current_tag.time;
 
-    LF_PRINT_DEBUG("Start time: %lldns", start_time);
+    #ifdef BIT_32
+        #ifdef MICROSECOND_TIME
+            LF_PRINT_DEBUG("Start time: %ldus", start_time);
+        #else
+            LF_PRINT_DEBUG("Start time: %ldns", start_time);
+        #endif
+    #else
+        #ifdef MICROSECOND_TIME
+            LF_PRINT_DEBUG("Start time: %ldus", start_time);
+        #else
+            LF_PRINT_DEBUG("Start time: %ldns", start_time);
+        #endif
+    #endif
 
+    #ifdef ARDUINO
+    printf("---- Start execution at time %ldus\n", physical_start_time);
+    #else
     struct timespec physical_time_timespec = {physical_start_time / BILLION, physical_start_time % BILLION};
 
     printf("---- Start execution at time %s---- plus %ld nanoseconds.\n",
             ctime(&physical_time_timespec.tv_sec), physical_time_timespec.tv_nsec);
-    
+    #endif
     if (duration >= 0LL) {
         // A duration has been specified. Calculate the stop time.
         _lf_set_stop_tag((tag_t) {.time = current_tag.time + duration, .microstep = 0});
@@ -2001,7 +2038,7 @@ void termination(void) {
         lf_print_warning("---- There are %zu unprocessed future events on the event queue.", pqueue_size(event_q));
         event_t* event = (event_t*)pqueue_peek(event_q);
         interval_t event_time = event->time - start_time;
-        lf_print_warning("---- The first future event has timestamp %lld after start time.", event_time);
+        lf_print_warning("---- The first future event has timestamp " PRINTF_TIME " after start time.", event_time);
     }
     // Issue a warning if a memory leak has been detected.
     if (_lf_count_payload_allocations > 0) {

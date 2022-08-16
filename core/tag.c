@@ -183,7 +183,7 @@ instant_t _lf_physical_time() {
     //     interval_t drift = (adjusted_clock_ns - _lf_last_clock_sync_instant) *
     //                        _lf_global_physical_clock_drift;
     //     adjusted_clock_ns += drift;
-    //     LF_PRINT_DEBUG("Physical time adjusted for clock drift by %lld.", drift);
+    //     LF_PRINT_DEBUG("Physical time adjusted for clock drift by " PRINTF_TIME ".", drift);
     // }
     
     // Check if the clock has progressed since the last reported value
@@ -192,7 +192,9 @@ instant_t _lf_physical_time() {
         _lf_last_reported_physical_time_ns = adjusted_clock_ns;
     }
     
-    LF_PRINT_DEBUG("Physical time: %lld. Elapsed: %lld. Offset: %lld",
+    LF_PRINT_DEBUG("Physical time: " PRINTF_TIME
+    		". Elapsed: " PRINTF_TIME
+			". Offset: " PRINTF_TIME,
             _lf_last_reported_physical_time_ns,
             _lf_last_reported_physical_time_ns - start_time,
             _lf_time_physical_clock_offset + _lf_time_test_physical_clock_offset);
