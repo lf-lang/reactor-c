@@ -864,7 +864,7 @@ void connect_to_federate(uint16_t remote_federate_id) {
  * @param hostname A hostname, such as "localhost".
  * @param port_number A port number.
  */
-void connect_to_rti(char* hostname, int port) {
+void connect_to_rti(const char* hostname, int port) {
     LF_PRINT_LOG("Connecting to the RTI.");
 
     // override passed hostname and port if passed as runtime arguments
@@ -2745,6 +2745,6 @@ parse_rti_code_t parse_rti_addr(const char* rti_addr) {
 /**
  * Sets the federation_id of this federate to fid.
  */
-void set_federation_id(char* fid) {
+void set_federation_id(const char* fid) {
     federation_metadata.federation_id = fid;
 }

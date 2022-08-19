@@ -172,7 +172,7 @@ parse_rti_code_t parse_rti_addr(const char* rti_addr);
 /**
  * Sets the federation_id of this federate to fid.
  */
-void set_federation_id(char* fid);
+void set_federation_id(const char* fid);
 #endif
 
 /**
