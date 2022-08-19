@@ -167,7 +167,7 @@ typedef enum parse_rti_code_t {
  * Parse the address of the RTI and store them into the global federation_metadata struct.
  * @return a parse_rti_code_t indicating the result of the parse.
  */
-parse_rti_code_t parse_rti_addr(char* rti_addr);
+parse_rti_code_t parse_rti_addr(const char* rti_addr);
 
 /**
  * Sets the federation_id of this federate to fid.
@@ -1471,7 +1471,6 @@ void _lf_advance_logical_time(instant_t next_time) {
     // to the ordinary execution of LF programs. Instead, there might
     // be a need for a target property that enables these kinds of logic
     // assertions for development purposes only.
-    /*
     event_t* next_event = (event_t*)pqueue_peek(event_q);
     if (next_event != NULL) {
         if (next_time > next_event->time) {
@@ -1480,7 +1479,6 @@ void _lf_advance_logical_time(instant_t next_time) {
                     next_time - start_time, next_event->time - start_time);
         }
     }
-    */
 
     if (current_tag.time < next_time) {
         current_tag.time = next_time;
@@ -1917,7 +1915,7 @@ int process_args(int argc, const char* argv[]) {
                 usage(argc, argv);
                 return 0;
             }
-            char* fid = argv[i++];
+            const char* fid = argv[i++];
             set_federation_id(fid);
             lf_print("Federation ID for executable %s: %s", argv[0], fid);
         } else if (strcmp(arg, "-r") == 0 || strcmp(arg, "--rti") == 0) {
