@@ -66,10 +66,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error "Platform not supported"
 #endif
 
+// All platforms require some form of mutex support for physical actions.
+typedef _lf_mutex_t lf_mutex_t;          // Type to hold handle to a mutex
+// Single global mutex.
+extern lf_mutex_t mutex;
+
 #ifdef NUMBER_OF_WORKERS
 #define LF_TIMEOUT _LF_TIMEOUT
 
-typedef _lf_mutex_t lf_mutex_t;          // Type to hold handle to a mutex
 typedef _lf_cond_t lf_cond_t;            // Type to hold handle to a condition variable
 typedef _lf_thread_t lf_thread_t;        // Type to hold handle to a thread
 #endif
@@ -91,26 +95,26 @@ typedef _interval_t interval_t;
 typedef _microstep_t microstep_t;
 
 /**
- * Enter a critical section where logical time is guaranteed
- * to not change unless it is changed within the critical section.
+ * Enter a critical section where logical time and the event queue are guaranteed
+ * to not change unless they are changed within the critical section.
  * In platforms with threading support, this normally will be implemented
  * by acquiring a mutex lock. In platforms without threading support,
  * this can be implemented by disabling interrupts.
- * Users of this function must ensure that lf_init_lock_time() is
- * called first.
+ * Users of this function must ensure that lf_init_critical_sections() is
+ * called first and that lf_critical_section_exit() is called later.
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_lock_time();
+extern int lf_critical_section_enter();
 
 /**
  * Exit the critical section entered with lf_lock_time().
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_unlock_time();
+extern int lf_critical_section_exit();
 
 /**
  * Notify any listeners that an event has been created.
- * The caller should call lf_lock_time() before calling this function.
+ * The caller should call lf_critical_section_enter() before calling this function.
  * @return 0 on success, platform-specific error number otherwise.
  */
 extern int lf_notify_of_event();
@@ -119,7 +123,7 @@ extern int lf_notify_of_event();
  * Initialize the lock used by lf_lock_time().
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_init_lock_time();
+extern int lf_init_critical_sections();
 
 // For platforms with threading support, the following functions
 // abstract the API so that the LF runtime remains portable.
