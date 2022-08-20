@@ -65,6 +65,17 @@ int lf_mutex_init(_lf_mutex_t* mutex) {
     // Set up a recursive mutex
     pthread_mutexattr_t attr;
     pthread_mutexattr_init(&attr);
+    // Initialize the mutex to be recursive, meaning that it is OK
+    // for the same thread to lock and unlock the mutex even if it already holds
+    // the lock.
+    // FIXME: This is dangerous. The docs say this: "It is advised that an
+    // application should not use a PTHREAD_MUTEX_RECURSIVE mutex with
+    // condition variables because the implicit unlock performed for a
+    // pthread_cond_wait() or pthread_cond_timedwait() may not actually
+    // release the mutex (if it had been locked multiple times).
+    // If this happens, no other thread can satisfy the condition
+    // of the predicate.”  This seems like a bug in the implementation of
+    // pthreads. Maybe it has been fixed?
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
     return pthread_mutex_init((pthread_mutex_t*)mutex, &attr);
 }
