@@ -90,6 +90,39 @@ typedef _interval_t interval_t;
  */
 typedef _microstep_t microstep_t;
 
+/**
+ * Enter a critical section where logical time is guaranteed
+ * to not change unless it is changed within the critical section.
+ * In platforms with threading support, this normally will be implemented
+ * by acquiring a mutex lock. In platforms without threading support,
+ * this can be implemented by disabling interrupts.
+ * Users of this function must ensure that lf_init_lock_time() is
+ * called first.
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_lock_time();
+
+/**
+ * Exit the critical section entered with lf_lock_time().
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_unlock_time();
+
+/**
+ * Notify any listeners that an event has been created.
+ * The caller should call lf_lock_time() before calling this function.
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_notify_of_event();
+
+/**
+ * Initialize the lock used by lf_lock_time().
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_init_lock_time();
+
+// For platforms with threading support, the following functions
+// abstract the API so that the LF runtime remains portable.
 #ifdef NUMBER_OF_WORKERS
 
 /**
