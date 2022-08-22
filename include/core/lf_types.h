@@ -202,7 +202,12 @@ struct reaction_t {
     void* self;    // Pointer to a struct with the reactor's state. INSTANCE.
     int number;    // The number of the reaction in the reactor (0 is the first reaction).
     index_t index; // Inverse priority determined by dependency analysis. INSTANCE.
-    unsigned long long chain_id; // Binary encoding of the branches that this reaction has upstream in the dependency graph. INSTANCE.
+    // Binary encoding of the branches that this reaction has upstream in the dependency graph. INSTANCE.
+    #ifdef BIT_32 // Use a reduced width for chain IDs on 32-bit systems.
+    unsigned long chain_id;
+    #else
+    unsigned long long chain_id;
+    #endif
     size_t pos;       // Current position in the priority queue. RUNTIME.
     reaction_t* last_enabling_reaction; // The last enabling reaction, or NULL if there is none. Used for optimization. INSTANCE.
     size_t num_outputs;  // Number of outputs that may possibly be produced by this function. COMMON.
@@ -228,7 +233,7 @@ struct reaction_t {
                                 // any output reactions. Default is false.
     size_t worker_affinity;     // The worker number of the thread that scheduled this reaction. Used
                                 // as a suggestion to the scheduler.
-    char* name;                 // If logging is set to LOG or higher, then this will
+    const char* name;                 // If logging is set to LOG or higher, then this will
                                 // point to the full name of the reactor followed by
                                 // the reaction number.
     reactor_mode_t* mode;       // The enclosing mode of this reaction (if exists).
