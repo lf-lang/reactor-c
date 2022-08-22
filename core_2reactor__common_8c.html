@@ -178,10 +178,10 @@ Functions</h2></td></tr>
 <tr class="separator:a615a0670be544780678a1940a49c8d1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab8b23ae956bad82624233eafa837affb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2reactor__common_8c.html#ab8b23ae956bad82624233eafa837affb">writable_copy</a> (<a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
 <tr class="separator:ab8b23ae956bad82624233eafa837affb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeb5079a0bdbc96962460a991aa880725"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2reactor__common_8c.html#aeb5079a0bdbc96962460a991aa880725">usage</a> (int argc, char *argv[])</td></tr>
-<tr class="separator:aeb5079a0bdbc96962460a991aa880725"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8de011aeee37cd0347b5e01d7e3baed4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2reactor__common_8c.html#a8de011aeee37cd0347b5e01d7e3baed4">process_args</a> (int argc, char *argv[])</td></tr>
-<tr class="separator:a8de011aeee37cd0347b5e01d7e3baed4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f44f474f50286c4ba8c0ebac254bb28"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2reactor__common_8c.html#a7f44f474f50286c4ba8c0ebac254bb28">usage</a> (int argc, const char *argv[])</td></tr>
+<tr class="separator:a7f44f474f50286c4ba8c0ebac254bb28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80aaf4eeed3e2902f8fe9de80b45777d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2reactor__common_8c.html#a80aaf4eeed3e2902f8fe9de80b45777d">process_args</a> (int argc, const char *argv[])</td></tr>
+<tr class="separator:a80aaf4eeed3e2902f8fe9de80b45777d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9efe22aaead3a5e936b5df459de02eba"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2reactor__common_8c.html#a9efe22aaead3a5e936b5df459de02eba">initialize</a> (void)</td></tr>
 <tr class="separator:a9efe22aaead3a5e936b5df459de02eba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa329f59a16f5617b5195f2c05872c9e9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2reactor__common_8c.html#aa329f59a16f5617b5195f2c05872c9e9">termination</a> (void)</td></tr>
@@ -237,8 +237,8 @@ Variables</h2></td></tr>
 <tr class="separator:a36d4f18784a333cacd808c3b5927eff4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aab46895a3a4d1341a19b689a0ea902d1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2reactor__common_8c.html#aab46895a3a4d1341a19b689a0ea902d1">default_argc</a> = 0</td></tr>
 <tr class="separator:aab46895a3a4d1341a19b689a0ea902d1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a079c42a8611d008395dba5af4911e85c"><td class="memItemLeft" align="right" valign="top">char **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2reactor__common_8c.html#a079c42a8611d008395dba5af4911e85c">default_argv</a> = NULL</td></tr>
-<tr class="separator:a079c42a8611d008395dba5af4911e85c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad0fd32b8326e2d630ee8f4a431ea2867"><td class="memItemLeft" align="right" valign="top">const char **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2reactor__common_8c.html#ad0fd32b8326e2d630ee8f4a431ea2867">default_argv</a> = NULL</td></tr>
+<tr class="separator:ad0fd32b8326e2d630ee8f4a431ea2867"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="ad6be436dfb95ab914336870d340b207d" name="ad6be436dfb95ab914336870d340b207d"></a>
@@ -1275,8 +1275,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a8de011aeee37cd0347b5e01d7e3baed4" name="a8de011aeee37cd0347b5e01d7e3baed4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8de011aeee37cd0347b5e01d7e3baed4">&#9670;&nbsp;</a></span>process_args()</h2>
+<a id="a80aaf4eeed3e2902f8fe9de80b45777d" name="a80aaf4eeed3e2902f8fe9de80b45777d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a80aaf4eeed3e2902f8fe9de80b45777d">&#9670;&nbsp;</a></span>process_args()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1290,7 +1290,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>argv</em>[]&#160;</td>
         </tr>
         <tr>
@@ -1358,8 +1358,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="aeb5079a0bdbc96962460a991aa880725" name="aeb5079a0bdbc96962460a991aa880725"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeb5079a0bdbc96962460a991aa880725">&#9670;&nbsp;</a></span>usage()</h2>
+<a id="a7f44f474f50286c4ba8c0ebac254bb28" name="a7f44f474f50286c4ba8c0ebac254bb28"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f44f474f50286c4ba8c0ebac254bb28">&#9670;&nbsp;</a></span>usage()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1373,7 +1373,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>argv</em>[]&#160;</td>
         </tr>
         <tr>
@@ -1652,14 +1652,14 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a079c42a8611d008395dba5af4911e85c" name="a079c42a8611d008395dba5af4911e85c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a079c42a8611d008395dba5af4911e85c">&#9670;&nbsp;</a></span>default_argv</h2>
+<a id="ad0fd32b8326e2d630ee8f4a431ea2867" name="ad0fd32b8326e2d630ee8f4a431ea2867"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad0fd32b8326e2d630ee8f4a431ea2867">&#9670;&nbsp;</a></span>default_argv</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char** default_argv = NULL</td>
+          <td class="memname">const char** default_argv = NULL</td>
         </tr>
       </table>
 </div><div class="memdoc">
