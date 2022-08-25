@@ -12,7 +12,7 @@ We use some arbitrary exceptions to the Barr standard. These serve
 
 #### Braces (1.3)
 
-We use K&R style braces. Example:
+We use K&R-style braces. Example:
 ```
 if (NULL == p_event) {
     lf_print_error_and_exit("Out of memory!");
@@ -52,6 +52,11 @@ The name of all public data types shall be prefixed with lf_.
 
 The name of all public functions shall be prefixed with lf_.
 
+#### Macro capitalization (6.1f)
+
+The only acceptable use of macros containing lowercase letters is macros prefixed by `lf_` that
+appear in the `reactor-c` public API.
+
 #### Printed pages (6.2 and elsewhere)
 
 We do not print code for the purpose of code review. In cases where Barr refers to the size of a
@@ -74,3 +79,215 @@ optimization instead.
 #### Return types in function declarations
 
 The return type of a function must appear on the same line as the function name.
+
+#### Line breaks
+
+If the parenthesized expression(s) in a parameter list, `if` statement,`for` loop, `while loop`, or
+similar is too long to fit on one line, then the opening parenthesis must be immediately followed by
+a line feed, and the closing parenthesis and opening bracket must appear one their own line.
+Example:
+
+```
+while (
+    NULL != (
+        current_reaction_to_execute = lf_sched_get_ready_reaction(worker_number)
+    )
+) {
+    // Do something
+}
+```
+
+#### Documentation comments
+
+We use the Javadoc-style `/**` to mark documentation comments, and we precede any Doxygen commands
+with an `@` sign. Example:
+
+```c
+/**
+ * @brief Enqueue network output control reactions that will send a PORT_ABSENT
+ * message to downstream federates if a given network output port is not present.
+ */
+```
+
+The opening `/**` marker must be immediately followed by a line feed.
+
+## Abbreviations
+
+The following is an extended version of the table provided by the Barr standard.
+
+| Abbreviation | Meaning                       |
+| ------------ | ----------------------        |
+| adc          | analog-to-digital converter   |
+| addr         | address                       |
+| argc         | argument count                |
+| argv         | argument vector               |
+| avg          | average                       |
+| b_           | boolean                       |
+| buf          | buffer                        |
+| cfg          | configuration                 |
+| cond         | condition variable            |
+| ctor         | constructor                   |
+| curr         | current (item in a list)      |
+| dac          | digital-to-analog converter   |
+| dtor         | destructor                    |
+| ee           | EEPROM                        |
+| err          | error                         |
+| fed          | federate/federated            |
+| g_           | global                        |
+| gpio         | general purpose I/0 pins      |
+| h_           | handle (to)                   |
+| id           | ID                            |
+| init         | initialize                    |
+| io           | input/output                  |
+| ip           | Internet Protocol             |
+| isr          | interrupt service routine     |
+| lcd          | liquid crystal display        |
+| led          | light-emitting diode          |
+| lf           | Lingua Franca                 |
+| max          | maximum                       |
+| min          | minumum                       |
+| msec         | millisecond                   |
+| msg          | message                       |
+| net          | network                       |
+| next         | next (item in a list)         |
+| nsec         | nanosecond                    |
+| num          | number (of)                   |
+| p_           | pointer (to)                  |
+| param        | parameter                     |
+| pp_          | pointer to a pointer (to)     |
+| pqueue       | priority queue                |
+| prev         | previous (item in a list)     |
+| prio         | priority                      |
+| ptag         | provisional tag               |
+| pwm          | pulse width modulation        |
+| q            | queue                         |
+| ref          | reference                     |
+| reg          | register                      |
+| ret          | return value                  |
+| rti          | runtime infrastructure        |
+| rx           | receive                       |
+| sched        | scheduler                     |
+| sem          | semaphore                     |
+| sta          | safe to advance (time)        |
+| staa         | safe to assume absent         |
+| stp          | safe to process               |
+| str          | string (null-terminated)      |
+| sync         | synchronize                   |
+| tcp          | transmission control protocol |
+| temp         | temperature                   |
+| tmp          | temporary                     |
+| tx           | transmit                      |
+| udp          | User Datagram Protocol        |
+| usec         | microsecond                   |
+| util         | utilities                     |
+
+## Source file template
+
+```c
+/*************
+Copyright (c) <year>, <name of the author's institution>
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************/
+
+/**
+ * @file <file name>
+ * @brief <description of this file's purpose>
+ * @author{<author name> <<author email>>}
+ */
+
+<#includes for standard libraries and files associated with the target platform>
+
+<#includes for header files belonging to our project>
+
+///////////////////////   Macros and Type Definitions   ////////////////////////
+<preprocessor definitions>
+
+<definitions for private types>
+
+///////////////////////            Variables            ////////////////////////
+<constants>
+
+<globals>
+
+<static variables>
+
+///////////////////////        Private Procedures        ///////////////////////
+<private procedure prototypes>
+
+<private procedures>
+
+///////////////////////        Public Procedures         ///////////////////////
+<public procedures>
+```
+
+## Header file template
+
+```c
+/*************
+Copyright (c) <year>, <name of the author's institution>
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice, this
+   list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************/
+
+/**
+ * @file <file name>
+ * @brief <description of this file's purpose>
+ * @author{<author name> <<author email>>}
+ */
+
+#ifdef <file name in all caps, with "." replaced with "_">
+#define <file name in all caps, with "." replaced with "_">
+
+<#includes for standard libraries and files associated with the target platform>
+
+<#includes for header files belonging to our project>
+
+///////////////////////   Macros and Type Definitions   ////////////////////////
+<preprocessor definitions>
+
+<definitions for public types>
+
+///////////////////////           Procedures             ///////////////////////
+<public procedure prototypes>
+
+#endif // <file name in all caps, with "." replaced with "_">
+```
