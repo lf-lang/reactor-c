@@ -314,13 +314,13 @@ do { \
 #define LEVEL(index) (index & 0xffffLL)
 
 /** Utility for finding the maximum of two values. */
-#ifndef MAX
-#define MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
+#ifndef LF_MAX
+#define LF_MAX(X, Y) (((X) > (Y)) ? (X) : (Y))
 #endif
 
 /** Utility for finding the minimum of two values. */
-#ifndef MIN
-#define MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
+#ifndef LF_MIN
+#define LF_MIN(X, Y) (((X) < (Y)) ? (X) : (Y))
 #endif
 
 /**
@@ -419,7 +419,7 @@ typedef int trigger_handle_t;
  * being consumed downstream, use type char*.
  */
 #ifndef string
-typedef char* string;
+typedef const char* string;
 #else
 #warning "string typedef has been previously given."
 #endif
@@ -512,7 +512,11 @@ struct reaction_t {
     void* self;    // Pointer to a struct with the reactor's state. INSTANCE.
     int number;    // The number of the reaction in the reactor (0 is the first reaction).
     index_t index; // Inverse priority determined by dependency analysis. INSTANCE.
+    #ifdef BIT_32 // Use a reduced width for chain IDs on 32-bit systems.
+    unsigned long chain_id; // Binary encoding of the branches that this reaction has upstream in the dependency graph. INSTANCE.
+    #else
     unsigned long long chain_id; // Binary encoding of the branches that this reaction has upstream in the dependency graph. INSTANCE.
+    #endif
     size_t pos;       // Current position in the priority queue. RUNTIME.
     reaction_t* last_enabling_reaction; // The last enabling reaction, or NULL if there is none. Used for optimization. INSTANCE.
     size_t num_outputs;  // Number of outputs that may possibly be produced by this function. COMMON.
@@ -538,7 +542,7 @@ struct reaction_t {
                                 // any output reactions. Default is false.
     size_t worker_affinity;     // The worker number of the thread that scheduled this reaction. Used
                                 // as a suggestion to the scheduler.
-    char* name;                 // If logging is set to LOG or higher, then this will
+    const char* name;           // If logging is set to LOG or higher, then this will
                                 // point to the full name of the reactor followed by
                                 // the reaction number.
     reactor_mode_t* mode;       // The enclosing mode of this reaction (if exists).

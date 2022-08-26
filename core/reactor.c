@@ -116,7 +116,7 @@ void _lf_set_present(lf_port_base_t* port) {
     if(port->sparse_record
     		&& port->destination_channel >= 0
 			&& port->sparse_record->size >= 0) {
-    	int next = port->sparse_record->size++;
+    	size_t next = port->sparse_record->size++;
     	if (next >= port->sparse_record->capacity) {
     		// Buffer is full. Have to revert to the classic iteration.
     		port->sparse_record->size = -1;
@@ -139,11 +139,11 @@ void _lf_set_present(lf_port_base_t* port) {
 int wait_until(instant_t logical_time_ns) {
     int return_value = 0;
     if (!fast) {
-        LF_PRINT_LOG("Waiting for elapsed logical time %lld.", logical_time_ns - start_time);
+        LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", logical_time_ns - start_time);
         interval_t ns_to_wait = logical_time_ns - lf_time_physical();
     
         if (ns_to_wait < MIN_WAIT_TIME) {
-            LF_PRINT_DEBUG("Wait time %lld is less than MIN_WAIT_TIME %lld. Skipping wait.",
+            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_WAIT_TIME %lld. Skipping wait.",
                 ns_to_wait, MIN_WAIT_TIME);
             return return_value;
         }
@@ -200,7 +200,7 @@ int _lf_do_step(void) {
         reaction_t* reaction = (reaction_t*)pqueue_pop(reaction_q);
         reaction->status = running;
         
-        LF_PRINT_LOG("Invoking reaction %s at elapsed logical tag (%lld, %d).",
+        LF_PRINT_LOG("Invoking reaction %s at elapsed logical tag " PRINTF_TAG ".",
         		reaction->name,
                 current_tag.time - start_time, current_tag.microstep);
 
@@ -287,7 +287,11 @@ int next(void) {
     // If there is no next event and -keepalive has been specified
     // on the command line, then we will wait the maximum time possible.
     // FIXME: is LLONG_MAX different from FOREVER?
+    #ifdef BIT_32
+    tag_t next_tag = { .time = LONG_MAX, .microstep = UINT_MAX};
+    #else 
     tag_t next_tag = { .time = LLONG_MAX, .microstep = UINT_MAX};
+    #endif
     if (event == NULL) {
         // No event in the queue.
         if (!keepalive_specified) { // FIXME: validator should issue a warning for unthreaded implementation
@@ -309,7 +313,7 @@ int next(void) {
         next_tag = stop_tag;
     }
 
-    LF_PRINT_LOG("Next event (elapsed) time is %lld.", next_tag.time - start_time);
+    LF_PRINT_LOG("Next event (elapsed) time is " PRINTF_TIME ".", next_tag.time - start_time);
     // Wait until physical time >= event.time.
     // The wait_until function will advance current_tag.time.
     if (wait_until(next_tag.time) != 0) {
@@ -375,7 +379,7 @@ bool _lf_is_blocked_by_executing_reaction(void) {
  * other main functions that might get resolved and linked
  * at compile time.
  */
-int lf_reactor_c_main(int argc, char* argv[]) {
+int lf_reactor_c_main(int argc, const char* argv[]) {
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
 
@@ -390,8 +394,11 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         // The above handles only "normal" termination (via a call to exit).
         // As a consequence, we need to also trap ctrl-C, which issues a SIGINT,
         // and cause it to call exit.
+        // We wrap this statement since certain Arduino flavors don't support signals.
+        #ifndef ARDUINO
         signal(SIGINT, exit);
-
+        #endif
+        
         LF_PRINT_DEBUG("Initializing.");
         initialize(); // Sets start_time.
 #ifdef MODAL_REACTORS

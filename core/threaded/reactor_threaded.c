@@ -152,7 +152,7 @@ void _lf_increment_global_tag_barrier_already_locked(tag_t future_tag) {
             // Therefore, we should prevent logical time from reaching the
             // future tag.
             _lf_global_tag_advancement_barrier.horizon = future_tag;
-            LF_PRINT_DEBUG("Raised barrier at elapsed tag (%lld, %u).",
+            LF_PRINT_DEBUG("Raised barrier at elapsed tag " PRINTF_TAG ".",
                         _lf_global_tag_advancement_barrier.horizon.time - start_time,
                         _lf_global_tag_advancement_barrier.horizon.microstep);
         } 
@@ -168,7 +168,7 @@ void _lf_increment_global_tag_barrier_already_locked(tag_t future_tag) {
             // that has elapsed after the incoming message would have violated the STP offset.
             _lf_global_tag_advancement_barrier.horizon = current_tag;
             _lf_global_tag_advancement_barrier.horizon.microstep++;
-            LF_PRINT_DEBUG("Raised barrier at elapsed tag (%lld, %u).",
+            LF_PRINT_DEBUG("Raised barrier at elapsed tag " PRINTF_TAG ".",
                         _lf_global_tag_advancement_barrier.horizon.time - start_time,
                         _lf_global_tag_advancement_barrier.horizon.microstep);
     }
@@ -236,7 +236,7 @@ void _lf_decrement_global_tag_barrier_locked() {
         // Notify waiting threads that the semaphore has reached zero.
         lf_cond_broadcast(&global_tag_barrier_requestors_reached_zero);
     }
-    LF_PRINT_DEBUG("Barrier is at tag (%lld, %u).",
+    LF_PRINT_DEBUG("Barrier is at tag " PRINTF_TAG ".",
                  _lf_global_tag_advancement_barrier.horizon.time,
                  _lf_global_tag_advancement_barrier.horizon.microstep);
 }
@@ -282,7 +282,7 @@ int _lf_wait_on_global_tag_barrier(tag_t proposed_tag) {
             && lf_tag_compare(proposed_tag, _lf_global_tag_advancement_barrier.horizon) >= 0
     ) {
         result = 1;
-        LF_PRINT_LOG("Waiting on barrier for tag (%lld, %u).", proposed_tag.time - start_time, proposed_tag.microstep);
+        LF_PRINT_LOG("Waiting on barrier for tag " PRINTF_TAG ".", proposed_tag.time - start_time, proposed_tag.microstep);
         // Wait until no requestor remains for the barrier on logical time
         lf_cond_wait(&global_tag_barrier_requestors_reached_zero, &mutex);
         
@@ -424,7 +424,7 @@ void synchronize_with_other_federates();
  *  was reached.
  */
 bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
-    LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time %lld", logical_time_ns);
+    LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time " PRINTF_TIME, logical_time_ns);
     bool return_value = true;
     interval_t wait_until_time_ns = logical_time_ns;
 #ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized
@@ -432,7 +432,7 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
     // Prevent an overflow
     if (wait_until_time_ns < FOREVER - _lf_fed_STA_offset) {
         // If wait_time is not forever
-        LF_PRINT_DEBUG("Adding STA %lld to wait until time %lld.",
+        LF_PRINT_DEBUG("Adding STA " PRINTF_TIME " to wait until time " PRINTF_TIME ".",
                 _lf_fed_STA_offset,
                 wait_until_time_ns - start_time);
         wait_until_time_ns += _lf_fed_STA_offset;
@@ -446,7 +446,7 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
         // We should not wait if that adjusted time is already ahead
         // of logical time.
         if (ns_to_wait < MIN_WAIT_TIME) {
-            LF_PRINT_DEBUG("Wait time %lld is less than MIN_WAIT_TIME %lld. Skipping wait.",
+            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_WAIT_TIME %lld. Skipping wait.",
                 ns_to_wait, MIN_WAIT_TIME);
             return return_value;
         }
@@ -466,8 +466,9 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
         if (FOREVER - _lf_last_reported_unadjusted_physical_time_ns > ns_to_wait) {
             unadjusted_wait_until_time_ns = _lf_last_reported_unadjusted_physical_time_ns + ns_to_wait;
         }
-        LF_PRINT_DEBUG("-------- Clock offset is %lld ns.", current_physical_time - _lf_last_reported_unadjusted_physical_time_ns);
-        LF_PRINT_DEBUG("-------- Waiting %lld ns for physical time to match logical time %llu.", ns_to_wait, 
+        LF_PRINT_DEBUG("-------- Clock offset is " PRINTF_TIME " ns.", current_physical_time - _lf_last_reported_unadjusted_physical_time_ns);
+        LF_PRINT_DEBUG("-------- Waiting " PRINTF_TIME " ns for physical time to match logical time " PRINTF_TIME ".",
+        		ns_to_wait,
                 logical_time_ns - start_time);
 
         // lf_cond_timedwait returns 0 if it is awakened before the timeout.
@@ -500,7 +501,7 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
             return wait_until(wait_until_time_ns, condition);
         }
 
-        LF_PRINT_DEBUG("-------- Returned from wait, having waited %lld ns.", lf_time_physical() - current_physical_time);
+        LF_PRINT_DEBUG("-------- Returned from wait, having waited " PRINTF_TIME " ns.", lf_time_physical() - current_physical_time);
     }
     return return_value;
 }
@@ -517,8 +518,8 @@ tag_t get_next_event_tag() {
     if (event != NULL) {
         // There is an event in the event queue.
         if (event->time < current_tag.time) {
-            lf_print_error_and_exit("get_next_event_tag(): Earliest event on the event queue (%lld) is "
-                                  "earlier than the current time (%lld).",
+            lf_print_error_and_exit("get_next_event_tag(): Earliest event on the event queue (" PRINTF_TIME ") is "
+                                  "earlier than the current time (" PRINTF_TIME ").",
                                   event->time - start_time,
                                   current_tag.time - start_time);
         }
@@ -538,7 +539,7 @@ tag_t get_next_event_tag() {
     if (_lf_is_tag_after_stop_tag(next_tag)) {
         next_tag = stop_tag;
     }
-    LF_PRINT_LOG("Earliest event on the event queue (or stop time if empty) is (%lld, %u). Event queue has size %d.",
+    LF_PRINT_LOG("Earliest event on the event queue (or stop time if empty) is " PRINTF_TAG ". Event queue has size %zu.",
             next_tag.time - start_time, next_tag.microstep, pqueue_size(event_q));
     return next_tag;
 }
@@ -642,7 +643,7 @@ void _lf_next_locked() {
     // Wait for physical time to advance to the next event time (or stop time).
     // This can be interrupted if a physical action triggers (e.g., a message
     // arrives from an upstream federate or a local physical action triggers).
-    LF_PRINT_LOG("Waiting until elapsed time %lld.", (next_tag.time - start_time));
+    LF_PRINT_LOG("Waiting until elapsed time " PRINTF_TIME ".", (next_tag.time - start_time));
     while (!wait_until(next_tag.time, &event_q_changed)) {
         LF_PRINT_DEBUG("_lf_next_locked(): Wait until time interrupted.");
         // Sleep was interrupted.  Check for a new next_event.
@@ -663,7 +664,7 @@ void _lf_next_locked() {
         return;
     }
 
-    LF_PRINT_DEBUG("Physical time is ahead of next tag time by %lld. This should be small unless -fast is used.",
+    LF_PRINT_DEBUG("Physical time is ahead of next tag time by " PRINTF_TIME ". This should be small unless -fast is used.",
                 lf_time_physical() - next_tag.time);
     
 #ifdef FEDERATED
@@ -816,13 +817,13 @@ void _lf_initialize_start_tag() {
     // from other federates) to hold the lock and possibly raise a tag barrier. This is 
     // especially useful if an STA is set properly because the federate will get
     // a chance to process incoming messages while utilizing the STA.
-    LF_PRINT_LOG("Waiting for start time %lld plus STA %lld.",
+    LF_PRINT_LOG("Waiting for start time " PRINTF_TIME " plus STA " PRINTF_TIME ".",
             start_time, _lf_fed_STA_offset);
     // Ignore interrupts to this wait. We don't want to start executing until
     // physical time matches or exceeds the logical start time.
     while (!wait_until(start_time, &event_q_changed)) {}
-    LF_PRINT_DEBUG("Done waiting for start time %lld.", start_time);
-    LF_PRINT_DEBUG("Physical time is ahead of current time by %lld. This should be small.",
+    LF_PRINT_DEBUG("Done waiting for start time " PRINTF_TIME ".", start_time);
+    LF_PRINT_DEBUG("Physical time is ahead of current time by " PRINTF_TIME ". This should be small.",
             lf_time_physical() - start_time);
 
     // Reinitialize the physical start time to match the start_time.
@@ -982,7 +983,7 @@ bool _lf_worker_handle_violations(int worker_number, reaction_t* reaction) {
  * executing 'reaction'.
  */
 void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
-    LF_PRINT_LOG("Worker %d: Invoking reaction %s at elapsed tag (%lld, %d).",
+    LF_PRINT_LOG("Worker %d: Invoking reaction %s at elapsed tag " PRINTF_TAG ".",
             worker_number,
             reaction->name,
             current_tag.time - start_time,
@@ -1014,7 +1015,7 @@ void _lf_worker_do_work(int worker_number) {
             != NULL) {
         // Got a reaction that is ready to run.
         LF_PRINT_DEBUG("Worker %d: Got from scheduler reaction %s: "
-                "level: %lld, is control reaction: %d, chain ID: %llu, and deadline %lld.", 
+                "level: %lld, is control reaction: %d, chain ID: %llu, and deadline " PRINTF_TIME ".",
                 worker_number,
                 current_reaction_to_execute->name,
                 LEVEL(current_reaction_to_execute->index),
@@ -1082,7 +1083,7 @@ void lf_print_snapshot() {
         LF_PRINT_DEBUG("Pending:");
         // pqueue_dump(reaction_q, print_reaction); FIXME: reaction_q is not
         // accessible here
-        LF_PRINT_DEBUG("Event queue size: %d. Contents:",
+        LF_PRINT_DEBUG("Event queue size: %zu. Contents:",
                         pqueue_size(event_q));
         pqueue_dump(event_q, print_reaction); 
         LF_PRINT_DEBUG(">>> END Snapshot");
@@ -1145,7 +1146,7 @@ void determine_number_of_workers(void) {
  * other main functions that might get resolved and linked
  * at compile time.
  */
-int lf_reactor_c_main(int argc, char* argv[]) {
+int lf_reactor_c_main(int argc, const char* argv[]) {
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
     
@@ -1219,7 +1220,7 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         		lf_print_error("Failed to join thread listening for incoming messages: %s", strerror(failure));
         	}
         	if (worker_thread_exit_status != NULL) {
-                lf_print_error("---- Worker %d reports error code %p", worker_thread_exit_status);
+                lf_print_error("---- Worker %d reports error code %p", i, worker_thread_exit_status);
                 ret = 1;
         	}
         }
