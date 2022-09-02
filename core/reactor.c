@@ -54,41 +54,6 @@ pqueue_t* reaction_q;
 #define MIN_WAIT_TIME NSEC(10)
 
 /**
- * Variant of schedule_token that creates a token to carry the specified value.
- * See reactor.h for documentation.
- */
-trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* value, size_t length) {
-    trigger_t* trigger = _lf_action_to_trigger(action);
-    lf_token_t* token = create_token(trigger->element_size);
-    token->value = value;
-    token->length = length;
-    return _lf_schedule_token(action, extra_delay, token);
-}
-
-/**
- * Schedule an action to occur with the specified value and time offset
- * with a copy of the specified value.
- * See reactor.h for documentation.
- */
-trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value, size_t length) {
-    trigger_t* trigger = _lf_action_to_trigger(action);
-    if (value == NULL) {
-        return _lf_schedule_token(action, offset, NULL);
-    }
-    if (trigger == NULL || trigger->token == NULL || trigger->token->element_size <= 0) {
-        lf_print_error("schedule: Invalid trigger or element size.");
-        return -1;
-    }
-    LF_PRINT_DEBUG("schedule_copy: Allocating memory for payload (token value): %p.", trigger);
-    // Initialize token with an array size of length and a reference count of 0.
-    lf_token_t* token = _lf_initialize_token(trigger->token, length);
-    // Copy the value into the newly allocated memory.
-    memcpy(token->value, value, token->element_size * length);
-    // The schedule function will increment the reference count.
-    return _lf_schedule_token(action, offset, token);
-}
-
-/**
  * Mark the given port's is_present field as true. This is_present field
  * will later be cleaned up by _lf_start_time_step.
  * @param port A pointer to the port struct.

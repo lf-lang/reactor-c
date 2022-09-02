@@ -294,52 +294,6 @@ int _lf_wait_on_global_tag_barrier(tag_t proposed_tag) {
     return result;
 }
 
-/**
- * Schedule an action to occur with the specified value and time offset
- * with a copy of the specified value.
- * See reactor.h for documentation.
- */
-trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value, size_t length) {
-    if (value == NULL) {
-        return _lf_schedule_token(action, offset, NULL);
-    }
-    trigger_t* trigger = _lf_action_to_trigger(action);
-
-    if (trigger == NULL || trigger->token == NULL || trigger->token->element_size <= 0) {
-        lf_print_error("schedule: Invalid trigger or element size.");
-        return -1;
-    }
-    lf_mutex_lock(&mutex);
-    // Initialize token with an array size of length and a reference count of 0.
-    lf_token_t* token = _lf_initialize_token(trigger->token, length);
-    // Copy the value into the newly allocated memory.
-    memcpy(token->value, value, token->element_size * length);
-    // The schedule function will increment the reference count.
-    trigger_handle_t result = _lf_schedule(trigger, offset, token);
-    // Notify the main thread in case it is waiting for physical time to elapse.
-    lf_cond_signal(&event_q_changed);
-    lf_mutex_unlock(&mutex);
-    return result;
-}
-
-/**
- * Variant of schedule_token that creates a token to carry the specified value.
- * See reactor.h for documentation.
- */
-trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* value, size_t length) {
-    trigger_t* trigger = _lf_action_to_trigger(action);
-
-    lf_mutex_lock(&mutex);
-    lf_token_t* token = create_token(trigger->element_size);
-    token->value = value;
-    token->length = length;
-    int return_value = _lf_schedule(trigger, extra_delay, token);
-    // Notify the main thread in case it is waiting for physical time to elapse.
-    lf_cond_signal(&event_q_changed);
-    lf_mutex_unlock(&mutex);
-    return return_value;
-}
-
 /*
  * Mark the given port's is_present field as true. This is_present field
  * will later be cleaned up by _lf_start_time_step.
