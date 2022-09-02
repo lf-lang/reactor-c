@@ -253,7 +253,7 @@ void _lf_decrement_global_tag_barrier_locked() {
  * advancement of time until to the proposed tag until the message has
  * been put onto the event queue.
  *
- * If the prposed_tag is greater than the stop tag, then use the stop tag instead.
+ * If the proposed_tag is greater than the stop tag, then use the stop tag instead.
  * 
  * This function assumes the mutex is already locked.
  * Thus, it unlocks the mutex while it's waiting to allow
@@ -292,21 +292,6 @@ int _lf_wait_on_global_tag_barrier(tag_t proposed_tag) {
         }
     }
     return result;
-}
-
-/**
- * Schedule the specified trigger at current_tag.time plus the offset of the
- * specified trigger plus the delay.
- * See reactor.h for documentation.
- */
-trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-    trigger_t* trigger = _lf_action_to_trigger(action);
-    lf_mutex_lock(&mutex);
-    int return_value = _lf_schedule(trigger, extra_delay, token);
-    // Notify the main thread in case it is waiting for physical time to elapse.
-    lf_cond_broadcast(&event_q_changed);
-    lf_mutex_unlock(&mutex);
-    return return_value;
 }
 
 /**

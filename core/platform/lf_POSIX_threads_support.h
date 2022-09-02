@@ -35,6 +35,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <pthread.h>
 
+extern lf_mutex_t mutex;
+
 typedef pthread_mutex_t _lf_mutex_t;
 typedef pthread_cond_t _lf_cond_t;
 typedef pthread_t _lf_thread_t;

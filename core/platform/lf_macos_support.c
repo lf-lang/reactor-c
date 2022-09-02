@@ -33,11 +33,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../platform.h"
 
 #ifdef NUMBER_OF_WORKERS
-#if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
-#include "lf_POSIX_threads_support.c"
-#else
+    #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
+    #include "lf_POSIX_threads_support.c"
+    #else
 #include "lf_C11_threads_support.c"
-#endif
+    #endif
+#else
+    #include "lf_os_single_threaded_support.c"
 #endif
 
 #include "lf_unix_clock_support.c"

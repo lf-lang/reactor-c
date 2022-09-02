@@ -36,6 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Alexander Schulz-Rosengarten <als@informatik.uni-kiel.de>}
  */
 
+#include "platform.h"
 #include "reactor.h"
 #include "tag.c"
 #include "utils/pqueue.c"
@@ -1453,6 +1454,21 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
  */
 trigger_t* _lf_action_to_trigger(void* action) {
     return *((trigger_t**)action);
+}
+
+/**
+ * Schedule the specified trigger at current_tag.time plus the offset of the
+ * specified trigger plus the delay.
+ * See reactor.h for documentation.
+ */
+trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
+    trigger_t* trigger = _lf_action_to_trigger(action);
+    lf_critical_section_enter();
+    int return_value = _lf_schedule(trigger, extra_delay, token);
+    // Notify the main thread in case it is waiting for physical time to elapse.
+    lf_notify_of_event();
+    lf_critical_section_exit();
+    return return_value;
 }
 
 /**

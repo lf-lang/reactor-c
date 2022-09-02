@@ -54,16 +54,6 @@ pqueue_t* reaction_q;
 #define MIN_WAIT_TIME NSEC(10)
 
 /**
- * Schedule the specified trigger at current_tag.time plus the offset of the
- * specified trigger plus the delay.
- * See reactor.h for documentation.
- */
-trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-    trigger_t* trigger = _lf_action_to_trigger(action);
-    return _lf_schedule(trigger, extra_delay, token);
-}
-
-/**
  * Variant of schedule_token that creates a token to carry the specified value.
  * See reactor.h for documentation.
  */

@@ -120,7 +120,7 @@ extern int lf_critical_section_exit();
 extern int lf_notify_of_event();
 
 /**
- * Initialize the lock used by lf_lock_time().
+ * Initialize the lock used by lf_init_critical_sections().
  * @return 0 on success, platform-specific error number otherwise.
  */
 extern int lf_init_critical_sections();

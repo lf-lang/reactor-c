@@ -244,6 +244,8 @@ int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section
 #else
 #include "lf_C11_threads_support.c"
 #endif
+#else
+    #include "lf_os_single_threaded_support.c"
 #endif
 
 /**
