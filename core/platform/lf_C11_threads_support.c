@@ -151,3 +151,19 @@ int lf_cond_timedwait(_lf_cond_t* cond, _lf_mutex_t* mutex, int64_t absolute_tim
     }
     return return_value;
 }
+
+int lf_critical_section_enter() {
+    return lf_mutex_lock(&mutex);
+}
+
+int lf_critical_section_exit() {
+    return lf_mutex_unlock(&mutex);
+}
+
+int lf_notify_of_event() {
+    return lf_cond_broadcast(&event_q_changed);
+}
+
+int lf_init_critical_sections() {
+    return 0;
+}
