@@ -65,6 +65,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.c"        // Time-related types and functions.
 #include "rti.h"
 
+// FIXME: these were added to get the RTI to build.
+// They serve no other purpose and are not used or even initialized.
+lf_mutex_t mutex;
+lf_cond_t event_q_changed;
+
 /**
  * The state of this RTI instance.
  */
