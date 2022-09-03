@@ -168,12 +168,12 @@ typedef enum parse_rti_code_t {
  * Parse the address of the RTI and store them into the global federation_metadata struct.
  * @return a parse_rti_code_t indicating the result of the parse.
  */
-parse_rti_code_t parse_rti_addr(char* rti_addr);
+parse_rti_code_t parse_rti_addr(const char* rti_addr);
 
 /**
  * Sets the federation_id of this federate to fid.
  */
-void set_federation_id(char* fid);
+void set_federation_id(const char* fid);
 #endif
 
 /**
