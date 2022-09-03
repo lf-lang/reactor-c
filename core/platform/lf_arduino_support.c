@@ -34,6 +34,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Arduino.h"
 
 /**
+ * Keep track of interrupts being raised.
+ */
+bool _lf_timer_interrupted;
+
+/**
  * Pause execution for a number of microseconds.
  *
  * This function works very accurately in the range from 3 to 16383 microseconds.
@@ -78,5 +83,25 @@ int lf_clock_gettime(instant_t* t) {
     }
 
     *t = micros();
+    return 0;
+}
+
+int lf_critical_section_enter() {
+    noInterrupts();
+    return 0;
+}
+
+int lf_critical_section_exit() {
+    interrupts();
+    return 0;
+}
+
+int lf_notify_of_event() {
+   _lf_timer_interrupted = true;
+   return 0;
+}
+
+int lf_init_critical_sections() {
+    _lf_timer_interrupted = false;
     return 0;
 }
