@@ -1110,7 +1110,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     signal(SIGPIPE, SIG_IGN);
 #endif // SIGPIPE
 
-    if (process_args(default_argc, default_argv)
+    if (process_args(default_argc, (const char**)default_argv)
             && process_args(argc, argv)) {
         
         determine_number_of_workers();
