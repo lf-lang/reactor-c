@@ -1872,7 +1872,7 @@ void usage(int argc, const char* argv[]) {
 // Some options given in the target directive are provided here as
 // default command-line options.
 int default_argc = 0;
-char** default_argv = NULL;
+const char** default_argv = NULL;
 
 
 /**
