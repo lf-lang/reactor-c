@@ -237,7 +237,9 @@ int _lf_do_step(void) {
 // the keepalive command-line option has not been given.
 // Otherwise, return 1.
 int next(void) {
+    lf_critical_section_enter();
     event_t* event = (event_t*)pqueue_peek(event_q);
+    lf_critical_section_exit();
     //pqueue_dump(event_q, event_q->prt);
     // If there is no next event and -keepalive has been specified
     // on the command line, then we will wait the maximum time possible.
@@ -270,24 +272,18 @@ int next(void) {
 
     LF_PRINT_LOG("Next event (elapsed) time is " PRINTF_TIME ".", next_tag.time - start_time);
     // Wait until physical time >= event.time.
-    // The wait_until function will advance current_tag.time.
     if (wait_until(next_tag.time) != 0) {
         LF_PRINT_DEBUG("***** wait_until was interrupted.");
-        // Sleep was interrupted.
-        // FIXME: It is unclear what would cause this to occur in this unthreaded
-        // runtime since lf_schedule() is not thread safe here and should not
-        // be called asynchronously. Perhaps in some runtime such as for a
-        // PRET machine this will be supported, so here we handle this as
-        // if an asynchronous call to schedule has occurred. In that case,
-        // we should return 1 to let the runtime loop around to see what
-        // is on the event queue.
+        // Sleep was interrupted. This could happen when a physical action
+        // gets scheduled from an interrupt service routine.
         return 1;
     }
 
     // At this point, finally, we have an event to process.
     // Advance current time to match that of the first event on the queue.
+    lf_critical_section_enter();
     _lf_advance_logical_time(next_tag.time);
-
+    lf_critical_section_exit();
     if (lf_tag_compare(current_tag, stop_tag) >= 0) {        
         _lf_trigger_shutdown_reactions();
     }
@@ -299,7 +295,9 @@ int next(void) {
     // Pop all events from event_q with timestamp equal to current_tag.time,
     // extract all the reactions triggered by these events, and
     // stick them into the reaction queue.
+    lf_critical_section_enter();
     _lf_pop_events();
+    lf_critical_section_exit();
 
     return _lf_do_step();
 }
