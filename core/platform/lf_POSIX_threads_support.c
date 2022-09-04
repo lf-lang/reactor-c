@@ -25,15 +25,21 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /** POSIX API support for the C target of Lingua Franca.
- *  
+ *
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
- * 
+ *
  * All functions return 0 on success.
  */
 
 #include "lf_POSIX_threads_support.h"
 #include <errno.h>
 #include <stdint.h> // For fixed-width integral types
+
+// The one and only mutex lock.
+_lf_mutex_t mutex;
+
+// Condition variables used for notification between threads.
+_lf_cond_t event_q_changed;
 
 /**
  * Create a new thread, starting with execution of lf_thread getting passed
@@ -89,7 +95,7 @@ int lf_mutex_lock(_lf_mutex_t* mutex) {
     return pthread_mutex_lock((pthread_mutex_t*)mutex);
 }
 
-/** 
+/**
  * Unlock a mutex.
  *
  * @return 0 on success, error number otherwise (see pthread_mutex_unlock()).
@@ -98,7 +104,7 @@ int lf_mutex_unlock(_lf_mutex_t* mutex) {
     return pthread_mutex_unlock((pthread_mutex_t*)mutex);
 }
 
-/** 
+/**
  * Initialize a conditional variable.
  *
  * @return 0 on success, error number otherwise (see pthread_cond_init()).
@@ -111,7 +117,7 @@ int lf_cond_init(_lf_cond_t* cond) {
     return pthread_cond_init(cond, &cond_attr);
 }
 
-/** 
+/**
  * Wake up all threads waiting for condition variable cond.
  *
  * @return 0 on success, error number otherwise (see pthread_cond_broadcast()).
@@ -120,7 +126,7 @@ int lf_cond_broadcast(_lf_cond_t* cond) {
     return pthread_cond_broadcast((pthread_cond_t*)cond);
 }
 
-/** 
+/**
  * Wake up one thread waiting for condition variable cond.
  *
  * @return 0 on success, error number otherwise (see pthread_cond_signal()).
@@ -129,7 +135,7 @@ int lf_cond_signal(_lf_cond_t* cond) {
     return pthread_cond_signal((pthread_cond_t*)cond);
 }
 
-/** 
+/**
  * Wait for condition variable "cond" to be signaled or broadcast.
  * "mutex" is assumed to be locked before.
  *
@@ -139,11 +145,11 @@ int lf_cond_wait(_lf_cond_t* cond, _lf_mutex_t* mutex) {
     return pthread_cond_wait((pthread_cond_t*)cond, (pthread_mutex_t*)mutex);
 }
 
-/** 
+/**
  * Block current thread on the condition variable until condition variable
  * pointed by "cond" is signaled or time pointed by "absolute_time_ns" in
  * nanoseconds is reached.
- * 
+ *
  * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
  *  number otherwise (see pthread_cond_timedwait).
  */
@@ -162,7 +168,7 @@ int lf_cond_timedwait(_lf_cond_t* cond, _lf_mutex_t* mutex, int64_t absolute_tim
         case ETIMEDOUT:
             return_value = _LF_TIMEOUT;
             break;
-        
+
         default:
             break;
     }
