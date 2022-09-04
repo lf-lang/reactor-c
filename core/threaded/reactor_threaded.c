@@ -40,6 +40,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler.h"
 #include <signal.h>
 
+// The one and only mutex lock.
+extern lf_mutex_t mutex;
+
+// Condition variables used for notification between threads.
+extern lf_cond_t event_q_changed;
 
 /**
  * The maximum amount of time a worker thread should stall
