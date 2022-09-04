@@ -139,7 +139,7 @@ typedef struct federate_instance_t {
 
     /**
      * Indicates whether the last TAG received is provisional or an ordinary
-     * TAG. 
+     * TAG.
      * If the last TAG has been provisional, network control reactions must be inserted.
      * This variable should only be accessed while holding the mutex lock.
      */
@@ -200,12 +200,12 @@ typedef struct federate_instance_t {
     instant_t min_delay_from_physical_action_to_federate_output;
 
     /**
-     * This list is also used to determine the status of a given network 
-     * input port at a given logical time. The status of the port (trigger->status) can be: 
-     * present, absent, or unknown. To determine the status of that port, for a given trigger 
-     * 't' in this list, a (number of) network input control reactions are inserted into the 
-     * reaction queue, which is are special kind of reaction that wait long enough until the 
-     * status of the port becomes known. In the centralized coordination, this wait is until 
+     * This list is also used to determine the status of a given network
+     * input port at a given logical time. The status of the port (trigger->status) can be:
+     * present, absent, or unknown. To determine the status of that port, for a given trigger
+     * 't' in this list, a (number of) network input control reactions are inserted into the
+     * reaction queue, which is are special kind of reaction that wait long enough until the
+     * status of the port becomes known. In the centralized coordination, this wait is until
      * the RTI informs the reaction of the status of the port. In the decentralized coordination,
      * this wait is until the STP offset expires (or the status is somehow becomes known sooner).
      */
@@ -219,11 +219,11 @@ typedef struct federate_instance_t {
 
 
     /**
-     * The triggers for all network output control reactions. 
-     * 
+     * The triggers for all network output control reactions.
+     *
      * This is used to trigger network output
-     * control reactions that will potentially send an ABSENT 
-     * message to any downstream federate that might be blocking 
+     * control reactions that will potentially send an ABSENT
+     * message to any downstream federate that might be blocking
      * on the network port. The ABSENT message will only be sent if
      * the output is not present.
      */
@@ -233,16 +233,16 @@ typedef struct federate_instance_t {
 
 
 typedef struct federation_metadata_t {
-    char* federation_id;
+    const char* federation_id;
     char* rti_host;
     int rti_port;
     char* rti_user;
 } federation_metadata_t;
 
-/** 
+/**
  * Synchronize the start with other federates via the RTI.
- * This assumes that a connection to the RTI is already made 
- * and _lf_rti_socket_TCP is valid. It then sends the current logical 
+ * This assumes that a connection to the RTI is already made
+ * and _lf_rti_socket_TCP is valid. It then sends the current logical
  * time to the RTI and waits for the RTI to respond with a specified
  * time. It starts a thread to listen for messages from the RTI.
  * It then waits for physical time to match the specified time,
@@ -255,12 +255,12 @@ void synchronize_with_other_federates(void);
 
 /**
  * Wait until the status of network port "port_ID" is known.
- * 
+ *
  * In decentralized coordination mode, the wait time is capped by STAA + STA,
  * after which the status of the port is presumed to be absent.
- * 
+ *
  * This function assumes the holder does not hold a mutex.
- * 
+ *
  * @param port_ID The ID of the network port
  * @param STAA The safe-to-assume-absent threshold for the port
  */
