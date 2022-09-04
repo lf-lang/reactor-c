@@ -276,7 +276,7 @@ void extract_timed_header(
  *
  * The tag is transmitted as a 64-bit (8 byte) signed integer for time and a
  * 32-bit (4 byte) unsigned integer for microstep.
- * 
+ *
  * @param buffer The buffer to read from.
  * @return The extracted tag.
  */
@@ -286,9 +286,9 @@ tag_t extract_tag(
 
 /**
  * Encode tag information into buffer.
- * 
+ *
  * Buffer must have been allocated externally.
- * 
+ *
  * @param buffer The buffer to encode into.
  * @param tag The tag to encode into 'buffer'.
  */
@@ -327,35 +327,35 @@ bool validate_port(char* port);
  * Checks if host is valid.
  * @return true if valid, false otherwise.
  */
-bool validate_host(char* host);
+bool validate_host(const char* host);
 
 
 /**
  * Checks if user is valid.
  * @return true if valid, false otherwise.
  */
-bool validate_user(char* user);
+bool validate_user(const char* user);
 
 
 /**
  * Extract one match group from the rti_addr regex .
  * @return true if SUCCESS, else false.
  */
-bool extract_match_group(char* rti_addr, char* dest, regmatch_t group, int max_len, int min_len, char* err_msg);
+bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group, int max_len, int min_len, char* err_msg);
 
 
 /**
  * Extract match groups from the rti_addr regex.
  * @return true if success, else false.
  */
-bool extract_match_groups(char* rti_addr, char** rti_addr_strs, bool** rti_addr_flags, regmatch_t* group_array, 
+bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti_addr_flags, regmatch_t* group_array,
                           int* gids, int* max_lens, int* min_lens, char** err_msgs);
 
 
 /**
- * Extract the host, port and user from rti_addr.  
+ * Extract the host, port and user from rti_addr.
  */
-void extract_rti_addr_info(char* rti_addr, rti_addr_info_t* rti_addr_info);
+void extract_rti_addr_info(const char* rti_addr, rti_addr_info_t* rti_addr_info);
 
 
 #endif /* NET_UTIL_H */

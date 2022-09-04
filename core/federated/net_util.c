@@ -573,7 +573,7 @@ void encode_tag(
  * Checks if str matches regex.
  * @return true if there is a match, false otherwise.
  */
-bool match_regex(char* str, char* regex) {
+bool match_regex(const char* str, char* regex) {
     regex_t regex_compiled;
     regmatch_t group;
     bool valid = false;
