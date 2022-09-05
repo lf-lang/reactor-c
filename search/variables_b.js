@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['last_0',['last',['../structtrigger__t.html#a08bc1aefda73f515c91dbff3186fa23f',1,'trigger_t']]],
-  ['last_5fenabling_5freaction_1',['last_enabling_reaction',['../structreaction__t.html#a3c48d3ba033458a40cd1af39971a659c',1,'reaction_t']]],
+  ['last_0',['last',['../structtrigger__t.html#ab1ea5c50bb1ca98f03d2e0aedd7ea454',1,'trigger_t']]],
+  ['last_5fenabling_5freaction_1',['last_enabling_reaction',['../structreaction__t.html#acbf0778e73f7eeedbb89345d1beb09b6',1,'reaction_t']]],
   ['last_5fgranted_2',['last_granted',['../structfederate__t.html#a426f1683c5b95daae0ac0b21dab4d648',1,'federate_t']]],
   ['last_5fprovisionally_5fgranted_3',['last_provisionally_granted',['../structfederate__t.html#a0d12fb57d188ef7496268b93ea65481a',1,'federate_t']]],
   ['last_5fsent_5fltc_4',['last_sent_LTC',['../structfederate__instance__t.html#ae95f54a01b0367048faa6460ff86e987',1,'federate_instance_t']]],

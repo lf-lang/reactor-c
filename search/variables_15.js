@@ -6,5 +6,5 @@ var searchData=
   ['welcome_5fmessage_5flength_3',['welcome_message_length',['../sensor__simulator_8c.html#aed914099b551105b7294552e79e13b16',1,'sensor_simulator.c']]],
   ['width_4',['width',['../structlf__multiport__iterator__t.html#a9a506388d73fdb6c0fd45c182f6a41ac',1,'lf_multiport_iterator_t']]],
   ['worker_5faffinity_5',['worker_affinity',['../structreaction__t.html#a861cbf9521eb367cedf9e2d0ecee0fca',1,'reaction_t']]],
-  ['worker_5fthread_5fcount_6',['worker_thread_count',['../core_2threaded_2reactor__threaded_8c.html#a76d8bd3f166632ed8f2990a1f29852cd',1,'worker_thread_count():&#160;reactor_threaded.c'],['../include_2core_2threaded_2reactor__threaded_8c.html#a76d8bd3f166632ed8f2990a1f29852cd',1,'worker_thread_count():&#160;reactor_threaded.c']]]
+  ['worker_5fthread_5fcount_6',['worker_thread_count',['../reactor__threaded_8c.html#a76d8bd3f166632ed8f2990a1f29852cd',1,'reactor_threaded.c']]]
 ];
