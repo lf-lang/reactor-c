@@ -206,7 +206,6 @@ In each file, delete section headers corresponding to sections that are empty.
 ```c
 /**
  * @file
- * @brief <description of this file's purpose>
  * @author <author name>
  * @copyright See "LICENSE.md."
  */
@@ -237,6 +236,7 @@ In each file, delete section headers corresponding to sections that are empty.
 ```c
 /**
  * @file
+ * @brief <description of this file's purpose>
  * @author <author name>
  * @copyright See "LICENSE.md."
  */
