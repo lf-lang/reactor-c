@@ -133,7 +133,6 @@ Documentation comments for nontrivial private procedures must be provided where 
 implemented.
 
 Duplication of multiline comments or of sigificant parts of multiline comments is forbidden.
-Doxygen's `@implements` command should be used instead of comment duplication.
 
 ## Abbreviations
 
