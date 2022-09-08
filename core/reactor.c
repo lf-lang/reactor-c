@@ -85,9 +85,8 @@ void _lf_set_present(lf_port_base_t* port) {
 /**
  * Wait until physical time matches the given logical time or the time of a 
  * concurrently scheduled physical action, which might be earlier than the 
- * requested logical time
- * , in which case the wait is preempted.
- * ...The return value is the logical time of the next event(s) to handle.
+ * requested logical time.
+ * @return 0 if the wait was completed, -1 if it was preempted or interrupted.
  */ 
 int wait_until(instant_t logical_time_ns) {
     int ns_waited = 0;
@@ -98,7 +97,7 @@ int wait_until(instant_t logical_time_ns) {
         if (ns_to_wait < MIN_WAIT_TIME) {
             LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_WAIT_TIME %lld. Skipping wait.",
                 ns_to_wait, MIN_WAIT_TIME);
-            return return_value;
+            return -1;
         }
         return lf_nanosleep(ns_to_wait);
     }
