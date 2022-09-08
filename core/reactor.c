@@ -83,16 +83,14 @@ void _lf_set_present(lf_port_base_t* port) {
 }
 
 /**
- * Advance logical time to the lesser of the specified time or the
- * timeout time, if a timeout time has been given. If the -fast command-line option
- * was not given, then wait until physical time matches or exceeds the start time of
- * execution plus the current_tag.time plus the specified logical time.  If this is not
- * interrupted, then advance current_tag.time by the specified logical_delay.
- * Return 0 if time advanced to the time of the event and -1 if the wait
- * was interrupted or if the timeout time was reached.
+ * Wait until physical time matches the given logical time or the time of a 
+ * concurrently scheduled physical action, which might be earlier than the 
+ * requested logical time
+ * , in which case the wait is preempted.
+ * ...The return value is the logical time of the next event(s) to handle.
  */ 
 int wait_until(instant_t logical_time_ns) {
-    int return_value = 0;
+    int ns_waited = 0;
     if (!fast) {
         LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", logical_time_ns - start_time);
         interval_t ns_to_wait = logical_time_ns - lf_time_physical();
@@ -102,10 +100,8 @@ int wait_until(instant_t logical_time_ns) {
                 ns_to_wait, MIN_WAIT_TIME);
             return return_value;
         }
-
-        return_value = lf_nanosleep(ns_to_wait);
+        return lf_nanosleep(ns_to_wait);
     }
-    return return_value;
 }
 
 void lf_print_snapshot() {
@@ -243,17 +239,13 @@ int next(void) {
     //pqueue_dump(event_q, event_q->prt);
     // If there is no next event and -keepalive has been specified
     // on the command line, then we will wait the maximum time possible.
-    // FIXME: is LLONG_MAX different from FOREVER?
-    #ifdef BIT_32
-    tag_t next_tag = { .time = LONG_MAX, .microstep = UINT_MAX};
-    #else 
-    tag_t next_tag = { .time = LLONG_MAX, .microstep = UINT_MAX};
-    #endif
+    tag_t next_tag = FOREVER_TAG_INITIALIZER;
     if (event == NULL) {
         // No event in the queue.
-        if (!keepalive_specified) { // FIXME: validator should issue a warning for unthreaded implementation
-                                    // schedule is not thread-safe
-            _lf_set_stop_tag((tag_t){.time=current_tag.time,.microstep=current_tag.microstep+1});
+        if (!keepalive_specified) {
+            _lf_set_stop_tag(
+                (tag_t){.time=current_tag.time, .microstep=current_tag.microstep+1}
+            );
         }
     } else {
         next_tag.time = event->time;
@@ -263,27 +255,29 @@ int next(void) {
         } else {
             next_tag.microstep = 0;
         }
+        if (_lf_is_tag_after_stop_tag(next_tag)) {
+            // Cannot process events after the stop tag.
+            next_tag = stop_tag;
+        }
     }
     
-    if (_lf_is_tag_after_stop_tag(next_tag)) {
-        // Cannot process events after the stop tag.
-        next_tag = stop_tag;
-    }
-
-    LF_PRINT_LOG("Next event (elapsed) time is " PRINTF_TIME ".", next_tag.time - start_time);
     // Wait until physical time >= event.time.
-    if (wait_until(next_tag.time) != 0) {
+    int finished_sleep = wait_until(next_tag.time);
+    lf_critical_section_enter();
+    LF_PRINT_LOG("Next event (elapsed) time is " PRINTF_TIME ".", next_tag.time - start_time);
+    if (!finished_sleep) {
         LF_PRINT_DEBUG("***** wait_until was interrupted.");
         // Sleep was interrupted. This could happen when a physical action
         // gets scheduled from an interrupt service routine.
-        return 1;
+        // In this case, check the event queue again to make sure to
+        // advance time to the correct tag.
+        next_tag.time = ((event_t*)pqueue_peek(event_q))->time;
     }
-
-    // At this point, finally, we have an event to process.
     // Advance current time to match that of the first event on the queue.
-    lf_critical_section_enter();
     _lf_advance_logical_time(next_tag.time);
     lf_critical_section_exit();
+    
+    // Trigger shutdown reactions if appropriate.
     if (lf_tag_compare(current_tag, stop_tag) >= 0) {        
         _lf_trigger_shutdown_reactions();
     }
