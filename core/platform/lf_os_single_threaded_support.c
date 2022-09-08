@@ -10,6 +10,6 @@ int lf_notify_of_event() {
     return 0;
 }
 
-int lf_init_critical_sections() {
+int lf_ack_events() {
     return 0;
 }
