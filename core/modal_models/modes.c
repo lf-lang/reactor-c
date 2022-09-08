@@ -374,8 +374,8 @@ void _lf_process_mode_changes(
                     // Reset state variables (if explicitly requested for automatic reset).
                     // The generated code will not register all state variables by default.
                     // Usually the reset trigger is used.
-                    for (int i = 0; i < reset_data_size; i++) {
-                        mode_state_variable_reset_data_t data = reset_data[i];
+                    for (int j = 0; j < reset_data_size; j++) {
+                        mode_state_variable_reset_data_t data = reset_data[j];
                         if (data.mode == state->next_mode) {
                             LF_PRINT_DEBUG("Modes: Reseting state variable.");
                             memcpy(data.target, data.source, data.size);
@@ -386,8 +386,8 @@ void _lf_process_mode_changes(
                     // once and will not be on the event_q after their initial triggering.
                     // Therefore, the logic above cannot handle these timers. We need
                     // to trigger these timers manually if there is a reset transition.
-                    for (int i = 0; i < timer_triggers_size; i++) {
-                        trigger_t* timer = timer_triggers[i];
+                    for (int j = 0; j < timer_triggers_size; j++) {
+                        trigger_t* timer = timer_triggers[j];
                         if (timer->period == 0 && timer->mode == state->next_mode) {
                             _lf_schedule(timer, timer->offset, NULL);
                         }
@@ -503,7 +503,7 @@ void _lf_process_mode_changes(
                 size_t delayed_removal_count = 0;
 
                 // Find events
-                for (int i = 0; i < q_size; i++) {
+                for (size_t i = 0; i < q_size; i++) {
                     event_t* event = (event_t*)event_q->d[i + 1]; // internal queue data structure omits index 0
                     if (event != NULL && event->trigger != NULL && !_lf_mode_is_active(event->trigger->mode)) {
                         delayed_removal[delayed_removal_count++] = event;
@@ -515,7 +515,7 @@ void _lf_process_mode_changes(
                 // Events are removed delayed in order to allow linear iteration over the queue
                 LF_PRINT_DEBUG("Modes: Pulling %zu events from the event queue to suspend them. %d events are now suspended.",
                 		delayed_removal_count, _lf_suspended_events_num);
-                for (int i = 0; i < delayed_removal_count; i++) {
+                for (size_t i = 0; i < delayed_removal_count; i++) {
                     pqueue_remove(event_q, delayed_removal[i]);
                 }
 

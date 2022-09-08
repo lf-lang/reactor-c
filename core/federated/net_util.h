@@ -298,7 +298,7 @@ void encode_tag(
 );
 
 /**
- * A helper struct for passing rti_addr information betweem parse_rti_addr and extract_rti_addr_info
+ * A helper struct for passing rti_addr information between parse_rti_addr and extract_rti_addr_info
  */
 typedef struct rti_addr_info_t {
     char rti_host_str[256];
@@ -341,16 +341,14 @@ bool validate_user(const char* user);
  * Extract one match group from the rti_addr regex .
  * @return true if SUCCESS, else false.
  */
-bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group, int max_len, int min_len, char* err_msg);
-
+bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group,
+		int max_len, int min_len, const char* err_msg);
 
 /**
  * Extract match groups from the rti_addr regex.
  * @return true if success, else false.
  */
-bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti_addr_flags, regmatch_t* group_array,
-                          int* gids, int* max_lens, int* min_lens, char** err_msgs);
-
+bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti_addr_flags, regmatch_t* group_array, int* gids, int* max_lens, int* min_lens, const char** err_msgs);
 
 /**
  * Extract the host, port and user from rti_addr.

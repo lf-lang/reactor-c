@@ -864,7 +864,7 @@ void connect_to_federate(uint16_t remote_federate_id) {
  * @param hostname A hostname, such as "localhost".
  * @param port_number A port number.
  */
-void connect_to_rti(char* hostname, int port) {
+void connect_to_rti(const char* hostname, int port) {
     LF_PRINT_LOG("Connecting to the RTI.");
 
     // override passed hostname and port if passed as runtime arguments

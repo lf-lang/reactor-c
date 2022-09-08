@@ -1533,7 +1533,6 @@ void _lf_advance_logical_time(instant_t next_time) {
     // to the ordinary execution of LF programs. Instead, there might
     // be a need for a target property that enables these kinds of logic
     // assertions for development purposes only.
-    /*
     event_t* next_event = (event_t*)pqueue_peek(event_q);
     if (next_event != NULL) {
         if (next_time > next_event->time) {
@@ -1542,7 +1541,6 @@ void _lf_advance_logical_time(instant_t next_time) {
                     next_time - start_time, next_event->time - start_time);
         }
     }
-    */
 
     if (current_tag.time < next_time) {
         current_tag.time = next_time;
@@ -2049,20 +2047,20 @@ void initialize(void) {
 
     #ifdef BIT_32
         #ifdef MICROSECOND_TIME
-            LF_PRINT_DEBUG("Start time: %ldus", start_time);
+            LF_PRINT_DEBUG("Start time: " PRINTF_TIME "us", start_time);
         #else
-            LF_PRINT_DEBUG("Start time: %ldns", start_time);
+            LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
         #endif
     #else
         #ifdef MICROSECOND_TIME
-            LF_PRINT_DEBUG("Start time: %ldus", start_time);
+            LF_PRINT_DEBUG("Start time: " PRINTF_TIME "us", start_time);
         #else
-            LF_PRINT_DEBUG("Start time: %ldns", start_time);
+            LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
         #endif
     #endif
 
     #ifdef ARDUINO
-    printf("---- Start execution at time %ldus\n", physical_start_time);
+    printf("---- Start execution at time " PRINTF_TIME "us\n", physical_start_time);
     #else
     struct timespec physical_time_timespec = {physical_start_time / BILLION, physical_start_time % BILLION};
 

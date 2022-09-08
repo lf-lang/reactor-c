@@ -639,7 +639,8 @@ bool validate_user(const char* user) {
  * Extract one match group from the rti_addr regex .
  * @return true if SUCCESS, else false.
  */
-bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group, int max_len, int min_len, char* err_msg) {
+bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group, 
+        int max_len, int min_len, const char* err_msg) {
     size_t size = group.rm_eo - group.rm_so;
     if (size > max_len || size < min_len) {
         lf_print_error("%s", err_msg);
@@ -654,8 +655,7 @@ bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group, int
  * Extract match groups from the rti_addr regex.
  * @return true if success, else false.
  */
-bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti_addr_flags, regmatch_t* group_array, 
-                          int* gids, int* max_lens, int* min_lens, char** err_msgs) {
+bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti_addr_flags, regmatch_t* group_array, int* gids, int* max_lens, int* min_lens, const char** err_msgs) {
     for (int i = 0; i < 3; i++) {
         if (group_array[gids[i]].rm_so != -1) {
             if (!extract_match_group(rti_addr, rti_addr_strs[i], group_array[gids[i]], max_lens[i], min_lens[i], err_msgs[i])) {
@@ -672,7 +672,7 @@ bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti
  * Extract the host, port and user from rti_addr.  
  */
 void extract_rti_addr_info(const char* rti_addr, rti_addr_info_t* rti_addr_info) {
-    char* regex_str = "(([a-zA-Z0-9_-]{1,254})@)?([a-zA-Z0-9.]{1,255})(:([0-9]{1,5}))?";
+    const char* regex_str = "(([a-zA-Z0-9_-]{1,254})@)?([a-zA-Z0-9.]{1,255})(:([0-9]{1,5}))?";
     size_t max_groups = 6;
     // The group indices of each field of interest in the regex.
     int user_gid = 2, host_gid = 3, port_gid = 5;
@@ -681,7 +681,7 @@ void extract_rti_addr_info(const char* rti_addr, rti_addr_info_t* rti_addr_info)
     bool* rti_addr_flags[3] = {&rti_addr_info->has_user, &rti_addr_info->has_host, &rti_addr_info->has_port};
     int max_lens[3] = {255, 255, 5};
     int min_lens[3] = {1, 1, 1};
-    char* err_msgs[3] = {"User name must be between 1 to 255 characters long.",
+    const char* err_msgs[3] = {"User name must be between 1 to 255 characters long.",
                          "Host must be between 1 to 255 characters long.",
                          "Port must be between 1 to 5 characters long."};
 

@@ -36,7 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Keep track of interrupts being raised.
  */
-bool _lf_timer_interrupted;
+volatile bool _lf_timer_interrupted = false;
 
 /**
  * Pause execution for a number of microseconds.
@@ -101,7 +101,7 @@ int lf_notify_of_event() {
    return 0;
 }
 
-int lf_init_critical_sections() {
+int lf_ack_events() {
     _lf_timer_interrupted = false;
     return 0;
 }

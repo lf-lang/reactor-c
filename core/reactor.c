@@ -271,6 +271,7 @@ int next(void) {
         // In this case, check the event queue again to make sure to
         // advance time to the correct tag.
         next_tag.time = ((event_t*)pqueue_peek(event_q))->time;
+        lf_ack_events();
     }
     // Advance current time to match that of the first event on the queue.
     _lf_advance_logical_time(next_tag.time);

@@ -187,6 +187,6 @@ int lf_notify_of_event() {
     return lf_cond_broadcast(&event_q_changed);
 }
 
-int lf_init_critical_sections() {
+int lf_ack_events() {
     return 0;
 }
