@@ -39,10 +39,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         #include "lf_C11_threads_support.c"
     #endif
 #else
-    // If there are physical actions in the program, the LF compiler will ensure
-    // that a threaded runtime is being used. In the absence of physical actions,
-    // no support is needed for entry and exit of critical sections, hence the
-    // following implementation does not really do anything.
     #include "lf_os_single_threaded_support.c"
 #endif
 
