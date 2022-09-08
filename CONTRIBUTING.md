@@ -30,6 +30,10 @@ int* ptr;
 
 We do not use the special case mentioned in Barr 3.1j.
 
+#### Horizontal alignment (3.2a, c)
+Tabs are always forbidden. The use of multiple consecutive spaces is forbidden except as indentation
+at the beginning of a line or as required by rule 3.2d.
+
 #### Blank lines separating natural blocks of code (3.3b)
 
 The only natural blocks of code that must be preceded and followed by a blank line are procedure
@@ -46,11 +50,11 @@ alternative functionality that depends on a preprocessor definition.
 
 #### Names of public data types (5.1c)
 
-The name of all public data types shall be prefixed with lf_.
+The name of all public data types shall be prefixed with `lf_`.
 
 #### Names of public functions (6.1i)
 
-The name of all public functions shall be prefixed with lf_.
+The name of all public functions shall be prefixed with `lf_`.
 
 #### Macro capitalization (6.1f)
 
@@ -66,7 +70,11 @@ effort shall be taken to keep the length of each function limited to a maximum o
 #### Short variable names (7.1e)
 
 We place no restrictions on the length of variable names; however, recommendations against cryptic
-abbreviations and abbreviations not in a version-controlled table nor in Barr Appendix A still apply.
+abbreviations and abbreviations not in a version-controlled table still apply.
+
+#### Hungarian notation (7.1 j, k, l, m, n, o)
+
+Both Apps and Systems Hungarian notation are forbidden.
 
 ### Addenda
 
@@ -97,7 +105,12 @@ while (
 }
 ```
 
-#### Documentation comments
+#### Section headers in files
+
+Sections within files shall not be marked by explicit section headers. They shall be made clear by
+adhering to the sectioning suggested by the source and header file templates.
+
+#### Documentation comment format
 
 We use the Javadoc-style `/**` to mark documentation comments, and we precede any Doxygen commands
 with an `@` sign. Example:
@@ -110,6 +123,15 @@ with an `@` sign. Example:
 ```
 
 The opening `/**` marker must be immediately followed by a line feed.
+
+#### Documentation comment placement
+Documentation comments of public procedures must be provided in the corresponding header files.
+
+Documentation comments for nontrivial private procedures must be provided where those procedures are
+implemented.
+
+Duplication of multiline comments or of sigificant parts of multiline comments is forbidden.
+Doxygen's `@implements` command should be used instead of comment duplication.
 
 ## Abbreviations
 
@@ -197,25 +219,21 @@ In each file, delete section headers corresponding to sections that are empty.
 
 <#includes for header files belonging to our project>
 
-///////////////////////   Macros and Type Definitions   ////////////////////////
 <preprocessor definitions>
 
 <definitions for private types>
 
-///////////////////////            Variables            ////////////////////////
 <constants>
 
-<globals>
+<global data definitions>
 
-<static variables>
+<static data declarations and definitions>
 
-///////////////////////        Private Procedures        ///////////////////////
 <private procedure prototypes>
 
-<private procedures>
+<public procedure bodies>
 
-///////////////////////        Public Procedures         ///////////////////////
-<public procedures>
+<private procedure bodies>
 ```
 
 ## Header file template
@@ -234,12 +252,12 @@ In each file, delete section headers corresponding to sections that are empty.
 
 <#includes for header files belonging to our project>
 
-///////////////////////   Macros and Type Definitions   ////////////////////////
 <preprocessor definitions>
 
 <definitions for public types>
 
-///////////////////////           Procedures             ///////////////////////
+<global variable declarations>
+
 <public procedure prototypes>
 
 #endif // <file name in all caps, with "." replaced with "_">
