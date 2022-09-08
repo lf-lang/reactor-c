@@ -144,7 +144,6 @@ The following is an extended version of the table provided by the Barr standard.
 | argc         | argument count                |
 | argv         | argument vector               |
 | avg          | average                       |
-| b_           | boolean                       |
 | buf          | buffer                        |
 | cfg          | configuration                 |
 | cond         | condition variable            |
@@ -155,9 +154,7 @@ The following is an extended version of the table provided by the Barr standard.
 | ee           | EEPROM                        |
 | err          | error                         |
 | fed          | federate/federated            |
-| g_           | global                        |
 | gpio         | general purpose I/0 pins      |
-| h_           | handle (to)                   |
 | id           | ID                            |
 | init         | initialize                    |
 | io           | input/output                  |
@@ -174,7 +171,6 @@ The following is an extended version of the table provided by the Barr standard.
 | next         | next (item in a list)         |
 | nsec         | nanosecond                    |
 | num          | number (of)                   |
-| p_           | pointer (to)                  |
 | param        | parameter                     |
 | pp_          | pointer to a pointer (to)     |
 | pqueue       | priority queue                |
