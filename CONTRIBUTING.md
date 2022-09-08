@@ -74,7 +74,9 @@ abbreviations and abbreviations not in a version-controlled table still apply.
 
 #### Hungarian notation (7.1 j, k, l, m, n, o)
 
-Both Apps and Systems Hungarian notation are forbidden.
+Hungarian notation is never required and is only permitted in unusual cases where it aids
+readability. The abbreviations listed in the "Abbreviations" table remain valid. Example: The `p_`
+and `pp_` prefixes are permitted in the navigation of potentially confusing data structures.
 
 ### Addenda
 
