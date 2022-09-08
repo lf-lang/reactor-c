@@ -86,10 +86,9 @@ void _lf_set_present(lf_port_base_t* port) {
  * Wait until physical time matches the given logical time or the time of a 
  * concurrently scheduled physical action, which might be earlier than the 
  * requested logical time.
- * @return 0 if the wait was completed, -1 if it was preempted or interrupted.
+ * @return 0 if the wait was completed, -1 if it was skipped or interrupted.
  */ 
 int wait_until(instant_t logical_time_ns) {
-    int ns_waited = 0;
     if (!fast) {
         LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", logical_time_ns - start_time);
         interval_t ns_to_wait = logical_time_ns - lf_time_physical();
@@ -101,6 +100,7 @@ int wait_until(instant_t logical_time_ns) {
         }
         return lf_nanosleep(ns_to_wait);
     }
+    return 0;
 }
 
 void lf_print_snapshot() {
