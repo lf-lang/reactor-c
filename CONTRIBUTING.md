@@ -50,11 +50,11 @@ alternative functionality that depends on a preprocessor definition.
 
 #### Names of public data types (5.1c)
 
-The name of all public data types shall be prefixed with `lf_`.
+The names of all public data types shall be prefixed with `lf_`.
 
 #### Names of public functions (6.1i)
 
-The name of all public functions shall be prefixed with `lf_`.
+The names of all public functions shall be prefixed with `lf_`.
 
 #### Macro capitalization (6.1f)
 
@@ -82,7 +82,7 @@ and `pp_` prefixes are permitted in the navigation of potentially confusing data
 
 #### Inlining-related performance optimizations
 
-Before attempting to encourage or force inlining, e.g. using the `inline` functions and/or
+Before attempting to encourage or force inlining, e.g. using the `inline` keyword and/or
 parameterized macros, consider whether similar performance could be realized using link-time
 optimization instead.
 
@@ -205,8 +205,6 @@ The following is an extended version of the table provided by the Barr standard.
 | util         | utilities                     |
 
 ## Source file template
-
-In each file, delete section headers corresponding to sections that are empty.
 
 ```c
 /**
