@@ -61,7 +61,7 @@ extern lf_cond_t event_q_changed;
  * to prevent unnecessary delays caused by simply setting up and
  * performing the wait.
  */
-#define MIN_WAIT_TIME USEC(10)
+#define MIN_SLEEP_DURATION USEC(10)
 
 /*
  * A struct representing a barrier in threaded
@@ -351,7 +351,7 @@ void synchronize_with_other_federates();
  * was placed on the queue if that event time matches or exceeds
  * the specified time.
  *
- * @param logical_time_ns Logical time to wait until physical time matches it.
+ * @param logical_time Logical time to wait until physical time matches it.
  * @param return_if_interrupted If this is false, then wait_util will wait
  *  until physical time matches the logical time regardless of whether new
  *  events get put on the event queue. This is useful, for example, for
@@ -362,10 +362,10 @@ void synchronize_with_other_federates();
  *  the stop time, if one was specified. Return true if the full wait time
  *  was reached.
  */
-bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
-    LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time " PRINTF_TIME, logical_time_ns);
+bool wait_until(instant_t logical_time, lf_cond_t* condition) {
+    LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time " PRINTF_TIME, logical_time);
     bool return_value = true;
-    interval_t wait_until_time_ns = logical_time_ns;
+    interval_t wait_until_time_ns = logical_time;
 #ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized
     // Apply the STA to the logical time
     // Prevent an overflow
@@ -384,9 +384,9 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
         interval_t ns_to_wait = wait_until_time_ns - current_physical_time;
         // We should not wait if that adjusted time is already ahead
         // of logical time.
-        if (ns_to_wait < MIN_WAIT_TIME) {
-            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_WAIT_TIME %lld. Skipping wait.",
-                ns_to_wait, MIN_WAIT_TIME);
+        if (ns_to_wait < MIN_SLEEP_DURATION) {
+            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_SLEEP_DURATION %lld. Skipping wait.",
+                ns_to_wait, MIN_SLEEP_DURATION);
             return return_value;
         }
 
@@ -408,7 +408,7 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
         LF_PRINT_DEBUG("-------- Clock offset is " PRINTF_TIME " ns.", current_physical_time - _lf_last_reported_unadjusted_physical_time_ns);
         LF_PRINT_DEBUG("-------- Waiting " PRINTF_TIME " ns for physical time to match logical time " PRINTF_TIME ".",
         		ns_to_wait,
-                logical_time_ns - start_time);
+                logical_time - start_time);
 
         // lf_cond_timedwait returns 0 if it is awakened before the timeout.
         // Hence, we want to run it repeatedly until either it returns non-zero or the
@@ -432,7 +432,7 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
             interval_t ns_to_wait = wait_until_time_ns - lf_time_physical();
             // We should not wait if that adjusted time is already ahead
             // of logical time.
-            if (ns_to_wait < MIN_WAIT_TIME) {
+            if (ns_to_wait < MIN_SLEEP_DURATION) {
                 return true;
             }
             LF_PRINT_DEBUG("-------- lf_cond_timedwait claims to have timed out, "

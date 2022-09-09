@@ -299,7 +299,7 @@ extern int lf_clock_gettime(instant_t* t);
  * Pause execution for a given number of nanoseconds.
  * @return 0 if sleep was completed, or -1 if it was interrupted.
  */
-extern int lf_nanosleep(instant_t requested_time);
+extern int lf_sleep(interval_t sleep_duration);
 
 /**
  * Macros for marking function as deprecated

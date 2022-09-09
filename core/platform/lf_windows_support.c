@@ -330,7 +330,7 @@ int lf_clock_gettime(instant_t* t) {
  *   - EINTR: The sleep was interrupted by a signal handler
  *   - EINVAL: All other errors
  */
-int lf_nanosleep(instant_t requested_time) {
+int lf_sleep(interval_t sleep_duration) {
     /* Declarations */
     HANDLE timer;	/* Timer handle */
     LARGE_INTEGER li;	/* Time defintion */
@@ -341,9 +341,9 @@ int lf_nanosleep(instant_t requested_time) {
     /**
     * Set timer properties.
     * A negative number indicates relative time to wait.
-    * The requested relative time must be in number of 100 nanoseconds.
+    * The requested sleep duration must be in number of 100 nanoseconds.
     */
-    li.QuadPart = -1 * (requested_time / 100);
+    li.QuadPart = -1 * (sleep_duration / 100);
     if(!SetWaitableTimer(timer, &li, 0, NULL, NULL, FALSE)){
         CloseHandle(timer);
         return FALSE;

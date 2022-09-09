@@ -51,7 +51,7 @@ pqueue_t* reaction_q;
  * to prevent unnecessary delays caused by simply setting up and
  * performing the wait.
  */
-#define MIN_WAIT_TIME NSEC(10)
+#define MIN_SLEEP_DURATION NSEC(10)
 
 /**
  * Mark the given port's is_present field as true. This is_present field
@@ -88,17 +88,17 @@ void _lf_set_present(lf_port_base_t* port) {
  * requested logical time.
  * @return 0 if the wait was completed, -1 if it was skipped or interrupted.
  */ 
-int wait_until(instant_t logical_time_ns) {
+int wait_until(instant_t wakeup_time) {
     if (!fast) {
-        LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", logical_time_ns - start_time);
-        interval_t ns_to_wait = logical_time_ns - lf_time_physical();
+        LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", wakeup_time - start_time);
+        interval_t sleep_duration = wakeup_time - lf_time_physical();
     
-        if (ns_to_wait < MIN_WAIT_TIME) {
-            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_WAIT_TIME %lld. Skipping wait.",
-                ns_to_wait, MIN_WAIT_TIME);
+        if (sleep_duration < MIN_SLEEP_DURATION) {
+            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_SLEEP_DURATION %lld. Skipping wait.",
+                sleep_duration, MIN_SLEEP_DURATION);
             return -1;
         }
-        return lf_nanosleep(ns_to_wait);
+        return lf_sleep(sleep_duration);
     }
     return 0;
 }

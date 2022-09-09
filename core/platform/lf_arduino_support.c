@@ -47,8 +47,8 @@ volatile bool _lf_timer_interrupted = false;
  *
  * @return 0 always.
  */
-int lf_nanosleep(instant_t requested_time) {
-    unsigned int microsec = (unsigned int) requested_time;
+int lf_sleep(interval_t sleep_duration) {
+    unsigned int microsec = (unsigned int) sleep_duration; // FIXME: this cast should not be necessary if the datatype is defined correctly.
     if(microsec < 3) {
         return 0;
     }
