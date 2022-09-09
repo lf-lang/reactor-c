@@ -55,7 +55,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  set appropriately (see `man 2 clock_nanosleep`).
  */
 int lf_sleep(interval_t sleep_duration) {
-    const struct timespec tp = convert_ns_to_timespec(sleep);
+    const struct timespec tp = convert_ns_to_timespec(sleep_duration);
     struct timespec remaining;
     return clock_nanosleep(_LF_CLOCK, 0, (const struct timespec*)&tp, (struct timespec*)&remaining);
 }
