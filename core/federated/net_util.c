@@ -655,7 +655,8 @@ bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group,
  * Extract match groups from the rti_addr regex.
  * @return true if success, else false.
  */
-bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti_addr_flags, regmatch_t* group_array, int* gids, int* max_lens, int* min_lens, const char** err_msgs) {
+bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti_addr_flags, regmatch_t* group_array,
+        int* gids, int* max_lens, int* min_lens, const char** err_msgs) {
     for (int i = 0; i < 3; i++) {
         if (group_array[gids[i]].rm_so != -1) {
             if (!extract_match_group(rti_addr, rti_addr_strs[i], group_array[gids[i]], max_lens[i], min_lens[i], err_msgs[i])) {
