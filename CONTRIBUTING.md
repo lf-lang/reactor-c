@@ -28,7 +28,8 @@ int* ptr;
 
 #### Function declarations (3.1j)
 
-We do not use the special case mentioned in Barr 3.1j.
+When defining a function, we do not add a space between the function name and the opening
+parenthesis.
 
 #### Horizontal alignment (3.2a, c)
 Tabs are always forbidden. The use of multiple consecutive spaces is forbidden except as indentation
