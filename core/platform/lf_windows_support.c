@@ -355,3 +355,7 @@ int lf_sleep(interval_t sleep_duration) {
     /* Slept without problems */
     return TRUE;
 }
+
+int lf_nanosleep(interval_t sleep_duration) {
+    return lf_sleep(sleep_duration);
+}

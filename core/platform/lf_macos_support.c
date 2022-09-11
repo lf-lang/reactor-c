@@ -56,3 +56,7 @@ int lf_sleep(interval_t sleep_duration) {
     struct timespec remaining;
     return nanosleep((const struct timespec*)&tp, (struct timespec*)&remaining);
 }
+
+int lf_nanosleep(interval_t sleep_duration) {
+    return lf_sleep(sleep_duration);
+}

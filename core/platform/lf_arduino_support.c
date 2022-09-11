@@ -105,3 +105,7 @@ int lf_ack_events() {
     _lf_timer_interrupted = false;
     return 0;
 }
+
+int lf_nanosleep(interval_t sleep_duration) {
+    return lf_sleep(sleep_duration);
+}

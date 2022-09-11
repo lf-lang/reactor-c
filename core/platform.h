@@ -289,7 +289,7 @@ extern void lf_initialize_clock(void);
 extern int lf_clock_gettime(instant_t* t);
 
 /**
- * Pause execution for a given number of nanoseconds.
+ * Pause execution for a given number duration.
  * @return 0 if sleep was completed, or -1 if it was interrupted.
  */
 extern int lf_sleep(interval_t sleep_duration);
@@ -304,5 +304,11 @@ extern int lf_sleep(interval_t sleep_duration);
 #else
 #define DEPRECATED(X) X
 #endif
+
+/**
+ * Pause execution for a given number of nanoseconds.
+ * @return 0 if sleep was completed, or -1 if it was interrupted.
+ */
+DEPRECATED(extern int lf_nanosleep(interval_t sleep_duration));
 
 #endif // PLATFORM_H
