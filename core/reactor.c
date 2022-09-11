@@ -93,7 +93,9 @@ int wait_until(instant_t wakeup_time) {
         LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", wakeup_time - start_time);
         interval_t sleep_duration = wakeup_time - lf_time_physical();
     
-        if (sleep_duration < MIN_SLEEP_DURATION) {
+        if (sleep_duration <= 0) {
+            return 0;
+        } else if (sleep_duration < MIN_SLEEP_DURATION) {
             LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_SLEEP_DURATION %lld. Skipping wait.",
                 sleep_duration, MIN_SLEEP_DURATION);
             return -1;
@@ -234,6 +236,7 @@ int _lf_do_step(void) {
 int next(void) {
     lf_critical_section_enter();
     event_t* event = (event_t*)pqueue_peek(event_q);
+    // FIXME: stay in the critical section and leave it only while waiting?
     lf_critical_section_exit();
     //pqueue_dump(event_q, event_q->prt);
     // If there is no next event and -keepalive has been specified
@@ -262,18 +265,17 @@ int next(void) {
     
     // Wait until physical time >= event.time.
     int finished_sleep = wait_until(next_tag.time);
-    lf_critical_section_enter();
     LF_PRINT_LOG("Next event (elapsed) time is " PRINTF_TIME ".", next_tag.time - start_time);
-    if (!finished_sleep) {
+    if (finished_sleep != 0) {
         LF_PRINT_DEBUG("***** wait_until was interrupted.");
         // Sleep was interrupted. This could happen when a physical action
         // gets scheduled from an interrupt service routine.
         // In this case, check the event queue again to make sure to
         // advance time to the correct tag.
-        next_tag.time = ((event_t*)pqueue_peek(event_q))->time;
-        lf_ack_events();
+        return 1;
     }
     // Advance current time to match that of the first event on the queue.
+    lf_critical_section_enter();
     _lf_advance_logical_time(next_tag.time);
     lf_critical_section_exit();
     
