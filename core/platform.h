@@ -298,16 +298,15 @@ extern int lf_sleep(interval_t sleep_duration);
  * Macros for marking function as deprecated
  */
 #ifdef __GNUC__
-#define DEPRECATED(X) X __attribute__((deprecated))
+    #define DEPRECATED(X) X __attribute__((deprecated))
 #elif defined(_MSC_VER)
-#define DEPRECATED(X) __declspec(deprecated) X
+    #define DEPRECATED(X) __declspec(deprecated) X
 #else
-#define DEPRECATED(X) X
+    #define DEPRECATED(X) X
 #endif
 
 /**
- * Pause execution for a given number of nanoseconds.
- * @return 0 if sleep was completed, or -1 if it was interrupted.
+ * @deprecated version of "lf_seep"
  */
 DEPRECATED(extern int lf_nanosleep(interval_t sleep_duration));
 
