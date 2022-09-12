@@ -289,10 +289,19 @@ extern void lf_initialize_clock(void);
 extern int lf_clock_gettime(instant_t* t);
 
 /**
- * Pause execution for a given number duration.
- * @return 0 if sleep was completed, or -1 if it was interrupted.
+ * Pause execution for a given duration.
+ * 
+ * @return 0 for success, or -1 for failure.
  */
 extern int lf_sleep(interval_t sleep_duration);
+
+/**
+ * @brief Sleep until the given wakeup time.
+ * 
+ * @param wakeup_time The time instant at which to wake up.
+ * @return int 0 if sleep completed, or -1 if it was interrupted.
+ */
+extern int lf_sleep_until(instant_t wakeup_time);
 
 /**
  * Macros for marking function as deprecated
