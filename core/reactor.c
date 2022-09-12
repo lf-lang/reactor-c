@@ -51,7 +51,7 @@ pqueue_t* reaction_q;
  * to prevent unnecessary delays caused by simply setting up and
  * performing the wait.
  */
-#define MIN_SLEEP_DURATION NSEC(10)
+#define MIN_SLEEP_DURATION USEC(10) // FIXME: https://github.com/lf-lang/reactor-c/issues/109
 
 /**
  * Mark the given port's is_present field as true. This is_present field
@@ -96,11 +96,20 @@ int wait_until(instant_t wakeup_time) {
         if (sleep_duration <= 0) {
             return 0;
         } else if (sleep_duration < MIN_SLEEP_DURATION) {
+            // This is a temporary fix. FIXME: factor this out into platform API function.
+            // Issue: https://github.com/lf-lang/reactor-c/issues/109
+            // What really should be done on embedded platforms:
+            // - compute target time
+            // - disable interrupts
+            // - read current time
+            // - compute shortest distance between target time and current time 
+            // - shortest distance should be positive and at least 2 ticks(us)
             LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_SLEEP_DURATION %lld. Skipping wait.",
                 sleep_duration, MIN_SLEEP_DURATION);
             return -1;
         }
-        return lf_sleep(sleep_duration);
+        LF_PRINT_DEBUG("Going to sleep for %"PRId64" ns\n", sleep_duration);
+        return lf_sleep_until(wakeup_time);
     }
     return 0;
 }
@@ -234,10 +243,10 @@ int _lf_do_step(void) {
 // the keepalive command-line option has not been given.
 // Otherwise, return 1.
 int next(void) {
+    // Enter the critical section and do not leave until we have
+    // determined which tag to commit to and start invoking reactions for.
     lf_critical_section_enter();
     event_t* event = (event_t*)pqueue_peek(event_q);
-    // FIXME: stay in the critical section and leave it only while waiting?
-    lf_critical_section_exit();
     //pqueue_dump(event_q, event_q->prt);
     // If there is no next event and -keepalive has been specified
     // on the command line, then we will wait the maximum time possible.
@@ -272,10 +281,12 @@ int next(void) {
         // gets scheduled from an interrupt service routine.
         // In this case, check the event queue again to make sure to
         // advance time to the correct tag.
+        lf_critical_section_exit();
         return 1;
     }
     // Advance current time to match that of the first event on the queue.
-    lf_critical_section_enter();
+    // We can now leave the critical section. Any events that will be added
+    // to the queue asynchronously will have a later tag than the current one.
     _lf_advance_logical_time(next_tag.time);
     lf_critical_section_exit();
     
