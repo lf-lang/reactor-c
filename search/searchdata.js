@@ -9,7 +9,7 @@ var indexSectionsWithContent =
   6: "_cefloprst",
   7: "_acdfgilnpqrstuvw",
   8: "_abcdefhiklmnoprstuvw",
-  9: "/dlr"
+  9: "/dlrs"
 };
 
 var indexSectionNames =
