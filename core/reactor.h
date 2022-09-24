@@ -525,6 +525,7 @@ struct reaction_t {
     trigger_t ***triggers;    // Array of pointers to arrays of pointers to triggers triggered by each output. INSTANCE.
     reaction_status_t status; // Indicator of whether the reaction is inactive, queued, or running. RUNTIME.
     interval_t deadline;      // Deadline relative to the time stamp for invocation of the reaction. INSTANCE.
+    interval_t let;			  // The logical execution time of this reaction.
     bool is_STP_violated;     // Indicator of STP violation in one of the input triggers to this reaction. default = false.
                               // Value of True indicates to the runtime that this reaction contains trigger(s)
                               // that are triggered at a later logical time that was originally anticipated.
