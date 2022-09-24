@@ -233,7 +233,7 @@ typedef struct federate_instance_t {
 
 
 typedef struct federation_metadata_t {
-    char* federation_id;
+    const char* federation_id;
     char* rti_host;
     int rti_port;
     char* rti_user;

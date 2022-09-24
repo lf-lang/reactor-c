@@ -287,7 +287,11 @@ int next(void) {
     // If there is no next event and -keepalive has been specified
     // on the command line, then we will wait the maximum time possible.
     // FIXME: is LLONG_MAX different from FOREVER?
+    #ifdef BIT_32
+    tag_t next_tag = { .time = LONG_MAX, .microstep = UINT_MAX};
+    #else 
     tag_t next_tag = { .time = LLONG_MAX, .microstep = UINT_MAX};
+    #endif
     if (event == NULL) {
         // No event in the queue.
         if (!keepalive_specified) { // FIXME: validator should issue a warning for unthreaded implementation
@@ -375,7 +379,7 @@ bool _lf_is_blocked_by_executing_reaction(void) {
  * other main functions that might get resolved and linked
  * at compile time.
  */
-int lf_reactor_c_main(int argc, char* argv[]) {
+int lf_reactor_c_main(int argc, const char* argv[]) {
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
 
@@ -390,8 +394,11 @@ int lf_reactor_c_main(int argc, char* argv[]) {
         // The above handles only "normal" termination (via a call to exit).
         // As a consequence, we need to also trap ctrl-C, which issues a SIGINT,
         // and cause it to call exit.
+        // We wrap this statement since certain Arduino flavors don't support signals.
+        #ifndef ARDUINO
         signal(SIGINT, exit);
-
+        #endif
+        
         LF_PRINT_DEBUG("Initializing.");
         initialize(); // Sets start_time.
 #ifdef MODAL_REACTORS
