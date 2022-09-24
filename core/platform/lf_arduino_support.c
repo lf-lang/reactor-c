@@ -44,6 +44,12 @@ static volatile bool _lf_interrupts_enabled = true;
 static volatile uint32_t _lf_time_us_high = 0;
 static volatile uint32_t _lf_time_us_low_last = 0;
 
+int lf_sleep_until(instant_t wakeup) {
+
+    instant_t now;
+
+}
+
 /**
  * Pause execution for a number of nanoseconds. This should be called while in a critical section.
  * There are scenarios where this function returns with -1 but due to an old physical action which
@@ -55,18 +61,20 @@ static volatile uint32_t _lf_time_us_low_last = 0;
  * @return 0 if sleep finished. -1 if woken by async event
  */
 int lf_sleep(interval_t sleep_duration) {
-    assert(!_lf_interrupts_enabled);
     instant_t now;
     lf_clock_gettime(&now);
     instant_t wakeup = now + sleep_duration;
-    lf_critical_section_exit();
+
+    bool was_in_critical_section = !_lf_interrupts_enabled;
+    if (was_in_critical_sectio) lf_critical_section_exit();
 
     // Do busysleep
     do {
         lf_clock_gettime(&now);        
     } while ((now < wakeup) || !_lf_async_event)
 
-    lf_critical_section_enter();
+    if (was_in_critical_section) lf_critical_section_enter();
+
     if (_lf_async_event) {
         lf_ack_events();
         return -1;
@@ -83,7 +91,7 @@ void lf_initialize_clock() {}
 /**
  * Return the current time in nanoseconds
  * This has to be called at least once per 35minute to work
- * FIXME: Address this
+ * FIXME: This is only addressable by setting up interrupts on a timer peripheral to occur at wrap.
  */
 int lf_clock_gettime(instant_t* t) {
     

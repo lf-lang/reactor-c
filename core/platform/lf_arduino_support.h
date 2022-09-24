@@ -98,12 +98,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Time instant. Both physical and logical times are represented
  * using this typedef.
  */
-typedef int32_t _instant_t;
+typedef int64_t _instant_t;
 
 /**
  * Interval of time.
  */
-typedef int32_t _interval_t;
+typedef int64_t _interval_t;
 
 /**
  * Microstep instant.
