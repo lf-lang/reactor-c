@@ -988,6 +988,20 @@ void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
             reaction->name,
             current_tag.time - start_time,
             current_tag.microstep);
+    // FIXME: Replace the following call with the following sequence:
+    //   acquire a mutex.  Could use event_q_changed condition variable, probably.
+    //   check ((self_base_t*)reaction->self)->executing_reaction
+    //   if not NULL, wait until it is using a condition wait.
+    //   set executing_reaction
+    //   then release mutex
+	//   execute reaction.
+    //   acquire mutex
+	//   set executing_reaction to NULL
+	//   notify
+	//   release mutex.
+	// This will deal with interrupting events that trigger any
+	// reaction belonging to the same reactor as a currently executing
+	// LET reaction.
     _lf_invoke_reaction(reaction, worker_number);
 
     // If the reaction produced outputs, put the resulting triggered
