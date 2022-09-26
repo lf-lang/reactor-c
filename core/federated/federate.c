@@ -857,7 +857,7 @@ void connect_to_federate(uint16_t remote_federate_id) {
 }
 
 void perform_hmac_authentication(int rti_socket) {
-    LF_PRINT_LOG("Connected to an RTI. Performing HAMC-based authentication.");
+    LF_PRINT_LOG("Connected to an RTI. Performing HMAC-based authentication.");
     unsigned char buffer[1 + RTI_HELLO_LENGTH];
     read_from_socket_errexit(rti_socket, 1 + RTI_HELLO_LENGTH, buffer, "Failed to read RTI hello.");
 

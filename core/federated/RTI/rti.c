@@ -1831,7 +1831,7 @@ void connect_to_federates(int socket_descriptor) {
             }
         }
 
-        // Send RTI hello including a nounce.
+        // Send RTI hello including a nonce.
         // If authenticated hello is required.
         send_rti_hello(socket_id);
 
