@@ -548,7 +548,8 @@ struct reaction_t {
     reactor_mode_t* mode;       // The enclosing mode of this reaction (if exists).
                                 // If enclosed in multiple, this will point to the innermost mode.
     interval_t min_delay;       // The minimum delay of this reaction.
-    instant_t  end_timestamp;   // The timestamp which indicates the end of this reaction.
+
+    instant_t  first_effect_timestamp;   // The timestamp which indicates the end of this reaction.
                                 // It is updated when the reaction is triggered.
 };
 
@@ -638,6 +639,7 @@ typedef struct allocation_record_t {
 typedef struct self_base_t {
 	struct allocation_record_t *allocations;
 	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
+    tag_t  current_tag;     // Latest tag of the reactor.
 #ifdef MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif
@@ -929,6 +931,13 @@ void _lf_fd_send_stop_request_to_rti(void);
  * @return True if the specified deadline has passed and false otherwise.
  */
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
+
+
+/**
+ * Get the latest tag of the reactor
+ * @param self The self struct of the reactor
+ */
+interval_t _lf_time_logical_elapsed(self_base_t* self);
 
 //  ******** Global Variables ********  //
 

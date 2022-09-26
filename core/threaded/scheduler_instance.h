@@ -88,6 +88,12 @@ typedef struct {
     void* _lf_sched_triggered_reactions;
 
     /**
+     * @brief Hold LET reactions.
+     *
+     */
+    void* _lf_sched_let_reactions;
+
+    /**
      * @brief An array of mutexes.
      *
      * Can be used to avoid race conditions. Schedulers are allowed to

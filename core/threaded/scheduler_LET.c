@@ -30,8 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Logical Execution Time (LET) non-preemptive scheduler
  * for the threaded runtime of the C target of Lingua Franca.
- *
-*/
+ */
 
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
@@ -40,10 +39,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../platform.h"
 #include "../utils/pqueue_support.h"
 #include "../utils/semaphore.h"
-#include "../utils/vector.c"
+#include "../utils/vector.h"
 #include "scheduler.h"
 #include "scheduler_instance.h"
 #include "scheduler_sync_tag_advance.c"
+#include <assert.h>
 
 #ifndef MAX_REACTION_LEVEL
 #define MAX_REACTION_LEVEL INITIAL_REACT_QUEUE_SIZE
@@ -106,6 +106,24 @@ bool _lf_has_precedence_over(reaction_t* r1, reaction_t* r2) {
     }
     return false;
 }
+
+/**
+ * Return true if the reaction has shortest let_timestamp which is grater than zero
+ * @param reaction The reaction
+ */
+bool _lf_is_fastest_let_reaction(reaction_t* reaction) {
+    reaction_t* peek_reaction = (reaction_t*)pqueue_peek((pqueue_t*)_lf_sched_instance->_lf_sched_let_reactions);
+
+    if (reaction->index == peek_reaction->index &&
+        peek_reaction->first_effect_timestamp > lf_time_logical()) {
+            
+        return true;
+    }
+    return false;
+}
+
+
+
 
 /**
  * If the reaction is blocked by a currently executing
@@ -210,8 +228,6 @@ int _lf_sched_distribute_ready_reactions_locked() {
         // Set the reaction aside if it is blocked, either by another
         // blocked reaction or by a reaction that is currently executing.
         if (!_lf_is_blocked_by_executing_or_blocked_reaction(r)) {
-            // Update end_timestamp of the reaction
-            r->end_timestamp = ((tag_t) current_tag).time + r->min_delay;
             _lf_sched_distribute_ready_reaction_locked(r);
             reactions_distributed++;
             continue;
@@ -241,10 +257,10 @@ int _lf_sched_distribute_ready_reactions_locked() {
  */
 void _lf_sched_notify_workers() {
     size_t workers_to_awaken =
-        MIN(_lf_sched_instance->_lf_sched_number_of_idle_workers,
+        LF_MIN(_lf_sched_instance->_lf_sched_number_of_idle_workers,
             pqueue_size(
                 (pqueue_t*)_lf_sched_instance->_lf_sched_executing_reactions));
-    LF_PRINT_DEBUG("Notifying %d workers.", workers_to_awaken);
+    LF_PRINT_DEBUG("Notifying %zu workers.", workers_to_awaken);
     lf_atomic_fetch_add(&_lf_sched_instance->_lf_sched_number_of_idle_workers,
                         -1 * workers_to_awaken);
     if (workers_to_awaken > 1) {
@@ -319,7 +335,7 @@ void _lf_sched_signal_stop() {
  */
 void _lf_sched_update_triggered_reactions(size_t worker_number) {
     lf_mutex_lock(&mutex);
-    LF_PRINT_DEBUG("Scheduler: Emptying the output reaction queue of Worker %d.",
+    LF_PRINT_DEBUG("Scheduler: Emptying the output reaction queue of Worker %zu.",
                 worker_number);
     pqueue_empty_into(
         (pqueue_t**)&_lf_sched_instance->_lf_sched_triggered_reactions,
@@ -348,7 +364,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
                             1) ==
         _lf_sched_instance->_lf_sched_number_of_workers) {
         // Last thread to go idle
-        LF_PRINT_DEBUG("Scheduler: Worker %d is the last idle thread.",
+        LF_PRINT_DEBUG("Scheduler: Worker %zu is the last idle thread.",
                     worker_number);
         // Call on the scheduler to distribute work or advance tag.
         if (_lf_sched_try_advance_tag_and_distribute()) {
@@ -360,6 +376,10 @@ void _lf_sched_wait_for_work(size_t worker_number) {
         // Wait for work to be released.
         lf_semaphore_acquire(_lf_sched_instance->_lf_sched_semaphore);
     }
+}
+
+reaction_t* _lf_get_candidate_reaction() {
+    
 }
 
 ///////////////////// Scheduler Init and Destroy API /////////////////////////
@@ -378,7 +398,7 @@ void lf_sched_init(
     size_t number_of_workers, 
     sched_params_t* params
 ) {
-    LF_PRINT_DEBUG("Scheduler: Initializing with %d workers", number_of_workers);
+    LF_PRINT_DEBUG("Scheduler: Initializing with %zu workers", number_of_workers);
     if(!init_sched_instance(&_lf_sched_instance, number_of_workers, params)) {
         // Already initialized
         return;
@@ -394,7 +414,7 @@ void lf_sched_init(
             }
         }
     }
-    LF_PRINT_DEBUG("Scheduler: Adopting a queue size of %u.", queue_size);
+    LF_PRINT_DEBUG("Scheduler: Adopting a queue size of %zu.", queue_size);
 
     _lf_sched_instance->_lf_sched_array_of_mutexes =
         (lf_mutex_t*)calloc(1, sizeof(lf_mutex_t));
@@ -411,8 +431,11 @@ void lf_sched_init(
         set_reaction_position, reaction_matches, print_reaction);
     // Create a queue on which to put reactions that are currently executing.
     _lf_sched_instance->_lf_sched_executing_reactions = pqueue_init(
-        queue_size, in_correct_order, get_reaction_end_timestamp, get_reaction_position,
+        queue_size, in_reverse_order, get_reaction_index, get_reaction_position,
         set_reaction_position, reaction_matches, print_reaction);
+
+    // FIXME: Have to add initialization of  _lf_sched_instance->_lf_sched_let_reactions
+
 
     _lf_sched_threads_info = (_lf_sched_thread_info_t*)calloc(
         _lf_sched_instance->_lf_sched_number_of_workers,
@@ -464,11 +487,23 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
         lf_mutex_unlock(&_lf_sched_instance->_lf_sched_array_of_mutexes[0]);
 
         if (reaction_to_return != NULL) {
-            // Advance time
-            while(((tag_t)current_tag).time < reaction_to_return->end_timestamp) {
+
+            //Time advance
+            if (_lf_is_fastest_let_reaction(reaction_to_return)) {
                 _lf_sched_advance_tag_locked();
+                pqueue_pop((pqueue_t*)_lf_sched_instance->_lf_sched_let_reactions);
             }
-            // Return the reaction
+
+            // Got a reaction
+            return reaction_to_return;
+        }
+
+        lf_mutex_lock(&_lf_sched_instance->_lf_sched_array_of_mutexes[0]);
+        reaction_to_return = _lf_get_candidate_reaction();
+        lf_mutex_unlock(&_lf_sched_instance->_lf_sched_array_of_mutexes[0]);
+
+        if (reaction_to_return != NULL) {
+            // Got a reaction
             return reaction_to_return;
         }
 
@@ -520,6 +555,13 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     if (reaction == NULL || !lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
         return;
     }
+
+    reaction->first_effect_timestamp = lf_time_logical() + reaction->min_delay;
+    pqueue_insert(
+        (pqueue_t*)_lf_sched_instance->_lf_sched_let_reactions,
+        (void*)reaction);
+    
+
     LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld.",
             reaction->name, LEVEL(reaction->index));
     if (worker_number == -1) {
