@@ -59,6 +59,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assert.h>
 #include <sys/wait.h>   // Defines wait() for process to change state.
 #include <openssl/rand.h> // For secure random number generation.
+#include <openssl/hmac.h> // For HMAC authentication
 #include "platform.h"   // Platform-specific types and functions
 #include "utils/util.c" // Defines print functions (e.g., lf_print).
 #include "net_util.c"   // Defines network functions.
@@ -1797,11 +1798,39 @@ int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id) {
  * @param socket Socket for the incoming federate tryting to authenticate.
  */
 void send_rti_hello(int socket) {
-    size_t message_length = 1 + RTI_HELLO_LENGTH;
+    // Buffer for message type and federation RTI nonce.
+    size_t message_length = 1 + NONCE_LENGTH;
     unsigned char buffer[message_length];
     buffer[0] = MSG_TYPE_RTI_HELLO;
-    RAND_bytes(&(buffer[1]), RTI_HELLO_LENGTH);
-    ssize_t bytes_written = write_to_socket(socket, message_length, buffer);
+    unsigned char rti_nonce[NONCE_LENGTH];
+    RAND_bytes(rti_nonce, NONCE_LENGTH);
+    memcpy(buffer + 1, rti_nonce, NONCE_LENGTH);
+    write_to_socket(socket, message_length, buffer);
+
+    // Received MSG_TYPE_FED_RESPONSE
+    int hmac_length = 32;
+    size_t federation_id_length = 48;
+    unsigned char received[1 + NONCE_LENGTH + hmac_length];
+    read_from_socket_errexit(socket, 1 + NONCE_LENGTH + hmac_length, received, "Failed to read RTI response.");
+    if (buffer[0] != MSG_TYPE_FED_RESPONSE) {
+        lf_print_error_and_exit("Received unexpected response %u from the RTI (see net_common.h).",
+                buffer[0]);
+    }
+    unsigned char rti_tag[hmac_length];
+    HMAC(EVP_sha256(), _RTI.federation_id, federation_id_length, rti_nonce, NONCE_LENGTH,
+         rti_tag, &hmac_length);
+    if (memcmp(&received[1 + NONCE_LENGTH], rti_tag, hmac_length) != 0) {
+        // Federation IDs do not match. Send back a MSG_TYPE_REJECT message.
+        lf_print_error("WARNING: HMAC authentication failed.");
+        send_reject(socket, HMAC_DOES_NOT_MATCH);
+    }
+    LF_PRINT_LOG("HMAC verified.");
+    // Buffer for message type and tag created with received federation nonce.
+    unsigned char sender[1 + hmac_length];
+    sender[0] = MSG_TYPE_RTI_RESPONSE;
+    HMAC(EVP_sha256(), _RTI.federation_id, federation_id_length, &received[1], NONCE_LENGTH,
+         &sender[1], &hmac_length);
+    write_to_socket(socket, message_length, buffer);
 }
 
 /**

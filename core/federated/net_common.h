@@ -336,7 +336,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The next eight bytes are a 8-byte random nonce.
  */
 #define MSG_TYPE_RTI_HELLO 100
-#define RTI_HELLO_LENGTH 8
+#define MSG_TYPE_FED_RESPONSE 101
+#define MSG_TYPE_RTI_RESPONSE 102
+#define NONCE_LENGTH 8
 
 #define MSG_TYPE_AUTHENTICATED_FED_IDS 101
 
@@ -671,5 +673,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /** Connected to the wrong server. */
 #define WRONG_SERVER 5
+
+/** HMAC authentication failed. */
+#define HMAC_DOES_NOT_MATCH 6
 
 #endif /* NET_COMMON_H */
