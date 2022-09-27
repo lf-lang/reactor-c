@@ -871,18 +871,31 @@ void perform_hmac_authentication(int rti_socket) {
     }
     int hmac_length = 32;
     size_t federation_id_length = 48;
+    int fed_id_length = 2;
+    unsigned char fed_id_buf[fed_id_length];
+    encode_uint16((uint16_t)_lf_my_fed_id, fed_id_buf);
+
+    // HMAC tag is created with MSG_TYPE, federate ID, received rti nonce.
+    unsigned char mac_buf[1 + NONCE_LENGTH + fed_id_length];
+    mac_buf[0] = MSG_TYPE_RTI_HELLO;
+    memcpy(&mac_buf[1], fed_id_buf, fed_id_length);
+    memcpy(&mac_buf[1 + fed_id_length], &buffer[1], NONCE_LENGTH);
     unsigned char hmac_tag[hmac_length];
     HMAC(EVP_sha256(), federation_metadata.federation_id, federation_id_length,
-         &buffer[1], NONCE_LENGTH, hmac_tag, &hmac_length);
-    memcpy(buffer + 1 + NONCE_LENGTH, hmac_tag, hmac_length);
-    // Buffer for message type, Federate nonce, and tag created with received
-    // RTI nonce.
-    unsigned char sender[1 + NONCE_LENGTH + hmac_length];
+         mac_buf, 1 + NONCE_LENGTH + fed_id_length, hmac_tag, &hmac_length);
+
+    // Buffer for message type, Federate nonce, federate ID, and HMAC tag.
+    int i = 1;
+    unsigned char sender[1 + NONCE_LENGTH + fed_id_length + hmac_length];
     sender[0] = MSG_TYPE_FED_RESPONSE;
     unsigned char federate_nonce[NONCE_LENGTH];
     RAND_bytes(federate_nonce, NONCE_LENGTH);
-    memcpy(sender + 1, federate_nonce, NONCE_LENGTH);
-    memcpy(sender + 1 + NONCE_LENGTH, hmac_tag, hmac_length);
+    memcpy(&sender[i], federate_nonce, NONCE_LENGTH);
+    i += NONCE_LENGTH;
+    memcpy(&sender[i], fed_id_buf, fed_id_length);
+    i += fed_id_length;
+    memcpy(&sender[i], hmac_tag, hmac_length);
+    i += hmac_length;
     write_to_socket(rti_socket, 1 + NONCE_LENGTH + hmac_length, sender);
 
     // Received MSG_TYPE_RTI_RESPONSE
@@ -895,9 +908,13 @@ void perform_hmac_authentication(int rti_socket) {
             "Received unexpected response %u from the RTI (see net_common.h).",
             buffer[0]);
     }
+
+    unsigned char mac_buf2[1 + NONCE_LENGTH];
+    mac_buf2[0] = MSG_TYPE_RTI_RESPONSE;
+    memcpy(&mac_buf[1], federate_nonce, NONCE_LENGTH);
     unsigned char fed_tag[hmac_length];
     HMAC(EVP_sha256(), federation_metadata.federation_id, federation_id_length,
-         federate_nonce, NONCE_LENGTH, fed_tag, &hmac_length);
+         mac_buf2, 1 + NONCE_LENGTH, fed_tag, &hmac_length);
     if (memcmp(&received[1], fed_tag, hmac_length) != 0) {
         // Federation IDs do not match. Send back a MSG_TYPE_REJECT message.
         lf_print_error("WARNING: HMAC authentication failed.");
