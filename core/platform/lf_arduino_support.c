@@ -36,37 +36,34 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Combine 2 32bit values into a 64bit
 #define COMBINE_HI_LO(hi,lo) ((((uint64_t) hi) << 32) | ((uint64_t) lo))
 
-/**
- * Keep track of interrupts being raised.
- */
+// Keep track of physical actions being entered into the system
 static volatile bool _lf_async_event = false;
-static volatile bool _lf_interrupts_enabled = true;
+// Keep track of whether we are in a critical section or not
+static volatile bool _lf_in_critical_section = true;
+
+/**
+ * Global timing variables:
+ * Since Arduino is 32bit we need to also maintaint the 32 higher bits
+ * _lf_time_us_high is incremented at each overflow of 32bit Arduino timer
+ * _lf_time_us_low_last is the last value we read form the 32 bit Arduino timer
+ *  We can detect overflow by reading a value that is lower than this.
+ *  This does require us to read the timer and update this variable at least once per 35 minutes
+ *  This is no issue when we do busy-sleep. If we go to HW timer sleep we would want to register an interrupt 
+ *  capturing the overflow.
+ */
 static volatile uint32_t _lf_time_us_high = 0;
 static volatile uint32_t _lf_time_us_low_last = 0;
 
-int lf_sleep_until(instant_t wakeup) {
-
-    instant_t now;
-
-}
-
 /**
- * Pause execution for a number of nanoseconds. This should be called while in a critical section.
- * There are scenarios where this function returns with -1 but due to an old physical action which
- * has not been acked yet. So calling function has to checl pQueue to verify that a physical action
- * has occured. 
+ * @brief Sleep until an absolute time.
+ * FIXME: For improved power consumption this should be implemented with a HW timer and interrupts.
  * 
- * This is currently busy-sleeping.
- *
- * @return 0 if sleep finished. -1 if woken by async event
+ * @param wakeup int64_t time of wakeup 
+ * @return int 0 if successful sleep, -1 if awoken by async event
  */
-int lf_sleep(interval_t sleep_duration) {
-    instant_t now;
-    lf_clock_gettime(&now);
-    instant_t wakeup = now + sleep_duration;
-
-    bool was_in_critical_section = !_lf_interrupts_enabled;
-    if (was_in_critical_sectio) lf_critical_section_exit();
+int lf_sleep_until(instant_t wakeup) {
+    bool was_in_critical_section = _lf_in_critical_section;
+    if (was_in_critical_section) lf_critical_section_exit();
 
     // Do busysleep
     do {
@@ -81,6 +78,22 @@ int lf_sleep(interval_t sleep_duration) {
     } else {
         return 0;
     }
+
+}
+
+/**
+ * @brief Sleep for duration
+ * 
+ * @param sleep_duration int64_t nanoseconds representing the desired sleep duration
+ * @return int 0 if success. -1 if interrupted by async event.
+ */
+int lf_sleep(interval_t sleep_duration) {
+    instant_t now;
+    lf_clock_gettime(&now);
+    instant_t wakeup = now + sleep_duration;
+
+    return lf_sleep_until(wakeup);
+
 }
 
 /**
@@ -114,12 +127,13 @@ int lf_clock_gettime(instant_t* t) {
 
 int lf_critical_section_enter() {
     noInterrupts();
-    _lf_interrupts_enabled = false;
+    _lf_in_critical_section = true;
     return 0;
 }
 
 int lf_critical_section_exit() {
-    _lf_interrupts_enabled = true;
+    _lf_in_critical_section = false;
+    // FIXME: What will happen if interrupts were not enabled to begin with?
     interrupts();
     return 0;
 }
