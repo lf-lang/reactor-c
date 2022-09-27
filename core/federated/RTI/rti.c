@@ -1814,9 +1814,9 @@ void send_rti_hello(int socket) {
 
     unsigned char received[1 + NONCE_LENGTH + fed_id_length + hmac_length];
     read_from_socket_errexit(socket, 1 + NONCE_LENGTH + fed_id_length + hmac_length, received, "Failed to read RTI response.");
-    if (buffer[0] != MSG_TYPE_FED_RESPONSE) {
-        lf_print_error_and_exit("Received unexpected response %u from the RTI (see net_common.h).",
-                buffer[0]);
+    if (received[0] != MSG_TYPE_FED_RESPONSE) {
+        lf_print_error_and_exit("Received unexpected response %u from the FED (see net_common.h).",
+                received[0]);
     }
     unsigned char fed_id_buf[fed_id_length];
     unsigned char buf_to_check[1 + fed_id_length + NONCE_LENGTH];
@@ -1827,26 +1827,33 @@ void send_rti_hello(int socket) {
     indicator += fed_id_length;
     memcpy(&buf_to_check[indicator], rti_nonce, NONCE_LENGTH);
     indicator += NONCE_LENGTH;
+
+
     unsigned char rti_tag[hmac_length];
-    HMAC(EVP_sha256(), _RTI.federation_id, federation_id_length, buf_to_check, indicator,
+    HMAC(EVP_sha256(), _RTI.federation_id, federation_id_length, buf_to_check, 1 + fed_id_length + NONCE_LENGTH,
          rti_tag, &hmac_length);
+
+
+
     if (memcmp(&received[indicator], rti_tag, hmac_length) != 0) {
         // Federation IDs do not match. Send back a MSG_TYPE_REJECT message.
         lf_print_error("WARNING: HMAC authentication failed.");
         send_reject(socket, HMAC_DOES_NOT_MATCH);
     }
-    LF_PRINT_LOG("HMAC verified.");
+    else{
+        LF_PRINT_LOG("HMAC verified.");
+        // HMAC tag is created with MSG_TYPE and received federate nonce.
+        unsigned char mac_buf[1 + NONCE_LENGTH];
+        mac_buf[0] = MSG_TYPE_RTI_RESPONSE;
+        memcpy(&mac_buf[1], &received[1], NONCE_LENGTH);
 
-    // HMAC tag is created with MSG_TYPE and received federate nonce.
-    unsigned char mac_buf[1 + NONCE_LENGTH];
-    mac_buf[0] = MSG_TYPE_RTI_RESPONSE;
-    memcpy(&mac_buf[1], &received[1], NONCE_LENGTH);
-    // Buffer for message type and HMAC tag
-    unsigned char sender[1 + hmac_length];
-    sender[0] = MSG_TYPE_RTI_RESPONSE;
-    HMAC(EVP_sha256(), _RTI.federation_id, federation_id_length, mac_buf, 1 + NONCE_LENGTH,
-         &sender[1], &hmac_length);
-    write_to_socket(socket, message_length, buffer);
+        // Buffer for message type and HMAC tag
+        unsigned char sender[1 + hmac_length];
+        sender[0] = MSG_TYPE_RTI_RESPONSE;
+        HMAC(EVP_sha256(), _RTI.federation_id, federation_id_length, mac_buf, 1 + NONCE_LENGTH,
+             &sender[1], &hmac_length);
+        write_to_socket(socket, 1 + hmac_length, sender);
+    }
 }
 
 /**

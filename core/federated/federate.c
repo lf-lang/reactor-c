@@ -863,7 +863,6 @@ void perform_hmac_authentication(int rti_socket) {
     unsigned char buffer[1 + NONCE_LENGTH];
     read_from_socket_errexit(rti_socket, 1 + NONCE_LENGTH, buffer,
                              "Failed to read RTI hello.");
-
     if (buffer[0] != MSG_TYPE_RTI_HELLO) {
         lf_print_error_and_exit(
             "Received unexpected response %u from the RTI (see net_common.h).",
@@ -874,16 +873,15 @@ void perform_hmac_authentication(int rti_socket) {
     int fed_id_length = 2;
     unsigned char fed_id_buf[fed_id_length];
     encode_uint16((uint16_t)_lf_my_fed_id, fed_id_buf);
-
     // HMAC tag is created with MSG_TYPE, federate ID, received rti nonce.
     unsigned char mac_buf[1 + NONCE_LENGTH + fed_id_length];
-    mac_buf[0] = MSG_TYPE_RTI_HELLO;
+    mac_buf[0] = MSG_TYPE_FED_RESPONSE;
     memcpy(&mac_buf[1], fed_id_buf, fed_id_length);
     memcpy(&mac_buf[1 + fed_id_length], &buffer[1], NONCE_LENGTH);
     unsigned char hmac_tag[hmac_length];
     HMAC(EVP_sha256(), federation_metadata.federation_id, federation_id_length,
-         mac_buf, 1 + NONCE_LENGTH + fed_id_length, hmac_tag, &hmac_length);
-
+         mac_buf, 1 + fed_id_length + NONCE_LENGTH, hmac_tag, &hmac_length);
+    
     // Buffer for message type, Federate nonce, federate ID, and HMAC tag.
     int i = 1;
     unsigned char sender[1 + NONCE_LENGTH + fed_id_length + hmac_length];
@@ -896,22 +894,22 @@ void perform_hmac_authentication(int rti_socket) {
     i += fed_id_length;
     memcpy(&sender[i], hmac_tag, hmac_length);
     i += hmac_length;
-    write_to_socket(rti_socket, 1 + NONCE_LENGTH + hmac_length, sender);
+    write_to_socket(rti_socket, i, sender);
 
     // Received MSG_TYPE_RTI_RESPONSE
     unsigned char received[1 + hmac_length];
     read_from_socket_errexit(rti_socket, 1 + hmac_length, received,
                              "Failed to read RTI response.");
 
-    if (buffer[0] != MSG_TYPE_RTI_RESPONSE) {
+    if (received[0] != MSG_TYPE_RTI_RESPONSE) {
         lf_print_error_and_exit(
             "Received unexpected response %u from the RTI (see net_common.h).",
-            buffer[0]);
+            received[0]);
     }
-
+    // HMAC tag is created with MSG_TYPE and federate nonce.
     unsigned char mac_buf2[1 + NONCE_LENGTH];
     mac_buf2[0] = MSG_TYPE_RTI_RESPONSE;
-    memcpy(&mac_buf[1], federate_nonce, NONCE_LENGTH);
+    memcpy(&mac_buf2[1], federate_nonce, NONCE_LENGTH);
     unsigned char fed_tag[hmac_length];
     HMAC(EVP_sha256(), federation_metadata.federation_id, federation_id_length,
          mac_buf2, 1 + NONCE_LENGTH, fed_tag, &hmac_length);
@@ -923,7 +921,7 @@ void perform_hmac_authentication(int rti_socket) {
         response[1] = HMAC_DOES_NOT_MATCH;
         write_to_socket_errexit(
             rti_socket, 2, response,
-            "RTI failed to write MSG_TYPE_REJECT message on the socket.");
+            "Federate failed to write MSG_TYPE_REJECT message on the socket.");
         close(rti_socket);
     } else {
         LF_PRINT_LOG("HMAC verified.");
