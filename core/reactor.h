@@ -547,6 +547,8 @@ struct reaction_t {
                                 // the reaction number.
     reactor_mode_t* mode;       // The enclosing mode of this reaction (if exists).
                                 // If enclosed in multiple, this will point to the innermost mode.
+    interval_t let_value;       // The LET value of the reactor.
+    instant_t first_effect_timestamp;
 };
 
 /** Typedef for event_t struct, used for storing activation records. */

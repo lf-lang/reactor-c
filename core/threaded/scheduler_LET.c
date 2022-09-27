@@ -112,6 +112,23 @@ bool _lf_has_precedence_over(reaction_t* r1, reaction_t* r2) {
 }
 
 /**
+ * Return true if the reaction has shortest let_timestamp which is grater than zero
+ * @param reaction The reaction
+ */
+bool _lf_is_fastest_let_reaction(reaction_t* reaction) {
+    reaction_t* peek_reaction = (reaction_t*)pqueue_peek((pqueue_t*)_lf_sched_instance->_lf_sched_let_reactions);
+
+    if (reaction->index == peek_reaction->index &&
+        peek_reaction->first_effect_timestamp > lf_time_logical()) {
+
+        return true;
+    }
+    return false;
+}
+
+
+
+/**
  * If the reaction is blocked by a currently executing
  * reaction, return true. Otherwise, return false.
  * A reaction blocks the specified reaction if it has a
@@ -416,6 +433,8 @@ void lf_sched_init(
         queue_size, in_reverse_order, get_reaction_index, get_reaction_position,
         set_reaction_position, reaction_matches, print_reaction);
 
+    // FIXME: Have to add initialization of  _lf_sched_instance->_lf_sched_let_reactions
+
     _lf_sched_threads_info = (_lf_sched_thread_info_t*)calloc(
         _lf_sched_instance->_lf_sched_number_of_workers,
         sizeof(_lf_sched_thread_info_t));
@@ -466,9 +485,18 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
         lf_mutex_unlock(&_lf_sched_instance->_lf_sched_array_of_mutexes[0]);
 
         if (reaction_to_return != NULL) {
+
+            //Time advance
+            if (_lf_is_fastest_let_reaction(reaction_to_return)) {
+                _lf_sched_advance_tag_locked();
+                pqueue_pop((pqueue_t*)_lf_sched_instance->_lf_sched_let_reactions);
+            }
+                        
             // Got a reaction
             return reaction_to_return;
         }
+
+
 
         LF_PRINT_DEBUG("Worker %d is out of ready reactions.", worker_number);
 
@@ -518,6 +546,12 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     if (reaction == NULL || !lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
         return;
     }
+    // time advance according to LET value
+    reaction->first_effect_timestamp = reaction->let_value + lf_time_logical();
+     pqueue_insert(
+        (pqueue_t*)_lf_sched_instance->_lf_sched_let_reactions,
+        (void*)reaction);
+
     LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld.",
             reaction->name, LEVEL(reaction->index));
     if (worker_number == -1) {
