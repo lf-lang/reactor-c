@@ -59,7 +59,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assert.h>
 #include <sys/wait.h>   // Defines wait() for process to change state.
 #include <openssl/rand.h> // For secure random number generation.
-#include <openssl/hmac.h> // For HMAC authentication
+#include <openssl/hmac.h> // For HMAC authentication.
 #include "platform.h"   // Platform-specific types and functions
 #include "utils/util.c" // Defines print functions (e.g., lf_print).
 #include "net_util.c"   // Defines network functions.
