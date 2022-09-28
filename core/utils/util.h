@@ -252,4 +252,7 @@ typedef void(print_message_function_t)(const char*, va_list);
  */
 void lf_register_print_function(print_message_function_t* function, int log_level);
 
+//// Strings
+int is_empty(const char *s);
+
 #endif /* UTIL_H */

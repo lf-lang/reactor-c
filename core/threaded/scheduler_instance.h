@@ -45,6 +45,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../utils/semaphore.h"
 #include "scheduler.h"
 
+#ifdef SCHEDULER_QS
+#include "scheduler_QS.h"
+#endif
+
 extern lf_mutex_t mutex;
 
 
@@ -96,6 +100,14 @@ typedef struct {
     lf_mutex_t* _lf_sched_array_of_mutexes;
 
     /**
+     * @brief An array of conditional variable.
+     *
+     * Can be used to avoid race conditions. Schedulers are allowed to
+     * initialize as many conditional as they deem fit.
+     */
+    lf_cond_t* _lf_sched_array_of_conds;
+
+    /**
      * @brief An array of atomic indexes.
      *
      * Can be used to avoid race conditions. Schedulers are allowed to to use as
@@ -132,6 +144,59 @@ typedef struct {
      *
      */
     volatile size_t _lf_sched_next_reaction_level;
+
+#ifdef SCHEDULER_QS
+    ///////// Specific to the quasi-static scheduler /////////
+    /**
+     * @brief Points to a read-only array of static schedules.
+     * 
+     */
+    inst_t*** static_schedules;
+
+    /**
+     * @brief An index that points to the current static schedules.
+     * 
+     * If there is one generic schedule, the index remains 0.
+     * 
+     */
+    int current_schedule_index;
+
+    /**
+     * @brief Points to a read-only array of lengths of the static schedules.
+     * 
+     */
+    uint32_t** schedule_lengths;
+
+    /**
+     * @brief Points to an array of program counters for each worker.
+     * 
+     */
+    size_t* pc;
+    
+    /**
+     * @brief Points to an array of pointers to reaction instances.
+     * 
+     * The indices are the reaction indices in inst_t.
+     */
+    reaction_t** reaction_instances;
+    
+    /**
+     * @brief Points to an array of pointers to scheduler semaphores,
+     * which enable a worker to wait for another worker to finish an instruction.
+     * 
+     * The semaphores are assigned by the compiler, and they have initial counts
+     * of 0 (acquired). When the worker process a "notify [semaphore id]",
+     * the semaphore is released and unblocks waiting threads. The indicies are
+     * semaphore IDs.
+     */
+    semaphore_t** semaphores;
+
+    /**
+     * @brief An integer indicating the number of semaphores needed.
+     * 
+     */
+    int num_semaphores;
+#endif
 } _lf_sched_instance_t;
 
 /**

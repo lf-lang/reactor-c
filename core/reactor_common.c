@@ -175,6 +175,13 @@ parse_rti_code_t parse_rti_addr(const char* rti_addr);
 void set_federation_id(const char* fid);
 #endif
 
+#ifdef SCHEDULER_QS
+/**
+ * Path to the static schedule text file (specified on the command line)
+ */
+char* static_schedule_path = NULL;
+#endif
+
 /**
  * Allocate memory using calloc (so the allocated memory is zeroed out)
  * and record the allocated memory on the specified self struct so that
@@ -1618,6 +1625,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
                             		downstream_reaction->is_STP_violated, downstream_reaction->name);
                         }
 #endif
+#ifndef SCHEDULER_QS // Include the optimization (downstream_to_execute_now) if QS scheduler is not in use.
                         if (downstream_reaction != NULL && downstream_reaction != downstream_to_execute_now) {
                             num_downstream_reactions++;
                             // If there is exactly one downstream reaction that is enabled by this
@@ -1646,11 +1654,16 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
                                 _lf_trigger_reaction(downstream_reaction, worker);
                             }
                         }
+#else // If QS scheduler is used, exclude the optimization so that it does not affect quasi-static scheduling.
+                        // Queue the reaction.
+                        _lf_trigger_reaction(downstream_reaction, worker);
+#endif // SCHEDULER_QS
                     }
                 }
             }
         }
     }
+#ifndef SCHEDULER_QS // Exclude the optimization so that it does not affect quasi-static scheduling.
     if (downstream_to_execute_now != NULL) {
         LF_PRINT_LOG("Worker %d: Optimizing and executing downstream reaction now: %s", worker, downstream_to_execute_now->name);
         bool violation = false;
@@ -1730,6 +1743,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
         LF_PRINT_DEBUG("Finally, reset reaction's is_STP_violated field to false: %s",
         		downstream_to_execute_now->name);
     }
+#endif // SCHEDULER_QS
 }
 
 /**
@@ -1796,6 +1810,10 @@ void usage(int argc, const char* argv[]) {
     #ifdef FEDERATED
     printf("  -r, --rti <n>\n");
     printf("   The address of the RTI, which can be in the form of user@host:port or ip:port.\n\n");
+    #endif
+    #ifdef SCHEDULER_QS
+    printf("  -s, --static-schedule <n>\n");
+    printf("   The path to the static schedule text file.\n\n");
     #endif
 
     printf("Command given:\n");
@@ -1946,7 +1964,12 @@ int process_args(int argc, const char* argv[]) {
                 return 0;
             }
         }
-        #endif 
+        #endif  
+        #ifdef SCHEDULER_QS
+          else if (strcmp(arg, "-s") == 0 || strcmp(arg, "--static-schedule") == 0) {
+            static_schedule_path = argv[i++];
+        }
+        #endif
           else if (strcmp(arg, "--ros-args") == 0) {
     	      // FIXME: Ignore ROS arguments for now
         } else {
