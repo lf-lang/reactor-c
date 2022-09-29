@@ -62,13 +62,14 @@ static volatile uint32_t _lf_time_us_low_last = 0;
  * @return int 0 if successful sleep, -1 if awoken by async event
  */
 int lf_sleep_until(instant_t wakeup) {
+    instant_t now;
     bool was_in_critical_section = _lf_in_critical_section;
     if (was_in_critical_section) lf_critical_section_exit();
 
     // Do busysleep
     do {
         lf_clock_gettime(&now);        
-    } while ((now < wakeup) || !_lf_async_event)
+    } while ((now < wakeup) || !_lf_async_event);
 
     if (was_in_critical_section) lf_critical_section_enter();
 

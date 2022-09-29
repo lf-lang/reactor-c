@@ -90,9 +90,24 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 #endif
 
-#define PRINTF_TIME "%" PRIu64
+#define PRINTF_TIME "%" PRIu32
 #define PRINTF_MICROSTEP "%" PRIu32
 #define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
+
+#define LLONG_MAX __LONG_LONG_MAX__
+#define LLONG_MIN (-LLONG_MAX - 1LL)
+#define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)
+
+#ifndef _STRUCT_TIMESPEC
+#define _STRUCT_TIMESPEC        struct timespec
+
+_STRUCT_TIMESPEC
+{
+	long tv_sec;
+	long tv_nsec;
+};
+#endif /* _STRUCT_TIMESPEC */
+
 
 /**
  * Time instant. Both physical and logical times are represented
@@ -110,6 +125,6 @@ typedef int64_t _interval_t;
  */
 typedef uint32_t _microstep_t;
 
-
+int lf_ack_events();
 
 #endif // LF_ARDUINO_SUPPORT_H

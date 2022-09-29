@@ -108,7 +108,7 @@ int wait_until(instant_t wakeup_time) {
                 sleep_duration, MIN_SLEEP_DURATION);
             return -1;
         }
-        LF_PRINT_DEBUG("Going to sleep for %"PRId64" ns\n", sleep_duration);
+        LF_PRINT_DEBUG("Going to sleep for %" PRINTF_TIME " ns\n", sleep_duration);
         return lf_sleep_until(wakeup_time);
     }
     return 0;

@@ -1908,7 +1908,12 @@ int process_args(int argc, const char* argv[]) {
             const char* time_spec = argv[i++];
             const char* units = argv[i++];
 
+
+            #if defined(ARDUINO)
+            duration = atol(time_spec);
+            #else
             duration = atoll(time_spec);
+            #endif
             
             // A parse error returns 0LL, so check to see whether that is what is meant.
             if (duration == 0LL && strncmp(time_spec, "0", 1) != 0) {
