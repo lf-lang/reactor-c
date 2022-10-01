@@ -1842,6 +1842,7 @@ lf_token_t* writable_copy(lf_token_t* token) {
 /**
  * Print a usage message.
  */
+#ifndef TARGET_EMBEDDED
 void usage(int argc, const char* argv[]) {
     printf("\nCommand-line arguments: \n\n");
     printf("  -f, --fast [true | false]\n");
@@ -1866,6 +1867,7 @@ void usage(int argc, const char* argv[]) {
     }
     printf("\n\n");
 }
+#endif
 
 // Some options given in the target directive are provided here as
 // default command-line options.
@@ -1878,7 +1880,11 @@ const char** default_argv = NULL;
  * understood, then print a usage message and return 0. Otherwise, return 1.
  * @return 1 if the arguments processed successfully, 0 otherwise.
  */
+
 int process_args(int argc, const char* argv[]) {
+    #ifdef TARGET_EMBEDDED
+    return 1;
+    #else
     int i = 1;
     while (i < argc) {
         const char* arg = argv[i++];
@@ -2018,6 +2024,7 @@ int process_args(int argc, const char* argv[]) {
         }
     }
     return 1;
+    #endif
 }
 
 /**
@@ -2059,7 +2066,7 @@ void initialize(void) {
         #endif
     #endif
 
-    #ifdef ARDUINO
+    #ifdef TARGET_EMBEDDED
     printf("---- Start execution at time " PRINTF_TIME "us\n", physical_start_time);
     #else
     struct timespec physical_time_timespec = {physical_start_time / BILLION, physical_start_time % BILLION};

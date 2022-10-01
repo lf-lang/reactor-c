@@ -34,7 +34,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "reactor_common.c"
 #include "platform.h"
+
+#ifndef TARGET_EMBEDDED
 #include <signal.h> // To trap ctrl-c and invoke termination().
+#endif
 //#include <assert.h>
 
 /**
@@ -348,14 +351,16 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
             && process_args(argc, argv)) {
         LF_PRINT_DEBUG("Processed command line arguments.");
         LF_PRINT_DEBUG("Registering the termination function.");
+        #ifndef TARGET_EMBEDDED
         if (atexit(termination) != 0) {
             lf_print_warning("Failed to register termination function!");
         }
+        #endif
         // The above handles only "normal" termination (via a call to exit).
         // As a consequence, we need to also trap ctrl-C, which issues a SIGINT,
         // and cause it to call exit.
         // We wrap this statement since certain Arduino flavors don't support signals.
-        #ifndef ARDUINO
+        #ifndef TARGET_EMBEDDED
         signal(SIGINT, exit);
         #endif
         
