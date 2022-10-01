@@ -25,6 +25,8 @@ static volatile unsigned _lf_irq_mask = 0;
 static volatile uint32_t _lf_time_us_high = 0;
 static volatile uint32_t _lf_time_us_low_last = 0;
 
+// Forward declaration of local function to ack notified events
+static int lf_ack_events();
 /**
  * @brief Sleep until an absolute time.
  * FIXME: For improved power consumption this should be implemented with a HW timer and interrupts.
@@ -33,13 +35,17 @@ static volatile uint32_t _lf_time_us_low_last = 0;
  * @return int 0 if successful sleep, -1 if awoken by async event
  */
 int lf_sleep_until(instant_t wakeup) {
+    // FIXME: I think we can always assume that we are in critical section
+    //  and we can thus always ack an incoming event.
+    instant_t now;
+    interval_t duration = wakeup - now;
     bool was_in_critical_section = _lf_in_critical_section;
     if (was_in_critical_section) lf_critical_section_exit();
 
-    // Do busysleep
+
     do {
         lf_clock_gettime(&now);        
-    } while ((now < wakeup) || !_lf_async_event)
+    } while ((now < wakeup) && !_lf_async_event);
 
     if (was_in_critical_section) lf_critical_section_enter();
 
@@ -85,8 +91,8 @@ int lf_clock_gettime(instant_t* t) {
         errno = EFAULT;
         return -1;
     }
-
-    int64_t now = k_cyc_to_us_floor64(k_cycle_get_64()) * 1000LL;
+    // FIXME: Get proper timing
+    int64_t now = k_uptime_get() * 1000000;
     *t = now;
     return 0;
 }
@@ -109,7 +115,7 @@ int lf_notify_of_event() {
    return 0;
 }
 
-int lf_ack_events() {
+static int lf_ack_events() {
     _lf_async_event = false;
     return 0;
 }

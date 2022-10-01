@@ -7,11 +7,16 @@
 
 #include <zephyr/kernel.h>
 
-#define printf prtink
+#define TARGET_EMBEDDED
 #define PRINTF_TIME "%" PRIu64
 #define PRINTF_MICROSTEP "%" PRIu32
 #define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
 
+#define calloc k_calloc
+#define malloc k_malloc
+#define free(x) k_free(x)
+// FIXME: What to do about realloc?
+#define realloc assert(false)
 /**
  * Time instant. Both physical and logical times are represented
  * using this typedef.
