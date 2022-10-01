@@ -69,7 +69,7 @@ int lf_sleep_until(instant_t wakeup) {
     // Do busysleep
     do {
         lf_clock_gettime(&now);        
-    } while ((now < wakeup) || !_lf_async_event);
+    } while ((now < wakeup) && !_lf_async_event);
 
     if (was_in_critical_section) lf_critical_section_enter();
 
