@@ -16,7 +16,6 @@
 #define malloc k_malloc
 #define free(x) k_free(x)
 // FIXME: What to do about realloc?
-#define realloc assert(false)
 /**
  * Time instant. Both physical and logical times are represented
  * using this typedef.
