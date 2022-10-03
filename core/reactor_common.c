@@ -1842,7 +1842,6 @@ lf_token_t* writable_copy(lf_token_t* token) {
 /**
  * Print a usage message.
  */
-#ifndef TARGET_EMBEDDED
 void usage(int argc, const char* argv[]) {
     printf("\nCommand-line arguments: \n\n");
     printf("  -f, --fast [true | false]\n");
@@ -1867,7 +1866,6 @@ void usage(int argc, const char* argv[]) {
     }
     printf("\n\n");
 }
-#endif
 
 // Some options given in the target directive are provided here as
 // default command-line options.
@@ -1882,9 +1880,6 @@ const char** default_argv = NULL;
  */
 
 int process_args(int argc, const char* argv[]) {
-    #ifdef TARGET_EMBEDDED
-    return 1;
-    #else
     int i = 1;
     while (i < argc) {
         const char* arg = argv[i++];
@@ -1914,8 +1909,9 @@ int process_args(int argc, const char* argv[]) {
             const char* time_spec = argv[i++];
             const char* units = argv[i++];
 
-            #ifdef BIT_32
-            duration = atol(time_spec);
+            #ifdef TARGET_EMBEDDED
+            // FIXME: how should we parse this? I think embedded platforms might want another way of passing args
+            duration = atoi(time_spec);
             #else
             duration = atoll(time_spec);
             #endif
@@ -2024,7 +2020,6 @@ int process_args(int argc, const char* argv[]) {
         }
     }
     return 1;
-    #endif
 }
 
 /**
