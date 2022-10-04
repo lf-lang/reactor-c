@@ -32,6 +32,14 @@ typedef int64_t _interval_t;
  */
 typedef uint32_t _microstep_t;
 
+typedef int _lf_mutex_t;
+typedef int _lf_cond_t;
+typedef int _lf_thread_t;
+
+extern _lf_mutex_t mutex;
+extern _lf_cond_t event_q_changed;
+
+#define _LF_TIMEOUT 1
 
 
 #endif // LF_ZEPHYR_SUPPORT_H

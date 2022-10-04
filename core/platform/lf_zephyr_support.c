@@ -33,6 +33,12 @@ static volatile uint32_t _lf_time_cycles_low_last = 0;
 
 // Forward declaration of local function to ack notified events
 static int lf_ack_events();
+
+#ifdef NUMBER_OF_WORKERS
+lf_mutex_t mutex;
+lf_cond_t event_q_changed;
+#endif
+
 /**
  * @brief Sleep until an absolute time.
  * FIXME: For improved power consumption this should be implemented with a HW timer and interrupts.
@@ -142,3 +148,129 @@ static int lf_ack_events() {
 int lf_nanosleep(interval_t sleep_duration) {
     return lf_sleep(sleep_duration);
 }
+
+#ifdef NUMBER_OF_WORKERS
+
+/**
+ * @brief Get the number of cores on the host machine.
+ * FIXME: Use proper Zephyr API
+ */
+int lf_available_cores() {
+    return 1;
+}
+
+/**
+ * Create a new thread, starting with execution of lf_thread
+ * getting passed arguments. The new handle is stored in thread_id.
+ *
+ * @return 0 on success, platform-specific error number otherwise.
+ *
+ */
+int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
+    printk("lf_thread_create called\n");
+    return 0;
+}
+
+/**
+ * Make calling thread wait for termination of the thread.  The
+ * exit status of the thread is stored in thread_return, if thread_return
+ * is not NULL.
+ * 
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_thread_join(lf_thread_t thread, void** thread_return) {
+    printk("lf_thread_join called\n");
+    return 0;
+}
+
+/**
+ * Initialize a mutex.
+ * 
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_mutex_init(lf_mutex_t* mutex) {
+
+    printk("lf_mutex_init called\n");
+    return 0;    
+}
+
+/**
+ * Lock a mutex.
+ * 
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_mutex_lock(lf_mutex_t* mutex) {
+    printk("lf_mutex_lock\n");
+    return 0;
+}
+
+/** 
+ * Unlock a mutex.
+ * 
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_mutex_unlock(lf_mutex_t* mutex) {
+
+    printk("lf_mutex_unlock\n");
+    return 0;
+}
+
+
+/** 
+ * Initialize a conditional variable.
+ * 
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_cond_init(lf_cond_t* cond) {
+    printk("lf_cond_init\n");
+    return 0;
+}
+
+/** 
+ * Wake up all threads waiting for condition variable cond.
+ * 
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_cond_broadcast(lf_cond_t* cond) {
+    printk("lf_cond_broadcast\n");
+    return 0;
+}
+
+/** 
+ * Wake up one thread waiting for condition variable cond.
+ * 
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_cond_signal(lf_cond_t* cond) {
+ 
+    printk("lf_cond_signal\n");
+    return 0;
+}
+
+/** 
+ * Wait for condition variable "cond" to be signaled or broadcast.
+ * "mutex" is assumed to be locked before.
+ * 
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex) {
+
+    printk("lf_cond_wait\n");
+    return 0;
+}
+
+/** 
+ * Block current thread on the condition variable until condition variable
+ * pointed by "cond" is signaled or time pointed by "absolute_time_ns" in
+ * nanoseconds is reached.
+ * 
+ * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
+ *  number otherwise.
+ */
+int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absolute_time_ns) {
+    printk("lf_cond_timedwait\n");
+    return 0;
+}
+
+
+#endif // NUMBER_OF_WORKERS

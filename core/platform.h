@@ -217,7 +217,9 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  * @param value The value to be added to the variable pointed to by the ptr parameter.
  * @return The original value of the variable that ptr points to (i.e., from before the application of this operation).
  */
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(ZEPHYR)
+#define lf_atomic_fetch_add(ptr, value) 1
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that an integer is 32 bits.
 #define lf_atomic_fetch_add(ptr, value) InterlockedExchangeAdd(ptr, value)
 #elif defined(__GNUC__) || defined(__clang__)
@@ -232,7 +234,9 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  * @param value The value to be added to the variable pointed to by the ptr parameter.
  * @return The new value of the variable that ptr points to (i.e., from before the application of this operation).
  */
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(ZEPHYR)
+#define lf_atomic_add_fetch(ptr, value) 1
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that an integer is 32 bits.
 #define lf_atomic_add_fetch(ptr, value) InterlockedAdd(ptr, value)
 #elif defined(__GNUC__) || defined(__clang__)
@@ -249,7 +253,9 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  * @param newval The value to assign to *ptr if comparison is successful.
  * @return True if comparison was successful. False otherwise.
  */
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(ZEPHYR)
+#define lf_bool_compare_and_swap(ptr, value, newval) 1
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that a boolean is represented with a 32-bit integer.
 #define lf_bool_compare_and_swap(ptr, oldval, newval) (InterlockedCompareExchange(ptr, newval, oldval) == oldval)
 #elif defined(__GNUC__) || defined(__clang__)
@@ -266,7 +272,9 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  * @param newval The value to assign to *ptr if comparison is successful.
  * @return The initial value of *ptr.
  */
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(ZEPHYR)
+#define lf_val_compare_and_swap(ptr, value, newval) 1
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define lf_val_compare_and_swap(ptr, oldval, newval) InterlockedCompareExchange(ptr, newval, oldval)
 #elif defined(__GNUC__) || defined(__clang__)
 #define lf_val_compare_and_swap(ptr, oldval, newval) __sync_val_compare_and_swap(ptr, oldval, newval)

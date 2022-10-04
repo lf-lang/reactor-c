@@ -34,11 +34,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
-
+typedef int lf_mutex_t;
 #include "../reactor_common.c"
 #include "../platform.h"
 #include "scheduler.h"
+#ifndef TARGET_EMBEDDED
 #include <signal.h>
+#endif
 
 // The one and only mutex lock.
 extern lf_mutex_t mutex;
@@ -1096,6 +1098,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     lf_cond_init(&event_q_changed);
     lf_cond_init(&global_tag_barrier_requestors_reached_zero);
 
+    #ifndef TARGET_EMBEDDED
     if (atexit(termination) != 0) {
         lf_print_warning("Failed to register termination function!");
     }
@@ -1109,7 +1112,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Instead, cause an EPIPE error to be set when write() fails.
     signal(SIGPIPE, SIG_IGN);
 #endif // SIGPIPE
-
+#endif // TARGET_EMBEDDED
     if (process_args(default_argc, default_argv)
             && process_args(argc, argv)) {
 
