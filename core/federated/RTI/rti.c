@@ -88,7 +88,8 @@ RTI_instance_t _RTI = {
     .socket_descriptor_UDP = -1,
     .clock_sync_global_status = clock_sync_init,
     .clock_sync_period_ns = MSEC(10),
-    .clock_sync_exchanges_per_interval = 10
+    .clock_sync_exchanges_per_interval = 10,
+    .is_auth = false
 };
 
 /**
@@ -1885,7 +1886,10 @@ void connect_to_federates(int socket_descriptor) {
 
         // Send RTI hello including a nonce.
         // If authenticated hello is required.
-        send_rti_hello(socket_id);
+        if (_RTI.is_auth) {
+            send_rti_hello(socket_id);
+        }
+        
 
         // The first message from the federate should contain its ID and the federation ID.
         int32_t fed_id = receive_and_check_fed_id_message(socket_id, (struct sockaddr_in*)&client_fd);
@@ -2114,6 +2118,7 @@ void usage(int argc, char* argv[]) {
     printf("          (period in nanoseconds, default is 5 msec). Only applies to 'on'.\n");
     printf("       - exchanges-per-interval <n>: Controls the number of messages that are exchanged for each\n");
     printf("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n\n");
+    printf("  -a, --auth Turn on HMAC authentication options\n\n");
 
     printf("Command given:\n");
     for (int i = 0; i < argc; i++) {
@@ -2209,6 +2214,9 @@ int process_args(int argc, char* argv[]) {
             i++;
             printf("RTI: Federation ID: %s\n", argv[i]);
             _RTI.federation_id = argv[i];
+        } else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--auth") == 0) {
+            i++;
+            _RTI.is_auth = true;
         } else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--number_of_federates") == 0) {
             if (argc < i + 2) {
                 fprintf(stderr, "Error: --number_of_federates needs an integer argument.\n");

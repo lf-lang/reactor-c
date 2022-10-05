@@ -194,6 +194,11 @@ typedef struct RTI_instance_t {
      * Number of messages exchanged for each clock sync attempt.
      */
     int32_t clock_sync_exchanges_per_interval;
+
+    /**
+     * Number of messages exchanged for each clock sync attempt.
+     */
+    bool is_auth;
 } RTI_instance_t;
 
 #endif // RTI_H
