@@ -2118,7 +2118,7 @@ void usage(int argc, char* argv[]) {
     printf("          (period in nanoseconds, default is 5 msec). Only applies to 'on'.\n");
     printf("       - exchanges-per-interval <n>: Controls the number of messages that are exchanged for each\n");
     printf("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n\n");
-    printf("  -a, --auth Turn on HMAC authentication options\n\n");
+    printf("  -a, --auth Turn on HMAC authentication options.\n\n");
 
     printf("Command given:\n");
     for (int i = 0; i < argc; i++) {
@@ -2215,7 +2215,7 @@ int process_args(int argc, char* argv[]) {
             printf("RTI: Federation ID: %s\n", argv[i]);
             _RTI.federation_id = argv[i];
         } else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--auth") == 0) {
-            i++;
+            // i++;
             _RTI.is_auth = true;
         } else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--number_of_federates") == 0) {
             if (argc < i + 2) {
