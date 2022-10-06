@@ -19,6 +19,16 @@ sudo make install
 
 If you would like to go back to the non-DEBUG mode, you would have to remove all contents of the `build` folder.
 
+**Note:** To enable HMAC authorization, use the following build commands instead:
+
+```bash
+mkdir build && cd build
+cmake -DAUTH=ON ../
+make
+sudo make install
+```
+
+If you would like to go back to non-AUTH mode, you would have to remove all contents of the `build` folder.
 
 To build a docker image for the RTI, do 
 ```bash

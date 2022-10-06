@@ -23,11 +23,20 @@
 # If you would like to go back to non-DEBUG mode, you would have to remove all
 # contents of the `build` folder.
 
+# To enable HMAC authorization, use the following build commands instead:
+# 
+# $> mkdir build && cd build
+# $> cmake -DAUTH=ON ../
+# $> make
+# $> sudo make install
+#
+# If you would like to go back to non-AUTH mode, you would have to remove all
+# contents of the `build` folder.
+
 cmake_minimum_required(VERSION 3.12)
 project(RTI VERSION 1.0.0 LANGUAGES C)
 
 set(CoreLib ../../../core)
-
 # Check which system we are running on to select the correct platform support
 # file and assign the file's path to LF_PLATFORM_FILE
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
@@ -63,9 +72,14 @@ target_compile_definitions(RTI PUBLIC NUMBER_OF_WORKERS)
 find_package(Threads REQUIRED)
 target_link_libraries(RTI Threads::Threads)
 
-# Find OpenSSL and link to it
-find_package(OpenSSL REQUIRED)
-target_link_libraries(RTI OpenSSL::SSL)
+# # Find OpenSSL and link to it
+option(AUTH "Turn on AUTH or not." OFF)
+IF(AUTH)
+  add_compile_definitions(_AUTH_)
+  find_package(OpenSSL REQUIRED)
+  target_link_libraries(RTI OpenSSL::SSL)
+ENDIF(AUTH)
+set(AUTH OFF)
 
 install(
     TARGETS RTI
