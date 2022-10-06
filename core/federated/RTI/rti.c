@@ -1890,7 +1890,6 @@ void connect_to_federates(int socket_descriptor) {
             send_rti_hello(socket_id);
         }
         
-
         // The first message from the federate should contain its ID and the federation ID.
         int32_t fed_id = receive_and_check_fed_id_message(socket_id, (struct sockaddr_in*)&client_fd);
         if (fed_id >= 0
@@ -2214,9 +2213,6 @@ int process_args(int argc, char* argv[]) {
             i++;
             printf("RTI: Federation ID: %s\n", argv[i]);
             _RTI.federation_id = argv[i];
-        } else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--auth") == 0) {
-            // i++;
-            _RTI.is_auth = true;
         } else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--number_of_federates") == 0) {
             if (argc < i + 2) {
                 fprintf(stderr, "Error: --number_of_federates needs an integer argument.\n");
@@ -2262,6 +2258,8 @@ int process_args(int argc, char* argv[]) {
            }
            i++;
            i += process_clock_sync_args((argc-i), &argv[i]);
+        } else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--auth") == 0) {
+            _RTI.is_auth = true;
         } else if (strcmp(argv[i], " ") == 0) {
             // Tolerate spaces
             continue;

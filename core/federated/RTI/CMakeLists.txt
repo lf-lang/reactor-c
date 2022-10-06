@@ -67,7 +67,6 @@ target_link_libraries(RTI Threads::Threads)
 find_package(OpenSSL REQUIRED)
 target_link_libraries(RTI OpenSSL::SSL)
 
-
 install(
     TARGETS RTI
     DESTINATION bin

@@ -41,8 +41,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <strings.h>    // Defines bzero().
 #include <assert.h>
 #include <signal.h>     // Defines sigaction.
-#include <openssl/rand.h> // For secure random number generation.
-#include <openssl/hmac.h> // For HMAC authentication.
 #include "net_util.c"   // Defines network functions.
 #include "net_common.h" // Defines message types, etc.
 #include "../reactor.h"    // Defines instant_t.
@@ -857,7 +855,9 @@ void connect_to_federate(uint16_t remote_federate_id) {
         );
     }
 }
-
+#ifdef FEDERATED_AUTH
+#include <openssl/rand.h> // For secure random number generation.
+#include <openssl/hmac.h> // For HMAC authentication.
 void perform_hmac_authentication(int rti_socket) {
     LF_PRINT_LOG("Connected to an RTI. Performing HMAC-based authentication.");
     unsigned char buffer[1 + NONCE_LENGTH];
@@ -927,7 +927,7 @@ void perform_hmac_authentication(int rti_socket) {
         LF_PRINT_LOG("HMAC verified.");
     }
 }
-
+#endif
 /**
  * Connect to the RTI at the specified host and port and return
  * the socket descriptor for the connection. If this fails, the
@@ -967,9 +967,6 @@ void connect_to_rti(const char* hostname, int port) {
     }
     int result = -1;
     int count_retries = 0;
-
-    // See https://github.com/lf-lang/lingua-franca/issues/1146 for more information.
-    bool use_hmac_authentication = true;
 
     while (result < 0) {
         // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
@@ -1038,11 +1035,9 @@ void connect_to_rti(const char* hostname, int port) {
             // Send a MSG_TYPE_FED_IDS message and wait for a reply.
             // Notify the RTI of the ID of this federate and its federation.
             unsigned char buffer[4];
-
-            if (use_hmac_authentication) {
-                perform_hmac_authentication(_fed.socket_TCP_RTI);
-            }
-
+            #ifdef FEDERATED_AUTH
+            perform_hmac_authentication(_fed.socket_TCP_RTI);
+            #endif
             LF_PRINT_LOG("Connected to an RTI. Sending federation ID for authentication.");
 
             // Send the message type first.
