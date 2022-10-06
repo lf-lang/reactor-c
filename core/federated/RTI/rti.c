@@ -406,6 +406,7 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
             // Find the (transitive) next event tag upstream.
             tag_t upstream_next_event = transitive_next_event(
                     upstream, upstream->next_event, visited);
+            free(visited);
 
             // If these tags are equal, then
             // a TAG or PTAG should have already been granted,
@@ -515,6 +516,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
             t_d = candidate;
         }
     }
+    free(visited);
 
     LF_PRINT_LOG("Earliest next event upstream has tag (%lld, %u).",
             t_d.time - start_time, t_d.microstep);
@@ -615,6 +617,7 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
     // track of which upstream federates have been visited.
     bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
     send_downstream_advance_grants_if_safe(&_RTI.federates[federate_id], visited);
+    free(visited);
 }
 
 /**
@@ -854,6 +857,7 @@ void handle_logical_tag_complete(federate_t* fed) {
         send_advance_grant_if_safe(downstream);
         bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
         send_downstream_advance_grants_if_safe(downstream, visited);
+        free(visited);
     }
 
     pthread_mutex_unlock(&_RTI.rti_mutex);
@@ -1435,6 +1439,7 @@ void handle_federate_resign(federate_t *my_fed) {
     // track of which upstream federates have been visited.
     bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
     send_downstream_advance_grants_if_safe(my_fed, visited);
+    free(visited);
 
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
