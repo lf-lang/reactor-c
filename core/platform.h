@@ -61,7 +61,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     #include "platform/lf_POSIX_threads_support.h"
 #elif defined(__riscv) || defined(__riscv__) 
     // RISC-V (see https://github.com/riscv/riscv-toolchain-conventions)
-    #error "RISC-V not supported"
+    #include "platform/lf_spike_support.h"
 #else
 #error "Platform not supported"
 #endif
