@@ -24,7 +24,7 @@
 # contents of the `build` folder.
 
 # To enable simple HMAC-based authentication of federates,
-# use the following build commands instead:
+# add `-DAUTH=ON` option to the cmake command as shown below:
 # 
 # $> mkdir build && cd build
 # $> cmake -DAUTH=ON ../
@@ -38,6 +38,7 @@ cmake_minimum_required(VERSION 3.12)
 project(RTI VERSION 1.0.0 LANGUAGES C)
 
 set(CoreLib ../../../core)
+
 # Check which system we are running on to select the correct platform support
 # file and assign the file's path to LF_PLATFORM_FILE
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")

@@ -87,7 +87,7 @@ RTI_instance_t _RTI = {
     .clock_sync_global_status = clock_sync_init,
     .clock_sync_period_ns = MSEC(10),
     .clock_sync_exchanges_per_interval = 10,
-    .is_auth = false
+    .authentication_enabled = false
 };
 
 /**
@@ -1890,7 +1890,7 @@ void connect_to_federates(int socket_descriptor) {
 
         // Send RTI hello when RTI -a option is on.
         #ifdef __RTI_AUTH__
-            if (_RTI.is_auth) {
+            if (_RTI.authentication_enabled) {
                 send_rti_hello(socket_id);
             }
         #endif
@@ -2264,7 +2264,7 @@ int process_args(int argc, char* argv[]) {
            i++;
            i += process_clock_sync_args((argc-i), &argv[i]);
         } else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--auth") == 0) {
-            _RTI.is_auth = true;
+            _RTI.authentication_enabled = true;
         } else if (strcmp(argv[i], " ") == 0) {
             // Tolerate spaces
             continue;
