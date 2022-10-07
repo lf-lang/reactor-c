@@ -855,9 +855,9 @@ void connect_to_federate(uint16_t remote_federate_id) {
         );
     }
 }
-#ifdef FEDERATED_AUTH
+#ifdef FEDERATED_AUTHENTICATED
 #include <openssl/rand.h> // For secure random number generation.
-#include <openssl/hmac.h> // For HMAC authentication.
+#include <openssl/hmac.h> // For HMAC-based authentication of federates.
 void perform_hmac_authentication(int rti_socket) {
     LF_PRINT_LOG("Connected to an RTI. Performing HMAC-based authentication.");
     unsigned char buffer[1 + NONCE_LENGTH];
@@ -1035,7 +1035,7 @@ void connect_to_rti(const char* hostname, int port) {
             // Send a MSG_TYPE_FED_IDS message and wait for a reply.
             // Notify the RTI of the ID of this federate and its federation.
             unsigned char buffer[4];
-            #ifdef FEDERATED_AUTH
+            #ifdef FEDERATED_AUTHENTICATED
             perform_hmac_authentication(_fed.socket_TCP_RTI);
             #endif
             LF_PRINT_LOG("Connected to an RTI. Sending federation ID for authentication.");

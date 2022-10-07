@@ -23,7 +23,8 @@
 # If you would like to go back to non-DEBUG mode, you would have to remove all
 # contents of the `build` folder.
 
-# To enable HMAC authorization, use the following build commands instead:
+# To enable simple HMAC-based authentication of federates,
+# use the following build commands instead:
 # 
 # $> mkdir build && cd build
 # $> cmake -DAUTH=ON ../
@@ -74,12 +75,11 @@ target_link_libraries(RTI Threads::Threads)
 
 # # Find OpenSSL and link to it
 option(AUTH "Turn on AUTH or not." OFF)
-IF(AUTH)
+IF(AUTH MATCHES ON)
   add_compile_definitions(_AUTH_)
   find_package(OpenSSL REQUIRED)
   target_link_libraries(RTI OpenSSL::SSL)
-ENDIF(AUTH)
-set(AUTH OFF)
+ENDIF(AUTH MATCHES ON)
 
 install(
     TARGETS RTI

@@ -19,7 +19,8 @@ sudo make install
 
 If you would like to go back to the non-DEBUG mode, you would have to remove all contents of the `build` folder.
 
-**Note:** To enable HMAC authorization, use the following build commands instead:
+**Note:** To enable simple HMAC-based authentication of federates,
+add `-DAUTH=ON` option to the cmake command as shown below:
 
 ```bash
 mkdir build && cd build
