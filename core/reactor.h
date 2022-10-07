@@ -636,6 +636,7 @@ typedef struct allocation_record_t {
 typedef struct self_base_t {
 	struct allocation_record_t *allocations;
 	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
+    tag_t current_tag;
 #ifdef MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif
@@ -750,7 +751,7 @@ void _lf_pop_events(void);
  * @param token The token payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t delay, lf_token_t* token);
+trigger_handle_t _lf_schedule(self_base_t * self, trigger_t* trigger, interval_t delay, lf_token_t* token);
 
 /**
  * Function (to be code generated) to schedule timers.
@@ -793,7 +794,7 @@ lf_token_t* create_token(size_t element_size);
  * @param value The value to send.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule_int(void* action, interval_t extra_delay, int value);
+trigger_handle_t _lf_schedule_int(self_base_t * self, void* action, interval_t extra_delay, int value);
 
 /**
  * Get a new event. If there is a recycled event available, use that.
@@ -878,7 +879,7 @@ event_t* _lf_create_dummy_event(trigger_t* trigger, instant_t time, event_t* nex
  * @param token The token to carry the payload or null for no payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token);
+trigger_handle_t _lf_schedule_token(self_base_t * self, void* action, interval_t extra_delay, lf_token_t* token);
 
 /**
  * Variant of schedule_token that creates a token to carry the specified value.
@@ -892,7 +893,7 @@ trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_tok
  *  scalar and 0 for no payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* value, size_t length);
+trigger_handle_t _lf_schedule_value(self_base_t * self, void* action, interval_t extra_delay, void* value, size_t length);
 
 /**
  * Schedule an action to occur with the specified value and time offset
@@ -907,7 +908,7 @@ trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* 
  * @param length The length, if an array, 1 if a scalar, and 0 if value is NULL.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value, size_t length);
+trigger_handle_t _lf_schedule_copy(self_base_t * self, void* action, interval_t offset, void* value, size_t length);
 
 /**
  * For a federated execution, send a STOP_REQUEST message

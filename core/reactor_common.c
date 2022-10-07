@@ -693,7 +693,7 @@ void _lf_pop_events() {
         // If the trigger is a periodic timer, create a new event for its next execution.
         if (event->trigger->is_timer && event->trigger->period > 0LL) {
             // Reschedule the trigger.
-            _lf_schedule(event->trigger, event->trigger->period, NULL);
+            _lf_schedule(NULL, event->trigger, event->trigger->period, NULL);
         }
 
         // Copy the token pointer into the trigger struct so that the
@@ -787,7 +787,7 @@ void _lf_initialize_timer(trigger_t* timer) {
     // Recycle event_t structs, if possible.    
     event_t* e = _lf_get_new_event();
     e->trigger = timer;
-    e->time = lf_time_logical() + delay;
+    e->time = lf_time_logical(NULL) + delay;
     // NOTE: No lock is being held. Assuming this only happens at startup.
     pqueue_insert(event_q, e);
     tracepoint_schedule(timer, delay); // Trace even though schedule is not called.
@@ -1100,7 +1100,7 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
  * @param token The token wrapping the payload or NULL for no payload.
  * @return A handle to the event, or 0 if no new event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
+trigger_handle_t _lf_schedule(self_base_t * self, trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
     if (_lf_is_tag_after_stop_tag(current_tag)) {
         // If schedule is called after stop_tag
         // This is a critical condition.
@@ -1139,9 +1139,18 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     if (!trigger->is_timer) {
     	delay += trigger->offset;
     }
-    interval_t intended_time = current_tag.time + delay;
-    LF_PRINT_DEBUG("_lf_schedule: current_tag.time = " PRINTF_TIME ". Total logical delay = " PRINTF_TIME "",
-            current_tag.time, delay);
+    // If a self!= NULL we should calculate schedule relative 
+    //  the logical time at the reactor. Else use global time
+    tag_t now;
+    if(self) {
+        now = self->current_tag;
+    } else {
+        now = current_tag;
+    }
+    
+    interval_t intended_time = now.time + delay;
+    LF_PRINT_DEBUG("_lf_schedule: current_tag.time = " PRINTF_TIME ". local_tag.time = " PRINTF_TIME "Total logical delay = " PRINTF_TIME "",
+            current_tag.time, now.time, delay);
     interval_t min_spacing = trigger->period;
 
     event_t* e = _lf_get_new_event();
@@ -1432,7 +1441,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
         if (reaction->status == inactive) {
             reaction->is_STP_violated = is_STP_violated;
             _lf_trigger_reaction(reaction, -1);
-            LF_PRINT_LOG("Enqueued reaction %s at time " PRINTF_TIME ".", reaction->name, lf_time_logical());
+            LF_PRINT_LOG("Enqueued reaction %s at time " PRINTF_TIME ".", reaction->name, lf_time_logical(NULL));
         }
     }
 
@@ -1496,7 +1505,7 @@ void _lf_advance_logical_time(instant_t next_time) {
  * See reactor.h for documentation.
  * @param action Pointer to an action on the self struct.
  */
-trigger_handle_t _lf_schedule_int(void* action, interval_t extra_delay, int value) {
+trigger_handle_t _lf_schedule_int(self_base_t * self, void* action, interval_t extra_delay, int value) {
     trigger_t* trigger = _lf_action_to_trigger(action);
     // NOTE: This doesn't acquire the mutex lock in the multithreaded version
     // until schedule_value is called. This should be OK because the element_size
@@ -1507,7 +1516,7 @@ trigger_handle_t _lf_schedule_int(void* action, interval_t extra_delay, int valu
     }
     int* container = (int*)malloc(sizeof(int));
     *container = value;
-    return _lf_schedule_value(action, extra_delay, container, 1);
+    return _lf_schedule_value(self, action, extra_delay, container, 1);
 }
 
 /**
@@ -1546,7 +1555,7 @@ lf_token_t* _lf_set_new_array_impl(lf_token_t* token, size_t length, int num_des
  */
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
     reaction_t* reaction = self->executing_reaction;
-    if (lf_time_physical() > lf_time_logical() + reaction->deadline) {
+    if (lf_time_physical() > lf_time_logical(self) + reaction->deadline) {
         if (invoke_deadline_handler) {
             reaction->deadline_violation_handler(self);
         }
@@ -2049,7 +2058,7 @@ void termination(void) {
     }
     // Print elapsed times.
     // If these are negative, then the program failed to start up.
-    interval_t elapsed_time = lf_time_logical_elapsed();
+    interval_t elapsed_time = lf_time_logical_elapsed(NULL);
     if (elapsed_time >= 0LL) {
         char time_buffer[29]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
         lf_comma_separated_time(time_buffer, elapsed_time);

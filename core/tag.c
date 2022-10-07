@@ -33,7 +33,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "tag.h"
 #include "platform.h"
-
+#include "reactor.h"
 /**
  * Current time in nanoseconds since January 1, 1970
  * This is not in scope for reactors.
@@ -252,15 +252,16 @@ instant_t _lf_time(_lf_time_type type) {
 /**
  * Return the current logical time in nanoseconds since January 1, 1970.
  */
-instant_t lf_time_logical(void) {
-    return _lf_time(LF_LOGICAL);
+instant_t lf_time_logical(void *self) {
+    if (self) return ((self_base_t *) self)->current_tag.time;
+    else return _lf_time(LF_LOGICAL);
 }
 
 /**
  * Return the elapsed logical time in nanoseconds since the start of execution.
  */
-interval_t lf_time_logical_elapsed(void) {
-    return _lf_time(LF_ELAPSED_LOGICAL);
+interval_t lf_time_logical_elapsed(void *self) {
+    return lf_time_logical(self) - start_time;
 }
 
 

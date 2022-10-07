@@ -6,13 +6,12 @@
 /**
  * @deprecated version of "lf_time_logical"
  */
-DEPRECATED(instant_t get_logical_time(void));
+DEPRECATED(instant_t get_logical_time(void* self));
 
 /**
  * @deprecated version of "lf_time_logical_elapsed"
  */
-DEPRECATED(interval_t get_elapsed_logical_time(void));
-
+DEPRECATED(interval_t get_elapsed_logical_time(void* self));
 /**
  * @deprecated version of "lf_time_physical"
  */

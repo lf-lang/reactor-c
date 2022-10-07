@@ -211,3 +211,12 @@ do { \
 #endif // MODAL_REACTORS
 
 #endif // CTARGET_SET
+
+// FIXME: Temporary workaround to enable LET reactions and changing lf_schedule and lf_time API
+#define lf_time_logical() lf_time_logical(self)
+#define lf_time_logical_elapsed() lf_time_logical_elapsed(self)
+#define lf_schedule(A,O) lf_schedule(self,A,O)
+#define lf_schedule_int(A,O,V) lf_schedule_int(self,A,O,V)
+#define lf_schedule_token(A,O,T) lf_schedule_tokem(self,A,O,T)
+#define lf_schedule_copy(A,O,V,L) lf_schedule_copy(self,A,O,V,L)
+#define lf_schedule_value(A,O,V,L) lf_schedule_value(self,A,O,V,L)

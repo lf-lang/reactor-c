@@ -112,4 +112,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #undef SET_MODE
 #endif
 
+#undef lf_time_logical 
+#undef lf_time_logical_elapsed 
+#undef lf_schedule 
+#undef lf_schedule_int 
+#undef lf_schedule_token 
+#undef lf_schedule_copy 
+#undef lf_schedule_value 
 #endif // CTARGET_SET

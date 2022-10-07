@@ -3,12 +3,18 @@
 /**
  * @deprecated version of "lf_time_logical"
  */
-instant_t get_logical_time() { return lf_time_logical(); }
+instant_t get_logical_time(void* self) { 
+    lf_time_logical(self);
+    return 0; 
+}
 
 /**
  * @deprecated version of "lf_time_logical_elapsed"
  */
-interval_t get_elapsed_logical_time() { return lf_time_logical_elapsed(); }
+interval_t get_elapsed_logical_time(void* self) { 
+    lf_time_logical(self);
+    return 0; 
+    }
 
 /**
  * @deprecated version of "lf_time_physical"

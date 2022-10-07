@@ -48,15 +48,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param offset The time offset over and above that in the action.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t lf_schedule(void* action, interval_t offset) {
-    return _lf_schedule_token(action, offset, NULL);
+trigger_handle_t lf_schedule(void* self, void* action, interval_t offset) {
+    return _lf_schedule_token((self_base_t *) self, action, offset, NULL);
 }
 
 /**
  * @deprecated version of 'lf_schedule'
  */
-trigger_handle_t schedule(void* action, interval_t offset) {
-    return lf_schedule(action, offset);
+trigger_handle_t schedule(void *self, void* action, interval_t offset) {
+    return lf_schedule(self, action, offset);
 }
 
 /**
@@ -70,17 +70,17 @@ trigger_handle_t schedule(void* action, interval_t offset) {
  * @param value The value to send.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value)
+trigger_handle_t lf_schedule_int(void* self, void* action, interval_t extra_delay, int value)
 {
-    return _lf_schedule_int(action, extra_delay, value);
+    return _lf_schedule_int((self_base_t *) self, action, extra_delay, value);
 }
 
 /**
  * @deprecated version of 'lf_schedule_int'
  */
-trigger_handle_t schedule_int(void* action, interval_t extra_delay, int value)
+trigger_handle_t schedule_int(void* self, void* action, interval_t extra_delay, int value)
 {
-    return lf_schedule_int(action, extra_delay, value);
+    return lf_schedule_int(self, action, extra_delay, value);
 }
 
 /**
@@ -133,15 +133,15 @@ trigger_handle_t schedule_int(void* action, interval_t extra_delay, int value)
  * @param token The token to carry the payload or null for no payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-    return _lf_schedule_token(action, extra_delay, token);
+trigger_handle_t lf_schedule_token(void* self, void* action, interval_t extra_delay, lf_token_t* token) {
+    return _lf_schedule_token((self_base_t *) self, action, extra_delay, token);
 }
 
 /**
  * @deprecated version of 'lf_schedule_token'
  */
-trigger_handle_t schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-    return lf_schedule_token(action, extra_delay, token);
+trigger_handle_t schedule_token(void* self, void* action, interval_t extra_delay, lf_token_t* token) {
+    return lf_schedule_token(self, action, extra_delay, token);
 }
 
 /**
@@ -160,7 +160,7 @@ trigger_handle_t schedule_token(void* action, interval_t extra_delay, lf_token_t
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for
  *  error.
  */
-trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, int length) {
+trigger_handle_t lf_schedule_copy(void* self, void* action, interval_t offset, void* value, int length) {
     if (length < 0) {
         lf_print_error(
             "schedule_copy():"
@@ -169,14 +169,14 @@ trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, 
         );
         return -1;
     }
-    return _lf_schedule_copy(action, offset, value, (size_t)length);
+    return _lf_schedule_copy((self_base_t *) self, action, offset, value, (size_t)length);
 }
 
 /**
  * @deprecated version of 'lf_schedule_copy'
  */
-trigger_handle_t schedule_copy(void* action, interval_t offset, void* value, int length) {
-    return lf_schedule_copy(action, offset, value, length);
+trigger_handle_t schedule_copy(void* self, void* action, interval_t offset, void* value, int length) {
+    return lf_schedule_copy(self, action, offset, value, length);
 }
 
 
@@ -196,7 +196,7 @@ trigger_handle_t schedule_copy(void* action, interval_t offset, void* value, int
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for
  *  error.
  */
-trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* value, int length) {
+trigger_handle_t lf_schedule_value(void* self, void* action, interval_t extra_delay, void* value, int length) {
     if (length < 0) {
         lf_print_error(
             "schedule_value():"
@@ -205,14 +205,15 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
         );
         return -1;
     }
-    return _lf_schedule_value(action, extra_delay, value, (size_t)length);
+    return _lf_schedule_value((self_base_t *) self, action, extra_delay, value, (size_t)length);
 }
 
 /**
  * @deprecated version of 'lf_schedule_value'
  */
-trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* value, int length) {
-    return lf_schedule_value(action, extra_delay, value, length);
+trigger_handle_t schedule_value(void* self, void* self, void* action, interval_t extra_delay, void* value, int length) {
+    lf_print_error_and_exit("schedule not supported with LET");
+    return lf_schedule_value(self, action, extra_delay, value, length);
 }
 
 

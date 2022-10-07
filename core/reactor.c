@@ -58,21 +58,21 @@ pqueue_t* reaction_q;
  * specified trigger plus the delay.
  * See reactor.h for documentation.
  */
-trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
+trigger_handle_t _lf_schedule_token(self_base_t *self, void* action, interval_t extra_delay, lf_token_t* token) {
     trigger_t* trigger = _lf_action_to_trigger(action);
-    return _lf_schedule(trigger, extra_delay, token);
+    return _lf_schedule(self, trigger, extra_delay, token);
 }
 
 /**
  * Variant of schedule_token that creates a token to carry the specified value.
  * See reactor.h for documentation.
  */
-trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* value, size_t length) {
+trigger_handle_t _lf_schedule_value(self_base_t * self, void* action, interval_t extra_delay, void* value, size_t length) {
     trigger_t* trigger = _lf_action_to_trigger(action);
     lf_token_t* token = create_token(trigger->element_size);
     token->value = value;
     token->length = length;
-    return _lf_schedule_token(action, extra_delay, token);
+    return _lf_schedule_token(self,NULL action, extra_delay, token);
 }
 
 /**
@@ -80,10 +80,10 @@ trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* 
  * with a copy of the specified value.
  * See reactor.h for documentation.
  */
-trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value, size_t length) {
+trigger_handle_t _lf_schedule_copy(self_base_t * self, void* action, interval_t offset, void* value, size_t length) {
     trigger_t* trigger = _lf_action_to_trigger(action);
     if (value == NULL) {
-        return _lf_schedule_token(action, offset, NULL);
+        return _lf_schedule_token(self, action, offset, NULL);
     }
     if (trigger == NULL || trigger->token == NULL || trigger->token->element_size <= 0) {
         lf_print_error("schedule: Invalid trigger or element size.");
@@ -95,7 +95,7 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
     // Copy the value into the newly allocated memory.
     memcpy(token->value, value, token->element_size * length);
     // The schedule function will increment the reference count.
-    return _lf_schedule_token(action, offset, token);
+    return _lf_schedule_token(self, action, offset, token);
 }
 
 /**

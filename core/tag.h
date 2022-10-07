@@ -167,7 +167,7 @@ int lf_tag_compare(tag_t tag1, tag_t tag2);
  * 
  * @return A time instant.
  */
-instant_t lf_time_logical(void);
+instant_t lf_time_logical(void* self);
 
 
 /**
@@ -175,7 +175,7 @@ instant_t lf_time_logical(void);
  * since the start of execution.
  * @return A time interval.
  */
-interval_t lf_time_logical_elapsed(void);
+interval_t lf_time_logical_elapsed(void *self);
 
 
 /**
