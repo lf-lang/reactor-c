@@ -216,7 +216,14 @@ int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section
     // Convert the absolute time to a relative time
     instant_t current_time_ns;
     lf_clock_gettime(&current_time_ns);
-    DWORD relative_time_ms = (absolute_time_ns - current_time_ns)/1000000LL;
+    DWORD relative_time_ns = (absolute_time_ns - current_time_ns);
+    if (relative_time_ns <= 0){
+      // physical time has already catched up sufficiently and we do not need to wait anymore
+      return 0;
+    }
+
+    // convert ns to ms and round up to closest full integer
+    DWORD relative_time_ms = relative_time_ns + 999999LL / 1000000LL;
 
     int return_value =
      (int)SleepConditionVariableCS(
