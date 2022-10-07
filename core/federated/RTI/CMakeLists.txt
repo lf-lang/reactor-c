@@ -73,10 +73,11 @@ target_compile_definitions(RTI PUBLIC NUMBER_OF_WORKERS)
 find_package(Threads REQUIRED)
 target_link_libraries(RTI Threads::Threads)
 
-# # Find OpenSSL and link to it
-option(AUTH "Turn on AUTH or not." OFF)
+# Option for enabling federate authentication by RTI.
+option(AUTH "Federate authentication by RTI enabled." OFF)
 IF(AUTH MATCHES ON)
-  add_compile_definitions(_AUTH_)
+  add_compile_definitions(__RTI_AUTH__)
+  # Find OpenSSL and link to it
   find_package(OpenSSL REQUIRED)
   target_link_libraries(RTI OpenSSL::SSL)
 ENDIF(AUTH MATCHES ON)

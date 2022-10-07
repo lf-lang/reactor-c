@@ -330,6 +330,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_FED_IDS 1
 
+/////////// Messages used for authenticated federation. ///////////////
 /**
  * Byte identifying a message from an RTI to a federate containing
  * a 8-byte nonce.

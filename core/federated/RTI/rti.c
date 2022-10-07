@@ -1801,7 +1801,7 @@ int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id) {
  * 
  * @param socket Socket for the incoming federate tryting to authenticate.
  */
-#ifdef _AUTH_
+#ifdef __RTI_AUTH__
 #include <openssl/rand.h> // For secure random number generation.
 #include <openssl/hmac.h> // For HMAC authentication.
 void send_rti_hello(int socket) {
@@ -1889,7 +1889,7 @@ void connect_to_federates(int socket_descriptor) {
         }
 
         // Send RTI hello when RTI -a option is on.
-        #ifdef _AUTH_
+        #ifdef __RTI_AUTH__
             if (_RTI.is_auth) {
                 send_rti_hello(socket_id);
             }
