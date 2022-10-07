@@ -211,8 +211,7 @@ trigger_handle_t lf_schedule_value(void* self, void* action, interval_t extra_de
 /**
  * @deprecated version of 'lf_schedule_value'
  */
-trigger_handle_t schedule_value(void* self, void* self, void* action, interval_t extra_delay, void* value, int length) {
-    lf_print_error_and_exit("schedule not supported with LET");
+trigger_handle_t schedule_value(void* self, void* action, interval_t extra_delay, void* value, int length) {
     return lf_schedule_value(self, action, extra_delay, value, length);
 }
 

@@ -135,4 +135,20 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  */
 void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number);
 
+/**
+ * @brief Hook called from reactor_common.c before reaction invokation. Can be empty
+ * 
+ * @param reaction 
+ * @param worker_number 
+ */
+void lf_sched_reaction_prelude(reaction_t * reaction, int worker_number);
+
+/**
+ * @brief Hook called right after reaction invokation
+ * 
+ * @param reaction 
+ * @param worker_number 
+ */
+void lf_sched_reaction_postlude(reaction_t * reaction, int worker_number);
+
 #endif // LF_SCHEDULER_H

@@ -675,3 +675,7 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
         vector_push(&_lf_sched_threads_info[worker_number].output_reactions, (void*)reaction);
     }
 }
+
+// Empty implementations of pre/postlude used by the LET scheduler
+void lf_sched_reaction_prelude(reaction_t * reaction, int worker_number) {}
+void lf_sched_reaction_postlude(reaction_t * reaction, int worker_number) {}

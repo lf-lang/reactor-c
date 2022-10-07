@@ -127,3 +127,7 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     if (!lf_bool_compare_and_swap(&reaction->status, inactive, queued)) return;
     worker_assignments_put(reaction);
 }
+
+// Empty implementations of pre/postlude used by the LET scheduler
+void lf_sched_reaction_prelude(reaction_t * reaction, int worker_number) {}
+void lf_sched_reaction_postlude(reaction_t * reaction, int worker_number) {}
