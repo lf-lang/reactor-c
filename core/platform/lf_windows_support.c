@@ -223,7 +223,7 @@ int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section
     }
 
     // convert ns to ms and round up to closest full integer
-    DWORD relative_time_ms = relative_time_ns + 999999LL / 1000000LL;
+    DWORD relative_time_ms = (relative_time_ns + 999999LL) / 1000000LL;
 
     int return_value =
      (int)SleepConditionVariableCS(
