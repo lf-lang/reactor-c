@@ -35,9 +35,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
 
+#include "scheduler.h"
 #include "../reactor_common.c"
 #include "../platform.h"
-#include "scheduler.h"
 #include <signal.h>
 
 
@@ -667,7 +667,7 @@ void _lf_next_locked() {
     LF_PRINT_DEBUG("Physical time is ahead of next tag time by " PRINTF_TIME ". This should be small unless -fast is used.",
                 lf_time_physical() - next_tag.time);
     
-#ifdef FEDERATED
+#if defined(FEDERATED) || defined(NUMBER_OF_LET_REACTIONS)
     // In federated execution (at least under decentralized coordination),
     // it is possible that an incoming message has been partially read,
     // enough to see its tag. To prevent it from becoming tardy, the thread
@@ -988,20 +988,7 @@ void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
             reaction->name,
             current_tag.time - start_time,
             current_tag.microstep);
-    // FIXME: Replace the following call with the following sequence:
-    //   acquire a mutex.  Could use event_q_changed condition variable, probably.
-    //   check ((self_base_t*)reaction->self)->executing_reaction
-    //   if not NULL, wait until it is using a condition wait.
-    //   set executing_reaction
-    //   then release mutex
-	//   execute reaction.
-    //   acquire mutex
-	//   set executing_reaction to NULL
-	//   notify
-	//   release mutex.
-	// This will deal with interrupting events that trigger any
-	// reaction belonging to the same reactor as a currently executing
-	// LET reaction.
+
     _lf_invoke_reaction(reaction, worker_number);
 
     // If the reaction produced outputs, put the resulting triggered
