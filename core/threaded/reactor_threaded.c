@@ -112,7 +112,7 @@ void enqueue_network_output_control_reactions();
  * prevent any further advances. This function will increment the
  * total number of pending barrier requests. For each call to this
  * function, there should always be a subsequent call to
- * _lf_decrement_global_tag_barrier_locked()
+ * lf_decrement_global_tag_barrier_locked()
  * to release the barrier.
  * 
  * If there is already a barrier raised at a tag later than future_tag, this
@@ -134,7 +134,7 @@ void enqueue_network_output_control_reactions();
  * If future_tag is in the past (or equals to current logical time), the runtime
  * will freeze advancement of logical time.
  */
-void _lf_increment_global_tag_barrier_already_locked(tag_t future_tag) {
+void lf_increment_global_tag_barrier_already_locked(tag_t future_tag) {
     // Check if future_tag is after stop tag.
     // This will only occur when a federate receives a timed message with 
     // a tag that is after the stop tag
@@ -183,7 +183,7 @@ void _lf_increment_global_tag_barrier_already_locked(tag_t future_tag) {
  * prevent any further advances. This function will increment the
  * total number of pending barrier requests. For each call to this
  * function, there should always be a subsequent call to
- * _lf_decrement_global_tag_barrier_locked()
+ * lf_decrement_global_tag_barrier_locked()
  * to release the barrier.
  * 
  * If there is already a barrier raised at a tag later than future_tag, this
@@ -206,7 +206,7 @@ void _lf_increment_global_tag_barrier_already_locked(tag_t future_tag) {
  */
 void _lf_increment_global_tag_barrier(tag_t future_tag) {
     lf_mutex_lock(&mutex);
-    _lf_increment_global_tag_barrier_already_locked(future_tag);
+    lf_increment_global_tag_barrier_already_locked(future_tag);
     lf_mutex_unlock(&mutex);
 }
 
@@ -222,14 +222,14 @@ void _lf_increment_global_tag_barrier(tag_t future_tag) {
  *  certain non-blocking functionalities such as receiving timed messages
  *  over the network or handling stop in the federated execution.
  */
-void _lf_decrement_global_tag_barrier_locked() {
+void lf_decrement_global_tag_barrier_locked() {
     // Decrement the number of requestors for the tag barrier.
     _lf_global_tag_advancement_barrier.requestors--;
     // Check to see if the semaphore is negative, which indicates that
     // a mismatched call was placed for this function.
     if (_lf_global_tag_advancement_barrier.requestors < 0) {
         lf_print_error_and_exit("Mismatched use of _lf_increment_global_tag_barrier()"
-                " and  _lf_decrement_global_tag_barrier_locked().");
+                " and  lf_decrement_global_tag_barrier_locked().");
     } else if (_lf_global_tag_advancement_barrier.requestors == 0) {
         // When the semaphore reaches zero, reset the horizon to forever.
         _lf_global_tag_advancement_barrier.horizon = FOREVER_TAG;
@@ -244,7 +244,7 @@ void _lf_decrement_global_tag_barrier_locked() {
 /**
  * If the proposed_tag is greater than or equal to a barrier tag that has been
  * set by a call to _lf_increment_global_tag_barrier or
- * _lf_increment_global_tag_barrier_already_locked, and if there are requestors
+ * lf_increment_global_tag_barrier_already_locked, and if there are requestors
  * still pending on that barrier, then wait until all requestors have been
  * satisfied. This is used in federated execution when an incoming timed
  * message has been partially read so that we know its tag, but the rest of

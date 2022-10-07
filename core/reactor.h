@@ -938,6 +938,21 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
  */
 extern unsigned int _lf_number_of_workers;
 
+/**
+ * @brief Add a future tag as a global barrier for advancing time. 
+ *  has to implemented to support LET scheduling. Currently only reactor_threaded.c
+ *  provides an implementation. It has to be in reactor.h to expose it to the scheduler
+ * 
+ * @param future_tag 
+ */
+void lf_increment_global_tag_barrier_already_locked(tag_t future_tag);
+
+/**
+ * @brief Remove a future tag.
+ * 
+ */
+void lf_decrement_global_tag_barrier_locked();
+
 #include "trace.h"
 
 #endif /* REACTOR_H */
