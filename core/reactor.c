@@ -72,7 +72,7 @@ trigger_handle_t _lf_schedule_value(self_base_t * self, void* action, interval_t
     lf_token_t* token = create_token(trigger->element_size);
     token->value = value;
     token->length = length;
-    return _lf_schedule_token(self,NULL action, extra_delay, token);
+    return _lf_schedule_token(self, action, extra_delay, token);
 }
 
 /**
