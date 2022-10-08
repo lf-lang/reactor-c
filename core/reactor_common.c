@@ -693,7 +693,7 @@ void _lf_pop_events() {
         // If the trigger is a periodic timer, create a new event for its next execution.
         if (event->trigger->is_timer && event->trigger->period > 0LL) {
             // Reschedule the trigger.
-            _lf_schedule(NULL, event->trigger, event->trigger->period, NULL);
+            _lf_schedule(event->trigger, event->trigger->period, NULL);
         }
 
         // Copy the token pointer into the trigger struct so that the
@@ -1100,7 +1100,7 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
  * @param token The token wrapping the payload or NULL for no payload.
  * @return A handle to the event, or 0 if no new event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule(self_base_t * self, trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
+trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
     if (_lf_is_tag_after_stop_tag(current_tag)) {
         // If schedule is called after stop_tag
         // This is a critical condition.
@@ -1139,11 +1139,23 @@ trigger_handle_t _lf_schedule(self_base_t * self, trigger_t* trigger, interval_t
     if (!trigger->is_timer) {
     	delay += trigger->offset;
     }
-    // If a self!= NULL we should calculate schedule relative 
-    //  the logical time at the reactor. Else use global time
+
+    // Find the containing reactor
+    // FIXME: Is this safe? Will all the triggered reactions always be in the same containing reactor?
+    // FIXME: Is there a scenario where we want to use the local time at the "caller" rather than the reactor containing the action? 
+    self_base_t * reactor = NULL;
+    if (trigger->number_of_reactions) {
+        reactor = (self_base_t *) trigger->reactions[0]->self;
+    } else {
+        // FIXME: Is this a possibility?
+        lf_print_error_and_exit("A trigger with no effects was scheduled");
+    }
+
+    // What is the current time? If we are currently executing a reaction then use the local time.
+    //  if not, use the global time 
     tag_t now;
-    if(self) {
-        now = self->current_tag;
+    if (reactor->executing_reaction) {
+        now = reactor->current_tag;            
     } else {
         now = current_tag;
     }
@@ -1397,7 +1409,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
                              "This should not happen under centralized coordination. Intended tag: " PRINTF_TAG ". Current tag: " PRINTF_TAG ").",
                              trigger->intended_tag.time - lf_time_start(), 
                              trigger->intended_tag.microstep,
-                             lf_time_logical_elapsed(), 
+                             lf_time_logical_elapsed(NULL), 
                              lf_tag().microstep);
     }
 #endif
@@ -1505,7 +1517,7 @@ void _lf_advance_logical_time(instant_t next_time) {
  * See reactor.h for documentation.
  * @param action Pointer to an action on the self struct.
  */
-trigger_handle_t _lf_schedule_int(self_base_t * self, void* action, interval_t extra_delay, int value) {
+trigger_handle_t _lf_schedule_int(void* action, interval_t extra_delay, int value) {
     trigger_t* trigger = _lf_action_to_trigger(action);
     // NOTE: This doesn't acquire the mutex lock in the multithreaded version
     // until schedule_value is called. This should be OK because the element_size
@@ -1516,7 +1528,7 @@ trigger_handle_t _lf_schedule_int(self_base_t * self, void* action, interval_t e
     }
     int* container = (int*)malloc(sizeof(int));
     *container = value;
-    return _lf_schedule_value(self, action, extra_delay, container, 1);
+    return _lf_schedule_value(action, extra_delay, container, 1);
 }
 
 /**
@@ -1578,6 +1590,7 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
     
     LF_PRINT_DEBUG("Worker %d Execute Reaction", worker);
     tracepoint_reaction_starts(reaction, worker);
+    ((self_base_t*) reaction->self)->current_tag = lf_tag();
     ((self_base_t*) reaction->self)->executing_reaction = reaction;
     reaction->function(reaction->self);
     ((self_base_t*) reaction->self)->executing_reaction = NULL;

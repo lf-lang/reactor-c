@@ -53,8 +53,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param offset The time offset over and above that in the action.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t lf_schedule(void * self, void* action, interval_t offset);
-DEPRECATED(trigger_handle_t schedule(void *self, void* action, interval_t offset));
+trigger_handle_t lf_schedule(void* action, interval_t offset);
+DEPRECATED(trigger_handle_t schedule(void* action, interval_t offset));
 
 /**
  * Schedule the specified action with an integer value at a later logical
@@ -67,8 +67,8 @@ DEPRECATED(trigger_handle_t schedule(void *self, void* action, interval_t offset
  * @param value The value to send.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t lf_schedule_int(void * self, void* action, interval_t extra_delay, int value);
-DEPRECATED(trigger_handle_t schedule_int(void *self, void* action, interval_t extra_delay, int value));
+trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value);
+DEPRECATED(trigger_handle_t schedule_int(void* action, interval_t extra_delay, int value));
 
 /**
  * Schedule the specified action with the specified token as a payload.
@@ -120,8 +120,8 @@ DEPRECATED(trigger_handle_t schedule_int(void *self, void* action, interval_t ex
  * @param token The token to carry the payload or null for no payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t lf_schedule_token(void* self, void* action, interval_t extra_delay, lf_token_t* token);
-DEPRECATED(trigger_handle_t schedule_token(void* self, void* action, interval_t extra_delay, lf_token_t* token));
+trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token);
+DEPRECATED(trigger_handle_t schedule_token(void* action, interval_t extra_delay, lf_token_t* token));
 
 /**
  * Schedule an action to occur with the specified value and time offset with a
@@ -139,8 +139,8 @@ DEPRECATED(trigger_handle_t schedule_token(void* self, void* action, interval_t 
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for
  *  error.
  */
-trigger_handle_t lf_schedule_copy(void* self, void* action, interval_t offset, void* value, int length);
-DEPRECATED(trigger_handle_t schedule_copy(void* self, void* action, interval_t offset, void* value, int length));
+trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, int length);
+DEPRECATED(trigger_handle_t schedule_copy(void* action, interval_t offset, void* value, int length));
 
 /**
  * Variant of lf_schedule_token that creates a token to carry the specified value.
@@ -158,8 +158,8 @@ DEPRECATED(trigger_handle_t schedule_copy(void* self, void* action, interval_t o
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for
  *  error.
  */
-trigger_handle_t lf_schedule_value(void * self, void* action, interval_t extra_delay, void* value, int length);
-DEPRECATED(trigger_handle_t schedule_value(void * self, void* action, interval_t extra_delay, void* value, int length));
+trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* value, int length);
+DEPRECATED(trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* value, int length));
 
 /**
  * Check the deadline of the currently executing reaction against the
