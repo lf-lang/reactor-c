@@ -333,14 +333,28 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /////////// Messages used for authenticated federation. ///////////////
 /**
  * Byte identifying a message from an RTI to a federate containing
- * a 8-byte nonce.
- * The next eight bytes are a 8-byte random nonce.
+ * RTI's 8-byte random nonce for HMAC-based authentication. The RTI sends this
+ * message to an incoming federate when TCP connection is established
+ * between the RTI and the federate.
+ * The next eight bytes are RTI's 8-byte nonce (RTI nonce).
  */
 #define MSG_TYPE_RTI_HELLO 100
-#define MSG_TYPE_FED_RESPONSE 101
-#define MSG_TYPE_RTI_RESPONSE 102
-#define NONCE_LENGTH 8
 
+/**
+ * Byte identifying a message from federate to RTI as a response to the RTI Hello
+ * message. The federate sends this message to RTI for HMAC-based authentication.
+ * The message contains, in this order:
+ * * One byte equal to MSG_TYPE_FED_RESPONSE.
+ * * Eight bytes for federate's nonce.
+ * * Two bytes (ushort) giving the federate ID.
+ * * 32 bytes for HMAC tag based on SHA256.
+ */
+#define MSG_TYPE_FED_RESPONSE 101
+// FIXME: Needs comments.
+#define MSG_TYPE_RTI_RESPONSE 102
+// FIXME: Needs comments.
+#define NONCE_LENGTH 8
+// FIXME: Needs comments.
 #define MSG_TYPE_AUTHENTICATED_FED_IDS 101
 
 
