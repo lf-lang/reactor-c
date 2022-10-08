@@ -877,32 +877,29 @@ void perform_hmac_authentication(int rti_socket) {
             buffer[0]);
     }
     int hmac_length = 32;
-    size_t federation_id_length = 48;
-    int fed_id_length = 2;
-    unsigned char fed_id_buf[fed_id_length];
-    encode_uint16((uint16_t)_lf_my_fed_id, fed_id_buf);
+    size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
     // HMAC tag is created with MSG_TYPE, federate ID, received rti nonce.
-    unsigned char mac_buf[1 + NONCE_LENGTH + fed_id_length];
+    unsigned char mac_buf[1 + sizeof(uint16_t) + NONCE_LENGTH];
     mac_buf[0] = MSG_TYPE_FED_RESPONSE;
-    memcpy(&mac_buf[1], fed_id_buf, fed_id_length);
-    memcpy(&mac_buf[1 + fed_id_length], &buffer[1], NONCE_LENGTH);
+    encode_uint16((uint16_t)_lf_my_fed_id, &mac_buf[1]);
+    memcpy(&mac_buf[1 + sizeof(uint16_t)], &buffer[1], NONCE_LENGTH);
     unsigned char hmac_tag[hmac_length];
     HMAC(EVP_sha256(), federation_metadata.federation_id, federation_id_length,
-         mac_buf, 1 + fed_id_length + NONCE_LENGTH, hmac_tag, &hmac_length);
+         mac_buf, 1 + sizeof(uint16_t) + NONCE_LENGTH, hmac_tag, &hmac_length);
     
-    // Buffer for message type, Federate nonce, federate ID, and HMAC tag.
-    int i = 1;
-    unsigned char sender[1 + NONCE_LENGTH + fed_id_length + hmac_length];
+    // Buffer for message type, federate's nonce, federate ID, and HMAC tag.
+    unsigned char sender[1 + NONCE_LENGTH + sizeof(uint16_t) + hmac_length];
     sender[0] = MSG_TYPE_FED_RESPONSE;
     unsigned char federate_nonce[NONCE_LENGTH];
     RAND_bytes(federate_nonce, NONCE_LENGTH);
-    memcpy(&sender[i], federate_nonce, NONCE_LENGTH);
-    i += NONCE_LENGTH;
-    memcpy(&sender[i], fed_id_buf, fed_id_length);
-    i += fed_id_length;
-    memcpy(&sender[i], hmac_tag, hmac_length);
-    i += hmac_length;
-    write_to_socket(rti_socket, i, sender);
+    int num_bytes = 1;
+    memcpy(&sender[num_bytes], federate_nonce, NONCE_LENGTH);
+    num_bytes += NONCE_LENGTH;
+    encode_uint16((uint16_t)_lf_my_fed_id, &sender[num_bytes]);
+    num_bytes += sizeof(uint16_t);
+    memcpy(&sender[num_bytes], hmac_tag, hmac_length);
+    num_bytes += hmac_length;
+    write_to_socket(rti_socket, num_bytes, sender);
 
     // Received MSG_TYPE_RTI_RESPONSE
     unsigned char received[1 + hmac_length];
