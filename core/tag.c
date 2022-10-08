@@ -93,9 +93,18 @@ instant_t _lf_last_reported_unadjusted_physical_time_ns = NEVER;
 
 /**
  * Return the current tag, a logical time, microstep pair.
+ * If the containing reactor is executing a reaciton use its local tag.
+ * Else use the global tag. Also allow calling it with self=NULL in which case we return the global tag
  */
-tag_t lf_tag() {
-    return current_tag;
+tag_t lf_tag(void* self) {
+    if (self == NULL) {
+        return current_tag;
+    }
+    if (((self_base_t *) self)->executing_reaction) {
+        return ((self_base_t *) self)->current_tag;
+    } else {
+        return current_tag;
+    }
 }
 
 /**

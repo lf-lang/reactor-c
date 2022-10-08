@@ -762,7 +762,7 @@ void _lf_initialize_timer(trigger_t* timer) {
         // && (timer->offset != 0 || timer->period != 0)) {
         event_t* e = _lf_get_new_event();
         e->trigger = timer;
-        e->time = lf_time_logical() + timer->offset;
+        e->time = lf_time_logical(NULL) + timer->offset;
         _lf_add_suspended_event(e);
     	return;
     }
@@ -1101,7 +1101,20 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
  * @return A handle to the event, or 0 if no new event was scheduled, or -1 for error.
  */
 trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
-    if (_lf_is_tag_after_stop_tag(current_tag)) {
+    
+    // Find the containing reactor
+    // FIXME: Is this safe? Will all the triggered reactions always be in the same containing reactor?
+    // FIXME: Is there a scenario where we want to use the local time at the "caller" rather than the reactor containing the action? 
+    self_base_t * reactor = NULL;
+    if (trigger->number_of_reactions) {
+        reactor = (self_base_t *) trigger->reactions[0]->self;
+    } else {
+        // FIXME: Is this a possibility?
+        lf_print_error_and_exit("A trigger with no effects was scheduled");
+    }
+    tag_t now = lf_tag(reactor);
+
+    if (_lf_is_tag_after_stop_tag(now)) {
         // If schedule is called after stop_tag
         // This is a critical condition.
         _lf_done_using(token);
@@ -1140,26 +1153,6 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     	delay += trigger->offset;
     }
 
-    // Find the containing reactor
-    // FIXME: Is this safe? Will all the triggered reactions always be in the same containing reactor?
-    // FIXME: Is there a scenario where we want to use the local time at the "caller" rather than the reactor containing the action? 
-    self_base_t * reactor = NULL;
-    if (trigger->number_of_reactions) {
-        reactor = (self_base_t *) trigger->reactions[0]->self;
-    } else {
-        // FIXME: Is this a possibility?
-        lf_print_error_and_exit("A trigger with no effects was scheduled");
-    }
-
-    // What is the current time? If we are currently executing a reaction then use the local time.
-    //  if not, use the global time 
-    tag_t now;
-    if (reactor->executing_reaction) {
-        now = reactor->current_tag;            
-    } else {
-        now = current_tag;
-    }
-    
     interval_t intended_time = now.time + delay;
     LF_PRINT_DEBUG("_lf_schedule: current_tag.time = " PRINTF_TIME ". local_tag.time = " PRINTF_TIME "Total logical delay = " PRINTF_TIME "",
             current_tag.time, now.time, delay);
@@ -1192,11 +1185,11 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
         // FIXME: This can go away once:
         // - we have eliminated the possibility to have a negative additional delay; and
         // - we detect the asynchronous use of logical actions
-        if (intended_time < current_tag.time) {
+        if (intended_time < now.time) {
             lf_print_warning("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
                     "Revising to the current time " PRINTF_TIME ".",
-                    current_tag.time - intended_time, current_tag.time);
-            intended_time = current_tag.time;
+                    now.time - intended_time, now.time);
+            intended_time = now.time;
         }
     }
 
@@ -1269,8 +1262,8 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
                     // the preceding event is equal to the current time, then
                     // we search the event queue to figure out whether it has
                     // been handled yet.
-                    if (existing->time > current_tag.time ||
-                            (existing->time == current_tag.time &&
+                    if (existing->time > now.time ||
+                            (existing->time == now.time &&
                             pqueue_find_equal_same_priority(event_q, existing) != NULL)) {
                         // Recycle the existing token and the new event                        
                         // and update the token of the existing event.
@@ -1283,7 +1276,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
                     intended_time = earliest_time;
                     break;
                 default:
-                    if (existing->time == current_tag.time &&
+                    if (existing->time == now.time &&
                             pqueue_find_equal_same_priority(event_q, existing) != NULL) {
                         if (_lf_is_tag_after_stop_tag((tag_t){.time=existing->time,.microstep=lf_tag().microstep+1})) {
                             // Scheduling e will incur a microstep at timeout, 
@@ -1344,7 +1337,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
             e->time - start_time);
     pqueue_insert(event_q, e);
 
-    tracepoint_schedule(trigger, e->time - current_tag.time);
+    tracepoint_schedule(trigger, e->time - now.time);
 
     // FIXME: make a record of handle and implement unschedule.
     // NOTE: Rather than wrapping around to get a negative number,
@@ -1590,7 +1583,7 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
     
     LF_PRINT_DEBUG("Worker %d Execute Reaction", worker);
     tracepoint_reaction_starts(reaction, worker);
-    ((self_base_t*) reaction->self)->current_tag = lf_tag();
+    ((self_base_t*) reaction->self)->current_tag = current_tag;
     ((self_base_t*) reaction->self)->executing_reaction = reaction;
     reaction->function(reaction->self);
     ((self_base_t*) reaction->self)->executing_reaction = NULL;

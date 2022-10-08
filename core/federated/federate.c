@@ -1755,7 +1755,7 @@ void handle_tagged_message(int socket, int fed_id) {
 #endif
     LF_PRINT_LOG("Received message with tag: " PRINTF_TAG ", Current tag: " PRINTF_TAG ".",
             intended_tag.time - start_time, intended_tag.microstep,
-            lf_time_logical_elapsed(), lf_tag().microstep);
+            lf_time_logical_elapsed(NULL), lf_tag().microstep);
 
     // Read the payload.
     // Allocate memory for the message contents.
