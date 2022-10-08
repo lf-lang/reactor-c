@@ -884,8 +884,12 @@ void perform_hmac_authentication(int rti_socket) {
     encode_uint16((uint16_t)_lf_my_fed_id, &mac_buf[1]);
     memcpy(&mac_buf[1 + sizeof(uint16_t)], &buffer[1], NONCE_LENGTH);
     unsigned char hmac_tag[hmac_length];
-    HMAC(EVP_sha256(), federation_metadata.federation_id, federation_id_length,
-         mac_buf, 1 + sizeof(uint16_t) + NONCE_LENGTH, hmac_tag, &hmac_length);
+    unsigned char * ret = HMAC(EVP_sha256(), federation_metadata.federation_id,
+        federation_id_length, mac_buf, 1 + sizeof(uint16_t) + NONCE_LENGTH,
+        hmac_tag, &hmac_length);
+    if (ret == NULL) {
+        lf_print_error_and_exit("HMAC failure for MSG_TYPE_FED_RESPONSE.");
+    }
     
     // Buffer for message type, federate's nonce, federate ID, and HMAC tag.
     unsigned char sender[1 + NONCE_LENGTH + sizeof(uint16_t) + hmac_length];
@@ -916,11 +920,14 @@ void perform_hmac_authentication(int rti_socket) {
     mac_buf2[0] = MSG_TYPE_RTI_RESPONSE;
     memcpy(&mac_buf2[1], federate_nonce, NONCE_LENGTH);
     unsigned char fed_tag[hmac_length];
-    HMAC(EVP_sha256(), federation_metadata.federation_id, federation_id_length,
+    ret = HMAC(EVP_sha256(), federation_metadata.federation_id, federation_id_length,
          mac_buf2, 1 + NONCE_LENGTH, fed_tag, &hmac_length);
+    if (ret == NULL) {
+        lf_print_error_and_exit("HMAC failure for MSG_TYPE_RTI_RESPONSE.");
+    }
     if (memcmp(&received[1], fed_tag, hmac_length) != 0) {
         // Federation IDs do not match. Send back a MSG_TYPE_REJECT message.
-        lf_print_error("WARNING: HMAC authentication failed.");
+        lf_print_error("HMAC authentication failed.");
         unsigned char response[2];
         response[0] = MSG_TYPE_REJECT;
         response[1] = HMAC_DOES_NOT_MATCH;
