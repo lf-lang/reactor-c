@@ -898,8 +898,9 @@ void _lf_replace_token(event_t* event, lf_token_t* token) {
  *  or -1 for error (the tag is equal to or less than the current tag).
  */
 int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
+    self_base_t * reactor = _lf_trigger_to_reactor(trigger);
 
-    tag_t current_logical_tag = lf_tag();
+    tag_t current_logical_tag = lf_tag(reactor);
 
     LF_PRINT_DEBUG("_lf_schedule_at_tag() called with tag " PRINTF_TAG " at tag " PRINTF_TAG ".",
                   tag.time - start_time, tag.microstep,
@@ -1278,7 +1279,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
                 default:
                     if (existing->time == now.time &&
                             pqueue_find_equal_same_priority(event_q, existing) != NULL) {
-                        if (_lf_is_tag_after_stop_tag((tag_t){.time=existing->time,.microstep=lf_tag().microstep+1})) {
+                        if (_lf_is_tag_after_stop_tag((tag_t){.time=existing->time,.microstep=now.microstep+1})) {
                             // Scheduling e will incur a microstep at timeout, 
                             // which is illegal.
                             _lf_recycle_event(e);
@@ -1301,7 +1302,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     // This is a sanity check for the logic above
     // FIXME: This is a development assertion and might
     // not be necessary for end-user LF programs
-    if (intended_time < current_tag.time) {
+    if (intended_time < now.time) {
         lf_print_error("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
                 "Revising to the current time " PRINTF_TIME ".",
                 current_tag.time - intended_time, current_tag.time);
@@ -1337,7 +1338,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
             e->time - start_time);
     pqueue_insert(event_q, e);
 
-    tracepoint_schedule(trigger, e->time - now.time);
+    tracepoint_schedule(trigger, e->time - current_tag.time);
 
     // FIXME: make a record of handle and implement unschedule.
     // NOTE: Rather than wrapping around to get a negative number,
@@ -1391,7 +1392,8 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
     // Check if the trigger has violated the STP offset
     bool is_STP_violated = false;
 #ifdef FEDERATED
-    if (lf_tag_compare(trigger->intended_tag, lf_tag()) < 0) {
+    // FIXME: Is this correct wrt LET reactor    
+    if (lf_tag_compare(trigger->intended_tag, current_tag) < 0) {
         is_STP_violated = true;
     }
 #ifdef FEDERATED_CENTRALIZED
@@ -1403,7 +1405,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
                              trigger->intended_tag.time - lf_time_start(), 
                              trigger->intended_tag.microstep,
                              lf_time_logical_elapsed(NULL), 
-                             lf_tag().microstep);
+                             lf_tag(NULL).microstep);
     }
 #endif
 #endif
@@ -1467,6 +1469,21 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
  */
 trigger_t* _lf_action_to_trigger(void* action) {
     return *((trigger_t**)action);
+}
+
+/**
+ * @brief Returns the containing reactor of a trigger. 
+ *  FIXME: Can a trigger have no reactions? This only works if not
+ * 
+ * @param trigger 
+ * @return self_base_t* 
+ */
+self_base_t * _lf_trigger_to_reactor(trigger_t* trigger) {
+    if (trigger->number_of_reactions == 0)  {
+        assert(false);
+    } else {
+        return (self_base_t *) trigger->reactions[0]->self;
+    }
 }
 
 /**

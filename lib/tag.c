@@ -10,14 +10,14 @@ int compare_tags(tag_t tag1, tag_t tag2) {
 /**
  * @deprecated version of `lf_tag`
  */
-tag_t get_current_tag(void) {
-    return lf_tag();
+tag_t get_current_tag(void* self) {
+    return lf_tag(self);
 }
 
 /**
  * Return the current microstep.
  * @deprecated
  */
-microstep_t get_microstep() {
-    return lf_tag().microstep;
+microstep_t get_microstep(void* self) {
+    return lf_tag(self).microstep;
 }

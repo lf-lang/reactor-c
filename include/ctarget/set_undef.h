@@ -114,4 +114,5 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #undef lf_time_logical 
 #undef lf_time_logical_elapsed 
+#undef lf_tag
 #endif // CTARGET_SET

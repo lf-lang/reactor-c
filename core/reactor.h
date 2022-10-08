@@ -929,6 +929,14 @@ void _lf_fd_send_stop_request_to_rti(void);
  */
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
 
+/**
+ * @brief Return the reactor containing the trigger
+ *  FIXME: This assumes that all triggers have at least 1 reaction as an effect
+ * @param trigger 
+ * @return self_base_t* 
+ */
+self_base_t * _lf_trigger_to_reactor(trigger_t* trigger);
+
 //  ******** Global Variables ********  //
 
 /**

@@ -19,17 +19,17 @@ DEPRECATED(int compare_tags(tag_t tag1, tag_t tag2));
 /**
  * Return the current tag, a logical time, microstep pair.
  */
-tag_t lf_tag();
+tag_t lf_tag(void* self);
 
 /**
  * Return the current tag, a logical time, microstep pair.
  */
-DEPRECATED(tag_t get_current_tag(void));
+DEPRECATED(tag_t get_current_tag(void* self));
 
 /**
  * Return the current microstep.
  */
-DEPRECATED(microstep_t get_microstep(void));
+DEPRECATED(microstep_t get_microstep(void* self));
 
 
 #endif // CTARGET_TAG

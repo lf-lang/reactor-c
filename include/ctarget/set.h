@@ -214,4 +214,5 @@ do { \
 
 // FIXME: Temporary workaround to enable LET reactions and changing lf_schedule and lf_time API
 #define lf_time_logical() lf_time_logical(self)
+#define lf_tag() lf_tag(self)
 #define lf_time_logical_elapsed() lf_time_logical_elapsed(self)

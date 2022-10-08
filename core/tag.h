@@ -145,7 +145,7 @@ typedef tag_t tag_interval_t;
 /**
  * Return the current tag, a logical time, microstep pair.
  */
-tag_t lf_tag();
+tag_t lf_tag(void* self);
 
 /**
  * Compare two tags. Return -1 if the first is less than
