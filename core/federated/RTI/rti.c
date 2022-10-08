@@ -1797,14 +1797,15 @@ int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id) {
 }
 
 /**
- * Send RTI hello message for authenticated joining of federation.
+ * Authenticate incoming federate by performing HMAC-based authentication.
  * 
  * @param socket Socket for the incoming federate tryting to authenticate.
+ * @return True if authentication is successful and false otherwise.
  */
 #ifdef __RTI_AUTH__
 #include <openssl/rand.h> // For secure random number generation.
 #include <openssl/hmac.h> // For HMAC authentication.
-void send_rti_hello(int socket) {
+bool authenticate_federate(int socket) {
     // Buffer for message type and federation RTI nonce.
     size_t message_length = 1 + NONCE_LENGTH;
     unsigned char buffer[message_length];
@@ -1812,9 +1813,10 @@ void send_rti_hello(int socket) {
     unsigned char rti_nonce[NONCE_LENGTH];
     RAND_bytes(rti_nonce, NONCE_LENGTH);
     memcpy(buffer + 1, rti_nonce, NONCE_LENGTH);
+    // Send RTI hello with RTI's random nonce.
     write_to_socket(socket, message_length, buffer);
 
-    // Received MSG_TYPE_FED_RESPONSE
+    // Received MSG_TYPE_FED_RESPONSE.
     int hmac_length = 32;
     size_t federation_id_length = 48;
     int fed_id_length = 2;
@@ -1841,8 +1843,9 @@ void send_rti_hello(int socket) {
 
     if (memcmp(&received[indicator], rti_tag, hmac_length) != 0) {
         // Federation IDs do not match. Send back a MSG_TYPE_REJECT message.
-        lf_print_error("WARNING: HMAC authentication failed.");
+        lf_print_warning("HMAC authentication failed. Rejecting the federate.");
         send_reject(socket, HMAC_DOES_NOT_MATCH);
+        return false;
     }
     else{
         LF_PRINT_LOG("HMAC verified.");
@@ -1857,6 +1860,7 @@ void send_rti_hello(int socket) {
         HMAC(EVP_sha256(), _RTI.federation_id, federation_id_length, mac_buf, 1 + NONCE_LENGTH,
              &sender[1], &hmac_length);
         write_to_socket(socket, 1 + hmac_length, sender);
+        return true;
     }
 }
 #endif
@@ -1890,9 +1894,14 @@ void connect_to_federates(int socket_descriptor) {
 
         // Send RTI hello when RTI -a option is on.
         #ifdef __RTI_AUTH__
-            if (_RTI.authentication_enabled) {
-                send_rti_hello(socket_id);
+        if (_RTI.authentication_enabled) {
+            if (!authenticate_federate(socket_id)) {
+                lf_print_warning("RTI failed to authenticate the incoming federate.");
+                // Ignore the federate that failed authentication.
+                i--;
+                continue;
             }
+        }
         #endif
         
         // The first message from the federate should contain its ID and the federation ID.
