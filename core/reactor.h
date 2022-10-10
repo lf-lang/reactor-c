@@ -600,6 +600,7 @@ struct trigger_t {
                               //   downstream messages have been produced for the same port for the same logical time.
     reactor_mode_t* mode;     // The enclosing mode of this reaction (if exists).
                               // If enclosed in multiple, this will point to the innermost mode.
+    void* parent              // Pointer to reactor which contains the trigger
 #ifdef FEDERATED
     tag_t last_known_status_tag;        // Last known status of the port, either via a timed message, a port absent, or a
                                         // TAG from the RTI.
@@ -928,14 +929,6 @@ void _lf_fd_send_stop_request_to_rti(void);
  * @return True if the specified deadline has passed and false otherwise.
  */
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
-
-/**
- * @brief Return the reactor containing the trigger
- *  FIXME: This assumes that all triggers have at least 1 reaction as an effect
- * @param trigger 
- * @return self_base_t* 
- */
-self_base_t * _lf_trigger_to_reactor(trigger_t* trigger);
 
 //  ******** Global Variables ********  //
 

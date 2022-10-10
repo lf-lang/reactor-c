@@ -898,7 +898,7 @@ void _lf_replace_token(event_t* event, lf_token_t* token) {
  *  or -1 for error (the tag is equal to or less than the current tag).
  */
 int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
-    self_base_t * reactor = _lf_trigger_to_reactor(trigger);
+    self_base_t * reactor = (self_base_t *) trigger->parent;
 
     tag_t current_logical_tag = lf_tag(reactor);
 
@@ -1103,16 +1103,7 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
  */
 trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
     
-    // Find the containing reactor
-    // FIXME: Is this safe? Will all the triggered reactions always be in the same containing reactor?
-    // FIXME: Is there a scenario where we want to use the local time at the "caller" rather than the reactor containing the action? 
-    self_base_t * reactor = NULL;
-    if (trigger->number_of_reactions) {
-        reactor = (self_base_t *) trigger->reactions[0]->self;
-    } else {
-        // FIXME: Is this a possibility?
-        lf_print_error_and_exit("A trigger with no effects was scheduled");
-    }
+    self_base_t * reactor = (self_base_t *) trigger->parent;
     tag_t now = lf_tag(reactor);
 
     if (_lf_is_tag_after_stop_tag(now)) {
@@ -1469,21 +1460,6 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
  */
 trigger_t* _lf_action_to_trigger(void* action) {
     return *((trigger_t**)action);
-}
-
-/**
- * @brief Returns the containing reactor of a trigger. 
- *  FIXME: Can a trigger have no reactions? This only works if not
- * 
- * @param trigger 
- * @return self_base_t* 
- */
-self_base_t * _lf_trigger_to_reactor(trigger_t* trigger) {
-    if (trigger->number_of_reactions == 0)  {
-        assert(false);
-    } else {
-        return (self_base_t *) trigger->reactions[0]->self;
-    }
 }
 
 /**

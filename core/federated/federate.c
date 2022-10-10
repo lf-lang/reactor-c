@@ -1238,7 +1238,7 @@ void mark_control_reaction_waiting(int portID, bool waiting) {
 port_status_t get_current_port_status(int portID) {
     // Check whether the status of the port is known at the current tag.
     trigger_t* network_input_port_action = _lf_action_for_port(portID);
-    self_base_t * reactor = _lf_trigger_to_reactor(network_input_port_action);
+    self_base_t * reactor = (self_base_t *) network_input_port_action->parent;
 
     if (network_input_port_action->status == present) {
         // The status of the trigger is present.
