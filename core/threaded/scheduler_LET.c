@@ -232,6 +232,9 @@ void _lf_sched_wait_for_work(size_t worker_number) {
     // Due to the retiring and rejoining of worker threads before/after LET reactions we know have to use a lock.
     //  this is due to the fact that rejoining would require atomically updating 2 variables.
     //  num_workers and num_idle_workers.
+
+    // FIXME: Can the rejoining worker thread join the current level instead of waiting for next?
+
     lf_mutex_lock(&mutex);
     lf_atomic_add_fetch(&_lf_sched_instance->_lf_sched_number_of_idle_workers,1);
     if (_lf_sched_instance->_lf_sched_number_of_idle_workers == _lf_sched_instance->_lf_sched_number_of_workers) {
@@ -442,6 +445,12 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
 }
 
 void lf_sched_reaction_prelude(reaction_t * reaction, int worker_number) {
+    // FIXME: Use 1 mutex per LET reactor. Check whether mutex is NULL. If not acquire it before executing any reaction
+    //  in that reactor. Should we have a cond var per Reactor also. 
+    //  Why will this not cause deadlock: So far, the only other mutex is the global mutex. No other mutex is held when the
+    //  system executes a reaciton. UNder that assumption this new mutex will always be acquired before any other mutex is acquired
+    //  If the order of mutex acquisition is the same throughout the system you are deadlock free.
+
     self_base_t *self = (self_base_t *) reaction->self;
     // Take global mutex
     LF_PRINT_DEBUG("Worker %d tries to lock LET mutex", worker_number);
@@ -449,13 +458,16 @@ void lf_sched_reaction_prelude(reaction_t * reaction, int worker_number) {
     LF_PRINT_DEBUG("Worker %d locked LET mutex", worker_number);
     
     // Check if we are an interrupting reaction
+    // FIXME: If we hold the local mutex we dont have to check this field.
     while (self->executing_reaction != NULL) {
         LF_PRINT_DEBUG("Worker %d is interrupting reaction", worker_number);
-        lf_cond_wait(&event_q_changed, &mutex); // FIXME: Should we use another condition variable?
+        lf_cond_wait(&event_q_changed, &mutex);
         LF_PRINT_DEBUG("Worker %d woken up from interrupting sleep", worker_number);
     }
 
     // If LET reaction, increment global tag barrier and remove worker from pool
+    // FIXME: Use pqueue for tracking tag barrier. Only notify the cond_var when the head of the
+    //  pqueue is removed.
     if (reaction->let > 0) {
         if (reaction->let < FOREVER) {
             LF_PRINT_DEBUG("Worker %d Increment global barrier", worker_number);
@@ -464,7 +476,7 @@ void lf_sched_reaction_prelude(reaction_t * reaction, int worker_number) {
         }
         // Atomically decrement number of workers
         lf_atomic_add_fetch(&_lf_sched_instance->_lf_sched_number_of_workers,-1);
-        LF_PRINT_DEBUG("Worker %d removed from pool. %d left", worker_number, _lf_sched_instance->_lf_sched_number_of_workers);
+        LF_PRINT_DEBUG("Worker %d removed from pool. %zu left", worker_number, _lf_sched_instance->_lf_sched_number_of_workers);
 
         // If all other workers are sleeping then wake one up to advance time
         if (_lf_sched_instance->_lf_sched_number_of_idle_workers == _lf_sched_instance->_lf_sched_number_of_workers) {
@@ -472,7 +484,6 @@ void lf_sched_reaction_prelude(reaction_t * reaction, int worker_number) {
             _lf_sched_instance->_lf_sched_number_of_idle_workers--;
             lf_semaphore_release(_lf_sched_instance->_lf_sched_semaphore, 1);
         }
-
     }
 
     // Set currently executing reaction
@@ -485,21 +496,25 @@ void lf_sched_reaction_prelude(reaction_t * reaction, int worker_number) {
 
 void lf_sched_reaction_postlude(reaction_t * reaction, int worker_number) {
     self_base_t *self = (self_base_t *) reaction->self;
+    // FIXME: Use local mutex
     lf_mutex_lock(&mutex);
     // Reset currently executing reaction of the reactor
     self->executing_reaction = NULL;
     // Wakeup any worker thread that was waiting on this reaction to complete.
-    lf_cond_signal(&event_q_changed); //FIXME: Use dedicated condition variable
+    lf_cond_signal(&event_q_changed); //FIXME: Use local cond_var
 
     if(reaction->let > 0) {
+        // FIXME: DO we need atomic on this? I think yes due to idle worker being worked on outside critical section
         lf_atomic_add_fetch(&_lf_sched_instance->_lf_sched_number_of_workers,1);
         lf_atomic_add_fetch(&_lf_sched_instance->_lf_sched_number_of_idle_workers,1);
     
+        // Reactions without any effects are assigned a LET of FOREVER, in that case we dont need any barrier
         if (reaction->let < FOREVER) {
             lf_decrement_global_tag_barrier_locked();
         }
          
         lf_mutex_unlock(&mutex);
+        // FIXME: This check should not be done here. Move this to `_lf_sched_wait_for_work`
         if(!_lf_sched_instance->_lf_sched_should_stop) {
             LF_PRINT_DEBUG("Worker %d goes to sleep until next level", worker_number);
             lf_semaphore_acquire(_lf_sched_instance->_lf_sched_semaphore);

@@ -34,6 +34,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * @author{Alexander Schulz-Rosengarten <als@informatik.uni-kiel.de>}
  * @author{Soroush Bateni <soroush@utdallas.edu}
+ * FIXME: Before performing any mode transitions the reactor-local mutex must be acquired.
+ *  this will make sure that we dont do any mode transition while executing a LET reaction
  */
 #ifdef MODAL_REACTORS
 
@@ -335,7 +337,6 @@ void _lf_handle_mode_shutdown_reactions(
  * @param reset_data_size
  * @param timer_triggers Array of pointers to timer triggers.
  * @param timer_triggers_size
- * FIXME: How does modal models work with LET?  
  */
 void _lf_process_mode_changes(
     reactor_mode_state_t* states[],
