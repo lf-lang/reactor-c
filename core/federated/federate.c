@@ -867,7 +867,7 @@ void connect_to_federate(uint16_t remote_federate_id) {
  * @param hostname A hostname, such as "localhost".
  * @param port_number A port number.
  */
-void connect_to_rti(char* hostname, int port) {
+void connect_to_rti(const char* hostname, int port) {
     LF_PRINT_LOG("Connecting to the RTI.");
 
     // override passed hostname and port if passed as runtime arguments
@@ -2710,7 +2710,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
  * Parse the address of the RTI and store them into the global federation_metadata struct.
  * @return a parse_rti_code_t indicating the result of the parse.
  */
-parse_rti_code_t parse_rti_addr(char* rti_addr) {
+parse_rti_code_t parse_rti_addr(const char* rti_addr) {
     bool has_host = false, has_port = false, has_user = false;
     rti_addr_info_t rti_addr_info = {0};
     extract_rti_addr_info(rti_addr, &rti_addr_info);
@@ -2748,6 +2748,6 @@ parse_rti_code_t parse_rti_addr(char* rti_addr) {
 /**
  * Sets the federation_id of this federate to fid.
  */
-void set_federation_id(char* fid) {
+void set_federation_id(const char* fid) {
     federation_metadata.federation_id = fid;
 }

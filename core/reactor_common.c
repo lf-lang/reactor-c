@@ -166,7 +166,6 @@ vector_t _lf_sparse_io_record_sizes = {
     NULL, NULL, NULL, 0, 0
 };
 
-
 /**
  * Allocate memory using calloc (so the allocated memory is zeroed out)
  * and record the allocated memory on the specified self struct so that
@@ -1463,7 +1462,6 @@ void _lf_advance_logical_time(instant_t next_time) {
     // to the ordinary execution of LF programs. Instead, there might
     // be a need for a target property that enables these kinds of logic
     // assertions for development purposes only.
-    /*
     event_t* next_event = (event_t*)pqueue_peek(event_q);
     if (next_event != NULL) {
         if (next_time > next_event->time) {
@@ -1472,7 +1470,6 @@ void _lf_advance_logical_time(instant_t next_time) {
                     next_time - start_time, next_event->time - start_time);
         }
     }
-    */
 
     if (current_tag.time < next_time) {
         current_tag.time = next_time;
@@ -1774,7 +1771,7 @@ lf_token_t* writable_copy(lf_token_t* token) {
 /**
  * Print a usage message.
  */
-static void usage(int argc, char* argv[]) {
+void usage(int argc, const char* argv[]) {
     printf("\nCommand-line arguments: \n\n");
     printf("  -f, --fast [true | false]\n");
     printf("   Whether to wait for physical time to match logical time.\n\n");
@@ -1802,7 +1799,7 @@ static void usage(int argc, char* argv[]) {
 // Some options given in the target directive are provided here as
 // default command-line options.
 int default_argc = 0;
-char** default_argv = NULL;
+const char** default_argv = NULL;
 
 
 /**
@@ -1810,17 +1807,17 @@ char** default_argv = NULL;
  * understood, then print a usage message and return 0. Otherwise, return 1.
  * @return 1 if the arguments processed successfully, 0 otherwise.
  */
-int process_args(int argc, char* argv[]) {
+int process_args(int argc, const char* argv[]) {
     int i = 1;
     while (i < argc) {
-        char* arg = argv[i++];
+        const char* arg = argv[i++];
         if (strcmp(arg, "-f") == 0 || strcmp(arg, "--fast") == 0) {
             if (argc < i + 1) {
                 lf_print_error("--fast needs a boolean.");
                 usage(argc, argv);
                 return 0;
             }
-            char* fast_spec = argv[i++];
+            const char* fast_spec = argv[i++];
             if (strcmp(fast_spec, "true") == 0) {
                 fast = true;
             } else if (strcmp(fast_spec, "false") == 0) {
@@ -1837,8 +1834,8 @@ int process_args(int argc, char* argv[]) {
                 usage(argc, argv);
                 return 0;
             }
-            char* time_spec = argv[i++];
-            char* units = argv[i++];
+            const char* time_spec = argv[i++];
+            const char* units = argv[i++];
 
             #ifdef BIT_32
             duration = atol(time_spec);
@@ -1880,7 +1877,7 @@ int process_args(int argc, char* argv[]) {
                 usage(argc, argv);
                 return 0;
             }
-            char* keep_spec = argv[i++];
+            const char* keep_spec = argv[i++];
             if (strcmp(keep_spec, "true") == 0) {
                 keepalive_specified = true;
             } else if (strcmp(keep_spec, "false") == 0) {
@@ -1894,7 +1891,7 @@ int process_args(int argc, char* argv[]) {
                 usage(argc, argv);
                 return 0;
             }
-            char* threads_spec = argv[i++];
+            const char* threads_spec = argv[i++];
             int num_workers = atoi(threads_spec);
             if (num_workers <= 0) {
                 lf_print_error("Invalid value for --workers: %s. Using 1.", threads_spec);
@@ -1909,7 +1906,7 @@ int process_args(int argc, char* argv[]) {
                 usage(argc, argv);
                 return 0;
             }
-            char* fid = argv[i++];
+            const char* fid = argv[i++];
             set_federation_id(fid);
             lf_print("Federation ID for executable %s: %s", argv[0], fid);
         } else if (strcmp(arg, "-r") == 0 || strcmp(arg, "--rti") == 0) {
@@ -1979,20 +1976,20 @@ void initialize(void) {
 
     #ifdef BIT_32
         #ifdef MICROSECOND_TIME
-            LF_PRINT_DEBUG("Start time: %ldus", start_time);
+            LF_PRINT_DEBUG("Start time: " PRINTF_TIME "us", start_time);
         #else
-            LF_PRINT_DEBUG("Start time: %ldns", start_time);
+            LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
         #endif
     #else
         #ifdef MICROSECOND_TIME
-            LF_PRINT_DEBUG("Start time: %ldus", start_time);
+            LF_PRINT_DEBUG("Start time: " PRINTF_TIME "us", start_time);
         #else
-            LF_PRINT_DEBUG("Start time: %ldns", start_time);
+            LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
         #endif
     #endif
 
     #ifdef ARDUINO
-    printf("---- Start execution at time %ldus\n", physical_start_time);
+    printf("---- Start execution at time " PRINTF_TIME "us\n", physical_start_time);
     #else
     struct timespec physical_time_timespec = {physical_start_time / BILLION, physical_start_time % BILLION};
 

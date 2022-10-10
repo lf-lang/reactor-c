@@ -46,8 +46,8 @@ typedef enum parse_rti_code_t {
     INVALID_USER,
     FAILED_TO_PARSE
 } parse_rti_code_t;
-parse_rti_code_t parse_rti_addr(char* rti_addr);
-void set_federation_id(char* fid);
+parse_rti_code_t parse_rti_addr(const char* rti_addr);
+void set_federation_id(const char* fid);
 #endif
 
 void* _lf_allocate(size_t count, size_t size, struct allocation_record_t** head);
