@@ -460,7 +460,7 @@ void lf_sched_reaction_prelude(reaction_t * reaction, int worker_number) {
         if (reaction->let < FOREVER) {
             LF_PRINT_DEBUG("Worker %d Increment global barrier", worker_number);
             tag_t finish_tag = {current_tag.time + reaction->let, 0UL};
-            lf_increment_global_tag_barrier_already_locked(finish_tag);
+            lf_increment_global_tag_barrier_locked(finish_tag);
         }
         // Atomically decrement number of workers
         lf_atomic_add_fetch(&_lf_sched_instance->_lf_sched_number_of_workers,-1);

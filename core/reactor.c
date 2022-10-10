@@ -438,7 +438,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 }
 
 
-void lf_increment_global_tag_barrier_already_locked(tag_t future_tag) {
+void lf_increment_global_tag_barrier_locked(tag_t future_tag) {
     assert(false);
 }
 void lf_decrement_global_tag_barrier_locked() {

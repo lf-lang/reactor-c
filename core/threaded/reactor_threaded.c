@@ -134,7 +134,7 @@ void enqueue_network_output_control_reactions();
  * If future_tag is in the past (or equals to current logical time), the runtime
  * will freeze advancement of logical time.
  */
-void lf_increment_global_tag_barrier_already_locked(tag_t future_tag) {
+void lf_increment_global_tag_barrier_locked(tag_t future_tag) {
     // Check if future_tag is after stop tag.
     // This will only occur when a federate receives a timed message with 
     // a tag that is after the stop tag
@@ -206,7 +206,7 @@ void lf_increment_global_tag_barrier_already_locked(tag_t future_tag) {
  */
 void _lf_increment_global_tag_barrier(tag_t future_tag) {
     lf_mutex_lock(&mutex);
-    lf_increment_global_tag_barrier_already_locked(future_tag);
+    lf_increment_global_tag_barrier_locked(future_tag);
     lf_mutex_unlock(&mutex);
 }
 
@@ -244,7 +244,7 @@ void lf_decrement_global_tag_barrier_locked() {
 /**
  * If the proposed_tag is greater than or equal to a barrier tag that has been
  * set by a call to _lf_increment_global_tag_barrier or
- * lf_increment_global_tag_barrier_already_locked, and if there are requestors
+ * lf_increment_global_tag_barrier_locked, and if there are requestors
  * still pending on that barrier, then wait until all requestors have been
  * satisfied. This is used in federated execution when an incoming timed
  * message has been partially read so that we know its tag, but the rest of

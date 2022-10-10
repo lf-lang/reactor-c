@@ -953,7 +953,7 @@ extern unsigned int _lf_number_of_workers;
  * 
  * @param future_tag 
  */
-void lf_increment_global_tag_barrier_already_locked(tag_t future_tag);
+void lf_increment_global_tag_barrier_locked(tag_t future_tag);
 
 /**
  * @brief Remove a future tag.

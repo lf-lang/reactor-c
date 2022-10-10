@@ -2077,7 +2077,7 @@ void _lf_fd_send_stop_request_to_rti() {
     }
     LF_PRINT_LOG("Requesting the whole program to stop.");
     // Raise a logical time barrier at the current tag.
-    lf_increment_global_tag_barrier_already_locked(current_tag);
+    lf_increment_global_tag_barrier_locked(current_tag);
 
     // Send a stop request with the current tag to the RTI
     unsigned char buffer[MSG_TYPE_STOP_REQUEST_LENGTH];
@@ -2200,7 +2200,7 @@ void handle_stop_request_message() {
 
     // Raise a barrier at current tag
     // because we are sending it to the RTI
-    lf_increment_global_tag_barrier_already_locked(tag_to_stop);
+    lf_increment_global_tag_barrier_locked(tag_to_stop);
 
     // A subsequent call to lf_request_stop will be a no-op.
     _fed.sent_a_stop_request_to_rti = true;
