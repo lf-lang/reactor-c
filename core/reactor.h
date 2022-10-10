@@ -600,7 +600,7 @@ struct trigger_t {
                               //   downstream messages have been produced for the same port for the same logical time.
     reactor_mode_t* mode;     // The enclosing mode of this reaction (if exists).
                               // If enclosed in multiple, this will point to the innermost mode.
-    self_base_t* parent;      // Pointer to reactor which contains the trigger
+    void* parent;      // Pointer to reactor which contains the trigger
 #ifdef FEDERATED
     tag_t last_known_status_tag;        // Last known status of the port, either via a timed message, a port absent, or a
                                         // TAG from the RTI.
@@ -637,7 +637,9 @@ typedef struct allocation_record_t {
 typedef struct self_base_t {
 	struct allocation_record_t *allocations;
 	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
-    tag_t current_tag;
+    tag_t current_tag;                       // The tag of the most recent reaction invokation
+    lf_mutex_t mutex;                       // A local mutex to ensure mutual exclusion of reactions in reactor 
+    bool has_mutex;                       // A local mutex to ensure mutual exclusion of reactions in reactor 
 #ifdef MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif

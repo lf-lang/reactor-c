@@ -453,18 +453,12 @@ void lf_sched_reaction_prelude(reaction_t * reaction, int worker_number) {
 
     self_base_t *self = (self_base_t *) reaction->self;
     // Take global mutex
-    LF_PRINT_DEBUG("Worker %d tries to lock LET mutex", worker_number);
-    lf_mutex_lock(&mutex);
-    LF_PRINT_DEBUG("Worker %d locked LET mutex", worker_number);
-    
-    // Check if we are an interrupting reaction
-    // FIXME: If we hold the local mutex we dont have to check this field.
-    while (self->executing_reaction != NULL) {
-        LF_PRINT_DEBUG("Worker %d is interrupting reaction", worker_number);
-        lf_cond_wait(&event_q_changed, &mutex);
-        LF_PRINT_DEBUG("Worker %d woken up from interrupting sleep", worker_number);
+    if (self->has_mutex) {
+        LF_PRINT_DEBUG("Worker %d tries to lock LET mutex", worker_number);
+        lf_mutex_lock(&self->mutex);
+        LF_PRINT_DEBUG("Worker %d locked LET mutex", worker_number);
     }
-
+    
     // If LET reaction, increment global tag barrier and remove worker from pool
     // FIXME: Use pqueue for tracking tag barrier. Only notify the cond_var when the head of the
     //  pqueue is removed.
@@ -489,19 +483,18 @@ void lf_sched_reaction_prelude(reaction_t * reaction, int worker_number) {
     // Set currently executing reaction
     self->executing_reaction = reaction;
 
-    lf_mutex_unlock(&mutex);
     // Update the current_logical_time of the Reactor
     self->current_tag = current_tag;
 }
 
 void lf_sched_reaction_postlude(reaction_t * reaction, int worker_number) {
     self_base_t *self = (self_base_t *) reaction->self;
-    // FIXME: Use local mutex
-    lf_mutex_lock(&mutex);
-    // Reset currently executing reaction of the reactor
-    self->executing_reaction = NULL;
-    // Wakeup any worker thread that was waiting on this reaction to complete.
-    lf_cond_signal(&event_q_changed); //FIXME: Use local cond_var
+
+    if (self->has_mutex) {
+        lf_mutex_unlock(&self->mutex);
+        LF_PRINT_DEBUG("Worker %d unlocks LET mutex", worker_number);
+    }
+
 
     if(reaction->let > 0) {
         // FIXME: DO we need atomic on this? I think yes due to idle worker being worked on outside critical section
