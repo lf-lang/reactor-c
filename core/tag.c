@@ -92,18 +92,18 @@ instant_t _lf_last_reported_physical_time_ns = 0LL;
 instant_t _lf_last_reported_unadjusted_physical_time_ns = NEVER;
 
 /**
- * Return the current tag, a logical time, microstep pair.
- * If the containing reactor is executing a reaciton use its local tag.
- * Else use the global tag. Also allow calling it with self=NULL in which case we return the global tag
+ * @brief Return the current tag at a reactor specified by the self argument. 
+ * If self is NULL then return the global current tag.
+ * If self is not executing any reaction this will return the tag of the last executed reaction of self 
+ * 
+ * @param self pointer to self-struct of a reactor 
+ * @return tag_t 
  */
 tag_t lf_tag(void* self) {
     if (self == NULL) {
         return current_tag;
-    }
-    if (((self_base_t *) self)->executing_reaction) {
-        return ((self_base_t *) self)->current_tag;
     } else {
-        return current_tag;
+        return ((self_base_t *) self)->current_tag;
     }
 }
 
@@ -201,12 +201,12 @@ instant_t _lf_physical_time() {
         _lf_last_reported_physical_time_ns = adjusted_clock_ns;
     }
     
-    LF_PRINT_DEBUG("Physical time: " PRINTF_TIME
-    		". Elapsed: " PRINTF_TIME
-			". Offset: " PRINTF_TIME,
-            _lf_last_reported_physical_time_ns,
-            _lf_last_reported_physical_time_ns - start_time,
-            _lf_time_physical_clock_offset + _lf_time_test_physical_clock_offset);
+    // LF_PRINT_DEBUG("Physical time: " PRINTF_TIME
+    // 		". Elapsed: " PRINTF_TIME
+	// 		". Offset: " PRINTF_TIME,
+    //         _lf_last_reported_physical_time_ns,
+    //         _lf_last_reported_physical_time_ns - start_time,
+    //         _lf_time_physical_clock_offset + _lf_time_test_physical_clock_offset);
 
     return _lf_last_reported_physical_time_ns;
 }
