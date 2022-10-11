@@ -1570,9 +1570,7 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
  */
 void _lf_invoke_reaction(reaction_t* reaction, int worker) {
     
-    #ifdef LF_NUMBER_OF_LET_REACTIONS
     lf_sched_reaction_prelude(reaction, worker);
-    #endif
     
     LF_PRINT_DEBUG("Worker %d Execute Reaction", worker);
     tracepoint_reaction_starts(reaction, worker);
@@ -1583,9 +1581,7 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
     tracepoint_reaction_ends(reaction, worker); 
     LF_PRINT_DEBUG("Worker %d Finished Reaction", worker);
  
-    #ifdef LF_NUMBER_OF_LET_REACTIONS
     lf_sched_reaction_postlude(reaction, worker);
-    #endif
 }
 
 /**
@@ -1995,12 +1991,16 @@ void initialize(void) {
     next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
 
-    // Initialize the trigger table.
-    _lf_initialize_trigger_objects();
+    // Initialize clock
+    lf_initialize_clock();
 
+    // Set start time
     physical_start_time = lf_time_physical();
     current_tag.time = physical_start_time;
     start_time = current_tag.time;
+    
+    // Initialize the trigger table.
+    _lf_initialize_trigger_objects();
 
     #ifdef BIT_32
         #ifdef MICROSECOND_TIME

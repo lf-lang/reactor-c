@@ -667,7 +667,7 @@ void _lf_next_locked() {
     LF_PRINT_DEBUG("Physical time is ahead of next tag time by " PRINTF_TIME ". This should be small unless -fast is used.",
                 lf_time_physical() - next_tag.time);
     
-#if defined(FEDERATED) || defined(NUMBER_OF_LET_REACTIONS)
+    // FIXME: We need global_tag_barrier check for LET. Should we use macros for this or?
     // In federated execution (at least under decentralized coordination),
     // it is possible that an incoming message has been partially read,
     // enough to see its tag. To prevent it from becoming tardy, the thread
@@ -679,7 +679,6 @@ void _lf_next_locked() {
         // A wait actually occurred, so the next_tag may have changed again.
         next_tag = get_next_event_tag();
     }
-#endif // FEDERATED
 
     // If the first event in the event queue has a tag greater than or equal to the
     // stop time, and the current_tag matches the stop tag (meaning that we have already

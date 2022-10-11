@@ -93,8 +93,8 @@ instant_t _lf_last_reported_unadjusted_physical_time_ns = NEVER;
 
 /**
  * @brief Return the current tag at a reactor specified by the self argument. 
- * If self is NULL then return the global current tag.
- * If self is not executing any reaction this will return the tag of the last executed reaction of self 
+ * If self is NULL or self is not executing a reaction,
+ * then return the global current tag.
  * 
  * @param self pointer to self-struct of a reactor 
  * @return tag_t 
@@ -102,9 +102,11 @@ instant_t _lf_last_reported_unadjusted_physical_time_ns = NEVER;
 tag_t lf_tag(void* self) {
     if (self == NULL) {
         return current_tag;
-    } else {
+    } else if (((self_base_t *) self)->executing_reaction) {
         return ((self_base_t *) self)->current_tag;
-    }
+    } else {
+        return current_tag;
+    } 
 }
 
 /**
