@@ -693,7 +693,8 @@ void _lf_pop_events() {
         // If the trigger is a periodic timer, create a new event for its next execution.
         if (event->trigger->is_timer && event->trigger->period > 0LL) {
             // Reschedule the trigger.
-            _lf_schedule(event->trigger, event->trigger->period, NULL);
+            tag_t next_tag = {current_tag.time + event->trigger->period, 0UL};
+            _lf_schedule_at_tag(event->trigger, next_tag, NULL);
         }
 
         // Copy the token pointer into the trigger struct so that the
