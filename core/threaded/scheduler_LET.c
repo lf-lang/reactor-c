@@ -43,6 +43,7 @@ extern lf_cond_t event_q_changed;
 
 /////////////////// Scheduler Variables and Structs /////////////////////////
 _lf_sched_instance_t* _lf_sched_instance;
+bool* worker_is_in_workforce;
 
 /////////////////// Scheduler Private API /////////////////////////
 
@@ -141,8 +142,8 @@ int _lf_sched_distribute_ready_reactions() {
  */
 void _lf_sched_notify_workers() {
     // Calculate the number of workers that we need to wake up, which is the
-    // Note: All threads are idle. Therefore, there is no need to lock the mutex
-    // while accessing the index for the current level.
+    // Need mutex because LET worker also accesses this variable
+    lf_mutex_lock(&mutex);
     size_t workers_to_awaken =
         LF_MIN(_lf_sched_instance->_lf_sched_number_of_idle_workers,
             _lf_sched_instance->_lf_sched_indexes[
@@ -156,7 +157,9 @@ void _lf_sched_notify_workers() {
     _lf_sched_instance->_lf_sched_number_of_idle_workers -= workers_to_awaken;
     LF_PRINT_DEBUG("Scheduler: New number of idle workers: %zu.",
                 _lf_sched_instance->_lf_sched_number_of_idle_workers);
-    
+
+    lf_mutex_unlock(&mutex);
+
     if (workers_to_awaken > 1) {
         // Notify all the workers except the worker thread that has called this
         // function.
@@ -229,14 +232,9 @@ void _lf_sched_wait_for_work(size_t worker_number) {
     // Increment the number of idle workers by 1 and check if this is the last
     // worker thread to become idle.
 
-    // Due to the retiring and rejoining of worker threads before/after LET reactions we know have to use a lock.
-    //  this is due to the fact that rejoining would require atomically updating 2 variables.
-    //  num_workers and num_idle_workers.
-
-    // FIXME: Can the rejoining worker thread join the current level instead of waiting for next?
-
+    
     lf_mutex_lock(&mutex);
-    lf_atomic_add_fetch(&_lf_sched_instance->_lf_sched_number_of_idle_workers,1);
+    _lf_sched_instance->_lf_sched_number_of_idle_workers+=1;
     if (_lf_sched_instance->_lf_sched_number_of_idle_workers == _lf_sched_instance->_lf_sched_number_of_workers) {
         lf_mutex_unlock(&mutex);
         // Last thread to go idle
@@ -321,6 +319,12 @@ void lf_sched_init(
         lf_mutex_init(&_lf_sched_instance->_lf_sched_array_of_mutexes[i]);
     }
 
+    // Allocate array to hold information about what workers are in the workforce
+    worker_is_in_workforce = malloc(_lf_number_of_workers * sizeof(bool));
+    for (int i = 0; i< _lf_number_of_workers; i++) {
+        worker_is_in_workforce[i] = true;
+    }
+
     _lf_sched_instance->_lf_sched_executing_reactions = 
         (void*)((reaction_t***)_lf_sched_instance->
             _lf_sched_triggered_reactions)[0];
@@ -338,6 +342,7 @@ void lf_sched_free() {
     free(_lf_sched_instance->_lf_sched_triggered_reactions);
     free(_lf_sched_instance->_lf_sched_executing_reactions);
     lf_semaphore_destroy(_lf_sched_instance->_lf_sched_semaphore);
+    free(worker_is_in_workforce);
 }
 
 ///////////////////// Scheduler Worker API (public) /////////////////////////
@@ -355,6 +360,13 @@ void lf_sched_free() {
 reaction_t* lf_sched_get_ready_reaction(int worker_number) {
     // Iterate until the stop tag is reached or reaction vectors are empty
     while (!_lf_sched_instance->_lf_sched_should_stop) {
+        // Coordinate rejoining the workforce. 
+        if (!worker_is_in_workforce[worker_number]) {
+            worker_is_in_workforce[worker_number] = true;
+            LF_PRINT_DEBUG("Worker %d goes to sleep until next level", worker_number);
+            lf_semaphore_acquire(_lf_sched_instance->_lf_sched_semaphore);
+            LF_PRINT_DEBUG("Worker %d has awoken. Back to work", worker_number);
+        }    
         // Calculate the current level of reactions to execute
         size_t current_level =
             _lf_sched_instance->_lf_sched_next_reaction_level - 1;
@@ -468,6 +480,9 @@ void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
             tag_t finish_tag = {current_tag.time + reaction->let, 0UL};
             lf_increment_global_tag_barrier_locked(finish_tag);
         }
+        // Remove worker from workforce
+        worker_is_in_workforce[worker_number] = false;
+
         // Atomically decrement number of workers
         lf_atomic_add_fetch(&_lf_sched_instance->_lf_sched_number_of_workers,-1);
         LF_PRINT_DEBUG("Worker %d removed from pool. %zu left", worker_number, _lf_sched_instance->_lf_sched_number_of_workers);
@@ -490,33 +505,22 @@ void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
 void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
     self_base_t *self = (self_base_t *) reaction->self;
 
+    // Unlock local mutex to allow interrupting reactions+mode changes
     if (self->has_mutex) {
         lf_mutex_unlock(&self->mutex);
         LF_PRINT_DEBUG("Worker %d unlocks LET mutex", worker_number);
     }
 
-
+    // Do half of the rejoining step. Increment num_workers and num_idle workers
+    //  last step is done when worker calls get_ready_reactions again.
     if(reaction->let > 0) {
-        // FIXME: DO we need atomic on this? I think yes due to idle worker being worked on outside critical section
-        lf_atomic_add_fetch(&_lf_sched_instance->_lf_sched_number_of_workers,1);
-        lf_atomic_add_fetch(&_lf_sched_instance->_lf_sched_number_of_idle_workers,1);
-    
+        lf_mutex_lock(&mutex);
+        _lf_sched_instance->_lf_sched_number_of_workers+=1;
+        _lf_sched_instance->_lf_sched_number_of_idle_workers+=1;
         // Reactions without any effects are assigned a LET of FOREVER, in that case we dont need any barrier
         if (reaction->let < FOREVER) {
             lf_decrement_global_tag_barrier_locked();
         }
-         
         lf_mutex_unlock(&mutex);
-        // FIXME: This check should not be done here. Move this to `_lf_sched_wait_for_work`
-        if(!_lf_sched_instance->_lf_sched_should_stop) {
-            LF_PRINT_DEBUG("Worker %d goes to sleep until next level", worker_number);
-            lf_semaphore_acquire(_lf_sched_instance->_lf_sched_semaphore);
-            LF_PRINT_DEBUG("Worker %d has awoken. Back to work", worker_number);
-        } else {    
-            LF_PRINT_DEBUG("Worker %d Sleep was requested while worker was working", worker_number);
-        }
     }
-
-    lf_mutex_unlock(&mutex);
-
 }
