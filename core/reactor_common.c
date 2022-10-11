@@ -1991,17 +1991,15 @@ void initialize(void) {
     next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
 
-    // Initialize clock
-    lf_initialize_clock();
+    
+    // Initialize the trigger table.
+    _lf_initialize_trigger_objects();
 
     // Set start time
     physical_start_time = lf_time_physical();
     current_tag.time = physical_start_time;
     start_time = current_tag.time;
     
-    // Initialize the trigger table.
-    _lf_initialize_trigger_objects();
-
     #ifdef BIT_32
         #ifdef MICROSECOND_TIME
             LF_PRINT_DEBUG("Start time: " PRINTF_TIME "us", start_time);
