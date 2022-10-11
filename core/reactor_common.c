@@ -1570,7 +1570,7 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
  */
 void _lf_invoke_reaction(reaction_t* reaction, int worker) {
     
-    lf_sched_reaction_prelude(reaction, worker);
+    lf_sched_reaction_prologue(reaction, worker);
     
     LF_PRINT_DEBUG("Worker %d Execute Reaction", worker);
     tracepoint_reaction_starts(reaction, worker);
@@ -1581,7 +1581,7 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
     tracepoint_reaction_ends(reaction, worker); 
     LF_PRINT_DEBUG("Worker %d Finished Reaction", worker);
  
-    lf_sched_reaction_postlude(reaction, worker);
+    lf_sched_reaction_epilogue(reaction, worker);
 }
 
 /**

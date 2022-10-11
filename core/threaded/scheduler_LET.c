@@ -444,7 +444,7 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     _lf_sched_insert_reaction(reaction);
 }
 
-void lf_sched_reaction_prelude(reaction_t * reaction, int worker_number) {
+void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
     // FIXME: Use 1 mutex per LET reactor. Check whether mutex is NULL. If not acquire it before executing any reaction
     //  in that reactor. Should we have a cond var per Reactor also. 
     //  Why will this not cause deadlock: So far, the only other mutex is the global mutex. No other mutex is held when the
@@ -487,7 +487,7 @@ void lf_sched_reaction_prelude(reaction_t * reaction, int worker_number) {
     self->current_tag = current_tag;
 }
 
-void lf_sched_reaction_postlude(reaction_t * reaction, int worker_number) {
+void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
     self_base_t *self = (self_base_t *) reaction->self;
 
     if (self->has_mutex) {
