@@ -457,12 +457,6 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
 }
 
 void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
-    // FIXME: Use 1 mutex per LET reactor. Check whether mutex is NULL. If not acquire it before executing any reaction
-    //  in that reactor. Should we have a cond var per Reactor also. 
-    //  Why will this not cause deadlock: So far, the only other mutex is the global mutex. No other mutex is held when the
-    //  system executes a reaciton. UNder that assumption this new mutex will always be acquired before any other mutex is acquired
-    //  If the order of mutex acquisition is the same throughout the system you are deadlock free.
-
     self_base_t *self = (self_base_t *) reaction->self;
     // Take global mutex
     if (self->has_mutex) {
@@ -475,31 +469,28 @@ void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
     // FIXME: Use pqueue for tracking tag barrier. Only notify the cond_var when the head of the
     //  pqueue is removed.
     if (reaction->let > 0) {
+        // Acquire the global mutex to: 1. Increment global barrier and 2. Update the scheduler variables.
+        lf_mutex_lock(&mutex);
         if (reaction->let < FOREVER) {
             LF_PRINT_DEBUG("Worker %d Increment global barrier", worker_number);
             tag_t finish_tag = {current_tag.time + reaction->let, 0UL};
             lf_increment_global_tag_barrier_locked(finish_tag);
         }
-        // Remove worker from workforce
+        // Remove worker from workforce. By both updating the local array holding workers that are in the workforce
+        //  and decrementing the total number of workers. The first is needed for the rejoining process 
         worker_is_in_workforce[worker_number] = false;
+        _lf_sched_instance->_lf_sched_number_of_workers--;
 
-        // Atomically decrement number of workers
-        lf_atomic_add_fetch(&_lf_sched_instance->_lf_sched_number_of_workers,-1);
         LF_PRINT_DEBUG("Worker %d removed from pool. %zu left", worker_number, _lf_sched_instance->_lf_sched_number_of_workers);
-
         // If all other workers are sleeping then wake one up to advance time
         if (_lf_sched_instance->_lf_sched_number_of_idle_workers == _lf_sched_instance->_lf_sched_number_of_workers) {
             LF_PRINT_DEBUG("Worker %d Wakes up 1 sleeping thread before going to LET work", worker_number);
             _lf_sched_instance->_lf_sched_number_of_idle_workers--;
             lf_semaphore_release(_lf_sched_instance->_lf_sched_semaphore, 1);
         }
+        // Release global mutex
+        lf_mutex_unlock(&mutex);
     }
-
-    // Set currently executing reaction
-    self->executing_reaction = reaction;
-
-    // Update the current_logical_time of the Reactor
-    self->current_tag = current_tag;
 }
 
 void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
@@ -512,12 +503,14 @@ void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
     }
 
     // Do half of the rejoining step. Increment num_workers and num_idle workers
-    //  last step is done when worker calls get_ready_reactions again.
+    //  This will not have any effect on the operation of the other workers. They will atomically see num_workers
+    //  and num_idle being incremented. This worker will rejoin the worker pool upon calling `lf_sched_get_ready_reaction`
+    //  Note that the GLOBAL mutex is used to increment the scheduler varibles.
     if(reaction->let > 0) {
         lf_mutex_lock(&mutex);
         _lf_sched_instance->_lf_sched_number_of_workers+=1;
         _lf_sched_instance->_lf_sched_number_of_idle_workers+=1;
-        // Reactions without any effects are assigned a LET of FOREVER, in that case we dont need any barrier
+        // Reactions without any effects are assigned a LET of FOREVER, and did not setup any barrier
         if (reaction->let < FOREVER) {
             lf_decrement_global_tag_barrier_locked();
         }
