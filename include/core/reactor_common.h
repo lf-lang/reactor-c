@@ -33,7 +33,7 @@ extern vector_t _lf_sparse_io_record_sizes;
 extern pqueue_t* event_q;
 
 extern int default_argc;
-extern char** default_argv;
+extern const char** default_argv;
 
 #ifdef FEDERATED
 void reset_status_fields_on_input_port_triggers();
@@ -89,7 +89,7 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
 void _lf_invoke_reaction(reaction_t* reaction, int worker);
 void schedule_output_reactions(reaction_t* reaction, int worker);
 lf_token_t* writable_copy(lf_token_t* token);
-int process_args(int argc, char* argv[]);
+int process_args(int argc, const char* argv[]);
 void initialize(void);
 void termination(void);
 
