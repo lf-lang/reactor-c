@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: core/threaded/scheduler_instance.h Source File</title>
+<title>reactor-c: include/core/threaded/scheduler_instance.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -69,7 +69,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_4270bfced15e0e73154b13468c7c9ad9.html">core</a></li><li class="navelem"><a class="el" href="dir_9409d006c5a5b89ee51387d0bee40656.html">threaded</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_3d69f64eaf81436fe2b22361382717e5.html">core</a></li><li class="navelem"><a class="el" href="dir_47494a40d0a882b8f118ab8beff1b4c5.html">threaded</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -109,7 +109,7 @@ $(function() {
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="scheduler__instance_8h.html#a43fcdba4ed8864d210afd3f031b4e346">   42</a></span><span class="preprocessor">#define NUMBER_OF_WORKERS 1</span></div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="preprocessor">#endif  </span><span class="comment">// NUMBER_OF_WORKERS</span></div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="preprocessor">#include &quot;../utils/semaphore.h&quot;</span></div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="preprocessor">#include &quot;<a class="code" href="semaphore_8h.html">semaphore.h</a>&quot;</span></div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="preprocessor">#include &quot;<a class="code" href="scheduler_8h.html">scheduler.h</a>&quot;</span></div>
 <div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span> </div>
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="keyword">extern</span> lf_mutex_t <a class="code hl_variable" href="scheduler__instance_8h.html#ab491fbef9a883a7cee19e074dba32661">mutex</a>;</div>
@@ -118,7 +118,7 @@ $(function() {
 <div class="line"><a id="l00057" name="l00057"></a><span class="lineno"><a class="line" href="struct__lf__sched__instance__t.html">   57</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
 <div class="line"><a id="l00062" name="l00062"></a><span class="lineno"><a class="line" href="struct__lf__sched__instance__t.html#a849eaf1f99346683ae2944ba2d5e6461">   62</a></span>    <span class="keywordtype">size_t</span> <a class="code hl_variable" href="struct__lf__sched__instance__t.html#a849eaf1f99346683ae2944ba2d5e6461">max_reaction_level</a>;</div>
 <div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno"><a class="line" href="struct__lf__sched__instance__t.html#a0bc5e7ed0500875dd36f11a32ebce067">   76</a></span>    <a class="code hl_struct" href="structsemaphore__t.html">semaphore_t</a>* <a class="code hl_variable" href="struct__lf__sched__instance__t.html#a0bc5e7ed0500875dd36f11a32ebce067">_lf_sched_semaphore</a>; </div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno"><a class="line" href="struct__lf__sched__instance__t.html#a0bc5e7ed0500875dd36f11a32ebce067">   76</a></span>    <a class="code hl_struct" href="structsemaphore__t.html">semaphore_t</a>* <a class="code hl_variable" href="struct__lf__sched__instance__t.html#a0bc5e7ed0500875dd36f11a32ebce067">_lf_sched_semaphore</a>;</div>
 <div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span> </div>
 <div class="line"><a id="l00082" name="l00082"></a><span class="lineno"><a class="line" href="struct__lf__sched__instance__t.html#aa8974d9e3296e6d6da2859adb1d053b6">   82</a></span>    <span class="keyword">volatile</span> <span class="keywordtype">bool</span> <a class="code hl_variable" href="struct__lf__sched__instance__t.html#aa8974d9e3296e6d6da2859adb1d053b6">_lf_sched_should_stop</a>;</div>
 <div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span> </div>
@@ -145,17 +145,17 @@ $(function() {
 <div class="line"><a id="l00153" name="l00153"></a><span class="lineno">  153</span>    <a class="code hl_struct" href="structsched__params__t.html">sched_params_t</a>* params) {</div>
 <div class="line"><a id="l00154" name="l00154"></a><span class="lineno">  154</span> </div>
 <div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span>    <span class="comment">// Check if the instance is already initialized</span></div>
-<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>    <a class="code hl_function" href="lf___c11__threads__support_8c.html#a5b4bfce1aea7b1fe41a0dd43ca508579">lf_mutex_lock</a>(&amp;<a class="code hl_variable" href="scheduler__instance_8h.html#ab491fbef9a883a7cee19e074dba32661">mutex</a>); <span class="comment">// Safeguard against multiple threads calling this </span></div>
+<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>    lf_mutex_lock(&amp;<a class="code hl_variable" href="scheduler__instance_8h.html#ab491fbef9a883a7cee19e074dba32661">mutex</a>); <span class="comment">// Safeguard against multiple threads calling this</span></div>
 <div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>                           <span class="comment">// function.</span></div>
 <div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span>    <span class="keywordflow">if</span> (*instance != NULL) {</div>
 <div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>        <span class="comment">// Already initialized</span></div>
-<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>        <a class="code hl_function" href="lf___c11__threads__support_8c.html#ab4ab44390a03ab9cfe030e840175cbf6">lf_mutex_unlock</a>(&amp;<a class="code hl_variable" href="scheduler__instance_8h.html#ab491fbef9a883a7cee19e074dba32661">mutex</a>);</div>
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span>        lf_mutex_unlock(&amp;<a class="code hl_variable" href="scheduler__instance_8h.html#ab491fbef9a883a7cee19e074dba32661">mutex</a>);</div>
 <div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span>        <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
 <div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span>    } <span class="keywordflow">else</span> {</div>
 <div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span>        *instance =</div>
 <div class="line"><a id="l00164" name="l00164"></a><span class="lineno">  164</span>            (<a class="code hl_struct" href="struct__lf__sched__instance__t.html">_lf_sched_instance_t</a>*)calloc(1, <span class="keyword">sizeof</span>(<a class="code hl_struct" href="struct__lf__sched__instance__t.html">_lf_sched_instance_t</a>));</div>
 <div class="line"><a id="l00165" name="l00165"></a><span class="lineno">  165</span>    }</div>
-<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>    <a class="code hl_function" href="lf___c11__threads__support_8c.html#ab4ab44390a03ab9cfe030e840175cbf6">lf_mutex_unlock</a>(&amp;<a class="code hl_variable" href="scheduler__instance_8h.html#ab491fbef9a883a7cee19e074dba32661">mutex</a>);</div>
+<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span>    lf_mutex_unlock(&amp;<a class="code hl_variable" href="scheduler__instance_8h.html#ab491fbef9a883a7cee19e074dba32661">mutex</a>);</div>
 <div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span> </div>
 <div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>    <span class="keywordflow">if</span> (params == NULL || params-&gt;<a class="code hl_variable" href="structsched__params__t.html#a15d5c083329a86fde98d5990c21e43a4">num_reactions_per_level_size</a> == 0) {</div>
 <div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>        (*instance)-&gt;max_reaction_level = <a class="code hl_define" href="scheduler_8h.html#a7c3f7c6b1c85f7572b42fa34fa853973">DEFAULT_MAX_REACTION_LEVEL</a>;</div>
@@ -178,13 +178,12 @@ $(function() {
 <div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span>}</div>
 <div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span> </div>
 <div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span><span class="preprocessor">#endif </span><span class="comment">// LF_SCHEDULER_PARAMS_H</span></div>
-<div class="ttc" id="alf___c11__threads__support_8c_html_a5b4bfce1aea7b1fe41a0dd43ca508579"><div class="ttname"><a href="lf___c11__threads__support_8c.html#a5b4bfce1aea7b1fe41a0dd43ca508579">lf_mutex_lock</a></div><div class="ttdeci">int lf_mutex_lock(_lf_mutex_t *mutex)</div><div class="ttdef"><b>Definition:</b> lf_C11_threads_support.c:75</div></div>
-<div class="ttc" id="alf___c11__threads__support_8c_html_ab4ab44390a03ab9cfe030e840175cbf6"><div class="ttname"><a href="lf___c11__threads__support_8c.html#ab4ab44390a03ab9cfe030e840175cbf6">lf_mutex_unlock</a></div><div class="ttdeci">int lf_mutex_unlock(_lf_mutex_t *mutex)</div><div class="ttdef"><b>Definition:</b> lf_C11_threads_support.c:84</div></div>
 <div class="ttc" id="ascheduler_8h_html"><div class="ttname"><a href="scheduler_8h.html">scheduler.h</a></div><div class="ttdoc">Scheduler API for the threaded C runtime.</div></div>
 <div class="ttc" id="ascheduler_8h_html_a7c3f7c6b1c85f7572b42fa34fa853973"><div class="ttname"><a href="scheduler_8h.html#a7c3f7c6b1c85f7572b42fa34fa853973">DEFAULT_MAX_REACTION_LEVEL</a></div><div class="ttdeci">#define DEFAULT_MAX_REACTION_LEVEL</div><div class="ttdoc">Default value that is assumed to be the maximum reaction level in the program.</div><div class="ttdef"><b>Definition:</b> scheduler.h:50</div></div>
-<div class="ttc" id="ascheduler__instance_8h_html_ab491fbef9a883a7cee19e074dba32661"><div class="ttname"><a href="scheduler__instance_8h.html#ab491fbef9a883a7cee19e074dba32661">mutex</a></div><div class="ttdeci">lf_mutex_t mutex</div><div class="ttdef"><b>Definition:</b> reactor_threaded.c:87</div></div>
+<div class="ttc" id="ascheduler__instance_8h_html_ab491fbef9a883a7cee19e074dba32661"><div class="ttname"><a href="scheduler__instance_8h.html#ab491fbef9a883a7cee19e074dba32661">mutex</a></div><div class="ttdeci">lf_mutex_t mutex</div><div class="ttdef"><b>Definition:</b> reactor_threaded.c:92</div></div>
 <div class="ttc" id="ascheduler__instance_8h_html_ae393e1a34a51d36ed78a5c1f4d7fee50"><div class="ttname"><a href="scheduler__instance_8h.html#ae393e1a34a51d36ed78a5c1f4d7fee50">init_sched_instance</a></div><div class="ttdeci">bool init_sched_instance(_lf_sched_instance_t **instance, size_t number_of_workers, sched_params_t *params)</div><div class="ttdoc">Initialize instance using the provided information.</div><div class="ttdef"><b>Definition:</b> scheduler_instance.h:150</div></div>
 <div class="ttc" id="asemaphore_8c_html_a187a690a94648f59013bb33b95781fcd"><div class="ttname"><a href="semaphore_8c.html#a187a690a94648f59013bb33b95781fcd">lf_semaphore_new</a></div><div class="ttdeci">semaphore_t * lf_semaphore_new(int count)</div><div class="ttdoc">Create a new semaphore.</div><div class="ttdef"><b>Definition:</b> semaphore.c:42</div></div>
+<div class="ttc" id="asemaphore_8h_html"><div class="ttname"><a href="semaphore_8h.html">semaphore.h</a></div></div>
 <div class="ttc" id="astruct__lf__sched__instance__t_html"><div class="ttname"><a href="struct__lf__sched__instance__t.html">_lf_sched_instance_t</a></div><div class="ttdoc">Paramters used in schedulers of the threaded reactor C runtime.</div><div class="ttdef"><b>Definition:</b> scheduler_instance.h:57</div></div>
 <div class="ttc" id="astruct__lf__sched__instance__t_html_a0bc5e7ed0500875dd36f11a32ebce067"><div class="ttname"><a href="struct__lf__sched__instance__t.html#a0bc5e7ed0500875dd36f11a32ebce067">_lf_sched_instance_t::_lf_sched_semaphore</a></div><div class="ttdeci">semaphore_t * _lf_sched_semaphore</div><div class="ttdoc">Used by the scheduler to signal the maximum number of worker threads that should be executing work at...</div><div class="ttdef"><b>Definition:</b> scheduler_instance.h:76</div></div>
 <div class="ttc" id="astruct__lf__sched__instance__t_html_a439caa48daf77e9b45c2b45c2c993384"><div class="ttname"><a href="struct__lf__sched__instance__t.html#a439caa48daf77e9b45c2b45c2c993384">_lf_sched_instance_t::_lf_sched_next_reaction_level</a></div><div class="ttdeci">volatile size_t _lf_sched_next_reaction_level</div><div class="ttdoc">The next level of reactions to execute.</div><div class="ttdef"><b>Definition:</b> scheduler_instance.h:134</div></div>

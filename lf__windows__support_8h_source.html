@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: core/platform/lf_windows_support.h Source File</title>
+<title>reactor-c: include/core/platform/lf_windows_support.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -69,7 +69,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_4270bfced15e0e73154b13468c7c9ad9.html">core</a></li><li class="navelem"><a class="el" href="dir_e013a6b3093d526b264ef8c8204162a6.html">platform</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_3d69f64eaf81436fe2b22361382717e5.html">core</a></li><li class="navelem"><a class="el" href="dir_34e5870a65eed40bfc66e19669509957.html">platform</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -110,39 +110,32 @@ $(function() {
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">#include &lt;windef.h&gt;</span></div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">#include &lt;stdint.h&gt;</span> <span class="comment">// For fixed-width integral types</span></div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="preprocessor">#ifndef __cplusplus</span></div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno"><a class="line" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">   45</a></span><span class="keyword">typedef</span> BOOL <a class="code hl_typedef" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>;</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno"><a class="line" href="lf__windows__support_8h.html#a41f9c5fb8b08eb5dc3edce4dcb37fee7">   46</a></span><span class="preprocessor">#define true TRUE</span></div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno"><a class="line" href="lf__windows__support_8h.html#a65e9886d74aaee76545e83dd09011727">   47</a></span><span class="preprocessor">#define false FALSE</span></div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="preprocessor">#endif </span><span class="comment">// __cplusplus</span></div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="preprocessor">#ifdef NUMBER_OF_WORKERS</span></div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="preprocessor">#if __STDC_VERSION__ &lt; 201112L || defined (__STDC_NO_THREADS__) </span><span class="comment">// (Not C++11 or later) or no threads support</span></div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span><span class="keyword">typedef</span> CRITICAL_SECTION <a class="code hl_typedef" href="lf___c11__threads__support_8h.html#af138a3eb9c01e6c750ec727fc3263351">_lf_mutex_t</a>;</div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="keyword">typedef</span> <a class="code hl_typedef" href="lf___c11__threads__support_8h.html#af138a3eb9c01e6c750ec727fc3263351">_lf_mutex_t</a> _lf_critical_section_t;</div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span> </div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><span class="keyword">typedef</span> CONDITION_VARIABLE <a class="code hl_typedef" href="lf___c11__threads__support_8h.html#a25f8fa235dd876facebb445897982ee8">_lf_cond_t</a>;</div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="keyword">typedef</span> HANDLE <a class="code hl_typedef" href="lf___c11__threads__support_8h.html#a0c63968b3c6c1797744468f13daf0814">_lf_thread_t</a>;</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span><span class="preprocessor">#include &quot;<a class="code" href="lf___c11__threads__support_8h.html">lf_C11_threads_support.h</a>&quot;</span></div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span> </div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span><span class="comment">// Use 64-bit times and 32-bit unsigned microsteps</span></div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span><span class="preprocessor">#include &quot;<a class="code" href="lf__tag__64__32_8h.html">lf_tag_64_32.h</a>&quot;</span></div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span> </div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno"><a class="line" href="lf__windows__support_8h.html#a648705f106259061531b75d252c66f79">   77</a></span><span class="preprocessor">#define _LF_TIMEOUT ETIMEDOUT</span></div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span><span class="preprocessor">#endif </span><span class="comment">// LF_WINDOWS_SUPPORT_H</span></div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span> </div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="preprocessor">#if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE</span></div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="preprocessor">#if __STDC_VERSION__ &lt; 201112L || defined (__STDC_NO_THREADS__) </span><span class="comment">// (Not C++11 or later) or no threads support</span></div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="keyword">typedef</span> CRITICAL_SECTION <a class="code hl_typedef" href="lf___c11__threads__support_8h.html#af138a3eb9c01e6c750ec727fc3263351">_lf_mutex_t</a>;</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="keyword">typedef</span> <a class="code hl_typedef" href="lf___c11__threads__support_8h.html#af138a3eb9c01e6c750ec727fc3263351">_lf_mutex_t</a> _lf_critical_section_t;</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span><span class="keyword">typedef</span> CONDITION_VARIABLE <a class="code hl_typedef" href="lf___c11__threads__support_8h.html#a25f8fa235dd876facebb445897982ee8">_lf_cond_t</a>;</div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span><span class="keyword">typedef</span> HANDLE <a class="code hl_typedef" href="lf___c11__threads__support_8h.html#a0c63968b3c6c1797744468f13daf0814">_lf_thread_t</a>;</div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="preprocessor">#include &quot;<a class="code" href="lf___c11__threads__support_8h.html">lf_C11_threads_support.h</a>&quot;</span></div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span><span class="comment">// Use 64-bit times and 32-bit unsigned microsteps</span></div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="preprocessor">#include &quot;<a class="code" href="lf__tag__64__32_8h.html">lf_tag_64_32.h</a>&quot;</span></div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno"><a class="line" href="lf__windows__support_8h.html#a648705f106259061531b75d252c66f79">   71</a></span><span class="preprocessor">#define _LF_TIMEOUT ETIMEDOUT</span></div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span><span class="preprocessor">#endif </span><span class="comment">// LF_WINDOWS_SUPPORT_H</span></div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span> </div>
 <div class="ttc" id="alf___c11__threads__support_8h_html"><div class="ttname"><a href="lf___c11__threads__support_8h.html">lf_C11_threads_support.h</a></div></div>
-<div class="ttc" id="alf___c11__threads__support_8h_html_a0c63968b3c6c1797744468f13daf0814"><div class="ttname"><a href="lf___c11__threads__support_8h.html#a0c63968b3c6c1797744468f13daf0814">_lf_thread_t</a></div><div class="ttdeci">thrd_t _lf_thread_t</div><div class="ttdef"><b>Definition:</b> lf_C11_threads_support.h:39</div></div>
-<div class="ttc" id="alf___c11__threads__support_8h_html_a25f8fa235dd876facebb445897982ee8"><div class="ttname"><a href="lf___c11__threads__support_8h.html#a25f8fa235dd876facebb445897982ee8">_lf_cond_t</a></div><div class="ttdeci">cnd_t _lf_cond_t</div><div class="ttdef"><b>Definition:</b> lf_C11_threads_support.h:38</div></div>
-<div class="ttc" id="alf___c11__threads__support_8h_html_af138a3eb9c01e6c750ec727fc3263351"><div class="ttname"><a href="lf___c11__threads__support_8h.html#af138a3eb9c01e6c750ec727fc3263351">_lf_mutex_t</a></div><div class="ttdeci">mtx_t _lf_mutex_t</div><div class="ttdef"><b>Definition:</b> lf_C11_threads_support.h:37</div></div>
+<div class="ttc" id="alf___c11__threads__support_8h_html_a0c63968b3c6c1797744468f13daf0814"><div class="ttname"><a href="lf___c11__threads__support_8h.html#a0c63968b3c6c1797744468f13daf0814">_lf_thread_t</a></div><div class="ttdeci">thrd_t _lf_thread_t</div><div class="ttdef"><b>Definition:</b> lf_C11_threads_support.h:41</div></div>
+<div class="ttc" id="alf___c11__threads__support_8h_html_a25f8fa235dd876facebb445897982ee8"><div class="ttname"><a href="lf___c11__threads__support_8h.html#a25f8fa235dd876facebb445897982ee8">_lf_cond_t</a></div><div class="ttdeci">cnd_t _lf_cond_t</div><div class="ttdef"><b>Definition:</b> lf_C11_threads_support.h:40</div></div>
+<div class="ttc" id="alf___c11__threads__support_8h_html_af138a3eb9c01e6c750ec727fc3263351"><div class="ttname"><a href="lf___c11__threads__support_8h.html#af138a3eb9c01e6c750ec727fc3263351">_lf_mutex_t</a></div><div class="ttdeci">mtx_t _lf_mutex_t</div><div class="ttdef"><b>Definition:</b> lf_C11_threads_support.h:39</div></div>
 <div class="ttc" id="alf__tag__64__32_8h_html"><div class="ttname"><a href="lf__tag__64__32_8h.html">lf_tag_64_32.h</a></div></div>
-<div class="ttc" id="alf__windows__support_8h_html_a6ab4028eed8039b6a81740c40097581e"><div class="ttname"><a href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a></div><div class="ttdeci">BOOL bool</div><div class="ttdef"><b>Definition:</b> lf_windows_support.h:45</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

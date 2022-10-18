@@ -92,10 +92,10 @@ $(function() {
 <code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;sys/wait.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="platform_8h_source.html">platform.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="core_2utils_2util_8c.html">utils/util.c</a>&quot;</code><br />
+<code>#include &quot;util.c&quot;</code><br />
 <code>#include &quot;<a class="el" href="net__util_8c.html">net_util.c</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="net__common_8h_source.html">net_common.h</a>&quot;</code><br />
-<code>#include &quot;tag.c&quot;</code><br />
+<code>#include &quot;<a class="el" href="tag_8c.html">tag.c</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="rti_8h_source.html">rti.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
@@ -106,13 +106,13 @@ Functions</h2></td></tr>
 <tr class="separator:acde4076cd96817debe76e74fca261c70"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2c94ce50b24ed5cc0bfce3d548d8e59f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#a2c94ce50b24ed5cc0bfce3d548d8e59f">send_tag_advance_grant</a> (<a class="el" href="structfederate__t.html">federate_t</a> *fed, <a class="el" href="structtag__t.html">tag_t</a> tag)</td></tr>
 <tr class="separator:a2c94ce50b24ed5cc0bfce3d548d8e59f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa067d8ff2e12b42f8c1f011758231be1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#aa067d8ff2e12b42f8c1f011758231be1">transitive_next_event</a> (<a class="el" href="structfederate__t.html">federate_t</a> *fed, <a class="el" href="structtag__t.html">tag_t</a> candidate, <a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> visited[])</td></tr>
+<tr class="memitem:aa067d8ff2e12b42f8c1f011758231be1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#aa067d8ff2e12b42f8c1f011758231be1">transitive_next_event</a> (<a class="el" href="structfederate__t.html">federate_t</a> *fed, <a class="el" href="structtag__t.html">tag_t</a> candidate, bool visited[])</td></tr>
 <tr class="separator:aa067d8ff2e12b42f8c1f011758231be1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab36a04086b8af885621e5f808efecd23"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#ab36a04086b8af885621e5f808efecd23">send_provisional_tag_advance_grant</a> (<a class="el" href="structfederate__t.html">federate_t</a> *fed, <a class="el" href="structtag__t.html">tag_t</a> tag)</td></tr>
 <tr class="separator:ab36a04086b8af885621e5f808efecd23"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a70e4672b8d5c3b0e42bbb0c17d01cccd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#a70e4672b8d5c3b0e42bbb0c17d01cccd">send_advance_grant_if_safe</a> (<a class="el" href="structfederate__t.html">federate_t</a> *fed)</td></tr>
+<tr class="memitem:a70e4672b8d5c3b0e42bbb0c17d01cccd"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#a70e4672b8d5c3b0e42bbb0c17d01cccd">send_advance_grant_if_safe</a> (<a class="el" href="structfederate__t.html">federate_t</a> *fed)</td></tr>
 <tr class="separator:a70e4672b8d5c3b0e42bbb0c17d01cccd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a05299fb2838277ff1f030448c9cf1ad8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#a05299fb2838277ff1f030448c9cf1ad8">send_downstream_advance_grants_if_safe</a> (<a class="el" href="structfederate__t.html">federate_t</a> *fed, <a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> visited[])</td></tr>
+<tr class="memitem:a05299fb2838277ff1f030448c9cf1ad8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#a05299fb2838277ff1f030448c9cf1ad8">send_downstream_advance_grants_if_safe</a> (<a class="el" href="structfederate__t.html">federate_t</a> *fed, bool visited[])</td></tr>
 <tr class="separator:a05299fb2838277ff1f030448c9cf1ad8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7190c8d1000afb0a5e8898011d041917"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#a7190c8d1000afb0a5e8898011d041917">update_federate_next_event_tag_locked</a> (uint16_t federate_id, <a class="el" href="structtag__t.html">tag_t</a> next_event_tag)</td></tr>
 <tr class="memdesc:a7190c8d1000afb0a5e8898011d041917"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the next event tag of federate <code>federate_id</code>.  <a href="rti_8c.html#a7190c8d1000afb0a5e8898011d041917">More...</a><br /></td></tr>
@@ -157,7 +157,7 @@ Functions</h2></td></tr>
 <tr class="separator:a31b7dee1852120f00c4f7415a84550d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf8907ccab075522f7b84de579d50030"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#acf8907ccab075522f7b84de579d50030">connect_to_federates</a> (int socket_descriptor)</td></tr>
 <tr class="separator:acf8907ccab075522f7b84de579d50030"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac6af5f2343ecf9ed87cdbebd98b94271"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#ac6af5f2343ecf9ed87cdbebd98b94271">respond_to_erroneous_connections</a> (void *nothing)</td></tr>
+<tr class="memitem:ac6af5f2343ecf9ed87cdbebd98b94271"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#ac6af5f2343ecf9ed87cdbebd98b94271">respond_to_erroneous_connections</a> (void *<a class="el" href="hashmap_8h.html#abddc82f328c9384f6c66210d6740e6aa">nothing</a>)</td></tr>
 <tr class="separator:ac6af5f2343ecf9ed87cdbebd98b94271"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9569e1329c5a061249aae331a8e77403"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#a9569e1329c5a061249aae331a8e77403">initialize_federate</a> (uint16_t id)</td></tr>
 <tr class="separator:a9569e1329c5a061249aae331a8e77403"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -178,7 +178,7 @@ Functions</h2></td></tr>
 Variables</h2></td></tr>
 <tr class="memitem:a104f9a0ac7ff4aa717e0462b8ac445ea"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_r_t_i__instance__t.html">RTI_instance_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#a104f9a0ac7ff4aa717e0462b8ac445ea">_RTI</a></td></tr>
 <tr class="separator:a104f9a0ac7ff4aa717e0462b8ac445ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a94849214863f76b3f7c59a78bd2ad624"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#a94849214863f76b3f7c59a78bd2ad624">_lf_rti_stop_granted_already_sent_to_federates</a> = <a class="el" href="lf__windows__support_8h.html#a65e9886d74aaee76545e83dd09011727">false</a></td></tr>
+<tr class="memitem:a94849214863f76b3f7c59a78bd2ad624"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#a94849214863f76b3f7c59a78bd2ad624">_lf_rti_stop_granted_already_sent_to_federates</a> = false</td></tr>
 <tr class="separator:a94849214863f76b3f7c59a78bd2ad624"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -373,7 +373,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Handle address query messages. This function reads the body of a MSG_TYPE_ADDRESS_QUERY (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="net__common_8h.html">net_common.h</a>) message which is the requested destination federate ID and replies with the stored port value for the socket server of that federate. The port values are initialized to -1. If <a class="el" href="reactor_8h.html#a174f339edecd4463df25e673366a2b16a8fe4a05f1addc1b9a4aae17d7b166646">no</a> <a class="el" href="net__common_8h.html#ae004cb4e5add42afe5483f6706e11d35">MSG_TYPE_ADDRESS_ADVERTISEMENT</a> message has been received from the destination federate, the RTI will simply reply with -1 for the port. The sending federate is responsible for checking back with the RTI after a period of time. </dd>
+<p >Handle address query messages. This function reads the body of a MSG_TYPE_ADDRESS_QUERY (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="net__common_8h.html">net_common.h</a>) message which is the requested destination federate ID and replies with the stored port value <a class="el" href="hashmap_8h.html#a611d52c77a8144080f7bfb45eaec2a66">for</a> the socket server of that federate. The port values are initialized to -1. If <a class="el" href="lf__types_8h.html#a174f339edecd4463df25e673366a2b16a8fe4a05f1addc1b9a4aae17d7b166646">no</a> <a class="el" href="net__common_8h.html#ae004cb4e5add42afe5483f6706e11d35">MSG_TYPE_ADDRESS_ADVERTISEMENT</a> message has been received from the destination federate, the RTI will simply reply with -1 <a class="el" href="hashmap_8h.html#a611d52c77a8144080f7bfb45eaec2a66">for</a> the port. The sending federate is responsible <a class="el" href="hashmap_8h.html#a611d52c77a8144080f7bfb45eaec2a66">for</a> checking back with the RTI after a period of time. </dd>
 <dd>
 <a class="el" href="federate_8c.html#a2ca619f14cb3f3e777c8ca2e0e9ec022">connect_to_federate()</a> in <a class="el" href="federate_8c.html">federate.c</a>. * </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -919,7 +919,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> send_advance_grant_if_safe </td>
+          <td class="memname">bool send_advance_grant_if_safe </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structfederate__t.html">federate_t</a> *&#160;</td>
           <td class="paramname"><em>fed</em></td><td>)</td>
@@ -951,7 +951,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td>
+          <td class="paramtype">bool&#160;</td>
           <td class="paramname"><em>visited</em>[]&#160;</td>
         </tr>
         <tr>
@@ -1174,7 +1174,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td>
+          <td class="paramtype">bool&#160;</td>
           <td class="paramname"><em>visited</em>[]&#160;</td>
         </tr>
         <tr>
@@ -1298,7 +1298,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_rti_stop_granted_already_sent_to_federates = <a class="el" href="lf__windows__support_8h.html#a65e9886d74aaee76545e83dd09011727">false</a></td>
+          <td class="memname">bool _lf_rti_stop_granted_already_sent_to_federates = false</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -1321,7 +1321,7 @@ DESCRIPTION</h1>
 <div class="line">    .rti_mutex = PTHREAD_MUTEX_INITIALIZER,</div>
 <div class="line">    .received_start_times = PTHREAD_COND_INITIALIZER,</div>
 <div class="line">    .sent_start_time = PTHREAD_COND_INITIALIZER,</div>
-<div class="line">    .max_stop_tag = <a class="code hl_define" href="core_2tag_8h.html#afc2f39e1818a6a8b68ca46e7c9dc2704">NEVER_TAG</a>,</div>
+<div class="line">    .max_stop_tag = <a class="code hl_define" href="tag_8h.html#afc2f39e1818a6a8b68ca46e7c9dc2704">NEVER_TAG</a>,</div>
 <div class="line">    .max_start_time = 0LL,</div>
 <div class="line">    .number_of_federates = 0,</div>
 <div class="line">    .num_feds_proposed_start = 0,</div>
@@ -1334,12 +1334,12 @@ DESCRIPTION</h1>
 <div class="line">    .final_port_UDP = UINT16_MAX,</div>
 <div class="line">    .socket_descriptor_UDP = -1,</div>
 <div class="line">    .clock_sync_global_status = <a class="code hl_enumvalue" href="rti_8h.html#a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558">clock_sync_init</a>,</div>
-<div class="line">    .clock_sync_period_ns = <a class="code hl_define" href="core_2tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8">MSEC</a>(10),</div>
+<div class="line">    .clock_sync_period_ns = <a class="code hl_define" href="tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8">MSEC</a>(10),</div>
 <div class="line">    .clock_sync_exchanges_per_interval = 10</div>
 <div class="line">}</div>
-<div class="ttc" id="acore_2tag_8h_html_a673a8ebab8ec621a1cf731871dd170c8"><div class="ttname"><a href="core_2tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8">MSEC</a></div><div class="ttdeci">#define MSEC(t)</div><div class="ttdef"><b>Definition:</b> tag.h:66</div></div>
-<div class="ttc" id="acore_2tag_8h_html_afc2f39e1818a6a8b68ca46e7c9dc2704"><div class="ttname"><a href="core_2tag_8h.html#afc2f39e1818a6a8b68ca46e7c9dc2704">NEVER_TAG</a></div><div class="ttdeci">#define NEVER_TAG</div><div class="ttdef"><b>Definition:</b> tag.h:94</div></div>
 <div class="ttc" id="arti_8h_html_a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558"><div class="ttname"><a href="rti_8h.html#a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558">clock_sync_init</a></div><div class="ttdeci">@ clock_sync_init</div><div class="ttdef"><b>Definition:</b> rti.h:108</div></div>
+<div class="ttc" id="atag_8h_html_a673a8ebab8ec621a1cf731871dd170c8"><div class="ttname"><a href="tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8">MSEC</a></div><div class="ttdeci">#define MSEC(t)</div><div class="ttdef"><b>Definition:</b> tag.h:67</div></div>
+<div class="ttc" id="atag_8h_html_afc2f39e1818a6a8b68ca46e7c9dc2704"><div class="ttname"><a href="tag_8h.html#afc2f39e1818a6a8b68ca46e7c9dc2704">NEVER_TAG</a></div><div class="ttdeci">#define NEVER_TAG</div><div class="ttdef"><b>Definition:</b> tag.h:95</div></div>
 </div><!-- fragment --><p >The state of this RTI instance. </p>
 
 </div>

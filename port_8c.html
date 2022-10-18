@@ -74,13 +74,13 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#func-members">Functions</a> &#124;
-<a href="#var-members">Variables</a>  </div>
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">port.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="port_8h_source.html">port.h</a>&quot;</code><br />
-<code>#include &lt;stdio.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;stdio.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="port_8h_source.html">port.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="vector_8h_source.html">vector.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -90,11 +90,6 @@ Functions</h2></td></tr>
 <tr class="separator:a23e88870b9a699d1a067ff5b397e0887"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac7c743d3c64a839642e54781b8e9127f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="port_8c.html#ac7c743d3c64a839642e54781b8e9127f">lf_multiport_next</a> (<a class="el" href="structlf__multiport__iterator__t.html">lf_multiport_iterator_t</a> *iterator)</td></tr>
 <tr class="separator:ac7c743d3c64a839642e54781b8e9127f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:a42f8ec6e213e075f695544e8a822d6fa"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="structvector__t.html">vector_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="port_8c.html#a42f8ec6e213e075f695544e8a822d6fa">_lf_sparse_io_record_sizes</a></td></tr>
-<tr class="separator:a42f8ec6e213e075f695544e8a822d6fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>)</dd></dl>
@@ -202,22 +197,6 @@ DESCRIPTION</h1>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<h2 class="groupheader">Variable Documentation</h2>
-<a id="a42f8ec6e213e075f695544e8a822d6fa" name="a42f8ec6e213e075f695544e8a822d6fa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a42f8ec6e213e075f695544e8a822d6fa">&#9670;&#160;</a></span>_lf_sparse_io_record_sizes</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">struct <a class="el" href="structvector__t.html">vector_t</a> _lf_sparse_io_record_sizes</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >A vector of pointers to the size fields of instances of <a class="el" href="structlf__sparse__io__record__t.html">lf_sparse_io_record_t</a> so that these can be set to 0 between iterations. The start field of this struct will be NULL initially, so calling vector_new(_lf_sparse_io_record_sizes) will be necessary to use this. </p>
 
 </div>
 </div>

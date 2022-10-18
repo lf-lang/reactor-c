@@ -79,14 +79,17 @@ $(function() {
   <div class="headertitle"><div class="title">clock-sync.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="clock-sync_8h_source.html">clock-sync.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &lt;errno.h&gt;</code><br />
+<code>#include &lt;math.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="clock-sync_8h_source.html">clock-sync.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="net__common_8h_source.html">net_common.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="net__util_8h_source.html">net_util.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ae267d03a5f2263604459ca4c1aef2c2c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clock-sync_8c.html#ae267d03a5f2263604459ca4c1aef2c2c">reset_socket_stat</a> (struct <a class="el" href="structsocket__stat__t.html">socket_stat_t</a> *socket_stat)</td></tr>
 <tr class="separator:ae267d03a5f2263604459ca4c1aef2c2c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aefb38f85188382621177f531f5134a89"><td class="memItemLeft" align="right" valign="top"><a class="el" href="reactor_8h.html#a3fa7784c89589b49764048e9909d0e07">ushort</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clock-sync_8c.html#aefb38f85188382621177f531f5134a89">setup_clock_synchronization_with_rti</a> ()</td></tr>
+<tr class="memitem:aefb38f85188382621177f531f5134a89"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__types_8h.html#a3fa7784c89589b49764048e9909d0e07">ushort</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clock-sync_8c.html#aefb38f85188382621177f531f5134a89">setup_clock_synchronization_with_rti</a> ()</td></tr>
 <tr class="separator:aefb38f85188382621177f531f5134a89"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8a95b04db741b4fd04fb2ee4941fc8c6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clock-sync_8c.html#a8a95b04db741b4fd04fb2ee4941fc8c6">synchronize_initial_physical_clock_with_rti</a> (int rti_socket_TCP)</td></tr>
 <tr class="separator:a8a95b04db741b4fd04fb2ee4941fc8c6"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -281,7 +284,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="reactor_8h.html#a3fa7784c89589b49764048e9909d0e07">ushort</a> setup_clock_synchronization_with_rti </td>
+          <td class="memname"><a class="el" href="lf__types_8h.html#a3fa7784c89589b49764048e9909d0e07">ushort</a> setup_clock_synchronization_with_rti </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -348,8 +351,8 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= {</div>
-<div class="line">    .remote_physical_clock_snapshot_T1 = <a class="code hl_define" href="core_2tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a>,</div>
-<div class="line">    .local_physical_clock_snapshot_T2 = <a class="code hl_define" href="core_2tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a>,</div>
+<div class="line">    .remote_physical_clock_snapshot_T1 = <a class="code hl_define" href="tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a>,</div>
+<div class="line">    .local_physical_clock_snapshot_T2 = <a class="code hl_define" href="tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a>,</div>
 <div class="line">    .local_delay = 0LL,</div>
 <div class="line">    .received_T4_messages_in_current_sync_window = 0,</div>
 <div class="line">    .history = 0LL,</div>
@@ -357,7 +360,7 @@ DESCRIPTION</h1>
 <div class="line">    .network_stat_sample_index = 0,</div>
 <div class="line">    .clock_synchronization_error_bound = 0LL</div>
 <div class="line">}</div>
-<div class="ttc" id="acore_2tag_8h_html_a9e5c19968af97bd64f46650ec8732318"><div class="ttname"><a href="core_2tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></div><div class="ttdeci">#define NEVER</div><div class="ttdef"><b>Definition:</b> tag.h:92</div></div>
+<div class="ttc" id="atag_8h_html_a9e5c19968af97bd64f46650ec8732318"><div class="ttname"><a href="tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></div><div class="ttdeci">#define NEVER</div><div class="ttdef"><b>Definition:</b> tag.h:93</div></div>
 </div><!-- fragment --><p >Keep a record of connection statistics and the remote physical clock of the RTI. </p>
 
 </div>

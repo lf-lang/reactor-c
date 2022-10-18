@@ -79,18 +79,18 @@ $(function() {
   <div class="headertitle"><div class="title">net_util.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="util_8h_source.html">../utils/util.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="net__util_8h_source.html">net_util.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
+<code>#include &lt;ctype.h&gt;</code><br />
 <code>#include &lt;errno.h&gt;</code><br />
+<code>#include &lt;math.h&gt;</code><br />
+<code>#include &lt;stdarg.h&gt;</code><br />
 <code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
-<code>#include &lt;unistd.h&gt;</code><br />
-<code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
-<code>#include &lt;stdarg.h&gt;</code><br />
-<code>#include &lt;<a class="el" href="time_8h_source.html">time.h</a>&gt;</code><br />
-<code>#include &lt;math.h&gt;</code><br />
-<code>#include &lt;ctype.h&gt;</code><br />
+<code>#include &lt;time.h&gt;</code><br />
+<code>#include &lt;unistd.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="net__util_8h_source.html">net_util.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="util_8h_source.html">util.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
@@ -145,17 +145,17 @@ Functions</h2></td></tr>
 <tr class="separator:a9cd95311c2c29ce5bed1c44d5336584d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7b5ae6582f28e14a37d50a2d243613c5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#a7b5ae6582f28e14a37d50a2d243613c5">encode_tag</a> (unsigned char *buffer, <a class="el" href="structtag__t.html">tag_t</a> tag)</td></tr>
 <tr class="separator:a7b5ae6582f28e14a37d50a2d243613c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a425ade4ffa28a4b72b3ce2db13e63782"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#a425ade4ffa28a4b72b3ce2db13e63782">match_regex</a> (char *str, char *regex)</td></tr>
+<tr class="memitem:a425ade4ffa28a4b72b3ce2db13e63782"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#a425ade4ffa28a4b72b3ce2db13e63782">match_regex</a> (char *str, char *regex)</td></tr>
 <tr class="separator:a425ade4ffa28a4b72b3ce2db13e63782"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a841bec9ddc3fb61c2b615f5d512dc3f0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#a841bec9ddc3fb61c2b615f5d512dc3f0">validate_port</a> (char *port)</td></tr>
+<tr class="memitem:a841bec9ddc3fb61c2b615f5d512dc3f0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#a841bec9ddc3fb61c2b615f5d512dc3f0">validate_port</a> (char *port)</td></tr>
 <tr class="separator:a841bec9ddc3fb61c2b615f5d512dc3f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abcdc39c44be4d7899fc40ddc91bd8ca7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#abcdc39c44be4d7899fc40ddc91bd8ca7">validate_host</a> (char *host)</td></tr>
+<tr class="memitem:abcdc39c44be4d7899fc40ddc91bd8ca7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#abcdc39c44be4d7899fc40ddc91bd8ca7">validate_host</a> (char *host)</td></tr>
 <tr class="separator:abcdc39c44be4d7899fc40ddc91bd8ca7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab2d03d7e8944f2c0f6131885b6a6ce85"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#ab2d03d7e8944f2c0f6131885b6a6ce85">validate_user</a> (char *user)</td></tr>
+<tr class="memitem:ab2d03d7e8944f2c0f6131885b6a6ce85"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#ab2d03d7e8944f2c0f6131885b6a6ce85">validate_user</a> (char *user)</td></tr>
 <tr class="separator:ab2d03d7e8944f2c0f6131885b6a6ce85"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4f1b49ab84b0d449ec2d3f07b91c3e96"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#a4f1b49ab84b0d449ec2d3f07b91c3e96">extract_match_group</a> (const char *rti_addr, char *dest, regmatch_t group, int max_len, int min_len, const char *err_msg)</td></tr>
+<tr class="memitem:a4f1b49ab84b0d449ec2d3f07b91c3e96"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#a4f1b49ab84b0d449ec2d3f07b91c3e96">extract_match_group</a> (const char *rti_addr, char *dest, regmatch_t group, int max_len, int min_len, const char *err_msg)</td></tr>
 <tr class="separator:a4f1b49ab84b0d449ec2d3f07b91c3e96"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adcea108f126fa918514c63fde32c20f8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#adcea108f126fa918514c63fde32c20f8">extract_match_groups</a> (const char *rti_addr, char **rti_addr_strs, <a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> **rti_addr_flags, regmatch_t *group_array, int *gids, int *max_lens, int *min_lens, const char **err_msgs)</td></tr>
+<tr class="memitem:adcea108f126fa918514c63fde32c20f8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#adcea108f126fa918514c63fde32c20f8">extract_match_groups</a> (const char *rti_addr, char **rti_addr_strs, bool **rti_addr_flags, regmatch_t *group_array, int *gids, int *max_lens, int *min_lens, const char **err_msgs)</td></tr>
 <tr class="separator:adcea108f126fa918514c63fde32c20f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0737fc3d45aae606811f57a16ad87208"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#a0737fc3d45aae606811f57a16ad87208">extract_rti_addr_info</a> (const char *rti_addr, <a class="el" href="structrti__addr__info__t.html">rti_addr_info_t</a> *rti_addr_info)</td></tr>
 <tr class="separator:a0737fc3d45aae606811f57a16ad87208"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -488,7 +488,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> extract_match_group </td>
+          <td class="memname">bool extract_match_group </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>rti_addr</em>, </td>
@@ -541,7 +541,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> extract_match_groups </td>
+          <td class="memname">bool extract_match_groups </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>rti_addr</em>, </td>
@@ -555,7 +555,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> **&#160;</td>
+          <td class="paramtype">bool **&#160;</td>
           <td class="paramname"><em>rti_addr_flags</em>, </td>
         </tr>
         <tr>
@@ -624,8 +624,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Extract the host, port and user from rti_addr. <br  />
- </p>
+<p >Extract the host, port and user from rti_addr. </p>
 
 </div>
 </div>
@@ -786,7 +785,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> match_regex </td>
+          <td class="memname">bool match_regex </td>
           <td>(</td>
           <td class="paramtype">char *&#160;</td>
           <td class="paramname"><em>str</em>, </td>
@@ -1013,7 +1012,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> validate_host </td>
+          <td class="memname">bool validate_host </td>
           <td>(</td>
           <td class="paramtype">char *&#160;</td>
           <td class="paramname"><em>host</em></td><td>)</td>
@@ -1032,7 +1031,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> validate_port </td>
+          <td class="memname">bool validate_port </td>
           <td>(</td>
           <td class="paramtype">char *&#160;</td>
           <td class="paramname"><em>port</em></td><td>)</td>
@@ -1051,7 +1050,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> validate_user </td>
+          <td class="memname">bool validate_user </td>
           <td>(</td>
           <td class="paramtype">char *&#160;</td>
           <td class="paramname"><em>user</em></td><td>)</td>

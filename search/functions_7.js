@@ -19,6 +19,6 @@ var searchData=
   ['handle_5ftagged_5fmessage_16',['handle_tagged_message',['../federate_8c.html#afe62a8b474897e95ba73528ffa23b621',1,'federate.c']]],
   ['handle_5ftimed_5fmessage_17',['handle_timed_message',['../rti_8c.html#afc6a599f3f5b9cf66a147b0f9ca657c8',1,'rti.c']]],
   ['handle_5ftimestamp_18',['handle_timestamp',['../rti_8c.html#a9cf552da2c0c98857a8f772fe19c4e9d',1,'rti.c']]],
-  ['hashmap_19',['HASHMAP',['../hashmap_8c.html#a35f8cbc558e33b333f2f1291924c3dd7',1,'HASHMAP(entry_t):&#160;hashmap.c'],['../hashmap_8c.html#ab5bae600da88f9323e4521aab645274e',1,'HASHMAP(t):&#160;hashmap.c']]],
+  ['hashmap_19',['HASHMAP',['../hashmap_8h.html#a559e0d0f93abbf3dd6b8d285d51568a0',1,'HASHMAP(entry_t) *HASHMAP(get_actual_address)(HASHMAP(t) *hashmap:&#160;hashmap.h'],['../hashmap_8h.html#a5fc7f76b19cc9b81a81dce2d7957e4bf',1,'HASHMAP(t) *HASHMAP(new)(size_t capacity:&#160;hashmap.h']]],
   ['host_5fis_5fbig_5fendian_20',['host_is_big_endian',['../net__util_8c.html#a04dd5e3e7b7ee262b58476c4611d7b23',1,'host_is_big_endian():&#160;net_util.c'],['../net__util_8h.html#ad791461950852eb074b90bc75156b413',1,'host_is_big_endian(void):&#160;net_util.c']]]
 ];

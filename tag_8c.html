@@ -74,82 +74,65 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#typedef-members">Typedefs</a> &#124;
-<a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">tag.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="core_2tag_8h_source.html">tag.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="platform_8h_source.html">platform.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
+<code>#include &lt;stdio.h&gt;</code><br />
+<code>#include &lt;string.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="tag_8h_source.html">tag.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="util_8h_source.html">util.h</a>&quot;</code><br />
 </div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
-Typedefs</h2></td></tr>
-<tr class="memitem:a54d7caccb6b46e7692ef0775b7f85023"><td class="memItemLeft" align="right" valign="top">typedef enum <a class="el" href="core_2tag_8c.html#a2d07c34cb48cd21da0a0c307126d7fb5">_lf_time_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#a54d7caccb6b46e7692ef0775b7f85023">_lf_time_type</a></td></tr>
-<tr class="separator:a54d7caccb6b46e7692ef0775b7f85023"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
-Enumerations</h2></td></tr>
-<tr class="memitem:a2d07c34cb48cd21da0a0c307126d7fb5"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#a2d07c34cb48cd21da0a0c307126d7fb5">_lf_time_type</a> { <br />
-&#160;&#160;<a class="el" href="core_2tag_8c.html#a2d07c34cb48cd21da0a0c307126d7fb5ab1f08a6adfd28e90aa0f627d90dec650">LF_LOGICAL</a>
-, <a class="el" href="core_2tag_8c.html#a2d07c34cb48cd21da0a0c307126d7fb5adf8c05057e7f5f50eda89617a74527cf">LF_PHYSICAL</a>
-, <a class="el" href="core_2tag_8c.html#a2d07c34cb48cd21da0a0c307126d7fb5a86f2ac8e0f11d68a3e0e987d5170d45d">LF_ELAPSED_LOGICAL</a>
-, <a class="el" href="core_2tag_8c.html#a2d07c34cb48cd21da0a0c307126d7fb5a39d908dfd47bc4426d8e185fcd6bfadc">LF_ELAPSED_PHYSICAL</a>
-, <br />
-&#160;&#160;<a class="el" href="core_2tag_8c.html#a2d07c34cb48cd21da0a0c307126d7fb5a3bec17b3914ed04bcaed9a1b52fcda5e">LF_START</a>
-<br />
- }</td></tr>
-<tr class="separator:a2d07c34cb48cd21da0a0c307126d7fb5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a578a919fbb78cb28be3e41c9aa769c8a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#a578a919fbb78cb28be3e41c9aa769c8a">lf_tag</a> ()</td></tr>
+<tr class="memitem:a578a919fbb78cb28be3e41c9aa769c8a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#a578a919fbb78cb28be3e41c9aa769c8a">lf_tag</a> ()</td></tr>
 <tr class="separator:a578a919fbb78cb28be3e41c9aa769c8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a596d8734432616c9c7847283fde63cfa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#a596d8734432616c9c7847283fde63cfa">lf_tag_compare</a> (<a class="el" href="structtag__t.html">tag_t</a> tag1, <a class="el" href="structtag__t.html">tag_t</a> tag2)</td></tr>
+<tr class="memitem:a596d8734432616c9c7847283fde63cfa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#a596d8734432616c9c7847283fde63cfa">lf_tag_compare</a> (<a class="el" href="structtag__t.html">tag_t</a> tag1, <a class="el" href="structtag__t.html">tag_t</a> tag2)</td></tr>
 <tr class="separator:a596d8734432616c9c7847283fde63cfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae100cec052125d78384bd740d6f7e142"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#ae100cec052125d78384bd740d6f7e142">_lf_delay_tag</a> (<a class="el" href="structtag__t.html">tag_t</a> tag, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> interval)</td></tr>
+<tr class="memitem:ae100cec052125d78384bd740d6f7e142"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#ae100cec052125d78384bd740d6f7e142">_lf_delay_tag</a> (<a class="el" href="structtag__t.html">tag_t</a> tag, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> interval)</td></tr>
 <tr class="separator:ae100cec052125d78384bd740d6f7e142"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab3508bec310297ee386a5bde718c840d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#ab3508bec310297ee386a5bde718c840d">_lf_physical_time</a> ()</td></tr>
+<tr class="memitem:ab3508bec310297ee386a5bde718c840d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#ab3508bec310297ee386a5bde718c840d">_lf_physical_time</a> ()</td></tr>
 <tr class="separator:ab3508bec310297ee386a5bde718c840d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae837e2be4525d56b220a2b3497b7a708"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#ae837e2be4525d56b220a2b3497b7a708">_lf_time</a> (<a class="el" href="core_2tag_8c.html#a2d07c34cb48cd21da0a0c307126d7fb5">_lf_time_type</a> type)</td></tr>
+<tr class="memitem:ae837e2be4525d56b220a2b3497b7a708"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#ae837e2be4525d56b220a2b3497b7a708">_lf_time</a> (<a class="el" href="tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5">_lf_time_type</a> type)</td></tr>
 <tr class="separator:ae837e2be4525d56b220a2b3497b7a708"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a57369a6152ded211933cdb91893ed864"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#a57369a6152ded211933cdb91893ed864">lf_time_logical</a> (void)</td></tr>
+<tr class="memitem:a57369a6152ded211933cdb91893ed864"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#a57369a6152ded211933cdb91893ed864">lf_time_logical</a> (void)</td></tr>
 <tr class="separator:a57369a6152ded211933cdb91893ed864"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4703006e120ec461bd669e53f70a7058"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#a4703006e120ec461bd669e53f70a7058">lf_time_logical_elapsed</a> (void)</td></tr>
+<tr class="memitem:a4703006e120ec461bd669e53f70a7058"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#a4703006e120ec461bd669e53f70a7058">lf_time_logical_elapsed</a> (void)</td></tr>
 <tr class="separator:a4703006e120ec461bd669e53f70a7058"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7538766a655ba2e60ddde55f2e020e58"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#a7538766a655ba2e60ddde55f2e020e58">lf_time_physical</a> (void)</td></tr>
+<tr class="memitem:a7538766a655ba2e60ddde55f2e020e58"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#a7538766a655ba2e60ddde55f2e020e58">lf_time_physical</a> (void)</td></tr>
 <tr class="separator:a7538766a655ba2e60ddde55f2e020e58"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a98468f1c5132e3aa18d77f85d65bb6ec"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#a98468f1c5132e3aa18d77f85d65bb6ec">lf_time_physical_elapsed</a> (void)</td></tr>
+<tr class="memitem:a98468f1c5132e3aa18d77f85d65bb6ec"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#a98468f1c5132e3aa18d77f85d65bb6ec">lf_time_physical_elapsed</a> (void)</td></tr>
 <tr class="separator:a98468f1c5132e3aa18d77f85d65bb6ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8da2172c41ab13ff4748994a62ae34b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#a8da2172c41ab13ff4748994a62ae34b5">lf_time_start</a> (void)</td></tr>
+<tr class="memitem:a8da2172c41ab13ff4748994a62ae34b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#a8da2172c41ab13ff4748994a62ae34b5">lf_time_start</a> (void)</td></tr>
 <tr class="separator:a8da2172c41ab13ff4748994a62ae34b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a209c8df88a5ef884e0cf51d4727cda"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#a3a209c8df88a5ef884e0cf51d4727cda">lf_set_physical_clock_offset</a> (<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset)</td></tr>
+<tr class="memitem:a3a209c8df88a5ef884e0cf51d4727cda"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#a3a209c8df88a5ef884e0cf51d4727cda">lf_set_physical_clock_offset</a> (<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset)</td></tr>
 <tr class="separator:a3a209c8df88a5ef884e0cf51d4727cda"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a43509483b3e9886acd002c7d7b6482c8"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#a43509483b3e9886acd002c7d7b6482c8">lf_readable_time</a> (char *buffer, <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> time)</td></tr>
+<tr class="memitem:a43509483b3e9886acd002c7d7b6482c8"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#a43509483b3e9886acd002c7d7b6482c8">lf_readable_time</a> (char *buffer, <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> time)</td></tr>
 <tr class="separator:a43509483b3e9886acd002c7d7b6482c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae956f1688a3893b44cf4bced3c13ef9a"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#ae956f1688a3893b44cf4bced3c13ef9a">lf_comma_separated_time</a> (char *buffer, <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> time)</td></tr>
+<tr class="memitem:ae956f1688a3893b44cf4bced3c13ef9a"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#ae956f1688a3893b44cf4bced3c13ef9a">lf_comma_separated_time</a> (char *buffer, <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> time)</td></tr>
 <tr class="separator:ae956f1688a3893b44cf4bced3c13ef9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7ffa6446464d5a939e848bb9a41ceab7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#a7ffa6446464d5a939e848bb9a41ceab7">_lf_convert_volatile_tag_to_nonvolatile</a> (<a class="el" href="structtag__t.html">tag_t</a> volatile vtag)</td></tr>
+<tr class="memitem:a7ffa6446464d5a939e848bb9a41ceab7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#a7ffa6446464d5a939e848bb9a41ceab7">_lf_convert_volatile_tag_to_nonvolatile</a> (<a class="el" href="structtag__t.html">tag_t</a> volatile vtag)</td></tr>
 <tr class="separator:a7ffa6446464d5a939e848bb9a41ceab7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a1545de0581eee4dfe26fb54ee1039ffe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#a1545de0581eee4dfe26fb54ee1039ffe">current_tag</a> = {.time = 0LL, .microstep = 0}</td></tr>
+<tr class="memitem:a1545de0581eee4dfe26fb54ee1039ffe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#a1545de0581eee4dfe26fb54ee1039ffe">current_tag</a> = {.time = 0LL, .microstep = 0}</td></tr>
 <tr class="separator:a1545de0581eee4dfe26fb54ee1039ffe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afc91fb8110046fe2a5b10993c6618688"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#afc91fb8110046fe2a5b10993c6618688">physical_start_time</a> = <a class="el" href="core_2tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></td></tr>
+<tr class="memitem:afc91fb8110046fe2a5b10993c6618688"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#afc91fb8110046fe2a5b10993c6618688">physical_start_time</a> = <a class="el" href="tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></td></tr>
 <tr class="separator:afc91fb8110046fe2a5b10993c6618688"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a20b56e8fb05c017508f1c4fa2e311a87"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#a20b56e8fb05c017508f1c4fa2e311a87">start_time</a> = <a class="el" href="core_2tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></td></tr>
+<tr class="memitem:a20b56e8fb05c017508f1c4fa2e311a87"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#a20b56e8fb05c017508f1c4fa2e311a87">start_time</a> = <a class="el" href="tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></td></tr>
 <tr class="separator:a20b56e8fb05c017508f1c4fa2e311a87"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab11f867fe347f51594fdc4371362c96b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#ab11f867fe347f51594fdc4371362c96b">_lf_time_physical_clock_offset</a> = 0LL</td></tr>
+<tr class="memitem:ab11f867fe347f51594fdc4371362c96b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#ab11f867fe347f51594fdc4371362c96b">_lf_time_physical_clock_offset</a> = 0LL</td></tr>
 <tr class="separator:ab11f867fe347f51594fdc4371362c96b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:add35442c29c7b864362ef6672f35e7a5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#add35442c29c7b864362ef6672f35e7a5">_lf_global_physical_clock_drift</a> = 0LL</td></tr>
+<tr class="memitem:add35442c29c7b864362ef6672f35e7a5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#add35442c29c7b864362ef6672f35e7a5">_lf_global_physical_clock_drift</a> = 0LL</td></tr>
 <tr class="separator:add35442c29c7b864362ef6672f35e7a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af4f4076229307c5b0a64a250b4fac0bd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#af4f4076229307c5b0a64a250b4fac0bd">_lf_time_test_physical_clock_offset</a> = 0LL</td></tr>
+<tr class="memitem:af4f4076229307c5b0a64a250b4fac0bd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#af4f4076229307c5b0a64a250b4fac0bd">_lf_time_test_physical_clock_offset</a> = 0LL</td></tr>
 <tr class="separator:af4f4076229307c5b0a64a250b4fac0bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae33f5d37733acaf7044864b1124240e0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#ae33f5d37733acaf7044864b1124240e0">_lf_last_reported_physical_time_ns</a> = 0LL</td></tr>
+<tr class="memitem:ae33f5d37733acaf7044864b1124240e0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#ae33f5d37733acaf7044864b1124240e0">_lf_last_reported_physical_time_ns</a> = 0LL</td></tr>
 <tr class="separator:ae33f5d37733acaf7044864b1124240e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa69d28e60eef684c98f95a802681c4b9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="core_2tag_8c.html#aa69d28e60eef684c98f95a802681c4b9">_lf_last_reported_unadjusted_physical_time_ns</a> = <a class="el" href="core_2tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></td></tr>
+<tr class="memitem:aa69d28e60eef684c98f95a802681c4b9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8c.html#aa69d28e60eef684c98f95a802681c4b9">_lf_last_reported_unadjusted_physical_time_ns</a> = <a class="el" href="tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></td></tr>
 <tr class="separator:aa69d28e60eef684c98f95a802681c4b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -170,46 +153,7 @@ LICENSE</h1>
 <h1><a class="anchor" id="DESCRIPTION"></a>
 DESCRIPTION</h1>
 <p >Implementation file for tag functions for Lingua Franca programs. </p>
-</div><h2 class="groupheader">Typedef Documentation</h2>
-<a id="a54d7caccb6b46e7692ef0775b7f85023" name="a54d7caccb6b46e7692ef0775b7f85023"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a54d7caccb6b46e7692ef0775b7f85023">&#9670;&#160;</a></span>_lf_time_type</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">typedef enum <a class="el" href="core_2tag_8c.html#a2d07c34cb48cd21da0a0c307126d7fb5">_lf_time_type</a> <a class="el" href="core_2tag_8c.html#a2d07c34cb48cd21da0a0c307126d7fb5">_lf_time_type</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >An enum for specifying the desired tag when calling "lf_time" </p>
-
-</div>
-</div>
-<h2 class="groupheader">Enumeration Type Documentation</h2>
-<a id="a2d07c34cb48cd21da0a0c307126d7fb5" name="a2d07c34cb48cd21da0a0c307126d7fb5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2d07c34cb48cd21da0a0c307126d7fb5">&#9670;&#160;</a></span>_lf_time_type</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum <a class="el" href="core_2tag_8c.html#a2d07c34cb48cd21da0a0c307126d7fb5">_lf_time_type</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >An enum for specifying the desired tag when calling "lf_time" </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a2d07c34cb48cd21da0a0c307126d7fb5ab1f08a6adfd28e90aa0f627d90dec650" name="a2d07c34cb48cd21da0a0c307126d7fb5ab1f08a6adfd28e90aa0f627d90dec650"></a>LF_LOGICAL&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a2d07c34cb48cd21da0a0c307126d7fb5adf8c05057e7f5f50eda89617a74527cf" name="a2d07c34cb48cd21da0a0c307126d7fb5adf8c05057e7f5f50eda89617a74527cf"></a>LF_PHYSICAL&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a2d07c34cb48cd21da0a0c307126d7fb5a86f2ac8e0f11d68a3e0e987d5170d45d" name="a2d07c34cb48cd21da0a0c307126d7fb5a86f2ac8e0f11d68a3e0e987d5170d45d"></a>LF_ELAPSED_LOGICAL&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a2d07c34cb48cd21da0a0c307126d7fb5a39d908dfd47bc4426d8e185fcd6bfadc" name="a2d07c34cb48cd21da0a0c307126d7fb5a39d908dfd47bc4426d8e185fcd6bfadc"></a>LF_ELAPSED_PHYSICAL&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a2d07c34cb48cd21da0a0c307126d7fb5a3bec17b3914ed04bcaed9a1b52fcda5e" name="a2d07c34cb48cd21da0a0c307126d7fb5a3bec17b3914ed04bcaed9a1b52fcda5e"></a>LF_START&#160;</td><td class="fielddoc"></td></tr>
-</table>
-
-</div>
-</div>
-<h2 class="groupheader">Function Documentation</h2>
+</div><h2 class="groupheader">Function Documentation</h2>
 <a id="a7ffa6446464d5a939e848bb9a41ceab7" name="a7ffa6446464d5a939e848bb9a41ceab7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7ffa6446464d5a939e848bb9a41ceab7">&#9670;&#160;</a></span>_lf_convert_volatile_tag_to_nonvolatile()</h2>
 
@@ -293,7 +237,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> _lf_time </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="core_2tag_8c.html#a2d07c34cb48cd21da0a0c307126d7fb5">_lf_time_type</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5">_lf_time_type</a>&#160;</td>
           <td class="paramname"><em>type</em></td><td>)</td>
           <td></td>
         </tr>
@@ -342,7 +286,7 @@ DESCRIPTION</h1>
 </div><div class="memdoc">
 <p >Print a non-negative time value in nanoseconds with commas separating thousands into the specified buffer. Ideally, this would use the locale to use periods if appropriate, but I haven't found a sufficiently portable way to do that. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">buffer</td><td>A buffer long enough to contain a string like "-9,223,372,036,854,775,807". </td></tr>
+    <tr><td class="paramname">buffer</td><td>A buffer long enough to contain a 27-character string like "-9,223,372,036,854,775,807". </td></tr>
     <tr><td class="paramname">time</td><td>A time value. </td></tr>
   </table>
   </dd>
@@ -379,7 +323,7 @@ DESCRIPTION</h1>
 <p >Store into the specified buffer a string giving a human-readable rendition of the specified time. The buffer must have length at least equal to LF_TIME_BUFFER_LENGTH. The format is: </p><div class="fragment"><div class="line">x weeks, x days, x hours, x minutes, x seconds, x unit</div>
 </div><!-- fragment --><p> where each <code>x</code> is a string of numbers with commas inserted if needed every three numbers and <code>unit</code> is nanoseconds, microseconds, or milliseconds. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">buffer</td><td>The buffer into which to write the string. </td></tr>
+    <tr><td class="paramname">buffer</td><td>The buffer into which to write the string, having a length of at least 58 characters. </td></tr>
     <tr><td class="paramname">time</td><td>The time to write. </td></tr>
   </table>
   </dd>
@@ -403,7 +347,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Set a fixed offset to the physical clock. After calling this, the value returned by <a class="el" href="time_8c.html#a84d52b3843db3b4fcb932326d6b288c4">get_physical_time()</a> and get_elpased_physical_time() will have this specified offset added to what it would have returned before the call. </p>
+<p >Set a fixed offset to the physical clock. After calling this, the value returned by <a class="el" href="tag_8c.html#a7538766a655ba2e60ddde55f2e020e58">lf_time_physical()</a> and get_elpased_physical_time() will have this specified offset added to what it would have returned before the call. </p>
 
 </div>
 </div>
@@ -533,7 +477,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Return the elapsed physical time in nanoseconds. This is the time returned by <a class="el" href="time_8c.html#a84d52b3843db3b4fcb932326d6b288c4">get_physical_time()</a> minus the physical start time as measured by <a class="el" href="time_8c.html#a84d52b3843db3b4fcb932326d6b288c4">get_physical_time()</a> when the program was started. </p>
+<p >Return the elapsed physical time in nanoseconds. This is the time returned by <a class="el" href="tag_8c.html#a7538766a655ba2e60ddde55f2e020e58">lf_time_physical()</a> minus the physical start time as measured by <a class="el" href="tag_8c.html#a7538766a655ba2e60ddde55f2e020e58">lf_time_physical()</a> when the program was started. </p>
 
 </div>
 </div>
@@ -594,11 +538,11 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> _lf_last_reported_unadjusted_physical_time_ns = <a class="el" href="core_2tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></td>
+          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> _lf_last_reported_unadjusted_physical_time_ns = <a class="el" href="tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Records the most recent time reported by the physical clock when accessed by <a class="el" href="time_8c.html#a84d52b3843db3b4fcb932326d6b288c4">get_physical_time()</a>. This will be an epoch time (number of nanoseconds since Jan. 1, 1970), as reported when you call lf_clock_gettime(CLOCK_REALTIME, ...). This differs from _lf_last_reported_physical_time_ns by _lf_time_physical_clock_offset plus any calculated drift adjustement, which are adjustments made by clock synchronization. </p>
+<p >Records the most recent time reported by the physical clock when accessed by <a class="el" href="tag_8c.html#a7538766a655ba2e60ddde55f2e020e58">lf_time_physical()</a>. This will be an epoch time (number of nanoseconds since Jan. 1, 1970), as reported when you call lf_clock_gettime(CLOCK_REALTIME, ...). This differs from _lf_last_reported_physical_time_ns by _lf_time_physical_clock_offset plus any calculated drift adjustement, which are adjustments made by clock synchronization. </p>
 
 </div>
 </div>
@@ -654,7 +598,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> physical_start_time = <a class="el" href="core_2tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></td>
+          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> physical_start_time = <a class="el" href="tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -669,7 +613,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> start_time = <a class="el" href="core_2tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></td>
+          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> start_time = <a class="el" href="tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></td>
         </tr>
       </table>
 </div><div class="memdoc">

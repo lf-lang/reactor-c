@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: core/utils/util.h File Reference</title>
+<title>reactor-c: include/core/utils/util.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -69,7 +69,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_4270bfced15e0e73154b13468c7c9ad9.html">core</a></li><li class="navelem"><a class="el" href="dir_182a39db29e4ad63eb633860d83c5a1d.html">utils</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_3d69f64eaf81436fe2b22361382717e5.html">core</a></li><li class="navelem"><a class="el" href="dir_9e3c081da26bdde9c5aec25c2fcc2ede.html">utils</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -97,6 +97,12 @@ Macros</h2></td></tr>
 <tr class="separator:a1e753fbf3551d4a04cd45c04b5a90867"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8d8698026252ae104cc2405d8bb13f0e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="util_8h.html#a8d8698026252ae104cc2405d8bb13f0e">CONCATENATE_THREE_STRINGS</a>(__string1,  __string2,  __string3)&#160;&#160;&#160;__string1 __string2 __string3</td></tr>
 <tr class="separator:a8d8698026252ae104cc2405d8bb13f0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad5a08658dc3e13eab4cddafd94734794"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="util_8h.html#ad5a08658dc3e13eab4cddafd94734794">LF_LEVEL</a>(index)&#160;&#160;&#160;(index &amp; 0xffffLL)</td></tr>
+<tr class="separator:ad5a08658dc3e13eab4cddafd94734794"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aac9240f79bd758e00ed7bbf75dafc4fa"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="util_8h.html#aac9240f79bd758e00ed7bbf75dafc4fa">LF_MAX</a>(X,  Y)&#160;&#160;&#160;(((X) &gt; (Y)) ? (X) : (Y))</td></tr>
+<tr class="separator:aac9240f79bd758e00ed7bbf75dafc4fa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4359466e7fdb68dcf8116c469946cd92"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="util_8h.html#a4359466e7fdb68dcf8116c469946cd92">LF_MIN</a>(X,  Y)&#160;&#160;&#160;(((X) &lt; (Y)) ? (X) : (Y))</td></tr>
+<tr class="separator:a4359466e7fdb68dcf8116c469946cd92"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a742fc70e331d7e568bd893c514756a29"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="util_8h.html#a742fc70e331d7e568bd893c514756a29">LOG_LEVEL_ERROR</a>&#160;&#160;&#160;0</td></tr>
 <tr class="separator:a742fc70e331d7e568bd893c514756a29"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af539a66abed2a7a15e3443d70a3cf1e1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="util_8h.html#af539a66abed2a7a15e3443d70a3cf1e1">LOG_LEVEL_WARNING</a>&#160;&#160;&#160;1</td></tr>
@@ -242,6 +248,83 @@ DESCRIPTION</h1>
 
 </div>
 </div>
+<a id="ad5a08658dc3e13eab4cddafd94734794" name="ad5a08658dc3e13eab4cddafd94734794"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad5a08658dc3e13eab4cddafd94734794">&#9670;&#160;</a></span>LF_LEVEL</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LF_LEVEL</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">index</td><td>)</td>
+          <td>&#160;&#160;&#160;(index &amp; 0xffffLL)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Macro for extracting the level from the index of a reaction. A reaction that has no upstream reactions has level 0. Other reactions have a level that is the length of the longest upstream chain to a reaction with level 0 (inclusive). This is used, along with the deadline, to sort reactions in the reaction queue. It ensures that reactions that are upstream in the dependence graph execute before reactions that are downstream. </p>
+
+</div>
+</div>
+<a id="aac9240f79bd758e00ed7bbf75dafc4fa" name="aac9240f79bd758e00ed7bbf75dafc4fa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac9240f79bd758e00ed7bbf75dafc4fa">&#9670;&#160;</a></span>LF_MAX</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LF_MAX</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">X, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">Y&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td>&#160;&#160;&#160;(((X) &gt; (Y)) ? (X) : (Y))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Utility for finding the maximum of two values. </p>
+
+</div>
+</div>
+<a id="a4359466e7fdb68dcf8116c469946cd92" name="a4359466e7fdb68dcf8116c469946cd92"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4359466e7fdb68dcf8116c469946cd92">&#9670;&#160;</a></span>LF_MIN</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LF_MIN</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">X, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">Y&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td>&#160;&#160;&#160;(((X) &lt; (Y)) ? (X) : (Y))</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Utility for finding the minimum of two values. </p>
+
+</div>
+</div>
 <a id="ab5a65df50027549a8245f6b3eaff97e4" name="ab5a65df50027549a8245f6b3eaff97e4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab5a65df50027549a8245f6b3eaff97e4">&#9670;&#160;</a></span>LF_PRINT_DEBUG</h2>
 
@@ -270,8 +353,8 @@ DESCRIPTION</h1>
 <b>Value:</b><div class="fragment"><div class="line">            <span class="keywordflow">do</span> { <span class="keywordflow">if</span>(<a class="code hl_define" href="util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a> &gt;= <a class="code hl_define" href="util_8h.html#a130224df8c6bf22a688e3cb74a45689a">LOG_LEVEL_DEBUG</a>) { \</div>
 <div class="line">                    lf_print_debug(format, ##__VA_ARGS__); \</div>
 <div class="line">                } } <span class="keywordflow">while</span> (0)</div>
-<div class="ttc" id="autil_8h_html_a0b87e0d3bf5853bcbb0b66a7c48fdc05"><div class="ttname"><a href="util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a></div><div class="ttdeci">#define LOG_LEVEL</div><div class="ttdef"><b>Definition:</b> util.h:87</div></div>
-<div class="ttc" id="autil_8h_html_a130224df8c6bf22a688e3cb74a45689a"><div class="ttname"><a href="util_8h.html#a130224df8c6bf22a688e3cb74a45689a">LOG_LEVEL_DEBUG</a></div><div class="ttdeci">#define LOG_LEVEL_DEBUG</div><div class="ttdef"><b>Definition:</b> util.h:82</div></div>
+<div class="ttc" id="autil_8h_html_a0b87e0d3bf5853bcbb0b66a7c48fdc05"><div class="ttname"><a href="util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a></div><div class="ttdeci">#define LOG_LEVEL</div><div class="ttdef"><b>Definition:</b> util.h:109</div></div>
+<div class="ttc" id="autil_8h_html_a130224df8c6bf22a688e3cb74a45689a"><div class="ttname"><a href="util_8h.html#a130224df8c6bf22a688e3cb74a45689a">LOG_LEVEL_DEBUG</a></div><div class="ttdeci">#define LOG_LEVEL_DEBUG</div><div class="ttdef"><b>Definition:</b> util.h:104</div></div>
 </div><!-- fragment --><p >A macro used to print useful debug information. It can be enabled by setting the target property 'logging' to 'DEBUG' or by defining LOG_LEVEL to 2 in the top-level preamble. The input to this macro is exactly like printf: (format, ...). "DEBUG: " is prepended to the beginning of the message and a newline is appended to the end of the message.</p>
 <dl class="section note"><dt>Note</dt><dd>This macro is non-empty even if LOG_LEVEL is not defined in user-code. This is to ensure that the compiler will still parse the predicate inside (...) to prevent LF_PRINT_DEBUG statements to fall out of sync with the rest of the code. This should have a negligible impact on performance if compiler optimization (e.g., -O2 for gcc) is used as long as the arguments passed to it do not themselves incur significant overhead to evaluate. </dd></dl>
 
@@ -305,7 +388,7 @@ DESCRIPTION</h1>
 <b>Value:</b><div class="fragment"><div class="line">            <span class="keywordflow">do</span> { <span class="keywordflow">if</span>(<a class="code hl_define" href="util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a> &gt;= <a class="code hl_define" href="util_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd">LOG_LEVEL_LOG</a>) { \</div>
 <div class="line">                    lf_print_log(format, ##__VA_ARGS__); \</div>
 <div class="line">                } } <span class="keywordflow">while</span> (0)</div>
-<div class="ttc" id="autil_8h_html_a8b58cabecd61bfd1b706be9cb992e0bd"><div class="ttname"><a href="util_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd">LOG_LEVEL_LOG</a></div><div class="ttdeci">#define LOG_LEVEL_LOG</div><div class="ttdef"><b>Definition:</b> util.h:81</div></div>
+<div class="ttc" id="autil_8h_html_a8b58cabecd61bfd1b706be9cb992e0bd"><div class="ttname"><a href="util_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd">LOG_LEVEL_LOG</a></div><div class="ttdeci">#define LOG_LEVEL_LOG</div><div class="ttdef"><b>Definition:</b> util.h:103</div></div>
 </div><!-- fragment --><p >A macro used to print useful logging information. It can be enabled by setting the target property 'logging' to 'LOG' or by defining LOG_LEVEL to LOG_LEVEL_LOG or LOG_LEVEL_DEBUG in the top-level preamble. The input to this macro is exactly like printf: (format, ...). "LOG: " is prepended to the beginning of the message and a newline is appended to the end of the message.</p>
 <dl class="section note"><dt>Note</dt><dd>This macro is non-empty even if LOG_LEVEL is not defined in user-code. This is to ensure that the compiler will still parse the predicate inside (...) to prevent LF_PRINT_LOG statements to fall out of sync with the rest of the code. This should have a negligible impact on performance if compiler optimization (e.g., -O2 for gcc) is used as long as the arguments passed to it do not themselves incur significant overhead to evaluate. </dd></dl>
 

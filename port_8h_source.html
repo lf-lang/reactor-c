@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: core/port.h Source File</title>
+<title>reactor-c: include/core/port.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -69,7 +69,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_4270bfced15e0e73154b13468c7c9ad9.html">core</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_3d69f64eaf81436fe2b22361382717e5.html">core</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -107,21 +107,17 @@ $(function() {
 <div class="line"><a id="l00113" name="l00113"></a><span class="lineno"><a class="line" href="structlf__multiport__iterator__t.html#a9a506388d73fdb6c0fd45c182f6a41ac">  113</a></span>    <span class="keywordtype">int</span> <a class="code hl_variable" href="structlf__multiport__iterator__t.html#a9a506388d73fdb6c0fd45c182f6a41ac">width</a>;</div>
 <div class="line"><a id="l00114" name="l00114"></a><span class="lineno"><a class="line" href="port_8h.html#af8a81a7373f3d5f77fd865e437964ef3">  114</a></span>} <a class="code hl_struct" href="structlf__multiport__iterator__t.html">lf_multiport_iterator_t</a>;</div>
 <div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span> </div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span> </div>
-<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span><span class="keyword">extern</span> <span class="keyword">struct </span><a class="code hl_struct" href="structvector__t.html">vector_t</a> <a class="code hl_variable" href="port_8h.html#a42f8ec6e213e075f695544e8a822d6fa">_lf_sparse_io_record_sizes</a>;</div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno">  123</span><a class="code hl_struct" href="structlf__multiport__iterator__t.html">lf_multiport_iterator_t</a> <a class="code hl_function" href="port_8h.html#a23e88870b9a699d1a067ff5b397e0887">_lf_multiport_iterator_impl</a>(<a class="code hl_struct" href="structlf__port__base__t.html">lf_port_base_t</a>** port, <span class="keywordtype">int</span> width);</div>
 <div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span> </div>
-<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span><a class="code hl_struct" href="structlf__multiport__iterator__t.html">lf_multiport_iterator_t</a> <a class="code hl_function" href="port_8h.html#a23e88870b9a699d1a067ff5b397e0887">_lf_multiport_iterator_impl</a>(<a class="code hl_struct" href="structlf__port__base__t.html">lf_port_base_t</a>** port, <span class="keywordtype">int</span> width);</div>
-<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span> </div>
-<div class="line"><a id="l00140" name="l00140"></a><span class="lineno"><a class="line" href="port_8h.html#a5759266c62b989a6b305584cb72f8840">  140</a></span><span class="preprocessor">#define lf_multiport_iterator(in) (_lf_multiport_iterator_impl( \</span></div>
-<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span><span class="preprocessor">               (lf_port_base_t**)self-&gt;_lf_ ## in, \</span></div>
-<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span><span class="preprocessor">               self-&gt;_lf_ ## in ## _width))</span></div>
-<div class="line"><a id="l00143" name="l00143"></a><span class="lineno">  143</span> </div>
-<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span><span class="keywordtype">int</span> <a class="code hl_function" href="port_8h.html#ac7c743d3c64a839642e54781b8e9127f">lf_multiport_next</a>(<a class="code hl_struct" href="structlf__multiport__iterator__t.html">lf_multiport_iterator_t</a>* iterator);</div>
-<div class="line"><a id="l00150" name="l00150"></a><span class="lineno">  150</span> </div>
-<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span><span class="preprocessor">#endif </span><span class="comment">/* PORT_H */</span><span class="preprocessor"></span></div>
-<div class="ttc" id="aport_8h_html_a23e88870b9a699d1a067ff5b397e0887"><div class="ttname"><a href="port_8h.html#a23e88870b9a699d1a067ff5b397e0887">_lf_multiport_iterator_impl</a></div><div class="ttdeci">lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t **port, int width)</div><div class="ttdef"><b>Definition:</b> port.c:68</div></div>
-<div class="ttc" id="aport_8h_html_a42f8ec6e213e075f695544e8a822d6fa"><div class="ttname"><a href="port_8h.html#a42f8ec6e213e075f695544e8a822d6fa">_lf_sparse_io_record_sizes</a></div><div class="ttdeci">struct vector_t _lf_sparse_io_record_sizes</div><div class="ttdef"><b>Definition:</b> port.c:43</div></div>
-<div class="ttc" id="aport_8h_html_ac7c743d3c64a839642e54781b8e9127f"><div class="ttname"><a href="port_8h.html#ac7c743d3c64a839642e54781b8e9127f">lf_multiport_next</a></div><div class="ttdeci">int lf_multiport_next(lf_multiport_iterator_t *iterator)</div><div class="ttdef"><b>Definition:</b> port.c:112</div></div>
+<div class="line"><a id="l00131" name="l00131"></a><span class="lineno"><a class="line" href="port_8h.html#a5759266c62b989a6b305584cb72f8840">  131</a></span><span class="preprocessor">#define lf_multiport_iterator(in) (_lf_multiport_iterator_impl( \</span></div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span><span class="preprocessor">               (lf_port_base_t**)self-&gt;_lf_ ## in, \</span></div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span><span class="preprocessor">               self-&gt;_lf_ ## in ## _width))</span></div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span> </div>
+<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span><span class="keywordtype">int</span> <a class="code hl_function" href="port_8h.html#ac7c743d3c64a839642e54781b8e9127f">lf_multiport_next</a>(<a class="code hl_struct" href="structlf__multiport__iterator__t.html">lf_multiport_iterator_t</a>* iterator);</div>
+<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span> </div>
+<div class="line"><a id="l00142" name="l00142"></a><span class="lineno">  142</span><span class="preprocessor">#endif </span><span class="comment">/* PORT_H */</span><span class="preprocessor"></span></div>
+<div class="ttc" id="aport_8h_html_a23e88870b9a699d1a067ff5b397e0887"><div class="ttname"><a href="port_8h.html#a23e88870b9a699d1a067ff5b397e0887">_lf_multiport_iterator_impl</a></div><div class="ttdeci">lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t **port, int width)</div><div class="ttdef"><b>Definition:</b> port.c:61</div></div>
+<div class="ttc" id="aport_8h_html_ac7c743d3c64a839642e54781b8e9127f"><div class="ttname"><a href="port_8h.html#ac7c743d3c64a839642e54781b8e9127f">lf_multiport_next</a></div><div class="ttdeci">int lf_multiport_next(lf_multiport_iterator_t *iterator)</div><div class="ttdef"><b>Definition:</b> port.c:105</div></div>
 <div class="ttc" id="astructlf__multiport__iterator__t_html"><div class="ttname"><a href="structlf__multiport__iterator__t.html">lf_multiport_iterator_t</a></div><div class="ttdef"><b>Definition:</b> port.h:109</div></div>
 <div class="ttc" id="astructlf__multiport__iterator__t_html_a30b60ca0b6d101367ccb31a0725ee74b"><div class="ttname"><a href="structlf__multiport__iterator__t.html#a30b60ca0b6d101367ccb31a0725ee74b">lf_multiport_iterator_t::port</a></div><div class="ttdeci">lf_port_base_t ** port</div><div class="ttdef"><b>Definition:</b> port.h:112</div></div>
 <div class="ttc" id="astructlf__multiport__iterator__t_html_a6707e4d4535a1630d74d5fcda16d163d"><div class="ttname"><a href="structlf__multiport__iterator__t.html#a6707e4d4535a1630d74d5fcda16d163d">lf_multiport_iterator_t::idx</a></div><div class="ttdeci">int idx</div><div class="ttdef"><b>Definition:</b> port.h:111</div></div>
@@ -135,7 +131,6 @@ $(function() {
 <div class="ttc" id="astructlf__sparse__io__record__t_html_a0cc33a35b50da10e8a871bd3b7afcd02"><div class="ttname"><a href="structlf__sparse__io__record__t.html#a0cc33a35b50da10e8a871bd3b7afcd02">lf_sparse_io_record_t::capacity</a></div><div class="ttdeci">size_t capacity</div><div class="ttdef"><b>Definition:</b> port.h:86</div></div>
 <div class="ttc" id="astructlf__sparse__io__record__t_html_a439f0d9ec340e1f08f3ae83f7218f0b4"><div class="ttname"><a href="structlf__sparse__io__record__t.html#a439f0d9ec340e1f08f3ae83f7218f0b4">lf_sparse_io_record_t::present_channels</a></div><div class="ttdeci">size_t present_channels[]</div><div class="ttdef"><b>Definition:</b> port.h:87</div></div>
 <div class="ttc" id="astructlf__sparse__io__record__t_html_aa4dbb7002633cc49c634ab3ba9822ef3"><div class="ttname"><a href="structlf__sparse__io__record__t.html#aa4dbb7002633cc49c634ab3ba9822ef3">lf_sparse_io_record_t::size</a></div><div class="ttdeci">int size</div><div class="ttdef"><b>Definition:</b> port.h:85</div></div>
-<div class="ttc" id="astructvector__t_html"><div class="ttname"><a href="structvector__t.html">vector_t</a></div><div class="ttdef"><b>Definition:</b> vector.h:16</div></div>
 <div class="ttc" id="avector_8h_html"><div class="ttname"><a href="vector_8h.html">vector.h</a></div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

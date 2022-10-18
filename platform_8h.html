@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: core/platform.h File Reference</title>
+<title>reactor-c: include/core/platform.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -69,7 +69,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_4270bfced15e0e73154b13468c7c9ad9.html">core</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_3d69f64eaf81436fe2b22361382717e5.html">core</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -117,7 +117,7 @@ Functions</h2></td></tr>
           <td class="memname">#define DEPRECATED</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname">X                                   </td><td>)</td>
+          <td class="paramname">X</td><td>)</td>
           <td>&#160;&#160;&#160;X</td>
         </tr>
       </table>
@@ -190,7 +190,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p >Fetch the value of an internal (and platform-specific) physical clock and store it in <code>t</code>.</p>
-<p >Ideally, the underlying platform clock should be monotonic. However, the core lib tries to enforce monotonicity at higher level APIs (see tag.h).</p>
+<p >Ideally, the underlying platform clock should be monotonic. However, the core lib tries to enforce monotonicity at higher level APIs (see <a class="el" href="tag_8h.html">tag.h</a>).</p>
 <dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure</dd></dl>
 <p>Fetch the value of _LF_CLOCK (see <a class="el" href="lf__arduino__support_8h.html">lf_arduino_support.h</a>) and store it in t. The timestamp value in 't' will be physical Arduino time in microseconds, which starts once Arduino boots up.</p>
 <dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. In case of failure, errno will be set appropriately.</dd></dl>

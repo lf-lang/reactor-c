@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: core/utils/pqueue.h File Reference</title>
+<title>reactor-c: include/core/utils/pqueue.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -69,7 +69,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_4270bfced15e0e73154b13468c7c9ad9.html">core</a></li><li class="navelem"><a class="el" href="dir_182a39db29e4ad63eb633860d83c5a1d.html">utils</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_3d69f64eaf81436fe2b22361382717e5.html">core</a></li><li class="navelem"><a class="el" href="dir_9e3c081da26bdde9c5aec25c2fcc2ede.html">utils</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -81,7 +81,8 @@ $(function() {
 
 <p>Priority Queue function declarations.  
 <a href="#details">More...</a></p>
-
+<div class="textblock"><code>#include &lt;stddef.h&gt;</code><br />
+</div>
 <p><a href="pqueue_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
@@ -135,6 +136,30 @@ Data Structures</h2></td></tr>
 <tr class="separator:add0fae8523cca210f1574586e82cf7dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aecb92aa04f03ad7866508bc27778d7e9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#aecb92aa04f03ad7866508bc27778d7e9">pqueue_is_valid</a> (<a class="el" href="structpqueue__t.html">pqueue_t</a> *q)</td></tr>
 <tr class="separator:aecb92aa04f03ad7866508bc27778d7e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19d650d18c331602f44c642bce2456e8"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#a19d650d18c331602f44c642bce2456e8">in_reverse_order</a> (<a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> thiz, <a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> that)</td></tr>
+<tr class="separator:a19d650d18c331602f44c642bce2456e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a987e40d356a70d4799d6fe56920d3b8f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#a987e40d356a70d4799d6fe56920d3b8f">in_no_particular_order</a> (<a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> thiz, <a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> that)</td></tr>
+<tr class="separator:a987e40d356a70d4799d6fe56920d3b8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6abb03cf541980b01e48f830260c46e9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#a6abb03cf541980b01e48f830260c46e9">event_matches</a> (void *<a class="el" href="reactor_8c.html#a6967cbc8a4ce78b1049da429d172f90b">next</a>, void *curr)</td></tr>
+<tr class="separator:a6abb03cf541980b01e48f830260c46e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa369c3ef69d9502b77f4e154c2a25faf"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#aa369c3ef69d9502b77f4e154c2a25faf">reaction_matches</a> (void *<a class="el" href="reactor_8c.html#a6967cbc8a4ce78b1049da429d172f90b">next</a>, void *curr)</td></tr>
+<tr class="separator:aa369c3ef69d9502b77f4e154c2a25faf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0fb21cd2840e8552d5a127f6e949668c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#a0fb21cd2840e8552d5a127f6e949668c">get_event_time</a> (void *a)</td></tr>
+<tr class="separator:a0fb21cd2840e8552d5a127f6e949668c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a625c09da56c743c2180613c25271f7da"><td class="memItemLeft" align="right" valign="top"><a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#a625c09da56c743c2180613c25271f7da">get_reaction_index</a> (void *a)</td></tr>
+<tr class="separator:a625c09da56c743c2180613c25271f7da"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae5b1746e75bcefbd924c4cdeeb7bce6a"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#ae5b1746e75bcefbd924c4cdeeb7bce6a">get_event_position</a> (void *a)</td></tr>
+<tr class="separator:ae5b1746e75bcefbd924c4cdeeb7bce6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a66344e489d0494ce2d74e719fd190a10"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#a66344e489d0494ce2d74e719fd190a10">get_reaction_position</a> (void *a)</td></tr>
+<tr class="separator:a66344e489d0494ce2d74e719fd190a10"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad12f6906a77b8e62780d4462bdf33126"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#ad12f6906a77b8e62780d4462bdf33126">set_event_position</a> (void *a, size_t pos)</td></tr>
+<tr class="separator:ad12f6906a77b8e62780d4462bdf33126"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a10095d3883ff8e244676f38ddbb0ffee"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#a10095d3883ff8e244676f38ddbb0ffee">set_reaction_position</a> (void *a, size_t pos)</td></tr>
+<tr class="separator:a10095d3883ff8e244676f38ddbb0ffee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a26e33f5180dc5951b3d26094959913b7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#a26e33f5180dc5951b3d26094959913b7">print_reaction</a> (void *reaction)</td></tr>
+<tr class="separator:a26e33f5180dc5951b3d26094959913b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac3748c134d36779db69ce9dd3d7ac4ac"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pqueue_8h.html#ac3748c134d36779db69ce9dd3d7ac4ac">print_event</a> (void *event)</td></tr>
+<tr class="separator:ac3748c134d36779db69ce9dd3d7ac4ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Priority Queue function declarations. </p>
@@ -271,6 +296,169 @@ Data Structures</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="a6abb03cf541980b01e48f830260c46e9" name="a6abb03cf541980b01e48f830260c46e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6abb03cf541980b01e48f830260c46e9">&#9670;&#160;</a></span>event_matches()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int event_matches </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>next</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>curr</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Return whether or not the given events have matching triggers. </p>
+
+</div>
+</div>
+<a id="ae5b1746e75bcefbd924c4cdeeb7bce6a" name="ae5b1746e75bcefbd924c4cdeeb7bce6a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae5b1746e75bcefbd924c4cdeeb7bce6a">&#9670;&#160;</a></span>get_event_position()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t get_event_position </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>a</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Return the given event's position in the queue. </p>
+
+</div>
+</div>
+<a id="a0fb21cd2840e8552d5a127f6e949668c" name="a0fb21cd2840e8552d5a127f6e949668c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0fb21cd2840e8552d5a127f6e949668c">&#9670;&#160;</a></span>get_event_time()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> get_event_time </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>a</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Report a priority equal to the time of the given event. Used for sorting pointers to <a class="el" href="structevent__t.html">event_t</a> structs in the event queue. </p>
+
+</div>
+</div>
+<a id="a625c09da56c743c2180613c25271f7da" name="a625c09da56c743c2180613c25271f7da"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a625c09da56c743c2180613c25271f7da">&#9670;&#160;</a></span>get_reaction_index()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> get_reaction_index </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>a</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Report a priority equal to the index of the given reaction. Used for sorting pointers to <a class="el" href="structreaction__t.html">reaction_t</a> structs in the blocked and executing queues. </p>
+
+</div>
+</div>
+<a id="a66344e489d0494ce2d74e719fd190a10" name="a66344e489d0494ce2d74e719fd190a10"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a66344e489d0494ce2d74e719fd190a10">&#9670;&#160;</a></span>get_reaction_position()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t get_reaction_position </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>a</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Return the given reaction's position in the queue. </p>
+
+</div>
+</div>
+<a id="a987e40d356a70d4799d6fe56920d3b8f" name="a987e40d356a70d4799d6fe56920d3b8f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a987e40d356a70d4799d6fe56920d3b8f">&#9670;&#160;</a></span>in_no_particular_order()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int in_no_particular_order </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td>
+          <td class="paramname"><em>thiz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td>
+          <td class="paramname"><em>that</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Return false (0) regardless of reaction order. </p>
+
+</div>
+</div>
+<a id="a19d650d18c331602f44c642bce2456e8" name="a19d650d18c331602f44c642bce2456e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a19d650d18c331602f44c642bce2456e8">&#9670;&#160;</a></span>in_reverse_order()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int in_reverse_order </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td>
+          <td class="paramname"><em>thiz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td>
+          <td class="paramname"><em>that</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Return whether the first and second argument are given in reverse order. </p>
+
+</div>
+</div>
 <a id="a7dfaa607ca404b915355d4b123c669ee" name="a7dfaa607ca404b915355d4b123c669ee"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7dfaa607ca404b915355d4b123c669ee">&#9670;&#160;</a></span>pqueue_change_priority()</h2>
 
@@ -752,6 +940,133 @@ Data Structures</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="ac3748c134d36779db69ce9dd3d7ac4ac" name="ac3748c134d36779db69ce9dd3d7ac4ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac3748c134d36779db69ce9dd3d7ac4ac">&#9670;&#160;</a></span>print_event()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void print_event </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>event</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Print some information about the given event.</p>
+<p >DEBUG function only. </p>
+
+</div>
+</div>
+<a id="a26e33f5180dc5951b3d26094959913b7" name="a26e33f5180dc5951b3d26094959913b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26e33f5180dc5951b3d26094959913b7">&#9670;&#160;</a></span>print_reaction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void print_reaction </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>reaction</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Print some information about the given reaction.</p>
+<p >DEBUG function only. </p>
+
+</div>
+</div>
+<a id="aa369c3ef69d9502b77f4e154c2a25faf" name="aa369c3ef69d9502b77f4e154c2a25faf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa369c3ef69d9502b77f4e154c2a25faf">&#9670;&#160;</a></span>reaction_matches()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int reaction_matches </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>next</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>curr</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Return whether or not the given <a class="el" href="structreaction__t.html">reaction_t</a> pointers point to the same struct. </p>
+
+</div>
+</div>
+<a id="ad12f6906a77b8e62780d4462bdf33126" name="ad12f6906a77b8e62780d4462bdf33126"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad12f6906a77b8e62780d4462bdf33126">&#9670;&#160;</a></span>set_event_position()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void set_event_position </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>pos</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Set the given event's position in the queue. </p>
+
+</div>
+</div>
+<a id="a10095d3883ff8e244676f38ddbb0ffee" name="a10095d3883ff8e244676f38ddbb0ffee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a10095d3883ff8e244676f38ddbb0ffee">&#9670;&#160;</a></span>set_reaction_position()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void set_reaction_position </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>a</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>pos</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Return the given reaction's position in the queue. </p>
 
 </div>
 </div>

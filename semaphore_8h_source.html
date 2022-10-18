@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: core/utils/semaphore.h Source File</title>
+<title>reactor-c: include/core/utils/semaphore.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -69,7 +69,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_4270bfced15e0e73154b13468c7c9ad9.html">core</a></li><li class="navelem"><a class="el" href="dir_182a39db29e4ad63eb633860d83c5a1d.html">utils</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_3d69f64eaf81436fe2b22361382717e5.html">core</a></li><li class="navelem"><a class="el" href="dir_9e3c081da26bdde9c5aec25c2fcc2ede.html">utils</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -109,7 +109,7 @@ $(function() {
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno"><a class="line" href="semaphore_8h.html#a43fcdba4ed8864d210afd3f031b4e346">   37</a></span><span class="preprocessor">#define NUMBER_OF_WORKERS 1</span></div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="preprocessor">#endif </span><span class="comment">// NUMBER_OF_WORKERS</span></div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span> </div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#include &quot;../platform.h&quot;</span></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#include &quot;<a class="code" href="platform_8h.html">platform.h</a>&quot;</span></div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">#include &lt;stdlib.h&gt;</span></div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno"><a class="line" href="structsemaphore__t.html">   43</a></span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
@@ -129,6 +129,7 @@ $(function() {
 <div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span><span class="keywordtype">void</span> <a class="code hl_function" href="semaphore_8h.html#a93bb4d6b9b537c46858676eb80346bcf">lf_semaphore_destroy</a>(<a class="code hl_struct" href="structsemaphore__t.html">semaphore_t</a>* semaphore);</div>
 <div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span> </div>
 <div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span><span class="preprocessor">#endif </span><span class="comment">// LF_SEMAPHORE_H</span></div>
+<div class="ttc" id="aplatform_8h_html"><div class="ttname"><a href="platform_8h.html">platform.h</a></div></div>
 <div class="ttc" id="asemaphore_8h_html_a187a690a94648f59013bb33b95781fcd"><div class="ttname"><a href="semaphore_8h.html#a187a690a94648f59013bb33b95781fcd">lf_semaphore_new</a></div><div class="ttdeci">semaphore_t * lf_semaphore_new(int count)</div><div class="ttdoc">Create a new semaphore.</div><div class="ttdef"><b>Definition:</b> semaphore.c:42</div></div>
 <div class="ttc" id="asemaphore_8h_html_a35684a48d0659480170bd51265c5e2a0"><div class="ttname"><a href="semaphore_8h.html#a35684a48d0659480170bd51265c5e2a0">lf_semaphore_release</a></div><div class="ttdeci">void lf_semaphore_release(semaphore_t *semaphore, int i)</div><div class="ttdoc">Release the 'semaphore' and add 'i' to its count.</div><div class="ttdef"><b>Definition:</b> semaphore.c:56</div></div>
 <div class="ttc" id="asemaphore_8h_html_a635705588775d14fe7c566bb1b7d8372"><div class="ttname"><a href="semaphore_8h.html#a635705588775d14fe7c566bb1b7d8372">lf_semaphore_wait</a></div><div class="ttdeci">void lf_semaphore_wait(semaphore_t *semaphore)</div><div class="ttdoc">Wait on the 'semaphore' if count is 0.</div><div class="ttdef"><b>Definition:</b> semaphore.c:84</div></div>

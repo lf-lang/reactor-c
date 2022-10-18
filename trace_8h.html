@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.5"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: core/trace.h File Reference</title>
+<title>reactor-c: include/core/trace.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -69,7 +69,7 @@ $(function() {
 
 <div id="nav-path" class="navpath">
   <ul>
-<li class="navelem"><a class="el" href="dir_4270bfced15e0e73154b13468c7c9ad9.html">core</a></li>  </ul>
+<li class="navelem"><a class="el" href="dir_d44c64559bbebec7f509842c48db8b23.html">include</a></li><li class="navelem"><a class="el" href="dir_3d69f64eaf81436fe2b22361382717e5.html">core</a></li>  </ul>
 </div>
 </div><!-- top -->
 <div class="header">
@@ -79,11 +79,14 @@ $(function() {
   <div class="headertitle"><div class="title">trace.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-
+<div class="textblock"><code>#include &quot;<a class="el" href="lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
+</div>
 <p><a href="trace_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
+<tr class="memitem:a706e8785112271e15dc95022b31c7a88"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trace_8h.html#a706e8785112271e15dc95022b31c7a88">_lf_register_trace_event</a>(...)</td></tr>
+<tr class="separator:a706e8785112271e15dc95022b31c7a88"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a93b33b5ac0d1091ac118ab464bf3a7d0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trace_8h.html#a93b33b5ac0d1091ac118ab464bf3a7d0">register_user_trace_event</a>(...)</td></tr>
 <tr class="separator:a93b33b5ac0d1091ac118ab464bf3a7d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aeae0efb071b08e657d36788eee20c1a7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trace_8h.html#aeae0efb071b08e657d36788eee20c1a7">tracepoint</a>(...)</td></tr>
@@ -153,6 +156,24 @@ DESCRIPTION</h1>
 </ul>
 <p >Traces: A sequence of traces, each of which begins with an int giving the length of the trace followed by binary representations of the trace_record struct written using fwrite(). </p>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="a706e8785112271e15dc95022b31c7a88" name="a706e8785112271e15dc95022b31c7a88"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a706e8785112271e15dc95022b31c7a88">&#9670;&#160;</a></span>_lf_register_trace_event</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define _lf_register_trace_event</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a93b33b5ac0d1091ac118ab464bf3a7d0" name="a93b33b5ac0d1091ac118ab464bf3a7d0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a93b33b5ac0d1091ac118ab464bf3a7d0">&#9670;&#160;</a></span>register_user_trace_event</h2>
 

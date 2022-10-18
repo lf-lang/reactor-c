@@ -81,13 +81,14 @@ $(function() {
   <div class="headertitle"><div class="title">scheduler_PEDF_NP.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="scheduler_8h_source.html">scheduler.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="platform_8h_source.html">../platform.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="pqueue__support_8h_source.html">../utils/pqueue_support.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="semaphore_8c.html">../utils/semaphore.c</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="vector_8h_source.html">../utils/vector.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="platform_8h_source.html">platform.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="pqueue_8h_source.html">pqueue.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="reactor_8h_source.html">reactor.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="scheduler__instance_8h_source.html">scheduler_instance.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="scheduler__sync__tag__advance_8c.html">scheduler_sync_tag_advance.c</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="scheduler__sync__tag__advance_8h_source.html">scheduler_sync_tag_advance.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="scheduler_8h_source.html">scheduler.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="semaphore_8h_source.html">semaphore.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="vector_8h_source.html">vector.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
@@ -102,17 +103,17 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a92faef7f26ced82ad093c4876d6ab9bf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler___p_e_d_f___n_p_8c.html#a92faef7f26ced82ad093c4876d6ab9bf">_lf_has_precedence_over</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *r1, <a class="el" href="structreaction__t.html">reaction_t</a> *r2)</td></tr>
+<tr class="memitem:a92faef7f26ced82ad093c4876d6ab9bf"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler___p_e_d_f___n_p_8c.html#a92faef7f26ced82ad093c4876d6ab9bf">_lf_has_precedence_over</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *r1, <a class="el" href="structreaction__t.html">reaction_t</a> *r2)</td></tr>
 <tr class="separator:a92faef7f26ced82ad093c4876d6ab9bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a881c16f5335d6e3bcd7e073b07c0b4dc"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler___p_e_d_f___n_p_8c.html#a881c16f5335d6e3bcd7e073b07c0b4dc">_lf_is_blocked_by_executing_or_blocked_reaction</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *reaction)</td></tr>
+<tr class="memitem:a881c16f5335d6e3bcd7e073b07c0b4dc"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler___p_e_d_f___n_p_8c.html#a881c16f5335d6e3bcd7e073b07c0b4dc">_lf_is_blocked_by_executing_or_blocked_reaction</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *reaction)</td></tr>
 <tr class="separator:a881c16f5335d6e3bcd7e073b07c0b4dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a10ca432ff131d77df4fa82cfe376545b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler___p_e_d_f___n_p_8c.html#a10ca432ff131d77df4fa82cfe376545b">_lf_sched_update_queues</a> ()</td></tr>
+<tr class="memitem:a10ca432ff131d77df4fa82cfe376545b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler___p_e_d_f___n_p_8c.html#a10ca432ff131d77df4fa82cfe376545b">_lf_sched_update_queues</a> ()</td></tr>
 <tr class="memdesc:a10ca432ff131d77df4fa82cfe376545b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transfer the contents of worker thread queues to the actual global queues.  <a href="scheduler___p_e_d_f___n_p_8c.html#a10ca432ff131d77df4fa82cfe376545b">More...</a><br /></td></tr>
 <tr class="separator:a10ca432ff131d77df4fa82cfe376545b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac1555e7d3ff8c65d325f7e97762f198d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler___p_e_d_f___n_p_8c.html#ac1555e7d3ff8c65d325f7e97762f198d">_lf_sched_notify_workers</a> ()</td></tr>
 <tr class="memdesc:ac1555e7d3ff8c65d325f7e97762f198d"><td class="mdescLeft">&#160;</td><td class="mdescRight">If there is work to be done, notify workers individually.  <a href="scheduler___p_e_d_f___n_p_8c.html#ac1555e7d3ff8c65d325f7e97762f198d">More...</a><br /></td></tr>
 <tr class="separator:ac1555e7d3ff8c65d325f7e97762f198d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ace0cce6054d5e5ea6fbf4df95f0373e6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler___p_e_d_f___n_p_8c.html#ace0cce6054d5e5ea6fbf4df95f0373e6">_lf_sched_try_advance_tag_and_distribute</a> ()</td></tr>
+<tr class="memitem:ace0cce6054d5e5ea6fbf4df95f0373e6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler___p_e_d_f___n_p_8c.html#ace0cce6054d5e5ea6fbf4df95f0373e6">_lf_sched_try_advance_tag_and_distribute</a> ()</td></tr>
 <tr class="memdesc:ace0cce6054d5e5ea6fbf4df95f0373e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Advance tag or distribute reactions to worker threads.  <a href="scheduler___p_e_d_f___n_p_8c.html#ace0cce6054d5e5ea6fbf4df95f0373e6">More...</a><br /></td></tr>
 <tr class="separator:ace0cce6054d5e5ea6fbf4df95f0373e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac7834893e1dc1b9360d931fd58ecd3d2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler___p_e_d_f___n_p_8c.html#ac7834893e1dc1b9360d931fd58ecd3d2">_lf_sched_signal_stop</a> ()</td></tr>
@@ -149,7 +150,7 @@ Variables</h2></td></tr>
 <tr class="memitem:abf1db8342ffb5ddcbc31914a6e22c5f1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct__lf__sched__thread__info__t.html">_lf_sched_thread_info_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler___p_e_d_f___n_p_8c.html#abf1db8342ffb5ddcbc31914a6e22c5f1">_lf_sched_threads_info</a></td></tr>
 <tr class="memdesc:abf1db8342ffb5ddcbc31914a6e22c5f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Information about worker threads.  <a href="scheduler___p_e_d_f___n_p_8c.html#abf1db8342ffb5ddcbc31914a6e22c5f1">More...</a><br /></td></tr>
 <tr class="separator:abf1db8342ffb5ddcbc31914a6e22c5f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a52d834811739fa4d02659e51298b0f50"><td class="memItemLeft" align="right" valign="top">volatile <a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler___p_e_d_f___n_p_8c.html#a52d834811739fa4d02659e51298b0f50">_lf_sched_scheduling_in_progress</a> = <a class="el" href="lf__windows__support_8h.html#a65e9886d74aaee76545e83dd09011727">false</a></td></tr>
+<tr class="memitem:a52d834811739fa4d02659e51298b0f50"><td class="memItemLeft" align="right" valign="top">volatile bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler___p_e_d_f___n_p_8c.html#a52d834811739fa4d02659e51298b0f50">_lf_sched_scheduling_in_progress</a> = false</td></tr>
 <tr class="memdesc:a52d834811739fa4d02659e51298b0f50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicate that a thread is already performing scheduling.  <a href="scheduler___p_e_d_f___n_p_8c.html#a52d834811739fa4d02659e51298b0f50">More...</a><br /></td></tr>
 <tr class="separator:a52d834811739fa4d02659e51298b0f50"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9f71997b58700c4fe1fddb2118d7958e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler___p_e_d_f___n_p_8c.html#a9f71997b58700c4fe1fddb2118d7958e">_lf_sched_balancing_index</a> = 0</td></tr>
@@ -185,7 +186,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_has_precedence_over </td>
+          <td class="memname">bool _lf_has_precedence_over </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structreaction__t.html">reaction_t</a> *&#160;</td>
           <td class="paramname"><em>r1</em>, </td>
@@ -220,7 +221,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_is_blocked_by_executing_or_blocked_reaction </td>
+          <td class="memname">bool _lf_is_blocked_by_executing_or_blocked_reaction </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="structreaction__t.html">reaction_t</a> *&#160;</td>
           <td class="paramname"><em>reaction</em></td><td>)</td>
@@ -303,7 +304,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_sched_try_advance_tag_and_distribute </td>
+          <td class="memname">bool _lf_sched_try_advance_tag_and_distribute </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -325,7 +326,7 @@ Variables</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_sched_update_queues </td>
+          <td class="memname">bool _lf_sched_update_queues </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -359,7 +360,7 @@ false All the workers were idle. </dd></dl>
 </div><div class="memdoc">
 
 <p>Wait until the scheduler assigns work. </p>
-<p >This will inform the scheduler that this thread is idle via </p><dl class="section see"><dt>See also</dt><dd>'_lf_sched_ask_for_work' and waits until work is handed out by the scheduler to the <a class="el" href="reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63">worker</a> thread 'worker_number' or it's time for the <a class="el" href="reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63">worker</a> thread to stop.</dd></dl>
+<p >This will inform the scheduler that this thread is idle via </p><dl class="section see"><dt>See also</dt><dd>'_lf_sched_ask_for_work' and waits until work is handed out by the scheduler to the <a class="el" href="reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63">worker</a> thread 'worker_number' or it's time <a class="el" href="hashmap_8h.html#a611d52c77a8144080f7bfb45eaec2a66">for</a> the <a class="el" href="reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63">worker</a> thread to stop.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">worker_number</td><td>The worker number of the worker thread asking for work to be assigned to it. </td></tr>
@@ -570,7 +571,7 @@ false All the workers were idle. </dd></dl>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">volatile <a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_sched_scheduling_in_progress = <a class="el" href="lf__windows__support_8h.html#a65e9886d74aaee76545e83dd09011727">false</a></td>
+          <td class="memname">volatile bool _lf_sched_scheduling_in_progress = false</td>
         </tr>
       </table>
 </div><div class="memdoc">

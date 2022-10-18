@@ -82,16 +82,17 @@ $(function() {
 
 <p>API used to advance tag globally.  
 <a href="#details">More...</a></p>
-<table class="memberdecls">
+<div class="textblock"><code>#include &quot;<a class="el" href="scheduler__sync__tag__advance_8h_source.html">scheduler_sync_tag_advance.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="trace_8h_source.html">trace.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="util_8h_source.html">util.h</a>&quot;</code><br />
+</div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a30de5114ba04269152b0fa25406b75f4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler__sync__tag__advance_8c.html#a30de5114ba04269152b0fa25406b75f4">_lf_next_locked</a> ()</td></tr>
 <tr class="separator:a30de5114ba04269152b0fa25406b75f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad96dd94446ff66184dcf0f8f65cdb4f0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler__sync__tag__advance_8c.html#ad96dd94446ff66184dcf0f8f65cdb4f0">logical_tag_complete</a> (<a class="el" href="structtag__t.html">tag_t</a> tag_to_send)</td></tr>
-<tr class="separator:ad96dd94446ff66184dcf0f8f65cdb4f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afbd688201fab6a2da5fb10bd4f374102"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler__sync__tag__advance_8c.html#afbd688201fab6a2da5fb10bd4f374102">_lf_sched_should_stop_locked</a> ()</td></tr>
+<tr class="memitem:afbd688201fab6a2da5fb10bd4f374102"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler__sync__tag__advance_8c.html#afbd688201fab6a2da5fb10bd4f374102">_lf_sched_should_stop_locked</a> ()</td></tr>
 <tr class="separator:afbd688201fab6a2da5fb10bd4f374102"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a20544997f91f5d96d134b33c687d204b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler__sync__tag__advance_8c.html#a20544997f91f5d96d134b33c687d204b">_lf_sched_advance_tag_locked</a> ()</td></tr>
+<tr class="memitem:a20544997f91f5d96d134b33c687d204b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler__sync__tag__advance_8c.html#a20544997f91f5d96d134b33c687d204b">_lf_sched_advance_tag_locked</a> ()</td></tr>
 <tr class="separator:a20544997f91f5d96d134b33c687d204b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
@@ -100,9 +101,6 @@ Variables</h2></td></tr>
 <tr class="separator:a1545de0581eee4dfe26fb54ee1039ffe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a007aadaac39cca4ce69656a91b5e236c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler__sync__tag__advance_8c.html#a007aadaac39cca4ce69656a91b5e236c">stop_tag</a></td></tr>
 <tr class="separator:a007aadaac39cca4ce69656a91b5e236c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a147f52e4b288a4d60e6b91638eaa32c2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="scheduler__sync__tag__advance_8c.html#a147f52e4b288a4d60e6b91638eaa32c2">_lf_logical_tag_completed</a> = <a class="el" href="lf__windows__support_8h.html#a65e9886d74aaee76545e83dd09011727">false</a></td></tr>
-<tr class="memdesc:a147f52e4b288a4d60e6b91638eaa32c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Indicator that execution of at least one tag has completed.  <a href="scheduler__sync__tag__advance_8c.html#a147f52e4b288a4d60e6b91638eaa32c2">More...</a><br /></td></tr>
-<tr class="separator:a147f52e4b288a4d60e6b91638eaa32c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >API used to advance tag globally. </p>
@@ -145,7 +143,7 @@ Copyright (c) 2022, The University of California at Berkeley. </dd></dl>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_sched_advance_tag_locked </td>
+          <td class="memname">bool _lf_sched_advance_tag_locked </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -165,7 +163,7 @@ Copyright (c) 2022, The University of California at Berkeley. </dd></dl>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_sched_should_stop_locked </td>
+          <td class="memname">bool _lf_sched_should_stop_locked </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -176,47 +174,7 @@ Copyright (c) 2022, The University of California at Berkeley. </dd></dl>
 
 </div>
 </div>
-<a id="ad96dd94446ff66184dcf0f8f65cdb4f0" name="ad96dd94446ff66184dcf0f8f65cdb4f0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad96dd94446ff66184dcf0f8f65cdb4f0">&#9670;&#160;</a></span>logical_tag_complete()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void logical_tag_complete </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td>
-          <td class="paramname"><em>tag_to_send</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p >Placeholder for code-generated function that will, in a federated execution, be used to coordinate the advancement of tag. It will notify the runtime infrastructure (RTI) that all reactions at the specified logical tag have completed. This function should be called only while holding the mutex lock. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">tag_to_send</td><td>The tag to send. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <h2 class="groupheader">Variable Documentation</h2>
-<a id="a147f52e4b288a4d60e6b91638eaa32c2" name="a147f52e4b288a4d60e6b91638eaa32c2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a147f52e4b288a4d60e6b91638eaa32c2">&#9670;&#160;</a></span>_lf_logical_tag_completed</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="lf__windows__support_8h.html#a6ab4028eed8039b6a81740c40097581e">bool</a> _lf_logical_tag_completed = <a class="el" href="lf__windows__support_8h.html#a65e9886d74aaee76545e83dd09011727">false</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Indicator that execution of at least one tag has completed. </p>
-
-</div>
-</div>
 <a id="a1545de0581eee4dfe26fb54ee1039ffe" name="a1545de0581eee4dfe26fb54ee1039ffe"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1545de0581eee4dfe26fb54ee1039ffe">&#9670;&#160;</a></span>current_tag</h2>
 
