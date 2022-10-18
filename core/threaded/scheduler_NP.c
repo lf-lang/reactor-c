@@ -63,7 +63,7 @@ _lf_sched_instance_t* _lf_sched_instance;
  * @param reaction The reaction to insert.
  */
 static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
-    size_t reaction_level = LEVEL(reaction->index);
+    size_t reaction_level = LF_LEVEL(reaction->index);
 #ifdef FEDERATED
     // Lock the mutex if federated because a federate can insert reactions with
     // a level equal to the current level.
@@ -437,6 +437,6 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
         return;
     }
     LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld.",
-            reaction->name, LEVEL(reaction->index));
+            reaction->name, LF_LEVEL(reaction->index));
     _lf_sched_insert_reaction(reaction);
 }

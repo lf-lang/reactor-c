@@ -1009,7 +1009,7 @@ void _lf_worker_do_work(int worker_number) {
                 "level: %lld, is control reaction: %d, chain ID: %llu, and deadline " PRINTF_TIME ".",
                 worker_number,
                 current_reaction_to_execute->name,
-                LEVEL(current_reaction_to_execute->index),
+                LF_LEVEL(current_reaction_to_execute->index),
                 current_reaction_to_execute->is_a_control_reaction,
                 current_reaction_to_execute->chain_id,
                 current_reaction_to_execute->deadline);

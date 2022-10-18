@@ -74,7 +74,7 @@ typedef struct lf_stat_ll {
  * upstream in the dependence graph execute before reactions
  * that are downstream.
  */
-#define LEVEL(index) (index & 0xffffLL)
+#define LF_LEVEL(index) (index & 0xffffLL)
 
 /** Utility for finding the maximum of two values. */
 #ifndef LF_MAX

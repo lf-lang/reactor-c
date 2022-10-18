@@ -216,7 +216,7 @@ static inline bool _lf_sched_distribute_ready_reaction(reaction_t* ready_reactio
  * @param r2 The second reaction.
  */
 bool _lf_has_precedence_over(reaction_t* r1, reaction_t* r2) {
-    if (LEVEL(r1->index) < LEVEL(r2->index)
+    if (LF_LEVEL(r1->index) < LF_LEVEL(r2->index)
             && OVERLAPPING(r1->chain_id, r2->chain_id)) {
         return true;
     }
@@ -663,7 +663,7 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
         return;
     }
     LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld.",
-            reaction->name, LEVEL(reaction->index));
+            reaction->name, LF_LEVEL(reaction->index));
     if (worker_number == -1) {
         lf_mutex_lock(&mutex);
         // Immediately put 'reaction' on the reaction queue.

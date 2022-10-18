@@ -204,7 +204,7 @@ static reaction_t* worker_assignments_get_or_lock(size_t worker) {
  * @param reaction A reaction to be executed in the current tag.
  */
 static void worker_assignments_put(reaction_t* reaction) {
-    size_t level = LEVEL(reaction->index);
+    size_t level = LF_LEVEL(reaction->index);
     assert(reaction != NULL);
 #ifndef FEDERATED
     assert(level > current_level || current_level == 0);
