@@ -9,7 +9,7 @@
 #define K void*
 #define V int
 #define HASH_OF(key) (size_t) key
-#include "hashmap.c"
+#include "hashmap.h"
 #undef HASHMAP
 #undef K
 #undef V
