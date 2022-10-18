@@ -35,18 +35,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Edward A. Lee <eal@berkeley.edu>}
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
-
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
 
 #include <assert.h>
 
-#include "../platform.h"
-#include "../utils/semaphore.h"
-#include "scheduler.h"
+#include "platform.h"
 #include "scheduler_instance.h"
-#include "scheduler_sync_tag_advance.c"
+#include "scheduler_sync_tag_advance.h"
+#include "scheduler.h"
+#include "semaphore.h"
+#include "trace.h"
+#include "util.h"
 
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;
@@ -62,7 +63,7 @@ _lf_sched_instance_t* _lf_sched_instance;
  * @param reaction The reaction to insert.
  */
 static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
-    size_t reaction_level = LEVEL(reaction->index);
+    size_t reaction_level = LF_LEVEL(reaction->index);
 #ifdef FEDERATED
     // Lock the mutex if federated because a federate can insert reactions with
     // a level equal to the current level.
@@ -95,7 +96,7 @@ static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
     assert(reaction_q_level_index >= 0);
     LF_PRINT_DEBUG(
         "Scheduler: Accessing triggered reactions at the level %zu with index %d.",
-        reaction_level, 
+        reaction_level,
         reaction_q_level_index
     );
     ((reaction_t***)_lf_sched_instance->_lf_sched_triggered_reactions)[reaction_level][reaction_q_level_index] = reaction;
@@ -128,7 +129,7 @@ int _lf_sched_distribute_ready_reactions() {
             (void*)((reaction_t***)_lf_sched_instance->_lf_sched_triggered_reactions)[
                 _lf_sched_instance->_lf_sched_next_reaction_level
             ];
-            
+
         if (((reaction_t**)_lf_sched_instance->_lf_sched_executing_reactions)[0] != NULL) {
             // There is at least one reaction to execute
             _lf_sched_instance->_lf_sched_next_reaction_level++;
@@ -151,17 +152,17 @@ void _lf_sched_notify_workers() {
     size_t workers_to_awaken =
         LF_MIN(_lf_sched_instance->_lf_sched_number_of_idle_workers,
             _lf_sched_instance->_lf_sched_indexes[
-                _lf_sched_instance->_lf_sched_next_reaction_level - 1 // Current 
+                _lf_sched_instance->_lf_sched_next_reaction_level - 1 // Current
                                                                       // reaction
                                                                       // level
-                                                                      // to execute.                                                         
+                                                                      // to execute.
             ]);
     LF_PRINT_DEBUG("Scheduler: Notifying %zu workers.", workers_to_awaken);
 
     _lf_sched_instance->_lf_sched_number_of_idle_workers -= workers_to_awaken;
     LF_PRINT_DEBUG("Scheduler: New number of idle workers: %zu.",
                 _lf_sched_instance->_lf_sched_number_of_idle_workers);
-    
+
     if (workers_to_awaken > 1) {
         // Notify all the workers except the worker thread that has called this
         // function.
@@ -265,7 +266,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
  *  scheduler parameters.
  */
 void lf_sched_init(
-    size_t number_of_workers, 
+    size_t number_of_workers,
     sched_params_t* params
 ) {
     LF_PRINT_DEBUG("Scheduler: Initializing with %zu workers", number_of_workers);
@@ -305,18 +306,18 @@ void lf_sched_init(
         // Initialize the reaction vectors
         ((reaction_t***)_lf_sched_instance->_lf_sched_triggered_reactions)[i] =
             (reaction_t**)calloc(queue_size, sizeof(reaction_t*));
-        
+
         LF_PRINT_DEBUG(
             "Scheduler: Initialized vector of reactions for level %zu with size %zu",
             i,
             queue_size
         );
-        
+
         // Initialize the mutexes for the reaction vectors
         lf_mutex_init(&_lf_sched_instance->_lf_sched_array_of_mutexes[i]);
     }
 
-    _lf_sched_instance->_lf_sched_executing_reactions = 
+    _lf_sched_instance->_lf_sched_executing_reactions =
         (void*)((reaction_t***)_lf_sched_instance->
             _lf_sched_triggered_reactions)[0];
 }
@@ -368,7 +369,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
                 "for level: %d.",
                 worker_number, current_level, current_level_q_index
             );
-            reaction_to_return = 
+            reaction_to_return =
                 ((reaction_t**)_lf_sched_instance->
                     _lf_sched_executing_reactions)[current_level_q_index];
             ((reaction_t**)_lf_sched_instance->
@@ -418,7 +419,7 @@ void lf_sched_done_with_reaction(size_t worker_number,
  *
  * If a worker number is not available (e.g., this function is not called by a
  * worker thread), -1 should be passed as the 'worker_number'.
- * 
+ *
  * This scheduler ignores the worker number.
  *
  * The scheduler will ensure that the same reaction is not triggered twice in
@@ -436,6 +437,6 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
         return;
     }
     LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld.",
-            reaction->name, LEVEL(reaction->index));
+            reaction->name, LF_LEVEL(reaction->index));
     _lf_sched_insert_reaction(reaction);
 }

@@ -14,7 +14,7 @@
 # a directory that is on the path.
 #
 # To enable DEBUG messages, use the following build commands instead:
-# 
+#
 # $> mkdir build && cd build
 # $> cmake -DCMAKE_BUILD_TYPE=DEBUG ../
 # $> make
@@ -38,16 +38,27 @@ else()
   message(FATAL_ERROR "Your platform is not supported! RTI supports Linux and MacOS.")
 endif()
 
+# The following should not be done
+include_directories(${CoreLib}/..)
 include_directories(${CoreLib})
-include_directories(${CoreLib}/platform)
 include_directories(${CoreLib}/federated)
+include_directories(${CoreLib}/platform)
+include_directories(${CoreLib}/utils)
+
+set(IncludeDir ../../../include/core)
+include_directories(${IncludeDir})
+include_directories(${IncludeDir}/federated)
+include_directories(${IncludeDir}/modal_models)
+include_directories(${IncludeDir}/platform)
+include_directories(${IncludeDir}/utils)
 
 # Declare a new executable target and list all its sources
 add_executable(
-    RTI 
-    rti.c 
-    ${LF_PLATFORM_FILE} 
-    ${CoreLib}/utils/pqueue.c 
+    RTI
+    rti.c
+    ${LF_PLATFORM_FILE}
+    ${CoreLib}/platform/lf_unix_clock_support.c
+    ${CoreLib}/utils/pqueue.c
     message_record/message_record.c
 )
 
