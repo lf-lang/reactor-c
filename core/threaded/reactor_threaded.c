@@ -244,7 +244,7 @@ void _lf_decrement_global_tag_barrier_locked() {
  * advancement of time until to the proposed tag until the message has
  * been put onto the event queue.
  *
- * If the prposed_tag is greater than the stop tag, then use the stop tag instead.
+ * If the proposed_tag is greater than the stop tag, then use the stop tag instead.
  *
  * This function assumes the mutex is already locked.
  * Thus, it unlocks the mutex while it's waiting to allow
