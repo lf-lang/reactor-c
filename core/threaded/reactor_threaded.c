@@ -41,6 +41,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_types.h"
 #include "platform.h"
 #include "reactor_common.h"
+#include "reactor_threaded.h"
 #include "reactor.h"
 #include "scheduler.h"
 #include "tag.h"
@@ -87,7 +88,7 @@ typedef struct _lf_tag_advancement_barrier {
  */
 _lf_tag_advancement_barrier _lf_global_tag_advancement_barrier = {0, FOREVER_TAG_INITIALIZER};
 
-// The one and only mutex lock.
+// The one and only global mutex lock.
 lf_mutex_t mutex;
 
 // Condition variables used for notification between threads.

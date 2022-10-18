@@ -1,6 +1,9 @@
-lf_mutex_t mutex;
-lf_cond_t event_q_changed;
-lf_cond_t global_tag_barrier_requestors_reached_zero;
+#ifndef REACTOR_THREADED_H
+#define REACTOR_THREADED_H
+
+extern lf_mutex_t mutex;
+extern lf_cond_t event_q_changed;
+extern lf_cond_t global_tag_barrier_requestors_reached_zero;
 
 /**
  * Enqueue network input control reactions that determine if the trigger for a
@@ -23,3 +26,4 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition);
 tag_t get_next_event_tag();
 tag_t send_next_event_tag(tag_t tag, bool wait_for_reply);
 void _lf_next_locked();
+#endif // REACTOR_THREADED_H
