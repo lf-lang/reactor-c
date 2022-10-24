@@ -1571,7 +1571,7 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
  */
 void _lf_invoke_reaction(reaction_t* reaction, int worker) {
     
-    #ifdef NUMBER_OF_WORKERS
+    #ifdef LF_MULTI_THREADED
     lf_sched_reaction_prologue(reaction, worker);
     #endif
 
@@ -1584,7 +1584,7 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
     tracepoint_reaction_ends(reaction, worker); 
     LF_PRINT_DEBUG("Worker %d Finished Reaction", worker);
     
-    #ifdef NUMBER_OF_WORKERS
+    #ifdef LF_MULTI_THREADED
     lf_sched_reaction_epilogue(reaction, worker);
     #endif
 }

@@ -68,10 +68,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef NUMBER_OF_WORKERS
 #define LF_TIMEOUT _LF_TIMEOUT
-
 typedef _lf_mutex_t lf_mutex_t;          // Type to hold handle to a mutex
 typedef _lf_cond_t lf_cond_t;            // Type to hold handle to a condition variable
 typedef _lf_thread_t lf_thread_t;        // Type to hold handle to a thread
+#else
+typedef void lf_mutex_t;                 // Define mutex type also in single-threaded to allow mutex type on self struct
 #endif
 
 /**

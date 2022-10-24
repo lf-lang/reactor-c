@@ -638,10 +638,8 @@ typedef struct self_base_t {
 	struct allocation_record_t *allocations;
 	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
     tag_t current_tag;                       // The tag of the most recent reaction invokation
-#ifdef NUMBER_OF_WORKERS
     lf_mutex_t mutex;                       // A local mutex to ensure mutual exclusion of reactions in reactor 
     bool has_mutex;                       // A local mutex to ensure mutual exclusion of reactions in reactor 
-#endif
 #ifdef MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif
