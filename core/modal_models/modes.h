@@ -44,6 +44,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef MODAL_REACTORS
 
+// Forward declare reactor self-struct from reactor.h
+struct self_base_t;
+
 ////////////////////////////////////////////////////////////
 //// Macros for setting modes.
 
@@ -113,6 +116,7 @@ struct reactor_mode_t {
 
 /** A struct to store state of the modes in a reactor instance and/or its relation to enclosing modes. */
 struct reactor_mode_state_t {
+    struct self_base_t* self;       // Pointer to the self-struct of the reactor containing this mode.
     reactor_mode_t* parent_mode;    // Pointer to the next enclosing mode (if exists).
     reactor_mode_t* initial_mode;   // Pointer to the initial mode.
     reactor_mode_t* current_mode;   // Pointer to the currently active mode (only locally active).

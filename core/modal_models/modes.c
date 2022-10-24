@@ -370,6 +370,15 @@ void _lf_process_mode_changes(
             // Handle effect of entering next mode
             if (state->next_mode != NULL) {
                 LF_PRINT_DEBUG("Modes: Transition to %s.", state->next_mode->name);
+                // Grab Reactor mutex if it is present. This enables LET scheduling
+                // FIXME: Verify that there is no race condition. Can a worker advance time BEFORE the LET
+                //  worker has grabbed the mutex? 
+                if (state->self->has_mutex) {
+                    LF_PRINT_DEBUG("Modes: Acquire mutex of reactor");
+                    lf_mutex_lock(&state->self->mutex);
+                    LF_PRINT_DEBUG("Modes: Mutex acquired of reactor");
+                }
+
                 transition = true;
 
                 if (state->mode_change == reset_transition) {
@@ -440,6 +449,12 @@ void _lf_process_mode_changes(
                     } else {
                         suspended_event = suspended_event->next;
                     }
+                }
+
+                // Unlock mutex after mode transition has been completed. 
+                if (state->self->has_mutex) {
+                    LF_PRINT_DEBUG("Modes: release mutex of reactor");
+                    lf_mutex_unlock(&state->self->mutex);
                 }
             }
         }
