@@ -76,6 +76,19 @@ do { \
 
 
 ////////////////////////////////////////////////////////////
+//// Type definitions for modal infrastructure.
+
+/** Typedef for reactor_mode_t struct, used for representing a mode. */
+typedef struct reactor_mode_t reactor_mode_t;
+/** Typedef for reactor_mode_state_t struct, used for storing modal state of reactor and/or its relation to enclosing modes. */
+typedef struct reactor_mode_state_t reactor_mode_state_t;
+/** Typedef for mode_state_variable_reset_data_t struct, used for storing data for resetting state variables nested in modes. */
+typedef struct mode_state_variable_reset_data_t mode_state_variable_reset_data_t;
+
+/** Type of the mode change. */
+typedef enum {no_transition, reset_transition, history_transition} lf_mode_change_type_t;
+
+////////////////////////////////////////////////////////////
 //// Forward declaration for generated code.
 
 /**
@@ -93,18 +106,11 @@ void _lf_handle_mode_changes(void);
  */
 void _lf_handle_mode_triggered_reactions(void);
 
-////////////////////////////////////////////////////////////
-//// Type definitions for modal infrastructure.
+/**
+ * Function (to be code generated) to get the reactor_mode_state array and its length
+ */
+int _lf_mode_get_reactor_mode_states(reactor_mode_state_t ***reactor_mode_state);
 
-/** Typedef for reactor_mode_t struct, used for representing a mode. */
-typedef struct reactor_mode_t reactor_mode_t;
-/** Typedef for reactor_mode_state_t struct, used for storing modal state of reactor and/or its relation to enclosing modes. */
-typedef struct reactor_mode_state_t reactor_mode_state_t;
-/** Typedef for mode_state_variable_reset_data_t struct, used for storing data for resetting state variables nested in modes. */
-typedef struct mode_state_variable_reset_data_t mode_state_variable_reset_data_t;
-
-/** Type of the mode change. */
-typedef enum {no_transition, reset_transition, history_transition} lf_mode_change_type_t;
 
 /** A struct to represent a single mode instace in a reactor instance. */
 struct reactor_mode_t {

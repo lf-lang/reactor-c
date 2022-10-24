@@ -37,6 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler_instance.h"
 #include "scheduler_sync_tag_advance.c"
 
+#include "modal_models/modes.h"
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;
 extern lf_cond_t event_q_changed;
@@ -44,10 +45,11 @@ extern lf_cond_t event_q_changed;
 /////////////////// Scheduler Variables and Structs /////////////////////////
 _lf_sched_instance_t* _lf_sched_instance;
 bool* worker_is_in_workforce;
+bool* local_mutex_was_locked;
 
 /////////////////// Scheduler Private API /////////////////////////
-
-
+static void _lf_sched_mode_change_prologue();
+static void _lf_sched_mode_change_epilogue();
 
 /**
  * @brief Insert 'reaction' into
@@ -197,6 +199,11 @@ void _lf_sched_try_advance_tag_and_distribute() {
         if (_lf_sched_instance->_lf_sched_next_reaction_level ==
             (_lf_sched_instance->max_reaction_level + 1)) {
             _lf_sched_instance->_lf_sched_next_reaction_level = 0;
+            
+            #ifdef MODAL_REACTORS
+                _lf_sched_mode_change_prologue();
+            #endif
+            
             lf_mutex_lock(&mutex);
             // Nothing more happening at this tag.
             
@@ -206,9 +213,18 @@ void _lf_sched_try_advance_tag_and_distribute() {
                 LF_PRINT_DEBUG("Scheduler: Reached stop tag.");
                 _lf_sched_signal_stop();
                 lf_mutex_unlock(&mutex);
+            
+                #ifdef MODAL_REACTORS
+                    _lf_sched_mode_change_epilogue();
+                #endif
+            
                 break;
             }
             lf_mutex_unlock(&mutex);
+            
+            #ifdef MODAL_REACTORS
+                _lf_sched_mode_change_epilogue();
+            #endif
         }
 
         if (_lf_sched_distribute_ready_reactions() > 0) {
@@ -325,6 +341,17 @@ void lf_sched_init(
         worker_is_in_workforce[i] = true;
     }
 
+    #ifdef MODAL_REACTORS
+    // Allocate array to hold information about which local mutexes was acquired
+    //  due to mode transitions
+    reactor_mode_state_t **states;
+    int states_size = _lf_mode_get_reactor_mode_states(&states); 
+    local_mutex_was_locked = malloc(states_size * sizeof(bool));
+    for (int i = 0; i<states_size; i++) {
+        local_mutex_was_locked[i] = false;
+    }
+    #endif
+
     _lf_sched_instance->_lf_sched_executing_reactions = 
         (void*)((reaction_t***)_lf_sched_instance->
             _lf_sched_triggered_reactions)[0];
@@ -343,6 +370,7 @@ void lf_sched_free() {
     free(_lf_sched_instance->_lf_sched_executing_reactions);
     lf_semaphore_destroy(_lf_sched_instance->_lf_sched_semaphore);
     free(worker_is_in_workforce);
+    free(local_mutex_was_locked);
 }
 
 ///////////////////// Scheduler Worker API (public) /////////////////////////
@@ -361,11 +389,13 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
     // Iterate until the stop tag is reached or reaction vectors are empty
     while (!_lf_sched_instance->_lf_sched_should_stop) {
         // Coordinate rejoining the workforce. 
+        // FIXME: Allow worker to join on the CURRENT level instead of waiting for next
         if (!worker_is_in_workforce[worker_number]) {
             worker_is_in_workforce[worker_number] = true;
             LF_PRINT_DEBUG("Worker %d goes to sleep until next level", worker_number);
             lf_semaphore_acquire(_lf_sched_instance->_lf_sched_semaphore);
             LF_PRINT_DEBUG("Worker %d has awoken. Back to work", worker_number);
+            continue;
         }    
         // Calculate the current level of reactions to execute
         size_t current_level =
@@ -458,11 +488,12 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
 
 void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
     self_base_t *self = (self_base_t *) reaction->self;
-    // Take global mutex
+    
+    // Take local mutex
     if (self->has_mutex) {
-        LF_PRINT_DEBUG("Worker %d tries to lock LET mutex", worker_number);
+        LF_PRINT_DEBUG("Worker %d tries to locks local mutex", worker_number);
         lf_mutex_lock(&self->mutex);
-        LF_PRINT_DEBUG("Worker %d locked LET mutex", worker_number);
+        LF_PRINT_DEBUG("Worker %d locked local mutex", worker_number);
     }
     
     // If LET reaction, increment global tag barrier and remove worker from pool
@@ -470,7 +501,9 @@ void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
     //  pqueue is removed.
     if (reaction->let > 0) {
         // Acquire the global mutex to: 1. Increment global barrier and 2. Update the scheduler variables.
+        LF_PRINT_DEBUG("Worker %d tries to locks global mutex", worker_number);
         lf_mutex_lock(&mutex);
+        LF_PRINT_DEBUG("Worker %d locked global mutex", worker_number);
         if (reaction->let < FOREVER) {
             LF_PRINT_DEBUG("Worker %d Increment global barrier", worker_number);
             tag_t finish_tag = {current_tag.time + reaction->let, 0UL};
@@ -499,7 +532,7 @@ void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
     // Unlock local mutex to allow interrupting reactions+mode changes
     if (self->has_mutex) {
         lf_mutex_unlock(&self->mutex);
-        LF_PRINT_DEBUG("Worker %d unlocks LET mutex", worker_number);
+        LF_PRINT_DEBUG("Worker %d unlocked local mutex", worker_number);
     }
 
     // Do half of the rejoining step. Increment num_workers and num_idle workers
@@ -517,3 +550,53 @@ void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
         lf_mutex_unlock(&mutex);
     }
 }
+
+#ifdef MODAL_REACTORS
+static void _lf_sched_mode_change_prologue() {
+    reactor_mode_state_t **states;
+    int states_size = _lf_mode_get_reactor_mode_states(&states);
+
+    // FIXME: In this loop we are actually overwriting the transitions of containing modes
+    //  this is also done later inside the `next` function. I dont think it has any effect.
+    for (int i = 0; i < states_size; i++) {
+        reactor_mode_state_t* state = states[i];
+        if (state != NULL) {
+            // Hierarchical reset: if this mode has parent that is entered in
+            // this step with a reset this reactor has to enter its initial mode
+            if (state->parent_mode != NULL
+                    && state->parent_mode->state != NULL
+                    && state->parent_mode->state->next_mode == state->parent_mode
+                    && state->parent_mode->state->mode_change == reset_transition
+            ){
+                // Reset to initial state.
+                state->next_mode = state->initial_mode;
+                // Enter with reset, to cascade it further down.
+                state->mode_change = reset_transition;
+            }
+            
+            // If this reactor is going to perform a mode change. Lock its mutex
+            if (state->next_mode != NULL 
+                && state->self->has_mutex
+            ) {
+                LF_PRINT_DEBUG("Modes: lock mutex for %s", state->next_mode->name);
+                lf_mutex_lock(&state->self->mutex);
+                LF_PRINT_DEBUG("Modes: locked mutex for %s", state->next_mode->name);
+                local_mutex_was_locked[i] = true;
+            }
+        }
+    }
+}
+
+static void _lf_sched_mode_change_epilogue() {
+    reactor_mode_state_t **states;
+    int states_size = _lf_mode_get_reactor_mode_states(&states);
+    for (int i = 0; i < states_size; i++) {
+        reactor_mode_state_t* state = states[i];
+        if (local_mutex_was_locked[i]) {
+            LF_PRINT_DEBUG("Modes: unlock mutex for %s", state->current_mode->name);
+            lf_mutex_unlock(&state->self->mutex);
+            local_mutex_was_locked[i] = false;
+        }
+    }
+}
+#endif
