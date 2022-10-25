@@ -150,6 +150,17 @@ int lf_nanosleep(interval_t sleep_duration) {
 }
 
 #ifdef NUMBER_OF_WORKERS
+#define _LF_STACK_SIZE 500
+#define _LF_THREAD_PRIORITY 5
+static K_THREAD_STACK_ARRAY_DEFINE(stacks, NUMBER_OF_WORKERS, _LF_STACK_SIZE);
+static struct k_thread threads[NUMBER_OF_WORKERS];
+
+typedef void *(*lf_function_t) (void *);
+
+static void zephyr_worker_entry(void * func, void * args, void * unused2) {
+    lf_function_t _func = (lf_function_t) func;
+    func(args);
+}
 
 /**
  * @brief Get the number of cores on the host machine.
@@ -167,7 +178,15 @@ int lf_available_cores() {
  *
  */
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
-    printk("lf_thread_create called\n");
+    static tid = 0;
+    assert(tid > (NUMBER_OF_WORKERS-1));
+
+    k_tid_t my_tid = k_thread_create(&threads[i], &stacks[i][0],
+                                    _LF_STACK_SIZE, zephyr_worker_entry,
+                                 (void *) lf_thread, arguments, NULL,
+                                 _LF_THREAD_PRIORITY, 0, K_NO_WAIT);
+
+    tid++;    
     return 0;
 }
 

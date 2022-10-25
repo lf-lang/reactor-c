@@ -32,9 +32,9 @@ typedef int64_t _interval_t;
  */
 typedef uint32_t _microstep_t;
 
-typedef int _lf_mutex_t;
-typedef int _lf_cond_t;
-typedef int _lf_thread_t;
+typedef k_mutex _lf_mutex_t;
+typedef k_condvar _lf_cond_t;
+typedef k_thread _lf_thread_t;
 
 extern _lf_mutex_t mutex;
 extern _lf_cond_t event_q_changed;
