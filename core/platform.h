@@ -218,7 +218,7 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  * @return The original value of the variable that ptr points to (i.e., from before the application of this operation).
  */
 #if defined(ZEPHYR)
-#define lf_atomic_fetch_add(ptr, value) 1
+#define lf_atomic_fetch_add(ptr, value) _zephyr_atomic_fetch_add((int*) ptr, value)
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that an integer is 32 bits.
 #define lf_atomic_fetch_add(ptr, value) InterlockedExchangeAdd(ptr, value)
@@ -235,7 +235,7 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  * @return The new value of the variable that ptr points to (i.e., from before the application of this operation).
  */
 #if defined(ZEPHYR)
-#define lf_atomic_add_fetch(ptr, value) 1
+#define lf_atomic_add_fetch(ptr, value) _zephyr_atomic_add_fetch((int*) ptr, value)
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that an integer is 32 bits.
 #define lf_atomic_add_fetch(ptr, value) InterlockedAdd(ptr, value)
@@ -254,7 +254,7 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  * @return True if comparison was successful. False otherwise.
  */
 #if defined(ZEPHYR)
-#define lf_bool_compare_and_swap(ptr, value, newval) 1
+#define lf_bool_compare_and_swap(ptr, value, newval) _zephyr_bool_compare_and_swap((bool*) ptr, value, newval)
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that a boolean is represented with a 32-bit integer.
 #define lf_bool_compare_and_swap(ptr, oldval, newval) (InterlockedCompareExchange(ptr, newval, oldval) == oldval)
@@ -273,7 +273,7 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  * @return The initial value of *ptr.
  */
 #if defined(ZEPHYR)
-#define lf_val_compare_and_swap(ptr, value, newval) 1
+#define lf_val_compare_and_swap(ptr, value, newval) _zephyr_val_compare_and_swap((int*) ptr, value, newval)
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define lf_val_compare_and_swap(ptr, oldval, newval) InterlockedCompareExchange(ptr, newval, oldval)
 #elif defined(__GNUC__) || defined(__clang__)

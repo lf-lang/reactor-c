@@ -11,7 +11,7 @@
 // Keep track of physical actions being entered into the system
 static volatile bool _lf_async_event = false;
 // Keep track of whether we are in a critical section or not
-static volatile bool _lf_in_critical_section = true;
+static volatile bool _lf_in_critical_section = false;
 
 static volatile unsigned _lf_irq_mask = 0;
 
@@ -95,6 +95,7 @@ int lf_sleep(interval_t sleep_duration) {
  * Initialize the LF clock. Arduino auto-initializes its clock, so we don't do anything.
  */
 void lf_initialize_clock() {
+    printk("NS per HW_CYCLE: %llu\n", NSEC_PER_HW_CYCLE);
 }
 
 /**
@@ -150,16 +151,20 @@ int lf_nanosleep(interval_t sleep_duration) {
 }
 
 #ifdef NUMBER_OF_WORKERS
-#define _LF_STACK_SIZE 500
+// FIXME: What is an appropriate stack size?
+#define _LF_STACK_SIZE 1024
+// FIXME: What is an appropriate thread prio?
 #define _LF_THREAD_PRIORITY 5
 static K_THREAD_STACK_ARRAY_DEFINE(stacks, NUMBER_OF_WORKERS, _LF_STACK_SIZE);
 static struct k_thread threads[NUMBER_OF_WORKERS];
 
+// Typedef that represents the function pointers passed by LF runtime into lf_thread_create
 typedef void *(*lf_function_t) (void *);
 
+// Entry point for all worker threads. an intermediate step to connect Zephyr threads with LF runtimes idea of a thread
 static void zephyr_worker_entry(void * func, void * args, void * unused2) {
     lf_function_t _func = (lf_function_t) func;
-    func(args);
+    _func(args);
 }
 
 /**
@@ -178,15 +183,17 @@ int lf_available_cores() {
  *
  */
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
-    static tid = 0;
+    static int tid = 0;
     assert(tid > (NUMBER_OF_WORKERS-1));
 
-    k_tid_t my_tid = k_thread_create(&threads[i], &stacks[i][0],
+    k_tid_t my_tid = k_thread_create(&threads[tid], &stacks[tid][0],
                                     _LF_STACK_SIZE, zephyr_worker_entry,
                                  (void *) lf_thread, arguments, NULL,
                                  _LF_THREAD_PRIORITY, 0, K_NO_WAIT);
 
-    tid++;    
+    tid++; 
+
+    *thread = my_tid;   
     return 0;
 }
 
@@ -198,7 +205,7 @@ int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arg
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_thread_join(lf_thread_t thread, void** thread_return) {
-    printk("lf_thread_join called\n");
+    k_thread_join(thread, K_FOREVER);
     return 0;
 }
 
@@ -208,9 +215,7 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_mutex_init(lf_mutex_t* mutex) {
-
-    printk("lf_mutex_init called\n");
-    return 0;    
+    return k_mutex_init(mutex);    
 }
 
 /**
@@ -219,8 +224,8 @@ int lf_mutex_init(lf_mutex_t* mutex) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_mutex_lock(lf_mutex_t* mutex) {
-    printk("lf_mutex_lock\n");
-    return 0;
+    int res = k_mutex_lock(mutex, K_FOREVER);
+    return res;
 }
 
 /** 
@@ -229,9 +234,8 @@ int lf_mutex_lock(lf_mutex_t* mutex) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_mutex_unlock(lf_mutex_t* mutex) {
-
-    printk("lf_mutex_unlock\n");
-    return 0;
+    int res = k_mutex_unlock(mutex);
+    return res;
 }
 
 
@@ -241,8 +245,7 @@ int lf_mutex_unlock(lf_mutex_t* mutex) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_init(lf_cond_t* cond) {
-    printk("lf_cond_init\n");
-    return 0;
+    return k_condvar_init(cond);
 }
 
 /** 
@@ -251,7 +254,7 @@ int lf_cond_init(lf_cond_t* cond) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_broadcast(lf_cond_t* cond) {
-    printk("lf_cond_broadcast\n");
+    k_condvar_broadcast(cond);
     return 0;
 }
 
@@ -261,9 +264,7 @@ int lf_cond_broadcast(lf_cond_t* cond) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_signal(lf_cond_t* cond) {
- 
-    printk("lf_cond_signal\n");
-    return 0;
+    return k_condvar_signal(cond);
 }
 
 /** 
@@ -273,9 +274,7 @@ int lf_cond_signal(lf_cond_t* cond) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex) {
-
-    printk("lf_cond_wait\n");
-    return 0;
+    return k_condvar_wait(cond, mutex, K_FOREVER);
 }
 
 /** 
@@ -287,9 +286,65 @@ int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex) {
  *  number otherwise.
  */
 int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absolute_time_ns) {
-    printk("lf_cond_timedwait\n");
-    return 0;
+    
+    // lf_sleep_until(absolute_time_ns);
+    // instant_t now;
+    // lf_clock_gettime(&now);
+    // return LF_TIMEOUT;
+    instant_t now;
+    lf_clock_gettime(&now);
+    interval_t sleep_duration_ns = absolute_time_ns - now;
+    k_timeout_t timeout = K_NSEC(sleep_duration_ns);
+    int res = k_condvar_wait(cond, mutex, timeout);
+    if (res == 0) {
+        return 0;
+    } else {
+        return LF_TIMEOUT;
+    }
 }
 
+// Atomics
+//  Implemented by just entering a critical section and doing the arithmetic
+//  FIXME: We are now restricted to atomic integer operations
+
+int _zephyr_atomic_fetch_add(int *ptr, int value) {
+    lf_critical_section_enter();
+    int res = *ptr;
+    *ptr += value;
+    lf_critical_section_exit();
+    return res;
+}
+
+int _zephyr_atomic_add_fetch(int *ptr, int value) {
+    lf_critical_section_enter();
+    int res = *ptr + value;
+    *ptr = res;
+    lf_critical_section_exit();
+    return res;
+}
+
+// FIXME: Are you sure that it should return bool?
+bool _zephyr_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
+    lf_critical_section_enter();
+    bool res = false;
+    if (*ptr == value) {
+        *ptr = newval;
+        res = true;
+    }
+    lf_critical_section_exit();
+    return res;
+}
+
+// FIXME: Are you sure that it should return bool?
+bool _zephyr_val_compare_and_swap(int *ptr, int value, int newval) {
+    lf_critical_section_enter();
+    bool res = false;
+    if (*ptr == value) {
+        *ptr = newval;
+        res = true;
+    }
+    lf_critical_section_exit();
+    return res;
+}
 
 #endif // NUMBER_OF_WORKERS
