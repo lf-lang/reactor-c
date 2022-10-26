@@ -34,7 +34,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
-typedef int lf_mutex_t;
 #include "../reactor_common.c"
 #include "../platform.h"
 #include "scheduler.h"
