@@ -342,7 +342,7 @@ void lf_sched_init(
     }
 
     #ifdef MODAL_REACTORS
-    // Allocate array to hold information about which local mutexes was acquired
+    // Allocate array to hold information about which local mutexes were acquired
     //  due to mode transitions
     reactor_mode_state_t **states;
     int states_size = _lf_mode_get_reactor_mode_states(&states); 
