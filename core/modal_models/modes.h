@@ -47,6 +47,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Forward declare reactor self-struct from reactor.h
 struct self_base_t;
 
+// Use a vector for collecting transitioning reactors
+#include "utils/vector.h"
+
 ////////////////////////////////////////////////////////////
 //// Macros for setting modes.
 
@@ -107,9 +110,9 @@ void _lf_handle_mode_changes(void);
 void _lf_handle_mode_triggered_reactions(void);
 
 /**
- * Function (to be code generated) to get the reactor_mode_state array and its length
+ * Function (to be code generated) to fill up a vector with the reactors who has mode transitions
  */
-int _lf_mode_get_reactor_mode_states(reactor_mode_state_t ***reactor_mode_state);
+int _lf_mode_get_transitioning_reactors(void * return_vec);
 
 
 /** A struct to represent a single mode instace in a reactor instance. */

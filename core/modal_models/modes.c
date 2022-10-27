@@ -557,4 +557,51 @@ void _lf_terminate_modal_reactors() {
     }
     _lf_unsused_suspended_events_head = NULL;
 }
+
+/**
+ * @brief This function accepts an array of ALL the mode_states and should add a reactor ptr into return_vec 
+ *  for all reactors that will do a transition
+ * 
+ *  A mode does a transition of either:
+ *  1) next_mode is set or
+ *  2) parent has next_mode set
+ * 
+ *  A preliminary implementation is simple:
+ *  1) Check if reactor has next_mode set. If so, add to return_vec 
+ *  2) If not, check if its parent has already been added to return_vec. If so, add it
+ *  
+ *  This assumes that the `states` argument is an array ordered hierarchically. It does a bunch of searching through
+ *  the return_vec, but this might be OK.   
+ * 
+ * @param states 
+ * @param states_size 
+ * @param return_vec 
+ * @return int 
+ */
+int _lf_mode_collect_transitioning_reactors(reactor_mode_state_t **states, int states_size, void * _return_vec) {
+    int num_transitioning_reactors = 0;
+    vector_t *return_vec = (vector_t *) _return_vec;
+    for (int i = 0; i < states_size; i++) {
+        reactor_mode_state_t* state = states[i];
+        if (state != NULL) {
+            // Check if reactor is doing a "volunteering" mode transition (scheduled from within itself)
+            if (state->next_mode != NULL) {
+                vector_push(return_vec, state->self);
+                num_transitioning_reactors++;
+            } else {
+                // See if its parent has done any volunteered mode transition
+                 for (int i = 0; i< num_transitioning_reactors; i++) {
+                    // Start search from the end. Look for a reactor pointer equal to self pointer of parent
+                    if (vector_at(return_vec, num_transitioning_reactors-1-i) == (void *) state->parent_mode->state->self) {
+                        vector_push(return_vec, state->self);
+                        num_transitioning_reactors++;
+                        break;
+                    }
+                }
+            }
+        }
+    }
+    return num_transitioning_reactors;
+}
+
 #endif
