@@ -34,7 +34,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "reactor_common.c"
 #include "platform.h"
+
+#ifndef TARGET_EMBEDDED
 #include <signal.h> // To trap ctrl-c and invoke termination().
+#endif
 //#include <assert.h>
 
 /**
@@ -51,52 +54,7 @@ pqueue_t* reaction_q;
  * to prevent unnecessary delays caused by simply setting up and
  * performing the wait.
  */
-#define MIN_WAIT_TIME NSEC(10)
-
-/**
- * Schedule the specified trigger at current_tag.time plus the offset of the
- * specified trigger plus the delay.
- * See reactor.h for documentation.
- */
-trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-    trigger_t* trigger = _lf_action_to_trigger(action);
-    return _lf_schedule(trigger, extra_delay, token);
-}
-
-/**
- * Variant of schedule_token that creates a token to carry the specified value.
- * See reactor.h for documentation.
- */
-trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* value, size_t length) {
-    trigger_t* trigger = _lf_action_to_trigger(action);
-    lf_token_t* token = create_token(trigger->element_size);
-    token->value = value;
-    token->length = length;
-    return _lf_schedule_token(action, extra_delay, token);
-}
-
-/**
- * Schedule an action to occur with the specified value and time offset
- * with a copy of the specified value.
- * See reactor.h for documentation.
- */
-trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value, size_t length) {
-    trigger_t* trigger = _lf_action_to_trigger(action);
-    if (value == NULL) {
-        return _lf_schedule_token(action, offset, NULL);
-    }
-    if (trigger == NULL || trigger->token == NULL || trigger->token->element_size <= 0) {
-        lf_print_error("schedule: Invalid trigger or element size.");
-        return -1;
-    }
-    LF_PRINT_DEBUG("schedule_copy: Allocating memory for payload (token value): %p.", trigger);
-    // Initialize token with an array size of length and a reference count of 0.
-    lf_token_t* token = _lf_initialize_token(trigger->token, length);
-    // Copy the value into the newly allocated memory.
-    memcpy(token->value, value, token->element_size * length);
-    // The schedule function will increment the reference count.
-    return _lf_schedule_token(action, offset, token);
-}
+#define MIN_SLEEP_DURATION USEC(10) // FIXME: https://github.com/lf-lang/reactor-c/issues/109
 
 /**
  * Mark the given port's is_present field as true. This is_present field
@@ -128,29 +86,35 @@ void _lf_set_present(lf_port_base_t* port) {
 }
 
 /**
- * Advance logical time to the lesser of the specified time or the
- * timeout time, if a timeout time has been given. If the -fast command-line option
- * was not given, then wait until physical time matches or exceeds the start time of
- * execution plus the current_tag.time plus the specified logical time.  If this is not
- * interrupted, then advance current_tag.time by the specified logical_delay.
- * Return 0 if time advanced to the time of the event and -1 if the wait
- * was interrupted or if the timeout time was reached.
+ * Wait until physical time matches the given logical time or the time of a 
+ * concurrently scheduled physical action, which might be earlier than the 
+ * requested logical time.
+ * @return 0 if the wait was completed, -1 if it was skipped or interrupted.
  */ 
-int wait_until(instant_t logical_time_ns) {
-    int return_value = 0;
+int wait_until(instant_t wakeup_time) {
     if (!fast) {
-        LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", logical_time_ns - start_time);
-        interval_t ns_to_wait = logical_time_ns - lf_time_physical();
+        LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", wakeup_time - start_time);
+        interval_t sleep_duration = wakeup_time - lf_time_physical();
     
-        if (ns_to_wait < MIN_WAIT_TIME) {
-            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_WAIT_TIME %lld. Skipping wait.",
-                ns_to_wait, MIN_WAIT_TIME);
-            return return_value;
+        if (sleep_duration <= 0) {
+            return 0;
+        } else if (sleep_duration < MIN_SLEEP_DURATION) {
+            // This is a temporary fix. FIXME: factor this out into platform API function.
+            // Issue: https://github.com/lf-lang/reactor-c/issues/109
+            // What really should be done on embedded platforms:
+            // - compute target time
+            // - disable interrupts
+            // - read current time
+            // - compute shortest distance between target time and current time 
+            // - shortest distance should be positive and at least 2 ticks(us)
+            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_SLEEP_DURATION %lld. Skipping wait.",
+                sleep_duration, MIN_SLEEP_DURATION);
+            return -1;
         }
-
-        return_value = lf_nanosleep(ns_to_wait);
+        LF_PRINT_DEBUG("Going to sleep for %"PRId64" ns\n", sleep_duration);
+        return lf_sleep_until(wakeup_time);
     }
-    return return_value;
+    return 0;
 }
 
 void lf_print_snapshot() {
@@ -282,21 +246,20 @@ int _lf_do_step(void) {
 // the keepalive command-line option has not been given.
 // Otherwise, return 1.
 int next(void) {
+    // Enter the critical section and do not leave until we have
+    // determined which tag to commit to and start invoking reactions for.
+    lf_critical_section_enter();
     event_t* event = (event_t*)pqueue_peek(event_q);
     //pqueue_dump(event_q, event_q->prt);
     // If there is no next event and -keepalive has been specified
     // on the command line, then we will wait the maximum time possible.
-    // FIXME: is LLONG_MAX different from FOREVER?
-    #ifdef BIT_32
-    tag_t next_tag = { .time = LONG_MAX, .microstep = UINT_MAX};
-    #else 
-    tag_t next_tag = { .time = LLONG_MAX, .microstep = UINT_MAX};
-    #endif
+    tag_t next_tag = FOREVER_TAG_INITIALIZER;
     if (event == NULL) {
         // No event in the queue.
-        if (!keepalive_specified) { // FIXME: validator should issue a warning for unthreaded implementation
-                                    // schedule is not thread-safe
-            _lf_set_stop_tag((tag_t){.time=current_tag.time,.microstep=current_tag.microstep+1});
+        if (!keepalive_specified) {
+            _lf_set_stop_tag(
+                (tag_t){.time=current_tag.time, .microstep=current_tag.microstep+1}
+            );
         }
     } else {
         next_tag.time = event->time;
@@ -306,33 +269,31 @@ int next(void) {
         } else {
             next_tag.microstep = 0;
         }
+        if (_lf_is_tag_after_stop_tag(next_tag)) {
+            // Cannot process events after the stop tag.
+            next_tag = stop_tag;
+        }
     }
     
-    if (_lf_is_tag_after_stop_tag(next_tag)) {
-        // Cannot process events after the stop tag.
-        next_tag = stop_tag;
-    }
-
-    LF_PRINT_LOG("Next event (elapsed) time is " PRINTF_TIME ".", next_tag.time - start_time);
     // Wait until physical time >= event.time.
-    // The wait_until function will advance current_tag.time.
-    if (wait_until(next_tag.time) != 0) {
+    int finished_sleep = wait_until(next_tag.time);
+    LF_PRINT_LOG("Next event (elapsed) time is " PRINTF_TIME ".", next_tag.time - start_time);
+    if (finished_sleep != 0) {
         LF_PRINT_DEBUG("***** wait_until was interrupted.");
-        // Sleep was interrupted.
-        // FIXME: It is unclear what would cause this to occur in this unthreaded
-        // runtime since lf_schedule() is not thread safe here and should not
-        // be called asynchronously. Perhaps in some runtime such as for a
-        // PRET machine this will be supported, so here we handle this as
-        // if an asynchronous call to schedule has occurred. In that case,
-        // we should return 1 to let the runtime loop around to see what
-        // is on the event queue.
+        // Sleep was interrupted. This could happen when a physical action
+        // gets scheduled from an interrupt service routine.
+        // In this case, check the event queue again to make sure to
+        // advance time to the correct tag.
+        lf_critical_section_exit();
         return 1;
     }
-
-    // At this point, finally, we have an event to process.
     // Advance current time to match that of the first event on the queue.
+    // We can now leave the critical section. Any events that will be added
+    // to the queue asynchronously will have a later tag than the current one.
     _lf_advance_logical_time(next_tag.time);
-
+    lf_critical_section_exit();
+    
+    // Trigger shutdown reactions if appropriate.
     if (lf_tag_compare(current_tag, stop_tag) >= 0) {        
         _lf_trigger_shutdown_reactions();
     }
@@ -344,7 +305,9 @@ int next(void) {
     // Pop all events from event_q with timestamp equal to current_tag.time,
     // extract all the reactions triggered by these events, and
     // stick them into the reaction queue.
+    lf_critical_section_enter();
     _lf_pop_events();
+    lf_critical_section_exit();
 
     return _lf_do_step();
 }
@@ -388,14 +351,16 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
             && process_args(argc, argv)) {
         LF_PRINT_DEBUG("Processed command line arguments.");
         LF_PRINT_DEBUG("Registering the termination function.");
+        #ifndef TARGET_EMBEDDED
         if (atexit(termination) != 0) {
             lf_print_warning("Failed to register termination function!");
         }
+        #endif
         // The above handles only "normal" termination (via a call to exit).
         // As a consequence, we need to also trap ctrl-C, which issues a SIGINT,
         // and cause it to call exit.
         // We wrap this statement since certain Arduino flavors don't support signals.
-        #ifndef ARDUINO
+        #ifndef TARGET_EMBEDDED
         signal(SIGINT, exit);
         #endif
         

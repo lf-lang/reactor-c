@@ -573,7 +573,7 @@ void encode_tag(
  * Checks if str matches regex.
  * @return true if there is a match, false otherwise.
  */
-bool match_regex(char* str, char* regex) {
+bool match_regex(const char* str, char* regex) {
     regex_t regex_compiled;
     regmatch_t group;
     bool valid = false;
@@ -617,7 +617,7 @@ bool validate_port(char* port) {
  * Checks if host is valid.
  * @return true if valid, false otherwise.
  */
-bool validate_host(char* host) {
+bool validate_host(const char* host) {
     // regex taken from LFValidator.xtend
     char* ipv4_regex = "((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])";
     char* host_or_FQN_regex = "^([a-z0-9]+(-[a-z0-9]+)*)|(([a-z0-9]+(-[a-z0-9]+)*\\.)+[a-z]{2,})$";
@@ -629,7 +629,7 @@ bool validate_host(char* host) {
  * Checks if user is valid.
  * @return true if valid, false otherwise.
  */
-bool validate_user(char* user) {
+bool validate_user(const char* user) {
     // regex taken from LFValidator.xtend
     char* username_regex = "^[a-z_]([a-z0-9_-]{0,31}|[a-z0-9_-]{0,30}\\$)$";
     return match_regex(user, username_regex);
@@ -639,7 +639,8 @@ bool validate_user(char* user) {
  * Extract one match group from the rti_addr regex .
  * @return true if SUCCESS, else false.
  */
-bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group, int max_len, int min_len, const char* err_msg) {
+bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group, 
+        int max_len, int min_len, const char* err_msg) {
     size_t size = group.rm_eo - group.rm_so;
     if (size > max_len || size < min_len) {
         lf_print_error("%s", err_msg);
@@ -655,7 +656,7 @@ bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group, int
  * @return true if success, else false.
  */
 bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti_addr_flags, regmatch_t* group_array,
-                          int* gids, int* max_lens, int* min_lens, const char** err_msgs) {
+        int* gids, int* max_lens, int* min_lens, const char** err_msgs) {
     for (int i = 0; i < 3; i++) {
         if (group_array[gids[i]].rm_so != -1) {
             if (!extract_match_group(rti_addr, rti_addr_strs[i], group_array[gids[i]], max_lens[i], min_lens[i], err_msgs[i])) {

@@ -51,7 +51,7 @@ typedef BOOL bool;
 #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
 
 /**
- * On Windows, one could use botha  mutex or
+ * On Windows, one could use both a mutex or
  * a critical section for the same purpose. However,
  * critical sections are lighter and limited to one process
  * and thus fit the requirements of Lingua Franca.

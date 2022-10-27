@@ -25,7 +25,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /** Linux API support for the C target of Lingua Franca.
- *  
+ *
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
  */
 
@@ -33,11 +33,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LF_LINUX_SUPPORT_H
 
 #ifdef NUMBER_OF_WORKERS
-#if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
-#include "lf_POSIX_threads_support.h"
-#else
-#include "lf_C11_threads_support.h"
-#endif
+    #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
+        #include "lf_POSIX_threads_support.h"
+    #else
+        #include "lf_C11_threads_support.h"
+    #endif
 #endif
 
 #include <stdint.h> // For fixed-width integral types

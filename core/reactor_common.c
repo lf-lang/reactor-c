@@ -36,6 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Alexander Schulz-Rosengarten <als@informatik.uni-kiel.de>}
  */
 
+#include "platform.h"
 #include "reactor.h"
 #include "tag.c"
 #include "utils/pqueue.c"
@@ -1456,6 +1457,67 @@ trigger_t* _lf_action_to_trigger(void* action) {
 }
 
 /**
+ * Schedule the specified trigger at current_tag.time plus the offset of the
+ * specified trigger plus the delay.
+ * See reactor.h for documentation.
+ */
+trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
+    trigger_t* trigger = _lf_action_to_trigger(action);
+    lf_critical_section_enter();
+    int return_value = _lf_schedule(trigger, extra_delay, token);
+    // Notify the main thread in case it is waiting for physical time to elapse.
+    lf_notify_of_event();
+    lf_critical_section_exit();
+    return return_value;
+}
+
+/**
+ * Schedule an action to occur with the specified value and time offset
+ * with a copy of the specified value.
+ * See reactor.h for documentation.
+ */
+trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value, size_t length) {
+    if (value == NULL) {
+        return _lf_schedule_token(action, offset, NULL);
+    }
+    trigger_t* trigger = _lf_action_to_trigger(action);
+
+    if (trigger == NULL || trigger->token == NULL || trigger->token->element_size <= 0) {
+        lf_print_error("schedule: Invalid trigger or element size.");
+        return -1;
+    }
+    lf_critical_section_enter();
+    // Initialize token with an array size of length and a reference count of 0.
+    lf_token_t* token = _lf_initialize_token(trigger->token, length);
+    // Copy the value into the newly allocated memory.
+    memcpy(token->value, value, token->element_size * length);
+    // The schedule function will increment the reference count.
+    trigger_handle_t result = _lf_schedule(trigger, offset, token);
+    // Notify the main thread in case it is waiting for physical time to elapse.
+    lf_notify_of_event();
+    lf_critical_section_exit();
+    return result;
+}
+
+/**
+ * Variant of schedule_token that creates a token to carry the specified value.
+ * See reactor.h for documentation.
+ */
+trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* value, size_t length) {
+    trigger_t* trigger = _lf_action_to_trigger(action);
+
+    lf_critical_section_enter();
+    lf_token_t* token = create_token(trigger->element_size);
+    token->value = value;
+    token->length = length;
+    int return_value = _lf_schedule(trigger, extra_delay, token);
+    // Notify the main thread in case it is waiting for physical time to elapse.
+    lf_notify_of_event();
+    lf_critical_section_exit();
+    return return_value;
+}
+
+/**
  * Advance from the current tag to the next. If the given next_time is equal to
  * the current time, then increase the microstep. Otherwise, update the current
  * time and set the microstep to zero.
@@ -1816,6 +1878,7 @@ const char** default_argv = NULL;
  * understood, then print a usage message and return 0. Otherwise, return 1.
  * @return 1 if the arguments processed successfully, 0 otherwise.
  */
+
 int process_args(int argc, const char* argv[]) {
     int i = 1;
     while (i < argc) {
@@ -1846,8 +1909,9 @@ int process_args(int argc, const char* argv[]) {
             const char* time_spec = argv[i++];
             const char* units = argv[i++];
 
-            #ifdef BIT_32
-            duration = atol(time_spec);
+            #ifdef TARGET_EMBEDDED
+            // FIXME: how should we parse this? I think embedded platforms might want another way of passing args
+            duration = atoi(time_spec);
             #else
             duration = atoll(time_spec);
             #endif
@@ -1997,7 +2061,7 @@ void initialize(void) {
         #endif
     #endif
 
-    #ifdef ARDUINO
+    #ifdef TARGET_EMBEDDED
     printf("---- Start execution at time " PRINTF_TIME "us\n", physical_start_time);
     #else
     struct timespec physical_time_timespec = {physical_start_time / BILLION, physical_start_time % BILLION};

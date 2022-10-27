@@ -34,6 +34,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Arduino.h"
 
 /**
+ * Keep track of interrupts being raised.
+ */
+volatile bool _lf_timer_interrupted = false;
+
+/**
  * Pause execution for a number of microseconds.
  *
  * This function works very accurately in the range from 3 to 16383 microseconds.
@@ -42,8 +47,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * @return 0 always.
  */
-int lf_nanosleep(instant_t requested_time) {
-    unsigned int microsec = (unsigned int) requested_time;
+int lf_sleep(interval_t sleep_duration) {
+    unsigned int microsec = (unsigned int) sleep_duration; // FIXME: this cast should not be necessary if the datatype is defined correctly.
     if(microsec < 3) {
         return 0;
     }
@@ -79,4 +84,28 @@ int lf_clock_gettime(instant_t* t) {
 
     *t = micros();
     return 0;
+}
+
+int lf_critical_section_enter() {
+    noInterrupts();
+    return 0;
+}
+
+int lf_critical_section_exit() {
+    interrupts();
+    return 0;
+}
+
+int lf_notify_of_event() {
+   _lf_timer_interrupted = true;
+   return 0;
+}
+
+int lf_ack_events() {
+    _lf_timer_interrupted = false;
+    return 0;
+}
+
+int lf_nanosleep(interval_t sleep_duration) {
+    return lf_sleep(sleep_duration);
 }

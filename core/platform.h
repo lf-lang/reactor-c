@@ -42,7 +42,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#if defined(ARDUINO)
+#define ZEPHYR
+
+#if defined(ZEPHYR)
+    #include "platform/lf_zephyr_support.h"
+#elif defined(ARDUINO)
     #include "platform/lf_arduino_support.h"
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
    // Windows platforms
@@ -67,9 +71,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #ifdef NUMBER_OF_WORKERS
+// All platforms require some form of mutex support for physical actions.
+typedef _lf_mutex_t lf_mutex_t;          // Type to hold handle to a mutex
+// Single global mutex.
+extern lf_mutex_t mutex;
+
 #define LF_TIMEOUT _LF_TIMEOUT
 
-typedef _lf_mutex_t lf_mutex_t;          // Type to hold handle to a mutex
 typedef _lf_cond_t lf_cond_t;            // Type to hold handle to a condition variable
 typedef _lf_thread_t lf_thread_t;        // Type to hold handle to a thread
 #endif
@@ -90,6 +98,33 @@ typedef _interval_t interval_t;
  */
 typedef _microstep_t microstep_t;
 
+/**
+ * Enter a critical section where logical time and the event queue are guaranteed
+ * to not change unless they are changed within the critical section.
+ * In platforms with threading support, this normally will be implemented
+ * by acquiring a mutex lock. In platforms without threading support,
+ * this can be implemented by disabling interrupts.
+ * Users of this function must ensure that lf_init_critical_sections() is
+ * called first and that lf_critical_section_exit() is called later.
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_critical_section_enter();
+
+/**
+ * Exit the critical section entered with lf_lock_time().
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_critical_section_exit();
+
+/**
+ * Notify any listeners that an event has been created.
+ * The caller should call lf_critical_section_enter() before calling this function.
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_notify_of_event();
+
+// For platforms with threading support, the following functions
+// abstract the API so that the LF runtime remains portable.
 #ifdef NUMBER_OF_WORKERS
 
 /**
@@ -182,7 +217,9 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  * @param value The value to be added to the variable pointed to by the ptr parameter.
  * @return The original value of the variable that ptr points to (i.e., from before the application of this operation).
  */
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(ZEPHYR)
+#define lf_atomic_fetch_add(ptr, value) _zephyr_atomic_fetch_add((int*) ptr, value)
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that an integer is 32 bits.
 #define lf_atomic_fetch_add(ptr, value) InterlockedExchangeAdd(ptr, value)
 #elif defined(__GNUC__) || defined(__clang__)
@@ -197,7 +234,9 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  * @param value The value to be added to the variable pointed to by the ptr parameter.
  * @return The new value of the variable that ptr points to (i.e., from before the application of this operation).
  */
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(ZEPHYR)
+#define lf_atomic_add_fetch(ptr, value) _zephyr_atomic_add_fetch((int*) ptr, value)
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that an integer is 32 bits.
 #define lf_atomic_add_fetch(ptr, value) InterlockedAdd(ptr, value)
 #elif defined(__GNUC__) || defined(__clang__)
@@ -214,7 +253,9 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  * @param newval The value to assign to *ptr if comparison is successful.
  * @return True if comparison was successful. False otherwise.
  */
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(ZEPHYR)
+#define lf_bool_compare_and_swap(ptr, value, newval) _zephyr_bool_compare_and_swap((bool*) ptr, value, newval)
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that a boolean is represented with a 32-bit integer.
 #define lf_bool_compare_and_swap(ptr, oldval, newval) (InterlockedCompareExchange(ptr, newval, oldval) == oldval)
 #elif defined(__GNUC__) || defined(__clang__)
@@ -231,7 +272,9 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  * @param newval The value to assign to *ptr if comparison is successful.
  * @return The initial value of *ptr.
  */
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(ZEPHYR)
+#define lf_val_compare_and_swap(ptr, value, newval) _zephyr_val_compare_and_swap((int*) ptr, value, newval)
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define lf_val_compare_and_swap(ptr, oldval, newval) InterlockedCompareExchange(ptr, newval, oldval)
 #elif defined(__GNUC__) || defined(__clang__)
 #define lf_val_compare_and_swap(ptr, oldval, newval) __sync_val_compare_and_swap(ptr, oldval, newval)
@@ -258,22 +301,34 @@ extern void lf_initialize_clock(void);
 extern int lf_clock_gettime(instant_t* t);
 
 /**
- * Pause execution for a number of nanoseconds.
+ * Pause execution for a given duration.
  * 
  * @return 0 for success, or -1 for failure.
  */
-extern int lf_nanosleep(instant_t requested_time);
+extern int lf_sleep(interval_t sleep_duration);
 
+/**
+ * @brief Sleep until the given wakeup time.
+ * 
+ * @param wakeup_time The time instant at which to wake up.
+ * @return int 0 if sleep completed, or -1 if it was interrupted.
+ */
+extern int lf_sleep_until(instant_t wakeup_time);
 
 /**
  * Macros for marking function as deprecated
  */
 #ifdef __GNUC__
-#define DEPRECATED(X) X __attribute__((deprecated))
+    #define DEPRECATED(X) X __attribute__((deprecated))
 #elif defined(_MSC_VER)
-#define DEPRECATED(X) __declspec(deprecated) X
+    #define DEPRECATED(X) __declspec(deprecated) X
 #else
-#define DEPRECATED(X) X
+    #define DEPRECATED(X) X
 #endif
+
+/**
+ * @deprecated version of "lf_seep"
+ */
+DEPRECATED(extern int lf_nanosleep(interval_t sleep_duration));
 
 #endif // PLATFORM_H

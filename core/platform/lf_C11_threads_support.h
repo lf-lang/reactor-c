@@ -38,6 +38,9 @@ typedef mtx_t _lf_mutex_t;
 typedef cnd_t _lf_cond_t;
 typedef thrd_t _lf_thread_t;
 
+extern _lf_mutex_t mutex;
+extern _lf_cond_t event_q_changed;
+
 #define _LF_TIMEOUT thrd_timedout
 
 #endif // LF_C11_THREADS_SUPPORT_H
