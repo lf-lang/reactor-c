@@ -44,21 +44,41 @@
  *  capturing the overflow.
  */
 static volatile uint32_t _lf_time_cycles_high = 0;
-static volatile uint32_t _lf_time_cycles_low_last = 0;
 
 // To enable development also on QEMU emulation we provide
 //  the ability to use the less precise system clock. This flag is set
 
 #ifndef LF_QEMU_EMULATION
 // FIXME: timer1 is nrf52dk specific. For other boards we wanna support we have to do some
-//  macro-lookups to get it working 
+//  macro-lookups to get it working with all other boards
 #define LF_TIMER DT_NODELABEL(timer1)
 #define LF_TIMER_SLEEP_CHANNEL 0
-struct counter_alarm_cfg _lf_alarm_cfg;
+static struct counter_alarm_cfg _lf_alarm_cfg;
+static struct counter_top_cfg _lf_timer_top_cfg;
 const struct device *const _lf_counter_dev = DEVICE_DT_GET(LF_TIMER);   
+
+// Timer overflow callback
+// FIXME: Remove debug printing here
+static void  _lf_timer_overflow_callback(const struct device *dev, void *user_data) {
+    
+    printk("Timeroverflow detected\n");
+    uint32_t now_cycles;
+    int res = counter_get_value(dev, &now_cycles);
+    printk("Cycles=%u\n", now_cycles);
+
+    k_sleep(K_MSEC(1));
+
+    res = counter_get_value(dev, &now_cycles);
+    printk("Cycles=%u\n", now_cycles);
+
+    _lf_time_cycles_high++;
+
+}
+
 
 // Global variable for storing the frequency of the clock. As well as macro for translating into nsec
 static uint32_t _lf_timer_freq_hz;
+static uint32_t _lf_timer_max_value_ticks;
 #define TIMER_TICKS_TO_NS(ticks) ((int64_t) ticks) * 1000000000ULL/_lf_timer_freq_hz
 #else
 
@@ -111,8 +131,17 @@ void lf_initialize_clock() {
         printk("ERROR: Timer has 0Hz frequency\n");
         while(1) {};
     }
+    
+    _lf_timer_max_value_ticks = counter_get_max_top_value(_lf_counter_dev);
+    _lf_timer_top_cfg.ticks = _lf_timer_max_value_ticks;
+    _lf_timer_top_cfg.callback = _lf_timer_overflow_callback;
+    int res = counter_set_top_value(_lf_counter_dev, &_lf_timer_top_cfg);
+    if (res != 0) {
+        printk("ERROR: Timer couldnt set top value\n");
+        while(1) {};
+    }
 
-    printk("HW Clock has frequency of %u Hz \n", _lf_timer_freq_hz);
+    printk("HW Clock has frequency of %u Hz and wraps every %u sec\n", _lf_timer_freq_hz, _lf_timer_max_value_ticks/_lf_timer_freq_hz);
 
     // Start counter
     counter_start(_lf_counter_dev);
@@ -123,8 +152,6 @@ void lf_initialize_clock() {
 
 /**
  * Return the current time in nanoseconds
- * This has to be called at least once per 35minute to work
- * FIXME: This is only addressable by setting up interrupts on a timer peripheral to occur at wrap.
  */
 int lf_clock_gettime(instant_t* t) {
     
@@ -137,7 +164,7 @@ int lf_clock_gettime(instant_t* t) {
     #ifndef LF_QEMU_EMULATION
     uint32_t now_cycles;
     int res = counter_get_value(_lf_counter_dev, &now_cycles);
-    
+
     if (res != 0) {
         return res;
     }
@@ -145,16 +172,9 @@ int lf_clock_gettime(instant_t* t) {
     uint32_t now_cycles = k_cycle_get_32();
     #endif
 
-
-    // Check if we have overflowed since last and should increment higher word
-    if (now_cycles < _lf_time_cycles_low_last) {
-        _lf_time_cycles_high++;
-    }
     int64_t cycles_64 = COMBINE_HI_LO(_lf_time_cycles_high, now_cycles);
-
     *t = TIMER_TICKS_TO_NS(cycles_64);
 
-    _lf_time_cycles_low_last = now_cycles;
     return 0;
 }
 /**
