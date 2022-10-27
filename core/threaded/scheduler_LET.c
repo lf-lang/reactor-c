@@ -501,7 +501,7 @@ void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
     //  pqueue is removed.
     if (reaction->let > 0) {
         // Acquire the global mutex to: 1. Increment global barrier and 2. Update the scheduler variables.
-        LF_PRINT_DEBUG("Worker %d tries to locks global mutex", worker_number);
+        LF_PRINT_DEBUG("Worker %d tries to lock global mutex", worker_number);
         lf_mutex_lock(&mutex);
         LF_PRINT_DEBUG("Worker %d locked global mutex", worker_number);
         if (reaction->let < FOREVER) {
