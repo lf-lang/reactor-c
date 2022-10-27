@@ -59,10 +59,8 @@ const struct device *const _lf_counter_dev = DEVICE_DT_GET(LF_TIMER);
 
 // Timer overflow callback
 static void  _lf_timer_overflow_callback(const struct device *dev, void *user_data) {
-
     _lf_time_cycles_high++;
 }
-
 
 // Global variable for storing the frequency of the clock. As well as macro for translating into nsec
 static uint32_t _lf_timer_freq_hz;
@@ -70,10 +68,8 @@ static uint32_t _lf_timer_max_value_ticks;
 // Translate ticks into nsec. CAREFUL. If you do multiplication in wrong order you will get overflow.
 #define TIMER_TICKS_TO_NS(ticks) (1000000000ULL/((uint64_t) _lf_timer_freq_hz)) * ((uint64_t) ticks)
 #else
-
     #define NSEC_PER_HW_CYCLE 1000000000LL/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC
     #define TIMER_TICKS_TO_NS(ticks) ((int64_t) ticks) * NSEC_PER_HW_CYCLE
-
 #endif
 
 // Forward declaration of local function to ack notified events
@@ -200,7 +196,6 @@ int lf_sleep_until(instant_t wakeup) {
     } else {
         return 0;
     }
-
 }
 
 /**
@@ -213,14 +208,9 @@ int lf_sleep(interval_t sleep_duration) {
     instant_t now;
     lf_clock_gettime(&now);
     instant_t wakeup = now + sleep_duration;
-
     return lf_sleep_until(wakeup);
-
 }
 
-
-
-// FIXME: Fix interrupts
 int lf_critical_section_enter() {
     _lf_in_critical_section = true;
     _lf_irq_mask = irq_lock();
@@ -409,7 +399,6 @@ int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absolute_tim
 // Atomics
 //  Implemented by just entering a critical section and doing the arithmetic
 //  FIXME: We are now restricted to atomic integer operations
-
 int _zephyr_atomic_fetch_add(int *ptr, int value) {
     lf_critical_section_enter();
     int res = *ptr;
