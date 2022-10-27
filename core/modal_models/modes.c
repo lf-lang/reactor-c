@@ -441,7 +441,6 @@ void _lf_process_mode_changes(
                         suspended_event = suspended_event->next;
                     }
                 }
-
             }
         }
     }

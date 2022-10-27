@@ -346,10 +346,7 @@ void lf_sched_init(
     //  due to mode transitions
     reactor_mode_state_t **states;
     int states_size = _lf_mode_get_reactor_mode_states(&states); 
-    local_mutex_was_locked = malloc(states_size * sizeof(bool));
-    for (int i = 0; i<states_size; i++) {
-        local_mutex_was_locked[i] = false;
-    }
+    local_mutex_was_locked = (bool *) calloc(states_size, sizeof(bool));
     #endif
 
     _lf_sched_instance->_lf_sched_executing_reactions = 
