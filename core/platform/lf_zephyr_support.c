@@ -58,21 +58,9 @@ static struct counter_top_cfg _lf_timer_top_cfg;
 const struct device *const _lf_counter_dev = DEVICE_DT_GET(LF_TIMER);   
 
 // Timer overflow callback
-// FIXME: Remove debug printing here
 static void  _lf_timer_overflow_callback(const struct device *dev, void *user_data) {
-    
-    printk("Timeroverflow detected\n");
-    uint32_t now_cycles;
-    int res = counter_get_value(dev, &now_cycles);
-    printk("Cycles=%u\n", now_cycles);
-
-    k_sleep(K_MSEC(1));
-
-    res = counter_get_value(dev, &now_cycles);
-    printk("Cycles=%u\n", now_cycles);
 
     _lf_time_cycles_high++;
-
 }
 
 
