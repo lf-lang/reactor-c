@@ -2,9 +2,12 @@
 #include <errno.h>
 
 #include "lf_zephyr_support.h"
-#include "../platform.h"
+#include "platform.h"
+#include "utils/util.h"
 
 #include <zephyr/kernel.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/counter.h>
 
 #define NSEC_PER_HW_CYCLE 1000000000ULL/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC
 
@@ -31,14 +34,97 @@ static volatile unsigned _lf_irq_mask = 0;
 static volatile uint32_t _lf_time_cycles_high = 0;
 static volatile uint32_t _lf_time_cycles_low_last = 0;
 
+// FIXME: How can we know that there will always be a timer1 device? Also will it work with BLE?
+#define LF_TIMER DT_NODELABEL(timer1)
+#define LF_TIMER_SLEEP_CHANNEL 0
+struct counter_alarm_cfg _lf_alarm_cfg;
+const struct device *const _lf_counter_dev = DEVICE_DT_GET(LF_TIMER);   
+
+// Global variable for storing the frequency of the clock. As well as macro for translating into nsec
+static uint32_t _lf_timer_freq_hz;
+#define TIMER_TICKS_TO_NS(ticks) ((int64_t) ticks) * 1000000000ULL/_lf_timer_freq_hz
+
 // Forward declaration of local function to ack notified events
 static int lf_ack_events();
+
+// Keep track of physical actions being entered into the system
+static volatile bool _lf_async_event = false;
+// Keep track of whether we are in a critical section or not
+static volatile bool _lf_in_critical_section = false;
+
+static volatile unsigned _lf_irq_mask = 0;
 
 #ifdef NUMBER_OF_WORKERS
 lf_mutex_t mutex;
 lf_cond_t event_q_changed;
 #endif
 
+/**
+ * Initialize the LF clock
+ */
+void lf_initialize_clock() {
+    LF_PRINT_LOG("Initializing zephyr HW timer");
+	
+    #ifdef GPIO_DEBUG
+    gpio_debug_init();
+    #endif
+
+    // Verify that we have the device
+    // FIXME: proper error handling here
+    if (!device_is_ready(_lf_counter_dev)) {
+		printk("ERROR: counter device not ready.\n");
+        while(1) {};
+    }
+
+    // Verify that it is working as we think
+    if(!counter_is_counting_up(_lf_counter_dev)) {
+        printk("ERROR: Timer is counting down \n");
+        while(1) {};
+    }
+
+    _lf_timer_freq_hz= counter_get_frequency(_lf_counter_dev);
+    if (_lf_timer_freq_hz == 0) {
+        printk("ERROR: Timer has 0Hz frequency\n");
+        while(1) {};
+    }
+
+    printk("HW Clock has frequency of %u Hz \n", _lf_timer_freq_hz);
+
+    // Start counter
+    counter_start(_lf_counter_dev);
+}   
+
+/**
+ * Return the current time in nanoseconds
+ * This has to be called at least once per 35minute to work
+ * FIXME: This is only addressable by setting up interrupts on a timer peripheral to occur at wrap.
+ */
+int lf_clock_gettime(instant_t* t) {
+    
+    if (t == NULL) {
+        // The t argument address references invalid memory
+        errno = EFAULT;
+        return -1;
+    }
+    // Read value from HW counter
+    uint32_t now_cycles;
+    int res = counter_get_value(_lf_counter_dev, &now_cycles);
+
+    if (res != 0) {
+        return res;
+    }
+
+    // Check if we have overflowed since last and should increment higher word
+    if (now_cycles < _lf_time_cycles_low_last) {
+        _lf_time_cycles_high++;
+    }
+    int64_t cycles_64 = COMBINE_HI_LO(_lf_time_cycles_high, now_cycles);
+
+    *t = TIMER_TICKS_TO_NS(cycles_64);
+
+    _lf_time_cycles_low_last = now_cycles;
+    return 0;
+}
 /**
  * @brief Sleep until an absolute time.
  * FIXME: For improved power consumption this should be implemented with a HW timer and interrupts.
@@ -52,7 +138,7 @@ lf_cond_t event_q_changed;
  */
 int lf_sleep_until(instant_t wakeup) {
     instant_t now;
-    
+
     // If we are not in a critical section, we cannot safely call lf_ack_events because it might have occurred after calling 
     //  lf_sleep_until, in which case we should return immediatly.
     bool was_in_critical_section = _lf_in_critical_section;
@@ -91,37 +177,7 @@ int lf_sleep(interval_t sleep_duration) {
 
 }
 
-/**
- * Initialize the LF clock. Arduino auto-initializes its clock, so we don't do anything.
- */
-void lf_initialize_clock() {
-    printk("NS per HW_CYCLE: %llu\n", NSEC_PER_HW_CYCLE);
-}
 
-/**
- * Return the current time in nanoseconds
- * This has to be called at least once per 35minute to work
- * FIXME: This is only addressable by setting up interrupts on a timer peripheral to occur at wrap.
- */
-int lf_clock_gettime(instant_t* t) {
-    
-    if (t == NULL) {
-        // The t argument address references invalid memory
-        errno = EFAULT;
-        return -1;
-    }
-    uint32_t now_cycles = k_cycle_get_32();
-
-    if (now_cycles < _lf_time_cycles_low_last) {
-        _lf_time_cycles_high++;
-    }
-    int64_t cycles_64 = COMBINE_HI_LO(_lf_time_cycles_high, now_cycles);
-
-    *t = cycles_64* NSEC_PER_HW_CYCLE;
-
-    _lf_time_cycles_low_last = now_cycles;
-    return 0;
-}
 
 // FIXME: Fix interrupts
 int lf_critical_section_enter() {
@@ -183,8 +239,14 @@ int lf_available_cores() {
  *
  */
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
+    // Use static id to map each created thread to a 
+    // FIXME: ARe we guaranteed to never have more threads? What about tracing?
     static int tid = 0;
-    assert(tid > (NUMBER_OF_WORKERS-1));
+    
+    if (tid > (NUMBER_OF_WORKERS-1)) {
+        return -1;
+    }
+
 
     k_tid_t my_tid = k_thread_create(&threads[tid], &stacks[tid][0],
                                     _LF_STACK_SIZE, zephyr_worker_entry,
