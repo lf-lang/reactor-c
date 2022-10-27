@@ -79,7 +79,8 @@ static void  _lf_timer_overflow_callback(const struct device *dev, void *user_da
 // Global variable for storing the frequency of the clock. As well as macro for translating into nsec
 static uint32_t _lf_timer_freq_hz;
 static uint32_t _lf_timer_max_value_ticks;
-#define TIMER_TICKS_TO_NS(ticks) ((int64_t) ticks) * 1000000000ULL/_lf_timer_freq_hz
+// Translate ticks into nsec. CAREFUL. If you do multiplication in wrong order you will get overflow.
+#define TIMER_TICKS_TO_NS(ticks) (1000000000ULL/((uint64_t) _lf_timer_freq_hz)) * ((uint64_t) ticks)
 #else
 
     #define NSEC_PER_HW_CYCLE 1000000000LL/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC
@@ -172,8 +173,8 @@ int lf_clock_gettime(instant_t* t) {
     uint32_t now_cycles = k_cycle_get_32();
     #endif
 
-    int64_t cycles_64 = COMBINE_HI_LO(_lf_time_cycles_high, now_cycles);
-    *t = TIMER_TICKS_TO_NS(cycles_64);
+    uint64_t cycles_64 = COMBINE_HI_LO(_lf_time_cycles_high, now_cycles);
+    *t = (int64_t) TIMER_TICKS_TO_NS(cycles_64);
 
     return 0;
 }
