@@ -3,20 +3,30 @@
 
 #include "lf_zephyr_support.h"
 #include "platform.h"
-#include "utils/util.h"
 
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/counter.h>
 
-#define NSEC_PER_HW_CYCLE 1000000000ULL/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC
+// Includes and functions for GPIO debugging
+#define GPIO_DEBUG
+#ifdef GPIO_DEBUG
+    #include <zephyr/drivers/gpio.h>
+    #define GPIO0 DT_NODELABEL(gpio0)
+    #define NUM_DEBUG_PINS 5
+    gpio_pin_t debug_pins[NUM_DEBUG_PINS] = {19, 20, 22, 23, 24};
+    const struct device *gpio_dev = DEVICE_DT_GET(GPIO0);
 
-// Keep track of physical actions being entered into the system
-static volatile bool _lf_async_event = false;
-// Keep track of whether we are in a critical section or not
-static volatile bool _lf_in_critical_section = false;
+    static void gpio_debug_init() {
+        for (int i = 0; i<NUM_DEBUG_PINS; i++) {
+            gpio_pin_configure(gpio_dev, debug_pins[i], GPIO_OUTPUT_INACTIVE);
+        }
+    }
 
-static volatile unsigned _lf_irq_mask = 0;
+    void gpio_toggle(int pin) {
+        gpio_pin_toggle(gpio_dev,debug_pins[pin]);
+    }
+#endif
 
 // Combine 2 32bit works to a 64 bit word
 #define COMBINE_HI_LO(hi,lo) ((((uint64_t) hi) << 32) | ((uint64_t) lo))
