@@ -40,6 +40,36 @@ cd ~/dev/lingua-franca
 bin/lfc -c test/C/src/zephyr/HelloZephyr.lf
 ```
 
+This should build the HelloWorld.lf for QEMU and start the emulation. You should see something like
+```
+...
+[145/145] Linking C executable zephyr/zephyr.elf
+Memory region         Used Size  Region Size  %age Used
+           FLASH:       21052 B       256 KB      8.03%
+            SRAM:        8384 B        64 KB     12.79%
+        IDT_LIST:          0 GB         2 KB      0.00%
+--- Executing on QEMU emulation
+-- west build: running target run
+[0/1] To exit from QEMU enter: 'CTRL+a, x'[QEMU] CPU: cortex-m3
+*** Booting Zephyr OS build v3.2.0-rc3-97-gf37db90541e7  ***
+Sys Clock has frequency of 12000000 Hz
+---- Start execution at time 641916us
+logical=0 physical=258500 diff = 258500 Hello World!
+qemu-system-arm: warning: nic stellaris_enet.0 has no peer
+Timer with period zero, disabling
+logical=500000000 physical=500080667 diff = 80667 Hello World!
+logical=1000000000 physical=1000057500 diff = 57500 Hello World!
+logical=1500000000 physical=1500053250 diff = 53250 Hello World!
+logical=2000000000 physical=2000052500 diff = 52500 Hello World!
+logical=2500000000 physical=2500060084 diff = 60084 Hello World!
+logical=3000000000 physical=3000055834 diff = 55834 Hello World!
+logical=3500000000 physical=3500055084 diff = 55084 Hello World!
+logical=4000000000 physical=4000054417 diff = 54417 Hello World!
+logical=4500000000 physical=4500057250 diff = 57250 Hello World!
+logical=5000000000 physical=5000063500 diff = 63500 Hello World!
+logical=5500000000 physical=5500059584 diff = 59584 Hello World!
+```
+
 ## How does it work
 - Inspect the target properties of the zephyr LF programs. `build: scripts/zephyr_build.sh` make lfc invoke the script instead of buildint the cmake project directly.
 - The build script takes 1-2 arguments, the board and an optional "flash" flag. And does the following:
@@ -58,8 +88,16 @@ bin/lfc -c test/C/src/zephyr/HelloZephyr.lf
 - Install NRF command line tools. Download [here](https://www.nordicsemi.com/Products/Development-tools/nRF-Command-Line-Tools/Download?lang=en#infotabs)
 - Try running sample Zephyr applications on NRF52 using west build and flash.
 - Run LF Blinky program: `bin/lfc -c test/C/src/zephyr/Blinky.lf` and verify that LED1 is indeed blinking
-- To get debug access into the NRF you will have to follow [this](https://devzone.nordicsemi.com/guides/nrf-connect-sdk-guides/b/getting-started/posts/using-gdb-with-nordic-devices) guide from Nordic. I have started on a script to automate that check out `zephyr_debug_nrf.sh` I would be happy if someone would fix it.
+- To get debug access into the NRF you will have to follow [this](https://devzone.nordicsemi.com/guides/nrf-connect-sdk-guides/b/getting-started/posts/using-gdb-with-nordic-devices) guide from Nordic. You need to have a JLink GDB server running in your host machine listening to a specific port (2331 is default). Then you must let GDB connect to that port in order to step through the code
+- There is a script in `scripts/zephyr_debug_nrf.sh` which automates this. (It assumes that the JLink GDB server is already running). I normally debug like this:
 
+```
+bin/lfc -c test/C/src/zephyr/Blinky.lf
+bash test/C/src/scripts/zephyr_debug_nrf.sh test/C/src-gen/zephyr/Blinky
+```
+
+I then remove the 'flash' argument to the `build` target property in the LF file.
+- To get access to printfs from the NRF52 you have to open a serial monitor. I use putty in windows, in Linux minicom works fine.
 
 
 ## Troubleshooting
