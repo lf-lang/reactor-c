@@ -3,13 +3,15 @@
 
 #include "lf_zephyr_support.h"
 #include "platform.h"
+#include "utils/util.h"
 
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/counter.h>
 
 // Includes and functions for GPIO debugging
-#define GPIO_DEBUG
+// Uncomment below to get gpio debug access
+//#define GPIO_DEBUG
 #ifdef GPIO_DEBUG
     #include <zephyr/drivers/gpio.h>
     #define GPIO0 DT_NODELABEL(gpio0)
@@ -44,7 +46,12 @@
 static volatile uint32_t _lf_time_cycles_high = 0;
 static volatile uint32_t _lf_time_cycles_low_last = 0;
 
-// FIXME: How can we know that there will always be a timer1 device? Also will it work with BLE?
+// To enable development also on QEMU emulation we provide
+//  the ability to use the less precise system clock. This flag is set
+
+#ifndef LF_QEMU_EMULATION
+// FIXME: timer1 is nrf52dk specific. For other boards we wanna support we have to do some
+//  macro-lookups to get it working 
 #define LF_TIMER DT_NODELABEL(timer1)
 #define LF_TIMER_SLEEP_CHANNEL 0
 struct counter_alarm_cfg _lf_alarm_cfg;
@@ -53,6 +60,12 @@ const struct device *const _lf_counter_dev = DEVICE_DT_GET(LF_TIMER);
 // Global variable for storing the frequency of the clock. As well as macro for translating into nsec
 static uint32_t _lf_timer_freq_hz;
 #define TIMER_TICKS_TO_NS(ticks) ((int64_t) ticks) * 1000000000ULL/_lf_timer_freq_hz
+#else
+
+    #define NSEC_PER_HW_CYCLE 1000000000LL/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC
+    #define TIMER_TICKS_TO_NS(ticks) ((int64_t) ticks) * NSEC_PER_HW_CYCLE
+
+#endif
 
 // Forward declaration of local function to ack notified events
 static int lf_ack_events();
@@ -61,7 +74,7 @@ static int lf_ack_events();
 static volatile bool _lf_async_event = false;
 // Keep track of whether we are in a critical section or not
 static volatile bool _lf_in_critical_section = false;
-
+// Keep track of IRQ mask when entering critical section so we can enable again after
 static volatile unsigned _lf_irq_mask = 0;
 
 #ifdef NUMBER_OF_WORKERS
@@ -73,6 +86,7 @@ lf_cond_t event_q_changed;
  * Initialize the LF clock
  */
 void lf_initialize_clock() {
+    #ifndef LF_QEMU_EMULATION
     LF_PRINT_LOG("Initializing zephyr HW timer");
 	
     #ifdef GPIO_DEBUG
@@ -102,6 +116,9 @@ void lf_initialize_clock() {
 
     // Start counter
     counter_start(_lf_counter_dev);
+    #else
+    printk("Sys Clock has frequency of %u Hz\n", CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC);
+    #endif
 }   
 
 /**
@@ -117,12 +134,17 @@ int lf_clock_gettime(instant_t* t) {
         return -1;
     }
     // Read value from HW counter
+    #ifndef LF_QEMU_EMULATION
     uint32_t now_cycles;
     int res = counter_get_value(_lf_counter_dev, &now_cycles);
-
+    
     if (res != 0) {
         return res;
     }
+    #else
+    uint32_t now_cycles = k_cycle_get_32();
+    #endif
+
 
     // Check if we have overflowed since last and should increment higher word
     if (now_cycles < _lf_time_cycles_low_last) {

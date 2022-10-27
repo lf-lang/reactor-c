@@ -42,8 +42,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
+// FIXME: This flag should be set by LFC
 #define ZEPHYR
-
 #if defined(ZEPHYR)
     #include "platform/lf_zephyr_support.h"
 #elif defined(ARDUINO)

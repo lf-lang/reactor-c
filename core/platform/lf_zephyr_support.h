@@ -7,7 +7,9 @@
 
 #include <zephyr/kernel.h>
 
+// FIXME: This flag should also be set by the compiler
 #define TARGET_EMBEDDED
+
 #define PRINTF_TIME "%" PRIu64
 #define PRINTF_MICROSTEP "%" PRIu32
 #define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
