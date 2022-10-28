@@ -564,7 +564,7 @@ void _lf_terminate_modal_reactors() {
  * 
  *  A mode performs a transition if either:
  *  1) next_mode is set or
- *  2) parent has next_mode set
+ *  2) any parent has next_mode set.
  * 
  *  A preliminary implementation is simple:
  *  1) Check if reactor has next_mode set. If so, add to return_vec 
