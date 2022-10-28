@@ -559,7 +559,7 @@ void _lf_terminate_modal_reactors() {
 }
 
 /**
- * @brief This function accepts an array of ALL the mode_states and should add a reactor ptr into return_vec 
+ * @brief This function accepts an array of ALL the mode_states and adds a reactor ptr into return_vec 
  *  for all reactors that will perform a transition at the current tag.
  * 
  *  A mode performs a transition if either:
