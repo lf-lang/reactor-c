@@ -584,9 +584,11 @@ int _lf_mode_collect_transitioning_reactors(reactor_mode_state_t **states, int s
         reactor_mode_state_t* state = states[i];
         if (state != NULL) {
             // Check if reactor is doing a "volunteering" mode transition (scheduled from within itself)
+            bool mode_transition = false;
             if (state->next_mode != NULL) {
                 vector_push(return_vec, state->self);
                 num_transitioning_reactors++;
+                mode_transition = true;
             } else {
                 // See if its parent has done any volunteered mode transition
                  for (int i = 0; i< num_transitioning_reactors; i++) {
@@ -594,9 +596,16 @@ int _lf_mode_collect_transitioning_reactors(reactor_mode_state_t **states, int s
                     if ( ((self_base_t *) vector_at(return_vec, num_transitioning_reactors-1-i)) == state->parent_mode->state->self) {
                         vector_push(return_vec, state->self);
                         num_transitioning_reactors++;
+                        mode_transition = true;
                         break;
                     }
                 }
+            }
+            
+
+            if (mode_transition) {
+                // This Reactor is performing a mode change. In which case we should grab mutexes of all containing reactors as well
+                _lf_mode_collect_containing_reactors(state->self, return_vec); // FIXME: Implement me
             }
         }
     }
