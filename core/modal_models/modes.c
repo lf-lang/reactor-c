@@ -562,7 +562,7 @@ void _lf_terminate_modal_reactors() {
  * @brief This function accepts an array of ALL the mode_states and should add a reactor ptr into return_vec 
  *  for all reactors that will do a transition
  * 
- *  A mode does a transition of either:
+ *  A mode performs a transition if either:
  *  1) next_mode is set or
  *  2) parent has next_mode set
  * 
