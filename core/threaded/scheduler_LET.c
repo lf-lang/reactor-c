@@ -337,7 +337,7 @@ void lf_sched_init(
     }
 
     // Allocate array to hold information about what workers are in the workforce
-    _lf_sched_worker_is_in_workforce = malloc(_lf_number_of_workers * sizeof(bool));
+    _lf_sched_worker_is_in_workforce = (bool *) malloc(_lf_number_of_workers * sizeof(bool));
     for (int i = 0; i< _lf_number_of_workers; i++) {
         _lf_sched_worker_is_in_workforce[i] = true;
     }
@@ -550,7 +550,10 @@ void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
 
 #ifdef MODAL_REACTORS
 /**
- * @brief 
+ * @brief This function should be invoked by the worker thread about to advance time BEFORE it acquires the global mutex.
+ *  It is only relevant if we have modal reactors. It gathers all the Reactors which are about to perform mode changes, and reactors contained within them,
+ *  and acquires there local mutex to make sure there are no LET reactions currently executing in any of them.
+ *  In the case that there are LET reactions, this will block the advancement of time until the LET reaction completes.
  * 
  */
 static void _lf_sched_mode_change_prologue() {

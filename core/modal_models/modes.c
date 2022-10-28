@@ -591,7 +591,7 @@ int _lf_mode_collect_transitioning_reactors(reactor_mode_state_t **states, int s
                 // See if its parent has done any volunteered mode transition
                  for (int i = 0; i< num_transitioning_reactors; i++) {
                     // Start search from the end. Look for a reactor pointer equal to self pointer of parent
-                    if (vector_at(return_vec, num_transitioning_reactors-1-i) == (void *) state->parent_mode->state->self) {
+                    if ( ((self_base_t *) vector_at(return_vec, num_transitioning_reactors-1-i)) == state->parent_mode->state->self) {
                         vector_push(return_vec, state->self);
                         num_transitioning_reactors++;
                         break;
