@@ -110,7 +110,7 @@ void _lf_handle_mode_changes(void);
 void _lf_handle_mode_triggered_reactions(void);
 
 /**
- * Function (to be code generated) to fill up a vector with the reactors who has mode transitions
+ * Function (to be code generated) to fill up a vector with the reactors which have mode transitions.
  */
 int _lf_mode_get_transitioning_reactors(void * return_vec);
 
