@@ -559,8 +559,8 @@ void _lf_terminate_modal_reactors() {
 }
 
 /**
- * @brief This function accepts an array of ALL the mode_states and adds a reactor ptr into return_vec 
- *  for all reactors that will perform a transition at the current tag.
+ * @brief This function accepts an array of ALL the modes ordered from top-level and ending with leaf modes, 
+ *  and adds a reactor ptr into return_vec for all reactors that will perform a transition at the current tag.
  * 
  *  A mode performs a transition if either:
  *  1) next_mode is set or
@@ -570,8 +570,7 @@ void _lf_terminate_modal_reactors() {
  *  1) Check if reactor has next_mode set. If so, add to return_vec 
  *  2) If not, check if its parent has already been added to return_vec. If so, add it
  *  
- *  This assumes that the `states` argument is an array ordered hierarchically. It does a bunch of searching through
- *  the return_vec, but this might be OK.   
+ *  This assumes that the `states` argument is an array ordered from top-level mode to leaf mode
  * 
  * @param states 
  * @param states_size 
