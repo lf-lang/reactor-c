@@ -27,16 +27,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * This is a non-priority-driven scheduler. See scheduler.h for documentation.
  * @author{Peter Donovan <peterdonovan@berkeley.edu>}
  */
-
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
 
 #include <assert.h>
 
+#include "scheduler_sync_tag_advance.h"
 #include "scheduler.h"
-#include "../utils/pqueue_support.h"
-#include "scheduler_sync_tag_advance.c"
 #include "worker_assignments.h"
 #include "worker_states.h"
 

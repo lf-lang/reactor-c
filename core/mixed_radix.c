@@ -30,9 +30,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @see mixed_radix.h
  */
 
-#include "mixed_radix.h"
 #include <assert.h>
 #include <stdlib.h>  // defines NULL
+
+#include "mixed_radix.h"
 
 /**
  * Increment the mixed radix number by one according to the permutation matrix.

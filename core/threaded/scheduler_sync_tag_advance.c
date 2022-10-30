@@ -29,11 +29,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author Edward A. Lee <eal@berkeley.edu>
  * @author Marten Lohstroh <marten@berkeley.edu>
  * @brief API used to advance tag globally.
- * 
+ *
  * @copyright Copyright (c) 2022, The University of Texas at Dallas.
  * @copyright Copyright (c) 2022, The University of California at Berkeley.
  */
 
+#include "scheduler_sync_tag_advance.h"
+#include "trace.h"
+#include "util.h"
 
 /////////////////// External Variables /////////////////////////
 extern tag_t current_tag;
@@ -43,25 +46,15 @@ extern tag_t stop_tag;
 /**
  * Placeholder for function that will advance tag and initially fill the
  * reaction queue.
- * 
+ *
  * This does not acquire the mutex lock. It assumes the lock is already held.
  */
 void _lf_next_locked();
 
-/** 
- * Placeholder for code-generated function that will, in a federated
- * execution, be used to coordinate the advancement of tag. It will notify
- * the runtime infrastructure (RTI) that all reactions at the specified
- * logical tag have completed. This function should be called only while
- * holding the mutex lock.
- * @param tag_to_send The tag to send.
- */
-void logical_tag_complete(tag_t tag_to_send);
-
 /**
  * @brief Indicator that execution of at least one tag has completed.
  */
-bool _lf_logical_tag_completed = false;
+static bool _lf_logical_tag_completed = false;
 
 /**
  * Return true if the worker should stop now; false otherwise.
@@ -82,9 +75,9 @@ bool _lf_sched_should_stop_locked() {
 /**
  * Advance tag. This will also pop events for the newly acquired tag and put
  * the triggered reactions on the '_lf_sched_vector_of_reaction_qs'.
- * 
+ *
  * This function assumes the caller holds the 'mutex' lock.
- * 
+ *
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
 bool _lf_sched_advance_tag_locked() {
@@ -99,7 +92,6 @@ bool _lf_sched_advance_tag_locked() {
     // Advance time.
     // _lf_next_locked() may block waiting for real time to pass or events to appear.
     // to appear on the event queue. Note that we already
-    // hold the mutex lock.
     tracepoint_scheduler_advancing_time_starts();
     _lf_next_locked();
     tracepoint_scheduler_advancing_time_ends();

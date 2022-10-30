@@ -31,8 +31,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Implementation file for tag functions for Lingua Franca programs.
  */
 
+#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
+
 #include "tag.h"
-#include "platform.h"
+#include "util.h"
+
+// Global variables :(
 
 /**
  * Current time in nanoseconds since January 1, 1970
@@ -75,14 +81,14 @@ interval_t _lf_global_physical_clock_drift = 0LL;
 interval_t _lf_time_test_physical_clock_offset = 0LL;
 
 /**
- * Stores the last reported absolute snapshot of the 
+ * Stores the last reported absolute snapshot of the
  * physical clock.
  */
 instant_t _lf_last_reported_physical_time_ns = 0LL;
 
 /**
  * Records the most recent time reported by the physical clock
- * when accessed by get_physical_time(). This will be an epoch time
+ * when accessed by lf_time_physical(). This will be an epoch time
  * (number of nanoseconds since Jan. 1, 1970), as reported when
  * you call lf_clock_gettime(CLOCK_REALTIME, ...). This differs from
  * _lf_last_reported_physical_time_ns by _lf_time_physical_clock_offset
@@ -169,7 +175,7 @@ instant_t _lf_physical_time() {
     if (result != 0) {
         lf_print_error("Failed to read the physical clock.");
     }
-    
+
     // Adjust the reported clock with the appropriate offsets
     instant_t adjusted_clock_ns = _lf_last_reported_unadjusted_physical_time_ns
             + _lf_time_physical_clock_offset;
@@ -185,13 +191,13 @@ instant_t _lf_physical_time() {
     //     adjusted_clock_ns += drift;
     //     LF_PRINT_DEBUG("Physical time adjusted for clock drift by " PRINTF_TIME ".", drift);
     // }
-    
+
     // Check if the clock has progressed since the last reported value
     // This ensures that the clock is monotonic
     if (adjusted_clock_ns > _lf_last_reported_physical_time_ns) {
         _lf_last_reported_physical_time_ns = adjusted_clock_ns;
     }
-    
+
     LF_PRINT_DEBUG("Physical time: " PRINTF_TIME
     		". Elapsed: " PRINTF_TIME
 			". Offset: " PRINTF_TIME,
@@ -202,32 +208,21 @@ instant_t _lf_physical_time() {
     return _lf_last_reported_physical_time_ns;
 }
 
-/**
- * An enum for specifying the desired tag when calling "lf_time"
- */
-typedef enum _lf_time_type {
-    LF_LOGICAL,
-    LF_PHYSICAL,
-    LF_ELAPSED_LOGICAL,
-    LF_ELAPSED_PHYSICAL,
-    LF_START
-} _lf_time_type;
-
 
 /**
  * Get the time specified by "type".
- * 
+ *
  * Example use cases:
  * - Getting the starting time:
  * _lf_time(LF_START)
- * 
+ *
  * - Getting the elapsed physical time:
  * _lf_time(LF_ELAPSED_PHYSICAL)
- * 
+ *
  * - Getting the logical time
  * _lf_time(LF_LOGICAL)
- * 
- * @param type A field in an enum specifying the time type. 
+ *
+ * @param type A field in an enum specifying the time type.
  *             See enum "lf_time_type" above.
  * @return The desired time
  */
@@ -274,8 +269,8 @@ instant_t lf_time_physical(void) {
 
 /**
  * Return the elapsed physical time in nanoseconds.
- * This is the time returned by get_physical_time() minus the
- * physical start time as measured by get_physical_time() when
+ * This is the time returned by lf_time_physical() minus the
+ * physical start time as measured by lf_time_physical() when
  * the program was started.
  */
 instant_t lf_time_physical_elapsed(void) {
@@ -284,9 +279,9 @@ instant_t lf_time_physical_elapsed(void) {
 
 
 /**
- * Return the physical time of the start of execution in nanoseconds. * 
+ * Return the physical time of the start of execution in nanoseconds. *
  * On many platforms, this is the number of nanoseconds
- * since January 1, 1970, but it is actually platform dependent. * 
+ * since January 1, 1970, but it is actually platform dependent. *
  * @return A time instant.
  */
 instant_t lf_time_start(void) {
@@ -295,7 +290,7 @@ instant_t lf_time_start(void) {
 
 /**
  * Set a fixed offset to the physical clock.
- * After calling this, the value returned by get_physical_time()
+ * After calling this, the value returned by lf_time_physical()
  * and get_elpased_physical_time() will have this specified offset
  * added to what it would have returned before the call.
  */
@@ -313,7 +308,8 @@ void lf_set_physical_clock_offset(interval_t offset) {
  * where each `x` is a string of numbers with commas inserted if needed
  * every three numbers and `unit` is nanoseconds, microseconds, or
  * milliseconds.
- * @param buffer The buffer into which to write the string.
+ * @param buffer The buffer into which to write the string, having a length of
+ * at least 58 characters.
  * @param time The time to write.
  * @return The number of characters written (not counting the null terminator).
  */
@@ -325,60 +321,60 @@ size_t lf_readable_time(char* buffer, instant_t time) {
         size_t printed = lf_comma_separated_time(buffer, time / WEEKS(1));
         time = time % WEEKS(1);
         buffer += printed;
-        sprintf(buffer, " weeks");
+        snprintf(buffer, 7, " weeks");
         buffer += 6;
     }
     if (time > DAYS(1)) {
         if (lead == true) {
-            sprintf(buffer, ", ");
+            snprintf(buffer, 3, ", ");
             buffer += 2;
         }
         lead = true;
         size_t printed = lf_comma_separated_time(buffer, time / DAYS(1));
         time = time % DAYS(1);
         buffer += printed;
-        sprintf(buffer, " days");
+        snprintf(buffer, 6, " days");
         buffer += 5;
     }
     if (time > HOURS(1)) {
         if (lead == true) {
-            sprintf(buffer, ", ");
+            snprintf(buffer, 3, ", ");
             buffer += 2;
         }
         lead = true;
         size_t printed = lf_comma_separated_time(buffer, time / HOURS(1));
         time = time % HOURS(1);
         buffer += printed;
-        sprintf(buffer, " hours");
+        snprintf(buffer, 7, " hours");
         buffer += 6;
     }
     if (time > MINUTES(1)) {
         if (lead == true) {
-            sprintf(buffer, ", ");
+            snprintf(buffer, 3, ", ");
             buffer += 2;
         }
         lead = true;
         size_t printed = lf_comma_separated_time(buffer, time / MINUTES(1));
         time = time % MINUTES(1);
         buffer += printed;
-        sprintf(buffer, " minutes");
+        snprintf(buffer, 9, " minutes");
         buffer += 8;
     }
     if (time > SECONDS(1)) {
         if (lead == true) {
-            sprintf(buffer, ", ");
+            snprintf(buffer, 3, ", ");
             buffer += 2;
         }
         lead = true;
         size_t printed = lf_comma_separated_time(buffer, time / SECONDS(1));
         time = time % SECONDS(1);
         buffer += printed;
-        sprintf(buffer, " seconds");
+        snprintf(buffer, 9, " seconds");
         buffer += 8;
     }
     if (time > (instant_t)0) {
         if (lead == true) {
-            sprintf(buffer, ", ");
+            snprintf(buffer, 3, ", ");
             buffer += 2;
         }
         const char* units = "nanoseconds";
@@ -391,10 +387,10 @@ size_t lf_readable_time(char* buffer, instant_t time) {
         }
         size_t printed = lf_comma_separated_time(buffer, time);
         buffer += printed;
-        sprintf(buffer, " %s", units);
+        snprintf(buffer, 14, " %s", units);
         buffer += strlen(units) + 1;
     } else {
-        sprintf(buffer, "0");
+        snprintf(buffer, 2, "0");
     }
     return (buffer - original_buffer);
 }
@@ -404,7 +400,8 @@ size_t lf_readable_time(char* buffer, instant_t time) {
  * into the specified buffer. Ideally, this would use the locale to
  * use periods if appropriate, but I haven't found a sufficiently portable
  * way to do that.
- * @param buffer A buffer long enough to contain a string like "-9,223,372,036,854,775,807".
+ * @param buffer A buffer long enough to contain a 27-character string like
+ * "-9,223,372,036,854,775,807".
  * @param time A time value.
  * @return The number of characters written into the buffer (not including
  *  the null terminator).
@@ -413,12 +410,12 @@ size_t lf_comma_separated_time(char* buffer, instant_t time) {
     size_t result = 0; // The number of characters printed.
     // If the number is zero, print it and return.
     if (time == (instant_t)0) {
-        sprintf(buffer, "0");
+        snprintf(buffer, 2, "0");
         return 1;
     }
     // If the number is negative, print a minus sign.
     if (time < (instant_t)0) {
-        sprintf(buffer, "-");
+        snprintf(buffer, 2, "-");
         buffer++;
         result++;
     }
@@ -431,7 +428,7 @@ size_t lf_comma_separated_time(char* buffer, instant_t time) {
     }
     // Highest order clause should not be filled with zeros.
     instant_t to_print = clauses[--count] % 1000;
-    sprintf(buffer, "%lld", (long long)to_print);
+    snprintf(buffer, 5, "%lld", (long long)to_print);
     if (to_print >= 100LL) {
         buffer += 3;
         result += 3;
@@ -444,7 +441,7 @@ size_t lf_comma_separated_time(char* buffer, instant_t time) {
     }
     while (count-- > 0) {
         to_print = clauses[count] % 1000LL;
-        sprintf(buffer, ",%03lld", (long long)to_print);
+        snprintf(buffer, 8, ",%03lld", (long long)to_print);
         buffer += 4;
         result += 4;
     }

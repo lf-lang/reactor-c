@@ -86,7 +86,7 @@ void _lf_message_print(
 ) {  // Disable warnings about format check.
 	// The logging level may be set either by a LOG_LEVEL #define
 	// (which is code generated based on the logging target property)
-	// or by a register_print_function() call. Honor both. If neither
+	// or by a lf_register_print_function() call. Honor both. If neither
 	// has been set, then assume LOG_LEVEL_INFO. If both have been set,
 	// then honor the maximum.
 	int print_level = -1;
