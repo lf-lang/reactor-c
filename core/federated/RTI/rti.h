@@ -196,7 +196,7 @@ typedef struct RTI_instance_t {
     int32_t clock_sync_exchanges_per_interval;
 
     /**
-     * Number of messages exchanged for each clock sync attempt.
+     * Boolean indicating that authentication is enabled.
      */
     bool authentication_enabled;
 } RTI_instance_t;

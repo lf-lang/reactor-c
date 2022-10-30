@@ -64,7 +64,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "net_common.h" // Defines message types, etc. Includes <pthread.h> and "reactor.h".
 #include "tag.c"        // Time-related types and functions.
 #include "rti.h"
-
+#ifdef __RTI_AUTH__
+#include <openssl/rand.h> // For secure random number generation.
+#include <openssl/hmac.h> // For HMAC authentication.
+#endif
 /**
  * The state of this RTI instance.
  */
@@ -1803,8 +1806,6 @@ int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id) {
  * @return True if authentication is successful and false otherwise.
  */
 #ifdef __RTI_AUTH__
-#include <openssl/rand.h> // For secure random number generation.
-#include <openssl/hmac.h> // For HMAC authentication.
 bool authenticate_federate(int socket) {
     // Buffer for message type and federation RTI nonce.
     size_t message_length = 1 + NONCE_LENGTH;

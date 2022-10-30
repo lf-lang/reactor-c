@@ -347,14 +347,30 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * * One byte equal to MSG_TYPE_FED_RESPONSE.
  * * Eight bytes for federate's nonce.
  * * Two bytes (ushort) giving the federate ID.
- * * 32 bytes for HMAC tag based on SHA256.
+ * * 32 bytes for HMAC tag based on SHA256. 
+ * The HMAC tag is composed of the following order:
+ * * One byte equal to MSG_TYPE_FED_RESPONSE.
+ * * Two bytes (ushort) giving the federate ID.
+ * * Eight bytes for received RTI's nonce.
  */
 #define MSG_TYPE_FED_RESPONSE 101
-// FIXME: Needs comments.
-#define MSG_TYPE_RTI_RESPONSE 102
-// FIXME: Needs comments.
-#define NONCE_LENGTH 8
 
+/**
+ * Byte identifying a message from RTI to a federate as a response to the FED_RESPONSE
+ * message. The RTI sends this message to federate for HMAC-based authentication.
+ * The message contains, in this order:
+ * * One byte equal to MSG_TYPE_RTI_RESPONSE.
+ * * 32 bytes for HMAC tag based on SHA256.
+ * The HMAC tag is composed of the following order:
+ * * One byte equal to MSG_TYPE_RTI_RESPONSE.
+ * * Eight bytes for received federate's nonce.
+ */
+#define MSG_TYPE_RTI_RESPONSE 102
+
+/**
+ * The randomly created nonce size will be 8 bytes.
+ */
+#define NONCE_LENGTH 8
 
 /**
  * Byte identifying a timestamp message, which is 64 bits long.
