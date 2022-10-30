@@ -1809,37 +1809,39 @@ int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id) {
 bool authenticate_federate(int socket) {
     // Buffer for message type and federation RTI nonce.
     size_t message_length = 1 + NONCE_LENGTH;
-    unsigned char buffer[message_length];
-    buffer[0] = MSG_TYPE_RTI_HELLO;
+    unsigned char rti_hello_buffer[message_length];
+    rti_hello_buffer[0] = MSG_TYPE_RTI_HELLO;
     unsigned char rti_nonce[NONCE_LENGTH];
     RAND_bytes(rti_nonce, NONCE_LENGTH);
-    memcpy(buffer + 1, rti_nonce, NONCE_LENGTH);
+    memcpy(rti_hello_buffer + 1, rti_nonce, NONCE_LENGTH);
     // Send RTI hello with RTI's random nonce.
-    write_to_socket(socket, message_length, buffer);
+    write_to_socket(socket, message_length, rti_hello_buffer);
 
     // Received MSG_TYPE_FED_RESPONSE.
-    int hmac_length = 32;
-    size_t federation_id_length = 48;
-    int fed_id_length = 2;
+    
+    size_t hmac_length = 32; //FIXME: Add #define?
+    size_t federation_id_length = 48; //FIXME: Is this static?
+    size_t fed_id_length = sizeof(uint16_t);
 
     unsigned char received[1 + NONCE_LENGTH + fed_id_length + hmac_length];
     read_from_socket_errexit(socket, 1 + NONCE_LENGTH + fed_id_length + hmac_length, received, "Failed to read RTI response.");
     if (received[0] != MSG_TYPE_FED_RESPONSE) {
         lf_print_error_and_exit("Received unexpected response %u from the FED (see net_common.h).",
                 received[0]);
+        //FIXME: Need to continue RTI without exit?
     }
     unsigned char fed_id_buf[fed_id_length];
     unsigned char buf_to_check[1 + fed_id_length + NONCE_LENGTH];
     memcpy(fed_id_buf, &received[1 + NONCE_LENGTH], fed_id_length);
     buf_to_check[0] = MSG_TYPE_FED_RESPONSE;
-    int indicator = 1;
+    int indicator = 1; //FIXME: Need this?
     memcpy(&buf_to_check[indicator], fed_id_buf, fed_id_length);
     indicator += fed_id_length;
     memcpy(&buf_to_check[indicator], rti_nonce, NONCE_LENGTH);
     indicator += NONCE_LENGTH;
 
     unsigned char rti_tag[hmac_length];
-    HMAC(EVP_sha256(), _RTI.federation_id, federation_id_length, buf_to_check, 1 + fed_id_length + NONCE_LENGTH,
+    HMAC(EVP_sha256(), _RTI.federation_id, federation_id_length, buf_to_check, indicator,
          rti_tag, &hmac_length);
 
     if (memcmp(&received[indicator], rti_tag, hmac_length) != 0) {
