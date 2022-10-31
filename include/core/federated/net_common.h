@@ -370,7 +370,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * The randomly created nonce size will be 8 bytes.
  */
-#define NONCE_LENGTH 8
+#define NONCE_LENGTH 8 //FIXME: Should this be here?
 
 /**
  * Byte identifying a timestamp message, which is 64 bits long.
