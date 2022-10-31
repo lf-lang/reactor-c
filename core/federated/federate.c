@@ -879,7 +879,7 @@ void perform_hmac_authentication(int rti_socket) {
             "Received unexpected response %u from the RTI (see net_common.h).",
             buffer[0]);
     }
-    int hmac_length = 32; //FIXME: Leave this?
+    int hmac_length = SHA256_HMAC_LENGTH;
     size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
     // HMAC tag is created with MSG_TYPE, federate ID, received rti nonce.
     unsigned char mac_buf[1 + sizeof(uint16_t) + NONCE_LENGTH];

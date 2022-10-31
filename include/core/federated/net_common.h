@@ -370,7 +370,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * The randomly created nonce size will be 8 bytes.
  */
-#define NONCE_LENGTH 8 //FIXME: Should this be here?
+#define NONCE_LENGTH 8
+
+/**
+ * The HMAC tag uses the SHA256 hash algorithm, creating a 32 byte length hash tag.
+ */
+#define SHA256_HMAC_LENGTH 32
 
 /**
  * Byte identifying a timestamp message, which is 64 bits long.
