@@ -55,7 +55,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * The flag OK_TO_FREE is used to indicate whether
- * the void* in token_t should be freed or not.
+ * the void* value in token_t should be freed or not.
+ * In particular, in the Python target, the value should
+ * not be freed because Python handles garbage collection.
+ * But the token will still need to be freed (unless it's a
+ * template token).
  */
 #ifdef _LF_GARBAGE_COLLECTED
 #define OK_TO_FREE token_only
@@ -176,19 +180,19 @@ vector_t _lf_sparse_io_record_sizes = {
  *  the allocation, or NULL to not record it.
  */
 void* _lf_allocate(
-		size_t count, size_t size, struct allocation_record_t** head) {
-	void *mem = calloc(count, size);
+        size_t count, size_t size, struct allocation_record_t** head) {
+    void *mem = calloc(count, size);
     if (mem == NULL) lf_print_error_and_exit("Out of memory!");
-	if (head != NULL) {
-		struct allocation_record_t* record
-				= (allocation_record_t*)calloc(1, sizeof(allocation_record_t));
-		if (record == NULL) lf_print_error_and_exit("Out of memory!");
-		record->allocated = mem;
-		allocation_record_t* tmp = *head; // Previous head of the list or NULL.
-		*head = record;                   // New head of the list.
-		record->next = tmp;
-	}
-	return mem;
+    if (head != NULL) {
+        struct allocation_record_t* record
+                = (allocation_record_t*)calloc(1, sizeof(allocation_record_t));
+        if (record == NULL) lf_print_error_and_exit("Out of memory!");
+        record->allocated = mem;
+        allocation_record_t* tmp = *head; // Previous head of the list or NULL.
+        *head = record;                   // New head of the list.
+        record->next = tmp;
+    }
+    return mem;
 }
 
 /**
@@ -205,7 +209,7 @@ struct allocation_record_t* _lf_reactors_to_free = NULL;
  * @param size The size of the self struct, obtained with sizeof().
  */
 void* _lf_new_reactor(size_t size) {
-	return _lf_allocate(1, size, &_lf_reactors_to_free);
+    return _lf_allocate(1, size, &_lf_reactors_to_free);
 }
 
 /**
@@ -216,15 +220,15 @@ void* _lf_new_reactor(size_t size) {
  *  the allocation, or NULL to not record it.
  */
 void _lf_free(struct allocation_record_t** head) {
-	if (head == NULL) return;
-	struct allocation_record_t* record = *head;
-	while (record != NULL) {
-		free(record->allocated);
-		struct allocation_record_t* tmp = record->next;
-		free(record);
-		record = tmp;
-	}
-	*head = NULL;
+    if (head == NULL) return;
+    struct allocation_record_t* record = *head;
+    while (record != NULL) {
+        free(record->allocated);
+        struct allocation_record_t* tmp = record->next;
+        free(record);
+        record = tmp;
+    }
+    *head = NULL;
 }
 
 /**
@@ -233,8 +237,8 @@ void _lf_free(struct allocation_record_t** head) {
  * @param self The self struct of the reactor.
  */
 void _lf_free_reactor(struct self_base_t *self) {
-	_lf_free(&self->allocations);
-	free(self);
+    _lf_free(&self->allocations);
+    free(self);
 }
 
 /**
@@ -242,14 +246,14 @@ void _lf_free_reactor(struct self_base_t *self) {
  * {@link #_lf_new_reactor(size_t)}.
  */
 void _lf_free_all_reactors(void) {
-	struct allocation_record_t* head = _lf_reactors_to_free;
-	while (head != NULL) {
-		_lf_free_reactor((self_base_t*)head->allocated);
-		struct allocation_record_t* tmp = head->next;
-		free(head);
-		head = tmp;
-	}
-	_lf_reactors_to_free = NULL;
+    struct allocation_record_t* head = _lf_reactors_to_free;
+    while (head != NULL) {
+        _lf_free_reactor((self_base_t*)head->allocated);
+        struct allocation_record_t* tmp = head->next;
+        free(head);
+        head = tmp;
+    }
+    _lf_reactors_to_free = NULL;
 }
 
 /**
@@ -358,10 +362,18 @@ static token_freed _lf_free_token(lf_token_t* token) {
     token_freed result = NOT_FREED;
     if (token->value != NULL) {
         // Count frees to issue a warning if this is never freed.
-        // Do not free the value field if it is garbage collected and token's ok_to_free field is not "token_and_value".
+        // Do not free the value field if it is garbage collected and token's
+        // ok_to_free field is not "token_and_value".
         _lf_count_payload_allocations--;
-        if (OK_TO_FREE != token_only && token->ok_to_free == token_and_value) {
-            LF_PRINT_DEBUG("_lf_free_token: Freeing allocated memory for payload (token value): %p", token->value);
+        // Free the value field (the payload).
+        // First check whether the value field is garbage collected (e.g. in the
+        // Python target), in which case the payload should not be freed.
+        if (OK_TO_FREE != token_only
+                && token->value != NULL
+                && token->ok_to_free != token_only
+            ) {
+            LF_PRINT_DEBUG("_lf_free_token: Freeing allocated memory for payload (token value): %p",
+                    token->value);
             if (token->destructor == NULL) {
                 free(token->value);
             } else {
@@ -411,7 +423,7 @@ static token_freed _lf_done_using(lf_token_t* token) {
         return NOT_FREED;
     }
     token->ref_count--;
-    LF_PRINT_DEBUG("_lf_done_using: ref_count = %d.", token->ref_count);
+    LF_PRINT_DEBUG("_lf_done_using: token = %p, ref_count = %d.", token, token->ref_count);
     return token->ref_count == 0 ? _lf_free_token(token) : NOT_FREED;
 }
 
@@ -437,7 +449,7 @@ void _lf_start_time_step() {
     for(int i = 0; i < _lf_tokens_with_ref_count_size; i++) {
         if (*(_lf_tokens_with_ref_count[i].status) == present) {
             if (_lf_tokens_with_ref_count[i].reset_is_present
-            		&& _lf_tokens_with_ref_count[i].status != NULL) {
+                    && _lf_tokens_with_ref_count[i].status != NULL) {
                 *(_lf_tokens_with_ref_count[i].status) = absent;
             }
             _lf_done_using(*(_lf_tokens_with_ref_count[i].token));
@@ -460,15 +472,15 @@ void _lf_start_time_step() {
     }
     // Reset sparse IO record sizes to 0, if any.
     if (_lf_sparse_io_record_sizes.start != NULL) {
-    	for (size_t i = 0; i < vector_size(&_lf_sparse_io_record_sizes); i++) {
-    		// NOTE: vector_at does not return the element at
-    		// the index, but rather returns a pointer to that element, which is
-    		// itself a pointer.
-    		int** sizep = (int**)vector_at(&_lf_sparse_io_record_sizes, i);
-    		if (sizep != NULL && *sizep != NULL) {
-    			**sizep = 0;
-    		}
-    	}
+        for (size_t i = 0; i < vector_size(&_lf_sparse_io_record_sizes); i++) {
+            // NOTE: vector_at does not return the element at
+            // the index, but rather returns a pointer to that element, which is
+            // itself a pointer.
+            int** sizep = (int**)vector_at(&_lf_sparse_io_record_sizes, i);
+            if (sizep != NULL && *sizep != NULL) {
+                **sizep = 0;
+            }
+        }
     }
 
 #ifdef FEDERATED_DECENTRALIZED
@@ -615,11 +627,11 @@ void _lf_pop_events() {
         event = (event_t*)pqueue_pop(event_q);
 
         if (event->is_dummy) {
-        	LF_PRINT_DEBUG("Popped dummy event from the event queue.");
-        	if (event->next != NULL) {
-            	LF_PRINT_DEBUG("Putting event from the event queue for the next microstep.");
-        		pqueue_insert(next_q, event->next);
-        	}
+            LF_PRINT_DEBUG("Popped dummy event from the event queue.");
+            if (event->next != NULL) {
+                LF_PRINT_DEBUG("Putting event from the event queue for the next microstep.");
+                pqueue_insert(next_q, event->next);
+            }
             _lf_recycle_event(event);
             // Peek at the next event in the event queue.
             event = (event_t*)pqueue_peek(event_q);
@@ -772,7 +784,7 @@ void _lf_initialize_timer(trigger_t* timer) {
         e->trigger = timer;
         e->time = lf_time_logical() + timer->offset;
         _lf_add_suspended_event(e);
-    	return;
+        return;
     }
 #endif
     if (timer->offset == 0) {
@@ -1108,27 +1120,27 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     LF_PRINT_DEBUG("_lf_schedule: scheduling trigger %p with delay " PRINTF_TIME " and token %p.",
             trigger, extra_delay, token);
 
-	// The trigger argument could be null, meaning that nothing is triggered.
+    // The trigger argument could be null, meaning that nothing is triggered.
     // Doing this after incrementing the reference count ensures that the
     // payload will be freed, if there is one.
-	if (trigger == NULL) {
-	    _lf_done_using(token);
-	    return 0;
-	}
+    if (trigger == NULL) {
+        _lf_done_using(token);
+        return 0;
+    }
 
     // Increment the reference count of the token.
-	if (token != NULL) {
-	    token->ref_count++;
-	}
+    if (token != NULL) {
+        token->ref_count++;
+    }
 
     // Compute the tag (the logical timestamp for the future event).
-	// We first do this assuming it is logical action and then, if it is a
-	// physical action, modify it if physical time exceeds the result.
+    // We first do this assuming it is logical action and then, if it is a
+    // physical action, modify it if physical time exceeds the result.
     interval_t delay = extra_delay;
     // Add the offset if this is not a timer because, in that case,
     // it is the minimum delay.
     if (!trigger->is_timer) {
-    	delay += trigger->offset;
+        delay += trigger->offset;
     }
     interval_t intended_time = current_tag.time + delay;
     LF_PRINT_DEBUG("_lf_schedule: current_tag.time = " PRINTF_TIME ". Total logical delay = " PRINTF_TIME "",
@@ -1339,11 +1351,11 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
     // The trigger argument could be null, meaning that nothing is triggered.
     // Doing this after incrementing the reference count ensures that the
     // payload will be freed, if there is one.
-	if (trigger == NULL) {
+    if (trigger == NULL) {
         lf_print_warning("_lf_schedule_init_reactions() called with a NULL trigger");
-	    _lf_done_using(token);
-	    return 0;
-	}
+        _lf_done_using(token);
+        return 0;
+    }
 
     // Check to see if the trigger is not a timer
     // and not a physical action
@@ -1361,9 +1373,9 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
 #endif
 
     // Increment the reference count of the token.
-	if (token != NULL) {
-	    token->ref_count++;
-	}
+    if (token != NULL) {
+        token->ref_count++;
+    }
 
     // Check if the trigger has violated the STP offset
     bool is_STP_violated = false;
@@ -1594,7 +1606,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
             LF_PRINT_DEBUG("Output %zu has been produced.", i);
             trigger_t** triggerArray = (reaction->triggers)[i];
             LF_PRINT_DEBUG("There are %d trigger arrays associated with output %zu.",
-            		reaction->triggered_sizes[i], i);
+                    reaction->triggered_sizes[i], i);
             for (int j=0; j < reaction->triggered_sizes[i]; j++) {
                 trigger_t* trigger = triggerArray[j];
                 if (trigger != NULL) {
@@ -1606,7 +1618,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
                         if (downstream_reaction != NULL) {
                             downstream_reaction->is_STP_violated = inherited_STP_violation;
                             LF_PRINT_DEBUG("Passing is_STP_violated of %d to the downstream reaction: %s",
-                            		downstream_reaction->is_STP_violated, downstream_reaction->name);
+                                    downstream_reaction->is_STP_violated, downstream_reaction->name);
                         }
 #endif
                         if (downstream_reaction != NULL && downstream_reaction != downstream_to_execute_now) {
@@ -1683,7 +1695,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
                 // STP handler
                 downstream_to_execute_now->is_STP_violated = false;
                 LF_PRINT_DEBUG("Reset reaction's is_STP_violated field to false: %s",
-                		downstream_to_execute_now->name);
+                        downstream_to_execute_now->name);
             }
         }
 #endif
@@ -1719,7 +1731,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
         // down the chain
         downstream_to_execute_now->is_STP_violated = false;
         LF_PRINT_DEBUG("Finally, reset reaction's is_STP_violated field to false: %s",
-        		downstream_to_execute_now->name);
+                downstream_to_execute_now->name);
     }
 }
 
@@ -1939,7 +1951,7 @@ int process_args(int argc, const char* argv[]) {
         }
         #endif
           else if (strcmp(arg, "--ros-args") == 0) {
-    	      // FIXME: Ignore ROS arguments for now
+              // FIXME: Ignore ROS arguments for now
         } else {
             lf_print_error("Unrecognized command-line argument: %s", arg);
             usage(argc, argv);
@@ -1961,7 +1973,7 @@ void initialize(void) {
 
     event_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_reverse_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
-	// NOTE: The recycle and next queue does not need to be sorted. But here it is.
+    // NOTE: The recycle and next queue does not need to be sorted. But here it is.
     recycle_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
     next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
@@ -2049,7 +2061,7 @@ void termination(void) {
         // If physical_start_time is 0, then execution didn't get far enough along
         // to initialize this.
         if (physical_start_time > 0LL) {
-        	lf_comma_separated_time(time_buffer, lf_time_physical_elapsed());
+            lf_comma_separated_time(time_buffer, lf_time_physical_elapsed());
             printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
         }
     }
