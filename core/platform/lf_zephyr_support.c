@@ -4,6 +4,7 @@
 #include "lf_zephyr_support.h"
 #include "platform.h"
 #include "utils/util.h"
+#include "tag.h"
 
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
@@ -53,6 +54,8 @@ static volatile uint32_t _lf_time_cycles_high = 0;
 //  macro-lookups to get it working with all other boards
 #define LF_TIMER DT_NODELABEL(timer1)
 #define LF_TIMER_SLEEP_CHANNEL 0
+#define LF_TIMER_ALARM_CHANNEL 0
+#define LF_SLEEP_OVERHEAD_US 82
 static struct counter_alarm_cfg _lf_alarm_cfg;
 static struct counter_top_cfg _lf_timer_top_cfg;
 const struct device *const _lf_counter_dev = DEVICE_DT_GET(LF_TIMER);   
@@ -65,11 +68,25 @@ static void  _lf_timer_overflow_callback(const struct device *dev, void *user_da
 // Global variable for storing the frequency of the clock. As well as macro for translating into nsec
 static uint32_t _lf_timer_freq_hz;
 static uint32_t _lf_timer_max_value_ticks;
-// Translate ticks into nsec. CAREFUL. If you do multiplication in wrong order you will get overflow.
-#define TIMER_TICKS_TO_NS(ticks) (1000000000ULL/((uint64_t) _lf_timer_freq_hz)) * ((uint64_t) ticks)
+
+static uint32_t _lf_ticks_to_nsec_divisor;
+static uint32_t _lf_ticks_to_nsec_remainder;
+
+// Convert ticks to nsec using precomputed divisor and remainder. 
+//  If we translate ticks to nsec directly we lose a lot of precision unless we use floating point
+static inline int64_t _lf_ticks_to_ns(uint64_t ticks) {
+    int64_t res;
+    res = ticks * _lf_ticks_to_nsec_divisor;
+    res += (ticks * _lf_ticks_to_nsec_remainder)/_lf_timer_freq_hz;
+    return res;
+} 
+
 #else
-    #define NSEC_PER_HW_CYCLE 1000000000LL/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC
-    #define TIMER_TICKS_TO_NS(ticks) ((int64_t) ticks) * NSEC_PER_HW_CYCLE
+static inline int64_t _lf_ticks_to_ns(uint64_t ticks) {
+    int64_t res;
+    res = (SECOND(1)/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC)*ticks;
+    return res;
+}
 #endif
 
 // Forward declaration of local function to ack notified events
@@ -82,6 +99,14 @@ static volatile bool _lf_in_critical_section = false;
 // Keep track of IRQ mask when entering critical section so we can enable again after
 static volatile unsigned _lf_irq_mask = 0;
 
+static volatile bool _lf_alarm_fired;
+
+static void _lf_wakeup_alarm(const struct device *counter_dev,
+				      uint8_t chan_id, uint32_t ticks,
+				      void *user_data)
+{
+    _lf_alarm_fired=true;
+}
 #ifdef NUMBER_OF_WORKERS
 lf_mutex_t mutex;
 lf_cond_t event_q_changed;
@@ -116,10 +141,18 @@ void lf_initialize_clock() {
         printk("ERROR: Timer has 0Hz frequency\n");
         while(1) {};
     }
+    _lf_ticks_to_nsec_divisor = SECOND(1) /_lf_timer_freq_hz;
+    _lf_ticks_to_nsec_remainder = SECOND(1) % _lf_timer_freq_hz;
     
     _lf_timer_max_value_ticks = counter_get_max_top_value(_lf_counter_dev);
     _lf_timer_top_cfg.ticks = _lf_timer_max_value_ticks;
     _lf_timer_top_cfg.callback = _lf_timer_overflow_callback;
+    
+    _lf_alarm_cfg.flags = 0;
+    _lf_alarm_cfg.ticks = 0;
+    _lf_alarm_cfg.callback = _lf_wakeup_alarm;
+    _lf_alarm_cfg.user_data = &_lf_alarm_cfg;
+
     int res = counter_set_top_value(_lf_counter_dev, &_lf_timer_top_cfg);
     if (res != 0) {
         printk("ERROR: Timer couldnt set top value\n");
@@ -158,10 +191,11 @@ int lf_clock_gettime(instant_t* t) {
     #endif
 
     uint64_t cycles_64 = COMBINE_HI_LO(_lf_time_cycles_high, now_cycles);
-    *t = (int64_t) TIMER_TICKS_TO_NS(cycles_64);
+    *t = _lf_ticks_to_ns(cycles_64);
 
     return 0;
 }
+
 /**
  * @brief Sleep until an absolute time.
  * FIXME: For improved power consumption this should be implemented with a HW timer and interrupts.
@@ -174,19 +208,33 @@ int lf_clock_gettime(instant_t* t) {
  * @return int 0 if successful sleep, -1 if awoken by async event
  */
 int lf_sleep_until(instant_t wakeup) {
-    instant_t now;
-
     // If we are not in a critical section, we cannot safely call lf_ack_events because it might have occurred after calling 
     //  lf_sleep_until, in which case we should return immediatly.
     bool was_in_critical_section = _lf_in_critical_section;
     if (was_in_critical_section) {
         lf_ack_events();
         lf_critical_section_exit();
-    } 
+    }
 
-    do {
-        lf_clock_gettime(&now);        
-    } while ((now < wakeup) && !_lf_async_event);
+    _lf_alarm_fired = false;
+
+    uint32_t now_cycles;
+    int res = counter_get_value(_lf_counter_dev, &now_cycles);
+
+    instant_t now;
+    lf_clock_gettime(&now);
+    
+    interval_t sleep_for_us = (wakeup - now)/1000 - LF_SLEEP_OVERHEAD_US; 
+    uint32_t sleep_duration_ticks = counter_us_to_ticks(_lf_counter_dev, sleep_for_us);
+
+    _lf_alarm_cfg.ticks = sleep_duration_ticks;
+	int err = counter_set_channel_alarm(_lf_counter_dev, LF_TIMER_ALARM_CHANNEL,  &_lf_alarm_cfg);
+    if (err != 0) {
+        lf_print_error_and_exit("Could not setup alarm");
+    }
+
+    while (!_lf_alarm_fired && !_lf_async_event) {}
+    // gpio_toggle(1);
 
     if (was_in_critical_section) lf_critical_section_enter();
 
