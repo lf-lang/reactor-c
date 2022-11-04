@@ -288,7 +288,6 @@ int next(void) {
     // We can now leave the critical section. Any events that will be added
     // to the queue asynchronously will have a later tag than the current one.
     _lf_advance_logical_time(next_tag.time);
-    lf_critical_section_exit();
     
     // Trigger shutdown reactions if appropriate.
     if (lf_tag_compare(current_tag, stop_tag) >= 0) {        
@@ -302,7 +301,6 @@ int next(void) {
     // Pop all events from event_q with timestamp equal to current_tag.time,
     // extract all the reactions triggered by these events, and
     // stick them into the reaction queue.
-    lf_critical_section_enter();
     _lf_pop_events();
     lf_critical_section_exit();
 
