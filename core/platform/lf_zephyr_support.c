@@ -207,6 +207,7 @@ int lf_clock_gettime(instant_t* t) {
  * @param wakeup int64_t time of wakeup 
  * @return int 0 if successful sleep, -1 if awoken by async event
  */
+#ifndef LF_QEMU_EMULATION
 int lf_sleep_until(instant_t wakeup) {
     // If we are not in a critical section, we cannot safely call lf_ack_events because it might have occurred after calling 
     //  lf_sleep_until, in which case we should return immediatly.
@@ -245,6 +246,32 @@ int lf_sleep_until(instant_t wakeup) {
         return 0;
     }
 }
+#else
+int lf_sleep_until(instant_t wakeup) {
+    // If we are not in a critical section, we cannot safely call lf_ack_events because it might have occurred after calling 
+    //  lf_sleep_until, in which case we should return immediatly.
+    bool was_in_critical_section = _lf_in_critical_section;
+    if (was_in_critical_section) {
+        lf_ack_events();
+        lf_critical_section_exit();
+    }
+
+    _lf_alarm_fired = false;
+    do {
+    instant_t now;
+    lf_clock_gettime(&now);
+    } while (!_lf_alarm_fired && !_lf_async_event);
+
+    if (was_in_critical_section) lf_critical_section_enter();
+
+    if (_lf_async_event) {
+        lf_ack_events();
+        return -1;
+    } else {
+        return 0;
+    }
+}
+#endif
 
 /**
  * @brief Sleep for duration
