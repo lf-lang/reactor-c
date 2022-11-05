@@ -257,10 +257,10 @@ int lf_sleep_until(instant_t wakeup) {
     }
 
     _lf_alarm_fired = false;
-    do {
     instant_t now;
+    do {
     lf_clock_gettime(&now);
-    } while (!_lf_alarm_fired && !_lf_async_event);
+    } while ( (now<wakeup) && !_lf_async_event);
 
     if (was_in_critical_section) lf_critical_section_enter();
 
