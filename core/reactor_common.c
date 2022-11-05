@@ -596,6 +596,11 @@ lf_token_t* _lf_initialize_token(lf_token_t* token, size_t length) {
 
     // Allocate memory for storing the array.
     void* value = malloc(token->element_size * length);
+    
+    if (value == NULL) {
+        lf_print_error_and_exit("Out of memory");
+    }
+
     // Count allocations to issue a warning if this is never freed.
     _lf_count_payload_allocations++;
     return _lf_initialize_token_with_value(token, value, length);

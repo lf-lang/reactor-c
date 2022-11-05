@@ -147,7 +147,9 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
         LF_PRINT_DEBUG("Enqueing downstream reaction %s, which has level %lld.",
         		reaction->name, reaction->index & 0xffffLL);
         reaction->status = queued;
-        pqueue_insert(reaction_q, reaction);
+        if (pqueue_insert(reaction_q, reaction) != 0) {
+            lf_print_error_and_exit("Could not insert reaction into reaction_q");
+        }
     }
 }
 
