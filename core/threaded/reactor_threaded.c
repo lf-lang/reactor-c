@@ -1023,7 +1023,9 @@ void _lf_worker_do_work(int worker_number) {
                 current_reaction_to_execute->chain_id,
                 current_reaction_to_execute->deadline);
 
-        bool violation = _lf_worker_handle_violations(
+        // Check for STP violations. Deadline violations checked after acquiring all the
+        //  mutexes.
+        bool violation = _lf_worker_handle_STP_violation_for_reaction(
             worker_number, 
             current_reaction_to_execute
         );
