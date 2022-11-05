@@ -640,6 +640,7 @@ typedef struct self_base_t {
     tag_t current_tag;                       // The tag of the most recent reaction invokation
     lf_mutex_t mutex;                       // A local mutex to ensure mutual exclusion of reactions in reactor 
     bool has_mutex;                       // A local mutex to ensure mutual exclusion of reactions in reactor 
+    struct self_base_t *parent;                     // Pointer to parent/containing reactor
 #ifdef MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif
