@@ -487,6 +487,59 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     _lf_sched_insert_reaction(reaction);
 }
 
+#ifdef MODAL_REACTORS
+/**
+ * @brief This function takes a self pointer and locks, recursively
+ *  all the parent reactors which are modal. It effectively walks
+ *  up the containment hierarchy and locks any modal reactor
+ * 
+ * @param reactor 
+ */
+static void _lf_sched_lock_modal_parents(self_base_t* reactor, int worker_number) {
+    self_base_t *parent = reactor->parent;
+    // If has a parent/containing reactor
+    if (parent) {
+        // Check if it is modal
+        if (parent->_lf__mode_state.current_mode) { // FIXME: Is this a reliable way to check if reactor is modal?
+            if (!parent->has_mutex) {
+                lf_print_error_and_exit("Runtime error. Modal reactor did not have a mutex");
+            }
+            LF_PRINT_DEBUG("Worker %i: Locking parent reactor %p", worker_number, parent);
+            lf_mutex_lock(&parent->mutex);
+            LF_PRINT_DEBUG("Worker %i: Locked parent reactor %p", worker_number, parent);
+        }
+        _lf_sched_lock_modal_parents(parent, worker_number);
+    }
+}
+/**
+ * @brief This function walks up the containment hierarchy and unlocks
+ *  any modal reactor.
+ * 
+ * @param reactor 
+ */
+static void _lf_sched_unlock_modal_parents(self_base_t* reactor, int worker_number) {
+    self_base_t *parent = reactor->parent;
+    // If has a parent/containing reactor
+    if (parent) {
+        // Check if it is modal
+        if (parent->_lf__mode_state.current_mode) {
+            if (!parent->has_mutex) {
+                lf_print_error_and_exit("Runtime error. Modal reactor did not have a mutex");
+            }
+            LF_PRINT_DEBUG("Worker %i: Unlocking parent reactor %p", worker_number, parent);
+            lf_mutex_unlock(&parent->mutex);
+        }
+        _lf_sched_lock_modal_parents(parent, worker_number);
+    }
+}
+#endif
+/**
+ * @brief This function is invoked right before the reaction invocation.
+ *  It locks the local mutex of  
+ * 
+ * @param reaction 
+ * @param worker_number 
+ */
 void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
     self_base_t *self = (self_base_t *) reaction->self;
     
@@ -496,11 +549,15 @@ void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
         lf_mutex_lock(&self->mutex);
         LF_PRINT_DEBUG("Worker %d locked local mutex", worker_number);
     }
+
     
-    // If LET reaction, increment global tag barrier and remove worker from pool
-    // FIXME: Use pqueue for tracking tag barrier. Only notify the cond_var when the head of the
-    //  pqueue is removed.
+    // If LET reaction, lock any modal parent, increment global tag barrier and remove worker from workforce
     if (reaction->let > 0) {
+        // Lock any containing reactor which is modal to avoid mode changes while LET is executing
+        #ifdef MODAL_REACTORS
+            _lf_sched_lock_modal_parents(self, worker_number);
+        #endif
+
         // Acquire the global mutex to: 1. Increment global barrier and 2. Update the scheduler variables.
         LF_PRINT_DEBUG("Worker %d tries to lock global mutex", worker_number);
         lf_mutex_lock(&mutex);
@@ -508,8 +565,11 @@ void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
         if (reaction->let < FOREVER) {
             LF_PRINT_DEBUG("Worker %d Increment global barrier", worker_number);
             tag_t finish_tag = {current_tag.time + reaction->let, 0UL};
+            // FIXME: Use pqueue for tracking tag barrier. Only notify the cond_var when the head of the
+            //  pqueue is removed.
             lf_increment_global_tag_barrier_locked(finish_tag);
         }
+
         // Remove worker from workforce. By both updating the local array holding workers that are in the workforce
         //  and decrementing the total number of workers. The first is needed for the rejoining process 
         _lf_sched_worker_is_in_workforce[worker_number] = false;
@@ -549,6 +609,11 @@ void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
             lf_decrement_global_tag_barrier_locked();
         }
         lf_mutex_unlock(&mutex);
+
+        // unlock any containing reactor which is modal to enable mode changes in parents
+        #ifdef MODAL_REACTORS
+            _lf_sched_unlock_modal_parents(self, worker_number);
+        #endif
     }
 }
 
