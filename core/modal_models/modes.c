@@ -560,17 +560,8 @@ void _lf_terminate_modal_reactors() {
 
 /**
  * @brief This function accepts an array of ALL the modes ordered from top-level and ending with leaf modes, 
- *  and adds a reactor ptr into return_vec for all reactors that will perform a transition at the current tag.
- * 
- *  A mode performs a transition if either:
- *  1) next_mode is set or
- *  2) any parent has next_mode set.
- * 
- *  A preliminary implementation is simple:
- *  1) Check if reactor has next_mode set. If so, add to return_vec 
- *  2) If not, check if its parent has already been added to return_vec. If so, add it
- *  
- *  This assumes that the `states` argument is an array ordered from top-level mode to leaf mode
+ *  and adds a reactor ptr into return_vec if a mode transition was requested. This will not add reactors having 
+ *  contained modes. Only reactors that have scheduled a transition itself.
  * 
  * @param states 
  * @param states_size 
@@ -583,29 +574,10 @@ int _lf_mode_collect_transitioning_reactors(reactor_mode_state_t **states, int s
     for (int i = 0; i < states_size; i++) {
         reactor_mode_state_t* state = states[i];
         if (state != NULL) {
-            // Check if reactor is doing a "volunteering" mode transition (scheduled from within itself)
-            bool mode_transition = false;
             if (state->next_mode != NULL) {
                 vector_push(return_vec, state->self);
                 num_transitioning_reactors++;
-                mode_transition = true;
-            } else {
-                // See if its parent has done any volunteered mode transition
-                 for (int i = 0; i< num_transitioning_reactors; i++) {
-                    // Start search from the end. Look for a reactor pointer equal to self pointer of parent
-                    if ( ((self_base_t *) vector_at(return_vec, num_transitioning_reactors-1-i)) == state->parent_mode->state->self) {
-                        vector_push(return_vec, state->self);
-                        num_transitioning_reactors++;
-                        mode_transition = true;
-                        break;
-                    }
-                }
-            }
-            
-
-            if (mode_transition) {
-                // This Reactor is performing a mode change. In which case we should grab mutexes of all containing reactors as well
-                _lf_mode_collect_containing_reactors(state->self, return_vec); // FIXME: Implement me
+                
             }
         }
     }
