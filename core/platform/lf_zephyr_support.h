@@ -4,6 +4,7 @@
 #include <stdint.h> // For fixed-width integral types
 #include <time.h>   // For CLOCK_MONOTONIC
 #include <stdbool.h>
+#include <stdlib.h> //malloc, calloc, free, realloc
 
 #include <zephyr/kernel.h>
 
@@ -14,10 +15,6 @@
 #define PRINTF_MICROSTEP "%" PRIu32
 #define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
 
-#define calloc k_calloc
-#define malloc k_malloc
-#define free(x) k_free(x)
-// FIXME: What to do about realloc?
 /**
  * Time instant. Both physical and logical times are represented
  * using this typedef.
