@@ -370,8 +370,12 @@ token_freed _lf_free_token(lf_token_t* token) {
         // Count frees to issue a warning if this is never freed.
         // Do not free the value field if it is garbage collected and token's ok_to_free field is not "token_and_value".
         _lf_count_payload_allocations--;
-        if (OK_TO_FREE != token_only && token->ok_to_free == token_and_value) {
-            LF_PRINT_DEBUG("_lf_free_token: Freeing allocated memory for payload (token value): %p", token->value);
+        if (OK_TO_FREE != token_only
+                && token->value != NULL
+                && token->ok_to_free != token_only
+            ) {
+            LF_PRINT_DEBUG("_lf_free_token: Freeing allocated memory for payload (token value): %p",
+                    token->value);
             if (token->destructor == NULL) {
                 free(token->value);
             } else {
