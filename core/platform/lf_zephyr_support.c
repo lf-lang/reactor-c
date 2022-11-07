@@ -55,10 +55,13 @@ static volatile uint32_t _lf_time_cycles_high = 0;
 #define LF_TIMER DT_NODELABEL(timer1)
 #define LF_TIMER_SLEEP_CHANNEL 0
 #define LF_TIMER_ALARM_CHANNEL 0
-#define LF_SLEEP_OVERHEAD_US 82
+#define LF_WAKEUP_OVERHEAD_US 100 // Pessimistic estimate of wakeup overhead
+#define LF_MIN_SLEEP_US 10      // Do not try to sleep for less than 10 us. do busy-wait instead
+#define LF_RUNTIME_OVERHEAD_US 19 // Estimate of run-time overhead from sleep exit till first reaction
 static struct counter_alarm_cfg _lf_alarm_cfg;
 static struct counter_top_cfg _lf_timer_top_cfg;
 const struct device *const _lf_counter_dev = DEVICE_DT_GET(LF_TIMER);   
+static k_tid_t _lf_sleeping_thread;
 
 // Timer overflow callback
 static void  _lf_timer_overflow_callback(const struct device *dev, void *user_data) {
@@ -106,6 +109,7 @@ static void _lf_wakeup_alarm(const struct device *counter_dev,
 				      void *user_data)
 {
     _lf_alarm_fired=true;
+    k_thread_resume(_lf_sleeping_thread);
 }
 #ifdef NUMBER_OF_WORKERS
 lf_mutex_t mutex;
@@ -209,14 +213,6 @@ int lf_clock_gettime(instant_t* t) {
  */
 #ifndef LF_QEMU_EMULATION
 int lf_sleep_until(instant_t wakeup) {
-    // If we are not in a critical section, we cannot safely call lf_ack_events because it might have occurred after calling 
-    //  lf_sleep_until, in which case we should return immediatly.
-    bool was_in_critical_section = _lf_in_critical_section;
-    if (was_in_critical_section) {
-        lf_ack_events();
-        lf_critical_section_exit();
-    }
-
     _lf_alarm_fired = false;
 
     uint32_t now_cycles;
@@ -225,19 +221,35 @@ int lf_sleep_until(instant_t wakeup) {
     instant_t now;
     lf_clock_gettime(&now);
     
-    interval_t sleep_for_us = (wakeup - now)/1000 - LF_SLEEP_OVERHEAD_US; 
-    uint32_t sleep_duration_ticks = counter_us_to_ticks(_lf_counter_dev, sleep_for_us);
+    interval_t sleep_for_us = (wakeup - now)/1000;
+    
+    if (sleep_for_us > (LF_WAKEUP_OVERHEAD_US + LF_MIN_SLEEP_US)) {
+        _lf_sleeping_thread = k_current_get();
+        
+        uint32_t sleep_duration_ticks = counter_us_to_ticks(_lf_counter_dev, sleep_for_us-LF_WAKEUP_OVERHEAD_US);
+        _lf_alarm_cfg.ticks = sleep_duration_ticks;
+        int err = counter_set_channel_alarm(_lf_counter_dev, LF_TIMER_ALARM_CHANNEL,  &_lf_alarm_cfg);
+     
+        if (err != 0) {
+            lf_print_error_and_exit("Could not setup alarm for sleeping. Errno %i", err);
+        }
 
-    _lf_alarm_cfg.ticks = sleep_duration_ticks;
-	int err = counter_set_channel_alarm(_lf_counter_dev, LF_TIMER_ALARM_CHANNEL,  &_lf_alarm_cfg);
-    if (err != 0) {
-        lf_print_error_and_exit("Could not setup alarm");
-    }
+        lf_critical_section_exit();
+        k_thread_suspend(_lf_sleeping_thread);
+        lf_critical_section_enter();
 
-    while (!_lf_alarm_fired && !_lf_async_event) {}
-    // gpio_toggle(1);
+        // Then calculating remaining sleep
+        if (!_lf_async_event) {
+            lf_clock_gettime(&now);
+            sleep_for_us = (wakeup - now)/1000;
+        }
+    } 
 
-    if (was_in_critical_section) lf_critical_section_enter();
+    // Do remaining sleep in busy_wait
+    if (sleep_for_us > LF_RUNTIME_OVERHEAD_US) {
+        k_busy_wait((uint32_t) (sleep_for_us - LF_RUNTIME_OVERHEAD_US));
+    } 
+    
 
     if (_lf_async_event) {
         lf_ack_events();
@@ -300,6 +312,7 @@ int lf_critical_section_exit() {
 
 int lf_notify_of_event() {
    _lf_async_event = true;
+    k_thread_resume(_lf_sleeping_thread);
    return 0;
 }
 
