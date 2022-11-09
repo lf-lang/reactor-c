@@ -12,7 +12,7 @@
 
 // Includes and functions for GPIO debugging
 // Uncomment below to get gpio debug access
-//#define GPIO_DEBUG
+// #define GPIO_DEBUG
 #ifdef GPIO_DEBUG
     #include <zephyr/drivers/gpio.h>
     #define GPIO0 DT_NODELABEL(gpio0)
@@ -213,19 +213,24 @@ int lf_clock_gettime(instant_t* t) {
  */
 #ifndef LF_QEMU_EMULATION
 int lf_sleep_until(instant_t wakeup) {
+    // Reset flags
     _lf_alarm_fired = false;
+    _lf_async_event = false;
 
+    // gpio_toggle(0);
+    // Calculate the sleep duration
     uint32_t now_cycles;
-    int res = counter_get_value(_lf_counter_dev, &now_cycles);
-
+    counter_get_value(_lf_counter_dev, &now_cycles);
     instant_t now;
     lf_clock_gettime(&now);
-    
     interval_t sleep_for_us = (wakeup - now)/1000;
     
+    // Check if sleep is above threshold
     if (sleep_for_us > (LF_WAKEUP_OVERHEAD_US + LF_MIN_SLEEP_US)) {
         _lf_sleeping_thread = k_current_get();
         
+        // Compute sleep duration in ticks. subtract wakeup overhead such that we wakeup a little early and
+        //  do reamined in busy_wait
         uint32_t sleep_duration_ticks = counter_us_to_ticks(_lf_counter_dev, sleep_for_us-LF_WAKEUP_OVERHEAD_US);
         _lf_alarm_cfg.ticks = sleep_duration_ticks;
         int err = counter_set_channel_alarm(_lf_counter_dev, LF_TIMER_ALARM_CHANNEL,  &_lf_alarm_cfg);
@@ -234,21 +239,27 @@ int lf_sleep_until(instant_t wakeup) {
             lf_print_error_and_exit("Could not setup alarm for sleeping. Errno %i", err);
         }
 
+        // FIXME: There is actually a race condition when using suspend/resume.
+        //  change to using a semaphore
         lf_critical_section_exit();
         k_thread_suspend(_lf_sleeping_thread);
         lf_critical_section_enter();
 
-        // Then calculating remaining sleep
+        // Then calculating remaining sleep, unless we got woken up by an event
         if (!_lf_async_event) {
             lf_clock_gettime(&now);
             sleep_for_us = (wakeup - now)/1000;
         }
     } 
-
+    
     // Do remaining sleep in busy_wait
-    if (sleep_for_us > LF_RUNTIME_OVERHEAD_US) {
+    if (!_lf_async_event &&
+        sleep_for_us > LF_RUNTIME_OVERHEAD_US) {        
+        // Subtract LF_RUNTIME_OVERHEAD_US which is a measured lower bound on the
+        //  latency from wakup to first reaction invokation. Essentially, we wakeup
+        //  a little early to have the first reaction execute at the right moment.
         k_busy_wait((uint32_t) (sleep_for_us - LF_RUNTIME_OVERHEAD_US));
-    } 
+    }
     
 
     if (_lf_async_event) {
@@ -312,7 +323,8 @@ int lf_critical_section_exit() {
 
 int lf_notify_of_event() {
    _lf_async_event = true;
-    k_thread_resume(_lf_sleeping_thread);
+   // FIXME: We need to wake up worker
+    // k_thread_resume(_lf_sleeping_thread);
    return 0;
 }
 
