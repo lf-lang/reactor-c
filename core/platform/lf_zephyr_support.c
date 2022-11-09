@@ -16,8 +16,8 @@
 #ifdef GPIO_DEBUG
     #include <zephyr/drivers/gpio.h>
     #define GPIO0 DT_NODELABEL(gpio0)
-    #define NUM_DEBUG_PINS 5
-    gpio_pin_t debug_pins[NUM_DEBUG_PINS] = {19, 20, 22, 23, 24};
+    #define NUM_DEBUG_PINS 8
+    gpio_pin_t debug_pins[NUM_DEBUG_PINS] = {17, 18, 19, 20, 22, 23, 24, 25};
     const struct device *gpio_dev = DEVICE_DT_GET(GPIO0);
 
     static void gpio_debug_init() {
@@ -68,6 +68,15 @@ static void  _lf_timer_overflow_callback(const struct device *dev, void *user_da
     _lf_time_cycles_high++;
 }
 
+
+static void _lf_wakeup_alarm(const struct device *counter_dev,
+				      uint8_t chan_id, uint32_t ticks,
+				      void *user_data)
+{
+    _lf_alarm_fired=true;
+    k_thread_resume(_lf_sleeping_thread);
+}
+
 // Global variable for storing the frequency of the clock. As well as macro for translating into nsec
 static uint32_t _lf_timer_freq_hz;
 static uint32_t _lf_timer_max_value_ticks;
@@ -101,16 +110,8 @@ static volatile bool _lf_async_event = false;
 static volatile bool _lf_in_critical_section = false;
 // Keep track of IRQ mask when entering critical section so we can enable again after
 static volatile unsigned _lf_irq_mask = 0;
-
 static volatile bool _lf_alarm_fired;
 
-static void _lf_wakeup_alarm(const struct device *counter_dev,
-				      uint8_t chan_id, uint32_t ticks,
-				      void *user_data)
-{
-    _lf_alarm_fired=true;
-    k_thread_resume(_lf_sleeping_thread);
-}
 #ifdef NUMBER_OF_WORKERS
 lf_mutex_t mutex;
 lf_cond_t event_q_changed;
