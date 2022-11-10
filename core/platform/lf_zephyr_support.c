@@ -62,6 +62,7 @@ static struct counter_alarm_cfg _lf_alarm_cfg;
 static struct counter_top_cfg _lf_timer_top_cfg;
 const struct device *const _lf_counter_dev = DEVICE_DT_GET(LF_TIMER);   
 static k_tid_t _lf_sleeping_thread;
+static volatile bool _lf_alarm_fired;
 
 // Timer overflow callback
 static void  _lf_timer_overflow_callback(const struct device *dev, void *user_data) {
@@ -94,6 +95,7 @@ static inline int64_t _lf_ticks_to_ns(uint64_t ticks) {
 } 
 
 #else
+static volatile bool _lf_alarm_fired;
 static inline int64_t _lf_ticks_to_ns(uint64_t ticks) {
     int64_t res;
     res = (SECOND(1)/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC)*ticks;
@@ -110,7 +112,6 @@ static volatile bool _lf_async_event = false;
 static volatile bool _lf_in_critical_section = false;
 // Keep track of IRQ mask when entering critical section so we can enable again after
 static volatile unsigned _lf_irq_mask = 0;
-static volatile bool _lf_alarm_fired;
 
 #ifdef NUMBER_OF_WORKERS
 lf_mutex_t mutex;
