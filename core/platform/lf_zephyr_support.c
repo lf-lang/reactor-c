@@ -58,10 +58,13 @@ static volatile uint32_t _lf_time_cycles_high = 0;
 #define LF_WAKEUP_OVERHEAD_US 100 // Pessimistic estimate of wakeup overhead
 #define LF_MIN_SLEEP_US 10      // Do not try to sleep for less than 10 us. do busy-wait instead
 #define LF_RUNTIME_OVERHEAD_US 19 // Estimate of run-time overhead from sleep exit till first reaction
+
+// Create semaphore for async wakeup from physical action
+K_SEM_DEFINE(_lf_sem,0,1)
+
 static struct counter_alarm_cfg _lf_alarm_cfg;
 static struct counter_top_cfg _lf_timer_top_cfg;
 const struct device *const _lf_counter_dev = DEVICE_DT_GET(LF_TIMER);   
-static k_tid_t _lf_sleeping_thread;
 static volatile bool _lf_alarm_fired;
 
 // Timer overflow callback
@@ -75,7 +78,7 @@ static void _lf_wakeup_alarm(const struct device *counter_dev,
 				      void *user_data)
 {
     _lf_alarm_fired=true;
-    k_thread_resume(_lf_sleeping_thread);
+    k_sem_give(&_lf_sem);
 }
 
 // Global variable for storing the frequency of the clock. As well as macro for translating into nsec
@@ -179,19 +182,11 @@ void lf_initialize_clock() {
  */
 int lf_clock_gettime(instant_t* t) {
     
-    if (t == NULL) {
-        // The t argument address references invalid memory
-        errno = EFAULT;
-        return -1;
-    }
     // Read value from HW counter
     #ifndef LF_QEMU_EMULATION
     uint32_t now_cycles;
     int res = counter_get_value(_lf_counter_dev, &now_cycles);
 
-    if (res != 0) {
-        return res;
-    }
     #else
     uint32_t now_cycles = k_cycle_get_32();
     #endif
@@ -218,6 +213,7 @@ int lf_sleep_until(instant_t wakeup) {
     // Reset flags
     _lf_alarm_fired = false;
     _lf_async_event = false;
+    k_sem_reset(&_lf_sem);
 
     // gpio_toggle(0);
     // Calculate the sleep duration
@@ -229,7 +225,6 @@ int lf_sleep_until(instant_t wakeup) {
     
     // Check if sleep is above threshold
     if (sleep_for_us > (LF_WAKEUP_OVERHEAD_US + LF_MIN_SLEEP_US)) {
-        _lf_sleeping_thread = k_current_get();
         
         // Compute sleep duration in ticks. subtract wakeup overhead such that we wakeup a little early and
         //  do reamined in busy_wait
@@ -240,11 +235,9 @@ int lf_sleep_until(instant_t wakeup) {
         if (err != 0) {
             lf_print_error_and_exit("Could not setup alarm for sleeping. Errno %i", err);
         }
-
-        // FIXME: There is actually a race condition when using suspend/resume.
-        //  change to using a semaphore
+        
         lf_critical_section_exit();
-        k_thread_suspend(_lf_sleeping_thread);
+        k_sem_take(&_lf_sem, K_FOREVER);
         lf_critical_section_enter();
 
         // Then calculating remaining sleep, unless we got woken up by an event
@@ -265,6 +258,8 @@ int lf_sleep_until(instant_t wakeup) {
     
 
     if (_lf_async_event) {
+        // Cancel the outstanding alarm
+        counter_cancel_channel_alarm(_lf_counter_dev, LF_TIMER_ALARM_CHANNEL);
         lf_ack_events();
         return -1;
     } else {
@@ -325,8 +320,9 @@ int lf_critical_section_exit() {
 
 int lf_notify_of_event() {
    _lf_async_event = true;
-   // FIXME: We need to wake up worker
-    // k_thread_resume(_lf_sleeping_thread);
+   #ifndef QEMU_EMULATION
+   k_sem_give(&_lf_sem);
+   #endif
    return 0;
 }
 
