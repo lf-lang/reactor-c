@@ -12,7 +12,8 @@
 
 // Includes and functions for GPIO debugging
 // Uncomment below to get gpio debug access
-// #define GPIO_DEBUG
+#ifndef QEMU_EMULATION
+#define GPIO_DEBUG
 #ifdef GPIO_DEBUG
     #include <zephyr/drivers/gpio.h>
     #define GPIO0 DT_NODELABEL(gpio0)
@@ -30,21 +31,11 @@
         gpio_pin_toggle(gpio_dev,debug_pins[pin]);
     }
 #endif
+#endif
 
 // Combine 2 32bit works to a 64 bit word
 #define COMBINE_HI_LO(hi,lo) ((((uint64_t) hi) << 32) | ((uint64_t) lo))
 
-/**
- * Global timing variables:
- * Since Arduino is 32bit we need to also maintaint the 32 higher bits
- * _lf_time_us_high is incremented at each overflow of 32bit Arduino timer
- * _lf_time_us_low_last is the last value we read form the 32 bit Arduino timer
- *  We can detect overflow by reading a value that is lower than this.
- *  This does require us to read the timer and update this variable at least once per 35 minutes
- *  This is no issue when we do busy-sleep. If we go to HW timer sleep we would want to register an interrupt 
- *  capturing the overflow.
- */
-static volatile uint32_t _lf_time_cycles_high = 0;
 
 // To enable development also on QEMU emulation we provide
 //  the ability to use the less precise system clock. This flag is set
@@ -59,17 +50,23 @@ static volatile uint32_t _lf_time_cycles_high = 0;
 #define LF_MIN_SLEEP_US 10      // Do not try to sleep for less than 10 us. do busy-wait instead
 #define LF_RUNTIME_OVERHEAD_US 19 // Estimate of run-time overhead from sleep exit till first reaction
 
+#define FREQ_16MHZ 16000000U
+
 // Create semaphore for async wakeup from physical action
 K_SEM_DEFINE(_lf_sem,0,1)
 
 static struct counter_alarm_cfg _lf_alarm_cfg;
-static struct counter_top_cfg _lf_timer_top_cfg;
 const struct device *const _lf_counter_dev = DEVICE_DT_GET(LF_TIMER);   
 static volatile bool _lf_alarm_fired;
+static uint32_t _lf_timer_freq;
+
+static int64_t _lf_timer_epoch_duration_nsec;
+static volatile int64_t _lf_timer_last_epoch_nsec = 0;
+
 
 // Timer overflow callback
 static void  _lf_timer_overflow_callback(const struct device *dev, void *user_data) {
-    _lf_time_cycles_high++;
+        _lf_timer_last_epoch_nsec += _lf_timer_epoch_duration_nsec;
 }
 
 
@@ -81,28 +78,10 @@ static void _lf_wakeup_alarm(const struct device *counter_dev,
     k_sem_give(&_lf_sem);
 }
 
-// Global variable for storing the frequency of the clock. As well as macro for translating into nsec
-static uint32_t _lf_timer_freq_hz;
-static uint32_t _lf_timer_max_value_ticks;
-
-static uint32_t _lf_ticks_to_nsec_divisor;
-static uint32_t _lf_ticks_to_nsec_remainder;
-
-// Convert ticks to nsec using precomputed divisor and remainder. 
-//  If we translate ticks to nsec directly we lose a lot of precision unless we use floating point
-static inline int64_t _lf_ticks_to_ns(uint64_t ticks) {
-    int64_t res;
-    res = ticks * _lf_ticks_to_nsec_divisor;
-    res += (ticks * _lf_ticks_to_nsec_remainder)/_lf_timer_freq_hz;
-    return res;
-} 
-
-#else
-static volatile bool _lf_alarm_fired;
-static inline int64_t _lf_ticks_to_ns(uint64_t ticks) {
-    int64_t res;
-    res = (SECOND(1)/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC)*ticks;
-    return res;
+static inline void ticks_to_nsec(uint32_t ticks, uint64_t *nsec) {
+    if (_lf_timer_freq == FREQ_16MHZ) {
+        *nsec = (ticks>>1) * 125000ULL;
+    }
 }
 #endif
 
@@ -125,6 +104,10 @@ lf_cond_t event_q_changed;
  * Initialize the LF clock
  */
 void lf_initialize_clock() {
+    struct counter_top_cfg counter_top_cfg;
+    uint32_t counter_max_ticks;
+    int res;
+
     #ifndef LF_QEMU_EMULATION
     LF_PRINT_LOG("Initializing zephyr HW timer");
 	
@@ -145,30 +128,33 @@ void lf_initialize_clock() {
         while(1) {};
     }
 
-    _lf_timer_freq_hz= counter_get_frequency(_lf_counter_dev);
-    if (_lf_timer_freq_hz == 0) {
-        printk("ERROR: Timer has 0Hz frequency\n");
+    // Get frequency of the counter and make sure that we support it
+    _lf_timer_freq= counter_get_frequency(_lf_counter_dev);
+    if (_lf_timer_freq != FREQ_16MHZ) {
+        printk("ERROR: Zephyr counter has unsupported frequnecy of %u Hz\n", _lf_timer_freq);
         while(1) {};
     }
-    _lf_ticks_to_nsec_divisor = SECOND(1) /_lf_timer_freq_hz;
-    _lf_ticks_to_nsec_remainder = SECOND(1) % _lf_timer_freq_hz;
-    
-    _lf_timer_max_value_ticks = counter_get_max_top_value(_lf_counter_dev);
-    _lf_timer_top_cfg.ticks = _lf_timer_max_value_ticks;
-    _lf_timer_top_cfg.callback = _lf_timer_overflow_callback;
-    
-    _lf_alarm_cfg.flags = 0;
-    _lf_alarm_cfg.ticks = 0;
-    _lf_alarm_cfg.callback = _lf_wakeup_alarm;
-    _lf_alarm_cfg.user_data = &_lf_alarm_cfg;
 
-    int res = counter_set_top_value(_lf_counter_dev, &_lf_timer_top_cfg);
+    // Calculate the duration of an epoch
+    _lf_timer_epoch_duration_nsec = counter_ticks_to_us(_lf_counter_dev, counter_max_ticks) * 1000LL;
+    
+    // Set the max_top value to be the maximum
+    counter_max_ticks = counter_get_max_top_value(_lf_counter_dev);
+    counter_top_cfg.ticks = counter_max_ticks;
+    counter_top_cfg.callback = _lf_timer_overflow_callback;
+    res = counter_set_top_value(_lf_counter_dev, &counter_top_cfg);
     if (res != 0) {
         printk("ERROR: Timer couldnt set top value\n");
         while(1) {};
     }
 
-    printk("HW Clock has frequency of %u Hz and wraps every %u sec\n", _lf_timer_freq_hz, _lf_timer_max_value_ticks/_lf_timer_freq_hz);
+    printk("HW Clock has frequency of %u Hz and wraps every %u sec\n", _lf_timer_freq, counter_max_ticks/_lf_timer_freq);
+    
+    // Prepare the alarm config
+    _lf_alarm_cfg.flags = 0;
+    _lf_alarm_cfg.ticks = 0;
+    _lf_alarm_cfg.callback = _lf_wakeup_alarm;
+    _lf_alarm_cfg.user_data = &_lf_alarm_cfg;
 
     // Start counter
     counter_start(_lf_counter_dev);
@@ -181,29 +167,25 @@ void lf_initialize_clock() {
  * Return the current time in nanoseconds
  */
 int lf_clock_gettime(instant_t* t) {
-    
-    // Read value from HW counter
-    #ifndef LF_QEMU_EMULATION
     uint32_t now_cycles;
-    int res = counter_get_value(_lf_counter_dev, &now_cycles);
+    int res;
+    uint64_t now_nsec;
+    
+    #ifndef LF_QEMU_EMULATION
+    res = counter_get_value(_lf_counter_dev, &now_cycles);
+    ticks_to_nsec(now_cycles, &now_nsec);
+    *t = now_nsec + _lf_timer_last_epoch_nsec;
 
     #else
-    uint32_t now_cycles = k_cycle_get_32();
+    now_cycles = k_cycle_get_32();
+    *t = (SECOND(1)/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC)*now_cycles;
+
     #endif
-
-    uint64_t cycles_64 = COMBINE_HI_LO(_lf_time_cycles_high, now_cycles);
-    *t = _lf_ticks_to_ns(cycles_64);
-
     return 0;
 }
 
 /**
  * @brief Sleep until an absolute time.
- * FIXME: For improved power consumption this should be implemented with a HW timer and interrupts.
- * This function should sleep until either timeout expires OR if we get interrupt by a physical action.
- * A physical action leads to the interrupting thread or IRQ calling "lf_notify_of_event". This can occur at anytime
- * Thus we reset this variable by calling "lf_ack_events" at the entry of the sleep. This works if we disabled interrupts before checking the event queue. 
- * and deciding to sleep. In that case we need to call "lf_ack_events" to reset any priori call to "lf_notify_of_event" which has been handled but not acked
  *  
  * @param wakeup int64_t time of wakeup 
  * @return int 0 if successful sleep, -1 if awoken by async event
@@ -276,7 +258,6 @@ int lf_sleep_until(instant_t wakeup) {
         lf_critical_section_exit();
     }
 
-    _lf_alarm_fired = false;
     instant_t now;
     do {
     lf_clock_gettime(&now);
@@ -320,8 +301,8 @@ int lf_critical_section_exit() {
 
 int lf_notify_of_event() {
    _lf_async_event = true;
-   #ifndef QEMU_EMULATION
-   k_sem_give(&_lf_sem);
+   #ifndef LF_QEMU_EMULATION
+    k_sem_give(&_lf_sem);
    #endif
    return 0;
 }

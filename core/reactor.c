@@ -160,10 +160,11 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
  *  should stop.
  */
 int _lf_do_step(void) {
+    reaction_t* reaction;
+
     // Invoke reactions.
-    while(pqueue_size(reaction_q) > 0) {
+    while(reaction = (reaction_t*)pqueue_pop(reaction_q)) {
         // lf_print_snapshot();
-        reaction_t* reaction = (reaction_t*)pqueue_pop(reaction_q);
         reaction->status = running;
         
         LF_PRINT_LOG("Invoking reaction %s at elapsed logical tag " PRINTF_TAG ".",
@@ -292,7 +293,7 @@ int next(void) {
     // Advance current time to match that of the first event on the queue.
     // We can now leave the critical section. Any events that will be added
     // to the queue asynchronously will have a later tag than the current one.
-    _lf_advance_logical_time(next_tag.time);
+    _lf_advance_logical_time(next_tag);
     lf_critical_section_exit();
     
     // Trigger shutdown reactions if appropriate.

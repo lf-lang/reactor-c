@@ -1181,12 +1181,14 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
         // FIXME: This can go away once:
         // - we have eliminated the possibility to have a negative additional delay; and
         // - we detect the asynchronous use of logical actions
+        #ifdef RUNTIME_CHECKS
         if (intended_time < current_tag.time) {
             lf_print_warning("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
                     "Revising to the current time " PRINTF_TIME ".",
                     current_tag.time - intended_time, current_tag.time);
             intended_time = current_tag.time;
         }
+        #endif
     }
 
 #ifdef FEDERATED_DECENTRALIZED
@@ -1297,12 +1299,14 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     // This is a sanity check for the logic above
     // FIXME: This is a development assertion and might
     // not be necessary for end-user LF programs
+    #ifdef RUNTIME_CHECKS
     if (intended_time < current_tag.time) {
         lf_print_error("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
                 "Revising to the current time " PRINTF_TIME ".",
                 current_tag.time - intended_time, current_tag.time);
         intended_time = current_tag.time;
     }
+    #endif
 
     // Set the tag of the event.
     e->time = intended_time;
@@ -1533,7 +1537,7 @@ trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* 
  * 
  * @param next_time The time step to advance to.
  */ 
-void _lf_advance_logical_time(instant_t next_time) {
+void _lf_advance_logical_time(tag_t next_time) {
     // FIXME: The following checks that _lf_advance_logical_time()
     // is being called correctly. Namely, check if logical time
     // is being pushed past the head of the event queue. This should
@@ -1542,24 +1546,19 @@ void _lf_advance_logical_time(instant_t next_time) {
     // to the ordinary execution of LF programs. Instead, there might
     // be a need for a target property that enables these kinds of logic
     // assertions for development purposes only.
+    #ifdef RUNTIME_CHECKS
     event_t* next_event = (event_t*)pqueue_peek(event_q);
     if (next_event != NULL) {
-        if (next_time > next_event->time) {
+        if (next_time->time > next_event->time) {
             lf_print_error_and_exit("_lf_advance_logical_time(): Attempted to move time to " PRINTF_TIME ", which is "
                     "past the head of the event queue, " PRINTF_TIME ".",
-                    next_time - start_time, next_event->time - start_time);
+                    next_time->time - start_time, next_event->time - start_time);
         }
     }
-
-    if (current_tag.time < next_time) {
-        current_tag.time = next_time;
-        current_tag.microstep = 0;
-    } else if (current_tag.time == next_time) {
-        current_tag.microstep++;
-    } else {
-        lf_print_error_and_exit("_lf_advance_logical_time(): Attempted to move tag back in time.");
-    }
-    LF_PRINT_LOG("Advanced (elapsed) tag to " PRINTF_TAG, next_time - start_time, current_tag.microstep);
+    #endif
+    current_tag.time = next_time.time;
+    current_tag.microstep = next_time.microstep;
+    LF_PRINT_LOG("Advanced (elapsed) tag to " PRINTF_TAG, next_time.time - start_time, current_tag.microstep);
 }
 
 /**
@@ -1649,11 +1648,16 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution (for tracing).
  */
 void schedule_output_reactions(reaction_t* reaction, int worker) {
+#ifdef FEDERATED
     if (reaction->is_a_control_reaction) {
         // Control reactions will not produce an output but can have
         // effects in order to have certain precedence requirements.
         // No need to execute this function if the reaction is a control
         // reaction.
+        return;
+    }
+#endif
+    if (reaction->num_outputs == 0) {
         return;
     }
     // If the reaction produced outputs, put the resulting triggered
