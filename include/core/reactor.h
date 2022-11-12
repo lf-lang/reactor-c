@@ -83,7 +83,17 @@ lf_token_t* _lf_initialize_token_with_value(lf_token_t* token, void* value, size
 // problems with if ... else statements that do not use braces around the
 // two branches.
 
+// Internal functions needed in the macros below.
 void _lf_set_present(lf_port_base_t* port);
+
+/** Possible return values for _lf_done_using and _lf_free_token. */
+typedef enum token_freed {
+    NOT_FREED,     // Nothing was freed.
+    VALUE_FREED,   // The value (payload) was freed.
+    TOKEN_FREED    // The value and the token were freed.
+} token_freed;
+
+token_freed _lf_free_token(lf_token_t* token);
 
 /**
  * Set the specified output (or input of a contained reactor)
@@ -111,7 +121,6 @@ do { \
         lf_token_t* token = _lf_initialize_token_with_value(out->token, *((void**) &out->value), 1); \
         token->ref_count = out->num_destinations; \
         out->token = token; \
-        out->token->ok_to_free = token_and_value; \
         if (out->destructor != NULL) { \
             out->token->destructor = out->destructor; \
         } \
@@ -246,6 +255,7 @@ do { \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
     out->value = newtoken->value; \
+    if (out->token != NULL && out->token->ref_count == 0) _lf_free_token(out->token); \
     out->token = newtoken; \
     newtoken->ref_count += out->num_destinations; \
     out->length = newtoken->length; \
@@ -255,6 +265,7 @@ do { \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
+    if (out->token != NULL && out->token->ref_count == 0) _lf_free_token(out->token); \
     out->token = newtoken; \
     newtoken->ref_count += out->num_destinations; \
     out->length = newtoken->length; \

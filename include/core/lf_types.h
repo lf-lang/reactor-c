@@ -72,7 +72,12 @@ typedef enum {defer, drop, replace} lf_spacing_policy_t;
  * ignore freeing the void* inside a token if the void*
  * value is garbage collected by an external controller
  */
-typedef enum {no=0, token_and_value, token_only} ok_to_free_t;
+typedef enum {
+	value_only=0,
+	token_and_value,
+	token_only,
+	neither_token_nor_value
+} ok_to_free_t;
 
 /**
  * Status of a given port at a given logical time.
@@ -308,6 +313,8 @@ struct trigger_t {
  * An allocation record that is used by a destructor for a reactor
  * to free memory that has been dynamically allocated for the particular
  * instance of the reactor.  This will be an element of linked list.
+ * If the indirect field is true, then the allocated pointer points to
+ * pointer to allocated memory, rather than directly to the allocated memory.
  */
 typedef struct allocation_record_t {
 	void* allocated;

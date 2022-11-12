@@ -51,6 +51,7 @@ void set_federation_id(const char* fid);
 #endif
 
 void* _lf_allocate(size_t count, size_t size, struct allocation_record_t** head);
+
 extern struct allocation_record_t* _lf_reactors_to_free;
 void* _lf_new_reactor(size_t size);
 void _lf_free(struct allocation_record_t** head);

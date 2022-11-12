@@ -63,6 +63,7 @@ endif()
 # Add sources from subdirectories.
 add_subdirectory(platform)
 add_subdirectory(utils)
+add_subdirectory(utils/hashset)
 add_subdirectory(modal_models)
 if(DEFINED NUMBER_OF_WORKERS)
     message(STATUS "Including sources for threaded runtime with \
