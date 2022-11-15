@@ -389,10 +389,19 @@ static token_freed _lf_free_token(lf_token_t* token) {
     if (token->ok_to_free) {
         // Need to free the lf_token_t struct also.
         if (_lf_token_recycling_bin_size < _LF_TOKEN_RECYCLING_BIN_SIZE_LIMIT) {
-            // Recycle instead of freeing.
-            token->next_free = _lf_token_recycling_bin;
-            _lf_token_recycling_bin = token;
-            _lf_token_recycling_bin_size++;
+            // find if token is already there in recycle bin
+            lf_token_t* token_itr = _lf_token_recycling_bin;
+            while ((token_itr != NULL) && (token_itr != token)) {
+                token_itr = token_itr->next_free;
+            }
+
+            // recycle in case of token not found in the list
+            if (token_itr == NULL) {
+                // Recycle instead of freeing.
+                token->next_free = _lf_token_recycling_bin;
+                _lf_token_recycling_bin = token;
+                _lf_token_recycling_bin_size++;
+            }
         } else {
             // Recycling bin is full.
             free(token);
