@@ -68,8 +68,8 @@ int hashset_iterator_next(hashset_itr_t itr)
 
   itr->index++;
 
-  while ((itr->set->items[(itr->index)] == 0 || itr->set->items[(itr->index)] == (void*)1)
-      && itr->index < itr->set->capacity) {
+  while (itr->index < itr->set->capacity
+      && (itr->set->items[(itr->index)] == 0 || itr->set->items[(itr->index)] == (void*)1)) {
     itr->index++;
   }
 
