@@ -108,8 +108,10 @@ extern int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), vo
 
 /**
  * Make calling thread wait for termination of the thread.  The
- * exit status of the thread is stored in thread_return, if thread_return
+ * exit status of the thread is stored in thread_return if thread_return
  * is not NULL.
+ * @param thread The thread.
+ * @param thread_return A pointer to where to store the exit status of the thread.
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
