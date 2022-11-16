@@ -16,40 +16,34 @@
  *   limitations under the License.
  *
  * In Nov. 2022, Edward A. Lee fixed bug where next could advance to a removed item.
+ * Also, changed the logic of the API a bit as inidicated in the .h file.
  */
 
 #include <assert.h>
 #include <stdio.h>
 #include "hashset/hashset_itr.h"
 
-hashset_itr_t hashset_iterator(hashset_t set)
-{
+hashset_itr_t hashset_iterator(hashset_t set) {
   hashset_itr_t itr = calloc(1, sizeof(struct hashset_itr_st));
-  if (itr == NULL)
+  if (itr == NULL) {
     return NULL;
-
+  }
   itr->set = set;
-  itr->index = 0;
-
-  /* advance to the first item if one is present */
-  if (set->nitems > 0)
-    hashset_iterator_next(itr);
+  itr->index = -1;
 
   return itr;
 }
 
-int hashset_iterator_has_next(hashset_itr_t itr)
-{
-  size_t index;
+int hashset_iterator_has_next(hashset_itr_t itr) {
+  assert(itr != NULL);
+  size_t index = itr->index + 1;
 
   /* empty or end of the set */
-  if (itr->set->nitems == 0 || itr->index == itr->set->capacity)
+  if (itr->set->nitems == 0 || index == itr->set->capacity) {
     return 0;
-
+  }
   /* peek to find another entry */
-  index = itr->index;
-  while(index < itr->set->capacity)
-  {
+  while(index < itr->set->capacity) {
     void* value = itr->set->items[index++];
     if(value != 0 && value != (void*)1)
       return 1;
@@ -57,33 +51,34 @@ int hashset_iterator_has_next(hashset_itr_t itr)
 
   /* Otherwise */
   return 0;
-
 }
 
-int hashset_iterator_next(hashset_itr_t itr)
-{
+int hashset_iterator_next(hashset_itr_t itr) {
+  assert(itr != NULL);
 
-  if(hashset_iterator_has_next(itr) == 0)
-    return -1; /* Can't advance */
+  size_t index = itr->index + 1;
 
-  itr->index++;
-
-  while (itr->index < itr->set->capacity
-      && (itr->set->items[(itr->index)] == 0 || itr->set->items[(itr->index)] == (void*)1)) {
-    itr->index++;
+  /* empty or end of the set */
+  if (itr->set->nitems == 0 || index == itr->set->capacity) {
+    return -1;
   }
 
-  return itr->index;
+  while (index < itr->set->capacity) {
+    if (itr->set->items[index] != 0 & itr->set->items[index] != (void*)1) {
+      // Found one.
+      itr->index = (int)index;
+      return index;
+    }
+    index++;
+  }
+
+  return -1;
 }
 
 void* hashset_iterator_value(hashset_itr_t itr) {
 
-  // Check to verify we're not at a null value, this can happen if an iterator is created
-  // before items are added to the set.
-  if(itr->set->items[itr->index] == 0)
-  {
-    hashset_iterator_next(itr);
-  }
+  // Check that hashset_iterator_next() has been called.
+  assert(itr->index >= 0 && itr->set->items[itr->index] != 0 && itr->set->items[itr->index] != (void*)1);
 
   return itr->set->items[itr->index];
 }

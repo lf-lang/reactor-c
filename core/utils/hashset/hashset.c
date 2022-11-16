@@ -17,6 +17,7 @@
  * Modified in 2022 by Edward A. Lee (eal@berkeley.edu) so that stored items are
  * consistently of type void*. Note that the void* value 1 is used to mark a deleted
  * item and therefore cannot be stored in the hashset.
+ * Also, used float rather than double for determining whether to rehash.
  */
 
 #include "hashset/hashset.h"
@@ -25,14 +26,13 @@
 static const unsigned int prime_1 = 73;
 static const unsigned int prime_2 = 5009;
 
-hashset_t hashset_create()
-{
+hashset_t hashset_create(unsigned short nbits) {
     hashset_t set = calloc(1, sizeof(struct hashset_st));
 
     if (set == NULL) {
         return NULL;
     }
-    set->nbits = 3;
+    set->nbits = nbits;
     set->capacity = (size_t)(1 << set->nbits);
     set->mask = set->capacity - 1;
     set->items = (void**)calloc(set->capacity, sizeof(void*));
@@ -45,21 +45,18 @@ hashset_t hashset_create()
     return set;
 }
 
-size_t hashset_num_items(hashset_t set)
-{
+size_t hashset_num_items(hashset_t set) {
     return set->nitems;
 }
 
-void hashset_destroy(hashset_t set)
-{
+void hashset_destroy(hashset_t set) {
     if (set) {
         free(set->items);
     }
     free(set);
 }
 
-static int hashset_add_member(hashset_t set, void *item)
-{
+static int hashset_add_member(hashset_t set, void *item) {
     size_t ii;
 
     if (item == 0 || item == (void*)1) {
@@ -84,13 +81,12 @@ static int hashset_add_member(hashset_t set, void *item)
     return 1;
 }
 
-static void maybe_rehash(hashset_t set)
-{
+static void maybe_rehash(hashset_t set) {
     void** old_items;
     size_t old_capacity, ii;
 
 
-    if (set->nitems + set->n_deleted_items >= (double)set->capacity * 0.85) {
+    if (set->nitems + set->n_deleted_items >= (float)set->capacity * 0.85f) {
         old_items = set->items;
         old_capacity = set->capacity;
         set->nbits++;
@@ -107,15 +103,13 @@ static void maybe_rehash(hashset_t set)
     }
 }
 
-int hashset_add(hashset_t set, void *item)
-{
+int hashset_add(hashset_t set, void *item) {
     int rv = hashset_add_member(set, item);
     maybe_rehash(set);
     return rv;
 }
 
-int hashset_remove(hashset_t set, void *item)
-{
+int hashset_remove(hashset_t set, void *item) {
     size_t ii = set->mask & (prime_1 * (size_t)item);
 
     while (set->items[ii] != 0) {
@@ -131,8 +125,7 @@ int hashset_remove(hashset_t set, void *item)
     return 0;
 }
 
-int hashset_is_member(hashset_t set, void *item)
-{
+int hashset_is_member(hashset_t set, void *item) {
     size_t ii = set->mask & (prime_1 * (size_t)item);
 
     while (set->items[ii] != 0) {

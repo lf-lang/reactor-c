@@ -13,7 +13,7 @@ reactor-c/include/core/utils/hashset
 
     char *foo = "foo";
     char *missing = "missing";
-    hashset_t set = hashset_create();
+    hashset_t set = hashset_create(3);
 
     if (set == NULL) {
     	fprintf(stderr, "failed to create hashset instance\n");

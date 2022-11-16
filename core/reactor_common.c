@@ -426,22 +426,22 @@ static token_freed _lf_done_using(lf_token_t* token) {
  */
 void _lf_free_all_tokens() {
     hashset_itr_t iterator = hashset_iterator(_lf_tokens_allocated);
-    while (hashset_iterator_has_next(iterator)) {
+    while (hashset_iterator_next(iterator) >= 0) {
         void* token = hashset_iterator_value(iterator);
         LF_PRINT_DEBUG("Freeing token from _lf_tokens_allocated: %p", token);
         free(token);
-        hashset_iterator_next(iterator);
     }
     hashset_destroy(_lf_tokens_allocated);
     _lf_tokens_allocated = NULL;
+    free(iterator);
 
     iterator = hashset_iterator(_lf_token_recycling_bin);
-    while (hashset_iterator_has_next(iterator)) {
+    while (hashset_iterator_next(iterator) >= 0) {
         void* token = hashset_iterator_value(iterator);
         LF_PRINT_DEBUG("Freeing token from _lf_token_recycling_bin: %p", token);
         free(token);
-        hashset_iterator_next(iterator);
     }
+    free(iterator);
     hashset_destroy(_lf_token_recycling_bin);
     _lf_token_recycling_bin = NULL;
 }
@@ -532,7 +532,7 @@ lf_token_t* _lf_create_token_internal(size_t element_size) {
     lf_token_t* token;
     // Check the recycling bin.
     hashset_itr_t iterator = hashset_iterator(_lf_token_recycling_bin);
-    if (hashset_iterator_has_next(iterator)) {
+    if (hashset_iterator_next(iterator) >= 0) {
         token = hashset_iterator_value(iterator);
         LF_PRINT_DEBUG("Removing %p from _lf_token_recycling_bin", token);
         hashset_remove(_lf_token_recycling_bin, token);
@@ -541,6 +541,7 @@ lf_token_t* _lf_create_token_internal(size_t element_size) {
         token = (lf_token_t*)malloc(sizeof(lf_token_t));
         LF_PRINT_DEBUG("_lf_create_token: Allocated memory for token: %p", token);
     }
+    free(iterator);
     token->value = NULL;
     token->length = 0;
     token->element_size = element_size;
@@ -2038,8 +2039,8 @@ void initialize(void) {
     next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
 
-    _lf_tokens_allocated = hashset_create();
-    _lf_token_recycling_bin = hashset_create();
+    _lf_tokens_allocated = hashset_create(3);     // Initial capacity 8
+    _lf_token_recycling_bin = hashset_create(4);  // Initial capacity 32
 
     // Initialize the trigger table.
     _lf_initialize_trigger_objects();

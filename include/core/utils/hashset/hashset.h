@@ -15,6 +15,7 @@
  *   limitations under the License.
  * 
  *  Modified in 2022 by Edward A. Lee to conform to documentation standards.
+ *  Also, changed so that hashset_create() takes an initial capacity argument.
  */
 
 #ifndef HASHSET_H
@@ -41,8 +42,10 @@ extern "C" {
     /**
      * @brief Create a hashset instance.
      * The returned value is a pointer.
+     * The caller must call hashset_destroy() to free allocated memory.
+     * @param nbits The log base 2 of the initial capacity of the hashset.
      */
-    hashset_t hashset_create(void);
+    hashset_t hashset_create(unsigned short nbits);
 
     /**
      * @brief Destroy the hashset instance, freeing allocated memory.
@@ -58,7 +61,8 @@ extern "C" {
      * @brief Add a pointer to the hashset.
      * Note that 0 and 1 are special values, meaning nil and deleted items.
      * This function will return -1 indicating error if you try to add 0 or 1.
-     * Returns zero if the item is already in the set and non-zero otherwise
+     * This function may resize the hashset if it is approaching capacity.
+     * Returns zero if the item is already in the set and non-zero otherwise.
      */
     int hashset_add(hashset_t set, void *item);
 
