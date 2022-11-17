@@ -70,13 +70,16 @@ typedef enum {defer, drop, replace} lf_spacing_policy_t;
 /**
  * An enum that enables the C core library to
  * ignore freeing the void* inside a token if the void*
- * value is garbage collected by an external controller
+ * value is garbage collected by an external controller.
+ * The order of this enum is important because token is
+ * freed when the low-order bit is set and value is freed
+ * when the next bit is set.
  */
 typedef enum {
-	value_only=0,
-	token_and_value,
-	token_only,
-	neither_token_nor_value
+    neither_token_nor_value = 0,
+    token_freeable,
+    value_freeable,
+	token_and_value
 } ok_to_free_t;
 
 /**
