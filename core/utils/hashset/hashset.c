@@ -56,28 +56,42 @@ void hashset_destroy(hashset_t set) {
     free(set);
 }
 
+// FIXME
+#include <stdio.h>
+
 static int hashset_add_member(hashset_t set, void *item) {
     size_t ii;
 
     if (item == 0 || item == (void*)1) {
         return -1;
     }
-
     ii = set->mask & (prime_1 * (size_t)item);
 
-    while (set->items[ii] != 0 && set->items[ii] != (void*)1) {
+    // Search chain of possible locations and stop when slot is empty.
+    // Chain of possibilities always ends with an empty (0) even
+    // if some items in the chain have been deleted (1). If a
+    // deleted slot is found along the way, remember it to use it.
+    int available = -1;
+    while (set->items[ii] != 0) {
         if (set->items[ii] == item) {
             return 0;
         } else {
-            /* search free slot */
+            if (set->items[ii] == (void*)1 && available < 0) {
+                // Slot is available from deletion.
+                available = (int)ii;
+            }
+            /* search the next slot */
             ii = set->mask & (ii + prime_2);
         }
     }
     set->nitems++;
-    if (set->items[ii] == (void*)1) {
+    if (available >= 0) {
+        // Use the slot available from a deletion.
         set->n_deleted_items--;
+        set->items[available] = item;
+    } else {
+        set->items[ii] = item;
     }
-    set->items[ii] = item;
     return 1;
 }
 
