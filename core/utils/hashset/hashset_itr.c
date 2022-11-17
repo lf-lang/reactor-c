@@ -64,7 +64,7 @@ int hashset_iterator_next(hashset_itr_t itr) {
   }
 
   while (index < itr->set->capacity) {
-    if (itr->set->items[index] != 0 & itr->set->items[index] != (void*)1) {
+    if (itr->set->items[index] != 0 && itr->set->items[index] != (void*)1) {
       // Found one.
       itr->index = (int)index;
       return index;
