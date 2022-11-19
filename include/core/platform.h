@@ -62,6 +62,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #elif defined(__riscv) || defined(__riscv__)
     // RISC-V (see https://github.com/riscv/riscv-toolchain-conventions)
     #error "RISC-V not supported"
+#elif defined(__patmos__)
+    #include "lf_patmos_support.h"
 #else
 #error "Platform not supported"
 #endif

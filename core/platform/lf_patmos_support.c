@@ -42,6 +42,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "lf_unix_clock_support.h"
 
+#include <time.h>
+
 /**
  * Pause execution for a number of nanoseconds.
  *
@@ -54,5 +56,5 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 int lf_nanosleep(instant_t requested_time) {
     const struct timespec tp = convert_ns_to_timespec(requested_time);
     struct timespec remaining;
-    return clock_nanosleep(_LF_CLOCK, 0, (const struct timespec*)&tp, (struct timespec*)&remaining);
+    return nanosleep((const struct timespec*)&tp, (struct timespec*)&remaining);
 }
