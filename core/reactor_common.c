@@ -1577,7 +1577,7 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
     #endif
 
     bool violation = false;
-    if (reaction->deadline >= 0LL) {
+    if (reaction->deadline >= 0LL && reaction->deadline < FOREVER) {
         // Get the current physical time.
         instant_t physical_time = lf_time_physical();
         // Check for deadline violation.

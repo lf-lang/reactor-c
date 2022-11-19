@@ -499,9 +499,9 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
 
 #ifdef MODAL_REACTORS
 /**
- * @brief This function takes a self pointer and locks, recursively
+ * @brief This function takes a self pointer and locks, recursively,
  *  all the parent reactors which are modal. It effectively walks
- *  up the containment hierarchy and locks any modal reactor
+ *  up the containment hierarchy and locks any modal reactor.
  * 
  * @param reactor 
  */
@@ -544,8 +544,12 @@ static void _lf_sched_unlock_modal_parents(self_base_t* reactor, int worker_numb
 }
 #endif
 /**
- * @brief This function is invoked right before the reaction invocation.
- *  It locks the local mutex of  
+ * @brief Lock mutexes needed to execute the specified reaction.
+ * If the reactor containing the specified reaction has a local mutex, lock it.
+ * Also, if the reaction has a logical execution time greater than zero, then
+ * lock all modal reactors higher in the hierarchy and set a global logical time
+ * barrier for the end time of the LET.
+ * execution   
  * 
  * @param reaction 
  * @param worker_number 
@@ -629,11 +633,12 @@ void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
 
 #ifdef MODAL_REACTORS
 /**
- * @brief This function should be invoked by the worker thread about to advance time BEFORE it acquires the global mutex.
- *  It is only relevant if we have modal reactors. It gathers all the Reactors which are about to perform mode changes, and reactors contained within them,
- *  and acquires there local mutex to make sure there are no LET reactions currently executing in any of them.
+ * @brief Acquire the local mutex for any reactor that has pending mode changes.
+ * This function should be invoked by the worker thread about to advance time BEFORE it acquires the global mutex.
+ *  It is only relevant if we have modal reactors. 
+ * It gathers all the Reactors which are about to perform mode changes, and reactors contained within them,
+ *  and acquires their local mutex to make sure there are no LET reactions currently executing in any of them.
  *  In the case that there are LET reactions, this will block the advancement of time until the LET reaction completes.
- * 
  */
 static void _lf_sched_mode_time_advance_prologue() {
     int n_reactors = _lf_mode_get_transitioning_reactors((void *) &_lf_sched_transitioning_reactors);
