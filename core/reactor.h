@@ -4,6 +4,7 @@
  * @author Marten Lohstroh (marten@berkeley.edu)
  * @author Chris Gill (cdgill@wustl.edu)
  * @author Mehrdad Niknami (mniknami@berkeley.edu)
+ * @author Erling R. jellum (erling.r.jellum@ntnu.no)
  *
  * @section LICENSE
  * Copyright (c) 2019, The University of California at Berkeley.

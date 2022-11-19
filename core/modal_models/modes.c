@@ -34,8 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * @author{Alexander Schulz-Rosengarten <als@informatik.uni-kiel.de>}
  * @author{Soroush Bateni <soroush@utdallas.edu}
- * FIXME: Before performing any mode transitions the reactor-local mutex must be acquired.
- *  this will make sure that we dont do any mode transition while executing a LET reaction
+ * @author{Erling R. Jellum <erling.r.jellum@ntnu.no}
  */
 #ifdef MODAL_REACTORS
 

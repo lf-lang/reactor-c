@@ -34,6 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Mehrdad Niknami <mniknami@berkeley.edu>}
  *  @author{Soroush Bateni <soroush@utdallas.edu}
  *  @author{Alexander Schulz-Rosengarten <als@informatik.uni-kiel.de>}
+ *  @author{Erling Rennemo Jellum <erling.r.jellum0@ntnu.no>}
  */
 
 #include "reactor.h"
@@ -1573,7 +1574,7 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
     
     #ifdef LF_MULTI_THREADED
     lf_sched_reaction_prologue(reaction, worker);
-    #endif        
+    #endif
 
     bool violation = false;
     if (reaction->deadline >= 0LL) {

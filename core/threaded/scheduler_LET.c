@@ -25,6 +25,16 @@ ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
+/**
+ * Non-preemptive scheduler for the threaded runtime of the C target of Lingua
+ * Franca.
+ * 
+ * @author{Erling R. Jellum <erling.r.jellum@ntnu.no>}
+ * @author{Soroush Bateni <soroush@utdallas.edu>}
+ * @author{Edward A. Lee <eal@berkeley.edu>}
+ * @author{Marten Lohstroh <marten@berkeley.edu>}
+ */
+
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
@@ -49,12 +59,14 @@ extern lf_cond_t event_q_changed;
 /////////////////// Scheduler Variables and Structs /////////////////////////
 _lf_sched_instance_t* _lf_sched_instance;
 bool* _lf_sched_worker_is_in_workforce;
+#ifdef MODAL_REACTORS
 static vector_t _lf_sched_transitioning_reactors;
 #define LF_SCHED_INTIAL_CAPACITY_TRANS_REACTORS 16
+#endif
 
 /////////////////// Scheduler Private API /////////////////////////
-static void _lf_sched_mode_change_prologue();
-static void _lf_sched_mode_change_epilogue();
+static void _lf_sched_mode_time_advance_prologue();
+static void _lf_sched_mode_time_advance_epilogue();
 
 /**
  * @brief Insert 'reaction' into
@@ -206,7 +218,7 @@ void _lf_sched_try_advance_tag_and_distribute() {
             _lf_sched_instance->_lf_sched_next_reaction_level = 0;
             
             #ifdef MODAL_REACTORS
-                _lf_sched_mode_change_prologue();
+                _lf_sched_mode_time_advance_prologue();
             #endif
             
             lf_mutex_lock(&mutex);
@@ -220,7 +232,7 @@ void _lf_sched_try_advance_tag_and_distribute() {
                 lf_mutex_unlock(&mutex);
             
                 #ifdef MODAL_REACTORS
-                    _lf_sched_mode_change_epilogue();
+                    _lf_sched_mode_time_advance_epilogue();
                 #endif
             
                 break;
@@ -228,7 +240,7 @@ void _lf_sched_try_advance_tag_and_distribute() {
             lf_mutex_unlock(&mutex);
             
             #ifdef MODAL_REACTORS
-                _lf_sched_mode_change_epilogue();
+                _lf_sched_mode_time_advance_epilogue();
             #endif
         }
 
@@ -350,7 +362,6 @@ void lf_sched_init(
     // Allocate array to hold information about which local mutexes were acquired
     //  due to mode transitions
     _lf_sched_transitioning_reactors = vector_new(LF_SCHED_INTIAL_CAPACITY_TRANS_REACTORS);
-
     #endif
 
     _lf_sched_instance->_lf_sched_executing_reactions = 
@@ -364,14 +375,13 @@ void lf_sched_init(
  * This must be called when the scheduler is no longer needed.
  */
 void lf_sched_free() {
-    // for (size_t j = 0; j <= _lf_sched_instance->max_reaction_level; j++) {
-    //     free(((reaction_t***)_lf_sched_instance->_lf_sched_triggered_reactions)[j]);
-    // }
     free(_lf_sched_instance->_lf_sched_triggered_reactions);
     free(_lf_sched_instance->_lf_sched_executing_reactions);
     lf_semaphore_destroy(_lf_sched_instance->_lf_sched_semaphore);
     free(_lf_sched_worker_is_in_workforce);
+    #ifdef MODAL_REACTORS
     vector_free(&_lf_sched_transitioning_reactors);
+    #endif
 }
 
 ///////////////////// Scheduler Worker API (public) /////////////////////////
@@ -500,7 +510,7 @@ static void _lf_sched_lock_modal_parents(self_base_t* reactor, int worker_number
     // If has a parent/containing reactor
     if (parent) {
         // Check if it is modal
-        if (parent->_lf__mode_state.current_mode) { // FIXME: Is this a reliable way to check if reactor is modal?
+        if (parent->_lf__mode_state.current_mode) {
             if (!parent->has_mutex) {
                 lf_print_error_and_exit("Runtime error. Modal reactor did not have a mutex");
             }
@@ -625,7 +635,7 @@ void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
  *  In the case that there are LET reactions, this will block the advancement of time until the LET reaction completes.
  * 
  */
-static void _lf_sched_mode_change_prologue() {
+static void _lf_sched_mode_time_advance_prologue() {
     int n_reactors = _lf_mode_get_transitioning_reactors((void *) &_lf_sched_transitioning_reactors);
 
     LF_PRINT_DEBUG("There are %u transitioning reactors whose locks we must acquire", n_reactors);
@@ -638,7 +648,7 @@ static void _lf_sched_mode_change_prologue() {
 
 }
 
-static void _lf_sched_mode_change_epilogue() {
+static void _lf_sched_mode_time_advance_epilogue() {
     int n_reactors = vector_size(&_lf_sched_transitioning_reactors);
     LF_PRINT_DEBUG("Unlocking %u reactors", n_reactors);
     for (int i = 0; i<n_reactors; i++) {

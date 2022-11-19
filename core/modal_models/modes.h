@@ -38,6 +38,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * @author{Alexander Schulz-Rosengarten <als@informatik.uni-kiel.de>}
  * @author{Soroush Bateni <soroush@utdallas.edu}
+ * @author{Erling R. Jellum <erling.r.jellum@ntnu.no}
  */
 #ifndef MODES_H
 #define MODES_H
@@ -110,7 +111,10 @@ void _lf_handle_mode_changes(void);
 void _lf_handle_mode_triggered_reactions(void);
 
 /**
- * Function (to be code generated) to fill up a vector with the reactors which have mode transitions.
+ * Function (to be code generated) which accepts a pointer to an allocated
+ * vector_t to which it appends all reactors which have requested 
+ * a mode change at the current tag. A void* is used to avoid
+ * adding vector.h to the namespace of the usercode.
  */
 int _lf_mode_get_transitioning_reactors(void * return_vec);
 
