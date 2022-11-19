@@ -559,14 +559,12 @@ void _lf_terminate_modal_reactors() {
 }
 
 /**
- * @brief This function accepts an array of ALL the modes ordered from top-level and ending with leaf modes, 
- *  and adds a reactor ptr into return_vec if a mode transition was requested. This will not add reactors having 
- *  contained modes. Only reactors that have scheduled a transition itself.
+ * @brief This function accepts an array of modes and appends into return_vec the self pointer of each mode's reactor if a next mode has been set, meaning that a transition out of the mode has been requested.
  * 
- * @param states 
- * @param states_size 
- * @param return_vec 
- * @return int 
+ * @param states An array of modes.
+ * @param states_size The size of the array of modes.
+ * @param return_vec A pointer to a vector_t into which to push the result.
+ * @return int The number of items pushed into the vector.
  */
 int _lf_mode_collect_transitioning_reactors(reactor_mode_state_t **states, int states_size, void * _return_vec) {
     int num_transitioning_reactors = 0;
