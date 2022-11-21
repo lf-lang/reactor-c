@@ -9,15 +9,15 @@ on:
   workflow_dispatch:
 
 jobs:
-  # unit-tests-single:
-  #   uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@main
-  #   with:
-  #     cmake-args: '-UNUMBER_OF_WORKERS'
+  unit-tests-single:
+    uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@main
+    with:
+      cmake-args: '-UNUMBER_OF_WORKERS'
 
-  # unit-tests-multi:
-  #   uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@main
-  #   with:
-  #     cmake-args: '-DNUMBER_OF_WORKERS=4'
+  unit-tests-multi:
+    uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@main
+    with:
+      cmake-args: '-DNUMBER_OF_WORKERS=4'
 
   fetch-lf:
     uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@master
@@ -31,26 +31,26 @@ jobs:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
 
-  # lf-gedf-np:
-  #   needs: fetch-lf
-  #   uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@auth
-  #   with:
-  #     runtime-ref: ${{ github.ref }}
-  #     compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-  #     scheduler: GEDF_NP
+  lf-gedf-np:
+    needs: fetch-lf
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@auth
+    with:
+      runtime-ref: ${{ github.ref }}
+      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+      scheduler: GEDF_NP
 
-  # lf-gedf-np-ci:
-  #   needs: fetch-lf
-  #   uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@auth
-  #   with:
-  #     runtime-ref: ${{ github.ref }}
-  #     compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-  #     scheduler: GEDF_NP_CI
+  lf-gedf-np-ci:
+    needs: fetch-lf
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@auth
+    with:
+      runtime-ref: ${{ github.ref }}
+      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+      scheduler: GEDF_NP_CI
 
-  # lf-adaptive:
-  #   needs: fetch-lf
-  #   uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@auth
-  #   with:
-  #     runtime-ref: ${{ github.ref }}
-  #     compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-  #     scheduler: adaptive
+  lf-adaptive:
+    needs: fetch-lf
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@auth
+    with:
+      runtime-ref: ${{ github.ref }}
+      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+      scheduler: adaptive
