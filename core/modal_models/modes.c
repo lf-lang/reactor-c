@@ -562,7 +562,7 @@ void _lf_terminate_modal_reactors() {
  * 
  * @param states An array of modes.
  * @param states_size The size of the array of modes.
- * @param return_vec A pointer to a vector_t into which to push the result.
+ * @param return_vec A pointer to a an allocated `vector_t` type. void* used to avoid exposing type to user-code
  * @return int The number of items pushed into the vector.
  */
 int _lf_mode_collect_transitioning_reactors(reactor_mode_state_t **states, int states_size, void * _return_vec) {
