@@ -99,7 +99,6 @@ static void maybe_rehash(hashset_t set) {
     void** old_items;
     size_t old_capacity, ii;
 
-
     if (set->nitems + set->n_deleted_items >= (float)set->capacity * 0.85f) {
         old_items = set->items;
         old_capacity = set->capacity;

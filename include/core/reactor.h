@@ -255,8 +255,12 @@ do { \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
     out->value = newtoken->value; \
-    if (out->token != NULL && out->token->ref_count == 0) _lf_free_token(out->token); \
+    if (out->token != NULL && out->token != newtoken) { \
+        out->token->ok_to_free |= token_freeable; \
+        if (out->token->ref_count == 0) _lf_free_token(out->token); \
+    } \
     out->token = newtoken; \
+    newtoken->ok_to_free &= ~token_freeable; \
     newtoken->ref_count += out->num_destinations; \
     out->length = newtoken->length; \
 } while(0)
@@ -265,8 +269,12 @@ do { \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
-    if (out->token != NULL && out->token->ref_count == 0) _lf_free_token(out->token); \
+    if (out->token != NULL && out->token != newtoken) { \
+        out->token->ok_to_free |= token_freeable; \
+        if (out->token->ref_count == 0) _lf_free_token(out->token); \
+    } \
     out->token = newtoken; \
+    newtoken->ok_to_free &= ~token_freeable; \
     newtoken->ref_count += out->num_destinations; \
     out->length = newtoken->length; \
 } while(0)
