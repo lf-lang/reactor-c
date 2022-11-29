@@ -68,21 +68,6 @@ typedef unsigned short int ushort;
 typedef enum {defer, drop, replace} lf_spacing_policy_t;
 
 /**
- * An enum that enables the C core library to
- * ignore freeing the void* inside a token if the void*
- * value is garbage collected by an external controller.
- * The order of this enum is important because token is
- * freed when the low-order bit is set and value is freed
- * when the next bit is set.
- */
-typedef enum {
-    neither_token_nor_value = 0,
-    token_freeable,
-    value_freeable,
-	token_and_value
-} ok_to_free_t;
-
-/**
  * Status of a given port at a given logical time.
  *
  * If the value is 'present', it is an indicator that the port is present at the given logical time.
@@ -146,7 +131,7 @@ typedef struct trigger_t trigger_t;
 /**
  * Token type for dynamically allocated arrays and structs sent as messages.
  *
- * In the C LF target, a type for an output that ends in '*' is
+ * In the C LF target, a type for an output that ends in '*' or '[]' is
  * treated specially. The value carried by the output is assumed
  * to be in dynamically allocated memory, and, using reference
  * counting, after the last downstream reader of the value has
@@ -159,7 +144,7 @@ typedef struct trigger_t trigger_t;
  * This struct is the wrapper around the dynamically allocated memory
  * that carries the message.  The message can be an array of values,
  * where the size of each value is element_size (in bytes). If it is
- * not an array, the length == 1.
+ * not an array, or is not to be treated as an array, the length == 1.
  */
 typedef struct lf_token_t {
     /** Pointer to dynamically allocated memory containing a message. */
@@ -168,24 +153,23 @@ typedef struct lf_token_t {
     size_t element_size;
     /** Length of the array or 1 for a struct. */
     size_t length;
-    /** The number of input ports that have not already reacted to the message. */
-    int ref_count;
+    /** The number of input ports that have a pointer to the message. */
+    size_t ref_count;
     /** The destructor or NULL to use the default free(). */
     void (*destructor) (void* value);
     /** The copy constructor or NULL to use memcpy. */
     void* (*copy_constructor) (void* value);
-    /**
-     * Indicator of whether this token is expected to be freed.
-     * Tokens that are created at the start of execution and associated with output
-     * ports or actions are not expected to be freed. They can be reused instead.
-     */
-    ok_to_free_t ok_to_free;
-    /** For recycling, a pointer to the next token in the recycling bin. */
-    struct lf_token_t* next_free;
+    /** Number of triggers (input ports and actions) that have this as a template. */
+    size_t template_count;
+    /** Indicator that the value is to be freed when the token is freed. */
+    bool ok_to_free_value;
+    /** Convenience for constructing a temporary list of tokens. */
+    struct lf_token_t* next;
 } lf_token_t;
 
-/** A struct with a pointer to a lf_token_t and an _is_present variable
- *  for use to initialize actions in start_time_step().
+/** 
+ * A struct with a pointer to a lf_token_t and an _is_present variable
+ * for use to initialize actions in start_time_step().
  */
 typedef struct token_present_t {
     lf_token_t** token;

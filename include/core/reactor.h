@@ -69,9 +69,6 @@
 #define CONSTRUCTOR(classname) (new_ ## classname)
 #define SELF_STRUCT_T(classname) (classname ## _self_t)
 
-/**
- * Prototype for the internal API. @see reactor_common.c
- **/
 lf_token_t* _lf_initialize_token_with_value(lf_token_t* token, void* value, size_t length);
 
 ////////////////////////////////////////////////////////////
@@ -83,16 +80,51 @@ lf_token_t* _lf_initialize_token_with_value(lf_token_t* token, void* value, size
 // problems with if ... else statements that do not use braces around the
 // two branches.
 
-// Internal functions needed in the macros below.
+// Declarations for functions used by the macros.
+
+/**
+ * Mark the given port's is_present field as true. This is_present field
+ * will later be cleaned up by _lf_start_time_step.
+ * This assumes that the mutex is not held.
+ * @param port A pointer to the port struct.
+ */
 void _lf_set_present(lf_port_base_t* port);
+
+/**
+ * @brief Replace the specified template token with a new one.
+ * If the two tokens are equal, this does nothing. Otherwise, it
+ * frees the previous template token pointed by the first argument,
+ * if appropriate (the reference and template counts are zero)
+ * and increments the template count of the second.
+ * @param template Pointer to a token pointer for a template token.
+ * @param newtoken The replacement token.
+ */
+ void _lf_replace_template_token(lf_token_t** template, lf_token_t* newtoken);
 
 /** Possible return values for _lf_done_using and _lf_free_token. */
 typedef enum token_freed {
-    NOT_FREED,     // Nothing was freed.
+    NOT_FREED = 0, // Nothing was freed.
     VALUE_FREED,   // The value (payload) was freed.
-    TOKEN_FREED    // The value and the token were freed.
+    TOKEN_FREED,    // The token was freed but not the value.
+    TOKEN_AND_VALUE_FREED // Both were freed
 } token_freed;
 
+/**
+ * @brief Free the specified token, if appropriate.
+ * If the reference count is greater than 0, then do not free 
+ * anything. Otherwise, the token value (payload) will be freed
+ * if the token's ok_to_free_value field is true (and the target
+ * is not a garbage-collected language like Python). Finally,
+ * the token itself will be freed if its template_count is zero.
+ * The freed token will be put on the recycling bin unless that
+ * bin has reached the designated capacity, in which case free()
+ * will be used.
+ *
+ * @param token Pointer to a token.
+ * @return NOT_FREED if nothing was freed, VALUE_FREED if the value
+ *  was freed, TOKEN_FREED if only the token was freed, and
+ *  TOKEN_AND_VALUE_FREED if both the value and the token were freed.
+ */
 token_freed _lf_free_token(lf_token_t* token);
 
 /**
@@ -254,13 +286,8 @@ do { \
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
+    _lf_replace_template_token(&out->token, newtoken); \
     out->value = newtoken->value; \
-    if (out->token != NULL && out->token != newtoken) { \
-        out->token->ok_to_free |= token_freeable; \
-        if (out->token->ref_count == 0) _lf_free_token(out->token); \
-    } \
-    out->token = newtoken; \
-    newtoken->ok_to_free &= ~token_freeable; \
     newtoken->ref_count += out->num_destinations; \
     out->length = newtoken->length; \
 } while(0)
@@ -268,13 +295,8 @@ do { \
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
+    _lf_replace_template_token(&out->token, newtoken); \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
-    if (out->token != NULL && out->token != newtoken) { \
-        out->token->ok_to_free |= token_freeable; \
-        if (out->token->ref_count == 0) _lf_free_token(out->token); \
-    } \
-    out->token = newtoken; \
-    newtoken->ok_to_free &= ~token_freeable; \
     newtoken->ref_count += out->num_destinations; \
     out->length = newtoken->length; \
 } while(0)
@@ -465,6 +487,8 @@ bool _lf_trigger_shutdown_reactions(void);
 /**
  * Create a new token and initialize it.
  * The value pointer will be NULL and the length will be 0.
+ * The token will be marked so that the value (payload) and token can both
+ * be freed when done with.
  * @param element_size The size of an element carried in the payload or
  *  0 if there is no payload.
  * @return A pointer to a new or recycled lf_token_t struct.

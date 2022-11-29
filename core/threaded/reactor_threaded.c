@@ -347,12 +347,11 @@ trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* 
     return return_value;
 }
 
-/*
+/**
  * Mark the given port's is_present field as true. This is_present field
  * will later be cleaned up by _lf_start_time_step.
  * This assumes that the mutex is not held.
  * @param port A pointer to the port struct.
- * must be set.
  */
 void _lf_set_present(lf_port_base_t* port) {
 	bool* is_present_field = &port->is_present;

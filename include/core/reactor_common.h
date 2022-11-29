@@ -25,8 +25,8 @@ extern bool** _lf_is_present_fields_abbreviated;
 extern int _lf_is_present_fields_abbreviated_size;
 extern tag_t** _lf_intended_tag_fields;
 extern int _lf_intended_tag_fields_size;
-extern token_present_t* _lf_tokens_with_ref_count;
-extern lf_token_t* _lf_more_tokens_with_ref_count;
+extern lf_token_t*** _lf_tokens_with_ref_count;
+extern lf_token_t* _lf_tokens_allocated_in_reactions;
 extern int _lf_tokens_with_ref_count_size;
 extern vector_t _lf_sparse_io_record_sizes;
 
@@ -89,8 +89,7 @@ lf_token_t* _lf_set_new_array_impl(lf_token_t* token, size_t length, int num_des
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
 void _lf_invoke_reaction(reaction_t* reaction, int worker);
 void schedule_output_reactions(reaction_t* reaction, int worker);
-lf_token_t* writable_copy(lf_token_t* token);
-lf_token_t* _lf_writable_copy(lf_token_t* token);
+lf_token_t* lf_writable_copy(lf_token_t* token);
 int process_args(int argc, const char* argv[]);
 void initialize(void);
 void termination(void);
