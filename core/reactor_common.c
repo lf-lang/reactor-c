@@ -491,9 +491,9 @@ void _lf_start_time_step() {
     for(int i = 0; i < _lf_tokens_with_ref_count_size; i++) {
         // If the reference count is already zero, no need to decrement. It shouldn't be, however.
         if (_lf_tokens_with_ref_count[i] && *(_lf_tokens_with_ref_count[i])
-                    && (*(_lf_tokens_with_ref_count[i]))->ref_count > 0) {
-                _lf_done_using(*(_lf_tokens_with_ref_count[i]));
-            }
+                && (*(_lf_tokens_with_ref_count[i]))->ref_count > 0) {
+            _lf_done_using(*(_lf_tokens_with_ref_count[i]));
+        }
     }
     // Also handle dynamically created tokens for mutable inputs.
     while (_lf_tokens_allocated_in_reactions != NULL) {
@@ -1814,13 +1814,12 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
 /**
  * Return a writable copy of the specified token.
  * If the reference count is 1, this returns the original token rather than a copy.
- * The reference count will be incremented to 2. Otherwise,
+ * The reference count will be left at 1. Otherwise,
  * if the size of the token payload is zero, this also returns the original token,
- * again with reference count incremented.
+ * again with reference count left at 1.
  * Otherwise, this returns a new token with a reference count of 1.
- * To ensure that the allocated memory is not leaked, this new token must be
- * either passed to an output using set_token() or scheduled with a action
- * using lf_schedule_token().
+ * The new token is added to a list of tokens whose reference counts will
+ * be decremented at the start of the next tag.
  */
 lf_token_t* lf_writable_copy(lf_token_t* token) {
     LF_PRINT_DEBUG("lf_writable_copy: Requesting writable copy of token %p with reference count %zu.",
@@ -1828,7 +1827,6 @@ lf_token_t* lf_writable_copy(lf_token_t* token) {
     if (token->ref_count == 1) {
         LF_PRINT_DEBUG("lf_writable_copy: Avoided copy because reference count is %zu.",
                 token->ref_count);
-        token->ref_count++;
         return token;
     }
     LF_PRINT_DEBUG("lf_writable_copy: Copying value because reference count is greater than 1. It is %zu.",
@@ -1838,7 +1836,6 @@ lf_token_t* lf_writable_copy(lf_token_t* token) {
         LF_PRINT_DEBUG("lf_writable_copy: Copy constructor is NULL. Using default strategy.");
         size_t size = token->element_size * token->length;
         if (size == 0) {
-            token->ref_count++;
             return token;
         }
         copy = malloc(size);
