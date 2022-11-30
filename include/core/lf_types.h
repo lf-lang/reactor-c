@@ -167,17 +167,6 @@ typedef struct lf_token_t {
     struct lf_token_t* next;
 } lf_token_t;
 
-/** 
- * A struct with a pointer to a lf_token_t and an _is_present variable
- * for use to initialize actions in start_time_step().
- */
-typedef struct token_present_t {
-    lf_token_t** token;
-    port_status_t* status; // FIXME: This structure is used to present the status of tokens
-                           // for both ports and actions.
-    bool reset_is_present; // True to set is_present to false after calling _lf_done_using().
-} token_present_t;
-
 /**
  * Reaction activation record to push onto the reaction queue.
  * Some of the information in this struct is common among all instances
