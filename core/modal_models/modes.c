@@ -34,8 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * @author{Alexander Schulz-Rosengarten <als@informatik.uni-kiel.de>}
  * @author{Soroush Bateni <soroush@utdallas.edu}
- * FIXME: Before performing any mode transitions the reactor-local mutex must be acquired.
- *  this will make sure that we dont do any mode transition while executing a LET reaction
+ * @author{Erling R. Jellum <erling.r.jellum@ntnu.no}
  */
 #ifdef MODAL_REACTORS
 
@@ -557,4 +556,29 @@ void _lf_terminate_modal_reactors() {
     }
     _lf_unsused_suspended_events_head = NULL;
 }
+
+/**
+ * @brief This function accepts an array of modes and appends into return_vec the self pointer of each mode's reactor if a next mode has been set, meaning that a transition out of the mode has been requested.
+ * 
+ * @param states An array of modes.
+ * @param states_size The size of the array of modes.
+ * @param return_vec A pointer to a an allocated `vector_t` type. void* used to avoid exposing type to user-code
+ * @return int The number of items pushed into the vector.
+ */
+int _lf_mode_collect_transitioning_reactors(reactor_mode_state_t **states, int states_size, void * _return_vec) {
+    int num_transitioning_reactors = 0;
+    vector_t *return_vec = (vector_t *) _return_vec;
+    for (int i = 0; i < states_size; i++) {
+        reactor_mode_state_t* state = states[i];
+        if (state != NULL) {
+            if (state->next_mode != NULL) {
+                vector_push(return_vec, state->self);
+                num_transitioning_reactors++;
+                
+            }
+        }
+    }
+    return num_transitioning_reactors;
+}
+
 #endif

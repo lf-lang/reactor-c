@@ -29,6 +29,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Edward A. Lee <eal@berkeley.edu>}
  *  @author{Marten Lohstroh <marten@berkeley.edu>}
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
+ *  @author{Soroush Bateni <erling.r.jellum@ntnu.no>}
  */
 
 #ifndef NUMBER_OF_WORKERS
@@ -1023,7 +1024,9 @@ void _lf_worker_do_work(int worker_number) {
                 current_reaction_to_execute->chain_id,
                 current_reaction_to_execute->deadline);
 
-        bool violation = _lf_worker_handle_violations(
+        // Check for STP violations. Deadline violations checked after acquiring all the
+        //  mutexes.
+        bool violation = _lf_worker_handle_STP_violation_for_reaction(
             worker_number, 
             current_reaction_to_execute
         );

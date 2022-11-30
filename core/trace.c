@@ -399,7 +399,7 @@ void tracepoint(
         self_base_t* reactor = (self_base_t *) trigger->reactions[0]->self;
         tag = lf_tag(reactor);
     } else {
-        lf_tag(NULL);
+        tag = lf_tag(NULL);
     }
 
     _lf_trace_buffer[index][i].event_type = event_type;

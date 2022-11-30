@@ -38,11 +38,18 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * @author{Alexander Schulz-Rosengarten <als@informatik.uni-kiel.de>}
  * @author{Soroush Bateni <soroush@utdallas.edu}
+ * @author{Erling R. Jellum <erling.r.jellum@ntnu.no}
  */
 #ifndef MODES_H
 #define MODES_H
 
 #ifdef MODAL_REACTORS
+
+// Forward declare reactor self-struct from reactor.h
+struct self_base_t;
+
+// Use a vector for collecting transitioning reactors
+#include "utils/vector.h"
 
 ////////////////////////////////////////////////////////////
 //// Macros for setting modes.
@@ -73,6 +80,19 @@ do { \
 
 
 ////////////////////////////////////////////////////////////
+//// Type definitions for modal infrastructure.
+
+/** Typedef for reactor_mode_t struct, used for representing a mode. */
+typedef struct reactor_mode_t reactor_mode_t;
+/** Typedef for reactor_mode_state_t struct, used for storing modal state of reactor and/or its relation to enclosing modes. */
+typedef struct reactor_mode_state_t reactor_mode_state_t;
+/** Typedef for mode_state_variable_reset_data_t struct, used for storing data for resetting state variables nested in modes. */
+typedef struct mode_state_variable_reset_data_t mode_state_variable_reset_data_t;
+
+/** Type of the mode change. */
+typedef enum {no_transition, reset_transition, history_transition} lf_mode_change_type_t;
+
+////////////////////////////////////////////////////////////
 //// Forward declaration for generated code.
 
 /**
@@ -90,18 +110,14 @@ void _lf_handle_mode_changes(void);
  */
 void _lf_handle_mode_triggered_reactions(void);
 
-////////////////////////////////////////////////////////////
-//// Type definitions for modal infrastructure.
+/**
+ * Function (to be code generated) which accepts a pointer to an allocated
+ * vector_t to which it appends all reactors which have requested 
+ * a mode change at the current tag. A void* is used to avoid
+ * adding vector.h to the namespace of the usercode.
+ */
+int _lf_mode_get_transitioning_reactors(void * return_vec);
 
-/** Typedef for reactor_mode_t struct, used for representing a mode. */
-typedef struct reactor_mode_t reactor_mode_t;
-/** Typedef for reactor_mode_state_t struct, used for storing modal state of reactor and/or its relation to enclosing modes. */
-typedef struct reactor_mode_state_t reactor_mode_state_t;
-/** Typedef for mode_state_variable_reset_data_t struct, used for storing data for resetting state variables nested in modes. */
-typedef struct mode_state_variable_reset_data_t mode_state_variable_reset_data_t;
-
-/** Type of the mode change. */
-typedef enum {no_transition, reset_transition, history_transition} lf_mode_change_type_t;
 
 /** A struct to represent a single mode instace in a reactor instance. */
 struct reactor_mode_t {
@@ -113,6 +129,7 @@ struct reactor_mode_t {
 
 /** A struct to store state of the modes in a reactor instance and/or its relation to enclosing modes. */
 struct reactor_mode_state_t {
+    struct self_base_t* self;       // Pointer to the self-struct of the reactor containing this mode.
     reactor_mode_t* parent_mode;    // Pointer to the next enclosing mode (if exists).
     reactor_mode_t* initial_mode;   // Pointer to the initial mode.
     reactor_mode_t* current_mode;   // Pointer to the currently active mode (only locally active).

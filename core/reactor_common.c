@@ -34,6 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Mehrdad Niknami <mniknami@berkeley.edu>}
  *  @author{Soroush Bateni <soroush@utdallas.edu}
  *  @author{Alexander Schulz-Rosengarten <als@informatik.uni-kiel.de>}
+ *  @author{Erling Rennemo Jellum <erling.r.jellum0@ntnu.no>}
  */
 
 #include "reactor.h"
@@ -1571,20 +1572,39 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
  */
 void _lf_invoke_reaction(reaction_t* reaction, int worker) {
     
-    #ifdef NUMBER_OF_WORKERS
+    #ifdef LF_MULTI_THREADED
     lf_sched_reaction_prologue(reaction, worker);
     #endif
 
-    LF_PRINT_DEBUG("Worker %d Execute Reaction", worker);
-    tracepoint_reaction_starts(reaction, worker);
-    ((self_base_t*) reaction->self)->current_tag = current_tag;
-    ((self_base_t*) reaction->self)->executing_reaction = reaction;
-    reaction->function(reaction->self);
-    ((self_base_t*) reaction->self)->executing_reaction = NULL;
-    tracepoint_reaction_ends(reaction, worker); 
-    LF_PRINT_DEBUG("Worker %d Finished Reaction", worker);
+    bool violation = false;
+    if (reaction->deadline >= 0LL && reaction->deadline < FOREVER) {
+        // Get the current physical time.
+        instant_t physical_time = lf_time_physical();
+        // Check for deadline violation.
+        if (reaction->deadline == 0 || physical_time > current_tag.time + reaction->deadline) {
+            // Deadline violation has occurred.
+            violation = true;
+            // Invoke the local handler, if there is one.
+            reaction_function_t handler = reaction->deadline_violation_handler;
+            if (handler != NULL) {
+                (*handler)(reaction->self);
+            }
+        }
+    }
     
-    #ifdef NUMBER_OF_WORKERS
+    // If no deadline violation occurred. Go ahead and execute reaction
+    if (!violation) {
+        LF_PRINT_DEBUG("Worker %d Execute Reaction", worker);
+        tracepoint_reaction_starts(reaction, worker);
+        ((self_base_t*) reaction->self)->current_tag = current_tag;
+        ((self_base_t*) reaction->self)->executing_reaction = reaction;
+        reaction->function(reaction->self);
+        ((self_base_t*) reaction->self)->executing_reaction = NULL;
+        tracepoint_reaction_ends(reaction, worker); 
+        LF_PRINT_DEBUG("Worker %d Finished Reaction", worker);
+    }
+    
+    #ifdef LF_MULTI_THREADED
     lf_sched_reaction_epilogue(reaction, worker);
     #endif
 }
@@ -1674,7 +1694,8 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
     if (downstream_to_execute_now != NULL) {
         LF_PRINT_LOG("Worker %d: Optimizing and executing downstream reaction now: %s", worker, downstream_to_execute_now->name);
         bool violation = false;
-#ifdef FEDERATED_DECENTRALIZED // Only use the STP handler for federated programs that use decentralized coordination
+#ifdef FEDERATED_DECENTRALIZED 
+        // Only use the STP handler for federated programs that use decentralized coordination
         // If the is_STP_violated for the reaction is true,
         // an input trigger to this reaction has been triggered at a later
         // logical time than originally anticipated. In this case, a special
@@ -1716,33 +1737,13 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
             }
         }
 #endif
-        if (downstream_to_execute_now->deadline >= 0LL) {
-            // Get the current physical time.
-            instant_t physical_time = lf_time_physical();
-            // Check for deadline violation.
-            if (downstream_to_execute_now->deadline == 0 || physical_time > current_tag.time + downstream_to_execute_now->deadline) {
-                // Deadline violation has occurred.
-                violation = true;
-                // Invoke the local handler, if there is one.
-                reaction_function_t handler = downstream_to_execute_now->deadline_violation_handler;
-                if (handler != NULL) {
-                    // Assume the mutex is still not held.
-                    (*handler)(downstream_to_execute_now->self);
 
-                    // If the reaction produced outputs, put the resulting
-                    // triggered reactions into the queue or execute them directly if possible.
-                    schedule_output_reactions(downstream_to_execute_now, worker);
-                }
-            }
-        }
-        if (!violation) {
             // Invoke the downstream_reaction function.
             _lf_invoke_reaction(downstream_to_execute_now, worker);
 
             // If the downstream_reaction produced outputs, put the resulting triggered
             // reactions into the queue (or execute them directly, if possible).
             schedule_output_reactions(downstream_to_execute_now, worker);
-        }
             
         // Reset the is_STP_violated because it has been passed
         // down the chain
