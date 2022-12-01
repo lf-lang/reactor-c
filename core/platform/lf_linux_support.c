@@ -24,13 +24,18 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
-/** Linux API support for the C target of Lingua Franca.
- *
- *  @author{Soroush Bateni <soroush@utdallas.edu>}
+/**
+ * @brief Platform support for the Linux operating system.
+ * 
+ * @author{Soroush Bateni <soroush@utdallas.edu>}
+ * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
-
+ 
 #include "lf_linux_support.h"
 #include "platform.h"
+
+#define LF_MAX_SLEEP_NS USEC(UINT64_MAX)
+#define LF_MIN_SLEEP_NS USEC(10)
 
 #if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
 #else
@@ -52,6 +57,18 @@ int lf_sleep(interval_t sleep_duration) {
     const struct timespec tp = convert_ns_to_timespec(sleep_duration);
     struct timespec remaining;
     return clock_nanosleep(_LF_CLOCK, 0, (const struct timespec*)&tp, (struct timespec*)&remaining);
+}
+
+int lf_sleep_until(instant_t wakeup_time) {
+    interval_t sleep_duration = wakeup_time - lf_time_physical();
+
+    if (sleep_duration < LF_MIN_SLEEP_NS) {
+        LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than LF_MIN_SLEEP_NS %lld. Skipping wait.", sleep_duration, LF_MIN_SLEEP_NS);
+            return 0;
+    } else {
+        LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", wakeup_time - start_time);
+        return lf_sleep(sleep_duration);
+    }
 }
 
 int lf_nanosleep(interval_t sleep_duration) {
