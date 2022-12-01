@@ -63,10 +63,8 @@ int lf_sleep_until(instant_t wakeup_time) {
     interval_t sleep_duration = wakeup_time - lf_time_physical();
 
     if (sleep_duration < LF_MIN_SLEEP_NS) {
-        LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than LF_MIN_SLEEP_NS %lld. Skipping wait.", sleep_duration, LF_MIN_SLEEP_NS);
-            return 0;
+        return 0;
     } else {
-        LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", wakeup_time - start_time);
         return lf_sleep(sleep_duration);
     }
 }
