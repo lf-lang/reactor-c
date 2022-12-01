@@ -40,9 +40,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 #endif
 
-extern _lf_mutex_t mutex;
-extern _lf_cond_t event_q_changed;
-
 #define _LF_TIMEOUT ETIMEDOUT
 #include <stdint.h> // For fixed-width integral types
 #include <time.h>   // For CLOCK_MONOTONIC
