@@ -94,14 +94,11 @@ typedef struct _lf_tag_advancement_barrier {
  */
 _lf_tag_advancement_barrier _lf_global_tag_advancement_barrier = {0, FOREVER_TAG_INITIALIZER};
 
-<<<<<<< HEAD
-=======
 // The one and only global mutex lock.
 lf_mutex_t mutex;
 
 // Condition variables used for notification between threads.
 lf_cond_t event_q_changed;
->>>>>>> origin/main
 // A condition variable that notifies threads whenever the number
 // of requestors on the tag barrier reaches zero.
 lf_cond_t global_tag_barrier_requestors_reached_zero;
@@ -1090,8 +1087,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
 
-<<<<<<< HEAD
-=======
     // Initialize the one and only mutex to be recursive, meaning that it is OK
     // for the same thread to lock and unlock the mutex even if it already holds
     // the lock.
@@ -1103,7 +1098,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // If this happens, no other thread can satisfy the condition
     // of the predicate.”  This seems like a bug in the implementation of
     // pthreads. Maybe it has been fixed?
->>>>>>> origin/main
     // The one and only mutex lock.
     lf_mutex_init(&mutex);
 

@@ -36,17 +36,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <stdint.h> // For fixed-width integral types
 
-// The one and only mutex lock.
-_lf_mutex_t mutex;
-
-// Condition variables used for notification between threads.
-_lf_cond_t event_q_changed;
-
 typedef mtx_t _lf_mutex_t;
 typedef cnd_t _lf_cond_t;
 typedef thrd_t _lf_thread_t;
 
 #define _LF_TIMEOUT thrd_timedout
+
+// The one and only mutex lock.
+extern _lf_mutex_t mutex;
+
+// Condition variables used for notification between threads.
+extern _lf_cond_t event_q_changed;
 
 /**
  * Create a new thread, starting with execution of lf_thread
@@ -166,15 +166,15 @@ static int lf_cond_timedwait(_lf_cond_t* cond, _lf_mutex_t* mutex, int64_t absol
     return return_value;
 }
 
-int lf_critical_section_enter() {
+static int lf_critical_section_enter() {
     return lf_mutex_lock(&mutex);
 }
 
-int lf_critical_section_exit() {
+static int lf_critical_section_exit() {
     return lf_mutex_unlock(&mutex);
 }
 
-int lf_notify_of_event() {
+static int lf_notify_of_event() {
     return lf_cond_broadcast(&event_q_changed);
 }
 #endif
