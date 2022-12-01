@@ -33,12 +33,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform.h"
 
 #if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
-    #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
-        // (Not C++11 or later) or no threads support
-        #include "lf_POSIX_threads_support.h"
-    #else
-        #include "lf_C11_threads_support.h"
-    #endif
 #else
     #include "lf_os_single_threaded_support.c"
 #endif

@@ -39,16 +39,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 #include <stdint.h> // For fixed-width integral types
 
-// The one and only mutex lock.
-_lf_mutex_t mutex;
-
-// Condition variables used for notification between threads.
-_lf_cond_t event_q_changed;
 typedef pthread_mutex_t _lf_mutex_t;
 typedef pthread_cond_t _lf_cond_t;
 typedef pthread_t _lf_thread_t;
 
 #define _LF_TIMEOUT ETIMEDOUT
+
+// The one and only mutex lock.
+extern _lf_mutex_t mutex;
+
+// Condition variables used for notification between threads.
+extern _lf_cond_t event_q_changed;
 
 /**
  * Create a new thread, starting with execution of lf_thread getting passed
