@@ -30,6 +30,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Edward A. Lee <eal@berkeley.edu>}
  *  @author{Marten Lohstroh <marten@berkeley.edu>}
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
+ *  @author{Erling Jellum <erlingrj@berkeley.edu>}
  */
 
 #include "reactor_common.c"
@@ -42,16 +43,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * 
  */
 pqueue_t* reaction_q;
-
-/**
- * Unless the "fast" option is given, an LF program will wait until
- * physical time matches logical time before handling an event with
- * a given logical time. The amount of time is less than this given
- * threshold, then no wait will occur. The purpose of this is
- * to prevent unnecessary delays caused by simply setting up and
- * performing the wait.
- */
-#define MIN_SLEEP_DURATION USEC(10) // FIXME: https://github.com/lf-lang/reactor-c/issues/109
 
 /**
  * Mark the given port's is_present field as true. This is_present field
@@ -91,24 +82,6 @@ void _lf_set_present(lf_port_base_t* port) {
 int wait_until(instant_t wakeup_time) {
     if (!fast) {
         LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", wakeup_time - start_time);
-        interval_t sleep_duration = wakeup_time - lf_time_physical();
-    
-        if (sleep_duration <= 0) {
-            return 0;
-        } else if (sleep_duration < MIN_SLEEP_DURATION) {
-            // This is a temporary fix. FIXME: factor this out into platform API function.
-            // Issue: https://github.com/lf-lang/reactor-c/issues/109
-            // What really should be done on embedded platforms:
-            // - compute target time
-            // - disable interrupts
-            // - read current time
-            // - compute shortest distance between target time and current time 
-            // - shortest distance should be positive and at least 2 ticks(us)
-            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_SLEEP_DURATION %lld. Skipping wait.",
-                sleep_duration, MIN_SLEEP_DURATION);
-            return -1;
-        }
-        LF_PRINT_DEBUG("Going to sleep for %"PRId64" ns\n", sleep_duration);
         return lf_sleep_until(wakeup_time);
     }
     return 0;
@@ -258,6 +231,7 @@ int next(void) {
                 (tag_t){.time=current_tag.time, .microstep=current_tag.microstep+1}
             );
         }
+        next_tag = stop_tag;
     } else {
         next_tag.time = event->time;
         // Deduce the microstep
@@ -350,12 +324,12 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
             lf_print_warning("Failed to register termination function!");
         }
         // The above handles only "normal" termination (via a call to exit).
-        // As a consequence, we need to also trap ctrl-C, which issues a SIGINT,
+        // As a consequence, we need to also trap Ctrl-C, which issues a SIGINT,
         // and cause it to call exit.
-        // We wrap this statement since certain Arduino flavors don't support signals.
-        #ifndef ARDUINO
+        // Embedded platforms with NO_TTY have no concept of a signal; for those, we exclude this call.
+#ifndef NO_TTY
         signal(SIGINT, exit);
-        #endif
+#endif
         
         LF_PRINT_DEBUG("Initializing.");
         initialize(); // Sets start_time.
