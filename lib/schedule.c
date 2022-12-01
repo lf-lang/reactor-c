@@ -37,7 +37,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
  */
 
-#include "../include/ctarget/schedule.h"
+#include "api.h"
+#include "reactor.h"
 
 /**
  * Schedule an action to occur with the specified value and time offset
@@ -50,13 +51,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 trigger_handle_t lf_schedule(void* action, interval_t offset) {
     return _lf_schedule_token(action, offset, NULL);
-}
-
-/**
- * @deprecated version of 'lf_schedule'
- */
-trigger_handle_t schedule(void* action, interval_t offset) {
-    return lf_schedule(action, offset);
 }
 
 /**
@@ -73,14 +67,6 @@ trigger_handle_t schedule(void* action, interval_t offset) {
 trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value)
 {
     return _lf_schedule_int(action, extra_delay, value);
-}
-
-/**
- * @deprecated version of 'lf_schedule_int'
- */
-trigger_handle_t schedule_int(void* action, interval_t extra_delay, int value)
-{
-    return lf_schedule_int(action, extra_delay, value);
 }
 
 /**
@@ -138,13 +124,6 @@ trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_toke
 }
 
 /**
- * @deprecated version of 'lf_schedule_token'
- */
-trigger_handle_t schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-    return lf_schedule_token(action, extra_delay, token);
-}
-
-/**
  * Schedule an action to occur with the specified value and time offset with a
  * copy of the specified value. If the value is non-null, then it will be copied
  * into newly allocated memory under the assumption that its size is given in
@@ -170,13 +149,6 @@ trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, 
         return -1;
     }
     return _lf_schedule_copy(action, offset, value, (size_t)length);
-}
-
-/**
- * @deprecated version of 'lf_schedule_copy'
- */
-trigger_handle_t schedule_copy(void* action, interval_t offset, void* value, int length) {
-    return lf_schedule_copy(action, offset, value, length);
 }
 
 
@@ -208,20 +180,13 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
     return _lf_schedule_value(action, extra_delay, value, (size_t)length);
 }
 
-/**
- * @deprecated version of 'lf_schedule_value'
- */
-trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* value, int length) {
-    return lf_schedule_value(action, extra_delay, value, length);
-}
-
 
 /**
  * Check the deadline of the currently executing reaction against the
  * current physical time. If the deadline has passed, invoke the deadline
  * handler (if invoke_deadline_handler parameter is set true) and return true.
  * Otherwise, return false.
- * 
+ *
  * @param self The self struct of the reactor.
  * @param invoke_deadline_handler When this is set true, also invoke deadline
  *  handler if the deadline has passed.
@@ -229,11 +194,4 @@ trigger_handle_t schedule_value(void* action, interval_t extra_delay, void* valu
  */
 bool lf_check_deadline(void* self, bool invoke_deadline_handler) {
 	return _lf_check_deadline((self_base_t*)self, invoke_deadline_handler);
-}
-
-/**
- * @deprecated version of 'lf_check_deadline'
- */
-bool check_deadline(void* self, bool invoke_deadline_handler) {
-	return lf_check_deadline(self, invoke_deadline_handler);
 }

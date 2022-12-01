@@ -21,7 +21,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /** Arduino API support for the C target of Lingua Franca.
- *  
+ *
  *  @author{Anirudh Rengarajan <arengarajan@berkeley.edu>}
  */
 
@@ -30,7 +30,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 
 #include "lf_arduino_support.h"
-#include "../platform.h"
+#include "platform.h"
 #include "Arduino.h"
 
 /**
@@ -75,7 +75,7 @@ void lf_initialize_clock() {}
  *  set appropriately.
  */
 int lf_clock_gettime(instant_t* t) {
-    
+
     if (t == NULL) {
         // The t argument address references invalid memory
         errno = EFAULT;

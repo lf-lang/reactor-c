@@ -1,6 +1,8 @@
 #include <time.h>
 #include <errno.h>
 
+#include "lf_unix_clock_support.h"
+
 /**
  * Offset to _LF_CLOCK that would convert it
  * to epoch time.
@@ -87,7 +89,7 @@ int lf_clock_gettime(instant_t* t) {
     if (_lf_time_epoch_offset != 0) {
         tp_in_ns += _lf_time_epoch_offset;
     }
-    
+
     if (t == NULL) {
         // The t argument address references invalid memory
         errno = EFAULT;

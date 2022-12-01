@@ -1,8 +1,8 @@
 #include <stdlib.h>
 #include <stdio.h>
-#include "core/utils/vector.h"
+#include "vector.h"
 #include "rand_utils.h"
-#include "core/utils/util.h"
+#include "util.h"
 
 #define CAPACITY 100
 #define MAX_PUSHALL 8
@@ -16,7 +16,7 @@ static int distribution[4] = {30, 50, 5, 15};
 
 /**
  * @brief Test the append functionality of `v`.
- * 
+ *
  * @param v A vector.
  * @param x Any pointer.
  */
@@ -29,7 +29,7 @@ void test_push(vector_t* v) {
 
 /**
  * @brief Test the pop functionality of `v`.
- * 
+ *
  * @param v A vector.
  */
 void test_pop(vector_t* v) {
@@ -48,7 +48,7 @@ void test_pop(vector_t* v) {
 
 /**
  * @brief Test the "push all" functionality of `v`.
- * 
+ *
  * @param v A vector
  * @return The number of items pushed to `v`.
  */
@@ -66,7 +66,7 @@ int test_pushall(vector_t* v) {
 /**
  * @brief Check that the result of a random access to `v` yields the
  * correct result.
- * 
+ *
  * @param v A vector.
  */
 void test_random_access(vector_t* v) {
@@ -83,7 +83,7 @@ void test_random_access(vector_t* v) {
 
 /**
  * @brief Check that voting does not cause an error.
- * 
+ *
  * @param v A vector.
  */
 void test_vote(vector_t* v) {
@@ -93,7 +93,7 @@ void test_vote(vector_t* v) {
 
 /**
  * @brief Run a randomly selected test on `v`.
- * 
+ *
  * @param v A vector.
  * @param distribution The desired probability distribution with
  * which each of four actions are performed, expressed as percents.

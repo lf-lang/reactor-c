@@ -1,5 +1,5 @@
 #include <stdbool.h>
-#include "core/tag.h"
+#include "tag.h"
 
 void _lf_initialize_trigger_objects() {}
 void terminate_execution() {}

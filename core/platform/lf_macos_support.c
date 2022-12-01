@@ -25,25 +25,25 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /** MacOS API support for the C target of Lingua Franca.
- *  
+ *
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
  */
 
 #include "lf_macos_support.h"
-#include "../platform.h"
+#include "platform.h"
 
-#ifdef NUMBER_OF_WORKERS
-    #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
-    #include "lf_POSIX_threads_support.c"
+#if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
+    #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
+// (Not C++11 or later) or no threads support
+#include "lf_POSIX_threads_support.c"
     #else
 #include "lf_C11_threads_support.c"
     #endif
 #else
-    #include "lf_os_single_threaded_support.c"
+#include "lf_os_single_threaded_support.c"
 #endif
 
-#include "lf_unix_clock_support.c"
-#include "lf_unix_syscall_support.c"
+#include "lf_unix_clock_support.h"
 
 /**
  * Pause execution for a number of nanoseconds.

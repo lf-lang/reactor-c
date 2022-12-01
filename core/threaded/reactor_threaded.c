@@ -35,10 +35,16 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
 
-#include "../reactor_common.c"
-#include "../platform.h"
-#include "scheduler.h"
 #include <signal.h>
+#include <string.h>
+
+#include "lf_types.h"
+#include "platform.h"
+#include "reactor_common.h"
+#include "reactor_threaded.h"
+#include "reactor.h"
+#include "scheduler.h"
+#include "tag.h"
 
 // The one and only mutex lock.
 extern lf_mutex_t mutex;
@@ -88,22 +94,17 @@ typedef struct _lf_tag_advancement_barrier {
  */
 _lf_tag_advancement_barrier _lf_global_tag_advancement_barrier = {0, FOREVER_TAG_INITIALIZER};
 
+<<<<<<< HEAD
+=======
+// The one and only global mutex lock.
+lf_mutex_t mutex;
+
+// Condition variables used for notification between threads.
+lf_cond_t event_q_changed;
+>>>>>>> origin/main
 // A condition variable that notifies threads whenever the number
 // of requestors on the tag barrier reaches zero.
 lf_cond_t global_tag_barrier_requestors_reached_zero;
-
-/**
- * Enqueue network input control reactions that determine if the trigger for a
- * given network input port is going to be present at the current logical time
- * or absent.
- */
-void enqueue_network_input_control_reactions();
-
-/**
- * Enqueue network output control reactions that will send a PORT_ABSENT
- * message to downstream federates if a given network output port is not present.
- */
-void enqueue_network_output_control_reactions();
 
 /**
  * Raise a barrier to prevent the current tag from advancing to or
@@ -957,7 +958,7 @@ void _lf_worker_do_work(int worker_number) {
                 "level: %lld, is control reaction: %d, chain ID: %llu, and deadline " PRINTF_TIME ".",
                 worker_number,
                 current_reaction_to_execute->name,
-                LEVEL(current_reaction_to_execute->index),
+                LF_LEVEL(current_reaction_to_execute->index),
                 current_reaction_to_execute->is_a_control_reaction,
                 current_reaction_to_execute->chain_id,
                 current_reaction_to_execute->deadline);
@@ -1089,6 +1090,20 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
 
+<<<<<<< HEAD
+=======
+    // Initialize the one and only mutex to be recursive, meaning that it is OK
+    // for the same thread to lock and unlock the mutex even if it already holds
+    // the lock.
+    // FIXME: This is dangerous. The docs say this: "It is advised that an
+    // application should not use a PTHREAD_MUTEX_RECURSIVE mutex with
+    // condition variables because the implicit unlock performed for a
+    // pthread_cond_wait() or pthread_cond_timedwait() may not actually
+    // release the mutex (if it had been locked multiple times).
+    // If this happens, no other thread can satisfy the condition
+    // of the predicate.”  This seems like a bug in the implementation of
+    // pthreads. Maybe it has been fixed?
+>>>>>>> origin/main
     // The one and only mutex lock.
     lf_mutex_init(&mutex);
 
