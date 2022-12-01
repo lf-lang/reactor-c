@@ -1,7 +1,7 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "core/utils/hashmap.h"
+#include "core/utils/impl/pointer_hashmap.h"
 #include "rand_utils.h"
 #include "core/utils/util.h"
 

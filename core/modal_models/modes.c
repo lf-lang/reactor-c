@@ -38,8 +38,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #ifdef MODAL_REACTORS
 
+#include <string.h>
+
+#include "lf_types.h"
 #include "modes.h"
-#include "../reactor.h"
+#include "reactor_common.h"
 
 // Bit masks for the internally used flags on modes
 #define _LF_MODE_FLAG_MASK_ACTIVE        (1 << 0)

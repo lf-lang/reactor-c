@@ -35,19 +35,22 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Edward A. Lee <eal@berkeley.edu>}
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
-
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
 
-#include "../platform.h"
-#include "../utils/pqueue_support.h"
-#include "../utils/semaphore.h"
-#include "../utils/vector.h"
-#include "scheduler.h"
-#include "scheduler_instance.h"
-#include "scheduler_sync_tag_advance.c"
 #include <assert.h>
+
+#include "platform.h"
+#include "pqueue.h"
+#include "reactor.h"
+#include "scheduler_instance.h"
+#include "scheduler_sync_tag_advance.h"
+#include "scheduler.h"
+#include "semaphore.h"
+#include "trace.h"
+#include "util.h"
+#include "vector.h"
 
 #ifndef MAX_REACTION_LEVEL
 #define MAX_REACTION_LEVEL INITIAL_REACT_QUEUE_SIZE
@@ -104,7 +107,7 @@ static inline void _lf_sched_distribute_ready_reaction_locked(
  * @param r2 The second reaction.
  */
 bool _lf_has_precedence_over(reaction_t* r1, reaction_t* r2) {
-    if (LEVEL(r1->index) < LEVEL(r2->index) &&
+    if (LF_LEVEL(r1->index) < LF_LEVEL(r2->index) &&
         OVERLAPPING(r1->chain_id, r2->chain_id)) {
         return true;
     }
@@ -377,7 +380,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
  *  scheduler parameters.
  */
 void lf_sched_init(
-    size_t number_of_workers, 
+    size_t number_of_workers,
     sched_params_t* params
 ) {
     LF_PRINT_DEBUG("Scheduler: Initializing with %zu workers", number_of_workers);
@@ -519,7 +522,7 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
         return;
     }
     LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld.",
-            reaction->name, LEVEL(reaction->index));
+            reaction->name, LF_LEVEL(reaction->index));
     if (worker_number == -1) {
         lf_mutex_lock(&mutex);
         // Immediately put 'reaction' on the reaction queue.

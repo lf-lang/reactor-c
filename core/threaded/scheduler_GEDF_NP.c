@@ -35,19 +35,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Edward A. Lee <eal@berkeley.edu>}
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
-
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
 
 #include <assert.h>
 
-#include "../platform.h"
-#include "../utils/pqueue_support.h"
-#include "../utils/semaphore.h"
-#include "scheduler.h"
+#include "platform.h"
+#include "pqueue.h"
 #include "scheduler_instance.h"
-#include "scheduler_sync_tag_advance.c"
+#include "scheduler_sync_tag_advance.h"
+#include "scheduler.h"
+#include "semaphore.h"
+#include "trace.h"
+#include "util.h"
 
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;
@@ -63,7 +64,7 @@ _lf_sched_instance_t* _lf_sched_instance;
  * @param reaction The reaction to insert.
  */
 static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
-    size_t reaction_level = LEVEL(reaction->index);
+    size_t reaction_level = LF_LEVEL(reaction->index);
     LF_PRINT_DEBUG("Scheduler: Trying to lock the mutex for level %zu.",
                 reaction_level);
     lf_mutex_lock(
@@ -222,7 +223,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
  *  scheduler parameters.
  */
 void lf_sched_init(
-    size_t number_of_workers, 
+    size_t number_of_workers,
     sched_params_t* params
 ) {
     LF_PRINT_DEBUG("Scheduler: Initializing with %zu workers", number_of_workers);
@@ -291,11 +292,11 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
         size_t current_level =
             _lf_sched_instance->_lf_sched_next_reaction_level - 1;
         LF_PRINT_DEBUG(
-            "Scheduler: Worker %zu trying to lock the mutex for level %zu.",
+            "Scheduler: Worker %d trying to lock the mutex for level %zu.",
             worker_number, current_level);
         lf_mutex_lock(
             &_lf_sched_instance->_lf_sched_array_of_mutexes[current_level]);
-        LF_PRINT_DEBUG("Scheduler: Worker %zu locked the mutex for level %d.",
+        LF_PRINT_DEBUG("Scheduler: Worker %d locked the mutex for level %d.",
                     worker_number, current_level);
         reaction_t* reaction_to_return = (reaction_t*)pqueue_pop(
             (pqueue_t*)_lf_sched_instance->_lf_sched_executing_reactions);
@@ -307,7 +308,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
             return reaction_to_return;
         }
 
-        LF_PRINT_DEBUG("Worker %zu is out of ready reactions.", worker_number);
+        LF_PRINT_DEBUG("Worker %d is out of ready reactions.", worker_number);
 
         // Ask the scheduler for more work and wait
         tracepoint_worker_wait_starts(worker_number);
@@ -356,7 +357,7 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
         return;
     }
     LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld.",
-            reaction->name, LEVEL(reaction->index));
+            reaction->name, LF_LEVEL(reaction->index));
     _lf_sched_insert_reaction(reaction);
 }
 

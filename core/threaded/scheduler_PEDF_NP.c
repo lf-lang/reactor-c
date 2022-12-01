@@ -26,26 +26,27 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
-/** 
+/**
  * Partitioned Earliest Deadline First (GEDF) non-preemptive for the threaded
  * runtime of the C target of Lingua Franca.
- *  
+ *
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  * @author{Edward A. Lee <eal@berkeley.edu>}
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
-
+#if SCHEDULER == PEDF_NP
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
 
-#include "scheduler.h"
-#include "../platform.h"
-#include "../utils/pqueue_support.h"
-#include "../utils/semaphore.c"
-#include "../utils/vector.h"
+#include "platform.h"
+#include "pqueue.h"
+#include "reactor.h"
 #include "scheduler_instance.h"
-#include "scheduler_sync_tag_advance.c"
+#include "scheduler_sync_tag_advance.h"
+#include "scheduler.h"
+#include "semaphore.h"
+#include "vector.h"
 
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;
@@ -56,40 +57,40 @@ _lf_sched_instance_t* _lf_sched_instance;
 
 /**
  * @brief Information about one worker thread.
- * 
+ *
  * Only reading and writing the 'is_idle' field strictly requires acquiring the
  * 'mutex' in this struct.
  */
 typedef struct {
     lf_mutex_t mutex;           // Used by the scheduler to access is_idle
-    
+
     lf_cond_t cond;             // Used by the scheduler to inform a
                                 // worker thread that there is more work to do.
-    
-    pqueue_t* ready_reactions;  // Reactions that are ready to be executed by 
+
+    pqueue_t* ready_reactions;  // Reactions that are ready to be executed by
                                 // the worker thread. The worker thread does not
                                 // need to acquire any mutex lock to read this
                                 // and the scheduler does not need to acquire
                                 // any mutex lock to write to this as long as
                                 // the worker thread is idle.
-    
-    vector_t output_reactions;  // Reactions produced by the worker after 
+
+    vector_t output_reactions;  // Reactions produced by the worker after
                                 // executing a reaction. The worker thread does
                                 // not need to acquire any mutex lock to read
                                 // this and the scheduler does not need to
                                 // acquire any mutex lock to write to this as
                                 // long as the worker thread is idle.
-    
-    vector_t done_reactions;    // Reactions that are ran to completion by the 
+
+    vector_t done_reactions;    // Reactions that are ran to completion by the
                                 // worker thread. The worker thread does not
                                 // need to acquire any mutex lock to read this
                                 // and the scheduler does not need to acquire
                                 // any mutex lock to write to this as long as
                                 // the worker thread is idle.
-    
+
     bool should_stop;           // Indicate to the worker thread that it should exit.
-    
-    size_t is_idle;             // Indicate to the scheduler that the worker thread 
+
+    size_t is_idle;             // Indicate to the scheduler that the worker thread
                                 // is idle (0 = busy, > 0 idle). This is the
                                 // only attribute of this struct that requires
                                 // the mutex lock to be held, both while reading
@@ -98,38 +99,38 @@ typedef struct {
 
 /**
  * @brief Information about worker threads. @see _lf_sched_thread_info_t.
- * 
+ *
  */
 _lf_sched_thread_info_t* _lf_sched_threads_info;
 
 /**
  * @brief Indicate that a thread is already performing scheduling.
- * 
+ *
  */
 volatile bool _lf_sched_scheduling_in_progress = false;;
 
 /**
  * @brief Index used by the scheduler to balance the distribution of reactions
  * to worker threads.
- * 
+ *
  * The maximum of _lf_sched_balancing_index and reaction->worker_affinity is chosen by
  * the scheduler as the starting point in the quest to find the next available
  * worker to assign a reaction to. During the work distribution phase, this
  * index is updated to make sure the scheduler does not assign work to the same
  * worker thread two times in a row. After the work distribution phase, this
  * index is reset to 0.
- * 
+ *
  */
 int _lf_sched_balancing_index = 0;
 
 ///////////////////// Scheduler Runtime API (private) /////////////////////////
 /**
  * @brief Ask the scheduler if it is time to stop (and exit).
- * 
+ *
  * @param worker_number The worker number of the worker thread asking if it
  * should stop.
  * @return true If the worker thread should stop executing reactions and exit.
- * @return false 
+ * @return false
  */
 static inline bool _lf_sched_should_stop(size_t worker_number) {
     return _lf_sched_threads_info[worker_number].should_stop;
@@ -137,7 +138,7 @@ static inline bool _lf_sched_should_stop(size_t worker_number) {
 
 /**
  * @brief Return true if the worker thread 'worker_number' is idle. False otherwise.
- * 
+ *
  */
 static inline bool _lf_sched_is_worker_idle(size_t worker_number) {
     return (_lf_sched_threads_info[worker_number].is_idle == 1);
@@ -145,7 +146,7 @@ static inline bool _lf_sched_is_worker_idle(size_t worker_number) {
 
 /**
  * @brief Distribute 'ready_reaction' to the best idle thread.
- * 
+ *
  * This will start from 'ready_reaction->worker_affinity' and rotates through
  * workers (only once) until it finds an idle thread to distribute the work to.
  * If successful, it will return true. If it cannot find a worker thread to
@@ -172,7 +173,7 @@ static inline bool _lf_sched_distribute_ready_reaction(reaction_t* ready_reactio
                 worker_id);
             // Add the ready reaction to the ready_reaction queue of the idle worker.
             if (!lf_bool_compare_and_swap(&ready_reaction->status, queued, running)) {
-                lf_print_error_and_exit("Unexpected reaction status: %d. Expected %d.", 
+                lf_print_error_and_exit("Unexpected reaction status: %d. Expected %d.",
                     ready_reaction->status,
                     queued);
             }
@@ -189,7 +190,7 @@ static inline bool _lf_sched_distribute_ready_reaction(reaction_t* ready_reactio
         }
 
         worker_id++;
-        
+
         // Rotate through workers in a circular fashion.
         if (worker_id == _lf_sched_instance->_lf_sched_number_of_workers) {
             worker_id = 0;
@@ -206,7 +207,7 @@ static inline bool _lf_sched_distribute_ready_reaction(reaction_t* ready_reactio
     _lf_sched_balancing_index = worker_id;
 
     return target_thread_found;
-        
+
 }
 
 /**
@@ -215,7 +216,7 @@ static inline bool _lf_sched_distribute_ready_reaction(reaction_t* ready_reactio
  * @param r2 The second reaction.
  */
 bool _lf_has_precedence_over(reaction_t* r1, reaction_t* r2) {
-    if (LEVEL(r1->index) < LEVEL(r2->index)
+    if (LF_LEVEL(r1->index) < LF_LEVEL(r2->index)
             && OVERLAPPING(r1->chain_id, r2->chain_id)) {
         return true;
     }
@@ -265,7 +266,7 @@ bool _lf_is_blocked_by_executing_or_blocked_reaction(reaction_t* reaction) {
             return true;
         }
     }
-    // NOTE: checks against the _lf_sched_instance->_lf_sched_transfer_reactions are not performed in 
+    // NOTE: checks against the _lf_sched_instance->_lf_sched_transfer_reactions are not performed in
     // this function but at its call site (where appropriate).
 
     // printf("Not blocking for reaction with chainID %llu and level %llu\n", reaction->chain_id, reaction->index);
@@ -275,12 +276,12 @@ bool _lf_is_blocked_by_executing_or_blocked_reaction(reaction_t* reaction) {
 
 /**
  * @brief Distribute any reaction that is ready to execute to idle worker thread(s).
- * 
+ *
  * This assumes that the caller is not holding any thread mutexes.
- * 
+ *
  * @return Number of reactions that were successfully distributed to worker threads.
- */ 
-static inline int _lf_sched_distribute_ready_reactions_locked() {    
+ */
+static inline int _lf_sched_distribute_ready_reactions_locked() {
     reaction_t* r;
 
     // Keep track of the number of reactions distributed
@@ -309,7 +310,7 @@ static inline int _lf_sched_distribute_ready_reactions_locked() {
     while ((reaction_to_transfer = (reaction_t*)vector_pop(&_lf_sched_instance->_lf_sched_transfer_reactions)) != NULL) {
         pqueue_insert(_lf_sched_instance->_lf_sched_triggered_reactions, reaction_to_transfer);
     }
-    
+
     // Reset the balancing index since this work distribution round is over.
     _lf_sched_balancing_index = 0;
     return reactions_distributed;
@@ -317,12 +318,12 @@ static inline int _lf_sched_distribute_ready_reactions_locked() {
 
 /**
  * @brief Transfer the contents of worker thread queues to the actual global queues.
- * 
+ *
  * This will transfer worker threads' output reactions to the reaction queue and
  * removes worker threads' done reactions from the executing queue.
- * 
+ *
  * This assumes that the caller is not holding any thread mutexes.
- * 
+ *
  * @return true If any of the workers were busy.
  * @return false All the workers were idle.
  */
@@ -341,7 +342,7 @@ bool _lf_sched_update_queues() {
         LF_PRINT_DEBUG("Scheduler: Emptying queues of Worker %d.", i);
         // Add output reactions to the reaction queue
         while(
-            (reaction_to_add = 
+            (reaction_to_add =
             (reaction_t*)vector_pop(&_lf_sched_threads_info[i].output_reactions))
             != NULL) {
             LF_PRINT_DEBUG(
@@ -355,7 +356,7 @@ bool _lf_sched_update_queues() {
 
         // Remove done reactions from the executing queue
         while(
-            (reaction_to_remove = 
+            (reaction_to_remove =
             (reaction_t*)vector_pop(&_lf_sched_threads_info[i].done_reactions))
             != NULL) {
             LF_PRINT_DEBUG(
@@ -372,7 +373,7 @@ bool _lf_sched_update_queues() {
 
 /**
  * @brief If there is work to be done, notify workers individually.
- * 
+ *
  * This assumes that the caller is not holding any thread mutexes.
  */
 void _lf_sched_notify_workers() {
@@ -394,9 +395,9 @@ void _lf_sched_notify_workers() {
  * there are such reactions, distribute them to worker threads. As part of its
  * book-keeping, this function will clear the output_reactions and
  * done_reactions queues of all idle worker threads if appropriate.
- * 
+ *
  * This function assumes the caller does not hold the 'mutex' lock.
- * 
+ *
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
 bool _lf_sched_try_advance_tag_and_distribute() {
@@ -418,8 +419,8 @@ bool _lf_sched_try_advance_tag_and_distribute() {
             }
         }
     }
-    
-    int reactions_distributed = _lf_sched_distribute_ready_reactions_locked();    
+
+    int reactions_distributed = _lf_sched_distribute_ready_reactions_locked();
     lf_mutex_unlock(&mutex);
 
     if (reactions_distributed) {
@@ -432,7 +433,7 @@ bool _lf_sched_try_advance_tag_and_distribute() {
 
 /**
  * @brief Signal all worker threads that it is time to stop.
- * 
+ *
  */
 void _lf_sched_signal_stop() {
     for (int i=0; i < _lf_sched_instance->_lf_sched_number_of_workers; i++) {
@@ -473,7 +474,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
         lf_bool_compare_and_swap(&_lf_sched_scheduling_in_progress, true, false);
     } else {
         lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
-    
+
         // Check if it is time to stop. If it is, return.
         if (_lf_sched_should_stop(worker_number)) { // Time to stop
             // The thread is going to exit and thus is not idle.
@@ -500,7 +501,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
  *  scheduler parameters.
  */
 void lf_sched_init(
-    size_t number_of_workers, 
+    size_t number_of_workers,
     sched_params_t* params
 ) {
     LF_PRINT_DEBUG("Scheduler: Initializing with %d workers", number_of_workers);
@@ -530,22 +531,22 @@ void lf_sched_init(
     // Create a queue on which to put reactions that are currently executing.
     _lf_sched_instance->_lf_sched_executing_reactions = pqueue_init(queue_size, in_reverse_order, get_reaction_index,
         get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
-    
-    _lf_sched_threads_info = 
+
+    _lf_sched_threads_info =
         (_lf_sched_thread_info_t*)malloc(
             sizeof(_lf_sched_thread_info_t) * _lf_sched_instance->_lf_sched_number_of_workers);
-    
+
     for (int i=0; i < _lf_sched_instance->_lf_sched_number_of_workers; i++) {
         lf_cond_init(&_lf_sched_threads_info[i].cond);
         lf_mutex_init(&_lf_sched_threads_info[i].mutex);
-        _lf_sched_threads_info[i].ready_reactions = 
+        _lf_sched_threads_info[i].ready_reactions =
             pqueue_init(
-                queue_size, 
-                in_reverse_order, 
+                queue_size,
+                in_reverse_order,
                 get_reaction_index,
-                get_reaction_position, 
-                set_reaction_position, 
-                reaction_matches, 
+                get_reaction_position,
+                set_reaction_position,
+                reaction_matches,
                 print_reaction
             );
         _lf_sched_threads_info[i].output_reactions = vector_new(queue_size);
@@ -557,7 +558,7 @@ void lf_sched_init(
 
 /**
  * @brief Free the memory used by the scheduler.
- * 
+ *
  * This must be called when the scheduler is no longer needed.
  */
 void lf_sched_free() {
@@ -575,12 +576,12 @@ void lf_sched_free() {
 ///////////////////// Scheduler Worker API (public) /////////////////////////
 /**
  * @brief Ask the scheduler for one more reaction.
- * 
+ *
  * This function blocks until it can return a ready reaction for worker thread
  * 'worker_number' or it is time for the worker thread to stop and exit (where a
  * NULL value would be returned).
- * 
- * @param worker_number 
+ *
+ * @param worker_number
  * @return reaction_t* A reaction for the worker to execute. NULL if the calling
  * worker thread should exit.
  */
@@ -590,16 +591,16 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
         lf_mutex_lock(&_lf_sched_threads_info[worker_number].mutex);
         reaction_t* reaction_to_return = (reaction_t*)pqueue_pop(_lf_sched_threads_info[worker_number].ready_reactions);
         lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
-        
+
         if (reaction_to_return == NULL && _lf_sched_instance->_lf_sched_number_of_workers > 1) {
             // Try to steal
             int index_to_steal = (worker_number + 1) % _lf_sched_instance->_lf_sched_number_of_workers;
             lf_mutex_lock(&_lf_sched_threads_info[index_to_steal].mutex);
-            reaction_to_return = 
+            reaction_to_return =
                 pqueue_pop(_lf_sched_threads_info[index_to_steal].ready_reactions);
             if (reaction_to_return != NULL) {
                 LF_PRINT_DEBUG(
-                    "Worker %d: Had nothing on my ready queue. Stole reaction %s from %d", 
+                    "Worker %d: Had nothing on my ready queue. Stole reaction %s from %d",
                     worker_number,
                     reaction_to_return->name,
                     index_to_steal);
@@ -626,14 +627,14 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
 /**
  * @brief Inform the scheduler that worker thread 'worker_number' is done
  * executing the 'done_reaction'.
- * 
+ *
  * @param worker_number The worker number for the worker thread that has
  * finished executing 'done_reaction'.
  * @param done_reaction The reaction is that is done.
  */
 void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction) {
     if (!lf_bool_compare_and_swap(&done_reaction->status, running, inactive)) {
-        lf_print_error_and_exit("Unexpected reaction status: %d. Expected %d.", 
+        lf_print_error_and_exit("Unexpected reaction status: %d. Expected %d.",
             done_reaction->status,
             running);
     }
@@ -643,26 +644,26 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
 /**
  * @brief Inform the scheduler that worker thread 'worker_number' would like to
  * trigger 'reaction' at the current tag.
- * 
+ *
  * If a worker number is not available (e.g., this function is not called by a
  * worker thread), -1 should be passed as the 'worker_number'.
- * 
+ *
  * The scheduler will ensure that the same reaction is not triggered twice in
  * the same tag.
- * 
+ *
  * @param reaction The reaction to trigger at the current tag.
  * @param worker_number The ID of the worker that is making this call. 0 should be
  *  used if there is only one worker (e.g., when the program is using the
  *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
  *  worker number does not make sense (e.g., the caller is not a worker thread).
- * 
+ *
  */
 void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     if (reaction == NULL || !lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
         return;
     }
     LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld.",
-            reaction->name, LEVEL(reaction->index));
+            reaction->name, LF_LEVEL(reaction->index));
     if (worker_number == -1) {
         lf_mutex_lock(&mutex);
         // Immediately put 'reaction' on the reaction queue.
