@@ -922,7 +922,10 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
 
     // Do not schedule events if the tag is after the stop tag
     if (_lf_is_tag_after_stop_tag(tag)) {
-        lf_print_warning("_lf_schedule_at_tag: event time is past the timeout. Discarding event.");
+        // FIXME: Due to LET update we are now using `_lf_schedule_at_tag` to schedule new timer events
+        //  this will conflict with the timeout/stop tag and generate this event.
+        //  I have thus commented out this warning.
+        // lf_print_warning("_lf_schedule_at_tag: event time is past the timeout. Discarding event.");
         _lf_done_using(token);
         return -1;
     }
@@ -1741,14 +1744,13 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
         }
 #endif
 
-            // Invoke the downstream_reaction function.
-            _lf_invoke_reaction(downstream_to_execute_now, worker);
+        // Invoke the downstream_reaction function.
+        _lf_invoke_reaction(downstream_to_execute_now, worker);
 
-            // If the downstream_reaction produced outputs, put the resulting triggered
-            // reactions into the queue (or execute them directly, if possible).
-            schedule_output_reactions(downstream_to_execute_now, worker);
-        }
-
+        // If the downstream_reaction produced outputs, put the resulting triggered
+        // reactions into the queue (or execute them directly, if possible).
+        schedule_output_reactions(downstream_to_execute_now, worker);
+            
         // Reset the is_STP_violated because it has been passed
         // down the chain
         downstream_to_execute_now->is_STP_violated = false;

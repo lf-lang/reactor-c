@@ -49,6 +49,7 @@ define(NUMBER_OF_WORKERS)
 define(SCHEDULER)
 define(TARGET_FILES_DIRECTORY)
 define(WORKERS_NEEDED_FOR_FEDERATE)
+define(LF_MULTI_THREADED)
 message(STATUS "")
 
 # List sources in this directory.
