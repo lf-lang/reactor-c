@@ -216,7 +216,9 @@ struct reaction_t {
     trigger_t ***triggers;    // Array of pointers to arrays of pointers to triggers triggered by each output. INSTANCE.
     reaction_status_t status; // Indicator of whether the reaction is inactive, queued, or running. RUNTIME.
     interval_t deadline;      // Deadline relative to the time stamp for invocation of the reaction. INSTANCE.
+#if SCHEDULER == LET
     interval_t let;			  // The logical execution time of this reaction.
+#endif
     bool is_STP_violated;     // Indicator of STP violation in one of the input triggers to this reaction. default = false.
                               // Value of True indicates to the runtime that this reaction contains trigger(s)
                               // that are triggered at a later logical time that was originally anticipated.
@@ -328,10 +330,12 @@ typedef struct allocation_record_t {
 typedef struct self_base_t {
 	struct allocation_record_t *allocations;
 	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
+#if SCHEDULER == LET
     tag_t current_tag;                       // The tag of the most recent reaction invokation
     lf_mutex_t mutex;                       // A local mutex to ensure mutual exclusion of reactions in reactor 
     bool has_mutex;                       // A local mutex to ensure mutual exclusion of reactions in reactor 
-    struct self_base_t *parent;                     // Pointer to parent/containing reactor
+    struct self_base_t *parent;
+#endif                                    // Pointer to parent/containing reactor
 #ifdef MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif

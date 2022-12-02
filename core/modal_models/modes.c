@@ -560,6 +560,7 @@ void _lf_terminate_modal_reactors() {
     _lf_unsused_suspended_events_head = NULL;
 }
 
+#if SCHEDULER == LET
 /**
  * @brief This function accepts an array of modes and appends into return_vec the self pointer of each mode's reactor if a next mode has been set, meaning that a transition out of the mode has been requested.
  * 
@@ -583,5 +584,6 @@ int _lf_mode_collect_transitioning_reactors(reactor_mode_state_t **states, int s
     }
     return num_transitioning_reactors;
 }
+#endif
 
 #endif

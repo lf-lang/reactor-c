@@ -108,13 +108,17 @@ instant_t _lf_last_reported_unadjusted_physical_time_ns = NEVER;
  * @return tag_t 
  */
 tag_t lf_tag(void* self) {
+    #if SCHEDULER == LET
     if (self == NULL) {
         return current_tag;
     } else if (((self_base_t *) self)->executing_reaction) {
         return ((self_base_t *) self)->current_tag;
     } else {
         return current_tag;
-    } 
+    }
+    #else
+    return current_tag;
+    #endif
 }
 
 /**
@@ -261,8 +265,12 @@ instant_t _lf_time(_lf_time_type type) {
  * Return the current logical time in nanoseconds since January 1, 1970.
  */
 instant_t lf_time_logical(void *self) {
+    #if SCHDULER == LET
     if (self) return ((self_base_t *) self)->current_tag.time;
     else return _lf_time(LF_LOGICAL);
+    #else
+    return _lf_time(LF_LOGICAL);
+    #endif
 }
 
 /**

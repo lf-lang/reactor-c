@@ -1578,7 +1578,7 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
  */
 void _lf_invoke_reaction(reaction_t* reaction, int worker) {
     
-    #ifdef LF_MULTI_THREADED
+    #if SCHEDULER == LET
     lf_sched_reaction_prologue(reaction, worker);
     #endif
 
@@ -1602,7 +1602,9 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
     if (!violation) {
         LF_PRINT_DEBUG("Worker %d Execute Reaction", worker);
         tracepoint_reaction_starts(reaction, worker);
+        #if SCHEDULER == LET
         ((self_base_t*) reaction->self)->current_tag = current_tag;
+        #endif
         ((self_base_t*) reaction->self)->executing_reaction = reaction;
         reaction->function(reaction->self);
         ((self_base_t*) reaction->self)->executing_reaction = NULL;
@@ -1610,7 +1612,7 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
         LF_PRINT_DEBUG("Worker %d Finished Reaction", worker);
     }
     
-    #ifdef LF_MULTI_THREADED
+    #if SCHEDULER == LET
     lf_sched_reaction_epilogue(reaction, worker);
     #endif
 }

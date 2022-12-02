@@ -170,6 +170,7 @@ void _lf_handle_mode_shutdown_reactions(
 
 void _lf_terminate_modal_reactors();
 
+#if SCHEDULER == LET
 /**
  * Function (to be code generated) which accepts a pointer to an allocated
  * vector_t to which it appends all reactors which have requested 
@@ -177,6 +178,7 @@ void _lf_terminate_modal_reactors();
  * adding vector.h to the namespace of the usercode.
  */
 int _lf_mode_get_transitioning_reactors(void * return_vec);
+#endif
 
 #else /* IF NOT MODAL_REACTORS */
 

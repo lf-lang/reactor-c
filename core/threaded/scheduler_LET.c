@@ -39,10 +39,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
 
-#ifndef LF_MULTI_THREADED
-#error LET-scheduler was chosen without LF_MULTI_THREADED flag defined
-#endif
-
 #include <assert.h>
 
 #include "../platform.h"
