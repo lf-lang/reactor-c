@@ -31,6 +31,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "lf_macos_support.h"
 #include "platform.h"
+#define LF_MIN_SLEEP_NS USEC(10)
 
 #if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
     // Define the global mutex and cond_var
@@ -52,6 +53,16 @@ int lf_sleep(interval_t sleep_duration) {
     const struct timespec tp = convert_ns_to_timespec(sleep_duration);
     struct timespec remaining;
     return nanosleep((const struct timespec*)&tp, (struct timespec*)&remaining);
+}
+
+int lf_sleep_until(instant_t wakeup_time) {
+    interval_t sleep_duration = wakeup_time - lf_time_physical();
+
+    if (sleep_duration < LF_MIN_SLEEP_NS) {
+        return 0;
+    } else {
+        return lf_sleep(sleep_duration);
+    }
 }
 
 int lf_nanosleep(interval_t sleep_duration) {
