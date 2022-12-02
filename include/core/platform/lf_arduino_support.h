@@ -98,16 +98,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LLONG_MIN (-LLONG_MAX - 1LL)
 #define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)
 
-#ifndef _STRUCT_TIMESPEC
-#define _STRUCT_TIMESPEC        struct timespec
-
-_STRUCT_TIMESPEC
-{
-	long tv_sec;
-	long tv_nsec;
-};
-#endif /* _STRUCT_TIMESPEC */
-
+// Arduinos are embedded platforms with no tty
+#define NO_TTY
 
 /**
  * Time instant. Both physical and logical times are represented
