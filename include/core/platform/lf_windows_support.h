@@ -44,6 +44,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
 #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
 
+
 /**
  * On Windows, one could use both a mutex or
  * a critical section for the same purpose. However,
@@ -59,6 +60,12 @@ typedef _lf_mutex_t _lf_critical_section_t;
 
 typedef CONDITION_VARIABLE _lf_cond_t;
 typedef HANDLE _lf_thread_t;
+
+// The one and only mutex lock.
+extern _lf_mutex_t mutex;
+
+// Condition variables used for notification between threads.
+extern _lf_cond_t event_q_changed;
 
 #else
 #include "lf_C11_threads_support.h"
