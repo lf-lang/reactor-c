@@ -21,8 +21,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /** Arduino API support for the C target of Lingua Franca.
- *
+ *  
  *  @author{Anirudh Rengarajan <arengarajan@berkeley.edu>}
+ *  @author{Erling Rennemo Jellum <erling.r.jellum@ntnu.no>}
  */
 
 
@@ -30,35 +31,71 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 
 #include "lf_arduino_support.h"
-#include "platform.h"
+#include "../platform.h"
 #include "Arduino.h"
 
-/**
- * Keep track of interrupts being raised.
- */
-volatile bool _lf_timer_interrupted = false;
+// Combine 2 32bit values into a 64bit
+#define COMBINE_HI_LO(hi,lo) ((((uint64_t) hi) << 32) | ((uint64_t) lo))
+
+// Keep track of physical actions being entered into the system
+static volatile bool _lf_async_event = false;
+// Keep track of whether we are in a critical section or not
+static volatile bool _lf_in_critical_section = true;
 
 /**
- * Pause execution for a number of microseconds.
- *
- * This function works very accurately in the range from 3 to 16383 microseconds.
- * We cannot assure that delayMicroseconds will perform precisely for smaller delay-times.
- * Larger delay times may actually delay for an extremely brief time.
- *
- * @return 0 always.
+ * Global timing variables:
+ * Since Arduino is 32bit we need to also maintaint the 32 higher bits
+ * _lf_time_us_high is incremented at each overflow of 32bit Arduino timer
+ * _lf_time_us_low_last is the last value we read form the 32 bit Arduino timer
+ *  We can detect overflow by reading a value that is lower than this.
+ *  This does require us to read the timer and update this variable at least once per 35 minutes
+ *  This is no issue when we do busy-sleep. If we go to HW timer sleep we would want to register an interrupt 
+ *  capturing the overflow.
  */
-int lf_sleep(interval_t sleep_duration) {
-    unsigned int microsec = (unsigned int) sleep_duration; // FIXME: this cast should not be necessary if the datatype is defined correctly.
-    if(microsec < 3) {
+static volatile uint32_t _lf_time_us_high = 0;
+static volatile uint32_t _lf_time_us_low_last = 0;
+
+/**
+ * @brief Sleep until an absolute time.
+ * FIXME: For improved power consumption this should be implemented with a HW timer and interrupts.
+ * 
+ * @param wakeup int64_t time of wakeup 
+ * @return int 0 if successful sleep, -1 if awoken by async event
+ */
+int lf_sleep_until(instant_t wakeup) {
+    instant_t now;
+    _lf_async_event = false;
+    lf_critical_section_exit();
+
+    // Do busy sleep
+    do {
+        lf_clock_gettime(&now);        
+    } while ((now < wakeup) && !_lf_async_event);
+
+    lf_critical_section_enter();
+
+    if (_lf_async_event) {
+        lf_ack_events();
+        return -1;
+    } else {
         return 0;
     }
-    else if(microsec <= 16383) {
-        delayMicroseconds(microsec);
-    }
-    else {
-        delay(microsec / 1000);
-    }
-    return 0;
+
+}
+
+/**
+ * @brief Sleep for duration
+ * 
+ * @param sleep_duration int64_t nanoseconds representing the desired sleep duration
+ * @return int 0 if success. -1 if interrupted by async event.
+ */
+int lf_sleep(interval_t sleep_duration) {
+    instant_t now;
+    lf_clock_gettime(&now);
+    instant_t wakeup = now + sleep_duration;
+
+    return lf_sleep_until(wakeup);
+
 }
 
 /**
@@ -67,45 +104,44 @@ int lf_sleep(interval_t sleep_duration) {
 void lf_initialize_clock() {}
 
 /**
- * Fetch the value of _LF_CLOCK (see lf_arduino_support.h) and store it in t. The
- * timestamp value in 't' will be physical Arduino time in microseconds,
- * which starts once Arduino boots up.
- *
- * @return 0 for success, or -1 for failure. In case of failure, errno will be
- *  set appropriately.
+ * Return the current time in nanoseconds
+ * This has to be called at least once per 35minute to work
+ * FIXME: This is only addressable by setting up interrupts on a timer peripheral to occur at wrap.
  */
 int lf_clock_gettime(instant_t* t) {
-
+    
     if (t == NULL) {
         // The t argument address references invalid memory
         errno = EFAULT;
         return -1;
     }
 
-    *t = micros();
+    uint32_t now_us_low = micros();
+    
+    // Detect whether overflow has occured since last read
+    // FIXME: This assumes that we lf_clock_gettime is called at least once per overflow
+    if (now_us_low < _lf_time_us_low_last) {
+        _lf_time_us_high++;
+    }
+
+    *t = COMBINE_HI_LO(_lf_time_us_high, now_us_low) * 1000ULL;
     return 0;
 }
 
 int lf_critical_section_enter() {
     noInterrupts();
+    _lf_in_critical_section = true;
     return 0;
 }
 
 int lf_critical_section_exit() {
+    _lf_in_critical_section = false;
+    // FIXME: What will happen if interrupts were not enabled to begin with?
     interrupts();
     return 0;
 }
 
 int lf_notify_of_event() {
-   _lf_timer_interrupted = true;
+   _lf_async_event = true;
    return 0;
-}
-
-int lf_ack_events() {
-    _lf_timer_interrupted = false;
-    return 0;
-}
-
-int lf_nanosleep(interval_t sleep_duration) {
-    return lf_sleep(sleep_duration);
 }
