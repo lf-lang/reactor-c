@@ -231,7 +231,6 @@ int next(void) {
                 (tag_t){.time=current_tag.time, .microstep=current_tag.microstep+1}
             );
         }
-        next_tag = stop_tag;
     } else {
         next_tag.time = event->time;
         // Deduce the microstep
@@ -239,10 +238,6 @@ int next(void) {
             next_tag.microstep = lf_tag().microstep + 1;
         } else {
             next_tag.microstep = 0;
-        }
-        if (_lf_is_tag_after_stop_tag(next_tag)) {
-            // Cannot process events after the stop tag.
-            next_tag = stop_tag;
         }
     }
 
