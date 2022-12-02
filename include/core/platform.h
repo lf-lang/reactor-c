@@ -42,8 +42,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#if defined(ARDUINO)
+#if defined(PLATFORM_ARDUINO)
     #include "platform/lf_arduino_support.h"
+#elif defined(PLATFORM_NRF52)
+    #include "platform/lf_nrf52_support.h"
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
    // Windows platforms
    #include "lf_windows_support.h"
@@ -69,13 +71,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
 // All platforms require some form of mutex support for physical actions.
 typedef _lf_mutex_t lf_mutex_t;          // Type to hold handle to a mutex
-// Single global mutex.
-extern lf_mutex_t mutex;
+typedef _lf_cond_t lf_cond_t;            // Type to hold handle to a condition variable
+typedef _lf_thread_t lf_thread_t;        // Type to hold handle to a thread
 
 #define LF_TIMEOUT _LF_TIMEOUT
 
-typedef _lf_cond_t lf_cond_t;            // Type to hold handle to a condition variable
-typedef _lf_thread_t lf_thread_t;        // Type to hold handle to a thread
 #endif
 
 /**
