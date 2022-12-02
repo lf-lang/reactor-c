@@ -59,11 +59,11 @@ double _lf_frequency_to_ns = 1.0;
 
 #if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
 
-// The one and only mutex lock.
-lf_mutex_t mutex;
+// // The one and only mutex lock.
+// lf_mutex_t mutex;
 
-// Condition variables used for notification between threads.
-lf_cond_t event_q_changed;
+// // Condition variables used for notification between threads.
+// lf_cond_t event_q_changed;
 /**
  * @brief Get the number of cores on the host machine.
  */
