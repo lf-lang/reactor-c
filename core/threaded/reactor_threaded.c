@@ -47,10 +47,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.h"
 
 // The one and only mutex lock.
-// extern lf_mutex_t mutex;
+extern lf_mutex_t mutex;
 
 // Condition variables used for notification between threads.
-// extern lf_cond_t event_q_changed;
+extern lf_cond_t event_q_changed;
 
 /**
  * The maximum amount of time a worker thread should stall
@@ -94,11 +94,6 @@ typedef struct _lf_tag_advancement_barrier {
  */
 _lf_tag_advancement_barrier _lf_global_tag_advancement_barrier = {0, FOREVER_TAG_INITIALIZER};
 
-// The one and only global mutex lock.
-lf_mutex_t mutex;
-
-// Condition variables used for notification between threads.
-lf_cond_t event_q_changed;
 // A condition variable that notifies threads whenever the number
 // of requestors on the tag barrier reaches zero.
 lf_cond_t global_tag_barrier_requestors_reached_zero;

@@ -33,6 +33,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform.h"
 
 #if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
+    // Define the global mutex and cond_var
+    lf_mutex_t mutex;
+    lf_cond_t event_q_changed;
 #else
 #include "lf_os_single_threaded_support.c"
 #endif
