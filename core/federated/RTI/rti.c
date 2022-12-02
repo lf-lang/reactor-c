@@ -66,9 +66,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.c"        // Time-related types and functions.
 #include "rti.h"
 
-lf_mutex_t mutex;
-lf_cond_t event_q_changed;
-
 /**
  * The state of this RTI instance.
  */
