@@ -74,6 +74,8 @@ typedef _lf_mutex_t lf_mutex_t;          // Type to hold handle to a mutex
 typedef _lf_cond_t lf_cond_t;            // Type to hold handle to a condition variable
 typedef _lf_thread_t lf_thread_t;        // Type to hold handle to a thread
 
+extern lf_mutex_t mutex;
+extern lf_cond_t event_q_changed;
 #define LF_TIMEOUT _LF_TIMEOUT
 
 #endif
