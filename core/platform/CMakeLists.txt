@@ -16,7 +16,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Arduino")
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
     set(LF_PLATFORM_FILES lf_nrf52_support.c)
 else()
-    message(FATAL_ERROR "Your platform is not supported! The C target supports Linux, MacOS, Windows, and Arduino.")
+    message(FATAL_ERROR "Your platform is not supported! The C target supports Linux, MacOS, Windows, Arduino and Nrf52.")
 endif()
 
 set(GENERAL_SOURCES ${LF_PLATFORM_FILES})
