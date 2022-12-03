@@ -53,6 +53,15 @@
 typedef unsigned short int ushort;
 #endif
 
+// Define scheduler types as integers. This way we can conditionally
+// include/exclude code with the preprocessor with
+// #if SCHEDULER == ADAPTIVE etc
+#define ADAPTIVE 1
+#define GEDF_NP_CI 2
+#define GEDF_NP 3
+#define LET 4
+
+
 /**
  * Policy for handling scheduled events that violate the specified
  * minimum interarrival time.

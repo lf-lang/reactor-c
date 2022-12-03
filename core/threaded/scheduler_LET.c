@@ -43,9 +43,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "../platform.h"
 #include "../utils/semaphore.h"
+#include "reactor.h"
 #include "scheduler.h"
 #include "scheduler_instance.h"
 #include "scheduler_sync_tag_advance.c"
+
 
 #include "modal_models/modes.h"
 /////////////////// External Variables /////////////////////////
@@ -71,7 +73,7 @@ static void _lf_sched_mode_time_advance_epilogue();
  * @param reaction The reaction to insert.
  */
 static inline void _lf_sched_insert_reaction(reaction_t* reaction) {
-    size_t reaction_level = LEVEL(reaction->index);
+    size_t reaction_level = LF_LEVEL(reaction->index);
 #ifdef FEDERATED
     // Lock the mutex if federated because a federate can insert reactions with
     // a level equal to the current level.
@@ -349,8 +351,8 @@ void lf_sched_init(
     }
 
     // Allocate array to hold information about what workers are in the workforce
-    _lf_sched_worker_is_in_workforce = (bool *) malloc(_lf_number_of_workers * sizeof(bool));
-    for (int i = 0; i< _lf_number_of_workers; i++) {
+    _lf_sched_worker_is_in_workforce = (bool *) malloc(number_of_workers * sizeof(bool));
+    for (int i = 0; i< number_of_workers; i++) {
         _lf_sched_worker_is_in_workforce[i] = true;
     }
 
@@ -489,7 +491,7 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
         return;
     }
     LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld.",
-            reaction->name, LEVEL(reaction->index));
+            reaction->name, LF_LEVEL(reaction->index));
     _lf_sched_insert_reaction(reaction);
 }
 

@@ -52,7 +52,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_types.h"
 #include "utils/vector.h"
 
-typedef struct self_base_t;
+struct self_base_t;
 typedef struct event_t event_t;
 typedef struct reaction_t reaction_t;
 typedef struct trigger_t trigger_t;
@@ -94,6 +94,8 @@ typedef struct reactor_mode_state_t reactor_mode_state_t;
 /** Typedef for mode_state_variable_reset_data_t struct, used for storing data for resetting state variables nested in modes. */
 typedef struct mode_state_variable_reset_data_t mode_state_variable_reset_data_t;
 
+/** Type of the mode change. */
+typedef enum {no_transition, reset_transition, history_transition} lf_mode_change_type_t;
 
 /** A struct to represent a single mode instace in a reactor instance. */
 struct reactor_mode_t {
@@ -178,6 +180,16 @@ void _lf_terminate_modal_reactors();
  * adding vector.h to the namespace of the usercode.
  */
 int _lf_mode_get_transitioning_reactors(void * return_vec);
+
+/**
+ * @brief This function accepts an array of modes and appends into return_vec the self pointer of each mode's reactor if a next mode has been set, meaning that a transition out of the mode has been requested.
+ * 
+ * @param states An array of modes.
+ * @param states_size The size of the array of modes.
+ * @param return_vec A pointer to a an allocated `vector_t` type. void* used to avoid exposing type to user-code
+ * @return int The number of items pushed into the vector.
+ */
+int _lf_mode_collect_transitioning_reactors(reactor_mode_state_t **states, int states_size, void * _return_vec);
 #endif
 
 #else /* IF NOT MODAL_REACTORS */

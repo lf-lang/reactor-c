@@ -44,6 +44,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef MODAL_REACTORS
 #include "modes.h"
 #endif
+
+// If we are using the LET scheduler we need to
+// get access to the definition of reaction prologue/epilogue
+#if SCHEDULER == LET
+#include "scheduler.h"
+#endif
+
 #include "port.h"
 #include "pqueue.h"
 #include "reactor.h"
