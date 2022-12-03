@@ -41,6 +41,18 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     // Define the global mutex and cond_var
     lf_mutex_t mutex;
     lf_cond_t event_q_changed;
+    // Implement critical section in threaded scenario
+    int lf_critical_section_enter() {
+        return lf_mutex_lock(&mutex);
+    }
+
+    int lf_critical_section_exit() {
+        return lf_mutex_unlock(&mutex);
+    }
+
+    int lf_notify_of_event() {
+        return lf_cond_broadcast(&event_q_changed);
+    }
 #else
     #include "lf_os_single_threaded_support.c"
 #endif

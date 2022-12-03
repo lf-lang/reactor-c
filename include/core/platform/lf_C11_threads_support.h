@@ -166,15 +166,4 @@ static int lf_cond_timedwait(_lf_cond_t* cond, _lf_mutex_t* mutex, int64_t absol
     return return_value;
 }
 
-static int lf_critical_section_enter() {
-    return lf_mutex_lock(&mutex);
-}
-
-static int lf_critical_section_exit() {
-    return lf_mutex_unlock(&mutex);
-}
-
-static int lf_notify_of_event() {
-    return lf_cond_broadcast(&event_q_changed);
-}
 #endif
