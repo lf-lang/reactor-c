@@ -55,6 +55,8 @@ int _lf_use_performance_counter = 0;
  */
 double _lf_frequency_to_ns = 1.0;
 
+#define LF_MIN_SLEEP_NS USEC(10)
+
 #define BILLION 1000000000
 
 #if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
