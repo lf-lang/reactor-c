@@ -40,6 +40,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_windows_support.h"
 #include "platform.h"
 #include "util.h"
+#include "tag.h"
 #include <time.h>
 
 /**

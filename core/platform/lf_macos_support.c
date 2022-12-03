@@ -31,6 +31,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "lf_macos_support.h"
 #include "platform.h"
+#include "tag.h"
 #define LF_MIN_SLEEP_NS USEC(10)
 
 #if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
