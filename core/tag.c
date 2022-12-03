@@ -39,6 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform.h"
 #include "reactor.h"
 #include "util.h"
+#include "lf_types.h"
 
 // Global variables :(
 
@@ -265,7 +266,7 @@ instant_t _lf_time(_lf_time_type type) {
  * Return the current logical time in nanoseconds since January 1, 1970.
  */
 instant_t lf_time_logical(void *self) {
-    #if SCHDULER == LET
+    #if SCHEDULER == LET
     if (self) return ((self_base_t *) self)->current_tag.time;
     else return _lf_time(LF_LOGICAL);
     #else
