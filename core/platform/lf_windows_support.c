@@ -358,6 +358,16 @@ int lf_sleep(interval_t sleep_duration) {
     return TRUE;
 }
 
+int lf_sleep_until(instant_t wakeup_time) {
+    interval_t sleep_duration = wakeup_time - lf_time_physical();
+
+    if (sleep_duration < LF_MIN_SLEEP_NS) {
+        return 0;
+    } else {
+        return lf_sleep(sleep_duration);
+    }
+}
+
 int lf_nanosleep(interval_t sleep_duration) {
     return lf_sleep(sleep_duration);
 }
