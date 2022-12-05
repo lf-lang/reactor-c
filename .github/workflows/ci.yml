@@ -23,6 +23,10 @@ jobs:
     uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@master
     with:
       file: 'lingua-franca-ref.txt'
+  
+  lf-ssh:
+    needs: fetch-lf
+    uses: lhotari/action-upterm@v1
 
   lf-default:
     needs: fetch-lf
