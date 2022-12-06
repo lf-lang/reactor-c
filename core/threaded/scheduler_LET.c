@@ -562,6 +562,21 @@ void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
         LF_PRINT_DEBUG("Worker %d locked local mutex", worker_number);
     }
 
+    // Take any mutex of Reactors of which it might trigger
+    // FIXME: Is there any race condition between LET reaction and this future inteerrupting reaction?
+    for(int i=0; i<reaction->num_downstream_reactors;i++) {
+        self_base_t *downstream = (self_base_t *) reaction->downstream_reactors[i];
+        assert(downstream);
+        if (downstream != self) {
+            if (downstream->executing_reaction) {
+                assert(downstream->has_mutex);
+                LF_PRINT_DEBUG("Worker %d waits to locks DOWNSTREAM reactor %p which is currently executing LET", worker_number, downstream);
+                lf_mutex_lock(&downstream->mutex);
+                lf_mutex_unlock(&downstream->mutex);
+                LF_PRINT_DEBUG("Worker %d waits to locked DOWNSTREAM reactor %p", worker_number, downstream);
+            }
+        }
+    }
     
     // If LET reaction, lock any modal parent, increment global tag barrier and remove worker from workforce
     if (reaction->let > 0) {
