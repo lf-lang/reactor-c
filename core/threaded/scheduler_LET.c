@@ -541,6 +541,27 @@ static void _lf_sched_unlock_modal_parents(self_base_t* reactor, int worker_numb
     }
 }
 #endif
+
+static void _lf_sched_lock_direct_upstream(reaction_t* reaction, int worker_number) {
+    for (int i = 0; i<reaction->num_upstream_reactors; i++) {
+        self_base_t* upstream = reaction->upstream_reactors[i];
+        assert(upstream->has_mutex);
+        LF_PRINT_DEBUG("Worker %d locking mutex of direct upstream %p", worker_number, upstream);
+        lf_mutex_lock(&upstream->mutex);
+        LF_PRINT_DEBUG("Worker %d locked mutex of direct upstream %p", worker_number, upstream);
+    }
+}
+
+
+static void _lf_sched_unlock_direct_upstream(reaction_t* reaction, int worker_number) {
+    for (int i = 0; i<reaction->num_upstream_reactors; i++) {
+        self_base_t* upstream = reaction->upstream_reactors[i];
+        assert(upstream->has_mutex);
+        LF_PRINT_DEBUG("Worker %d unlocking mutex of direct upstream %p", worker_number, upstream);
+        lf_mutex_unlock(&upstream->mutex);
+        LF_PRINT_DEBUG("Worker %d unlocked mutex of direct upstream %p", worker_number, upstream);
+    }
+}
 /**
  * @brief Lock mutexes needed to execute the specified reaction.
  * If the reactor containing the specified reaction has a local mutex, lock it.
@@ -562,21 +583,6 @@ void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
         LF_PRINT_DEBUG("Worker %d locked local mutex", worker_number);
     }
 
-    // Take any mutex of Reactors of which it might trigger
-    // FIXME: Is there any race condition between LET reaction and this future inteerrupting reaction?
-    for(int i=0; i<reaction->num_downstream_reactors;i++) {
-        self_base_t *downstream = (self_base_t *) reaction->downstream_reactors[i];
-        assert(downstream);
-        if (downstream != self) {
-            if (downstream->executing_reaction) {
-                assert(downstream->has_mutex);
-                LF_PRINT_DEBUG("Worker %d waits to locks DOWNSTREAM reactor %p which is currently executing LET", worker_number, downstream);
-                lf_mutex_lock(&downstream->mutex);
-                lf_mutex_unlock(&downstream->mutex);
-                LF_PRINT_DEBUG("Worker %d waits to locked DOWNSTREAM reactor %p", worker_number, downstream);
-            }
-        }
-    }
     
     // If LET reaction, lock any modal parent, increment global tag barrier and remove worker from workforce
     if (reaction->let > 0) {
@@ -584,6 +590,11 @@ void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
         #ifdef MODAL_REACTORS
             _lf_sched_lock_modal_parents(self, worker_number);
         #endif
+
+        // Lock any directly upstream reactor from this LET reaction.
+        //  This is needed to avoid upstream reactions executing and changing values on the
+        //  input port of this LET reaction
+        _lf_sched_lock_direct_upstream(reaction, worker_number);
 
         // Acquire the global mutex to: 1. Increment global barrier and 2. Update the scheduler variables.
         LF_PRINT_DEBUG("Worker %d tries to lock global mutex", worker_number);
@@ -641,6 +652,9 @@ void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
         #ifdef MODAL_REACTORS
             _lf_sched_unlock_modal_parents(self, worker_number);
         #endif
+
+        // Unlock any direct upstream reactors
+        _lf_sched_unlock_direct_upstream(reaction, worker_number);
     }
 }
 
