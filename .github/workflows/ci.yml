@@ -26,7 +26,7 @@ jobs:
   
   lf-ssh:
     needs: fetch-lf
-    uses: lhotari/action-upterm@v1
+    uses: lf-lang/reactor-c/.github/workflows/ssh.yml
 
   lf-default:
     needs: fetch-lf
