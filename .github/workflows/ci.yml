@@ -26,7 +26,7 @@ jobs:
   
   lf-ssh:
     needs: fetch-lf
-    uses: lf-lang/reactor-c/.github/workflows/ssh.yml@main
+    uses: lf-lang/lingua-franca/.github/workflows/ssh.yml@master
 
   lf-default:
     needs: fetch-lf
