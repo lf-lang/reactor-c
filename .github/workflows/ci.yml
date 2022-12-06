@@ -26,7 +26,10 @@ jobs:
   
   lf-ssh:
     needs: fetch-lf
-    uses: lf-lang/lingua-franca/.github/workflows/ssh.yml@master
+    uses: lf-lang/reactor-c/.github/workflows/ssh.yml@main
+    with:
+      runtime-ref: ${{ github.ref }}
+      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
 
   lf-default:
     needs: fetch-lf
