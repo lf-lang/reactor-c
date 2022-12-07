@@ -43,6 +43,12 @@
 #include "platform.h"
 #include "tag.h"
 
+#define lf_request(type) lf_request_ ## type ## _t
+#define LF_DECLARE_REQUEST(type) typedef struct lf_request(type) {             \
+    context_t* ctx;                                                            \
+    int value;                                                                 \
+} lf_request(type);
+
 /**
  * ushort type. Redefine here for portability if sys/types.h is not included.
  * @see sys/types.h
