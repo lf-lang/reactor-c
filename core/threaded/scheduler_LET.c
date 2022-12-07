@@ -547,10 +547,10 @@ static void _lf_sched_wait_on_downstream_let(reaction_t* reaction, int worker_nu
         self_base_t* downstream = reaction->downstream_let_reactors[i];
         assert(downstream->has_mutex);
         if (downstream->executing_reaction) {
-            LF_PRINT_DEBUG("Worker %d waiting on mutex of downstream let reactor %p", worker_number, upstream);
+            LF_PRINT_DEBUG("Worker %d waiting on mutex of downstream let reactor %p", worker_number, downstream);
             lf_mutex_lock(&downstream->mutex);
             lf_mutex_unlock(&downstream->mutex);
-            LF_PRINT_DEBUG("Worker %d finished waiting on mutex of downstream let reactor %p", worker_number, upstream);
+            LF_PRINT_DEBUG("Worker %d finished waiting on mutex of downstream let reactor %p", worker_number, downstream);
         }
     }
 }
