@@ -227,8 +227,8 @@ struct reaction_t {
     interval_t deadline;      // Deadline relative to the time stamp for invocation of the reaction. INSTANCE.
 #if SCHEDULER == LET
     interval_t let;			  // The logical execution time of this reaction.
-    int num_upstream_reactors; // Number of direct downstream reactors of this reactipm
-    void ** upstream_reactors; //Array of pointers to downstream reactors
+    int num_downstream_let_reactors; // Number of direct downstream reactors of this reactipm
+    void ** downstream_let_reactors; //Array of pointers to downstream reactors
 #endif
     bool is_STP_violated;     // Indicator of STP violation in one of the input triggers to this reaction. default = false.
                               // Value of True indicates to the runtime that this reaction contains trigger(s)

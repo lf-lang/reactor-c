@@ -542,26 +542,19 @@ static void _lf_sched_unlock_modal_parents(self_base_t* reactor, int worker_numb
 }
 #endif
 
-static void _lf_sched_lock_direct_upstream(reaction_t* reaction, int worker_number) {
-    for (int i = 0; i<reaction->num_upstream_reactors; i++) {
-        self_base_t* upstream = reaction->upstream_reactors[i];
-        assert(upstream->has_mutex);
-        LF_PRINT_DEBUG("Worker %d locking mutex of direct upstream %p", worker_number, upstream);
-        lf_mutex_lock(&upstream->mutex);
-        LF_PRINT_DEBUG("Worker %d locked mutex of direct upstream %p", worker_number, upstream);
+static void _lf_sched_wait_on_downstream_let(reaction_t* reaction, int worker_number) {
+    for (int i = 0; i<reaction->num_downstream_let_reactors; i++) {
+        self_base_t* downstream = reaction->downstream_let_reactors[i];
+        assert(downstream->has_mutex);
+        if (downstream->executing_reaction) {
+            LF_PRINT_DEBUG("Worker %d waiting on mutex of downstream let reactor %p", worker_number, upstream);
+            lf_mutex_lock(&downstream->mutex);
+            lf_mutex_unlock(&downstream->mutex);
+            LF_PRINT_DEBUG("Worker %d finished waiting on mutex of downstream let reactor %p", worker_number, upstream);
+        }
     }
 }
 
-
-static void _lf_sched_unlock_direct_upstream(reaction_t* reaction, int worker_number) {
-    for (int i = 0; i<reaction->num_upstream_reactors; i++) {
-        self_base_t* upstream = reaction->upstream_reactors[i];
-        assert(upstream->has_mutex);
-        LF_PRINT_DEBUG("Worker %d unlocking mutex of direct upstream %p", worker_number, upstream);
-        lf_mutex_unlock(&upstream->mutex);
-        LF_PRINT_DEBUG("Worker %d unlocked mutex of direct upstream %p", worker_number, upstream);
-    }
-}
 /**
  * @brief Lock mutexes needed to execute the specified reaction.
  * If the reactor containing the specified reaction has a local mutex, lock it.
@@ -575,6 +568,9 @@ static void _lf_sched_unlock_direct_upstream(reaction_t* reaction, int worker_nu
  */
 void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
     self_base_t *self = (self_base_t *) reaction->self;
+    
+    // Synchroni any directly downstream LET reactors w
+    _lf_sched_wait_on_downstream_let(reaction, worker_number);
     
     // Take local mutex
     if (self->has_mutex) {
@@ -591,10 +587,6 @@ void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
             _lf_sched_lock_modal_parents(self, worker_number);
         #endif
 
-        // Lock any directly upstream reactor from this LET reaction.
-        //  This is needed to avoid upstream reactions executing and changing values on the
-        //  input port of this LET reaction
-        _lf_sched_lock_direct_upstream(reaction, worker_number);
 
         // Acquire the global mutex to: 1. Increment global barrier and 2. Update the scheduler variables.
         LF_PRINT_DEBUG("Worker %d tries to lock global mutex", worker_number);
@@ -652,9 +644,6 @@ void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
         #ifdef MODAL_REACTORS
             _lf_sched_unlock_modal_parents(self, worker_number);
         #endif
-
-        // Unlock any direct upstream reactors
-        _lf_sched_unlock_direct_upstream(reaction, worker_number);
     }
 }
 
