@@ -360,8 +360,3 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
             reaction->name, LF_LEVEL(reaction->index));
     _lf_sched_insert_reaction(reaction);
 }
-
-// Empty implementations of pre/postlude used by the LET scheduler
-void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {}
-void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {}
-

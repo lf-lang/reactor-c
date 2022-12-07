@@ -135,6 +135,7 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  */
 void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number);
 
+#if SCHEDULER == LET
 /**
  * @brief Hook called from reactor_common.c before reaction invokation. Can be empty
  * 
@@ -150,5 +151,22 @@ void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number);
  * @param worker_number 
  */
 void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number);
+
+/**
+ * @brief Wait for reactor to finish executing by locking/unlocking local mutex
+ * 
+ * @param reactor 
+ */
+void lf_sched_wait_for_reactor(self_base_t *reactor);
+
+/**
+ * @brief Wait for reactor to finish executing, but is already called holding the global mutex
+ *  The global mutex must be released before waiting on the local mutex of the reactor
+ * 
+ * @param reactor 
+ */
+void lf_sched_wait_for_reactor_locked(self_base_t *reactor);
+
+#endif
 
 #endif // LF_SCHEDULER_H
