@@ -659,6 +659,18 @@ void _lf_pop_events() {
         // Put the corresponding reactions onto the reaction queue.
         for (int i = 0; i < event->trigger->number_of_reactions; i++) {
             reaction_t *reaction = event->trigger->reactions[i];
+#if SCHEDULER == LET
+            // If this trigger is seen by a currently executing (LET) reaction.
+            //  then we must wait until it completes
+            self_base_t* parent = (self_base_t *) reaction->self;
+            if (reaction == parent->executing_reaction) {
+                LF_PRINT_DEBUG("Tried to update trigger seen by executing LET reaction. Wait on local mutex");
+                // Unlock the global mutex which we are currently holding
+                lf_sched_wait_for_reactor_locked(parent);
+                LF_PRINT_DEBUG("Wait complete on executing LET reaction");
+            }
+#endif
+
             // Do not enqueue this reaction twice.
             if (reaction->status == inactive) {
 #ifdef FEDERATED_DECENTRALIZED
@@ -1586,6 +1598,10 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
 void _lf_invoke_reaction(reaction_t* reaction, int worker) {
     
     #if SCHEDULER == LET
+    // Record current tag at beginning. After the call to `lf_sched_reaction_prolog` the runtime
+    //  is allowed to advance logical time. So we must record it now
+    tag_t now = current_tag; 
+
     lf_sched_reaction_prologue(reaction, worker);
     #endif
 
@@ -1610,9 +1626,12 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
         LF_PRINT_DEBUG("Worker %d Execute Reaction", worker);
         tracepoint_reaction_starts(reaction, worker);
         #if SCHEDULER == LET
-        ((self_base_t*) reaction->self)->current_tag = current_tag;
-        #endif
+        LF_PRINT_DEBUG("Worker %d Update current_tag to" PRINTF_TIME "current_tag for %p", worker, now.time, reaction->self);
+        ((self_base_t*) reaction->self)->current_tag = now;
+        #else
+        // This field is set within `lf_sched_reaction_prologue` if LET scheduling is enabled
         ((self_base_t*) reaction->self)->executing_reaction = reaction;
+        #endif
         reaction->function(reaction->self);
         ((self_base_t*) reaction->self)->executing_reaction = NULL;
         tracepoint_reaction_ends(reaction, worker); 

@@ -461,10 +461,11 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
  */
 void lf_sched_done_with_reaction(size_t worker_number,
                                  reaction_t* done_reaction) {
-    if (!lf_bool_compare_and_swap(&done_reaction->status, queued, inactive)) {
-        lf_print_error_and_exit("Unexpected reaction status: %d. Expected %d.",
-                             done_reaction->status, queued);
-    }
+    // This is performed in the reaction epilogue
+    // if (!lf_bool_compare_and_swap(&done_reaction->status, queued, inactive)) {
+    //     lf_print_error_and_exit("Unexpected reaction status: %d. Expected %d.",
+    //                          done_reaction->status, queued);
+    // }
 }
 
 /**
@@ -542,14 +543,26 @@ static void _lf_sched_unlock_modal_parents(self_base_t* reactor, int worker_numb
 }
 #endif
 
+void lf_sched_wait_for_reactor(self_base_t *reactor) {
+    assert(reactor->has_mutex);
+    lf_mutex_lock(&reactor->mutex);
+    lf_mutex_unlock(&reactor->mutex);
+}
+
+void lf_sched_wait_for_reactor_locked(self_base_t *reactor) {
+    assert(reactor->has_mutex);
+    lf_mutex_unlock(&mutex);
+    lf_mutex_lock(&reactor->mutex);
+    lf_mutex_unlock(&reactor->mutex);
+    lf_mutex_lock(&mutex);
+}
+
 static void _lf_sched_wait_on_downstream_let(reaction_t* reaction, int worker_number) {
     for (int i = 0; i<reaction->num_downstream_let_reactors; i++) {
         self_base_t* downstream = reaction->downstream_let_reactors[i];
-        assert(downstream->has_mutex);
         if (downstream->executing_reaction) {
             LF_PRINT_DEBUG("Worker %d waiting on mutex of downstream let reactor %p", worker_number, downstream);
-            lf_mutex_lock(&downstream->mutex);
-            lf_mutex_unlock(&downstream->mutex);
+            lf_sched_wait_for_reactor(downstream);
             LF_PRINT_DEBUG("Worker %d finished waiting on mutex of downstream let reactor %p", worker_number, downstream);
         }
     }
@@ -569,7 +582,7 @@ static void _lf_sched_wait_on_downstream_let(reaction_t* reaction, int worker_nu
 void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
     self_base_t *self = (self_base_t *) reaction->self;
     
-    // Synchroni any directly downstream LET reactors w
+    // Wait on any directly downstream LET reactors w
     _lf_sched_wait_on_downstream_let(reaction, worker_number);
     
     // Take local mutex
@@ -612,6 +625,11 @@ void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
             _lf_sched_instance->_lf_sched_number_of_idle_workers--;
             lf_semaphore_release(_lf_sched_instance->_lf_sched_semaphore, 1);
         }
+        // Set the executing reaction field BEFORE releasing the global mutex
+        //  After we release global mutex the runtime might advance time. And it might 
+        //  preempt our current thread before it reaches it reaction invokation
+        self->executing_reaction = reaction;
+
         // Release global mutex
         lf_mutex_unlock(&mutex);
     }
@@ -619,7 +637,13 @@ void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
 
 void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
     self_base_t *self = (self_base_t *) reaction->self;
-
+    // First set reaction status to inactive. This is done here, while holding the local mutex
+    //  because when it is released, we might release a worker advancing time trying to trigger
+    //  this very reaction for a future tag. We must be inactive when this worker is released.
+    //  If not we could drop a future event.
+    
+    // FIXME: Can I do this here. Other schedulers do this in an atomic instruction later...
+    reaction->status = inactive;
     // Unlock local mutex to allow interrupting reactions+mode changes
     if (self->has_mutex) {
         lf_mutex_unlock(&self->mutex);
@@ -678,4 +702,7 @@ static void _lf_sched_mode_time_advance_epilogue() {
         lf_mutex_unlock(&reactor->mutex);
     }
 }
+
+
+
 #endif
