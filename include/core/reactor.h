@@ -290,6 +290,19 @@ do { \
     out->copy_constructor = cpy_ctor; \
 } while(0)
 
+// FIXME: REPLACE lf_request_int_t WITH GENERIC
+#define _LF_CALL(req, argument, res)                                           \
+do {                                                                           \
+    context_t* ctx = context_save(top_of_stack);                               \
+    if (ctx != NULL) {                                                         \
+        lf_set(req, ((lf_request_int_t) { .ctx=ctx, .value=argument }));       \
+        return;                                                                \
+    } else if (res->is_present) {                                              \
+        /* Crash if the response does not have a valid context attached */     \
+        context_free(res->value.ctx);                                          \
+    }                                                                          \
+} while(0)
+
 /**
  * Macro for extracting the deadline from the index of a reaction.
  * The reaction queue is sorted according to this index, and the

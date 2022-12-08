@@ -29,10 +29,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Target-specific runtime functions for the C target language.
  * This API layer can be used in conjunction with:
  *     target C;
- * 
- * Note for target language developers. This is one way of developing a target language where 
- * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca 
- * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a 
+ *
+ * Note for target language developers. This is one way of developing a target language where
+ * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca
+ * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a
  * template for future runtime developement for target languages.
  * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
  */
@@ -54,20 +54,20 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * to the specified value.
  *
  * If the value argument is a primitive type such as int,
- * double, etc. as well as the built-in types bool and string, 
+ * double, etc. as well as the built-in types bool and string,
  * the value is copied and therefore the variable carrying the
  * value can be subsequently modified without changing the output.
  * This also applies to structs with a type defined by a typedef
  * so that the type designating string does not end in '*'.
- * 
+ *
  * If the value argument is a pointer
  * to memory that the calling reaction has dynamically allocated,
  * the memory will be automatically freed once all downstream
  * reactions no longer need the value.
  * If 'lf_set_destructor' is called on 'out', then that destructor
- * will be used to free 'value'. 
+ * will be used to free 'value'.
  * Otherwise, the default void free(void*) function is used.
- * 
+ *
  * @param out The output port (by name) or input of a contained
  *  reactor in form input_name.port_name.
  * @param value The value to insert into the self struct.
@@ -172,24 +172,26 @@ do { \
  * Set the destructor used to free "token->value" set on "out".
  * That memory will be automatically freed once all downstream
  * reactions no longer need the value.
- * 
+ *
  * @param out The output port (by name) or input of a contained
  *            reactor in form input_name.port_name.
  * @param dtor A pointer to a void function that takes a pointer argument
- *             or NULL to use the default void free(void*) function. 
+ *             or NULL to use the default void free(void*) function.
  */
 #define lf_set_destructor(out, dtor) _LF_SET_DESTRUCTOR(out, dtor)
 
 /**
  * Set the destructor used to copy construct "token->value" received
  * by "in" if "in" is mutable.
- * 
+ *
  * @param out The output port (by name) or input of a contained
  *            reactor in form input_name.port_name.
  * @param cpy_ctor A pointer to a void* function that takes a pointer argument
  *                 or NULL to use the memcpy operator.
  */
 #define lf_set_copy_constructor(out, cpy_ctor) _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor)
+
+#define lf_call(req, argument, res) _LF_CALL(req, argument, res)
 
 //////////////////////////////////////////////////////////////
 /////////////  SET_MODE Function (to switch a mode)

@@ -44,6 +44,7 @@
 #include "tag.h"
 
 #define lf_request(type) lf_request_ ## type ## _t
+
 #define LF_DECLARE_REQUEST(type) typedef struct lf_request(type) {             \
     context_t* ctx;                                                            \
     int value;                                                                 \

@@ -99,6 +99,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #undef lf_set_copy_constructor
 
+#undef lf_call
+
 //////////////////////////////////////////////////////////////
 /////////////  SET_MODE Function (to switch a mode)
 
