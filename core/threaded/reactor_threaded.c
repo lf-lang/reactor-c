@@ -626,23 +626,7 @@ void _lf_next_locked() {
         // keepalive is not set so we should stop.
         // Note that federated programs with decentralized coordination always have
         // keepalive = true
-        // If we are using a LET scheduler, then also verify that there are no running
-        //  LET reactions. This is checked by inspecting the barrier. If the barrier is
-        //  raised into the future, then we cannot update the stop tag.
-        //  instead we will go to sleep until stop-tag and be awaked if the LET
-        //  reaction produces any output
-        //  FIXME: We can consider adding this check also for the other schedulers
-        //      It should never occur that we are advancing time when there is a barrier present.
-#if SCHEDULER == LET
-        if (_lf_global_tag_advancement_barrier.requestors == 0 &&
-            lf_tag_compare(current_tag, _lf_global_tag_advancement_barrier.horizon) > 0) {
-            _lf_set_stop_tag((tag_t){.time=current_tag.time,.microstep=current_tag.microstep+1});
-        } else {
-            LF_PRINT_DEBUG("Worker tried to update stop tag but was blocked by the barrier");
-        }
-#else
         _lf_set_stop_tag((tag_t){.time=current_tag.time,.microstep=current_tag.microstep+1});
-#endif
         // Stop tag has changed. Need to check next_tag again.
         next_tag = get_next_event_tag();
     }

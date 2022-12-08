@@ -53,10 +53,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;
 extern lf_cond_t event_q_changed;
+extern pqueue_t *event_q;
 
 /////////////////// Scheduler Variables and Structs /////////////////////////
 _lf_sched_instance_t* _lf_sched_instance;
 bool* _lf_sched_worker_is_in_workforce;
+int total_number_of_workers;
+
 #ifdef MODAL_REACTORS
 static vector_t _lf_sched_transitioning_reactors;
 #define LF_SCHED_INTIAL_CAPACITY_TRANS_REACTORS 16
@@ -66,6 +69,13 @@ static vector_t _lf_sched_transitioning_reactors;
 static void _lf_sched_mode_time_advance_prologue();
 static void _lf_sched_mode_time_advance_epilogue();
 
+/**
+ * Returns number of currently executing LET reactions
+*/
+static int _lf_sched_number_of_let_workers() {
+    return total_number_of_workers - _lf_sched_instance->_lf_sched_number_of_workers;
+
+}
 /**
  * @brief Insert 'reaction' into
  * _lf_sched_instance->_lf_sched_triggered_reactions at the appropriate level.
@@ -222,6 +232,19 @@ void _lf_sched_try_advance_tag_and_distribute() {
             lf_mutex_lock(&mutex);
             // Nothing more happening at this tag.
             
+            // Don`t advance time if next_event == NULL and we have currently
+            //  executing LET reactions. If thats the case wait until they finish
+            while (pqueue_peek(event_q) == NULL) {
+                if (_lf_sched_number_of_let_workers()) {
+                    // Abort time advancement and go to sleep on event_q_changed
+                    LF_PRINT_DEBUG("Worker blocked from advancing to stop tag sleep on cond var");
+                    lf_cond_wait(&event_q_changed, &mutex);
+                    LF_PRINT_DEBUG("Worker woken up from cond-var and can advance time");
+                } else {
+                    break;
+                }
+            }
+            
             LF_PRINT_DEBUG("Scheduler: Trying to advance tag.");
             // This worker thread will take charge of advancing tag.
             if (_lf_sched_advance_tag_locked()) {
@@ -351,6 +374,7 @@ void lf_sched_init(
     }
 
     // Allocate array to hold information about what workers are in the workforce
+    total_number_of_workers = number_of_workers;
     _lf_sched_worker_is_in_workforce = (bool *) malloc(number_of_workers * sizeof(bool));
     for (int i = 0; i< number_of_workers; i++) {
         _lf_sched_worker_is_in_workforce[i] = true;
@@ -662,6 +686,12 @@ void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
         if (reaction->let < FOREVER) {
             lf_decrement_global_tag_barrier_locked();
         }
+        // There might be a worker thread trying to advance time which has 
+        //  gone to sleep FOREVER even though the event queue was empty.
+        //  Signal that the event queue has changed, even if it hasnt,
+        //  to wake him up and
+        lf_cond_signal(&event_q_changed); 
+
         lf_mutex_unlock(&mutex);
 
         // unlock any containing reactor which is modal to enable mode changes in parents
