@@ -226,7 +226,7 @@ void _lf_sched_try_advance_tag_and_distribute() {
             _lf_sched_instance->_lf_sched_next_reaction_level = 0;
             
             #ifdef MODAL_REACTORS
-                _lf_sched_mode_time_advance_prologue();
+                _lf_sched_mode_time_advance_prologue(); // Acquiring all Modal mutexes
             #endif
             
             lf_mutex_lock(&mutex);
@@ -238,7 +238,7 @@ void _lf_sched_try_advance_tag_and_distribute() {
                 if (_lf_sched_number_of_let_workers()) {
                     // Abort time advancement and go to sleep on event_q_changed
                     LF_PRINT_DEBUG("Worker blocked from advancing to stop tag sleep on cond var");
-                    lf_cond_wait(&event_q_changed, &mutex);
+                    lf_cond_wait(&event_q_changed, &mutex); // FIXME: Create a dedicated condition variable for this
                     LF_PRINT_DEBUG("Worker woken up from cond-var and can advance time");
                 } else {
                     break;
@@ -576,8 +576,10 @@ void lf_sched_wait_for_reactor(self_base_t *reactor) {
 void lf_sched_wait_for_reactor_locked(self_base_t *reactor) {
     assert(reactor->has_mutex);
     lf_mutex_unlock(&mutex);
+    // FIXME: Here we might have a context switch 
     lf_mutex_lock(&reactor->mutex);
     lf_mutex_unlock(&reactor->mutex);
+    // FIXME: Here we might have a context switch
     lf_mutex_lock(&mutex);
 }
 
@@ -669,7 +671,7 @@ void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
     // FIXME: Can I do this here. Other schedulers do this in an atomic instruction later...
     reaction->status = inactive;
     // Unlock local mutex to allow interrupting reactions+mode changes
-    if (self->has_mutex) {
+    if (self->has_mutex) { // FIXME: only need to check if mutex != NULL
         lf_mutex_unlock(&self->mutex);
         LF_PRINT_DEBUG("Worker %d unlocked local mutex", worker_number);
     }
@@ -690,7 +692,7 @@ void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
         //  gone to sleep FOREVER even though the event queue was empty.
         //  Signal that the event queue has changed, even if it hasnt,
         //  to wake him up and
-        lf_cond_signal(&event_q_changed); 
+        lf_cond_signal(&event_q_changed); // FIXME: Use a new cond var
 
         lf_mutex_unlock(&mutex);
 
