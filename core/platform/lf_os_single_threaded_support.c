@@ -15,6 +15,9 @@
 #endif
 
 int lf_critical_section_enter() {
+    // FIXME: Is this what we want? Dont we want to grab a mutex here? 
+    //  Even if we are using a single-threaded LF we might have other threads 
+    //  trying to schedule physical actions. Or interrupt routines.
     return 0;
 }
 

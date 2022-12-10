@@ -39,9 +39,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LF_MIN_SLEEP_NS USEC(10)
 
 #if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
-    // Define the global mutex and cond_var
-    lf_mutex_t mutex;
-    lf_cond_t event_q_changed;
     // Implement critical section in threaded scenario
     int lf_critical_section_enter() {
         return lf_mutex_lock(&mutex);
