@@ -68,6 +68,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error "Platform not supported"
 #endif
 
+#if defined(NUMBER_OF_WORKERS) || defined(LINGUA_FRANCA_TRACE)
 // All platforms require some form of mutex support for physical actions.
 typedef _lf_mutex_t lf_mutex_t;          // Type to hold handle to a mutex
 typedef _lf_cond_t lf_cond_t;            // Type to hold handle to a condition variable
@@ -75,6 +76,10 @@ typedef _lf_thread_t lf_thread_t;        // Type to hold handle to a thread
 
 extern lf_mutex_t mutex;
 extern lf_cond_t event_q_changed;
+#else
+    typedef void lf_mutex_t;
+#endif
+
 #define LF_TIMEOUT _LF_TIMEOUT
 
 

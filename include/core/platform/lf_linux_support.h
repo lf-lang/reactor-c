@@ -32,11 +32,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef LF_LINUX_SUPPORT_H
 #define LF_LINUX_SUPPORT_H
 
-#if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
+#if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
+    #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
 // (Not C++11 or later) or no threads support
 #include "lf_POSIX_threads_support.h"
-#else
+    #else
 #include "lf_C11_threads_support.h"
+    #endif
 #endif
 
 #include <stdint.h> // For fixed-width integral types

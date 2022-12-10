@@ -47,6 +47,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.h"
 
 /**
+ * Global mutex and condition variable.
+*/
+
+lf_mutex_t mutex;
+lf_cond_t event_q_changed;
+
+
+/**
  * The maximum amount of time a worker thread should stall
  * before checking the reaction queue again.
  * This is not currently used.
