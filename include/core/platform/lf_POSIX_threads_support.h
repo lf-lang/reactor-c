@@ -45,12 +45,6 @@ typedef pthread_t _lf_thread_t;
 
 #define _LF_TIMEOUT ETIMEDOUT
 
-// The one and only mutex lock.
-extern _lf_mutex_t mutex;
-
-// Condition variables used for notification between threads.
-extern _lf_cond_t event_q_changed;
-
 /**
  * Create a new thread, starting with execution of lf_thread getting passed
  * arguments. The new handle is stored in thread.

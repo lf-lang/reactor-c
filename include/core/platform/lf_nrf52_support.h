@@ -59,9 +59,10 @@ typedef int64_t _interval_t;
 typedef uint32_t _microstep_t;
 
 /**
- * No mutex needed for single threaded NRF platforms
+ * No mutex or condition variable needed for single threaded NRF platforms
  */
 typedef void _lf_mutex_t;
+typedef void _lf_cond_var_t;
 
 /**
  * For user-friendly reporting of time values, the buffer length required.

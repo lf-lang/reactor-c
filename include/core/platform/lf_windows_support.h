@@ -61,12 +61,6 @@ typedef _lf_mutex_t _lf_critical_section_t;
 typedef CONDITION_VARIABLE _lf_cond_t;
 typedef HANDLE _lf_thread_t;
 
-// The one and only mutex lock.
-extern _lf_mutex_t mutex;
-
-// Condition variables used for notification between threads.
-extern _lf_cond_t event_q_changed;
-
 #else
 #include "lf_C11_threads_support.h"
 #endif

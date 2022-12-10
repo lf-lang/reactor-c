@@ -73,6 +73,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //// Global variables :(
 
 /**
+ * Global mutex and condition variable.
+ * It is defined here since it is needed by most single-threaded runtimes also.
+*/
+
+lf_mutex_t mutex;
+lf_cond_t event_q_changed;
+
+/**
  * Indicator of whether to wait for physical time to match logical time.
  * By default, execution will wait. The command-line argument -fast will
  * eliminate the wait and allow logical time to exceed physical time.

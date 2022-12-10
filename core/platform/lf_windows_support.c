@@ -62,9 +62,6 @@ double _lf_frequency_to_ns = 1.0;
 
 #if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
 
-    // Define the global mutex and cond_var
-    lf_mutex_t mutex;
-    lf_cond_t event_q_changed;
 /**
  * @brief Get the number of cores on the host machine.
  */

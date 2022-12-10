@@ -24,12 +24,12 @@ jobs:
     with:
       file: 'lingua-franca-ref.txt'
   
-  lf-ssh:
-    needs: fetch-lf
-    uses: lf-lang/reactor-c/.github/workflows/ssh.yml@main
-    with:
-      runtime-ref: ${{ github.ref }}
-      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+  # lf-ssh:
+  #   needs: fetch-lf
+  #   uses: lf-lang/reactor-c/.github/workflows/ssh.yml@main
+  #   with:
+  #     runtime-ref: ${{ github.ref }}
+  #     compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
 
   lf-default:
     needs: fetch-lf
