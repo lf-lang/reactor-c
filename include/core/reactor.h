@@ -569,5 +569,10 @@ void _lf_fd_send_stop_request_to_rti(void);
  */
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
 
+// FIXME: Write docs
+void _lf_notify_of_event();
+void _lf_critical_section_enter();
+void _lf_critical_section_exit();
+
 #endif /* REACTOR_H */
 /** @} */

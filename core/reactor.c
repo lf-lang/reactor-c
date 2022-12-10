@@ -218,7 +218,7 @@ int _lf_do_step(void) {
 int next(void) {
     // Enter the critical section and do not leave until we have
     // determined which tag to commit to and start invoking reactions for.
-    lf_critical_section_enter();
+    _lf_critical_section_enter();
     event_t* event = (event_t*)pqueue_peek(event_q);
     //pqueue_dump(event_q, event_q->prt);
     // If there is no next event and -keepalive has been specified
@@ -256,7 +256,7 @@ int next(void) {
         // gets scheduled from an interrupt service routine.
         // In this case, check the event queue again to make sure to
         // advance time to the correct tag.
-        lf_critical_section_exit();
+        _lf_critical_section_exit();
         return 1;
     }
     // Advance current time to match that of the first event on the queue.
@@ -277,7 +277,7 @@ int next(void) {
     // extract all the reactions triggered by these events, and
     // stick them into the reaction queue.
     _lf_pop_events();
-    lf_critical_section_exit();
+    _lf_critical_section_exit();
 
     return _lf_do_step();
 }
@@ -365,4 +365,14 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     } else {
         return -1;
     }
+}
+
+void _lf_notify_of_event() {
+    lf_notify_of_event();
+}
+void _lf_critical_section_enter() {
+    lf_critical_section_enter();
+}
+void _lf_critical_section_exit() {
+    lf_critical_section_exit();
 }

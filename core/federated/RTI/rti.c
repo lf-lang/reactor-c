@@ -66,15 +66,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.c"        // Time-related types and functions.
 #include "rti.h"
 
-
-// FIXME: These must be defined here because inside the platform support files
-//  these are called. I am not sure how to address it. I think generally
-//  the platform support files shouldnt use any global variables from the
-//  outside. I.e. we should pass mutex to lf_critical_section_enter()
-//  and event_q_changed to lf_notify_event()
-lf_mutex_t mutex;
-lf_cond_t event_q_changed;
-
 /**
  * The state of this RTI instance.
  */

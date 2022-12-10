@@ -1467,11 +1467,11 @@ trigger_t* _lf_action_to_trigger(void* action) {
  */
 trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
     trigger_t* trigger = _lf_action_to_trigger(action);
-    lf_critical_section_enter();
+    _lf_critical_section_enter();
     int return_value = _lf_schedule(trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
-    lf_notify_of_event();
-    lf_critical_section_exit();
+    _lf_notify_of_event();
+    _lf_critical_section_exit();
     return return_value;
 }
 
@@ -1490,7 +1490,7 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
         lf_print_error("schedule: Invalid trigger or element size.");
         return -1;
     }
-    lf_critical_section_enter();
+    _lf_critical_section_enter();
     // Initialize token with an array size of length and a reference count of 0.
     lf_token_t* token = _lf_initialize_token(trigger->token, length);
     // Copy the value into the newly allocated memory.
@@ -1498,8 +1498,8 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
     // The schedule function will increment the reference count.
     trigger_handle_t result = _lf_schedule(trigger, offset, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
-    lf_notify_of_event();
-    lf_critical_section_exit();
+    _lf_notify_of_event();
+    _lf_critical_section_exit();
     return result;
 }
 
@@ -1510,14 +1510,14 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
 trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* value, size_t length) {
     trigger_t* trigger = _lf_action_to_trigger(action);
 
-    lf_critical_section_enter();
+    _lf_critical_section_enter();
     lf_token_t* token = create_token(trigger->element_size);
     token->value = value;
     token->length = length;
     int return_value = _lf_schedule(trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
-    lf_notify_of_event();
-    lf_critical_section_exit();
+    _lf_notify_of_event();
+    _lf_critical_section_exit();
     return return_value;
 }
 

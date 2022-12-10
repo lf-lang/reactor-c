@@ -35,18 +35,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LF_MIN_SLEEP_NS USEC(10)
 
 #if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
-    // Implement critical sections in the threaded scenario
-    int lf_critical_section_enter() {
-        return lf_mutex_lock(&mutex);
-    }
-
-    int lf_critical_section_exit() {
-        return lf_mutex_unlock(&mutex);
-    }
-
-    int lf_notify_of_event() {
-        return lf_cond_broadcast(&event_q_changed);
-    }
 #else
 #include "lf_os_single_threaded_support.c"
 #endif
