@@ -34,7 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.h"
 #define LF_MIN_SLEEP_NS USEC(10)
 
-#if defined LF_SINGLE_THREADED || !defined LF_TRACING
+#if defined LF_UNTHREADED && !defined LF_TRACING
     #include "lf_os_single_threaded_support.c"
 #endif
 
