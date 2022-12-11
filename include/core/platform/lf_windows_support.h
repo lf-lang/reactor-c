@@ -47,6 +47,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <windef.h>
 #include <stdint.h> // For fixed-width integral types
 
+
+// Use 64-bit times and 32-bit unsigned microsteps
+#include "lf_tag_64_32.h"
+
+// Forward declare lf_clock_gettime which is needed by lf_cond_timedwait
+int lf_clock_gettime(_instant_t* t);
+
 #if defined LF_THREADED || defined LF_TRACING
 #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
 /**
@@ -208,9 +215,9 @@ int lf_cond_wait(_lf_cond_t* cond, _lf_critical_section_t* critical_section) {
  *
  * @return 0 on success and LF_TIMEOUT on timeout, 1 otherwise.
  */
-int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section, int64_t absolute_time_ns) {
+int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section, _instant_t absolute_time_ns) {
     // Convert the absolute time to a relative time
-    instant_t current_time_ns;
+    _instant_t current_time_ns;
     lf_clock_gettime(&current_time_ns);
     interval_t relative_time_ns = (absolute_time_ns - current_time_ns);
     if (relative_time_ns <= 0) {
@@ -243,8 +250,6 @@ int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section
 #endif
 #endif
 
-// Use 64-bit times and 32-bit unsigned microsteps
-#include "lf_tag_64_32.h"
 
 #define _LF_TIMEOUT ETIMEDOUT
 
