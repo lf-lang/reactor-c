@@ -44,13 +44,15 @@ static volatile bool _lf_in_critical_section = true;
 
 /**
  * Global timing variables:
- * Since Arduino is 32bit we need to also maintaint the 32 higher bits
- * _lf_time_us_high is incremented at each overflow of 32bit Arduino timer
- * _lf_time_us_low_last is the last value we read form the 32 bit Arduino timer
+ * Since Arduino is 32bit, we need to also maintain the 32 higher bits.
+
+ * _lf_time_us_high is incremented at each overflow of 32bit Arduino timer.
+ * _lf_time_us_low_last is the last value we read from the 32 bit Arduino timer.
  *  We can detect overflow by reading a value that is lower than this.
- *  This does require us to read the timer and update this variable at least once per 35 minutes
- *  This is no issue when we do busy-sleep. If we go to HW timer sleep we would want to register an interrupt 
+ *  This does require us to read the timer and update this variable at least once per 35 minutes.
+ *  This is not an issue when we do a busy-sleep. If we go to HW timer sleep we would want to register an interrupt 
  *  capturing the overflow.
+
  */
 static volatile uint32_t _lf_time_us_high = 0;
 static volatile uint32_t _lf_time_us_low_last = 0;
@@ -84,7 +86,8 @@ int lf_sleep_until(instant_t wakeup) {
 }
 
 /**
- * @brief Sleep for duration
+ * @brief Sleep for a specified duration.
+
  * 
  * @param sleep_duration int64_t nanoseconds representing the desired sleep duration
  * @return int 0 if success. -1 if interrupted by async event.
@@ -104,17 +107,15 @@ int lf_sleep(interval_t sleep_duration) {
 void lf_initialize_clock() {}
 
 /**
- * Return the current time in nanoseconds
- * This has to be called at least once per 35minute to work
+ * Write the current time in nanoseconds into the location given by the argument.
+ * This returns 0 (it never fails, assuming the argument gives a valid memory location).
+ * This has to be called at least once per 35 minutes to properly handle overflows of the 32-bit clock.
+
  * FIXME: This is only addressable by setting up interrupts on a timer peripheral to occur at wrap.
  */
 int lf_clock_gettime(instant_t* t) {
     
-    if (t == NULL) {
-        // The t argument address references invalid memory
-        errno = EFAULT;
-        return -1;
-    }
+    assert(t != NULL);
 
     uint32_t now_us_low = micros();
     
