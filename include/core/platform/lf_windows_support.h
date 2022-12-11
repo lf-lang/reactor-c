@@ -27,7 +27,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** Windows API support for the C target of Lingua Franca.
  *
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
- *  @author{Erling Jellum <erling.r.jellum@ntnu.no>}
+ *  @author{Erling Jellum <erling.r.jellum@ntnu>}
  *  
  * The API is implemented in the header files. This is also the case for Linux
  * and macos. This is to enable having both the unthreaded and the threaded API
@@ -208,7 +208,7 @@ int lf_cond_wait(_lf_cond_t* cond, _lf_critical_section_t* critical_section) {
  *
  * @return 0 on success and LF_TIMEOUT on timeout, 1 otherwise.
  */
-int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section, instant_t absolute_time_ns) {
+int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section, int64_t absolute_time_ns) {
     // Convert the absolute time to a relative time
     instant_t current_time_ns;
     lf_clock_gettime(&current_time_ns);
