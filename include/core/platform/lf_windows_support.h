@@ -47,7 +47,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <windef.h>
 #include <stdint.h> // For fixed-width integral types
 
-
+#define _LF_TIMEOUT ETIMEDOUT
 // Use 64-bit times and 32-bit unsigned microsteps
 #include "lf_tag_64_32.h"
 
@@ -251,7 +251,6 @@ int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section
 #endif
 
 
-#define _LF_TIMEOUT ETIMEDOUT
 
 #endif // LF_WINDOWS_SUPPORT_H
 
