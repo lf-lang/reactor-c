@@ -91,7 +91,7 @@ target_include_directories(core PUBLIC ../include/core/modal_models)
 target_include_directories(core PUBLIC ../include/core/threaded)
 target_include_directories(core PUBLIC ../include/core/utils)
 
-if(DEFINED NUMBER_OF_WORKERS OR DEFINED LINGUA_FRANCA_TRACE)
+if(DEFINED LF_THREADED OR DEFINED LINGUA_FRANCA_TRACE)
     find_package(Threads REQUIRED)
     target_link_libraries(core PUBLIC Threads::Threads)
 endif()
