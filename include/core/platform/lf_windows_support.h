@@ -52,7 +52,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_tag_64_32.h"
 
 // Forward declare lf_clock_gettime which is needed by lf_cond_timedwait
-int lf_clock_gettime(_instant_t* t);
+extern int lf_clock_gettime(_instant_t* t);
 
 #if defined LF_THREADED || defined LF_TRACING
 #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
@@ -78,7 +78,7 @@ typedef HANDLE _lf_thread_t;
  *
  * @return 0 on success, errno otherwise.
  */
-int lf_thread_create(_lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
+static int lf_thread_create(_lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     uintptr_t handle = _beginthreadex(NULL, 0, lf_thread, arguments, 0, NULL);
     *thread = (HANDLE)handle;
     if(handle == 0){
@@ -95,7 +95,7 @@ int lf_thread_create(_lf_thread_t* thread, void *(*lf_thread) (void *), void* ar
  *
  * @return 0 on success, EINVAL otherwise.
  */
-int lf_thread_join(_lf_thread_t thread, void** thread_return) {
+static int lf_thread_join(_lf_thread_t thread, void** thread_return) {
     DWORD retvalue = WaitForSingleObject(thread, INFINITE);
     if(retvalue == WAIT_FAILED){
         return EINVAL;
@@ -108,7 +108,7 @@ int lf_thread_join(_lf_thread_t thread, void** thread_return) {
  *
  * @return 0 on success, 1 otherwise.
  */
-int lf_mutex_init(_lf_critical_section_t* critical_section) {
+static int lf_mutex_init(_lf_critical_section_t* critical_section) {
     // Set up a recursive mutex
     InitializeCriticalSection((PCRITICAL_SECTION)critical_section);
     if(critical_section != NULL){
@@ -129,7 +129,7 @@ int lf_mutex_init(_lf_critical_section_t* critical_section) {
  *
  * @return 0
  */
-int lf_mutex_lock(_lf_critical_section_t* critical_section) {
+static int lf_mutex_lock(_lf_critical_section_t* critical_section) {
     // The following Windows API does not return a value. It can
     // raise a EXCEPTION_POSSIBLE_DEADLOCK. See synchapi.h.
     EnterCriticalSection((PCRITICAL_SECTION)critical_section);
@@ -141,7 +141,7 @@ int lf_mutex_lock(_lf_critical_section_t* critical_section) {
  *
  * @return 0
  */
-int lf_mutex_unlock(_lf_critical_section_t* critical_section) {
+static int lf_mutex_unlock(_lf_critical_section_t* critical_section) {
     // The following Windows API does not return a value.
     LeaveCriticalSection((PCRITICAL_SECTION)critical_section);
     return 0;
@@ -152,7 +152,7 @@ int lf_mutex_unlock(_lf_critical_section_t* critical_section) {
  *
  * @return 0
  */
-int lf_cond_init(_lf_cond_t* cond) {
+static int lf_cond_init(_lf_cond_t* cond) {
     // The following Windows API does not return a value.
     InitializeConditionVariable((PCONDITION_VARIABLE)cond);
     return 0;
@@ -163,7 +163,7 @@ int lf_cond_init(_lf_cond_t* cond) {
  *
  * @return 0
  */
-int lf_cond_broadcast(_lf_cond_t* cond) {
+static int lf_cond_broadcast(_lf_cond_t* cond) {
     // The following Windows API does not return a value.
     WakeAllConditionVariable((PCONDITION_VARIABLE)cond);
     return 0;
@@ -174,7 +174,7 @@ int lf_cond_broadcast(_lf_cond_t* cond) {
  *
  * @return 0
  */
-int lf_cond_signal(_lf_cond_t* cond) {
+static int lf_cond_signal(_lf_cond_t* cond) {
     // The following Windows API does not return a value.
     WakeConditionVariable((PCONDITION_VARIABLE)cond);
     return 0;
@@ -186,7 +186,7 @@ int lf_cond_signal(_lf_cond_t* cond) {
  *
  * @return 0 on success, 1 otherwise.
  */
-int lf_cond_wait(_lf_cond_t* cond, _lf_critical_section_t* critical_section) {
+static int lf_cond_wait(_lf_cond_t* cond, _lf_critical_section_t* critical_section) {
     // According to synchapi.h, the following Windows API returns 0 on failure,
     // and non-zero on success.
     int return_value =
@@ -215,7 +215,7 @@ int lf_cond_wait(_lf_cond_t* cond, _lf_critical_section_t* critical_section) {
  *
  * @return 0 on success and LF_TIMEOUT on timeout, 1 otherwise.
  */
-int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section, _instant_t absolute_time_ns) {
+static int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section, _instant_t absolute_time_ns) {
     // Convert the absolute time to a relative time
     _instant_t current_time_ns;
     lf_clock_gettime(&current_time_ns);
