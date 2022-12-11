@@ -59,10 +59,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assert.h>
 #include <sys/wait.h>   // Defines wait() for process to change state.
 
-#ifndef LF_THREADED
-#define LF_THREADED
-#endif
-
 #include "platform.h"   // Platform-specific types and functions
 #include "util.c" // Defines print functions (e.g., lf_print).
 #include "net_util.c"   // Defines network functions.

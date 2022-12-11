@@ -52,6 +52,7 @@ include_directories(${IncludeDir}/modal_models)
 include_directories(${IncludeDir}/platform)
 include_directories(${IncludeDir}/utils)
 
+
 # Declare a new executable target and list all its sources
 add_executable(
     RTI
@@ -67,8 +68,8 @@ IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
     target_compile_definitions(RTI PUBLIC LOG_LEVEL=4)
 ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 
-# Set the number of workers to enable threading
-target_compile_definitions(RTI PUBLIC NUMBER_OF_WORKERS)
+# Set LF_THREADING to get the threaded support
+target_compile_definitions(RTI PUBLIC LF_THREADED=1)
 
 # Find threads and link to it
 find_package(Threads REQUIRED)

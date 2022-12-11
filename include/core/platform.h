@@ -48,7 +48,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #if !defined(LF_THREADED) && !defined(LF_UNTHREADED)
-#error Must defined either UNTHREADED or THREADED runtime
+#error Must defined either LF_UNTHREADED or LF_THREADED runtime
 #endif
 
 
