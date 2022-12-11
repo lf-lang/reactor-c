@@ -12,12 +12,12 @@ jobs:
   unit-tests-single:
     uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@main
     with:
-      cmake-args: '-UNUMBER_OF_WORKERS'
+      cmake-args: '-UNUMBER_OF_WORKERS -DLF_SINGLE_THREADED'
 
   unit-tests-multi:
     uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@main
     with:
-      cmake-args: '-DNUMBER_OF_WORKERS=4'
+      cmake-args: '-DNUMBER_OF_WORKERS=4 -DLF_MULTI_THREADED'
 
   fetch-lf:
     uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@master
