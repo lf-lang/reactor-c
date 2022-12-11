@@ -67,8 +67,8 @@ static const nrfx_timer_t g_lf_timer_inst = NRFX_TIMER_INSTANCE(3);
 #define LF_MIN_SLEEP_NS USEC(5) 
 
 /**
- * Variable tracking the higher 32bits of the time
- * Incremented at each timer overflow
+ * Variable tracking the higher 32bits of the time.
+ * This is incremented at each timer overflow.
  */
 static volatile uint32_t _lf_time_us_high = 0;
 
@@ -128,14 +128,14 @@ void lf_initialize_clock() {
 }
 
 /**
- * Fetch the value of _LF_CLOCK (see lf_linux_support.h) and store it in tp. The
+ * Fetch the value of _LF_CLOCK (see lf_linux_support.h) and store it in *t. The
  * timestamp value in 't' will will be the number of nanoseconds since the board was reset.
  * The timers on the board have only 32 bits and their resolution is in microseconds, so
- * the time returned will always be an even number of microseconds. Moreover, after about 71
+ * the time returned will always be an integer number of microseconds. Moreover, after about 71
  * minutes of operation, the timer overflows. 
  * 
  * The function reads out the upper word before and after reading the timer.
- * If the upper word has changed (i.e. it was an overflow in between),
+ * If the upper word has changed (i.e. there was an overflow in between),
  * we cannot simply combine them. We read once more to be sure that 
  * we read after the overflow.
  *
