@@ -60,7 +60,7 @@ double _lf_frequency_to_ns = 1.0;
 
 #define BILLION 1000000000
 
-#if defined LF_MULTI_THREADED || defined LF_TRACING
+#if defined LF_THREADED || defined LF_TRACING
 
 /**
  * @brief Get the number of cores on the host machine.

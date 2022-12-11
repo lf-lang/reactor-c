@@ -59,8 +59,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assert.h>
 #include <sys/wait.h>   // Defines wait() for process to change state.
 
-#ifndef LF_MULTI_THREADED
-#define LF_MULTI_THREADED
+#ifndef LF_THREADED
+#define LF_THREADED
 #endif
 
 #include "platform.h"   // Platform-specific types and functions
