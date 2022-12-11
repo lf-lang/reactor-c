@@ -41,7 +41,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <windef.h>
 #include <stdint.h> // For fixed-width integral types
 
-#if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
+#if defined LF_MULTI_THREADED || defined LF_TRACING
 #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
 
 

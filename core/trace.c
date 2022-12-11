@@ -29,14 +29,19 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Include this file instead of trace.h to get tracing.
  * See trace.h file for instructions.
  */
-
+// FIXME: Should be renamed if we use the hack below maybe: LF_INCLUDE_TRACE_FILES
 #ifdef LINGUA_FRANCA_TRACE
 
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
 
+// FIXME: This is a hack to allow trace.c to get the threaded support API
+//  even though we are using a unthreaded runtime
+#define LF_TRACING
 #include "platform.h"
+#undef LF_TRACING
+
 #include "reactor_common.h"
 #include "trace.h"
 #include "util.h"

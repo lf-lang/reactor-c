@@ -68,14 +68,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error "Platform not supported"
 #endif
 
-#if defined(NUMBER_OF_WORKERS) || defined(LINGUA_FRANCA_TRACE)
+#if defined(LF_MULTI_THREADED) || defined(LF_TRACING)
 // All platforms require some form of mutex support for physical actions.
 typedef _lf_mutex_t lf_mutex_t;          // Type to hold handle to a mutex
 typedef _lf_cond_t lf_cond_t;            // Type to hold handle to a condition variable
 typedef _lf_thread_t lf_thread_t;        // Type to hold handle to a thread
 
-extern lf_mutex_t mutex;
-extern lf_cond_t event_q_changed;
 #else
     typedef void lf_mutex_t;
 #endif
@@ -99,34 +97,10 @@ typedef _interval_t interval_t;
  */
 typedef _microstep_t microstep_t;
 
-/**
- * Enter a critical section where logical time and the event queue are guaranteed
- * to not change unless they are changed within the critical section.
- * In platforms with threading support, this normally will be implemented
- * by acquiring a mutex lock. In platforms without threading support,
- * this can be implemented by disabling interrupts.
- * Users of this function must ensure that lf_init_critical_sections() is
- * called first and that lf_critical_section_exit() is called later.
- * @return 0 on success, platform-specific error number otherwise.
- */
-extern int lf_critical_section_enter();
-
-/**
- * Exit the critical section entered with lf_lock_time().
- * @return 0 on success, platform-specific error number otherwise.
- */
-extern int lf_critical_section_exit();
-
-/**
- * Notify any listeners that an event has been created.
- * The caller should call lf_critical_section_enter() before calling this function.
- * @return 0 on success, platform-specific error number otherwise.
- */
-extern int lf_notify_of_event();
 
 // For platforms with threading support, the following functions
 // abstract the API so that the LF runtime remains portable.
-#ifdef NUMBER_OF_WORKERS
+#if defined LF_MULTI_THREADED || defined LF_TRACING
 
 /**
  * @brief Get the number of cores on the host machine.
@@ -274,6 +248,30 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
 #else
 #error "Compiler not supported"
 #endif
+
+#else
+/**
+ * Enter a critical section where logical time and the event queue are guaranteed
+ * to not change unless they are changed within the critical section.
+ * this can be implemented by disabling interrupts.
+ * Users of this function must ensure that lf_init_critical_sections() is
+ * called first and that lf_critical_section_exit() is called later.
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_critical_section_enter();
+
+/**
+ * Exit the critical section entered with lf_lock_time().
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_critical_section_exit();
+
+/**
+ * Notify any listeners that an event has been created.
+ * The caller should call lf_critical_section_enter() before calling this function.
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_notify_of_event();
 
 #endif
 
