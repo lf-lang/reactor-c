@@ -82,7 +82,11 @@ static void advance_level_and_unlock(size_t worker) {
 void lf_sched_init(size_t number_of_workers, sched_params_t* params) {
     // TODO: Instead of making this a no-op, crash the program. If this gets called twice, then that
     // is a bug that should be fixed.
-    if (init_called) return;
+    if(!init_sched_instance(&_lf_sched_instance, number_of_workers, params)) {
+        // Already initialized
+        return;
+    }
+
     worker_states_init(number_of_workers);
     worker_assignments_init(number_of_workers, params);
     init_called = true;

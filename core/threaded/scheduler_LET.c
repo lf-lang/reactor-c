@@ -607,7 +607,11 @@ static void _lf_sched_wait_on_downstream_let(reaction_t* reaction, int worker_nu
  */
 void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
     self_base_t *self = (self_base_t *) reaction->self;
-    
+
+    if(reaction->let) {
+        (reaction->let_setup(self));
+    }
+
     // Wait on any directly downstream LET reactors w
     _lf_sched_wait_on_downstream_let(reaction, worker_number);
     
@@ -667,6 +671,11 @@ void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
     //  because when it is released, we might release a worker advancing time trying to trigger
     //  this very reaction for a future tag. We must be inactive when this worker is released.
     //  If not we could drop a future event.
+
+    // Do cleanup
+    if(reaction->let) {
+        (reaction->let_cleanup(self));
+    }
     
     // FIXME: Can I do this here. Other schedulers do this in an atomic instruction later...
     reaction->status = inactive;

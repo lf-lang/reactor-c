@@ -226,6 +226,8 @@ struct reaction_t {
     reaction_status_t status; // Indicator of whether the reaction is inactive, queued, or running. RUNTIME.
     interval_t deadline;      // Deadline relative to the time stamp for invocation of the reaction. INSTANCE.
 #if SCHEDULER == LET
+    reaction_function_t let_setup;
+    reaction_function_t let_cleanup;
     interval_t let;			  // The logical execution time of this reaction.
     int num_downstream_let_reactors; // Number of direct downstream reactors of this reactipm
     void ** downstream_let_reactors; //Array of pointers to downstream reactors
