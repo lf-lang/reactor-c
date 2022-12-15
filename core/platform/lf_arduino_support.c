@@ -135,10 +135,17 @@ int lf_critical_section_enter() {
     return 0;
 }
 
+/**
+ * @brief Exit a critical section.
+ * If interrupts were enabled when the matching call to lf_critical_section_enter()
+ * occurred, then they will be re-enabled here.
+ */
 int lf_critical_section_exit() {
-    _lf_in_critical_section = false;
-    // FIXME: What will happen if interrupts were not enabled to begin with?
-    interrupts();
+
+    _lf_in_critical_section--;
+    if (_lf_in_critical_section == 0) {
+        interrupts();
+    }
     return 0;
 }
 
