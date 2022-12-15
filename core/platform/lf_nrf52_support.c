@@ -143,11 +143,8 @@ void lf_initialize_clock() {
  *  set appropriately (see `man 2 clock_gettime`).
  */
 int lf_clock_gettime(instant_t* t) {
-    if (t == NULL) {
-        // The t argument address references invalid memory
-        // errno = EFAULT; //TODO: why does this not work with new build process?
-        return -1;
-    }
+    assert(t);
+    
     uint32_t now_us_hi_pre = _lf_time_us_high;
     uint32_t now_us_low = nrfx_timer_capture(&g_lf_timer_inst, NRF_TIMER_CC_CHANNEL1);
     uint32_t now_us_hi_post = _lf_time_us_high; 
@@ -162,23 +159,6 @@ int lf_clock_gettime(instant_t* t) {
     *t = ((instant_t)now_us) * 1000;
 
     return 0;
-}
-
-/**
- * @brief Return whether the critical section has been entered.
- * 
- * @return true if interrupts are currently disabled
- * @return false if interrupts are currently enabled
- */
-bool in_critical_section() {
-    // FIXME: if somehow interrupts get disabled directly (not through the NRF API),
-    // then this will go undetected. A lower-level implementation that uses the ARM
-    // instruction set directly would solve this problem.    
-    if (nrf_nvic_state.__cr_flag != 0) {
-        return true;
-    } else {
-        return false;
-    }
 }
 
 /**
@@ -277,8 +257,6 @@ int lf_sleep_until(instant_t wakeup_time) {
         //  2) no more sleeps AND sleep not interrupted 
     } while(!_lf_async_event && (sleep_next || _lf_sleep_interrupted));
     
-    
-    
     if (!_lf_async_event) {
         return 0;
     } else {
@@ -287,12 +265,22 @@ int lf_sleep_until(instant_t wakeup_time) {
     }
 }
 
+/**
+ * @brief Enter critical section. Let NRF Softdevice handle nesting
+ * FIXME: Will we always have the SoftDevice?
+ * @return int 
+ */
 int lf_critical_section_enter() {
     // disable nvic
     sd_nvic_critical_region_enter(&_lf_nested_region);
     return 0;
 }
 
+/**
+ * @brief Exit citical section. Let NRF SoftDevice handle nesting
+ * 
+ * @return int 
+ */
 int lf_critical_section_exit() {
     // enable nvic
     sd_nvic_critical_region_exit(_lf_nested_region);
