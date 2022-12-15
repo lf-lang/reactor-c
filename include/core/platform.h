@@ -79,7 +79,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #if defined(LF_THREADED) || defined(LF_TRACING)
-// All platforms require some form of mutex support for physical actions.
+// All threaded platforms require some form of mutex support for physical actions.
 typedef _lf_mutex_t lf_mutex_t;          // Type to hold handle to a mutex
 typedef _lf_cond_t lf_cond_t;            // Type to hold handle to a condition variable
 typedef _lf_thread_t lf_thread_t;        // Type to hold handle to a thread
