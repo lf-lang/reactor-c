@@ -40,7 +40,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Keep track of physical actions being entered into the system
 static volatile bool _lf_async_event = false;
 // Keep track of whether we are in a critical section or not
-static volatile bool _lf_in_critical_section = true;
+static volatile int _lf_in_critical_section = 0;
 
 /**
  * Global timing variables:
@@ -59,7 +59,7 @@ static volatile uint32_t _lf_time_us_low_last = 0;
 
 /**
  * @brief Sleep until an absolute time.
- * FIXME: For improved power consumption this should be implemented with a HW timer and interrupts.
+ * TODO: For improved power consumption this should be implemented with a HW timer and interrupts.
  * 
  * @param wakeup int64_t time of wakeup 
  * @return int 0 if successful sleep, -1 if awoken by async event
@@ -110,8 +110,7 @@ void lf_initialize_clock() {}
  * Write the current time in nanoseconds into the location given by the argument.
  * This returns 0 (it never fails, assuming the argument gives a valid memory location).
  * This has to be called at least once per 35 minutes to properly handle overflows of the 32-bit clock.
-
- * FIXME: This is only addressable by setting up interrupts on a timer peripheral to occur at wrap.
+ * TODO: This is only addressable by setting up interrupts on a timer peripheral to occur at wrap.
  */
 int lf_clock_gettime(instant_t* t) {
     
@@ -120,7 +119,7 @@ int lf_clock_gettime(instant_t* t) {
     uint32_t now_us_low = micros();
     
     // Detect whether overflow has occured since last read
-    // FIXME: This assumes that we lf_clock_gettime is called at least once per overflow
+    // TODO: This assumes that we lf_clock_gettime is called at least once per overflow
     if (now_us_low < _lf_time_us_low_last) {
         _lf_time_us_high++;
     }
@@ -129,19 +128,35 @@ int lf_clock_gettime(instant_t* t) {
     return 0;
 }
 
-int lf_critical_section_enter() {
-    noInterrupts();
-    _lf_in_critical_section = true;
+/**
+ * Enter a critical section by disabling interrupts, supports 
+ * nested critical sections.
+*/
+int lf_critical_section_enter() { 
+    if (_lf_in_critical_section++ == 0) {
+        // First nested entry into a critical section.
+        // If interrupts are not initially enabled, then increment again to prevent
+        // TODO: Do we need to check whether the interrupts were enabled to
+        //  begin with? AFAIK there is no Arduino API for that 
+        noInterrupts();
+    }
     return 0;
 }
 
+/**
+ * Leave a critical section. Enable interrupts when we are back to level 0
+*/
 int lf_critical_section_exit() {
-    _lf_in_critical_section = false;
-    // FIXME: What will happen if interrupts were not enabled to begin with?
-    interrupts();
+    if(--_lf_in_critical_section == 0) {
+        interrupts();
+    }
     return 0;
 }
 
+/**
+ * Handle notifications from the runtime of changes to the event queue.
+ * If a sleep is in progress, it should be interrupted.
+*/
 int lf_notify_of_event() {
    _lf_async_event = true;
    return 0;
