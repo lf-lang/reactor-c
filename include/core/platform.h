@@ -328,7 +328,7 @@ extern int lf_sleep_until(instant_t wakeup_time);
 #endif
 
 /**
- * @deprecated version of "lf_seep"
+ * @deprecated version of "lf_sleep"
  */
 DEPRECATED(extern int lf_nanosleep(interval_t sleep_duration));
 

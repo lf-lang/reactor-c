@@ -87,7 +87,6 @@ int lf_sleep_until(instant_t wakeup) {
 
 /**
  * @brief Sleep for a specified duration.
-
  * 
  * @param sleep_duration int64_t nanoseconds representing the desired sleep duration
  * @return int 0 if success. -1 if interrupted by async event.
