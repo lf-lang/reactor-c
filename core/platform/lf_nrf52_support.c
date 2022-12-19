@@ -267,7 +267,6 @@ int lf_sleep_until(instant_t wakeup_time) {
 
 /**
  * @brief Enter critical section. Let NRF Softdevice handle nesting
- * FIXME: Will we always have the SoftDevice?
  * @return int 
  */
 int lf_critical_section_enter() {

@@ -40,7 +40,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Keep track of physical actions being entered into the system
 static volatile bool _lf_async_event = false;
 // Keep track of whether we are in a critical section or not
-static volatile int _lf_in_critical_section = 0;
+static volatile int _lf_num_nested_critical_sections = 0;
 
 /**
  * Global timing variables:
@@ -132,7 +132,7 @@ int lf_clock_gettime(instant_t* t) {
  * nested critical sections.
 */
 int lf_critical_section_enter() { 
-    if (_lf_in_critical_section++ == 0) {
+    if (_lf_num_nested_critical_sections++ == 0) {
         // First nested entry into a critical section.
         // If interrupts are not initially enabled, then increment again to prevent
         // TODO: Do we need to check whether the interrupts were enabled to
@@ -149,8 +149,8 @@ int lf_critical_section_enter() {
  * occurred, then they will be re-enabled here.
  */
 int lf_critical_section_exit() {
-    _lf_in_critical_section--;
-    if (_lf_in_critical_section == 0) {
+    _lf_num_nested_critical_sections--;
+    if (_lf_num_nested_critical_sections == 0) {
         interrupts();
     }
     return 0;
