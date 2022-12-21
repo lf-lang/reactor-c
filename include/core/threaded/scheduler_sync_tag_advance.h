@@ -48,4 +48,4 @@ void logical_tag_complete(tag_t tag_to_send);
 bool _lf_sched_should_stop_locked();
 bool _lf_sched_advance_tag_locked();
 
-#endif
+#endif // LF_C11_THREADS_SUPPORT_H

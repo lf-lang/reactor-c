@@ -32,7 +32,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef LF_MACOS_SUPPORT_H
 #define LF_MACOS_SUPPORT_H
 
-#if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
+#if defined LF_THREADED || defined _LF_TRACE
 #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
 #include "lf_POSIX_threads_support.h"
 #else
@@ -40,6 +40,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 #endif
 
+#define _LF_TIMEOUT ETIMEDOUT
 #include <stdint.h> // For fixed-width integral types
 #include <time.h>   // For CLOCK_MONOTONIC
 

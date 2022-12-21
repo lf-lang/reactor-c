@@ -47,6 +47,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.h"
 
 /**
+ * Global mutex and condition variable.
+*/
+
+lf_mutex_t mutex;
+lf_cond_t event_q_changed;
+
+
+/**
  * The maximum amount of time a worker thread should stall
  * before checking the reaction queue again.
  * This is not currently used.
@@ -61,7 +69,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * to prevent unnecessary delays caused by simply setting up and
  * performing the wait.
  */
-#define MIN_WAIT_TIME USEC(10)
+#define MIN_SLEEP_DURATION USEC(10)
 
 /*
  * A struct representing a barrier in threaded
@@ -88,11 +96,6 @@ typedef struct _lf_tag_advancement_barrier {
  */
 _lf_tag_advancement_barrier _lf_global_tag_advancement_barrier = {0, FOREVER_TAG_INITIALIZER};
 
-// The one and only global mutex lock.
-lf_mutex_t mutex;
-
-// Condition variables used for notification between threads.
-lf_cond_t event_q_changed;
 // A condition variable that notifies threads whenever the number
 // of requestors on the tag barrier reaches zero.
 lf_cond_t global_tag_barrier_requestors_reached_zero;
@@ -286,67 +289,6 @@ int _lf_wait_on_global_tag_barrier(tag_t proposed_tag) {
     return result;
 }
 
-/**
- * Schedule the specified trigger at current_tag.time plus the offset of the
- * specified trigger plus the delay.
- * See reactor.h for documentation.
- */
-trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-    trigger_t* trigger = _lf_action_to_trigger(action);
-    lf_mutex_lock(&mutex);
-    int return_value = _lf_schedule(trigger, extra_delay, token);
-    // Notify the main thread in case it is waiting for physical time to elapse.
-    lf_cond_broadcast(&event_q_changed);
-    lf_mutex_unlock(&mutex);
-    return return_value;
-}
-
-/**
- * Schedule an action to occur with the specified value and time offset
- * with a copy of the specified value.
- * See reactor.h for documentation.
- */
-trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value, size_t length) {
-    if (value == NULL) {
-        return _lf_schedule_token(action, offset, NULL);
-    }
-    trigger_t* trigger = _lf_action_to_trigger(action);
-
-    if (trigger == NULL || trigger->token == NULL || trigger->token->element_size <= 0) {
-        lf_print_error("schedule: Invalid trigger or element size.");
-        return -1;
-    }
-    lf_mutex_lock(&mutex);
-    // Initialize token with an array size of length and a reference count of 0.
-    lf_token_t* token = _lf_initialize_token(trigger->token, length);
-    // Copy the value into the newly allocated memory.
-    memcpy(token->value, value, token->element_size * length);
-    // The schedule function will increment the reference count.
-    trigger_handle_t result = _lf_schedule(trigger, offset, token);
-    // Notify the main thread in case it is waiting for physical time to elapse.
-    lf_cond_signal(&event_q_changed);
-    lf_mutex_unlock(&mutex);
-    return result;
-}
-
-/**
- * Variant of schedule_token that creates a token to carry the specified value.
- * See reactor.h for documentation.
- */
-trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* value, size_t length) {
-    trigger_t* trigger = _lf_action_to_trigger(action);
-
-    lf_mutex_lock(&mutex);
-    lf_token_t* token = create_token(trigger->element_size);
-    token->value = value;
-    token->length = length;
-    int return_value = _lf_schedule(trigger, extra_delay, token);
-    // Notify the main thread in case it is waiting for physical time to elapse.
-    lf_cond_signal(&event_q_changed);
-    lf_mutex_unlock(&mutex);
-    return return_value;
-}
-
 /*
  * Mark the given port's is_present field as true. This is_present field
  * will later be cleaned up by _lf_start_time_step.
@@ -404,7 +346,7 @@ void synchronize_with_other_federates();
  * was placed on the queue if that event time matches or exceeds
  * the specified time.
  *
- * @param logical_time_ns Logical time to wait until physical time matches it.
+ * @param logical_time Logical time to wait until physical time matches it.
  * @param return_if_interrupted If this is false, then wait_util will wait
  *  until physical time matches the logical time regardless of whether new
  *  events get put on the event queue. This is useful, for example, for
@@ -415,10 +357,10 @@ void synchronize_with_other_federates();
  *  the stop time, if one was specified. Return true if the full wait time
  *  was reached.
  */
-bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
-    LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time " PRINTF_TIME, logical_time_ns);
+bool wait_until(instant_t logical_time, lf_cond_t* condition) {
+    LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time " PRINTF_TIME, logical_time);
     bool return_value = true;
-    interval_t wait_until_time_ns = logical_time_ns;
+    interval_t wait_until_time_ns = logical_time;
 #ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized
     // Apply the STA to the logical time
     // Prevent an overflow
@@ -437,9 +379,9 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
         interval_t ns_to_wait = wait_until_time_ns - current_physical_time;
         // We should not wait if that adjusted time is already ahead
         // of logical time.
-        if (ns_to_wait < MIN_WAIT_TIME) {
-            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_WAIT_TIME %lld. Skipping wait.",
-                ns_to_wait, MIN_WAIT_TIME);
+        if (ns_to_wait < MIN_SLEEP_DURATION) {
+            LF_PRINT_DEBUG("Wait time " PRINTF_TIME " is less than MIN_SLEEP_DURATION %lld. Skipping wait.",
+                ns_to_wait, MIN_SLEEP_DURATION);
             return return_value;
         }
 
@@ -461,7 +403,7 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
         LF_PRINT_DEBUG("-------- Clock offset is " PRINTF_TIME " ns.", current_physical_time - _lf_last_reported_unadjusted_physical_time_ns);
         LF_PRINT_DEBUG("-------- Waiting " PRINTF_TIME " ns for physical time to match logical time " PRINTF_TIME ".",
         		ns_to_wait,
-                logical_time_ns - start_time);
+                logical_time - start_time);
 
         // lf_cond_timedwait returns 0 if it is awakened before the timeout.
         // Hence, we want to run it repeatedly until either it returns non-zero or the
@@ -485,7 +427,7 @@ bool wait_until(instant_t logical_time_ns, lf_cond_t* condition) {
             interval_t ns_to_wait = wait_until_time_ns - lf_time_physical();
             // We should not wait if that adjusted time is already ahead
             // of logical time.
-            if (ns_to_wait < MIN_WAIT_TIME) {
+            if (ns_to_wait < MIN_SLEEP_DURATION) {
                 return true;
             }
             LF_PRINT_DEBUG("-------- lf_cond_timedwait claims to have timed out, "
@@ -1227,4 +1169,27 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     } else {
         return -1;
     }
+}
+
+/**
+ * @brief Notification of new event is implemented by broadcasting on a 
+ * condition variable. 
+ */
+void _lf_notify_of_event() {
+    lf_cond_broadcast(&event_q_changed);
+}
+
+/**
+ * @brief Enter critical section by locking the global mutex
+ * 
+ */
+void _lf_critical_section_enter() {
+    lf_mutex_lock(&mutex);
+}
+/**
+ * @brief Leave critical section by unlocking the global mutex
+ * 
+ */
+void _lf_critical_section_exit() {
+    lf_mutex_unlock(&mutex); 
 }

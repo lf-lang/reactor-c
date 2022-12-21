@@ -1,4 +1,4 @@
-/* Linux API support for the C target of Lingua Franca. */
+/* nRF52832 API support for the C target of Lingua Franca. */
 
 /*************
 Copyright (c) 2021, The University of California at Berkeley.
@@ -24,30 +24,64 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
-/** Linux API support for the C target of Lingua Franca.
- *
+/** nrf52 API support for the C target of Lingua Franca.
+ *  
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
+ *  @author{Abhi Gundrala <gundralaa@berkeley.edu>}
+ *  @author{Erling Rennemo Jellum <erling.r.jellum@ntnu.no>}
  */
 
-#ifndef LF_LINUX_SUPPORT_H
-#define LF_LINUX_SUPPORT_H
+#ifndef LF_NRF52_SUPPORT_H
+#define LF_NRF52_SUPPORT_H
 
-#if defined LF_THREADED || defined _LF_TRACE
-    #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
-// (Not C++11 or later) or no threads support
-#include "lf_POSIX_threads_support.h"
-    #else
-#include "lf_C11_threads_support.h"
-    #endif
-#endif
+// This embedded platform has no TTY suport
+#define NO_TTY 
 
 #include <stdint.h> // For fixed-width integral types
 #include <time.h>   // For CLOCK_MONOTONIC
+#include <stdbool.h>
 
-// Use 64-bit times and 32-bit unsigned microsteps
-#include "lf_tag_64_32.h"
+#include <inttypes.h>  // Needed to define PRId64 and PRIu32
+#define PRINTF_TIME "%" PRId64
+#define PRINTF_MICROSTEP "%" PRIu32
+#define PRINTF_TAG "(%" PRId64 ", %" PRIu32 ")"
+
+typedef int64_t _instant_t;
+
+/**
+ * Interval of time.
+ */
+typedef int64_t _interval_t;
+
+/**
+ * Microstep instant.
+ */
+typedef uint32_t _microstep_t;
+
+/**
+ * No mutex or condition variable needed for single threaded NRF platforms
+ */
+typedef void _lf_mutex_t;
+typedef void _lf_cond_var_t;
+
+/**
+ * For user-friendly reporting of time values, the buffer length required.
+ * This is calculated as follows, based on 64-bit time in nanoseconds:
+ * Maximum number of weeks is 15,250
+ * Maximum number of days is 6
+ * Maximum number of hours is 23
+ * Maximum number of minutes is 59
+ * Maximum number of seconds is 59
+ * Maximum number of nanoseconds is 999,999,999
+ * Maximum number of microsteps is 4,294,967,295
+ * Total number of characters for the above is 24.
+ * Text descriptions and spaces add an additional 55,
+ * for a total of 79. One more allows for a null terminator.
+ */
+#define LF_TIME_BUFFER_LENGTH 80
+
 
 // The underlying physical clock for Linux
 #define _LF_CLOCK CLOCK_MONOTONIC
 
-#endif // LF_LINUX_SUPPORT_H
+#endif // LF_nRF52832_SUPPORT_H

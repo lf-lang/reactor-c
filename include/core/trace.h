@@ -66,7 +66,7 @@ typedef enum {
     scheduler_advancing_time_ends
 } trace_event_t;
 
-#ifdef LINGUA_FRANCA_TRACE
+#ifdef LF_TRACE
 
 /**
  * String description of event types.
@@ -256,5 +256,5 @@ void stop_trace(void);
 #define start_trace(...)
 #define stop_trace(...)
 
-#endif // LINGUA_FRANCA_TRACE
+#endif // LF_TRACE
 #endif // TRACE_H
