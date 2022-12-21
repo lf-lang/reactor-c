@@ -78,7 +78,7 @@ static volatile uint32_t _lf_time_us_high = 0;
 uint8_t _lf_nested_region = 0;
 
 /**
- * Handles LF timer interrupts
+ * @brief Handle LF timer interrupts
  * Using lf_timer instance -> id = 3
  * channel2 -> channel for lf_sleep interrupt
  * channel3 -> channel for overflow interrupt

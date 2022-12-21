@@ -42,7 +42,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-// FIXME: We could also use a single flag since this is truly binary
 #if defined(LF_THREADED) && defined(LF_UNTHREADED)
 #error LF_UNTHREADED and LF_THREADED runtime requested
 #endif
