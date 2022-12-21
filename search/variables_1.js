@@ -5,6 +5,7 @@ var searchData=
   ['allocated_2',['allocated',['../structallocation__record__t.html#af527b359cdf811edd20a217fb9279ad2',1,'allocation_record_t']]],
   ['allocations_3',['allocations',['../structself__base__t.html#a851c71d2d9ce4ca9c1811283bcf5f2f9',1,'self_base_t']]],
   ['audio_5fformat_4',['audio_format',['../structlf__wav__format__t.html#a52979bb4f51994d359760876aa1c9db8',1,'lf_wav_format_t']]],
-  ['avail_5',['avail',['../structpqueue__t.html#a2edc2359d1420efc7031677ecd19c1ec',1,'pqueue_t']]],
-  ['average_6',['average',['../structlf__stat__ll.html#a33b66435c85f8a8297e3d39f6d3be218',1,'lf_stat_ll']]]
+  ['authentication_5fenabled_5',['authentication_enabled',['../struct_r_t_i__instance__t.html#a95c74156ee47dc498dd62bec26f436c8',1,'RTI_instance_t']]],
+  ['avail_6',['avail',['../structpqueue__t.html#a2edc2359d1420efc7031677ecd19c1ec',1,'pqueue_t']]],
+  ['average_7',['average',['../structlf__stat__ll.html#a33b66435c85f8a8297e3d39f6d3be218',1,'lf_stat_ll']]]
 ];

@@ -119,6 +119,8 @@ Data Fields</h2></td></tr>
 <tr class="separator:a12e87ac0324a0486f2cc9dde4bf25507"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1466e9453684df457d1385b4ef57618f"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_t_i__instance__t.html#a1466e9453684df457d1385b4ef57618f">clock_sync_exchanges_per_interval</a></td></tr>
 <tr class="separator:a1466e9453684df457d1385b4ef57618f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95c74156ee47dc498dd62bec26f436c8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_t_i__instance__t.html#a95c74156ee47dc498dd62bec26f436c8">authentication_enabled</a></td></tr>
+<tr class="separator:a95c74156ee47dc498dd62bec26f436c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p >Structure that an RTI instance uses to keep track of its own and its corresponding federates' state. </p>
@@ -135,6 +137,21 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p >Boolean indicating that all federates have exited. This gets set to true exactly once before the program exits. It is marked volatile because the write is not guarded by a mutex. The main thread makes this true, then calls shutdown and close on the socket, which will cause accept() to return with an error code in <a class="el" href="rti_8c.html#ac6af5f2343ecf9ed87cdbebd98b94271">respond_to_erroneous_connections()</a>. </p>
+
+</div>
+</div>
+<a id="a95c74156ee47dc498dd62bec26f436c8" name="a95c74156ee47dc498dd62bec26f436c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95c74156ee47dc498dd62bec26f436c8">&#9670;&#160;</a></span>authentication_enabled</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool RTI_instance_t::authentication_enabled</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Boolean indicating that authentication is enabled. </p>
 
 </div>
 </div>

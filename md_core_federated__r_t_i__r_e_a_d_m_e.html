@@ -83,6 +83,12 @@ $(function() {
 <div class="line">make</div>
 <div class="line">sudo make install</div>
 </div><!-- fragment --><p >If you would like to go back to the non-DEBUG mode, you would have to remove all contents of the <code>build</code> folder.</p>
+<p ><b>Note:</b> To enable simple HMAC-based authentication of federates, add <code>-DAUTH=ON</code> option to the cmake command as shown below:</p>
+<div class="fragment"><div class="line">mkdir build &amp;&amp; cd build</div>
+<div class="line">cmake -DAUTH=ON ../</div>
+<div class="line">make</div>
+<div class="line">sudo make install</div>
+</div><!-- fragment --><p >If you would like to go back to non-AUTH mode, you would have to remove all contents of the <code>build</code> folder.</p>
 <p >To build a docker image for the RTI, do </p><div class="fragment"><div class="line">docker build -t rti:rti -f rti.Dockerfile ../../../core/</div>
 </div><!-- fragment --> </div></div><!-- contents -->
 </div><!-- PageDoc -->

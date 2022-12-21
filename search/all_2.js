@@ -19,6 +19,7 @@ var searchData=
   ['audio_5floop_2eh_16',['audio_loop.h',['../audio__loop_8h.html',1,'']]],
   ['audio_5floop_5flinux_2ec_17',['audio_loop_linux.c',['../audio__loop__linux_8c.html',1,'']]],
   ['audio_5floop_5fmac_2ec_18',['audio_loop_mac.c',['../audio__loop__mac_8c.html',1,'']]],
-  ['avail_19',['avail',['../structpqueue__t.html#a2edc2359d1420efc7031677ecd19c1ec',1,'pqueue_t']]],
-  ['average_20',['average',['../structlf__stat__ll.html#a33b66435c85f8a8297e3d39f6d3be218',1,'lf_stat_ll']]]
+  ['authentication_5fenabled_19',['authentication_enabled',['../struct_r_t_i__instance__t.html#a95c74156ee47dc498dd62bec26f436c8',1,'RTI_instance_t']]],
+  ['avail_20',['avail',['../structpqueue__t.html#a2edc2359d1420efc7031677ecd19c1ec',1,'pqueue_t']]],
+  ['average_21',['average',['../structlf__stat__ll.html#a33b66435c85f8a8297e3d39f6d3be218',1,'lf_stat_ll']]]
 ];
