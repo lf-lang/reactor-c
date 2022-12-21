@@ -102,40 +102,158 @@ $(function() {
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="comment">THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</span></div>
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno">   25</span><span class="comment">***************/</span></div>
 <div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span> </div>
-<div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#ifndef LF_WINDOWS_SUPPORT_H</span></div>
-<div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="preprocessor">#define LF_WINDOWS_SUPPORT_H</span></div>
-<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="preprocessor">#include &lt;windows.h&gt;</span></div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#include &lt;process.h&gt;</span></div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">#include &lt;windef.h&gt;</span></div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">#include &lt;stdint.h&gt;</span> <span class="comment">// For fixed-width integral types</span></div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="preprocessor">#if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE</span></div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="preprocessor">#if __STDC_VERSION__ &lt; 201112L || defined (__STDC_NO_THREADS__) </span><span class="comment">// (Not C++11 or later) or no threads support</span></div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span> </div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="keyword">typedef</span> CRITICAL_SECTION <a class="code hl_typedef" href="lf___c11__threads__support_8h.html#af138a3eb9c01e6c750ec727fc3263351">_lf_mutex_t</a>;</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="keyword">typedef</span> <a class="code hl_typedef" href="lf___c11__threads__support_8h.html#af138a3eb9c01e6c750ec727fc3263351">_lf_mutex_t</a> _lf_critical_section_t;</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span> </div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span><span class="keyword">typedef</span> CONDITION_VARIABLE <a class="code hl_typedef" href="lf___c11__threads__support_8h.html#a25f8fa235dd876facebb445897982ee8">_lf_cond_t</a>;</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span><span class="keyword">typedef</span> HANDLE <a class="code hl_typedef" href="lf___c11__threads__support_8h.html#a0c63968b3c6c1797744468f13daf0814">_lf_thread_t</a>;</div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span><span class="preprocessor">#else</span></div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="preprocessor">#include &quot;<a class="code" href="lf___c11__threads__support_8h.html">lf_C11_threads_support.h</a>&quot;</span></div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span> </div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span><span class="comment">// Use 64-bit times and 32-bit unsigned microsteps</span></div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="preprocessor">#include &quot;<a class="code" href="lf__tag__64__32_8h.html">lf_tag_64_32.h</a>&quot;</span></div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span> </div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno"><a class="line" href="lf__windows__support_8h.html#a648705f106259061531b75d252c66f79">   71</a></span><span class="preprocessor">#define _LF_TIMEOUT ETIMEDOUT</span></div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span><span class="preprocessor">#endif </span><span class="comment">// LF_WINDOWS_SUPPORT_H</span></div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">#ifndef LF_WINDOWS_SUPPORT_H</span></div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="preprocessor">#define LF_WINDOWS_SUPPORT_H</span></div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="preprocessor">#include &lt;windows.h&gt;</span></div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="preprocessor">#include &lt;process.h&gt;</span></div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="preprocessor">#include &lt;windef.h&gt;</span></div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="preprocessor">#include &lt;stdint.h&gt;</span> <span class="comment">// For fixed-width integral types</span></div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno"><a class="line" href="lf__windows__support_8h.html#a648705f106259061531b75d252c66f79">   50</a></span><span class="preprocessor">#define _LF_TIMEOUT ETIMEDOUT</span></div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="comment">// Use 64-bit times and 32-bit unsigned microsteps</span></div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span><span class="preprocessor">#include &quot;<a class="code" href="lf__tag__64__32_8h.html">lf_tag_64_32.h</a>&quot;</span></div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span> </div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="comment">// Forward declare lf_clock_gettime which is needed by lf_cond_timedwait</span></div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span><span class="keyword">extern</span> <span class="keywordtype">int</span> <a class="code hl_function" href="lf__windows__support_8h.html#abe1eb8cc81def8fdc1e34f5d99bd42b7">lf_clock_gettime</a>(<a class="code hl_typedef" href="lf__arduino__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">_instant_t</a>* t);</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span><span class="preprocessor">#if defined LF_THREADED || defined _LF_TRACE</span></div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="preprocessor">#if __STDC_VERSION__ &lt; 201112L || defined (__STDC_NO_THREADS__) </span><span class="comment">// (Not C++11 or later) or no threads support</span></div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="comment"></span>typedef CRITICAL_SECTION _lf_mutex_t;</div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span><span class="keyword">typedef</span> <a class="code hl_typedef" href="lf___c11__threads__support_8h.html#af138a3eb9c01e6c750ec727fc3263351">_lf_mutex_t</a> _lf_critical_section_t;</div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span> </div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span><span class="keyword">typedef</span> CONDITION_VARIABLE <a class="code hl_typedef" href="lf___c11__threads__support_8h.html#a25f8fa235dd876facebb445897982ee8">_lf_cond_t</a>;</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span><span class="keyword">typedef</span> HANDLE <a class="code hl_typedef" href="lf___c11__threads__support_8h.html#a0c63968b3c6c1797744468f13daf0814">_lf_thread_t</a>;</div>
 <div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span> </div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span><span class="keyword">static</span> <span class="keywordtype">int</span> lf_thread_create(<a class="code hl_typedef" href="lf___c11__threads__support_8h.html#a0c63968b3c6c1797744468f13daf0814">_lf_thread_t</a>* thread, <span class="keywordtype">void</span> *(*lf_thread) (<span class="keywordtype">void</span> *), <span class="keywordtype">void</span>* arguments) {</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    uintptr_t handle = _beginthreadex(NULL, 0, lf_thread, arguments, 0, NULL);</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    *thread = (HANDLE)handle;</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    <span class="keywordflow">if</span>(handle == 0){</div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>        <span class="keywordflow">return</span> errno;</div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    }<span class="keywordflow">else</span>{</div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span>        <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    }</div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>}</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span> </div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span><span class="keyword">static</span> <span class="keywordtype">int</span> lf_thread_join(<a class="code hl_typedef" href="lf___c11__threads__support_8h.html#a0c63968b3c6c1797744468f13daf0814">_lf_thread_t</a> thread, <span class="keywordtype">void</span>** thread_return) {</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>    DWORD retvalue = WaitForSingleObject(thread, INFINITE);</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span>    <span class="keywordflow">if</span>(retvalue == WAIT_FAILED){</div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span>        <span class="keywordflow">return</span> EINVAL;</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    }</div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>}</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span> </div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span><span class="keyword">static</span> <span class="keywordtype">int</span> lf_mutex_init(_lf_critical_section_t* critical_section) {</div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span>    <span class="comment">// Set up a recursive mutex</span></div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span>    InitializeCriticalSection((PCRITICAL_SECTION)critical_section);</div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span>    <span class="keywordflow">if</span>(critical_section != NULL){</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno">  115</span>        <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span>    }<span class="keywordflow">else</span>{</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span>        <span class="keywordflow">return</span> 1;</div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno">  118</span>    }</div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno">  119</span>}</div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno">  120</span> </div>
+<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span><span class="keyword">static</span> <span class="keywordtype">int</span> lf_mutex_lock(_lf_critical_section_t* critical_section) {</div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span>    <span class="comment">// The following Windows API does not return a value. It can</span></div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span>    <span class="comment">// raise a EXCEPTION_POSSIBLE_DEADLOCK. See synchapi.h.</span></div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span>    EnterCriticalSection((PCRITICAL_SECTION)critical_section);</div>
+<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span>    <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span>}</div>
+<div class="line"><a id="l00138" name="l00138"></a><span class="lineno">  138</span> </div>
+<div class="line"><a id="l00144" name="l00144"></a><span class="lineno">  144</span><span class="keyword">static</span> <span class="keywordtype">int</span> lf_mutex_unlock(_lf_critical_section_t* critical_section) {</div>
+<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span>    <span class="comment">// The following Windows API does not return a value.</span></div>
+<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span>    LeaveCriticalSection((PCRITICAL_SECTION)critical_section);</div>
+<div class="line"><a id="l00147" name="l00147"></a><span class="lineno">  147</span>    <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00148" name="l00148"></a><span class="lineno">  148</span>}</div>
+<div class="line"><a id="l00149" name="l00149"></a><span class="lineno">  149</span> </div>
+<div class="line"><a id="l00155" name="l00155"></a><span class="lineno">  155</span><span class="keyword">static</span> <span class="keywordtype">int</span> lf_cond_init(<a class="code hl_typedef" href="lf___c11__threads__support_8h.html#a25f8fa235dd876facebb445897982ee8">_lf_cond_t</a>* cond) {</div>
+<div class="line"><a id="l00156" name="l00156"></a><span class="lineno">  156</span>    <span class="comment">// The following Windows API does not return a value.</span></div>
+<div class="line"><a id="l00157" name="l00157"></a><span class="lineno">  157</span>    InitializeConditionVariable((PCONDITION_VARIABLE)cond);</div>
+<div class="line"><a id="l00158" name="l00158"></a><span class="lineno">  158</span>    <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00159" name="l00159"></a><span class="lineno">  159</span>}</div>
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span> </div>
+<div class="line"><a id="l00166" name="l00166"></a><span class="lineno">  166</span><span class="keyword">static</span> <span class="keywordtype">int</span> lf_cond_broadcast(<a class="code hl_typedef" href="lf___c11__threads__support_8h.html#a25f8fa235dd876facebb445897982ee8">_lf_cond_t</a>* cond) {</div>
+<div class="line"><a id="l00167" name="l00167"></a><span class="lineno">  167</span>    <span class="comment">// The following Windows API does not return a value.</span></div>
+<div class="line"><a id="l00168" name="l00168"></a><span class="lineno">  168</span>    WakeAllConditionVariable((PCONDITION_VARIABLE)cond);</div>
+<div class="line"><a id="l00169" name="l00169"></a><span class="lineno">  169</span>    <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00170" name="l00170"></a><span class="lineno">  170</span>}</div>
+<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span> </div>
+<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span><span class="keyword">static</span> <span class="keywordtype">int</span> lf_cond_signal(<a class="code hl_typedef" href="lf___c11__threads__support_8h.html#a25f8fa235dd876facebb445897982ee8">_lf_cond_t</a>* cond) {</div>
+<div class="line"><a id="l00178" name="l00178"></a><span class="lineno">  178</span>    <span class="comment">// The following Windows API does not return a value.</span></div>
+<div class="line"><a id="l00179" name="l00179"></a><span class="lineno">  179</span>    WakeConditionVariable((PCONDITION_VARIABLE)cond);</div>
+<div class="line"><a id="l00180" name="l00180"></a><span class="lineno">  180</span>    <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00181" name="l00181"></a><span class="lineno">  181</span>}</div>
+<div class="line"><a id="l00182" name="l00182"></a><span class="lineno">  182</span> </div>
+<div class="line"><a id="l00189" name="l00189"></a><span class="lineno">  189</span><span class="keyword">static</span> <span class="keywordtype">int</span> lf_cond_wait(<a class="code hl_typedef" href="lf___c11__threads__support_8h.html#a25f8fa235dd876facebb445897982ee8">_lf_cond_t</a>* cond, _lf_critical_section_t* critical_section) {</div>
+<div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>    <span class="comment">// According to synchapi.h, the following Windows API returns 0 on failure,</span></div>
+<div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>    <span class="comment">// and non-zero on success.</span></div>
+<div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>    <span class="keywordtype">int</span> return_value =</div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>     (int)SleepConditionVariableCS(</div>
+<div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span>         (PCONDITION_VARIABLE)cond,</div>
+<div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>         (PCRITICAL_SECTION)critical_section,</div>
+<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span>         INFINITE</div>
+<div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>     );</div>
+<div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>     <span class="keywordflow">switch</span> (return_value) {</div>
+<div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>        <span class="keywordflow">case</span> 0:</div>
+<div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>            <span class="comment">// Error</span></div>
+<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>            <span class="keywordflow">return</span> 1;</div>
+<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>            <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span> </div>
+<div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>        <span class="keywordflow">default</span>:</div>
+<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>            <span class="comment">// Success</span></div>
+<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>            <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>            <span class="keywordflow">break</span>;</div>
+<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>     }</div>
+<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>}</div>
+<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span> </div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span><span class="keyword">static</span> <span class="keywordtype">int</span> lf_cond_timedwait(<a class="code hl_typedef" href="lf___c11__threads__support_8h.html#a25f8fa235dd876facebb445897982ee8">_lf_cond_t</a>* cond, _lf_critical_section_t* critical_section, <a class="code hl_typedef" href="lf__arduino__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">_instant_t</a> absolute_time_ns) {</div>
+<div class="line"><a id="l00219" name="l00219"></a><span class="lineno">  219</span>    <span class="comment">// Convert the absolute time to a relative time</span></div>
+<div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span>    <a class="code hl_typedef" href="lf__arduino__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">_instant_t</a> current_time_ns;</div>
+<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span>    <a class="code hl_function" href="lf__windows__support_8h.html#abe1eb8cc81def8fdc1e34f5d99bd42b7">lf_clock_gettime</a>(&amp;current_time_ns);</div>
+<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>    <a class="code hl_typedef" href="lf__arduino__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">_interval_t</a> relative_time_ns = (absolute_time_ns - current_time_ns);</div>
+<div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span>    <span class="keywordflow">if</span> (relative_time_ns &lt;= 0) {</div>
+<div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span>      <span class="comment">// physical time has already caught up sufficiently and we do not need to wait anymore</span></div>
+<div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>      <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00226" name="l00226"></a><span class="lineno">  226</span>    }</div>
+<div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span> </div>
+<div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span>    <span class="comment">// convert ns to ms and round up to closest full integer</span></div>
+<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span>    DWORD relative_time_ms = (relative_time_ns + 999999LL) / 1000000LL;</div>
+<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span> </div>
+<div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>    <span class="keywordtype">int</span> return_value =</div>
+<div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span>     (int)SleepConditionVariableCS(</div>
+<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span>         (PCONDITION_VARIABLE)cond,</div>
+<div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span>         (PCRITICAL_SECTION)critical_section,</div>
+<div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span>         relative_time_ms</div>
+<div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span>     );</div>
+<div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span>    <span class="keywordflow">if</span> (return_value == 0) {</div>
+<div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>      <span class="comment">// Error</span></div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>      <span class="keywordflow">if</span> (GetLastError() == ERROR_TIMEOUT) {</div>
+<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span>        <span class="keywordflow">return</span> <a class="code hl_define" href="lf__windows__support_8h.html#a648705f106259061531b75d252c66f79">_LF_TIMEOUT</a>;</div>
+<div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span>      }</div>
+<div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span>      <span class="keywordflow">return</span> 1;</div>
+<div class="line"><a id="l00243" name="l00243"></a><span class="lineno">  243</span>    }</div>
+<div class="line"><a id="l00244" name="l00244"></a><span class="lineno">  244</span> </div>
+<div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span>    <span class="comment">// Success</span></div>
+<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span>    <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span>}</div>
+<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span><span class="preprocessor">#else</span></div>
+<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span><span class="preprocessor">#include &quot;<a class="code" href="lf___c11__threads__support_8h.html">lf_C11_threads_support.h</a>&quot;</span></div>
+<div class="line"><a id="l00250" name="l00250"></a><span class="lineno">  250</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span> </div>
+<div class="line"><a id="l00253" name="l00253"></a><span class="lineno">  253</span> </div>
+<div class="line"><a id="l00254" name="l00254"></a><span class="lineno">  254</span> </div>
+<div class="line"><a id="l00255" name="l00255"></a><span class="lineno">  255</span><span class="preprocessor">#endif </span><span class="comment">// LF_WINDOWS_SUPPORT_H</span></div>
+<div class="line"><a id="l00256" name="l00256"></a><span class="lineno">  256</span> </div>
 <div class="ttc" id="alf___c11__threads__support_8h_html"><div class="ttname"><a href="lf___c11__threads__support_8h.html">lf_C11_threads_support.h</a></div></div>
 <div class="ttc" id="alf___c11__threads__support_8h_html_a0c63968b3c6c1797744468f13daf0814"><div class="ttname"><a href="lf___c11__threads__support_8h.html#a0c63968b3c6c1797744468f13daf0814">_lf_thread_t</a></div><div class="ttdeci">thrd_t _lf_thread_t</div><div class="ttdef"><b>Definition:</b> lf_C11_threads_support.h:41</div></div>
 <div class="ttc" id="alf___c11__threads__support_8h_html_a25f8fa235dd876facebb445897982ee8"><div class="ttname"><a href="lf___c11__threads__support_8h.html#a25f8fa235dd876facebb445897982ee8">_lf_cond_t</a></div><div class="ttdeci">cnd_t _lf_cond_t</div><div class="ttdef"><b>Definition:</b> lf_C11_threads_support.h:40</div></div>
 <div class="ttc" id="alf___c11__threads__support_8h_html_af138a3eb9c01e6c750ec727fc3263351"><div class="ttname"><a href="lf___c11__threads__support_8h.html#af138a3eb9c01e6c750ec727fc3263351">_lf_mutex_t</a></div><div class="ttdeci">mtx_t _lf_mutex_t</div><div class="ttdef"><b>Definition:</b> lf_C11_threads_support.h:39</div></div>
+<div class="ttc" id="alf__arduino__support_8h_html_a5903c83266094ca1bc1b5cbd4c3bdad8"><div class="ttname"><a href="lf__arduino__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">_interval_t</a></div><div class="ttdeci">int64_t _interval_t</div><div class="ttdef"><b>Definition:</b> lf_arduino_support.h:113</div></div>
+<div class="ttc" id="alf__arduino__support_8h_html_af8f0f3e156808b8af18129b60baf8ceb"><div class="ttname"><a href="lf__arduino__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">_instant_t</a></div><div class="ttdeci">int64_t _instant_t</div><div class="ttdef"><b>Definition:</b> lf_arduino_support.h:108</div></div>
 <div class="ttc" id="alf__tag__64__32_8h_html"><div class="ttname"><a href="lf__tag__64__32_8h.html">lf_tag_64_32.h</a></div></div>
+<div class="ttc" id="alf__windows__support_8h_html_a648705f106259061531b75d252c66f79"><div class="ttname"><a href="lf__windows__support_8h.html#a648705f106259061531b75d252c66f79">_LF_TIMEOUT</a></div><div class="ttdeci">#define _LF_TIMEOUT</div><div class="ttdef"><b>Definition:</b> lf_windows_support.h:50</div></div>
+<div class="ttc" id="alf__windows__support_8h_html_abe1eb8cc81def8fdc1e34f5d99bd42b7"><div class="ttname"><a href="lf__windows__support_8h.html#abe1eb8cc81def8fdc1e34f5d99bd42b7">lf_clock_gettime</a></div><div class="ttdeci">int lf_clock_gettime(_instant_t *t)</div><div class="ttdef"><b>Definition:</b> lf_arduino_support.c:114</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

@@ -85,26 +85,45 @@ $(function() {
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
+<tr class="memitem:a2cb0837301dbf928d9e6a4753e0fb52e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#a2cb0837301dbf928d9e6a4753e0fb52e">LF_TIMEOUT</a>&#160;&#160;&#160;<a class="el" href="lf___c11__threads__support_8h.html#a648705f106259061531b75d252c66f79">_LF_TIMEOUT</a></td></tr>
+<tr class="separator:a2cb0837301dbf928d9e6a4753e0fb52e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af67a6ff1a54b41b2a6e4bd36bc47b118"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#af67a6ff1a54b41b2a6e4bd36bc47b118">DEPRECATED</a>(X)&#160;&#160;&#160;X</td></tr>
 <tr class="separator:af67a6ff1a54b41b2a6e4bd36bc47b118"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:a0c4810f46596400a763cfe99b3cfa7b1"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="lf__arduino__support_8h.html#a8dc1b09b4ed380958dc996a794570333">_instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a></td></tr>
+<tr class="memitem:ad7c2ee72327071ecc11ecb5787fc4a37"><td class="memItemLeft" align="right" valign="top">typedef void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a></td></tr>
+<tr class="separator:ad7c2ee72327071ecc11ecb5787fc4a37"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0c4810f46596400a763cfe99b3cfa7b1"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="lf__arduino__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">_instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a></td></tr>
 <tr class="separator:a0c4810f46596400a763cfe99b3cfa7b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a25b148cb4bef9a108b00306879433f7b"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="lf__arduino__support_8h.html#ae63bd76dea12babdd4464487434b9a49">_interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a></td></tr>
+<tr class="memitem:a25b148cb4bef9a108b00306879433f7b"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="lf__arduino__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">_interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a></td></tr>
 <tr class="separator:a25b148cb4bef9a108b00306879433f7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aff94b88998d5bf37870fb520ad82526d"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="lf__arduino__support_8h.html#a6fa587bab59881a6741957a2c1a13798">_microstep_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#aff94b88998d5bf37870fb520ad82526d">microstep_t</a></td></tr>
 <tr class="separator:aff94b88998d5bf37870fb520ad82526d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a826d1582ddab93857dddcf900df4212f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#a826d1582ddab93857dddcf900df4212f">lf_critical_section_enter</a> ()</td></tr>
+<tr class="memdesc:a826d1582ddab93857dddcf900df4212f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter critical section. Let NRF Softdevice handle nesting.  <a href="platform_8h.html#a826d1582ddab93857dddcf900df4212f">More...</a><br /></td></tr>
+<tr class="separator:a826d1582ddab93857dddcf900df4212f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15016241de6a4f3c35115f39e0695084"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#a15016241de6a4f3c35115f39e0695084">lf_critical_section_exit</a> ()</td></tr>
+<tr class="memdesc:a15016241de6a4f3c35115f39e0695084"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exit a critical section. If interrupts were enabled when the matching call to <a class="el" href="lf__arduino__support_8c.html#a826d1582ddab93857dddcf900df4212f">lf_critical_section_enter()</a> occurred, then they will be re-enabled here.  <a href="platform_8h.html#a15016241de6a4f3c35115f39e0695084">More...</a><br /></td></tr>
+<tr class="separator:a15016241de6a4f3c35115f39e0695084"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaab97e9e3cf7021063a14698cca59adc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#aaab97e9e3cf7021063a14698cca59adc">lf_notify_of_event</a> ()</td></tr>
+<tr class="memdesc:aaab97e9e3cf7021063a14698cca59adc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set global flag to true so that sleep will return when woken.  <a href="platform_8h.html#aaab97e9e3cf7021063a14698cca59adc">More...</a><br /></td></tr>
+<tr class="separator:aaab97e9e3cf7021063a14698cca59adc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a57bdb87e60df2b275d11a5d4b9e36f87"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#a57bdb87e60df2b275d11a5d4b9e36f87">lf_initialize_clock</a> (void)</td></tr>
 <tr class="separator:a57bdb87e60df2b275d11a5d4b9e36f87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a40772fc7ae095d3f85d990620952addc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#a40772fc7ae095d3f85d990620952addc">lf_clock_gettime</a> (<a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> *t)</td></tr>
 <tr class="separator:a40772fc7ae095d3f85d990620952addc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8363dad84fd8ae522f4c492f6f5732e1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#a8363dad84fd8ae522f4c492f6f5732e1">lf_nanosleep</a> (<a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> requested_time)</td></tr>
-<tr class="separator:a8363dad84fd8ae522f4c492f6f5732e1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a43894d4caf7e2fc1e75b9b49d7285d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#a9a43894d4caf7e2fc1e75b9b49d7285d">lf_sleep</a> (<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> sleep_duration)</td></tr>
+<tr class="memdesc:a9a43894d4caf7e2fc1e75b9b49d7285d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sleep for a specified duration.  <a href="platform_8h.html#a9a43894d4caf7e2fc1e75b9b49d7285d">More...</a><br /></td></tr>
+<tr class="separator:a9a43894d4caf7e2fc1e75b9b49d7285d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19bc7b9be0caeb57f9655ce302622463"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#a19bc7b9be0caeb57f9655ce302622463">lf_sleep_until</a> (<a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> wakeup_time)</td></tr>
+<tr class="memdesc:a19bc7b9be0caeb57f9655ce302622463"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sleep until the given wakeup time.  <a href="platform_8h.html#a19bc7b9be0caeb57f9655ce302622463">More...</a><br /></td></tr>
+<tr class="separator:a19bc7b9be0caeb57f9655ce302622463"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa321c5ff2c1afca6cd771e8602972052"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#aa321c5ff2c1afca6cd771e8602972052">DEPRECATED</a> (extern int <a class="el" href="lf__linux__support_8c.html#a50ad9d5da851a0aeaf45ad759c02bbd1">lf_nanosleep</a>(<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> sleep_duration))</td></tr>
+<tr class="separator:aa321c5ff2c1afca6cd771e8602972052"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="af67a6ff1a54b41b2a6e4bd36bc47b118" name="af67a6ff1a54b41b2a6e4bd36bc47b118"></a>
@@ -117,12 +136,26 @@ Functions</h2></td></tr>
           <td class="memname">#define DEPRECATED</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
-          <td class="paramname">X</td><td>)</td>
+          <td class="paramname">X </td><td>)</td>
           <td>&#160;&#160;&#160;X</td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p >Macros for marking function as deprecated </p>
+
+</div>
+</div>
+<a id="a2cb0837301dbf928d9e6a4753e0fb52e" name="a2cb0837301dbf928d9e6a4753e0fb52e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2cb0837301dbf928d9e6a4753e0fb52e">&#9670;&#160;</a></span>LF_TIMEOUT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LF_TIMEOUT&#160;&#160;&#160;<a class="el" href="lf___c11__threads__support_8h.html#a648705f106259061531b75d252c66f79">_LF_TIMEOUT</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -134,12 +167,11 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef <a class="el" href="lf__arduino__support_8h.html#a8dc1b09b4ed380958dc996a794570333">_instant_t</a> <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a></td>
+          <td class="memname">typedef <a class="el" href="lf__arduino__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">_instant_t</a> <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Platform API support for the C target of Lingua Franca. This file detects the platform on which the C compiler is being run (e.g. Windows, Linux, Mac) and conditionally includes platform-specific files that define core datatypes and function signatures for Lingua Franca. For example, the type instant_t represents a time value (long long on most of the platforms). The conditionally included files define a type _instant_t, and this file defines the type instant_t to be whatever the included defines _instant_t to be. All platform-independent code in Lingua Franca, therefore, should use the type instant_t for time values.</p>
-<dl class="section author"><dt>Author</dt><dd>{Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} Time instant. Both physical and logical times are represented using this typedef. </dd></dl>
+<p >Time instant. Both physical and logical times are represented using this typedef. </p>
 
 </div>
 </div>
@@ -150,11 +182,27 @@ Functions</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef <a class="el" href="lf__arduino__support_8h.html#ae63bd76dea12babdd4464487434b9a49">_interval_t</a> <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a></td>
+          <td class="memname">typedef <a class="el" href="lf__arduino__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">_interval_t</a> <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 <p >Interval of time. </p>
+
+</div>
+</div>
+<a id="ad7c2ee72327071ecc11ecb5787fc4a37" name="ad7c2ee72327071ecc11ecb5787fc4a37"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad7c2ee72327071ecc11ecb5787fc4a37">&#9670;&#160;</a></span>lf_mutex_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef void <a class="el" href="platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Platform API support for the C target of Lingua Franca. This file detects the platform on which the C compiler is being run (e.g. Windows, Linux, Mac) and conditionally includes platform-specific files that define core datatypes and function signatures for Lingua Franca. For example, the type instant_t represents a time value (long long on most of the platforms). The conditionally included files define a type _instant_t, and this file defines the type instant_t to be whatever the included defines _instant_t to be. All platform-independent code in Lingua Franca, therefore, should use the type instant_t for time values.</p>
+<dl class="section author"><dt>Author</dt><dd>{Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd></dl>
 
 </div>
 </div>
@@ -174,6 +222,25 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="aa321c5ff2c1afca6cd771e8602972052" name="aa321c5ff2c1afca6cd771e8602972052"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa321c5ff2c1afca6cd771e8602972052">&#9670;&#160;</a></span>DEPRECATED()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">DEPRECATED </td>
+          <td>(</td>
+          <td class="paramtype">extern int &#160;</td>
+          <td class="paramname"><em>lf_nanosleep</em>interval_t sleep_duration</td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<dl class="deprecated"><dt><b><a class="el" href="deprecated.html#_deprecated000001">Deprecated:</a></b></dt><dd>version of "lf_sleep" </dd></dl>
+
+</div>
+</div>
 <a id="a40772fc7ae095d3f85d990620952addc" name="a40772fc7ae095d3f85d990620952addc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a40772fc7ae095d3f85d990620952addc">&#9670;&#160;</a></span>lf_clock_gettime()</h2>
 
@@ -192,12 +259,60 @@ Functions</h2></td></tr>
 <p >Fetch the value of an internal (and platform-specific) physical clock and store it in <code>t</code>.</p>
 <p >Ideally, the underlying platform clock should be monotonic. However, the core lib tries to enforce monotonicity at higher level APIs (see <a class="el" href="tag_8h.html">tag.h</a>).</p>
 <dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure</dd></dl>
-<p>Fetch the value of _LF_CLOCK (see <a class="el" href="lf__arduino__support_8h.html">lf_arduino_support.h</a>) and store it in t. The timestamp value in 't' will be physical Arduino time in microseconds, which starts once Arduino boots up.</p>
-<dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. In case of failure, errno will be set appropriately.</dd></dl>
+<p>Write the current time in nanoseconds into the location given by the argument. This returns 0 (it never fails, assuming the argument gives a valid memory location). This has to be called at least once per 35 minutes to properly handle overflows of the 32-bit clock. TODO: This is only addressable by setting up interrupts on a timer peripheral to occur at wrap.</p>
+<p >Fetch the value of _LF_CLOCK (see <a class="el" href="lf__linux__support_8h.html">lf_linux_support.h</a>) and store it in *t. The timestamp value in 't' will will be the number of nanoseconds since the board was reset. The timers on the board have only 32 bits and their resolution is in microseconds, so the time returned will always be an integer number of microseconds. Moreover, after about 71 minutes of operation, the timer overflows.</p>
+<p >The function reads out the upper word before and after reading the timer. If the upper word has changed (i.e. there was an overflow in between), we cannot simply combine them. We read once more to be sure that we read after the overflow.</p>
+<dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. In case of failure, errno will be set appropriately (see <code>man 2 clock_gettime</code>).</dd></dl>
 <p>Fetch the value of _LF_CLOCK (see <a class="el" href="lf__linux__support_8h.html">lf_linux_support.h</a>) and store it in tp. The timestamp value in 't' will always be epoch time, which is the number of nanoseconds since January 1st, 1970.</p>
 <dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. In case of failure, errno will be set appropriately (see <code>man 2 clock_gettime</code>).</dd></dl>
 <p>Fetch the value of the physical clock (see <a class="el" href="lf__windows__support_8h.html">lf_windows_support.h</a>) and store it in t. The timestamp value in 't' will be based on QueryPerformanceCounter, adjusted to reflect time passed in nanoseconds, on most modern Windows systems.</p>
 <dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. In case of failure, errno will be set to EINVAL or EFAULT. </dd></dl>
+
+</div>
+</div>
+<a id="a826d1582ddab93857dddcf900df4212f" name="a826d1582ddab93857dddcf900df4212f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a826d1582ddab93857dddcf900df4212f">&#9670;&#160;</a></span>lf_critical_section_enter()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lf_critical_section_enter </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enter critical section. Let NRF Softdevice handle nesting. </p>
+<p >Enter a critical section where logical time and the event queue are guaranteed to not change unless they are changed within the critical section. this can be implemented by disabling interrupts. Users of this function must ensure that lf_init_critical_sections() is called first and that <a class="el" href="lf__nrf52__support_8c.html#a15016241de6a4f3c35115f39e0695084" title="Exit citical section. Let NRF SoftDevice handle nesting.">lf_critical_section_exit()</a> is called later. </p><dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise.</dd></dl>
+<p>Enter a critical section by disabling interrupts, supports nested critical sections.</p>
+<dl class="section return"><dt>Returns</dt><dd>int</dd></dl>
+<p>Enter critical section. Let NRF Softdevice handle nesting.</p>
+<dl class="section return"><dt>Returns</dt><dd>int </dd></dl>
+
+</div>
+</div>
+<a id="a15016241de6a4f3c35115f39e0695084" name="a15016241de6a4f3c35115f39e0695084"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15016241de6a4f3c35115f39e0695084">&#9670;&#160;</a></span>lf_critical_section_exit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lf_critical_section_exit </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Exit a critical section. If interrupts were enabled when the matching call to <a class="el" href="lf__arduino__support_8c.html#a826d1582ddab93857dddcf900df4212f">lf_critical_section_enter()</a> occurred, then they will be re-enabled here. </p>
+<p >Exit the critical section entered with lf_lock_time(). </p><dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise.</dd></dl>
+<p>Exit a critical section. If interrupts were enabled when the matching call to <a class="el" href="lf__arduino__support_8c.html#a826d1582ddab93857dddcf900df4212f">lf_critical_section_enter()</a> occurred, then they will be re-enabled here.</p>
+<dl class="section return"><dt>Returns</dt><dd>int </dd></dl>
 
 </div>
 </div>
@@ -222,41 +337,123 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a8363dad84fd8ae522f4c492f6f5732e1" name="a8363dad84fd8ae522f4c492f6f5732e1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8363dad84fd8ae522f4c492f6f5732e1">&#9670;&#160;</a></span>lf_nanosleep()</h2>
+<a id="aaab97e9e3cf7021063a14698cca59adc" name="aaab97e9e3cf7021063a14698cca59adc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaab97e9e3cf7021063a14698cca59adc">&#9670;&#160;</a></span>lf_notify_of_event()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int lf_nanosleep </td>
+          <td class="memname">int lf_notify_of_event </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td>
-          <td class="paramname"><em>requested_time</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Pause execution for a number of nanoseconds.</p>
+
+<p>Set global flag to true so that sleep will return when woken. </p>
+<p >Notify any listeners that an event has been created. The caller should call <a class="el" href="lf__nrf52__support_8c.html#a826d1582ddab93857dddcf900df4212f" title="Enter critical section. Let NRF Softdevice handle nesting.">lf_critical_section_enter()</a> before calling this function. </p><dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise.</dd></dl>
+<p>Handle notifications from the runtime of changes to the event queue. If a sleep is in progress, it should be interrupted.</p>
+<dl class="section return"><dt>Returns</dt><dd>int </dd></dl>
+
+</div>
+</div>
+<a id="a9a43894d4caf7e2fc1e75b9b49d7285d" name="a9a43894d4caf7e2fc1e75b9b49d7285d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9a43894d4caf7e2fc1e75b9b49d7285d">&#9670;&#160;</a></span>lf_sleep()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lf_sleep </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td>
+          <td class="paramname"><em>sleep_duration</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sleep for a specified duration. </p>
+<p >Pause execution for a given duration.</p>
 <dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure.</dd></dl>
-<p>Arduino API support for the C target of Lingua Franca.</p>
-<dl class="section author"><dt>Author</dt><dd>{Anirudh Rengarajan <a href="#" onclick="location.href='mai'+'lto:'+'are'+'ng'+'ara'+'ja'+'n@b'+'er'+'kel'+'ey'+'.ed'+'u'; return false;">areng<span class="obfuscator">.nosp@m.</span>araj<span class="obfuscator">.nosp@m.</span>an@be<span class="obfuscator">.nosp@m.</span>rkel<span class="obfuscator">.nosp@m.</span>ey.ed<span class="obfuscator">.nosp@m.</span>u</a>} Pause execution for a number of microseconds.</dd></dl>
-<p>This function works very accurately in the range from 3 to 16383 microseconds. We cannot assure that delayMicroseconds will perform precisely for smaller delay-times. Larger delay times may actually delay for an extremely brief time.</p>
-<dl class="section return"><dt>Returns</dt><dd>0 always.</dd></dl>
-<p>Linux API support for the C target of Lingua Franca.</p>
-<dl class="section author"><dt>Author</dt><dd>{Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} Pause execution for a number of nanoseconds.</dd></dl>
-<p>A Linux-specific clock_nanosleep is used underneath that is supposedly more accurate.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sleep_duration</td><td>int64_t nanoseconds representing the desired sleep duration </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>int 0 if success. -1 if interrupted by async event.</dd></dl>
+<p>Pause execution for a number of nanoseconds.</p>
+<p >A Linux-specific clock_nanosleep is used underneath that is supposedly more accurate.</p>
 <dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. In case of failure, errno will be set appropriately (see <code>man 2 clock_nanosleep</code>).</dd></dl>
-<p>MacOS API support for the C target of Lingua Franca.</p>
-<dl class="section author"><dt>Author</dt><dd>{Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} Pause execution for a number of nanoseconds.</dd></dl>
+<p>Pause execution for a number of nanoseconds.</p>
 <dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. In case of failure, errno will be set appropriately (see <code>man 2 clock_nanosleep</code>).</dd></dl>
+<p>Sleep for a specified duration.</p>
+<p >This implementation performs a busy-wait because it is unclear what will happen if this function is called from within an ISR.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sleep_duration</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure.</dd></dl>
 <p>Pause execution for a number of nanoseconds.</p>
 <dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. In case of failure, errno will be set to<ul>
 <li>EINTR: The sleep was interrupted by a signal handler</li>
 <li>EINVAL: All other errors </li>
 </ul>
 </dd></dl>
-<p >Set timer properties. A negative number indicates relative time to wait. The requested relative time must be in number of 100 nanoseconds.</p>
+<p >Set timer properties. A negative number indicates relative time to wait. The requested sleep duration must be in number of 100 nanoseconds.</p>
+
+</div>
+</div>
+<a id="a19bc7b9be0caeb57f9655ce302622463" name="a19bc7b9be0caeb57f9655ce302622463"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a19bc7b9be0caeb57f9655ce302622463">&#9670;&#160;</a></span>lf_sleep_until()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lf_sleep_until </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td>
+          <td class="paramname"><em>wakeup_time</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Sleep until the given wakeup time. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">wakeup_time</td><td>The time instant at which to wake up. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>int 0 if sleep completed, or -1 if it was interrupted.</dd></dl>
+<p>Sleep until the given wakeup time.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">wakeup</td><td>int64_t time of wakeup </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>int 0 if successful sleep, -1 if awoken by async event</dd></dl>
+<p>Sleep until the given wakeup time.</p>
+<ol type="1">
+<li>Wakeup time is already past</li>
+<li>Implied sleep duration is below <code>LF_MAX_SLEEP_NS</code> threshold</li>
+<li>Implied sleep duration is above <code>LF_MAX_SLEEP_NS</code> limit</li>
+</ol>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">wakeup_time</td><td>The time instant at which to wake up. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>int 0 if sleep completed, or -1 if it was interrupted. </dd></dl>
 
 </div>
 </div>

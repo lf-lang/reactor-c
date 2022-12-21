@@ -85,6 +85,7 @@ $(function() {
 <div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;stdio.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="platform_8h_source.html">platform.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="port_8h_source.html">port.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="pqueue_8h_source.html">pqueue.h</a>&quot;</code><br />
@@ -163,6 +164,12 @@ Functions</h2></td></tr>
 <tr class="separator:aa985dff5d30c38625609d0eb356c536e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aca6f924d2da176c98435f96d3bcfac6b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtrigger__t.html">trigger_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#aca6f924d2da176c98435f96d3bcfac6b">_lf_action_to_trigger</a> (void *action)</td></tr>
 <tr class="separator:aca6f924d2da176c98435f96d3bcfac6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad48107f740a882d05dc5a85f47486158"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#ad48107f740a882d05dc5a85f47486158">_lf_schedule_token</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, <a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
+<tr class="separator:ad48107f740a882d05dc5a85f47486158"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acf2937acf3f9a8dfeb7af0152f31634e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#acf2937acf3f9a8dfeb7af0152f31634e">_lf_schedule_copy</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset, void *value, size_t length)</td></tr>
+<tr class="separator:acf2937acf3f9a8dfeb7af0152f31634e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f772464d0281b57bfa40d2d40fd062c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a8f772464d0281b57bfa40d2d40fd062c">_lf_schedule_value</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, void *value, size_t length)</td></tr>
+<tr class="separator:a8f772464d0281b57bfa40d2d40fd062c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abadead0c4f54963b062503cf6cb7ace7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#abadead0c4f54963b062503cf6cb7ace7">_lf_advance_logical_time</a> (<a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> next_time)</td></tr>
 <tr class="separator:abadead0c4f54963b062503cf6cb7ace7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaed2aef62e15386727c88c11b1737401"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#aaed2aef62e15386727c88c11b1737401">_lf_schedule_int</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, int value)</td></tr>
@@ -934,6 +941,47 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="acf2937acf3f9a8dfeb7af0152f31634e" name="acf2937acf3f9a8dfeb7af0152f31634e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acf2937acf3f9a8dfeb7af0152f31634e">&#9670;&#160;</a></span>_lf_schedule_copy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> _lf_schedule_copy </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>action</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td>
+          <td class="paramname"><em>offset</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>length</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Schedule an action to occur with the specified value and time offset with a copy of the specified value. See <a class="el" href="reactor_8h.html">reactor.h</a> for documentation. </p>
+
+</div>
+</div>
 <a id="aaed2aef62e15386727c88c11b1737401" name="aaed2aef62e15386727c88c11b1737401"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aaed2aef62e15386727c88c11b1737401">&#9670;&#160;</a></span>_lf_schedule_int()</h2>
 
@@ -971,6 +1019,82 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="ad48107f740a882d05dc5a85f47486158" name="ad48107f740a882d05dc5a85f47486158"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad48107f740a882d05dc5a85f47486158">&#9670;&#160;</a></span>_lf_schedule_token()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> _lf_schedule_token </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>action</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td>
+          <td class="paramname"><em>extra_delay</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td>
+          <td class="paramname"><em>token</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Schedule the specified trigger at current_tag.time plus the offset of the specified trigger plus the delay. See <a class="el" href="reactor_8h.html">reactor.h</a> for documentation. </p>
+
+</div>
+</div>
+<a id="a8f772464d0281b57bfa40d2d40fd062c" name="a8f772464d0281b57bfa40d2d40fd062c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8f772464d0281b57bfa40d2d40fd062c">&#9670;&#160;</a></span>_lf_schedule_value()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> _lf_schedule_value </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>action</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td>
+          <td class="paramname"><em>extra_delay</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>value</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>length</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p >Variant of schedule_token that creates a token to carry the specified value. See <a class="el" href="reactor_8h.html">reactor.h</a> for documentation. </p>
 
 </div>
 </div>

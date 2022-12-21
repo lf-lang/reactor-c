@@ -183,6 +183,15 @@ Functions</h2></td></tr>
 <tr class="separator:a4e7d759bc02a2b6dabb262fde1793ef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6a6f96af2d1adbf71c57586a9078f248"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a6a6f96af2d1adbf71c57586a9078f248">_lf_check_deadline</a> (<a class="el" href="structself__base__t.html">self_base_t</a> *self, bool invoke_deadline_handler)</td></tr>
 <tr class="separator:a6a6f96af2d1adbf71c57586a9078f248"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5ddc4ae4f8618d38c67e2b04744788b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#af5ddc4ae4f8618d38c67e2b04744788b">_lf_notify_of_event</a> ()</td></tr>
+<tr class="memdesc:af5ddc4ae4f8618d38c67e2b04744788b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Notify other threads of new events on the event queue.  <a href="reactor_8h.html#af5ddc4ae4f8618d38c67e2b04744788b">More...</a><br /></td></tr>
+<tr class="separator:af5ddc4ae4f8618d38c67e2b04744788b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a228e27703a177d8860d82df78d1738"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a1a228e27703a177d8860d82df78d1738">_lf_critical_section_enter</a> ()</td></tr>
+<tr class="memdesc:a1a228e27703a177d8860d82df78d1738"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter critical section. Must be paired with a <code><a class="el" href="reactor_8h.html#ae2cd0624deca6f7863e8785040cfd04a" title="Leave critical section.">_lf_critical_section_exit()</a></code>  <a href="reactor_8h.html#a1a228e27703a177d8860d82df78d1738">More...</a><br /></td></tr>
+<tr class="separator:a1a228e27703a177d8860d82df78d1738"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2cd0624deca6f7863e8785040cfd04a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#ae2cd0624deca6f7863e8785040cfd04a">_lf_critical_section_exit</a> ()</td></tr>
+<tr class="memdesc:ae2cd0624deca6f7863e8785040cfd04a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leave critical section.  <a href="reactor_8h.html#ae2cd0624deca6f7863e8785040cfd04a">More...</a><br /></td></tr>
+<tr class="separator:ae2cd0624deca6f7863e8785040cfd04a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
@@ -253,7 +262,7 @@ DESCRIPTION</h1>
 <div class="line">    } \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
 <div class="ttc" id="alf__types_8h_html_a174f339edecd4463df25e673366a2b16aad3aafaeae035f5d1c986b0b59e77458"><div class="ttname"><a href="lf__types_8h.html#a174f339edecd4463df25e673366a2b16aad3aafaeae035f5d1c986b0b59e77458">token_and_value</a></div><div class="ttdeci">@ token_and_value</div><div class="ttdef"><b>Definition:</b> lf_types.h:75</div></div>
-<div class="ttc" id="areactor_8h_html_a96b4b8f74714eae0efcb699281c10f87"><div class="ttname"><a href="reactor_8h.html#a96b4b8f74714eae0efcb699281c10f87">_lf_initialize_token_with_value</a></div><div class="ttdeci">lf_token_t * _lf_initialize_token_with_value(lf_token_t *token, void *value, size_t length)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:566</div></div>
+<div class="ttc" id="areactor_8h_html_a96b4b8f74714eae0efcb699281c10f87"><div class="ttname"><a href="reactor_8h.html#a96b4b8f74714eae0efcb699281c10f87">_lf_initialize_token_with_value</a></div><div class="ttdeci">lf_token_t * _lf_initialize_token_with_value(lf_token_t *token, void *value, size_t length)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:568</div></div>
 <div class="ttc" id="astructlf__port__base__t_html"><div class="ttname"><a href="structlf__port__base__t.html">lf_port_base_t</a></div><div class="ttdef"><b>Definition:</b> port.h:96</div></div>
 <div class="ttc" id="astructlf__token__t_html"><div class="ttname"><a href="structlf__token__t.html">lf_token_t</a></div><div class="ttdef"><b>Definition:</b> lf_types.h:156</div></div>
 <div class="ttc" id="astructlf__token__t_html_aa002374ec3b3165193393952dd216a90"><div class="ttname"><a href="structlf__token__t.html#aa002374ec3b3165193393952dd216a90">lf_token_t::ok_to_free</a></div><div class="ttdeci">ok_to_free_t ok_to_free</div><div class="ttdef"><b>Definition:</b> lf_types.h:174</div></div>
@@ -420,7 +429,7 @@ DESCRIPTION</h1>
 <div class="line">    out-&gt;value = token-&gt;<a class="code hl_variable" href="structlf__token__t.html#a96f790f8f8dcc01474dbc255e05ceaa8">value</a>; \</div>
 <div class="line">    out-&gt;token = token; \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="areactor__common_8c_html_a9df90516cce7d8e01b46acf61db64b8f"><div class="ttname"><a href="reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a></div><div class="ttdeci">lf_token_t * _lf_set_new_array_impl(lf_token_t *token, size_t length, int num_destinations)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1526</div></div>
+<div class="ttc" id="areactor__common_8c_html_a9df90516cce7d8e01b46acf61db64b8f"><div class="ttname"><a href="reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a></div><div class="ttdeci">lf_token_t * _lf_set_new_array_impl(lf_token_t *token, size_t length, int num_destinations)</div><div class="ttdef"><b>Definition:</b> reactor_common.c:1589</div></div>
 </div><!-- fragment --><p >Version of set() for output types given as 'type*' that allocates a new object of the type of the specified output port.</p>
 <p >This macro dynamically allocates enough memory to contain one instance of the output datatype and sets the variable named by the argument to point to the newly allocated memory. The user code can then populate it with whatever value it wishes to send.</p>
 <p >This macro also sets the corresponding _is_present variable in the self struct to true (which causes the object message to be sent), </p><dl class="params"><dt>Parameters</dt><dd>
@@ -760,6 +769,46 @@ DESCRIPTION</h1>
 
 </div>
 </div>
+<a id="a1a228e27703a177d8860d82df78d1738" name="a1a228e27703a177d8860d82df78d1738"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1a228e27703a177d8860d82df78d1738">&#9670;&#160;</a></span>_lf_critical_section_enter()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_critical_section_enter </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enter critical section. Must be paired with a <code><a class="el" href="reactor_8h.html#ae2cd0624deca6f7863e8785040cfd04a" title="Leave critical section.">_lf_critical_section_exit()</a></code> </p>
+<p >Enter critical section. Must be paired with a <code><a class="el" href="reactor_8h.html#ae2cd0624deca6f7863e8785040cfd04a" title="Leave critical section.">_lf_critical_section_exit()</a></code></p>
+
+</div>
+</div>
+<a id="ae2cd0624deca6f7863e8785040cfd04a" name="ae2cd0624deca6f7863e8785040cfd04a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae2cd0624deca6f7863e8785040cfd04a">&#9670;&#160;</a></span>_lf_critical_section_exit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_critical_section_exit </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Leave critical section. </p>
+<p >Leave critical section.</p>
+
+</div>
+</div>
 <a id="a4e7d759bc02a2b6dabb262fde1793ef5" name="a4e7d759bc02a2b6dabb262fde1793ef5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4e7d759bc02a2b6dabb262fde1793ef5">&#9670;&#160;</a></span>_lf_fd_send_stop_request_to_rti()</h2>
 
@@ -968,6 +1017,28 @@ DESCRIPTION</h1>
 
 </div>
 </div>
+<a id="af5ddc4ae4f8618d38c67e2b04744788b" name="af5ddc4ae4f8618d38c67e2b04744788b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af5ddc4ae4f8618d38c67e2b04744788b">&#9670;&#160;</a></span>_lf_notify_of_event()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_notify_of_event </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Notify other threads of new events on the event queue. </p>
+<p >These functions must be implemented by both threaded and unthreaded runtime. Should be routed to appropriate API calls in <a class="el" href="platform_8h.html">platform.h</a> </p>
+<p >The following calls are directly forwarded to <a class="el" href="platform_8h.html">platform.h</a></p>
+<p >Notify other threads of new events on the event queue. </p>
+
+</div>
+</div>
 <a id="aa6223efeff3c39fbc75dfb9b497e6789" name="aa6223efeff3c39fbc75dfb9b497e6789"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa6223efeff3c39fbc75dfb9b497e6789">&#9670;&#160;</a></span>_lf_pop_events()</h2>
 
@@ -1081,7 +1152,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Schedule an action to occur with the specified value and time offset with a copy of the specified value. If the value is non-null, then it will be copied into newly allocated memory under the assumption that its size is given in the trigger's token object's element_size field multiplied by the specified length. See <a class="el" href="reactor_8c.html#ad48107f740a882d05dc5a85f47486158">_lf_schedule_token()</a>, which this uses, for details. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Schedule an action to occur with the specified value and time offset with a copy of the specified value. If the value is non-null, then it will be copied into newly allocated memory under the assumption that its size is given in the trigger's token object's element_size field multiplied by the specified length. See <a class="el" href="reactor__common_8c.html#ad48107f740a882d05dc5a85f47486158">_lf_schedule_token()</a>, which this uses, for details. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">action</td><td>Pointer to an action on a self struct. </td></tr>
     <tr><td class="paramname">offset</td><td>The time offset over and above that in the action. </td></tr>
@@ -1232,7 +1303,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p >Variant of schedule_token that creates a token to carry the specified value. The value is required to be malloc'd memory with a size equal to the element_size of the specifies action times the length parameter. See <a class="el" href="reactor_8c.html#ad48107f740a882d05dc5a85f47486158">_lf_schedule_token()</a> for details. </p><dl class="params"><dt>Parameters</dt><dd>
+<p >Variant of schedule_token that creates a token to carry the specified value. The value is required to be malloc'd memory with a size equal to the element_size of the specifies action times the length parameter. See <a class="el" href="reactor__common_8c.html#ad48107f740a882d05dc5a85f47486158">_lf_schedule_token()</a> for details. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">action</td><td>The action to be triggered. </td></tr>
     <tr><td class="paramname">extra_delay</td><td>Extra offset of the event release above that in the action. </td></tr>

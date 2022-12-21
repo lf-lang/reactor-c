@@ -4,7 +4,7 @@ var searchData=
   ['max_5fpushall_1',['MAX_PUSHALL',['../vector__test_8c.html#a869c404c889e67fe95252fdca577f638',1,'vector_test.c']]],
   ['max_5freaction_5flevel_2',['MAX_REACTION_LEVEL',['../scheduler__adaptive_8c.html#af3500a0f31948d5fb75fc0ee500a1442',1,'MAX_REACTION_LEVEL():&#160;scheduler_adaptive.c'],['../scheduler___g_e_d_f___n_p___c_i_8c.html#af3500a0f31948d5fb75fc0ee500a1442',1,'MAX_REACTION_LEVEL():&#160;scheduler_GEDF_NP_CI.c']]],
   ['max_5fstall_5finterval_3',['MAX_STALL_INTERVAL',['../reactor__threaded_8c.html#a2759df05e92b68f74325190e9a6aca13',1,'reactor_threaded.c']]],
-  ['min_5fwait_5ftime_4',['MIN_WAIT_TIME',['../reactor_8c.html#a76d2b896dce8b5b2163d8640e700c36a',1,'MIN_WAIT_TIME():&#160;reactor.c'],['../reactor__threaded_8c.html#a76d2b896dce8b5b2163d8640e700c36a',1,'MIN_WAIT_TIME():&#160;reactor_threaded.c']]],
+  ['min_5fsleep_5fduration_4',['MIN_SLEEP_DURATION',['../reactor__threaded_8c.html#a3b755b6f58cb9ea64ae2f1ba9a382c86',1,'reactor_threaded.c']]],
   ['minute_5',['MINUTE',['../tag_8h.html#a72e3dbcf6a85e8c0a04691cfb14d3876',1,'tag.h']]],
   ['minutes_6',['MINUTES',['../tag_8h.html#a694878332b974b464c7d58c7114ee6e9',1,'tag.h']]],
   ['msec_7',['MSEC',['../tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8',1,'tag.h']]],

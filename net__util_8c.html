@@ -107,7 +107,7 @@ Functions</h2></td></tr>
 <tr class="separator:a5ccf34bcfb6d0eaef7262b60f96eb92d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a544d5db6c22bd15939900f9ba60a743a"><td class="memItemLeft" align="right" valign="top">ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#a544d5db6c22bd15939900f9ba60a743a">read_from_socket</a> (int socket, size_t num_bytes, unsigned char *buffer)</td></tr>
 <tr class="separator:a544d5db6c22bd15939900f9ba60a743a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab5fdba6f80b9b0c6516c8400920da702"><td class="memItemLeft" align="right" valign="top">ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#ab5fdba6f80b9b0c6516c8400920da702">write_to_socket_errexit_with_mutex</a> (int socket, size_t num_bytes, unsigned char *buffer, lf_mutex_t *<a class="el" href="reactor__threaded_8c.html#ab491fbef9a883a7cee19e074dba32661">mutex</a>, char *format,...)</td></tr>
+<tr class="memitem:ab5fdba6f80b9b0c6516c8400920da702"><td class="memItemLeft" align="right" valign="top">ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#ab5fdba6f80b9b0c6516c8400920da702">write_to_socket_errexit_with_mutex</a> (int socket, size_t num_bytes, unsigned char *buffer, <a class="el" href="platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a> *<a class="el" href="reactor__threaded_8c.html#ab491fbef9a883a7cee19e074dba32661">mutex</a>, char *format,...)</td></tr>
 <tr class="separator:ab5fdba6f80b9b0c6516c8400920da702"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adac7abf648593901711cc145d2ec986c"><td class="memItemLeft" align="right" valign="top">ssize_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#adac7abf648593901711cc145d2ec986c">write_to_socket_errexit</a> (int socket, size_t num_bytes, unsigned char *buffer, char *format,...)</td></tr>
 <tr class="separator:adac7abf648593901711cc145d2ec986c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -145,14 +145,14 @@ Functions</h2></td></tr>
 <tr class="separator:a9cd95311c2c29ce5bed1c44d5336584d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7b5ae6582f28e14a37d50a2d243613c5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#a7b5ae6582f28e14a37d50a2d243613c5">encode_tag</a> (unsigned char *buffer, <a class="el" href="structtag__t.html">tag_t</a> tag)</td></tr>
 <tr class="separator:a7b5ae6582f28e14a37d50a2d243613c5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a425ade4ffa28a4b72b3ce2db13e63782"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#a425ade4ffa28a4b72b3ce2db13e63782">match_regex</a> (char *str, char *regex)</td></tr>
-<tr class="separator:a425ade4ffa28a4b72b3ce2db13e63782"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7a568c79c856e633f5f181dd21700b74"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#a7a568c79c856e633f5f181dd21700b74">match_regex</a> (const char *str, char *regex)</td></tr>
+<tr class="separator:a7a568c79c856e633f5f181dd21700b74"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a841bec9ddc3fb61c2b615f5d512dc3f0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#a841bec9ddc3fb61c2b615f5d512dc3f0">validate_port</a> (char *port)</td></tr>
 <tr class="separator:a841bec9ddc3fb61c2b615f5d512dc3f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abcdc39c44be4d7899fc40ddc91bd8ca7"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#abcdc39c44be4d7899fc40ddc91bd8ca7">validate_host</a> (char *host)</td></tr>
-<tr class="separator:abcdc39c44be4d7899fc40ddc91bd8ca7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab2d03d7e8944f2c0f6131885b6a6ce85"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#ab2d03d7e8944f2c0f6131885b6a6ce85">validate_user</a> (char *user)</td></tr>
-<tr class="separator:ab2d03d7e8944f2c0f6131885b6a6ce85"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0f6ec1479ffe28cc089fe6b13e675f0e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#a0f6ec1479ffe28cc089fe6b13e675f0e">validate_host</a> (const char *host)</td></tr>
+<tr class="separator:a0f6ec1479ffe28cc089fe6b13e675f0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1285f4b0283c8e0c020e12e76a4426c2"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#a1285f4b0283c8e0c020e12e76a4426c2">validate_user</a> (const char *user)</td></tr>
+<tr class="separator:a1285f4b0283c8e0c020e12e76a4426c2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4f1b49ab84b0d449ec2d3f07b91c3e96"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#a4f1b49ab84b0d449ec2d3f07b91c3e96">extract_match_group</a> (const char *rti_addr, char *dest, regmatch_t group, int max_len, int min_len, const char *err_msg)</td></tr>
 <tr class="separator:a4f1b49ab84b0d449ec2d3f07b91c3e96"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adcea108f126fa918514c63fde32c20f8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="net__util_8c.html#adcea108f126fa918514c63fde32c20f8">extract_match_groups</a> (const char *rti_addr, char **rti_addr_strs, bool **rti_addr_flags, regmatch_t *group_array, int *gids, int *max_lens, int *min_lens, const char **err_msgs)</td></tr>
@@ -778,8 +778,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a425ade4ffa28a4b72b3ce2db13e63782" name="a425ade4ffa28a4b72b3ce2db13e63782"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a425ade4ffa28a4b72b3ce2db13e63782">&#9670;&#160;</a></span>match_regex()</h2>
+<a id="a7a568c79c856e633f5f181dd21700b74" name="a7a568c79c856e633f5f181dd21700b74"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7a568c79c856e633f5f181dd21700b74">&#9670;&#160;</a></span>match_regex()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -787,7 +787,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="memname">bool match_regex </td>
           <td>(</td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>str</em>, </td>
         </tr>
         <tr>
@@ -1005,8 +1005,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="abcdc39c44be4d7899fc40ddc91bd8ca7" name="abcdc39c44be4d7899fc40ddc91bd8ca7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abcdc39c44be4d7899fc40ddc91bd8ca7">&#9670;&#160;</a></span>validate_host()</h2>
+<a id="a0f6ec1479ffe28cc089fe6b13e675f0e" name="a0f6ec1479ffe28cc089fe6b13e675f0e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0f6ec1479ffe28cc089fe6b13e675f0e">&#9670;&#160;</a></span>validate_host()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1014,7 +1014,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="memname">bool validate_host </td>
           <td>(</td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>host</em></td><td>)</td>
           <td></td>
         </tr>
@@ -1043,8 +1043,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="ab2d03d7e8944f2c0f6131885b6a6ce85" name="ab2d03d7e8944f2c0f6131885b6a6ce85"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab2d03d7e8944f2c0f6131885b6a6ce85">&#9670;&#160;</a></span>validate_user()</h2>
+<a id="a1285f4b0283c8e0c020e12e76a4426c2" name="a1285f4b0283c8e0c020e12e76a4426c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1285f4b0283c8e0c020e12e76a4426c2">&#9670;&#160;</a></span>validate_user()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1052,7 +1052,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="memname">bool validate_user </td>
           <td>(</td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>user</em></td><td>)</td>
           <td></td>
         </tr>
@@ -1191,7 +1191,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">lf_mutex_t *&#160;</td>
+          <td class="paramtype"><a class="el" href="platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a> *&#160;</td>
           <td class="paramname"><em>mutex</em>, </td>
         </tr>
         <tr>

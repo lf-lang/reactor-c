@@ -109,7 +109,7 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:ab491fbef9a883a7cee19e074dba32661"><td class="memItemLeft" align="right" valign="top">lf_mutex_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8h.html#ab491fbef9a883a7cee19e074dba32661">mutex</a></td></tr>
+<tr class="memitem:ab491fbef9a883a7cee19e074dba32661"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8h.html#ab491fbef9a883a7cee19e074dba32661">mutex</a></td></tr>
 <tr class="separator:ab491fbef9a883a7cee19e074dba32661"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ace65260efd42a7c5585e4dcaac5d357f"><td class="memItemLeft" align="right" valign="top">lf_cond_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8h.html#ace65260efd42a7c5585e4dcaac5d357f">event_q_changed</a></td></tr>
 <tr class="separator:ace65260efd42a7c5585e4dcaac5d357f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -363,7 +363,7 @@ Variables</h2></td></tr>
           <td class="memname">bool wait_until </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td>
-          <td class="paramname"><em>logical_time_ns</em>, </td>
+          <td class="paramname"><em>logical_time</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -383,7 +383,7 @@ Variables</h2></td></tr>
 <p >The mutex lock is assumed to be held by the calling thread. Note this this could return true even if the a new event was placed on the queue if that event time matches or exceeds the specified time.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">logical_time_ns</td><td>Logical time to wait until physical time matches it. </td></tr>
+    <tr><td class="paramname">logical_time</td><td>Logical time to wait until physical time matches it. </td></tr>
     <tr><td class="paramname">return_if_interrupted</td><td>If this is false, then wait_util will wait until physical time matches the logical time regardless of whether new events get put on the event queue. This is useful, for example, for synchronizing the start of the program.</td></tr>
   </table>
   </dd>
@@ -447,7 +447,7 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">lf_mutex_t mutex</td>
+          <td class="memname"><a class="el" href="platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a> mutex</td>
         </tr>
       </table>
   </td>
@@ -456,6 +456,7 @@ Variables</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+<p >Global mutex and condition variable. </p>
 
 </div>
 </div>

@@ -15,7 +15,7 @@ var searchData=
   ['default_5fwindow_12',['default_window',['../sensor__simulator_8c.html#a9029bf378e52a9f85a25eb0ba9095fe3',1,'sensor_simulator.c']]],
   ['defer_13',['defer',['../lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a893b1cf0de04eaf44a009fecabd16b90',1,'lf_types.h']]],
   ['delay_5fstart_14',['DELAY_START',['../net__common_8h.html#a4b8c713b515dba0c86d9205dc0caf4ed',1,'net_common.h']]],
-  ['deprecated_15',['DEPRECATED',['../platform_8h.html#af67a6ff1a54b41b2a6e4bd36bc47b118',1,'platform.h']]],
+  ['deprecated_15',['DEPRECATED',['../platform_8h.html#af67a6ff1a54b41b2a6e4bd36bc47b118',1,'DEPRECATED():&#160;platform.h'],['../platform_8h.html#aa321c5ff2c1afca6cd771e8602972052',1,'DEPRECATED(extern int lf_nanosleep(interval_t sleep_duration)):&#160;platform.h']]],
   ['deprecated_20list_16',['Deprecated List',['../deprecated.html',1,'']]],
   ['deque_2ec_17',['deque.c',['../deque_8c.html',1,'']]],
   ['deque_2eh_18',['deque.h',['../deque_8h.html',1,'']]],
