@@ -52,6 +52,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "reactor_common.h"
 #include "reactor_threaded.h"
 #include "scheduler.h"
+#ifdef FEDERATED_AUTHENTICATED
+#include <openssl/rand.h> // For secure random number generation.
+#include <openssl/hmac.h> // For HMAC-based authentication of federates.
+#endif
 
 // Error messages.
 char* ERROR_SENDING_HEADER = "ERROR sending header information to federate via RTI";
@@ -859,6 +863,87 @@ void connect_to_federate(uint16_t remote_federate_id) {
     }
 }
 
+#ifdef FEDERATED_AUTHENTICATED
+/**
+ * Perform HMAC-based authentication with the RTI, using the federation ID
+ * as an HMAC key.
+ * 
+ * @param rti_socket TCP socket for connection with the RTI.
+ */
+void perform_hmac_authentication(int rti_socket) {
+    unsigned char buffer[1 + NONCE_LENGTH];
+    read_from_socket_errexit(rti_socket, 1 + NONCE_LENGTH, buffer,
+                             "Failed to read RTI hello.");
+    if (buffer[0] != MSG_TYPE_RTI_NONCE) {
+        lf_print_error_and_exit(
+            "Received unexpected response %u from the RTI (see net_common.h).",
+            buffer[0]);
+    }
+    unsigned int hmac_length = SHA256_HMAC_LENGTH;
+    size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
+    // HMAC tag is created with MSG_TYPE, federate ID, received rti nonce.
+    unsigned char mac_buf[1 + sizeof(uint16_t) + NONCE_LENGTH];
+    mac_buf[0] = MSG_TYPE_FED_RESPONSE;
+    encode_uint16((uint16_t)_lf_my_fed_id, &mac_buf[1]);
+    memcpy(&mac_buf[1 + sizeof(uint16_t)], &buffer[1], NONCE_LENGTH);
+    unsigned char hmac_tag[hmac_length];
+    unsigned char * ret = HMAC(EVP_sha256(), federation_metadata.federation_id,
+        federation_id_length, mac_buf, 1 + sizeof(uint16_t) + NONCE_LENGTH,
+        hmac_tag, &hmac_length);
+    if (ret == NULL) {
+        lf_print_error_and_exit("HMAC failure for MSG_TYPE_FED_RESPONSE.");
+    }
+    
+    // Buffer for message type, federate's nonce, federate ID, and HMAC tag.
+    unsigned char sender[1 + NONCE_LENGTH + sizeof(uint16_t) + hmac_length];
+    sender[0] = MSG_TYPE_FED_RESPONSE;
+    unsigned char federate_nonce[NONCE_LENGTH];
+    RAND_bytes(federate_nonce, NONCE_LENGTH);
+    int num_bytes = 1;
+    memcpy(&sender[num_bytes], federate_nonce, NONCE_LENGTH);
+    num_bytes += NONCE_LENGTH;
+    encode_uint16((uint16_t)_lf_my_fed_id, &sender[num_bytes]);
+    num_bytes += sizeof(uint16_t);
+    memcpy(&sender[num_bytes], hmac_tag, hmac_length);
+    num_bytes += hmac_length;
+    write_to_socket(rti_socket, num_bytes, sender);
+
+    // Received MSG_TYPE_RTI_RESPONSE
+    unsigned char received[1 + hmac_length];
+    read_from_socket_errexit(rti_socket, 1 + hmac_length, received,
+                             "Failed to read RTI response.");
+    if (received[0] != MSG_TYPE_RTI_RESPONSE) {
+        lf_print_error_and_exit(
+            "Received unexpected response %u from the RTI (see net_common.h).",
+            received[0]);
+    }
+    // HMAC tag is created with MSG_TYPE and federate nonce.
+    unsigned char mac_buf2[1 + NONCE_LENGTH];
+    mac_buf2[0] = MSG_TYPE_RTI_RESPONSE;
+    memcpy(&mac_buf2[1], federate_nonce, NONCE_LENGTH);
+    unsigned char fed_tag[hmac_length];
+    ret = HMAC(EVP_sha256(), federation_metadata.federation_id, federation_id_length,
+         mac_buf2, 1 + NONCE_LENGTH, fed_tag, &hmac_length);
+    if (ret == NULL) {
+        lf_print_error_and_exit("HMAC failure for MSG_TYPE_RTI_RESPONSE.");
+    }
+    // Compare received tag and created tag.
+    if (memcmp(&received[1], fed_tag, hmac_length) != 0) {
+        // Federation IDs do not match. Send back a MSG_TYPE_REJECT message.
+        lf_print_error("HMAC authentication failed.");
+        unsigned char response[2];
+        response[0] = MSG_TYPE_REJECT;
+        response[1] = HMAC_DOES_NOT_MATCH;
+        write_to_socket_errexit(
+            rti_socket, 2, response,
+            "Federate failed to write MSG_TYPE_REJECT message on the socket.");
+        close(rti_socket);
+    } else {
+        LF_PRINT_LOG("HMAC verified.");
+    }
+}
+#endif
+
 /**
  * Connect to the RTI at the specified host and port and return
  * the socket descriptor for the connection. If this fails, the
@@ -967,7 +1052,12 @@ void connect_to_rti(const char* hostname, int port) {
             // Notify the RTI of the ID of this federate and its federation.
             unsigned char buffer[4];
 
+#ifdef FEDERATED_AUTHENTICATED
+            LF_PRINT_LOG("Connected to an RTI. Performing HMAC-based authentication using federation ID.");
+            perform_hmac_authentication(_fed.socket_TCP_RTI);
+#else
             LF_PRINT_LOG("Connected to an RTI. Sending federation ID for authentication.");
+#endif
 
             // Send the message type first.
             buffer[0] = MSG_TYPE_FED_IDS;

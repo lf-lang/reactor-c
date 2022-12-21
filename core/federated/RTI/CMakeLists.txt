@@ -23,6 +23,17 @@
 # If you would like to go back to non-DEBUG mode, you would have to remove all
 # contents of the `build` folder.
 
+# To enable simple HMAC-based authentication of federates,
+# add `-DAUTH=ON` option to the cmake command as shown below:
+# 
+# $> mkdir build && cd build
+# $> cmake -DAUTH=ON ../
+# $> make
+# $> sudo make install
+#
+# If you would like to go back to non-AUTH mode, you would have to remove all
+# contents of the `build` folder.
+
 cmake_minimum_required(VERSION 3.12)
 project(RTI VERSION 1.0.0 LANGUAGES C)
 
@@ -73,6 +84,15 @@ target_compile_definitions(RTI PUBLIC NUMBER_OF_WORKERS)
 # Find threads and link to it
 find_package(Threads REQUIRED)
 target_link_libraries(RTI Threads::Threads)
+
+# Option for enabling federate authentication by RTI.
+option(AUTH "Federate authentication by RTI enabled." OFF)
+IF(AUTH MATCHES ON)
+  add_compile_definitions(__RTI_AUTH__)
+  # Find OpenSSL and link to it
+  find_package(OpenSSL REQUIRED)
+  target_link_libraries(RTI OpenSSL::SSL)
+ENDIF(AUTH MATCHES ON)
 
 install(
     TARGETS RTI
