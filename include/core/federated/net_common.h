@@ -338,7 +338,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * between the RTI and the federate.
  * The next eight bytes are RTI's 8-byte nonce (RTI nonce).
  */
-#define MSG_TYPE_RTI_HELLO 100
+#define MSG_TYPE_RTI_NONCE 100
 
 /**
  * Byte identifying a message from federate to RTI as a response to the RTI Hello

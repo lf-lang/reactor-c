@@ -874,7 +874,7 @@ void perform_hmac_authentication(int rti_socket) {
     unsigned char buffer[1 + NONCE_LENGTH];
     read_from_socket_errexit(rti_socket, 1 + NONCE_LENGTH, buffer,
                              "Failed to read RTI hello.");
-    if (buffer[0] != MSG_TYPE_RTI_HELLO) {
+    if (buffer[0] != MSG_TYPE_RTI_NONCE) {
         lf_print_error_and_exit(
             "Received unexpected response %u from the RTI (see net_common.h).",
             buffer[0]);

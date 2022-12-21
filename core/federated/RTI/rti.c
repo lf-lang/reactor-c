@@ -1811,7 +1811,7 @@ bool authenticate_federate(int socket) {
     // Buffer for message type and federation RTI nonce.
     size_t message_length = 1 + NONCE_LENGTH;
     unsigned char rti_hello_buffer[message_length];
-    rti_hello_buffer[0] = MSG_TYPE_RTI_HELLO;
+    rti_hello_buffer[0] = MSG_TYPE_RTI_NONCE;
     unsigned char rti_nonce[NONCE_LENGTH];
     RAND_bytes(rti_nonce, NONCE_LENGTH);
     memcpy(rti_hello_buffer + 1, rti_nonce, NONCE_LENGTH);
