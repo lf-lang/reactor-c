@@ -1174,8 +1174,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 /**
  * @brief Notification of new event is implemented by broadcasting on a 
  * condition variable. 
- * FIXME: Are we sure that it is not sufficient with a `signal`? 
- * 
  */
 void _lf_notify_of_event() {
     lf_cond_broadcast(&event_q_changed);
