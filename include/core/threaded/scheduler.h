@@ -167,6 +167,8 @@ void lf_sched_wait_for_reactor(self_base_t *reactor);
  */
 void lf_sched_wait_for_reactor_locked(self_base_t *reactor);
 
+void lf_sched_retire_let_worker(reaction_t *reaction, int worker);
+
 #endif
 
 #endif // LF_SCHEDULER_H

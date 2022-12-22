@@ -483,6 +483,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
  * finished executing 'done_reaction'.
  * @param done_reaction The reaction that is done.
  */
+// FIXME: Verify that thia setting status=inactive earlier does not break anything
 void lf_sched_done_with_reaction(size_t worker_number,
                                  reaction_t* done_reaction) {
     // This is performed in the reaction epilogue
@@ -583,17 +584,6 @@ void lf_sched_wait_for_reactor_locked(self_base_t *reactor) {
     lf_mutex_lock(&mutex);
 }
 
-static void _lf_sched_wait_on_downstream_let(reaction_t* reaction, int worker_number) {
-    for (int i = 0; i<reaction->num_downstream_let_reactors; i++) {
-        self_base_t* downstream = reaction->downstream_let_reactors[i];
-        if (downstream->executing_reaction) {
-            LF_PRINT_DEBUG("Worker %d waiting on mutex of downstream let reactor %p", worker_number, downstream);
-            lf_sched_wait_for_reactor(downstream);
-            LF_PRINT_DEBUG("Worker %d finished waiting on mutex of downstream let reactor %p", worker_number, downstream);
-        }
-    }
-}
-
 /**
  * @brief Lock mutexes needed to execute the specified reaction.
  * If the reactor containing the specified reaction has a local mutex, lock it.
@@ -608,13 +598,6 @@ static void _lf_sched_wait_on_downstream_let(reaction_t* reaction, int worker_nu
 void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
     self_base_t *self = (self_base_t *) reaction->self;
 
-    if(reaction->let) {
-        (reaction->let_setup(self));
-    }
-
-    // Wait on any directly downstream LET reactors w
-    _lf_sched_wait_on_downstream_let(reaction, worker_number);
-    
     // Take local mutex
     if (self->has_mutex) {
         LF_PRINT_DEBUG("Worker %d tries to locks local mutex", worker_number);
@@ -622,47 +605,48 @@ void lf_sched_reaction_prologue(reaction_t * reaction, int worker_number) {
         LF_PRINT_DEBUG("Worker %d locked local mutex", worker_number);
     }
 
-    
     // If LET reaction, lock any modal parent, increment global tag barrier and remove worker from workforce
     if (reaction->let > 0) {
         // Lock any containing reactor which is modal to avoid mode changes while LET is executing
         #ifdef MODAL_REACTORS
             _lf_sched_lock_modal_parents(self, worker_number);
         #endif
-
-
-        // Acquire the global mutex to: 1. Increment global barrier and 2. Update the scheduler variables.
-        LF_PRINT_DEBUG("Worker %d tries to lock global mutex", worker_number);
-        lf_mutex_lock(&mutex);
-        LF_PRINT_DEBUG("Worker %d locked global mutex", worker_number);
-        if (reaction->let < FOREVER) {
-            LF_PRINT_DEBUG("Worker %d Increment global barrier", worker_number);
-            tag_t finish_tag = {current_tag.time + reaction->let, 0UL};
-            // FIXME: Use pqueue for tracking tag barrier. Only notify the cond_var when the head of the
-            //  pqueue is removed.
-            lf_increment_global_tag_barrier_locked(finish_tag);
-        }
-
-        // Remove worker from workforce. By both updating the local array holding workers that are in the workforce
-        //  and decrementing the total number of workers. The first is needed for the rejoining process 
-        _lf_sched_worker_is_in_workforce[worker_number] = false;
-        _lf_sched_instance->_lf_sched_number_of_workers--;
-
-        LF_PRINT_DEBUG("Worker %d removed from pool. %zu left", worker_number, _lf_sched_instance->_lf_sched_number_of_workers);
-        // If all other workers are sleeping then wake one up to advance time
-        if (_lf_sched_instance->_lf_sched_number_of_idle_workers == _lf_sched_instance->_lf_sched_number_of_workers) {
-            LF_PRINT_DEBUG("Worker %d Wakes up 1 sleeping thread before going to LET work", worker_number);
-            _lf_sched_instance->_lf_sched_number_of_idle_workers--;
-            lf_semaphore_release(_lf_sched_instance->_lf_sched_semaphore, 1);
-        }
-        // Set the executing reaction field BEFORE releasing the global mutex
-        //  After we release global mutex the runtime might advance time. And it might 
-        //  preempt our current thread before it reaches it reaction invokation
-        self->executing_reaction = reaction;
-
-        // Release global mutex
-        lf_mutex_unlock(&mutex);
     }
+}
+
+void lf_sched_retire_let_worker(reaction_t* reaction, int worker_number) {
+    self_base_t *self = (self_base_t *) reaction->self;
+    // Acquire the global mutex to: 1. Increment global barrier and 2. Update the scheduler variables.
+    LF_PRINT_DEBUG("Worker %d tries to lock global mutex", worker_number);
+    lf_mutex_lock(&mutex);
+    LF_PRINT_DEBUG("Worker %d locked global mutex", worker_number);
+    if (reaction->let < FOREVER) {
+        LF_PRINT_DEBUG("Worker %d Increment global barrier", worker_number);
+        tag_t finish_tag = {current_tag.time + reaction->let, 0UL};
+        // FIXME: Use pqueue for tracking tag barrier. Only notify the cond_var when the head of the
+        //  pqueue is removed.
+        lf_increment_global_tag_barrier_locked(finish_tag);
+    }
+
+    // Remove worker from workforce. By both updating the local array holding workers that are in the workforce
+    //  and decrementing the total number of workers. The first is needed for the rejoining process 
+    _lf_sched_worker_is_in_workforce[worker_number] = false;
+    _lf_sched_instance->_lf_sched_number_of_workers--;
+
+    LF_PRINT_DEBUG("Worker %d removed from pool. %zu left", worker_number, _lf_sched_instance->_lf_sched_number_of_workers);
+    // If all other workers are sleeping then wake one up to advance time
+    if (_lf_sched_instance->_lf_sched_number_of_idle_workers == _lf_sched_instance->_lf_sched_number_of_workers) {
+        LF_PRINT_DEBUG("Worker %d Wakes up 1 sleeping thread before going to LET work", worker_number);
+        _lf_sched_instance->_lf_sched_number_of_idle_workers--;
+        lf_semaphore_release(_lf_sched_instance->_lf_sched_semaphore, 1);
+    }
+    // Set the executing reaction field BEFORE releasing the global mutex
+    //  After we release global mutex the runtime might advance time. And it might 
+    //  preempt our current thread before it reaches it reaction invokation
+    self->executing_reaction = reaction;
+
+    // Release global mutex
+    lf_mutex_unlock(&mutex);
 }
 
 void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
@@ -672,11 +656,6 @@ void lf_sched_reaction_epilogue(reaction_t * reaction, int worker_number) {
     //  this very reaction for a future tag. We must be inactive when this worker is released.
     //  If not we could drop a future event.
 
-    // Do cleanup
-    if(reaction->let) {
-        (reaction->let_cleanup(self));
-    }
-    
     // FIXME: Can I do this here. Other schedulers do this in an atomic instruction later...
     reaction->status = inactive;
     // Unlock local mutex to allow interrupting reactions+mode changes

@@ -662,6 +662,7 @@ void _lf_pop_events() {
 #if SCHEDULER == LET
             // If this trigger is seen by a currently executing (LET) reaction.
             //  then we must wait until it completes
+            // FIXME: EAL suggestion: lock if the parent reactor has ANY reactions executimg
             self_base_t* parent = (self_base_t *) reaction->self;
             if (reaction == parent->executing_reaction) {
                 LF_PRINT_DEBUG("Tried to update trigger seen by executing LET reaction. Wait on local mutex");
@@ -1582,7 +1583,7 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
     reaction_t* reaction = self->executing_reaction;
     if (lf_time_physical() > lf_time_logical(self) + reaction->deadline) {
         if (invoke_deadline_handler) {
-            reaction->deadline_violation_handler(self);
+            reaction->deadline_violation_handler(self, 0); // FIXME: Worker number
         }
         return true;
     }
@@ -1616,7 +1617,7 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
             // Invoke the local handler, if there is one.
             reaction_function_t handler = reaction->deadline_violation_handler;
             if (handler != NULL) {
-                (*handler)(reaction->self);
+                (*handler)(reaction->self, worker);
             }
         }
     }
@@ -1632,7 +1633,7 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
         // This field is set within `lf_sched_reaction_prologue` if LET scheduling is enabled
         ((self_base_t*) reaction->self)->executing_reaction = reaction;
         #endif
-        reaction->function(reaction->self);
+        reaction->function(reaction->self, worker);
         ((self_base_t*) reaction->self)->executing_reaction = NULL;
         tracepoint_reaction_ends(reaction, worker); 
         LF_PRINT_DEBUG("Worker %d Finished Reaction", worker);

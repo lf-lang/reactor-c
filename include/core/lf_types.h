@@ -135,11 +135,12 @@ typedef char* string;
 typedef pqueue_pri_t index_t;
 
 /**
- * Reaction function type. The argument passed to one of
+ * Reaction function type. The arguments passed to one of
  * these reaction functions is a pointer to the self struct
- * for the reactor.
+ * for the reactor and the worker id of the thread executing
+ * the reaction.
  */
-typedef void(*reaction_function_t)(void*);
+typedef void(*reaction_function_t)(void*, int);
 
 /** Trigger struct representing an output, timer, action, or input. See below. */
 typedef struct trigger_t trigger_t;
@@ -226,11 +227,7 @@ struct reaction_t {
     reaction_status_t status; // Indicator of whether the reaction is inactive, queued, or running. RUNTIME.
     interval_t deadline;      // Deadline relative to the time stamp for invocation of the reaction. INSTANCE.
 #if SCHEDULER == LET
-    reaction_function_t let_setup;
-    reaction_function_t let_cleanup;
     interval_t let;			  // The logical execution time of this reaction.
-    int num_downstream_let_reactors; // Number of direct downstream reactors of this reactipm
-    void ** downstream_let_reactors; //Array of pointers to downstream reactors
 #endif
     bool is_STP_violated;     // Indicator of STP violation in one of the input triggers to this reaction. default = false.
                               // Value of True indicates to the runtime that this reaction contains trigger(s)

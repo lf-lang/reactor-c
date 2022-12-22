@@ -879,7 +879,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(int worker_number, reacti
             if (handler != NULL) {
                 LF_PRINT_LOG("Worker %d: Deadline violation. Invoking deadline handler.",
                         worker_number);
-                (*handler)(reaction->self);
+                (*handler)(reaction->self, worker_number);
 
                 // If the reaction produced outputs, put the resulting
                 // triggered reactions into the queue or execute them directly if possible.
@@ -926,7 +926,7 @@ bool _lf_worker_handle_STP_violation_for_reaction(int worker_number, reaction_t*
             LF_PRINT_LOG("Worker %d: Invoking STP violation handler.", worker_number);
             // There is a violation
             violation_occurred = true;
-            (*handler)(reaction->self);
+            (*handler)(reaction->self, worker_number);
 
             // If the reaction produced outputs, put the resulting
             // triggered reactions into the queue or execute them directly if possible.
