@@ -258,12 +258,12 @@ do { \
  *
  * @param out The output port (by name) or input of a contained
  *            reactor in form input_name.port_name.
- * @param destructor A pointer to a void function that takes a pointer argument
+ * @param destruct A pointer to a void function that takes a pointer argument
  *             or NULL to use the default void free(void*) function.
  */
-#define _LF_SET_DESTRUCTOR(out, destructor) \
+#define _LF_SET_DESTRUCTOR(out, destruct) \
 do { \
-    ((token_type_t*)out)->destructor = destructor; \
+    ((token_type_t*)out)->destructor = destruct; \
 } while(0)
 
 /**
