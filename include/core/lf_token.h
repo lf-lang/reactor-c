@@ -198,15 +198,6 @@ lf_token_t* lf_writable_copy(token_template_t* template);
 token_freed _lf_free_token(lf_token_t* token);
 
 /**
- * Initialize the specified template to contain tokens that are
- * arrays with the specified size. Upon return, the token field will
- * be NULL. If there was previously a token, it will be freed.
- * @param template The template.
- * @param element_size The element size.
- */
-void _lf_initialize_template(token_template_t* template, size_t element_size);
-
-/**
  * @brief Return a new token with the specified type.
  * This will attempt to get one from the recyling bin, and, if the
  * recycling bin is empty, will allocate a new token using calloc
@@ -228,6 +219,17 @@ lf_token_t* lf_new_token(token_type_t* type);
  * @return A new or recycled lf_token_t struct.
  */
 lf_token_t* _lf_get_token(token_template_t* template);
+
+/**
+ * Initialize the specified template to contain tokens that are
+ * arrays with the specified size. Upon return, the token field will
+ * be non-NULL. If there was previously a token with a reference
+ * count greater than 0 or a non-matching type, it will be replaced.
+ * The length of the returned token will be 0.
+ * @param template The template.
+ * @param element_size The element size.
+ */
+void _lf_initialize_template(token_template_t* template, size_t element_size);
 
 /**
  * Return a token storing the specified value, which is assumed to

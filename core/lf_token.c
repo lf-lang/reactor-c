@@ -116,20 +116,6 @@ token_freed _lf_free_token(lf_token_t* token) {
     return result;
 }
 
-void _lf_initialize_template(token_template_t* template, size_t element_size) {
-    assert(template != NULL);
-    if (_lf_token_templates == NULL) {
-        _lf_token_templates = hashset_create(4); // Initial size is 16.
-    }
-    hashset_add(_lf_token_templates, template);
-    if (template->token != NULL) {
-        template->token->is_template = false;
-        _lf_free_token(template->token);
-        template->token = NULL;
-    }
-    template->type.element_size = element_size;
-}
-
 lf_token_t* lf_new_token(token_type_t* type) {
     lf_token_t* result = NULL;
     // Check the recycling bin.
@@ -150,6 +136,7 @@ lf_token_t* lf_new_token(token_type_t* type) {
     }
     result->is_template = false;
     result->type = type;
+    result->length = 0; // No array stored here for now.
     return result;
 }
 
@@ -170,9 +157,36 @@ lf_token_t* _lf_get_token(token_template_t* template) {
     return template->token;
 }
 
+void _lf_initialize_template(token_template_t* template, size_t element_size) {
+    assert(template != NULL);
+    if (_lf_token_templates == NULL) {
+        _lf_token_templates = hashset_create(4); // Initial size is 16.
+    }
+    hashset_add(_lf_token_templates, template);
+    if (template->token != NULL) {
+        if (template->token->ref_count == 0 && template->token->type == (token_type_t*)template) {
+            return; // Template token is already set.
+        }
+        // Replace the token.
+        template->token->is_template = false;
+        _lf_free_token(template->token);
+        template->token = NULL;
+    }
+    template->type.element_size = element_size;
+    template->token = lf_new_token((token_type_t*)template);
+    template->token->is_template = true;
+}
+
 lf_token_t* _lf_initialize_token_with_value(token_template_t* template, void* value, size_t length) {
     assert(template != NULL);
     lf_token_t* result = _lf_get_token(template);
+    if (result->value != NULL) {
+        if (((token_type_t*)template)->destructor == NULL) {
+            free(result->value);
+        } else {
+            ((token_type_t*)template)->destructor(result->value);
+        }
+    }
     result->value = value;
     result->length = length;
     return result;
