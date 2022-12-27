@@ -146,11 +146,7 @@ struct reaction_t {
     int number;    // The number of the reaction in the reactor (0 is the first reaction).
     index_t index; // Inverse priority determined by dependency analysis. INSTANCE.
     // Binary encoding of the branches that this reaction has upstream in the dependency graph. INSTANCE.
-    #ifdef BIT_32 // Use a reduced width for chain IDs on 32-bit systems.
-    unsigned long chain_id;
-    #else
     unsigned long long chain_id;
-    #endif
     size_t pos;       // Current position in the priority queue. RUNTIME.
     reaction_t* last_enabling_reaction; // The last enabling reaction, or NULL if there is none. Used for optimization. INSTANCE.
     size_t num_outputs;  // Number of outputs that may possibly be produced by this function. COMMON.

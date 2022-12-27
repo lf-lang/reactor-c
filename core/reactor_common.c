@@ -39,6 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <string.h>
 
+#include "platform.h"
 #include "lf_types.h"
 #ifdef MODAL_REACTORS
 #include "modes.h"
@@ -56,6 +57,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ////////////////////////////////////////////////////////////
 //// Global variables :(
+
 
 /**
  * Indicator of whether to wait for physical time to match logical time.
@@ -1152,6 +1154,65 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
 }
 
 /**
+ * Schedule the specified trigger at current_tag.time plus the offset of the
+ * specified trigger plus the delay.
+ * See reactor.h for documentation.
+ */
+trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
+    trigger_t* trigger = (trigger_t*)action;
+    _lf_critical_section_enter();
+    int return_value = _lf_schedule(trigger, extra_delay, token);
+    // Notify the main thread in case it is waiting for physical time to elapse.
+    _lf_notify_of_event();
+    _lf_critical_section_exit();
+    return return_value;
+}
+
+/**
+ * Schedule an action to occur with the specified value and time offset
+ * with a copy of the specified value.
+ * See reactor.h for documentation.
+ */
+trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value, size_t length) {
+    if (value == NULL) {
+        return _lf_schedule_token(action, offset, NULL);
+    }
+    trigger_t* trigger = (trigger_t*)action;
+
+    if (trigger == NULL || ((token_type_t*)trigger)->element_size <= 0) {
+        lf_print_error("schedule: Invalid trigger or element size.");
+        return -1;
+    }
+    _lf_critical_section_enter();
+    // Initialize token with an array size of length and a reference count of 0.
+    lf_token_t* token = _lf_initialize_token((token_template_t*)trigger, length);
+    // Copy the value into the newly allocated memory.
+    memcpy(token->value, value, trigger->element_size * length);
+    // The schedule function will increment the reference count.
+    trigger_handle_t result = _lf_schedule(trigger, offset, token);
+    // Notify the main thread in case it is waiting for physical time to elapse.
+    _lf_notify_of_event();
+    _lf_critical_section_exit();
+    return result;
+}
+
+/**
+ * Variant of schedule_token that creates a token to carry the specified value.
+ * See reactor.h for documentation.
+ */
+trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* value, size_t length) {
+    trigger_t* trigger = (trigger_t*)action;
+
+    _lf_critical_section_enter();
+    lf_token_t* token = _lf_initialize_token_with_value(&trigger->template, value, length);
+    int return_value = _lf_schedule(trigger, extra_delay, token);
+    // Notify the main thread in case it is waiting for physical time to elapse.
+    _lf_notify_of_event();
+    _lf_critical_section_exit();
+    return return_value;
+}
+
+/**
  * Advance from the current tag to the next. If the given next_time is equal to
  * the current time, then increase the microstep. Otherwise, update the current
  * time and set the microstep to zero.
@@ -1474,11 +1535,13 @@ int process_args(int argc, const char* argv[]) {
             const char* time_spec = argv[i++];
             const char* units = argv[i++];
 
-            #ifdef BIT_32
+
+            #if defined(ARDUINO)
             duration = atol(time_spec);
             #else
             duration = atoll(time_spec);
             #endif
+            
             // A parse error returns 0LL, so check to see whether that is what is meant.
             if (duration == 0LL && strncmp(time_spec, "0", 1) != 0) {
                 // Parse error.
@@ -1611,28 +1674,13 @@ void initialize(void) {
     current_tag.time = physical_start_time;
     start_time = current_tag.time;
 
-    #ifdef BIT_32
-        #ifdef MICROSECOND_TIME
-            LF_PRINT_DEBUG("Start time: " PRINTF_TIME "us", start_time);
-        #else
-            LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
-        #endif
-    #else
-        #ifdef MICROSECOND_TIME
-            LF_PRINT_DEBUG("Start time: " PRINTF_TIME "us", start_time);
-        #else
-            LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
-        #endif
-    #endif
+    LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
 
-    #ifdef ARDUINO
-    printf("---- Start execution at time " PRINTF_TIME "us\n", physical_start_time);
-    #else
     struct timespec physical_time_timespec = {physical_start_time / BILLION, physical_start_time % BILLION};
 
     printf("---- Start execution at time %s---- plus %ld nanoseconds.\n",
             ctime(&physical_time_timespec.tv_sec), physical_time_timespec.tv_nsec);
-    #endif
+    
     if (duration >= 0LL) {
         // A duration has been specified. Calculate the stop time.
         _lf_set_stop_tag((tag_t) {.time = current_tag.time + duration, .microstep = 0});

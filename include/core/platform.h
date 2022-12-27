@@ -42,8 +42,19 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#if defined(ARDUINO)
+#if defined(LF_THREADED) && defined(LF_UNTHREADED)
+#error LF_UNTHREADED and LF_THREADED runtime requested
+#endif
+
+#if !defined(LF_THREADED) && !defined(LF_UNTHREADED)
+#error Must defined either LF_UNTHREADED or LF_THREADED runtime
+#endif
+
+
+#if defined(PLATFORM_ARDUINO)
     #include "platform/lf_arduino_support.h"
+#elif defined(PLATFORM_NRF52)
+    #include "platform/lf_nrf52_support.h"
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
    // Windows platforms
    #include "lf_windows_support.h"
@@ -66,13 +77,18 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error "Platform not supported"
 #endif
 
-#if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
-#define LF_TIMEOUT _LF_TIMEOUT
-
+#if defined(LF_THREADED) || defined(_LF_TRACE)
+// All threaded platforms require some form of mutex support for physical actions.
 typedef _lf_mutex_t lf_mutex_t;          // Type to hold handle to a mutex
 typedef _lf_cond_t lf_cond_t;            // Type to hold handle to a condition variable
 typedef _lf_thread_t lf_thread_t;        // Type to hold handle to a thread
+
+#else
+    typedef void lf_mutex_t;
 #endif
+
+#define LF_TIMEOUT _LF_TIMEOUT
+
 
 /**
  * Time instant. Both physical and logical times are represented
@@ -90,7 +106,10 @@ typedef _interval_t interval_t;
  */
 typedef _microstep_t microstep_t;
 
-#ifdef NUMBER_OF_WORKERS
+
+// For platforms with threading support, the following functions
+// abstract the API so that the LF runtime remains portable.
+#if defined LF_THREADED || defined _LF_TRACE
 
 /**
  * @brief Get the number of cores on the host machine.
@@ -241,6 +260,30 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
 #error "Compiler not supported"
 #endif
 
+#else
+/**
+ * Enter a critical section where logical time and the event queue are guaranteed
+ * to not change unless they are changed within the critical section.
+ * this can be implemented by disabling interrupts.
+ * Users of this function must ensure that lf_init_critical_sections() is
+ * called first and that lf_critical_section_exit() is called later.
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_critical_section_enter();
+
+/**
+ * Exit the critical section entered with lf_lock_time().
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_critical_section_exit();
+
+/**
+ * Notify any listeners that an event has been created.
+ * The caller should call lf_critical_section_enter() before calling this function.
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_notify_of_event();
+
 #endif
 
 /**
@@ -260,22 +303,34 @@ extern void lf_initialize_clock(void);
 extern int lf_clock_gettime(instant_t* t);
 
 /**
- * Pause execution for a number of nanoseconds.
- *
+ * Pause execution for a given duration.
+ * 
  * @return 0 for success, or -1 for failure.
  */
-extern int lf_nanosleep(instant_t requested_time);
+extern int lf_sleep(interval_t sleep_duration);
 
+/**
+ * @brief Sleep until the given wakeup time.
+ * 
+ * @param wakeup_time The time instant at which to wake up.
+ * @return int 0 if sleep completed, or -1 if it was interrupted.
+ */
+extern int lf_sleep_until(instant_t wakeup_time);
 
 /**
  * Macros for marking function as deprecated
  */
 #ifdef __GNUC__
-#define DEPRECATED(X) X __attribute__((deprecated))
+    #define DEPRECATED(X) X __attribute__((deprecated))
 #elif defined(_MSC_VER)
-#define DEPRECATED(X) __declspec(deprecated) X
+    #define DEPRECATED(X) __declspec(deprecated) X
 #else
-#define DEPRECATED(X) X
+    #define DEPRECATED(X) X
 #endif
+
+/**
+ * @deprecated version of "lf_sleep"
+ */
+DEPRECATED(extern int lf_nanosleep(interval_t sleep_duration));
 
 #endif // PLATFORM_H
