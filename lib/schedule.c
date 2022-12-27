@@ -97,9 +97,6 @@ trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value
  * current physical time and the time it would be assigned if it
  * were a logical action.
  *
- * The token is required to be either NULL or a pointer to
- * a token created using create_token().
- *
  * There are three conditions under which this function will not
  * actually put an event on the event queue and decrement the reference count
  * of the token (if there is one), which could result in the payload being

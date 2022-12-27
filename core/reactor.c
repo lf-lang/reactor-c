@@ -62,7 +62,7 @@ pqueue_t* reaction_q;
  * See reactor.h for documentation.
  */
 trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-    trigger_t* trigger = _lf_action_to_trigger(action);
+    trigger_t* trigger = (trigger_t*)action;
     return _lf_schedule(trigger, extra_delay, token);
 }
 
@@ -71,10 +71,8 @@ trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_tok
  * See reactor.h for documentation.
  */
 trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* value, size_t length) {
-    trigger_t* trigger = _lf_action_to_trigger(action);
-    lf_token_t* token = create_token(trigger->element_size);
-    token->value = value;
-    token->length = length;
+    trigger_t* trigger = (trigger_t*)action;
+    lf_token_t* token = _lf_initialize_token_with_value(&trigger->template, value, length);
     return _lf_schedule_token(action, extra_delay, token);
 }
 
@@ -84,7 +82,9 @@ trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* 
  * See reactor.h for documentation.
  */
 trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value, size_t length) {
-    trigger_t* trigger = _lf_action_to_trigger(action);
+    assert(action != NULL);
+    // Every action is a trigger_t (extended).
+    trigger_t* trigger = (trigger_t*)action;
     if (value == NULL) {
         return _lf_schedule_token(action, offset, NULL);
     }
@@ -94,7 +94,7 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
     }
     LF_PRINT_DEBUG("schedule_copy: Allocating memory for payload (token value): %p.", trigger);
     // Initialize token with an array size of length and a reference count of 0.
-    lf_token_t* token = _lf_initialize_token(trigger->token, length);
+    lf_token_t* token = _lf_initialize_token(&trigger->template, length);
     // Copy the value into the newly allocated memory.
     memcpy(token->value, value, token->element_size * length);
     // The schedule function will increment the reference count.

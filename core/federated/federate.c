@@ -1772,7 +1772,7 @@ void handle_tagged_message(int socket, int fed_id) {
     lf_mutex_lock(&mutex);
 
     // Create a token for the message
-    lf_token_t* message_token = create_token(action->element_size);
+    lf_token_t* message_token = (action->element_size);
     // Set up the token
 
     message_token->value = message_contents;

@@ -67,6 +67,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include "lf_token.h"
 #include "utils/vector.h"
 
 /** Threshold for width of multiport s.t. sparse reading is supported. */
@@ -87,16 +88,21 @@ typedef struct lf_sparse_io_record_t {
 	size_t present_channels[];  // Array of channel indices that are present.
 } lf_sparse_io_record_t;
 
+
 /**
  * Port structs are customized types because their payloads are type
  * specific. This struct represents their common features. Given any
  * pointer to a port struct, it can be cast to lf_port_base_t and then
  * these common fields can be accessed.
+ * IMPORTANT: If this is changed, it must also be changed in
+ * CPortGenerator.java generateAuxiliaryStruct().
  */
 typedef struct lf_port_base_t {
+	token_template_t template;            // Type and token information.
 	bool is_present;
 	lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
 	int destination_channel;              // -1 if there is no destination.
+    int num_destinations;                 // The number of destination reactors this port writes to.
 } lf_port_base_t;
 
 /**

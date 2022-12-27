@@ -42,6 +42,7 @@
 #include "pqueue.h"
 #include "platform.h"
 #include "tag.h"
+#include "lf_token.h"
 
 /**
  * ushort type. Redefine here for portability if sys/types.h is not included.
@@ -129,45 +130,6 @@ typedef void(*reaction_function_t)(void*);
 typedef struct trigger_t trigger_t;
 
 /**
- * Token type for dynamically allocated arrays and structs sent as messages.
- *
- * In the C LF target, a type for an output that ends in '*' or '[]' is
- * treated specially. The value carried by the output is assumed
- * to be in dynamically allocated memory, and, using reference
- * counting, after the last downstream reader of the value has
- * finished, the memory will be freed.  To prevent this freeing
- * from occurring, the output type can be specified using the
- * syntax {= type* =}; this will not be treated as dynamically
- * allocated memory. Alternatively, the programmer can give a typedef
- * in the preamble that masks the trailing *.
- *
- * This struct is the wrapper around the dynamically allocated memory
- * that carries the message.  The message can be an array of values,
- * where the size of each value is element_size (in bytes). If it is
- * not an array, or is not to be treated as an array, the length == 1.
- */
-typedef struct lf_token_t {
-    /** Pointer to dynamically allocated memory containing a message. */
-    void* value;
-    /** Size of the struct or array element. */
-    size_t element_size;
-    /** Length of the array or 1 for a struct. */
-    size_t length;
-    /** The number of input ports that have a pointer to the message. */
-    size_t ref_count;
-    /** The destructor or NULL to use the default free(). */
-    void (*destructor) (void* value);
-    /** The copy constructor or NULL to use memcpy. */
-    void* (*copy_constructor) (void* value);
-    /** Number of triggers (input ports and actions) that have this as a template. */
-    size_t template_count;
-    /** Indicator that the value is to be freed when the token is freed. */
-    bool ok_to_free_value;
-    /** Convenience for constructing a temporary list of tokens. */
-    struct lf_token_t* next;
-} lf_token_t;
-
-/**
  * Reaction activation record to push onto the reaction queue.
  * Some of the information in this struct is common among all instances
  * of the reactor, and some is specific to each particular instance.
@@ -242,12 +204,12 @@ struct event_t {
  * Instances of this struct are put onto the event queue (event_q).
  */
 struct trigger_t {
+    token_template_t template;     // Type and token information.
     reaction_t** reactions;   // Array of pointers to reactions sensitive to this trigger.
     int number_of_reactions;  // Number of reactions sensitive to this trigger.
     bool is_timer;            // True if this is a timer (a special kind of action), false otherwise.
     interval_t offset;        // Minimum delay of an action. For a timer, this is also the maximum delay.
     interval_t period;        // Minimum interarrival time of an action. For a timer, this is also the maximal interarrival time.
-    lf_token_t* token;           // Pointer to a token wrapping the payload (or NULL if there is none).
     bool is_physical;         // Indicator that this denotes a physical action.
     event_t* last;            // Pointer to the last event that was scheduled for this action.
     lf_spacing_policy_t policy;          // Indicates which policy to use when an event is scheduled too early.

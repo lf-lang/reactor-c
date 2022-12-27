@@ -57,7 +57,8 @@
 #include <time.h>
 
 #include "lf_types.h"
-#include "modes.h" // Modal model support
+#include "lf_token.h"
+#include "modes.h"     // Modal model support
 #include "platform.h"  // Platform-specific times and APIs
 #include "port.h"
 #include "pqueue.h"
@@ -68,8 +69,6 @@
 //  ======== Macros ========  //
 #define CONSTRUCTOR(classname) (new_ ## classname)
 #define SELF_STRUCT_T(classname) (classname ## _self_t)
-
-lf_token_t* _lf_initialize_token_with_value(lf_token_t* token, void* value, size_t length);
 
 ////////////////////////////////////////////////////////////
 //// Macros for producing outputs.
@@ -90,42 +89,10 @@ lf_token_t* _lf_initialize_token_with_value(lf_token_t* token, void* value, size
  */
 void _lf_set_present(lf_port_base_t* port);
 
-/**
- * @brief Replace the specified template token with a new one.
- * If the two tokens are equal, this does nothing. Otherwise, it
- * frees the previous template token pointed by the first argument,
- * if appropriate (the reference and template counts are zero)
- * and increments the template count of the second.
- * @param template Pointer to a token pointer for a template token.
- * @param newtoken The replacement token.
- */
- void _lf_replace_template_token(lf_token_t** template, lf_token_t* newtoken);
-
-/** Possible return values for _lf_done_using and _lf_free_token. */
-typedef enum token_freed {
-    NOT_FREED = 0, // Nothing was freed.
-    VALUE_FREED,   // The value (payload) was freed.
-    TOKEN_FREED,    // The token was freed but not the value.
-    TOKEN_AND_VALUE_FREED // Both were freed
-} token_freed;
-
-/**
- * @brief Free the specified token, if appropriate.
- * If the reference count is greater than 0, then do not free 
- * anything. Otherwise, the token value (payload) will be freed
- * if the token's ok_to_free_value field is true (and the target
- * is not a garbage-collected language like Python). Finally,
- * the token itself will be freed if its template_count is zero.
- * The freed token will be put on the recycling bin unless that
- * bin has reached the designated capacity, in which case free()
- * will be used.
- *
- * @param token Pointer to a token.
- * @return NOT_FREED if nothing was freed, VALUE_FREED if the value
- *  was freed, TOKEN_FREED if only the token was freed, and
- *  TOKEN_AND_VALUE_FREED if both the value and the token were freed.
- */
-token_freed _lf_free_token(lf_token_t* token);
+// NOTE: Ports passed to these macros can be cast to:
+// lf_port_base_t: which has the field bool is_present (and more);
+// token_template_t: which has a lf_token_t* token field; or
+// token_type_t: Which has element_size, destructor, and copy_constructor fields.
 
 /**
  * Set the specified output (or input of a contained reactor)
@@ -147,18 +114,10 @@ do { \
     /* even if it is a literal */ \
     out->value = val; \
     _lf_set_present((lf_port_base_t*)out); \
-    if (out->token != NULL) { \
+    if (((token_template_t*)out)->token != NULL) { \
         /* The cast "*((void**) &out->value)" is a hack to make the code */ \
         /* compile with non-token types where val is not a pointer. */ \
-        lf_token_t* token = _lf_initialize_token_with_value(out->token, *((void**) &out->value), 1); \
-        token->ref_count = out->num_destinations; \
-        out->token = token; \
-        if (out->destructor != NULL) { \
-            out->token->destructor = out->destructor; \
-        } \
-        if (out->copy_constructor != NULL) { \
-            out->token->copy_constructor = out->copy_constructor; \
-        } \
+        lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, *((void**) &out->value), 1); \
     } \
 } while(0)
 
@@ -179,18 +138,14 @@ do { \
 #define _LF_SET_ARRAY(out, val, length) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
-    token->ref_count = out->num_destinations; \
-    out->token = token; \
+    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
     out->value = token->value; \
 } while(0)
 #else
 #define _LF_SET_ARRAY(out, val, length) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
-    token->ref_count = out->num_destinations; \
-    out->token = token; \
+    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
     out->value = static_cast<decltype(out->value)>(token->value); \
 } while(0)
 #endif
@@ -213,17 +168,15 @@ do { \
 #define _LF_SET_NEW(out) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
+    lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
     out->value = token->value; \
-    out->token = token; \
 } while(0)
 #else
 #define _LF_SET_NEW(out) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
+    lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
     out->value = static_cast<decltype(out->value)>(token->value); \
-    out->token = token; \
 } while(0)
 #endif // __cplusplus
 
@@ -244,18 +197,16 @@ do { \
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
+    lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
     out->value = token->value; \
-    out->token = token; \
     out->length = len; \
 } while(0)
 #else
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
+    lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
     out->value = static_cast<decltype(out->value)>(token->value); \
-    out->token = token; \
     out->length = len; \
 } while(0)
 #endif
@@ -286,18 +237,16 @@ do { \
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    _lf_replace_template_token(&out->token, newtoken); \
+    _lf_replace_template_token((token_template_t*)out, newtoken); \
     out->value = newtoken->value; \
-    newtoken->ref_count += out->num_destinations; \
     out->length = newtoken->length; \
 } while(0)
 #else
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    _lf_replace_template_token(&out->token, newtoken); \
+    _lf_replace_template_token((token_template_t*)out, newtoken); \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
-    newtoken->ref_count += out->num_destinations; \
     out->length = newtoken->length; \
 } while(0)
 #endif
@@ -309,26 +258,26 @@ do { \
  *
  * @param out The output port (by name) or input of a contained
  *            reactor in form input_name.port_name.
- * @param dtor A pointer to a void function that takes a pointer argument
+ * @param destructor A pointer to a void function that takes a pointer argument
  *             or NULL to use the default void free(void*) function.
  */
-#define _LF_SET_DESTRUCTOR(out, dtor) \
+#define _LF_SET_DESTRUCTOR(out, destructor) \
 do { \
-    out->destructor = dtor; \
+    ((token_type_t*)out)->destructor = destructor; \
 } while(0)
 
 /**
- * Set the destructor used to copy construct "token->value" received
- * by "in" if "in" is mutable.
+ * Set the constructor used to copy construct "token->value" received
+ * by a downstream mutable input.
  *
  * @param out The output port (by name) or input of a contained
  *            reactor in form input_name.port_name.
- * @param cpy_ctor A pointer to a void* function that takes a pointer argument
+ * @param constructor A pointer to a void* function that takes a pointer argument
  *                 or NULL to use the memcpy operator.
  */
-#define _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor) \
+#define _LF_SET_COPY_CONSTRUCTOR(out, constructor) \
 do { \
-    out->copy_constructor = cpy_ctor; \
+    ((token_type_t*)out)->copy_constructor = constructor; \
 } while(0)
 
 /**
@@ -485,17 +434,6 @@ void termination(void);
 bool _lf_trigger_shutdown_reactions(void);
 
 /**
- * Create a new token and initialize it.
- * The value pointer will be NULL and the length will be 0.
- * The token will be marked so that the value (payload) and token can both
- * be freed when done with.
- * @param element_size The size of an element carried in the payload or
- *  0 if there is no payload.
- * @return A pointer to a new or recycled lf_token_t struct.
- */
-lf_token_t* create_token(size_t element_size);
-
-/**
  * Schedule the specified action with an integer value at a later logical
  * time that depends on whether the action is logical or physical and
  * what its parameter values are. This wraps a copy of the integer value
@@ -539,9 +477,6 @@ event_t* _lf_create_dummy_event(trigger_t* trigger, instant_t time, event_t* nex
  * as a logical action, but its timestamp will be the larger of the
  * current physical time and the time it would be assigned if it
  * were a logical action.
- *
- * The token is required to be either NULL or a pointer to
- * a token created using create_token().
  *
  * There are three conditions under which this function will not
  * actually put an event on the event queue and decrement the reference count

@@ -53,7 +53,7 @@ message(STATUS "")
 
 # List sources in this directory.
 list(APPEND SINGLE_THREADED_SOURCES reactor.c)
-list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c)
+list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c lf_token.c)
 if (DEFINED LINGUA_FRANCA_TRACE)
     message(STATUS "Including sources specific to tracing.")
     list(APPEND GENERAL_SOURCES trace.c)
