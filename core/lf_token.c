@@ -142,13 +142,24 @@ lf_token_t* lf_new_token(token_type_t* type) {
 
 lf_token_t* _lf_get_token(token_template_t* template) {
     if (template->token != NULL) {
-        if (template->token->ref_count <= 0) {
-            LF_PRINT_DEBUG("_lf_get_token: Reusing template token: %p", template->token);
+        if (template->token->ref_count <= 1) {
+            LF_PRINT_DEBUG("_lf_get_token: Reusing template token: %p with ref_count %zu",
+                    template->token, template->token->ref_count);
+            // Free any previous value in the token.
+            if (template->token->value != NULL) {
+                if (template->token->type->destructor == NULL) {
+                    free(template->token->value);
+                } else {
+                    template->token->type->destructor(template->token->value);
+                }
+                template->token->value = NULL;
+                _lf_count_payload_allocations--;
+            }
             return template->token;
         } else {
             // Liberate the token.
             template->token->is_template = false;
-            _lf_free_token(template->token);
+            _lf_done_using(template->token);
         }
     }
     // If we get here, we need a new token.
@@ -179,16 +190,13 @@ void _lf_initialize_template(token_template_t* template, size_t element_size) {
 
 lf_token_t* _lf_initialize_token_with_value(token_template_t* template, void* value, size_t length) {
     assert(template != NULL);
+    LF_PRINT_DEBUG("_lf_initialize_token_with_value: template %p, value %p", template, value);
     lf_token_t* result = _lf_get_token(template);
-    if (result->value != NULL) {
-        if (((token_type_t*)template)->destructor == NULL) {
-            free(result->value);
-        } else {
-            ((token_type_t*)template)->destructor(result->value);
-        }
-    }
     result->value = value;
+    // Count allocations to issue a warning if this is never freed.
+    _lf_count_payload_allocations++;
     result->length = length;
+    result->ref_count = 1; // Do not increment because this can, in theory, be called more than once at a tag.
     return result;
 }
 
@@ -196,8 +204,6 @@ lf_token_t* _lf_initialize_token(token_template_t* template, size_t length) {
     assert(template != NULL);
     // Allocate memory for storing the array.
     void* value = calloc(length, template->type.element_size);
-    // Count allocations to issue a warning if this is never freed.
-    _lf_count_payload_allocations++;
     lf_token_t* result = _lf_initialize_token_with_value(template, value, length);
     return result;
 }
@@ -208,9 +214,10 @@ void _lf_free_all_tokens() {
         hashset_itr_t iterator = hashset_iterator(_lf_token_templates);
         while (hashset_iterator_next(iterator) >= 0) {
             token_template_t* template = (token_template_t*)hashset_iterator_value(iterator);
-            // So that both payload and token are freed:
-            template->token->is_template = false;
+            template->token->ref_count = 0;
+            // Free the payload, if any. Token itself will not be freed (it is a template token).
             _lf_free_token(template->token);
+            free(template->token);
             template->token = NULL;
         }
         free(iterator);
@@ -269,9 +276,9 @@ lf_token_t* lf_writable_copy(token_template_t* template) {
     // downstream reaction. That should be tested here.
     // Search for where "dominating" field of ReactionInstance is populated.
     // For now, always copy.
-    if (false /* template->single_reader */ && token->ref_count == 0) {
+    if (false /* template->single_reader */ && token->ref_count <= 1) {
         LF_PRINT_DEBUG("lf_writable_copy: Avoided copy because there "
-                "is only one reader and the reference count is zero.");
+                "is only one reader and the reference count is %zu.", token->ref_count);
         return token;
     }
     LF_PRINT_DEBUG("lf_writable_copy: Copying value. Reference count is %zu.",
@@ -289,12 +296,14 @@ lf_token_t* lf_writable_copy(token_template_t* template) {
         memcpy(copy, token->value, size);
     } else {
         LF_PRINT_DEBUG("lf_writable_copy: Copy constructor is not NULL. Using copy constructor.");
-        if (token->type != NULL && token->type->destructor == NULL) {
+        if (template->type.destructor == NULL) {
             lf_print_warning("lf_writable_copy: Using non-default copy constructor "
                     "without setting destructor. Potential memory leak.");
         }
         copy = template->type.copy_constructor(token->value);
     }
+    LF_PRINT_DEBUG("lf_writable_copy: Allocated memory for payload (token value): %p", copy);
+
     // Count allocations to issue a warning if this is never freed.
     _lf_count_payload_allocations++;
 

@@ -49,7 +49,12 @@
  * 
  * A "template token" is one pointed to by a token_template_t (an action or a port).
  * Such a token will persist in the template until it is overwritten by another
- * token. 
+ * token. Every token_template_t gets initialized with such a token.
+ * Before that token is used the first time, its reference count will be 0.
+ * Once it has been assigned a value, its reference count will be 1.
+ * When the token_template_t (port or action) is assigned a new value, if
+ * the reference count is 0 or 1, then the same token will be reused, and
+ * any previous value (payload) will be freed.
  */
 
 #ifndef LF_TOKEN_H
@@ -141,7 +146,9 @@ typedef struct token_template_t {
  * Otherwise, their memory could leak. If they are passed on to
  * an output or to a call to lf_schedule during the reaction, then
  * those will also result in incremented reference counts, enabling
- * the token to live on until used.
+ * the token to live on until used. For example, a new token created
+ * by lf_writable_copy could become the new template token for an output
+ * via a call to lf_set.
  */
 extern lf_token_t* _lf_tokens_allocated_in_reactions;
 
@@ -165,10 +172,10 @@ static int _lf_count_token_allocations;
 
 /**
  * Return a writable copy of the token in the specified template.
- * If the reference count is 1, this returns the template's token
- * rather than a copy. The reference count will be left at 1.
+ * If the reference count is 0 or 1, this returns the template's token
+ * rather than a copy. The reference count will be 1.
  * Otherwise, if the size of the token payload is zero, this also
- * returns the original token, again with reference count left as it is.
+ * returns the original token, again with reference count of 1.
  * Otherwise, this returns a new token with a reference count of 1.
  * The new token is added to a list of tokens whose reference counts will
  * be decremented at the start of the next tag.
@@ -203,7 +210,7 @@ token_freed _lf_free_token(lf_token_t* token);
  * recycling bin is empty, will allocate a new token using calloc
  * and set its type to point to the specified type.
  * The length of the returned token will be 0 and it will indicate
- * that it is not a template token.
+ * that it is not a template token, and its reference count will be 0.
  * @param type The type of the token
  * @return lf_token_t* 
  */
@@ -211,7 +218,7 @@ lf_token_t* lf_new_token(token_type_t* type);
 
 /**
  * Get a token for the specified template.
- * If the template already has a token and the reference count is 0,
+ * If the template already has a token and the reference count is 0 or 1,
  * then return that token. Otherwise, create a new token,
  * make it the new template, and dissociate or free the
  * previous template token.
@@ -235,7 +242,7 @@ void _lf_initialize_template(token_template_t* template, size_t element_size);
  * Return a token storing the specified value, which is assumed to
  * be either a scalar (if length is 1) or an array of the specified length.
  * If the token in the specified template is available (it non-null and its
- * reference count is 0), then return it. Otherwise, create a new token
+ * reference count is 0 or 1), then return it. Otherwise, create a new token
  * and replace the template token with the new one, freeing the
  * previous token from its template association.
  * The element_size for elements of the array is specified by
@@ -253,7 +260,7 @@ lf_token_t* _lf_initialize_token_with_value(token_template_t* template, void* va
  * Return a token for storing an array of the specified length
  * with new memory allocated (using calloc, so initialize to zero)
  * for storing that array. If the template's token is available
- * (it is non-null and its reference count is 0), then reuse it.
+ * (it is non-null and its reference count is 0 or 1), then reuse it.
  * Otherwise, create a new token and replace the template token
  * with the new one, freeing the previous token from its template
  * association. The element_size for elements
