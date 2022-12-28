@@ -116,7 +116,7 @@ do { \
     _lf_set_present((lf_port_base_t*)out); \
     if (((token_template_t*)out)->token != NULL) { \
         /* The cast "*((void**) &out->value)" is a hack to make the code */ \
-        /* compile with non-token types where val is not a pointer. */ \
+        /* compile with non-token types where value is not a pointer. */ \
         lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, *((void**) &out->value), 1); \
     } \
 } while(0)
