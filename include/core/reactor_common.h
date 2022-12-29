@@ -76,7 +76,7 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token);
 trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_token_t* token);
 trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t* token);
 void _lf_advance_logical_time(instant_t next_time);
-trigger_handle_t _lf_schedule_int(void* action, interval_t extra_delay, int value);
+trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value);
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
 void _lf_invoke_reaction(reaction_t* reaction, int worker);
 void schedule_output_reactions(reaction_t* reaction, int worker);

@@ -50,7 +50,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
 trigger_handle_t lf_schedule(void* action, interval_t offset) {
-    return _lf_schedule_token(action, offset, NULL);
+    return _lf_schedule_token((lf_action_base_t*)action, offset, NULL);
 }
 
 /**
@@ -66,7 +66,7 @@ trigger_handle_t lf_schedule(void* action, interval_t offset) {
  */
 trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value)
 {
-    return _lf_schedule_int(action, extra_delay, value);
+    return _lf_schedule_int((lf_action_base_t*)action, extra_delay, value);
 }
 
 /**
@@ -117,7 +117,7 @@ trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
 trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-    return _lf_schedule_token(action, extra_delay, token);
+    return _lf_schedule_token((lf_action_base_t*)action, extra_delay, token);
 }
 
 /**
@@ -145,7 +145,7 @@ trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, 
         );
         return -1;
     }
-    return _lf_schedule_copy(action, offset, value, (size_t)length);
+    return _lf_schedule_copy((lf_action_base_t*)action, offset, value, (size_t)length);
 }
 
 
@@ -174,7 +174,7 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
         );
         return -1;
     }
-    return _lf_schedule_value(action, extra_delay, value, (size_t)length);
+    return _lf_schedule_value((lf_action_base_t*)action, extra_delay, value, (size_t)length);
 }
 
 

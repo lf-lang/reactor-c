@@ -209,8 +209,6 @@ struct trigger_t {
     bool is_physical;         // Indicator that this denotes a physical action.
     event_t* last;            // Pointer to the last event that was scheduled for this action.
     lf_spacing_policy_t policy;          // Indicates which policy to use when an event is scheduled too early.
-    size_t element_size;      // The size of the payload, if there is one, zero otherwise.
-                              // If the payload is an array, then this is the size of an element of the array.
     port_status_t status;     // Determines the status of the port at the current logical time. Therefore, this
                               // value needs to be reset at the beginning of each logical time.
                               //
@@ -271,5 +269,20 @@ typedef struct self_base_t {
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif
 } self_base_t;
+
+/**
+ * Action structs are customized types because their payloads are type
+ * specific.  This struct represents their common features. Given any
+ * pointer to an action struct, it can be cast to lf_action_base_t,
+ * to token_template_t, or to token_type_t to access these common fields.
+ * IMPORTANT: If this is changed, it must also be changed in
+ * CActionGenerator.java generateAuxiliaryStruct().
+ */
+typedef struct lf_action_base_t {
+	token_template_t template;            // Type and token information.
+	bool is_present;
+	bool has_value;
+	trigger_t* trigger;
+} lf_action_base_t;
 
 #endif

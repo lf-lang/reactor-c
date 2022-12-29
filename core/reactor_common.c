@@ -1158,10 +1158,9 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
  * specified trigger plus the delay.
  * See reactor.h for documentation.
  */
-trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-    trigger_t* trigger = (trigger_t*)action;
+trigger_handle_t _lf_schedule_token(lf_action_base_t* action, interval_t extra_delay, lf_token_t* token) {
     _lf_critical_section_enter();
-    int return_value = _lf_schedule(trigger, extra_delay, token);
+    int return_value = _lf_schedule(action->trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
     _lf_notify_of_event();
     _lf_critical_section_exit();
@@ -1173,23 +1172,22 @@ trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_tok
  * with a copy of the specified value.
  * See reactor.h for documentation.
  */
-trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value, size_t length) {
+trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, void* value, size_t length) {
     if (value == NULL) {
         return _lf_schedule_token(action, offset, NULL);
     }
-    trigger_t* trigger = (trigger_t*)action;
-
-    if (trigger == NULL || ((token_type_t*)trigger)->element_size <= 0) {
-        lf_print_error("schedule: Invalid trigger or element size.");
+    token_template_t* template = (token_template_t*)action;
+    if (action == NULL || template->type.element_size <= 0) {
+        lf_print_error("schedule: Invalid element size.");
         return -1;
     }
     _lf_critical_section_enter();
     // Initialize token with an array size of length and a reference count of 0.
-    lf_token_t* token = _lf_initialize_token((token_template_t*)trigger, length);
+    lf_token_t* token = _lf_initialize_token(template, length);
     // Copy the value into the newly allocated memory.
-    memcpy(token->value, value, trigger->element_size * length);
+    memcpy(token->value, value, template->type.element_size * length);
     // The schedule function will increment the reference count.
-    trigger_handle_t result = _lf_schedule(trigger, offset, token);
+    trigger_handle_t result = _lf_schedule(action->trigger, offset, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
     _lf_notify_of_event();
     _lf_critical_section_exit();
@@ -1200,12 +1198,12 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
  * Variant of schedule_token that creates a token to carry the specified value.
  * See reactor.h for documentation.
  */
-trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* value, size_t length) {
-    trigger_t* trigger = (trigger_t*)action;
+trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_delay, void* value, size_t length) {
+    token_template_t* template = (token_template_t*)action;
 
     _lf_critical_section_enter();
-    lf_token_t* token = _lf_initialize_token_with_value(&trigger->template, value, length);
-    int return_value = _lf_schedule(trigger, extra_delay, token);
+    lf_token_t* token = _lf_initialize_token_with_value(template, value, length);
+    int return_value = _lf_schedule(action->trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
     _lf_notify_of_event();
     _lf_critical_section_exit();
@@ -1253,13 +1251,14 @@ void _lf_advance_logical_time(instant_t next_time) {
  * See reactor.h for documentation.
  * @param action Pointer to an action on the self struct.
  */
-trigger_handle_t _lf_schedule_int(void* action, interval_t extra_delay, int value) {
-    trigger_t* trigger = (trigger_t*)action;
+trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value) {
+    token_template_t* template = (token_template_t*)action;
+
     // NOTE: This doesn't acquire the mutex lock in the multithreaded version
     // until schedule_value is called. This should be OK because the element_size
     // does not change dynamically.
-    if (trigger->element_size != sizeof(int)) {
-        lf_print_error("Action type is not an integer.");
+    if (template->type.element_size != sizeof(int)) {
+        lf_print_error("Action type is not an integer. element_size is %zu", template->type.element_size);
         return -1;
     }
     int* container = (int*)malloc(sizeof(int));
