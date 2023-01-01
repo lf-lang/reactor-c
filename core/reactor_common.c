@@ -391,6 +391,9 @@ void _lf_pop_events() {
 
         lf_token_t *token = event->token;
 
+        // Decrement the reference count.
+        _lf_done_using(token);
+
         // Put the corresponding reactions onto the reaction queue.
         for (int i = 0; i < event->trigger->number_of_reactions; i++) {
             reaction_t *reaction = event->trigger->reactions[i];
@@ -444,7 +447,7 @@ void _lf_pop_events() {
 
         // Copy the token pointer into the trigger struct so that the
         // reactions can access it. This overwrites the previous template token,
-        // for which we decrement the reference count and template count.
+        // for which we decrement the reference count.
         _lf_replace_template_token((token_template_t*)event->trigger, token);
 
         // Mark the trigger present.
@@ -644,6 +647,8 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
     // Increment the reference count of the token.
     if (token != NULL) {
         token->ref_count++;
+        LF_PRINT_DEBUG("_lf_schedule_at_tag: Incremented ref_count of %p to %zu.",
+                token, token->ref_count);
     }
 
     // Do not schedule events if the tag is after the stop tag
@@ -849,17 +854,19 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     LF_PRINT_DEBUG("_lf_schedule: scheduling trigger %p with delay " PRINTF_TIME " and token %p.",
             trigger, extra_delay, token);
 
+    // Increment the reference count of the token.
+    if (token != NULL) {
+        token->ref_count++;
+        LF_PRINT_DEBUG("_lf_schedule: Incremented ref_count of %p to %zu.",
+                token, token->ref_count);
+    }
+
     // The trigger argument could be null, meaning that nothing is triggered.
     // Doing this after incrementing the reference count ensures that the
     // payload will be freed, if there is one.
     if (trigger == NULL) {
         _lf_done_using(token);
         return 0;
-    }
-
-    // Increment the reference count of the token.
-    if (token != NULL) {
-        token->ref_count++;
     }
 
     // Compute the tag (the logical timestamp for the future event).

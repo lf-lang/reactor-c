@@ -250,6 +250,8 @@ void _lf_replace_template_token(token_template_t* template, lf_token_t* newtoken
             _lf_done_using(template->token);
         }
         newtoken->ref_count++;
+        LF_PRINT_DEBUG("_lf_replace_template_token: Incremented ref_count of %p to %zu.",
+                newtoken, newtoken->ref_count);
         template->token = newtoken;
     }
 }
