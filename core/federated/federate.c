@@ -1786,7 +1786,7 @@ void handle_message(int socket, int fed_id) {
     LF_PRINT_LOG("Message received by federate: %s. Length: %zu.", message_contents, length);
 
     LF_PRINT_DEBUG("Calling schedule for message received on a physical connection.");
-    _lf_schedule_value(&action, 0, message_contents, length);
+    _lf_schedule_value((lf_action_base_t*)&action, 0, message_contents, length);
 }
 
 /**
@@ -1862,7 +1862,7 @@ void handle_tagged_message(int socket, int fed_id) {
     lf_mutex_lock(&mutex);
 
     // Create a token for the message
-    lf_token_t* message_token = (action->element_size);
+    lf_token_t* message_token = _lf_get_token((token_template_t*)action);
     // Set up the token
 
     message_token->value = message_contents;
