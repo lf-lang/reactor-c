@@ -391,9 +391,6 @@ void _lf_pop_events() {
 
         lf_token_t *token = event->token;
 
-        // Decrement the reference count.
-        _lf_done_using(token);
-
         // Put the corresponding reactions onto the reaction queue.
         for (int i = 0; i < event->trigger->number_of_reactions; i++) {
             reaction_t *reaction = event->trigger->reactions[i];
@@ -449,6 +446,12 @@ void _lf_pop_events() {
         // reactions can access it. This overwrites the previous template token,
         // for which we decrement the reference count.
         _lf_replace_template_token((token_template_t*)event->trigger, token);
+
+        // Decrement the reference count because the event queue no longer needs this token.
+        // This has to be done after the above call to _lf_replace_template_token because
+        // that call will increment the reference count and we need to not let the token be
+        // freed prematurely.
+        _lf_done_using(token);
 
         // Mark the trigger present.
         event->trigger->status = present;
