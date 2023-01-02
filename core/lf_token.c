@@ -66,6 +66,67 @@ static hashset_t _lf_token_recycling_bin = NULL;
 static hashset_t _lf_token_templates = NULL;
 
 ////////////////////////////////////////////////////////////////////
+//// Functions that user's may call.
+
+lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len) {
+    return _lf_new_token((token_type_t*)port_or_action, val, len);
+}
+
+lf_token_t* lf_writable_copy(token_template_t* template) {
+    assert(template != NULL);
+    lf_token_t* token = template->token;
+    if (token == NULL) return NULL;
+    LF_PRINT_DEBUG("lf_writable_copy: Requesting writable copy of token %p with reference count %zu.",
+            token, token->ref_count);
+    // FIXME: token_template_t needs to be augmented with a field
+    // single_reader that is set to true in the code generator
+    // for an output port or action that triggers exactly one
+    // downstream reaction. That should be tested here.
+    // Search for where "dominating" field of ReactionInstance is populated.
+    // For now, always copy. Or use num_destinations field.
+    if (false /* template->single_reader */ && token->ref_count == 1) {
+        LF_PRINT_DEBUG("lf_writable_copy: Avoided copy because there "
+                "is only one reader and the reference count is %zu.", token->ref_count);
+        return token;
+    }
+    LF_PRINT_DEBUG("lf_writable_copy: Copying value. Reference count is %zu.",
+            token->ref_count);
+    // Copy the payload.
+    void* copy;
+    if (template->type.copy_constructor == NULL) {
+        LF_PRINT_DEBUG("lf_writable_copy: Copy constructor is NULL. Using default strategy.");
+        size_t size = template->type.element_size * token->length;
+        if (size == 0) {
+            return token;
+        }
+        copy = malloc(size);
+        LF_PRINT_DEBUG("Allocating memory for writable copy %p.", copy);
+        memcpy(copy, token->value, size);
+    } else {
+        LF_PRINT_DEBUG("lf_writable_copy: Copy constructor is not NULL. Using copy constructor.");
+        if (template->type.destructor == NULL) {
+            lf_print_warning("lf_writable_copy: Using non-default copy constructor "
+                    "without setting destructor. Potential memory leak.");
+        }
+        copy = template->type.copy_constructor(token->value);
+    }
+    LF_PRINT_DEBUG("lf_writable_copy: Allocated memory for payload (token value): %p", copy);
+
+    // Count allocations to issue a warning if this is never freed.
+    _lf_count_payload_allocations++;
+
+    // Create a new, dynamically allocated token.
+    lf_token_t* result = _lf_new_token((token_type_t*)template, copy, token->length);
+    result->ref_count = 1;
+    // Arrange for the token to be released (and possibly freed) at
+    // the start of the next time step.
+    result->next = _lf_tokens_allocated_in_reactions;
+    _lf_tokens_allocated_in_reactions = result;
+
+    return result;
+}
+
+////////////////////////////////////////////////////////////////////
 //// Internal functions.
 
 void _lf_free_token_value(lf_token_t* token) {
@@ -278,60 +339,6 @@ token_freed _lf_done_using(lf_token_t* token) {
     }
     token->ref_count--;
     return _lf_free_token(token);
-}
-
-lf_token_t* lf_writable_copy(token_template_t* template) {
-    assert(template != NULL);
-    lf_token_t* token = template->token;
-    if (token == NULL) return NULL;
-    LF_PRINT_DEBUG("lf_writable_copy: Requesting writable copy of token %p with reference count %zu.",
-            token, token->ref_count);
-    // FIXME: token_template_t needs to be augmented with a field
-    // single_reader that is set to true in the code generator
-    // for an output port or action that triggers exactly one
-    // downstream reaction. That should be tested here.
-    // Search for where "dominating" field of ReactionInstance is populated.
-    // For now, always copy. Or use num_destinations field.
-    if (false /* template->single_reader */ && token->ref_count == 1) {
-        LF_PRINT_DEBUG("lf_writable_copy: Avoided copy because there "
-                "is only one reader and the reference count is %zu.", token->ref_count);
-        return token;
-    }
-    LF_PRINT_DEBUG("lf_writable_copy: Copying value. Reference count is %zu.",
-            token->ref_count);
-    // Copy the payload.
-    void* copy;
-    if (template->type.copy_constructor == NULL) {
-        LF_PRINT_DEBUG("lf_writable_copy: Copy constructor is NULL. Using default strategy.");
-        size_t size = template->type.element_size * token->length;
-        if (size == 0) {
-            return token;
-        }
-        copy = malloc(size);
-        LF_PRINT_DEBUG("Allocating memory for writable copy %p.", copy);
-        memcpy(copy, token->value, size);
-    } else {
-        LF_PRINT_DEBUG("lf_writable_copy: Copy constructor is not NULL. Using copy constructor.");
-        if (template->type.destructor == NULL) {
-            lf_print_warning("lf_writable_copy: Using non-default copy constructor "
-                    "without setting destructor. Potential memory leak.");
-        }
-        copy = template->type.copy_constructor(token->value);
-    }
-    LF_PRINT_DEBUG("lf_writable_copy: Allocated memory for payload (token value): %p", copy);
-
-    // Count allocations to issue a warning if this is never freed.
-    _lf_count_payload_allocations++;
-
-    // Create a new, dynamically allocated token.
-    lf_token_t* result = _lf_new_token((token_type_t*)template, copy, token->length);
-    result->ref_count = 1;
-    // Arrange for the token to be released (and possibly freed) at
-    // the start of the next time step.
-    result->next = _lf_tokens_allocated_in_reactions;
-    _lf_tokens_allocated_in_reactions = result;
-
-    return result;
 }
 
 void _lf_free_token_copies() {

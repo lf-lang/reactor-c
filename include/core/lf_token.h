@@ -186,8 +186,7 @@ static int _lf_count_token_allocations;
  * @param len The length, or 1 if it not an array.
  * @return A pointer to a lf_token_t struct. 
  */
-#define lf_new_token(port_or_action, val, len) \
-        _lf_new_token((token_type_t*)port_or_action, val, len)
+lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len);
 
 /**
  * Return a writable copy of the token in the specified template.
