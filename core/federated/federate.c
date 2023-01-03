@@ -670,6 +670,19 @@ void* listen_for_upstream_messages_from_downstream_federates(void* fed_id_ptr) {
             // Received a request to close the socket.
             LF_PRINT_DEBUG("Received MSG_TYPE_CLOSE_REQUEST from federate %d.", fed_id);
             _lf_close_outbound_socket(fed_id);
+            break;
+        }
+        if (bytes_read == 0) {
+            // EOF.
+            LF_PRINT_DEBUG("Received EOF from federate %d.", fed_id);
+            _lf_close_outbound_socket(fed_id);
+            break;
+        }
+        if (bytes_read < 0) {
+            // EOF.
+            LF_PRINT_DEBUG("Error on socket from federate %d.", fed_id);
+            _lf_close_outbound_socket(fed_id);
+            break;
         }
     }
     lf_mutex_unlock(&outbound_socket_mutex);
@@ -1786,6 +1799,7 @@ void handle_message(int socket, int fed_id) {
     LF_PRINT_LOG("Message received by federate: %s. Length: %zu.", message_contents, length);
 
     LF_PRINT_DEBUG("Calling schedule for message received on a physical connection.");
+    // FIXME: action is not an lf_action_base! it's a trigger_t
     _lf_schedule_value((lf_action_base_t*)&action, 0, message_contents, length);
 }
 
