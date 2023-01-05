@@ -8,8 +8,7 @@
 
 #include <zephyr/kernel.h>
 
-// FIXME: This flag should also be set by the compiler
-#define TARGET_EMBEDDED
+#define NO_TTY
 
 #define PRINTF_TIME "%" PRIu64
 #define PRINTF_MICROSTEP "%" PRIu32
@@ -31,7 +30,7 @@ typedef int64_t _interval_t;
  */
 typedef uint32_t _microstep_t;
 
-#ifdef NUMBER_OF_WORKERS
+#ifdef LF_THREADED
 typedef struct k_mutex _lf_mutex_t;
 typedef struct k_condvar _lf_cond_t;
 typedef k_tid_t _lf_thread_t;
@@ -45,7 +44,7 @@ int _zephyr_atomic_add_fetch(int *ptr, int value);
 bool _zephyr_bool_compare_and_swap(bool *ptr, bool value, bool newval);
 bool _zephyr_val_compare_and_swap(int *ptr, int value, int newval);
 
-#endif
+#endif // LF_THREADED
 
 #define _LF_TIMEOUT 1
 

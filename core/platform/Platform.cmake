@@ -1,5 +1,4 @@
 # Check which system we are running on to select the correct platform support
-
 # file and assign the file's path to LF_PLATFORM_FILE
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     set(LF_PLATFORM_FILE lf_linux_support.c)

@@ -136,8 +136,9 @@ int _lf_do_step(void) {
     reaction_t* reaction;
 
     // Invoke reactions.
-    while(reaction = (reaction_t*)pqueue_pop(reaction_q)) {
+    while(pqueue_size(reaction_q) > 0) {
         // lf_print_snapshot();
+        reaction_t* reaction = (reaction_t*)pqueue_pop(reaction_q);
         reaction->status = running;
 
         LF_PRINT_LOG("Invoking reaction %s at elapsed logical tag " PRINTF_TAG ".",
@@ -325,11 +326,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
             && process_args(argc, argv)) {
         LF_PRINT_DEBUG("Processed command line arguments.");
         LF_PRINT_DEBUG("Registering the termination function.");
-        #ifndef TARGET_EMBEDDED
         if (atexit(termination) != 0) {
             lf_print_warning("Failed to register termination function!");
         }
-        #endif
         // The above handles only "normal" termination (via a call to exit).
         // As a consequence, we need to also trap Ctrl-C, which issues a SIGINT,
         // and cause it to call exit.
