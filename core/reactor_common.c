@@ -1628,11 +1628,21 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution (for tracing).
  */
 void _lf_invoke_reaction(reaction_t* reaction, int worker) {
+    //FIXME: modif4watchdogs, added mutex lock/unlock
+    //FIXME: also make sure to check warning about mutex lock in lf_reactor_c_main
+    if (((self_base_t*) reaction->self)->watchdog_mutex != NULL) {
+        lf_mutex_lock(&(((self_base_t*) reaction->self)->watchdog_mutex));
+    }
+    
     tracepoint_reaction_starts(reaction, worker);
     ((self_base_t*) reaction->self)->executing_reaction = reaction;
     reaction->function(reaction->self);
     ((self_base_t*) reaction->self)->executing_reaction = NULL;
     tracepoint_reaction_ends(reaction, worker);
+
+    if (((self_base_t*) reaction->self)->watchdog_mutex != NULL) {
+        lf_mutex_unlock(&(((self_base_t*) reaction->self)->watchdog_mutex));
+    }
 }
 
 /**

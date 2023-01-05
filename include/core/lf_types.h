@@ -219,6 +219,7 @@ struct reaction_t {
                               // connections are used in a decentralized federated
                               // execution. COMMON.
     reaction_function_t deadline_violation_handler; // Deadline violation handler. COMMON.
+    reaction_function_t watchdog_handler; // Watchdog handler. //FIXME: modif4watchdogs
     reaction_function_t STP_handler;   // STP handler. Invoked when a trigger to this reaction
                                        // was triggered at a later logical time than originally
                                        // intended. Currently, this is only possible if logical
@@ -319,9 +320,13 @@ typedef struct allocation_record_t {
  * for the reactor that will be freed by that function, allocate the
  * memory using {@link _lf_allocate(size_t,size_t,self_base_t*)}.
  */
+//FIXME: may need to change freeing and allocating with watchdogs
+// modif4watchdogs
 typedef struct self_base_t {
 	struct allocation_record_t *allocations;
 	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
+    lf_mutex_t* watchdog_mutex; // The mutex for this reactor to be acquired before reaction
+                      // invocation. 
 #ifdef MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif

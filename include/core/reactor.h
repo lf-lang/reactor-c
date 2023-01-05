@@ -429,6 +429,12 @@ void _lf_initialize_timers(void);
  */
 void _lf_trigger_startup_reactions(void);
 
+/**
+ * Function to initialize mutexes for watchdogs
+ */
+// FIXME: modif4watchdogs
+void _lf_initialize_watchdog_mutexes(void);
+
 
 /**
  * Function (to be code generated) to terminate execution.
