@@ -1,7 +1,39 @@
+/*************
+Copyright (c) 2023, Norwegian University of Science and Technology.
+
+Redistribution and use in source and binary forms, with or without modification,
+are permitted provided that the following conditions are met:
+
+1. Redistributions of source code must retain the above copyright notice,
+   this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright notice,
+   this list of conditions and the following disclaimer in the documentation
+   and/or other materials provided with the distribution.
+
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+***************/
+
+/**
+ * @brief Zephyr support for the C target of Lingua Franca.
+ *
+ * @author{Erling Jellum <erling.r.jellum@ntnu.no>}
+ * @author{Marten Lohstroh <marten@berkeley.edu>}
+ */
+
 #include <time.h>
 #include <errno.h>
 
 #include "lf_zephyr_support.h"
+#include "lf_zephyr_clock_support.h"
 #include "platform.h"
 #include "utils/util.h"
 #include "tag.h"
@@ -10,48 +42,11 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/counter.h>
 
-// Includes and functions for GPIO debugging
-// Uncomment below to get gpio debug access
-#ifndef QEMU_EMULATION
-#define GPIO_DEBUG
-#ifdef GPIO_DEBUG
-    #include <zephyr/drivers/gpio.h>
-    #define GPIO0 DT_NODELABEL(gpio0)
-    #define NUM_DEBUG_PINS 8
-    gpio_pin_t debug_pins[NUM_DEBUG_PINS] = {17, 18, 19, 20, 22, 23, 24, 25};
-    const struct device *gpio_dev = DEVICE_DT_GET(GPIO0);
-
-    static void gpio_debug_init() {
-        for (int i = 0; i<NUM_DEBUG_PINS; i++) {
-            gpio_pin_configure(gpio_dev, debug_pins[i], GPIO_OUTPUT_INACTIVE);
-        }
-    }
-
-    void gpio_toggle(int pin) {
-        gpio_pin_toggle(gpio_dev,debug_pins[pin]);
-    }
-#endif
-#endif
-
 // Combine 2 32bit works to a 64 bit word
 #define COMBINE_HI_LO(hi,lo) ((((uint64_t) hi) << 32) | ((uint64_t) lo))
 
 
-// To enable development also on QEMU emulation we provide
-//  the ability to use the less precise system clock. This flag is set
-
-#ifndef LF_QEMU_EMULATION
-// FIXME: timer1 is nrf52dk specific. For other boards we wanna support we have to do some
-//  macro-lookups to get it working with all other boards
-#define LF_TIMER DT_NODELABEL(timer1)
-#define LF_TIMER_SLEEP_CHANNEL 0
-#define LF_TIMER_ALARM_CHANNEL 0
-#define LF_WAKEUP_OVERHEAD_US 100 // Pessimistic estimate of wakeup overhead
-#define LF_MIN_SLEEP_US 10      // Do not try to sleep for less than 10 us. do busy-wait instead
-#define LF_RUNTIME_OVERHEAD_US 19 // Estimate of run-time overhead from sleep exit till first reaction
-
-#define FREQ_16MHZ 16000000U
-
+#if defined(LF_ZEPHYR_CLOCK_HI_RES)
 // Create semaphore for async wakeup from physical action
 K_SEM_DEFINE(_lf_sem,0,1)
 
@@ -60,13 +55,13 @@ const struct device *const _lf_counter_dev = DEVICE_DT_GET(LF_TIMER);
 static volatile bool _lf_alarm_fired;
 static uint32_t _lf_timer_freq;
 
-static int64_t _lf_timer_epoch_duration_nsec;
+static int64_t _lf_timer_epoch_duration_usec;
 static volatile int64_t _lf_timer_last_epoch_nsec = 0;
 
 
 // Timer overflow callback
 static void  _lf_timer_overflow_callback(const struct device *dev, void *user_data) {
-        _lf_timer_last_epoch_nsec += _lf_timer_epoch_duration_nsec;
+        _lf_timer_last_epoch_nsec += _lf_timer_epoch_duration_usec*1000LL;
 }
 
 
@@ -78,27 +73,15 @@ static void _lf_wakeup_alarm(const struct device *counter_dev,
     k_sem_give(&_lf_sem);
 }
 
-static inline void ticks_to_nsec(uint32_t ticks, uint64_t *nsec) {
-    if (_lf_timer_freq == FREQ_16MHZ) {
-        *nsec = (ticks>>1) * 125000ULL;
-    }
-}
 #endif
 
-// Forward declaration of local function to ack notified events
-static int lf_ack_events();
-
+// Keep track of nested critical sections
+static uint32_t _lf_num_nested_critical_sections=0;
 // Keep track of physical actions being entered into the system
 static volatile bool _lf_async_event = false;
-// Keep track of whether we are in a critical section or not
-static volatile bool _lf_in_critical_section = false;
 // Keep track of IRQ mask when entering critical section so we can enable again after
 static volatile unsigned _lf_irq_mask = 0;
 
-#ifdef NUMBER_OF_WORKERS
-lf_mutex_t mutex;
-lf_cond_t event_q_changed;
-#endif
 
 /**
  * Initialize the LF clock
@@ -111,10 +94,6 @@ void lf_initialize_clock() {
     #ifndef LF_QEMU_EMULATION
     LF_PRINT_LOG("Initializing zephyr HW timer");
 	
-    #ifdef GPIO_DEBUG
-    gpio_debug_init();
-    #endif
-
     // Verify that we have the device
     // FIXME: proper error handling here
     if (!device_is_ready(_lf_counter_dev)) {
@@ -136,7 +115,7 @@ void lf_initialize_clock() {
     }
 
     // Calculate the duration of an epoch
-    _lf_timer_epoch_duration_nsec = counter_ticks_to_us(_lf_counter_dev, counter_max_ticks) * 1000LL;
+    _lf_timer_epoch_duration_usec = counter_ticks_to_us(_lf_counter_dev, counter_max_ticks);
     
     // Set the max_top value to be the maximum
     counter_max_ticks = counter_get_max_top_value(_lf_counter_dev);
@@ -163,6 +142,11 @@ void lf_initialize_clock() {
     #endif
 }   
 
+
+#if defined(LF_ZEPHYR_CLOCK_HI_RES)
+// Clock and sleep implementation for the HI_RES clock based on 
+// Zephyrs Counter API
+
 /**
  * Return the current time in nanoseconds
  */
@@ -171,16 +155,11 @@ int lf_clock_gettime(instant_t* t) {
     int res;
     uint64_t now_nsec;
     
-    #ifndef LF_QEMU_EMULATION
     res = counter_get_value(_lf_counter_dev, &now_cycles);
-    ticks_to_nsec(now_cycles, &now_nsec);
+    now_nsec = counter_ticks_to_us(_lf_counter_dev, now_cycles)*1000ULL;
     *t = now_nsec + _lf_timer_last_epoch_nsec;
-
-    #else
     now_cycles = k_cycle_get_32();
     *t = (SECOND(1)/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC)*now_cycles;
-
-    #endif
     return 0;
 }
 
@@ -190,27 +169,29 @@ int lf_clock_gettime(instant_t* t) {
  * @param wakeup int64_t time of wakeup 
  * @return int 0 if successful sleep, -1 if awoken by async event
  */
-#ifndef LF_QEMU_EMULATION
 int lf_sleep_until(instant_t wakeup) {
     // Reset flags
     _lf_alarm_fired = false;
     _lf_async_event = false;
     k_sem_reset(&_lf_sem);
 
-    // gpio_toggle(0);
     // Calculate the sleep duration
-    uint32_t now_cycles;
+    uint32_t now_cycles, sleep_duration_ticks;
     counter_get_value(_lf_counter_dev, &now_cycles);
     instant_t now;
     lf_clock_gettime(&now);
     interval_t sleep_for_us = (wakeup - now)/1000;
+
     
-    // Check if sleep is above threshold
-    if (sleep_for_us > (LF_WAKEUP_OVERHEAD_US + LF_MIN_SLEEP_US)) {
-        
-        // Compute sleep duration in ticks. subtract wakeup overhead such that we wakeup a little early and
-        //  do reamined in busy_wait
-        uint32_t sleep_duration_ticks = counter_us_to_ticks(_lf_counter_dev, sleep_for_us-LF_WAKEUP_OVERHEAD_US);
+    while ( !lf_async_event && 
+            sleep_for_us > (LF_WAKEUP_OVERHEAD_US + LF_MIN_SLEEP_US)
+    ) {  
+        if (sleep_for_us < _lf_timer_epoch_duration_usec) {
+            sleep_duration_ticks = counter_us_to_ticks(_lf_counter_dev, sleep_for_us-LF_WAKEUP_OVERHEAD_US);
+        } else {
+            sleep_duration_ticks = UINT32_MAX;
+        }
+
         _lf_alarm_cfg.ticks = sleep_duration_ticks;
         int err = counter_set_channel_alarm(_lf_counter_dev, LF_TIMER_ALARM_CHANNEL,  &_lf_alarm_cfg);
      
@@ -232,12 +213,8 @@ int lf_sleep_until(instant_t wakeup) {
     // Do remaining sleep in busy_wait
     if (!_lf_async_event &&
         sleep_for_us > LF_RUNTIME_OVERHEAD_US) {        
-        // Subtract LF_RUNTIME_OVERHEAD_US which is a measured lower bound on the
-        //  latency from wakup to first reaction invokation. Essentially, we wakeup
-        //  a little early to have the first reaction execute at the right moment.
         k_busy_wait((uint32_t) (sleep_for_us - LF_RUNTIME_OVERHEAD_US));
     }
-    
 
     if (_lf_async_event) {
         // Cancel the outstanding alarm
@@ -249,24 +226,27 @@ int lf_sleep_until(instant_t wakeup) {
     }
 }
 #else
+// Clock and sleep implementation for LO_RES clock
+
+int lf_clock_gettime(instant_t* t) {
+    uint32_t now_cycles = k_cycle_get_32();
+    *t = (SECOND(1)/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC)*now_cycles;
+    return 0;
+}
+
 int lf_sleep_until(instant_t wakeup) {
-    // If we are not in a critical section, we cannot safely call lf_ack_events because it might have occurred after calling 
-    //  lf_sleep_until, in which case we should return immediatly.
-    bool was_in_critical_section = _lf_in_critical_section;
-    if (was_in_critical_section) {
-        lf_ack_events();
-        lf_critical_section_exit();
-    }
+    _lf_async_event=false;    
+    lf_critical_section_exit();
 
     instant_t now;
     do {
     lf_clock_gettime(&now);
     } while ( (now<wakeup) && !_lf_async_event);
-
-    if (was_in_critical_section) lf_critical_section_enter();
+    
+    lf_critical_section_enter();
 
     if (_lf_async_event) {
-        lf_ack_events();
+        _lf_async_event=false;
         return -1;
     } else {
         return 0;
@@ -275,48 +255,74 @@ int lf_sleep_until(instant_t wakeup) {
 #endif
 
 /**
- * @brief Sleep for duration
+ * @brief Pause execution for a given duration.
  * 
- * @param sleep_duration int64_t nanoseconds representing the desired sleep duration
- * @return int 0 if success. -1 if interrupted by async event.
+ * This implementation performs a busy-wait because it is unclear what will
+ * happen if this function is called from within an ISR.
+ * 
+ * @param sleep_duration 
+ * @return 0 for success, or -1 for failure.
  */
 int lf_sleep(interval_t sleep_duration) {
-    instant_t now;
-    lf_clock_gettime(&now);
-    instant_t wakeup = now + sleep_duration;
-    return lf_sleep_until(wakeup);
+    instant_t target_time;
+    instant_t current_time;
+    lf_clock_gettime(&current_time);
+    target_time = current_time + sleep_duration;
+    while (current_time <= target_time) {
+        lf_clock_gettime(&current_time);
+    }
+    return 0;
 }
-
+/**
+ * @brief Enter critical section by disabling interrupts.
+ * Support nested critical sections by only disabling
+ * interrupts on the first call 
+ * 
+ * @return int 
+ */
 int lf_critical_section_enter() {
-    _lf_in_critical_section = true;
-    _lf_irq_mask = irq_lock();
+    if (_lf_num_nested_critical_sections++ == 0) {
+        // First nested entry into a critical section.
+        // If interrupts are not initially enabled, then increment again to prevent
+        _lf_irq_mask = irq_lock();
+    }
     return 0;
 }
 
+/**
+ * @brief Leave critical section by re-enabling interrupts
+ * 
+ * @return int 
+ */
 int lf_critical_section_exit() {
-    _lf_in_critical_section = false;
-    irq_unlock(_lf_irq_mask);
+    if (--_lf_num_nested_critical_sections == 0) {
+        irq_unlock(_lf_irq_mask);
+    }
     return 0;
 }
 
 int lf_notify_of_event() {
    _lf_async_event = true;
-   #ifndef LF_QEMU_EMULATION
+   // If we are using the HI_RES clock. Then we interrupt a sleep through
+   // a semaphore. The LO_RES clock does a busy wait and is woken up by
+   // flipping the `_lf_async_event` flag  
+   #if defined(LF_ZEPHYR_CLOCK_HI_RES)
     k_sem_give(&_lf_sem);
    #endif
    return 0;
 }
 
-static int lf_ack_events() {
-    _lf_async_event = false;
-    return 0;
-}
 
 int lf_nanosleep(interval_t sleep_duration) {
     return lf_sleep(sleep_duration);
 }
 
-#ifdef NUMBER_OF_WORKERS
+#ifdef LF_THREADED
+#warning "Threaded support on Zephyr is still experimental"
+
+lf_mutex_t mutex;
+lf_cond_t event_q_changed;
+
 // FIXME: What is an appropriate stack size?
 #define _LF_STACK_SIZE 1024
 // FIXME: What is an appropriate thread prio?
