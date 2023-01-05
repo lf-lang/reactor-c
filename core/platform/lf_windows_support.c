@@ -38,8 +38,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sysinfoapi.h>
 #include <errno.h>
 #include "lf_windows_support.h"
-#include "../platform.h"
-#include "../utils/util.h"
+#include "platform.h"
+#include "util.h"
+#include "tag.h"
 #include <time.h>
 
 /**
@@ -55,15 +56,12 @@ int _lf_use_performance_counter = 0;
  */
 double _lf_frequency_to_ns = 1.0;
 
+#define LF_MIN_SLEEP_NS USEC(10)
+
 #define BILLION 1000000000
 
-#ifdef NUMBER_OF_WORKERS
+#if defined LF_THREADED || defined _LF_TRACE
 
-// The one and only mutex lock.
-lf_mutex_t mutex;
-
-// Condition variables used for notification between threads.
-lf_cond_t event_q_changed;
 /**
  * @brief Get the number of cores on the host machine.
  */
@@ -73,200 +71,8 @@ int lf_available_cores() {
     return sysinfo.dwNumberOfProcessors;
 }
 
-#if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
-
-/**
- * Create a new thread, starting with execution of lf_thread
- * getting passed arguments. The new handle is stored in thread.
- *
- * @return 0 on success, errno otherwise.
- */
-int lf_thread_create(_lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
-    uintptr_t handle = _beginthreadex(NULL, 0, lf_thread, arguments, 0, NULL);
-    *thread = (HANDLE)handle;
-    if(handle == 0){
-        return errno;
-    }else{
-        return 0;
-    }
-}
-
-/**
- * Make calling thread wait for termination of the thread.  The
- * exit status of the thread is stored in thread_return, if thread_return
- * is not NULL.
- *
- * @return 0 on success, EINVAL otherwise.
- */
-int lf_thread_join(_lf_thread_t thread, void** thread_return) {
-    DWORD retvalue = WaitForSingleObject(thread, INFINITE);
-    if(retvalue == WAIT_FAILED){
-        return EINVAL;
-    }
-    return 0;
-}
-
-/**
- * Initialize a critical section.
- *
- * @return 0 on success, 1 otherwise.
- */
-int lf_mutex_init(_lf_critical_section_t* critical_section) {
-    // Set up a recursive mutex
-    InitializeCriticalSection((PCRITICAL_SECTION)critical_section);
-    if(critical_section != NULL){
-        return 0;
-    }else{
-        return 1;
-    }
-}
-
-/**
- * Lock a critical section.
- *
- * From https://docs.microsoft.com/en-us/windows/win32/api/synchapi/nf-synchapi-entercriticalsection:
- *    "This function can raise EXCEPTION_POSSIBLE_DEADLOCK if a wait operation on the critical section times out.
- *     The timeout interval is specified by the following registry value:
- *     HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\Session Manager\CriticalSectionTimeout.
- *     Do not handle a possible deadlock exception; instead, debug the application."
- *
- * @return 0
- */
-int lf_mutex_lock(_lf_critical_section_t* critical_section) {
-    // The following Windows API does not return a value. It can
-    // raise a EXCEPTION_POSSIBLE_DEADLOCK. See synchapi.h.
-    EnterCriticalSection((PCRITICAL_SECTION)critical_section);
-    return 0;
-}
-
-/**
- * Leave a critical_section.
- *
- * @return 0
- */
-int lf_mutex_unlock(_lf_critical_section_t* critical_section) {
-    // The following Windows API does not return a value.
-    LeaveCriticalSection((PCRITICAL_SECTION)critical_section);
-    return 0;
-}
-
-/**
- * Initialize a conditional variable.
- *
- * @return 0
- */
-int lf_cond_init(_lf_cond_t* cond) {
-    // The following Windows API does not return a value.
-    InitializeConditionVariable((PCONDITION_VARIABLE)cond);
-    return 0;
-}
-
-/**
- * Wake up all threads waiting for condition variable cond.
- *
- * @return 0
- */
-int lf_cond_broadcast(_lf_cond_t* cond) {
-    // The following Windows API does not return a value.
-    WakeAllConditionVariable((PCONDITION_VARIABLE)cond);
-    return 0;
-}
-
-/**
- * Wake up one thread waiting for condition variable cond.
- *
- * @return 0
- */
-int lf_cond_signal(_lf_cond_t* cond) {
-    // The following Windows API does not return a value.
-    WakeConditionVariable((PCONDITION_VARIABLE)cond);
-    return 0;
-}
-
-/**
- * Wait for condition variable "cond" to be signaled or broadcast.
- * "mutex" is assumed to be locked before.
- *
- * @return 0 on success, 1 otherwise.
- */
-int lf_cond_wait(_lf_cond_t* cond, _lf_critical_section_t* critical_section) {
-    // According to synchapi.h, the following Windows API returns 0 on failure,
-    // and non-zero on success.
-    int return_value =
-     (int)SleepConditionVariableCS(
-         (PCONDITION_VARIABLE)cond,
-         (PCRITICAL_SECTION)critical_section,
-         INFINITE
-     );
-     switch (return_value) {
-        case 0:
-            // Error
-            return 1;
-            break;
-
-        default:
-            // Success
-            return 0;
-            break;
-     }
-}
-
-/**
- * Block current thread on the condition variable until condition variable
- * pointed by "cond" is signaled or time pointed by "absolute_time_ns" in
- * nanoseconds is reached.
- *
- * @return 0 on success and LF_TIMEOUT on timeout, 1 otherwise.
- */
-int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section, instant_t absolute_time_ns) {
-    // Convert the absolute time to a relative time
-    instant_t current_time_ns;
-    lf_clock_gettime(&current_time_ns);
-    DWORD relative_time_ms = (absolute_time_ns - current_time_ns)/1000000LL;
-
-    int return_value =
-     (int)SleepConditionVariableCS(
-         (PCONDITION_VARIABLE)cond,
-         (PCRITICAL_SECTION)critical_section,
-         relative_time_ms
-     );
-     switch (return_value) {
-        case 0:
-            // Error
-            if (GetLastError() == ERROR_TIMEOUT) {
-                return _LF_TIMEOUT;
-            }
-            return 1;
-            break;
-
-        default:
-            // Success
-            return 0;
-            break;
-     }
-}
-
-int lf_critical_section_enter() {
-    return lf_mutex_lock(&mutex);
-}
-
-int lf_critical_section_exit() {
-    return lf_mutex_unlock(&mutex);
-}
-
-int lf_notify_of_event() {
-    return lf_cond_broadcast(&event_q_changed);
-}
-
-int lf_init_critical_sections() {
-    return 0;
-}
-
 #else
-#include "lf_C11_threads_support.c"
-#endif
-#else
-    #include "lf_os_single_threaded_support.c"
+#include "lf_os_single_threaded_support.c"
 #endif
 
 /**
@@ -354,6 +160,16 @@ int lf_sleep(interval_t sleep_duration) {
     CloseHandle(timer);
     /* Slept without problems */
     return TRUE;
+}
+
+int lf_sleep_until(instant_t wakeup_time) {
+    interval_t sleep_duration = wakeup_time - lf_time_physical();
+
+    if (sleep_duration < LF_MIN_SLEEP_NS) {
+        return 0;
+    } else {
+        return lf_sleep(sleep_duration);
+    }
 }
 
 int lf_nanosleep(interval_t sleep_duration) {

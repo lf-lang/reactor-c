@@ -29,19 +29,19 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @section DESCRIPTION
  * Utility functions for a federate in a federated execution.
  */
-
-#include "../utils/util.h"
-#include "net_util.h"
+#include <assert.h>
+#include <ctype.h>
 #include <errno.h>
+#include <math.h>       // For sqrtl() and powl
+#include <stdarg.h>     // Defines va_list
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>     // Defines read(), write(), and close()
-#include <assert.h>
 #include <string.h>     // Defines memcpy()
-#include <stdarg.h>     // Defines va_list
 #include <time.h>       // Defines nanosleep()
-#include <math.h>       // For sqrtl() and powl
-#include <ctype.h>
+#include <unistd.h>     // Defines read(), write(), and close()
+
+#include "net_util.h"
+#include "util.h"
 
 #ifndef NUMBER_OF_FEDERATES
 #define NUMBER_OF_FEDERATES 1
@@ -110,8 +110,8 @@ ssize_t read_from_socket_errexit(
             if (format != NULL) {
                 shutdown(socket, SHUT_RDWR);
                 close(socket);
-                lf_print_error("Read %ld bytes, but expected %zu.",
-                		more + bytes_read, num_bytes);
+                lf_print_error("Read %ld bytes, but expected %zu. errno=%d",
+                        more + bytes_read, num_bytes, errno);
                 lf_print_error_and_exit(format, args);
             } else if (more == 0) {
                 // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
@@ -485,18 +485,18 @@ void extract_header(
 ) {
     // The first two bytes are the ID of the destination reactor.
     *port_id = extract_uint16(buffer);
-    
+
     // The next two bytes are the ID of the destination federate.
     *federate_id = extract_uint16(&(buffer[sizeof(uint16_t)]));
 
     // printf("DEBUG: Message for port %d of federate %d.\n", *port_id, *federate_id);
-    
+
     // The next four bytes are the message length.
     int32_t local_length_signed = extract_int32(&(buffer[sizeof(uint16_t) + sizeof(uint16_t)]));
     if (local_length_signed < 0) {
         lf_print_error_and_exit(
-            "Received an invalid message length (%d) from federate %d.", 
-            local_length_signed, 
+            "Received an invalid message length (%d) from federate %d.",
+            local_length_signed,
             *federate_id
         );
     }
@@ -538,7 +538,7 @@ void extract_timed_header(
  *
  * The tag is transmitted as a 64-bit (8 byte) signed integer for time and a
  * 32-bit (4 byte) unsigned integer for microstep.
- * 
+ *
  * @param buffer The buffer to read from.
  * @return The extracted tag.
  */
@@ -554,9 +554,9 @@ tag_t extract_tag(
 
 /**
  * Encode tag information into buffer.
- * 
+ *
  * Buffer must have been allocated externally.
- * 
+ *
  * @param buffer The buffer to encode into.
  * @param tag The tag to encode into 'buffer'.
  */
@@ -565,7 +565,7 @@ void encode_tag(
     tag_t tag
 ){
     encode_int64(tag.time, buffer);
-    encode_uint32(tag.microstep, &(buffer[sizeof(int64_t)]));  
+    encode_uint32(tag.microstep, &(buffer[sizeof(int64_t)]));
 }
 
 
@@ -583,7 +583,7 @@ bool match_regex(const char* str, char* regex) {
         return valid;
     }
 
-    // regexec returns 0 when a match is found. 
+    // regexec returns 0 when a match is found.
     if (regexec(&regex_compiled, str, 1, &group, 0) == 0) {
         valid = true;
     }
@@ -598,7 +598,7 @@ bool match_regex(const char* str, char* regex) {
  */
 bool validate_port(char* port) {
     // magic number 6 since port range is [0, 65535]
-    int port_len = strnlen(port, 6); 
+    int port_len = strnlen(port, 6);
     if (port_len < 1 || port_len > 5) {
         return false;
     }
@@ -670,7 +670,7 @@ bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti
 }
 
 /**
- * Extract the host, port and user from rti_addr.  
+ * Extract the host, port and user from rti_addr.
  */
 void extract_rti_addr_info(const char* rti_addr, rti_addr_info_t* rti_addr_info) {
     const char* regex_str = "(([a-zA-Z0-9_-]{1,254})@)?([a-zA-Z0-9.]{1,255})(:([0-9]{1,5}))?";

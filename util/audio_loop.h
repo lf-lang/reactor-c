@@ -32,9 +32,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * `lf_start_audio_loop`, passing it the logical time at which
  * you would like the loop to start.  To play a waveform,
  * call `lf_play_audio_waveform()`.  A waveform may be
- * synthesized or read from a .wav file using 
+ * synthesized or read from a .wav file using
  * `read_wave_file()` (see wave_file_reader.h).
- * 
+ *
  * To use this, include the following flags in your target properties:
  * If you are running on Linux:
  * <pre>
@@ -50,7 +50,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *     files: ["/lib/C/util/audio_loop_mac.c", "/lib/C/util/audio_loop.h"]
  * };
  * </pre>
- * 
+ *
  * In addition, you need this in your Lingua Franca file:
  * If you are running on Linux:
  * <pre>
@@ -70,7 +70,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define AUDIO_LOOP_H
 
 #include "wave_file_reader.h" // Defines lf_waveform_t.
-#include "core/tag.h"         // Defines instant_t.
+#include "tag.h"         // Defines instant_t.
 
 // Constants for playback. These are all coupled.
 #define SAMPLE_RATE 44100
@@ -101,14 +101,14 @@ void lf_stop_audio_loop();
  * the specified time. If the waveform is null, play a simple tick
  * (an impulse). If the waveform has length zero or volume 0,
  * play nothing.
- * 
+ *
  * If the time is too far in the future
  * (beyond the window of the current audio write buffer), then
  * block until the audio output catches up. If the audio playback
  * has already passed the specified point, then play the waveform
  * as soon as possible and return 1.
  * Otherwise, return 0.
- * 
+ *
  * @param waveform The waveform to play or NULL to just play a tick.
  * @param emphasis The emphasis (0.0 for silence, 1.0 for waveform volume).
  * @param start_time The time to start playing the waveform.

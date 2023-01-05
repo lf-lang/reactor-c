@@ -29,9 +29,21 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Include this file instead of trace.h to get tracing.
  * See trace.h file for instructions.
  */
+#ifdef LF_TRACE
 
-#include "utils/util.h"
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
+
+// FIXME: This is a hack to allow trace.c to get the threaded support API
+//  even though we are using a unthreaded runtime
+#define _LF_TRACE
 #include "platform.h"
+#undef _LF_TRACE
+
+#include "reactor_common.h"
+#include "trace.h"
+#include "util.h"
 
 /** Macro to use when access to trace file fails. */
 #define _LF_TRACE_FAILURE(trace_file) \
@@ -44,13 +56,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     } while(0)
 
 // Mutex used to prevent collisions between threads writing to the file.
-lf_mutex_t _lf_trace_mutex;
+static lf_mutex_t _lf_trace_mutex;
 // Condition variable used to indicate when flushing a buffer is finished.
-lf_cond_t _lf_flush_finished;
+static lf_cond_t _lf_flush_finished;
 // Condition variable used to indicate when a new trace needs to be flushed.
-lf_cond_t _lf_flush_needed;
+static lf_cond_t _lf_flush_needed;
 // The thread that flushes to a file.
-lf_thread_t _lf_flush_trace_thread;
+static lf_thread_t _lf_flush_trace_thread;
 
 /**
  * Array of buffers into which traces are written.
@@ -59,25 +71,25 @@ lf_thread_t _lf_flush_trace_thread;
  * tracing continues in a new buffer while a separate thread writes
  * the old buffer to the file.
  */
-trace_record_t** _lf_trace_buffer = NULL;
-int* _lf_trace_buffer_size = NULL;
-trace_record_t** _lf_trace_buffer_to_flush = NULL;
-int* _lf_trace_buffer_size_to_flush = NULL;
+static trace_record_t** _lf_trace_buffer = NULL;
+static int* _lf_trace_buffer_size = NULL;
+static trace_record_t** _lf_trace_buffer_to_flush = NULL;
+static int* _lf_trace_buffer_size_to_flush = NULL;
 
 /** The number of trace buffers allocated when tracing starts. */
-int _lf_number_of_trace_buffers;
+static int _lf_number_of_trace_buffers;
 
 /** Marker that tracing is stopping or has stopped. */
-int _lf_trace_stop = 1;
+static int _lf_trace_stop = 1;
 
 /** The file into which traces are written. */
-FILE* _lf_trace_file;
+static FILE* _lf_trace_file;
 
 /**
  * Table of pointers to a description of the object.
  */
-object_description_t _lf_trace_object_descriptions[TRACE_OBJECT_TABLE_SIZE];
-int _lf_trace_object_descriptions_size = 0;
+static object_description_t _lf_trace_object_descriptions[TRACE_OBJECT_TABLE_SIZE];
+static int _lf_trace_object_descriptions_size = 0;
 
 /**
  * Register a trace event.
@@ -539,3 +551,5 @@ void stop_trace() {
     _lf_trace_file = NULL;
     LF_PRINT_DEBUG("Stopped tracing.");
 }
+
+#endif // LF_TRACE

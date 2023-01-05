@@ -25,25 +25,20 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /** MacOS API support for the C target of Lingua Franca.
- *  
+ *
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
  */
 
 #include "lf_macos_support.h"
-#include "../platform.h"
+#include "platform.h"
+#include "tag.h"
+#define LF_MIN_SLEEP_NS USEC(10)
 
-#ifdef NUMBER_OF_WORKERS
-    #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
-    #include "lf_POSIX_threads_support.c"
-    #else
-#include "lf_C11_threads_support.c"
-    #endif
-#else
+#if defined LF_UNTHREADED && !defined _LF_TRACE
     #include "lf_os_single_threaded_support.c"
 #endif
 
-#include "lf_unix_clock_support.c"
-#include "lf_unix_syscall_support.c"
+#include "lf_unix_clock_support.h"
 
 /**
  * Pause execution for a number of nanoseconds.
@@ -55,6 +50,16 @@ int lf_sleep(interval_t sleep_duration) {
     const struct timespec tp = convert_ns_to_timespec(sleep_duration);
     struct timespec remaining;
     return nanosleep((const struct timespec*)&tp, (struct timespec*)&remaining);
+}
+
+int lf_sleep_until(instant_t wakeup_time) {
+    interval_t sleep_duration = wakeup_time - lf_time_physical();
+
+    if (sleep_duration < LF_MIN_SLEEP_NS) {
+        return 0;
+    } else {
+        return lf_sleep(sleep_duration);
+    }
 }
 
 int lf_nanosleep(interval_t sleep_duration) {

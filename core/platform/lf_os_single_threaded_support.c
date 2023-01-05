@@ -14,6 +14,13 @@
     #error Usage of threads in the single-threaded runtime is not safe.
 #endif
 
+/**
+ * @brief Unthreaded support under a OS is a special case in which we assume
+ * only a single execution context. Other threads scheduling physical actions
+ * are not a use-case. ISRs scheduling physical actions are also not a use-case.
+ * 
+ * @return int 
+ */
 int lf_critical_section_enter() {
     return 0;
 }

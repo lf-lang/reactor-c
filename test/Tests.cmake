@@ -35,4 +35,5 @@ foreach(FILE ${TEST_FILES})
         ${CoreLib} ${Lib} ${TestLib}
     )
     target_include_directories(${NAME} PRIVATE ${TEST_DIR})
+    target_compile_definitions(${NAME} PUBLIC LF_UNTHREADED=1)
 endforeach(FILE ${TEST_FILES})
