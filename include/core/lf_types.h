@@ -219,7 +219,6 @@ struct reaction_t {
                               // connections are used in a decentralized federated
                               // execution. COMMON.
     reaction_function_t deadline_violation_handler; // Deadline violation handler. COMMON.
-    reaction_function_t watchdog_handler; // Watchdog handler. //FIXME: modif4watchdogs
     reaction_function_t STP_handler;   // STP handler. Invoked when a trigger to this reaction
                                        // was triggered at a later logical time than originally
                                        // intended. Currently, this is only possible if logical
