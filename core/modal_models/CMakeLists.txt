@@ -1,2 +1,5 @@
-set(GENERAL_SOURCES modes.c)
-add_sources_to_parent(GENERAL_SOURCES "" "")
+set(MODAL_SOURCES modes.c)
+list(APPEND INFO_SOURCES MODAL_SOURCES)
+
+list(TRANSFORM MODAL_SOURCES PREPEND modal_models/)
+target_sources(core PRIVATE ${MODAL_SOURCES})

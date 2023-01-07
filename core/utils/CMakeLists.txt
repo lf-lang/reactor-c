@@ -1,3 +1,11 @@
-set(GENERAL_SOURCES vector.c pqueue.c util.c)
-set(MULTITHREADED_SOURCES semaphore.c)
-add_sources_to_parent(GENERAL_SOURCES MULTITHREADED_SOURCES "")
+set(UTIL_SOURCES vector.c pqueue.c util.c)
+set(UTIL_THREADED_SOURCES semaphore.c)
+
+if(DEFINED LF_THREADED)
+    list(APPEND UTIL_SOURCES UTIL_THREADED_SOURCES)
+endif()
+
+list(APPEND INFO_SOURCES UTIL_SOURCES)
+
+list(TRANSFORM UTIL_SOURCES PREPEND utils/)
+target_sources(core PRIVATE ${UTIL_SOURCES})

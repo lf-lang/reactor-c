@@ -13,13 +13,22 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     message("Using Windows SDK version ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Arduino")
     set(LF_PLATFORM_FILES lf_arduino_support.c)
-    add_compile_definitions(PUBLIC PLATFORM_ARDUINO)
+    target_compile_definitions(core PUBLIC PLATFORM_ARDUINO)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
     set(LF_PLATFORM_FILES lf_nrf52_support.c)
-    add_compile_definitions(PUBLIC PLATFORM_NRF52)
+    target_compile_definitions(core PUBLIC PLATFORM_NRF52)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
+    set(LF_PLATFORM_FILES lf_zephyr_support.c)
+    target_compile_definitions(core PUBLIC PLATFORM_ZEPHYR)
 else()
-    message(FATAL_ERROR "Your platform is not supported! The C target supports Linux, MacOS, Windows, Arduino and Nrf52.")
+    message(FATAL_ERROR "Your platform is not supported! The C target supports Linux, MacOS, Windows, Arduino, Nrf52 and Zephyr.")
 endif()
 
-set(GENERAL_SOURCES ${LF_PLATFORM_FILES})
-add_sources_to_parent(GENERAL_SOURCES "" "")
+# Add sources to the list for debug info
+list(APPEND INFO_SOURCES LF_PLATFORM_FILES)
+
+# Prepend all sources with platform
+list(TRANSFORM LF_PLATFORM_FILES PREPEND platform/)
+
+# Add sources to core lib
+target_sources(core PRIVATE ${LF_PLATFORM_FILES})
