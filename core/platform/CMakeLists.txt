@@ -21,7 +21,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     set(LF_PLATFORM_FILES lf_zephyr_support.c)
     add_compile_definitions(PUBLIC PLATFORM_ZEPHYR)
 else()
-    message(FATAL_ERROR "Your platform is not supported! The C target supports Linux, MacOS, Windows, Arduino and Nrf52.")
+    message(FATAL_ERROR "Your platform is not supported! The C target supports Linux, MacOS, Windows, Arduino, Nrf52 and Zephyr.")
 endif()
 
 set(GENERAL_SOURCES ${LF_PLATFORM_FILES})

@@ -33,7 +33,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 
 #include "lf_zephyr_support.h"
-#include "lf_zephyr_clock_support.h"
+#include "lf_zephyr_board_support.h"
 #include "platform.h"
 #include "utils/util.h"
 #include "tag.h"
@@ -87,11 +87,11 @@ static volatile unsigned _lf_irq_mask = 0;
  * Initialize the LF clock
  */
 void lf_initialize_clock() {
+
+    #if defined(LF_ZEPHYR_CLOCK_HI_RES)
     struct counter_top_cfg counter_top_cfg;
     uint32_t counter_max_ticks;
     int res;
-
-    #ifndef LF_QEMU_EMULATION
     LF_PRINT_LOG("Initializing zephyr HW timer");
 	
     // Verify that we have the device
@@ -295,6 +295,10 @@ int lf_critical_section_enter() {
  * @return int 
  */
 int lf_critical_section_exit() {
+    if (_lf_num_nested_critical_sections <= 0) {
+        return 1;
+    }
+    
     if (--_lf_num_nested_critical_sections == 0) {
         irq_unlock(_lf_irq_mask);
     }

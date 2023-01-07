@@ -33,7 +33,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  * @author{Erling Jellum <erlingrj@berkeley.edu>}
  */
+
+// Embedded platforms with no TTY shouldnt have signals
+#if !defined(NO_TTY)
 #include <signal.h> // To trap ctrl-c and invoke termination().
+#endif
+
 #include <string.h>
 
 #include "reactor.h"

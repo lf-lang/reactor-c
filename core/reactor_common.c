@@ -1557,8 +1557,9 @@ void _lf_advance_logical_time(instant_t next_time) {
         }
     }
     #endif
-    current_tag.time = next_time.time;
-    current_tag.microstep = next_time.microstep;
+    //FIXME: What is right here instant vs tag
+    current_tag.time = next_time;
+    current_tag.microstep = 0;
     LF_PRINT_LOG("Advanced (elapsed) tag to " PRINTF_TAG, next_time.time - start_time, current_tag.microstep);
 }
 
@@ -1855,6 +1856,7 @@ lf_token_t* writable_copy(lf_token_t* token) {
 
 /**
  * Print a usage message.
+ * TODO: This is not necessary for NO_TTY
  */
 void usage(int argc, const char* argv[]) {
     printf("\nCommand-line arguments: \n\n");
@@ -1891,6 +1893,7 @@ const char** default_argv = NULL;
  * Process the command-line arguments. If the command line arguments are not
  * understood, then print a usage message and return 0. Otherwise, return 1.
  * @return 1 if the arguments processed successfully, 0 otherwise.
+ * TODO: Not necessary for NO_TTY
  */
 
 int process_args(int argc, const char* argv[]) {
@@ -1924,7 +1927,7 @@ int process_args(int argc, const char* argv[]) {
             const char* units = argv[i++];
 
 
-            #if defined(ARDUINO)
+            #if defined(PLATFORM_ARDUINO)
             duration = atol(time_spec);
             #else
             duration = atoll(time_spec);
