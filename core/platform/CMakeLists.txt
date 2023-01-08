@@ -25,7 +25,7 @@ else()
 endif()
 
 # Add sources to the list for debug info
-list(APPEND INFO_SOURCES LF_PLATFORM_FILES)
+list(APPEND INFO_SOURCES ${LF_PLATFORM_FILES})
 
 # Prepend all sources with platform
 list(TRANSFORM LF_PLATFORM_FILES PREPEND platform/)
