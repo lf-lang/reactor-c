@@ -149,8 +149,11 @@ int lf_critical_section_enter() {
  * occurred, then they will be re-enabled here.
  */
 int lf_critical_section_exit() {
-    _lf_num_nested_critical_sections--;
-    if (_lf_num_nested_critical_sections == 0) {
+    if (_lf_num_nested_critical_sections <= 0) {
+        return 1;
+    }
+    
+    if (--_lf_num_nested_critical_sections == 0) {
         interrupts();
     }
     return 0;

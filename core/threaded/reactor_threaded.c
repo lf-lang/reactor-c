@@ -1183,13 +1183,13 @@ void _lf_notify_of_event() {
  * @brief Enter critical section by locking the global mutex
  * 
  */
-void _lf_critical_section_enter() {
-    lf_mutex_lock(&mutex);
+int _lf_critical_section_enter() {
+    return lf_mutex_lock(&mutex);
 }
 /**
  * @brief Leave critical section by unlocking the global mutex
  * 
  */
-void _lf_critical_section_exit() {
-    lf_mutex_unlock(&mutex); 
+int _lf_critical_section_exit() {
+    return lf_mutex_unlock(&mutex); 
 }
