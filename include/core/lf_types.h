@@ -132,6 +132,14 @@ typedef pqueue_pri_t index_t;
  */
 typedef void(*reaction_function_t)(void*);
 
+/** 
+ * Watchdog function type. The argument passed to one of 
+ * these watchdog functions is a pointer to the self struct
+ * for the reactor.
+ */
+// FIXME: modif4watchdogs
+typedef void(*watchdog_function_t)(void*); 
+
 /** Trigger struct representing an output, timer, action, or input. See below. */
 typedef struct trigger_t trigger_t;
 
@@ -250,6 +258,17 @@ struct event_t {
     tag_t intended_tag;       // The intended tag.
 #endif
     event_t* next;            // Pointer to the next event lined up in superdense time.
+};
+
+//FIXME: modif4watchdogs
+/** Typdef for watchdog_t struct, used to call watchdog handler. */
+typedef struct watchdog_t watchdog_t;
+
+/** Watchdog struct for handler. */
+struct watchdog_t {
+    self_base_t* self;                      // The reactor that contains the watchdog.
+    instant_t expiration;                   // The expiration instant for the watchdog. (Initialized to NEVER)
+    watchdog_function_t watchdog_function;  // The function/handler for the watchdog.
 };
 
 /**
