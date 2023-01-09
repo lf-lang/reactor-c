@@ -130,6 +130,4 @@ typedef int64_t _interval_t;
  */
 typedef uint32_t _microstep_t;
 
-int lf_ack_events();
-
 #endif // LF_ARDUINO_SUPPORT_H

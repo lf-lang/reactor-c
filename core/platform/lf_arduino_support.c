@@ -58,10 +58,6 @@ static volatile int _lf_num_nested_critical_sections = 0;
 static volatile uint32_t _lf_time_us_high = 0;
 static volatile uint32_t _lf_time_us_low_last = 0;
 
-int lf_ack_events() {
-    return 0;
-}
-
 /**
  * @brief Sleep until an absolute time.
  * TODO: For improved power consumption this should be implemented with a HW timer and interrupts.
@@ -82,7 +78,7 @@ int lf_sleep_until(instant_t wakeup) {
     lf_critical_section_enter();
 
     if (_lf_async_event) {
-        lf_ack_events();
+        _lf_async_event = false;
         return -1;
     } else {
         return 0;
