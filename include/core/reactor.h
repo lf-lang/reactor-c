@@ -585,6 +585,9 @@ void lf_increment_global_tag_barrier_locked(tag_t future_tag);
  */
 void lf_decrement_global_tag_barrier_locked();
 
+
+int _lf_done_using(lf_token_t* token);
+
 #include "trace.h"
 
 #endif /* REACTOR_H */

@@ -363,7 +363,7 @@ typedef enum token_freed {
  *  was freed, and TOKEN_FREED if both the value and the token were
  *  freed.
  */
-static token_freed _lf_free_token(lf_token_t* token) {
+token_freed _lf_free_token(lf_token_t* token) {
     if (token == NULL) {
         return NOT_FREED;
     }
@@ -422,7 +422,7 @@ static token_freed _lf_free_token(lf_token_t* token) {
  *  was freed, and TOKEN_FREED if both the value and the token were
  *  freed.
  */
-static token_freed _lf_done_using(lf_token_t* token) {
+int _lf_done_using(lf_token_t* token) {
     if (token == NULL) {
         return NOT_FREED;
     }
