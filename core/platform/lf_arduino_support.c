@@ -29,6 +29,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <time.h>
 #include <errno.h>
+#include <assert.h>
 
 #include "lf_arduino_support.h"
 #include "../platform.h"
@@ -56,6 +57,10 @@ static volatile int _lf_num_nested_critical_sections = 0;
  */
 static volatile uint32_t _lf_time_us_high = 0;
 static volatile uint32_t _lf_time_us_low_last = 0;
+
+int lf_ack_events() {
+    return 0;
+}
 
 /**
  * @brief Sleep until an absolute time.
