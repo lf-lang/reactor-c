@@ -90,12 +90,12 @@ void lf_initialize_clock() {
 
     #if defined(LF_ZEPHYR_CLOCK_HI_RES)
     struct counter_top_cfg counter_top_cfg;
-    uint32_t counter_max_ticks;
+    uint32_t counter_max_ticks=0;
     int res;
-    LF_PRINT_LOG("Initializing zephyr HW timer");
+    LF_PRINT_LOG("Using High resolution Zephyr Counter. Initializing  HW timer");
 	
     // Verify that we have the device
-    // FIXME: proper error handling here
+    // FIXME: Try lf_print_error_and_exit? Or terminate in some way? Maybe return non-zero from this function
     if (!device_is_ready(_lf_counter_dev)) {
 		printk("ERROR: counter device not ready.\n");
         while(1) {};
@@ -131,7 +131,8 @@ void lf_initialize_clock() {
     // Start counter
     counter_start(_lf_counter_dev);
     #else
-    printk("Sys Clock has frequency of %u Hz\n", CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC);
+    LF_PRINT_LOG("Using Low resolution zephyr kernel clock")
+    LF_PRINT_LOG("Kernel Clock has frequency of %u Hz\n", CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC);
     #endif
 }   
 
