@@ -16,5 +16,7 @@ var searchData=
   ['triggers_13',['triggers',['../structreaction__t.html#a75ea18d69a144fdb181857cc413ae62c',1,'reaction_t']]],
   ['triggers_5ffor_5fnetwork_5finput_5fcontrol_5freactions_14',['triggers_for_network_input_control_reactions',['../structfederate__instance__t.html#a8385397cd2996dbf5f79828e077926f2',1,'federate_instance_t']]],
   ['triggers_5ffor_5fnetwork_5finput_5fcontrol_5freactions_5fsize_15',['triggers_for_network_input_control_reactions_size',['../structfederate__instance__t.html#aa5363f015c5ece818a390b8639b4be77',1,'federate_instance_t']]],
-  ['type_16',['type',['../struct__lf__sensor__message__t.html#a985768458c6b00559db82b549f2870a4',1,'_lf_sensor_message_t']]]
+  ['tv_5fnsec_16',['tv_nsec',['../structtimespec.html#ae3c7510dafa8cbcaede866ed13c99683',1,'timespec']]],
+  ['tv_5fsec_17',['tv_sec',['../structtimespec.html#a6919fa4ce675f41c89ad8f53b0e9cce4',1,'timespec']]],
+  ['type_18',['type',['../struct__lf__sensor__message__t.html#a985768458c6b00559db82b549f2870a4',1,'_lf_sensor_message_t']]]
 ];
