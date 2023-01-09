@@ -270,9 +270,7 @@ int lf_sleep_until(instant_t wakeup_time) {
  * @return int 
  */
 int lf_critical_section_enter() {
-    // disable nvic
-    sd_nvic_critical_region_enter(&_lf_nested_region);
-    return 0;
+    return sd_nvic_critical_region_enter(&_lf_nested_region);
 }
 
 /**
@@ -281,9 +279,7 @@ int lf_critical_section_enter() {
  * @return int 
  */
 int lf_critical_section_exit() {
-    // enable nvic
-    sd_nvic_critical_region_exit(_lf_nested_region);
-    return 0;
+    return sd_nvic_critical_region_exit(_lf_nested_region);
 }
 
 /**

@@ -585,12 +585,12 @@ void _lf_notify_of_event();
  * `_lf_critical_section_exit()`
  * 
  */
-void _lf_critical_section_enter();
+int _lf_critical_section_enter();
 
 /**
  * @brief Leave critical section
  */
-void _lf_critical_section_exit();
+int _lf_critical_section_exit();
 
 #endif /* REACTOR_H */
 /** @} */
