@@ -107,13 +107,6 @@ void lf_initialize_clock() {
         while(1) {};
     }
 
-    // Get frequency of the counter and make sure that we support it
-    _lf_timer_freq= counter_get_frequency(_lf_counter_dev);
-    if (_lf_timer_freq != FREQ_16MHZ) {
-        printk("ERROR: Zephyr counter has unsupported frequnecy of %u Hz\n", _lf_timer_freq);
-        while(1) {};
-    }
-
     // Calculate the duration of an epoch
     _lf_timer_epoch_duration_usec = counter_ticks_to_us(_lf_counter_dev, counter_max_ticks);
     
@@ -183,7 +176,7 @@ int lf_sleep_until(instant_t wakeup) {
     interval_t sleep_for_us = (wakeup - now)/1000;
 
     
-    while ( !lf_async_event && 
+    while ( !_lf_async_event && 
             sleep_for_us > (LF_WAKEUP_OVERHEAD_US + LF_MIN_SLEEP_US)
     ) {  
         if (sleep_for_us < _lf_timer_epoch_duration_usec) {
@@ -219,7 +212,7 @@ int lf_sleep_until(instant_t wakeup) {
     if (_lf_async_event) {
         // Cancel the outstanding alarm
         counter_cancel_channel_alarm(_lf_counter_dev, LF_TIMER_ALARM_CHANNEL);
-        lf_ack_events();
+        _lf_async_event = false;
         return -1;
     } else {
         return 0;
