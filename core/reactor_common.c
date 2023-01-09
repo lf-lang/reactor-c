@@ -1572,7 +1572,7 @@ void _lf_advance_logical_time(instant_t next_time) {
     //FIXME: What is right here instant vs tag
     current_tag.time = next_time;
     current_tag.microstep = 0;
-    LF_PRINT_LOG("Advanced (elapsed) tag to " PRINTF_TAG, next_time.time - start_time, current_tag.microstep);
+    LF_PRINT_LOG("Advanced (elapsed) tag to " PRINTF_TAG, current_tag.time - start_time, current_tag.microstep);
 }
 
 /**
