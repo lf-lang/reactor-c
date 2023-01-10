@@ -138,8 +138,6 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
  *  should stop.
  */
 int _lf_do_step(void) {
-    reaction_t* reaction;
-
     // Invoke reactions.
     while(pqueue_size(reaction_q) > 0) {
         // lf_print_snapshot();

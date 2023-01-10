@@ -97,17 +97,18 @@ void lf_initialize_clock() {
     // Verify that we have the device
     // FIXME: Try lf_print_error_and_exit? Or terminate in some way? Maybe return non-zero from this function
     if (!device_is_ready(_lf_counter_dev)) {
-		printk("ERROR: counter device not ready.\n");
-        while(1) {};
+
+		lf_print_error_and_exit("ERROR: counter device not ready.\n");
     }
 
     // Verify that it is working as we think
     if(!counter_is_counting_up(_lf_counter_dev)) {
-        printk("ERROR: Timer is counting down \n");
+        lf_print_error_and_exit("ERROR: Timer is counting down \n");
         while(1) {};
     }
 
     // Calculate the duration of an epoch
+    counter_max_ticks = counter_get_max_top_value(_lf_counter_dev);
     _lf_timer_epoch_duration_usec = counter_ticks_to_us(_lf_counter_dev, counter_max_ticks);
     
     // Set the max_top value to be the maximum
@@ -116,11 +117,12 @@ void lf_initialize_clock() {
     counter_top_cfg.callback = _lf_timer_overflow_callback;
     res = counter_set_top_value(_lf_counter_dev, &counter_top_cfg);
     if (res != 0) {
-        printk("ERROR: Timer couldnt set top value\n");
+        lf_print_error_and_exit("ERROR: Timer couldnt set top value\n");
         while(1) {};
     }
 
-    printk("HW Clock has frequency of %u Hz and wraps every %u sec\n", _lf_timer_freq, counter_max_ticks/_lf_timer_freq);
+    LF_PRINT_LOG("HW Clock has frequency of %u Hz and wraps every %u sec\n", _lf_timer_freq, counter_max_ticks/_lf_timer_freq);
+    
     
     // Prepare the alarm config
     _lf_alarm_cfg.flags = 0;
@@ -131,7 +133,7 @@ void lf_initialize_clock() {
     // Start counter
     counter_start(_lf_counter_dev);
     #else
-    LF_PRINT_LOG("Using Low resolution zephyr kernel clock")
+    LF_PRINT_LOG("Using Low resolution zephyr kernel clock");
     LF_PRINT_LOG("Kernel Clock has frequency of %u Hz\n", CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC);
     #endif
 }   
@@ -181,7 +183,7 @@ int lf_sleep_until(instant_t wakeup) {
             sleep_for_us > (LF_WAKEUP_OVERHEAD_US + LF_MIN_SLEEP_US)
     ) {  
         if (sleep_for_us < _lf_timer_epoch_duration_usec) {
-            sleep_duration_ticks = counter_us_to_ticks(_lf_counter_dev, sleep_for_us-LF_WAKEUP_OVERHEAD_US);
+            sleep_duration_ticks = counter_us_to_ticks(_lf_counter_dev, ((uint64_t) sleep_for_us) - LF_WAKEUP_OVERHEAD_US);
         } else {
             sleep_duration_ticks = UINT32_MAX;
         }
