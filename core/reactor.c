@@ -34,10 +34,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Erling Jellum <erlingrj@berkeley.edu>}
  */
 
-// Embedded platforms with no TTY shouldnt have signals
-#if !defined(NO_TTY)
-#include <signal.h> // To trap ctrl-c and invoke termination().
-#endif
 
 #include <string.h>
 
@@ -45,6 +41,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_types.h"
 #include "platform.h"
 #include "reactor_common.h"
+
+// Embedded platforms with no TTY shouldnt have signals
+#if !defined(NO_TTY)
+#include <signal.h> // To trap ctrl-c and invoke termination().
+#endif
 
 /**
  * @brief Queue of triggered reactions at the current tag.
