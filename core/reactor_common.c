@@ -1549,7 +1549,6 @@ trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* 
  *
  * @param next_time The time step to advance to.
  */
-// FIXME: Should this be instant_t or tag_t?
 void _lf_advance_logical_time(instant_t next_time) {
     // FIXME: The following checks that _lf_advance_logical_time()
     // is being called correctly. Namely, check if logical time
@@ -1562,17 +1561,22 @@ void _lf_advance_logical_time(instant_t next_time) {
     #ifdef RUNTIME_CHECKS
     event_t* next_event = (event_t*)pqueue_peek(event_q);
     if (next_event != NULL) {
-        if (next_time->time > next_event->time) {
+        if (next_time > next_event->time) {
             lf_print_error_and_exit("_lf_advance_logical_time(): Attempted to move time to " PRINTF_TIME ", which is "
                     "past the head of the event queue, " PRINTF_TIME ".",
-                    next_time->time - start_time, next_event->time - start_time);
+                    next_time - start_time, next_event->time - start_time);
         }
     }
     #endif
-    //FIXME: What is right here instant vs tag
-    current_tag.time = next_time;
-    current_tag.microstep = 0;
-    LF_PRINT_LOG("Advanced (elapsed) tag to " PRINTF_TAG, current_tag.time - start_time, current_tag.microstep);
+    if (current_tag.time < next_time) {
+        current_tag.time = next_time;
+        current_tag.microstep = 0;
+    } else if (current_tag.time == next_time) {
+        current_tag.microstep++;
+    } else {
+        lf_print_error_and_exit("_lf_advance_logical_time(): Attempted to move tag back in time.");
+    }
+    LF_PRINT_LOG("Advanced (elapsed) tag to " PRINTF_TAG, next_time - start_time, current_tag.microstep);
 }
 
 /**

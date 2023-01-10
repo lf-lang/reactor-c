@@ -632,7 +632,7 @@ void _lf_next_locked() {
 
     // At this point, finally, we have an event to process.
     // Advance current time to match that of the first event on the queue.
-    _lf_advance_logical_time(next_tag);
+    _lf_advance_logical_time(next_tag.time);
 
     if (lf_tag_compare(current_tag, stop_tag) >= 0) {
         // Pop shutdown events
@@ -1102,7 +1102,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     lf_cond_init(&event_q_changed);
     lf_cond_init(&global_tag_barrier_requestors_reached_zero);
 
-    #ifndef TARGET_EMBEDDED
     if (atexit(termination) != 0) {
         lf_print_warning("Failed to register termination function!");
     }
@@ -1116,7 +1115,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Instead, cause an EPIPE error to be set when write() fails.
     signal(SIGPIPE, SIG_IGN);
 #endif // SIGPIPE
-#endif // TARGET_EMBEDDED
     if (process_args(default_argc, default_argv)
             && process_args(argc, argv)) {
 
