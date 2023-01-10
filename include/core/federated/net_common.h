@@ -330,6 +330,53 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_FED_IDS 1
 
+/////////// Messages used for authenticated federation. ///////////////
+/**
+ * Byte identifying a message from an RTI to a federate containing
+ * RTI's 8-byte random nonce for HMAC-based authentication. The RTI sends this
+ * message to an incoming federate when TCP connection is established
+ * between the RTI and the federate.
+ * The next eight bytes are RTI's 8-byte nonce (RTI nonce).
+ */
+#define MSG_TYPE_RTI_NONCE 100
+
+/**
+ * Byte identifying a message from federate to RTI as a response to the RTI Hello
+ * message. The federate sends this message to RTI for HMAC-based authentication.
+ * The message contains, in this order:
+ * * One byte equal to MSG_TYPE_FED_RESPONSE.
+ * * Eight bytes for federate's nonce.
+ * * Two bytes (ushort) giving the federate ID.
+ * * 32 bytes for HMAC tag based on SHA256. 
+ * The HMAC tag is composed of the following order:
+ * * One byte equal to MSG_TYPE_FED_RESPONSE.
+ * * Two bytes (ushort) giving the federate ID.
+ * * Eight bytes for received RTI's nonce.
+ */
+#define MSG_TYPE_FED_RESPONSE 101
+
+/**
+ * Byte identifying a message from RTI to a federate as a response to the FED_RESPONSE
+ * message. The RTI sends this message to federate for HMAC-based authentication.
+ * The message contains, in this order:
+ * * One byte equal to MSG_TYPE_RTI_RESPONSE.
+ * * 32 bytes for HMAC tag based on SHA256.
+ * The HMAC tag is composed of the following order:
+ * * One byte equal to MSG_TYPE_RTI_RESPONSE.
+ * * Eight bytes for received federate's nonce.
+ */
+#define MSG_TYPE_RTI_RESPONSE 102
+
+/**
+ * The randomly created nonce size will be 8 bytes.
+ */
+#define NONCE_LENGTH 8
+
+/**
+ * The HMAC tag uses the SHA256 hash algorithm, creating a 32 byte length hash tag.
+ */
+#define SHA256_HMAC_LENGTH 32
+
 /**
  * Byte identifying a timestamp message, which is 64 bits long.
  * Each federate sends its starting physical time as a message of this
@@ -660,5 +707,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /** Connected to the wrong server. */
 #define WRONG_SERVER 5
+
+/** HMAC authentication failed. */
+#define HMAC_DOES_NOT_MATCH 6
 
 #endif /* NET_COMMON_H */

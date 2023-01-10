@@ -31,13 +31,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "lf_macos_support.h"
 #include "platform.h"
+#include "tag.h"
+#define LF_MIN_SLEEP_NS USEC(10)
 
-#if defined NUMBER_OF_WORKERS || defined LINGUA_FRANCA_TRACE
-#if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
-#include "lf_POSIX_threads_support.h"
-#else
-#include "lf_C11_threads_support.h"
-#endif
+#if defined LF_UNTHREADED && !defined _LF_TRACE
+    #include "lf_os_single_threaded_support.c"
 #endif
 
 #include "lf_unix_clock_support.h"
@@ -48,8 +46,22 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @return 0 for success, or -1 for failure. In case of failure, errno will be
  *  set appropriately (see `man 2 clock_nanosleep`).
  */
-int lf_nanosleep(instant_t requested_time) {
-    const struct timespec tp = convert_ns_to_timespec(requested_time);
+int lf_sleep(interval_t sleep_duration) {
+    const struct timespec tp = convert_ns_to_timespec(sleep_duration);
     struct timespec remaining;
     return nanosleep((const struct timespec*)&tp, (struct timespec*)&remaining);
+}
+
+int lf_sleep_until(instant_t wakeup_time) {
+    interval_t sleep_duration = wakeup_time - lf_time_physical();
+
+    if (sleep_duration < LF_MIN_SLEEP_NS) {
+        return 0;
+    } else {
+        return lf_sleep(sleep_duration);
+    }
+}
+
+int lf_nanosleep(interval_t sleep_duration) {
+    return lf_sleep(sleep_duration);
 }

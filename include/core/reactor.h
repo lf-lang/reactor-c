@@ -575,5 +575,28 @@ void _lf_fd_send_stop_request_to_rti(void);
  */
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
 
+/**
+ * These functions must be implemented by both threaded and unthreaded
+ * runtime. Should be routed to appropriate API calls in platform.h
+*/
+
+/**
+ * @brief Notify other threads of new events on the event queue.
+ * 
+ */
+void _lf_notify_of_event();
+
+/**
+ * @brief Enter critical section. Must be paired with a
+ * `_lf_critical_section_exit()`
+ * 
+ */
+int _lf_critical_section_enter();
+
+/**
+ * @brief Leave critical section
+ */
+int _lf_critical_section_exit();
+
 #endif /* REACTOR_H */
 /** @} */

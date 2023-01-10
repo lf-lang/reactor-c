@@ -90,26 +90,44 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 #endif
 
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
+#ifndef _SYS__TIMESPEC_H_
+#define	_SYS__TIMESPEC_H_
+
+struct timespec {
+	long long	tv_sec;		/* seconds */
+	long	tv_nsec;	/* and nanoseconds */
+};
+
+#endif
+
 #define PRINTF_TIME "%" PRIu32
 #define PRINTF_MICROSTEP "%" PRIu32
 #define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
+
+#define LLONG_MAX __LONG_LONG_MAX__
+#define LLONG_MIN (-LLONG_MAX - 1LL)
+#define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)
+
+// Arduinos are embedded platforms with no tty
+#define NO_TTY
 
 /**
  * Time instant. Both physical and logical times are represented
  * using this typedef.
  */
-typedef int32_t _instant_t;
+typedef int64_t _instant_t;
 
 /**
  * Interval of time.
  */
-typedef int32_t _interval_t;
+typedef int64_t _interval_t;
 
 /**
  * Microstep instant.
  */
 typedef uint32_t _microstep_t;
-
-
 
 #endif // LF_ARDUINO_SUPPORT_H
