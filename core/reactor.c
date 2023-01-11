@@ -202,7 +202,7 @@ int _lf_do_step(void) {
 #endif
 
     if (lf_tag_compare(current_tag, stop_tag) >= 0) {
-        return 0;
+        exit(0);
     }
 
     return 1;
