@@ -107,7 +107,7 @@ Functions</h2></td></tr>
 <tr class="memdesc:a826d1582ddab93857dddcf900df4212f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter critical section. Let NRF Softdevice handle nesting.  <a href="platform_8h.html#a826d1582ddab93857dddcf900df4212f">More...</a><br /></td></tr>
 <tr class="separator:a826d1582ddab93857dddcf900df4212f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a15016241de6a4f3c35115f39e0695084"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#a15016241de6a4f3c35115f39e0695084">lf_critical_section_exit</a> ()</td></tr>
-<tr class="memdesc:a15016241de6a4f3c35115f39e0695084"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exit a critical section. If interrupts were enabled when the matching call to <a class="el" href="lf__arduino__support_8c.html#a826d1582ddab93857dddcf900df4212f">lf_critical_section_enter()</a> occurred, then they will be re-enabled here.  <a href="platform_8h.html#a15016241de6a4f3c35115f39e0695084">More...</a><br /></td></tr>
+<tr class="memdesc:a15016241de6a4f3c35115f39e0695084"><td class="mdescLeft">&#160;</td><td class="mdescRight">Exit a critical section.  <a href="platform_8h.html#a15016241de6a4f3c35115f39e0695084">More...</a><br /></td></tr>
 <tr class="separator:a15016241de6a4f3c35115f39e0695084"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaab97e9e3cf7021063a14698cca59adc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#aaab97e9e3cf7021063a14698cca59adc">lf_notify_of_event</a> ()</td></tr>
 <tr class="memdesc:aaab97e9e3cf7021063a14698cca59adc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set global flag to true so that sleep will return when woken.  <a href="platform_8h.html#aaab97e9e3cf7021063a14698cca59adc">More...</a><br /></td></tr>
@@ -309,9 +309,11 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Exit a critical section. If interrupts were enabled when the matching call to <a class="el" href="lf__arduino__support_8c.html#a826d1582ddab93857dddcf900df4212f">lf_critical_section_enter()</a> occurred, then they will be re-enabled here. </p>
+<p>Exit a critical section. </p>
 <p >Exit the critical section entered with lf_lock_time(). </p><dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise.</dd></dl>
-<p>Exit a critical section. If interrupts were enabled when the matching call to <a class="el" href="lf__arduino__support_8c.html#a826d1582ddab93857dddcf900df4212f">lf_critical_section_enter()</a> occurred, then they will be re-enabled here.</p>
+<p >TODO: Arduino currently has bugs with its interrupt process, so we disable it for now. As such, physical actions are not yet supported.</p>
+<p >If interrupts were enabled when the matching call to <a class="el" href="lf__arduino__support_8c.html#a826d1582ddab93857dddcf900df4212f">lf_critical_section_enter()</a> occurred, then they will be re-enabled here.</p>
+<p >Exit a critical section.</p>
 <dl class="section return"><dt>Returns</dt><dd>int </dd></dl>
 
 </div>
