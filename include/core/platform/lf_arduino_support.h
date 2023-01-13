@@ -90,6 +90,19 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 #endif
 
+#define __STDC_FORMAT_MACROS
+#include <inttypes.h>
+
+#ifndef _SYS__TIMESPEC_H_
+#define	_SYS__TIMESPEC_H_
+
+struct timespec {
+	long long	tv_sec;		/* seconds */
+	long	tv_nsec;	/* and nanoseconds */
+};
+
+#endif
+
 #define PRINTF_TIME "%" PRIu32
 #define PRINTF_MICROSTEP "%" PRIu32
 #define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
@@ -116,7 +129,5 @@ typedef int64_t _interval_t;
  * Microstep instant.
  */
 typedef uint32_t _microstep_t;
-
-int lf_ack_events();
 
 #endif // LF_ARDUINO_SUPPORT_H

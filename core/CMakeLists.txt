@@ -1,34 +1,72 @@
 set(CORE_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
-# Appends the provided sources to the SOURCES variable of the parent.
-macro(add_sources_to_parent GENERAL_SOURCES MULTITHREADED_SOURCES SINGLE_THREADED_SOURCES)
-    set(TEMP ${${GENERAL_SOURCES}})
-    if(DEFINED NUMBER_OF_WORKERS)
-        list(APPEND TEMP ${${MULTITHREADED_SOURCES}})
-    else()
-        list(APPEND TEMP ${${SINGLE_THREADED_SOURCES}})
-    endif()
-    foreach(FILE ${TEMP})
-        file(RELATIVE_PATH RELATIVE_TO_ROOT ${CORE_ROOT} ${CMAKE_CURRENT_SOURCE_DIR}/${FILE})
-        list(APPEND SOURCES ${RELATIVE_TO_ROOT})
-    endforeach()
-    set(SOURCES ${SOURCES} PARENT_SCOPE)
-endmacro()
+# Get the general common sources for reactor-c
+list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c)
 
-# Applies the variable whose name is X as a preprocessor definition,
-#  if that variable is defined.
+# Add tracing support if requested
+if (DEFINED LF_TRACE)
+    message(STATUS "Including sources specific to tracing.")
+    list(APPEND GENERAL_SOURCES trace.c)
+endif()
+
+# Store all sources used to build the reactor-c lib in INFO_SOURCES
+list(APPEND INFO_SOURCES ${GENERAL_SOURCES})
+
+# Create the core library
+add_library(core ${GENERAL_SOURCES})
+
+# Add sources for either threaded or unthreaded runtime
+if(DEFINED LF_THREADED)
+    message(STATUS "Including sources for threaded runtime with \
+${NUMBER_OF_WORKERS} worker(s) with scheduler=${SCHEDULER} and \
+tracing=${LF_TRACE}.")
+    include(threaded/CMakeLists.txt)
+else()
+    message(STATUS "Including sources for unthreaded runtime.")
+    list(APPEND SINGLE_THREADED_SOURCES reactor.c)
+    target_sources(core PRIVATE ${SINGLE_THREADED_SOURCES})
+    list(APPEND INFO_SOURCES ${SINGLE_THREADED_SOURCES})
+endif()
+
+
+# Include sources from subdirectories
+include(utils/CMakeLists.txt)
+include(modal_models/CMakeLists.txt)
+include(platform/CMakeLists.txt)
+
+# Print sources used for compilation
+list(JOIN INFO_SOURCES ", " PRINTABLE_SOURCE_LIST)
+message(STATUS "Including the following sources: " ${PRINTABLE_SOURCE_LIST})
+
+target_include_directories(core PUBLIC ../include)
+target_include_directories(core PUBLIC ../include/core)
+target_include_directories(core PUBLIC ../include/core/federated)
+target_include_directories(core PUBLIC ../include/core/platform)
+target_include_directories(core PUBLIC ../include/core/modal_models)
+target_include_directories(core PUBLIC ../include/core/threaded)
+target_include_directories(core PUBLIC ../include/core/utils)
+
+# Link with thread library 
+if(DEFINED LF_THREADED OR DEFINED LF_TRACE)
+    find_package(Threads REQUIRED)
+    target_link_libraries(core PUBLIC Threads::Threads)
+endif()
+
+# Macro for translating a command-line argument into compile definition for 
+# core lib
 macro(define X)
     if(DEFINED ${X})
         message(STATUS ${X}=${${X}})
-        add_compile_definitions(${X}=${${X}})
+        target_compile_definitions(core PUBLIC ${X}=${${X}})
     endif(DEFINED ${X})
 endmacro()
 
 # FIXME: May want these to be application dependent, hence passed as
 # parameters to Cmake.
-add_compile_definitions(INITIAL_EVENT_QUEUE_SIZE=10)
-add_compile_definitions(INITIAL_REACT_QUEUE_SIZE=10)
+target_compile_definitions(core PRIVATE INITIAL_EVENT_QUEUE_SIZE=10)
+target_compile_definitions(core PRIVATE INITIAL_REACT_QUEUE_SIZE=10)
 
+# Search and apply all possible compile definitions
 message(STATUS "Applying preprocessor definitions...")
 define(_LF_CLOCK_SYNC_ATTENUATION)
 define(_LF_CLOCK_SYNC_COLLECT_STATS)
@@ -51,48 +89,3 @@ define(NUMBER_OF_WORKERS)
 define(SCHEDULER)
 define(TARGET_FILES_DIRECTORY)
 define(WORKERS_NEEDED_FOR_FEDERATE)
-message(STATUS "")
-
-# List sources in this directory.
-list(APPEND SINGLE_THREADED_SOURCES reactor.c)
-list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c lf_token.c)
-if (DEFINED LF_TRACE)
-    message(STATUS "Including sources specific to tracing.")
-    list(APPEND GENERAL_SOURCES trace.c)
-endif()
-
-
-# Add sources from subdirectories.
-add_subdirectory(platform)
-add_subdirectory(utils)
-add_subdirectory(utils/hashset)
-add_subdirectory(modal_models)
-if(DEFINED NUMBER_OF_WORKERS)
-    message(STATUS "Including sources for threaded runtime with \
-${NUMBER_OF_WORKERS} worker(s) with scheduler=${SCHEDULER} and \
-tracing=${LF_TRACE}.")
-    add_subdirectory(threaded)
-else()
-    message(STATUS "Including sources for unthreaded runtime.")
-    list(APPEND SOURCES ${SINGLE_THREADED_SOURCES})
-endif()
-
-list(APPEND SOURCES ${GENERAL_SOURCES})
-
-# Create the library "core".
-list(JOIN SOURCES ", " PRINTABLE_SOURCE_LIST)
-message(STATUS "Including the following sources: " ${PRINTABLE_SOURCE_LIST})
-add_library(core ${SOURCES})
-
-target_include_directories(core PUBLIC ../include)
-target_include_directories(core PUBLIC ../include/core)
-target_include_directories(core PUBLIC ../include/core/federated)
-target_include_directories(core PUBLIC ../include/core/platform)
-target_include_directories(core PUBLIC ../include/core/modal_models)
-target_include_directories(core PUBLIC ../include/core/threaded)
-target_include_directories(core PUBLIC ../include/core/utils)
-
-if(DEFINED LF_THREADED OR DEFINED LF_TRACE)
-    find_package(Threads REQUIRED)
-    target_link_libraries(core PUBLIC Threads::Threads)
-endif()
