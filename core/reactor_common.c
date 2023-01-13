@@ -1925,7 +1925,7 @@ int process_args(int argc, const char* argv[]) {
             const char* units = argv[i++];
 
 
-            #if defined(ARDUINO)
+            #if defined(PLATFORM_ARDUINO)
             duration = atol(time_spec);
             #else
             duration = atoll(time_spec);
