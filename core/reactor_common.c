@@ -1219,19 +1219,11 @@ trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, 
 trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_delay, void* value, size_t length) {
     token_template_t* template = (token_template_t*)action;
 
-<<<<<<< HEAD
-    _lf_critical_section_enter();
-    lf_token_t* token = _lf_initialize_token_with_value(template, value, length);
-    int return_value = _lf_schedule(action->trigger, extra_delay, token);
-=======
     if (_lf_critical_section_enter() != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
-    lf_token_t* token = create_token(trigger->element_size);
-    token->value = value;
-    token->length = length;
-    int return_value = _lf_schedule(trigger, extra_delay, token);
->>>>>>> main
+    lf_token_t* token = _lf_initialize_token_with_value(template, value, length);
+    int return_value = _lf_schedule(action->trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
     _lf_notify_of_event();
     if(_lf_critical_section_exit() != 0) {
