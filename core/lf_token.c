@@ -315,6 +315,7 @@ void _lf_free_all_tokens() {
 
 void _lf_replace_template_token(token_template_t* template, lf_token_t* newtoken) {
     assert(template != NULL);
+    LF_PRINT_DEBUG("_lf_replace_template_token: template: %p newtoken: %p.", template, newtoken);
     if (template->token != newtoken) {
         if (template->token != NULL) {
             _lf_done_using(template->token);
