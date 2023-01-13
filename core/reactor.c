@@ -33,8 +33,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  * @author{Erling Jellum <erlingrj@berkeley.edu>}
  */
-
-
 #include <string.h>
 
 #include "reactor.h"
@@ -274,7 +272,6 @@ int next(void) {
     // Advance current time to match that of the first event on the queue.
     // We can now leave the critical section. Any events that will be added
     // to the queue asynchronously will have a later tag than the current one.
-    // FIXME: use tag or instant here?
     _lf_advance_logical_time(next_tag.time);
     
     // Trigger shutdown reactions if appropriate.

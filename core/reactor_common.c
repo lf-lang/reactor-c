@@ -1911,7 +1911,6 @@ const char** default_argv = NULL;
  * @return 1 if the arguments processed successfully, 0 otherwise.
  * TODO: Not necessary for NO_TTY
  */
-
 int process_args(int argc, const char* argv[]) {
     int i = 1;
     while (i < argc) {
