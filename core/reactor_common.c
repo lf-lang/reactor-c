@@ -1181,7 +1181,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
         // FIXME: This can go away once:
         // - we have eliminated the possibility to have a negative additional delay; and
         // - we detect the asynchronous use of logical actions
-        #ifdef RUNTIME_CHECKS
+        #ifndef NDEBUG
         if (intended_time < current_tag.time) {
             lf_print_warning("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
                     "Revising to the current time " PRINTF_TIME ".",
@@ -1299,7 +1299,7 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     // This is a sanity check for the logic above
     // FIXME: This is a development assertion and might
     // not be necessary for end-user LF programs
-    #ifdef RUNTIME_CHECKS
+    #ifndef NDEBUG
     if (intended_time < current_tag.time) {
         lf_print_error("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
                 "Revising to the current time " PRINTF_TIME ".",
@@ -1558,7 +1558,7 @@ void _lf_advance_logical_time(instant_t next_time) {
     // to the ordinary execution of LF programs. Instead, there might
     // be a need for a target property that enables these kinds of logic
     // assertions for development purposes only.
-    #ifdef RUNTIME_CHECKS
+    #ifndef NDEBUG
     event_t* next_event = (event_t*)pqueue_peek(event_q);
     if (next_event != NULL) {
         if (next_time > next_event->time) {
