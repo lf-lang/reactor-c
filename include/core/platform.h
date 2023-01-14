@@ -323,7 +323,7 @@ extern int lf_sleep(interval_t sleep_duration);
  * @param wakeup_time The time instant at which to wake up.
  * @return int 0 if sleep completed, or -1 if it was interrupted.
  */
-extern int lf_sleep_until(instant_t wakeup_time);
+extern int lf_sleep_until_locked(instant_t wakeup_time);
 
 /**
  * Macros for marking function as deprecated

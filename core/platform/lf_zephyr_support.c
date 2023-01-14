@@ -165,7 +165,7 @@ int lf_clock_gettime(instant_t* t) {
  * @param wakeup int64_t time of wakeup 
  * @return int 0 if successful sleep, -1 if awoken by async event
  */
-int lf_sleep_until(instant_t wakeup) {
+int lf_sleep_until_locked(instant_t wakeup) {
     // Reset flags
     _lf_alarm_fired = false;
     _lf_async_event = false;
@@ -230,7 +230,7 @@ int lf_clock_gettime(instant_t* t) {
     return 0;
 }
 
-int lf_sleep_until(instant_t wakeup) {
+int lf_sleep_until_locked(instant_t wakeup) {
     _lf_async_event=false;    
     lf_critical_section_exit();
 
@@ -465,7 +465,7 @@ int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex) {
  */
 int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absolute_time_ns) {
     
-    // lf_sleep_until(absolute_time_ns);
+    // lf_sleep_until_locked(absolute_time_ns);
     // instant_t now;
     // lf_clock_gettime(&now);
     // return LF_TIMEOUT;

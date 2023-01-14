@@ -203,7 +203,7 @@ static void lf_busy_wait_until(instant_t wakeup_time) {
  * @param wakeup_time The time instant at which to wake up.
  * @return int 0 if sleep completed, or -1 if it was interrupted.
  */
-int lf_sleep_until(instant_t wakeup_time) {
+int lf_sleep_until_locked(instant_t wakeup_time) {
     instant_t now;
     lf_clock_gettime(&now);
     interval_t duration = wakeup_time - now;
