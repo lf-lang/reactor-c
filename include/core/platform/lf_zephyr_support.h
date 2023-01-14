@@ -43,6 +43,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PRINTF_TIME "%" PRIu64
 #define PRINTF_MICROSTEP "%" PRIu32
 #define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
+#define _LF_TIMEOUT 1
 
 /**
  * Time instant. Both physical and logical times are represented
@@ -61,6 +62,8 @@ typedef int64_t _interval_t;
 typedef uint32_t _microstep_t;
 
 #ifdef LF_THREADED
+#warning "Threaded support on Zephyr is still experimental"
+
 typedef struct k_mutex _lf_mutex_t;
 typedef struct k_condvar _lf_cond_t;
 typedef k_tid_t _lf_thread_t;
@@ -68,15 +71,31 @@ typedef k_tid_t _lf_thread_t;
 extern _lf_mutex_t mutex;
 extern _lf_cond_t event_q_changed;
 
-// Atomics
+/**
+ * @brief Add `value` to `*ptr` and return original value of `*ptr` 
+ */
 int _zephyr_atomic_fetch_add(int *ptr, int value);
+/**
+ * @brief Add `value` to `*ptr` and return new updated value of `*ptr`
+ */
 int _zephyr_atomic_add_fetch(int *ptr, int value);
+
+/**
+ * @brief Compare and swap for boolaen value.
+ * If `*ptr` is equal to `value` then overwrite it 
+ * with `newval`. If not do nothing. Retruns true on overwrite.
+ */
 bool _zephyr_bool_compare_and_swap(bool *ptr, bool value, bool newval);
-bool _zephyr_val_compare_and_swap(int *ptr, int value, int newval);
+
+/**
+ * @brief Compare and swap for integers. If `*ptr` is equal
+ * to `value`, it is updated to `newval`. The function returns
+ * the original value of `*ptr`.
+ */
+int  _zephyr_val_compare_and_swap(int *ptr, int value, int newval);
 
 #endif // LF_THREADED
 
-#define _LF_TIMEOUT 1
 
 
 #endif // LF_ZEPHYR_SUPPORT_H
