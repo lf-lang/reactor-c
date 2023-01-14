@@ -65,7 +65,6 @@ endmacro()
 # parameters to Cmake.
 target_compile_definitions(core PRIVATE INITIAL_EVENT_QUEUE_SIZE=10)
 target_compile_definitions(core PRIVATE INITIAL_REACT_QUEUE_SIZE=10)
-target_compile_definitions(core PUBLIC RUNTIME_CHECKS)
 
 # Search and apply all possible compile definitions
 message(STATUS "Applying preprocessor definitions...")
