@@ -1666,16 +1666,11 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution (for tracing).
  */
 void schedule_output_reactions(reaction_t* reaction, int worker) {
-#ifdef FEDERATED
     if (reaction->is_a_control_reaction) {
         // Control reactions will not produce an output but can have
         // effects in order to have certain precedence requirements.
         // No need to execute this function if the reaction is a control
         // reaction.
-        return;
-    }
-#endif
-    if (reaction->num_outputs == 0) {
         return;
     }
     // If the reaction produced outputs, put the resulting triggered
