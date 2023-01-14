@@ -133,18 +133,23 @@ int lf_clock_gettime(instant_t* t) {
  * nested critical sections.
 */
 int lf_critical_section_enter() { 
-    if (_lf_num_nested_critical_sections++ == 0) {
-        // First nested entry into a critical section.
-        // If interrupts are not initially enabled, then increment again to prevent
-        // TODO: Do we need to check whether the interrupts were enabled to
-        //  begin with? AFAIK there is no Arduino API for that 
-        noInterrupts();
-    }
+    _lf_num_nested_critical_sections++;
+    // if (_lf_num_nested_critical_sections++ == 0) {
+    //     // First nested entry into a critical section.
+    //     // If interrupts are not initially enabled, then increment again to prevent
+    //     // TODO: Do we need to check whether the interrupts were enabled to
+    //     //  begin with? AFAIK there is no Arduino API for that 
+    //     noInterrupts();
+    // }
     return 0;
 }
 
 /**
  * @brief Exit a critical section.
+ * 
+ * TODO: Arduino currently has bugs with its interrupt process, so we disable it for now.
+ * As such, physical actions are not yet supported.
+ * 
  * If interrupts were enabled when the matching call to 
  * lf_critical_section_enter()
  * occurred, then they will be re-enabled here.
@@ -153,10 +158,10 @@ int lf_critical_section_exit() {
     if (_lf_num_nested_critical_sections <= 0) {
         return 1;
     }
-    
-    if (--_lf_num_nested_critical_sections == 0) {
-        interrupts();
-    }
+    // if (--_lf_num_nested_critical_sections == 0) {
+    //     interrupts();
+    // }
+    --_lf_num_nested_critical_sections;
     return 0;
 }
 
