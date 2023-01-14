@@ -356,7 +356,6 @@ int lf_available_cores() {
  */
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     // Use static id to map each created thread to a 
-    // FIXME: ARe we guaranteed to never have more threads? What about tracing?
     static int tid = 0;
     
     if (tid > (NUMBER_OF_WORKERS-1)) {
@@ -383,8 +382,7 @@ int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arg
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_thread_join(lf_thread_t thread, void** thread_return) {
-    k_thread_join(thread, K_FOREVER);
-    return 0;
+    return k_thread_join(thread, K_FOREVER);
 }
 
 /**
@@ -464,11 +462,6 @@ int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex) {
  *  number otherwise.
  */
 int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absolute_time_ns) {
-    
-    // lf_sleep_until_locked(absolute_time_ns);
-    // instant_t now;
-    // lf_clock_gettime(&now);
-    // return LF_TIMEOUT;
     instant_t now;
     lf_clock_gettime(&now);
     interval_t sleep_duration_ns = absolute_time_ns - now;
@@ -482,8 +475,12 @@ int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absolute_tim
 }
 
 // Atomics
-//  Implemented by just entering a critical section and doing the arithmetic
-//  FIXME: We are now restricted to atomic integer operations
+//  Implemented by just entering a critical section and doing the arithmetic.
+
+/**
+ * @brief Add `value` to `*ptr` and return original value of `*ptr` 
+ * 
+ */
 int _zephyr_atomic_fetch_add(int *ptr, int value) {
     lf_critical_section_enter();
     int res = *ptr;
@@ -491,7 +488,9 @@ int _zephyr_atomic_fetch_add(int *ptr, int value) {
     lf_critical_section_exit();
     return res;
 }
-
+/**
+ * @brief Add `value` to `*ptr` and return new updated value of `*ptr`
+ */
 int _zephyr_atomic_add_fetch(int *ptr, int value) {
     lf_critical_section_enter();
     int res = *ptr + value;
@@ -500,7 +499,11 @@ int _zephyr_atomic_add_fetch(int *ptr, int value) {
     return res;
 }
 
-// FIXME: Are you sure that it should return bool?
+/**
+ * @brief Compare and swap for boolaen value.
+ * If `*ptr` is equal to `value` then overwrite it 
+ * with `newval`. If not do nothing. Retruns true on overwrite.
+ */
 bool _zephyr_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
     lf_critical_section_enter();
     bool res = false;
@@ -512,13 +515,16 @@ bool _zephyr_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
     return res;
 }
 
-// FIXME: Are you sure that it should return bool?
-bool _zephyr_val_compare_and_swap(int *ptr, int value, int newval) {
+/**
+ * @brief Compare and swap for integers. If `*ptr` is equal
+ * to `value`, it is updated to `newval`. The function returns
+ * the original value of `*ptr`.
+ */
+int  _zephyr_val_compare_and_swap(int *ptr, int value, int newval) {
     lf_critical_section_enter();
-    bool res = false;
+    int res = *ptr;
     if (*ptr == value) {
         *ptr = newval;
-        res = true;
     }
     lf_critical_section_exit();
     return res;
