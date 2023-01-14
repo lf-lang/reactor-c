@@ -42,7 +42,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <zephyr/device.h>
 #include <zephyr/drivers/counter.h>
 
-// Combine 2 32bit works to a 64 bit word
+// Combine 2 32-bit words to a 64-bit word
 #define COMBINE_HI_LO(hi,lo) ((((uint64_t) hi) << 32) | ((uint64_t) lo))
 
 
@@ -278,8 +278,6 @@ int lf_sleep(interval_t sleep_duration) {
  */
 int lf_critical_section_enter() {
     if (_lf_num_nested_critical_sections++ == 0) {
-        // First nested entry into a critical section.
-        // If interrupts are not initially enabled, then increment again to prevent
         _lf_irq_mask = irq_lock();
     }
     return 0;
