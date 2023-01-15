@@ -72,9 +72,9 @@ lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len) {
     return _lf_new_token((token_type_t*)port_or_action, val, len);
 }
 
-lf_token_t* lf_writable_copy(token_template_t* template) {
-    assert(template != NULL);
-    lf_token_t* token = template->token;
+lf_token_t* lf_writable_copy(token_template_t* tmplt) {
+    assert(tmplt != NULL);
+    lf_token_t* token = tmplt->token;
     if (token == NULL) return NULL;
     LF_PRINT_DEBUG("lf_writable_copy: Requesting writable copy of token %p with reference count %zu.",
             token, token->ref_count);
@@ -84,7 +84,7 @@ lf_token_t* lf_writable_copy(token_template_t* template) {
     // downstream reaction. That should be tested here.
     // Search for where "dominating" field of ReactionInstance is populated.
     // For now, always copy. Or use num_destinations field.
-    if (false /* template->single_reader */ && token->ref_count == 1) {
+    if (false /* tmplt->single_reader */ && token->ref_count == 1) {
         LF_PRINT_DEBUG("lf_writable_copy: Avoided copy because there "
                 "is only one reader and the reference count is %zu.", token->ref_count);
         return token;
@@ -93,9 +93,9 @@ lf_token_t* lf_writable_copy(token_template_t* template) {
             token->ref_count);
     // Copy the payload.
     void* copy;
-    if (template->type.copy_constructor == NULL) {
+    if (tmplt->type.copy_constructor == NULL) {
         LF_PRINT_DEBUG("lf_writable_copy: Copy constructor is NULL. Using default strategy.");
-        size_t size = template->type.element_size * token->length;
+        size_t size = tmplt->type.element_size * token->length;
         if (size == 0) {
             return token;
         }
@@ -104,11 +104,11 @@ lf_token_t* lf_writable_copy(token_template_t* template) {
         memcpy(copy, token->value, size);
     } else {
         LF_PRINT_DEBUG("lf_writable_copy: Copy constructor is not NULL. Using copy constructor.");
-        if (template->type.destructor == NULL) {
+        if (tmplt->type.destructor == NULL) {
             lf_print_warning("lf_writable_copy: Using non-default copy constructor "
                     "without setting destructor. Potential memory leak.");
         }
-        copy = template->type.copy_constructor(token->value);
+        copy = tmplt->type.copy_constructor(token->value);
     }
     LF_PRINT_DEBUG("lf_writable_copy: Allocated memory for payload (token value): %p", copy);
 
@@ -116,7 +116,7 @@ lf_token_t* lf_writable_copy(token_template_t* template) {
     _lf_count_payload_allocations++;
 
     // Create a new, dynamically allocated token.
-    lf_token_t* result = _lf_new_token((token_type_t*)template, copy, token->length);
+    lf_token_t* result = _lf_new_token((token_type_t*)tmplt, copy, token->length);
     result->ref_count = 1;
     // Arrange for the token to be released (and possibly freed) at
     // the start of the next time step.
@@ -210,63 +210,63 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
     return result;
 }
 
-lf_token_t* _lf_get_token(token_template_t* template) {
-    if (template->token != NULL) {
-        if (template->token->ref_count == 1) {
+lf_token_t* _lf_get_token(token_template_t* tmplt) {
+    if (tmplt->token != NULL) {
+        if (tmplt->token->ref_count == 1) {
             LF_PRINT_DEBUG("_lf_get_token: Reusing template token: %p with ref_count %zu",
-                    template->token, template->token->ref_count);
+                    tmplt->token, tmplt->token->ref_count);
             // Free any previous value in the token.
-            if (template->token->value != NULL) {
-                if (template->token->type->destructor == NULL) {
-                    free(template->token->value);
+            if (tmplt->token->value != NULL) {
+                if (tmplt->token->type->destructor == NULL) {
+                    free(tmplt->token->value);
                 } else {
-                    template->token->type->destructor(template->token->value);
+                    tmplt->token->type->destructor(tmplt->token->value);
                 }
-                template->token->value = NULL;
+                tmplt->token->value = NULL;
                 _lf_count_payload_allocations--;
             }
-            return template->token;
+            return tmplt->token;
         } else {
             // Liberate the token.
-            _lf_done_using(template->token);
+            _lf_done_using(tmplt->token);
         }
     }
     // If we get here, we need a new token.
-    template->token = _lf_new_token((token_type_t*)template, NULL, 0);
-    template->token->ref_count = 1;
-    return template->token;
+    tmplt->token = _lf_new_token((token_type_t*)tmplt, NULL, 0);
+    tmplt->token->ref_count = 1;
+    return tmplt->token;
 }
 
-void _lf_initialize_template(token_template_t* template, size_t element_size) {
-    assert(template != NULL);
+void _lf_initialize_template(token_template_t* tmplt, size_t element_size) {
+    assert(tmplt != NULL);
     _lf_critical_section_enter();
     if (_lf_token_templates == NULL) {
         _lf_token_templates = hashset_create(4); // Initial size is 16.
     }
-    hashset_add(_lf_token_templates, template);
+    hashset_add(_lf_token_templates, tmplt);
     _lf_critical_section_exit();
-    if (template->token != NULL) {
-        if (template->token->ref_count == 1 && template->token->type->element_size == element_size) {
+    if (tmplt->token != NULL) {
+        if (tmplt->token->ref_count == 1 && tmplt->token->type->element_size == element_size) {
             // Template token is already set.
             // If it has a value, free it.
-            _lf_free_token_value(template->token);
+            _lf_free_token_value(tmplt->token);
             // Make sure its reference count is 1 (it should not be 0).
-            template->token->ref_count = 1;
+            tmplt->token->ref_count = 1;
             return;
         }
         // Replace the token.
-        _lf_done_using(template->token);
-        template->token = NULL;
+        _lf_done_using(tmplt->token);
+        tmplt->token = NULL;
     }
-    template->type.element_size = element_size;
-    template->token = _lf_new_token((token_type_t*)template, NULL, 0);
-    template->token->ref_count = 1;
+    tmplt->type.element_size = element_size;
+    tmplt->token = _lf_new_token((token_type_t*)tmplt, NULL, 0);
+    tmplt->token->ref_count = 1;
 }
 
-lf_token_t* _lf_initialize_token_with_value(token_template_t* template, void* value, size_t length) {
-    assert(template != NULL);
-    LF_PRINT_DEBUG("_lf_initialize_token_with_value: template %p, value %p", template, value);
-    lf_token_t* result = _lf_get_token(template);
+lf_token_t* _lf_initialize_token_with_value(token_template_t* tmplt, void* value, size_t length) {
+    assert(tmplt != NULL);
+    LF_PRINT_DEBUG("_lf_initialize_token_with_value: template %p, value %p", tmplt, value);
+    lf_token_t* result = _lf_get_token(tmplt);
     result->value = value;
     // Count allocations to issue a warning if this is never freed.
     _lf_count_payload_allocations++;
@@ -274,11 +274,11 @@ lf_token_t* _lf_initialize_token_with_value(token_template_t* template, void* va
     return result;
 }
 
-lf_token_t* _lf_initialize_token(token_template_t* template, size_t length) {
-    assert(template != NULL);
+lf_token_t* _lf_initialize_token(token_template_t* tmplt, size_t length) {
+    assert(tmplt != NULL);
     // Allocate memory for storing the array.
-    void* value = calloc(length, template->type.element_size);
-    lf_token_t* result = _lf_initialize_token_with_value(template, value, length);
+    void* value = calloc(length, tmplt->type.element_size);
+    lf_token_t* result = _lf_initialize_token_with_value(tmplt, value, length);
     return result;
 }
 
@@ -290,9 +290,9 @@ void _lf_free_all_tokens() {
     if (_lf_token_templates != NULL) {
         hashset_itr_t iterator = hashset_iterator(_lf_token_templates);
         while (hashset_iterator_next(iterator) >= 0) {
-            token_template_t* template = (token_template_t*)hashset_iterator_value(iterator);
-            _lf_done_using(template->token);
-            template->token = NULL;
+            token_template_t* tmplt = (token_template_t*)hashset_iterator_value(iterator);
+            _lf_done_using(tmplt->token);
+            tmplt->token = NULL;
         }
         free(iterator);
         hashset_destroy(_lf_token_templates);
@@ -313,19 +313,19 @@ void _lf_free_all_tokens() {
     _lf_critical_section_exit();
 }
 
-void _lf_replace_template_token(token_template_t* template, lf_token_t* newtoken) {
-    assert(template != NULL);
-    LF_PRINT_DEBUG("_lf_replace_template_token: template: %p newtoken: %p.", template, newtoken);
-    if (template->token != newtoken) {
-        if (template->token != NULL) {
-            _lf_done_using(template->token);
+void _lf_replace_template_token(token_template_t* tmplt, lf_token_t* newtoken) {
+    assert(tmplt != NULL);
+    LF_PRINT_DEBUG("_lf_replace_template_token: template: %p newtoken: %p.", tmplt, newtoken);
+    if (tmplt->token != newtoken) {
+        if (tmplt->token != NULL) {
+            _lf_done_using(tmplt->token);
         }
         if (newtoken != NULL) {
             newtoken->ref_count++;
             LF_PRINT_DEBUG("_lf_replace_template_token: Incremented ref_count of %p to %zu.",
                     newtoken, newtoken->ref_count);
         }
-        template->token = newtoken;
+        tmplt->token = newtoken;
     }
 }
 

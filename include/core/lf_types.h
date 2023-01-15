@@ -200,7 +200,7 @@ struct event_t {
  * Instances of this struct are put onto the event queue (event_q).
  */
 struct trigger_t {
-    token_template_t template;     // Type and token information.
+    token_template_t tmplt;   // Type and token information (template is a C++ keyword).
     reaction_t** reactions;   // Array of pointers to reactions sensitive to this trigger.
     int number_of_reactions;  // Number of reactions sensitive to this trigger.
     bool is_timer;            // True if this is a timer (a special kind of action), false otherwise.
@@ -279,7 +279,7 @@ typedef struct self_base_t {
  * CActionGenerator.java generateAuxiliaryStruct().
  */
 typedef struct lf_action_base_t {
-	token_template_t template;            // Type and token information.
+	token_template_t tmplt;    // Type and token information (template is a C++ keyword).
 	bool is_present;
 	bool has_value;
 	trigger_t* trigger;

@@ -98,7 +98,7 @@ typedef struct lf_sparse_io_record_t {
  * CPortGenerator.java generateAuxiliaryStruct().
  */
 typedef struct lf_port_base_t {
-	token_template_t template;            // Type and token information.
+	token_template_t tmplt;               // Type and token information (template is a C++ keyword).
 	bool is_present;
 	lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
 	int destination_channel;              // -1 if there is no destination.

@@ -199,9 +199,9 @@ lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len);
  * be decremented at the start of the next tag.
  * If the template has no token (it has a primitive type), then there
  * is no need for a writable copy. Return NULL.
- * @param template An action or an input port.
+ * @param tmplt An action or an input port.
  */
-lf_token_t* lf_writable_copy(token_template_t* template);
+lf_token_t* lf_writable_copy(token_template_t* tmplt);
 
 //////////////////////////////////////////////////////////
 //// Functions not intended to be used by users
@@ -243,10 +243,10 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length);
  * then return that token. Otherwise, create a new token,
  * make it the new template, and dissociate or free the
  * previous template token.
- * @param template The template.
+ * @param tmplt The template. // template is a C++ keyword.
  * @return A new or recycled lf_token_t struct.
  */
-lf_token_t* _lf_get_token(token_template_t* template);
+lf_token_t* _lf_get_token(token_template_t* tmplt);
 
 /**
  * Initialize the specified template to contain a token that is an
@@ -255,10 +255,10 @@ lf_token_t* _lf_get_token(token_template_t* template);
  * it will be replaced and that token will be freed. The length of the
  * returned token will be 0, its value will be NULL, and its reference count
  * will be 1.
- * @param template The template.
+ * @param tmplt The template. // template is a C++ keyword.
  * @param element_size The element size.
  */
-void _lf_initialize_template(token_template_t* template, size_t element_size);
+void _lf_initialize_template(token_template_t* tmplt, size_t element_size);
 
 /**
  * Return a token storing the specified value, which is assumed to
@@ -270,13 +270,13 @@ void _lf_initialize_template(token_template_t* template, size_t element_size);
  * The element_size for elements of the array is specified by
  * the specified template.
  *
- * @param template A template for the token.
+ * @param tmplt A template for the token. // template is a C++ keyword.
  * @param value The value of the array.
  * @param length The length of the array, or 1 if it is not an array.
  * @return Either the specified token or a new one, in each case with a value
  *  field pointing to newly allocated memory.
  */
-lf_token_t* _lf_initialize_token_with_value(token_template_t* template, void* value, size_t length);
+lf_token_t* _lf_initialize_token_with_value(token_template_t* tmplt, void* value, size_t length);
 
 /**
  * Return a token for storing an array of the specified length
@@ -290,12 +290,12 @@ lf_token_t* _lf_initialize_token_with_value(token_template_t* template, void* va
  * should populate the value and ref_count field of the returned
  * token after this returns.
  *
- * @param template The token template (must not be NULL).
+ * @param tmplt The token template (must not be NULL). // template is a C++ keyword.
  * @param length The length of the array, or 1 if it is not an array.
  * @return Either the template's token or a new one, in each case with a value
  *  field pointing to newly allocated memory.
  */
-lf_token_t* _lf_initialize_token(token_template_t* template, size_t length);
+lf_token_t* _lf_initialize_token(token_template_t* tmplt, size_t length);
 
 /**
  * @brief Free all tokens.
@@ -308,10 +308,10 @@ void _lf_free_all_tokens();
  * @brief Replace the token in the specified template, if there is one,
  * with a new one. If the new token is the same as the token in the template,
  * then this does nothing. Otherwise, it frees the previous template token.
- * @param template Pointer to a template.
+ * @param tmplt Pointer to a template. // template is a C++ keyword.
  * @param newtoken The replacement token.
  */
-void _lf_replace_template_token(token_template_t* template, lf_token_t* newtoken);
+void _lf_replace_template_token(token_template_t* tmplt, lf_token_t* newtoken);
 
 /**
  * Decrement the reference count of the specified token.
