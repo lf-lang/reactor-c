@@ -372,18 +372,3 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         return -1;
     }
 }
-
-/**
- * The following calls are directly forwarded to platform.h 
- */
-void lf_notify_of_event() {
-    lf_notify_of_event();
-}
-
-int lf_critical_section_enter() {
-    return lf_critical_section_enter();
-}
-
-int lf_critical_section_exit() {
-    return lf_critical_section_exit();
-}
