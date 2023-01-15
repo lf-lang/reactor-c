@@ -195,9 +195,9 @@ static void compute_number_of_workers(
         int minimum_workers = 1;
 #ifdef WORKERS_NEEDED_FOR_FEDERATE
         // TODO: only apply this constraint on levels containing control reactions
-        if (WORKERS_NEEDED_FOR_FEDERATE > minimum_workers && max_reasonable_num_workers >= WORKERS_NEEDED_FOR_FEDERATE) {
-            minimum_workers = WORKERS_NEEDED_FOR_FEDERATE;
-        }
+        assert(WORKERS_NEEDED_FOR_FEDERATE >= 1);
+        minimum_workers = WORKERS_NEEDED_FOR_FEDERATE > max_reasonable_num_workers ?
+            max_reasonable_num_workers : WORKERS_NEEDED_FOR_FEDERATE;
 #endif
         num_workers_by_level[level] = restrict_to_range(
             minimum_workers, max_reasonable_num_workers, ideal_number_of_workers
