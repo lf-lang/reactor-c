@@ -4,7 +4,7 @@ var searchData=
   ['never_1',['NEVER',['../tag_8h.html#a9e5c19968af97bd64f46650ec8732318',1,'tag.h']]],
   ['never_5ftag_2',['NEVER_TAG',['../tag_8h.html#afc2f39e1818a6a8b68ca46e7c9dc2704',1,'tag.h']]],
   ['never_5ftag_5finitializer_3',['NEVER_TAG_INITIALIZER',['../tag_8h.html#a0d876ab54e766798e559c4f47340b359',1,'tag.h']]],
-  ['no_5ftty_4',['NO_TTY',['../lf__arduino__support_8h.html#a740378474f42996dc8a9bba18b7258ae',1,'NO_TTY():&#160;lf_arduino_support.h'],['../lf__nrf52__support_8h.html#a740378474f42996dc8a9bba18b7258ae',1,'NO_TTY():&#160;lf_nrf52_support.h']]],
+  ['no_5ftty_4',['NO_TTY',['../lf__arduino__support_8h.html#a740378474f42996dc8a9bba18b7258ae',1,'NO_TTY():&#160;lf_arduino_support.h'],['../lf__nrf52__support_8h.html#a740378474f42996dc8a9bba18b7258ae',1,'NO_TTY():&#160;lf_nrf52_support.h'],['../lf__zephyr__support_8h.html#a740378474f42996dc8a9bba18b7258ae',1,'NO_TTY():&#160;lf_zephyr_support.h']]],
   ['nonce_5flength_5',['NONCE_LENGTH',['../net__common_8h.html#a6771c37605e49c8faae7898797f254b7',1,'net_common.h']]],
   ['nsec_6',['NSEC',['../tag_8h.html#a8c561c4985495c722ac86b55b3d9bbb3',1,'tag.h']]],
   ['nsecs_7',['NSECS',['../tag_8h.html#aea80ae7708f69d05cd44126f08a08cf3',1,'tag.h']]],

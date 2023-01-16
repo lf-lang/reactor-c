@@ -1,7 +1,7 @@
 var searchData=
 [
   ['calculate_5fepoch_5foffset_0',['calculate_epoch_offset',['../lf__unix__clock__support_8h.html#a3c5a1dbd80de5d5bf2a93c195df784c3',1,'calculate_epoch_offset(void):&#160;lf_unix_clock_support.c'],['../lf__unix__clock__support_8c.html#a3c5a1dbd80de5d5bf2a93c195df784c3',1,'calculate_epoch_offset(void):&#160;lf_unix_clock_support.c']]],
-  ['callback_1',['callback',['../audio__loop__linux_8c.html#a0aaba34d923e5940eba8f2857bd60ad4',1,'callback(snd_pcm_t *playback_handle, int16_t buf_ref[]):&#160;audio_loop_linux.c'],['../audio__loop__mac_8c.html#a84211de54f3d6c0fa430f5a31291fcd0',1,'callback(void *ignored, AudioQueueRef queue, AudioQueueBufferRef buf_ref):&#160;audio_loop_mac.c']]],
+  ['callback_1',['callback',['../audio__loop__mac_8c.html#a84211de54f3d6c0fa430f5a31291fcd0',1,'callback(void *ignored, AudioQueueRef queue, AudioQueueBufferRef buf_ref):&#160;audio_loop_mac.c'],['../audio__loop__linux_8c.html#a0aaba34d923e5940eba8f2857bd60ad4',1,'callback(snd_pcm_t *playback_handle, int16_t buf_ref[]):&#160;audio_loop_linux.c']]],
   ['capacity_2',['capacity',['../structlf__sparse__io__record__t.html#a0cc33a35b50da10e8a871bd3b7afcd02',1,'lf_sparse_io_record_t::capacity()'],['../hashmap_8h.html#a1bce06ff7731b972a99ac26963078731',1,'capacity():&#160;hashmap.h']]],
   ['capacity_3',['CAPACITY',['../vector__test_8c.html#a91fbe6020a4bbd73084f0681b9092479',1,'CAPACITY():&#160;vector_test.c'],['../hashmap__test_8c.html#a91fbe6020a4bbd73084f0681b9092479',1,'CAPACITY():&#160;hashmap_test.c']]],
   ['capacity_5fto_5fsize_5fratio_5ffor_5fshrink_5fvote_4',['CAPACITY_TO_SIZE_RATIO_FOR_SHRINK_VOTE',['../vector_8c.html#a47660715b0e3258d408ae26c0f38fb2e',1,'vector.c']]],
@@ -24,7 +24,7 @@ var searchData=
   ['clock_5fsynchronization_5fthread_21',['clock_synchronization_thread',['../rti_8c.html#a272b481a0cc2f86f21c75e8efa19a551',1,'rti.c']]],
   ['clock_5fthread_22',['clock_thread',['../struct_r_t_i__instance__t.html#a3542a74a533c1df0ac1e9178f7056152',1,'RTI_instance_t']]],
   ['cmppri_23',['cmppri',['../structpqueue__t.html#af44c1953e47510529147cfbea33489ef',1,'pqueue_t']]],
-  ['combine_5fhi_5flo_24',['COMBINE_HI_LO',['../lf__arduino__support_8c.html#afd29822398ad368c6c2794794e0cfd3f',1,'COMBINE_HI_LO():&#160;lf_arduino_support.c'],['../lf__nrf52__support_8c.html#afd29822398ad368c6c2794794e0cfd3f',1,'COMBINE_HI_LO():&#160;lf_nrf52_support.c']]],
+  ['combine_5fhi_5flo_24',['COMBINE_HI_LO',['../lf__arduino__support_8c.html#afd29822398ad368c6c2794794e0cfd3f',1,'COMBINE_HI_LO():&#160;lf_arduino_support.c'],['../lf__nrf52__support_8c.html#afd29822398ad368c6c2794794e0cfd3f',1,'COMBINE_HI_LO():&#160;lf_nrf52_support.c'],['../lf__zephyr__support_8c.html#afd29822398ad368c6c2794794e0cfd3f',1,'COMBINE_HI_LO():&#160;lf_zephyr_support.c']]],
   ['compare_5fsizes_25',['compare_sizes',['../port_8c.html#a961fc08a481d93873a7156b3a3c39536',1,'port.c']]],
   ['completed_26',['completed',['../structfederate__t.html#a06611a517931b5fcaff7719b0fa38150',1,'federate_t']]],
   ['concatenate_5fthree_5fstrings_27',['CONCATENATE_THREE_STRINGS',['../util_8h.html#a8d8698026252ae104cc2405d8bb13f0e',1,'util.h']]],

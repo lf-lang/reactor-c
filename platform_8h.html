@@ -119,9 +119,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a9a43894d4caf7e2fc1e75b9b49d7285d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#a9a43894d4caf7e2fc1e75b9b49d7285d">lf_sleep</a> (<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> sleep_duration)</td></tr>
 <tr class="memdesc:a9a43894d4caf7e2fc1e75b9b49d7285d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sleep for a specified duration.  <a href="platform_8h.html#a9a43894d4caf7e2fc1e75b9b49d7285d">More...</a><br /></td></tr>
 <tr class="separator:a9a43894d4caf7e2fc1e75b9b49d7285d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a19bc7b9be0caeb57f9655ce302622463"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#a19bc7b9be0caeb57f9655ce302622463">lf_sleep_until</a> (<a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> wakeup_time)</td></tr>
-<tr class="memdesc:a19bc7b9be0caeb57f9655ce302622463"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sleep until the given wakeup time.  <a href="platform_8h.html#a19bc7b9be0caeb57f9655ce302622463">More...</a><br /></td></tr>
-<tr class="separator:a19bc7b9be0caeb57f9655ce302622463"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6adcd81d27197ee0b1354bff0b368547"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#a6adcd81d27197ee0b1354bff0b368547">lf_sleep_until_locked</a> (<a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> wakeup_time)</td></tr>
+<tr class="memdesc:a6adcd81d27197ee0b1354bff0b368547"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sleep until the given wakeup time.  <a href="platform_8h.html#a6adcd81d27197ee0b1354bff0b368547">More...</a><br /></td></tr>
+<tr class="separator:a6adcd81d27197ee0b1354bff0b368547"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa321c5ff2c1afca6cd771e8602972052"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="platform_8h.html#aa321c5ff2c1afca6cd771e8602972052">DEPRECATED</a> (extern int <a class="el" href="lf__linux__support_8c.html#a50ad9d5da851a0aeaf45ad759c02bbd1">lf_nanosleep</a>(<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> sleep_duration))</td></tr>
 <tr class="separator:aa321c5ff2c1afca6cd771e8602972052"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -290,6 +290,8 @@ Functions</h2></td></tr>
 <p>Enter a critical section by disabling interrupts, supports nested critical sections.</p>
 <dl class="section return"><dt>Returns</dt><dd>int</dd></dl>
 <p>Enter critical section. Let NRF Softdevice handle nesting.</p>
+<dl class="section return"><dt>Returns</dt><dd>int</dd></dl>
+<p>Enter critical section. Let NRF Softdevice handle nesting.</p>
 <dl class="section return"><dt>Returns</dt><dd>int </dd></dl>
 
 </div>
@@ -314,6 +316,8 @@ Functions</h2></td></tr>
 <p >TODO: Arduino currently has bugs with its interrupt process, so we disable it for now. As such, physical actions are not yet supported.</p>
 <p >If interrupts were enabled when the matching call to <a class="el" href="lf__arduino__support_8c.html#a826d1582ddab93857dddcf900df4212f">lf_critical_section_enter()</a> occurred, then they will be re-enabled here.</p>
 <p >Exit a critical section.</p>
+<dl class="section return"><dt>Returns</dt><dd>int</dd></dl>
+<p>Exit a critical section.</p>
 <dl class="section return"><dt>Returns</dt><dd>int </dd></dl>
 
 </div>
@@ -335,7 +339,8 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p >Initialize the LF clock. Must be called before using other clock-related APIs.</p>
 <p >Initialize the LF clock. Arduino auto-initializes its clock, so we don't do anything.</p>
-<p >Initialize the LF clock. </p>
+<p >Initialize the LF clock.</p>
+<p >Initialize the LF clock </p>
 
 </div>
 </div>
@@ -404,21 +409,30 @@ Functions</h2></td></tr>
 <p>Pause execution for a number of nanoseconds.</p>
 <dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. In case of failure, errno will be set to<ul>
 <li>EINTR: The sleep was interrupted by a signal handler</li>
-<li>EINVAL: All other errors </li>
+<li>EINVAL: All other errors</li>
 </ul>
 </dd></dl>
+<p>Sleep for a specified duration.</p>
+<p >This implementation performs a busy-wait because it is unclear what will happen if this function is called from within an ISR.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">sleep_duration</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. </dd></dl>
 <p >Set timer properties. A negative number indicates relative time to wait. The requested sleep duration must be in number of 100 nanoseconds.</p>
 
 </div>
 </div>
-<a id="a19bc7b9be0caeb57f9655ce302622463" name="a19bc7b9be0caeb57f9655ce302622463"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a19bc7b9be0caeb57f9655ce302622463">&#9670;&#160;</a></span>lf_sleep_until()</h2>
+<a id="a6adcd81d27197ee0b1354bff0b368547" name="a6adcd81d27197ee0b1354bff0b368547"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6adcd81d27197ee0b1354bff0b368547">&#9670;&#160;</a></span>lf_sleep_until_locked()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int lf_sleep_until </td>
+          <td class="memname">int lf_sleep_until_locked </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td>
           <td class="paramname"><em>wakeup_time</em></td><td>)</td>

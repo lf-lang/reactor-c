@@ -21,13 +21,14 @@ var searchData=
   ['lf_5fsparse_5fwidth_5fthreshold_18',['LF_SPARSE_WIDTH_THRESHOLD',['../port_8h.html#aafcc3f0b909a44166db182035ca759c6',1,'port.h']]],
   ['lf_5ftime_5fbuffer_5flength_19',['LF_TIME_BUFFER_LENGTH',['../lf__nrf52__support_8h.html#acc2b8ac5ac3020137e71dfcdbaedf335',1,'LF_TIME_BUFFER_LENGTH():&#160;lf_nrf52_support.h'],['../lf__tag__64__32_8h.html#acc2b8ac5ac3020137e71dfcdbaedf335',1,'LF_TIME_BUFFER_LENGTH():&#160;lf_tag_64_32.h']]],
   ['lf_5ftimeout_20',['LF_TIMEOUT',['../platform_8h.html#a2cb0837301dbf928d9e6a4753e0fb52e',1,'platform.h']]],
-  ['llong_5fmax_21',['LLONG_MAX',['../lf__arduino__support_8h.html#a23ec2cf7fc07ea8f817bbac758402baf',1,'lf_arduino_support.h']]],
-  ['llong_5fmin_22',['LLONG_MIN',['../lf__arduino__support_8h.html#af17a13b2ae0e9c24c020ac1f044f30c2',1,'lf_arduino_support.h']]],
-  ['log_5flevel_23',['LOG_LEVEL',['../util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05',1,'util.h']]],
-  ['log_5flevel_5fall_24',['LOG_LEVEL_ALL',['../util_8h.html#a18226173309d6c2ae828080dad0859cf',1,'util.h']]],
-  ['log_5flevel_5fdebug_25',['LOG_LEVEL_DEBUG',['../util_8h.html#a130224df8c6bf22a688e3cb74a45689a',1,'util.h']]],
-  ['log_5flevel_5ferror_26',['LOG_LEVEL_ERROR',['../util_8h.html#a742fc70e331d7e568bd893c514756a29',1,'util.h']]],
-  ['log_5flevel_5finfo_27',['LOG_LEVEL_INFO',['../util_8h.html#a2e25fe130cf710da4ad800747fdd51f3',1,'util.h']]],
-  ['log_5flevel_5flog_28',['LOG_LEVEL_LOG',['../util_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd',1,'util.h']]],
-  ['log_5flevel_5fwarning_29',['LOG_LEVEL_WARNING',['../util_8h.html#af539a66abed2a7a15e3443d70a3cf1e1',1,'util.h']]]
+  ['lf_5fzephyr_5fclock_5flo_5fres_21',['LF_ZEPHYR_CLOCK_LO_RES',['../lf__zephyr__board__support_8h.html#aed0e3b388fbf6327a9d375a01068e66c',1,'lf_zephyr_board_support.h']]],
+  ['llong_5fmax_22',['LLONG_MAX',['../lf__arduino__support_8h.html#a23ec2cf7fc07ea8f817bbac758402baf',1,'lf_arduino_support.h']]],
+  ['llong_5fmin_23',['LLONG_MIN',['../lf__arduino__support_8h.html#af17a13b2ae0e9c24c020ac1f044f30c2',1,'lf_arduino_support.h']]],
+  ['log_5flevel_24',['LOG_LEVEL',['../util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05',1,'util.h']]],
+  ['log_5flevel_5fall_25',['LOG_LEVEL_ALL',['../util_8h.html#a18226173309d6c2ae828080dad0859cf',1,'util.h']]],
+  ['log_5flevel_5fdebug_26',['LOG_LEVEL_DEBUG',['../util_8h.html#a130224df8c6bf22a688e3cb74a45689a',1,'util.h']]],
+  ['log_5flevel_5ferror_27',['LOG_LEVEL_ERROR',['../util_8h.html#a742fc70e331d7e568bd893c514756a29',1,'util.h']]],
+  ['log_5flevel_5finfo_28',['LOG_LEVEL_INFO',['../util_8h.html#a2e25fe130cf710da4ad800747fdd51f3',1,'util.h']]],
+  ['log_5flevel_5flog_29',['LOG_LEVEL_LOG',['../util_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd',1,'util.h']]],
+  ['log_5flevel_5fwarning_30',['LOG_LEVEL_WARNING',['../util_8h.html#af539a66abed2a7a15e3443d70a3cf1e1',1,'util.h']]]
 ];
