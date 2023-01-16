@@ -52,7 +52,7 @@ int lf_sleep(interval_t sleep_duration) {
     return nanosleep((const struct timespec*)&tp, (struct timespec*)&remaining);
 }
 
-int lf_sleep_until(instant_t wakeup_time) {
+int lf_sleep_until_locked(instant_t wakeup_time) {
     interval_t sleep_duration = wakeup_time - lf_time_physical();
 
     if (sleep_duration < LF_MIN_SLEEP_NS) {

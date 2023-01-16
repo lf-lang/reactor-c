@@ -33,13 +33,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  * @author{Erling Jellum <erlingrj@berkeley.edu>}
  */
-#include <signal.h> // To trap ctrl-c and invoke termination().
 #include <string.h>
 
 #include "reactor.h"
 #include "lf_types.h"
 #include "platform.h"
 #include "reactor_common.h"
+
+// Embedded platforms with no TTY shouldnt have signals
+#if !defined(NO_TTY)
+#include <signal.h> // To trap ctrl-c and invoke termination().
+#endif
 
 /**
  * @brief Queue of triggered reactions at the current tag.
@@ -85,7 +89,7 @@ void _lf_set_present(lf_port_base_t* port) {
 int wait_until(instant_t wakeup_time) {
     if (!fast) {
         LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", wakeup_time - start_time);
-        return lf_sleep_until(wakeup_time);
+        return lf_sleep_until_locked(wakeup_time);
     }
     return 0;
 }
@@ -120,7 +124,9 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
         LF_PRINT_DEBUG("Enqueing downstream reaction %s, which has level %lld.",
         		reaction->name, reaction->index & 0xffffLL);
         reaction->status = queued;
-        pqueue_insert(reaction_q, reaction);
+        if (pqueue_insert(reaction_q, reaction) != 0) {
+            lf_print_error_and_exit("Could not insert reaction into reaction_q");
+        }
     }
 }
 

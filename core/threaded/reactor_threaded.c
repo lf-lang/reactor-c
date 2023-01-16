@@ -1115,7 +1115,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Instead, cause an EPIPE error to be set when write() fails.
     signal(SIGPIPE, SIG_IGN);
 #endif // SIGPIPE
-
     if (process_args(default_argc, default_argv)
             && process_args(argc, argv)) {
 
