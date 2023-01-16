@@ -224,7 +224,7 @@ int _lf_do_step(void) {
 int next(void) {
     // Enter the critical section and do not leave until we have
     // determined which tag to commit to and start invoking reactions for.
-    if (_lf_critical_section_enter() != 0) {
+    if (lf_critical_section_enter() != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
     event_t* event = (event_t*)pqueue_peek(event_q);
@@ -264,7 +264,7 @@ int next(void) {
         // gets scheduled from an interrupt service routine.
         // In this case, check the event queue again to make sure to
         // advance time to the correct tag.
-        if(_lf_critical_section_exit() != 0) {
+        if(lf_critical_section_exit() != 0) {
             lf_print_error_and_exit("Could not leave critical section");
         }
         return 1;
@@ -287,7 +287,7 @@ int next(void) {
     // extract all the reactions triggered by these events, and
     // stick them into the reaction queue.
     _lf_pop_events();
-    if(_lf_critical_section_exit() != 0) {
+    if(lf_critical_section_exit() != 0) {
         lf_print_error_and_exit("Could not leave critical section");
     }
 
@@ -377,19 +377,4 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     } else {
         return -1;
     }
-}
-
-/**
- * The following calls are directly forwarded to platform.h 
- */
-void _lf_notify_of_event() {
-    lf_notify_of_event();
-}
-
-int _lf_critical_section_enter() {
-    return lf_critical_section_enter();
-}
-
-int _lf_critical_section_exit() {
-    return lf_critical_section_exit();
 }

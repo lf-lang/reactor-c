@@ -108,6 +108,28 @@ typedef _interval_t interval_t;
  */
 typedef _microstep_t microstep_t;
 
+/**
+ * Enter a critical section where logical time and the event queue are guaranteed
+ * to not change unless they are changed within the critical section.
+ * this can be implemented by disabling interrupts.
+ * Users of this function must ensure that lf_init_critical_sections() is
+ * called first and that lf_critical_section_exit() is called later.
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_critical_section_enter();
+
+/**
+ * Exit the critical section entered with lf_lock_time().
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_critical_section_exit();
+
+/**
+ * Notify any listeners that an event has been created.
+ * The caller should call lf_critical_section_enter() before calling this function.
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_notify_of_event();
 
 // For platforms with threading support, the following functions
 // abstract the API so that the LF runtime remains portable.
@@ -156,7 +178,6 @@ extern int lf_mutex_lock(lf_mutex_t* mutex);
  * @return 0 on success, platform-specific error number otherwise.
  */
 extern int lf_mutex_unlock(lf_mutex_t* mutex);
-
 
 /**
  * Initialize a conditional variable.
@@ -267,30 +288,6 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
 #else
 #error "Compiler not supported"
 #endif
-
-#else
-/**
- * Enter a critical section where logical time and the event queue are guaranteed
- * to not change unless they are changed within the critical section.
- * this can be implemented by disabling interrupts.
- * Users of this function must ensure that lf_init_critical_sections() is
- * called first and that lf_critical_section_exit() is called later.
- * @return 0 on success, platform-specific error number otherwise.
- */
-extern int lf_critical_section_enter();
-
-/**
- * Exit the critical section entered with lf_lock_time().
- * @return 0 on success, platform-specific error number otherwise.
- */
-extern int lf_critical_section_exit();
-
-/**
- * Notify any listeners that an event has been created.
- * The caller should call lf_critical_section_enter() before calling this function.
- * @return 0 on success, platform-specific error number otherwise.
- */
-extern int lf_notify_of_event();
 
 #endif
 
