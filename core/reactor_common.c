@@ -600,6 +600,11 @@ lf_token_t* _lf_initialize_token(lf_token_t* token, size_t length) {
 
     // Allocate memory for storing the array.
     void* value = malloc(token->element_size * length);
+    
+    if (value == NULL) {
+        lf_print_error_and_exit("Out of memory");
+    }
+
     // Count allocations to issue a warning if this is never freed.
     _lf_count_payload_allocations++;
     return _lf_initialize_token_with_value(token, value, length);
@@ -1176,12 +1181,14 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
         // FIXME: This can go away once:
         // - we have eliminated the possibility to have a negative additional delay; and
         // - we detect the asynchronous use of logical actions
+        #ifndef NDEBUG
         if (intended_time < current_tag.time) {
             lf_print_warning("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
                     "Revising to the current time " PRINTF_TIME ".",
                     current_tag.time - intended_time, current_tag.time);
             intended_time = current_tag.time;
         }
+        #endif
     }
 
 #ifdef FEDERATED_DECENTRALIZED
@@ -1292,12 +1299,14 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     // This is a sanity check for the logic above
     // FIXME: This is a development assertion and might
     // not be necessary for end-user LF programs
+    #ifndef NDEBUG
     if (intended_time < current_tag.time) {
         lf_print_error("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
                 "Revising to the current time " PRINTF_TIME ".",
                 current_tag.time - intended_time, current_tag.time);
         intended_time = current_tag.time;
     }
+    #endif
 
     // Set the tag of the event.
     e->time = intended_time;
@@ -1467,13 +1476,13 @@ trigger_t* _lf_action_to_trigger(void* action) {
  */
 trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
     trigger_t* trigger = _lf_action_to_trigger(action);
-    if (_lf_critical_section_enter() != 0) {
+    if (lf_critical_section_enter() != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
     int return_value = _lf_schedule(trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
-    _lf_notify_of_event();
-    if(_lf_critical_section_exit() != 0) {
+    lf_notify_of_event();
+    if(lf_critical_section_exit() != 0) {
         lf_print_error_and_exit("Could not leave critical section");
     }
     return return_value;
@@ -1494,7 +1503,7 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
         lf_print_error("schedule: Invalid trigger or element size.");
         return -1;
     }
-    if (_lf_critical_section_enter() != 0) {
+    if (lf_critical_section_enter() != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
     // Initialize token with an array size of length and a reference count of 0.
@@ -1504,8 +1513,8 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
     // The schedule function will increment the reference count.
     trigger_handle_t result = _lf_schedule(trigger, offset, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
-    _lf_notify_of_event();
-    if(_lf_critical_section_exit() != 0) {
+    lf_notify_of_event();
+    if(lf_critical_section_exit() != 0) {
         lf_print_error_and_exit("Could not leave critical section");
     }
     return result;
@@ -1518,7 +1527,7 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
 trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* value, size_t length) {
     trigger_t* trigger = _lf_action_to_trigger(action);
 
-    if (_lf_critical_section_enter() != 0) {
+    if (lf_critical_section_enter() != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
     lf_token_t* token = create_token(trigger->element_size);
@@ -1526,8 +1535,8 @@ trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* 
     token->length = length;
     int return_value = _lf_schedule(trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
-    _lf_notify_of_event();
-    if(_lf_critical_section_exit() != 0) {
+    lf_notify_of_event();
+    if(lf_critical_section_exit() != 0) {
         lf_print_error_and_exit("Could not leave critical section");
     }
     return return_value;
@@ -1549,6 +1558,7 @@ void _lf_advance_logical_time(instant_t next_time) {
     // to the ordinary execution of LF programs. Instead, there might
     // be a need for a target property that enables these kinds of logic
     // assertions for development purposes only.
+    #ifndef NDEBUG
     event_t* next_event = (event_t*)pqueue_peek(event_q);
     if (next_event != NULL) {
         if (next_time > next_event->time) {
@@ -1557,7 +1567,7 @@ void _lf_advance_logical_time(instant_t next_time) {
                     next_time - start_time, next_event->time - start_time);
         }
     }
-
+    #endif
     if (current_tag.time < next_time) {
         current_tag.time = next_time;
         current_tag.microstep = 0;
@@ -1857,6 +1867,7 @@ lf_token_t* writable_copy(lf_token_t* token) {
 
 /**
  * Print a usage message.
+ * TODO: This is not necessary for NO_TTY
  */
 void usage(int argc, const char* argv[]) {
     printf("\nCommand-line arguments: \n\n");
@@ -1893,6 +1904,7 @@ const char** default_argv = NULL;
  * Process the command-line arguments. If the command line arguments are not
  * understood, then print a usage message and return 0. Otherwise, return 1.
  * @return 1 if the arguments processed successfully, 0 otherwise.
+ * TODO: Not necessary for NO_TTY
  */
 int process_args(int argc, const char* argv[]) {
     int i = 1;
@@ -1925,7 +1937,7 @@ int process_args(int argc, const char* argv[]) {
             const char* units = argv[i++];
 
 
-            #if defined(ARDUINO)
+            #if defined(PLATFORM_ARDUINO)
             duration = atol(time_spec);
             #else
             duration = atoll(time_spec);
