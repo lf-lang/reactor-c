@@ -183,15 +183,6 @@ Functions</h2></td></tr>
 <tr class="separator:a4e7d759bc02a2b6dabb262fde1793ef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6a6f96af2d1adbf71c57586a9078f248"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a6a6f96af2d1adbf71c57586a9078f248">_lf_check_deadline</a> (<a class="el" href="structself__base__t.html">self_base_t</a> *self, bool invoke_deadline_handler)</td></tr>
 <tr class="separator:a6a6f96af2d1adbf71c57586a9078f248"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af5ddc4ae4f8618d38c67e2b04744788b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#af5ddc4ae4f8618d38c67e2b04744788b">_lf_notify_of_event</a> ()</td></tr>
-<tr class="memdesc:af5ddc4ae4f8618d38c67e2b04744788b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Notify other threads of new events on the event queue.  <a href="reactor_8h.html#af5ddc4ae4f8618d38c67e2b04744788b">More...</a><br /></td></tr>
-<tr class="separator:af5ddc4ae4f8618d38c67e2b04744788b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8089eed2d80a3228dc71542a163312d4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a8089eed2d80a3228dc71542a163312d4">_lf_critical_section_enter</a> ()</td></tr>
-<tr class="memdesc:a8089eed2d80a3228dc71542a163312d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter critical section. Must be paired with a <code><a class="el" href="reactor_8h.html#a0f505de82e4d7ae55cf417f59507f41c" title="Leave critical section.">_lf_critical_section_exit()</a></code>  <a href="reactor_8h.html#a8089eed2d80a3228dc71542a163312d4">More...</a><br /></td></tr>
-<tr class="separator:a8089eed2d80a3228dc71542a163312d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0f505de82e4d7ae55cf417f59507f41c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a0f505de82e4d7ae55cf417f59507f41c">_lf_critical_section_exit</a> ()</td></tr>
-<tr class="memdesc:a0f505de82e4d7ae55cf417f59507f41c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leave critical section.  <a href="reactor_8h.html#a0f505de82e4d7ae55cf417f59507f41c">More...</a><br /></td></tr>
-<tr class="separator:a0f505de82e4d7ae55cf417f59507f41c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
@@ -769,46 +760,6 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a8089eed2d80a3228dc71542a163312d4" name="a8089eed2d80a3228dc71542a163312d4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8089eed2d80a3228dc71542a163312d4">&#9670;&#160;</a></span>_lf_critical_section_enter()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int _lf_critical_section_enter </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Enter critical section. Must be paired with a <code><a class="el" href="reactor_8h.html#a0f505de82e4d7ae55cf417f59507f41c" title="Leave critical section.">_lf_critical_section_exit()</a></code> </p>
-<p >Enter critical section. Must be paired with a <code><a class="el" href="reactor_8h.html#a0f505de82e4d7ae55cf417f59507f41c" title="Leave critical section.">_lf_critical_section_exit()</a></code></p>
-
-</div>
-</div>
-<a id="a0f505de82e4d7ae55cf417f59507f41c" name="a0f505de82e4d7ae55cf417f59507f41c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0f505de82e4d7ae55cf417f59507f41c">&#9670;&#160;</a></span>_lf_critical_section_exit()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int _lf_critical_section_exit </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Leave critical section. </p>
-<p >Leave critical section.</p>
-
-</div>
-</div>
 <a id="a4e7d759bc02a2b6dabb262fde1793ef5" name="a4e7d759bc02a2b6dabb262fde1793ef5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4e7d759bc02a2b6dabb262fde1793ef5">&#9670;&#160;</a></span>_lf_fd_send_stop_request_to_rti()</h2>
 
@@ -1014,28 +965,6 @@ DESCRIPTION</h1>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="af5ddc4ae4f8618d38c67e2b04744788b" name="af5ddc4ae4f8618d38c67e2b04744788b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af5ddc4ae4f8618d38c67e2b04744788b">&#9670;&#160;</a></span>_lf_notify_of_event()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void _lf_notify_of_event </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Notify other threads of new events on the event queue. </p>
-<p >These functions must be implemented by both threaded and unthreaded runtime. Should be routed to appropriate API calls in <a class="el" href="platform_8h.html">platform.h</a> </p>
-<p >The following calls are directly forwarded to <a class="el" href="platform_8h.html">platform.h</a></p>
-<p >Notify other threads of new events on the event queue. </p>
 
 </div>
 </div>

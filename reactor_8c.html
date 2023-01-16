@@ -106,15 +106,6 @@ Functions</h2></td></tr>
 <tr class="separator:a0480c270d70168b41ce510540dc391ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a831ac79bfc7b11dadfa1aa6dd1b68d4f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8c.html#a831ac79bfc7b11dadfa1aa6dd1b68d4f">lf_reactor_c_main</a> (int argc, const char *argv[])</td></tr>
 <tr class="separator:a831ac79bfc7b11dadfa1aa6dd1b68d4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af5ddc4ae4f8618d38c67e2b04744788b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8c.html#af5ddc4ae4f8618d38c67e2b04744788b">_lf_notify_of_event</a> ()</td></tr>
-<tr class="memdesc:af5ddc4ae4f8618d38c67e2b04744788b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Notify other threads of new events on the event queue.  <a href="reactor_8c.html#af5ddc4ae4f8618d38c67e2b04744788b">More...</a><br /></td></tr>
-<tr class="separator:af5ddc4ae4f8618d38c67e2b04744788b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8089eed2d80a3228dc71542a163312d4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8c.html#a8089eed2d80a3228dc71542a163312d4">_lf_critical_section_enter</a> ()</td></tr>
-<tr class="memdesc:a8089eed2d80a3228dc71542a163312d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter critical section. Must be paired with a <code><a class="el" href="reactor_8h.html#a0f505de82e4d7ae55cf417f59507f41c" title="Leave critical section.">_lf_critical_section_exit()</a></code>  <a href="reactor_8c.html#a8089eed2d80a3228dc71542a163312d4">More...</a><br /></td></tr>
-<tr class="separator:a8089eed2d80a3228dc71542a163312d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0f505de82e4d7ae55cf417f59507f41c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8c.html#a0f505de82e4d7ae55cf417f59507f41c">_lf_critical_section_exit</a> ()</td></tr>
-<tr class="memdesc:a0f505de82e4d7ae55cf417f59507f41c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leave critical section.  <a href="reactor_8c.html#a0f505de82e4d7ae55cf417f59507f41c">More...</a><br /></td></tr>
-<tr class="separator:a0f505de82e4d7ae55cf417f59507f41c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -123,44 +114,6 @@ Variables</h2></td></tr>
 <tr class="separator:ac78005c2cb229d6bec832088d9cdef10"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a8089eed2d80a3228dc71542a163312d4" name="a8089eed2d80a3228dc71542a163312d4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8089eed2d80a3228dc71542a163312d4">&#9670;&#160;</a></span>_lf_critical_section_enter()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int _lf_critical_section_enter </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Enter critical section. Must be paired with a <code><a class="el" href="reactor_8h.html#a0f505de82e4d7ae55cf417f59507f41c" title="Leave critical section.">_lf_critical_section_exit()</a></code> </p>
-
-</div>
-</div>
-<a id="a0f505de82e4d7ae55cf417f59507f41c" name="a0f505de82e4d7ae55cf417f59507f41c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0f505de82e4d7ae55cf417f59507f41c">&#9670;&#160;</a></span>_lf_critical_section_exit()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int _lf_critical_section_exit </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Leave critical section. </p>
-
-</div>
-</div>
 <a id="a081a39f2fb7b67488bf430710b5d5cb7" name="a081a39f2fb7b67488bf430710b5d5cb7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a081a39f2fb7b67488bf430710b5d5cb7">&#9670;&#160;</a></span>_lf_do_step()</h2>
 
@@ -202,26 +155,6 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="af5ddc4ae4f8618d38c67e2b04744788b" name="af5ddc4ae4f8618d38c67e2b04744788b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af5ddc4ae4f8618d38c67e2b04744788b">&#9670;&#160;</a></span>_lf_notify_of_event()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void _lf_notify_of_event </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Notify other threads of new events on the event queue. </p>
-<p >The following calls are directly forwarded to <a class="el" href="platform_8h.html">platform.h</a> </p>
 
 </div>
 </div>

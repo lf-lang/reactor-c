@@ -160,15 +160,15 @@ Functions</h2></td></tr>
 <tr class="separator:aff80c9b69d76f5dc1fb6c7c671de9708"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a831ac79bfc7b11dadfa1aa6dd1b68d4f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a831ac79bfc7b11dadfa1aa6dd1b68d4f">lf_reactor_c_main</a> (int argc, const char *argv[])</td></tr>
 <tr class="separator:a831ac79bfc7b11dadfa1aa6dd1b68d4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af5ddc4ae4f8618d38c67e2b04744788b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#af5ddc4ae4f8618d38c67e2b04744788b">_lf_notify_of_event</a> ()</td></tr>
-<tr class="memdesc:af5ddc4ae4f8618d38c67e2b04744788b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Notification of new event is implemented by broadcasting on a condition variable.  <a href="reactor__threaded_8c.html#af5ddc4ae4f8618d38c67e2b04744788b">More...</a><br /></td></tr>
-<tr class="separator:af5ddc4ae4f8618d38c67e2b04744788b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8089eed2d80a3228dc71542a163312d4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a8089eed2d80a3228dc71542a163312d4">_lf_critical_section_enter</a> ()</td></tr>
-<tr class="memdesc:a8089eed2d80a3228dc71542a163312d4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter critical section by locking the global mutex.  <a href="reactor__threaded_8c.html#a8089eed2d80a3228dc71542a163312d4">More...</a><br /></td></tr>
-<tr class="separator:a8089eed2d80a3228dc71542a163312d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0f505de82e4d7ae55cf417f59507f41c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a0f505de82e4d7ae55cf417f59507f41c">_lf_critical_section_exit</a> ()</td></tr>
-<tr class="memdesc:a0f505de82e4d7ae55cf417f59507f41c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leave critical section by unlocking the global mutex.  <a href="reactor__threaded_8c.html#a0f505de82e4d7ae55cf417f59507f41c">More...</a><br /></td></tr>
-<tr class="separator:a0f505de82e4d7ae55cf417f59507f41c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaab97e9e3cf7021063a14698cca59adc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#aaab97e9e3cf7021063a14698cca59adc">lf_notify_of_event</a> ()</td></tr>
+<tr class="memdesc:aaab97e9e3cf7021063a14698cca59adc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Notify of new event by broadcasting on a condition variable.  <a href="reactor__threaded_8c.html#aaab97e9e3cf7021063a14698cca59adc">More...</a><br /></td></tr>
+<tr class="separator:aaab97e9e3cf7021063a14698cca59adc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a826d1582ddab93857dddcf900df4212f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a826d1582ddab93857dddcf900df4212f">lf_critical_section_enter</a> ()</td></tr>
+<tr class="memdesc:a826d1582ddab93857dddcf900df4212f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter critical section by locking the global mutex.  <a href="reactor__threaded_8c.html#a826d1582ddab93857dddcf900df4212f">More...</a><br /></td></tr>
+<tr class="separator:a826d1582ddab93857dddcf900df4212f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15016241de6a4f3c35115f39e0695084"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__threaded_8c.html#a15016241de6a4f3c35115f39e0695084">lf_critical_section_exit</a> ()</td></tr>
+<tr class="memdesc:a15016241de6a4f3c35115f39e0695084"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leave a critical section by unlocking the global mutex.  <a href="reactor__threaded_8c.html#a15016241de6a4f3c35115f39e0695084">More...</a><br /></td></tr>
+<tr class="separator:a15016241de6a4f3c35115f39e0695084"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -252,46 +252,6 @@ Variables</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a8089eed2d80a3228dc71542a163312d4" name="a8089eed2d80a3228dc71542a163312d4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8089eed2d80a3228dc71542a163312d4">&#9670;&#160;</a></span>_lf_critical_section_enter()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int _lf_critical_section_enter </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Enter critical section by locking the global mutex. </p>
-<p >Enter critical section. Must be paired with a <code><a class="el" href="reactor_8h.html#a0f505de82e4d7ae55cf417f59507f41c" title="Leave critical section.">_lf_critical_section_exit()</a></code></p>
-
-</div>
-</div>
-<a id="a0f505de82e4d7ae55cf417f59507f41c" name="a0f505de82e4d7ae55cf417f59507f41c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0f505de82e4d7ae55cf417f59507f41c">&#9670;&#160;</a></span>_lf_critical_section_exit()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int _lf_critical_section_exit </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Leave critical section by unlocking the global mutex. </p>
-<p >Leave critical section.</p>
-
-</div>
-</div>
 <a id="a9438a9e9c2e8e6f15cc02c28b4828e2f" name="a9438a9e9c2e8e6f15cc02c28b4828e2f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9438a9e9c2e8e6f15cc02c28b4828e2f">&#9670;&#160;</a></span>_lf_decrement_global_tag_barrier_locked()</h2>
 
@@ -406,26 +366,6 @@ Variables</h2></td></tr>
 <p >If there is no event in the queue and the keepalive command-line option was not given, and this is not a federated execution with centralized coordination, set the stop tag to the current tag. If keepalive was given, then wait for either <a class="el" href="reactor__threaded_8c.html#aa217496c12cb5b53dad3d91e203cc323">lf_request_stop()</a> to be called or an event appears in the event queue and then return.</p>
 <p >Every time tag is advanced, it is checked against stop tag and if they are equal, shutdown reactions are triggered.</p>
 <p >This does not acquire the mutex lock. It assumes the lock is already held. </p>
-
-</div>
-</div>
-<a id="af5ddc4ae4f8618d38c67e2b04744788b" name="af5ddc4ae4f8618d38c67e2b04744788b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af5ddc4ae4f8618d38c67e2b04744788b">&#9670;&#160;</a></span>_lf_notify_of_event()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void _lf_notify_of_event </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Notification of new event is implemented by broadcasting on a condition variable. </p>
-<p >Notify other threads of new events on the event queue. </p>
 
 </div>
 </div>
@@ -696,6 +636,66 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p >Return the tag of the next event on the event queue. If the event queue is empty then return either FOREVER_TAG or, is a stop_time (timeout time) has been set, the stop time. </p>
+
+</div>
+</div>
+<a id="a826d1582ddab93857dddcf900df4212f" name="a826d1582ddab93857dddcf900df4212f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a826d1582ddab93857dddcf900df4212f">&#9670;&#160;</a></span>lf_critical_section_enter()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lf_critical_section_enter </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enter critical section by locking the global mutex. </p>
+<p >Enter critical section. Let NRF Softdevice handle nesting. </p>
+
+</div>
+</div>
+<a id="a15016241de6a4f3c35115f39e0695084" name="a15016241de6a4f3c35115f39e0695084"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15016241de6a4f3c35115f39e0695084">&#9670;&#160;</a></span>lf_critical_section_exit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lf_critical_section_exit </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Leave a critical section by unlocking the global mutex. </p>
+<p >Exit a critical section. </p>
+
+</div>
+</div>
+<a id="aaab97e9e3cf7021063a14698cca59adc" name="aaab97e9e3cf7021063a14698cca59adc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaab97e9e3cf7021063a14698cca59adc">&#9670;&#160;</a></span>lf_notify_of_event()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lf_notify_of_event </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Notify of new event by broadcasting on a condition variable. </p>
+<p >Set global flag to true so that sleep will return when woken. </p>
 
 </div>
 </div>
