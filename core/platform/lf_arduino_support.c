@@ -65,7 +65,7 @@ static volatile uint32_t _lf_time_us_low_last = 0;
  * @param wakeup int64_t time of wakeup 
  * @return int 0 if successful sleep, -1 if awoken by async event
  */
-int lf_sleep_until(instant_t wakeup) {
+int lf_sleep_until_locked(instant_t wakeup) {
     instant_t now;
     _lf_async_event = false;
     lf_critical_section_exit();
@@ -97,7 +97,7 @@ int lf_sleep(interval_t sleep_duration) {
     lf_clock_gettime(&now);
     instant_t wakeup = now + sleep_duration;
 
-    return lf_sleep_until(wakeup);
+    return lf_sleep_until_locked(wakeup);
 
 }
 
