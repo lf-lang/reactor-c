@@ -1621,6 +1621,20 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
     return false;
 }
 
+// FIXME: modif4watchdogs
+void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
+    // WATCHDOG QUESTION 1: How do I check if thread is currently running? How
+    // is thread linked to watchdog? Does watchdog struct need additional field 
+    // for thread?
+
+    // WATCHDOG QUESTION 2: When mutex is acquired here does a current reaction
+    // need to be interrupted?
+}
+
+void _lf_watchdog_stop(watchdog_t* watchdog) {
+
+}
+
 /**
  * Invoke the given reaction
  *
