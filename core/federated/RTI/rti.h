@@ -199,6 +199,11 @@ typedef struct RTI_instance_t {
      * Boolean indicating that authentication is enabled.
      */
     bool authentication_enabled;
+
+    /**
+     * Boolean indicating that SST is enabled.
+     */
+    bool sst_enabled;
 } RTI_instance_t;
 
 #endif // RTI_H

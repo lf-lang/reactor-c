@@ -25,7 +25,7 @@
 
 # To enable simple HMAC-based authentication of federates,
 # add `-DAUTH=ON` option to the cmake command as shown below:
-# 
+#
 # $> mkdir build && cd build
 # $> cmake -DAUTH=ON ../
 # $> make
@@ -33,6 +33,18 @@
 #
 # If you would like to go back to non-AUTH mode, you would have to remove all
 # contents of the `build` folder.
+
+# To enable SST security of RTI and federates,
+# add `-DSST=ON` option to the cmake command as shown below:
+
+# ```bash
+# mkdir build && cd build
+# cmake -DSST=ON ../
+# make
+# sudo make install
+# ```
+
+# If you would like to go back to non-SST mode, you would have to remove all contents of the `build` folder.
 
 cmake_minimum_required(VERSION 3.12)
 project(RTI VERSION 1.0.0 LANGUAGES C)
@@ -63,20 +75,19 @@ include_directories(${IncludeDir}/modal_models)
 include_directories(${IncludeDir}/platform)
 include_directories(${IncludeDir}/utils)
 
-
 # Declare a new executable target and list all its sources
 add_executable(
-    RTI
-    rti.c
-    ${LF_PLATFORM_FILE}
-    ${CoreLib}/platform/lf_unix_clock_support.c
-    ${CoreLib}/utils/pqueue.c
-    message_record/message_record.c
+  RTI
+  rti.c
+  ${LF_PLATFORM_FILE}
+  ${CoreLib}/platform/lf_unix_clock_support.c
+  ${CoreLib}/utils/pqueue.c
+  message_record/message_record.c
 )
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
-    # Set the LOG_LEVEL to 4 to get DEBUG messages
-    target_compile_definitions(RTI PUBLIC LOG_LEVEL=4)
+  # Set the LOG_LEVEL to 4 to get DEBUG messages
+  target_compile_definitions(RTI PUBLIC LOG_LEVEL=4)
 ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 
 # Set LF_THREADING to get the threaded support
@@ -88,14 +99,27 @@ target_link_libraries(RTI Threads::Threads)
 
 # Option for enabling federate authentication by RTI.
 option(AUTH "Federate authentication by RTI enabled." OFF)
+
 IF(AUTH MATCHES ON)
   add_compile_definitions(__RTI_AUTH__)
+
   # Find OpenSSL and link to it
   find_package(OpenSSL REQUIRED)
   target_link_libraries(RTI OpenSSL::SSL)
 ENDIF(AUTH MATCHES ON)
 
+# Option for enabling SST security.
+option(SST "SST security enabled." OFF)
+
+IF(SST MATCHES ON)
+  add_compile_definitions(__RTI_SST__)
+
+  # Find OpenSSL and link to it
+  find_package(OpenSSL REQUIRED)
+  target_link_libraries(RTI OpenSSL::SSL)
+ENDIF(SST MATCHES ON)
+
 install(
-    TARGETS RTI
-    DESTINATION bin
+  TARGETS RTI
+  DESTINATION bin
 )
