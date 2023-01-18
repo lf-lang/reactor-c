@@ -56,6 +56,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <openssl/rand.h> // For secure random number generation.
 #include <openssl/hmac.h> // For HMAC-based authentication of federates.
 #endif
+#ifdef FEDERATED_SST
+#endif
 
 // Error messages.
 char* ERROR_SENDING_HEADER = "ERROR sending header information to federate via RTI";
