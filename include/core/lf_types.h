@@ -268,6 +268,7 @@ typedef struct watchdog_t watchdog_t;
 struct watchdog_t {
     self_base_t* self;                      // The reactor that contains the watchdog.
     instant_t expiration;                   // The expiration instant for the watchdog. (Initialized to NEVER)
+    interval_t min_expiration;              // The minimum expiration interval for the watchdog.
     watchdog_function_t watchdog_function;  // The function/handler for the watchdog.
 };
 
