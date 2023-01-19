@@ -35,6 +35,7 @@ If you would like to go back to non-AUTH mode, you would have to remove all cont
 add `-DSST=ON` option to the cmake command as shown below:
 
 ```bash
+cd ../security/RTI
 mkdir build && cd build
 cmake -DSST=ON ../
 make
