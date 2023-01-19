@@ -1,0 +1,3 @@
+[submodule "core/federated/security/sst-c-api"]
+	path = core/federated/security/sst-c-api
+	url = git@github.com:iotauth/sst-c-api.git
