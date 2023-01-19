@@ -5,4 +5,5 @@
 /build/
 **/.DS_Store
 /core/federated/RTI/build/
+/core/federated/security/RTI/build/
 /cmake-build-debug/

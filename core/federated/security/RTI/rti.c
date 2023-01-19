@@ -69,6 +69,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <openssl/rand.h> // For secure random number generation.
 #include <openssl/hmac.h> // For HMAC authentication.
 #endif
+#ifdef __RTI_SST__
+#include "../sst-c-api/c_api.h"
+#endif
 /**
  * The state of this RTI instance.
  */
@@ -91,7 +94,8 @@ RTI_instance_t _RTI = {
     .clock_sync_global_status = clock_sync_init,
     .clock_sync_period_ns = MSEC(10),
     .clock_sync_exchanges_per_interval = 10,
-    .authentication_enabled = false
+    .authentication_enabled = false,
+    .sst_config_path = "Path/Long/Enough/"
 };
 
 /**
@@ -1890,6 +1894,9 @@ void connect_to_federates(int socket_descriptor) {
                 continue;
             }
         }
+        // #ifdef __RTI_SST__
+
+        // #endif
 
         // Send RTI hello when RTI -a option is on.
         #ifdef __RTI_AUTH__
@@ -2131,6 +2138,7 @@ void usage(int argc, char* argv[]) {
     printf("       - exchanges-per-interval <n>: Controls the number of messages that are exchanged for each\n");
     printf("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n\n");
     printf("  -a, --auth Turn on HMAC authentication options.\n\n");
+    printf("  -sst, --sst Use SST for authentication, authorization, and communication security.\n\n");
 
     printf("Command given:\n");
     for (int i = 0; i < argc; i++) {
@@ -2273,6 +2281,15 @@ int process_args(int argc, char* argv[]) {
            i += process_clock_sync_args((argc-i), &argv[i]);
         } else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--auth") == 0) {
             _RTI.authentication_enabled = true;
+        } else if (strcmp(argv[i], "-sst") == 0 || strcmp(argv[i], "--sst") == 0) {
+            if (argc < i + 2) {
+                fprintf(stderr, "Error: --sst needs a string argument.\n");
+                usage(argc, argv);
+                return 0;
+            }
+            i++;
+            printf("RTI: SST_config_path: %s\n", argv[i]);
+            _RTI.sst_config_path = argv[i];
         } else if (strcmp(argv[i], " ") == 0) {
             // Tolerate spaces
             continue;

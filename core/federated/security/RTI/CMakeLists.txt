@@ -49,7 +49,7 @@
 cmake_minimum_required(VERSION 3.12)
 project(RTI VERSION 1.0.0 LANGUAGES C)
 
-set(CoreLib ../../../core)
+set(CoreLib ../../../../core)
 
 # Check which system we are running on to select the correct platform support
 # file and assign the file's path to LF_PLATFORM_FILE
@@ -68,7 +68,7 @@ include_directories(${CoreLib}/federated)
 include_directories(${CoreLib}/platform)
 include_directories(${CoreLib}/utils)
 
-set(IncludeDir ../../../include/core)
+set(IncludeDir ../../../../include/core)
 include_directories(${IncludeDir})
 include_directories(${IncludeDir}/federated)
 include_directories(${IncludeDir}/modal_models)
