@@ -1752,6 +1752,8 @@ int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id) {
         if (_RTI.clock_sync_global_status >= clock_sync_init) {// If no initial clock sync, no need perform initial clock sync.
             uint16_t federate_UDP_port_number = extract_uint16(&(response[1]));
 
+            LF_PRINT_DEBUG("RTI got MSG_TYPE_UDP_PORT %u from federate %d.", federate_UDP_port_number, fed_id);
+
             // A port number of UINT16_MAX means initial clock sync should not be performed.
             if (federate_UDP_port_number != UINT16_MAX) {
                 // Perform the initialization clock synchronization with the federate.
