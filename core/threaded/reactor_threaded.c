@@ -1114,7 +1114,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Instead, cause an EPIPE error to be set when write() fails.
     signal(SIGPIPE, SIG_IGN);
 #endif // SIGPIPE
-
     if (process_args(default_argc, default_argv)
             && process_args(argc, argv)) {
 
@@ -1171,24 +1170,22 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 }
 
 /**
- * @brief Notification of new event is implemented by broadcasting on a 
- * condition variable. 
+ * @brief Notify of new event by broadcasting on a condition variable. 
  */
-void _lf_notify_of_event() {
-    lf_cond_broadcast(&event_q_changed);
+int lf_notify_of_event() {
+    return lf_cond_broadcast(&event_q_changed);
 }
 
 /**
- * @brief Enter critical section by locking the global mutex
- * 
+ * @brief Enter critical section by locking the global mutex.
  */
-int _lf_critical_section_enter() {
+int lf_critical_section_enter() {
     return lf_mutex_lock(&mutex);
 }
+
 /**
- * @brief Leave critical section by unlocking the global mutex
- * 
+ * @brief Leave a critical section by unlocking the global mutex.
  */
-int _lf_critical_section_exit() {
+int lf_critical_section_exit() {
     return lf_mutex_unlock(&mutex); 
 }

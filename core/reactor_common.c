@@ -913,12 +913,14 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
         // FIXME: This can go away once:
         // - we have eliminated the possibility to have a negative additional delay; and
         // - we detect the asynchronous use of logical actions
+        #ifndef NDEBUG
         if (intended_time < current_tag.time) {
             lf_print_warning("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
                     "Revising to the current time " PRINTF_TIME ".",
                     current_tag.time - intended_time, current_tag.time);
             intended_time = current_tag.time;
         }
+        #endif
     }
 
 #ifdef FEDERATED_DECENTRALIZED
@@ -1029,12 +1031,14 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     // This is a sanity check for the logic above
     // FIXME: This is a development assertion and might
     // not be necessary for end-user LF programs
+    #ifndef NDEBUG
     if (intended_time < current_tag.time) {
         lf_print_error("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
                 "Revising to the current time " PRINTF_TIME ".",
                 current_tag.time - intended_time, current_tag.time);
         intended_time = current_tag.time;
     }
+    #endif
 
     // Set the tag of the event.
     e->time = intended_time;
@@ -1174,8 +1178,8 @@ trigger_handle_t _lf_schedule_token(lf_action_base_t* action, interval_t extra_d
     }
     int return_value = _lf_schedule(action->trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
-    _lf_notify_of_event();
-    if(_lf_critical_section_exit() != 0) {
+    lf_notify_of_event();
+    if(lf_critical_section_exit() != 0) {
         lf_print_error_and_exit("Could not leave critical section");
     }
     return return_value;
@@ -1195,7 +1199,7 @@ trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, 
         lf_print_error("schedule: Invalid element size.");
         return -1;
     }
-    if (_lf_critical_section_enter() != 0) {
+    if (lf_critical_section_enter() != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
     // Initialize token with an array size of length and a reference count of 0.
@@ -1205,8 +1209,8 @@ trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, 
     // The schedule function will increment the reference count.
     trigger_handle_t result = _lf_schedule(action->trigger, offset, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
-    _lf_notify_of_event();
-    if(_lf_critical_section_exit() != 0) {
+    lf_notify_of_event();
+    if(lf_critical_section_exit() != 0) {
         lf_print_error_and_exit("Could not leave critical section");
     }
     return result;
@@ -1219,14 +1223,14 @@ trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, 
 trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_delay, void* value, size_t length) {
     token_template_t* template = (token_template_t*)action;
 
-    if (_lf_critical_section_enter() != 0) {
+    if (lf_critical_section_enter() != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
     lf_token_t* token = _lf_initialize_token_with_value(template, value, length);
     int return_value = _lf_schedule(action->trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
-    _lf_notify_of_event();
-    if(_lf_critical_section_exit() != 0) {
+    lf_notify_of_event();
+    if(lf_critical_section_exit() != 0) {
         lf_print_error_and_exit("Could not leave critical section");
     }
     return return_value;
@@ -1248,6 +1252,7 @@ void _lf_advance_logical_time(instant_t next_time) {
     // to the ordinary execution of LF programs. Instead, there might
     // be a need for a target property that enables these kinds of logic
     // assertions for development purposes only.
+    #ifndef NDEBUG
     event_t* next_event = (event_t*)pqueue_peek(event_q);
     if (next_event != NULL) {
         if (next_time > next_event->time) {
@@ -1256,7 +1261,7 @@ void _lf_advance_logical_time(instant_t next_time) {
                     next_time - start_time, next_event->time - start_time);
         }
     }
-
+    #endif
     if (current_tag.time < next_time) {
         current_tag.time = next_time;
         current_tag.microstep = 0;
@@ -1489,6 +1494,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
 
 /**
  * Print a usage message.
+ * TODO: This is not necessary for NO_TTY
  */
 void usage(int argc, const char* argv[]) {
     printf("\nCommand-line arguments: \n\n");
@@ -1525,6 +1531,7 @@ const char** default_argv = NULL;
  * Process the command-line arguments. If the command line arguments are not
  * understood, then print a usage message and return 0. Otherwise, return 1.
  * @return 1 if the arguments processed successfully, 0 otherwise.
+ * TODO: Not necessary for NO_TTY
  */
 int process_args(int argc, const char* argv[]) {
     int i = 1;
@@ -1557,7 +1564,7 @@ int process_args(int argc, const char* argv[]) {
             const char* units = argv[i++];
 
 
-            #if defined(ARDUINO)
+            #if defined(PLATFORM_ARDUINO)
             duration = atol(time_spec);
             #else
             duration = atoll(time_spec);

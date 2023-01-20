@@ -53,6 +53,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #if defined(PLATFORM_ARDUINO)
     #include "platform/lf_arduino_support.h"
+#elif defined(PLATFORM_ZEPHYR)
+    #include "platform/lf_zephyr_support.h"
 #elif defined(PLATFORM_NRF52)
     #include "platform/lf_nrf52_support.h"
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
@@ -106,6 +108,28 @@ typedef _interval_t interval_t;
  */
 typedef _microstep_t microstep_t;
 
+/**
+ * Enter a critical section where logical time and the event queue are guaranteed
+ * to not change unless they are changed within the critical section.
+ * this can be implemented by disabling interrupts.
+ * Users of this function must ensure that lf_init_critical_sections() is
+ * called first and that lf_critical_section_exit() is called later.
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_critical_section_enter();
+
+/**
+ * Exit the critical section entered with lf_lock_time().
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_critical_section_exit();
+
+/**
+ * Notify any listeners that an event has been created.
+ * The caller should call lf_critical_section_enter() before calling this function.
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_notify_of_event();
 
 // For platforms with threading support, the following functions
 // abstract the API so that the LF runtime remains portable.
@@ -157,7 +181,6 @@ extern int lf_mutex_lock(lf_mutex_t* mutex);
  */
 extern int lf_mutex_unlock(lf_mutex_t* mutex);
 
-
 /**
  * Initialize a conditional variable.
  *
@@ -203,7 +226,9 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  * @param value The value to be added to the variable pointed to by the ptr parameter.
  * @return The original value of the variable that ptr points to (i.e., from before the application of this operation).
  */
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(PLATFORM_ZEPHYR)
+#define lf_atomic_fetch_add(ptr, value) _zephyr_atomic_fetch_add((int*) ptr, value)
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that an integer is 32 bits.
 #define lf_atomic_fetch_add(ptr, value) InterlockedExchangeAdd(ptr, value)
 #elif defined(__GNUC__) || defined(__clang__)
@@ -218,7 +243,9 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  * @param value The value to be added to the variable pointed to by the ptr parameter.
  * @return The new value of the variable that ptr points to (i.e., from before the application of this operation).
  */
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(PLATFORM_ZEPHYR)
+#define lf_atomic_add_fetch(ptr, value) _zephyr_atomic_add_fetch((int*) ptr, value)
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that an integer is 32 bits.
 #define lf_atomic_add_fetch(ptr, value) InterlockedAdd(ptr, value)
 #elif defined(__GNUC__) || defined(__clang__)
@@ -235,7 +262,9 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  * @param newval The value to assign to *ptr if comparison is successful.
  * @return True if comparison was successful. False otherwise.
  */
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(PLATFORM_ZEPHYR)
+#define lf_bool_compare_and_swap(ptr, value, newval) _zephyr_bool_compare_and_swap((bool*) ptr, value, newval)
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that a boolean is represented with a 32-bit integer.
 #define lf_bool_compare_and_swap(ptr, oldval, newval) (InterlockedCompareExchange(ptr, newval, oldval) == oldval)
 #elif defined(__GNUC__) || defined(__clang__)
@@ -252,37 +281,15 @@ extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absol
  * @param newval The value to assign to *ptr if comparison is successful.
  * @return The initial value of *ptr.
  */
-#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+#if defined(PLATFORM_ZEPHYR)
+#define lf_val_compare_and_swap(ptr, value, newval) _zephyr_val_compare_and_swap((int*) ptr, value, newval)
+#elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define lf_val_compare_and_swap(ptr, oldval, newval) InterlockedCompareExchange(ptr, newval, oldval)
 #elif defined(__GNUC__) || defined(__clang__)
 #define lf_val_compare_and_swap(ptr, oldval, newval) __sync_val_compare_and_swap(ptr, oldval, newval)
 #else
 #error "Compiler not supported"
 #endif
-
-#else
-/**
- * Enter a critical section where logical time and the event queue are guaranteed
- * to not change unless they are changed within the critical section.
- * this can be implemented by disabling interrupts.
- * Users of this function must ensure that lf_init_critical_sections() is
- * called first and that lf_critical_section_exit() is called later.
- * @return 0 on success, platform-specific error number otherwise.
- */
-extern int lf_critical_section_enter();
-
-/**
- * Exit the critical section entered with lf_lock_time().
- * @return 0 on success, platform-specific error number otherwise.
- */
-extern int lf_critical_section_exit();
-
-/**
- * Notify any listeners that an event has been created.
- * The caller should call lf_critical_section_enter() before calling this function.
- * @return 0 on success, platform-specific error number otherwise.
- */
-extern int lf_notify_of_event();
 
 #endif
 
@@ -315,7 +322,7 @@ extern int lf_sleep(interval_t sleep_duration);
  * @param wakeup_time The time instant at which to wake up.
  * @return int 0 if sleep completed, or -1 if it was interrupted.
  */
-extern int lf_sleep_until(instant_t wakeup_time);
+extern int lf_sleep_until_locked(instant_t wakeup_time);
 
 /**
  * Macros for marking function as deprecated
