@@ -1173,7 +1173,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
  * See reactor.h for documentation.
  */
 trigger_handle_t _lf_schedule_token(lf_action_base_t* action, interval_t extra_delay, lf_token_t* token) {
-    if (_lf_critical_section_enter() != 0) {
+    if (lf_critical_section_enter() != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
     int return_value = _lf_schedule(action->trigger, extra_delay, token);

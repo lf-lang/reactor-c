@@ -39,9 +39,6 @@
 
 lf_token_t* _lf_tokens_allocated_in_reactions = NULL;
 
-// The following are declared in reactor.h, but to avoid circular includes, we declare again here.
-void _lf_critical_section_enter();
-void _lf_critical_section_exit();
 
 ////////////////////////////////////////////////////////////////////
 //// Global variables not visible outside this file.
@@ -158,11 +155,13 @@ token_freed _lf_free_token(lf_token_t* token) {
     // Tokens that are created at the start of execution and associated with
     // output ports or actions persist until they are overwritten.
     // Need to acquire a mutex to access the recycle bin.
-    _lf_critical_section_enter();
+    if (lf_critical_section_enter() != 0) {
+        lf_print_error_and_exit("Could not enter critical section");
+    }
     if (_lf_token_recycling_bin == NULL) {
         _lf_token_recycling_bin = hashset_create(4); // Initial size is 16.
         if (_lf_token_recycling_bin == NULL) {
-            _lf_critical_section_exit();
+            lf_critical_section_exit();
             lf_print_error_and_exit("Out of memory: failed to setup _lf_token_recycling_bin");
         }
     }
@@ -177,7 +176,9 @@ token_freed _lf_free_token(lf_token_t* token) {
         LF_PRINT_DEBUG("_lf_free_token: Freeing allocated memory for token: %p", token);
         free(token);
     }
-    _lf_critical_section_exit();
+    if(lf_critical_section_exit() != 0) {
+        lf_print_error_and_exit("Could not leave critical section");
+    }
     _lf_count_token_allocations--;
     result &= TOKEN_FREED;
 
@@ -187,7 +188,9 @@ token_freed _lf_free_token(lf_token_t* token) {
 lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
     lf_token_t* result = NULL;
     // Check the recycling bin.
-    _lf_critical_section_enter();
+    if (lf_critical_section_enter() != 0) {
+        lf_print_error_and_exit("Could not enter critical section");
+    }
     if (_lf_token_recycling_bin != NULL) {
         hashset_itr_t iterator = hashset_iterator(_lf_token_recycling_bin);
         if (hashset_iterator_next(iterator) >= 0) {
@@ -197,7 +200,9 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
         }
         free(iterator);
     }
-    _lf_critical_section_exit();
+    if(lf_critical_section_exit() != 0) {
+        lf_print_error_and_exit("Could not leave critical section");
+    }
     if (result == NULL) {
         // Nothing found on the recycle bin.
         result = (lf_token_t*)calloc(1, sizeof(lf_token_t));
@@ -239,12 +244,16 @@ lf_token_t* _lf_get_token(token_template_t* tmplt) {
 
 void _lf_initialize_template(token_template_t* tmplt, size_t element_size) {
     assert(tmplt != NULL);
-    _lf_critical_section_enter();
+    if (lf_critical_section_enter() != 0) {
+        lf_print_error_and_exit("Could not enter critical section");
+    }
     if (_lf_token_templates == NULL) {
         _lf_token_templates = hashset_create(4); // Initial size is 16.
     }
     hashset_add(_lf_token_templates, tmplt);
-    _lf_critical_section_exit();
+    if(lf_critical_section_exit() != 0) {
+        lf_print_error_and_exit("Could not leave critical section");
+    }
     if (tmplt->token != NULL) {
         if (tmplt->token->ref_count == 1 && tmplt->token->type->element_size == element_size) {
             // Template token is already set.
@@ -284,7 +293,9 @@ lf_token_t* _lf_initialize_token(token_template_t* tmplt, size_t length) {
 
 void _lf_free_all_tokens() {
     // Free template tokens.
-    _lf_critical_section_enter();
+    if (lf_critical_section_enter() != 0) {
+        lf_print_error_and_exit("Could not enter critical section");
+    }
     // It is possible for a token to be a template token for more than one port
     // or action because the same token may be sent to multiple output ports.
     if (_lf_token_templates != NULL) {
@@ -310,7 +321,9 @@ void _lf_free_all_tokens() {
         hashset_destroy(_lf_token_recycling_bin);
         _lf_token_recycling_bin = NULL;
     }
-    _lf_critical_section_exit();
+    if(lf_critical_section_exit() != 0) {
+        lf_print_error_and_exit("Could not leave critical section");
+    }
 }
 
 void _lf_replace_template_token(token_template_t* tmplt, lf_token_t* newtoken) {
