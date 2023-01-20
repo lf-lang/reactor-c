@@ -132,7 +132,7 @@ void reset_socket_stat(struct socket_stat_t* socket_stat);
  * 
  * @return port number to be sent to the RTI
  */
-unsigned short int setup_clock_synchronization_with_rti(void);
+uint16_t setup_clock_synchronization_with_rti(void);
 
 /**
  * Synchronize the initial physical clock with the RTI.

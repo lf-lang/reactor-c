@@ -95,6 +95,12 @@ void _lf_set_present(lf_port_base_t* port);
 // token_type_t: Which has element_size, destructor, and copy_constructor fields.
 
 /**
+ * @brief Forward declaration for the executable preamble;
+ * 
+ */
+void _lf_executable_preamble();
+
+/**
  * Set the specified output (or input of a contained reactor)
  * to the specified value.
  *
