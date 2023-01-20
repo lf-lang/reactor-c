@@ -36,9 +36,9 @@
 #include "lf_token.h"
 #include "hashset/hashset_itr.h"
 #include "util.h"
+#include "platform.h" // Defines lf_critical_section_enter() and exit.
 
 lf_token_t* _lf_tokens_allocated_in_reactions = NULL;
-
 
 ////////////////////////////////////////////////////////////////////
 //// Global variables not visible outside this file.
