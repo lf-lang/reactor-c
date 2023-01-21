@@ -1845,12 +1845,12 @@ void handle_tagged_message(int socket, int fed_id) {
     LF_PRINT_DEBUG("Receiving message to port %d of length %zu.", port_id, length);
 
     // Get the triggering action for the corresponding port
-    trigger_t* action = _lf_action_for_port(port_id)->trigger;
+    lf_action_base_t* action = _lf_action_for_port(port_id);
 
     // Record the physical time of arrival of the message
-    action->physical_time_of_arrival = lf_time_physical();
+    action->trigger->physical_time_of_arrival = lf_time_physical();
 
-    if (action->is_physical) {
+    if (action->trigger->is_physical) {
         // Messages sent on physical connections should be handled via handle_message().
         lf_print_error_and_exit("Received a timed message on a physical connection.");
     }
@@ -1887,12 +1887,12 @@ void handle_tagged_message(int socket, int fed_id) {
     // Sanity checks
 #ifdef FEDERATED_DECENTRALIZED
     if (lf_tag_compare(intended_tag,
-            action->last_known_status_tag) < 0) {
+            action->trigger->last_known_status_tag) < 0) {
         lf_print_error_and_exit("The following contract was violated for a timed message: In-order "
                              "delivery of messages over a TCP socket. Had status for " PRINTF_TAG ", got "
                              "timed message with intended tag " PRINTF_TAG ".",
-                             action->last_known_status_tag.time - start_time,
-                             action->last_known_status_tag.microstep,
+                             action->trigger->last_known_status_tag.time - start_time,
+                             action->trigger->last_known_status_tag.microstep,
                              intended_tag.time - start_time,
                              intended_tag.microstep);
     }
@@ -1922,8 +1922,8 @@ void handle_tagged_message(int socket, int fed_id) {
     // can be checked in this scenario without this race condition. The message with
     // intended_tag of 9 in this case needs to wait one microstep to be processed.
     if (lf_tag_compare(intended_tag, lf_tag()) <= 0 && // The event is meant for the current or a previous tag.
-            ((action->is_a_control_reaction_waiting && // Check if a control reaction is waiting and
-             action->status == unknown) ||             // if the status of the port is still unknown.
+            ((action->trigger->is_a_control_reaction_waiting && // Check if a control reaction is waiting and
+             action->trigger->status == unknown) ||             // if the status of the port is still unknown.
              (_lf_execution_started == false))         // Or, execution hasn't even started, so it's safe to handle this event.
     ) {
         // Since the message is intended for the current tag and a control reaction
@@ -1937,8 +1937,8 @@ void handle_tagged_message(int socket, int fed_id) {
             intended_tag.time - lf_time_start(),
             intended_tag.microstep
         );
-        action->intended_tag = intended_tag;
-        _lf_insert_reactions_for_trigger(action, message_token);
+        action->trigger->intended_tag = intended_tag;
+        _lf_insert_reactions_for_trigger(action->trigger, message_token);
 
         // Set the status of the port as present here to inform the network input
         // control reactions know that they no longer need to block. The reason for
@@ -1965,7 +1965,7 @@ void handle_tagged_message(int socket, int fed_id) {
         }
 
         LF_PRINT_LOG("Calling schedule with tag " PRINTF_TAG ".", intended_tag.time - start_time, intended_tag.microstep);
-        schedule_message_received_from_network_already_locked(action, intended_tag, message_token);
+        schedule_message_received_from_network_already_locked(action->trigger, intended_tag, message_token);
     }
 
 
