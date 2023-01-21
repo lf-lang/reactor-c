@@ -221,15 +221,7 @@ lf_token_t* _lf_get_token(token_template_t* tmplt) {
             LF_PRINT_DEBUG("_lf_get_token: Reusing template token: %p with ref_count %zu",
                     tmplt->token, tmplt->token->ref_count);
             // Free any previous value in the token.
-            if (tmplt->token->value != NULL) {
-                if (tmplt->token->type->destructor == NULL) {
-                    free(tmplt->token->value);
-                } else {
-                    tmplt->token->type->destructor(tmplt->token->value);
-                }
-                tmplt->token->value = NULL;
-                _lf_count_payload_allocations--;
-            }
+            _lf_free_token_value(tmplt->token);
             return tmplt->token;
         } else {
             // Liberate the token.
