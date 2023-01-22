@@ -197,7 +197,6 @@ struct event_t {
 
 /**
  * Trigger struct representing an output, timer, action, or input.
- * Instances of this struct are put onto the event queue (event_q).
  */
 struct trigger_t {
     token_template_t tmplt;   // Type and token information (template is a C++ keyword).

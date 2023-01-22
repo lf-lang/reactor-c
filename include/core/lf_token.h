@@ -122,16 +122,42 @@ typedef struct lf_token_t {
 } lf_token_t;
 
 /**
- * @brief Base type for ports (port_base_t) and actions (trigger_t), which can carry tokens.
- * The structs port_base_t and trigger_t should start with an instance of this struct
+ * A record of the subset of channels of a multiport that have present inputs.
+ */
+typedef struct lf_sparse_io_record_t {
+	int size;  			// -1 if overflowed. 0 if empty.
+	size_t capacity;    // Max number of writes to be considered sparse.
+	size_t present_channels[];  // Array of channel indices that are present.
+} lf_sparse_io_record_t;
+
+/**
+ * @brief Base type for ports (lf_port_base_t) and actions (trigger_t), which can carry tokens.
+ * The structs lf_port_base_t and trigger_t should start with an instance of this struct
  * so that they can be cast to this struct to access these fields in a uniform way.
  */
 typedef struct token_template_t {
 	/** Instances of this struct can be cast to token_type_t. */
 	token_type_t type;
 	lf_token_t* token;
-    size_t length;       // The token's length, for convenient access.
+    size_t length;       // The token's length, for convenient access in reactions.
 } token_template_t;
+
+/**
+ * @brief Base type for ports.
+ * Port structs are customized types because their payloads are type
+ * specific. This struct represents their common features. Given any
+ * pointer to a port struct, it can be cast to lf_port_base_t and then
+ * these common fields can be accessed.
+ * IMPORTANT: If this is changed, it must also be changed in
+ * CPortGenerator.java generateAuxiliaryStruct().
+ */
+typedef struct lf_port_base_t {
+	token_template_t tmplt;               // Type and token information (template is a C++ keyword).
+	bool is_present;
+	lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
+	int destination_channel;              // -1 if there is no destination.
+    int num_destinations;                 // The number of destination reactors this port writes to.
+} lf_port_base_t;
 
 //////////////////////////////////////////////////////////
 //// Global variables
@@ -199,9 +225,9 @@ lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len);
  * be decremented at the start of the next tag.
  * If the template has no token (it has a primitive type), then there
  * is no need for a writable copy. Return NULL.
- * @param tmplt An action or an input port.
+ * @param port An input port.
  */
-lf_token_t* lf_writable_copy(token_template_t* tmplt);
+lf_token_t* lf_writable_copy(lf_port_base_t* port);
 
 //////////////////////////////////////////////////////////
 //// Functions not intended to be used by users
