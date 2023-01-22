@@ -138,21 +138,6 @@ do { \
 } while (0)
 
 /**
- * Version of lf_set() for output types given as 'type[number]'.
- *
- * This sets the _is_present variable corresponding to the specified output
- * to true (which causes the array message to be sent). The values in the
- * output are normally written directly to the array or struct before or
- * after this is called.
- * @param out The output port (by name).
- */
-#define SET_PRESENT(out) \
-do { \
-	_Pragma ("Warning \"'SET_PRESENT' is deprecated.\""); \
-    _lf_set_present((lf_port_base_t*)out); \
-} while (0)
-
-/**
  * Version of lf_set() for output types given as 'type*' or 'type[]' where you want
  * to forward an input or action without copying it.
  *

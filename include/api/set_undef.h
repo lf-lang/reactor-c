@@ -74,11 +74,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #undef SET_NEW_ARRAY
 
 /**
- * Version of lf_set() for output types given as 'type[number]'.
- */
-#undef SET_PRESENT
-
-/**
  * Version of lf_set() for output types given as 'type*' or 'type[]' where you want
  * to forward an input or action without copying it.
  */
