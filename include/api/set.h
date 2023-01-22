@@ -80,25 +80,6 @@ do { \
 } while (0)
 
 /**
- * Version of lf_set for output types given as 'type[]' where you
- * want to send a previously dynamically allocated array.
- *
- * The deallocation is delegated to downstream reactors, which
- * automatically deallocate when the reference count drops to zero.
- * It also sets the corresponding _is_present variable in the self
- * struct to true (which causes the object message to be sent).
- * @param out The output port (by name).
- * @param val The array to send (a pointer to the first element).
- * @param length The length of the array to send.
- * @see lf_token_t
- */
-#define SET_ARRAY(out, val, elem_size, length) \
-do { \
-        _Pragma ("Warning \"'SET_ARRAY' is deprecated.\""); \
-        _LF_SET_ARRAY(out, val, length); \
-} while (0)
-
-/**
  * Version of lf_set() for output types given as 'type*' that
  * allocates a new object of the type of the specified output port.
  *

@@ -141,14 +141,14 @@ do { \
  * @see lf_token_t
  */
 #ifndef __cplusplus
-#define _LF_SET_ARRAY(out, val, length) \
+#define lf_set_array(out, val, length) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
     out->value = token->value; \
 } while(0)
 #else
-#define _LF_SET_ARRAY(out, val, length) \
+#define lf_set_array(out, val, length) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \

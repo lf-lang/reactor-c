@@ -57,12 +57,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #undef SET
 
 /**
- * Version of lf_set for output types given as 'type[]' where you
- * want to send a previously dynamically allocated array.
- */
-#undef SET_ARRAY
-
-/**
  * Version of lf_set() for output types given as 'type*' that
  * allocates a new object of the type of the specified output port.
  */
