@@ -160,6 +160,7 @@ static void data_collection_end_level(size_t level, size_t num_workers) {
 }
 
 static size_t restrict_to_range(size_t start_inclusive, size_t end_inclusive, size_t value) {
+    assert(start_inclusive <= end_inclusive);
     if (value < start_inclusive) return start_inclusive;
     if (value > end_inclusive) return end_inclusive;
     return value;
@@ -194,6 +195,7 @@ static void compute_number_of_workers(
         int minimum_workers = 1;
 #ifdef WORKERS_NEEDED_FOR_FEDERATE
         // TODO: only apply this constraint on levels containing control reactions
+        assert(WORKERS_NEEDED_FOR_FEDERATE >= 1);
         minimum_workers = WORKERS_NEEDED_FOR_FEDERATE > max_reasonable_num_workers ?
             max_reasonable_num_workers : WORKERS_NEEDED_FOR_FEDERATE;
 #endif

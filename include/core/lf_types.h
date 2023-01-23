@@ -38,8 +38,8 @@
 
 #include <stdbool.h>
 
-#include "modes.h" // Modal model support
-#include "pqueue.h"
+#include "modal_models/modes.h" // Modal model support
+#include "utils/pqueue.h"
 #include "platform.h"
 #include "tag.h"
 

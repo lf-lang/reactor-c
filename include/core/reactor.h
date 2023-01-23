@@ -86,6 +86,12 @@ lf_token_t* _lf_initialize_token_with_value(lf_token_t* token, void* value, size
 void _lf_set_present(lf_port_base_t* port);
 
 /**
+ * @brief Forward declaration for the executable preamble;
+ * 
+ */
+void _lf_executable_preamble();
+
+/**
  * Set the specified output (or input of a contained reactor)
  * to the specified value.
  *
