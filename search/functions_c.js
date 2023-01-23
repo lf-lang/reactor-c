@@ -19,8 +19,7 @@ var searchData=
   ['print_5fevent_16',['print_event',['../pqueue_8c.html#ac3748c134d36779db69ce9dd3d7ac4ac',1,'print_event(void *event):&#160;pqueue.c'],['../pqueue_8h.html#ac3748c134d36779db69ce9dd3d7ac4ac',1,'print_event(void *event):&#160;pqueue.c']]],
   ['print_5fmessage_5ffunction_5ft_17',['print_message_function_t',['../util_8h.html#a1917df59f183af6181ebafdf50877246',1,'util.h']]],
   ['print_5freaction_18',['print_reaction',['../pqueue_8c.html#a26e33f5180dc5951b3d26094959913b7',1,'print_reaction(void *reaction):&#160;pqueue.c'],['../pqueue_8h.html#a26e33f5180dc5951b3d26094959913b7',1,'print_reaction(void *reaction):&#160;pqueue.c']]],
-  ['print_5fsnapshot_19',['print_snapshot',['../lib_2util_8c.html#afd41621b799f40ef1ad8c21e1ea5a81c',1,'util.c']]],
-  ['process_5fargs_20',['process_args',['../rti_8c.html#a8de011aeee37cd0347b5e01d7e3baed4',1,'process_args(int argc, char *argv[]):&#160;rti.c'],['../reactor__common_8c.html#a80aaf4eeed3e2902f8fe9de80b45777d',1,'process_args(int argc, const char *argv[]):&#160;reactor_common.c'],['../reactor__common_8h.html#a80aaf4eeed3e2902f8fe9de80b45777d',1,'process_args(int argc, const char *argv[]):&#160;reactor_common.c']]],
-  ['process_5fclock_5fsync_5fargs_21',['process_clock_sync_args',['../rti_8c.html#a6d07d769654a6bfec790c24e1c65cd77',1,'rti.c']]],
-  ['put_22',['put',['../hashmap_8h.html#afe449c9d265cb18817e77ae3d1393671',1,'hashmap.h']]]
+  ['process_5fargs_19',['process_args',['../rti_8c.html#a8de011aeee37cd0347b5e01d7e3baed4',1,'process_args(int argc, char *argv[]):&#160;rti.c'],['../reactor__common_8c.html#a80aaf4eeed3e2902f8fe9de80b45777d',1,'process_args(int argc, const char *argv[]):&#160;reactor_common.c'],['../reactor__common_8h.html#a80aaf4eeed3e2902f8fe9de80b45777d',1,'process_args(int argc, const char *argv[]):&#160;reactor_common.c']]],
+  ['process_5fclock_5fsync_5fargs_20',['process_clock_sync_args',['../rti_8c.html#a6d07d769654a6bfec790c24e1c65cd77',1,'rti.c']]],
+  ['put_21',['put',['../hashmap_8h.html#afe449c9d265cb18817e77ae3d1393671',1,'hashmap.h']]]
 ];

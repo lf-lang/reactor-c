@@ -8,6 +8,5 @@ var searchData=
   ['get_5fnext_5fevent_5ftag_5',['get_next_event_tag',['../reactor__threaded_8c.html#abf5752e7ec0ac5ddd757162c0125dd2e',1,'get_next_event_tag():&#160;reactor_threaded.c'],['../reactor__threaded_8h.html#abf5752e7ec0ac5ddd757162c0125dd2e',1,'get_next_event_tag():&#160;reactor_threaded.c']]],
   ['get_5freaction_5findex_6',['get_reaction_index',['../pqueue_8c.html#a625c09da56c743c2180613c25271f7da',1,'get_reaction_index(void *a):&#160;pqueue.c'],['../pqueue_8h.html#a625c09da56c743c2180613c25271f7da',1,'get_reaction_index(void *a):&#160;pqueue.c']]],
   ['get_5freaction_5fposition_7',['get_reaction_position',['../pqueue_8c.html#a66344e489d0494ce2d74e719fd190a10',1,'get_reaction_position(void *a):&#160;pqueue.c'],['../pqueue_8h.html#a66344e489d0494ce2d74e719fd190a10',1,'get_reaction_position(void *a):&#160;pqueue.c']]],
-  ['get_5fstart_5ftime_5ffrom_5frti_8',['get_start_time_from_rti',['../federate_8c.html#aacc9f1bfb95d8b6c852a52832a9ecd9e',1,'federate.c']]],
-  ['get_5fstp_5foffset_9',['get_stp_offset',['../lib_2util_8c.html#a26d345d87fb4d4927d2e5f0a1143e1be',1,'util.c']]]
+  ['get_5fstart_5ftime_5ffrom_5frti_8',['get_start_time_from_rti',['../federate_8c.html#aacc9f1bfb95d8b6c852a52832a9ecd9e',1,'federate.c']]]
 ];

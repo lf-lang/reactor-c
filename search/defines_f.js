@@ -15,7 +15,7 @@ var searchData=
   ['set_5ftoken_12',['SET_TOKEN',['../set_8h.html#aabca482a436b71f743253b204953cbe4',1,'set.h']]],
   ['sha256_5fhmac_5flength_13',['SHA256_HMAC_LENGTH',['../net__common_8h.html#abd435507a255ff2571133013bdf93bd2',1,'net_common.h']]],
   ['slow_5fexperiments_14',['SLOW_EXPERIMENTS',['../data__collection_8h.html#ad1ee074910231c4eeb99118903d47c24',1,'data_collection.h']]],
-  ['socket_5fread_5fretry_5finterval_15',['SOCKET_READ_RETRY_INTERVAL',['../net__util_8c.html#a065f1f00e4a82d34116e1cd8734fabde',1,'SOCKET_READ_RETRY_INTERVAL():&#160;net_util.c'],['../core_2utils_2util_8c.html#a065f1f00e4a82d34116e1cd8734fabde',1,'SOCKET_READ_RETRY_INTERVAL():&#160;util.c']]],
+  ['socket_5fread_5fretry_5finterval_15',['SOCKET_READ_RETRY_INTERVAL',['../net__util_8c.html#a065f1f00e4a82d34116e1cd8734fabde',1,'SOCKET_READ_RETRY_INTERVAL():&#160;net_util.c'],['../util_8c.html#a065f1f00e4a82d34116e1cd8734fabde',1,'SOCKET_READ_RETRY_INTERVAL():&#160;util.c']]],
   ['start_5fexperiments_16',['START_EXPERIMENTS',['../data__collection_8h.html#a384501550593519cbc8da611cdce40ab',1,'data_collection.h']]],
   ['start_5ftrace_17',['start_trace',['../trace_8h.html#a27e365336dc38cd3fec8741832c0e195',1,'trace.h']]],
   ['starting_5fport_18',['STARTING_PORT',['../net__common_8h.html#a3935567021a890f8b97f3d733ca5cfa1',1,'net_common.h']]],

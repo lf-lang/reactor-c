@@ -9,9 +9,8 @@ var searchData=
   ['get_5freaction_5findex_6',['get_reaction_index',['../pqueue_8c.html#a625c09da56c743c2180613c25271f7da',1,'get_reaction_index(void *a):&#160;pqueue.c'],['../pqueue_8h.html#a625c09da56c743c2180613c25271f7da',1,'get_reaction_index(void *a):&#160;pqueue.c']]],
   ['get_5freaction_5fposition_7',['get_reaction_position',['../pqueue_8c.html#a66344e489d0494ce2d74e719fd190a10',1,'get_reaction_position(void *a):&#160;pqueue.c'],['../pqueue_8h.html#a66344e489d0494ce2d74e719fd190a10',1,'get_reaction_position(void *a):&#160;pqueue.c']]],
   ['get_5fstart_5ftime_5ffrom_5frti_8',['get_start_time_from_rti',['../federate_8c.html#aacc9f1bfb95d8b6c852a52832a9ecd9e',1,'federate.c']]],
-  ['get_5fstp_5foffset_9',['get_stp_offset',['../lib_2util_8c.html#a26d345d87fb4d4927d2e5f0a1143e1be',1,'util.c']]],
-  ['getpos_10',['getpos',['../structpqueue__t.html#a20a38eccf17fb90e2c483503326c3fba',1,'pqueue_t']]],
-  ['getpri_11',['getpri',['../structpqueue__t.html#ae1c098eb8c14bdfbce6797ede3f0c387',1,'pqueue_t']]],
-  ['global_5ftag_5fbarrier_5frequestors_5freached_5fzero_12',['global_tag_barrier_requestors_reached_zero',['../reactor__threaded_8c.html#ae4ea7f94000cdbe956e448768fc0c91e',1,'global_tag_barrier_requestors_reached_zero():&#160;reactor_threaded.c'],['../reactor__threaded_8h.html#ae4ea7f94000cdbe956e448768fc0c91e',1,'global_tag_barrier_requestors_reached_zero():&#160;reactor_threaded.c']]],
-  ['granted_13',['GRANTED',['../rti_8h.html#a7a2e496e8d9be587cc662640a4251b23a440c8b08fdd77c2aa90283c06dbe465a',1,'rti.h']]]
+  ['getpos_9',['getpos',['../structpqueue__t.html#a20a38eccf17fb90e2c483503326c3fba',1,'pqueue_t']]],
+  ['getpri_10',['getpri',['../structpqueue__t.html#ae1c098eb8c14bdfbce6797ede3f0c387',1,'pqueue_t']]],
+  ['global_5ftag_5fbarrier_5frequestors_5freached_5fzero_11',['global_tag_barrier_requestors_reached_zero',['../reactor__threaded_8c.html#ae4ea7f94000cdbe956e448768fc0c91e',1,'global_tag_barrier_requestors_reached_zero():&#160;reactor_threaded.c'],['../reactor__threaded_8h.html#ae4ea7f94000cdbe956e448768fc0c91e',1,'global_tag_barrier_requestors_reached_zero():&#160;reactor_threaded.c']]],
+  ['granted_12',['GRANTED',['../rti_8h.html#a7a2e496e8d9be587cc662640a4251b23a440c8b08fdd77c2aa90283c06dbe465a',1,'rti.h']]]
 ];
