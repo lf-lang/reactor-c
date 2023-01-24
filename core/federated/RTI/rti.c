@@ -69,6 +69,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <openssl/rand.h> // For secure random number generation.
 #include <openssl/hmac.h> // For HMAC authentication.
 #endif
+#ifdef __RTI_SST__
+#include "../sst-c-api/c_api.h"
+#endif
 /**
  * The state of this RTI instance.
  */
@@ -91,7 +94,8 @@ RTI_instance_t _RTI = {
     .clock_sync_global_status = clock_sync_init,
     .clock_sync_period_ns = MSEC(10),
     .clock_sync_exchanges_per_interval = 10,
-    .authentication_enabled = false
+    .authentication_enabled = false,
+    .sst_config_path = "Path/Long/Enough/"
 };
 
 /**
@@ -1864,6 +1868,92 @@ bool authenticate_federate(int socket) {
 }
 #endif
 
+#ifdef __RTI_SST__ //TODO: 주석 지우기.
+typedef struct {
+    SST_session_ctx_t *session_ctx;
+    federate_t* fed;
+} secure_fed_t;
+
+/**
+ * Thread handling TCP communication with a federate.
+ * @param fed A pointer to the federate's struct that has the
+ *  socket descriptor for the federate.
+ */
+void* secure_federate_thread_TCP(void* secure_fed) {
+    secure_fed_t* my_secure_fed = (secure_fed_t*)secure_fed;
+
+    // Buffer for incoming messages.
+    // This does not constrain the message size because messages
+    // are forwarded piece by piece.
+    unsigned char buffer[FED_COM_BUFFER_SIZE];
+
+    // Listen for messages from the federate.
+    while (my_secure_fed->fed->state != NOT_CONNECTED) {
+        ssize_t sst_bytes_read = read_from_socket(my_secure_fed->fed->socket, FED_COM_BUFFER_SIZE, buffer); //TODO: input buffer size?
+        unsigned char *decrypted_buf = return_decrypted_buf(buffer, sst_bytes_read, my_secure_fed->session_ctx);
+
+        FILE * fileDescriptor = fmemopen(decrypted_buf, sizeof(decrypted_buf), "r");
+        my_secure_fed->fed->socket = fileno(fileDescriptor);
+
+        // Read no more than one byte to get the message type.
+        ssize_t bytes_read = read_from_socket(my_secure_fed->fed->socket, 1, buffer);
+        if (bytes_read < 1) {
+            // Socket is closed
+            lf_print_warning("RTI: Socket to federate %d is closed. Exiting the thread.", my_secure_fed->fed->id);
+            my_secure_fed->fed->state = NOT_CONNECTED;
+            my_secure_fed->fed->socket = -1;
+            // FIXME: We need better error handling here, but this is probably not the right thing to do.
+            // mark_federate_requesting_stop(my_secure_fed->fed);
+            break;
+        }
+        LF_PRINT_DEBUG("RTI: Received message type %u from federate %d.", buffer[0], my_secure_fed->fed->id);
+        switch(buffer[0]) {
+            case MSG_TYPE_TIMESTAMP:
+                handle_timestamp(my_secure_fed->fed);
+                break;
+            case MSG_TYPE_ADDRESS_QUERY:
+                handle_address_query(my_secure_fed->fed->id);
+                break;
+            case MSG_TYPE_ADDRESS_ADVERTISEMENT:
+                handle_address_ad(my_secure_fed->fed->id);
+                break;
+            case MSG_TYPE_TAGGED_MESSAGE:
+                handle_timed_message(my_secure_fed->fed, buffer);
+                break;
+            case MSG_TYPE_RESIGN:
+                handle_federate_resign(my_secure_fed->fed);
+                return NULL;
+                break;
+            case MSG_TYPE_NEXT_EVENT_TAG:
+                handle_next_event_tag(my_secure_fed->fed);
+                break;
+            case MSG_TYPE_LOGICAL_TAG_COMPLETE:
+                handle_logical_tag_complete(my_secure_fed->fed);
+                break;
+            case MSG_TYPE_STOP_REQUEST:
+                handle_stop_request_message(my_secure_fed->fed); // FIXME: Reviewed until here.
+                                                     // Need to also look at
+                                                     // send_advance_grant_if_safe()
+                                                     // and send_downstream_advance_grants_if_safe()
+                break;
+            case MSG_TYPE_STOP_REQUEST_REPLY:
+                handle_stop_request_reply(my_secure_fed->fed);
+                break;
+            case MSG_TYPE_PORT_ABSENT:
+                handle_port_absent_message(my_secure_fed->fed, buffer);
+                break;
+            default:
+                lf_print_error("RTI received from federate %d an unrecognized TCP message type: %u.", my_secure_fed->fed->id, buffer[0]);
+        }
+    }
+
+    // Nothing more to do. Close the socket and exit.
+    close(my_secure_fed->fed->socket); //  from unistd.h
+
+    return NULL;
+}
+#endif
+
 /**
  * Wait for one incoming connection request from each federate,
  * and upon receiving it, create a thread to communicate with
@@ -1871,6 +1961,13 @@ bool authenticate_federate(int socket) {
  * @param socket_descriptor The socket on which to accept connections.
  */
 void connect_to_federates(int socket_descriptor) {
+    //TODO:여기가 for 문 시작. 여기서 number of federates 수만큼 받는다.
+    //여기서 시작? sst_ctx
+    #ifdef __RTI_SST__
+        SST_ctx_t *ctx = init_SST(_RTI.sst_config_path);
+        INIT_SESSION_KEY_LIST(s_key_list);
+    #endif
+
     for (int i = 0; i < _RTI.number_of_federates; i++) {
         // Wait for an incoming connection request.
         struct sockaddr client_fd;
@@ -1905,9 +2002,17 @@ void connect_to_federates(int socket_descriptor) {
         
         // The first message from the federate should contain its ID and the federation ID.
         int32_t fed_id = receive_and_check_fed_id_message(socket_id, (struct sockaddr_in*)&client_fd);
+        //TODO: 0, 1 return함.(federation이 2개일때.)
         if (fed_id >= 0
                 && receive_connection_information(socket_id, (uint16_t)fed_id)
+                //TODO: //_RTI_federates 정보 채워줌.
                 && receive_udp_message_and_set_up_clock_sync(socket_id, (uint16_t)fed_id)) {
+        #ifdef __RTI_SST__
+            SST_session_ctx_t *session_ctx = server_secure_comm_setup(ctx, socket_id, &s_key_list);
+            secure_fed_t secure_fed = {.session_ctx = session_ctx, .fed = &_RTI.federates[fed_id]};
+            pthread_create(&(_RTI.federates[fed_id].thread_id), NULL, &secure_federate_thread_TCP, (void *)session_ctx);
+
+        #endif
 
             // Create a thread to communicate with the federate.
             // This has to be done after clock synchronization is finished
@@ -2131,6 +2236,7 @@ void usage(int argc, char* argv[]) {
     printf("       - exchanges-per-interval <n>: Controls the number of messages that are exchanged for each\n");
     printf("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n\n");
     printf("  -a, --auth Turn on HMAC authentication options.\n\n");
+    printf("  -sst, --sst Use SST for authentication, authorization, and communication security.\n\n");
 
     printf("Command given:\n");
     for (int i = 0; i < argc; i++) {
@@ -2273,6 +2379,15 @@ int process_args(int argc, char* argv[]) {
            i += process_clock_sync_args((argc-i), &argv[i]);
         } else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--auth") == 0) {
             _RTI.authentication_enabled = true;
+        } else if (strcmp(argv[i], "-sst") == 0 || strcmp(argv[i], "--sst") == 0) {
+            if (argc < i + 2) {
+                fprintf(stderr, "Error: --sst needs a string argument.\n");
+                usage(argc, argv);
+                return 0;
+            }
+            i++;
+            printf("RTI: SST_config_path: %s\n", argv[i]);
+            _RTI.sst_config_path = argv[i];
         } else if (strcmp(argv[i], " ") == 0) {
             // Tolerate spaces
             continue;

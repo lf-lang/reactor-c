@@ -84,6 +84,7 @@ add_executable(
     ${CoreLib}/platform/lf_unix_clock_support.c
     ${CoreLib}/utils/pqueue.c
     message_record/message_record.c
+    ../sst-c-api/c_api.h
 )
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
@@ -111,11 +112,12 @@ IF(AUTH MATCHES ON)
 ENDIF(AUTH MATCHES ON)
 
 IF(SST MATCHES ON)
-  add_compile_definitions(__RTI_AUTH__)
+  add_compile_definitions(__RTI_SST__)
   # Find OpenSSL and link to it
   set(OPENSSL_ROOT_DIR "/usr/local/ssl")
   find_package(OpenSSL REQUIRED)
   target_link_libraries(RTI OpenSSL::SSL)
+  include_directories(../sst-c-api)
 ENDIF(SST MATCHES ON)
 
 
