@@ -43,55 +43,55 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MBED 4
 
 #ifndef BOARD
-#if defined(ARDUINO_AVR_ADK)       
+#if defined(ARDUINO_AVR_ADK)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_BT)    // Bluetooth      
+#elif defined(ARDUINO_AVR_BT)    // Bluetooth
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_DUEMILANOVE)           
+#elif defined(ARDUINO_AVR_DUEMILANOVE)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_ESPLORA)             
+#elif defined(ARDUINO_AVR_ESPLORA)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_ETHERNET)          
+#elif defined(ARDUINO_AVR_ETHERNET)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_FIO)             
+#elif defined(ARDUINO_AVR_FIO)      
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_GEMMA)      
+#elif defined(ARDUINO_AVR_GEMMA)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_LEONARDO)        
+#elif defined(ARDUINO_AVR_LEONARDO)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_LILYPAD)      
+#elif defined(ARDUINO_AVR_LILYPAD)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_LILYPAD_USB)      
+#elif defined(ARDUINO_AVR_LILYPAD_USB)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_MEGA)             
+#elif defined(ARDUINO_AVR_MEGA)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_MEGA2560)           
+#elif defined(ARDUINO_AVR_MEGA2560)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_MICRO)            
+#elif defined(ARDUINO_AVR_MICRO)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_MINI)          
+#elif defined(ARDUINO_AVR_MINI)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_NANO)          
+#elif defined(ARDUINO_AVR_NANO)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_NG)            
+#elif defined(ARDUINO_AVR_NG)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_PRO)          
+#elif defined(ARDUINO_AVR_PRO)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_ROBOT_CONTROL)        
+#elif defined(ARDUINO_AVR_ROBOT_CONTROL)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_ROBOT_MOTOR)            
+#elif defined(ARDUINO_AVR_ROBOT_MOTOR)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_UNO) || defined(__AVR_ATmega4809__)        
+#elif defined(ARDUINO_AVR_UNO) || defined(__AVR_ATmega4809__)
     #define BOARD AVR
-#elif defined(ARDUINO_AVR_YUN)             
+#elif defined(ARDUINO_AVR_YUN)
     #define BOARD AVR
 
 // These boards must be installed separately:
-#elif defined(ARDUINO_SAM_DUE)       
+#elif defined(ARDUINO_SAM_DUE)
     #define BOARD SAM
-#elif defined(ARDUINO_SAMD_ZERO)       
+#elif defined(ARDUINO_SAMD_ZERO)
     #define BOARD SAMD
-#elif defined(ARDUINO_ARC32_TOOLS)       
+#elif defined(ARDUINO_ARC32_TOOLS)
     #define BOARD SAM
 #elif defined(ARDUINO_ARDUINO_NANO33BLE)
     #define BOARD MBED
