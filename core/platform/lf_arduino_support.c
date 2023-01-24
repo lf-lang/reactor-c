@@ -133,7 +133,6 @@ int lf_clock_gettime(instant_t* t) {
  * nested critical sections.
 */
 int lf_critical_section_enter() { 
-    _lf_num_nested_critical_sections++;
     if (_lf_num_nested_critical_sections++ == 0) {
         // First nested entry into a critical section.
         // If interrupts are not initially enabled, then increment again to prevent
@@ -169,7 +168,6 @@ int lf_critical_section_exit() {
             interrupts();
         #endif
     }
-    --_lf_num_nested_critical_sections;
     return 0;
 }
 
