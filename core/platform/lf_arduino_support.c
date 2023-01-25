@@ -133,14 +133,17 @@ int lf_clock_gettime(instant_t* t) {
  * nested critical sections.
 */
 int lf_critical_section_enter() { 
-    _lf_num_nested_critical_sections++;
-    // if (_lf_num_nested_critical_sections++ == 0) {
-    //     // First nested entry into a critical section.
-    //     // If interrupts are not initially enabled, then increment again to prevent
-    //     // TODO: Do we need to check whether the interrupts were enabled to
-    //     //  begin with? AFAIK there is no Arduino API for that 
-    //     noInterrupts();
-    // }
+    if (_lf_num_nested_critical_sections++ == 0) {
+        // First nested entry into a critical section.
+        // If interrupts are not initially enabled, then increment again to prevent
+        // TODO: Do we need to check whether the interrupts were enabled to
+        //  begin with? AFAIK there is no Arduino API for that 
+        #if BOARD==MBED
+            core_util_critical_section_enter(); //MBED Boards use an RTOS, so we use a specific call to enter a critical section.
+        #else
+            noInterrupts();
+        #endif
+    }
     return 0;
 }
 
@@ -158,10 +161,13 @@ int lf_critical_section_exit() {
     if (_lf_num_nested_critical_sections <= 0) {
         return 1;
     }
-    // if (--_lf_num_nested_critical_sections == 0) {
-    //     interrupts();
-    // }
-    --_lf_num_nested_critical_sections;
+    if (--_lf_num_nested_critical_sections == 0) {
+        #if BOARD==MBED
+            core_util_critical_section_exit(); //MBED Boards use an RTOS, so we use a specific call to exit a critical section.
+        #else
+            interrupts();
+        #endif
+    }
     return 0;
 }
 
