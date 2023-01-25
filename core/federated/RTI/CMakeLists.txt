@@ -84,7 +84,11 @@ add_executable(
     ${CoreLib}/platform/lf_unix_clock_support.c
     ${CoreLib}/utils/pqueue.c
     message_record/message_record.c
-    ../sst-c-api/c_api.h
+    ../sst-c-api/c_api.c
+    ../sst-c-api/c_common.c 
+    ../sst-c-api/c_crypto.c 
+    ../sst-c-api/c_secure_comm.c 
+    ../sst-c-api/load_config.c
 )
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)

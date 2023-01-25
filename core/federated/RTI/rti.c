@@ -1893,7 +1893,9 @@ void* secure_federate_thread_TCP(void* secure_fed) {
         unsigned char *decrypted_buf = return_decrypted_buf(buffer, sst_bytes_read, my_secure_fed->session_ctx);
 
         FILE * fileDescriptor = fmemopen(decrypted_buf, sizeof(decrypted_buf), "r");
+        //  Change FILE pointer to file descriptor
         my_secure_fed->fed->socket = fileno(fileDescriptor);
+        //TODO: 문제는, read_from_socket 의 에러 핸들링이 적용이 안됨. 소켓을 다르게 지정해버렸으니깐...
 
         // Read no more than one byte to get the message type.
         ssize_t bytes_read = read_from_socket(my_secure_fed->fed->socket, 1, buffer);
@@ -2011,7 +2013,6 @@ void connect_to_federates(int socket_descriptor) {
             SST_session_ctx_t *session_ctx = server_secure_comm_setup(ctx, socket_id, &s_key_list);
             secure_fed_t secure_fed = {.session_ctx = session_ctx, .fed = &_RTI.federates[fed_id]};
             pthread_create(&(_RTI.federates[fed_id].thread_id), NULL, &secure_federate_thread_TCP, (void *)session_ctx);
-
         #endif
 
             // Create a thread to communicate with the federate.

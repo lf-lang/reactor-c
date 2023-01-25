@@ -40,6 +40,10 @@ mkdir build && cd build
 cmake -DSST=ON ../
 make
 sudo make install
+
+//TODO: Erase.
+RTI -n 2 -sst ../../sst_config/c_server.config
+java -jar target/auth-server-jar-with-dependencies.jar -p ../properties/exampleAuth101.properties
 ```
 
 If you would like to go back to non-SST mode, you would have to remove all contents of the `build` folder.
