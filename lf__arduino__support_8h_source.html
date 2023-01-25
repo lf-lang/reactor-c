@@ -114,97 +114,105 @@ $(function() {
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span><span class="preprocessor">#include &lt;time.h&gt;</span>   <span class="comment">// For CLOCK_MONOTONIC</span></div>
 <div class="line"><a id="l00037" name="l00037"></a><span class="lineno">   37</span><span class="preprocessor">#include &lt;stdbool.h&gt;</span></div>
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span> </div>
-<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="preprocessor">#ifndef BOARD</span></div>
-<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#if defined(ARDUINO_AVR_ADK)       </span></div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">    #define BOARD &quot;Mega Adk&quot;</span></div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">#elif defined(ARDUINO_AVR_BT)    </span><span class="comment">// Bluetooth</span></div>
-<div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="preprocessor">    #define BOARD &quot;Bt&quot;</span></div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="preprocessor">#elif defined(ARDUINO_AVR_DUEMILANOVE)       </span></div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="preprocessor">    #define BOARD &quot;Duemilanove&quot;</span></div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="preprocessor">#elif defined(ARDUINO_AVR_ESPLORA)       </span></div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="preprocessor">    #define BOARD &quot;Esplora&quot;</span></div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="preprocessor">#elif defined(ARDUINO_AVR_ETHERNET)       </span></div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span><span class="preprocessor">    #define BOARD &quot;Ethernet&quot;</span></div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="preprocessor">#elif defined(ARDUINO_AVR_FIO)       </span></div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="preprocessor">    #define BOARD &quot;Fio&quot;</span></div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span><span class="preprocessor">#elif defined(ARDUINO_AVR_GEMMA)</span></div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="preprocessor">    #define BOARD &quot;Gemma&quot;</span></div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="preprocessor">#elif defined(ARDUINO_AVR_LEONARDO)       </span></div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span><span class="preprocessor">    #define BOARD &quot;Leonardo&quot;</span></div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span><span class="preprocessor">#elif defined(ARDUINO_AVR_LILYPAD)</span></div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span><span class="preprocessor">    #define BOARD &quot;Lilypad&quot;</span></div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="preprocessor">#elif defined(ARDUINO_AVR_LILYPAD_USB)</span></div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span><span class="preprocessor">    #define BOARD &quot;Lilypad Usb&quot;</span></div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span><span class="preprocessor">#elif defined(ARDUINO_AVR_MEGA)       </span></div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span><span class="preprocessor">    #define BOARD &quot;Mega&quot;</span></div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span><span class="preprocessor">#elif defined(ARDUINO_AVR_MEGA2560)       </span></div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span><span class="preprocessor">    #define BOARD &quot;Mega 2560&quot;</span></div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="preprocessor">#elif defined(ARDUINO_AVR_MICRO)       </span></div>
-<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="preprocessor">    #define BOARD &quot;Micro&quot;</span></div>
-<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><span class="preprocessor">#elif defined(ARDUINO_AVR_MINI)       </span></div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="preprocessor">    #define BOARD &quot;Mini&quot;</span></div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span><span class="preprocessor">#elif defined(ARDUINO_AVR_NANO)       </span></div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="preprocessor">    #define BOARD &quot;Nano&quot;</span></div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span><span class="preprocessor">#elif defined(ARDUINO_AVR_NG)       </span></div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span><span class="preprocessor">    #define BOARD &quot;NG&quot;</span></div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span><span class="preprocessor">#elif defined(ARDUINO_AVR_PRO)       </span></div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span><span class="preprocessor">    #define BOARD &quot;Pro&quot;</span></div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span><span class="preprocessor">#elif defined(ARDUINO_AVR_ROBOT_CONTROL)       </span></div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span><span class="preprocessor">    #define BOARD &quot;Robot Ctrl&quot;</span></div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span><span class="preprocessor">#elif defined(ARDUINO_AVR_ROBOT_MOTOR)       </span></div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span><span class="preprocessor">    #define BOARD &quot;Robot Motor&quot;</span></div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span><span class="preprocessor">#elif defined(ARDUINO_AVR_UNO) || defined(__AVR_ATmega4809__)       </span></div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span><span class="preprocessor">    #define BOARD &quot;Uno&quot;</span></div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span><span class="preprocessor">#elif defined(ARDUINO_AVR_YUN)       </span></div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span><span class="preprocessor">    #define BOARD &quot;Yun&quot;</span></div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span> </div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span><span class="comment">// These boards must be installed separately:</span></div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span><span class="preprocessor">#elif defined(ARDUINO_SAM_DUE)       </span></div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span><span class="preprocessor">    #define BOARD &quot;Due&quot;</span></div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span><span class="preprocessor">#elif defined(ARDUINO_SAMD_ZERO)       </span></div>
-<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span><span class="preprocessor">    #define BOARD &quot;Zero&quot;</span></div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span><span class="preprocessor">#elif defined(ARDUINO_ARC32_TOOLS)       </span></div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span><span class="preprocessor">    #define BOARD &quot;101&quot;</span></div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span> </div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#aacbb9e1f38be71e22df1584a37c56693">   93</a></span><span class="preprocessor">#define __STDC_FORMAT_MACROS</span></div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span><span class="preprocessor">#include &lt;inttypes.h&gt;</span></div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span> </div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span><span class="preprocessor">#ifndef _SYS__TIMESPEC_H_</span></div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#abb50862d2e0e95d4abacd7eb12b34060">   97</a></span><span class="preprocessor">#define _SYS__TIMESPEC_H_</span></div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span> </div>
-<div class="line"><a id="l00099" name="l00099"></a><span class="lineno"><a class="line" href="structtimespec.html">   99</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structtimespec.html">timespec</a> {</div>
-<div class="line"><a id="l00100" name="l00100"></a><span class="lineno"><a class="line" href="structtimespec.html#a6919fa4ce675f41c89ad8f53b0e9cce4">  100</a></span>    <span class="keywordtype">long</span> <span class="keywordtype">long</span>   <a class="code hl_variable" href="structtimespec.html#a6919fa4ce675f41c89ad8f53b0e9cce4">tv_sec</a>;     <span class="comment">/* seconds */</span></div>
-<div class="line"><a id="l00101" name="l00101"></a><span class="lineno"><a class="line" href="structtimespec.html#ae3c7510dafa8cbcaede866ed13c99683">  101</a></span>    <span class="keywordtype">long</span>    <a class="code hl_variable" href="structtimespec.html#ae3c7510dafa8cbcaede866ed13c99683">tv_nsec</a>;    <span class="comment">/* and nanoseconds */</span></div>
-<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>};</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a1519396040c1c9c28f597ccfbae61843">   39</a></span><span class="preprocessor">#define AVR 0</span></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#afea0612b8f9e454182e55a4d78f4f1d3">   40</a></span><span class="preprocessor">#define megaAVR 1</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a5eed5c828e076621e5274450cdc6c32b">   41</a></span><span class="preprocessor">#define SAMD 2</span></div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a0184d5fd98854f0e40eef3a27de91fed">   42</a></span><span class="preprocessor">#define SAM 3</span></div>
+<div class="line"><a id="l00043" name="l00043"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a9721035a1d02f77a61d472905e269f03">   43</a></span><span class="preprocessor">#define MBED 4</span></div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span> </div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="preprocessor">#ifndef BOARD</span></div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="preprocessor">#if defined(ARDUINO_AVR_ADK)</span></div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="preprocessor">#elif defined(ARDUINO_AVR_BT)    </span><span class="comment">// Bluetooth</span></div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="preprocessor">#elif defined(ARDUINO_AVR_DUEMILANOVE)</span></div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span><span class="preprocessor">#elif defined(ARDUINO_AVR_ESPLORA)</span></div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="preprocessor">#elif defined(ARDUINO_AVR_ETHERNET)</span></div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span><span class="preprocessor">#elif defined(ARDUINO_AVR_FIO)      </span></div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span><span class="preprocessor">#elif defined(ARDUINO_AVR_GEMMA)</span></div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span><span class="preprocessor">#elif defined(ARDUINO_AVR_LEONARDO)</span></div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span><span class="preprocessor">#elif defined(ARDUINO_AVR_LILYPAD)</span></div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="preprocessor">#elif defined(ARDUINO_AVR_LILYPAD_USB)</span></div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span><span class="preprocessor">#elif defined(ARDUINO_AVR_MEGA)</span></div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span><span class="preprocessor">#elif defined(ARDUINO_AVR_MEGA2560)</span></div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span><span class="preprocessor">#elif defined(ARDUINO_AVR_MICRO)</span></div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span><span class="preprocessor">#elif defined(ARDUINO_AVR_MINI)</span></div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span><span class="preprocessor">#elif defined(ARDUINO_AVR_NANO)</span></div>
+<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span><span class="preprocessor">#elif defined(ARDUINO_AVR_NG)</span></div>
+<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span><span class="preprocessor">#elif defined(ARDUINO_AVR_PRO)</span></div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span><span class="preprocessor">#elif defined(ARDUINO_AVR_ROBOT_CONTROL)</span></div>
+<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span><span class="preprocessor">#elif defined(ARDUINO_AVR_ROBOT_MOTOR)</span></div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span><span class="preprocessor">#elif defined(ARDUINO_AVR_UNO) || defined(__AVR_ATmega4809__)</span></div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span><span class="preprocessor">#elif defined(ARDUINO_AVR_YUN)</span></div>
+<div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span><span class="preprocessor">    #define BOARD AVR</span></div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span> </div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span><span class="comment">// These boards must be installed separately:</span></div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span><span class="preprocessor">#elif defined(ARDUINO_SAM_DUE)</span></div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span><span class="preprocessor">    #define BOARD SAM</span></div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span><span class="preprocessor">#elif defined(ARDUINO_SAMD_ZERO)</span></div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span><span class="preprocessor">    #define BOARD SAMD</span></div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span><span class="preprocessor">#elif defined(ARDUINO_ARC32_TOOLS)</span></div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span><span class="preprocessor">    #define BOARD SAM</span></div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span><span class="preprocessor">#elif defined(ARDUINO_ARDUINO_NANO33BLE)</span></div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span><span class="preprocessor">    #define BOARD MBED</span></div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span> </div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#aacbb9e1f38be71e22df1584a37c56693">  101</a></span><span class="preprocessor">#define __STDC_FORMAT_MACROS</span></div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span><span class="preprocessor">#include &lt;inttypes.h&gt;</span></div>
 <div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span> </div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span> </div>
-<div class="line"><a id="l00106" name="l00106"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a291f54d612d8e6c53b96bf176e579b9a">  106</a></span><span class="preprocessor">#define PRINTF_TIME &quot;%&quot;</span> PRIu32</div>
-<div class="line"><a id="l00107" name="l00107"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a1a993c1a57a54296ab361e669008b79e">  107</a></span><span class="preprocessor">#define PRINTF_MICROSTEP &quot;%&quot;</span> PRIu32</div>
-<div class="line"><a id="l00108" name="l00108"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a8092ad9b0cfa72f49f205ca8a65d2736">  108</a></span><span class="preprocessor">#define PRINTF_TAG &quot;(&quot;</span> PRINTF_TIME &quot;, &quot; PRINTF_MICROSTEP &quot;)&quot;</div>
-<div class="line"><a id="l00109" name="l00109"></a><span class="lineno">  109</span> </div>
-<div class="line"><a id="l00110" name="l00110"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a23ec2cf7fc07ea8f817bbac758402baf">  110</a></span><span class="preprocessor">#define LLONG_MAX __LONG_LONG_MAX__</span></div>
-<div class="line"><a id="l00111" name="l00111"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#af17a13b2ae0e9c24c020ac1f044f30c2">  111</a></span><span class="preprocessor">#define LLONG_MIN (-LLONG_MAX - 1LL)</span></div>
-<div class="line"><a id="l00112" name="l00112"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#aa1dd7166a75b73ad62b111ae6fc17c59">  112</a></span><span class="preprocessor">#define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)</span></div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span><span class="preprocessor">#ifndef _SYS__TIMESPEC_H_</span></div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#abb50862d2e0e95d4abacd7eb12b34060">  105</a></span><span class="preprocessor">#define _SYS__TIMESPEC_H_</span></div>
+<div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span> </div>
+<div class="line"><a id="l00107" name="l00107"></a><span class="lineno"><a class="line" href="structtimespec.html">  107</a></span><span class="keyword">struct </span><a class="code hl_struct" href="structtimespec.html">timespec</a> {</div>
+<div class="line"><a id="l00108" name="l00108"></a><span class="lineno"><a class="line" href="structtimespec.html#a6919fa4ce675f41c89ad8f53b0e9cce4">  108</a></span>    <span class="keywordtype">long</span> <span class="keywordtype">long</span>   <a class="code hl_variable" href="structtimespec.html#a6919fa4ce675f41c89ad8f53b0e9cce4">tv_sec</a>;     <span class="comment">/* seconds */</span></div>
+<div class="line"><a id="l00109" name="l00109"></a><span class="lineno"><a class="line" href="structtimespec.html#ae3c7510dafa8cbcaede866ed13c99683">  109</a></span>    <span class="keywordtype">long</span>    <a class="code hl_variable" href="structtimespec.html#ae3c7510dafa8cbcaede866ed13c99683">tv_nsec</a>;    <span class="comment">/* and nanoseconds */</span></div>
+<div class="line"><a id="l00110" name="l00110"></a><span class="lineno">  110</span>};</div>
+<div class="line"><a id="l00111" name="l00111"></a><span class="lineno">  111</span> </div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span><span class="preprocessor">#endif</span></div>
 <div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span> </div>
-<div class="line"><a id="l00114" name="l00114"></a><span class="lineno">  114</span><span class="comment">// Arduinos are embedded platforms with no tty</span></div>
-<div class="line"><a id="l00115" name="l00115"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a740378474f42996dc8a9bba18b7258ae">  115</a></span><span class="preprocessor">#define NO_TTY</span></div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span> </div>
-<div class="line"><a id="l00121" name="l00121"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">  121</a></span><span class="keyword">typedef</span> int64_t <a class="code hl_typedef" href="lf__arduino__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">_instant_t</a>;</div>
-<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span> </div>
-<div class="line"><a id="l00126" name="l00126"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">  126</a></span><span class="keyword">typedef</span> int64_t <a class="code hl_typedef" href="lf__arduino__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">_interval_t</a>;</div>
-<div class="line"><a id="l00127" name="l00127"></a><span class="lineno">  127</span> </div>
-<div class="line"><a id="l00131" name="l00131"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a6fa587bab59881a6741957a2c1a13798">  131</a></span><span class="keyword">typedef</span> uint32_t <a class="code hl_typedef" href="lf__arduino__support_8h.html#a6fa587bab59881a6741957a2c1a13798">_microstep_t</a>;</div>
-<div class="line"><a id="l00132" name="l00132"></a><span class="lineno">  132</span> </div>
-<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span><span class="preprocessor">#endif </span><span class="comment">// LF_ARDUINO_SUPPORT_H</span></div>
-<div class="ttc" id="alf__arduino__support_8h_html_a5903c83266094ca1bc1b5cbd4c3bdad8"><div class="ttname"><a href="lf__arduino__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">_interval_t</a></div><div class="ttdeci">int64_t _interval_t</div><div class="ttdef"><b>Definition:</b> lf_arduino_support.h:126</div></div>
-<div class="ttc" id="alf__arduino__support_8h_html_a6fa587bab59881a6741957a2c1a13798"><div class="ttname"><a href="lf__arduino__support_8h.html#a6fa587bab59881a6741957a2c1a13798">_microstep_t</a></div><div class="ttdeci">uint32_t _microstep_t</div><div class="ttdef"><b>Definition:</b> lf_arduino_support.h:131</div></div>
-<div class="ttc" id="alf__arduino__support_8h_html_af8f0f3e156808b8af18129b60baf8ceb"><div class="ttname"><a href="lf__arduino__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">_instant_t</a></div><div class="ttdeci">int64_t _instant_t</div><div class="ttdef"><b>Definition:</b> lf_arduino_support.h:121</div></div>
-<div class="ttc" id="astructtimespec_html"><div class="ttname"><a href="structtimespec.html">timespec</a></div><div class="ttdef"><b>Definition:</b> lf_arduino_support.h:99</div></div>
-<div class="ttc" id="astructtimespec_html_a6919fa4ce675f41c89ad8f53b0e9cce4"><div class="ttname"><a href="structtimespec.html#a6919fa4ce675f41c89ad8f53b0e9cce4">timespec::tv_sec</a></div><div class="ttdeci">long long tv_sec</div><div class="ttdef"><b>Definition:</b> lf_arduino_support.h:100</div></div>
-<div class="ttc" id="astructtimespec_html_ae3c7510dafa8cbcaede866ed13c99683"><div class="ttname"><a href="structtimespec.html#ae3c7510dafa8cbcaede866ed13c99683">timespec::tv_nsec</a></div><div class="ttdeci">long tv_nsec</div><div class="ttdef"><b>Definition:</b> lf_arduino_support.h:101</div></div>
+<div class="line"><a id="l00114" name="l00114"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a291f54d612d8e6c53b96bf176e579b9a">  114</a></span><span class="preprocessor">#define PRINTF_TIME &quot;%&quot;</span> PRIu32</div>
+<div class="line"><a id="l00115" name="l00115"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a1a993c1a57a54296ab361e669008b79e">  115</a></span><span class="preprocessor">#define PRINTF_MICROSTEP &quot;%&quot;</span> PRIu32</div>
+<div class="line"><a id="l00116" name="l00116"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a8092ad9b0cfa72f49f205ca8a65d2736">  116</a></span><span class="preprocessor">#define PRINTF_TAG &quot;(&quot;</span> PRINTF_TIME &quot;, &quot; PRINTF_MICROSTEP &quot;)&quot;</div>
+<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span> </div>
+<div class="line"><a id="l00118" name="l00118"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a23ec2cf7fc07ea8f817bbac758402baf">  118</a></span><span class="preprocessor">#define LLONG_MAX __LONG_LONG_MAX__</span></div>
+<div class="line"><a id="l00119" name="l00119"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#af17a13b2ae0e9c24c020ac1f044f30c2">  119</a></span><span class="preprocessor">#define LLONG_MIN (-LLONG_MAX - 1LL)</span></div>
+<div class="line"><a id="l00120" name="l00120"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#aa1dd7166a75b73ad62b111ae6fc17c59">  120</a></span><span class="preprocessor">#define ULLONG_MAX (LLONG_MAX * 2ULL + 1ULL)</span></div>
+<div class="line"><a id="l00121" name="l00121"></a><span class="lineno">  121</span> </div>
+<div class="line"><a id="l00122" name="l00122"></a><span class="lineno">  122</span><span class="comment">// Arduinos are embedded platforms with no tty</span></div>
+<div class="line"><a id="l00123" name="l00123"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a740378474f42996dc8a9bba18b7258ae">  123</a></span><span class="preprocessor">#define NO_TTY</span></div>
+<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span> </div>
+<div class="line"><a id="l00129" name="l00129"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">  129</a></span><span class="keyword">typedef</span> int64_t <a class="code hl_typedef" href="lf__arduino__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">_instant_t</a>;</div>
+<div class="line"><a id="l00130" name="l00130"></a><span class="lineno">  130</span> </div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">  134</a></span><span class="keyword">typedef</span> int64_t <a class="code hl_typedef" href="lf__arduino__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">_interval_t</a>;</div>
+<div class="line"><a id="l00135" name="l00135"></a><span class="lineno">  135</span> </div>
+<div class="line"><a id="l00139" name="l00139"></a><span class="lineno"><a class="line" href="lf__arduino__support_8h.html#a6fa587bab59881a6741957a2c1a13798">  139</a></span><span class="keyword">typedef</span> uint32_t <a class="code hl_typedef" href="lf__arduino__support_8h.html#a6fa587bab59881a6741957a2c1a13798">_microstep_t</a>;</div>
+<div class="line"><a id="l00140" name="l00140"></a><span class="lineno">  140</span> </div>
+<div class="line"><a id="l00141" name="l00141"></a><span class="lineno">  141</span><span class="preprocessor">#endif </span><span class="comment">// LF_ARDUINO_SUPPORT_H</span></div>
+<div class="ttc" id="alf__arduino__support_8h_html_a5903c83266094ca1bc1b5cbd4c3bdad8"><div class="ttname"><a href="lf__arduino__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">_interval_t</a></div><div class="ttdeci">int64_t _interval_t</div><div class="ttdef"><b>Definition:</b> lf_arduino_support.h:134</div></div>
+<div class="ttc" id="alf__arduino__support_8h_html_a6fa587bab59881a6741957a2c1a13798"><div class="ttname"><a href="lf__arduino__support_8h.html#a6fa587bab59881a6741957a2c1a13798">_microstep_t</a></div><div class="ttdeci">uint32_t _microstep_t</div><div class="ttdef"><b>Definition:</b> lf_arduino_support.h:139</div></div>
+<div class="ttc" id="alf__arduino__support_8h_html_af8f0f3e156808b8af18129b60baf8ceb"><div class="ttname"><a href="lf__arduino__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">_instant_t</a></div><div class="ttdeci">int64_t _instant_t</div><div class="ttdef"><b>Definition:</b> lf_arduino_support.h:129</div></div>
+<div class="ttc" id="astructtimespec_html"><div class="ttname"><a href="structtimespec.html">timespec</a></div><div class="ttdef"><b>Definition:</b> lf_arduino_support.h:107</div></div>
+<div class="ttc" id="astructtimespec_html_a6919fa4ce675f41c89ad8f53b0e9cce4"><div class="ttname"><a href="structtimespec.html#a6919fa4ce675f41c89ad8f53b0e9cce4">timespec::tv_sec</a></div><div class="ttdeci">long long tv_sec</div><div class="ttdef"><b>Definition:</b> lf_arduino_support.h:108</div></div>
+<div class="ttc" id="astructtimespec_html_ae3c7510dafa8cbcaede866ed13c99683"><div class="ttname"><a href="structtimespec.html#ae3c7510dafa8cbcaede866ed13c99683">timespec::tv_nsec</a></div><div class="ttdeci">long tv_nsec</div><div class="ttdef"><b>Definition:</b> lf_arduino_support.h:109</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
