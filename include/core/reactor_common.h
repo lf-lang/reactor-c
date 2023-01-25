@@ -86,6 +86,7 @@ void _lf_advance_logical_time(instant_t next_time);
 trigger_handle_t _lf_schedule_int(void* action, interval_t extra_delay, int value);
 lf_token_t* _lf_set_new_array_impl(lf_token_t* token, size_t length, int num_destinations);
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
+void* run_watchdog(watchdog_t* watchdog);
 void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout);
 void _lf_watchdog_stop(watchdog_t* watchdog);
 void _lf_invoke_reaction(reaction_t* reaction, int worker);

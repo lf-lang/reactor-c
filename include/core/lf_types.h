@@ -265,11 +265,15 @@ struct event_t {
 typedef struct watchdog_t watchdog_t;
 
 /** Watchdog struct for handler. */
+// WATCHDOG QUESTION: it might be issue that self type is self_base_t?
+// self_base_t does not give access to parameters or actions
 struct watchdog_t {
     self_base_t* self;                      // The reactor that contains the watchdog.
     instant_t expiration;                   // The expiration instant for the watchdog. (Initialized to NEVER)
     interval_t min_expiration;              // The minimum expiration interval for the watchdog.
-    watchdog_function_t watchdog_function;  // The function/handler for the watchdog.
+    lf_thread_t thread_id;                 // The thread that the watchdog is meant to run on.
+    bool thread_active;                     // Boolean indicating whether or not thread is active.  
+    watchdog_function_t* watchdog_function;  // The function/handler for the watchdog.
 };
 
 /**
@@ -341,11 +345,13 @@ typedef struct allocation_record_t {
  */
 //FIXME: may need to change freeing and allocating with watchdogs
 // modif4watchdogs
+// WATCHDOG QUESTION: The mutex doesn't need to be a pointer right?
 typedef struct self_base_t {
 	struct allocation_record_t *allocations;
 	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
-    lf_mutex_t* watchdog_mutex; // The mutex for this reactor to be acquired before reaction
-                      // invocation. 
+    // WATCHDOG QUESTION: how to fix incomplete error? lf_mutex_t of type void
+    lf_mutex_t watchdog_mutex; // The mutex for this reactor to be acquired before reaction
+                               // invocation. 
 #ifdef MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif

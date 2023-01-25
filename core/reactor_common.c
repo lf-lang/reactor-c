@@ -1622,17 +1622,44 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
 }
 
 // FIXME: modif4watchdogs
-void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
-    // WATCHDOG QUESTION 1: How do I check if thread is currently running? How
-    // is thread linked to watchdog? Does watchdog struct need additional field 
-    // for thread?
+void* run_watchdog(watchdog_t* watchdog) {
+    watchdog->thread_active = true;
+    lf_mutex_lock(&(watchdog->self->watchdog_mutex));
 
-    // WATCHDOG QUESTION 2: When mutex is acquired here does a current reaction
-    // need to be interrupted?
+    while (lf_time_physical() < watchdog->expiration) {
+        interval_t T = watchdog->expiration - lf_time_physical();
+        lf_mutex_unlock(&(watchdog->self->watchdog_mutex));
+        lf_nanosleep(T);
+        lf_mutex_lock(&(watchdog->self->watchdog_mutex));
+    }
+    // WATCHDOG QUESTION: Had to change watchdog_function to not be
+    // a pointer because this threw error otherwise.
+    watchdog_function_t watchdog_func = watchdog->watchdog_function;
+    (*watchdog_func)(watchdog);
+    lf_mutex_unlock(&(watchdog->self->watchdog_mutex));
+}
+
+// FIXME: modif4watchdogs
+void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
+
+    lf_mutex_lock(&(watchdog->self->watchdog_mutex));
+    // reinitialize expiration time
+    watchdog->expiration = lf_time_logical() + watchdog->min_expiration + additional_timeout;
+
+    //check to see if thread is running
+    // WATCHDOG QUESTION: should I be using thread_join instead?
+    // WATCHDOG QUESTION: should I be calling watchdog stop for resets here?
+    if (!watchdog->thread_active) {
+        lf_thread_create(&(watchdog->thread_id), run_watchdog, watchdog);
+    } 
+
+    watchdog->thread_active = false;
+    lf_mutex_unlock(&(watchdog->self->watchdog_mutex));
 }
 
 void _lf_watchdog_stop(watchdog_t* watchdog) {
-
+    // WATCHDOG QUESTION: do I need to cancel thread
+    // If so, how?
 }
 
 /**
