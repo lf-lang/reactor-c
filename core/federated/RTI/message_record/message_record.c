@@ -160,11 +160,13 @@ tag_t get_minimum_in_transit_message_tag(in_transit_message_record_q_t* queue) {
     // Empty the transfer queue (which holds messages with equal time but larger microstep) into the main queue.
     pqueue_empty_into(&queue->main_queue, &queue->transfer_queue);
 
-    LF_PRINT_DEBUG(
-        "RTI: Minimum tag of all in-transit messages: (%ld, %u).",
-        head_of_in_transit_messages->tag.time - lf_time_start(),
-        head_of_in_transit_messages->tag.microstep
-    );
+    if (head_of_in_transit_messages != NULL) {
+        LF_PRINT_DEBUG(
+            "RTI: Minimum tag of all in-transit messages: (%ld, %u).",
+            head_of_in_transit_messages->tag.time - lf_time_start(),
+            head_of_in_transit_messages->tag.microstep
+        );
+    }
 
     return minimum_tag;
 }

@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * This is a non-priority-driven scheduler. See scheduler.h for documentation.
  * @author{Peter Donovan <peterdonovan@berkeley.edu>}
  */
+#if defined SCHEDULER && SCHEDULER == adaptive
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
@@ -125,3 +126,4 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     if (!lf_bool_compare_and_swap(&reaction->status, inactive, queued)) return;
     worker_assignments_put(reaction);
 }
+#endif // defined SCHEDULER && SCHEDULER == ADAPTIVE
