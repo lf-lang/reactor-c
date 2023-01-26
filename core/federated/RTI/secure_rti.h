@@ -27,93 +27,20 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  * @section DESCRIPTION
- * Header file for the runtime infrastructure for distributed Lingua Franca programs.
+ * Header file for the secure runtime infrastructure for distributed Lingua Franca programs.
  *
 */
 
-#ifndef RTI_H
-#define RTI_H
+#ifndef SECURE_RTI_H
+#define SECURE_RTI_H
 
-#include "lf_types.h"
-#include "message_record/message_record.h"
-
-/////////////////////////////////////////////
-//// Data structures
-
-typedef enum socket_type_t {
-    TCP,
-    UDP
-} socket_type_t;
-
-/** Mode of execution of a federate. */
-typedef enum execution_mode_t {
-    FAST,
-    REALTIME
-} execution_mode_t;
-
-/** State of a federate during execution. */
-typedef enum fed_state_t {
-    NOT_CONNECTED,  // The federate has not connected.
-    GRANTED,        // Most recent MSG_TYPE_NEXT_EVENT_TAG has been granted.
-    PENDING         // Waiting for upstream federates.
-} fed_state_t;
+#include "rti.h"
 
 /**
- * Information about a federate known to the RTI, including its runtime state,
- * mode of execution, and connectivity with other federates.
- * The list of upstream and downstream federates does not include
- * those that are connected via a "physical" connection (one
- * denoted with ~>) because those connections do not impose
- * any scheduling constraints.
- */
-typedef struct federate_t {
-    uint16_t id;            // ID of this federate.
-    pthread_t thread_id;    // The ID of the thread handling communication with this federate.
-    int socket;             // The TCP socket descriptor for communicating with this federate.
-    struct sockaddr_in UDP_addr;           // The UDP address for the federate.
-    bool clock_synchronization_enabled;    // Indicates the status of clock synchronization
-                                           // for this federate. Enabled by default.
-    tag_t completed;        // The largest logical tag completed by the federate (or NEVER if no LTC has been received).
-    tag_t last_granted;     // The maximum TAG that has been granted so far (or NEVER if none granted)
-    tag_t last_provisionally_granted;      // The maximum PTAG that has been provisionally granted (or NEVER if none granted)
-    tag_t next_event;       // Most recent NET received from the federate (or NEVER if none received).
-    in_transit_message_record_q_t* in_transit_message_tags; // Record of in-transit messages to this federate that are not
-                                                            // yet processed. This record is ordered based on the time
-                                                            // value of each message for a more efficient access.
-    fed_state_t state;      // State of the federate.
-    int* upstream;          // Array of upstream federate ids.
-    interval_t* upstream_delay;    // Minimum delay on connections from upstream federates.
-    							   // Here, NEVER encodes no delay. 0LL is a microstep delay.
-    int num_upstream;              // Size of the array of upstream federates and delays.
-    int* downstream;        // Array of downstream federate ids.
-    int num_downstream;     // Size of the array of downstream federates.
-    execution_mode_t mode;  // FAST or REALTIME.
-    char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
-    int32_t server_port;    // port number of the socket server of the federate
-                            // if it has any incoming direct connections from other federates.
-                            // The port number will be -1 if there is no server or if the
-                            // RTI has not been informed of the port number.
-    struct in_addr server_ip_addr; // Information about the IP address of the socket
-                                // server of the federate.
-    bool requested_stop;    // Indicates that the federate has requested stop or has replied
-                            // to a request for stop from the RTI. Used to prevent double-counting
-                            // a federate when handling lf_request_stop().
-} federate_t;
-
-/**
- * The status of clock synchronization.
- */
-typedef enum clock_sync_stat {
-    clock_sync_off,
-    clock_sync_init,
-    clock_sync_on
-} clock_sync_stat;
-
-/**
- * Structure that an RTI instance uses to keep track of its own and its
+ * Structure that an secure RTI instance uses to keep track of its own and its
  * corresponding federates' state.
  */
-typedef struct RTI_instance_t {
+typedef struct secure_RTI_instance_t {
     // The main mutex lock.
     pthread_mutex_t rti_mutex;
 
@@ -199,6 +126,11 @@ typedef struct RTI_instance_t {
      * Boolean indicating that authentication is enabled.
      */
     bool authentication_enabled;
-} RTI_instance_t;
 
-#endif // RTI_H
+    /**
+     * The path of the configuration file.
+     */
+    char* sst_config_path;
+} secure_RTI_instance_t;
+
+#endif // SECURE_RTI_H
