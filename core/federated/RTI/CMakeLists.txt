@@ -84,11 +84,6 @@ add_executable(
     ${CoreLib}/platform/lf_unix_clock_support.c
     ${CoreLib}/utils/pqueue.c
     message_record/message_record.c
-    ../sst-c-api/c_api.c
-    ../sst-c-api/c_common.c 
-    ../sst-c-api/c_crypto.c 
-    ../sst-c-api/c_secure_comm.c 
-    ../sst-c-api/load_config.c
 )
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
@@ -127,5 +122,46 @@ ENDIF(SST MATCHES ON)
 
 install(
     TARGETS RTI
+    DESTINATION bin
+)
+
+# Declare a new executable target and list all its sources
+add_executable(
+    secure_RTI
+    secure_rti.c
+    ${LF_PLATFORM_FILE}
+    ${CoreLib}/platform/lf_unix_clock_support.c
+    ${CoreLib}/utils/pqueue.c
+    message_record/message_record.c
+    ../sst-c-api/c_api.c
+    ../sst-c-api/c_common.c 
+    ../sst-c-api/c_crypto.c 
+    ../sst-c-api/c_secure_comm.c 
+    ../sst-c-api/load_config.c
+)
+
+IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+    # Set the LOG_LEVEL to 4 to get DEBUG messages
+    target_compile_definitions(secure_RTI PUBLIC LOG_LEVEL=4)
+ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+
+# Set LF_THREADING to get the threaded support
+target_compile_definitions(secure_RTI PUBLIC LF_THREADED=1)
+
+# Find threads and link to it
+find_package(Threads REQUIRED)
+target_link_libraries(secure_RTI Threads::Threads)
+
+# Option for enabling SST security.
+option(SST "SST security enabled." OFF)
+
+# Find OpenSSL and link to it
+set(OPENSSL_ROOT_DIR "/usr/local/ssl")
+find_package(OpenSSL REQUIRED)
+target_link_libraries(secure_RTI OpenSSL::SSL)
+include_directories(../sst-c-api)
+
+install(
+    TARGETS secure_RTI
     DESTINATION bin
 )

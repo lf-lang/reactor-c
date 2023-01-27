@@ -900,11 +900,6 @@ void handle_next_event_tag(federate_t* fed) {
 }
 
 /////////////////// STOP functions ////////////////////
-/**
- * Boolean used to prevent the RTI from sending the
- * MSG_TYPE_STOP_GRANTED message multiple times.
- */
-bool _lf_rti_stop_granted_already_sent_to_federates = false;
 
 /**
  * Once the RTI has seen proposed tags from all connected federates,

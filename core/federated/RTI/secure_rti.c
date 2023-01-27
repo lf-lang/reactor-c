@@ -47,9 +47,54 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Or we could bootstrap and implement it using Lingua Franca.
  */
 
-#include "rti.c"
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>      // Defines perror(), errno
+#include <sys/socket.h>
+#include <sys/types.h>  // Provides select() function to read from multiple sockets.
+#include <netinet/in.h> // Defines struct sockaddr_in
+#include <arpa/inet.h>  // inet_ntop & inet_pton
+#include <unistd.h>     // Defines read(), write(), and close()
+#include <netdb.h>      // Defines gethostbyname().
+#include <strings.h>    // Defines bzero().
+#include <assert.h>
+#include <sys/wait.h>   // Defines wait() for process to change state.
+
+#include "platform.h"   // Platform-specific types and functions
+#include "util.c" // Defines print functions (e.g., lf_print).
+#include "net_util.c"   // Defines network functions.
+#include "net_common.h" // Defines message types, etc. Includes <pthread.h> and "reactor.h".
+#include "tag.c"        // Time-related types and functions.
+
+#include "rti.h"
 #include "secure_rti.h"
 #include "../sst-c-api/c_api.h"
+
+/**
+ * The state of this RTI instance.
+ */
+RTI_instance_t _RTI = {
+    .rti_mutex = PTHREAD_MUTEX_INITIALIZER,
+    .received_start_times = PTHREAD_COND_INITIALIZER,
+    .sent_start_time = PTHREAD_COND_INITIALIZER,
+    .max_stop_tag = NEVER_TAG,
+    .max_start_time = 0LL,
+    .number_of_federates = 0,
+    .num_feds_proposed_start = 0,
+    .num_feds_handling_stop = 0,
+    .all_federates_exited = false,
+    .federation_id = "Unidentified Federation",
+    .user_specified_port = 0,
+    .final_port_TCP = 0,
+    .socket_descriptor_TCP = -1,
+    .final_port_UDP = UINT16_MAX,
+    .socket_descriptor_UDP = -1,
+    .clock_sync_global_status = clock_sync_init,
+    .clock_sync_period_ns = MSEC(10),
+    .clock_sync_exchanges_per_interval = 10,
+    .authentication_enabled = false,
+    .sst_config_path = "Path/Long/Enough/"
+};
 
 /**
  * Handle a port absent message being received from a federate via the RTI.
@@ -662,6 +707,7 @@ void handle_federate_resign(federate_t *my_fed) {
  */
 void* secure_federate_thread_TCP(void* secure_fed) {
     secure_fed_t* my_secure_fed = (secure_fed_t*)secure_fed;
+    unsigned char sst_buffer[1024]; //TODO: Check here.
 
     // Buffer for incoming messages.
     // This does not constrain the message size because messages
@@ -670,16 +716,19 @@ void* secure_federate_thread_TCP(void* secure_fed) {
 
     // Listen for messages from the federate.
     while (my_secure_fed->fed->state != NOT_CONNECTED) {
-        ssize_t sst_bytes_read = read_from_socket(my_secure_fed->fed->socket, FED_COM_BUFFER_SIZE, buffer); //TODO: input buffer size?
-        unsigned char *decrypted_buf = return_decrypted_buf(buffer, sst_bytes_read, my_secure_fed->session_ctx);
+        ssize_t sst_bytes_read = read_from_socket(my_secure_fed->fed->socket, sizeof(sst_buffer), sst_buffer); //TODO: input buffer size?
+        unsigned char *decrypted_buf = return_decrypted_buf(sst_buffer, sst_bytes_read, my_secure_fed->session_ctx);
 
-        FILE * fileDescriptor = fmemopen(decrypted_buf, sizeof(decrypted_buf), "r");
+        FILE * file_descriptor = fmemopen(decrypted_buf, sizeof(decrypted_buf), "r");
         //  Change FILE pointer to file descriptor
-        my_secure_fed->fed->socket = fileno(fileDescriptor);
+        int temp = fileno(file_descriptor);
+        // my_secure_fed->fed->socket = temp;
         //TODO: Error handling is not applied. Need to change.
 
         // Read no more than one byte to get the message type.
-        ssize_t bytes_read = read_from_socket(my_secure_fed->fed->socket, 1, buffer);
+        ssize_t bytes_read = read_from_socket(temp, 1, buffer);
+
+        //Test Just until here.
         if (bytes_read < 1) {
             // Socket is closed
             lf_print_warning("RTI: Socket to federate %d is closed. Exiting the thread.", my_secure_fed->fed->id);
@@ -784,9 +833,6 @@ void secure_connect_to_federates(int socket_descriptor) {
             // or that thread may end up attempting to handle incoming clock
             // synchronization messages.
             pthread_create(&(_RTI.federates[fed_id].thread_id), NULL, &secure_federate_thread_TCP, (void *)&secure_fed[i]); //TODO: Need debug.
-
-            //TODO: Erase below.
-            pthread_create(&(_RTI.federates[fed_id].thread_id), NULL, federate_thread_TCP, &(_RTI.federates[fed_id]));
         } else {
             // Received message was rejected. Try again.
             i--;
