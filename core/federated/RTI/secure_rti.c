@@ -2,6 +2,7 @@
  * @file
  * @author Edward A. Lee (eal@berkeley.edu)
  * @author Soroush Bateni
+ * @author Dongha Kim
  *
  * @section LICENSE
 Copyright (c) 2020, The University of California at Berkeley.
@@ -51,33 +52,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../sst-c-api/c_api.h"
 
 /**
- * The state of this secure RTI instance.
- */
-secure_RTI_instance_t _RTI = {
-    .rti_mutex = PTHREAD_MUTEX_INITIALIZER,
-    .received_start_times = PTHREAD_COND_INITIALIZER,
-    .sent_start_time = PTHREAD_COND_INITIALIZER,
-    .max_stop_tag = NEVER_TAG,
-    .max_start_time = 0LL,
-    .number_of_federates = 0,
-    .num_feds_proposed_start = 0,
-    .num_feds_handling_stop = 0,
-    .all_federates_exited = false,
-    .federation_id = "Unidentified Federation",
-    .user_specified_port = 0,
-    .final_port_TCP = 0,
-    .socket_descriptor_TCP = -1,
-    .final_port_UDP = UINT16_MAX,
-    .socket_descriptor_UDP = -1,
-    .clock_sync_global_status = clock_sync_init,
-    .clock_sync_period_ns = MSEC(10),
-    .clock_sync_exchanges_per_interval = 10,
-    .authentication_enabled = false,
-    .sst_config_path = "Path/Long/Enough/"
-};
-
-/**
- * Handle a port absent message being received rom a federate via the RIT.
+ * Handle a port absent message being received from a federate via the RTI.
  *
  * This function assumes the caller does not hold the mutex.
  */
@@ -680,12 +655,6 @@ void handle_federate_resign(federate_t *my_fed) {
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
-// #ifdef __RTI_SST__ //TODO: 주석 지우기.
-typedef struct {
-    SST_session_ctx_t *session_ctx;
-    federate_t* fed;
-} secure_fed_t;
-
 /**
  * Thread handling TCP communication with a federate.
  * @param fed A pointer to the federate's struct that has the
@@ -707,7 +676,7 @@ void* secure_federate_thread_TCP(void* secure_fed) {
         FILE * fileDescriptor = fmemopen(decrypted_buf, sizeof(decrypted_buf), "r");
         //  Change FILE pointer to file descriptor
         my_secure_fed->fed->socket = fileno(fileDescriptor);
-        //TODO: 문제는, read_from_socket 의 에러 핸들링이 적용이 안됨. 소켓을 다르게 지정해버렸으니깐...
+        //TODO: Error handling is not applied. Need to change.
 
         // Read no more than one byte to get the message type.
         ssize_t bytes_read = read_from_socket(my_secure_fed->fed->socket, 1, buffer);
@@ -766,7 +735,6 @@ void* secure_federate_thread_TCP(void* secure_fed) {
 
     return NULL;
 }
-#endif
 
 /**
  * Wait for one incoming connection request from each federate,
@@ -774,13 +742,12 @@ void* secure_federate_thread_TCP(void* secure_fed) {
  * that federate. Return when all federates have connected.
  * @param socket_descriptor The socket on which to accept connections.
  */
-void connect_to_federates(int socket_descriptor) {
-    //TODO:여기가 for 문 시작. 여기서 number of federates 수만큼 받는다.
-    //여기서 시작? sst_ctx
-    #ifdef __RTI_SST__
-        SST_ctx_t *ctx = init_SST(_RTI.sst_config_path);
-        INIT_SESSION_KEY_LIST(s_key_list);
-    #endif
+void secure_connect_to_federates(int socket_descriptor) {
+    // Initialize SST setting read form sst_config.
+    SST_ctx_t *ctx = init_SST(_RTI.sst_config_path);
+    // Initialize an empty session key list.
+    INIT_SESSION_KEY_LIST(s_key_list);
+    secure_fed_t secure_fed[_RTI.number_of_federates];
 
     for (int i = 0; i < _RTI.number_of_federates; i++) {
         // Wait for an incoming connection request.
@@ -800,39 +767,26 @@ void connect_to_federates(int socket_descriptor) {
                 lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
                 continue;
             }
-        }
-
-        // Send RTI hello when RTI -a option is on.
-        #ifdef __RTI_AUTH__
-        if (_RTI.authentication_enabled) {
-            if (!authenticate_federate(socket_id)) {
-                lf_print_warning("RTI failed to authenticate the incoming federate.");
-                // Ignore the federate that failed authentication.
-                i--;
-                continue;
-            }
-        }
-        #endif
-        
+        }        
         // The first message from the federate should contain its ID and the federation ID.
         int32_t fed_id = receive_and_check_fed_id_message(socket_id, (struct sockaddr_in*)&client_fd);
-        //TODO: 0, 1 return함.(federation이 2개일때.)
         if (fed_id >= 0
                 && receive_connection_information(socket_id, (uint16_t)fed_id)
-                //TODO: //_RTI_federates 정보 채워줌.
                 && receive_udp_message_and_set_up_clock_sync(socket_id, (uint16_t)fed_id)) {
-        #ifdef __RTI_SST__
+            // Wait for the federates get session keys from the Auth.
+            // The RTI will get requests for communication from the federates by session key id.
+            // Then RTI will request the corresponding session key to the Auth.
             SST_session_ctx_t *session_ctx = server_secure_comm_setup(ctx, socket_id, &s_key_list);
-            secure_fed_t secure_fed = {.session_ctx = session_ctx, .fed = &_RTI.federates[fed_id]}; //TODO: 배열로 만들어야하나?
-            pthread_create(&(_RTI.federates[fed_id].thread_id), NULL, &secure_federate_thread_TCP, (void *)&secure_fed);
-        #endif
-        //TODO: #ifdef original
+            secure_fed[i].session_ctx = session_ctx;
+            secure_fed[i].fed = &_RTI.federates[fed_id]; //TODO: Right poiting? Need debug.
             // Create a thread to communicate with the federate.
             // This has to be done after clock synchronization is finished
             // or that thread may end up attempting to handle incoming clock
             // synchronization messages.
+            pthread_create(&(_RTI.federates[fed_id].thread_id), NULL, &secure_federate_thread_TCP, (void *)&secure_fed[i]); //TODO: Need debug.
+
+            //TODO: Erase below.
             pthread_create(&(_RTI.federates[fed_id].thread_id), NULL, federate_thread_TCP, &(_RTI.federates[fed_id]));
-        // TODO: #endif original
         } else {
             // Received message was rejected. Try again.
             i--;
@@ -859,45 +813,13 @@ void connect_to_federates(int socket_descriptor) {
 }
 
 /**
- * Thread to respond to new connections, which could be federates of other
- * federations who are attempting to join the wrong federation.
- * @param nothing Nothing needed here.
- */
-void* respond_to_erroneous_connections(void* nothing) {
-    while (true) {
-        // Wait for an incoming connection request.
-        struct sockaddr client_fd;
-        uint32_t client_length = sizeof(client_fd);
-        // The following will block until either a federate attempts to connect
-        // or close(_RTI.socket_descriptor_TCP) is called.
-        int socket_id = accept(_RTI.socket_descriptor_TCP, &client_fd, &client_length);
-        if (socket_id < 0) return NULL;
-
-        if (_RTI.all_federates_exited) {
-            return NULL;
-        }
-
-        lf_print_error("RTI received an unexpected connection request. Federation is running.");
-        unsigned char response[2];
-        response[0] = MSG_TYPE_REJECT;
-        response[1] = FEDERATION_ID_DOES_NOT_MATCH;
-        // Ignore errors on this response.
-        write_to_socket_errexit(socket_id, 2, response,
-                 "RTI failed to write FEDERATION_ID_DOES_NOT_MATCH to erroneous incoming connection.");
-        // Close the socket.
-        close(socket_id);
-    }
-    return NULL;
-}
-
-/**
  * Start the runtime infrastructure (RTI) interaction with the federates
  * and wait for the federates to exit.
  * @param socket_descriptor The socket descriptor returned by start_rti_server().
  */
-void wait_for_federates(int socket_descriptor) {
+void secure_wait_for_federates(int socket_descriptor) {
     // Wait for connections from federates and create a thread for each.
-    connect_to_federates(socket_descriptor);
+    secure_connect_to_federates(socket_descriptor);
 
     // All federates have connected.
     lf_print("RTI: All expected federates have connected. Starting execution.");
@@ -977,108 +899,6 @@ void wait_for_federates(int socket_descriptor) {
     }
 }
 
-/**
- * Print a usage message.
- */
-void usage(int argc, char* argv[]) {
-    printf("\nCommand-line arguments: \n\n");
-    printf("  -i, --id <n>\n");
-    printf("   The ID of the federation that this RTI will control.\n\n");
-    printf("  -n, --number_of_federates <n>\n");
-    printf("   The number of federates in the federation that this RTI will control.\n\n");
-    printf("  -p, --port <n>\n");
-    printf("   The port number to use for the RTI. Must be larger than 0 and smaller than %d. Default is %d.\n\n", UINT16_MAX, STARTING_PORT);
-    printf("  -c, --clock_sync [off|init|on] [period <n>] [exchanges-per-interval <n>]\n");
-    printf("   The status of clock synchronization for this federate.\n");
-    printf("       - off: Clock synchronization is off.\n");
-    printf("       - init (default): Clock synchronization is done only during startup.\n");
-    printf("       - on: Clock synchronization is done both at startup and during the execution.\n");
-    printf("   Relevant parameters that can be set: \n");
-    printf("       - period <n>(in nanoseconds): Controls how often a clock synchronization attempt is made\n");
-    printf("          (period in nanoseconds, default is 5 msec). Only applies to 'on'.\n");
-    printf("       - exchanges-per-interval <n>: Controls the number of messages that are exchanged for each\n");
-    printf("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n\n");
-    printf("  -a, --auth Turn on HMAC authentication options.\n\n");
-    printf("  -sst, --sst Use SST for authentication, authorization, and communication security.\n\n");
-
-    printf("Command given:\n");
-    for (int i = 0; i < argc; i++) {
-        printf("%s ", argv[i]);
-    }
-    printf("\n\n");
-}
-
-/**
- * Process command-line arguments related to clock synchronization. Will return
- * the last read position of argv if all related arguments are parsed or an
- * invalid argument is read.
- *
- * @param argc: Number of arguments in the list
- * @param argv: The list of arguments as a string
- * @return Current position (head) of argv;
- */
-int process_clock_sync_args(int argc, char* argv[]) {
-    for (int i = 0; i < argc; i++) {
-        if (strcmp(argv[i], "off") == 0) {
-            _RTI.clock_sync_global_status = clock_sync_off;
-            printf("RTI: Clock sync: off\n");
-        } else if (strcmp(argv[i], "init") == 0 || strcmp(argv[i], "initial") == 0) {
-            _RTI.clock_sync_global_status = clock_sync_init;
-            printf("RTI: Clock sync: init\n");
-        } else if (strcmp(argv[i], "on") == 0) {
-            _RTI.clock_sync_global_status = clock_sync_on;
-            printf("RTI: Clock sync: on\n");
-        } else if (strcmp(argv[i], "period") == 0) {
-            if (_RTI.clock_sync_global_status != clock_sync_on) {
-                fprintf(stderr, "Error: clock sync period can only be set if --clock-sync is set to on.\n");
-                usage(argc, argv);
-                i++;
-                continue; // Try to parse the rest of the arguments as clock sync args.
-            } else if (argc < i + 2) {
-                fprintf(stderr, "Error: clock sync period needs a time (in nanoseconds) argument.\n");
-                usage(argc, argv);
-                continue;
-            }
-            i++;
-            long long period_ns = strtoll(argv[i], NULL, 10);
-            if (period_ns == 0LL || period_ns == LLONG_MAX || period_ns == LLONG_MIN) {
-                fprintf(stderr, "Error: clock sync period value is invalid.\n");
-                continue; // Try to parse the rest of the arguments as clock sync args.
-            }
-            _RTI.clock_sync_period_ns = (int64_t)period_ns;
-            printf("RTI: Clock sync period: %lld\n", (long long int)_RTI.clock_sync_period_ns);
-        } else if (strcmp(argv[i], "exchanges-per-interval") == 0) {
-            if (_RTI.clock_sync_global_status != clock_sync_on && _RTI.clock_sync_global_status != clock_sync_init) {
-                fprintf(stderr, "Error: clock sync exchanges-per-interval can only be set if\n");
-                fprintf(stderr, "--clock-sync is set to on or init.\n");
-                usage(argc, argv);
-                continue; // Try to parse the rest of the arguments as clock sync args.
-            } else if (argc < i + 2) {
-                fprintf(stderr, "Error: clock sync exchanges-per-interval needs an integer argument.\n");
-                usage(argc, argv);
-                continue; // Try to parse the rest of the arguments as clock sync args.
-            }
-            i++;
-            long exchanges = (long)strtol(argv[i], NULL, 10);
-            if (exchanges == 0L || exchanges == LONG_MAX ||  exchanges == LONG_MIN) {
-                 fprintf(stderr, "Error: clock sync exchanges-per-interval value is invalid.\n");
-                 continue; // Try to parse the rest of the arguments as clock sync args.
-             }
-            _RTI.clock_sync_exchanges_per_interval = (int32_t)exchanges; // FIXME: Loses numbers on 64-bit machines
-            printf("RTI: Clock sync exchanges per interval: %d\n", _RTI.clock_sync_exchanges_per_interval);
-        } else if (strcmp(argv[i], " ") == 0) {
-            // Tolerate spaces
-            continue;
-        } else {
-            // Either done with the clock sync args or there is an invalid
-            // character. In  either case, let the parent function deal with
-            // the rest of the characters;
-            return i;
-        }
-    }
-    return argc;
-}
-
 int main(int argc, char* argv[]) {
     if (!process_args(argc, argv)) {
         // Processing command-line arguments failed.
@@ -1088,10 +908,10 @@ int main(int argc, char* argv[]) {
     assert(_RTI.number_of_federates < UINT16_MAX);
     _RTI.federates = (federate_t*)calloc(_RTI.number_of_federates, sizeof(federate_t));
     for (uint16_t i = 0; i < _RTI.number_of_federates; i++) {
-        initialize_federate(i);
+        initialize_federate(i); //TODO: Need to add config path.
     }
     int socket_descriptor = start_rti_server(_RTI.user_specified_port);
-    wait_for_federates(socket_descriptor);
+    secure_wait_for_federates(socket_descriptor);
     printf("RTI is exiting.\n");
     return 0;
 }

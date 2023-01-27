@@ -199,6 +199,11 @@ typedef struct RTI_instance_t {
      * Boolean indicating that authentication is enabled.
      */
     bool authentication_enabled;
+
+    /**
+     * The path of the configuration file.
+     */
+    char* sst_config_path;
 } RTI_instance_t;
 
 #endif // RTI_H

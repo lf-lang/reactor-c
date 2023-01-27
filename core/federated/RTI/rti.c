@@ -91,7 +91,8 @@ RTI_instance_t _RTI = {
     .clock_sync_global_status = clock_sync_init,
     .clock_sync_period_ns = MSEC(10),
     .clock_sync_exchanges_per_interval = 10,
-    .authentication_enabled = false
+    .authentication_enabled = false,
+    .sst_config_path = "Path/Long/Enough/"
 };
 
 /**
@@ -625,7 +626,7 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
 }
 
 /**
- * Handle a port absent message being received rom a federate via the RIT.
+ * Handle a port absent message being received from a federate via the RTI.
  *
  * This function assumes the caller does not hold the mutex.
  */
@@ -2133,6 +2134,7 @@ void usage(int argc, char* argv[]) {
     printf("       - exchanges-per-interval <n>: Controls the number of messages that are exchanged for each\n");
     printf("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n\n");
     printf("  -a, --auth Turn on HMAC authentication options.\n\n");
+    printf("  -sst, --sst Use SST for authentication, authorization, and communication security.\n\n");
 
     printf("Command given:\n");
     for (int i = 0; i < argc; i++) {
@@ -2275,6 +2277,15 @@ int process_args(int argc, char* argv[]) {
            i += process_clock_sync_args((argc-i), &argv[i]);
         } else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--auth") == 0) {
             _RTI.authentication_enabled = true;
+        } else if (strcmp(argv[i], "-sst") == 0 || strcmp(argv[i], "--sst") == 0) {
+            if (argc < i + 2) {
+                fprintf(stderr, "Error: --sst needs a string argument.\n");
+                usage(argc, argv);
+                return 0;
+            }
+            i++;
+            printf("RTI: SST_config_path: %s\n", argv[i]);
+            _RTI.sst_config_path = argv[i];
         } else if (strcmp(argv[i], " ") == 0) {
             // Tolerate spaces
             continue;
