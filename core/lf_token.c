@@ -64,7 +64,7 @@ static hashset_t _lf_token_recycling_bin = NULL;
 static hashset_t _lf_token_templates = NULL;
 
 ////////////////////////////////////////////////////////////////////
-//// Functions that user's may call.
+//// Functions that users may call.
 
 lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len) {
     return _lf_new_token((token_type_t*)port_or_action, val, len);
