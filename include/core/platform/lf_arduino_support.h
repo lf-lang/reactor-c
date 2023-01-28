@@ -36,58 +36,70 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <time.h>   // For CLOCK_MONOTONIC
 #include <stdbool.h>
 
+#define AVR 0
+#define megaAVR 1
+#define SAMD 2
+#define SAM 3
+#define MBED 4
+
 #ifndef BOARD
-#if defined(ARDUINO_AVR_ADK)       
-    #define BOARD "Mega Adk"
+#if defined(ARDUINO_AVR_ADK)
+    #define BOARD AVR
 #elif defined(ARDUINO_AVR_BT)    // Bluetooth
-    #define BOARD "Bt"
-#elif defined(ARDUINO_AVR_DUEMILANOVE)       
-    #define BOARD "Duemilanove"
-#elif defined(ARDUINO_AVR_ESPLORA)       
-    #define BOARD "Esplora"
-#elif defined(ARDUINO_AVR_ETHERNET)       
-    #define BOARD "Ethernet"
-#elif defined(ARDUINO_AVR_FIO)       
-    #define BOARD "Fio"
+    #define BOARD AVR
+#elif defined(ARDUINO_AVR_DUEMILANOVE)
+    #define BOARD AVR
+#elif defined(ARDUINO_AVR_ESPLORA)
+    #define BOARD AVR
+#elif defined(ARDUINO_AVR_ETHERNET)
+    #define BOARD AVR
+#elif defined(ARDUINO_AVR_FIO)      
+    #define BOARD AVR
 #elif defined(ARDUINO_AVR_GEMMA)
-    #define BOARD "Gemma"
-#elif defined(ARDUINO_AVR_LEONARDO)       
-    #define BOARD "Leonardo"
+    #define BOARD AVR
+#elif defined(ARDUINO_AVR_LEONARDO)
+    #define BOARD AVR
 #elif defined(ARDUINO_AVR_LILYPAD)
-    #define BOARD "Lilypad"
+    #define BOARD AVR
 #elif defined(ARDUINO_AVR_LILYPAD_USB)
-    #define BOARD "Lilypad Usb"
-#elif defined(ARDUINO_AVR_MEGA)       
-    #define BOARD "Mega"
-#elif defined(ARDUINO_AVR_MEGA2560)       
-    #define BOARD "Mega 2560"
-#elif defined(ARDUINO_AVR_MICRO)       
-    #define BOARD "Micro"
-#elif defined(ARDUINO_AVR_MINI)       
-    #define BOARD "Mini"
-#elif defined(ARDUINO_AVR_NANO)       
-    #define BOARD "Nano"
-#elif defined(ARDUINO_AVR_NG)       
-    #define BOARD "NG"
-#elif defined(ARDUINO_AVR_PRO)       
-    #define BOARD "Pro"
-#elif defined(ARDUINO_AVR_ROBOT_CONTROL)       
-    #define BOARD "Robot Ctrl"
-#elif defined(ARDUINO_AVR_ROBOT_MOTOR)       
-    #define BOARD "Robot Motor"
-#elif defined(ARDUINO_AVR_UNO) || defined(__AVR_ATmega4809__)       
-    #define BOARD "Uno"
-#elif defined(ARDUINO_AVR_YUN)       
-    #define BOARD "Yun"
+    #define BOARD AVR
+#elif defined(ARDUINO_AVR_MEGA)
+    #define BOARD AVR
+#elif defined(ARDUINO_AVR_MEGA2560)
+    #define BOARD AVR
+#elif defined(ARDUINO_AVR_MICRO)
+    #define BOARD AVR
+#elif defined(ARDUINO_AVR_MINI)
+    #define BOARD AVR
+#elif defined(ARDUINO_AVR_NANO)
+    #define BOARD AVR
+#elif defined(ARDUINO_AVR_NG)
+    #define BOARD AVR
+#elif defined(ARDUINO_AVR_PRO)
+    #define BOARD AVR
+#elif defined(ARDUINO_AVR_ROBOT_CONTROL)
+    #define BOARD AVR
+#elif defined(ARDUINO_AVR_ROBOT_MOTOR)
+    #define BOARD AVR
+#elif defined(ARDUINO_AVR_UNO) || defined(__AVR_ATmega4809__)
+    #define BOARD AVR
+#elif defined(ARDUINO_AVR_YUN)
+    #define BOARD AVR
 
 // These boards must be installed separately:
-#elif defined(ARDUINO_SAM_DUE)       
-    #define BOARD "Due"
-#elif defined(ARDUINO_SAMD_ZERO)       
-    #define BOARD "Zero"
-#elif defined(ARDUINO_ARC32_TOOLS)       
-    #define BOARD "101"
+#elif defined(ARDUINO_SAM_DUE)
+    #define BOARD SAM
+#elif defined(ARDUINO_SAMD_ZERO)
+    #define BOARD SAMD
+#elif defined(ARDUINO_ARC32_TOOLS)
+    #define BOARD SAM
+#elif defined(ARDUINO_ARDUINO_NANO33BLE)
+    #define BOARD MBED
 #endif
+#endif
+
+#if BOARD==MBED
+#error "MBED RTOS-based Arduino Boards are currently unsupported"
 #endif
 
 #define __STDC_FORMAT_MACROS
