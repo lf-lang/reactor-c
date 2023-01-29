@@ -65,6 +65,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #elif defined(CONFIG_COUNTER_MCUX_CTIMER)
     #define LF_TIMER DT_NODELABEL(ctimer0)
     #define LF_ZEPHYR_CLOCK_HI_RES
+#elif defined(CONFIG_SOC_MIMXRT1176_CM7)
+    #define LF_TIMER DT_NODELABEL(gpt2)
+    #define LF_ZEPHYR_CLOCK_HI_RES
 #else
     #warning Using low-res Kernel timer because hi-res Counter timer is not ported yet for this board.
     #define LF_ZEPHYR_CLOCK_LO_RES
