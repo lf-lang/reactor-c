@@ -74,9 +74,6 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a> &#124;
-<a href="#typedef-members">Typedefs</a> &#124;
-<a href="#enum-members">Enumerations</a> &#124;
 <a href="#func-members">Functions</a> &#124;
 <a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">reactor_common.c File Reference</div></div>
@@ -95,27 +92,9 @@ $(function() {
 <code>#include &quot;<a class="el" href="trace_8h_source.html">trace.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="util_8h_source.html">util.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="vector_8h_source.html">vector.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="hashset_8h_source.html">hashset/hashset.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="hashset__itr_8h_source.html">hashset/hashset_itr.h</a>&quot;</code><br />
 </div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:a20b6cff12498f2db056084f86154d9a4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a20b6cff12498f2db056084f86154d9a4">OK_TO_FREE</a>&#160;&#160;&#160;<a class="el" href="lf__types_8h.html#a174f339edecd4463df25e673366a2b16aad3aafaeae035f5d1c986b0b59e77458">token_and_value</a></td></tr>
-<tr class="separator:a20b6cff12498f2db056084f86154d9a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad6be436dfb95ab914336870d340b207d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#ad6be436dfb95ab914336870d340b207d">_LF_TOKEN_RECYCLING_BIN_SIZE_LIMIT</a>&#160;&#160;&#160;512</td></tr>
-<tr class="separator:ad6be436dfb95ab914336870d340b207d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
-Typedefs</h2></td></tr>
-<tr class="memitem:a0cb4f0fedba2f1e1fd3893440ab53647"><td class="memItemLeft" align="right" valign="top">typedef enum <a class="el" href="reactor__common_8c.html#abe23a36a87d2f0c076da417eb0114c7e">token_freed</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a0cb4f0fedba2f1e1fd3893440ab53647">token_freed</a></td></tr>
-<tr class="separator:a0cb4f0fedba2f1e1fd3893440ab53647"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
-Enumerations</h2></td></tr>
-<tr class="memitem:abe23a36a87d2f0c076da417eb0114c7e"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#abe23a36a87d2f0c076da417eb0114c7e">token_freed</a> { <a class="el" href="reactor__common_8c.html#abe23a36a87d2f0c076da417eb0114c7ea3d7522b54086645e077eb70e78731c5c">NOT_FREED</a>
-, <a class="el" href="reactor__common_8c.html#abe23a36a87d2f0c076da417eb0114c7ea417a0268666423fd955fea6f38cde238">VALUE_FREED</a>
-, <a class="el" href="reactor__common_8c.html#abe23a36a87d2f0c076da417eb0114c7ea0a6094445d7a54e61aa3a43f6d017e2b">TOKEN_FREED</a>
- }</td></tr>
-<tr class="separator:abe23a36a87d2f0c076da417eb0114c7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:afa9a756e5a6685531141bb4bfdc1f327"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#afa9a756e5a6685531141bb4bfdc1f327">_lf_allocate</a> (size_t count, size_t size, struct <a class="el" href="structallocation__record__t.html">allocation_record_t</a> **head)</td></tr>
@@ -138,14 +117,6 @@ Functions</h2></td></tr>
 <tr class="separator:aef50e4963079f2716f35c8c92256bb4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad14a3abed525c815a41a4c273937e399"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#ad14a3abed525c815a41a4c273937e399">_lf_start_time_step</a> ()</td></tr>
 <tr class="separator:ad14a3abed525c815a41a4c273937e399"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acb98981bf2b49e5201d4233e785ac92f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#acb98981bf2b49e5201d4233e785ac92f">_lf_create_token</a> (size_t element_size)</td></tr>
-<tr class="separator:acb98981bf2b49e5201d4233e785ac92f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0b3e914b48f5f90533eecbf63acdf8d9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a0b3e914b48f5f90533eecbf63acdf8d9">create_token</a> (size_t element_size)</td></tr>
-<tr class="separator:a0b3e914b48f5f90533eecbf63acdf8d9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a96b4b8f74714eae0efcb699281c10f87"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a96b4b8f74714eae0efcb699281c10f87">_lf_initialize_token_with_value</a> (<a class="el" href="structlf__token__t.html">lf_token_t</a> *token, void *value, size_t length)</td></tr>
-<tr class="separator:a96b4b8f74714eae0efcb699281c10f87"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a55271525f5a88c650d1bce99cd137efe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a55271525f5a88c650d1bce99cd137efe">_lf_initialize_token</a> (<a class="el" href="structlf__token__t.html">lf_token_t</a> *token, size_t length)</td></tr>
-<tr class="separator:a55271525f5a88c650d1bce99cd137efe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7d189a2e2d8b3af5f40e261f3a6b8076"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a7d189a2e2d8b3af5f40e261f3a6b8076">_lf_is_tag_after_stop_tag</a> (<a class="el" href="structtag__t.html">tag_t</a> tag)</td></tr>
 <tr class="separator:a7d189a2e2d8b3af5f40e261f3a6b8076"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acf1ea511fbce4c80b124391d75e6ba92"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#acf1ea511fbce4c80b124391d75e6ba92">_lf_pop_events</a> ()</td></tr>
@@ -162,28 +133,22 @@ Functions</h2></td></tr>
 <tr class="separator:a2d868b0a53df4f434c3d41f741dc00bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa985dff5d30c38625609d0eb356c536e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#aa985dff5d30c38625609d0eb356c536e">_lf_insert_reactions_for_trigger</a> (<a class="el" href="structtrigger__t.html">trigger_t</a> *trigger, <a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
 <tr class="separator:aa985dff5d30c38625609d0eb356c536e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aca6f924d2da176c98435f96d3bcfac6b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtrigger__t.html">trigger_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#aca6f924d2da176c98435f96d3bcfac6b">_lf_action_to_trigger</a> (void *action)</td></tr>
-<tr class="separator:aca6f924d2da176c98435f96d3bcfac6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad48107f740a882d05dc5a85f47486158"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#ad48107f740a882d05dc5a85f47486158">_lf_schedule_token</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, <a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
-<tr class="separator:ad48107f740a882d05dc5a85f47486158"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acf2937acf3f9a8dfeb7af0152f31634e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#acf2937acf3f9a8dfeb7af0152f31634e">_lf_schedule_copy</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset, void *value, size_t length)</td></tr>
-<tr class="separator:acf2937acf3f9a8dfeb7af0152f31634e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8f772464d0281b57bfa40d2d40fd062c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a8f772464d0281b57bfa40d2d40fd062c">_lf_schedule_value</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, void *value, size_t length)</td></tr>
-<tr class="separator:a8f772464d0281b57bfa40d2d40fd062c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3abf7fed98b1e3578cffdd349a0ac227"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a3abf7fed98b1e3578cffdd349a0ac227">_lf_schedule_token</a> (<a class="el" href="structlf__action__base__t.html">lf_action_base_t</a> *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, <a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
+<tr class="separator:a3abf7fed98b1e3578cffdd349a0ac227"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac45c3ce53ac9974a6a597cd36c9dc0cf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#ac45c3ce53ac9974a6a597cd36c9dc0cf">_lf_schedule_copy</a> (<a class="el" href="structlf__action__base__t.html">lf_action_base_t</a> *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset, void *value, size_t length)</td></tr>
+<tr class="separator:ac45c3ce53ac9974a6a597cd36c9dc0cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5cc341c9378cb224bb0657e49ea0f88f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a5cc341c9378cb224bb0657e49ea0f88f">_lf_schedule_value</a> (<a class="el" href="structlf__action__base__t.html">lf_action_base_t</a> *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, void *value, size_t length)</td></tr>
+<tr class="separator:a5cc341c9378cb224bb0657e49ea0f88f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abadead0c4f54963b062503cf6cb7ace7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#abadead0c4f54963b062503cf6cb7ace7">_lf_advance_logical_time</a> (<a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> next_time)</td></tr>
 <tr class="separator:abadead0c4f54963b062503cf6cb7ace7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaed2aef62e15386727c88c11b1737401"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#aaed2aef62e15386727c88c11b1737401">_lf_schedule_int</a> (void *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, int value)</td></tr>
-<tr class="separator:aaed2aef62e15386727c88c11b1737401"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9df90516cce7d8e01b46acf61db64b8f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a9df90516cce7d8e01b46acf61db64b8f">_lf_set_new_array_impl</a> (<a class="el" href="structlf__token__t.html">lf_token_t</a> *token, size_t length, int num_destinations)</td></tr>
-<tr class="separator:a9df90516cce7d8e01b46acf61db64b8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf263557d88761d75b98bc6cc5226cb2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#aaf263557d88761d75b98bc6cc5226cb2">_lf_schedule_int</a> (<a class="el" href="structlf__action__base__t.html">lf_action_base_t</a> *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, int value)</td></tr>
+<tr class="separator:aaf263557d88761d75b98bc6cc5226cb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6a6f96af2d1adbf71c57586a9078f248"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a6a6f96af2d1adbf71c57586a9078f248">_lf_check_deadline</a> (<a class="el" href="structself__base__t.html">self_base_t</a> *self, bool invoke_deadline_handler)</td></tr>
 <tr class="separator:a6a6f96af2d1adbf71c57586a9078f248"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6043f620d4c10e7aed87f64499212ecf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a6043f620d4c10e7aed87f64499212ecf">_lf_invoke_reaction</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *reaction, int <a class="el" href="reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63">worker</a>)</td></tr>
 <tr class="separator:a6043f620d4c10e7aed87f64499212ecf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a615a0670be544780678a1940a49c8d1e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a615a0670be544780678a1940a49c8d1e">schedule_output_reactions</a> (<a class="el" href="structreaction__t.html">reaction_t</a> *reaction, int <a class="el" href="reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63">worker</a>)</td></tr>
 <tr class="separator:a615a0670be544780678a1940a49c8d1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab8b23ae956bad82624233eafa837affb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#ab8b23ae956bad82624233eafa837affb">writable_copy</a> (<a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
-<tr class="separator:ab8b23ae956bad82624233eafa837affb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7f44f474f50286c4ba8c0ebac254bb28"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a7f44f474f50286c4ba8c0ebac254bb28">usage</a> (int argc, const char *argv[])</td></tr>
 <tr class="separator:a7f44f474f50286c4ba8c0ebac254bb28"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a80aaf4eeed3e2902f8fe9de80b45777d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a80aaf4eeed3e2902f8fe9de80b45777d">process_args</a> (int argc, const char *argv[])</td></tr>
@@ -219,12 +184,6 @@ Variables</h2></td></tr>
 <tr class="separator:ac5bf168ab25a09620bc0d1f9fe0547b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a86d60ce16c0f0a9b139856b9f2a6c463"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a86d60ce16c0f0a9b139856b9f2a6c463">_lf_intended_tag_fields_size</a> = 0</td></tr>
 <tr class="separator:a86d60ce16c0f0a9b139856b9f2a6c463"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3e8e15db9bf3b081c3f084d1e1a3b043"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtoken__present__t.html">token_present_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a3e8e15db9bf3b081c3f084d1e1a3b043">_lf_tokens_with_ref_count</a> = NULL</td></tr>
-<tr class="separator:a3e8e15db9bf3b081c3f084d1e1a3b043"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a10daeb6bf7d37ada7a878859a34ed5ed"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a10daeb6bf7d37ada7a878859a34ed5ed">_lf_more_tokens_with_ref_count</a> = NULL</td></tr>
-<tr class="separator:a10daeb6bf7d37ada7a878859a34ed5ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0bf357e4cd193ba66ac15262992e2a9b"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a0bf357e4cd193ba66ac15262992e2a9b">_lf_tokens_with_ref_count_size</a> = 0</td></tr>
-<tr class="separator:a0bf357e4cd193ba66ac15262992e2a9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a48f58a9d22ac5303d3c0f0278c49e7ac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a48f58a9d22ac5303d3c0f0278c49e7ac">_lf_fed_STA_offset</a> = 0LL</td></tr>
 <tr class="separator:a48f58a9d22ac5303d3c0f0278c49e7ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7474dac67fd64b1dc78acdd0d820ad56"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structvector__t.html">vector_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#a7474dac67fd64b1dc78acdd0d820ad56">_lf_sparse_io_record_sizes</a></td></tr>
@@ -238,109 +197,7 @@ Variables</h2></td></tr>
 <tr class="memitem:ad0fd32b8326e2d630ee8f4a431ea2867"><td class="memItemLeft" align="right" valign="top">const char **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8c.html#ad0fd32b8326e2d630ee8f4a431ea2867">default_argv</a> = NULL</td></tr>
 <tr class="separator:ad0fd32b8326e2d630ee8f4a431ea2867"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Macro Definition Documentation</h2>
-<a id="ad6be436dfb95ab914336870d340b207d" name="ad6be436dfb95ab914336870d340b207d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad6be436dfb95ab914336870d340b207d">&#9670;&#160;</a></span>_LF_TOKEN_RECYCLING_BIN_SIZE_LIMIT</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define _LF_TOKEN_RECYCLING_BIN_SIZE_LIMIT&#160;&#160;&#160;512</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>To allow a system to recover from burst of activity, the token recycling bin has a limited size. When it becomes full, token are freed using <a class="el" href="hashmap_8h.html#a124050fa63c3161a5ae1ea701cf4e599" title="Free all memory used by the given hashmap.">free()</a>. </p>
-
-</div>
-</div>
-<a id="a20b6cff12498f2db056084f86154d9a4" name="a20b6cff12498f2db056084f86154d9a4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a20b6cff12498f2db056084f86154d9a4">&#9670;&#160;</a></span>OK_TO_FREE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define OK_TO_FREE&#160;&#160;&#160;<a class="el" href="lf__types_8h.html#a174f339edecd4463df25e673366a2b16aad3aafaeae035f5d1c986b0b59e77458">token_and_value</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Runtime infrastructure for the C target of Lingua Franca. This file contains resources that are shared by the threaded and non-threaded versions of the C runtime.</p>
-<dl class="section author"><dt>Author</dt><dd>{Edward A. Lee <a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd>
-<dd>
-{Marten Lohstroh <a href="#" onclick="location.href='mai'+'lto:'+'mar'+'te'+'n@b'+'er'+'kel'+'ey'+'.ed'+'u'; return false;">marte<span class="obfuscator">.nosp@m.</span>n@be<span class="obfuscator">.nosp@m.</span>rkele<span class="obfuscator">.nosp@m.</span>y.ed<span class="obfuscator">.nosp@m.</span>u</a>} </dd>
-<dd>
-{Mehrdad Niknami <a href="#" onclick="location.href='mai'+'lto:'+'mni'+'kn'+'ami'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">mnikn<span class="obfuscator">.nosp@m.</span>ami@<span class="obfuscator">.nosp@m.</span>berke<span class="obfuscator">.nosp@m.</span>ley.<span class="obfuscator">.nosp@m.</span>edu</a>} </dd>
-<dd>
-{Soroush Bateni &lt;<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd>
-<dd>
-{Alexander Schulz-Rosengarten <a href="#" onclick="location.href='mai'+'lto:'+'als'+'@i'+'nfo'+'rm'+'ati'+'k.'+'uni'+'-k'+'iel'+'.d'+'e'; return false;">als@i<span class="obfuscator">.nosp@m.</span>nfor<span class="obfuscator">.nosp@m.</span>matik<span class="obfuscator">.nosp@m.</span>.uni<span class="obfuscator">.nosp@m.</span>-kiel<span class="obfuscator">.nosp@m.</span>.de</a>} The flag OK_TO_FREE is used to indicate whether the void* value in token_t should be freed or not. In particular, in the Python target, the value should not be freed because Python handles garbage collection. But the token will still need to be freed (unless it's a template token). </dd></dl>
-
-</div>
-</div>
-<h2 class="groupheader">Typedef Documentation</h2>
-<a id="a0cb4f0fedba2f1e1fd3893440ab53647" name="a0cb4f0fedba2f1e1fd3893440ab53647"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0cb4f0fedba2f1e1fd3893440ab53647">&#9670;&#160;</a></span>token_freed</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">typedef enum <a class="el" href="reactor__common_8c.html#abe23a36a87d2f0c076da417eb0114c7e">token_freed</a> <a class="el" href="reactor__common_8c.html#abe23a36a87d2f0c076da417eb0114c7e">token_freed</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Possible return values for _lf_done_using. </p>
-
-</div>
-</div>
-<h2 class="groupheader">Enumeration Type Documentation</h2>
-<a id="abe23a36a87d2f0c076da417eb0114c7e" name="abe23a36a87d2f0c076da417eb0114c7e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abe23a36a87d2f0c076da417eb0114c7e">&#9670;&#160;</a></span>token_freed</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum <a class="el" href="reactor__common_8c.html#abe23a36a87d2f0c076da417eb0114c7e">token_freed</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Possible return values for _lf_done_using. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="abe23a36a87d2f0c076da417eb0114c7ea3d7522b54086645e077eb70e78731c5c" name="abe23a36a87d2f0c076da417eb0114c7ea3d7522b54086645e077eb70e78731c5c"></a>NOT_FREED&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="abe23a36a87d2f0c076da417eb0114c7ea417a0268666423fd955fea6f38cde238" name="abe23a36a87d2f0c076da417eb0114c7ea417a0268666423fd955fea6f38cde238"></a>VALUE_FREED&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="abe23a36a87d2f0c076da417eb0114c7ea0a6094445d7a54e61aa3a43f6d017e2b" name="abe23a36a87d2f0c076da417eb0114c7ea0a6094445d7a54e61aa3a43f6d017e2b"></a>TOKEN_FREED&#160;</td><td class="fielddoc"></td></tr>
-</table>
-
-</div>
-</div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="aca6f924d2da176c98435f96d3bcfac6b" name="aca6f924d2da176c98435f96d3bcfac6b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aca6f924d2da176c98435f96d3bcfac6b">&#9670;&#160;</a></span>_lf_action_to_trigger()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structtrigger__t.html">trigger_t</a> * _lf_action_to_trigger </td>
-          <td>(</td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>action</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Utility function to convert a pointer to action struct into a pointer to the corresponding trigger struct. The type of the action struct is defined by a generated typedef and differs for different actions, which is why the point to the action struct is a void*. All such structs, however, share a common feature, which is tht the first entry in the struct is a pointer to the corresponding <a class="el" href="structtrigger__t.html">trigger_t</a> struct. This function uses this fact to return a pointer to that <a class="el" href="structtrigger__t.html">trigger_t</a> struct. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">action</td><td>A pointer to an action struct. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A pointer to the corresponding trigger struct. </dd></dl>
-
-</div>
-</div>
 <a id="abadead0c4f54963b062503cf6cb7ace7" name="abadead0c4f54963b062503cf6cb7ace7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abadead0c4f54963b062503cf6cb7ace7">&#9670;&#160;</a></span>_lf_advance_logical_time()</h2>
 
@@ -405,6 +262,7 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>A pointer to the allocated memory. </dd></dl>
 
 </div>
 </div>
@@ -495,31 +353,6 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="acb98981bf2b49e5201d4233e785ac92f" name="acb98981bf2b49e5201d4233e785ac92f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acb98981bf2b49e5201d4233e785ac92f">&#9670;&#160;</a></span>_lf_create_token()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structlf__token__t.html">lf_token_t</a> * _lf_create_token </td>
-          <td>(</td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>element_size</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Create a new <a class="el" href="structlf__token__t.html">lf_token_t</a> struct and initialize it for assignment to a trigger. The value pointer will be NULL and the length will be 0. This function is for tokens that are not expected to be freed, and reactors are not expected to use it. It is used by the code generator to initialize actions with tokens. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">element_size</td><td>The size of an element carried in the payload or 0 if there is no payload. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A new or recycled <a class="el" href="structlf__token__t.html">lf_token_t</a> struct. </dd></dl>
-
-</div>
-</div>
 <a id="abbc6bff98286fbe73dabb8900dfa9043" name="abbc6bff98286fbe73dabb8900dfa9043"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abbc6bff98286fbe73dabb8900dfa9043">&#9670;&#160;</a></span>_lf_free()</h2>
 
@@ -535,7 +368,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Free memory allocated using <code><a class="el" href="reactor__common_8c.html#afa9a756e5a6685531141bb4bfdc1f327">_lf_allocate(size_t, size_t, allocation_record_t**)</a></code> and mark the list empty by setting <code>*head</code> to NULL. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Free memory on the specified allocation record, e.g. allocated by <code><a class="el" href="reactor__common_8c.html#afa9a756e5a6685531141bb4bfdc1f327">_lf_allocate(size_t, size_t, allocation_record_t**)</a></code>. Mark the list empty by setting <code>*head</code> to NULL. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">head</td><td>Pointer to the head of a list on which to record the allocation, or NULL to not record it. </td></tr>
   </table>
@@ -603,87 +436,6 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Initialize the given timer. If this timer has a zero offset, enqueue the reactions it triggers. If this timer is to trigger reactions at a <em>future</em> tag as well, schedule it accordingly. </p>
-
-</div>
-</div>
-<a id="a55271525f5a88c650d1bce99cd137efe" name="a55271525f5a88c650d1bce99cd137efe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a55271525f5a88c650d1bce99cd137efe">&#9670;&#160;</a></span>_lf_initialize_token()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structlf__token__t.html">lf_token_t</a> * _lf_initialize_token </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td>
-          <td class="paramname"><em>token</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>length</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Return a token for storing an array of the specified length with new memory allocated (using malloc) for storing that array. If the specified token is available (its reference count is 0), then reuse it. Otherwise, create a new token. The element_size for elements of the array is specified by the specified token. The caller should populate the value and ref_count field of the returned token after this returns.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">token</td><td>The token to populate, if it is available (must not be NULL). </td></tr>
-    <tr><td class="paramname">length</td><td>The length of the array, or 1 if it is not an array. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Either the specified token or a new one, in each case with a value field pointing to newly allocated memory. </dd></dl>
-
-</div>
-</div>
-<a id="a96b4b8f74714eae0efcb699281c10f87" name="a96b4b8f74714eae0efcb699281c10f87"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a96b4b8f74714eae0efcb699281c10f87">&#9670;&#160;</a></span>_lf_initialize_token_with_value()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structlf__token__t.html">lf_token_t</a> * _lf_initialize_token_with_value </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td>
-          <td class="paramname"><em>token</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *&#160;</td>
-          <td class="paramname"><em>value</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>length</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Return a token for storing an array of the specified length with the specified value containing the array. If the specified token is available (its reference count is 0), then reuse it. Otherwise, create a new token. The element_size for elements of the array is specified by the specified token.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">token</td><td>The token to populate, if it is available (must not be NULL). </td></tr>
-    <tr><td class="paramname">value</td><td>The value of the array. </td></tr>
-    <tr><td class="paramname">length</td><td>The length of the array, or 1 if it is not an array. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>Either the specified token or a new one, in each case with a value field pointing to newly allocated memory. </dd></dl>
 
 </div>
 </div>
@@ -941,8 +693,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="acf2937acf3f9a8dfeb7af0152f31634e" name="acf2937acf3f9a8dfeb7af0152f31634e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acf2937acf3f9a8dfeb7af0152f31634e">&#9670;&#160;</a></span>_lf_schedule_copy()</h2>
+<a id="ac45c3ce53ac9974a6a597cd36c9dc0cf" name="ac45c3ce53ac9974a6a597cd36c9dc0cf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac45c3ce53ac9974a6a597cd36c9dc0cf">&#9670;&#160;</a></span>_lf_schedule_copy()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -950,7 +702,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> _lf_schedule_copy </td>
           <td>(</td>
-          <td class="paramtype">void *&#160;</td>
+          <td class="paramtype"><a class="el" href="structlf__action__base__t.html">lf_action_base_t</a> *&#160;</td>
           <td class="paramname"><em>action</em>, </td>
         </tr>
         <tr>
@@ -982,8 +734,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="aaed2aef62e15386727c88c11b1737401" name="aaed2aef62e15386727c88c11b1737401"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaed2aef62e15386727c88c11b1737401">&#9670;&#160;</a></span>_lf_schedule_int()</h2>
+<a id="aaf263557d88761d75b98bc6cc5226cb2" name="aaf263557d88761d75b98bc6cc5226cb2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaf263557d88761d75b98bc6cc5226cb2">&#9670;&#160;</a></span>_lf_schedule_int()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -991,7 +743,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> _lf_schedule_int </td>
           <td>(</td>
-          <td class="paramtype">void *&#160;</td>
+          <td class="paramtype"><a class="el" href="structlf__action__base__t.html">lf_action_base_t</a> *&#160;</td>
           <td class="paramname"><em>action</em>, </td>
         </tr>
         <tr>
@@ -1022,8 +774,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="ad48107f740a882d05dc5a85f47486158" name="ad48107f740a882d05dc5a85f47486158"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad48107f740a882d05dc5a85f47486158">&#9670;&#160;</a></span>_lf_schedule_token()</h2>
+<a id="a3abf7fed98b1e3578cffdd349a0ac227" name="a3abf7fed98b1e3578cffdd349a0ac227"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3abf7fed98b1e3578cffdd349a0ac227">&#9670;&#160;</a></span>_lf_schedule_token()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1031,7 +783,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> _lf_schedule_token </td>
           <td>(</td>
-          <td class="paramtype">void *&#160;</td>
+          <td class="paramtype"><a class="el" href="structlf__action__base__t.html">lf_action_base_t</a> *&#160;</td>
           <td class="paramname"><em>action</em>, </td>
         </tr>
         <tr>
@@ -1057,8 +809,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a8f772464d0281b57bfa40d2d40fd062c" name="a8f772464d0281b57bfa40d2d40fd062c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8f772464d0281b57bfa40d2d40fd062c">&#9670;&#160;</a></span>_lf_schedule_value()</h2>
+<a id="a5cc341c9378cb224bb0657e49ea0f88f" name="a5cc341c9378cb224bb0657e49ea0f88f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5cc341c9378cb224bb0657e49ea0f88f">&#9670;&#160;</a></span>_lf_schedule_value()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1066,7 +818,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a> _lf_schedule_value </td>
           <td>(</td>
-          <td class="paramtype">void *&#160;</td>
+          <td class="paramtype"><a class="el" href="structlf__action__base__t.html">lf_action_base_t</a> *&#160;</td>
           <td class="paramname"><em>action</em>, </td>
         </tr>
         <tr>
@@ -1095,49 +847,6 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Variant of schedule_token that creates a token to carry the specified value. See <a class="el" href="reactor_8h.html">reactor.h</a> for documentation. </p>
-
-</div>
-</div>
-<a id="a9df90516cce7d8e01b46acf61db64b8f" name="a9df90516cce7d8e01b46acf61db64b8f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9df90516cce7d8e01b46acf61db64b8f">&#9670;&#160;</a></span>_lf_set_new_array_impl()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structlf__token__t.html">lf_token_t</a> * _lf_set_new_array_impl </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td>
-          <td class="paramname"><em>token</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>length</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>num_destinations</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Library function for allocating memory for an array to be sent on an output. This turns over "ownership" of the allocated memory to the output, so the allocated memory will be freed downstream. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">token</td><td>The token to use as a template (or if it is free, to use). </td></tr>
-    <tr><td class="paramname">length</td><td>The length of the array. </td></tr>
-    <tr><td class="paramname">num_destinations</td><td>The number of destinations (for initializing the reference count). </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A pointer to the new or reused token or null if the template token is incompatible with this usage. </dd></dl>
 
 </div>
 </div>
@@ -1214,32 +923,6 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="a0b3e914b48f5f90533eecbf63acdf8d9" name="a0b3e914b48f5f90533eecbf63acdf8d9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0b3e914b48f5f90533eecbf63acdf8d9">&#9670;&#160;</a></span>create_token()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structlf__token__t.html">lf_token_t</a> * create_token </td>
-          <td>(</td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>element_size</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Create a new token and initialize it. The value pointer will be NULL and the length will be 0. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">element_size</td><td>The size of an element carried in the payload or 0 if there is no payload. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>A new or recycled <a class="el" href="structlf__token__t.html">lf_token_t</a> struct.</dd></dl>
-<dl class="section note"><dt>Note</dt><dd>For multithreaded applications, the caller must hold the mutex lock because it accesses global variables. </dd></dl>
 
 </div>
 </div>
@@ -1385,7 +1068,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Report elapsed logical and physical times and report if any memory allocated by set_new, set_new_array, or writable_copy has not been freed. </p>
+<p>Report elapsed logical and physical times and report if any memory allocated by set_new, set_new_array, or lf_writable_copy has not been freed. </p>
 
 </div>
 </div>
@@ -1415,25 +1098,6 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Print a usage message. TODO: This is not necessary for NO_TTY </p>
-
-</div>
-</div>
-<a id="ab8b23ae956bad82624233eafa837affb" name="ab8b23ae956bad82624233eafa837affb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab8b23ae956bad82624233eafa837affb">&#9670;&#160;</a></span>writable_copy()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structlf__token__t.html">lf_token_t</a> * writable_copy </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="structlf__token__t.html">lf_token_t</a> *&#160;</td>
-          <td class="paramname"><em>token</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Return a writable copy of the specified token. If the reference count is 1, this returns the original token rather than a copy. The reference count will still be 1. If the size of the token payload is zero, this also returns the original token. Otherwise, this returns a new token with a reference count of 0. To ensure that the allocated memory is not leaked, this new token must be either passed to an output using set_token() or scheduled with a action using schedule_token(). </p>
 
 </div>
 </div>
@@ -1552,20 +1216,6 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a10daeb6bf7d37ada7a878859a34ed5ed" name="a10daeb6bf7d37ada7a878859a34ed5ed"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a10daeb6bf7d37ada7a878859a34ed5ed">&#9670;&#160;</a></span>_lf_more_tokens_with_ref_count</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structlf__token__t.html">lf_token_t</a>* _lf_more_tokens_with_ref_count = NULL</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 <a id="a01fd0d1404992f7d875791a764a26925" name="a01fd0d1404992f7d875791a764a26925"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a01fd0d1404992f7d875791a764a26925">&#9670;&#160;</a></span>_lf_number_of_workers</h2>
 
@@ -1612,34 +1262,6 @@ Variables</h2></td></tr>
 <div class="line">    NULL, NULL, NULL, 0, 0</div>
 <div class="line">}</div>
 </div><!-- fragment --><p>A vector of pointers to the size fields of instances of <a class="el" href="structlf__sparse__io__record__t.html">lf_sparse_io_record_t</a> so that these can be set to 0 between iterations. The start field of this struct will be NULL initially, so calling vector_new(_lf_sparse_io_record_sizes) will be necessary to use this. </p>
-
-</div>
-</div>
-<a id="a3e8e15db9bf3b081c3f084d1e1a3b043" name="a3e8e15db9bf3b081c3f084d1e1a3b043"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3e8e15db9bf3b081c3f084d1e1a3b043">&#9670;&#160;</a></span>_lf_tokens_with_ref_count</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structtoken__present__t.html">token_present_t</a>* _lf_tokens_with_ref_count = NULL</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a0bf357e4cd193ba66ac15262992e2a9b" name="a0bf357e4cd193ba66ac15262992e2a9b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0bf357e4cd193ba66ac15262992e2a9b">&#9670;&#160;</a></span>_lf_tokens_with_ref_count_size</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int _lf_tokens_with_ref_count_size = 0</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
 
 </div>
 </div>
@@ -1712,7 +1334,16 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Indicator of whether to wait for physical time to match logical time. By default, execution will wait. The command-line argument -fast will eliminate the wait and allow logical time to exceed physical time. </p>
+<p>Runtime infrastructure for the C target of Lingua Franca. This file contains resources that are shared by the threaded and non-threaded versions of the C runtime.</p>
+<dl class="section author"><dt>Author</dt><dd>{Edward A. Lee <a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd>
+<dd>
+{Marten Lohstroh <a href="#" onclick="location.href='mai'+'lto:'+'mar'+'te'+'n@b'+'er'+'kel'+'ey'+'.ed'+'u'; return false;">marte<span class="obfuscator">.nosp@m.</span>n@be<span class="obfuscator">.nosp@m.</span>rkele<span class="obfuscator">.nosp@m.</span>y.ed<span class="obfuscator">.nosp@m.</span>u</a>} </dd>
+<dd>
+{Mehrdad Niknami <a href="#" onclick="location.href='mai'+'lto:'+'mni'+'kn'+'ami'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">mnikn<span class="obfuscator">.nosp@m.</span>ami@<span class="obfuscator">.nosp@m.</span>berke<span class="obfuscator">.nosp@m.</span>ley.<span class="obfuscator">.nosp@m.</span>edu</a>} </dd>
+<dd>
+{Soroush Bateni &lt;<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd>
+<dd>
+{Alexander Schulz-Rosengarten <a href="#" onclick="location.href='mai'+'lto:'+'als'+'@i'+'nfo'+'rm'+'ati'+'k.'+'uni'+'-k'+'iel'+'.d'+'e'; return false;">als@i<span class="obfuscator">.nosp@m.</span>nfor<span class="obfuscator">.nosp@m.</span>matik<span class="obfuscator">.nosp@m.</span>.uni<span class="obfuscator">.nosp@m.</span>-kiel<span class="obfuscator">.nosp@m.</span>.de</a>} Indicator of whether to wait for physical time to match logical time. By default, execution will wait. The command-line argument -fast will eliminate the wait and allow logical time to exceed physical time. </dd></dl>
 
 </div>
 </div>

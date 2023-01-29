@@ -198,7 +198,7 @@ Variables</h2></td></tr>
 
 <p>Defines a generic, non-resizing hashmap data type. </p>
 <dl class="section author"><dt>Author</dt><dd>Peter Donovan (<a href="#" onclick="location.href='mai'+'lto:'+'pet'+'er'+'don'+'ov'+'an@'+'be'+'rke'+'le'+'y.e'+'du'; return false;">peter<span class="obfuscator">.nosp@m.</span>dono<span class="obfuscator">.nosp@m.</span>van@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd></dl>
-<p>Hashmaps are defined by redefining K, V, HASH_OF, and HASHMAP, and including this file. A default hashmap type is defined in <a class="el" href="hashmap_8h.html">hashmap.h</a>. See <a class="el" href="hashmap_8h.html">hashmap.h</a> for an example of a hashmap declaration.</p><ul>
+<p>Hashmaps are defined by redefining K, V, HASH_OF, and HASHMAP, and including this file. A default hashmap type is defined here. See <a class="el" href="pointer__hashmap_8h.html">pointer_hashmap.h</a> for an example of a hashmap declaration.</p><ul>
 <li>K and V must be the types of keys and values of the hashmap, respectively.</li>
 <li>HASH_OF must be the hash of a key.</li>
 <li>HASHMAP must be a function-like macro that prefixes tokens with the name of the hashmap. For example, the name of the hashmap data type is given by evaluation of the macro <a class="el" href="hashmap_8h.html#acbbbf0a5df7e698a480154ab66280715">HASHMAP(t)</a> so that it is "t" prefixed with the name of the hashmap. The function names associated with the data type are similar. </li>

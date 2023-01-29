@@ -83,16 +83,13 @@ $(function() {
 <div class="contents">
 <div class="textblock"><code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;stdbool.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="lf__token_8h_source.html">lf_token.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="vector_8h_source.html">utils/vector.h</a>&quot;</code><br />
 </div>
 <p><a href="port_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structlf__sparse__io__record__t.html">lf_sparse_io_record_t</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structlf__port__base__t.html">lf_port_base_t</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structlf__multiport__iterator__t.html">lf_multiport_iterator_t</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -107,10 +104,6 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:aa6696d69bef6bb4bdd52ef9ab9d2c614"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structlf__sparse__io__record__t.html">lf_sparse_io_record_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="port_8h.html#aa6696d69bef6bb4bdd52ef9ab9d2c614">lf_sparse_io_record_t</a></td></tr>
-<tr class="separator:aa6696d69bef6bb4bdd52ef9ab9d2c614"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a91b17c088cd50ce69df73f1470a18799"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structlf__port__base__t.html">lf_port_base_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="port_8h.html#a91b17c088cd50ce69df73f1470a18799">lf_port_base_t</a></td></tr>
-<tr class="separator:a91b17c088cd50ce69df73f1470a18799"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af8a81a7373f3d5f77fd865e437964ef3"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structlf__multiport__iterator__t.html">lf_multiport_iterator_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="port_8h.html#af8a81a7373f3d5f77fd865e437964ef3">lf_multiport_iterator_t</a></td></tr>
 <tr class="separator:af8a81a7373f3d5f77fd865e437964ef3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -146,8 +139,8 @@ DESCRIPTION</h1>
 <div class="line">    }</div>
 <div class="line">=}</div>
 <div class="ttc" id="aport_8c_html_ac7c743d3c64a839642e54781b8e9127f"><div class="ttname"><a href="port_8c.html#ac7c743d3c64a839642e54781b8e9127f">lf_multiport_next</a></div><div class="ttdeci">int lf_multiport_next(lf_multiport_iterator_t *iterator)</div><div class="ttdef"><b>Definition:</b> port.c:105</div></div>
-<div class="ttc" id="aport_8h_html_a5759266c62b989a6b305584cb72f8840"><div class="ttname"><a href="port_8h.html#a5759266c62b989a6b305584cb72f8840">lf_multiport_iterator</a></div><div class="ttdeci">#define lf_multiport_iterator(in)</div><div class="ttdef"><b>Definition:</b> port.h:131</div></div>
-<div class="ttc" id="astructlf__multiport__iterator__t_html"><div class="ttname"><a href="structlf__multiport__iterator__t.html">lf_multiport_iterator_t</a></div><div class="ttdef"><b>Definition:</b> port.h:109</div></div>
+<div class="ttc" id="aport_8h_html_a5759266c62b989a6b305584cb72f8840"><div class="ttname"><a href="port_8h.html#a5759266c62b989a6b305584cb72f8840">lf_multiport_iterator</a></div><div class="ttdeci">#define lf_multiport_iterator(in)</div><div class="ttdef"><b>Definition:</b> port.h:111</div></div>
+<div class="ttc" id="astructlf__multiport__iterator__t_html"><div class="ttname"><a href="structlf__multiport__iterator__t.html">lf_multiport_iterator_t</a></div><div class="ttdef"><b>Definition:</b> port.h:89</div></div>
 </div><!-- fragment --><p>The <code><a class="el" href="port_8h.html#a5759266c62b989a6b305584cb72f8840">lf_multiport_iterator()</a></code> function constructs an iterator (which is a struct) that can be passed to the <code><a class="el" href="port_8h.html#ac7c743d3c64a839642e54781b8e9127f">lf_multiport_next()</a></code> function to obtain the first channel number with a present input. Subsequent calls to <code><a class="el" href="port_8h.html#ac7c743d3c64a839642e54781b8e9127f">lf_multiport_next()</a></code> return the next channel index that is present until there are no more, at which point they return -1.</p>
 <p>The way this works is that for each input multiport p1 that is marked @sparse, a struct s of type <code><a class="el" href="structlf__sparse__io__record__t.html">lf_sparse_io_record_t</a></code> will be dynamically allocated and a pointer to this struct will be put on the self struct in a field named "portname__sparse". Each port channel struct within the multiport will be given a pointer to s. </p>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
@@ -170,7 +163,7 @@ DESCRIPTION</h1>
 <div class="line">               (<a class="code hl_struct" href="structlf__port__base__t.html">lf_port_base_t</a>**)self-&gt;_lf_ ## in, \</div>
 <div class="line">               self-&gt;_lf_ ## in ## _width))</div>
 <div class="ttc" id="aport_8h_html_a23e88870b9a699d1a067ff5b397e0887"><div class="ttname"><a href="port_8h.html#a23e88870b9a699d1a067ff5b397e0887">_lf_multiport_iterator_impl</a></div><div class="ttdeci">lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t **port, int width)</div><div class="ttdef"><b>Definition:</b> port.c:61</div></div>
-<div class="ttc" id="astructlf__port__base__t_html"><div class="ttname"><a href="structlf__port__base__t.html">lf_port_base_t</a></div><div class="ttdef"><b>Definition:</b> port.h:96</div></div>
+<div class="ttc" id="astructlf__port__base__t_html"><div class="ttname"><a href="structlf__port__base__t.html">lf_port_base_t</a></div><div class="ttdoc">Base type for ports. Port structs are customized types because their payloads are type specific....</div><div class="ttdef"><b>Definition:</b> lf_token.h:156</div></div>
 </div><!-- fragment --><p>Macro for creating an iterator over an input multiport. The argument is the port name. This returns an instance of <a class="el" href="structlf__multiport__iterator__t.html">lf_multiport_iterator_t</a> on the stack, a pointer to which should be passed to lf_multiport_iterator_next() to advance. </p>
 
 </div>
@@ -218,36 +211,6 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p>An iterator over a record of the subset of channels of a multiport that have present inputs. To use this, create an iterator using the function <a class="el" href="port_8h.html#a5759266c62b989a6b305584cb72f8840">lf_multiport_iterator()</a>. That function returns a struct that can be passed to the <a class="el" href="port_8c.html#ac7c743d3c64a839642e54781b8e9127f">lf_multiport_next()</a> function to obtain the next channel number of a present input (or -1 if there is no next present input). </p>
-
-</div>
-</div>
-<a id="a91b17c088cd50ce69df73f1470a18799" name="a91b17c088cd50ce69df73f1470a18799"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a91b17c088cd50ce69df73f1470a18799">&#9670;&#160;</a></span>lf_port_base_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">typedef struct <a class="el" href="structlf__port__base__t.html">lf_port_base_t</a> <a class="el" href="structlf__port__base__t.html">lf_port_base_t</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Port structs are customized types because their payloads are type specific. This struct represents their common features. Given any pointer to a port struct, it can be cast to <a class="el" href="structlf__port__base__t.html">lf_port_base_t</a> and then these common fields can be accessed. </p>
-
-</div>
-</div>
-<a id="aa6696d69bef6bb4bdd52ef9ab9d2c614" name="aa6696d69bef6bb4bdd52ef9ab9d2c614"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa6696d69bef6bb4bdd52ef9ab9d2c614">&#9670;&#160;</a></span>lf_sparse_io_record_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">typedef struct <a class="el" href="structlf__sparse__io__record__t.html">lf_sparse_io_record_t</a> <a class="el" href="structlf__sparse__io__record__t.html">lf_sparse_io_record_t</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>A record of the subset of channels of a multiport that have present inputs. </p>
 
 </div>
 </div>

@@ -30,7 +30,7 @@ var searchData=
   ['deque_5fsize_27',['deque_size',['../deque_8c.html#ad7e6969a2e1a7e7529575558103d512d',1,'deque_size(deque_t *d):&#160;deque.c'],['../deque_8h.html#ad7e6969a2e1a7e7529575558103d512d',1,'deque_size(deque_t *d):&#160;deque.c']]],
   ['deque_5ft_28',['deque_t',['../structdeque__t.html',1,'deque_t'],['../deque_8h.html#afc1887f5ebd7da3ce7dfc73beb195598',1,'deque_t():&#160;deque.h']]],
   ['destination_5fchannel_29',['destination_channel',['../structlf__port__base__t.html#ab7734e3cdd562ad5f6ad94f97e095822',1,'lf_port_base_t']]],
-  ['destructor_30',['destructor',['../structlf__token__t.html#a0be3b2161a183e6c55b16955091b3a97',1,'lf_token_t']]],
+  ['destructor_30',['destructor',['../structtoken__type__t.html#a304b9805bf712b9e1745432f8bd9796c',1,'token_type_t']]],
   ['determine_5fnumber_5fof_5fworkers_31',['determine_number_of_workers',['../reactor__threaded_8c.html#aff80c9b69d76f5dc1fb6c7c671de9708',1,'reactor_threaded.c']]],
   ['digits_32',['digits',['../structmixed__radix__int__t.html#a0e7296e98823c245fa1e3d7b6b590e4d',1,'mixed_radix_int_t']]],
   ['done_5freactions_33',['done_reactions',['../struct__lf__sched__thread__info__t.html#a0aa63072819d25d22fdbc59bf55f39f6',1,'_lf_sched_thread_info_t']]],

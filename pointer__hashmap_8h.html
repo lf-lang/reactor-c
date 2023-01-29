@@ -85,7 +85,7 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:acbbbf0a5df7e698a480154ab66280715"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pointer__hashmap_8h.html#acbbbf0a5df7e698a480154ab66280715">HASHMAP</a>(token)&#160;&#160;&#160;hashmap_object2int ## _ ## token</td></tr>
-<tr class="memdesc:acbbbf0a5df7e698a480154ab66280715"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines a hashmap type that maps void pointers to integers.  <br /></td></tr>
+<tr class="memdesc:acbbbf0a5df7e698a480154ab66280715"><td class="mdescLeft">&#160;</td><td class="mdescRight">Defines a hashmap type that maps void pointers to integers. To use this:  <br /></td></tr>
 <tr class="separator:acbbbf0a5df7e698a480154ab66280715"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a97d832ae23af4f215e801e37e4f94254"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pointer__hashmap_8h.html#a97d832ae23af4f215e801e37e4f94254">K</a>&#160;&#160;&#160;void*</td></tr>
 <tr class="separator:a97d832ae23af4f215e801e37e4f94254"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -129,9 +129,16 @@ Macros</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Defines a hashmap type that maps void pointers to integers. </p>
-<dl class="section author"><dt>Author</dt><dd>Peter Donovan (<a href="#" onclick="location.href='mai'+'lto:'+'pet'+'er'+'don'+'ov'+'an@'+'be'+'rke'+'le'+'y.e'+'du'; return false;">peter<span class="obfuscator">.nosp@m.</span>dono<span class="obfuscator">.nosp@m.</span>van@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd></dl>
-<p>See hashmap.c for documentation on how to declare other hashmap types. </p>
+<p>Defines a hashmap type that maps void pointers to integers. To use this: </p>
+<dl class="section author"><dt>Author</dt><dd>Peter Donovan (<a href="#" onclick="location.href='mai'+'lto:'+'pet'+'er'+'don'+'ov'+'an@'+'be'+'rke'+'le'+'y.e'+'du'; return false;">peter<span class="obfuscator">.nosp@m.</span>dono<span class="obfuscator">.nosp@m.</span>van@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) <div class="fragment"><div class="line"><span class="preprocessor">#include &quot;<a class="code" href="pointer__hashmap_8h.html">core/utils/impl/pointer_hashmap.h</a>&quot;</span></div>
+<div class="ttc" id="apointer__hashmap_8h_html"><div class="ttname"><a href="pointer__hashmap_8h.html">pointer_hashmap.h</a></div></div>
+</div><!-- fragment --> To create a new hashmap: <div class="fragment"><div class="line">hashmap_object2int_t my_map = hashmap_object2int_new(<a class="code hl_define" href="hashmap__test_8c.html#a91fbe6020a4bbd73084f0681b9092479">CAPACITY</a>, NOTHING);</div>
+<div class="ttc" id="ahashmap__test_8c_html_a91fbe6020a4bbd73084f0681b9092479"><div class="ttname"><a href="hashmap__test_8c.html#a91fbe6020a4bbd73084f0681b9092479">CAPACITY</a></div><div class="ttdeci">#define CAPACITY</div><div class="ttdef"><b>Definition:</b> hashmap_test.c:8</div></div>
+</div><!-- fragment --> where CAPACITY is the maximum capacity of the hashmap and NOTHING is a pointer key that is guaranteed to be never used (e.g., NULL). To put an entry into the hashmap: <div class="fragment"><div class="line">hashmap_object2int_put(POINTER, VALUE);</div>
+</div><!-- fragment --> where POINTER is a pointer not equal to NOTHING and VALUE is an integer. This will segfault if the hashmap is already at capacity.</dd></dl>
+<p>To retrieve a value from the hashmap: </p><div class="fragment"><div class="line"><span class="keywordtype">int</span> value = hashmap_object2int_get(POINTER);</div>
+</div><!-- fragment --><p> This will segfault if the entry is not in the hashmap.</p>
+<p>See <a class="el" href="hashmap_8h.html">hashmap.h</a> for documentation on how to declare other hashmap types. </p>
 
 </div>
 </div>

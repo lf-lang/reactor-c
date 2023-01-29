@@ -85,15 +85,12 @@ $(function() {
 <code>#include &quot;<a class="el" href="pqueue_8h_source.html">utils/pqueue.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="platform_8h_source.html">platform.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tag_8h_source.html">tag.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="lf__token_8h_source.html">lf_token.h</a>&quot;</code><br />
 </div>
 <p><a href="lf__types_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structlf__token__t.html">lf_token_t</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structtoken__present__t.html">token_present_t</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structreaction__t.html">reaction_t</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structevent__t.html">event_t</a></td></tr>
@@ -103,6 +100,8 @@ Data Structures</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structallocation__record__t.html">allocation_record_t</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structself__base__t.html">self_base_t</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structlf__action__base__t.html">lf_action_base_t</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
@@ -119,10 +118,6 @@ Typedefs</h2></td></tr>
 <tr class="separator:a149e5fee1c1841bcc96c72f200601d90"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae98c19a4a03c495fdd3044c206e99afc"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structtrigger__t.html">trigger_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__types_8h.html#ae98c19a4a03c495fdd3044c206e99afc">trigger_t</a></td></tr>
 <tr class="separator:ae98c19a4a03c495fdd3044c206e99afc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a973e404c4c1bd798a54501d0e1d640f9"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structlf__token__t.html">lf_token_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__types_8h.html#a973e404c4c1bd798a54501d0e1d640f9">lf_token_t</a></td></tr>
-<tr class="separator:a973e404c4c1bd798a54501d0e1d640f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2c506d193748554de2ff32e5f7cee41e"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structtoken__present__t.html">token_present_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__types_8h.html#a2c506d193748554de2ff32e5f7cee41e">token_present_t</a></td></tr>
-<tr class="separator:a2c506d193748554de2ff32e5f7cee41e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1f0f71b6c8e0c54c65cbfaa154b40694"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structreaction__t.html">reaction_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__types_8h.html#a1f0f71b6c8e0c54c65cbfaa154b40694">reaction_t</a></td></tr>
 <tr class="separator:a1f0f71b6c8e0c54c65cbfaa154b40694"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a59f5f6b9c6023baebf9c49c328b639a1"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structevent__t.html">event_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__types_8h.html#a59f5f6b9c6023baebf9c49c328b639a1">event_t</a></td></tr>
@@ -131,6 +126,8 @@ Typedefs</h2></td></tr>
 <tr class="separator:a416845ec4469b3186de047c32402f5e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6202eb05c29c30bfd6a8fc203de6422f"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structself__base__t.html">self_base_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__types_8h.html#a6202eb05c29c30bfd6a8fc203de6422f">self_base_t</a></td></tr>
 <tr class="separator:a6202eb05c29c30bfd6a8fc203de6422f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a37ca78c364cf78731b86967dbdcc1f2f"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="structlf__action__base__t.html">lf_action_base_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__types_8h.html#a37ca78c364cf78731b86967dbdcc1f2f">lf_action_base_t</a></td></tr>
+<tr class="separator:a37ca78c364cf78731b86967dbdcc1f2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -139,11 +136,6 @@ Enumerations</h2></td></tr>
 , <a class="el" href="lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a8a4df390c6f816287b90cb2b33ab4323">replace</a>
  }</td></tr>
 <tr class="separator:a0183c0b43037a172a1cd9aa6ed6b3822"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a174f339edecd4463df25e673366a2b16"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__types_8h.html#a174f339edecd4463df25e673366a2b16">ok_to_free_t</a> { <a class="el" href="lf__types_8h.html#a174f339edecd4463df25e673366a2b16a8fe4a05f1addc1b9a4aae17d7b166646">no</a> =0
-, <a class="el" href="lf__types_8h.html#a174f339edecd4463df25e673366a2b16aad3aafaeae035f5d1c986b0b59e77458">token_and_value</a>
-, <a class="el" href="lf__types_8h.html#a174f339edecd4463df25e673366a2b16aea2a62f409bdd1a145204606c8efb75b">token_only</a>
- }</td></tr>
-<tr class="separator:a174f339edecd4463df25e673366a2b16"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a759ba374f75ea0025b9af1bb35f14d7e"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__types_8h.html#a759ba374f75ea0025b9af1bb35f14d7e">port_status_t</a> { <a class="el" href="lf__types_8h.html#a759ba374f75ea0025b9af1bb35f14d7ea1a8fae68a24a59c5629c241401fabb08">absent</a> = false
 , <a class="el" href="lf__types_8h.html#a759ba374f75ea0025b9af1bb35f14d7eaaeb73d7cb56b19bff3d9f80426ed3267">present</a> = true
 , <a class="el" href="lf__types_8h.html#a759ba374f75ea0025b9af1bb35f14d7ea5b9f6d065e6e98483b3d3ed01f4f6cbe">unknown</a>
@@ -187,7 +179,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>An allocation record that is used by a destructor for a reactor to free memory that has been dynamically allocated for the particular instance of the reactor. This will be an element of linked list. </p>
+<p>An allocation record that is used by a destructor for a reactor to free memory that has been dynamically allocated for the particular instance of the reactor. This will be an element of linked list. If the indirect field is true, then the allocated pointer points to pointer to allocated memory, rather than directly to the allocated memory. </p>
 
 </div>
 </div>
@@ -221,20 +213,18 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a973e404c4c1bd798a54501d0e1d640f9" name="a973e404c4c1bd798a54501d0e1d640f9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a973e404c4c1bd798a54501d0e1d640f9">&#9670;&#160;</a></span>lf_token_t</h2>
+<a id="a37ca78c364cf78731b86967dbdcc1f2f" name="a37ca78c364cf78731b86967dbdcc1f2f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a37ca78c364cf78731b86967dbdcc1f2f">&#9670;&#160;</a></span>lf_action_base_t</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef struct <a class="el" href="structlf__token__t.html">lf_token_t</a> <a class="el" href="structlf__token__t.html">lf_token_t</a></td>
+          <td class="memname">typedef struct <a class="el" href="structlf__action__base__t.html">lf_action_base_t</a> <a class="el" href="structlf__action__base__t.html">lf_action_base_t</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Token type for dynamically allocated arrays and structs sent as messages.</p>
-<p>In the C LF target, a type for an output that ends in '*' is treated specially. The value carried by the output is assumed to be in dynamically allocated memory, and, using reference counting, after the last downstream reader of the value has finished, the memory will be freed. To prevent this freeing from occurring, the output type can be specified using the syntax {= type* =}; this will not be treated as dynamically allocated memory. Alternatively, the programmer can give a typedef in the preamble that masks the trailing *.</p>
-<p>This struct is the wrapper around the dynamically allocated memory that carries the message. The message can be an array of values, where the size of each value is element_size (in bytes). If it is not an array, the length == 1. </p>
+<p>Action structs are customized types because their payloads are type specific. This struct represents their common features. Given any pointer to an action struct, it can be cast to <a class="el" href="structlf__action__base__t.html">lf_action_base_t</a>, to <a class="el" href="structtoken__template__t.html" title="Base type for ports (lf_port_base_t) and actions (trigger_t), which can carry tokens....">token_template_t</a>, or to <a class="el" href="structtoken__type__t.html" title="Type information for tokens. Specifically, this struct contains the fields needed to support token ty...">token_type_t</a> to access these common fields. IMPORTANT: If this is changed, it must also be changed in CActionGenerator.java generateAuxiliaryStruct(). </p>
 
 </div>
 </div>
@@ -295,21 +285,6 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p>String type so that we don't have to use {= char* =}. Use this for strings that are not dynamically allocated. For dynamically allocated strings that have to be freed after being consumed downstream, use type char*. </p>
-
-</div>
-</div>
-<a id="a2c506d193748554de2ff32e5f7cee41e" name="a2c506d193748554de2ff32e5f7cee41e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2c506d193748554de2ff32e5f7cee41e">&#9670;&#160;</a></span>token_present_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">typedef struct <a class="el" href="structtoken__present__t.html">token_present_t</a> <a class="el" href="structtoken__present__t.html">token_present_t</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>A struct with a pointer to a <a class="el" href="structlf__token__t.html">lf_token_t</a> and an _is_present variable for use to initialize actions in start_time_step(). </p>
 
 </div>
 </div>
@@ -376,26 +351,6 @@ DESCRIPTION</h1>
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a0183c0b43037a172a1cd9aa6ed6b3822a893b1cf0de04eaf44a009fecabd16b90" name="a0183c0b43037a172a1cd9aa6ed6b3822a893b1cf0de04eaf44a009fecabd16b90"></a>defer&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019" name="a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019"></a>drop&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a0183c0b43037a172a1cd9aa6ed6b3822a8a4df390c6f816287b90cb2b33ab4323" name="a0183c0b43037a172a1cd9aa6ed6b3822a8a4df390c6f816287b90cb2b33ab4323"></a>replace&#160;</td><td class="fielddoc"></td></tr>
-</table>
-
-</div>
-</div>
-<a id="a174f339edecd4463df25e673366a2b16" name="a174f339edecd4463df25e673366a2b16"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a174f339edecd4463df25e673366a2b16">&#9670;&#160;</a></span>ok_to_free_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum <a class="el" href="lf__types_8h.html#a174f339edecd4463df25e673366a2b16">ok_to_free_t</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>An enum that enables the C core library to ignore freeing the void* inside a token if the void* value is garbage collected by an external controller </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a174f339edecd4463df25e673366a2b16a8fe4a05f1addc1b9a4aae17d7b166646" name="a174f339edecd4463df25e673366a2b16a8fe4a05f1addc1b9a4aae17d7b166646"></a>no&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a174f339edecd4463df25e673366a2b16aad3aafaeae035f5d1c986b0b59e77458" name="a174f339edecd4463df25e673366a2b16aad3aafaeae035f5d1c986b0b59e77458"></a>token_and_value&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a174f339edecd4463df25e673366a2b16aea2a62f409bdd1a145204606c8efb75b" name="a174f339edecd4463df25e673366a2b16aea2a62f409bdd1a145204606c8efb75b"></a>token_only&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>

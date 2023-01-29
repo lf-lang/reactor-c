@@ -129,8 +129,8 @@ Functions</h2></td></tr>
 <tr class="separator:a489b22ec3fd289be3b22f96e97958da7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aacc9f1bfb95d8b6c852a52832a9ecd9e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#aacc9f1bfb95d8b6c852a52832a9ecd9e">get_start_time_from_rti</a> (<a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> my_physical_time)</td></tr>
 <tr class="separator:aacc9f1bfb95d8b6c852a52832a9ecd9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a89f108cab37717071993e6e76efc83d7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtrigger__t.html">trigger_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a89f108cab37717071993e6e76efc83d7">_lf_action_for_port</a> (int port_id)</td></tr>
-<tr class="separator:a89f108cab37717071993e6e76efc83d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb067bb2820a1e50c6e9a596c6748240"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structlf__action__base__t.html">lf_action_base_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#acb067bb2820a1e50c6e9a596c6748240">_lf_action_for_port</a> (int port_id)</td></tr>
+<tr class="separator:acb067bb2820a1e50c6e9a596c6748240"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a26a55f84538e1d96832c6247d74e7da6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a26a55f84538e1d96832c6247d74e7da6">set_network_port_status</a> (int portID, <a class="el" href="lf__types_8h.html#a759ba374f75ea0025b9af1bb35f14d7e">port_status_t</a> status)</td></tr>
 <tr class="separator:a26a55f84538e1d96832c6247d74e7da6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a07d570a16cab26d91c4b47fa5dd6ef6a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a07d570a16cab26d91c4b47fa5dd6ef6a">mark_all_unknown_ports_as_absent</a> ()</td></tr>
@@ -210,6 +210,10 @@ Variables</h2></td></tr>
 <tr class="separator:a8dd2a9d602522afd72f6c524356868e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7de4491a57458e3090628acf441ae2b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structfederation__metadata__t.html">federation_metadata_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a7de4491a57458e3090628acf441ae2b5">federation_metadata</a></td></tr>
 <tr class="separator:a7de4491a57458e3090628acf441ae2b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50ab838878c3b6ec56511744ef27d6d7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structlf__action__base__t.html">lf_action_base_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a50ab838878c3b6ec56511744ef27d6d7">_lf_action_table</a> []</td></tr>
+<tr class="separator:a50ab838878c3b6ec56511744ef27d6d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae4661e69fce93d814bea4dcb2757115e"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#ae4661e69fce93d814bea4dcb2757115e">_lf_action_table_size</a></td></tr>
+<tr class="separator:ae4661e69fce93d814bea4dcb2757115e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>)</dd></dl>
@@ -226,14 +230,14 @@ LICENSE</h1>
 DESCRIPTION</h1>
 <p>Utility functions for a federate in a federated execution. The main entry point is <a class="el" href="federate_8c.html#ad83fe9661682934029a42954b8fe6e2f">synchronize_with_other_federates()</a>. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a89f108cab37717071993e6e76efc83d7" name="a89f108cab37717071993e6e76efc83d7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a89f108cab37717071993e6e76efc83d7">&#9670;&#160;</a></span>_lf_action_for_port()</h2>
+<a id="acb067bb2820a1e50c6e9a596c6748240" name="acb067bb2820a1e50c6e9a596c6748240"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acb067bb2820a1e50c6e9a596c6748240">&#9670;&#160;</a></span>_lf_action_for_port()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structtrigger__t.html">trigger_t</a> * _lf_action_for_port </td>
+          <td class="memname"><a class="el" href="structlf__action__base__t.html">lf_action_base_t</a> * _lf_action_for_port </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>port_id</em></td><td>)</td>
@@ -241,13 +245,13 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Placeholder for a generated function that returns a pointer to the <a class="el" href="structtrigger__t.html">trigger_t</a> struct for the action corresponding to the specified port ID. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Return a pointer to the action struct for the action corresponding to the specified port ID. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">port_id</td><td>The port ID. </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>A pointer to a <a class="el" href="structtrigger__t.html">trigger_t</a> struct or null if the ID is out of range. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>A pointer to an action struct or null if the ID is out of range. </dd></dl>
 
 </div>
 </div>
@@ -600,7 +604,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Create a server to listen to incoming physical connections from remote federates. This function only handles the creation of the server socket. The reserved port for the server socket is then sent to the RTI by sending an MSG_TYPE_ADDRESS_ADVERTISEMENT message (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="net__common_8h.html">net_common.h</a>). This function expects <a class="el" href="lf__types_8h.html#a174f339edecd4463df25e673366a2b16a8fe4a05f1addc1b9a4aae17d7b166646">no</a> response from the RTI.</dd></dl>
+<p>Create a server to listen to incoming physical connections from remote federates. This function only handles the creation of the server socket. The reserved port for the server socket is then sent to the RTI by sending an MSG_TYPE_ADDRESS_ADVERTISEMENT message (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="net__common_8h.html">net_common.h</a>). This function expects no response from the RTI.</dd></dl>
 <p>If a port is specified by the user, that will be used as the only possibility for the server. This function will fail if that port is not available. If a port is not specified, the STARTING_PORT (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="net__common_8h.html">net_common.h</a>) will be used. The function will keep incrementing the port in this case until the number of tries reaches <a class="el" href="net__common_8h.html#aff81692fc67e6f7838d9d1cff402d7f6">PORT_RANGE_LIMIT</a>.</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>This function is similar to create_server(...) in <a class="el" href="rti_8c.html">rti.c</a>. However, it contains specific log messages for the peer to peer connections between federates. It also additionally sends an address advertisement (MSG_TYPE_ADDRESS_ADVERTISEMENT) message to the RTI informing it of the port.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
@@ -1500,7 +1504,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Update the last known status tag of all network input ports to the value of <code>tag</code>, unless that the provided <code>tag</code> is less than the last_known_status_tag of the port. This is called when all inputs to network ports with tags up to an including <code>tag</code> have been received by those ports. If any update occurs and if there are control reactions blocked, then this broadcasts a signal to potentially unblock those control reactions.</p>
+<p>Update the last known status tag of all network input ports to the value of <code>tag</code>, unless that the provided <code>tag</code> is less than the last_known_status_tag of the port. This is called when all inputs to network ports with tags up to and including <code>tag</code> have been received by those ports. If any update occurs and if there are control reactions blocked, then this broadcasts a signal to potentially unblock those control reactions.</p>
 <p>This assumes the caller holds the mutex.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -1587,6 +1591,50 @@ DESCRIPTION</h1>
 <div class="ttc" id="astructtag__t_html"><div class="ttname"><a href="structtag__t.html">tag_t</a></div><div class="ttdef"><b>Definition:</b> tag.h:101</div></div>
 <div class="ttc" id="atag_8h_html_a9e5c19968af97bd64f46650ec8732318"><div class="ttname"><a href="tag_8h.html#a9e5c19968af97bd64f46650ec8732318">NEVER</a></div><div class="ttdeci">#define NEVER</div><div class="ttdef"><b>Definition:</b> tag.h:60</div></div>
 </div><!-- fragment --><p>The state of this federate instance. </p>
+
+</div>
+</div>
+<a id="a50ab838878c3b6ec56511744ef27d6d7" name="a50ab838878c3b6ec56511744ef27d6d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a50ab838878c3b6ec56511744ef27d6d7">&#9670;&#160;</a></span>_lf_action_table</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structlf__action__base__t.html">lf_action_base_t</a>* _lf_action_table[]</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae4661e69fce93d814bea4dcb2757115e" name="ae4661e69fce93d814bea4dcb2757115e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae4661e69fce93d814bea4dcb2757115e">&#9670;&#160;</a></span>_lf_action_table_size</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t _lf_action_table_size</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>

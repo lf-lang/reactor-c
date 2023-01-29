@@ -85,7 +85,7 @@ Data Fields</h2></td></tr>
 <tr class="separator:ad4d48c8b6826fa989e498cd7e629fd6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>An allocation record that is used by a destructor for a reactor to free memory that has been dynamically allocated for the particular instance of the reactor. This will be an element of linked list. </p>
+<div class="textblock"><p>An allocation record that is used by a destructor for a reactor to free memory that has been dynamically allocated for the particular instance of the reactor. This will be an element of linked list. If the indirect field is true, then the allocated pointer points to pointer to allocated memory, rather than directly to the allocated memory. </p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a id="af527b359cdf811edd20a217fb9279ad2" name="af527b359cdf811edd20a217fb9279ad2"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af527b359cdf811edd20a217fb9279ad2">&#9670;&#160;</a></span>allocated</h2>

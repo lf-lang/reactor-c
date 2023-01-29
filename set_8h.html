@@ -99,9 +99,9 @@ Macros</h2></td></tr>
 <tr class="separator:a1aa76760517d7100306d59b92fd41a26"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aabca482a436b71f743253b204953cbe4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="set_8h.html#aabca482a436b71f743253b204953cbe4">SET_TOKEN</a>(out,  newtoken)</td></tr>
 <tr class="separator:aabca482a436b71f743253b204953cbe4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af4b2874af3da2bb85edfb3f0a57028a1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="set_8h.html#af4b2874af3da2bb85edfb3f0a57028a1">lf_set_destructor</a>(out,  dtor)&#160;&#160;&#160;<a class="el" href="reactor_8h.html#acec0cd036d176324a861cf2a2dfb5e1e">_LF_SET_DESTRUCTOR</a>(out, dtor)</td></tr>
+<tr class="memitem:af4b2874af3da2bb85edfb3f0a57028a1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="set_8h.html#af4b2874af3da2bb85edfb3f0a57028a1">lf_set_destructor</a>(out,  dtor)&#160;&#160;&#160;<a class="el" href="reactor_8h.html#a80646c4d40238d665cf42e1743e80715">_LF_SET_DESTRUCTOR</a>(out, dtor)</td></tr>
 <tr class="separator:af4b2874af3da2bb85edfb3f0a57028a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa515ab9df816c6ac8a450def4dc02f40"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="set_8h.html#aa515ab9df816c6ac8a450def4dc02f40">lf_set_copy_constructor</a>(out,  cpy_ctor)&#160;&#160;&#160;<a class="el" href="reactor_8h.html#a96ed6842ba6557e9b755f85627fbc600">_LF_SET_COPY_CONSTRUCTOR</a>(out, cpy_ctor)</td></tr>
+<tr class="memitem:aa515ab9df816c6ac8a450def4dc02f40"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="set_8h.html#aa515ab9df816c6ac8a450def4dc02f40">lf_set_copy_constructor</a>(out,  cpy_ctor)&#160;&#160;&#160;<a class="el" href="reactor_8h.html#ae61c75cd543539c62c6021a0837737d9">_LF_SET_COPY_CONSTRUCTOR</a>(out, cpy_ctor)</td></tr>
 <tr class="separator:aa515ab9df816c6ac8a450def4dc02f40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -179,7 +179,7 @@ DESCRIPTION</h1>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td>&#160;&#160;&#160;<a class="el" href="reactor_8h.html#a96ed6842ba6557e9b755f85627fbc600">_LF_SET_COPY_CONSTRUCTOR</a>(out, cpy_ctor)</td>
+          <td></td><td>&#160;&#160;&#160;<a class="el" href="reactor_8h.html#ae61c75cd543539c62c6021a0837737d9">_LF_SET_COPY_CONSTRUCTOR</a>(out, cpy_ctor)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -215,7 +215,7 @@ DESCRIPTION</h1>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td>&#160;&#160;&#160;<a class="el" href="reactor_8h.html#acec0cd036d176324a861cf2a2dfb5e1e">_LF_SET_DESTRUCTOR</a>(out, dtor)</td>
+          <td></td><td>&#160;&#160;&#160;<a class="el" href="reactor_8h.html#a80646c4d40238d665cf42e1743e80715">_LF_SET_DESTRUCTOR</a>(out, dtor)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -441,7 +441,7 @@ DESCRIPTION</h1>
 <div class="line">    _Pragma (<span class="stringliteral">&quot;Warning \&quot;&#39;SET_PRESENT&#39; is deprecated.\&quot;&quot;</span>); \</div>
 <div class="line">    _lf_set_present((<a class="code hl_struct" href="structlf__port__base__t.html">lf_port_base_t</a>*)out); \</div>
 <div class="line">} <span class="keywordflow">while</span> (0)</div>
-<div class="ttc" id="astructlf__port__base__t_html"><div class="ttname"><a href="structlf__port__base__t.html">lf_port_base_t</a></div><div class="ttdef"><b>Definition:</b> port.h:96</div></div>
+<div class="ttc" id="astructlf__port__base__t_html"><div class="ttname"><a href="structlf__port__base__t.html">lf_port_base_t</a></div><div class="ttdoc">Base type for ports. Port structs are customized types because their payloads are type specific....</div><div class="ttdef"><b>Definition:</b> lf_token.h:156</div></div>
 </div><!-- fragment --><p>Version of <a class="el" href="set_8h.html#aef602f51d34bbd214643161e425d909d">lf_set()</a> for output types given as 'type[number]'.</p>
 <p>This sets the _is_present variable corresponding to the specified output to true (which causes the array message to be sent). The values in the output are normally written directly to the array or struct before or after this is called. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">

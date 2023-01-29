@@ -384,7 +384,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Mark the given port's is_present field as true. This is_present field will later be cleaned up by _lf_start_time_step. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Mark the given port's is_present field as true. This is_present field will later be cleaned up by _lf_start_time_step. This assumes that the mutex is not held. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">port</td><td>A pointer to the port struct. </td></tr>
   </table>
