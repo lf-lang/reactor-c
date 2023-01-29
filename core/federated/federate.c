@@ -670,6 +670,19 @@ void* listen_for_upstream_messages_from_downstream_federates(void* fed_id_ptr) {
             // Received a request to close the socket.
             LF_PRINT_DEBUG("Received MSG_TYPE_CLOSE_REQUEST from federate %d.", fed_id);
             _lf_close_outbound_socket(fed_id);
+            break;
+        }
+        if (bytes_read == 0) {
+            // EOF.
+            LF_PRINT_DEBUG("Received EOF from federate %d.", fed_id);
+            _lf_close_outbound_socket(fed_id);
+            break;
+        }
+        if (bytes_read < 0) {
+            // EOF.
+            LF_PRINT_DEBUG("Error on socket from federate %d.", fed_id);
+            _lf_close_outbound_socket(fed_id);
+            break;
         }
     }
     lf_mutex_unlock(&outbound_socket_mutex);
@@ -1162,14 +1175,22 @@ instant_t get_start_time_from_rti(instant_t my_physical_time) {
 
 ////////////////////////////////Port Status Handling///////////////////////////////////////
 
-/**
- * Placeholder for a generated function that returns a pointer to the
- * trigger_t struct for the action corresponding to the specified port ID.
- * @param port_id The port ID.
- * @return A pointer to a trigger_t struct or null if the ID is out of range.
- */
-trigger_t* _lf_action_for_port(int port_id);
+extern lf_action_base_t* _lf_action_table[];
+extern size_t _lf_action_table_size;
 
+/**
+ * Return a pointer to the action struct for the action
+ * corresponding to the specified port ID.
+ * @param port_id The port ID.
+ * @return A pointer to an action struct or null if the ID is out of range.
+ */
+lf_action_base_t* _lf_action_for_port(int port_id) {
+    if (port_id < _lf_action_table_size) {
+        return _lf_action_table[port_id];
+    }
+    lf_print_error("Invalid port ID: %d", port_id);
+    return NULL;
+}
 
 /**
  * Set the status of network port with id portID.
@@ -1178,18 +1199,17 @@ trigger_t* _lf_action_for_port(int port_id);
  * @param status The network port status (port_status_t)
  */
 void set_network_port_status(int portID, port_status_t status) {
-    trigger_t* network_input_port_action = _lf_action_for_port(portID);
-    network_input_port_action->status = status;
+    lf_action_base_t* network_input_port_action = _lf_action_for_port(portID);
+    network_input_port_action->trigger->status = status;
 }
-
 
 /**
  * Mark all status fields of unknown network input ports as absent.
  */
 void mark_all_unknown_ports_as_absent() {
     for (int i = 0; i < _fed.triggers_for_network_input_control_reactions_size; i++) {
-        trigger_t* input_port_action = _lf_action_for_port(i);
-        if (input_port_action->status == unknown) {
+        lf_action_base_t* input_port_action = _lf_action_for_port(i);
+        if (input_port_action->trigger->status == unknown) {
             set_network_port_status(i, absent);
         }
     }
@@ -1201,8 +1221,8 @@ void mark_all_unknown_ports_as_absent() {
  */
 bool is_input_control_reaction_blocked() {
     for (int i = 0; i < _fed.triggers_for_network_input_control_reactions_size; i++) {
-        trigger_t* input_port_action = _lf_action_for_port(i);
-        if (input_port_action->is_a_control_reaction_waiting) {
+        lf_action_base_t* input_port_action = _lf_action_for_port(i);
+        if (input_port_action->trigger->is_a_control_reaction_waiting) {
             return true;
         }
     }
@@ -1213,7 +1233,7 @@ bool is_input_control_reaction_blocked() {
  * Update the last known status tag of all network input ports
  * to the value of `tag`, unless that the provided `tag` is less
  * than the last_known_status_tag of the port. This is called when
- * all inputs to network ports with tags up to an including `tag`
+ * all inputs to network ports with tags up to and including `tag`
  * have been received by those ports. If any update occurs and if
  * there are control reactions blocked, then this broadcasts a
  * signal to potentially unblock those control reactions.
@@ -1226,7 +1246,7 @@ bool is_input_control_reaction_blocked() {
 void update_last_known_status_on_input_ports(tag_t tag) {
     bool notify = false;
     for (int i = 0; i < _fed.triggers_for_network_input_control_reactions_size; i++) {
-        trigger_t* input_port_action = _lf_action_for_port(i);
+        lf_action_base_t* input_port_action = _lf_action_for_port(i);
         // This is called when a TAG is received.
         // But it is possible for an input port to have received already
         // a message with a larger tag (if there is an after delay on the
@@ -1234,15 +1254,15 @@ void update_last_known_status_on_input_ports(tag_t tag) {
         // is in the future and should not be rolled back. So in that case,
         // we do not update the last known status tag.
         if (lf_tag_compare(tag,
-                input_port_action->last_known_status_tag) >= 0) {
+                input_port_action->trigger->last_known_status_tag) >= 0) {
             LF_PRINT_DEBUG(
                 "Updating the last known status tag of port %d to " PRINTF_TAG ".",
                 i,
                 tag.time - lf_time_start(),
                 tag.microstep
             );
-            input_port_action->last_known_status_tag = tag;
-            if (input_port_action->is_a_control_reaction_waiting) {
+            input_port_action->trigger->last_known_status_tag = tag;
+            if (input_port_action->trigger->is_a_control_reaction_waiting) {
                 notify = true;
             }
         }
@@ -1272,7 +1292,7 @@ void update_last_known_status_on_input_ports(tag_t tag) {
  * @param portID The port ID
  */
 void update_last_known_status_on_input_port(tag_t tag, int port_id) {
-    trigger_t* input_port_action = _lf_action_for_port(port_id);
+    trigger_t* input_port_action = _lf_action_for_port(port_id)->trigger;
     if (lf_tag_compare(tag,
             input_port_action->last_known_status_tag) >= 0) {
                 if (lf_tag_compare(tag,
@@ -1317,7 +1337,7 @@ void reset_status_fields_on_input_port_triggers() {
  * indicate whether a control reaction is waiting.
  */
 void mark_control_reaction_waiting(int portID, bool waiting) {
-    trigger_t* network_input_port_action = _lf_action_for_port(portID);
+    trigger_t* network_input_port_action = _lf_action_for_port(portID)->trigger;
     network_input_port_action->is_a_control_reaction_waiting = waiting;
 }
 
@@ -1330,7 +1350,7 @@ void mark_control_reaction_waiting(int portID, bool waiting) {
  */
 port_status_t get_current_port_status(int portID) {
     // Check whether the status of the port is known at the current tag.
-    trigger_t* network_input_port_action = _lf_action_for_port(portID);
+    trigger_t* network_input_port_action = _lf_action_for_port(portID)->trigger;
     if (network_input_port_action->status == present) {
         // The status of the trigger is present.
         return present;
@@ -1729,7 +1749,7 @@ void handle_port_absent_message(int socket, int fed_id) {
 
     lf_mutex_lock(&mutex);
 #ifdef FEDERATED_DECENTRALIZED
-    trigger_t* network_input_port_action = _lf_action_for_port(port_id);
+    trigger_t* network_input_port_action = _lf_action_for_port(port_id)->trigger;
     if (lf_tag_compare(intended_tag,
             network_input_port_action->last_known_status_tag) < 0) {
         lf_mutex_unlock(&mutex);
@@ -1774,8 +1794,8 @@ void handle_message(int socket, int fed_id) {
     assert(_lf_my_fed_id == federate_id);
     LF_PRINT_DEBUG("Receiving message to port %d of length %zu.", port_id, length);
 
-    // Get the triggering action for the corerponding port
-    trigger_t* action = _lf_action_for_port(port_id);
+    // Get the triggering action for the corresponding port
+    lf_action_base_t* action = _lf_action_for_port(port_id);
 
     // Read the payload.
     // Allocate memory for the message contents.
@@ -1786,7 +1806,7 @@ void handle_message(int socket, int fed_id) {
     LF_PRINT_LOG("Message received by federate: %s. Length: %zu.", message_contents, length);
 
     LF_PRINT_DEBUG("Calling schedule for message received on a physical connection.");
-    _lf_schedule_value(&action, 0, message_contents, length);
+    _lf_schedule_value(action, 0, message_contents, length);
 }
 
 /**
@@ -1825,12 +1845,12 @@ void handle_tagged_message(int socket, int fed_id) {
     LF_PRINT_DEBUG("Receiving message to port %d of length %zu.", port_id, length);
 
     // Get the triggering action for the corresponding port
-    trigger_t* action = _lf_action_for_port(port_id);
+    lf_action_base_t* action = _lf_action_for_port(port_id);
 
     // Record the physical time of arrival of the message
-    action->physical_time_of_arrival = lf_time_physical();
+    action->trigger->physical_time_of_arrival = lf_time_physical();
 
-    if (action->is_physical) {
+    if (action->trigger->is_physical) {
         // Messages sent on physical connections should be handled via handle_message().
         lf_print_error_and_exit("Received a timed message on a physical connection.");
     }
@@ -1862,21 +1882,17 @@ void handle_tagged_message(int socket, int fed_id) {
     lf_mutex_lock(&mutex);
 
     // Create a token for the message
-    lf_token_t* message_token = create_token(action->element_size);
-    // Set up the token
-
-    message_token->value = message_contents;
-    message_token->length = length;
+    lf_token_t* message_token = _lf_new_token((token_type_t*)action, message_contents, length);
 
     // Sanity checks
 #ifdef FEDERATED_DECENTRALIZED
     if (lf_tag_compare(intended_tag,
-            action->last_known_status_tag) < 0) {
+            action->trigger->last_known_status_tag) < 0) {
         lf_print_error_and_exit("The following contract was violated for a timed message: In-order "
                              "delivery of messages over a TCP socket. Had status for " PRINTF_TAG ", got "
                              "timed message with intended tag " PRINTF_TAG ".",
-                             action->last_known_status_tag.time - start_time,
-                             action->last_known_status_tag.microstep,
+                             action->trigger->last_known_status_tag.time - start_time,
+                             action->trigger->last_known_status_tag.microstep,
                              intended_tag.time - start_time,
                              intended_tag.microstep);
     }
@@ -1906,8 +1922,8 @@ void handle_tagged_message(int socket, int fed_id) {
     // can be checked in this scenario without this race condition. The message with
     // intended_tag of 9 in this case needs to wait one microstep to be processed.
     if (lf_tag_compare(intended_tag, lf_tag()) <= 0 && // The event is meant for the current or a previous tag.
-            ((action->is_a_control_reaction_waiting && // Check if a control reaction is waiting and
-             action->status == unknown) ||             // if the status of the port is still unknown.
+            ((action->trigger->is_a_control_reaction_waiting && // Check if a control reaction is waiting and
+             action->trigger->status == unknown) ||             // if the status of the port is still unknown.
              (_lf_execution_started == false))         // Or, execution hasn't even started, so it's safe to handle this event.
     ) {
         // Since the message is intended for the current tag and a control reaction
@@ -1921,8 +1937,8 @@ void handle_tagged_message(int socket, int fed_id) {
             intended_tag.time - lf_time_start(),
             intended_tag.microstep
         );
-        action->intended_tag = intended_tag;
-        _lf_insert_reactions_for_trigger(action, message_token);
+        action->trigger->intended_tag = intended_tag;
+        _lf_insert_reactions_for_trigger(action->trigger, message_token);
 
         // Set the status of the port as present here to inform the network input
         // control reactions know that they no longer need to block. The reason for
@@ -1949,7 +1965,7 @@ void handle_tagged_message(int socket, int fed_id) {
         }
 
         LF_PRINT_LOG("Calling schedule with tag " PRINTF_TAG ".", intended_tag.time - start_time, intended_tag.microstep);
-        schedule_message_received_from_network_already_locked(action, intended_tag, message_token);
+        schedule_message_received_from_network_already_locked(action->trigger, intended_tag, message_token);
     }
 
 

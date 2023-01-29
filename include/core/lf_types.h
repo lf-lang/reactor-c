@@ -42,6 +42,7 @@
 #include "utils/pqueue.h"
 #include "platform.h"
 #include "tag.h"
+#include "lf_token.h"
 
 /**
  * ushort type. Redefine here for portability if sys/types.h is not included.
@@ -66,13 +67,6 @@ typedef unsigned short int ushort;
  * `defer` policy is fallen back to.
  */
 typedef enum {defer, drop, replace} lf_spacing_policy_t;
-
-/**
- * An enum that enables the C core library to
- * ignore freeing the void* inside a token if the void*
- * value is garbage collected by an external controller
- */
-typedef enum {no=0, token_and_value, token_only} ok_to_free_t;
 
 /**
  * Status of a given port at a given logical time.
@@ -134,57 +128,6 @@ typedef void(*reaction_function_t)(void*);
 
 /** Trigger struct representing an output, timer, action, or input. See below. */
 typedef struct trigger_t trigger_t;
-
-/**
- * Token type for dynamically allocated arrays and structs sent as messages.
- *
- * In the C LF target, a type for an output that ends in '*' is
- * treated specially. The value carried by the output is assumed
- * to be in dynamically allocated memory, and, using reference
- * counting, after the last downstream reader of the value has
- * finished, the memory will be freed.  To prevent this freeing
- * from occurring, the output type can be specified using the
- * syntax {= type* =}; this will not be treated as dynamically
- * allocated memory. Alternatively, the programmer can give a typedef
- * in the preamble that masks the trailing *.
- *
- * This struct is the wrapper around the dynamically allocated memory
- * that carries the message.  The message can be an array of values,
- * where the size of each value is element_size (in bytes). If it is
- * not an array, the length == 1.
- */
-typedef struct lf_token_t {
-    /** Pointer to dynamically allocated memory containing a message. */
-    void* value;
-    /** Size of the struct or array element. */
-    size_t element_size;
-    /** Length of the array or 1 for a struct. */
-    size_t length;
-    /** The number of input ports that have not already reacted to the message. */
-    int ref_count;
-    /** The destructor or NULL to use the default free(). */
-    void (*destructor) (void* value);
-    /** The copy constructor or NULL to use memcpy. */
-    void* (*copy_constructor) (void* value);
-    /**
-     * Indicator of whether this token is expected to be freed.
-     * Tokens that are created at the start of execution and associated with output
-     * ports or actions are not expected to be freed. They can be reused instead.
-     */
-    ok_to_free_t ok_to_free;
-    /** For recycling, a pointer to the next token in the recycling bin. */
-    struct lf_token_t* next_free;
-} lf_token_t;
-
-/** A struct with a pointer to a lf_token_t and an _is_present variable
- *  for use to initialize actions in start_time_step().
- */
-typedef struct token_present_t {
-    lf_token_t** token;
-    port_status_t* status; // FIXME: This structure is used to present the status of tokens
-                           // for both ports and actions.
-    bool reset_is_present; // True to set is_present to false after calling _lf_done_using().
-} token_present_t;
 
 /**
  * Reaction activation record to push onto the reaction queue.
@@ -254,20 +197,17 @@ struct event_t {
 
 /**
  * Trigger struct representing an output, timer, action, or input.
- * Instances of this struct are put onto the event queue (event_q).
  */
 struct trigger_t {
+    token_template_t tmplt;   // Type and token information (template is a C++ keyword).
     reaction_t** reactions;   // Array of pointers to reactions sensitive to this trigger.
     int number_of_reactions;  // Number of reactions sensitive to this trigger.
     bool is_timer;            // True if this is a timer (a special kind of action), false otherwise.
     interval_t offset;        // Minimum delay of an action. For a timer, this is also the maximum delay.
     interval_t period;        // Minimum interarrival time of an action. For a timer, this is also the maximal interarrival time.
-    lf_token_t* token;           // Pointer to a token wrapping the payload (or NULL if there is none).
     bool is_physical;         // Indicator that this denotes a physical action.
     event_t* last;            // Pointer to the last event that was scheduled for this action.
     lf_spacing_policy_t policy;          // Indicates which policy to use when an event is scheduled too early.
-    size_t element_size;      // The size of the payload, if there is one, zero otherwise.
-                              // If the payload is an array, then this is the size of an element of the array.
     port_status_t status;     // Determines the status of the port at the current logical time. Therefore, this
                               // value needs to be reset at the beginning of each logical time.
                               //
@@ -304,6 +244,8 @@ struct trigger_t {
  * An allocation record that is used by a destructor for a reactor
  * to free memory that has been dynamically allocated for the particular
  * instance of the reactor.  This will be an element of linked list.
+ * If the indirect field is true, then the allocated pointer points to
+ * pointer to allocated memory, rather than directly to the allocated memory.
  */
 typedef struct allocation_record_t {
 	void* allocated;
@@ -326,5 +268,20 @@ typedef struct self_base_t {
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif
 } self_base_t;
+
+/**
+ * Action structs are customized types because their payloads are type
+ * specific.  This struct represents their common features. Given any
+ * pointer to an action struct, it can be cast to lf_action_base_t,
+ * to token_template_t, or to token_type_t to access these common fields.
+ * IMPORTANT: If this is changed, it must also be changed in
+ * CActionGenerator.java generateAuxiliaryStruct().
+ */
+typedef struct lf_action_base_t {
+	token_template_t tmplt;    // Type and token information (template is a C++ keyword).
+	bool is_present;
+	bool has_value;
+	trigger_t* trigger;
+} lf_action_base_t;
 
 #endif
