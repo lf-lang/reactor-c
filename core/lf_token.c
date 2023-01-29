@@ -64,7 +64,7 @@ static hashset_t _lf_token_recycling_bin = NULL;
 static hashset_t _lf_token_templates = NULL;
 
 ////////////////////////////////////////////////////////////////////
-//// Functions that user's may call.
+//// Functions that users may call.
 
 lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len) {
     return _lf_new_token((token_type_t*)port_or_action, val, len);
@@ -77,12 +77,6 @@ lf_token_t* lf_writable_copy(lf_port_base_t* port) {
     if (token == NULL) return NULL;
     LF_PRINT_DEBUG("lf_writable_copy: Requesting writable copy of token %p with reference count %zu.",
             token, token->ref_count);
-    // FIXME: token_template_t needs to be augmented with a field
-    // single_reader that is set to true in the code generator
-    // for an output port or action that triggers exactly one
-    // downstream reaction. That should be tested here.
-    // Search for where "dominating" field of ReactionInstance is populated.
-    // For now, always copy. Or use num_destinations field.
     if (port->num_destinations == 1 && token->ref_count == 1) {
         LF_PRINT_DEBUG("lf_writable_copy: Avoided copy because there "
                 "is only one reader and the reference count is %zu.", token->ref_count);

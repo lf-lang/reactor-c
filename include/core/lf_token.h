@@ -48,6 +48,8 @@
  * pointers to a destructor and a copy constructor.
  * 
  * A "template token" is one pointed to by a token_template_t (an action or a port).
+ * This template token ensures that port an action values persist until they are
+ * overwritten, and hence they can be read at a tag even if not present.
  * Such a token will persist in the template until it is overwritten by another
  * token. Every token_template_t gets initialized with such a token.
  * Before that token is used the first time, its reference count will be 0.
