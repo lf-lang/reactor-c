@@ -139,7 +139,7 @@ int lf_critical_section_enter() {
         // TODO: Do we need to check whether the interrupts were enabled to
         //  begin with? AFAIK there is no Arduino API for that 
         #if BOARD==MBED
-            core_util_critical_section_enter(); //MBED Boards use an RTOS, so we use a specific call to enter a critical section.
+            //core_util_critical_section_enter(); //MBED Boards use an RTOS, so we use a specific call to enter a critical section.
         #else
             noInterrupts();
         #endif
@@ -163,7 +163,7 @@ int lf_critical_section_exit() {
     }
     if (--_lf_num_nested_critical_sections == 0) {
         #if BOARD==MBED
-            core_util_critical_section_exit(); //MBED Boards use an RTOS, so we use a specific call to exit a critical section.
+            //core_util_critical_section_exit(); //MBED Boards use an RTOS, so we use a specific call to exit a critical section.
         #else
             interrupts();
         #endif

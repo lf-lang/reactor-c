@@ -57,7 +57,8 @@
 #include <time.h>
 
 #include "lf_types.h"
-#include "modes.h" // Modal model support
+#include "lf_token.h"
+#include "modes.h"     // Modal model support
 #include "platform.h"  // Platform-specific times and APIs
 #include "port.h"
 #include "pqueue.h"
@@ -69,11 +70,6 @@
 #define CONSTRUCTOR(classname) (new_ ## classname)
 #define SELF_STRUCT_T(classname) (classname ## _self_t)
 
-/**
- * Prototype for the internal API. @see reactor_common.c
- **/
-lf_token_t* _lf_initialize_token_with_value(lf_token_t* token, void* value, size_t length);
-
 ////////////////////////////////////////////////////////////
 //// Macros for producing outputs.
 
@@ -83,7 +79,20 @@ lf_token_t* _lf_initialize_token_with_value(lf_token_t* token, void* value, size
 // problems with if ... else statements that do not use braces around the
 // two branches.
 
+// Declarations for functions used by the macros.
+
+/**
+ * Mark the given port's is_present field as true. This is_present field
+ * will later be cleaned up by _lf_start_time_step.
+ * This assumes that the mutex is not held.
+ * @param port A pointer to the port struct.
+ */
 void _lf_set_present(lf_port_base_t* port);
+
+// NOTE: Ports passed to these macros can be cast to:
+// lf_port_base_t: which has the field bool is_present (and more);
+// token_template_t: which has a lf_token_t* token field; or
+// token_type_t: Which has element_size, destructor, and copy_constructor fields.
 
 /**
  * @brief Forward declaration for the executable preamble;
@@ -111,19 +120,10 @@ do { \
     /* even if it is a literal */ \
     out->value = val; \
     _lf_set_present((lf_port_base_t*)out); \
-    if (out->token != NULL) { \
+    if (((token_template_t*)out)->token != NULL) { \
         /* The cast "*((void**) &out->value)" is a hack to make the code */ \
-        /* compile with non-token types where val is not a pointer. */ \
-        lf_token_t* token = _lf_initialize_token_with_value(out->token, *((void**) &out->value), 1); \
-        token->ref_count = out->num_destinations; \
-        out->token = token; \
-        out->token->ok_to_free = token_and_value; \
-        if (out->destructor != NULL) { \
-            out->token->destructor = out->destructor; \
-        } \
-        if (out->copy_constructor != NULL) { \
-            out->token->copy_constructor = out->copy_constructor; \
-        } \
+        /* compile with non-token types where value is not a pointer. */ \
+        lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, *((void**) &out->value), 1); \
     } \
 } while(0)
 
@@ -144,18 +144,14 @@ do { \
 #define _LF_SET_ARRAY(out, val, length) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
-    token->ref_count = out->num_destinations; \
-    out->token = token; \
+    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
     out->value = token->value; \
 } while(0)
 #else
 #define _LF_SET_ARRAY(out, val, length) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token_with_value(out->token, val, length); \
-    token->ref_count = out->num_destinations; \
-    out->token = token; \
+    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
     out->value = static_cast<decltype(out->value)>(token->value); \
 } while(0)
 #endif
@@ -178,17 +174,15 @@ do { \
 #define _LF_SET_NEW(out) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
+    lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
     out->value = token->value; \
-    out->token = token; \
 } while(0)
 #else
 #define _LF_SET_NEW(out) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_set_new_array_impl(out->token, 1, out->num_destinations); \
+    lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
     out->value = static_cast<decltype(out->value)>(token->value); \
-    out->token = token; \
 } while(0)
 #endif // __cplusplus
 
@@ -209,18 +203,16 @@ do { \
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
+    lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
     out->value = token->value; \
-    out->token = token; \
     out->length = len; \
 } while(0)
 #else
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_set_new_array_impl(out->token, len, out->num_destinations); \
+    lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
     out->value = static_cast<decltype(out->value)>(token->value); \
-    out->token = token; \
     out->length = len; \
 } while(0)
 #endif
@@ -251,18 +243,16 @@ do { \
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
+    _lf_replace_template_token((token_template_t*)out, newtoken); \
     out->value = newtoken->value; \
-    out->token = newtoken; \
-    newtoken->ref_count += out->num_destinations; \
     out->length = newtoken->length; \
 } while(0)
 #else
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
+    _lf_replace_template_token((token_template_t*)out, newtoken); \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
-    out->token = newtoken; \
-    newtoken->ref_count += out->num_destinations; \
     out->length = newtoken->length; \
 } while(0)
 #endif
@@ -274,26 +264,26 @@ do { \
  *
  * @param out The output port (by name) or input of a contained
  *            reactor in form input_name.port_name.
- * @param dtor A pointer to a void function that takes a pointer argument
+ * @param destruct A pointer to a void function that takes a pointer argument
  *             or NULL to use the default void free(void*) function.
  */
-#define _LF_SET_DESTRUCTOR(out, dtor) \
+#define _LF_SET_DESTRUCTOR(out, destruct) \
 do { \
-    out->destructor = dtor; \
+    ((token_type_t*)out)->destructor = destruct; \
 } while(0)
 
 /**
- * Set the destructor used to copy construct "token->value" received
- * by "in" if "in" is mutable.
+ * Set the constructor used to copy construct "token->value" received
+ * by a downstream mutable input.
  *
  * @param out The output port (by name) or input of a contained
  *            reactor in form input_name.port_name.
- * @param cpy_ctor A pointer to a void* function that takes a pointer argument
+ * @param constructor A pointer to a void* function that takes a pointer argument
  *                 or NULL to use the memcpy operator.
  */
-#define _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor) \
+#define _LF_SET_COPY_CONSTRUCTOR(out, constructor) \
 do { \
-    out->copy_constructor = cpy_ctor; \
+    ((token_type_t*)out)->copy_constructor = constructor; \
 } while(0)
 
 /**
@@ -450,15 +440,6 @@ void termination(void);
 bool _lf_trigger_shutdown_reactions(void);
 
 /**
- * Create a new token and initialize it.
- * The value pointer will be NULL and the length will be 0.
- * @param element_size The size of an element carried in the payload or
- *  0 if there is no payload.
- * @return A pointer to a new or recycled lf_token_t struct.
- */
-lf_token_t* create_token(size_t element_size);
-
-/**
  * Schedule the specified action with an integer value at a later logical
  * time that depends on whether the action is logical or physical and
  * what its parameter values are. This wraps a copy of the integer value
@@ -468,7 +449,7 @@ lf_token_t* create_token(size_t element_size);
  * @param value The value to send.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule_int(void* action, interval_t extra_delay, int value);
+trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value);
 
 /**
  * Create a dummy event to be used as a spacer in the event queue.
@@ -503,9 +484,6 @@ event_t* _lf_create_dummy_event(trigger_t* trigger, instant_t time, event_t* nex
  * current physical time and the time it would be assigned if it
  * were a logical action.
  *
- * The token is required to be either NULL or a pointer to
- * a token created using create_token().
- *
  * There are three conditions under which this function will not
  * actually put an event on the event queue and decrement the reference count
  * of the token (if there is one), which could result in the payload being
@@ -525,7 +503,7 @@ event_t* _lf_create_dummy_event(trigger_t* trigger, instant_t time, event_t* nex
  * @param token The token to carry the payload or null for no payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token);
+trigger_handle_t _lf_schedule_token(lf_action_base_t* action, interval_t extra_delay, lf_token_t* token);
 
 /**
  * Variant of schedule_token that creates a token to carry the specified value.
@@ -539,7 +517,7 @@ trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_tok
  *  scalar and 0 for no payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* value, size_t length);
+trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_delay, void* value, size_t length);
 
 /**
  * Schedule an action to occur with the specified value and time offset
@@ -554,7 +532,7 @@ trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* 
  * @param length The length, if an array, 1 if a scalar, and 0 if value is NULL.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value, size_t length);
+trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, void* value, size_t length);
 
 /**
  * For a federated execution, send a STOP_REQUEST message

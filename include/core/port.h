@@ -67,6 +67,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include "lf_token.h"     // Defines token types and lf_port_base_t, lf_sparse_io_record
 #include "utils/vector.h"
 
 /** Threshold for width of multiport s.t. sparse reading is supported. */
@@ -77,27 +78,6 @@
  * sparse input record for a multiport.
  */
 #define LF_SPARSE_CAPACITY_DIVIDER 10
-
-/**
- * A record of the subset of channels of a multiport that have present inputs.
- */
-typedef struct lf_sparse_io_record_t {
-	int size;  			// -1 if overflowed. 0 if empty.
-	size_t capacity;    // Max number of writes to be considered sparse.
-	size_t present_channels[];  // Array of channel indices that are present.
-} lf_sparse_io_record_t;
-
-/**
- * Port structs are customized types because their payloads are type
- * specific. This struct represents their common features. Given any
- * pointer to a port struct, it can be cast to lf_port_base_t and then
- * these common fields can be accessed.
- */
-typedef struct lf_port_base_t {
-	bool is_present;
-	lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
-	int destination_channel;              // -1 if there is no destination.
-} lf_port_base_t;
 
 /**
  * An iterator over a record of the subset of channels of a multiport that

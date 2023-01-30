@@ -113,7 +113,7 @@ void clean_in_transit_message_record_up_to_tag(in_transit_message_record_q_t* qu
             ) <= 0
         ) {
             LF_PRINT_DEBUG(
-                "RTI: Removed a message with tag (%ld, %u) from the list of in-transit messages.",
+                "RTI: Removed a message with tag (" PRINTF_TIME ", %u) from the list of in-transit messages.",
                 head_of_in_transit_messages->tag.time - lf_time_start(),
                 head_of_in_transit_messages->tag.microstep
             );

@@ -99,9 +99,6 @@ trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value
  * current physical time and the time it would be assigned if it
  * were a logical action.
  *
- * The token is required to be either NULL or a pointer to
- * a token created using create_token().
- *
  * There are three conditions under which this function will not
  * actually put an event on the event queue and decrement the reference count
  * of the token (if there is one), which could result in the payload being
@@ -144,7 +141,7 @@ trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, 
 /**
  * Variant of lf_schedule_token that creates a token to carry the specified value.
  * The value is required to be malloc'd memory with a size equal to the
- * element_size of the specifies action times the length parameter.
+ * element_size of the specified action times the length parameter.
  *
  * See lf_schedule_token(), which this uses, for details.
  *

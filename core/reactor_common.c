@@ -52,22 +52,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "trace.h"
 #include "util.h"
 #include "vector.h"
-
-
-/**
- * The flag OK_TO_FREE is used to indicate whether
- * the void* value in token_t should be freed or not.
- * In particular, in the Python target, the value should
- * not be freed because Python handles garbage collection.
- * But the token will still need to be freed (unless it's a
- * template token).
- */
-#ifdef _LF_GARBAGE_COLLECTED
-#define OK_TO_FREE token_only
-#else
-#define OK_TO_FREE token_and_value
-#endif
-
+#include "hashset/hashset.h"
+#include "hashset/hashset_itr.h"
 
 ////////////////////////////////////////////////////////////
 //// Global variables :(
@@ -140,17 +126,6 @@ int _lf_is_present_fields_abbreviated_size = 0;
 tag_t** _lf_intended_tag_fields = NULL;
 int _lf_intended_tag_fields_size = 0;
 
-// Define the array of pointers to the token fields of all the
-// actions and inputs that need to have their reference counts
-// decremented at the start of each time step.
-// NOTE: This may have to be resized for a mutation.
-token_present_t* _lf_tokens_with_ref_count = NULL;
-// Dynamically created list of tokens that are copies made
-// as a result of mutable inputs. These need to also have
-// _lf_done_using() called on them at the start of the next time step.
-lf_token_t* _lf_more_tokens_with_ref_count = NULL;
-int _lf_tokens_with_ref_count_size = 0;
-
 /**
  * Global STP offset uniformly applied to advancement of each
  * time step in federated execution. This can be retrieved in
@@ -180,6 +155,7 @@ vector_t _lf_sparse_io_record_sizes = {
  * @param size The size of each item.
  * @param head Pointer to the head of a list on which to record
  *  the allocation, or NULL to not record it.
+ * @return A pointer to the allocated memory.
  */
 void* _lf_allocate(
         size_t count, size_t size, struct allocation_record_t** head) {
@@ -215,9 +191,9 @@ void* _lf_new_reactor(size_t size) {
 }
 
 /**
- * Free memory allocated using
- * {@link _lf_allocate(size_t, size_t, allocation_record_t**)}
- * and mark the list empty by setting `*head` to NULL.
+ * Free memory on the specified allocation record, e.g. allocated by
+ * {@link _lf_allocate(size_t, size_t, allocation_record_t**)}.
+ * Mark the list empty by setting `*head` to NULL.
  * @param head Pointer to the head of a list on which to record
  *  the allocation, or NULL to not record it.
  */
@@ -225,8 +201,10 @@ void _lf_free(struct allocation_record_t** head) {
     if (head == NULL) return;
     struct allocation_record_t* record = *head;
     while (record != NULL) {
+        LF_PRINT_DEBUG("Freeing memory at %p", record->allocated);
         free(record->allocated);
         struct allocation_record_t* tmp = record->next;
+    	LF_PRINT_DEBUG("Freeing allocation record at %p", record);
         free(record);
         record = tmp;
     }
@@ -310,126 +288,6 @@ static pqueue_t* next_q;      // For temporarily storing the next event lined
 static trigger_handle_t _lf_handle = 1;
 
 /**
- * Counter used to issue a warning if memory is
- * allocated for message payloads and never freed.
- */
-static int _lf_count_payload_allocations;
-
-/**
- * Counter used to issue a warning if memory is
- * allocated for tokens and never freed. Note that
- * every trigger will have one token allocated for
- * it. That token is not counted because it is not
- * expected to be freed.
- */
-static int _lf_count_token_allocations;
-
-/**
- * Tokens always have the same size in memory so they are easily recycled.
- * When a token is freed, this pointer will be updated to point to it.
- * Freed tokens are chained using their next_free field.
- */
-static lf_token_t* _lf_token_recycling_bin = NULL;
-
-/** Count of the number of tokens in the recycling bin. */
-static int _lf_token_recycling_bin_size = 0;
-
-/**
- * To allow a system to recover from burst of activity, the token recycling
- * bin has a limited size. When it becomes full, token are freed using free().
- */
-#define _LF_TOKEN_RECYCLING_BIN_SIZE_LIMIT 512
-
-/** Possible return values for _lf_done_using. */
-typedef enum token_freed {
-    NOT_FREED,     // Nothing was freed.
-    VALUE_FREED,   // The value (payload) was freed.
-    TOKEN_FREED    // The value and the token were freed.
-} token_freed;
-
-
-/**
- * Determine which part of the token should be freed and
- * free each part correspondingly.
- *
- * @param token Pointer to a token.
- * @return NOT_FREED if nothing was freed, VALUE_FREED if the value
- *  was freed, and TOKEN_FREED if both the value and the token were
- *  freed.
- */
-static token_freed _lf_free_token(lf_token_t* token) {
-    if (token == NULL) {
-        return NOT_FREED;
-    }
-    token_freed result = NOT_FREED;
-    if (token->value != NULL) {
-        // Count frees to issue a warning if this is never freed.
-        // Do not free the value field if it is garbage collected and token's
-        // ok_to_free field is not "token_and_value".
-        _lf_count_payload_allocations--;
-        // Free the value field (the payload).
-        // First check whether the value field is garbage collected (e.g. in the
-        // Python target), in which case the payload should not be freed.
-        if (OK_TO_FREE != token_only
-                && token->value != NULL
-                && token->ok_to_free != token_only
-            ) {
-            LF_PRINT_DEBUG("_lf_free_token: Freeing allocated memory for payload (token value): %p",
-                    token->value);
-            if (token->destructor == NULL) {
-                free(token->value);
-            } else {
-                token->destructor(token->value);
-            }
-        }
-        token->value = NULL;
-        result = VALUE_FREED;
-    }
-    // Tokens that are created at the start of execution and associated with
-    // output ports or actions are pointed to by those actions and output
-    // ports and should not be freed. They are expected to be reused instead.
-    if (token->ok_to_free) {
-        // Need to free the lf_token_t struct also.
-        if (_lf_token_recycling_bin_size < _LF_TOKEN_RECYCLING_BIN_SIZE_LIMIT) {
-            // Recycle instead of freeing.
-            token->next_free = _lf_token_recycling_bin;
-            _lf_token_recycling_bin = token;
-            _lf_token_recycling_bin_size++;
-        } else {
-            // Recycling bin is full.
-            free(token);
-        }
-        _lf_count_token_allocations--;
-        LF_PRINT_DEBUG("_lf_free_token: Freeing allocated memory for token: %p", token);
-        result = TOKEN_FREED;
-    }
-    return result;
-}
-
-/**
- * Decrement the reference count of the specified token.
- * If the reference count hits 0, free the memory for the value
- * carried by the token, and, if the token is not also the template
- * token of its trigger, free the token.
- * @param token Pointer to a token.
- * @return NOT_FREED if nothing was freed, VALUE_FREED if the value
- *  was freed, and TOKEN_FREED if both the value and the token were
- *  freed.
- */
-static token_freed _lf_done_using(lf_token_t* token) {
-    if (token == NULL) {
-        return NOT_FREED;
-    }
-    if (token->ref_count == 0) {
-        lf_print_warning("Token being freed that has already been freed: %p", token);
-        return NOT_FREED;
-    }
-    token->ref_count--;
-    LF_PRINT_DEBUG("_lf_done_using: token = %p, ref_count = %d.", token, token->ref_count);
-    return token->ref_count == 0 ? _lf_free_token(token) : NOT_FREED;
-}
-
-/**
  * Trigger 'reaction'.
  *
  * @param reaction The reaction.
@@ -448,21 +306,9 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number);
  */
 void _lf_start_time_step() {
     LF_PRINT_LOG("--------- Start time step at tag " PRINTF_TAG ".", current_tag.time - start_time, current_tag.microstep);
-    for(int i = 0; i < _lf_tokens_with_ref_count_size; i++) {
-        if (*(_lf_tokens_with_ref_count[i].status) == present) {
-            if (_lf_tokens_with_ref_count[i].reset_is_present
-                    && _lf_tokens_with_ref_count[i].status != NULL) {
-                *(_lf_tokens_with_ref_count[i].status) = absent;
-            }
-            _lf_done_using(*(_lf_tokens_with_ref_count[i].token));
-        }
-    }
-    // Also handle dynamically created tokens for mutable inputs.
-    while (_lf_more_tokens_with_ref_count != NULL) {
-        lf_token_t* next = _lf_more_tokens_with_ref_count->next_free;
-        _lf_done_using(_lf_more_tokens_with_ref_count);
-        _lf_more_tokens_with_ref_count = next;
-    }
+    // Handle dynamically created tokens for mutable inputs.
+    _lf_free_token_copies();
+
     bool** is_present_fields = _lf_is_present_fields_abbreviated;
     int size = _lf_is_present_fields_abbreviated_size;
     if (_lf_is_present_fields_abbreviated_size > _lf_is_present_fields_size) {
@@ -498,116 +344,6 @@ void _lf_start_time_step() {
     reset_status_fields_on_input_port_triggers();
 #endif
     _lf_is_present_fields_abbreviated_size = 0;
-}
-
-/**
- * Create a new lf_token_t struct and initialize it for assignment to a trigger.
- * The value pointer will be NULL and the length will be 0.
- * This function is for tokens that are not expected to be freed, and
- * reactors are not expected to use it. It is used by the code generator
- * to initialize actions with tokens.
- * @param element_size The size of an element carried in the payload or
- *  0 if there is no payload.
- * @return A new or recycled lf_token_t struct.
- */
-lf_token_t* _lf_create_token(size_t element_size) {
-    lf_token_t* token;
-    // Check the recycling bin.
-    if (_lf_token_recycling_bin != NULL) {
-        token = _lf_token_recycling_bin;
-        _lf_token_recycling_bin = token->next_free;
-        _lf_token_recycling_bin_size--;
-        LF_PRINT_DEBUG("_lf_create_token: Retrieved token from the recycling bin: %p", token);
-    } else {
-        token = (lf_token_t*)malloc(sizeof(lf_token_t));
-        LF_PRINT_DEBUG("_lf_create_token: Allocated memory for token: %p", token);
-    }
-    token->value = NULL;
-    token->length = 0;
-    token->element_size = element_size;
-    token->ref_count = 0;
-    token->destructor = NULL;
-    token->copy_constructor = NULL;
-    token->ok_to_free = no;
-    token->next_free = NULL;
-    return token;
-}
-
-/**
- * Create a new token and initialize it.
- * The value pointer will be NULL and the length will be 0.
- * @param element_size The size of an element carried in the payload or
- *  0 if there is no payload.
- * @return A new or recycled lf_token_t struct.
- *
- * @note For multithreaded applications, the caller must hold
- *  the mutex lock because it accesses global variables.
- */
-lf_token_t* create_token(size_t element_size) {
-    LF_PRINT_DEBUG("create_token: element_size: %zu", element_size);
-    _lf_count_token_allocations++;
-    lf_token_t* result = _lf_create_token(element_size);
-    result->ok_to_free = OK_TO_FREE;
-    return result;
-}
-
-/**
- * Return a token for storing an array of the specified length
- * with the specified value containing the array.
- * If the specified token is available (its reference count is 0),
- * then reuse it. Otherwise, create a new token.
- * The element_size for elements of the array is specified by
- * the specified token.
- *
- * @param token The token to populate, if it is available (must not be NULL).
- * @param value The value of the array.
- * @param length The length of the array, or 1 if it is not an array.
- * @return Either the specified token or a new one, in each case with a value
- *  field pointing to newly allocated memory.
- */
-lf_token_t* _lf_initialize_token_with_value(lf_token_t* token, void* value, size_t length) {
-    assert(token != NULL);
-
-    // If necessary, allocate memory for a new lf_token_t struct.
-    // This assumes that the lf_token_t* in the self struct has been initialized to NULL.
-    lf_token_t* result = token;
-    LF_PRINT_DEBUG("Initializing a token %p with ref_count %d.", token, token->ref_count);
-    if (token->ref_count > 0) {
-        // The specified token is not available.
-        result = create_token(token->element_size);
-    }
-    result->value = value;
-    result->length = length;
-    return result;
-}
-
-/**
- * Return a token for storing an array of the specified length
- * with new memory allocated (using malloc) for storing that array.
- * If the specified token is available (its reference count is 0),
- * then reuse it. Otherwise, create a new token.
- * The element_size for elements of the array is specified by
- * the specified token. The caller should populate the value and
- * ref_count field of the returned token after this returns.
- *
- * @param token The token to populate, if it is available (must not be NULL).
- * @param length The length of the array, or 1 if it is not an array.
- * @return Either the specified token or a new one, in each case with a value
- *  field pointing to newly allocated memory.
- */
-lf_token_t* _lf_initialize_token(lf_token_t* token, size_t length) {
-    assert(token != NULL);
-
-    // Allocate memory for storing the array.
-    void* value = malloc(token->element_size * length);
-    
-    if (value == NULL) {
-        lf_print_error_and_exit("Out of memory");
-    }
-
-    // Count allocations to issue a warning if this is never freed.
-    _lf_count_payload_allocations++;
-    return _lf_initialize_token_with_value(token, value, length);
 }
 
 /**
@@ -709,21 +445,13 @@ void _lf_pop_events() {
         // Copy the token pointer into the trigger struct so that the
         // reactions can access it. This overwrites the previous template token,
         // for which we decrement the reference count.
-        if (event->trigger->token != event->token
-                && event->trigger->token != NULL) {
-            // Mark the previous one ok_to_free so we don't get a memory leak.
-            event->trigger->token->ok_to_free = OK_TO_FREE;
-            // Free the token if its reference count is zero. Since _lf_done_using
-            // decrements the reference count, first increment it here.
-            event->trigger->token->ref_count++;
-            _lf_done_using(event->trigger->token);
-        }
-        event->trigger->token = token;
-        // Prevent this token from being freed. It is the new template.
-        // This might be null if there are no reactions to the action.
-        if (token != NULL) {
-            token->ok_to_free = no;
-        }
+        _lf_replace_template_token((token_template_t*)event->trigger, token);
+
+        // Decrement the reference count because the event queue no longer needs this token.
+        // This has to be done after the above call to _lf_replace_template_token because
+        // that call will increment the reference count and we need to not let the token be
+        // freed prematurely.
+        _lf_done_using(token);
 
         // Mark the trigger present.
         event->trigger->status = present;
@@ -922,6 +650,8 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
     // Increment the reference count of the token.
     if (token != NULL) {
         token->ref_count++;
+        LF_PRINT_DEBUG("_lf_schedule_at_tag: Incremented ref_count of %p to %zu.",
+                token, token->ref_count);
     }
 
     // Do not schedule events if the tag is after the stop tag
@@ -1127,17 +857,19 @@ trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_tok
     LF_PRINT_DEBUG("_lf_schedule: scheduling trigger %p with delay " PRINTF_TIME " and token %p.",
             trigger, extra_delay, token);
 
+    // Increment the reference count of the token.
+    if (token != NULL) {
+        token->ref_count++;
+        LF_PRINT_DEBUG("_lf_schedule: Incremented ref_count of %p to %zu.",
+                token, token->ref_count);
+    }
+
     // The trigger argument could be null, meaning that nothing is triggered.
     // Doing this after incrementing the reference count ensures that the
     // payload will be freed, if there is one.
     if (trigger == NULL) {
         _lf_done_using(token);
         return 0;
-    }
-
-    // Increment the reference count of the token.
-    if (token != NULL) {
-        token->ref_count++;
     }
 
     // Compute the tag (the logical timestamp for the future event).
@@ -1383,11 +1115,6 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
     }
 #endif
 
-    // Increment the reference count of the token.
-    if (token != NULL) {
-        token->ref_count++;
-    }
-
     // Check if the trigger has violated the STP offset
     bool is_STP_violated = false;
 #ifdef FEDERATED
@@ -1411,20 +1138,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
     // Copy the token pointer into the trigger struct so that the
     // reactions can access it. This overwrites the previous template token,
     // for which we decrement the reference count.
-    if (trigger->token != token && trigger->token != NULL) {
-        // Mark the previous one ok_to_free so we don't get a memory leak.
-        trigger->token->ok_to_free = OK_TO_FREE;
-        // Free the token if its reference count is zero. Since _lf_done_using
-        // decrements the reference count, first increment it here.
-        trigger->token->ref_count++;
-        _lf_done_using(trigger->token);
-    }
-    trigger->token = token;
-    // Prevent this token from being freed. It is the new template.
-    // This might be null if there are no reactions to the action.
-    if (token != NULL) {
-        token->ok_to_free = no;
-    }
+    _lf_replace_template_token((token_template_t*)trigger, token);
 
     // Mark the trigger present.
     trigger->status = present;
@@ -1454,32 +1168,15 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
 }
 
 /**
- * Utility function to convert a pointer to action struct into
- * a pointer to the corresponding trigger struct.  The type of the
- * action struct is defined by a generated typedef and differs for different
- * actions, which is why the point to the action struct is a void*.
- * All such structs, however, share a common feature, which is tht the
- * first entry in the struct is a pointer to the corresponding trigger_t
- * struct.  This function uses this fact to return a pointer to that
- * trigger_t struct.
- * @param action A pointer to an action struct.
- * @return A pointer to the corresponding trigger struct.
- */
-trigger_t* _lf_action_to_trigger(void* action) {
-    return *((trigger_t**)action);
-}
-
-/**
  * Schedule the specified trigger at current_tag.time plus the offset of the
  * specified trigger plus the delay.
  * See reactor.h for documentation.
  */
-trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-    trigger_t* trigger = _lf_action_to_trigger(action);
+trigger_handle_t _lf_schedule_token(lf_action_base_t* action, interval_t extra_delay, lf_token_t* token) {
     if (lf_critical_section_enter() != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
-    int return_value = _lf_schedule(trigger, extra_delay, token);
+    int return_value = _lf_schedule(action->trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
     lf_notify_of_event();
     if(lf_critical_section_exit() != 0) {
@@ -1493,25 +1190,24 @@ trigger_handle_t _lf_schedule_token(void* action, interval_t extra_delay, lf_tok
  * with a copy of the specified value.
  * See reactor.h for documentation.
  */
-trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value, size_t length) {
+trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, void* value, size_t length) {
     if (value == NULL) {
         return _lf_schedule_token(action, offset, NULL);
     }
-    trigger_t* trigger = _lf_action_to_trigger(action);
-
-    if (trigger == NULL || trigger->token == NULL || trigger->token->element_size <= 0) {
-        lf_print_error("schedule: Invalid trigger or element size.");
+    token_template_t* template = (token_template_t*)action;
+    if (action == NULL || template->type.element_size <= 0) {
+        lf_print_error("schedule: Invalid element size.");
         return -1;
     }
     if (lf_critical_section_enter() != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
     // Initialize token with an array size of length and a reference count of 0.
-    lf_token_t* token = _lf_initialize_token(trigger->token, length);
+    lf_token_t* token = _lf_initialize_token(template, length);
     // Copy the value into the newly allocated memory.
-    memcpy(token->value, value, token->element_size * length);
+    memcpy(token->value, value, template->type.element_size * length);
     // The schedule function will increment the reference count.
-    trigger_handle_t result = _lf_schedule(trigger, offset, token);
+    trigger_handle_t result = _lf_schedule(action->trigger, offset, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
     lf_notify_of_event();
     if(lf_critical_section_exit() != 0) {
@@ -1524,16 +1220,14 @@ trigger_handle_t _lf_schedule_copy(void* action, interval_t offset, void* value,
  * Variant of schedule_token that creates a token to carry the specified value.
  * See reactor.h for documentation.
  */
-trigger_handle_t _lf_schedule_value(void* action, interval_t extra_delay, void* value, size_t length) {
-    trigger_t* trigger = _lf_action_to_trigger(action);
+trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_delay, void* value, size_t length) {
+    token_template_t* template = (token_template_t*)action;
 
     if (lf_critical_section_enter() != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
-    lf_token_t* token = create_token(trigger->element_size);
-    token->value = value;
-    token->length = length;
-    int return_value = _lf_schedule(trigger, extra_delay, token);
+    lf_token_t* token = _lf_initialize_token_with_value(template, value, length);
+    int return_value = _lf_schedule(action->trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
     lf_notify_of_event();
     if(lf_critical_section_exit() != 0) {
@@ -1584,41 +1278,19 @@ void _lf_advance_logical_time(instant_t next_time) {
  * See reactor.h for documentation.
  * @param action Pointer to an action on the self struct.
  */
-trigger_handle_t _lf_schedule_int(void* action, interval_t extra_delay, int value) {
-    trigger_t* trigger = _lf_action_to_trigger(action);
+trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value) {
+    token_template_t* template = (token_template_t*)action;
+
     // NOTE: This doesn't acquire the mutex lock in the multithreaded version
     // until schedule_value is called. This should be OK because the element_size
     // does not change dynamically.
-    if (trigger->element_size != sizeof(int)) {
-        lf_print_error("Action type is not an integer.");
+    if (template->type.element_size != sizeof(int)) {
+        lf_print_error("Action type is not an integer. element_size is %zu", template->type.element_size);
         return -1;
     }
     int* container = (int*)malloc(sizeof(int));
     *container = value;
     return _lf_schedule_value(action, extra_delay, container, 1);
-}
-
-/**
- * Library function for allocating memory for an array to be sent on an output.
- * This turns over "ownership" of the allocated memory to the output, so
- * the allocated memory will be freed downstream.
- * @param token The token to use as a template (or if it is free, to use).
- * @param length The length of the array.
- * @param num_destinations The number of destinations (for initializing the reference count).
- * @return A pointer to the new or reused token or null if the template token
- *  is incompatible with this usage.
- */
-lf_token_t* _lf_set_new_array_impl(lf_token_t* token, size_t length, int num_destinations) {
-    // If the template token cannot carry a payload, then it is incompatible.
-    if (token->element_size == 0) {
-        lf_print_error("set_new_array: specified token cannot carry an array. It has zero element_size.");
-        return NULL;
-    }
-    // First, initialize the token, reusing the one given if possible.
-    lf_token_t* new_token = _lf_initialize_token(token, length);
-    new_token->ref_count = num_destinations;
-    LF_PRINT_DEBUG("_lf_set_new_array_impl: Allocated memory for payload %p.", new_token->value);
-    return new_token;
 }
 
 /**
@@ -1818,51 +1490,6 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
         LF_PRINT_DEBUG("Finally, reset reaction's is_STP_violated field to false: %s",
                 downstream_to_execute_now->name);
     }
-}
-
-/**
- * Return a writable copy of the specified token.
- * If the reference count is 1, this returns the original token rather than a copy.
- * The reference count will still be 1.
- * If the size of the token payload is zero, this also returns the original token.
- * Otherwise, this returns a new token with a reference count of 0.
- * To ensure that the allocated memory is not leaked, this new token must be
- * either passed to an output using set_token() or scheduled with a action
- * using schedule_token().
- */
-lf_token_t* writable_copy(lf_token_t* token) {
-    LF_PRINT_DEBUG("writable_copy: Requesting writable copy of token %p with reference count %d.", token, token->ref_count);
-    if (token->ref_count == 1) {
-        LF_PRINT_DEBUG("writable_copy: Avoided copy because reference count is %d.", token->ref_count);
-        return token;
-    }
-    LF_PRINT_DEBUG("writable_copy: Copying array because reference count is greater than 1. It is %d.", token->ref_count);
-    void* copy;
-    if (token->copy_constructor == NULL) {
-        LF_PRINT_DEBUG("writable_copy: Copy constructor is NULL. Using default strategy.");
-        size_t size = token->element_size * token->length;
-        if (size == 0) {
-            return token;
-        }
-        copy = malloc(size);
-        LF_PRINT_DEBUG("Allocating memory for writable copy %p.", copy);
-        memcpy(copy, token->value, size);
-        // Count allocations to issue a warning if this is never freed.
-    } else {
-        LF_PRINT_DEBUG("writable_copy: Copy constructor is not NULL. Using copy constructor.");
-        if (token->destructor == NULL) {
-            lf_print_warning("writable_copy: Using non-default copy constructor without setting destructor. Potential memory leak.");
-        }
-        copy = token->copy_constructor(token->value);
-    }
-    // Create a new, dynamically allocated token.
-    lf_token_t* result = create_token(token->element_size);
-    _lf_count_payload_allocations++;
-    result->length = token->length;
-    result->value = copy;
-    result->destructor = token->destructor;
-    result->copy_constructor = token->copy_constructor;
-    return result;
 }
 
 /**
@@ -2090,7 +1717,7 @@ void initialize(void) {
 
 /**
  * Report elapsed logical and physical times and report if any
- * memory allocated by set_new, set_new_array, or writable_copy
+ * memory allocated by set_new, set_new_array, or lf_writable_copy
  * has not been freed.
  */
 void termination(void) {
@@ -2139,8 +1766,8 @@ void termination(void) {
             printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
         }
     }
+    _lf_free_all_tokens(); // Must be done before freeing reactors.
     _lf_free_all_reactors();
-    free(_lf_tokens_with_ref_count);
     free(_lf_is_present_fields);
     free(_lf_is_present_fields_abbreviated);
 }

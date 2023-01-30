@@ -98,6 +98,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 #endif
 
+#if BOARD==MBED
+#error "MBED RTOS-based Arduino Boards are currently unsupported"
+#endif
+
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
