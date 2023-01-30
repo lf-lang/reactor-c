@@ -33,6 +33,24 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifndef RTI_H
 #define RTI_H
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>      // Defines perror(), errno
+#include <sys/socket.h>
+#include <sys/types.h>  // Provides select() function to read from multiple sockets.
+#include <netinet/in.h> // Defines struct sockaddr_in
+#include <arpa/inet.h>  // inet_ntop & inet_pton
+#include <unistd.h>     // Defines read(), write(), and close()
+#include <netdb.h>      // Defines gethostbyname().
+#include <strings.h>    // Defines bzero().
+#include <assert.h>
+#include <sys/wait.h>   // Defines wait() for process to change state.
+
+#include "platform.h"   // Platform-specific types and functions
+#include "util.c" // Defines print functions (e.g., lf_print).
+#include "net_util.c"   // Defines network functions.
+#include "net_common.h" // Defines message types, etc. Includes <pthread.h> and "reactor.h".
+#include "tag.c"        // Time-related types and functions.
 
 #include "lf_types.h"
 #include "message_record/message_record.h"

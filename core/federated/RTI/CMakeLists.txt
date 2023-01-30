@@ -25,7 +25,7 @@
 
 # To enable simple HMAC-based authentication of federates,
 # add `-DAUTH=ON` option to the cmake command as shown below:
-# 
+#
 # $> mkdir build && cd build
 # $> cmake -DAUTH=ON ../
 # $> make
@@ -110,58 +110,48 @@ IF(AUTH MATCHES ON)
   target_link_libraries(RTI OpenSSL::SSL)
 ENDIF(AUTH MATCHES ON)
 
-IF(SST MATCHES ON)
-  add_compile_definitions(__RTI_SST__)
-  # Find OpenSSL and link to it
-  set(OPENSSL_ROOT_DIR "/usr/local/ssl")
-  find_package(OpenSSL REQUIRED)
-  target_link_libraries(RTI OpenSSL::SSL)
-  include_directories(../sst-c-api)
-ENDIF(SST MATCHES ON)
-
-
 install(
     TARGETS RTI
     DESTINATION bin
 )
 
-# Declare a new executable target and list all its sources
-add_executable(
+option(SST "SST security enabled." OFF)
+IF(SST MATCHES ON)
+  # Declare a new executable target and list all its sources
+  add_executable(
     secure_RTI
     secure_rti.c
     ${LF_PLATFORM_FILE}
     ${CoreLib}/platform/lf_unix_clock_support.c
     ${CoreLib}/utils/pqueue.c
     message_record/message_record.c
-    ../sst-c-api/c_api.c
-    ../sst-c-api/c_common.c 
-    ../sst-c-api/c_crypto.c 
-    ../sst-c-api/c_secure_comm.c 
-    ../sst-c-api/load_config.c
-)
+    # ../sst-c-api/c_api.c
+    # ../sst-c-api/c_common.c
+    # ../sst-c-api/c_crypto.c
+    # ../sst-c-api/c_secure_comm.c
+    # ../sst-c-api/load_config.c
+  )
+  target_include_directories(secure_RTI PUBLIC ${CoreLib}/federated/sst-c-api)
+  target_include_directories(secure_RTI PUBLIC ${CoreLib}/federated/RTI)
 
-IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+  IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
     # Set the LOG_LEVEL to 4 to get DEBUG messages
     target_compile_definitions(secure_RTI PUBLIC LOG_LEVEL=4)
-ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
+  ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 
-# Set LF_THREADING to get the threaded support
-target_compile_definitions(secure_RTI PUBLIC LF_THREADED=1)
+  # Set LF_THREADING to get the threaded support
+  target_compile_definitions(secure_RTI PUBLIC LF_THREADED=1)
 
-# Find threads and link to it
-find_package(Threads REQUIRED)
-target_link_libraries(secure_RTI Threads::Threads)
+  # Find threads and link to it
+  target_link_libraries(secure_RTI Threads::Threads)
 
-# Option for enabling SST security.
-option(SST "SST security enabled." OFF)
+  # Find OpenSSL and link to it
+  set(OPENSSL_ROOT_DIR "/usr/local/ssl")
+  find_package(OpenSSL REQUIRED)
+  target_link_libraries(secure_RTI OpenSSL::SSL)
 
-# Find OpenSSL and link to it
-set(OPENSSL_ROOT_DIR "/usr/local/ssl")
-find_package(OpenSSL REQUIRED)
-target_link_libraries(secure_RTI OpenSSL::SSL)
-include_directories(../sst-c-api)
-
-install(
+  install(
     TARGETS secure_RTI
     DESTINATION bin
-)
+  )
+ENDIF(SST MATCHES ON)

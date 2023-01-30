@@ -35,7 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define SECURE_RTI_H
 
 #include "rti.h"
-
+#include "../sst-c-api/c_api.h"
 typedef struct {
     SST_session_ctx_t *session_ctx;
     federate_t* fed;
