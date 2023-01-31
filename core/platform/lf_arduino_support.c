@@ -1,3 +1,4 @@
+#if defined(PLATFORM_ARDUINO)
 /* Arduino Platform API support for the C target of Lingua Franca. */
 
 /*************
@@ -179,3 +180,4 @@ int lf_notify_of_event() {
    _lf_async_event = true;
    return 0;
 }
+#endif

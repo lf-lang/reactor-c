@@ -1,3 +1,4 @@
+#if !defined(PLATFORM_ARDUINO)
 #if SCHEDULER == ADAPTIVE
 #include "scheduler_adaptive.c"
 
@@ -9,5 +10,5 @@
 
 #else
 #include "scheduler_NP.c"
-
+#endif
 #endif

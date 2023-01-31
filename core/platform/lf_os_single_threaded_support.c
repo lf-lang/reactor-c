@@ -1,3 +1,4 @@
+#if defined LF_UNTHREADED && !defined _LF_TRACE
 /**
  * @file lf_os_single_threaded_support.c
  * @author Marten Lohstroh (marten@berkeley.edu)
@@ -36,3 +37,4 @@ int lf_notify_of_event() {
 int lf_ack_events() {
     return 0;
 }
+#endif

@@ -1,3 +1,4 @@
+#if defined(LF_THREADED)
 /* Runtime infrastructure for the threaded version of the C target of Lingua Franca. */
 
 /*************
@@ -1189,3 +1190,4 @@ int lf_critical_section_enter() {
 int lf_critical_section_exit() {
     return lf_mutex_unlock(&mutex); 
 }
+#endif

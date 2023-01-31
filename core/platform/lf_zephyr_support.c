@@ -1,3 +1,4 @@
+#if defined(PLATFORM_ZEPHYR)
 /*************
 Copyright (c) 2023, Norwegian University of Science and Technology.
 
@@ -529,3 +530,4 @@ int  _zephyr_val_compare_and_swap(int *ptr, int value, int newval) {
 }
 
 #endif // NUMBER_OF_WORKERS
+#endif
