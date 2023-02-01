@@ -203,7 +203,7 @@ static void lf_busy_wait_until(instant_t wakeup_time) {
  * @param wakeup_time The time instant at which to wake up.
  * @return int 0 if sleep completed, or -1 if it was interrupted.
  */
-int lf_sleep_until(instant_t wakeup_time) {
+int lf_sleep_until_locked(instant_t wakeup_time) {
     instant_t now;
     lf_clock_gettime(&now);
     interval_t duration = wakeup_time - now;
@@ -270,9 +270,7 @@ int lf_sleep_until(instant_t wakeup_time) {
  * @return int 
  */
 int lf_critical_section_enter() {
-    // disable nvic
-    sd_nvic_critical_region_enter(&_lf_nested_region);
-    return 0;
+    return sd_nvic_critical_region_enter(&_lf_nested_region);
 }
 
 /**
@@ -281,9 +279,7 @@ int lf_critical_section_enter() {
  * @return int 
  */
 int lf_critical_section_exit() {
-    // enable nvic
-    sd_nvic_critical_region_exit(_lf_nested_region);
-    return 0;
+    return sd_nvic_critical_region_exit(_lf_nested_region);
 }
 
 /**

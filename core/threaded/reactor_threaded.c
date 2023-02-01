@@ -289,12 +289,11 @@ int _lf_wait_on_global_tag_barrier(tag_t proposed_tag) {
     return result;
 }
 
-/*
+/**
  * Mark the given port's is_present field as true. This is_present field
  * will later be cleaned up by _lf_start_time_step.
  * This assumes that the mutex is not held.
  * @param port A pointer to the port struct.
- * must be set.
  */
 void _lf_set_present(lf_port_base_t* port) {
 	bool* is_present_field = &port->is_present;
@@ -1115,7 +1114,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Instead, cause an EPIPE error to be set when write() fails.
     signal(SIGPIPE, SIG_IGN);
 #endif // SIGPIPE
-
     if (process_args(default_argc, default_argv)
             && process_args(argc, argv)) {
 
@@ -1175,24 +1173,22 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 }
 
 /**
- * @brief Notification of new event is implemented by broadcasting on a 
- * condition variable. 
+ * @brief Notify of new event by broadcasting on a condition variable. 
  */
-void _lf_notify_of_event() {
-    lf_cond_broadcast(&event_q_changed);
+int lf_notify_of_event() {
+    return lf_cond_broadcast(&event_q_changed);
 }
 
 /**
- * @brief Enter critical section by locking the global mutex
- * 
+ * @brief Enter critical section by locking the global mutex.
  */
-void _lf_critical_section_enter() {
-    lf_mutex_lock(&mutex);
+int lf_critical_section_enter() {
+    return lf_mutex_lock(&mutex);
 }
+
 /**
- * @brief Leave critical section by unlocking the global mutex
- * 
+ * @brief Leave a critical section by unlocking the global mutex.
  */
-void _lf_critical_section_exit() {
-    lf_mutex_unlock(&mutex); 
+int lf_critical_section_exit() {
+    return lf_mutex_unlock(&mutex); 
 }

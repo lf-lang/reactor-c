@@ -33,13 +33,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  * @author{Erling Jellum <erlingrj@berkeley.edu>}
  */
-#include <signal.h> // To trap ctrl-c and invoke termination().
 #include <string.h>
 
 #include "reactor.h"
 #include "lf_types.h"
 #include "platform.h"
 #include "reactor_common.h"
+
+// Embedded platforms with no TTY shouldnt have signals
+#if !defined(NO_TTY)
+#include <signal.h> // To trap ctrl-c and invoke termination().
+#endif
 
 /**
  * @brief Queue of triggered reactions at the current tag.
@@ -85,7 +89,7 @@ void _lf_set_present(lf_port_base_t* port) {
 int wait_until(instant_t wakeup_time) {
     if (!fast) {
         LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", wakeup_time - start_time);
-        return lf_sleep_until(wakeup_time);
+        return lf_sleep_until_locked(wakeup_time);
     }
     return 0;
 }
@@ -120,7 +124,9 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
         LF_PRINT_DEBUG("Enqueing downstream reaction %s, which has level %lld.",
         		reaction->name, reaction->index & 0xffffLL);
         reaction->status = queued;
-        pqueue_insert(reaction_q, reaction);
+        if (pqueue_insert(reaction_q, reaction) != 0) {
+            lf_print_error_and_exit("Could not insert reaction into reaction_q");
+        }
     }
 }
 
@@ -218,7 +224,9 @@ int _lf_do_step(void) {
 int next(void) {
     // Enter the critical section and do not leave until we have
     // determined which tag to commit to and start invoking reactions for.
-    _lf_critical_section_enter();
+    if (lf_critical_section_enter() != 0) {
+        lf_print_error_and_exit("Could not enter critical section");
+    }
     event_t* event = (event_t*)pqueue_peek(event_q);
     //pqueue_dump(event_q, event_q->prt);
     // If there is no next event and -keepalive has been specified
@@ -256,7 +264,9 @@ int next(void) {
         // gets scheduled from an interrupt service routine.
         // In this case, check the event queue again to make sure to
         // advance time to the correct tag.
-        _lf_critical_section_exit();
+        if(lf_critical_section_exit() != 0) {
+            lf_print_error_and_exit("Could not leave critical section");
+        }
         return 1;
     }
     // Advance current time to match that of the first event on the queue.
@@ -277,7 +287,9 @@ int next(void) {
     // extract all the reactions triggered by these events, and
     // stick them into the reaction queue.
     _lf_pop_events();
-    _lf_critical_section_exit();
+    if(lf_critical_section_exit() != 0) {
+        lf_print_error_and_exit("Could not leave critical section");
+    }
 
     return _lf_do_step();
 }
@@ -367,18 +379,4 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     } else {
         return -1;
     }
-}
-
-/**
- * The following calls are directly forwarded to platform.h 
- */
-void _lf_notify_of_event() {
-    lf_notify_of_event();
-}
-
-void _lf_critical_section_enter() {
-    lf_critical_section_enter();
-}
-void _lf_critical_section_exit() {
-    lf_critical_section_exit();
 }

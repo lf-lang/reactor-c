@@ -3,7 +3,7 @@
  * @brief Defines a generic, non-resizing hashmap data type.
  *
  * Hashmaps are defined by redefining K, V, HASH_OF, and HASHMAP, and including this file. A default
- * hashmap type is defined in hashmap.h. See hashmap.h for an example of a hashmap declaration.
+ * hashmap type is defined here. See pointer_hashmap.h for an example of a hashmap declaration.
  * - K and V must be the types of keys and values of the hashmap, respectively.
  * - HASH_OF must be the hash of a key.
  * - HASHMAP must be a function-like macro that prefixes tokens with the name of the hashmap. For

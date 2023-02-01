@@ -28,7 +28,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @section DESCRIPTION
  * Utility functions for managing output the user, error and warning
  * messages, logging, and debug messages. Outputs are filtered based on
- * whether a
+ * the target "logging" parameter.
  */
 
 #include "util.h"

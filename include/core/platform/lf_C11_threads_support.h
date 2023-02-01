@@ -60,9 +60,8 @@ static int lf_thread_create(_lf_thread_t* thread, void *(*lf_thread) (void *), v
  * @return 0 on success, error number otherwise (see thrd_join()).
  */
 static int lf_thread_join(_lf_thread_t thread, void** thread_return) {
-    thread_return = (void**)malloc(sizeof(void*));
-    *thread_return= (int*)malloc(sizeof(int));
-    return thrd_join((thrd_t)thread, (int*)*thread_return);
+    // thrd_join wants the second argument to be an int* rather than a void**
+    return thrd_join((thrd_t)thread, (int*)thread_return);
 }
 
 //FIXME: modif4watchdogs

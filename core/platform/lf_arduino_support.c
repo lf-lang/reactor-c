@@ -29,6 +29,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <time.h>
 #include <errno.h>
+#include <assert.h>
 
 #include "lf_arduino_support.h"
 #include "../platform.h"
@@ -64,7 +65,7 @@ static volatile uint32_t _lf_time_us_low_last = 0;
  * @param wakeup int64_t time of wakeup 
  * @return int 0 if successful sleep, -1 if awoken by async event
  */
-int lf_sleep_until(instant_t wakeup) {
+int lf_sleep_until_locked(instant_t wakeup) {
     instant_t now;
     _lf_async_event = false;
     lf_critical_section_exit();
@@ -77,7 +78,7 @@ int lf_sleep_until(instant_t wakeup) {
     lf_critical_section_enter();
 
     if (_lf_async_event) {
-        lf_ack_events();
+        _lf_async_event = false;
         return -1;
     } else {
         return 0;
@@ -96,7 +97,7 @@ int lf_sleep(interval_t sleep_duration) {
     lf_clock_gettime(&now);
     instant_t wakeup = now + sleep_duration;
 
-    return lf_sleep_until(wakeup);
+    return lf_sleep_until_locked(wakeup);
 
 }
 
@@ -137,21 +138,35 @@ int lf_critical_section_enter() {
         // If interrupts are not initially enabled, then increment again to prevent
         // TODO: Do we need to check whether the interrupts were enabled to
         //  begin with? AFAIK there is no Arduino API for that 
-        noInterrupts();
+        #if BOARD==MBED
+            //core_util_critical_section_enter(); //MBED Boards use an RTOS, so we use a specific call to enter a critical section.
+        #else
+            noInterrupts();
+        #endif
     }
     return 0;
 }
 
 /**
  * @brief Exit a critical section.
+ * 
+ * TODO: Arduino currently has bugs with its interrupt process, so we disable it for now.
+ * As such, physical actions are not yet supported.
+ * 
  * If interrupts were enabled when the matching call to 
  * lf_critical_section_enter()
  * occurred, then they will be re-enabled here.
  */
 int lf_critical_section_exit() {
-    _lf_num_nested_critical_sections--;
-    if (_lf_num_nested_critical_sections == 0) {
-        interrupts();
+    if (_lf_num_nested_critical_sections <= 0) {
+        return 1;
+    }
+    if (--_lf_num_nested_critical_sections == 0) {
+        #if BOARD==MBED
+            //core_util_critical_section_exit(); //MBED Boards use an RTOS, so we use a specific call to exit a critical section.
+        #else
+            interrupts();
+        #endif
     }
     return 0;
 }

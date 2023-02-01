@@ -140,8 +140,8 @@ void reset_socket_stat(struct socket_stat_t* socket_stat) {
  *  If clock synchronization is set to on, a reserved UDP port number
  *   will be sent.
  */
-ushort setup_clock_synchronization_with_rti() {
-    ushort port_to_return = USHRT_MAX;
+uint16_t setup_clock_synchronization_with_rti() {
+    uint16_t port_to_return = UINT16_MAX;
 #ifdef _LF_CLOCK_SYNC_ON
     // Initialize the UDP socket
     _lf_rti_socket_UDP = socket(AF_INET, SOCK_DGRAM, 0);

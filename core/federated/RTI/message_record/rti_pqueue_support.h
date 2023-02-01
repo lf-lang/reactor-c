@@ -85,8 +85,8 @@ static void set_message_record_position(void *a, size_t pos) {
 static void print_message_record(void *message) {
 	in_transit_message_record_t *r = (in_transit_message_record_t*)message;
     LF_PRINT_DEBUG(
-        "Tag of the in_transit_message_record_t: (%ld, %u). "
-        "Its position in the priority queue: %u",
+        "Tag of the in_transit_message_record_t: (" PRINTF_TIME ", %u). "
+        "Its position in the priority queue: %zu",
         r->tag.time - lf_time_start(),
         r->tag.microstep,
         r->pos
