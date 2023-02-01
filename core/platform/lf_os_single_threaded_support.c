@@ -1,4 +1,4 @@
-#if defined LF_UNTHREADED && !defined _LF_TRACE
+#if defined LF_UNTHREADED && !defined _LF_TRACE && !defined(PLATFORM_ARDUINO)
 /**
  * @file lf_os_single_threaded_support.c
  * @author Marten Lohstroh (marten@berkeley.edu)
