@@ -172,6 +172,9 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
  */
 bool lf_check_deadline(void* self, bool invoke_deadline_handler);
 
+// FIXME: modif4watchdogs
+void lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout);
+
 /**
  * Compare two tags. Return -1 if the first is less than
  * the second, 0 if they are equal, and +1 if the first is
