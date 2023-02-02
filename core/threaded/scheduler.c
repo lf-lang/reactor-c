@@ -1,3 +1,5 @@
+#include "lf_types.h"
+
 #if SCHEDULER == ADAPTIVE
 #include "scheduler_adaptive.c"
 
