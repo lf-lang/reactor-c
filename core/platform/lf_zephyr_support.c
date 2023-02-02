@@ -269,6 +269,22 @@ int lf_sleep(interval_t sleep_duration) {
     }
     return 0;
 }
+
+/**
+ * Old nanosleep API. It is just forwarded to `lf_sleep`
+*/
+int lf_nanosleep(interval_t sleep_duration) {
+    return lf_sleep(sleep_duration);
+}
+
+
+
+/**
+ * Only provide implementation of critical sections and notify of event
+ * for the unthreaded scenario. FOr threaded, it is implemented in
+ * `reactor_threaded.c`
+*/
+#ifdef LF_UNTHREADED
 /**
  * @brief Enter critical section by disabling interrupts.
  * Support nested critical sections by only disabling
@@ -310,16 +326,12 @@ int lf_notify_of_event() {
    return 0;
 }
 
+#endif
 
-int lf_nanosleep(interval_t sleep_duration) {
-    return lf_sleep(sleep_duration);
-}
+
 
 #ifdef LF_THREADED
 #warning "Threaded support on Zephyr is still experimental"
-
-lf_mutex_t mutex;
-lf_cond_t event_q_changed;
 
 // FIXME: What is an appropriate stack size?
 #define _LF_STACK_SIZE 1024
