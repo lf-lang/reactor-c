@@ -129,6 +129,8 @@ int lf_clock_gettime(instant_t* t) {
     return 0;
 }
 
+#ifndef LF_THREADED
+
 /**
  * Enter a critical section by disabling interrupts, supports 
  * nested critical sections.
@@ -139,11 +141,7 @@ int lf_critical_section_enter() {
         // If interrupts are not initially enabled, then increment again to prevent
         // TODO: Do we need to check whether the interrupts were enabled to
         //  begin with? AFAIK there is no Arduino API for that 
-        #if BOARD==MBED
-            //core_util_critical_section_enter(); //MBED Boards use an RTOS, so we use a specific call to enter a critical section.
-        #else
-            noInterrupts();
-        #endif
+        noInterrupts();
     }
     return 0;
 }
@@ -163,11 +161,7 @@ int lf_critical_section_exit() {
         return 1;
     }
     if (--_lf_num_nested_critical_sections == 0) {
-        #if BOARD==MBED
-            //core_util_critical_section_exit(); //MBED Boards use an RTOS, so we use a specific call to exit a critical section.
-        #else
-            interrupts();
-        #endif
+        interrupts();
     }
     return 0;
 }
@@ -180,4 +174,138 @@ int lf_notify_of_event() {
    _lf_async_event = true;
    return 0;
 }
+
+#else
+#warning "Threaded support on Arduino is still experimental"
+#include "ConditionWrapper.h"
+#include "MutexWrapper.h"
+#include "ThreadWrapper.h"
+
+// Typedef that represents the function pointers passed by LF runtime into lf_thread_create
+typedef void *(*lf_function_t) (void *);
+
+/**
+ * @brief Get the number of cores on the host machine.
+ */
+int lf_available_cores() {
+    return 1;
+}
+
+/**
+ * Create a new thread, starting with execution of lf_thread
+ * getting passed arguments. The new handle is stored in thread_id.
+ *
+ * @return 0 on success, platform-specific error number otherwise.
+ *
+ */
+int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
+    _lf_thread_t t = thread_new();
+    long int start = thread_start(t, *lf_thread, arguments);
+    *thread = t;   
+    return start;
+}
+
+/**
+ * Make calling thread wait for termination of the thread.  The
+ * exit status of the thread is stored in thread_return, if thread_return
+ * is not NULL.
+ * 
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_thread_join(lf_thread_t thread, void** thread_return) {
+   return thread_join(thread, thread_return);
+}
+
+/**
+ * Initialize a mutex.
+ * 
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_mutex_init(lf_mutex_t* mutex) {
+    *mutex = (lf_mutex_t) mutex_new();
+    return 0;   
+}
+
+/**
+ * Lock a mutex.
+ * 
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_mutex_lock(lf_mutex_t* mutex) {
+    mutex_lock(*mutex);
+    return 0;
+}
+
+/** 
+ * Unlock a mutex.
+ * 
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_mutex_unlock(lf_mutex_t* mutex) {
+    mutex_unlock(*mutex);
+    return 0;
+}
+
+/** 
+ * Initialize a conditional variable.
+ * 
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
+    *cond = (lf_cond_t) condition_new (*mutex);
+    return 0;
+}
+
+/** 
+ * Wake up all threads waiting for condition variable cond.
+ * 
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_cond_broadcast(lf_cond_t* cond) {
+    condition_notify_all(*cond);
+    return 0;
+}
+
+/** 
+ * Wake up one thread waiting for condition variable cond.
+ * 
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_cond_signal(lf_cond_t* cond) {
+    condition_notify_one(*cond);
+    return 0;
+}
+
+/** 
+ * Wait for condition variable "cond" to be signaled or broadcast.
+ * "mutex" is assumed to be locked before.
+ * 
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex) {
+    condition_wait(*cond);
+    return 0;
+}
+
+/** 
+ * Block current thread on the condition variable until condition variable
+ * pointed by "cond" is signaled or time pointed by "absolute_time_ns" in
+ * nanoseconds is reached.
+ * 
+ * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
+ *  number otherwise.
+ */
+int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absolute_time_ns) {
+    instant_t now;
+    lf_clock_gettime(&now);
+    interval_t sleep_duration_ns = absolute_time_ns - now;
+    bool res = condition_wait_for(*cond, sleep_duration_ns);
+    if (!res) {
+        return 0;
+    } else {
+        return LF_TIMEOUT;
+    }
+}
+
+#endif
 #endif
