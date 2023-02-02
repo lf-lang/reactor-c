@@ -55,6 +55,20 @@ typedef unsigned short int ushort;
 #endif
 
 /**
+ * Define scheduler types as integers. This way we can conditionally
+ * include/exclude code with the preprocessor with
+ * #if SCHEDULER == ADAPTIVE etc
+ * This means that `lf_types.h` MUST be included before doing any preprocessing
+ * on SCHEDULER compile def.
+ */
+
+#define ADAPTIVE 1
+#define GEDF_NP_CI 2
+#define GEDF_NP 3
+#define LET 4
+#define NP 5
+
+/**
  * Policy for handling scheduled events that violate the specified
  * minimum interarrival time.
  * The default policy is `defer`: adjust the tag to that the minimum
