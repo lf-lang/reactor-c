@@ -1,4 +1,4 @@
-#if (__APPLE__ || __linux__)
+#if !defined(PLATFORM_ARDUINO)
 #include <time.h>
 #include <errno.h>
 

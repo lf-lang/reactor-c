@@ -1,4 +1,4 @@
-#if defined(PLATFORM_NRF52)
+#if !defined(PLATFORM_ARDUINO)
 /*************
 Copyright (c) 2022, The University of California at Berkeley.
 

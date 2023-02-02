@@ -1,4 +1,4 @@
-#if __linux__
+#if !defined(PLATFORM_ARDUINO)
 /* MacOS API support for the C target of Lingua Franca. */
 
 /*************

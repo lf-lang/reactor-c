@@ -1,4 +1,4 @@
-#if (__APPLE__ || __linux__)
+#if !defined(PLATFORM_ARDUINO)
 /**
  * @file lf_unix_syscall_support.c
  * @author Soroush Bateni (soroush@utdallas.edu)
