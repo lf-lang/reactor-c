@@ -186,7 +186,7 @@ extern int lf_mutex_unlock(lf_mutex_t* mutex);
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_cond_init(lf_cond_t* cond);
+extern int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex);
 
 /**
  * Wake up all threads waiting for condition variable cond.

@@ -419,7 +419,7 @@ int lf_mutex_unlock(lf_mutex_t* mutex) {
  * 
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_cond_init(lf_cond_t* cond) {
+int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
     return k_condvar_init(cond);
 }
 

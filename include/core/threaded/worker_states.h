@@ -102,7 +102,7 @@ static void worker_states_init(size_t number_of_workers) {
         cumsum_of_worker_group_sizes[i] += cumsum_of_worker_group_sizes[i - 1];
     }
     for (int i = 0; i < num_conds; i++) {
-        lf_cond_init(worker_conds + i);
+        lf_cond_init(worker_conds + i, &mutex);
     }
     num_loose_threads = number_of_workers;
 }

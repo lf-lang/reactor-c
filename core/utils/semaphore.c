@@ -42,8 +42,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 semaphore_t* lf_semaphore_new(int count) {
     semaphore_t* semaphore = (semaphore_t*)malloc(sizeof(semaphore_t));
-    lf_cond_init(&semaphore->cond);
     lf_mutex_init(&semaphore->mutex);
+    lf_cond_init(&semaphore->cond, &semaphore->mutex);
     semaphore->count = count;
     return semaphore;
 }

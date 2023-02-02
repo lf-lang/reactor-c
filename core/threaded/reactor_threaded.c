@@ -1099,8 +1099,8 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     lf_mutex_init(&mutex);
 
     // Initialize condition variables used for notification between threads.
-    lf_cond_init(&event_q_changed);
-    lf_cond_init(&global_tag_barrier_requestors_reached_zero);
+    lf_cond_init(&event_q_changed, &mutex);
+    lf_cond_init(&global_tag_barrier_requestors_reached_zero, &mutex);
 
     if (atexit(termination) != 0) {
         lf_print_warning("Failed to register termination function!");

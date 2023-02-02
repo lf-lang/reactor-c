@@ -152,7 +152,7 @@ static int lf_mutex_unlock(_lf_critical_section_t* critical_section) {
  *
  * @return 0
  */
-static int lf_cond_init(_lf_cond_t* cond) {
+static int lf_cond_init(_lf_cond_t* cond, _lf_mutex_t* mutex) {
     // The following Windows API does not return a value.
     InitializeConditionVariable((PCONDITION_VARIABLE)cond);
     return 0;

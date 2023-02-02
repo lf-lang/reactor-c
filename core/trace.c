@@ -325,8 +325,8 @@ void flush_trace_to_file(int worker) {
  */
 void start_trace(char* filename) {
     lf_mutex_init(&_lf_trace_mutex);
-    lf_cond_init(&_lf_flush_finished);
-    lf_cond_init(&_lf_flush_needed);
+    lf_cond_init(&_lf_flush_finished, &_lf_trace_mutex);
+    lf_cond_init(&_lf_flush_needed, &_lf_trace_mutex);
     // FIXME: location of trace file should be customizable.
     _lf_trace_file = fopen(filename, "w");
     if (_lf_trace_file == NULL) {

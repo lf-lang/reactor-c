@@ -97,7 +97,7 @@ static int lf_mutex_unlock(_lf_mutex_t* mutex) {
  *
  * @return 0 on success, error number otherwise (see cnd_init()).
  */
-static int lf_cond_init(_lf_cond_t* cond) {
+static int lf_cond_init(_lf_cond_t* cond, _lf_mutex_t* mutex) {
     return cnd_init((cnd_t*)cond);
 }
 

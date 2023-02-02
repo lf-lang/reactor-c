@@ -113,7 +113,7 @@ static int lf_mutex_unlock(_lf_mutex_t* mutex) {
  *
  * @return 0 on success, error number otherwise (see pthread_cond_init()).
  */
-static int lf_cond_init(_lf_cond_t* cond) {
+static int lf_cond_init(_lf_cond_t* cond, _lf_mutex_t* mutex) {
     pthread_condattr_t cond_attr;
     pthread_condattr_init(&cond_attr);
     // Limit the scope of the condition variable to this process (default)
