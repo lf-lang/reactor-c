@@ -282,7 +282,7 @@ int lf_cond_signal(lf_cond_t* cond) {
  * 
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex) {
+int lf_cond_wait(lf_cond_t* cond) {
     condition_wait(*cond);
     return 0;
 }
@@ -295,7 +295,7 @@ int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex) {
  * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
  *  number otherwise.
  */
-int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absolute_time_ns) {
+int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
     instant_t now;
     lf_clock_gettime(&now);
     interval_t sleep_duration_ns = absolute_time_ns - now;

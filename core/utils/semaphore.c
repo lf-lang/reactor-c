@@ -71,7 +71,7 @@ void lf_semaphore_acquire(semaphore_t* semaphore) {
     assert(semaphore != NULL);
     lf_mutex_lock(&semaphore->mutex);
     while (semaphore->count == 0) {
-        lf_cond_wait(&semaphore->cond, &semaphore->mutex);
+        lf_cond_wait(&semaphore->cond);
     }
     semaphore->count--;
     lf_mutex_unlock(&semaphore->mutex);
@@ -86,7 +86,7 @@ void lf_semaphore_wait(semaphore_t* semaphore) {
     assert(semaphore != NULL);
     lf_mutex_lock(&semaphore->mutex);
     while (semaphore->count == 0) {
-        lf_cond_wait(&semaphore->cond, &semaphore->mutex);
+        lf_cond_wait(&semaphore->cond);
     }
     lf_mutex_unlock(&semaphore->mutex);
 }

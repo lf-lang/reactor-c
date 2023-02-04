@@ -40,7 +40,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdint.h> // For fixed-width integral types
 
 typedef pthread_mutex_t _lf_mutex_t;
-typedef pthread_cond_t _lf_cond_t;
+typedef struct {
+    _lf_mutex_t* mutex;
+    pthread_cond_t condition;
+} _lf_cond_t;
 typedef pthread_t _lf_thread_t;
 
 #define _LF_TIMEOUT ETIMEDOUT
@@ -114,11 +117,12 @@ static int lf_mutex_unlock(_lf_mutex_t* mutex) {
  * @return 0 on success, error number otherwise (see pthread_cond_init()).
  */
 static int lf_cond_init(_lf_cond_t* cond, _lf_mutex_t* mutex) {
+    cond->mutex = mutex;
     pthread_condattr_t cond_attr;
     pthread_condattr_init(&cond_attr);
     // Limit the scope of the condition variable to this process (default)
     pthread_condattr_setpshared(&cond_attr, PTHREAD_PROCESS_PRIVATE);
-    return pthread_cond_init(cond, &cond_attr);
+    return pthread_cond_init(&cond->condition, &cond_attr);
 }
 
 /**
@@ -127,7 +131,7 @@ static int lf_cond_init(_lf_cond_t* cond, _lf_mutex_t* mutex) {
  * @return 0 on success, error number otherwise (see pthread_cond_broadcast()).
  */
 static int lf_cond_broadcast(_lf_cond_t* cond) {
-    return pthread_cond_broadcast((pthread_cond_t*)cond);
+    return pthread_cond_broadcast((pthread_cond_t*)&cond->condition);
 }
 
 /**
@@ -136,7 +140,7 @@ static int lf_cond_broadcast(_lf_cond_t* cond) {
  * @return 0 on success, error number otherwise (see pthread_cond_signal()).
  */
 static int lf_cond_signal(_lf_cond_t* cond) {
-    return pthread_cond_signal((pthread_cond_t*)cond);
+    return pthread_cond_signal((pthread_cond_t*)&cond->condition);
 }
 
 /**
@@ -145,8 +149,8 @@ static int lf_cond_signal(_lf_cond_t* cond) {
  *
  * @return 0 on success, error number otherwise (see pthread_cond_wait()).
  */
-static int lf_cond_wait(_lf_cond_t* cond, _lf_mutex_t* mutex) {
-    return pthread_cond_wait((pthread_cond_t*)cond, (pthread_mutex_t*)mutex);
+static int lf_cond_wait(_lf_cond_t* cond) {
+    return pthread_cond_wait((pthread_cond_t*)&cond->condition, (pthread_mutex_t*)cond->mutex);
 }
 
 /**
@@ -157,15 +161,15 @@ static int lf_cond_wait(_lf_cond_t* cond, _lf_mutex_t* mutex) {
  * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
  *  number otherwise (see pthread_cond_timedwait).
  */
-static int lf_cond_timedwait(_lf_cond_t* cond, _lf_mutex_t* mutex, int64_t absolute_time_ns) {
+static int lf_cond_timedwait(_lf_cond_t* cond, int64_t absolute_time_ns) {
     // Convert the absolute time to a timespec.
     // timespec is seconds and nanoseconds.
     struct timespec timespec_absolute_time
             = {(time_t)absolute_time_ns / 1000000000LL, (long)absolute_time_ns % 1000000000LL};
     int return_value = 0;
     return_value = pthread_cond_timedwait(
-        (pthread_cond_t*)cond,
-        (pthread_mutex_t*)mutex,
+        (pthread_cond_t*)&cond->condition,
+        (pthread_mutex_t*)cond->mutex,
         &timespec_absolute_time
     );
     switch (return_value) {
