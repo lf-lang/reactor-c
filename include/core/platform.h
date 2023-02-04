@@ -208,7 +208,7 @@ extern int lf_cond_signal(lf_cond_t* cond);
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_cond_wait(lf_cond_t* cond);
+extern int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex);
 
 /**
  * Block current thread on the condition variable until condition variable
@@ -218,7 +218,7 @@ extern int lf_cond_wait(lf_cond_t* cond);
  * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
  *  number otherwise.
  */
-extern int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
+extern int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absolute_time_ns);
 
 /*
  * Atomically increment the variable that ptr points to by the given value, and return the original value of the variable.

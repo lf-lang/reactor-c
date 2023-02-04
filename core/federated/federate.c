@@ -2746,7 +2746,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
                 // Wait until either something changes on the event queue or
                 // the RTI has responded with a TAG.
                 LF_PRINT_DEBUG("Waiting for a TAG from the RTI.");
-                if (lf_cond_wait(&event_q_changed) != 0) {
+                if (lf_cond_wait(&event_q_changed, &mutex) != 0) {
                     lf_print_error("Wait error.");
                 }
                 // Either a TAG or PTAG arrived or something appeared on the event queue.
@@ -2800,7 +2800,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
             wait_until_time_ns = original_tag.time;
         }
 
-        lf_cond_timedwait(&event_q_changed, wait_until_time_ns);
+        lf_cond_timedwait(&event_q_changed, &mutex, wait_until_time_ns);
 
         LF_PRINT_DEBUG("Wait finished or interrupted.");
 

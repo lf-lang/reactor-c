@@ -65,10 +65,7 @@ typedef uint32_t _microstep_t;
 #warning "Threaded support on Zephyr is still experimental"
 
 typedef struct k_mutex _lf_mutex_t;
-typedef struct {
-    _lf_mutex_t* mutex;
-    struct k_condvar condition;
-} _lf_cond_t;
+typedef struct k_condvar _lf_cond_t;
 typedef k_tid_t _lf_thread_t;
 
 extern _lf_mutex_t mutex;

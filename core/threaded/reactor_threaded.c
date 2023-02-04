@@ -280,7 +280,7 @@ int _lf_wait_on_global_tag_barrier(tag_t proposed_tag) {
         result = 1;
         LF_PRINT_LOG("Waiting on barrier for tag " PRINTF_TAG ".", proposed_tag.time - start_time, proposed_tag.microstep);
         // Wait until no requestor remains for the barrier on logical time
-        lf_cond_wait(&global_tag_barrier_requestors_reached_zero);
+        lf_cond_wait(&global_tag_barrier_requestors_reached_zero, &mutex);
 
         // The stop tag may have changed during the wait.
         if (_lf_is_tag_after_stop_tag(proposed_tag)) {
@@ -408,7 +408,7 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
         // lf_cond_timedwait returns 0 if it is awakened before the timeout.
         // Hence, we want to run it repeatedly until either it returns non-zero or the
         // current physical time matches or exceeds the logical time.
-        if (lf_cond_timedwait(condition, unadjusted_wait_until_time_ns) != LF_TIMEOUT) {
+        if (lf_cond_timedwait(condition, &mutex, unadjusted_wait_until_time_ns) != LF_TIMEOUT) {
             LF_PRINT_DEBUG("-------- wait_until interrupted before timeout.");
 
             // Wait did not time out, which means that there
