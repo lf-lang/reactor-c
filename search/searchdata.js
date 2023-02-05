@@ -8,7 +8,7 @@ var indexSectionsWithContent =
   5: "_acdefhilmprstuv",
   6: "_ceflprst",
   7: "_acdfgilnpqrstuvw",
-  8: "_abcdefhklmnoprstuvw",
+  8: "_abcdefghklmnoprstuvw",
   9: "/dhlrs"
 };
 

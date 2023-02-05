@@ -75,6 +75,7 @@ $(function() {
 <div class="header">
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
+<a href="#define-members">Macros</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a>  </div>
   <div class="headertitle"><div class="title">lf_types.h File Reference</div></div>
@@ -103,6 +104,19 @@ Data Structures</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structlf__action__base__t.html">lf_action_base_t</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:a464391e568178aa10799bce40d9a7792"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__types_8h.html#a464391e568178aa10799bce40d9a7792">ADAPTIVE</a>&#160;&#160;&#160;1</td></tr>
+<tr class="separator:a464391e568178aa10799bce40d9a7792"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a94b343eb76927b38e334d8b8e1c865ff"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__types_8h.html#a94b343eb76927b38e334d8b8e1c865ff">GEDF_NP_CI</a>&#160;&#160;&#160;2</td></tr>
+<tr class="separator:a94b343eb76927b38e334d8b8e1c865ff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a39c2560ba450b2c4258b512f3ec8b609"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__types_8h.html#a39c2560ba450b2c4258b512f3ec8b609">GEDF_NP</a>&#160;&#160;&#160;3</td></tr>
+<tr class="separator:a39c2560ba450b2c4258b512f3ec8b609"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c795be4f965e0348be0b1259a294163"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__types_8h.html#a1c795be4f965e0348be0b1259a294163">LET</a>&#160;&#160;&#160;4</td></tr>
+<tr class="separator:a1c795be4f965e0348be0b1259a294163"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab04c88bedc6b2be8ddfe7aa8d3e93f06"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__types_8h.html#ab04c88bedc6b2be8ddfe7aa8d3e93f06">NP</a>&#160;&#160;&#160;5</td></tr>
+<tr class="separator:ab04c88bedc6b2be8ddfe7aa8d3e93f06"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -167,7 +181,79 @@ LICENSE</h1>
 <h1><a class="anchor" id="DESCRIPTION"></a>
 DESCRIPTION</h1>
 <p>Type definitions that are widely used across different parts of the runtime. </p>
-</div><h2 class="groupheader">Typedef Documentation</h2>
+</div><h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="a464391e568178aa10799bce40d9a7792" name="a464391e568178aa10799bce40d9a7792"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a464391e568178aa10799bce40d9a7792">&#9670;&#160;</a></span>ADAPTIVE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define ADAPTIVE&#160;&#160;&#160;1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Define scheduler types as integers. This way we can conditionally include/exclude code with the preprocessor with <a class="el" href="hashmap_8h.html#a8e6b2068271907802fcd4b9b567adab1">if</a> SCHEDULER == ADAPTIVE etc This means that <code><a class="el" href="lf__types_8h.html">lf_types.h</a></code> MUST be included before doing any preprocessing on SCHEDULER compile def. </p>
+
+</div>
+</div>
+<a id="a39c2560ba450b2c4258b512f3ec8b609" name="a39c2560ba450b2c4258b512f3ec8b609"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a39c2560ba450b2c4258b512f3ec8b609">&#9670;&#160;</a></span>GEDF_NP</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define GEDF_NP&#160;&#160;&#160;3</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a94b343eb76927b38e334d8b8e1c865ff" name="a94b343eb76927b38e334d8b8e1c865ff"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a94b343eb76927b38e334d8b8e1c865ff">&#9670;&#160;</a></span>GEDF_NP_CI</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define GEDF_NP_CI&#160;&#160;&#160;2</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a1c795be4f965e0348be0b1259a294163" name="a1c795be4f965e0348be0b1259a294163"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1c795be4f965e0348be0b1259a294163">&#9670;&#160;</a></span>LET</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LET&#160;&#160;&#160;4</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ab04c88bedc6b2be8ddfe7aa8d3e93f06" name="ab04c88bedc6b2be8ddfe7aa8d3e93f06"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab04c88bedc6b2be8ddfe7aa8d3e93f06">&#9670;&#160;</a></span>NP</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define NP&#160;&#160;&#160;5</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<h2 class="groupheader">Typedef Documentation</h2>
 <a id="a416845ec4469b3186de047c32402f5e8" name="a416845ec4469b3186de047c32402f5e8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a416845ec4469b3186de047c32402f5e8">&#9670;&#160;</a></span>allocation_record_t</h2>
 
