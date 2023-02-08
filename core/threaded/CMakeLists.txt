@@ -22,15 +22,13 @@ SET(
     ${THREADED_SOURCES} 
     scheduler_GEDF_NP.c
 )
-elseif (SCHEDULER MATCHES NP)
+else ()
 SET( 
     THREADED_SOURCES 
     ${THREADED_SOURCES} 
     scheduler_NP.c
 )
-else()
-message( FATAL_ERROR "Undefined Scheduler" )
-endif()
+endif ()
 
 list(APPEND INFO_SOURCES ${THREADED_SOURCES})
 
