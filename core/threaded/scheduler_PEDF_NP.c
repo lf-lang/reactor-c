@@ -27,7 +27,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /**
- * Partitioned Earliest Deadline First (GEDF) non-preemptive for the threaded
+ * Partitioned Earliest Deadline First (PEDF) non-preemptive for the threaded
  * runtime of the C target of Lingua Franca.
  *
  * @author{Soroush Bateni <soroush@utdallas.edu>}
