@@ -211,7 +211,7 @@ typedef struct watchdog_t watchdog_t;
 // WATCHDOG QUESTION: it might be issue that self type is self_base_t?
 // self_base_t does not give access to parameters or actions
 struct watchdog_t {
-    self_base_t* base;                      // The reactor that contains the watchdog.
+    struct self_base_t* base;                      // The reactor that contains the watchdog.
     instant_t expiration;                   // The expiration instant for the watchdog. (Initialized to NEVER)
     interval_t min_expiration;              // The minimum expiration interval for the watchdog.
     lf_thread_t thread_id;                 // The thread that the watchdog is meant to run on.
