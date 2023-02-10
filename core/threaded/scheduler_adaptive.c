@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * This is a non-priority-driven scheduler. See scheduler.h for documentation.
  * @author{Peter Donovan <peterdonovan@berkeley.edu>}
  */
-#if defined SCHEDULER && SCHEDULER == adaptive
+#if defined SCHEDULER && SCHEDULER == ADAPTIVE
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
