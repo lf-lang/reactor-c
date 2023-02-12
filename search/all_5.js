@@ -14,7 +14,7 @@ var searchData=
   ['default_5fwindow_11',['default_window',['../sensor__simulator_8c.html#a9029bf378e52a9f85a25eb0ba9095fe3',1,'sensor_simulator.c']]],
   ['defer_12',['defer',['../lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a893b1cf0de04eaf44a009fecabd16b90',1,'lf_types.h']]],
   ['delay_5fstart_13',['DELAY_START',['../net__common_8h.html#a4b8c713b515dba0c86d9205dc0caf4ed',1,'net_common.h']]],
-  ['deprecated_14',['DEPRECATED',['../platform_8h.html#aa321c5ff2c1afca6cd771e8602972052',1,'DEPRECATED(extern int lf_nanosleep(interval_t sleep_duration)):&#160;platform.h'],['../platform_8h.html#af67a6ff1a54b41b2a6e4bd36bc47b118',1,'DEPRECATED():&#160;platform.h']]],
+  ['deprecated_14',['DEPRECATED',['../platform_8h.html#af67a6ff1a54b41b2a6e4bd36bc47b118',1,'DEPRECATED():&#160;platform.h'],['../platform_8h.html#aa321c5ff2c1afca6cd771e8602972052',1,'DEPRECATED(extern int lf_nanosleep(interval_t sleep_duration)):&#160;platform.h']]],
   ['deprecated_20list_15',['Deprecated List',['../deprecated.html',1,'']]],
   ['deque_2ec_16',['deque.c',['../deque_8c.html',1,'']]],
   ['deque_2eh_17',['deque.h',['../deque_8h.html',1,'']]],
@@ -31,10 +31,9 @@ var searchData=
   ['deque_5ft_28',['deque_t',['../structdeque__t.html',1,'deque_t'],['../deque_8h.html#afc1887f5ebd7da3ce7dfc73beb195598',1,'deque_t():&#160;deque.h']]],
   ['destination_5fchannel_29',['destination_channel',['../structlf__port__base__t.html#ab7734e3cdd562ad5f6ad94f97e095822',1,'lf_port_base_t']]],
   ['destructor_30',['destructor',['../structtoken__type__t.html#a304b9805bf712b9e1745432f8bd9796c',1,'token_type_t']]],
-  ['determine_5fnumber_5fof_5fworkers_31',['determine_number_of_workers',['../reactor__threaded_8c.html#aff80c9b69d76f5dc1fb6c7c671de9708',1,'reactor_threaded.c']]],
-  ['digits_32',['digits',['../structmixed__radix__int__t.html#a0e7296e98823c245fa1e3d7b6b590e4d',1,'mixed_radix_int_t']]],
-  ['done_5freactions_33',['done_reactions',['../struct__lf__sched__thread__info__t.html#a0aa63072819d25d22fdbc59bf55f39f6',1,'_lf_sched_thread_info_t']]],
-  ['downstream_34',['downstream',['../structfederate__t.html#a70e3719658ccc1ed171389b566ec5631',1,'federate_t']]],
-  ['drop_35',['drop',['../lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019',1,'lf_types.h']]],
-  ['duration_36',['duration',['../reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration():&#160;reactor_common.c'],['../reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration():&#160;reactor_common.c']]]
+  ['digits_31',['digits',['../structmixed__radix__int__t.html#a0e7296e98823c245fa1e3d7b6b590e4d',1,'mixed_radix_int_t']]],
+  ['done_5freactions_32',['done_reactions',['../struct__lf__sched__thread__info__t.html#a0aa63072819d25d22fdbc59bf55f39f6',1,'_lf_sched_thread_info_t']]],
+  ['downstream_33',['downstream',['../structfederate__t.html#a70e3719658ccc1ed171389b566ec5631',1,'federate_t']]],
+  ['drop_34',['drop',['../lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019',1,'lf_types.h']]],
+  ['duration_35',['duration',['../reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration():&#160;reactor_common.c'],['../reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration():&#160;reactor_common.c']]]
 ];

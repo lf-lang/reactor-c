@@ -81,7 +81,8 @@ $(function() {
   <div class="headertitle"><div class="title">scheduler_PEDF_NP.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &quot;<a class="el" href="platform_8h_source.html">platform.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &quot;<a class="el" href="lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="platform_8h_source.html">platform.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="pqueue_8h_source.html">pqueue.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="reactor_8h_source.html">reactor.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="scheduler__instance_8h_source.html">scheduler_instance.h</a>&quot;</code><br />
@@ -169,7 +170,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Partitioned Earliest Deadline First (GEDF) non-preemptive for the threaded runtime of the C target of Lingua Franca.</p>
+<p>Partitioned Earliest Deadline First (PEDF) non-preemptive for the threaded runtime of the C target of Lingua Franca.</p>
 <dl class="section author"><dt>Author</dt><dd>{Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd>
 <dd>
 {Edward A. Lee <a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd>
@@ -360,7 +361,7 @@ false All the workers were idle. </dd></dl>
 </div><div class="memdoc">
 
 <p>Wait until the scheduler assigns work. </p>
-<p>This will inform the scheduler that this thread is idle via </p><dl class="section see"><dt>See also</dt><dd>'_lf_sched_ask_for_work' and waits until work is handed out by the scheduler to the <a class="el" href="reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63">worker</a> thread 'worker_number' or it's time <a class="el" href="hashmap_8h.html#a611d52c77a8144080f7bfb45eaec2a66">for</a> the <a class="el" href="reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63">worker</a> thread to stop.</dd></dl>
+<p>This will inform the scheduler that this thread is idle via </p><dl class="section see"><dt>See also</dt><dd>'_lf_sched_ask_for_work' and waits until work is handed out by the scheduler to the worker thread 'worker_number' or it's time <a class="el" href="hashmap_8h.html#a611d52c77a8144080f7bfb45eaec2a66">for</a> the worker thread to stop.</dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">worker_number</td><td>The worker number of the worker thread asking for work to be assigned to it. </td></tr>
@@ -616,7 +617,6 @@ false All the workers were idle. </dd></dl>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Global mutex and condition variable. </p>
 
 </div>
 </div>

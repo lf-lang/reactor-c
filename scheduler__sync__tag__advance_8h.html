@@ -117,10 +117,6 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>If there is at least one event in the event queue, then wait until physical time matches or exceeds the time of the least tag on the event queue; pop the next event(s) from the event queue that all have the same tag; extract from those events the reactions that are to be invoked at this logical time and insert them into the reaction queue. The event queue is sorted by time tag.</p>
-<p>If there is no event in the queue and the keepalive command-line option was not given, and this is not a federated execution with centralized coordination, set the stop tag to the current tag. If keepalive was given, then wait for either <a class="el" href="reactor__threaded_8c.html#aa217496c12cb5b53dad3d91e203cc323">lf_request_stop()</a> to be called or an event appears in the event queue and then return.</p>
-<p>Every time tag is advanced, it is checked against stop tag and if they are equal, shutdown reactions are triggered.</p>
-<p>This does not acquire the mutex lock. It assumes the lock is already held. </p>
 
 </div>
 </div>

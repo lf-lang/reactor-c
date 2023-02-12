@@ -6,6 +6,5 @@ var searchData=
   ['has_5fupstream_3',['has_upstream',['../structfederate__instance__t.html#a603662cf0155920b8a76659e7dacb9ef',1,'federate_instance_t']]],
   ['has_5fuser_4',['has_user',['../structrti__addr__info__t.html#a66ce998dc61ba1e1a939c18cb79ae9af',1,'rti_addr_info_t']]],
   ['has_5fvalue_5',['has_value',['../structlf__action__base__t.html#aaa41924b6862c8128e8ea02b1c964c52',1,'lf_action_base_t']]],
-  ['history_6',['history',['../structsocket__stat__t.html#ab34f093b789df801fe4717cca5a3e745',1,'socket_stat_t']]],
-  ['horizon_7',['horizon',['../struct__lf__tag__advancement__barrier.html#ad60842fa9c91497e893075d9b42913ba',1,'_lf_tag_advancement_barrier']]]
+  ['history_6',['history',['../structsocket__stat__t.html#ab34f093b789df801fe4717cca5a3e745',1,'socket_stat_t']]]
 ];
