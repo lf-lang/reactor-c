@@ -27,13 +27,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /**
- * Partitioned Earliest Deadline First (GEDF) non-preemptive for the threaded
+ * Partitioned Earliest Deadline First (PEDF) non-preemptive for the threaded
  * runtime of the C target of Lingua Franca.
  *
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  * @author{Edward A. Lee <eal@berkeley.edu>}
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
+
+#include "lf_types.h"
 #if SCHEDULER == PEDF_NP
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
