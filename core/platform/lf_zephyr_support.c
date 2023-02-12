@@ -281,7 +281,7 @@ int lf_nanosleep(interval_t sleep_duration) {
 
 /**
  * Only provide implementation of critical sections and notify of event
- * for the unthreaded scenario. FOr threaded, it is implemented in
+ * for the unthreaded scenario. For threaded, it is implemented in
  * `reactor_threaded.c`
 */
 #ifdef LF_UNTHREADED
