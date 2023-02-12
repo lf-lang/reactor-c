@@ -290,8 +290,6 @@ Functions</h2></td></tr>
 <p>Enter a critical section by disabling interrupts, supports nested critical sections.</p>
 <dl class="section return"><dt>Returns</dt><dd>int</dd></dl>
 <p>Enter critical section. Let NRF Softdevice handle nesting.</p>
-<dl class="section return"><dt>Returns</dt><dd>int</dd></dl>
-<p>Enter critical section. Let NRF Softdevice handle nesting.</p>
 <dl class="section return"><dt>Returns</dt><dd>int </dd></dl>
 
 </div>
@@ -315,8 +313,6 @@ Functions</h2></td></tr>
 <p>Exit the critical section entered with lf_lock_time(). </p><dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise.</dd></dl>
 <p>TODO: Arduino currently has bugs with its interrupt process, so we disable it for now. As such, physical actions are not yet supported.</p>
 <p>If interrupts were enabled when the matching call to <a class="el" href="lf__arduino__support_8c.html#a826d1582ddab93857dddcf900df4212f">lf_critical_section_enter()</a> occurred, then they will be re-enabled here.</p>
-<p>Exit a critical section.</p>
-<dl class="section return"><dt>Returns</dt><dd>int</dd></dl>
 <p>Exit a critical section.</p>
 <dl class="section return"><dt>Returns</dt><dd>int </dd></dl>
 

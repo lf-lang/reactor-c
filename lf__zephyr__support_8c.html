@@ -108,15 +108,6 @@ Functions</h2></td></tr>
 <tr class="memitem:a9a43894d4caf7e2fc1e75b9b49d7285d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__zephyr__support_8c.html#a9a43894d4caf7e2fc1e75b9b49d7285d">lf_sleep</a> (<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> sleep_duration)</td></tr>
 <tr class="memdesc:a9a43894d4caf7e2fc1e75b9b49d7285d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pause execution for a given duration.  <br /></td></tr>
 <tr class="separator:a9a43894d4caf7e2fc1e75b9b49d7285d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a826d1582ddab93857dddcf900df4212f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__zephyr__support_8c.html#a826d1582ddab93857dddcf900df4212f">lf_critical_section_enter</a> ()</td></tr>
-<tr class="memdesc:a826d1582ddab93857dddcf900df4212f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter critical section by disabling interrupts. Support nested critical sections by only disabling interrupts on the first call.  <br /></td></tr>
-<tr class="separator:a826d1582ddab93857dddcf900df4212f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a15016241de6a4f3c35115f39e0695084"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__zephyr__support_8c.html#a15016241de6a4f3c35115f39e0695084">lf_critical_section_exit</a> ()</td></tr>
-<tr class="memdesc:a15016241de6a4f3c35115f39e0695084"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leave critical section by re-enabling interrupts.  <br /></td></tr>
-<tr class="separator:a15016241de6a4f3c35115f39e0695084"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaab97e9e3cf7021063a14698cca59adc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__zephyr__support_8c.html#aaab97e9e3cf7021063a14698cca59adc">lf_notify_of_event</a> ()</td></tr>
-<tr class="memdesc:aaab97e9e3cf7021063a14698cca59adc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set global flag to true so that sleep will return when woken.  <br /></td></tr>
-<tr class="separator:aaab97e9e3cf7021063a14698cca59adc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a50ad9d5da851a0aeaf45ad759c02bbd1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf__zephyr__support_8c.html#a50ad9d5da851a0aeaf45ad759c02bbd1">lf_nanosleep</a> (<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> sleep_duration)</td></tr>
 <tr class="separator:a50ad9d5da851a0aeaf45ad759c02bbd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -184,48 +175,6 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a826d1582ddab93857dddcf900df4212f" name="a826d1582ddab93857dddcf900df4212f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a826d1582ddab93857dddcf900df4212f">&#9670;&#160;</a></span>lf_critical_section_enter()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int lf_critical_section_enter </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Enter critical section by disabling interrupts. Support nested critical sections by only disabling interrupts on the first call. </p>
-<p>Enter critical section. Let NRF Softdevice handle nesting.</p>
-<dl class="section return"><dt>Returns</dt><dd>int </dd></dl>
-
-</div>
-</div>
-<a id="a15016241de6a4f3c35115f39e0695084" name="a15016241de6a4f3c35115f39e0695084"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a15016241de6a4f3c35115f39e0695084">&#9670;&#160;</a></span>lf_critical_section_exit()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int lf_critical_section_exit </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Leave critical section by re-enabling interrupts. </p>
-<p>Exit a critical section.</p>
-<dl class="section return"><dt>Returns</dt><dd>int </dd></dl>
-
-</div>
-</div>
 <a id="a8a8a7b7282ac4e56d2834b68824452a5" name="a8a8a7b7282ac4e56d2834b68824452a5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8a8a7b7282ac4e56d2834b68824452a5">&#9670;&#160;</a></span>lf_initialize_clock()</h2>
 
@@ -260,28 +209,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-</div>
-</div>
-<a id="aaab97e9e3cf7021063a14698cca59adc" name="aaab97e9e3cf7021063a14698cca59adc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaab97e9e3cf7021063a14698cca59adc">&#9670;&#160;</a></span>lf_notify_of_event()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int lf_notify_of_event </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set global flag to true so that sleep will return when woken. </p>
-<p>Notify any listeners that an event has been created. The caller should call <a class="el" href="lf__nrf52__support_8c.html#a826d1582ddab93857dddcf900df4212f" title="Enter critical section. Let NRF Softdevice handle nesting.">lf_critical_section_enter()</a> before calling this function. </p><dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise.</dd></dl>
-<p>Handle notifications from the runtime of changes to the event queue. If a sleep is in progress, it should be interrupted.</p>
-<dl class="section return"><dt>Returns</dt><dd>int </dd></dl>
+<p>Old nanosleep API. It is just forwarded to <code>lf_sleep</code> </p>
 
 </div>
 </div>
