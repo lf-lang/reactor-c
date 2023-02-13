@@ -1,4 +1,3 @@
-#if defined(LF_THREADED)
 /* Runtime infrastructure for the threaded version of the C target of Lingua Franca. */
 
 /*************
