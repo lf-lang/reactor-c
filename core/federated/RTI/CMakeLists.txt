@@ -70,6 +70,9 @@ add_executable(
     rti.c
     ${LF_PLATFORM_FILE}
     ${CoreLib}/platform/lf_unix_clock_support.c
+    ${CoreLib}/utils/util.c
+    ${CoreLib}/tag.c
+    ${CoreLib}/federated/net_util.c
     ${CoreLib}/utils/pqueue.c
     message_record/message_record.c
 )

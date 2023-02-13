@@ -60,10 +60,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/wait.h>   // Defines wait() for process to change state.
 
 #include "platform.h"   // Platform-specific types and functions
-#include "util.c" // Defines print functions (e.g., lf_print).
-#include "net_util.c"   // Defines network functions.
+#include "util.h" // Defines print functions (e.g., lf_print).
+#include "net_util.h"   // Defines network functions.
 #include "net_common.h" // Defines message types, etc. Includes <pthread.h> and "reactor.h".
-#include "tag.c"        // Time-related types and functions.
+#include "tag.h"        // Time-related types and functions.
 #include "rti.h"
 #ifdef __RTI_AUTH__
 #include <openssl/rand.h> // For secure random number generation.
