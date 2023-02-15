@@ -1270,7 +1270,8 @@ void _lf_advance_logical_time(instant_t next_time) {
     } else {
         lf_print_error_and_exit("_lf_advance_logical_time(): Attempted to move tag back in time.");
     }
-    LF_PRINT_LOG("Advanced (elapsed) tag to " PRINTF_TAG, next_time - start_time, current_tag.microstep);
+    LF_PRINT_LOG("Advanced (elapsed) tag to " PRINTF_TAG " at physical time " PRINTF_TIME,
+        next_time - start_time, current_tag.microstep, lf_time_physical_elapsed());
 }
 
 /**
