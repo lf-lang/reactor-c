@@ -203,7 +203,7 @@ static void worker_states_sleep_and_unlock(size_t worker, size_t level_counter_s
         ((level_counter_snapshot == level_counter) || worker >= num_awakened)
     ) {
         do {
-            lf_cond_wait(worker_conds + cond, &mutex);
+            lf_cond_wait(worker_conds + cond);
         } while (level_counter_snapshot == level_counter || worker >= num_awakened);
     }
     assert(!mutex_held[worker]);  // This thread holds the mutex, but it did not report that.

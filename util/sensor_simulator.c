@@ -316,7 +316,7 @@ void* _lf_sensor_simulator_thread(void* ignored) {
     while(_lf_sensor.thread_created != 0) {
     	// Sadly, ncurses is not thread safe, so this thread deals with all messages.
     	while (_lf_sensor.message_q == NULL) {
-            lf_cond_wait(&_lf_sensor_simulator_cond_var, &_lf_sensor_mutex);
+            lf_cond_wait(&_lf_sensor_simulator_cond_var);
     	}
     	// Show all messages in the queue.
 		while (_lf_sensor.message_q != NULL) {
