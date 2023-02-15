@@ -337,6 +337,13 @@ int lf_notify_of_event() {
 #define _LF_STACK_SIZE 1024
 // FIXME: What is an appropriate thread prio?
 #define _LF_THREAD_PRIORITY 5
+
+// If NUMBER_OF_WORKERS is not specified, or specified to 0. Then we default to 1
+#if !defined(NUMBER_OF_WORKERS) || NUMBER_OF_WORKERS==0
+#undef NUMBER_OF_WORKERS
+#define NUMBER_OF_WORKERS 1
+#endif
+
 static K_THREAD_STACK_ARRAY_DEFINE(stacks, NUMBER_OF_WORKERS, _LF_STACK_SIZE);
 static struct k_thread threads[NUMBER_OF_WORKERS];
 
@@ -367,7 +374,8 @@ int lf_available_cores() {
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     // Use static id to map each created thread to a 
     static int tid = 0;
-    
+
+    // Make sure we dont try to create too many threads
     if (tid > (NUMBER_OF_WORKERS-1)) {
         return -1;
     }
