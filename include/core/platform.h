@@ -79,13 +79,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error "Platform not supported"
 #endif
 
-#if defined(LF_THREADED) || defined(_LF_TRACE)
-// All threaded platforms require some form of mutex support for physical actions.
-typedef _lf_mutex_t lf_mutex_t;          // Type to hold handle to a mutex
-typedef _lf_cond_t lf_cond_t;            // Type to hold handle to a condition variable
-typedef _lf_thread_t lf_thread_t;        // Type to hold handle to a thread
-
-#else
+#if !defined(LF_THREADED) && !defined(_LF_TRACE)
     typedef void lf_mutex_t;
 #endif
 

@@ -69,8 +69,8 @@ typedef struct _lf_sensor_message_t {
 } _lf_sensor_message_t;
 
 struct {
-	_lf_thread_t input_thread_id;
-	_lf_thread_t output_thread_id;
+	lf_thread_t input_thread_id;
+	lf_thread_t output_thread_id;
 	int thread_created;
 
 	/**

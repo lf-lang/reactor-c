@@ -199,7 +199,7 @@ int lf_available_cores() {
  *
  */
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
-    _lf_thread_t t = thread_new();
+    lf_thread_t t = thread_new();
     long int start = thread_start(t, *lf_thread, arguments);
     *thread = t;   
     return start;

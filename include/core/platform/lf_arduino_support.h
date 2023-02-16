@@ -114,12 +114,12 @@ struct timespec {
 #ifdef LF_THREADED
 #warning "Threaded support on Arduino is still experimental"
 
-typedef void* _lf_mutex_t;
-typedef void* _lf_cond_t;
-typedef void* _lf_thread_t;
+typedef void* lf_mutex_t;
+typedef void* lf_cond_t;
+typedef void* lf_thread_t;
 
-extern _lf_mutex_t mutex;
-extern _lf_cond_t event_q_changed;
+extern lf_mutex_t mutex;
+extern lf_cond_t event_q_changed;
 
 #endif // LF_THREADED
 

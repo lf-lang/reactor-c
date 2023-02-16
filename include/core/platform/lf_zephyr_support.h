@@ -64,15 +64,15 @@ typedef uint32_t _microstep_t;
 #ifdef LF_THREADED
 #warning "Threaded support on Zephyr is still experimental"
 
-typedef struct k_mutex _lf_mutex_t;
+typedef struct k_mutex lf_mutex_t;
 typedef struct {
-    _lf_mutex_t* mutex;
+    lf_mutex_t* mutex;
     struct k_condvar condition;
-} _lf_cond_t;
-typedef k_tid_t _lf_thread_t;
+} lf_cond_t;
+typedef k_tid_t lf_thread_t;
 
-extern _lf_mutex_t mutex;
-extern _lf_cond_t event_q_changed;
+extern lf_mutex_t mutex;
+extern lf_cond_t event_q_changed;
 
 /**
  * @brief Add `value` to `*ptr` and return original value of `*ptr` 
