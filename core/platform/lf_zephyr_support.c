@@ -343,7 +343,7 @@ int lf_notify_of_event() {
 
 
 #ifdef LF_THREADED
-#warning "Threaded support on Zephyr is still experimental"
+#error "Threaded support on Zephyr is not supported"
 
 // FIXME: What is an appropriate stack size?
 #define _LF_STACK_SIZE 1024
@@ -381,7 +381,10 @@ int lf_available_cores() {
  * getting passed arguments. The new handle is stored in thread_id.
  *
  * @return 0 on success, platform-specific error number otherwise.
- *
+ * FIXME: As this function is currently part of the user-facing API, 
+ *  it should not care about the number of workers specified.
+ *  If we want static allocation of workers, as implemented now,
+ *  it must be removed from the API.
  */
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     // Use static id to map each created thread to a 
