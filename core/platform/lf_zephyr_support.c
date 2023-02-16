@@ -350,7 +350,7 @@ int lf_notify_of_event() {
 // FIXME: What is an appropriate thread prio?
 #define _LF_THREAD_PRIORITY 5
 
-// If NUMBER_OF_WORKERS is not specified, or specified to 0. Then we default to 1
+// If NUMBER_OF_WORKERS is not specified, or set to 0, then we default to 1.
 #if !defined(NUMBER_OF_WORKERS) || NUMBER_OF_WORKERS==0
 #undef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
