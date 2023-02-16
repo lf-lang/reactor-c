@@ -45,6 +45,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Combine 2 32-bit words to a 64-bit word
 #define COMBINE_HI_LO(hi,lo) ((((uint64_t) hi) << 32) | ((uint64_t) lo))
 
+// Keep track of overflows to keep clocks monotonic
+static int64_t _lf_timer_epoch_duration_nsec;
+static volatile int64_t _lf_timer_last_epoch_nsec = 0;
 
 #if defined(LF_ZEPHYR_CLOCK_HI_RES)
 // Create semaphore for async wakeup from physical action
@@ -55,13 +58,11 @@ const struct device *const _lf_counter_dev = DEVICE_DT_GET(LF_TIMER);
 static volatile bool _lf_alarm_fired;
 static uint32_t _lf_timer_freq;
 
-static int64_t _lf_timer_epoch_duration_usec;
-static volatile int64_t _lf_timer_last_epoch_nsec = 0;
 
 
 // Timer overflow callback
 static void  _lf_timer_overflow_callback(const struct device *dev, void *user_data) {
-        _lf_timer_last_epoch_nsec += _lf_timer_epoch_duration_usec*1000LL;
+        _lf_timer_last_epoch_nsec += _lf_timer_epoch_duration_nsec;
 }
 
 
@@ -109,7 +110,7 @@ void lf_initialize_clock() {
 
     // Calculate the duration of an epoch
     counter_max_ticks = counter_get_max_top_value(_lf_counter_dev);
-    _lf_timer_epoch_duration_usec = counter_ticks_to_us(_lf_counter_dev, counter_max_ticks);
+    _lf_timer_epoch_duration_nsec = counter_ticks_to_us(_lf_counter_dev, counter_max_ticks) * 1000LL;
     
     // Set the max_top value to be the maximum
     counter_max_ticks = counter_get_max_top_value(_lf_counter_dev);
@@ -135,6 +136,9 @@ void lf_initialize_clock() {
     #else
     LF_PRINT_LOG("Using Low resolution zephyr kernel clock");
     LF_PRINT_LOG("Kernel Clock has frequency of %u Hz\n", CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC);
+    _lf_timer_last_epoch_nsec = 0;
+    // Compute the duration of an 
+    _lf_timer_epoch_duration_nsec = ((1LL << 32) * SECONDS(1))/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC;
     #endif
 }   
 
@@ -222,11 +226,19 @@ int lf_sleep_until_locked(instant_t wakeup) {
     }
 }
 #else
-// Clock and sleep implementation for LO_RES clock
-
+// Clock and sleep implementation for LO_RES clock. Handle wraps
+//  by checking if two consecutive reads are monotonic
+static uint32_t last_read_cycles=0;
 int lf_clock_gettime(instant_t* t) {
     uint32_t now_cycles = k_cycle_get_32();
-    *t = (SECOND(1)/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC)*now_cycles;
+
+    if (now_cycles < last_read_cycles) {
+        _lf_timer_last_epoch_nsec += _lf_timer_epoch_duration_nsec;
+    }
+
+    *t = (SECOND(1)/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC)*now_cycles + _lf_timer_last_epoch_nsec;
+
+    last_read_cycles = now_cycles;
     return 0;
 }
 
