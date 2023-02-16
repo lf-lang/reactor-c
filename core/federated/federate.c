@@ -501,9 +501,10 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
                             errno,
                             strerror(errno)
                         );
-
+            return;
         } else if (errno == ENOTCONN) {
             lf_print_error("Socket to the RTI is no longer connected. Considering this a soft error.");
+            return;
         } else {
             lf_mutex_unlock(&outbound_socket_mutex);
             lf_print_error_and_exit("Failed to send tag " PRINTF_TAG " to the RTI."
@@ -515,7 +516,7 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
                                 );
         }
     }
-
+    tracepoint_tag_to_RTI(type, tag);
     lf_mutex_unlock(&outbound_socket_mutex);
 }
 

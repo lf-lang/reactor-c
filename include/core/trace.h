@@ -29,7 +29,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Definitions of tracepoint events for use with the C code generator and any other
  * code generator that uses the C infrastructure (such as the Python code generator).
  *
- * See: https://github.com/icyphy/lingua-franca/wiki/Tracing#TracingInC
+ * See: https://www.lf-lang.org/docs/handbook/tracing?target=c
  *
  * The trace file is named trace.lft and is a binary file with the following format:
  *
@@ -49,6 +49,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "lf_types.h"
 
+#ifdef FEDERATED
+#include "net_common.h"
+#endif // FEDERATED
+
 /**
  * Trace event types. If you update this, be sure to update the
  * string representation below. Also, create a tracepoint function
@@ -63,7 +67,9 @@ typedef enum {
     worker_wait_starts,
     worker_wait_ends,
     scheduler_advancing_time_starts,
-    scheduler_advancing_time_ends
+    scheduler_advancing_time_ends,
+    federate_NET,
+    federate_LTC
 } trace_event_t;
 
 #ifdef LF_TRACE
@@ -80,7 +86,9 @@ static const char* trace_event_names[] = {
         "Worker wait starts",
         "Worker wait ends",
         "Scheduler advancing time starts",
-        "Scheduler advancing time ends"
+        "Scheduler advancing time ends",
+        "Federate sends NET to RTI",
+        "Federate sends LTC to RTI"
 };
 
 // FIXME: Target property should specify the capacity of the trace buffer.
@@ -89,6 +97,9 @@ static const char* trace_event_names[] = {
 /** Size of the table of trace objects. */
 #define TRACE_OBJECT_TABLE_SIZE 1024
 
+/**
+ * @brief A trace record that is written in binary to the trace file.
+ */
 typedef struct trace_record_t {
     trace_event_t event_type;
     void* pointer;  // pointer identifying the record, e.g. to self struct for a reactor.
@@ -151,6 +162,7 @@ void start_trace(char* filename);
  * This is a generic tracepoint function. It is better to use one of the specific functions.
  * @param event_type The type of event (see trace_event_t in trace.h)
  * @param reactor The pointer to the self struct of the reactor instance in the trace table.
+ * @param tag Pointer to a tag or NULL to use current tag.
  * @param reaction_number The index of the reaction or -1 if the trace is not of a reaction.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  * @param physical_time If the caller has already accessed physical time, provide it here.
@@ -163,6 +175,7 @@ void start_trace(char* filename);
 void tracepoint(
         trace_event_t event_type,
         void* reactor,
+        tag_t* tag,
         int reaction_number,
         int worker,
         instant_t* physical_time,
@@ -234,6 +247,20 @@ void tracepoint_scheduler_advancing_time_starts();
  * appear on the event queue.
  */
 void tracepoint_scheduler_advancing_time_ends();
+
+////////////////////////////////////////////////////////////
+//// For federated execution
+
+#ifdef FEDERATED
+
+/**
+ * Trace sending a Next Event Tag (NET) or Logical Tag Complete (LTC) message to the RTI.
+ * @param type Either MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LOGICAL_TAG_COMPLETE.
+ * @param tag The tag that has been sent.
+ */
+void tracepoint_tag_to_RTI(unsigned char type, tag_t tag);
+
+#endif // FEDERATED
 
 void stop_trace(void);
 

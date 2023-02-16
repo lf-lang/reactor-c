@@ -375,6 +375,7 @@ void start_trace(char* filename) {
  * This is a generic tracepoint function. It is better to use one of the specific functions.
  * @param event_type The type of event (see trace_event_t in trace.h)
  * @param pointer The identifying pointer.
+ * @param tag Pointer to a tag or NULL to use current tag.
  * @param reaction_number The number of the reaction or -1 if the trace is not of a reaction
  *  or the reaction number if not known.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution
@@ -389,6 +390,7 @@ void start_trace(char* filename) {
 void tracepoint(
         trace_event_t event_type,
         void* pointer,
+        tag_t* tag,
         int reaction_number,
         int worker,
         instant_t* physical_time,
@@ -409,8 +411,13 @@ void tracepoint(
     _lf_trace_buffer[index][i].pointer = pointer;
     _lf_trace_buffer[index][i].reaction_number = reaction_number;
     _lf_trace_buffer[index][i].worker = worker;
-    _lf_trace_buffer[index][i].logical_time = lf_time_logical();
-    _lf_trace_buffer[index][i].microstep = lf_tag().microstep;
+    if (tag != NULL) {
+        _lf_trace_buffer[index][i].logical_time = lf_time_logical();
+        _lf_trace_buffer[index][i].microstep = lf_tag().microstep;
+    } else {
+        _lf_trace_buffer[index][i].logical_time = tag->time;
+        _lf_trace_buffer[index][i].microstep = tag->microstep;
+    }
     if (physical_time != NULL) {
         _lf_trace_buffer[index][i].physical_time = *physical_time;
     } else {
@@ -427,7 +434,7 @@ void tracepoint(
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_reaction_starts(reaction_t* reaction, int worker) {
-    tracepoint(reaction_starts, reaction->self, reaction->number, worker, NULL, NULL, 0);
+    tracepoint(reaction_starts, reaction->self, NULL, reaction->number, worker, NULL, NULL, 0);
 }
 
 /**
@@ -436,7 +443,7 @@ void tracepoint_reaction_starts(reaction_t* reaction, int worker) {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_reaction_ends(reaction_t* reaction, int worker) {
-    tracepoint(reaction_ends, reaction->self, reaction->number, worker, NULL, NULL, 0);
+    tracepoint(reaction_ends, reaction->self, NULL, reaction->number, worker, NULL, NULL, 0);
 }
 
 /**
@@ -454,7 +461,7 @@ void tracepoint_schedule(trigger_t* trigger, interval_t extra_delay) {
             && trigger->reactions[0] != NULL) {
         reactor = trigger->reactions[0]->self;
     }
-    tracepoint(schedule_called, reactor, 0, 0, NULL, trigger, extra_delay);
+    tracepoint(schedule_called, reactor, NULL, 0, 0, NULL, trigger, extra_delay);
 }
 
 /**
@@ -465,7 +472,7 @@ void tracepoint_schedule(trigger_t* trigger, interval_t extra_delay) {
  */
 void tracepoint_user_event(char* description) {
     // -1s indicate unknown reaction number and worker thread.
-    tracepoint(user_event, description,  -1, -1, NULL, NULL, 0);
+    tracepoint(user_event, description,  NULL, -1, -1, NULL, NULL, 0);
 }
 
 /**
@@ -480,7 +487,7 @@ void tracepoint_user_event(char* description) {
  */
 void tracepoint_user_value(char* description, long long value) {
     // -1s indicate unknown reaction number and worker thread.
-    tracepoint(user_value, description,  -1, -1, NULL, NULL, value);
+    tracepoint(user_value, description,  NULL, -1, -1, NULL, NULL, value);
 }
 
 /**
@@ -488,7 +495,7 @@ void tracepoint_user_value(char* description, long long value) {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_worker_wait_starts(int worker) {
-    tracepoint(worker_wait_starts, NULL, -1, worker, NULL, NULL, 0);
+    tracepoint(worker_wait_starts, NULL, NULL, -1, worker, NULL, NULL, 0);
 }
 
 /**
@@ -496,7 +503,7 @@ void tracepoint_worker_wait_starts(int worker) {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_worker_wait_ends(int worker) {
-    tracepoint(worker_wait_ends, NULL, -1, worker, NULL, NULL, 0);
+    tracepoint(worker_wait_ends, NULL, NULL, -1, worker, NULL, NULL, 0);
 }
 
 /**
@@ -504,7 +511,7 @@ void tracepoint_worker_wait_ends(int worker) {
  * appear on the event queue.
  */
 void tracepoint_scheduler_advancing_time_starts() {
-    tracepoint(scheduler_advancing_time_starts, NULL, -1, -1, NULL, NULL, 0);
+    tracepoint(scheduler_advancing_time_starts, NULL, NULL, -1, -1, NULL, NULL, 0);
 }
 
 /**
@@ -512,7 +519,7 @@ void tracepoint_scheduler_advancing_time_starts() {
  * appear on the event queue.
  */
 void tracepoint_scheduler_advancing_time_ends() {
-    tracepoint(scheduler_advancing_time_ends, NULL, -1, -1, NULL, NULL, 0);
+    tracepoint(scheduler_advancing_time_ends, NULL, NULL, -1, -1, NULL, NULL, 0);
 }
 
 /**
@@ -551,5 +558,31 @@ void stop_trace() {
     _lf_trace_file = NULL;
     LF_PRINT_DEBUG("Stopped tracing.");
 }
+
+////////////////////////////////////////////////////////////
+//// For federated execution
+
+#ifdef FEDERATED
+
+/**
+ * Trace sending a Next Event Tag (NET) or Logical Tag Complete (LTC) message to the RTI.
+ * @param type Either MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LOGICAL_TAG_COMPLETE.
+ * @param tag The tag that has been sent.
+ */
+void tracepoint_tag_to_RTI(unsigned char type, tag_t tag) {
+
+    trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG)? federate_NET : federate_LTC;
+    tracepoint(event_type,
+        NULL, // void* pointer,
+        &tag, // tag* tag,
+        -1,   // int reaction_number,
+        0,    // int worker,
+        NULL, // instant_t* physical_time (will be generated)
+        NULL, // trigger_t* trigger,
+        0     // interval_t extra_delay
+    );
+}
+
+#endif // FEDERATED
 
 #endif // LF_TRACE
