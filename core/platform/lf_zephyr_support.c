@@ -144,7 +144,9 @@ void lf_initialize_clock() {
 // Zephyrs Counter API
 
 /**
- * Return the current time in nanoseconds
+ * Return the current time in nanoseconds. It gets the current value
+ * of the hi-res counter device and also keeps track of overflows
+ * to deliver a monotonically increasing clock.
  */
 int lf_clock_gettime(instant_t* t) {
     uint32_t now_cycles;
@@ -154,8 +156,6 @@ int lf_clock_gettime(instant_t* t) {
     res = counter_get_value(_lf_counter_dev, &now_cycles);
     now_nsec = counter_ticks_to_us(_lf_counter_dev, now_cycles)*1000ULL;
     *t = now_nsec + _lf_timer_last_epoch_nsec;
-    now_cycles = k_cycle_get_32();
-    *t = (SECOND(1)/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC)*now_cycles;
     return 0;
 }
 
