@@ -230,7 +230,7 @@ struct watchdog_t {
     interval_t min_expiration;              // The minimum expiration interval for the watchdog.
     lf_thread_t thread_id;                 // The thread that the watchdog is meant to run on.
     bool thread_active;                     // Boolean indicating whether or not thread is active.  
-    watchdog_function_t* watchdog_function;  // The function/handler for the watchdog.
+    struct watchdog_function_t* watchdog_function;  // The function/handler for the watchdog.
 };
 
 /**
@@ -303,8 +303,8 @@ typedef struct allocation_record_t {
 // modif4watchdogs
 // WATCHDOG QUESTION: The mutex doesn't need to be a pointer right?
 typedef struct self_base_t {
-	allocation_record_t *allocations;
-	reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
+	struct allocation_record_t *allocations;
+	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
     // WATCHDOG QUESTION: how to fix incomplete error? lf_mutex_t of type void
     lf_mutex_t watchdog_mutex; // The mutex for this reactor to be acquired before reaction
                                // invocation. 

@@ -160,15 +160,6 @@ extern int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), vo
  */
 extern int lf_thread_join(lf_thread_t thread, void** thread_return);
 
-//FIXME: modif4watchdogs
-// /**
-//  * Terminate a thread.
-//  * 
-//  * @return 0 on success, platform-specific error number otherwise.
-//  */
-// extern int lf_thread_cancel(lf_thread_t thread);
-
-
 /**
  * Initialize a mutex.
  *
