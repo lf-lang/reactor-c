@@ -69,7 +69,8 @@ typedef enum {
     scheduler_advancing_time_starts,
     scheduler_advancing_time_ends,
     federate_NET,
-    federate_LTC
+    federate_LTC,
+    NUM_EVENT_TYPES
 } trace_event_t;
 
 #ifdef LF_TRACE

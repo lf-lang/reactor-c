@@ -412,11 +412,11 @@ void tracepoint(
     _lf_trace_buffer[index][i].reaction_number = reaction_number;
     _lf_trace_buffer[index][i].worker = worker;
     if (tag != NULL) {
-        _lf_trace_buffer[index][i].logical_time = lf_time_logical();
-        _lf_trace_buffer[index][i].microstep = lf_tag().microstep;
-    } else {
         _lf_trace_buffer[index][i].logical_time = tag->time;
         _lf_trace_buffer[index][i].microstep = tag->microstep;
+    } else {
+        _lf_trace_buffer[index][i].logical_time = lf_time_logical();
+        _lf_trace_buffer[index][i].microstep = lf_tag().microstep;
     }
     if (physical_time != NULL) {
         _lf_trace_buffer[index][i].physical_time = *physical_time;

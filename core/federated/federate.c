@@ -52,6 +52,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "reactor_common.h"
 #include "reactor_threaded.h"
 #include "scheduler.h"
+#include "trace.h"
 #ifdef FEDERATED_AUTHENTICATED
 #include <openssl/rand.h> // For secure random number generation.
 #include <openssl/hmac.h> // For HMAC-based authentication of federates.
