@@ -2,17 +2,13 @@
 
 /*************
 Copyright (c) 2019, The University of California at Berkeley.
-
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
-
 1. Redistributions of source code must retain the above copyright notice,
    this list of conditions and the following disclaimer.
-
 2. Redistributions in binary form must reproduce the above copyright notice,
    this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
-
 THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
 EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
 MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
@@ -1315,28 +1311,30 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
     return false;
 }
 
+
 // FIXME: modif4watchdogs
 void* run_watchdog(watchdog_t* watchdog) {
     watchdog->thread_active = true;
-    lf_mutex_lock(&(watchdog->self->watchdog_mutex));
+    self_base_t* base = watchdog->base;
+    lf_mutex_lock(&(base->watchdog_mutex));
 
     while (lf_time_physical() < watchdog->expiration) {
         interval_t T = watchdog->expiration - lf_time_physical();
-        lf_mutex_unlock(&(watchdog->self->watchdog_mutex));
+        lf_mutex_unlock(&(base->watchdog_mutex));
         lf_nanosleep(T);
-        lf_mutex_lock(&(watchdog->self->watchdog_mutex));
+        lf_mutex_lock(&(base->watchdog_mutex));
     }
     // WATCHDOG QUESTION: Had to change watchdog_function to not be
     // a pointer because this threw error otherwise.
     watchdog_function_t watchdog_func = watchdog->watchdog_function;
     (*watchdog_func)(watchdog);
-    lf_mutex_unlock(&(watchdog->self->watchdog_mutex));
+    lf_mutex_unlock(&(base->watchdog_mutex));
 }
 
 // FIXME: modif4watchdogs
 void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
-
-    lf_mutex_lock(&(watchdog->self->watchdog_mutex));
+    self_base_t* base = watchdog->base;
+    lf_mutex_lock(&(base->watchdog_mutex));
     // reinitialize expiration time
     watchdog->expiration = lf_time_logical() + watchdog->min_expiration + additional_timeout;
 
@@ -1348,7 +1346,7 @@ void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
     } 
 
     watchdog->thread_active = false;
-    lf_mutex_unlock(&(watchdog->self->watchdog_mutex));
+    lf_mutex_unlock(&(base->watchdog_mutex));
 }
 
 void _lf_watchdog_stop(watchdog_t* watchdog) {
@@ -1365,7 +1363,7 @@ void _lf_watchdog_stop(watchdog_t* watchdog) {
 void _lf_invoke_reaction(reaction_t* reaction, int worker) {
     //FIXME: modif4watchdogs, added mutex lock/unlock
     //FIXME: also make sure to check warning about mutex lock in lf_reactor_c_main
-    if (((self_base_t*) reaction->self)->watchdog_mutex != NULL) {
+    if (&(((self_base_t*) reaction->self)->watchdog_mutex) != NULL) {
         lf_mutex_lock(&(((self_base_t*) reaction->self)->watchdog_mutex));
     }
     
@@ -1375,7 +1373,7 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
     ((self_base_t*) reaction->self)->executing_reaction = NULL;
     tracepoint_reaction_ends(reaction, worker);
 
-    if (((self_base_t*) reaction->self)->watchdog_mutex != NULL) {
+    if (&(((self_base_t*) reaction->self)->watchdog_mutex) != NULL) {
         lf_mutex_unlock(&(((self_base_t*) reaction->self)->watchdog_mutex));
     }
 }
@@ -1822,3 +1820,4 @@ void termination(void) {
     free(_lf_is_present_fields);
     free(_lf_is_present_fields_abbreviated);
 }
+

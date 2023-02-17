@@ -67,14 +67,14 @@ static int lf_thread_join(_lf_thread_t thread, void** thread_return) {
 //FIXME: modif4watchdogs
 //implement
 // WATCHDOG QUESTION: how to implement without posix?
-/**
- * Terminate a thread.
- * 
- * @return 0 on success, error number otherwise.
- */
-static int lf_thread_cancel(_lf_thread_t* thread) {
+// /**
+//  * Terminate a thread.
+//  * 
+//  * @return 0 on success, error number otherwise.
+//  */
+// static int lf_thread_cancel(_lf_thread_t* thread) {
 
-}
+// }
 
 /**
  * Initialize a mutex.
