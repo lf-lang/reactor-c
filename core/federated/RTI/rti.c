@@ -600,8 +600,10 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
     ) {
         next_event_tag = min_in_transit_tag;
     }
-
-    _RTI.federates[federate_id].next_event = next_event_tag;
+    if (_RTI.federates[federate_id].next_event != next_event_tag) {
+        RTI.federates[federate_id].next_event = next_event_tag;
+        //FIXME: notify upstream federates
+    }
 
     LF_PRINT_DEBUG(
        "RTI: Updated the recorded next event tag for federate %d to (%ld, %u).",
