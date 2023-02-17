@@ -889,8 +889,8 @@ void handle_next_event_tag(federate_t* fed) {
 
     tag_t intended_tag = extract_tag(buffer);
     LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) (%ld, %u).",
-        fed->id, fed->next_event.time - start_time,
-        fed->next_event.microstep);
+        fed->id, intended_tag.time - start_time,
+        intended_tag.microstep);
     update_federate_next_event_tag_locked(
         fed->id,
         intended_tag
