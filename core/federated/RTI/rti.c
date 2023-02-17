@@ -887,13 +887,13 @@ void handle_next_event_tag(federate_t* fed) {
                                          // federates' buffers in an orderly fashion.
 
 
-    tag_t intended_tag = extract_tag(buffer);
+    tag_t next_tag = extract_tag(buffer);
     LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) (%ld, %u).",
-        fed->id, intended_tag.time - start_time,
-        intended_tag.microstep);
+        fed->id, next_tag.time - start_time,
+        next_tag.microstep);
     update_federate_next_event_tag_locked(
         fed->id,
-        intended_tag
+        next_tag
     );
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
