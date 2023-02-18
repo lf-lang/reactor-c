@@ -583,6 +583,25 @@ void tracepoint_tag_to_RTI(unsigned char type, tag_t tag) {
     );
 }
 
+/**
+ * Trace receiving a Tag Advance Grant (TAG) or Provisional Tag Advance Grant (PTAG) message from the RTI.
+ * @param type Either MSG_TYPE_TAG_ADVANCE_GRANT or MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT.
+ * @param tag The tag that has been sent.
+ */
+void tracepoint_tag_from_RTI(unsigned char type, tag_t tag) {
+
+    trace_event_t event_type = (type == MSG_TYPE_TAG_ADVANCE_GRANT)? federate_TAG : federate_PTAG;
+    tracepoint(event_type,
+        NULL, // void* pointer,
+        &tag, // tag* tag,
+        -1,   // int reaction_number,
+        0,    // int worker,
+        NULL, // instant_t* physical_time (will be generated)
+        NULL, // trigger_t* trigger,
+        0     // interval_t extra_delay
+    );
+}
+
 #endif // FEDERATED
 
 #endif // LF_TRACE

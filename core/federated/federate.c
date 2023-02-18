@@ -2009,6 +2009,8 @@ void handle_tag_advance_grant() {
 
     lf_mutex_lock(&mutex);
 
+    tracepoint_tag_from_RTI(MSG_TYPE_TAG_ADVANCE_GRANT, TAG);
+
     // Update the last known status tag of all network input ports
     // to the TAG received from the RTI. Here we assume that the RTI
     // knows the status of network ports up to and including the granted tag,
@@ -2088,6 +2090,8 @@ void handle_provisional_tag_advance_grant() {
     // the RTI knows about the status of all ports up to and _including_
     // the value of PTAG. Only a TAG message indicates that.
     lf_mutex_lock(&mutex);
+
+    tracepoint_tag_from_RTI(MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT, PTAG);
 
     // Sanity check
     if (lf_tag_compare(PTAG, _fed.last_TAG) < 0

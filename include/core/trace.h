@@ -69,6 +69,8 @@ typedef enum {
     scheduler_advancing_time_starts,
     scheduler_advancing_time_ends,
     federate_NET,
+    federate_TAG,
+    federate_PTAG,
     federate_LTC,
     NUM_EVENT_TYPES
 } trace_event_t;
@@ -89,6 +91,8 @@ static const char* trace_event_names[] = {
         "Scheduler advancing time starts",
         "Scheduler advancing time ends",
         "Federate sends NET to RTI",
+        "Federate receives TAG from RTI",
+        "Federate receives PTAG from RTI",
         "Federate sends LTC to RTI"
 };
 
@@ -260,6 +264,13 @@ void tracepoint_scheduler_advancing_time_ends();
  * @param tag The tag that has been sent.
  */
 void tracepoint_tag_to_RTI(unsigned char type, tag_t tag);
+
+/**
+ * Trace receiving a Tag Advance Grant (TAG) or Provisional Tag Advance Grant (PTAG) message from the RTI.
+ * @param type Either MSG_TYPE_TAG_ADVANCE_GRANT or MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT.
+ * @param tag The tag that has been sent.
+ */
+void tracepoint_tag_from_RTI(unsigned char type, tag_t tag);
 
 #endif // FEDERATED
 
