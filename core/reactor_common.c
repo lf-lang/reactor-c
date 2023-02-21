@@ -1319,7 +1319,7 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
 void* run_watchdog(watchdog_t* watchdog) {
     watchdog->thread_active = true;
     self_base_t* base = watchdog->base;
-    lf_mutex_lock(&(base->watchdog_mutex));
+    // lf_mutex_lock(&(base->watchdog_mutex));
 
     while (lf_time_physical() < watchdog->expiration) {
         interval_t T = watchdog->expiration - lf_time_physical();
@@ -1337,7 +1337,7 @@ void* run_watchdog(watchdog_t* watchdog) {
 // FIXME: modif4watchdogs
 void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
     self_base_t* base = watchdog->base;
-    lf_mutex_lock(&(base->watchdog_mutex));
+    // lf_mutex_lock(&(base->watchdog_mutex));
     // reinitialize expiration time
     watchdog->expiration = lf_time_logical() + watchdog->min_expiration + additional_timeout;
 
@@ -1349,7 +1349,7 @@ void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
     } 
 
     watchdog->thread_active = false;
-    lf_mutex_unlock(&(base->watchdog_mutex));
+    // lf_mutex_unlock(&(base->watchdog_mutex));
 }
 
 void _lf_watchdog_stop(watchdog_t* watchdog) {
