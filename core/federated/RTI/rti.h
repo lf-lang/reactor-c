@@ -34,6 +34,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef RTI_H
 #define RTI_H
 
+// FIXME: Should be defined here, or defined conditionnaly defined if set when compiling?
+#ifndef RTI_TRACE
+#define RTI_TRACE 
+#endif
+
+#ifdef RTI_TRACE
+#define LF_TRACE
+#endif
+
 #include "lf_types.h"
 #include "message_record/message_record.h"
 
@@ -199,6 +208,11 @@ typedef struct RTI_instance_t {
      * Boolean indicating that authentication is enabled.
      */
     bool authentication_enabled;
+
+    /**
+     * Boolean indicating that tracing is enabled.
+     */
+    bool tracing_enabled;
 } RTI_instance_t;
 
 #endif // RTI_H

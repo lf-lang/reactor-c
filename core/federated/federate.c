@@ -518,7 +518,7 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
         }
     }
 #ifdef LF_TRACE
-    tracepoint_tag_to_RTI(type, tag);
+    tracepoint_tag_to_RTI(type, federation_metadata.federation_id, tag);
 #endif // LF_TRACE
     lf_mutex_unlock(&outbound_socket_mutex);
 }
@@ -2012,7 +2012,7 @@ void handle_tag_advance_grant() {
     lf_mutex_lock(&mutex);
 
 #ifdef LF_TRACE
-    tracepoint_tag_from_RTI(MSG_TYPE_TAG_ADVANCE_GRANT, TAG);
+    tracepoint_tag_from_RTI(MSG_TYPE_TAG_ADVANCE_GRANT, federation_metadata.federation_id, TAG);
 #endif // LF_TRACE
     // Update the last known status tag of all network input ports
     // to the TAG received from the RTI. Here we assume that the RTI
@@ -2095,7 +2095,7 @@ void handle_provisional_tag_advance_grant() {
     lf_mutex_lock(&mutex);
 
 #ifdef LF_TRACE
-    tracepoint_tag_from_RTI(MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT, PTAG);
+    tracepoint_tag_from_RTI(MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT, federation_metadata.federation_id, PTAG);
 #endif // LF_TRACE
 
     // Sanity check

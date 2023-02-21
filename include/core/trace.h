@@ -72,6 +72,17 @@ typedef enum {
     federate_TAG,
     federate_PTAG,
     federate_LTC,
+    rti_receive_TIMESTAMP,
+    rti_receive_ADDRESS_QUERY,
+    rti_receive_ADDRESS_ADVERTISEMENT,
+    rti_receive_TAGGED_MESSAGE,
+    rti_receive_RESIGN,
+    rti_receive_NEXT_EVENT_TAG,
+    rti_receive_LOGICAL_TAG_COMPLETE,
+    rti_receive_STOP_REQUEST,
+    rti_receive_STOP_REQUEST_REPLY,
+    rti_receive_PORT_ABSENT,
+    rti_receive_unidentified,
     NUM_EVENT_TYPES
 } trace_event_t;
 
@@ -80,7 +91,7 @@ typedef enum {
 /**
  * String description of event types.
  */
-static const char* trace_event_names[] = {
+static const char *trace_event_names[] = {
         "Reaction starts",
         "Reaction ends",
         "Schedule called",
@@ -93,7 +104,18 @@ static const char* trace_event_names[] = {
         "Federate sends NET to RTI",
         "Federate receives TAG from RTI",
         "Federate receives PTAG from RTI",
-        "Federate sends LTC to RTI"
+        "Federate sends LTC to RTI",
+        "RTI receives TIMESTAMP from federate",
+        "RTI receives ADDRESS_QUERY from federate",
+        "RTI receives ADDRESS_ADVERTISEMENT from federate",
+        "RTI receives TAGGED_MESSAGE from federate",
+        "RTI receives RESIGN from federate",
+        "RTI receives NEXT_EVENT_TAG from federate",
+        "RTI receives LOGICAL_TAG_COMPLETE from federate",
+        "RTI receives STOP_REQUEST from federate",
+        "RTI receives STOP_REQUEST_REPLY from federate",
+        "RTI receives PORT_ABSENT from federate",
+        "RTI receives unidentified message from federate"
 };
 
 // FIXME: Target property should specify the capacity of the trace buffer.
@@ -261,18 +283,47 @@ void tracepoint_scheduler_advancing_time_ends();
 /**
  * Trace sending a Next Event Tag (NET) or Logical Tag Complete (LTC) message to the RTI.
  * @param type Either MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LOGICAL_TAG_COMPLETE.
+ * @param fed_id The fedaerate identifier.
+ *        FIXME: The pointer is not correctly passed for now.
  * @param tag The tag that has been sent.
  */
-void tracepoint_tag_to_RTI(unsigned char type, tag_t tag);
+void tracepoint_tag_to_RTI(unsigned char type, const char* fed_id, tag_t tag);
 
 /**
  * Trace receiving a Tag Advance Grant (TAG) or Provisional Tag Advance Grant (PTAG) message from the RTI.
  * @param type Either MSG_TYPE_TAG_ADVANCE_GRANT or MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT.
- * @param tag The tag that has been sent.
+ * @param fed_id The fedaerate identifier.
+ *        FIXME: The pointer is not correctly passed for now.
+ * @param tag The tag that has been received.
  */
-void tracepoint_tag_from_RTI(unsigned char type, tag_t tag);
+void tracepoint_tag_from_RTI(unsigned char type, const char* fed_id, tag_t tag);
 
 #endif // FEDERATED
+
+////////////////////////////////////////////////////////////
+//// For RTI execution
+
+#ifdef RTI_TRACE
+
+/**
+ * Trace of RTI sending a message to a federate.
+ * @param type ...
+ * @param fed_id The fedaerate identifier.
+ *        FIXME: The pointer is not correctly passed for now.
+ * @param tag The tag that has been sent, if any.
+ */
+void tracepoint_message_to_federate(unsigned char type, const char *fed_id, tag_t tag);
+
+/**
+ * Trace RTI receiving a message from a federate.
+ * @param type ....
+ * @param fed_id The fedaerate identifier.
+ *        FIXME: The pointer is not correctly passed for now.
+ * @param tag The tag that has been received, if any.
+ */
+void tracepoint_message_from_federate(unsigned char type, const char *fed_id, tag_t tag);
+
+#endif // RTI_TRACE
 
 void stop_trace(void);
 
@@ -291,6 +342,10 @@ void stop_trace(void);
 #define tracepoint_worker_wait_ends(...)
 #define tracepoint_scheduler_advancing_time_starts(...);
 #define tracepoint_scheduler_advancing_time_ends(...);
+#define tracepoint_tag_to_RTI(...);
+#define tracepoint_tag_from_RTI(...);
+#define tracepoint_message_to_federate(...);
+#define tracepoint_message_from_federate(...) ;
 
 #define start_trace(...)
 #define stop_trace(...)

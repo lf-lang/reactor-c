@@ -65,10 +65,16 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "net_common.h" // Defines message types, etc. Includes <pthread.h> and "reactor.h".
 #include "tag.c"        // Time-related types and functions.
 #include "rti.h"
+
 #ifdef __RTI_AUTH__
 #include <openssl/rand.h> // For secure random number generation.
 #include <openssl/hmac.h> // For HMAC authentication.
 #endif
+
+#ifdef RTI_TRACE
+#include "trace.h"
+#endif
+
 /**
  * The state of this RTI instance.
  */
@@ -91,8 +97,14 @@ RTI_instance_t _RTI = {
     .clock_sync_global_status = clock_sync_init,
     .clock_sync_period_ns = MSEC(10),
     .clock_sync_exchanges_per_interval = 10,
-    .authentication_enabled = false
+    .authentication_enabled = false,
+    .tracing_enabled = false
 };
+
+/**
+ * RTI trace file name 
+ */
+char* rti_trace_file_name = "rti.lft";
 
 /**
  * Mark a federate requesting stop.
@@ -1475,7 +1487,13 @@ void* federate_thread_TCP(void* fed) {
             break;
         }
         LF_PRINT_DEBUG("RTI: Received message type %u from federate %d.", buffer[0], my_fed->id);
-        switch(buffer[0]) {
+#ifdef RTI_TRACE
+        // FIXME: This is a temporary use of lf_tag(), just for testing
+        // FIXME: This is rather a working canvas
+        if (_RTI.tracing_enabled)
+            tracepoint_message_from_federate(buffer[0], my_fed->id, lf_tag());
+#endif // RTI_TRACE
+            switch (buffer[0]) {
             case MSG_TYPE_TIMESTAMP:
                 handle_timestamp(my_fed);
                 break;
@@ -2133,6 +2151,7 @@ void usage(int argc, char* argv[]) {
     printf("       - exchanges-per-interval <n>: Controls the number of messages that are exchanged for each\n");
     printf("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n\n");
     printf("  -a, --auth Turn on HMAC authentication options.\n\n");
+    printf("  -t, --tracing Turn on tracing.\n\n");
 
     printf("Command given:\n");
     for (int i = 0; i < argc; i++) {
@@ -2275,14 +2294,17 @@ int process_args(int argc, char* argv[]) {
            i += process_clock_sync_args((argc-i), &argv[i]);
         } else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--auth") == 0) {
             _RTI.authentication_enabled = true;
-        } else if (strcmp(argv[i], " ") == 0) {
+        } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tracing") == 0) {
+            _RTI.tracing_enabled = true;
+        }
+        else if (strcmp(argv[i], " ") == 0) {
             // Tolerate spaces
             continue;
-        }  else {
-           fprintf(stderr, "Error: Unrecognized command-line argument: %s\n", argv[i]);
-           usage(argc, argv);
-           return 0;
-       }
+        } else {
+            fprintf(stderr, "Error: Unrecognized command-line argument: %s\n", argv[i]);
+            usage(argc, argv);
+            return 0;
+        }
     }
     if (_RTI.number_of_federates == 0) {
         fprintf(stderr, "Error: --number_of_federates needs a valid positive integer argument.\n");
@@ -2297,6 +2319,15 @@ int main(int argc, char* argv[]) {
         // Processing command-line arguments failed.
         return -1;
     }
+    if (_RTI.tracing_enabled) {
+#ifdef RTI_TRACE
+        start_trace(rti_trace_file_name);
+        printf("Tracing the RTI execution in %s file.\n", rti_trace_file_name);
+#else
+        printf("Tracing is requested, but RTI_TRACE is not defined. Please 
+        build the RTI again, with RTI_TRACE defined.\n");
+#endif
+    }
     printf("Starting RTI for %d federates in federation ID %s\n", _RTI.number_of_federates, _RTI.federation_id);
     assert(_RTI.number_of_federates < UINT16_MAX);
     _RTI.federates = (federate_t*)calloc(_RTI.number_of_federates, sizeof(federate_t));
@@ -2305,6 +2336,11 @@ int main(int argc, char* argv[]) {
     }
     int socket_descriptor = start_rti_server(_RTI.user_specified_port);
     wait_for_federates(socket_descriptor);
+    if (_RTI.tracing_enabled) {
+#ifdef RTI_TRACE
+        stop_trace();
+#endif
+    }
     printf("RTI is exiting.\n");
     return 0;
 }

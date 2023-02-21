@@ -68,6 +68,7 @@ include_directories(${IncludeDir}/utils)
 add_executable(
     RTI
     rti.c
+    ${CoreLib}/trace.c
     ${LF_PLATFORM_FILE}
     ${CoreLib}/platform/lf_unix_clock_support.c
     ${CoreLib}/utils/pqueue.c
@@ -81,6 +82,9 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 
 # Set LF_THREADING to get the threaded support
 target_compile_definitions(RTI PUBLIC LF_THREADED=1)
+
+# FIXME: Should be defined conditionnaly or always set when compiling?
+target_compile_definitions(RTI PUBLIC RTI_TRACE)
 
 # Find threads and link to it
 find_package(Threads REQUIRED)

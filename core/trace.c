@@ -29,6 +29,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Include this file instead of trace.h to get tracing.
  * See trace.h file for instructions.
  */
+
+#ifdef RTI_TRACE
+#define LF_TRACE
+#endif
+
 #ifdef LF_TRACE
 
 #include <errno.h>
@@ -40,6 +45,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _LF_TRACE
 #include "platform.h"
 #undef _LF_TRACE
+
+
+#ifdef RTI_TRACE
+#include "net_common.h"
+#endif // RTI_TRACE
 
 #include "reactor_common.h"
 #include "trace.h"
@@ -341,7 +351,11 @@ void start_trace(char* filename) {
     // Allocate an array of arrays of trace records, one per worker thread plus one
     // for the 0 thread (the main thread, or in an unthreaded program, the only
     // thread).
+#ifndef RTI_TRACE
     _lf_number_of_trace_buffers = _lf_number_of_workers + 1;
+#else
+    _lf_number_of_trace_buffers = 1;
+#endif
     _lf_trace_buffer = (trace_record_t**)malloc(sizeof(trace_record_t*) * _lf_number_of_trace_buffers);
     for (int i = 0; i < _lf_number_of_trace_buffers; i++) {
         _lf_trace_buffer[i] = (trace_record_t*)malloc(sizeof(trace_record_t) * TRACE_BUFFER_CAPACITY);
@@ -567,13 +581,16 @@ void stop_trace() {
 /**
  * Trace sending a Next Event Tag (NET) or Logical Tag Complete (LTC) message to the RTI.
  * @param type Either MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LOGICAL_TAG_COMPLETE.
+ * @param fed_id The fedaerate identifier.
+ *        FIXME: The pointer is not correctly passed for now.
  * @param tag The tag that has been sent.
  */
-void tracepoint_tag_to_RTI(unsigned char type, tag_t tag) {
+void tracepoint_tag_to_RTI(unsigned char type, const char* fed_id, tag_t tag) {
 
     trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG)? federate_NET : federate_LTC;
-    tracepoint(event_type,
-        NULL, // void* pointer,
+    void* fed = ((void*) fed_id);
+    tracepoint(event_type, 
+        fed, // void* pointer,
         &tag, // tag* tag,
         -1,   // int reaction_number,
         0,    // int worker,
@@ -586,13 +603,16 @@ void tracepoint_tag_to_RTI(unsigned char type, tag_t tag) {
 /**
  * Trace receiving a Tag Advance Grant (TAG) or Provisional Tag Advance Grant (PTAG) message from the RTI.
  * @param type Either MSG_TYPE_TAG_ADVANCE_GRANT or MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT.
+ * @param fed_id The fedaerate identifier.
+ *        FIXME: The pointer is not correctly passed for now.
  * @param tag The tag that has been sent.
  */
-void tracepoint_tag_from_RTI(unsigned char type, tag_t tag) {
+void tracepoint_tag_from_RTI(unsigned char type, const char* fed_id, tag_t tag) {
 
     trace_event_t event_type = (type == MSG_TYPE_TAG_ADVANCE_GRANT)? federate_TAG : federate_PTAG;
+    void *fed = ((void *)fed_id);
     tracepoint(event_type,
-        NULL, // void* pointer,
+        fed, // void* pointer,
         &tag, // tag* tag,
         -1,   // int reaction_number,
         0,    // int worker,
@@ -603,5 +623,64 @@ void tracepoint_tag_from_RTI(unsigned char type, tag_t tag) {
 }
 
 #endif // FEDERATED
+
+////////////////////////////////////////////////////////////
+//// For RTI execution
+
+#ifdef RTI_TRACE
+
+/**
+ * Trace of RTI sending a message to a federate.
+ * @param type ...
+ * @param fed_id The fedaerate identifier.
+ *        FIXME: The pointer is not correctly passed for now.
+ * @param tag The tag that has been sent, if any.
+ */
+void tracepoint_message_to_federate(unsigned char type, const char *fed_id, tag_t tag){ 
+    trace_event_t event_type = type;// == MSG_TYPE_NEXT_EVENT_TAG) ? federate_NET : federate_LTC;
+    void *fed = (void *)fed_id;
+    tracepoint(event_type,
+               fed,  // void* pointer,
+               &tag, // tag* tag,
+               -1,   // int reaction_number,
+               0,    // int worker,
+               NULL, // instant_t* physical_time (will be generated)
+               NULL, // trigger_t* trigger,
+               0     // interval_t extra_delay
+    );
+}
+
+/**
+ * Trace RTI receiving a message from a federate.
+ * @param type ....
+ * @param fed_id The fedaerate identifier.
+ *        FIXME: The pointer is not correctly passed for now.
+ * @param tag The tag that has been received, if any.
+ */
+void tracepoint_message_from_federate(unsigned char type, const char *fed_id, tag_t tag) {
+    trace_event_t event_type = (type == MSG_TYPE_TIMESTAMP) ? rti_receive_TIMESTAMP : (
+        (type == MSG_TYPE_ADDRESS_QUERY) ? rti_receive_ADDRESS_QUERY : (
+        (type == MSG_TYPE_ADDRESS_ADVERTISEMENT) ? rti_receive_ADDRESS_ADVERTISEMENT : (
+        (type == MSG_TYPE_TAGGED_MESSAGE) ? rti_receive_TAGGED_MESSAGE : (
+        (type == MSG_TYPE_RESIGN) ? rti_receive_RESIGN : (
+        (type == MSG_TYPE_NEXT_EVENT_TAG) ? rti_receive_NEXT_EVENT_TAG : (
+        (type == MSG_TYPE_LOGICAL_TAG_COMPLETE) ? rti_receive_LOGICAL_TAG_COMPLETE : (
+        (type == MSG_TYPE_STOP_REQUEST) ? rti_receive_STOP_REQUEST : (
+        (type == MSG_TYPE_STOP_REQUEST_REPLY) ? rti_receive_STOP_REQUEST_REPLY : (
+        (type == MSG_TYPE_PORT_ABSENT) ? rti_receive_PORT_ABSENT : rti_receive_unidentified)))))))));
+
+    void *fed = (void *)fed_id;
+    tracepoint(event_type,
+               fed,  // void* pointer,
+               &tag, // tag* tag,
+               -1,   // int reaction_number,
+               0,    // int worker,
+               NULL, // instant_t* physical_time (will be generated)
+               NULL, // trigger_t* trigger,
+               0     // interval_t extra_delay
+    );
+}
+
+#endif // RTI_TRACE
 
 #endif // LF_TRACE
