@@ -29,6 +29,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @section DESCRIPTION
  * Utility functions for a federate in a federated execution.
  */
+
+#ifdef FEDERATED
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
@@ -705,3 +707,4 @@ void extract_rti_addr_info(const char* rti_addr, rti_addr_info_t* rti_addr_info)
     }
     regfree(&regex_compiled);
 }
+#endif

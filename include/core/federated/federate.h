@@ -32,6 +32,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef FEDERATE_H
 #define FEDERATE_H
 
+#include "tag.h"
+#include "lf_types.h"
+#include <stdbool.h>
+
 #ifndef ADVANCE_MESSAGE_INTERVAL
 #define ADVANCE_MESSAGE_INTERVAL MSEC(10)
 #endif
@@ -238,6 +242,43 @@ typedef struct federation_metadata_t {
     int rti_port;
     char* rti_user;
 } federation_metadata_t;
+
+/**
+* Generated function that sends information about connections between this federate and
+* other federates where messages are routed through the RTI. Currently, this
+* only includes logical connections when the coordination is centralized. This
+* information is needed for the RTI to perform the centralized coordination.
+* @see MSG_TYPE_NEIGHBOR_STRUCTURE in net_common.h
+*/
+void send_neighbor_structure_to_RTI(int);
+
+/**
+ * Thread that listens for inputs from other federates.
+ * This thread listens for messages of type MSG_TYPE_P2P_MESSAGE,
+ * MSG_TYPE_P2P_TAGGED_MESSAGE, or MSG_TYPE_PORT_ABSENT (@see net_common.h) from the specified
+ * peer federate and calls the appropriate handling function for
+ * each message type. If an error occurs or an EOF is received
+ * from the peer, then this procedure sets the corresponding
+ * socket in _fed.sockets_for_inbound_p2p_connections
+ * to -1 and returns, terminating the thread.
+ * @param fed_id_ptr A pointer to a uint16_t containing federate ID being listened to.
+ *  This procedure frees the memory pointed to before returning.
+ */
+void* listen_to_federates(void*);
+
+/**
+ * Send a port absent message to federate with fed_ID, informing the
+ * remote federate that the current federate will not produce an event
+ * on this network port at the current logical time.
+ *
+ * @param additional_delay The offset applied to the timestamp
+ *  using after. The additional delay will be greater or equal to zero
+ *  if an after is used on the connection. If no after is given in the
+ *  program, -1 is passed.
+ * @param port_ID The ID of the receiving port.
+ * @param fed_ID The fed ID of the receiving federate.
+ */
+void send_port_absent_to_federate(interval_t, unsigned short, unsigned short);
 
 /**
  * Synchronize the start with other federates via the RTI.

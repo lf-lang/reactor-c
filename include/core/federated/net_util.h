@@ -38,9 +38,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NET_UTIL_H
 #define NET_UTIL_H
 
+#ifndef PLATFORM_ARDUINO
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <regex.h>
+#endif
+
+#include <sys/types.h>
 #include <stdbool.h>
 
 #include "../platform.h"

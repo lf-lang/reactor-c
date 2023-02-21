@@ -30,12 +30,18 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Utility functions for clock synchronization.
  */
 
+#ifdef FEDERATED
 #include <errno.h>
 #include <math.h>
+#include <string.h>
+#include <stdlib.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 #include "clock-sync.h"
 #include "net_common.h"
 #include "net_util.h"
+#include "util.h"
 
 /**
  * Keep a record of connection statistics
@@ -567,3 +573,4 @@ int create_clock_sync_thread(lf_thread_t* thread_id) {
 #endif // _LF_CLOCK_SYNC_ON
     return 0;
 }
+#endif

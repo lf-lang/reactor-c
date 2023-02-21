@@ -196,7 +196,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NET_COMMON_H
 #define NET_COMMON_H
 
+#ifndef PLATFORM_ARDUINO
 #include <pthread.h>
+#endif
 
 /**
  * The timeout time in ns for TCP operations.
