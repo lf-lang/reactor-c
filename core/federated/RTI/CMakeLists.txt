@@ -50,11 +50,11 @@ else()
 endif()
 
 # The following should not be done
-include_directories(${CoreLib}/..)
-include_directories(${CoreLib})
-include_directories(${CoreLib}/federated)
-include_directories(${CoreLib}/platform)
-include_directories(${CoreLib}/utils)
+# include_directories(${CoreLib}/..)
+# include_directories(${CoreLib})
+# include_directories(${CoreLib}/federated)
+# include_directories(${CoreLib}/platform)
+# include_directories(${CoreLib}/utils)
 
 set(IncludeDir ../../../include/core)
 include_directories(${IncludeDir})
@@ -82,8 +82,8 @@ IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
     target_compile_definitions(RTI PUBLIC LOG_LEVEL=4)
 ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 
-# Set LF_THREADING to get the threaded support
-target_compile_definitions(RTI PUBLIC LF_THREADED=1)
+# Set LF_THREADING to get the threaded support and FEDERATED to get federated compilation support
+target_compile_definitions(RTI PUBLIC LF_THREADED=1 FEDERATED=1)
 
 # Find threads and link to it
 find_package(Threads REQUIRED)

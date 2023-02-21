@@ -16,6 +16,11 @@ list(APPEND INFO_SOURCES ${GENERAL_SOURCES})
 add_library(core ${GENERAL_SOURCES})
 
 # Add sources for either threaded or unthreaded runtime
+if(DEFINED FEDERATED)
+    include(federated/CMakeLists.txt)
+endif()
+
+# Add sources for either threaded or unthreaded runtime
 if(DEFINED LF_THREADED)
     message(STATUS "Including sources for threaded runtime with \
 ${NUMBER_OF_WORKERS} worker(s) with scheduler=${SCHEDULER} and \
