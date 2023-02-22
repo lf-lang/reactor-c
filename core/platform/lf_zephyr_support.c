@@ -1,4 +1,4 @@
-#if !defined(PLATFORM_ARDUINO)
+#ifdef PLATFORM_ZEPHYR
 /*************
 Copyright (c) 2023, Norwegian University of Science and Technology.
 

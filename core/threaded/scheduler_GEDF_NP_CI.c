@@ -1,4 +1,3 @@
-#if defined(LF_THREADED) && !defined(PLATFORM_ARDUINO)
 /* Global Earliest Deadline First (GEDF) non-preemptive scheduler with chain ID
 for the threaded runtime of the C target of Lingua Franca. */
 
@@ -542,5 +541,4 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
                       (void*)reaction);
     }
 }
-#endif
 #endif

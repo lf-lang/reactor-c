@@ -1,4 +1,3 @@
-#if defined(LF_THREADED) && !defined(PLATFORM_ARDUINO)
 /*************
 Copyright (c) 2022, The University of California at Berkeley.
 
@@ -128,4 +127,3 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     worker_assignments_put(reaction);
 }
 #endif // defined SCHEDULER && SCHEDULER == ADAPTIVE
-#endif

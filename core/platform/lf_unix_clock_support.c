@@ -1,4 +1,4 @@
-#if !defined(PLATFORM_ARDUINO)
+#if defined(PLATFORM_Linux) || defined(PLATFORM_Darwin)
 #include <time.h>
 #include <errno.h>
 

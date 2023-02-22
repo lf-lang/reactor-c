@@ -1,4 +1,4 @@
-#if !defined(PLATFORM_ARDUINO)
+#ifdef PLATFORM_Darwin
 /* MacOS API support for the C target of Lingua Franca. */
 
 /*************
