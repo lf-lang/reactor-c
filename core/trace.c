@@ -582,21 +582,18 @@ void stop_trace() {
  * Trace sending a Next Event Tag (NET) or Logical Tag Complete (LTC) message to the RTI.
  * @param type Either MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LOGICAL_TAG_COMPLETE.
  * @param fed_id The fedaerate identifier.
- *        FIXME: The pointer is not correctly passed for now.
  * @param tag The tag that has been sent.
  */
-void tracepoint_tag_to_RTI(unsigned char type, const char* fed_id, tag_t tag) {
-
+void tracepoint_tag_to_RTI(unsigned char type, int fed_id, tag_t tag) {
     trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG)? federate_NET : federate_LTC;
-    void* fed = ((void*) fed_id);
     tracepoint(event_type, 
-        fed, // void* pointer,
-        &tag, // tag* tag,
-        -1,   // int reaction_number,
-        0,    // int worker,
-        NULL, // instant_t* physical_time (will be generated)
-        NULL, // trigger_t* trigger,
-        0     // interval_t extra_delay
+        NULL,   // void* pointer,
+        &tag,   // tag* tag,
+        fed_id, // int reaction_number,
+        0,      // int worker,
+        NULL,   // instant_t* physical_time (will be generated)
+        NULL,   // trigger_t* trigger,
+        0       // interval_t extra_delay
     );
 }
 
@@ -604,21 +601,18 @@ void tracepoint_tag_to_RTI(unsigned char type, const char* fed_id, tag_t tag) {
  * Trace receiving a Tag Advance Grant (TAG) or Provisional Tag Advance Grant (PTAG) message from the RTI.
  * @param type Either MSG_TYPE_TAG_ADVANCE_GRANT or MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT.
  * @param fed_id The fedaerate identifier.
- *        FIXME: The pointer is not correctly passed for now.
- * @param tag The tag that has been sent.
+ * @param tag The tag that has been received.
  */
-void tracepoint_tag_from_RTI(unsigned char type, const char* fed_id, tag_t tag) {
-
+void tracepoint_tag_from_RTI(unsigned char type, int fed_id, tag_t tag) {
     trace_event_t event_type = (type == MSG_TYPE_TAG_ADVANCE_GRANT)? federate_TAG : federate_PTAG;
-    void *fed = ((void *)fed_id);
     tracepoint(event_type,
-        fed, // void* pointer,
-        &tag, // tag* tag,
-        -1,   // int reaction_number,
-        0,    // int worker,
-        NULL, // instant_t* physical_time (will be generated)
-        NULL, // trigger_t* trigger,
-        0     // interval_t extra_delay
+        NULL,   // void* pointer,
+        &tag,   // tag* tag,
+        fed_id, // int reaction_number,
+        0,      // int worker,
+        NULL,   // instant_t* physical_time (will be generated)
+        NULL,   // trigger_t* trigger,
+        0       // interval_t extra_delay
     );
 }
 

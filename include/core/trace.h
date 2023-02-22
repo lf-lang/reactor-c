@@ -283,20 +283,18 @@ void tracepoint_scheduler_advancing_time_ends();
 /**
  * Trace sending a Next Event Tag (NET) or Logical Tag Complete (LTC) message to the RTI.
  * @param type Either MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LOGICAL_TAG_COMPLETE.
- * @param fed_id The fedaerate identifier.
- *        FIXME: The pointer is not correctly passed for now.
+ * @param fed_id The federate identifier.
  * @param tag The tag that has been sent.
  */
-void tracepoint_tag_to_RTI(unsigned char type, const char* fed_id, tag_t tag);
+void tracepoint_tag_to_RTI(unsigned char type, int fed_id, tag_t tag);
 
 /**
  * Trace receiving a Tag Advance Grant (TAG) or Provisional Tag Advance Grant (PTAG) message from the RTI.
  * @param type Either MSG_TYPE_TAG_ADVANCE_GRANT or MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT.
- * @param fed_id The fedaerate identifier.
- *        FIXME: The pointer is not correctly passed for now.
+ * @param fed_id The federate identifier.
  * @param tag The tag that has been received.
  */
-void tracepoint_tag_from_RTI(unsigned char type, const char* fed_id, tag_t tag);
+void tracepoint_tag_from_RTI(unsigned char type, int fed_id, tag_t tag);
 
 #endif // FEDERATED
 
