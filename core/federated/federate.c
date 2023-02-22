@@ -67,10 +67,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 char* ERROR_SENDING_HEADER = "ERROR sending header information to federate via RTI";
 char* ERROR_SENDING_MESSAGE = "ERROR sending message to federate via RTI";
 
-// Mutex lock held while performing socket write and close operations.
-lf_mutex_t outbound_socket_mutex;
-lf_cond_t port_status_changed;
-
 /**
  * The state of this federate instance.
  */
