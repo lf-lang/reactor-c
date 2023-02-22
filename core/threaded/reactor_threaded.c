@@ -1031,7 +1031,9 @@ void start_threads() {
     LF_PRINT_LOG("Starting %u worker threads.", _lf_number_of_workers);
     _lf_thread_ids = (lf_thread_t*)malloc(_lf_number_of_workers * sizeof(lf_thread_t));
     for (unsigned int i = 0; i < _lf_number_of_workers; i++) {
-        lf_thread_create(&_lf_thread_ids[i], worker, NULL);
+        if (lf_thread_create(&_lf_thread_ids[i], worker, NULL) != 0) {
+            lf_print_error_and_exit("Could not start thread-%u", i);
+        }
     }
 }
 
