@@ -1,4 +1,4 @@
-#if defined(unix) || defined(__unix) || defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+#if defined(PLATFORM_Linux) || defined(PLATFORM_Darwin)
 #include <time.h>
 #include <errno.h>
 

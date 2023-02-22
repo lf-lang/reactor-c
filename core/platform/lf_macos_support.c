@@ -1,4 +1,4 @@
-#ifdef __APPLE__
+#ifdef PLATFORM_Darwin
 /* MacOS API support for the C target of Lingua Franca. */
 
 /*************
