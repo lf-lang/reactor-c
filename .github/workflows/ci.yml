@@ -60,4 +60,4 @@ jobs:
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-      scheduler: adaptive
+      scheduler: ADAPTIVE

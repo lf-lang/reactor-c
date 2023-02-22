@@ -30,7 +30,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Marten Lohstroh <marten@berkeley.edu>}
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
  */
-
+#if defined LF_THREADED
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
@@ -1031,7 +1031,9 @@ void start_threads() {
     LF_PRINT_LOG("Starting %u worker threads.", _lf_number_of_workers);
     _lf_thread_ids = (lf_thread_t*)malloc(_lf_number_of_workers * sizeof(lf_thread_t));
     for (unsigned int i = 0; i < _lf_number_of_workers; i++) {
-        lf_thread_create(&_lf_thread_ids[i], worker, NULL);
+        if (lf_thread_create(&_lf_thread_ids[i], worker, NULL) != 0) {
+            lf_print_error_and_exit("Could not start thread-%u", i);
+        }
     }
 }
 
@@ -1189,3 +1191,4 @@ int lf_critical_section_enter() {
 int lf_critical_section_exit() {
     return lf_mutex_unlock(&mutex); 
 }
+#endif
