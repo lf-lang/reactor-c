@@ -28,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * This is a non-priority-driven scheduler. See scheduler.h for documentation.
  * @author{Peter Donovan <peterdonovan@berkeley.edu>}
  */
+#include "lf_types.h"
 #if defined SCHEDULER && SCHEDULER == ADAPTIVE
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
