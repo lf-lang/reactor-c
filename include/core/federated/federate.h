@@ -265,8 +265,6 @@ lf_cond_t port_status_changed;
 */
 void _lf_logical_tag_complete(tag_t);
 
-void initialize_triggers_for_federate();
-
 /**
  * Connect to the RTI at the specified host and port and return
  * the socket descriptor for the connection. If this fails, the
