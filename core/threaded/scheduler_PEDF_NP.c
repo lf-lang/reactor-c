@@ -1,4 +1,3 @@
-#if defined(LF_THREADED) && !defined(PLATFORM_ARDUINO)
 /* Partitioned Earliest Deadline First (PEDF) non-preemptive scheduler for the
 threaded runtime of the C target of Lingua Franca. */
 
@@ -681,4 +680,3 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
 }
 
 #endif // SCHEDULER == PEDF_NP
-#endif

@@ -1,4 +1,4 @@
-#if !defined(PLATFORM_ARDUINO)
+#if defined(_WIN32) || defined(__CYGWIN__)
 /* Windows API support for the C target of Lingua Franca. */
 
 /*************

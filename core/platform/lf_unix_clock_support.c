@@ -1,4 +1,4 @@
-#if !defined(PLATFORM_ARDUINO)
+#if defined(unix) || defined(__unix) || defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
 #include <time.h>
 #include <errno.h>
 

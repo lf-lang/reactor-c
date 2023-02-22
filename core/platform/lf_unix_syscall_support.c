@@ -1,4 +1,4 @@
-#if !defined(PLATFORM_ARDUINO)
+#if defined(unix) || defined(__unix) || defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
 /**
  * @file lf_unix_syscall_support.c
  * @author Soroush Bateni (soroush@utdallas.edu)
