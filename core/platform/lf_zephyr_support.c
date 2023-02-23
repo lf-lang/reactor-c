@@ -109,9 +109,11 @@ void lf_initialize_clock() {
         while(1) {};
     }
 
-    // Calculate the duration of an epoch
+    // Calculate the duration of an epoch. Compute both
+    //  nsec and usec now at boot to avoid these computations later
     counter_max_ticks = counter_get_max_top_value(_lf_counter_dev);
-    _lf_timer_epoch_duration_nsec = counter_ticks_to_us(_lf_counter_dev, counter_max_ticks) * 1000LL;
+    _lf_timer_epoch_duration_usec = counter_ticks_to_us(_lf_counter_dev, counter_max_ticks);
+    _lf_timer_epoch_duration_usec = _lf_timer_epoch_duration_usec * 1000LL;
     
     // Set the max_top value to be the maximum
     counter_max_ticks = counter_get_max_top_value(_lf_counter_dev);
