@@ -187,7 +187,7 @@ int lf_sleep_until_locked(instant_t wakeup) {
     while ( !_lf_async_event && 
             sleep_for_us > (LF_WAKEUP_OVERHEAD_US + LF_MIN_SLEEP_US)
     ) {  
-        if (sleep_for_us < _lf_timer_epoch_duration_usec) {
+        if (sleep_for_us < (_lf_timer_epoch_duration_nsec / 1000)) {
             sleep_duration_ticks = counter_us_to_ticks(_lf_counter_dev, ((uint64_t) sleep_for_us) - LF_WAKEUP_OVERHEAD_US);
         } else {
             sleep_duration_ticks = UINT32_MAX;
