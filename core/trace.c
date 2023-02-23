@@ -636,16 +636,41 @@ void tracepoint_message_to_federate(unsigned char type, int fed_id, tag_t tag){
 }
 
 void tracepoint_message_from_federate(unsigned char type, int fed_id, tag_t tag) {
-    trace_event_t event_type = (type == MSG_TYPE_TIMESTAMP) ? rti_receive_TIMESTAMP : (
-        (type == MSG_TYPE_ADDRESS_QUERY) ? rti_receive_ADDRESS_QUERY : (
-        (type == MSG_TYPE_ADDRESS_ADVERTISEMENT) ? rti_receive_ADDRESS_ADVERTISEMENT : (
-        (type == MSG_TYPE_TAGGED_MESSAGE) ? rti_receive_TAGGED_MESSAGE : (
-        (type == MSG_TYPE_RESIGN) ? rti_receive_RESIGN : (
-        (type == MSG_TYPE_NEXT_EVENT_TAG) ? rti_receive_NEXT_EVENT_TAG : (
-        (type == MSG_TYPE_LOGICAL_TAG_COMPLETE) ? rti_receive_LOGICAL_TAG_COMPLETE : (
-        (type == MSG_TYPE_STOP_REQUEST) ? rti_receive_STOP_REQUEST : (
-        (type == MSG_TYPE_STOP_REQUEST_REPLY) ? rti_receive_STOP_REQUEST_REPLY : (
-        (type == MSG_TYPE_PORT_ABSENT) ? rti_receive_PORT_ABSENT : rti_receive_unidentified)))))))));
+    trace_event_t event_type;
+    switch(type) {
+    case MSG_TYPE_TIMESTAMP:
+        event_type = rti_receive_TIMESTAMP;
+        break;
+    case MSG_TYPE_ADDRESS_QUERY:
+        event_type = rti_receive_ADDRESS_QUERY;
+        break;
+    case MSG_TYPE_ADDRESS_ADVERTISEMENT:
+        event_type = rti_receive_ADDRESS_ADVERTISEMENT;
+        break;
+    case MSG_TYPE_TAGGED_MESSAGE:
+        event_type = rti_receive_TAGGED_MESSAGE;
+        break;
+    case MSG_TYPE_RESIGN:
+        event_type = rti_receive_RESIGN;
+        break;
+    case MSG_TYPE_NEXT_EVENT_TAG:
+        event_type = rti_receive_NEXT_EVENT_TAG;
+        break;
+    case MSG_TYPE_LOGICAL_TAG_COMPLETE:
+        event_type = rti_receive_LOGICAL_TAG_COMPLETE;
+        break;
+    case MSG_TYPE_STOP_REQUEST:
+        event_type = rti_receive_STOP_REQUEST;
+        break;
+    case MSG_TYPE_STOP_REQUEST_REPLY:
+        event_type = rti_receive_STOP_REQUEST_REPLY;
+        break;
+    case MSG_TYPE_PORT_ABSENT:
+        event_type = rti_receive_PORT_ABSENT;
+        break;
+    default:
+        event_type = rti_receive_unidentified;
+    }
 
     tracepoint(event_type,
                NULL, // void* pointer,
