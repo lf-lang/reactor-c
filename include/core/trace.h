@@ -304,22 +304,20 @@ void tracepoint_tag_from_RTI(unsigned char type, int fed_id, tag_t tag);
 #ifdef RTI_TRACE
 
 /**
- * Trace of RTI sending a message to a federate.
- * @param type ...
- * @param fed_id The fedaerate identifier.
- *        FIXME: The pointer is not correctly passed for now.
+ * Trace RTI sending a message to a federate.
+ * @param type The byte identifying the message type.
+ * @param fed_id The fedaerate ID.
  * @param tag The tag that has been sent, if any.
  */
-void tracepoint_message_to_federate(unsigned char type, const char *fed_id, tag_t tag);
+void tracepoint_message_to_federate(unsigned char type, int fed_id, tag_t tag);
 
 /**
  * Trace RTI receiving a message from a federate.
- * @param type ....
- * @param fed_id The fedaerate identifier.
- *        FIXME: The pointer is not correctly passed for now.
+ * @param type The byte identifying the message type.
+ * @param fed_id The fedaerate ID.
  * @param tag The tag that has been received, if any.
  */
-void tracepoint_message_from_federate(unsigned char type, const char *fed_id, tag_t tag);
+void tracepoint_message_from_federate(unsigned char type, int fed_id, tag_t tag);
 
 #endif // RTI_TRACE
 

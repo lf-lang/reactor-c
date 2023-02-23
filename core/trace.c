@@ -622,20 +622,12 @@ void tracepoint_tag_from_RTI(unsigned char type, int fed_id, tag_t tag) {
 
 #ifdef RTI_TRACE
 
-/**
- * Trace of RTI sending a message to a federate.
- * @param type ...
- * @param fed_id The fedaerate identifier.
- *        FIXME: The pointer is not correctly passed for now.
- * @param tag The tag that has been sent, if any.
- */
-void tracepoint_message_to_federate(unsigned char type, const char *fed_id, tag_t tag){ 
+void tracepoint_message_to_federate(unsigned char type, int fed_id, tag_t tag){ 
     trace_event_t event_type = type;// == MSG_TYPE_NEXT_EVENT_TAG) ? federate_NET : federate_LTC;
-    void *fed = (void *)fed_id;
     tracepoint(event_type,
-               fed,  // void* pointer,
+               NULL, // void* pointer,
                &tag, // tag* tag,
-               -1,   // int id_number,
+               fed_id,  // int id_number,
                0,    // int worker,
                NULL, // instant_t* physical_time (will be generated)
                NULL, // trigger_t* trigger,
@@ -643,14 +635,7 @@ void tracepoint_message_to_federate(unsigned char type, const char *fed_id, tag_
     );
 }
 
-/**
- * Trace RTI receiving a message from a federate.
- * @param type ....
- * @param fed_id The fedaerate identifier.
- *        FIXME: The pointer is not correctly passed for now.
- * @param tag The tag that has been received, if any.
- */
-void tracepoint_message_from_federate(unsigned char type, const char *fed_id, tag_t tag) {
+void tracepoint_message_from_federate(unsigned char type, int fed_id, tag_t tag) {
     trace_event_t event_type = (type == MSG_TYPE_TIMESTAMP) ? rti_receive_TIMESTAMP : (
         (type == MSG_TYPE_ADDRESS_QUERY) ? rti_receive_ADDRESS_QUERY : (
         (type == MSG_TYPE_ADDRESS_ADVERTISEMENT) ? rti_receive_ADDRESS_ADVERTISEMENT : (
@@ -662,11 +647,10 @@ void tracepoint_message_from_federate(unsigned char type, const char *fed_id, ta
         (type == MSG_TYPE_STOP_REQUEST_REPLY) ? rti_receive_STOP_REQUEST_REPLY : (
         (type == MSG_TYPE_PORT_ABSENT) ? rti_receive_PORT_ABSENT : rti_receive_unidentified)))))))));
 
-    void *fed = (void *)fed_id;
     tracepoint(event_type,
-               fed,  // void* pointer,
+               NULL, // void* pointer,
                &tag, // tag* tag,
-               -1,   // int id_number,
+               fed_id,   // int id_number,
                0,    // int worker,
                NULL, // instant_t* physical_time (will be generated)
                NULL, // trigger_t* trigger,
