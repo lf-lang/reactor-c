@@ -75,16 +75,22 @@ include_directories(${IncludeDir}/modal_models)
 include_directories(${IncludeDir}/platform)
 include_directories(${IncludeDir}/utils)
 
+# add_library(RTI_LIB lib_rti.c)
+# target_compile_definitions(RTI_LIB PUBLIC LF_THREADED=1)
+include_directories(.)
 
 # Declare a new executable target and list all its sources
 add_executable(
     RTI
     rti.c
-    ${LF_PLATFORM_FILE}
-    ${CoreLib}/platform/lf_unix_clock_support.c
-    ${CoreLib}/utils/pqueue.c
-    message_record/message_record.c
+    lib_rti.c
+    # ${LF_PLATFORM_FILE}
+    # ${CoreLib}/platform/lf_unix_clock_support.c
+    # ${CoreLib}/utils/pqueue.c
+    # message_record/message_record.c
 )
+
+# target_link_libraries(RTI RTI_LIB)
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
     # Set the LOG_LEVEL to 4 to get DEBUG messages
@@ -117,9 +123,13 @@ install(
 
 option(SST "SST security enabled." OFF)
 IF(SST MATCHES ON)
+  
+  # add_library(RTI_LIB rti.c)
+  # target_compile_definitions(RTI_LIB PUBLIC LF_THREADED=1)
   # Declare a new executable target and list all its sources
   add_executable(
     secure_RTI
+    lib_rti.c
     secure_rti.c
     ${LF_PLATFORM_FILE}
     ${CoreLib}/platform/lf_unix_clock_support.c
@@ -131,6 +141,9 @@ IF(SST MATCHES ON)
     # ../sst-c-api/c_secure_comm.c
     # ../sst-c-api/load_config.c
   )
+
+  # target_link_libraries(secure_RTI RTI_LIB)
+
   target_include_directories(secure_RTI PUBLIC ${CoreLib}/federated/sst-c-api)
   target_include_directories(secure_RTI PUBLIC ${CoreLib}/federated/RTI)
 
