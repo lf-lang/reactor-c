@@ -38,6 +38,13 @@ jobs:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
 
+  lf-default-zephyr:
+    needs: fetch-lf
+    uses: lf-lang/lingua-franca/.github/workflows/c-zephyr-tests.yml@master
+    with:
+      runtime-ref: ${{ github.ref }}
+      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+
   lf-default:
     needs: fetch-lf
     uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master

@@ -62,7 +62,6 @@ typedef int64_t _interval_t;
 typedef uint32_t _microstep_t;
 
 #ifdef LF_THREADED
-#warning "Threaded support on Zephyr is still experimental"
 
 typedef struct k_mutex lf_mutex_t;
 typedef struct {
