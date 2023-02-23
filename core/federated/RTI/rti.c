@@ -1595,7 +1595,7 @@ void send_reject(int socket_id, unsigned char error_code) {
     // FIXME: Ignore errors on this response.
     write_to_socket_errexit(socket_id, 2, response, "RTI failed to write MSG_TYPE_REJECT message on the socket.");
     if (_RTI.tracing_enabled) {
-        tracepoint_message_to_federate(rti_send_reject, fed->id, NULL);
+        tracepoint_message_to_federate(rti_send_reject, -1, NULL);
     }
     // Close the socket.
     close(socket_id);
@@ -2370,7 +2370,7 @@ int main(int argc, char* argv[]) {
         start_trace(rti_trace_file_name);
         printf("Tracing the RTI execution in %s file.\n", rti_trace_file_name);
 #else
-        printf("Tracing is requested, but RTI_TRACE is not defined. Please 
+        printf("Tracing is requested, but RTI_TRACE is not defined. Please \
         build the RTI again, with RTI_TRACE defined.\n");
 #endif
     }
