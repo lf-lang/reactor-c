@@ -83,6 +83,11 @@ typedef enum {
     rti_receive_STOP_REQUEST_REPLY,
     rti_receive_PORT_ABSENT,
     rti_receive_unidentified,
+    rti_send_PTAG,
+    rti_send_TAG,
+    rti_send_reject,
+    rti_send_STOP_REQUEST,
+    rti_join_federate,
     NUM_EVENT_TYPES
 } trace_event_t;
 
@@ -115,7 +120,13 @@ static const char *trace_event_names[] = {
         "RTI receives STOP_REQUEST from federate",
         "RTI receives STOP_REQUEST_REPLY from federate",
         "RTI receives PORT_ABSENT from federate",
-        "RTI receives unidentified message from federate"
+        "RTI receives unidentified message from federate",
+        "RTI sends PTAG to federate",
+        "RTI sends TAG to federate",
+        "RTI sends reject to federate",
+        "RTI sends STOP REQUEST to federate",
+        "RTI accepts joining federate"
+
 };
 
 // FIXME: Target property should specify the capacity of the trace buffer.

@@ -288,6 +288,9 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag) {
         fed->last_granted = tag;
         LF_PRINT_LOG("RTI sent to federate %d the Time Advance Grant (TAG) (%lld, %u).",
                 fed->id, tag.time - start_time, tag.microstep);
+        if (_RTI.tracing_enabled) {
+            tracepoint_message_to_federate(rti_send_TAG, fed->id, &tag);
+        }
     }
 }
 
@@ -399,6 +402,9 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
         fed->last_provisionally_granted = tag;
         LF_PRINT_LOG("RTI sent to federate %d the Provisional Tag Advance Grant (PTAG) (%lld, %u).",
                 fed->id, tag.time - start_time, tag.microstep);
+        if (_RTI.tracing_enabled) {
+            tracepoint_message_to_federate(rti_send_PTAG, fed->id, &tag);
+        }
 
         // Send PTAG to all upstream federates, if they have not had
         // a later or equal PTAG or TAG sent previously and if their transitive
@@ -1057,6 +1063,9 @@ void handle_stop_request_message(federate_t* fed) {
             }
             write_to_socket_errexit(_RTI.federates[i].socket, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer,
                     "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.", _RTI.federates[i].id);
+            if (_RTI.tracing_enabled) {
+                tracepoint_message_to_federate(rti_send_STOP_REQUEST, _RTI.federates[i].id, NULL);
+            }
         }
     }
     LF_PRINT_LOG("RTI forwarded to federates MSG_TYPE_STOP_REQUEST with tag (%lld, %u).",
@@ -1500,6 +1509,11 @@ void handle_federate_resign(federate_t *my_fed) {
 void* federate_thread_TCP(void* fed) {
     federate_t* my_fed = (federate_t*)fed;
 
+    // Reaching the thread creation means that the RTI acceptes the federate join request
+    if (_RTI.tracing_enabled) {
+        tracepoint_message_to_federate(rti_join_federate, my_fed->id, NULL);
+    }
+
     // Buffer for incoming messages.
     // This does not constrain the message size because messages
     // are forwarded piece by piece.
@@ -1580,6 +1594,9 @@ void send_reject(int socket_id, unsigned char error_code) {
     response[1] = error_code;
     // FIXME: Ignore errors on this response.
     write_to_socket_errexit(socket_id, 2, response, "RTI failed to write MSG_TYPE_REJECT message on the socket.");
+    if (_RTI.tracing_enabled) {
+        tracepoint_message_to_federate(rti_send_reject, fed->id, NULL);
+    }
     // Close the socket.
     close(socket_id);
 }
