@@ -47,6 +47,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Keep track of overflows to keep clocks monotonic
 static int64_t _lf_timer_epoch_duration_nsec;
+static int64_t _lf_timer_epoch_duration_usec;
 static volatile int64_t _lf_timer_last_epoch_nsec = 0;
 
 #if defined(LF_ZEPHYR_CLOCK_HI_RES)
@@ -137,8 +138,10 @@ void lf_initialize_clock() {
     LF_PRINT_LOG("Using Low resolution zephyr kernel clock");
     LF_PRINT_LOG("Kernel Clock has frequency of %u Hz\n", CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC);
     _lf_timer_last_epoch_nsec = 0;
-    // Compute the duration of an 
+    // Compute the duration of an epoch. Compute both
+    //  nsec and usec now at boot to avoid these computations later
     _lf_timer_epoch_duration_nsec = ((1LL << 32) * SECONDS(1))/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC;
+    _lf_timer_epoch_duration_usec = _lf_timer_epoch_duration_nsec/1000;
     #endif
 }   
 
