@@ -634,7 +634,7 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
 }
 
 /**
- * Handle a port absent message being received rom a federate via the RIT.
+ * Handle a port absent message being received from a federate.
  *
  * This function assumes the caller does not hold the mutex.
  */
@@ -645,13 +645,18 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
                             " RTI failed to read port absent message from federate %u.",
                             sending_federate->id);
 
+    uint16_t reactor_port_id = extract_uint16(&(buffer[1]));
+    uint16_t federate_id = extract_uint16(&(buffer[1 + sizeof(uint16_t)]));
+
+    if (_RTI.tracing_enabled) {
+        tag_t tag = extract_tag(&(buffer[1 + 2 * sizeof(uint16_t)]));
+        tracepoint_message_from_federate(rti_receive_PORT_ABSENT, federate_id, &tag);
+    }
+
     // Need to acquire the mutex lock to ensure that the thread handling
     // messages coming from the socket connected to the destination does not
     // issue a TAG before this message has been forwarded.
     pthread_mutex_lock(&_RTI.rti_mutex);
-
-    uint16_t reactor_port_id = extract_uint16(&(buffer[1]));
-    uint16_t federate_id = extract_uint16(&(buffer[1 + sizeof(uint16_t)]));
 
     // If the destination federate is no longer connected, issue a warning
     // and return.
@@ -731,6 +736,9 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     LF_PRINT_LOG("RTI received message from federate %d for federate %u port %u with intended tag " PRINTF_TAG ". Forwarding.",
             sending_federate->id, federate_id, reactor_port_id,
             intended_tag.time - lf_time_start(), intended_tag.microstep);
+    if (_RTI.tracing_enabled) {
+        tracepoint_message_from_federate(rti_receive_TAGGED_MESSAGE, federate_id, &intended_tag);
+    }
 
     read_from_socket_errexit(sending_federate->socket, bytes_to_read, &(buffer[header_size]),
                      "RTI failed to read timed message from federate %d.", federate_id);
@@ -861,6 +869,10 @@ void handle_logical_tag_complete(federate_t* fed) {
     LF_PRINT_LOG("RTI received from federate %d the Logical Tag Complete (LTC) (%lld, %u).",
                 fed->id, fed->completed.time - start_time, fed->completed.microstep);
 
+    if (_RTI.tracing_enabled) {
+        tracepoint_message_from_federate(rti_receive_LOGICAL_TAG_COMPLETE, fed->id, &fed->completed);
+    }
+
     // See if we can remove any of the recorded in-transit messages for this.
     clean_in_transit_message_record_up_to_tag(fed->in_transit_message_tags, fed->completed);
 
@@ -900,6 +912,9 @@ void handle_next_event_tag(federate_t* fed) {
     LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) " PRINTF_TAG,
         fed->id, next_tag.time - start_time,
         next_tag.microstep);
+    if (_RTI.tracing_enabled) {
+        tracepoint_message_from_federate(rti_receive_NEXT_EVENT_TAG, fed->id, &next_tag);
+    }
     update_federate_next_event_tag_locked(
         fed->id,
         next_tag
@@ -1012,6 +1027,10 @@ void handle_stop_request_message(federate_t* fed) {
     LF_PRINT_LOG("RTI received from federate %d a MSG_TYPE_STOP_REQUEST message with tag (%lld, %u).",
             fed->id, proposed_stop_tag.time - start_time, proposed_stop_tag.microstep);
 
+    if (_RTI.tracing_enabled) {
+        tracepoint_message_from_federate(rti_receive_STOP_REQUEST, fed->id, &proposed_stop_tag);
+    }
+
     // If this federate has not already asked
     // for a stop, add it to the tally.
     mark_federate_requesting_stop(fed);
@@ -1064,6 +1083,9 @@ void handle_stop_request_reply(federate_t* fed) {
     LF_PRINT_LOG("RTI received from federate %d STOP reply tag (%lld, %u).", fed->id,
             federate_stop_tag.time - start_time,
             federate_stop_tag.microstep);
+    if (_RTI.tracing_enabled) {
+        tracepoint_message_from_federate(rti_receive_STOP_REQUEST_REPLY, fed->id, &federate_stop_tag);
+    }
 
     // Acquire the mutex lock so that we can change the state of the RTI
     pthread_mutex_lock(&_RTI.rti_mutex);
@@ -1099,6 +1121,9 @@ void handle_address_query(uint16_t fed_id) {
     uint16_t remote_fed_id = extract_uint16(buffer);
 
     LF_PRINT_DEBUG("RTI received address query from %d for %d.", fed_id, remote_fed_id);
+    if (_RTI.tracing_enabled) {
+        tracepoint_message_from_federate(rti_receive_ADDRESS_QUERY, fed_id, NULL);
+    }
 
     // NOTE: server_port initializes to -1, which means the RTI does not know
     // the port number because it has not yet received an MSG_TYPE_ADDRESS_ADVERTISEMENT message
@@ -1156,6 +1181,9 @@ void handle_address_ad(uint16_t federate_id) {
     pthread_mutex_lock(&_RTI.rti_mutex);
     _RTI.federates[federate_id].server_port = server_port;
      LF_PRINT_LOG("Received address advertisement from federate %d.", federate_id);
+    if (_RTI.tracing_enabled) {
+        tracepoint_message_from_federate(rti_receive_ADDRESS_ADVERTISEMENT, federate_id, NULL);
+    }
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
@@ -1173,7 +1201,10 @@ void handle_timestamp(federate_t *my_fed) {
 
     int64_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t *)(&buffer)));
     LF_PRINT_LOG("RTI received timestamp message: %lld.", timestamp);
-
+    if (_RTI.tracing_enabled) {
+        tag_t tag = {.time = timestamp, .microstep = 0};
+        tracepoint_message_from_federate(rti_receive_TIMESTAMP, my_fed->id, &tag);
+    }
     pthread_mutex_lock(&_RTI.rti_mutex);
     _RTI.num_feds_proposed_start++;
     if (timestamp > _RTI.max_start_time) {
@@ -1447,6 +1478,10 @@ void handle_federate_resign(federate_t *my_fed) {
 
     lf_print("Federate %d has resigned.", my_fed->id);
 
+    if (_RTI.tracing_enabled) {
+        tracepoint_message_from_federate(rti_receive_RESIGN, my_fed->id, &my_fed->completed);
+    }
+
     // Check downstream federates to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream federates have been visited.
@@ -1484,13 +1519,7 @@ void* federate_thread_TCP(void* fed) {
             break;
         }
         LF_PRINT_DEBUG("RTI: Received message type %u from federate %d.", buffer[0], my_fed->id);
-#ifdef RTI_TRACE
-        // FIXME: This is a temporary use of lf_tag(), just for testing
-        // FIXME: This is rather a working canvas
-        if (_RTI.tracing_enabled)
-            tracepoint_message_from_federate(buffer[0], my_fed->id, lf_tag());
-#endif // RTI_TRACE
-            switch (buffer[0]) {
+        switch (buffer[0]) {
             case MSG_TYPE_TIMESTAMP:
                 handle_timestamp(my_fed);
                 break;
@@ -1527,6 +1556,9 @@ void* federate_thread_TCP(void* fed) {
                 break;
             default:
                 lf_print_error("RTI received from federate %d an unrecognized TCP message type: %u.", my_fed->id, buffer[0]);
+                if (_RTI.tracing_enabled) {
+                    tracepoint_message_from_federate(rti_receive_unidentified, my_fed->id, NULL);
+                }
         }
     }
 
