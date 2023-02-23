@@ -48,7 +48,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 #ifdef RTI_TRACE
-#include "net_common.h"
+#include "net_common.h"  // Defines message types
 #endif // RTI_TRACE
 
 #include "reactor_common.h"
