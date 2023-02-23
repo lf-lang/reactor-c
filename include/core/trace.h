@@ -130,7 +130,7 @@ static const char *trace_event_names[] = {
 typedef struct trace_record_t {
     trace_event_t event_type;
     void* pointer;  // pointer identifying the record, e.g. to self struct for a reactor.
-    int reaction_number;
+    int id_number;
     int worker;
     instant_t logical_time;
     microstep_t microstep;
@@ -190,7 +190,7 @@ void start_trace(char* filename);
  * @param event_type The type of event (see trace_event_t in trace.h)
  * @param reactor The pointer to the self struct of the reactor instance in the trace table.
  * @param tag Pointer to a tag or NULL to use current tag.
- * @param reaction_number The index of the reaction or -1 if the trace is not of a reaction.
+ * @param id_number The id number (e.g. reaction or federate) or -1 if the event does not have an id number.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  * @param physical_time If the caller has already accessed physical time, provide it here.
  *  Otherwise, provide NULL. This argument avoids a second call to lf_time_physical()
@@ -203,7 +203,7 @@ void tracepoint(
         trace_event_t event_type,
         void* reactor,
         tag_t* tag,
-        int reaction_number,
+        int id_number,
         int worker,
         instant_t* physical_time,
         trigger_t* trigger,

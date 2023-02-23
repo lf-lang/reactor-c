@@ -390,8 +390,7 @@ void start_trace(char* filename) {
  * @param event_type The type of event (see trace_event_t in trace.h)
  * @param pointer The identifying pointer.
  * @param tag Pointer to a tag or NULL to use current tag.
- * @param reaction_number The number of the reaction or -1 if the trace is not of a reaction
- *  or the reaction number if not known.
+ * @param id_number The id number (e.g. of a reaction or federate) or -1 if the event has no id number.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution
  *  or -1 for an unknown thread.
  * @param physical_time If the caller has already accessed physical time, provide it here.
@@ -405,7 +404,7 @@ void tracepoint(
         trace_event_t event_type,
         void* pointer,
         tag_t* tag,
-        int reaction_number,
+        int id_number,
         int worker,
         instant_t* physical_time,
         trigger_t* trigger,
@@ -423,7 +422,7 @@ void tracepoint(
     // Write to memory buffer.
     _lf_trace_buffer[index][i].event_type = event_type;
     _lf_trace_buffer[index][i].pointer = pointer;
-    _lf_trace_buffer[index][i].reaction_number = reaction_number;
+    _lf_trace_buffer[index][i].id_number = id_number;
     _lf_trace_buffer[index][i].worker = worker;
     if (tag != NULL) {
         _lf_trace_buffer[index][i].logical_time = tag->time;
@@ -589,7 +588,7 @@ void tracepoint_tag_to_RTI(unsigned char type, int fed_id, tag_t tag) {
     tracepoint(event_type, 
         NULL,   // void* pointer,
         &tag,   // tag* tag,
-        fed_id, // int reaction_number,
+        fed_id, // int id_number,
         0,      // int worker,
         NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
@@ -608,7 +607,7 @@ void tracepoint_tag_from_RTI(unsigned char type, int fed_id, tag_t tag) {
     tracepoint(event_type,
         NULL,   // void* pointer,
         &tag,   // tag* tag,
-        fed_id, // int reaction_number,
+        fed_id, // int id_number,
         0,      // int worker,
         NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
@@ -636,7 +635,7 @@ void tracepoint_message_to_federate(unsigned char type, const char *fed_id, tag_
     tracepoint(event_type,
                fed,  // void* pointer,
                &tag, // tag* tag,
-               -1,   // int reaction_number,
+               -1,   // int id_number,
                0,    // int worker,
                NULL, // instant_t* physical_time (will be generated)
                NULL, // trigger_t* trigger,
@@ -667,7 +666,7 @@ void tracepoint_message_from_federate(unsigned char type, const char *fed_id, ta
     tracepoint(event_type,
                fed,  // void* pointer,
                &tag, // tag* tag,
-               -1,   // int reaction_number,
+               -1,   // int id_number,
                0,    // int worker,
                NULL, // instant_t* physical_time (will be generated)
                NULL, // trigger_t* trigger,
