@@ -47,7 +47,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <unistd.h>     // Defines read(), write(), and close()
 
-//clock-sync.c, net_util.c
 #include "clock-sync.h"
 #include "federate.h"
 #include "lf_types.h"
