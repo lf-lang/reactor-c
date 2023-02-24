@@ -230,7 +230,7 @@ void* flush_trace(void* args) {
             }
             // Wait for notification that there is a buffer ready to flush
             // (or that tracing is being stopped).
-            lf_cond_wait(&_lf_flush_needed, &_lf_trace_mutex);
+            lf_cond_wait(&_lf_flush_needed);
             continue;
         }
         // Unlock the mutex to write to the file.
@@ -290,7 +290,7 @@ void flush_trace_to_file_locked(int worker) {
 
         // If the previous flush for this worker is not finished, wait for it to finish.
         while (_lf_trace_buffer_size_to_flush[worker] != 0) {
-            lf_cond_wait(&_lf_flush_finished, &_lf_trace_mutex);
+            lf_cond_wait(&_lf_flush_finished);
         }
         _lf_trace_buffer_size_to_flush[worker] = _lf_trace_buffer_size[worker];
 
@@ -325,8 +325,8 @@ void flush_trace_to_file(int worker) {
  */
 void start_trace(char* filename) {
     lf_mutex_init(&_lf_trace_mutex);
-    lf_cond_init(&_lf_flush_finished);
-    lf_cond_init(&_lf_flush_needed);
+    lf_cond_init(&_lf_flush_finished, &_lf_trace_mutex);
+    lf_cond_init(&_lf_flush_needed, &_lf_trace_mutex);
     // FIXME: location of trace file should be customizable.
     _lf_trace_file = fopen(filename, "w");
     if (_lf_trace_file == NULL) {

@@ -1,3 +1,4 @@
+#ifdef PLATFORM_ZEPHYR
 /*************
 Copyright (c) 2023, Norwegian University of Science and Technology.
 
@@ -458,8 +459,9 @@ int lf_mutex_unlock(lf_mutex_t* mutex) {
  * 
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_cond_init(lf_cond_t* cond) {
-    return k_condvar_init(cond);
+int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
+    cond->mutex = mutex;
+    return k_condvar_init(&cond->condition);
 }
 
 /** 
@@ -468,7 +470,7 @@ int lf_cond_init(lf_cond_t* cond) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_broadcast(lf_cond_t* cond) {
-    k_condvar_broadcast(cond);
+    k_condvar_broadcast(&cond->condition);
     return 0;
 }
 
@@ -478,7 +480,7 @@ int lf_cond_broadcast(lf_cond_t* cond) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_signal(lf_cond_t* cond) {
-    return k_condvar_signal(cond);
+    return k_condvar_signal(&cond->condition);
 }
 
 /** 
@@ -487,8 +489,8 @@ int lf_cond_signal(lf_cond_t* cond) {
  * 
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex) {
-    return k_condvar_wait(cond, mutex, K_FOREVER);
+int lf_cond_wait(lf_cond_t* cond) {
+    return k_condvar_wait(&cond->condition, cond->mutex, K_FOREVER);
 }
 
 /** 
@@ -499,12 +501,12 @@ int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex) {
  * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
  *  number otherwise.
  */
-int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absolute_time_ns) {
+int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
     instant_t now;
     lf_clock_gettime(&now);
     interval_t sleep_duration_ns = absolute_time_ns - now;
     k_timeout_t timeout = K_NSEC(sleep_duration_ns);
-    int res = k_condvar_wait(cond, mutex, timeout);
+    int res = k_condvar_wait(&cond->condition, cond->mutex, timeout);
     if (res == 0) {
         return 0;
     } else {
@@ -569,3 +571,4 @@ int  _zephyr_val_compare_and_swap(int *ptr, int value, int newval) {
 }
 
 #endif // NUMBER_OF_WORKERS
+#endif

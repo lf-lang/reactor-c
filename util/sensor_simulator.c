@@ -69,8 +69,8 @@ typedef struct _lf_sensor_message_t {
 } _lf_sensor_message_t;
 
 struct {
-	_lf_thread_t input_thread_id;
-	_lf_thread_t output_thread_id;
+	lf_thread_t input_thread_id;
+	lf_thread_t output_thread_id;
 	int thread_created;
 
 	/**
@@ -316,7 +316,7 @@ void* _lf_sensor_simulator_thread(void* ignored) {
     while(_lf_sensor.thread_created != 0) {
     	// Sadly, ncurses is not thread safe, so this thread deals with all messages.
     	while (_lf_sensor.message_q == NULL) {
-            lf_cond_wait(&_lf_sensor_simulator_cond_var, &_lf_sensor_mutex);
+            lf_cond_wait(&_lf_sensor_simulator_cond_var);
     	}
     	// Show all messages in the queue.
 		while (_lf_sensor.message_q != NULL) {
