@@ -134,9 +134,6 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Advance tag. This will also pop events for the newly acquired tag and put the triggered reactions on the '_lf_sched_vector_of_reaction_qs'.</p>
-<p>This function assumes the caller holds the 'mutex' lock.</p>
-<dl class="section return"><dt>Returns</dt><dd>should_exit True if the worker thread should exit. False otherwise. </dd></dl>
 
 </div>
 </div>
@@ -154,7 +151,6 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Return true if the worker should stop now; false otherwise. This function assumes the caller holds the mutex lock. </p>
 
 </div>
 </div>
@@ -225,7 +221,7 @@ Variables</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>The tag at which the Lingua Franca program should stop. It will be initially set to timeout if it is set. However, starvation or calling <a class="el" href="reactor_8c.html#aa217496c12cb5b53dad3d91e203cc323">lf_request_stop()</a> can also alter the stop_tag by moving it earlier.</p>
+<p>The tag at which the Lingua Franca program should stop. It will be initially set to timeout if it is set. However, starvation or calling <a class="el" href="reactor_8h.html#ab49affc958f705d9e33c5e3463848bda">lf_request_stop()</a> can also alter the stop_tag by moving it earlier.</p>
 <p>FIXME: This variable might need to be volatile </p>
 
 </div>

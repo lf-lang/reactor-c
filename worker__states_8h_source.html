@@ -113,7 +113,7 @@ $(function() {
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#include &quot;<a class="code" href="platform_8h.html">platform.h</a>&quot;</span></div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="preprocessor">#include &quot;<a class="code" href="scheduler_8h.html">scheduler.h</a>&quot;</span></div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="keyword">static</span> lf_cond_t* worker_conds;</div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="keyword">static</span> <a class="code hl_struct" href="structlf__cond__t.html">lf_cond_t</a>* worker_conds;</div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span><span class="keyword">static</span> <span class="keywordtype">size_t</span>* cumsum_of_worker_group_sizes;</div>
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="keyword">static</span> <span class="keyword">volatile</span> <span class="keywordtype">size_t</span> num_loose_threads;</div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="keyword">static</span> <span class="keyword">volatile</span> <span class="keywordtype">size_t</span> num_awakened;</div>
@@ -142,7 +142,7 @@ $(function() {
 <div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span><span class="keyword">static</span> <span class="keywordtype">void</span> worker_states_init(<span class="keywordtype">size_t</span> number_of_workers) {</div>
 <div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    <span class="keywordtype">size_t</span> greatest_worker_number = number_of_workers - 1;</div>
 <div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    <span class="keywordtype">size_t</span> num_conds = cond_of(greatest_worker_number) + 1;</div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    worker_conds = (lf_cond_t*) malloc(<span class="keyword">sizeof</span>(lf_cond_t) * num_conds);</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    worker_conds = (<a class="code hl_struct" href="structlf__cond__t.html">lf_cond_t</a>*) malloc(<span class="keyword">sizeof</span>(<a class="code hl_struct" href="structlf__cond__t.html">lf_cond_t</a>) * num_conds);</div>
 <div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span>    cumsum_of_worker_group_sizes = (<span class="keywordtype">size_t</span>*) calloc(num_conds, <span class="keyword">sizeof</span>(<span class="keywordtype">size_t</span>));</div>
 <div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    mutex_held = (<span class="keywordtype">bool</span>*) calloc(number_of_workers, <span class="keyword">sizeof</span>(<span class="keywordtype">bool</span>));</div>
 <div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; number_of_workers; i++) {</div>
@@ -152,7 +152,7 @@ $(function() {
 <div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>        cumsum_of_worker_group_sizes[i] += cumsum_of_worker_group_sizes[i - 1];</div>
 <div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    }</div>
 <div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; num_conds; i++) {</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>        lf_cond_init(worker_conds + i);</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>        lf_cond_init(worker_conds + i, &amp;<a class="code hl_variable" href="worker__states_8h.html#ab491fbef9a883a7cee19e074dba32661">mutex</a>);</div>
 <div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>    }</div>
 <div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    num_loose_threads = number_of_workers;</div>
 <div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>}</div>
@@ -227,7 +227,7 @@ $(function() {
 <div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>        ((level_counter_snapshot == level_counter) || worker &gt;= num_awakened)</div>
 <div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>    ) {</div>
 <div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>        <span class="keywordflow">do</span> {</div>
-<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>            lf_cond_wait(worker_conds + cond, &amp;<a class="code hl_variable" href="worker__states_8h.html#ab491fbef9a883a7cee19e074dba32661">mutex</a>);</div>
+<div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>            lf_cond_wait(worker_conds + cond);</div>
 <div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span>        } <span class="keywordflow">while</span> (level_counter_snapshot == level_counter || worker &gt;= num_awakened);</div>
 <div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>    }</div>
 <div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span>    <a class="code hl_function" href="hashmap_8h.html#aba6a66e60b2db6671c7f4b720258488e">assert</a>(!mutex_held[worker]);  <span class="comment">// This thread holds the mutex, but it did not report that.</span></div>
@@ -239,8 +239,9 @@ $(function() {
 <div class="ttc" id="ahashmap_8h_html_a339672ff94e6199019102f50d317c3d7"><div class="ttname"><a href="hashmap_8h.html#a339672ff94e6199019102f50d317c3d7">ret</a></div><div class="ttdeci">return ret</div><div class="ttdef"><b>Definition:</b> hashmap.h:115</div></div>
 <div class="ttc" id="ahashmap_8h_html_aba6a66e60b2db6671c7f4b720258488e"><div class="ttname"><a href="hashmap_8h.html#aba6a66e60b2db6671c7f4b720258488e">assert</a></div><div class="ttdeci">assert(address &gt;=hashmap-&gt;entries)</div></div>
 <div class="ttc" id="aplatform_8h_html"><div class="ttname"><a href="platform_8h.html">platform.h</a></div></div>
-<div class="ttc" id="aplatform_8h_html_ad7c2ee72327071ecc11ecb5787fc4a37"><div class="ttname"><a href="platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a></div><div class="ttdeci">void lf_mutex_t</div><div class="ttdef"><b>Definition:</b> platform.h:89</div></div>
+<div class="ttc" id="aplatform_8h_html_ad7c2ee72327071ecc11ecb5787fc4a37"><div class="ttname"><a href="platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a></div><div class="ttdeci">void lf_mutex_t</div><div class="ttdef"><b>Definition:</b> platform.h:83</div></div>
 <div class="ttc" id="ascheduler_8h_html"><div class="ttname"><a href="scheduler_8h.html">scheduler.h</a></div><div class="ttdoc">Scheduler API for the threaded C runtime.</div></div>
+<div class="ttc" id="astructlf__cond__t_html"><div class="ttname"><a href="structlf__cond__t.html">lf_cond_t</a></div><div class="ttdef"><b>Definition:</b> lf_C11_threads_support.h:40</div></div>
 <div class="ttc" id="aworker__states_8h_html_a1108d86c2dd7c22be33214ab97fe6f0e"><div class="ttname"><a href="worker__states_8h.html#a1108d86c2dd7c22be33214ab97fe6f0e">max_num_workers</a></div><div class="ttdeci">size_t max_num_workers</div></div>
 <div class="ttc" id="aworker__states_8h_html_a81a95f8f17facc678ca8e5c35783f3ac"><div class="ttname"><a href="worker__states_8h.html#a81a95f8f17facc678ca8e5c35783f3ac">current_level</a></div><div class="ttdeci">size_t current_level</div></div>
 <div class="ttc" id="aworker__states_8h_html_a9c91e5c84c3910df17c909ccdea074db"><div class="ttname"><a href="worker__states_8h.html#a9c91e5c84c3910df17c909ccdea074db">fast</a></div><div class="ttdeci">bool fast</div><div class="ttdef"><b>Definition:</b> reactor_common.c:67</div></div>

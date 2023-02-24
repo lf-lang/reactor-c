@@ -194,13 +194,6 @@ Copyright (c) 2022, The University of California at Berkeley. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">worker_number</td><td>The worker number for the worker thread that has finished executing 'done_reaction'. </td></tr>
-    <tr><td class="paramname">done_reaction</td><td>The reaction that is done.</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">worker_number</td><td>The worker number for the worker thread that has finished executing 'done_reaction'. </td></tr>
     <tr><td class="paramname">done_reaction</td><td>The reaction is that is done. </td></tr>
   </table>
   </dd>
@@ -224,7 +217,6 @@ Copyright (c) 2022, The University of California at Berkeley. </dd></dl>
 </div><div class="memdoc">
 
 <p>Free the memory used by the scheduler. </p>
-<p>This must be called when the scheduler is no longer needed.</p>
 <p>This must be called when the scheduler is no longer needed.</p>
 <p>This must be called when the scheduler is no longer needed.</p>
 <p>This must be called when the scheduler is no longer needed.</p>
@@ -253,14 +245,6 @@ Copyright (c) 2022, The University of California at Berkeley. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">worker_number</td><td>For the calling worker thread. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>reaction_t* A reaction for the worker to execute. NULL if the calling worker thread should exit.</dd></dl>
-<p>This function blocks until it can return a ready reaction for worker thread 'worker_number' or it is time for the worker thread to stop and exit (where a NULL value would be returned).</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">worker_number</td><td></td></tr>
   </table>
   </dd>
 </dl>
@@ -347,14 +331,6 @@ Copyright (c) 2022, The University of California at Berkeley. </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">number_of_workers</td><td>Indicate how many workers this scheduler will be managing. </td></tr>
-    <tr><td class="paramname">option</td><td>Pointer to a <code><a class="el" href="structsched__params__t.html" title="Struct representing the most common scheduler parameters.">sched_params_t</a></code> struct containing additional scheduler parameters.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>This has to be called before other functions of the scheduler can be used. If the scheduler is already initialized, this will be a no-op.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">number_of_workers</td><td>Indicate how many workers this scheduler will be managing. </td></tr>
     <tr><td class="paramname">option</td><td>Pointer to a <code><a class="el" href="structsched__params__t.html" title="Struct representing the most common scheduler parameters.">sched_params_t</a></code> struct containing additional scheduler parameters. </td></tr>
   </table>
   </dd>
@@ -408,16 +384,6 @@ Copyright (c) 2022, The University of California at Berkeley. </dd></dl>
   </dd>
 </dl>
 <p>If a worker number is not available (e.g., this function is not called by a worker thread), -1 should be passed as the 'worker_number'.</p>
-<p>The scheduler will ensure that the same reaction is not triggered twice in the same tag.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">reaction</td><td>The reaction to trigger at the current tag. </td></tr>
-    <tr><td class="paramname">worker_number</td><td>The ID of the worker that is making this call. 0 should be used if there is only one worker (e.g., when the program is using the unthreaded C runtime). -1 is used for an anonymous call in a context where a worker number does not make sense (e.g., the caller is not a worker thread).</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>If a worker number is not available (e.g., this function is not called by a worker thread), -1 should be passed as the 'worker_number'.</p>
-<p>This scheduler ignores the worker number.</p>
 <p>The scheduler will ensure that the same reaction is not triggered twice in the same tag.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">

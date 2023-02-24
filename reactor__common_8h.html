@@ -119,7 +119,7 @@ Functions</h2></td></tr>
 <tr class="separator:abffc41fcd9c4870f3b01157b523a257b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a662cfd5714e5930f5e1c880f13deba6d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8h.html#a662cfd5714e5930f5e1c880f13deba6d">_lf_recycle_event</a> (<a class="el" href="structevent__t.html">event_t</a> *e)</td></tr>
 <tr class="separator:a662cfd5714e5930f5e1c880f13deba6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aedb705114eb79ae21c2c3594055d0783"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structevent__t.html">event_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8h.html#aedb705114eb79ae21c2c3594055d0783">_lf_create_dummy_events</a> (<a class="el" href="structtrigger__t.html">trigger_t</a> *trigger, <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> time, <a class="el" href="structevent__t.html">event_t</a> *<a class="el" href="reactor_8c.html#a6967cbc8a4ce78b1049da429d172f90b">next</a>, <a class="el" href="platform_8h.html#aff94b88998d5bf37870fb520ad82526d">microstep_t</a> offset)</td></tr>
+<tr class="memitem:aedb705114eb79ae21c2c3594055d0783"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structevent__t.html">event_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8h.html#aedb705114eb79ae21c2c3594055d0783">_lf_create_dummy_events</a> (<a class="el" href="structtrigger__t.html">trigger_t</a> *trigger, <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> time, <a class="el" href="structevent__t.html">event_t</a> *next, <a class="el" href="platform_8h.html#aff94b88998d5bf37870fb520ad82526d">microstep_t</a> offset)</td></tr>
 <tr class="separator:aedb705114eb79ae21c2c3594055d0783"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af1f3a3c4613102e28fc0105408731c5e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor__common_8h.html#af1f3a3c4613102e28fc0105408731c5e">_lf_schedule_at_tag</a> (<a class="el" href="structtrigger__t.html">trigger_t</a> *trigger, <a class="el" href="structtag__t.html">tag_t</a> tag, <a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
 <tr class="separator:af1f3a3c4613102e28fc0105408731c5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -782,14 +782,6 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Trigger 'reaction'.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">reaction</td><td>The reaction. </td></tr>
-    <tr><td class="paramname">worker_number</td><td>The ID of the worker that is making this call. 0 should be used if there is only one worker (e.g., when the program is using the unthreaded C runtime). -1 is used for an anonymous call in a context where a worker number does not make sense (e.g., the caller is not a worker thread). </td></tr>
-  </table>
-  </dd>
-</dl>
 
 </div>
 </div>
@@ -1351,7 +1343,7 @@ Variables</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>The tag at which the Lingua Franca program should stop. It will be initially set to timeout if it is set. However, starvation or calling <a class="el" href="reactor_8c.html#aa217496c12cb5b53dad3d91e203cc323">lf_request_stop()</a> can also alter the stop_tag by moving it earlier.</p>
+<p>The tag at which the Lingua Franca program should stop. It will be initially set to timeout if it is set. However, starvation or calling <a class="el" href="reactor_8h.html#ab49affc958f705d9e33c5e3463848bda">lf_request_stop()</a> can also alter the stop_tag by moving it earlier.</p>
 <p>FIXME: This variable might need to be volatile </p>
 
 </div>

@@ -74,6 +74,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
 <a href="#typedef-members">Typedefs</a>  </div>
   <div class="headertitle"><div class="title">lf_POSIX_threads_support.h File Reference</div></div>
@@ -85,6 +86,11 @@ $(function() {
 </div>
 <p><a href="lf___p_o_s_i_x__threads__support_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structlf__cond__t.html">lf_cond_t</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:a648705f106259061531b75d252c66f79"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf___p_o_s_i_x__threads__support_8h.html#a648705f106259061531b75d252c66f79">_LF_TIMEOUT</a>&#160;&#160;&#160;ETIMEDOUT</td></tr>
@@ -92,12 +98,10 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
-<tr class="memitem:a3d2a0d3780373cad3d9e3bded3579c54"><td class="memItemLeft" align="right" valign="top">typedef pthread_mutex_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf___p_o_s_i_x__threads__support_8h.html#a3d2a0d3780373cad3d9e3bded3579c54">_lf_mutex_t</a></td></tr>
-<tr class="separator:a3d2a0d3780373cad3d9e3bded3579c54"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab740f08cb12d74b3afa801ef249fbc72"><td class="memItemLeft" align="right" valign="top">typedef pthread_cond_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf___p_o_s_i_x__threads__support_8h.html#ab740f08cb12d74b3afa801ef249fbc72">_lf_cond_t</a></td></tr>
-<tr class="separator:ab740f08cb12d74b3afa801ef249fbc72"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a35c42e73e6a0fbc99f9c2f935776c322"><td class="memItemLeft" align="right" valign="top">typedef pthread_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf___p_o_s_i_x__threads__support_8h.html#a35c42e73e6a0fbc99f9c2f935776c322">_lf_thread_t</a></td></tr>
-<tr class="separator:a35c42e73e6a0fbc99f9c2f935776c322"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae1e850e7dbba094a6d3c8391311a1018"><td class="memItemLeft" align="right" valign="top">typedef pthread_mutex_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf___p_o_s_i_x__threads__support_8h.html#ae1e850e7dbba094a6d3c8391311a1018">lf_mutex_t</a></td></tr>
+<tr class="separator:ae1e850e7dbba094a6d3c8391311a1018"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adf60ce8e6a4aa33ec6165c9a0c2262a9"><td class="memItemLeft" align="right" valign="top">typedef pthread_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="lf___p_o_s_i_x__threads__support_8h.html#adf60ce8e6a4aa33ec6165c9a0c2262a9">lf_thread_t</a></td></tr>
+<tr class="separator:adf60ce8e6a4aa33ec6165c9a0c2262a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a648705f106259061531b75d252c66f79" name="a648705f106259061531b75d252c66f79"></a>
@@ -115,28 +119,14 @@ Typedefs</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Typedef Documentation</h2>
-<a id="ab740f08cb12d74b3afa801ef249fbc72" name="ab740f08cb12d74b3afa801ef249fbc72"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab740f08cb12d74b3afa801ef249fbc72">&#9670;&#160;</a></span>_lf_cond_t</h2>
+<a id="ae1e850e7dbba094a6d3c8391311a1018" name="ae1e850e7dbba094a6d3c8391311a1018"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae1e850e7dbba094a6d3c8391311a1018">&#9670;&#160;</a></span>lf_mutex_t</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef pthread_cond_t <a class="el" href="lf___c11__threads__support_8h.html#a25f8fa235dd876facebb445897982ee8">_lf_cond_t</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a3d2a0d3780373cad3d9e3bded3579c54" name="a3d2a0d3780373cad3d9e3bded3579c54"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3d2a0d3780373cad3d9e3bded3579c54">&#9670;&#160;</a></span>_lf_mutex_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">typedef pthread_mutex_t <a class="el" href="lf___c11__threads__support_8h.html#af138a3eb9c01e6c750ec727fc3263351">_lf_mutex_t</a></td>
+          <td class="memname">typedef pthread_mutex_t <a class="el" href="platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -146,14 +136,14 @@ Typedefs</h2></td></tr>
 
 </div>
 </div>
-<a id="a35c42e73e6a0fbc99f9c2f935776c322" name="a35c42e73e6a0fbc99f9c2f935776c322"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a35c42e73e6a0fbc99f9c2f935776c322">&#9670;&#160;</a></span>_lf_thread_t</h2>
+<a id="adf60ce8e6a4aa33ec6165c9a0c2262a9" name="adf60ce8e6a4aa33ec6165c9a0c2262a9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adf60ce8e6a4aa33ec6165c9a0c2262a9">&#9670;&#160;</a></span>lf_thread_t</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef pthread_t <a class="el" href="lf___c11__threads__support_8h.html#a0c63968b3c6c1797744468f13daf0814">_lf_thread_t</a></td>
+          <td class="memname">typedef pthread_t <a class="el" href="lf___c11__threads__support_8h.html#aaa456353790fbeda2b144e28e4eb1a85">lf_thread_t</a></td>
         </tr>
       </table>
 </div><div class="memdoc">

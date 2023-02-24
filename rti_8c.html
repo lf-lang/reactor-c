@@ -354,7 +354,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Handle address advertisement messages (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="net__common_8h.html#ae004cb4e5add42afe5483f6706e11d35">MSG_TYPE_ADDRESS_ADVERTISEMENT</a> in <a class="el" href="net__common_8h.html">net_common.h</a>). The federate is expected to send its server port number as the <a class="el" href="reactor_8c.html#a6967cbc8a4ce78b1049da429d172f90b">next</a> byte. The RTI will keep a record of this number in the .server_port field of the _RTI.federates[federate_id] array of structs.</dd></dl>
+<p>Handle address advertisement messages (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="net__common_8h.html#ae004cb4e5add42afe5483f6706e11d35">MSG_TYPE_ADDRESS_ADVERTISEMENT</a> in <a class="el" href="net__common_8h.html">net_common.h</a>). The federate is expected to send its server port number as the next byte. The RTI will keep a record of this number in the .server_port field of the _RTI.federates[federate_id] array of structs.</dd></dl>
 <p>The server_hostname and server_ip_addr fields are assigned in <a class="el" href="rti_8c.html#acf8907ccab075522f7b84de579d50030">connect_to_federates()</a> upon accepting the socket from the remote federate.</p>
 <p>This function assumes the caller does not hold the mutex.</p>
 <dl class="params"><dt>Parameters</dt><dd>

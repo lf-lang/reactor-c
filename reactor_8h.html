@@ -171,7 +171,7 @@ Functions</h2></td></tr>
 <tr class="separator:a1d5c2f94ff007a3a8c74e5cb9e664238"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaf263557d88761d75b98bc6cc5226cb2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#aaf263557d88761d75b98bc6cc5226cb2">_lf_schedule_int</a> (<a class="el" href="structlf__action__base__t.html">lf_action_base_t</a> *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, int value)</td></tr>
 <tr class="separator:aaf263557d88761d75b98bc6cc5226cb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a46845578328233d51b6bfb55e8724ee1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structevent__t.html">event_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a46845578328233d51b6bfb55e8724ee1">_lf_create_dummy_event</a> (<a class="el" href="structtrigger__t.html">trigger_t</a> *trigger, <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> time, <a class="el" href="structevent__t.html">event_t</a> *<a class="el" href="reactor_8c.html#a6967cbc8a4ce78b1049da429d172f90b">next</a>, unsigned int offset)</td></tr>
+<tr class="memitem:a46845578328233d51b6bfb55e8724ee1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structevent__t.html">event_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a46845578328233d51b6bfb55e8724ee1">_lf_create_dummy_event</a> (<a class="el" href="structtrigger__t.html">trigger_t</a> *trigger, <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> time, <a class="el" href="structevent__t.html">event_t</a> *next, unsigned int offset)</td></tr>
 <tr class="separator:a46845578328233d51b6bfb55e8724ee1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3abf7fed98b1e3578cffdd349a0ac227"><td class="memItemLeft" align="right" valign="top"><a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="reactor_8h.html#a3abf7fed98b1e3578cffdd349a0ac227">_lf_schedule_token</a> (<a class="el" href="structlf__action__base__t.html">lf_action_base_t</a> *action, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay, <a class="el" href="structlf__token__t.html">lf_token_t</a> *token)</td></tr>
 <tr class="separator:a3abf7fed98b1e3578cffdd349a0ac227"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1246,12 +1246,6 @@ DESCRIPTION</h1>
 </div><div class="memdoc">
 <p>Mark the given port's is_present field as true. This is_present field will later be cleaned up by _lf_start_time_step. This assumes that the mutex is not held. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">port</td><td>A pointer to the port struct.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>Mark the given port's is_present field as true. This is_present field will later be cleaned up by _lf_start_time_step. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
     <tr><td class="paramname">port</td><td>A pointer to the port struct. </td></tr>
   </table>
   </dd>
@@ -1370,8 +1364,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Request a stop to execution as soon as possible. In a non-federated execution, this will occur at the conclusion of the current logical time. In a federated execution, it will likely occur at a later logical time determined by the RTI so that all federates stop at the same logical time.</p>
-<p>Stop execution at the conclusion of the next microstep. </p>
+<p>Request a stop to execution as soon as possible. In a non-federated execution, this will occur at the conclusion of the current logical time. In a federated execution, it will likely occur at a later logical time determined by the RTI so that all federates stop at the same logical time. </p>
 
 </div>
 </div>

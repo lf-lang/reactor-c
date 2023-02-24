@@ -204,7 +204,7 @@ Variables</h2></td></tr>
 <tr class="separator:a0eb9d322e65732ec508efed2bebfec31"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1de2c61d36e14fae8de7043ff2661a34"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a1de2c61d36e14fae8de7043ff2661a34">outbound_socket_mutex</a></td></tr>
 <tr class="separator:a1de2c61d36e14fae8de7043ff2661a34"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac31c3ee54cd862c9381fbf980fa7d9ef"><td class="memItemLeft" align="right" valign="top">lf_cond_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#ac31c3ee54cd862c9381fbf980fa7d9ef">port_status_changed</a></td></tr>
+<tr class="memitem:ac31c3ee54cd862c9381fbf980fa7d9ef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structlf__cond__t.html">lf_cond_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#ac31c3ee54cd862c9381fbf980fa7d9ef">port_status_changed</a></td></tr>
 <tr class="separator:ac31c3ee54cd862c9381fbf980fa7d9ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8dd2a9d602522afd72f6c524356868e4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structfederate__instance__t.html">federate_instance_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="federate_8c.html#a8dd2a9d602522afd72f6c524356868e4">_fed</a></td></tr>
 <tr class="separator:a8dd2a9d602522afd72f6c524356868e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -855,7 +855,7 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p>Handle a MSG_TYPE_STOP_GRANTED message from the RTI.</p>
-<p>This function removes the global barrier on logical time raised when <a class="el" href="reactor_8c.html#aa217496c12cb5b53dad3d91e203cc323">lf_request_stop()</a> was called.</p>
+<p>This function removes the global barrier on logical time raised when <a class="el" href="reactor_8h.html#ab49affc958f705d9e33c5e3463848bda">lf_request_stop()</a> was called.</p>
 <p>This function assumes the caller does not hold the mutex lock, therefore, it acquires it. </p>
 
 </div>
@@ -1707,7 +1707,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">lf_cond_t port_status_changed</td>
+          <td class="memname"><a class="el" href="structlf__cond__t.html">lf_cond_t</a> port_status_changed</td>
         </tr>
       </table>
 </div><div class="memdoc">

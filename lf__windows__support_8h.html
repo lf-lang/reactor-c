@@ -129,31 +129,12 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">int lf_clock_gettime </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="lf__arduino__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb">_instant_t</a> *&#160;</td>
           <td class="paramname"><em>t</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Write the current time in nanoseconds into the location given by the argument. This returns 0 (it never fails, assuming the argument gives a valid memory location). This has to be called at least once per 35 minutes to properly handle overflows of the 32-bit clock. TODO: This is only addressable by setting up interrupts on a timer peripheral to occur at wrap.</p>
-<p>Fetch the value of _LF_CLOCK (see <a class="el" href="lf__linux__support_8h.html">lf_linux_support.h</a>) and store it in *t. The timestamp value in 't' will will be the number of nanoseconds since the board was reset. The timers on the board have only 32 bits and their resolution is in microseconds, so the time returned will always be an integer number of microseconds. Moreover, after about 71 minutes of operation, the timer overflows.</p>
-<p>The function reads out the upper word before and after reading the timer. If the upper word has changed (i.e. there was an overflow in between), we cannot simply combine them. We read once more to be sure that we read after the overflow.</p>
-<dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. In case of failure, errno will be set appropriately (see <code>man 2 clock_gettime</code>).</dd></dl>
-<p>Fetch the value of _LF_CLOCK (see <a class="el" href="lf__linux__support_8h.html">lf_linux_support.h</a>) and store it in tp. The timestamp value in 't' will always be epoch time, which is the number of nanoseconds since January 1st, 1970.</p>
-<dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. In case of failure, errno will be set appropriately (see <code>man 2 clock_gettime</code>).</dd></dl>
-<p>Fetch the value of the physical clock (see <a class="el" href="lf__windows__support_8h.html">lf_windows_support.h</a>) and store it in t. The timestamp value in 't' will be based on QueryPerformanceCounter, adjusted to reflect time passed in nanoseconds, on most modern Windows systems.</p>
-<dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. In case of failure, errno will be set to EINVAL or EFAULT.</dd></dl>
-<p>Fetch the value of an internal (and platform-specific) physical clock and store it in <code>t</code>.</p>
-<p>Ideally, the underlying platform clock should be monotonic. However, the core lib tries to enforce monotonicity at higher level APIs (see <a class="el" href="tag_8h.html">tag.h</a>).</p>
-<dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure</dd></dl>
-<p>Write the current time in nanoseconds into the location given by the argument. This returns 0 (it never fails, assuming the argument gives a valid memory location). This has to be called at least once per 35 minutes to properly handle overflows of the 32-bit clock. TODO: This is only addressable by setting up interrupts on a timer peripheral to occur at wrap.</p>
-<p>Fetch the value of _LF_CLOCK (see <a class="el" href="lf__linux__support_8h.html">lf_linux_support.h</a>) and store it in *t. The timestamp value in 't' will will be the number of nanoseconds since the board was reset. The timers on the board have only 32 bits and their resolution is in microseconds, so the time returned will always be an integer number of microseconds. Moreover, after about 71 minutes of operation, the timer overflows.</p>
-<p>The function reads out the upper word before and after reading the timer. If the upper word has changed (i.e. there was an overflow in between), we cannot simply combine them. We read once more to be sure that we read after the overflow.</p>
-<dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. In case of failure, errno will be set appropriately (see <code>man 2 clock_gettime</code>).</dd></dl>
-<p>Fetch the value of _LF_CLOCK (see <a class="el" href="lf__linux__support_8h.html">lf_linux_support.h</a>) and store it in tp. The timestamp value in 't' will always be epoch time, which is the number of nanoseconds since January 1st, 1970.</p>
-<dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. In case of failure, errno will be set appropriately (see <code>man 2 clock_gettime</code>).</dd></dl>
-<p>Fetch the value of the physical clock (see <a class="el" href="lf__windows__support_8h.html">lf_windows_support.h</a>) and store it in t. The timestamp value in 't' will be based on QueryPerformanceCounter, adjusted to reflect time passed in nanoseconds, on most modern Windows systems.</p>
-<dl class="section return"><dt>Returns</dt><dd>0 for success, or -1 for failure. In case of failure, errno will be set to EINVAL or EFAULT. </dd></dl>
 
 </div>
 </div>
