@@ -256,6 +256,20 @@ extern lf_cond_t port_status_changed;
 void send_neighbor_structure_to_RTI(int);
 
 /**
+ * Connect to the federate with the specified id. This established
+ * connection will then be used in functions such as send_timed_message()
+ * to send messages directly to the specified federate.
+ * This function first sends an MSG_TYPE_ADDRESS_QUERY message to the RTI to obtain
+ * the IP address and port number of the specified federate. It then attempts
+ * to establish a socket connection to the specified federate.
+ * If this fails, the program exits. If it succeeds, it sets element [id] of
+ * the _fed.sockets_for_outbound_p2p_connections global array to
+ * refer to the socket for communicating directly with the federate.
+ * @param remote_federate_id The ID of the remote federate.
+ */
+void connect_to_federate(uint16_t);
+
+/**
  * Send a logical tag complete (LTC) message to the RTI
  * unless an equal or later LTC has previously been sent.
  * This function assumes the caller holds the mutex lock.
@@ -289,13 +303,39 @@ void connect_to_rti(const char*, int);
 void* listen_to_federates(void*);
 
 /**
+ * Create a server to listen to incoming physical
+ * connections from remote federates. This function
+ * only handles the creation of the server socket.
+ * The reserved port for the server socket is then
+ * sent to the RTI by sending an MSG_TYPE_ADDRESS_ADVERTISEMENT message
+ * (@see net_common.h). This function expects no response
+ * from the RTI.
+ *
+ * If a port is specified by the user, that will be used
+ * as the only possibility for the server. This function
+ * will fail if that port is not available. If a port is not
+ * specified, the STARTING_PORT (@see net_common.h) will be used.
+ * The function will keep incrementing the port in this case
+ * until the number of tries reaches PORT_RANGE_LIMIT.
+ *
+ * @note This function is similar to create_server(...) in rti.c.
+ * However, it contains specific log messages for the peer to
+ * peer connections between federates. It also additionally
+ * sends an address advertisement (MSG_TYPE_ADDRESS_ADVERTISEMENT) message to the
+ * RTI informing it of the port.
+ *
+ * @param specified_port The specified port by the user.
+ */
+void create_server(int specified_port);
+
+/**
  * Thread to accept connections from other federates that send this federate
  * messages directly (not through the RTI). This thread starts a thread for
  * each accepted socket connection and, once it has opened all expected
  * sockets, exits.
  * @param ignored No argument needed for this thread.
  */
-void* handle_p2p_connections_from_federates(void* ignored);
+void* handle_p2p_connections_from_federates(void*);
 
 /**
  * Send a port absent message to federate with fed_ID, informing the
@@ -310,6 +350,35 @@ void* handle_p2p_connections_from_federates(void* ignored);
  * @param fed_ID The fed ID of the receiving federate.
  */
 void send_port_absent_to_federate(interval_t, unsigned short, unsigned short);
+
+/**
+ * Send a message to another federate directly or via the RTI.
+ * This method assumes that the caller does not hold the outbound_socket_mutex lock,
+ * which it acquires to perform the send.
+ *
+ * If the socket connection to the remote federate or the RTI has been broken,
+ * then this returns 0 without sending. Otherwise, it returns 1.
+ *
+ * @note This function is similar to send_timed_message() except that it
+ *  does not deal with time and timed_messages.
+ *
+ * @param message_type The type of the message being sent.
+ *  Currently can be MSG_TYPE_TAGGED_MESSAGE for messages sent via
+ *  RTI or MSG_TYPE_P2P_TAGGED_MESSAGE for messages sent between
+ *  federates.
+ * @param port The ID of the destination port.
+ * @param federate The ID of the destination federate.
+ * @param next_destination_str The name of the next destination in string format
+ * @param length The message length.
+ * @param message The message.
+ * @return 1 if the message has been sent, 0 otherwise.
+ */
+int send_message(int message_type,
+                  unsigned short port,
+                  unsigned short federate,
+                  const char* next_destination_str,
+                  size_t length,
+                  unsigned char* message);
 
 /**
  * Send the specified timestamped message to the specified port in the
