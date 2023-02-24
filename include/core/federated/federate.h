@@ -289,6 +289,15 @@ void connect_to_rti(const char*, int);
 void* listen_to_federates(void*);
 
 /**
+ * Thread to accept connections from other federates that send this federate
+ * messages directly (not through the RTI). This thread starts a thread for
+ * each accepted socket connection and, once it has opened all expected
+ * sockets, exits.
+ * @param ignored No argument needed for this thread.
+ */
+void* handle_p2p_connections_from_federates(void* ignored);
+
+/**
  * Send a port absent message to federate with fed_ID, informing the
  * remote federate that the current federate will not produce an event
  * on this network port at the current logical time.
