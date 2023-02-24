@@ -1,4 +1,3 @@
-#if defined(LF_THREADED) && !defined(PLATFORM_ARDUINO)
 /* Partitioned Earliest Deadline First (PEDF) non-preemptive scheduler for the
 threaded runtime of the C target of Lingua Franca. */
 
@@ -486,7 +485,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
         }
         // If no work has been assigned, wait for the signal from the scheduler
         LF_PRINT_DEBUG("Worker %d: Waiting on work to be handed out.", worker_number);
-        lf_cond_wait(&_lf_sched_threads_info[worker_number].cond, &_lf_sched_threads_info[worker_number].mutex);
+        lf_cond_wait(&_lf_sched_threads_info[worker_number].cond);
         lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
     }
 }
@@ -681,4 +680,3 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
 }
 
 #endif // SCHEDULER == PEDF_NP
-#endif

@@ -1,4 +1,4 @@
-#if !defined(PLATFORM_ARDUINO)
+#if defined(PLATFORM_Linux) || defined(PLATFORM_Darwin)
 /**
  * @file lf_unix_syscall_support.c
  * @author Soroush Bateni (soroush@utdallas.edu)

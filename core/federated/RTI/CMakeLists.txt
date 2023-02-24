@@ -84,6 +84,7 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 
 # Set LF_THREADING to get the threaded support and FEDERATED to get federated compilation support
 target_compile_definitions(RTI PUBLIC LF_THREADED=1 FEDERATED=1)
+target_compile_definitions(RTI PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 
 # Find threads and link to it
 find_package(Threads REQUIRED)
