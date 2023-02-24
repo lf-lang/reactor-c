@@ -243,6 +243,9 @@ typedef struct federation_metadata_t {
     char* rti_user;
 } federation_metadata_t;
 
+extern lf_mutex_t outbound_socket_mutex;
+extern lf_cond_t port_status_changed;
+
 /**
 * Generated function that sends information about connections between this federate and
 * other federates where messages are routed through the RTI. Currently, this
@@ -251,10 +254,6 @@ typedef struct federation_metadata_t {
 * @see MSG_TYPE_NEIGHBOR_STRUCTURE in net_common.h
 */
 void send_neighbor_structure_to_RTI(int);
-
-// Mutex lock held while performing socket write and close operations.
-lf_mutex_t outbound_socket_mutex;
-lf_cond_t port_status_changed;
 
 /**
  * Send a logical tag complete (LTC) message to the RTI
