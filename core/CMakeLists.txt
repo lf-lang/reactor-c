@@ -16,7 +16,7 @@ list(APPEND INFO_SOURCES ${GENERAL_SOURCES})
 add_library(core ${GENERAL_SOURCES})
 
 # Add sources for either threaded or unthreaded runtime
-if(DEFINED FEDERATED)
+if (DEFINED FEDERATED)
     include(federated/CMakeLists.txt)
 endif()
 
