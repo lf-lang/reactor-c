@@ -31,7 +31,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifdef FEDERATED
-#ifndef PLATFORM_ARDUINO
+#ifdef PLATFORM_ARDUINO
+#error To be implemented. No support for federation on Arduino yet.
+#else
 #include <arpa/inet.h>  // inet_ntop & inet_pton
 #include <netdb.h>      // Defines gethostbyname().
 #include <netinet/in.h> // Defines struct sockaddr_in
