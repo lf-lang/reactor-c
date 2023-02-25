@@ -78,8 +78,7 @@ $(function() {
   <div class="headertitle"><div class="title">net_common.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;pthread.h&gt;</code><br />
-</div>
+
 <p><a href="net__common_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
@@ -308,7 +307,7 @@ LICENSE</h1>
 <div class="line">    assert(microstep &gt;= 0); \</div>
 <div class="line">    encode_int32((int32_t)microstep, &amp;(buffer[1 + <span class="keyword">sizeof</span>(<a class="code hl_typedef" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>)])); \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="anet__common_8h_html_aad37dd00423e88f213ca7d7d238bce2e"><div class="ttname"><a href="net__common_8h.html#aad37dd00423e88f213ca7d7d238bce2e">MSG_TYPE_STOP_GRANTED</a></div><div class="ttdeci">#define MSG_TYPE_STOP_GRANTED</div><div class="ttdef"><b>Definition:</b> net_common.h:530</div></div>
+<div class="ttc" id="anet__common_8h_html_aad37dd00423e88f213ca7d7d238bce2e"><div class="ttname"><a href="net__common_8h.html#aad37dd00423e88f213ca7d7d238bce2e">MSG_TYPE_STOP_GRANTED</a></div><div class="ttdeci">#define MSG_TYPE_STOP_GRANTED</div><div class="ttdef"><b>Definition:</b> net_common.h:528</div></div>
 <div class="ttc" id="aplatform_8h_html_a0c4810f46596400a763cfe99b3cfa7b1"><div class="ttname"><a href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a></div><div class="ttdeci">_instant_t instant_t</div><div class="ttdef"><b>Definition:</b> platform.h:93</div></div>
 </div><!-- fragment -->
 </div>
@@ -350,7 +349,7 @@ LICENSE</h1>
 <div class="line">    assert(microstep &gt;= 0); \</div>
 <div class="line">    encode_int32((int32_t)microstep, &amp;(buffer[1 + <span class="keyword">sizeof</span>(<a class="code hl_typedef" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>)])); \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="anet__common_8h_html_a8588a57a3ae81bf33c740dfc57103a23"><div class="ttname"><a href="net__common_8h.html#a8588a57a3ae81bf33c740dfc57103a23">MSG_TYPE_STOP_REQUEST</a></div><div class="ttdeci">#define MSG_TYPE_STOP_REQUEST</div><div class="ttdef"><b>Definition:</b> net_common.h:497</div></div>
+<div class="ttc" id="anet__common_8h_html_a8588a57a3ae81bf33c740dfc57103a23"><div class="ttname"><a href="net__common_8h.html#a8588a57a3ae81bf33c740dfc57103a23">MSG_TYPE_STOP_REQUEST</a></div><div class="ttdeci">#define MSG_TYPE_STOP_REQUEST</div><div class="ttdef"><b>Definition:</b> net_common.h:495</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -391,7 +390,7 @@ LICENSE</h1>
 <div class="line">    assert(microstep &gt;= 0); \</div>
 <div class="line">    encode_int32((int32_t)microstep, &amp;(buffer[1 + <span class="keyword">sizeof</span>(<a class="code hl_typedef" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>)])); \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="anet__common_8h_html_adbe10e103635ee7ec4bca3226ccebc56"><div class="ttname"><a href="net__common_8h.html#adbe10e103635ee7ec4bca3226ccebc56">MSG_TYPE_STOP_REQUEST_REPLY</a></div><div class="ttdeci">#define MSG_TYPE_STOP_REQUEST_REPLY</div><div class="ttdef"><b>Definition:</b> net_common.h:514</div></div>
+<div class="ttc" id="anet__common_8h_html_adbe10e103635ee7ec4bca3226ccebc56"><div class="ttname"><a href="net__common_8h.html#adbe10e103635ee7ec4bca3226ccebc56">MSG_TYPE_STOP_REQUEST_REPLY</a></div><div class="ttdeci">#define MSG_TYPE_STOP_REQUEST_REPLY</div><div class="ttdef"><b>Definition:</b> net_common.h:512</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -603,7 +602,7 @@ LICENSE</h1>
 <li>One byte equal to MSG_TYPE_FED_IDS.</li>
 <li>Two bytes (ushort) giving the federate ID.</li>
 <li>One byte (uchar) giving the length N of the federation ID.</li>
-<li>N bytes containing the federation ID. Each federate needs to have a unique ID between 0 and NUMBER_OF_FEDERATES-1. Each federate, when starting up, should send this message to the RTI. This is its first message to the RTI. The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT. If the federate is a C target LF program, the generated federate code does this by calling <a class="el" href="federate_8c.html#ad83fe9661682934029a42954b8fe6e2f">synchronize_with_other_federates()</a>, passing to it its federate ID. </li>
+<li>N bytes containing the federation ID. Each federate needs to have a unique ID between 0 and NUMBER_OF_FEDERATES-1. Each federate, when starting up, should send this message to the RTI. This is its first message to the RTI. The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT. If the federate is a C target LF program, the generated federate code does this by calling <a class="el" href="federate_8h.html#a1050d75d3d2a6a00effec4e07d7ad031">synchronize_with_other_federates()</a>, passing to it its federate ID. </li>
 </ul>
 
 </div>

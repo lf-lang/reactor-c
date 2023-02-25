@@ -92,10 +92,10 @@ $(function() {
 <code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;sys/wait.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="platform_8h_source.html">platform.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="util_8c.html">util.c</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="net__util_8c.html">net_util.c</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="util_8h_source.html">util.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="net__util_8h_source.html">net_util.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="net__common_8h_source.html">net_common.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="tag_8c.html">tag.c</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="tag_8h_source.html">tag.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="rti_8h_source.html">rti.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
@@ -383,7 +383,7 @@ DESCRIPTION</h1>
 </div><div class="memdoc">
 <p>Handle address query messages. This function reads the body of a MSG_TYPE_ADDRESS_QUERY (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="net__common_8h.html">net_common.h</a>) message which is the requested destination federate ID and replies with the stored port value <a class="el" href="hashmap_8h.html#a611d52c77a8144080f7bfb45eaec2a66">for</a> the socket server of that federate. The port values are initialized to -1. If no <a class="el" href="net__common_8h.html#ae004cb4e5add42afe5483f6706e11d35">MSG_TYPE_ADDRESS_ADVERTISEMENT</a> message has been received from the destination federate, the RTI will simply reply with -1 <a class="el" href="hashmap_8h.html#a611d52c77a8144080f7bfb45eaec2a66">for</a> the port. The sending federate is responsible <a class="el" href="hashmap_8h.html#a611d52c77a8144080f7bfb45eaec2a66">for</a> checking back with the RTI after a period of time. </dd>
 <dd>
-<a class="el" href="federate_8c.html#a2ca619f14cb3f3e777c8ca2e0e9ec022">connect_to_federate()</a> in <a class="el" href="federate_8c.html">federate.c</a>. * </dd></dl>
+<a class="el" href="federate_8h.html#a3e3a769ec47609bd5cb9fc44d51e48a4">connect_to_federate()</a> in <a class="el" href="federate_8c.html">federate.c</a>. * </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">fed_id</td><td>The federate sending a MSG_TYPE_ADDRESS_QUERY message. </td></tr>

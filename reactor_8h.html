@@ -779,10 +779,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>For a federated execution, send a STOP_REQUEST message to the RTI.</p>
-<p>Send a MSG_TYPE_STOP_REQUEST message to the RTI with payload equal to the current tag plus one microstep.</p>
-<p>This function raises a global barrier on logical tag at the current tag.</p>
-<p>This function assumes the caller holds the mutex lock. </p>
+<p>For a federated execution, send a STOP_REQUEST message to the RTI. </p>
 
 </div>
 </div>
@@ -1408,8 +1405,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Function (to be code generated) to terminate execution. This will be invoked after all shutdown actions have completed.</p>
-<p>Close sockets used to communicate with other federates, if they are open, and send a MSG_TYPE_RESIGN message to the RTI. This implements the function defined in <a class="el" href="reactor_8h.html">reactor.h</a>. For unfederated execution, the code generator generates an empty implementation. </p>
+<p>Function (to be code generated) to terminate execution. This will be invoked after all shutdown actions have completed. </p>
 
 </div>
 </div>

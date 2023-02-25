@@ -82,8 +82,8 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;sys/socket.h&gt;</code><br />
-<code>#include &lt;sys/types.h&gt;</code><br />
 <code>#include &lt;regex.h&gt;</code><br />
+<code>#include &lt;sys/types.h&gt;</code><br />
 <code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="platform_8h_source.html">../platform.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tag_8h_source.html">../tag.h</a>&quot;</code><br />
@@ -835,17 +835,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Read the specified number of bytes from the specified socket into the specified buffer. If a disconnect occurs during this reading, return a negative number. If an EOF occurs during this reading, return 0. Otherwise, return the number of bytes read. This is a version of <a class="el" href="net__util_8c.html#a5ccf34bcfb6d0eaef7262b60f96eb92d">read_from_socket_errexit()</a> that does not error out. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">socket</td><td>The socket ID. </td></tr>
-    <tr><td class="paramname">num_bytes</td><td>The number of bytes to read. </td></tr>
-    <tr><td class="paramname">buffer</td><td>The buffer into which to put the bytes. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The number of bytes read or 0 when EOF is received or negative for an error.</dd></dl>
-<p>Read the specified number of bytes from the specified socket into the specified buffer. If a disconnect occurs during this reading, return a negative number. If an EOF occurs during this reading, return 0. Otherwise, return the number of bytes read. This is a version of <a class="el" href="net__util_8c.html#a5ccf34bcfb6d0eaef7262b60f96eb92d">read_from_socket_errexit()</a> that neither closes the socket nor errors out.</p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Read the specified number of bytes from the specified socket into the specified buffer. If a disconnect occurs during this reading, return a negative number. If an EOF occurs during this reading, return 0. Otherwise, return the number of bytes read. This is a version of <a class="el" href="net__util_8h.html#a5ccf34bcfb6d0eaef7262b60f96eb92d">read_from_socket_errexit()</a> that does not error out. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">socket</td><td>The socket ID. </td></tr>
     <tr><td class="paramname">num_bytes</td><td>The number of bytes to read. </td></tr>
@@ -901,18 +891,6 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p>Read the specified number of bytes from the specified socket into the specified buffer. If a disconnect or an EOF occurs during this reading, then if format is non-null, report an error and exit. If format is null, then report the error, but do not exit. This function takes a formatted string and additional optional arguments similar to printf(format, ...) that is appended to the error messages. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">socket</td><td>The socket ID. </td></tr>
-    <tr><td class="paramname">num_bytes</td><td>The number of bytes to read. </td></tr>
-    <tr><td class="paramname">buffer</td><td>The buffer into which to put the bytes. </td></tr>
-    <tr><td class="paramname">format</td><td>A printf-style format string, followed by arguments to fill the string, or NULL to not exit with an error message. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The number of bytes read, or 0 if an EOF is received, or a negative number for an error.</dd></dl>
-<p>Read the specified number of bytes from the specified socket into the specified buffer. If an error or an EOF occurs during this reading, then if format is non-null, close the socket, report an error and exit. If format is NULL, then just return 0 for EOF and a negative number for any other error.</p>
-<p>This function takes a formatted string and additional optional arguments similar to printf(format, ...) that is appended to the error messages.</p>
-<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">socket</td><td>The socket ID. </td></tr>
     <tr><td class="paramname">num_bytes</td><td>The number of bytes to read. </td></tr>
@@ -1085,16 +1063,6 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Write the specified number of bytes to the specified socket from the specified buffer. If a disconnect or an EOF occurs during this reading, return a negative number or 0 respectively. Otherwise, return the number of bytes written. This is a version of <a class="el" href="net__util_8c.html#adac7abf648593901711cc145d2ec986c">write_to_socket_errexit()</a> that neither closes the socket nor errors out.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">socket</td><td>The socket ID. </td></tr>
-    <tr><td class="paramname">num_bytes</td><td>The number of bytes to write. </td></tr>
-    <tr><td class="paramname">buffer</td><td>The buffer from which to get the bytes. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The number of bytes written, or 0 if an EOF was received, or a negative number if an error occurred. </dd></dl>
 
 </div>
 </div>
@@ -1194,18 +1162,6 @@ DESCRIPTION</h1>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>The number of bytes written, or 0 if an EOF was received, or a negative number if an error occurred.</dd></dl>
-<p>Write the specified number of bytes to the specified socket from the specified buffer. If an error or an EOF occurs during this reading, then if the format string is non-null, close the socket, report an error, and exit. If the format string is null, report an error or EOF and return.</p>
-<p>This function takes a formatted string and additional optional arguments similar to printf(format, ...) that is appended to the error messages.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">socket</td><td>The socket ID. </td></tr>
-    <tr><td class="paramname">num_bytes</td><td>The number of bytes to write. </td></tr>
-    <tr><td class="paramname">buffer</td><td>The buffer from which to get the bytes. </td></tr>
-    <tr><td class="paramname">format</td><td>A format string for error messages, followed by any number of fields that will be used to fill the format string as in printf, or NULL to prevent exit on error. </td></tr>
-  </table>
-  </dd>
-</dl>
 <dl class="section return"><dt>Returns</dt><dd>The number of bytes written, or 0 if an EOF was received, or a negative number if an error occurred. </dd></dl>
 
 </div>
@@ -1260,19 +1216,6 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p>Write the specified number of bytes to the specified socket from the specified buffer. If a disconnect or an EOF occurs during this reading, report an error and exit, unless the format string is NULL, in which case, report an error and return. This function takes a formatted string and additional optional arguments similar to printf(format, ...) that is appended to the error messages. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">socket</td><td>The socket ID. </td></tr>
-    <tr><td class="paramname">num_bytes</td><td>The number of bytes to write. </td></tr>
-    <tr><td class="paramname">buffer</td><td>The buffer from which to get the bytes. </td></tr>
-    <tr><td class="paramname">mutex</td><td>If non-NULL, the mutex to unlock before exiting. </td></tr>
-    <tr><td class="paramname">format</td><td>A format string for error messages, followed by any number of fields that will be used to fill the format string as in printf, or NULL to prevent exit on error. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>The number of bytes written, or 0 if an EOF was received, or a negative number if an error occurred.</dd></dl>
-<p>Write the specified number of bytes to the specified socket from the specified buffer. If an error or an EOF occurs during this reading, then if the format string is non-null, close the socket, report an error, and exit. If the format string is null, report an error or EOF and return.</p>
-<p>This function takes a formatted string and additional optional arguments similar to printf(format, ...) that is appended to the error messages.</p>
-<dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">socket</td><td>The socket ID. </td></tr>
     <tr><td class="paramname">num_bytes</td><td>The number of bytes to write. </td></tr>

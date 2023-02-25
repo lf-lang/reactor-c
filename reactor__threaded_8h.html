@@ -237,8 +237,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Enqueue network output control reactions that will send a PORT_ABSENT message to downstream federates if a given network output port is not present.</p>
-<p>Enqueue network output control reactions that will send a MSG_TYPE_PORT_ABSENT message to downstream federates if a given network output port is not present. </p>
+<p>Enqueue network output control reactions that will send a PORT_ABSENT message to downstream federates if a given network output port is not present. </p>
 
 </div>
 </div>
@@ -301,8 +300,6 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Synchronize the start with other federates via the RTI. This assumes that a connection to the RTI is already made and _fed.socket_TCP_RTI is valid. It then sends the current logical time to the RTI and waits for the RTI to respond with a specified time. It starts a thread to listen for messages from the RTI. It then waits for physical time to match the specified time, sets current logical time to the time returned by the RTI, and then returns. If &ndash;fast was specified, then this does not wait for physical time to match the logical start time returned by the RTI.</p>
-<p>FIXME: Possibly should be renamed </p>
 
 </div>
 </div>
