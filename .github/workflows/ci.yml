@@ -33,7 +33,7 @@ jobs:
 
   lf-default-arduino:
     needs: fetch-lf
-    uses: lf-lang/lingua-franca/.github/workflows/c-arduino-tests.yml@arduino-mbed-support
+    uses: lf-lang/lingua-franca/.github/workflows/c-arduino-tests.yml@master
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
