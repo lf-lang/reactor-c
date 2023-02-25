@@ -196,8 +196,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NET_COMMON_H
 #define NET_COMMON_H
 
-#include <pthread.h>
-
 /**
  * The timeout time in ns for TCP operations.
  * Default value is 10 secs.
