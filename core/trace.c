@@ -516,6 +516,15 @@ void tracepoint_scheduler_advancing_time_ends() {
 }
 
 /**
+ * Trace the occurrence of a deadline miss.
+ * @param reaction Pointer to the reaction_t struct for the reaction.
+ * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ */
+void tracepoint_reaction_deadline_missed(reaction_t *reaction, int worker) {
+    tracepoint(reaction_deadline_missed, reaction->self, reaction->number, worker, NULL, NULL, 0);
+}
+
+/**
  * Flush any buffered trace records to the trace file and
  * close the file.
  */
