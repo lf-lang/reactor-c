@@ -217,6 +217,7 @@ struct event_t {
     event_t* next;            // Pointer to the next event lined up in superdense time.
 };
 
+#ifdef LF_THREADED
 //FIXME: modif4watchdogs
 /** Typdef for watchdog_t struct, used to call watchdog handler. */
 typedef struct watchdog_t watchdog_t;
@@ -232,6 +233,7 @@ struct watchdog_t {
     bool thread_active;                     // Boolean indicating whether or not thread is active.  
     struct watchdog_function_t* watchdog_function;  // The function/handler for the watchdog.
 };
+#endif
 
 /**
  * Trigger struct representing an output, timer, action, or input.
@@ -306,8 +308,10 @@ typedef struct self_base_t {
 	struct allocation_record_t *allocations;
 	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
     // WATCHDOG QUESTION: how to fix incomplete error? lf_mutex_t of type void
+#ifdef LF_THREADED
     lf_mutex_t watchdog_mutex; // The mutex for this reactor to be acquired before reaction
                                // invocation. 
+#endif
 #ifdef MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif

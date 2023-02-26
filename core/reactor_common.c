@@ -1315,6 +1315,7 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
     return false;
 }
 
+#ifdef LF_THREADED
 // FIXME: modif4watchdogs
 void* run_watchdog(watchdog_t* watchdog) {
     watchdog->thread_active = true;
@@ -1356,6 +1357,7 @@ void _lf_watchdog_stop(watchdog_t* watchdog) {
     // WATCHDOG QUESTION: do I need to cancel thread
     // If so, how?
 }
+#endif
 
 /**
  * Invoke the given reaction
@@ -1366,19 +1368,23 @@ void _lf_watchdog_stop(watchdog_t* watchdog) {
 void _lf_invoke_reaction(reaction_t* reaction, int worker) {
     //FIXME: modif4watchdogs, added mutex lock/unlock
     //FIXME: also make sure to check warning about mutex lock in lf_reactor_c_main
+#ifdef LF_THREADED
     if (&(((self_base_t*) reaction->self)->watchdog_mutex) != NULL) {
         lf_mutex_lock(&(((self_base_t*) reaction->self)->watchdog_mutex));
     }
-    
+#endif
+
     tracepoint_reaction_starts(reaction, worker);
     ((self_base_t*) reaction->self)->executing_reaction = reaction;
     reaction->function(reaction->self);
     ((self_base_t*) reaction->self)->executing_reaction = NULL;
     tracepoint_reaction_ends(reaction, worker);
 
+#ifdef LF_THREADED
     if (&(((self_base_t*) reaction->self)->watchdog_mutex) != NULL) {
         lf_mutex_unlock(&(((self_base_t*) reaction->self)->watchdog_mutex));
     }
+#endif
 }
 
 /**

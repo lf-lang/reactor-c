@@ -193,7 +193,9 @@ bool lf_check_deadline(void* self, bool invoke_deadline_handler) {
 	return _lf_check_deadline((self_base_t*)self, invoke_deadline_handler);
 }
 
+#ifdef LF_THREADED
 //FIXME: modif4watchdogs
 void lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
     return _lf_watchdog_start(watchdog, additional_timeout);
 }
+#endif
