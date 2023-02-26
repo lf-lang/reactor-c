@@ -1,8 +1,5 @@
-#ifdef PLATFORM_Darwin
-/* MacOS API support for the C target of Lingua Franca. */
-
 /*************
-Copyright (c) 2021, The University of California at Berkeley.
+Copyright (c) 2023, The University of California at Berkeley.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -25,45 +22,26 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
-/** MacOS API support for the C target of Lingua Franca.
- *
- *  @author{Soroush Bateni <soroush@utdallas.edu>}
+/* Adds mutex support in RTOS-enabled Arduino Boards (MBED)
+ *  
+ *  @author{Anirudh Rengarajan <arengarajan@berkeley.edu>}
  */
 
-#include "lf_macos_support.h"
-#include "platform.h"
-#include "tag.h"
-#define LF_MIN_SLEEP_NS USEC(10)
+#ifndef MUTEXWRAPPER_H
+#define MUTEXWRAPPER_H
 
-#if defined LF_UNTHREADED && !defined _LF_TRACE
-    #include "lf_os_single_threaded_support.c"
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#include "lf_unix_clock_support.h"
+    void *mutex_new();
+    void mutex_delete();
+    void mutex_lock();
+    bool mutex_trylock();
+    void mutex_unlock();
+    void *mutex_get_owner();
 
-/**
- * Pause execution for a number of nanoseconds.
- *
- * @return 0 for success, or -1 for failure. In case of failure, errno will be
- *  set appropriately (see `man 2 clock_nanosleep`).
- */
-int lf_sleep(interval_t sleep_duration) {
-    const struct timespec tp = convert_ns_to_timespec(sleep_duration);
-    struct timespec remaining;
-    return nanosleep((const struct timespec*)&tp, (struct timespec*)&remaining);
+#ifdef __cplusplus
 }
-
-int lf_sleep_until_locked(instant_t wakeup_time) {
-    interval_t sleep_duration = wakeup_time - lf_time_physical();
-
-    if (sleep_duration < LF_MIN_SLEEP_NS) {
-        return 0;
-    } else {
-        return lf_sleep(sleep_duration);
-    }
-}
-
-int lf_nanosleep(interval_t sleep_duration) {
-    return lf_sleep(sleep_duration);
-}
+#endif
 #endif

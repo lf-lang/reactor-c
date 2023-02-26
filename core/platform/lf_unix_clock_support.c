@@ -1,3 +1,4 @@
+#if defined(PLATFORM_Linux) || defined(PLATFORM_Darwin)
 #include <time.h>
 #include <errno.h>
 
@@ -99,3 +100,4 @@ int lf_clock_gettime(instant_t* t) {
     *t = tp_in_ns;
     return return_value;
 }
+#endif

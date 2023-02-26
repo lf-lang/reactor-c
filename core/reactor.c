@@ -1,3 +1,4 @@
+#if defined(LF_UNTHREADED)
 /* Runtime infrastructure for the non-threaded version of the C target of Lingua Franca. */
 
 /*************
@@ -380,3 +381,4 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         return -1;
     }
 }
+#endif

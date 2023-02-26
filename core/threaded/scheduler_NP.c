@@ -1,3 +1,4 @@
+#if defined(LF_THREADED)
 /* Non-preemptive scheduler for the threaded runtime of the C target of Lingua
 Franca. */
 
@@ -35,6 +36,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Edward A. Lee <eal@berkeley.edu>}
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
+#include "lf_types.h"
+#if SCHEDULER == NP || (!defined(SCHEDULER) && defined(LF_THREADED))
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
@@ -440,3 +443,5 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
             reaction->name, LF_LEVEL(reaction->index));
     _lf_sched_insert_reaction(reaction);
 }
+#endif
+#endif

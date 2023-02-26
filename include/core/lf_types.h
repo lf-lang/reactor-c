@@ -67,6 +67,7 @@ typedef unsigned short int ushort;
 #define GEDF_NP 3
 #define LET 4
 #define NP 5
+#define PEDF_NP 6
 
 /**
  * Policy for handling scheduled events that violate the specified

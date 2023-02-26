@@ -61,7 +61,7 @@ typedef uint32_t _microstep_t;
 /**
  * No mutex or condition variable needed for single threaded NRF platforms
  */
-typedef void _lf_mutex_t;
+typedef void lf_mutex_t;
 typedef void _lf_cond_var_t;
 
 /**

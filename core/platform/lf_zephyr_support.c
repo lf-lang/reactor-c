@@ -1,3 +1,4 @@
+#ifdef PLATFORM_ZEPHYR
 /*************
 Copyright (c) 2023, Norwegian University of Science and Technology.
 
@@ -45,6 +46,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Combine 2 32-bit words to a 64-bit word
 #define COMBINE_HI_LO(hi,lo) ((((uint64_t) hi) << 32) | ((uint64_t) lo))
 
+// Keep track of overflows to keep clocks monotonic
+static int64_t _lf_timer_epoch_duration_nsec;
+static int64_t _lf_timer_epoch_duration_usec;
+static volatile int64_t _lf_timer_last_epoch_nsec = 0;
 
 #if defined(LF_ZEPHYR_CLOCK_HI_RES)
 // Create semaphore for async wakeup from physical action
@@ -55,13 +60,11 @@ const struct device *const _lf_counter_dev = DEVICE_DT_GET(LF_TIMER);
 static volatile bool _lf_alarm_fired;
 static uint32_t _lf_timer_freq;
 
-static int64_t _lf_timer_epoch_duration_usec;
-static volatile int64_t _lf_timer_last_epoch_nsec = 0;
 
 
 // Timer overflow callback
 static void  _lf_timer_overflow_callback(const struct device *dev, void *user_data) {
-        _lf_timer_last_epoch_nsec += _lf_timer_epoch_duration_usec*1000LL;
+        _lf_timer_last_epoch_nsec += _lf_timer_epoch_duration_nsec;
 }
 
 
@@ -107,9 +110,11 @@ void lf_initialize_clock() {
         while(1) {};
     }
 
-    // Calculate the duration of an epoch
+    // Calculate the duration of an epoch. Compute both
+    //  nsec and usec now at boot to avoid these computations later
     counter_max_ticks = counter_get_max_top_value(_lf_counter_dev);
     _lf_timer_epoch_duration_usec = counter_ticks_to_us(_lf_counter_dev, counter_max_ticks);
+    _lf_timer_epoch_duration_nsec = _lf_timer_epoch_duration_usec * 1000LL;
     
     // Set the max_top value to be the maximum
     counter_max_ticks = counter_get_max_top_value(_lf_counter_dev);
@@ -135,6 +140,11 @@ void lf_initialize_clock() {
     #else
     LF_PRINT_LOG("Using Low resolution zephyr kernel clock");
     LF_PRINT_LOG("Kernel Clock has frequency of %u Hz\n", CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC);
+    _lf_timer_last_epoch_nsec = 0;
+    // Compute the duration of an epoch. Compute both
+    //  nsec and usec now at boot to avoid these computations later
+    _lf_timer_epoch_duration_nsec = ((1LL << 32) * SECONDS(1))/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC;
+    _lf_timer_epoch_duration_usec = _lf_timer_epoch_duration_nsec/1000;
     #endif
 }   
 
@@ -144,7 +154,9 @@ void lf_initialize_clock() {
 // Zephyrs Counter API
 
 /**
- * Return the current time in nanoseconds
+ * Return the current time in nanoseconds. It gets the current value
+ * of the hi-res counter device and also keeps track of overflows
+ * to deliver a monotonically increasing clock.
  */
 int lf_clock_gettime(instant_t* t) {
     uint32_t now_cycles;
@@ -154,8 +166,6 @@ int lf_clock_gettime(instant_t* t) {
     res = counter_get_value(_lf_counter_dev, &now_cycles);
     now_nsec = counter_ticks_to_us(_lf_counter_dev, now_cycles)*1000ULL;
     *t = now_nsec + _lf_timer_last_epoch_nsec;
-    now_cycles = k_cycle_get_32();
-    *t = (SECOND(1)/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC)*now_cycles;
     return 0;
 }
 
@@ -222,11 +232,19 @@ int lf_sleep_until_locked(instant_t wakeup) {
     }
 }
 #else
-// Clock and sleep implementation for LO_RES clock
-
+// Clock and sleep implementation for LO_RES clock. Handle wraps
+//  by checking if two consecutive reads are monotonic
+static uint32_t last_read_cycles=0;
 int lf_clock_gettime(instant_t* t) {
     uint32_t now_cycles = k_cycle_get_32();
-    *t = (SECOND(1)/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC)*now_cycles;
+
+    if (now_cycles < last_read_cycles) {
+        _lf_timer_last_epoch_nsec += _lf_timer_epoch_duration_nsec;
+    }
+
+    *t = (SECOND(1)/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC)*now_cycles + _lf_timer_last_epoch_nsec;
+
+    last_read_cycles = now_cycles;
     return 0;
 }
 
@@ -269,6 +287,22 @@ int lf_sleep(interval_t sleep_duration) {
     }
     return 0;
 }
+
+/**
+ * Old nanosleep API. It is just forwarded to `lf_sleep`
+*/
+int lf_nanosleep(interval_t sleep_duration) {
+    return lf_sleep(sleep_duration);
+}
+
+
+
+/**
+ * Only provide implementation of critical sections and notify of event
+ * for the unthreaded scenario. For threaded, it is implemented in
+ * `reactor_threaded.c`
+*/
+#ifdef LF_UNTHREADED
 /**
  * @brief Enter critical section by disabling interrupts.
  * Support nested critical sections by only disabling
@@ -310,21 +344,24 @@ int lf_notify_of_event() {
    return 0;
 }
 
+#endif
 
-int lf_nanosleep(interval_t sleep_duration) {
-    return lf_sleep(sleep_duration);
-}
+
 
 #ifdef LF_THREADED
-#warning "Threaded support on Zephyr is still experimental"
-
-lf_mutex_t mutex;
-lf_cond_t event_q_changed;
+#error "Threaded support on Zephyr is not supported"
 
 // FIXME: What is an appropriate stack size?
 #define _LF_STACK_SIZE 1024
 // FIXME: What is an appropriate thread prio?
 #define _LF_THREAD_PRIORITY 5
+
+// If NUMBER_OF_WORKERS is not specified, or set to 0, then we default to 1.
+#if !defined(NUMBER_OF_WORKERS) || NUMBER_OF_WORKERS==0
+#undef NUMBER_OF_WORKERS
+#define NUMBER_OF_WORKERS 1
+#endif
+
 static K_THREAD_STACK_ARRAY_DEFINE(stacks, NUMBER_OF_WORKERS, _LF_STACK_SIZE);
 static struct k_thread threads[NUMBER_OF_WORKERS];
 
@@ -350,12 +387,16 @@ int lf_available_cores() {
  * getting passed arguments. The new handle is stored in thread_id.
  *
  * @return 0 on success, platform-specific error number otherwise.
- *
+ * FIXME: As this function is currently part of the user-facing API, 
+ *  it should not care about the number of workers specified.
+ *  If we want static allocation of workers, as implemented now,
+ *  it must be removed from the API.
  */
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     // Use static id to map each created thread to a 
     static int tid = 0;
-    
+
+    // Make sure we dont try to create too many threads
     if (tid > (NUMBER_OF_WORKERS-1)) {
         return -1;
     }
@@ -418,8 +459,9 @@ int lf_mutex_unlock(lf_mutex_t* mutex) {
  * 
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_cond_init(lf_cond_t* cond) {
-    return k_condvar_init(cond);
+int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
+    cond->mutex = mutex;
+    return k_condvar_init(&cond->condition);
 }
 
 /** 
@@ -428,7 +470,7 @@ int lf_cond_init(lf_cond_t* cond) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_broadcast(lf_cond_t* cond) {
-    k_condvar_broadcast(cond);
+    k_condvar_broadcast(&cond->condition);
     return 0;
 }
 
@@ -438,7 +480,7 @@ int lf_cond_broadcast(lf_cond_t* cond) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_signal(lf_cond_t* cond) {
-    return k_condvar_signal(cond);
+    return k_condvar_signal(&cond->condition);
 }
 
 /** 
@@ -447,8 +489,8 @@ int lf_cond_signal(lf_cond_t* cond) {
  * 
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex) {
-    return k_condvar_wait(cond, mutex, K_FOREVER);
+int lf_cond_wait(lf_cond_t* cond) {
+    return k_condvar_wait(&cond->condition, cond->mutex, K_FOREVER);
 }
 
 /** 
@@ -459,12 +501,12 @@ int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex) {
  * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
  *  number otherwise.
  */
-int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absolute_time_ns) {
+int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
     instant_t now;
     lf_clock_gettime(&now);
     interval_t sleep_duration_ns = absolute_time_ns - now;
     k_timeout_t timeout = K_NSEC(sleep_duration_ns);
-    int res = k_condvar_wait(cond, mutex, timeout);
+    int res = k_condvar_wait(&cond->condition, cond->mutex, timeout);
     if (res == 0) {
         return 0;
     } else {
@@ -529,3 +571,4 @@ int  _zephyr_val_compare_and_swap(int *ptr, int value, int newval) {
 }
 
 #endif // NUMBER_OF_WORKERS
+#endif

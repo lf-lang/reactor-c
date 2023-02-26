@@ -1,9 +1,4 @@
-set(UTIL_SOURCES vector.c pqueue.c util.c)
-
-if(DEFINED LF_THREADED)
-    set(UTIL_THREADED_SOURCES semaphore.c)
-    list(APPEND UTIL_SOURCES ${UTIL_THREADED_SOURCES})
-endif()
+set(UTIL_SOURCES vector.c pqueue.c util.c semaphore.c)
 
 list(APPEND INFO_SOURCES ${UTIL_SOURCES})
 

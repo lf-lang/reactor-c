@@ -30,7 +30,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Marten Lohstroh <marten@berkeley.edu>}
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
  */
-
+#if defined LF_THREADED
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
@@ -279,7 +279,7 @@ int _lf_wait_on_global_tag_barrier(tag_t proposed_tag) {
         result = 1;
         LF_PRINT_LOG("Waiting on barrier for tag " PRINTF_TAG ".", proposed_tag.time - start_time, proposed_tag.microstep);
         // Wait until no requestor remains for the barrier on logical time
-        lf_cond_wait(&global_tag_barrier_requestors_reached_zero, &mutex);
+        lf_cond_wait(&global_tag_barrier_requestors_reached_zero);
 
         // The stop tag may have changed during the wait.
         if (_lf_is_tag_after_stop_tag(proposed_tag)) {
@@ -407,7 +407,7 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
         // lf_cond_timedwait returns 0 if it is awakened before the timeout.
         // Hence, we want to run it repeatedly until either it returns non-zero or the
         // current physical time matches or exceeds the logical time.
-        if (lf_cond_timedwait(condition, &mutex, unadjusted_wait_until_time_ns) != LF_TIMEOUT) {
+        if (lf_cond_timedwait(condition, unadjusted_wait_until_time_ns) != LF_TIMEOUT) {
             LF_PRINT_DEBUG("-------- wait_until interrupted before timeout.");
 
             // Wait did not time out, which means that there
@@ -1031,7 +1031,9 @@ void start_threads() {
     LF_PRINT_LOG("Starting %u worker threads.", _lf_number_of_workers);
     _lf_thread_ids = (lf_thread_t*)malloc(_lf_number_of_workers * sizeof(lf_thread_t));
     for (unsigned int i = 0; i < _lf_number_of_workers; i++) {
-        lf_thread_create(&_lf_thread_ids[i], worker, NULL);
+        if (lf_thread_create(&_lf_thread_ids[i], worker, NULL) != 0) {
+            lf_print_error_and_exit("Could not start thread-%u", i);
+        }
     }
 }
 
@@ -1098,8 +1100,8 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     lf_mutex_init(&mutex);
 
     // Initialize condition variables used for notification between threads.
-    lf_cond_init(&event_q_changed);
-    lf_cond_init(&global_tag_barrier_requestors_reached_zero);
+    lf_cond_init(&event_q_changed, &mutex);
+    lf_cond_init(&global_tag_barrier_requestors_reached_zero, &mutex);
 
     if (atexit(termination) != 0) {
         lf_print_warning("Failed to register termination function!");
@@ -1192,3 +1194,4 @@ int lf_critical_section_enter() {
 int lf_critical_section_exit() {
     return lf_mutex_unlock(&mutex); 
 }
+#endif

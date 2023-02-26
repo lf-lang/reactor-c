@@ -60,10 +60,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/wait.h>   // Defines wait() for process to change state.
 
 #include "platform.h"   // Platform-specific types and functions
-#include "util.c" // Defines print functions (e.g., lf_print).
-#include "net_util.c"   // Defines network functions.
+#include "util.h" // Defines print functions (e.g., lf_print).
+#include "net_util.h"   // Defines network functions.
 #include "net_common.h" // Defines message types, etc. Includes <pthread.h> and "reactor.h".
-#include "tag.c"        // Time-related types and functions.
+#include "tag.h"        // Time-related types and functions.
 #include "rti.h"
 #ifdef __RTI_AUTH__
 #include <openssl/rand.h> // For secure random number generation.
@@ -889,8 +889,8 @@ void handle_next_event_tag(federate_t* fed) {
 
     tag_t intended_tag = extract_tag(buffer);
     LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) (%ld, %u).",
-        fed->id, fed->next_event.time - start_time,
-        fed->next_event.microstep);
+        fed->id, intended_tag.time - start_time,
+        intended_tag.microstep);
     update_federate_next_event_tag_locked(
         fed->id,
         intended_tag
