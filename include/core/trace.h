@@ -64,7 +64,7 @@ typedef enum {
     worker_wait_starts,
     worker_wait_ends,
     scheduler_advancing_time_starts,
-    scheduler_advancing_time_ends,
+    scheduler_advancing_time_ends
 } trace_event_t;
 
 #ifdef LF_TRACE
