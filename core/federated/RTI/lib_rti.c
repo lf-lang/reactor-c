@@ -46,16 +46,19 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Or we could bootstrap and implement it using Lingua Franca.
  */
 
+#include "platform.h"   // Platform-specific types and functions
+#include "util.c" // Defines print functions (e.g., lf_print).
+#include "net_util.c"   // Defines network functions.
+#include "net_common.h" // Defines message types, etc. Includes <pthread.h> and "reactor.h".
+#include "tag.c"        // Time-related types and functions.
+
 #include "lib_rti.h"
-#ifdef __RTI_AUTH__
-#include <openssl/rand.h> // For secure random number generation.
-#include <openssl/hmac.h> // For HMAC authentication.
-#endif
+
 
 /**
  * The state of this RTI instance.
  */
-extern RTI_instance_t _RTI = {
+RTI_instance_t _RTI = {
     .rti_mutex = PTHREAD_MUTEX_INITIALIZER,
     .received_start_times = PTHREAD_COND_INITIALIZER,
     .sent_start_time = PTHREAD_COND_INITIALIZER,
@@ -883,6 +886,8 @@ void handle_next_event_tag(federate_t* fed) {
 }
 
 /////////////////// STOP functions ////////////////////
+
+bool _lf_rti_stop_granted_already_sent_to_federates = false;
 
 /**
  * Once the RTI has seen proposed tags from all connected federates,
@@ -2280,3 +2285,250 @@ int process_args(int argc, char* argv[]) {
     }
     return 1;
 }
+
+#ifdef __RTI_SST__
+/**
+ * Thread handling TCP communication with a federate.
+ * @param fed A pointer to the federate's struct that has the
+ *  socket descriptor for the federate.
+ */
+void* secure_federate_thread_TCP(void* secure_fed) {
+    secure_fed_t* my_secure_fed = (secure_fed_t*)secure_fed;
+    unsigned char sst_buffer[1024]; //TODO: Check here.
+
+    // Buffer for incoming messages.
+    // This does not constrain the message size because messages
+    // are forwarded piece by piece.
+    unsigned char buffer[FED_COM_BUFFER_SIZE];
+
+    // Listen for messages from the federate.
+    while (my_secure_fed->fed->state != NOT_CONNECTED) {
+        ssize_t sst_bytes_read = read_from_socket(my_secure_fed->fed->socket, sizeof(sst_buffer), sst_buffer); //TODO: input buffer size?
+        unsigned char *decrypted_buf = return_decrypted_buf(sst_buffer, sst_bytes_read, my_secure_fed->session_ctx);
+
+        FILE * file_descriptor = fmemopen(decrypted_buf, sizeof(decrypted_buf), "r");
+        //  Change FILE pointer to file descriptor
+        int temp = fileno(file_descriptor);
+        // my_secure_fed->fed->socket = temp;
+        //TODO: Error handling is not applied. Need to change.
+
+        // Read no more than one byte to get the message type.
+        ssize_t bytes_read = read_from_socket(temp, 1, buffer);
+
+        //Test Just until here.
+        if (bytes_read < 1) {
+            // Socket is closed
+            lf_print_warning("RTI: Socket to federate %d is closed. Exiting the thread.", my_secure_fed->fed->id);
+            my_secure_fed->fed->state = NOT_CONNECTED;
+            my_secure_fed->fed->socket = -1;
+            // FIXME: We need better error handling here, but this is probably not the right thing to do.
+            // mark_federate_requesting_stop(my_secure_fed->fed);
+            break;
+        }
+        LF_PRINT_DEBUG("RTI: Received message type %u from federate %d.", buffer[0], my_secure_fed->fed->id);
+        switch(buffer[0]) {
+            case MSG_TYPE_TIMESTAMP:
+                handle_timestamp(my_secure_fed->fed);
+                break;
+            case MSG_TYPE_ADDRESS_QUERY:
+                handle_address_query(my_secure_fed->fed->id);
+                break;
+            case MSG_TYPE_ADDRESS_ADVERTISEMENT:
+                handle_address_ad(my_secure_fed->fed->id);
+                break;
+            case MSG_TYPE_TAGGED_MESSAGE:
+                handle_timed_message(my_secure_fed->fed, buffer);
+                break;
+            case MSG_TYPE_RESIGN:
+                handle_federate_resign(my_secure_fed->fed);
+                return NULL;
+                break;
+            case MSG_TYPE_NEXT_EVENT_TAG:
+                handle_next_event_tag(my_secure_fed->fed);
+                break;
+            case MSG_TYPE_LOGICAL_TAG_COMPLETE:
+                handle_logical_tag_complete(my_secure_fed->fed);
+                break;
+            case MSG_TYPE_STOP_REQUEST:
+                handle_stop_request_message(my_secure_fed->fed); // FIXME: Reviewed until here.
+                                                     // Need to also look at
+                                                     // send_advance_grant_if_safe()
+                                                     // and send_downstream_advance_grants_if_safe()
+                break;
+            case MSG_TYPE_STOP_REQUEST_REPLY:
+                handle_stop_request_reply(my_secure_fed->fed);
+                break;
+            case MSG_TYPE_PORT_ABSENT:
+                handle_port_absent_message(my_secure_fed->fed, buffer);
+                break;
+            default:
+                lf_print_error("RTI received from federate %d an unrecognized TCP message type: %u.", my_secure_fed->fed->id, buffer[0]);
+        }
+    }
+
+    // Nothing more to do. Close the socket and exit.
+    close(my_secure_fed->fed->socket); //  from unistd.h
+
+    return NULL;
+}
+
+/**
+ * Wait for one incoming connection request from each federate,
+ * and upon receiving it, create a thread to communicate with
+ * that federate. Return when all federates have connected.
+ * @param socket_descriptor The socket on which to accept connections.
+ */
+void secure_connect_to_federates(int socket_descriptor) {
+    // Initialize SST setting read form sst_config.
+    SST_ctx_t *ctx = init_SST(_RTI.sst_config_path);
+    // Initialize an empty session key list.
+    INIT_SESSION_KEY_LIST(s_key_list);
+    secure_fed_t secure_fed[_RTI.number_of_federates];
+
+    for (int i = 0; i < _RTI.number_of_federates; i++) {
+        // Wait for an incoming connection request.
+        struct sockaddr client_fd;
+        uint32_t client_length = sizeof(client_fd);
+        // The following blocks until a federate connects.
+        int socket_id = -1;
+        while(1) {
+            socket_id = accept(_RTI.socket_descriptor_TCP, &client_fd, &client_length);
+            if (socket_id >= 0) {
+                // Got a socket
+                break;
+            } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
+                lf_print_error_and_exit("RTI failed to accept the socket. %s.", strerror(errno));
+            } else {
+                // Try again
+                lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
+                continue;
+            }
+        }        
+        // The first message from the federate should contain its ID and the federation ID.
+        int32_t fed_id = receive_and_check_fed_id_message(socket_id, (struct sockaddr_in*)&client_fd);
+        if (fed_id >= 0
+                && receive_connection_information(socket_id, (uint16_t)fed_id)
+                && receive_udp_message_and_set_up_clock_sync(socket_id, (uint16_t)fed_id)) {
+            // Wait for the federates get session keys from the Auth.
+            // The RTI will get requests for communication from the federates by session key id.
+            // Then RTI will request the corresponding session key to the Auth.
+            SST_session_ctx_t *session_ctx = server_secure_comm_setup(ctx, socket_id, &s_key_list);
+            secure_fed[i].session_ctx = session_ctx;
+            secure_fed[i].fed = &_RTI.federates[fed_id]; //TODO: Right pointing? Need debug.
+            // Create a thread to communicate with the federate.
+            // This has to be done after clock synchronization is finished
+            // or that thread may end up attempting to handle incoming clock
+            // synchronization messages.
+            pthread_create(&(_RTI.federates[fed_id].thread_id), NULL, &secure_federate_thread_TCP, (void *)&secure_fed[i]); //TODO: Need debug.
+        } else {
+            // Received message was rejected. Try again.
+            i--;
+        }
+    }
+    // All federates have connected.
+    LF_PRINT_DEBUG("All federates have connected to RTI.");
+
+    if (_RTI.clock_sync_global_status >= clock_sync_on) {
+        // Create the thread that performs periodic PTP clock synchronization sessions
+        // over the UDP channel, but only if the UDP channel is open and at least one
+        // federate is performing runtime clock synchronization.
+        bool clock_sync_enabled = false;
+        for (int i = 0; i < _RTI.number_of_federates; i++) {
+            if (_RTI.federates[i].clock_synchronization_enabled) {
+                clock_sync_enabled = true;
+                break;
+            }
+        }
+        if (_RTI.final_port_UDP != UINT16_MAX && clock_sync_enabled) {
+            pthread_create(&_RTI.clock_thread, NULL, clock_synchronization_thread, NULL);
+        }
+    }
+}
+
+/**
+ * Start the runtime infrastructure (RTI) interaction with the federates
+ * and wait for the federates to exit.
+ * @param socket_descriptor The socket descriptor returned by start_rti_server().
+ */
+void secure_wait_for_federates(int socket_descriptor) {
+    // Wait for connections from federates and create a thread for each.
+    secure_connect_to_federates(socket_descriptor);
+
+    // All federates have connected.
+    lf_print("RTI: All expected federates have connected. Starting execution.");
+
+    // The socket server will not continue to accept connections after all the federates
+    // have joined.
+    // In case some other federation's federates are trying to join the wrong
+    // federation, need to respond. Start a separate thread to do that.
+    pthread_t responder_thread;
+    pthread_create(&responder_thread, NULL, respond_to_erroneous_connections, NULL);
+
+    // Wait for federate threads to exit.
+    void* thread_exit_status;
+    for (int i = 0; i < _RTI.number_of_federates; i++) {
+        lf_print("RTI: Waiting for thread handling federate %d.", _RTI.federates[i].id);
+        pthread_join(_RTI.federates[i].thread_id, &thread_exit_status);
+        free_in_transit_message_q(_RTI.federates[i].in_transit_message_tags);
+        lf_print("RTI: Federate %d thread exited.", _RTI.federates[i].id);
+    }
+
+    _RTI.all_federates_exited = true;
+
+    // Shutdown and close the socket so that the accept() call in
+    // respond_to_erroneous_connections returns. That thread should then
+    // check _RTI.all_federates_exited and it should exit.
+    if (shutdown(socket_descriptor, SHUT_RDWR)) {
+        LF_PRINT_LOG("On shut down TCP socket, received reply: %s", strerror(errno));
+    }
+    close(socket_descriptor);
+
+    /************** FIXME: The following is probably not needed.
+    The above shutdown and close should do the job.
+
+    // NOTE: Apparently, closing the socket will not necessarily
+    // cause the respond_to_erroneous_connections accept() call to return,
+    // so instead, we connect here so that it can check the _RTI.all_federates_exited
+    // variable.
+
+    // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
+    int tmp_socket = socket(AF_INET , SOCK_STREAM , 0);
+    // If creating the socket fails, assume the thread has already exited.
+    if (tmp_socket >= 0) {
+        struct hostent *server = gethostbyname("localhost");
+        if (server != NULL) {
+            // Server file descriptor.
+            struct sockaddr_in server_fd;
+            // Zero out the server_fd struct.
+            bzero((char *) &server_fd, sizeof(server_fd));
+            // Set up the server_fd fields.
+            server_fd.sin_family = AF_INET;    // IPv4
+            bcopy((char *)server->h_addr,
+                 (char *)&server_fd.sin_addr.s_addr,
+                 server->h_length);
+            // Convert the port number from host byte order to network byte order.
+            server_fd.sin_port = htons(_RTI.final_port_TCP);
+            connect(
+                tmp_socket,
+                (struct sockaddr *)&server_fd,
+                sizeof(server_fd));
+            close(tmp_socket);
+        }
+    }
+
+    // NOTE: In all common TCP/IP stacks, there is a time period,
+    // typically between 30 and 120 seconds, called the TIME_WAIT period,
+    // before the port is released after this close. This is because
+    // the OS is preventing another program from accidentally receiving
+    // duplicated packets intended for this program.
+    close(socket_descriptor);
+    */
+
+    if (_RTI.socket_descriptor_UDP > 0) {
+        if (shutdown(_RTI.socket_descriptor_UDP, SHUT_RDWR)) {
+            LF_PRINT_LOG("On shut down UDP socket, received reply: %s", strerror(errno));
+        }
+        close(_RTI.socket_descriptor_UDP);
+    }
+}
+#endif

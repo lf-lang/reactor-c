@@ -77,24 +77,22 @@ include_directories(${IncludeDir}/utils)
 
 # add_library(RTI_LIB lib_rti.c)
 # target_compile_definitions(RTI_LIB PUBLIC LF_THREADED=1)
-include_directories(.)
 
 # Declare a new executable target and list all its sources
 add_executable(
-    RTI
-    rti.c
-    lib_rti.c
-    # ${LF_PLATFORM_FILE}
-    # ${CoreLib}/platform/lf_unix_clock_support.c
-    # ${CoreLib}/utils/pqueue.c
-    # message_record/message_record.c
+  RTI
+  rti.c
+  lib_rti.c
+  ${LF_PLATFORM_FILE}
+  ${CoreLib}/platform/lf_unix_clock_support.c
+  ${CoreLib}/utils/pqueue.c
+  message_record/message_record.c
 )
 
 # target_link_libraries(RTI RTI_LIB)
-
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
-    # Set the LOG_LEVEL to 4 to get DEBUG messages
-    target_compile_definitions(RTI PUBLIC LOG_LEVEL=4)
+  # Set the LOG_LEVEL to 4 to get DEBUG messages
+  target_compile_definitions(RTI PUBLIC LOG_LEVEL=4)
 ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 
 # Set LF_THREADING to get the threaded support
@@ -106,10 +104,13 @@ target_link_libraries(RTI Threads::Threads)
 
 # Option for enabling federate authentication by RTI.
 option(AUTH "Federate authentication by RTI enabled." OFF)
+
 # Option for enabling SST security.
 option(SST "SST security enabled." OFF)
+
 IF(AUTH MATCHES ON)
   add_compile_definitions(__RTI_AUTH__)
+
   # Find OpenSSL and link to it
   set(OPENSSL_ROOT_DIR "/usr/local/ssl")
   find_package(OpenSSL REQUIRED)
@@ -117,33 +118,40 @@ IF(AUTH MATCHES ON)
 ENDIF(AUTH MATCHES ON)
 
 install(
-    TARGETS RTI
-    DESTINATION bin
+  TARGETS RTI
+  DESTINATION bin
 )
 
 option(SST "SST security enabled." OFF)
+
 IF(SST MATCHES ON)
-  
+  add_compile_definitions(__RTI_SST__)
+
+  set(SSTDir ../sst-c-api)
+  add_library(
+    SST_LIB 
+    ${SSTDir}/c_api.c
+    ${SSTDir}/c_common.c
+    ${SSTDir}/c_crypto.c
+    ${SSTDir}/c_secure_comm.c
+    ${SSTDir}/load_config.c
+  )
+  target_link_libraries(RTI SST_LIB)
+
   # add_library(RTI_LIB rti.c)
   # target_compile_definitions(RTI_LIB PUBLIC LF_THREADED=1)
   # Declare a new executable target and list all its sources
   add_executable(
     secure_RTI
-    lib_rti.c
     secure_rti.c
+    lib_rti.c
     ${LF_PLATFORM_FILE}
     ${CoreLib}/platform/lf_unix_clock_support.c
     ${CoreLib}/utils/pqueue.c
     message_record/message_record.c
-    # ../sst-c-api/c_api.c
-    # ../sst-c-api/c_common.c
-    # ../sst-c-api/c_crypto.c
-    # ../sst-c-api/c_secure_comm.c
-    # ../sst-c-api/load_config.c
   )
 
   # target_link_libraries(secure_RTI RTI_LIB)
-
   target_include_directories(secure_RTI PUBLIC ${CoreLib}/federated/sst-c-api)
   target_include_directories(secure_RTI PUBLIC ${CoreLib}/federated/RTI)
 
@@ -162,7 +170,11 @@ IF(SST MATCHES ON)
   set(OPENSSL_ROOT_DIR "/usr/local/ssl")
   find_package(OpenSSL REQUIRED)
   target_link_libraries(secure_RTI OpenSSL::SSL)
+  # Link OpenSSL to secure_RTI
+  target_link_libraries(SST_LIB OpenSSL::SSL)
 
+  # Link SST_LIB to secure_RTI
+  target_link_libraries(secure_RTI SST_LIB)
   install(
     TARGETS secure_RTI
     DESTINATION bin

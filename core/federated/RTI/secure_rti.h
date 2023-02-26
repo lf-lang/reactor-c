@@ -34,11 +34,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef SECURE_RTI_H
 #define SECURE_RTI_H
 
-#include "rti.h"
-#include "../sst-c-api/c_api.h"
-typedef struct {
-    SST_session_ctx_t *session_ctx;
-    federate_t* fed;
-} secure_fed_t;
+#include "lib_rti.h"
+// #include "../sst-c-api/c_api.h"
+// typedef struct {
+//     SST_session_ctx_t *session_ctx;
+//     federate_t* fed;
+// } secure_fed_t;
 
 #endif // SECURE_RTI_H

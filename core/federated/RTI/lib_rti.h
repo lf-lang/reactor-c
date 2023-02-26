@@ -47,14 +47,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assert.h>
 #include <sys/wait.h>   // Defines wait() for process to change state.
 
-#include "platform.h"   // Platform-specific types and functions
-#include "util.c" // Defines print functions (e.g., lf_print).
-#include "net_util.c"   // Defines network functions.
-#include "net_common.h" // Defines message types, etc. Includes <pthread.h> and "reactor.h".
-#include "tag.c"        // Time-related types and functions.
-
 #include "lf_types.h"
 #include "message_record/message_record.h"
+
+#ifdef __RTI_AUTH__
+#include <openssl/rand.h> // For secure random number generation.
+#include <openssl/hmac.h> // For HMAC authentication.
+#endif
+
+#ifdef __RTI_SST__
+#include "../sst-c-api/c_api.h"
+#endif
 
 /////////////////////////////////////////////
 
@@ -226,6 +229,13 @@ typedef struct RTI_instance_t {
     char* sst_config_path;
 } RTI_instance_t;
 
+#ifdef __RTI_SST__
+typedef struct {
+    SST_session_ctx_t *session_ctx;
+    federate_t* fed;
+} secure_fed_t;
+#endif
+
 /**
  * A function to handle timestamp messages.
  * This function assumes the caller does not hold the mutex.
@@ -318,13 +328,6 @@ void handle_next_event_tag(federate_t* fed);
  * @param fed The federate that has completed a logical tag.
  */
 void handle_logical_tag_complete(federate_t* fed);
-
-/////////////////// STOP functions ////////////////////
-/**
- * Boolean used to prevent the RTI from sending the
- * MSG_TYPE_STOP_GRANTED message multiple times.
- */
-bool _lf_rti_stop_granted_already_sent_to_federates = false;
 
 /**
  * Once the RTI has seen proposed tags from all connected federates,
