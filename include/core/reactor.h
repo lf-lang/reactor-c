@@ -559,8 +559,10 @@ void _lf_fd_send_stop_request_to_rti(void);
  */
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
 
+#ifdef LF_THREADED
 // FIXME: modif4watchdogs
 void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout);
+#endif
 
 /**
  * These functions must be implemented by both threaded and unthreaded
