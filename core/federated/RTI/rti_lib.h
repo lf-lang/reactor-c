@@ -31,8 +31,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
 */
 
-#ifndef LIB_RTI_H
-#define LIB_RTI_H
+#ifndef RTI_LIB_H
+#define RTI_LIB_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -651,4 +651,4 @@ int process_args(int argc, char* argv[]);
 
 
 
-#endif // LIB_RTI_H
+#endif // RTI_LIB_H

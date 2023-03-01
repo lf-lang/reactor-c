@@ -46,7 +46,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Or we could bootstrap and implement it using Lingua Franca.
  */
 
-#include "lib_rti.h"
+#include "rti_lib.h"
 /**
  * The state of this RTI instance.
  */
