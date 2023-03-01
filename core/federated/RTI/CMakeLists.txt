@@ -61,6 +61,7 @@ include_directories(${IncludeDir}/utils)
 add_executable(
     RTI
     rti.c
+    lib_rti.c
     ${LF_PLATFORM_FILE}
     ${CoreLib}/platform/lf_unix_clock_support.c
     ${CoreLib}/utils/util.c

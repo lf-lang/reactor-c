@@ -31,8 +31,33 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
 */
 
-#ifndef RTI_H
-#define RTI_H
+#ifndef LIB_RTI_H
+#define LIB_RTI_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>      // Defines perror(), errno
+#include <sys/socket.h>
+#include <sys/types.h>  // Provides select() function to read from multiple sockets.
+#include <netinet/in.h> // Defines struct sockaddr_in
+#include <arpa/inet.h>  // inet_ntop & inet_pton
+#include <unistd.h>     // Defines read(), write(), and close()
+#include <netdb.h>      // Defines gethostbyname().
+#include <strings.h>    // Defines bzero().
+#include <assert.h>
+#include <sys/wait.h>   // Defines wait() for process to change state.
+#include <pthread.h>
+
+#include "platform.h"   // Platform-specific types and functions
+#include "util.h" // Defines print functions (e.g., lf_print).
+#include "net_util.h"   // Defines network functions.
+#include "net_common.h" // Defines message types, etc. Includes <pthread.h> and "reactor.h".
+#include "tag.h"        // Time-related types and functions.
+#include "rti.h"
+#ifdef __RTI_AUTH__
+#include <openssl/rand.h> // For secure random number generation.
+#include <openssl/hmac.h> // For HMAC authentication.
+#endif
 
 #include "lf_types.h"
 #include "message_record/message_record.h"
@@ -201,4 +226,4 @@ typedef struct RTI_instance_t {
     bool authentication_enabled;
 } RTI_instance_t;
 
-#endif // RTI_H
+#endif // LIB_RTI_H
