@@ -73,19 +73,6 @@ RTI_instance_t _RTI = {
 };
 
 /**
- * Mark a federate requesting stop.
- *
- * If the number of federates handling stop reaches the
- * NUM_OF_FEDERATES, broadcast MSG_TYPE_STOP_GRANTED to every federate.
- *
- * This function assumes the _RTI.rti_mutex is already locked.
- *
- * @param fed The federate that has requested a stop or has suddenly
- *  stopped (disconnected).
- */
-void mark_federate_requesting_stop(federate_t* fed);
-
-/**
  * Create a server and enable listening for socket connections.
  *
  * @note This function is similar to create_server(...) in
