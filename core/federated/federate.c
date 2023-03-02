@@ -30,25 +30,32 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The main entry point is synchronize_with_other_federates().
  */
 
+#ifdef FEDERATED
+#ifdef PLATFORM_ARDUINO
+#error To be implemented. No support for federation on Arduino yet.
+#else
 #include <arpa/inet.h>  // inet_ntop & inet_pton
-#include <assert.h>
-#include <errno.h>      // Defined perror(), errno
 #include <netdb.h>      // Defines gethostbyname().
 #include <netinet/in.h> // Defines struct sockaddr_in
 #include <regex.h>
+#include <strings.h>    // Defines bzero().
+#include <sys/socket.h>
+#endif
+
+#include <assert.h>
+#include <errno.h>      // Defined perror(), errno
 #include <signal.h>     // Defines sigaction.
 #include <stdio.h>
 #include <stdlib.h>
-#include <strings.h>    // Defines bzero().
-#include <sys/socket.h>
 #include <unistd.h>     // Defines read(), write(), and close()
 
-#include "clock-sync.c"
+#include "clock-sync.h"
 #include "federate.h"
 #include "lf_types.h"
 #include "net_common.h"
-#include "net_util.c"
+#include "net_util.h"
 #include "platform.h"
+#include "reactor.h"
 #include "reactor_common.h"
 #include "reactor_threaded.h"
 #include "scheduler.h"
@@ -101,28 +108,6 @@ federation_metadata_t federation_metadata = {
     .rti_user = NULL
 };
 
-
-/**
- * Thread that listens for inputs from other federates.
- * This thread listens for messages of type MSG_TYPE_P2P_TAGGED_MESSAGE
- * from the specified peer federate and calls schedule to
- * schedule an event. If an error occurs or an EOF is received
- * from the peer, then this procedure returns, terminating the
- * thread.
- * @param fed_id_ptr A pointer to a uint16_t containing federate ID being listened to.
- *  This procedure frees the memory pointed to before returning.
- */
-void* listen_to_federates(void* args);
-
-
-/**
- * Generated function that sends information about connections between this federate and
- * other federates where messages are routed through the RTI. Currently, this
- * only includes logical connections when the coordination is centralized. This
- * information is needed for the RTI to perform the centralized coordination.
- * @see MSG_TYPE_NEIGHBOR_STRUCTURE in net_common.h
- */
-void send_neighbor_structure_to_RTI(int rti_socket);
 
 /**
  * Create a server to listen to incoming physical
@@ -2757,7 +2742,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
                 // Wait until either something changes on the event queue or
                 // the RTI has responded with a TAG.
                 LF_PRINT_DEBUG("Waiting for a TAG from the RTI.");
-                if (lf_cond_wait(&event_q_changed, &mutex) != 0) {
+                if (lf_cond_wait(&event_q_changed) != 0) {
                     lf_print_error("Wait error.");
                 }
                 // Either a TAG or PTAG arrived or something appeared on the event queue.
@@ -2811,7 +2796,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
             wait_until_time_ns = original_tag.time;
         }
 
-        lf_cond_timedwait(&event_q_changed, &mutex, wait_until_time_ns);
+        lf_cond_timedwait(&event_q_changed, wait_until_time_ns);
 
         LF_PRINT_DEBUG("Wait finished or interrupted.");
 
@@ -2868,3 +2853,4 @@ parse_rti_code_t parse_rti_addr(const char* rti_addr) {
 void set_federation_id(const char* fid) {
     federation_metadata.federation_id = fid;
 }
+#endif

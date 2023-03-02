@@ -1,3 +1,4 @@
+#ifdef PLATFORM_ZEPHYR
 /*************
 Copyright (c) 2023, Norwegian University of Science and Technology.
 
@@ -47,6 +48,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Keep track of overflows to keep clocks monotonic
 static int64_t _lf_timer_epoch_duration_nsec;
+static int64_t _lf_timer_epoch_duration_usec;
 static volatile int64_t _lf_timer_last_epoch_nsec = 0;
 
 #if defined(LF_ZEPHYR_CLOCK_HI_RES)
@@ -108,9 +110,11 @@ void lf_initialize_clock() {
         while(1) {};
     }
 
-    // Calculate the duration of an epoch
+    // Calculate the duration of an epoch. Compute both
+    //  nsec and usec now at boot to avoid these computations later
     counter_max_ticks = counter_get_max_top_value(_lf_counter_dev);
-    _lf_timer_epoch_duration_nsec = counter_ticks_to_us(_lf_counter_dev, counter_max_ticks) * 1000LL;
+    _lf_timer_epoch_duration_usec = counter_ticks_to_us(_lf_counter_dev, counter_max_ticks);
+    _lf_timer_epoch_duration_nsec = _lf_timer_epoch_duration_usec * 1000LL;
     
     // Set the max_top value to be the maximum
     counter_max_ticks = counter_get_max_top_value(_lf_counter_dev);
@@ -137,8 +141,10 @@ void lf_initialize_clock() {
     LF_PRINT_LOG("Using Low resolution zephyr kernel clock");
     LF_PRINT_LOG("Kernel Clock has frequency of %u Hz\n", CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC);
     _lf_timer_last_epoch_nsec = 0;
-    // Compute the duration of an 
+    // Compute the duration of an epoch. Compute both
+    //  nsec and usec now at boot to avoid these computations later
     _lf_timer_epoch_duration_nsec = ((1LL << 32) * SECONDS(1))/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC;
+    _lf_timer_epoch_duration_usec = _lf_timer_epoch_duration_nsec/1000;
     #endif
 }   
 
@@ -453,8 +459,9 @@ int lf_mutex_unlock(lf_mutex_t* mutex) {
  * 
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_cond_init(lf_cond_t* cond) {
-    return k_condvar_init(cond);
+int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
+    cond->mutex = mutex;
+    return k_condvar_init(&cond->condition);
 }
 
 /** 
@@ -463,7 +470,7 @@ int lf_cond_init(lf_cond_t* cond) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_broadcast(lf_cond_t* cond) {
-    k_condvar_broadcast(cond);
+    k_condvar_broadcast(&cond->condition);
     return 0;
 }
 
@@ -473,7 +480,7 @@ int lf_cond_broadcast(lf_cond_t* cond) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_signal(lf_cond_t* cond) {
-    return k_condvar_signal(cond);
+    return k_condvar_signal(&cond->condition);
 }
 
 /** 
@@ -482,8 +489,8 @@ int lf_cond_signal(lf_cond_t* cond) {
  * 
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex) {
-    return k_condvar_wait(cond, mutex, K_FOREVER);
+int lf_cond_wait(lf_cond_t* cond) {
+    return k_condvar_wait(&cond->condition, cond->mutex, K_FOREVER);
 }
 
 /** 
@@ -494,12 +501,12 @@ int lf_cond_wait(lf_cond_t* cond, lf_mutex_t* mutex) {
  * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
  *  number otherwise.
  */
-int lf_cond_timedwait(lf_cond_t* cond, lf_mutex_t* mutex, instant_t absolute_time_ns) {
+int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
     instant_t now;
     lf_clock_gettime(&now);
     interval_t sleep_duration_ns = absolute_time_ns - now;
     k_timeout_t timeout = K_NSEC(sleep_duration_ns);
-    int res = k_condvar_wait(cond, mutex, timeout);
+    int res = k_condvar_wait(&cond->condition, cond->mutex, timeout);
     if (res == 0) {
         return 0;
     } else {
@@ -564,3 +571,4 @@ int  _zephyr_val_compare_and_swap(int *ptr, int value, int newval) {
 }
 
 #endif // NUMBER_OF_WORKERS
+#endif

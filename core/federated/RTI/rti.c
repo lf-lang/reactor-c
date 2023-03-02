@@ -58,6 +58,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <strings.h>    // Defines bzero().
 #include <assert.h>
 #include <sys/wait.h>   // Defines wait() for process to change state.
+#include <pthread.h>
 
 #include "rti.h"
 #include "trace.h"

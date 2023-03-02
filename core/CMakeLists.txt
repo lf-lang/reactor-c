@@ -16,6 +16,11 @@ list(APPEND INFO_SOURCES ${GENERAL_SOURCES})
 add_library(core ${GENERAL_SOURCES})
 
 # Add sources for either threaded or unthreaded runtime
+if (DEFINED FEDERATED)
+    include(federated/CMakeLists.txt)
+endif()
+
+# Add sources for either threaded or unthreaded runtime
 if(DEFINED LF_THREADED)
     message(STATUS "Including sources for threaded runtime with \
 ${NUMBER_OF_WORKERS} worker(s) with scheduler=${SCHEDULER} and \
@@ -46,13 +51,13 @@ target_include_directories(core PUBLIC ../include/core/modal_models)
 target_include_directories(core PUBLIC ../include/core/threaded)
 target_include_directories(core PUBLIC ../include/core/utils)
 
-# Link with thread library 
+# Link with thread library
 if(DEFINED LF_THREADED OR DEFINED LF_TRACE)
     find_package(Threads REQUIRED)
     target_link_libraries(core PUBLIC Threads::Threads)
 endif()
 
-# Macro for translating a command-line argument into compile definition for 
+# Macro for translating a command-line argument into compile definition for
 # core lib
 macro(define X)
     if(DEFINED ${X})
@@ -65,6 +70,7 @@ endmacro()
 # parameters to Cmake.
 target_compile_definitions(core PRIVATE INITIAL_EVENT_QUEUE_SIZE=10)
 target_compile_definitions(core PRIVATE INITIAL_REACT_QUEUE_SIZE=10)
+target_compile_definitions(core PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 
 # Search and apply all possible compile definitions
 message(STATUS "Applying preprocessor definitions...")

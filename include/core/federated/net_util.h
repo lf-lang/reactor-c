@@ -38,9 +38,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NET_UTIL_H
 #define NET_UTIL_H
 
+#ifdef PLATFORM_ARDUINO
+#error To be implemented. No support for federation on Arduino yet.
+#else
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <regex.h>
+#endif
+
+#include <sys/types.h>
 #include <stdbool.h>
 
 #include "../platform.h"

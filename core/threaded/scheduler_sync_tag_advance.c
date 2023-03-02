@@ -1,3 +1,4 @@
+#if defined(LF_THREADED)
 /*************
 Copyright (c) 2022, The University of Texas at Dallas.
 Copyright (c) 2022, The University of California at Berkeley.
@@ -99,3 +100,4 @@ bool _lf_sched_advance_tag_locked() {
     LF_PRINT_DEBUG("Scheduler: Done waiting for _lf_next_locked().");
     return false;
 }
+#endif

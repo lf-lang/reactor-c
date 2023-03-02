@@ -49,13 +49,6 @@ else()
   message(FATAL_ERROR "Your platform is not supported! RTI supports Linux and MacOS.")
 endif()
 
-# The following should not be done
-include_directories(${CoreLib}/..)
-include_directories(${CoreLib})
-include_directories(${CoreLib}/federated)
-include_directories(${CoreLib}/platform)
-include_directories(${CoreLib}/utils)
-
 set(IncludeDir ../../../include/core)
 include_directories(${IncludeDir})
 include_directories(${IncludeDir}/federated)
@@ -71,6 +64,9 @@ add_executable(
     ${CoreLib}/trace.c
     ${LF_PLATFORM_FILE}
     ${CoreLib}/platform/lf_unix_clock_support.c
+    ${CoreLib}/utils/util.c
+    ${CoreLib}/tag.c
+    ${CoreLib}/federated/net_util.c
     ${CoreLib}/utils/pqueue.c
     message_record/message_record.c
 )
@@ -80,8 +76,9 @@ IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
     target_compile_definitions(RTI PUBLIC LOG_LEVEL=4)
 ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 
-# Set LF_THREADING to get the threaded support
-target_compile_definitions(RTI PUBLIC LF_THREADED=1)
+# Set LF_THREADING to get the threaded support and FEDERATED to get federated compilation support
+target_compile_definitions(RTI PUBLIC LF_THREADED=1 FEDERATED=1)
+target_compile_definitions(RTI PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 
 # FIXME: Should be defined conditionnaly or always set when compiling?
 target_compile_definitions(RTI PUBLIC RTI_TRACE)

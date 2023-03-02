@@ -98,10 +98,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 #endif
 
-#if BOARD==MBED
-#error "MBED RTOS-based Arduino Boards are currently unsupported"
-#endif
-
 #define __STDC_FORMAT_MACROS
 #include <inttypes.h>
 
@@ -115,9 +111,22 @@ struct timespec {
 
 #endif
 
+#ifdef LF_THREADED
+#warning "Threaded support on Arduino is still experimental"
+
+typedef void* lf_mutex_t;
+typedef void* lf_cond_t;
+typedef void* lf_thread_t;
+
+extern lf_mutex_t mutex;
+extern lf_cond_t event_q_changed;
+
+#endif // LF_THREADED
+
 #define PRINTF_TIME "%" PRIu32
 #define PRINTF_MICROSTEP "%" PRIu32
 #define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
+#define _LF_TIMEOUT 1
 
 #define LLONG_MAX __LONG_LONG_MAX__
 #define LLONG_MIN (-LLONG_MAX - 1LL)
