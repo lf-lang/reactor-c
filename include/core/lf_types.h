@@ -218,11 +218,11 @@ struct event_t {
     event_t* next;            // Pointer to the next event lined up in superdense time.
 };
 
-#ifdef LF_THREADED
 //FIXME: modif4watchdogs
 /** Typdef for watchdog_t struct, used to call watchdog handler. */
 typedef struct watchdog_t watchdog_t;
 
+#ifdef LF_THREADED
 /** Watchdog struct for handler. */
 // WATCHDOG QUESTION: it might be issue that self type is self_base_t?
 // self_base_t does not give access to parameters or actions
@@ -232,9 +232,10 @@ struct watchdog_t {
     interval_t min_expiration;              // The minimum expiration interval for the watchdog.
     lf_thread_t thread_id;                 // The thread that the watchdog is meant to run on.
     bool thread_active;                     // Boolean indicating whether or not thread is active.  
-    struct watchdog_function_t* watchdog_function;  // The function/handler for the watchdog.
+    watchdog_function_t* watchdog_function;  // The function/handler for the watchdog.
 };
-#endif
+#endif 
+
 
 /**
  * Trigger struct representing an output, timer, action, or input.
