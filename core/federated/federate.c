@@ -478,6 +478,9 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
         return;
     }
     ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
+#ifdef LF_TRACE
+    tracepoint_tag_to_RTI(type, _lf_my_fed_id, tag);
+#endif // LF_TRACE
     if (bytes_written < (ssize_t)bytes_to_write) {
         if (!exit_on_error) {
             lf_print_error("Failed to send tag " PRINTF_TAG " to the RTI."
@@ -502,9 +505,6 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
                                 );
         }
     }
-#ifdef LF_TRACE
-    tracepoint_tag_to_RTI(type, _lf_my_fed_id, tag);
-#endif // LF_TRACE
     lf_mutex_unlock(&outbound_socket_mutex);
 }
 
