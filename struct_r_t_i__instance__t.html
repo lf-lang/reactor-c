@@ -75,7 +75,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p><code>#include &lt;<a class="el" href="rti_8h_source.html">rti.h</a>&gt;</code></p>
+<p><code>#include &lt;<a class="el" href="rti__lib_8h_source.html">rti_lib.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
@@ -113,7 +113,7 @@ Data Fields</h2></td></tr>
 <tr class="separator:af7ea0946430be69dbd403314255334a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3542a74a533c1df0ac1e9178f7056152"><td class="memItemLeft" align="right" valign="top">pthread_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_t_i__instance__t.html#a3542a74a533c1df0ac1e9178f7056152">clock_thread</a></td></tr>
 <tr class="separator:a3542a74a533c1df0ac1e9178f7056152"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abb421f526cf8b07674727179a37391d8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="rti_8h.html#a9705d612b9ce908ee485e92eb3f2769f">clock_sync_stat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_t_i__instance__t.html#abb421f526cf8b07674727179a37391d8">clock_sync_global_status</a></td></tr>
+<tr class="memitem:abb421f526cf8b07674727179a37391d8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="rti__lib_8h.html#a9705d612b9ce908ee485e92eb3f2769f">clock_sync_stat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_t_i__instance__t.html#abb421f526cf8b07674727179a37391d8">clock_sync_global_status</a></td></tr>
 <tr class="separator:abb421f526cf8b07674727179a37391d8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a12e87ac0324a0486f2cc9dde4bf25507"><td class="memItemLeft" align="right" valign="top">uint64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_t_i__instance__t.html#a12e87ac0324a0486f2cc9dde4bf25507">clock_sync_period_ns</a></td></tr>
 <tr class="separator:a12e87ac0324a0486f2cc9dde4bf25507"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -136,7 +136,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Boolean indicating that all federates have exited. This gets set to true exactly once before the program exits. It is marked volatile because the write is not guarded by a mutex. The main thread makes this true, then calls shutdown and close on the socket, which will cause accept() to return with an error code in <a class="el" href="rti_8c.html#ac6af5f2343ecf9ed87cdbebd98b94271">respond_to_erroneous_connections()</a>. </p>
+<p>Boolean indicating that all federates have exited. This gets set to true exactly once before the program exits. It is marked volatile because the write is not guarded by a mutex. The main thread makes this true, then calls shutdown and close on the socket, which will cause accept() to return with an error code in <a class="el" href="rti__lib_8c.html#ac6af5f2343ecf9ed87cdbebd98b94271">respond_to_erroneous_connections()</a>. </p>
 
 </div>
 </div>
@@ -177,7 +177,7 @@ Data Fields</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="rti_8h.html#a9705d612b9ce908ee485e92eb3f2769f">clock_sync_stat</a> RTI_instance_t::clock_sync_global_status</td>
+          <td class="memname"><a class="el" href="rti__lib_8h.html#a9705d612b9ce908ee485e92eb3f2769f">clock_sync_stat</a> RTI_instance_t::clock_sync_global_status</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -431,7 +431,7 @@ Data Fields</h2></td></tr>
 </div>
 </div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
-<li>core/federated/RTI/<a class="el" href="rti_8h_source.html">rti.h</a></li>
+<li>core/federated/RTI/<a class="el" href="rti__lib_8h_source.html">rti_lib.h</a></li>
 </ul>
 </div><!-- contents -->
 <!-- start footer part -->

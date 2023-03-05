@@ -2,7 +2,7 @@ var searchData=
 [
   ['main_0',['main',['../rti_8c.html#a0ddf1224851353fc92bfbff6f499fa97',1,'main(int argc, char *argv[]):&#160;rti.c'],['../tag__test_8c.html#a3c04138a5bfe5d72780bb7e82a18e627',1,'main(int argc, char **argv):&#160;tag_test.c'],['../hashmap__test_8c.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;hashmap_test.c'],['../hashset__test_8c.html#a0ddf1224851353fc92bfbff6f499fa97',1,'main(int argc, char *argv[]):&#160;hashset_test.c'],['../vector__test_8c.html#ae66f6b31b5ad750f1fe042a706a4e3d4',1,'main():&#160;vector_test.c']]],
   ['main_5fqueue_1',['main_queue',['../structin__transit__message__record__q__t.html#a71390cdd1b1c002e305835239d3164c0',1,'in_transit_message_record_q_t']]],
-  ['mark_5ffederate_5frequesting_5fstop_2',['mark_federate_requesting_stop',['../rti_8c.html#a97ac8c4d61e522fc3587a7469bdc7afb',1,'rti.c']]],
+  ['mark_5ffederate_5frequesting_5fstop_2',['mark_federate_requesting_stop',['../rti__lib_8h.html#a97ac8c4d61e522fc3587a7469bdc7afb',1,'mark_federate_requesting_stop(federate_t *fed):&#160;rti_lib.c'],['../rti__lib_8c.html#a97ac8c4d61e522fc3587a7469bdc7afb',1,'mark_federate_requesting_stop(federate_t *fed):&#160;rti_lib.c']]],
   ['mask_3',['mask',['../structhashset__st.html#adf5780dd9e62e8c1bceb11207383cd0d',1,'hashset_st']]],
   ['match_5fregex_4',['match_regex',['../net__util_8h.html#a7a568c79c856e633f5f181dd21700b74',1,'net_util.h']]],
   ['max_5',['max',['../structlf__stat__ll.html#a0f03f89499cdd68d790e3b874e0d0d43',1,'lf_stat_ll']]],
