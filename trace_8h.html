@@ -109,6 +109,8 @@ Macros</h2></td></tr>
 <tr class="separator:a2b43a4d257b235afe8066e4a3f1bfe7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac91dba72663dc0f17ce46d105ff3f511"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trace_8h.html#ac91dba72663dc0f17ce46d105ff3f511">tracepoint_scheduler_advancing_time_ends</a>(...)&#160;&#160;&#160;;</td></tr>
 <tr class="separator:ac91dba72663dc0f17ce46d105ff3f511"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa608d6a7b724896211cc9a279bacfbbf"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trace_8h.html#aa608d6a7b724896211cc9a279bacfbbf">tracepoint_reaction_deadline_missed</a>(...)&#160;&#160;&#160;;</td></tr>
+<tr class="separator:aa608d6a7b724896211cc9a279bacfbbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a27e365336dc38cd3fec8741832c0e195"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trace_8h.html#a27e365336dc38cd3fec8741832c0e195">start_trace</a>(...)</td></tr>
 <tr class="separator:a27e365336dc38cd3fec8741832c0e195"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9c54cf0034978f2dd5b3521fc522d237"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trace_8h.html#a9c54cf0034978f2dd5b3521fc522d237">stop_trace</a>(...)</td></tr>
@@ -119,15 +121,16 @@ Enumerations</h2></td></tr>
 <tr class="memitem:ab02e9e69539d60297cedb38c2193a453"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453">trace_event_t</a> { <br />
 &#160;&#160;<a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453a7ca2fc1a301d8e66944fab471646728a">reaction_starts</a>
 , <a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453a79889b5c51ccdf63962a8ec230ff3f6b">reaction_ends</a>
+, <a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453a8dd4df4dfbe3f6fd12f454467d61cda0">reaction_deadline_missed</a>
 , <a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453a666fca0e7c44992277a6f47331b6ff49">schedule_called</a>
-, <a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453aeba45bd40c043d7a65ac7c5d31b9e187">user_event</a>
 , <br />
-&#160;&#160;<a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453a1d509d2fbc0fe97dcc61aea8ba7b68c1">user_value</a>
+&#160;&#160;<a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453aeba45bd40c043d7a65ac7c5d31b9e187">user_event</a>
+, <a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453a1d509d2fbc0fe97dcc61aea8ba7b68c1">user_value</a>
 , <a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453a9c6849445ded286ba9f914d3b1decd2a">worker_wait_starts</a>
 , <a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453afa179671ba1508f1c16b10ffef3a17c6">worker_wait_ends</a>
-, <a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453a79e198f97731e9ea1f982ccb8db8f5d0">scheduler_advancing_time_starts</a>
 , <br />
-&#160;&#160;<a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453a0422fad861a51f83258d104e6b34fdad">scheduler_advancing_time_ends</a>
+&#160;&#160;<a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453a79e198f97731e9ea1f982ccb8db8f5d0">scheduler_advancing_time_starts</a>
+, <a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453a0422fad861a51f83258d104e6b34fdad">scheduler_advancing_time_ends</a>
 <br />
  }</td></tr>
 <tr class="separator:ab02e9e69539d60297cedb38c2193a453"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -240,6 +243,24 @@ DESCRIPTION</h1>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>...</em></td><td>)</td>
           <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa608d6a7b724896211cc9a279bacfbbf" name="aa608d6a7b724896211cc9a279bacfbbf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa608d6a7b724896211cc9a279bacfbbf">&#9670;&#160;</a></span>tracepoint_reaction_deadline_missed</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define tracepoint_reaction_deadline_missed</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em></td><td>)</td>
+          <td>&#160;&#160;&#160;;</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -424,6 +445,7 @@ DESCRIPTION</h1>
 <table class="fieldtable">
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a7ca2fc1a301d8e66944fab471646728a" name="ab02e9e69539d60297cedb38c2193a453a7ca2fc1a301d8e66944fab471646728a"></a>reaction_starts&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a79889b5c51ccdf63962a8ec230ff3f6b" name="ab02e9e69539d60297cedb38c2193a453a79889b5c51ccdf63962a8ec230ff3f6b"></a>reaction_ends&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a8dd4df4dfbe3f6fd12f454467d61cda0" name="ab02e9e69539d60297cedb38c2193a453a8dd4df4dfbe3f6fd12f454467d61cda0"></a>reaction_deadline_missed&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a666fca0e7c44992277a6f47331b6ff49" name="ab02e9e69539d60297cedb38c2193a453a666fca0e7c44992277a6f47331b6ff49"></a>schedule_called&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453aeba45bd40c043d7a65ac7c5d31b9e187" name="ab02e9e69539d60297cedb38c2193a453aeba45bd40c043d7a65ac7c5d31b9e187"></a>user_event&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="ab02e9e69539d60297cedb38c2193a453a1d509d2fbc0fe97dcc61aea8ba7b68c1" name="ab02e9e69539d60297cedb38c2193a453a1d509d2fbc0fe97dcc61aea8ba7b68c1"></a>user_value&#160;</td><td class="fielddoc"></td></tr>
