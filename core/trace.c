@@ -583,8 +583,7 @@ void stop_trace() {
  * @param fed_id The fedaerate identifier.
  * @param tag The tag that has been sent.
  */
-void tracepoint_tag_to_RTI(unsigned char type, int fed_id, tag_t tag) {
-    trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG)? federate_NET : federate_LTC;
+void tracepoint_federate_to_RTI(trace_event_t event_type, int fed_id, tag_t tag) {
     tracepoint(event_type, 
         NULL,   // void* pointer,
         &tag,   // tag* tag,
@@ -602,8 +601,8 @@ void tracepoint_tag_to_RTI(unsigned char type, int fed_id, tag_t tag) {
  * @param fed_id The fedaerate identifier.
  * @param tag The tag that has been received.
  */
-void tracepoint_tag_from_RTI(unsigned char type, int fed_id, tag_t tag) {
-    trace_event_t event_type = (type == MSG_TYPE_TAG_ADVANCE_GRANT)? federate_TAG : federate_PTAG;
+void tracepoint_federate_from_RTI(trace_event_t event_type, int fed_id, tag_t tag) {
+    // trace_event_t event_type = (type == MSG_TYPE_TAG_ADVANCE_GRANT)? federate_TAG : federate_PTAG;
     tracepoint(event_type,
         NULL,   // void* pointer,
         &tag,   // tag* tag,
@@ -622,7 +621,7 @@ void tracepoint_tag_from_RTI(unsigned char type, int fed_id, tag_t tag) {
 
 #ifdef RTI_TRACE
 
-void tracepoint_message_to_federate(trace_event_t event_type, int fed_id, tag_t* tag) { 
+void tracepoint_RTI_to_federate(trace_event_t event_type, int fed_id, tag_t* tag) { 
     tracepoint(event_type,
                NULL, // void* pointer,
                tag,  // tag_t* tag,
@@ -634,7 +633,7 @@ void tracepoint_message_to_federate(trace_event_t event_type, int fed_id, tag_t*
     );
 }
 
-void tracepoint_message_from_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
+void tracepoint_RTI_from_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
     tracepoint(event_type,
                NULL, // void* pointer,
                tag,  // tag_t* tag,

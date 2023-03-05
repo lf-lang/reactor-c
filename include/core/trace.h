@@ -68,26 +68,55 @@ typedef enum {
     worker_wait_ends,
     scheduler_advancing_time_starts,
     scheduler_advancing_time_ends,
-    federate_NET,
-    federate_TAG,
-    federate_PTAG,
-    federate_LTC,
-    rti_receive_TIMESTAMP,
-    rti_receive_ADDRESS_QUERY,
-    rti_receive_ADDRESS_ADVERTISEMENT,
-    rti_receive_TAGGED_MESSAGE,
-    rti_receive_RESIGN,
-    rti_receive_NEXT_EVENT_TAG,
-    rti_receive_LOGICAL_TAG_COMPLETE,
-    rti_receive_STOP_REQUEST,
-    rti_receive_STOP_REQUEST_REPLY,
-    rti_receive_PORT_ABSENT,
-    rti_receive_unidentified,
-    rti_send_PTAG,
-    rti_send_TAG,
-    rti_send_reject,
-    rti_send_STOP_REQUEST,
-    rti_join_federate,
+
+    // Federate sends to RTI
+    fed_to_rti_TIMESTAMP,
+    fed_to_rti_NET,
+    fed_to_rti_LTC,
+    fed_to_rti_STOP_REQ,
+    fed_to_rti_STOP_REQ_REP,
+
+    // Federate receives from RTI
+    fed_from_rti_ACK,
+    fed_from_rti_REJECT,
+    fed_from_rti_TIMESTAMP,
+    fed_from_rti_PTAG,
+    fed_from_rti_TAG,
+    fed_from_rti_STOP_REQ,
+    fed_from_rti_STOP_GRN,
+
+    // Federate sends to federate
+    fed_to_fed_FED_ID,
+    // Federate receives from federate
+    fed_from_fed_FED_ID,
+
+    // RTI sends to federate
+    rti_to_fed_ACK,
+    rti_to_fed_REJECT,
+    rti_to_fed_TIMESTAMP,
+    rti_to_fed_PTAG,
+    rti_to_fed_TAG,
+    rti_to_fed_STOP_REQ,
+    rti_to_fed_STOP_GRN,
+    rti_to_fed_JOIN,
+
+    // rti_to_fed_STOP_REQUEST,
+    // rti_join_federate,
+
+    // RTI receives from federate
+    rti_from_fed_TIMESTAMP,
+    rti_from_fed_NET,
+    rti_from_fed_LTC,
+    rti_from_fed_STOP_REQ,
+    rti_from_fed_STOP_REQ_REP,
+
+    // rti_from_fed_ADDRESS_QUERY,
+    // rti_from_fed_ADDRESS_ADVERTISEMENT,
+    // rti_from_fed_TAGGED_MESSAGE,
+    // rti_from_fed_RESIGN,
+    // rti_from_fed_PORT_ABSENT,
+    // rti_from_fed_unidentified,
+
     NUM_EVENT_TYPES
 } trace_event_t;
 
@@ -97,35 +126,63 @@ typedef enum {
  * String description of event types.
  */
 static const char *trace_event_names[] = {
-        "Reaction starts",
-        "Reaction ends",
-        "Schedule called",
-        "User-defined event",
-        "User-defined valued event",
-        "Worker wait starts",
-        "Worker wait ends",
-        "Scheduler advancing time starts",
-        "Scheduler advancing time ends",
-        "Federate sends NET to RTI",
-        "Federate receives TAG from RTI",
-        "Federate receives PTAG from RTI",
-        "Federate sends LTC to RTI",
-        "RTI receives TIMESTAMP from federate",
-        "RTI receives ADDRESS_QUERY from federate",
-        "RTI receives ADDRESS_ADVERTISEMENT from federate",
-        "RTI receives TAGGED_MESSAGE from federate",
-        "RTI receives RESIGN from federate",
-        "RTI receives NEXT_EVENT_TAG from federate",
-        "RTI receives LOGICAL_TAG_COMPLETE from federate",
-        "RTI receives STOP_REQUEST from federate",
-        "RTI receives STOP_REQUEST_REPLY from federate",
-        "RTI receives PORT_ABSENT from federate",
-        "RTI receives unidentified message from federate",
-        "RTI sends PTAG to federate",
-        "RTI sends TAG to federate",
-        "RTI sends reject to federate",
-        "RTI sends STOP REQUEST to federate",
-        "RTI accepts joining federate"
+    "Reaction starts",
+    "Reaction ends",
+    "Schedule called",
+    "User-defined event",
+    "User-defined valued event",
+    "Worker wait starts",
+    "Worker wait ends",
+    "Scheduler advancing time starts",
+    "Scheduler advancing time ends",
+
+    // Federate sends to RTI
+    "Federate sends TIMESTAMP to RTI",
+    "Federate sends NET to RTI",
+    "Federate sends LTC to RTI",
+    "Federate sends STOP_REQ to RTI",
+    "Federate sends STOP_REQ_REP to RTI",
+
+    // Federate receives from RTI
+    "Federate receives ACK from RTI",
+    "Federate receives REJECT from RTI",
+    "Federate receives TIMESTAMP from RTI",
+    "Federate receives PTAG from RTI",
+    "Federate receives TAG from RTI",
+    "Federate receives STOP_REQ from RTI",
+    "Federate receives STOP_GRN from RTI",
+
+    // Federate sends to federate
+    "Federate sends FED_ID to federate",
+    // Federate receives from federate
+    "Federate receives FED_ID from federate",
+
+    // RTI sends to federate
+    "RTI sends ACK to federate",
+    "RTI sends REJECT to federate",
+    "RTI sends TIMESTAMP to federate",
+    "RTI sends PTAG to federate",
+    "RTI sends TAG to federate",
+    "RTI sends STOP_REQ to federate",
+    "RTI sends STOP_GRN to federate",
+    "RTI sends JOIN to federate", // Sentence should be corrected!
+
+    // rti_to_fed_STOP_REQUEST,
+    // rti_join_federate,
+
+    // RTI receives from federate
+    "RTI receives TIMESTAMP from federate",
+    "RTI receives NET from federate",
+    "RTI receives LTC from federate",
+    "RTI receives STOP_REQ from federate",
+    "RTI receives STOP_REQ_REP from federate",
+
+    // rti_from_fed_ADDRESS_QUERY,
+    // rti_from_fed_ADDRESS_ADVERTISEMENT,
+    // rti_from_fed_TAGGED_MESSAGE,
+    // rti_from_fed_RESIGN,
+    // rti_from_fed_PORT_ABSENT,
+    // rti_from_fed_unidentified
 
 };
 
@@ -297,7 +354,7 @@ void tracepoint_scheduler_advancing_time_ends();
  * @param fed_id The federate identifier.
  * @param tag The tag that has been sent.
  */
-void tracepoint_tag_to_RTI(unsigned char type, int fed_id, tag_t tag);
+void tracepoint_federate_to_RTI(trace_event_t event_type, int fed_id, tag_t tag);
 
 /**
  * Trace receiving a Tag Advance Grant (TAG) or Provisional Tag Advance Grant (PTAG) message from the RTI.
@@ -305,7 +362,7 @@ void tracepoint_tag_to_RTI(unsigned char type, int fed_id, tag_t tag);
  * @param fed_id The federate identifier.
  * @param tag The tag that has been received.
  */
-void tracepoint_tag_from_RTI(unsigned char type, int fed_id, tag_t tag);
+void tracepoint_federate_from_RTI(trace_event_t event_type, int fed_id, tag_t tag);
 
 #endif // FEDERATED
 
@@ -320,7 +377,7 @@ void tracepoint_tag_from_RTI(unsigned char type, int fed_id, tag_t tag);
  * @param fed_id The fedaerate ID.
  * @param tag The tag that has been sent, or NULL if none.
  */
-void tracepoint_message_to_federate(trace_event_t type, int fed_id, tag_t* tag);
+void tracepoint_RTI_to_federate(trace_event_t type, int fed_id, tag_t* tag);
 
 /**
  * Trace RTI receiving a message from a federate.
@@ -328,7 +385,7 @@ void tracepoint_message_to_federate(trace_event_t type, int fed_id, tag_t* tag);
  * @param fed_id The fedaerate ID.
  * @param tag The tag that has been sent, or NULL if none.
  */
-void tracepoint_message_from_federate(trace_event_t event_type, int fed_id, tag_t* tag);
+void tracepoint_RTI_from_federate(trace_event_t event_type, int fed_id, tag_t* tag);
 
 #endif // RTI_TRACE
 
@@ -349,10 +406,10 @@ void stop_trace(void);
 #define tracepoint_worker_wait_ends(...)
 #define tracepoint_scheduler_advancing_time_starts(...);
 #define tracepoint_scheduler_advancing_time_ends(...);
-#define tracepoint_tag_to_RTI(...);
-#define tracepoint_tag_from_RTI(...);
-#define tracepoint_message_to_federate(...);
-#define tracepoint_message_from_federate(...) ;
+#define tracepoint_federate_to_RTI(...);
+#define tracepoint_federate_from_RTI(...);
+#define tracepoint_RTI_to_federate(...);
+#define tracepoint_RTI_from_federate(...) ;
 
 #define start_trace(...)
 #define stop_trace(...)

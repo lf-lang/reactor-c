@@ -479,8 +479,10 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
     }
     ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
 #ifdef LF_TRACE
-    tracepoint_tag_to_RTI(type, _lf_my_fed_id, tag);
+    trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG) ? fed_to_rti_NET : fed_to_rti_LTC;
+    tracepoint_federate_to_RTI(event_type, _lf_my_fed_id, tag);
 #endif // LF_TRACE
+
     if (bytes_written < (ssize_t)bytes_to_write) {
         if (!exit_on_error) {
             lf_print_error("Failed to send tag " PRINTF_TAG " to the RTI."
@@ -1994,11 +1996,12 @@ void handle_tag_advance_grant() {
             "Failed to read tag advance grant from RTI.");
     tag_t TAG = extract_tag(buffer);
 
+#ifdef LF_TRACE
+    tracepoint_federate_from_RTI(fed_from_rti_TAG, _lf_my_fed_id, TAG);
+#endif // LF_TRACE
+
     lf_mutex_lock(&mutex);
 
-#ifdef LF_TRACE
-    tracepoint_tag_from_RTI(MSG_TYPE_TAG_ADVANCE_GRANT, _lf_my_fed_id, TAG);
-#endif // LF_TRACE
     // Update the last known status tag of all network input ports
     // to the TAG received from the RTI. Here we assume that the RTI
     // knows the status of network ports up to and including the granted tag,
@@ -2073,15 +2076,15 @@ void handle_provisional_tag_advance_grant() {
             "Failed to read provisional tag advance grant from RTI.");
     tag_t PTAG = extract_tag(buffer);
 
+#ifdef LF_TRACE
+    tracepoint_federate_from_RTI(fed_from_rti_PTAG, _lf_my_fed_id, PTAG);
+#endif // LF_TRACE
+
     // Note: it is important that last_known_status_tag of ports does not
     // get updated to a PTAG value because a PTAG does not indicate that
     // the RTI knows about the status of all ports up to and _including_
     // the value of PTAG. Only a TAG message indicates that.
     lf_mutex_lock(&mutex);
-
-#ifdef LF_TRACE
-    tracepoint_tag_from_RTI(MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT, _lf_my_fed_id, PTAG);
-#endif // LF_TRACE
 
     // Sanity check
     if (lf_tag_compare(PTAG, _fed.last_TAG) < 0
