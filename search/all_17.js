@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['wait_5ffor_5ffederates_0',['wait_for_federates',['../rti__lib_8c.html#a005cb43e8e6c7795c8f0db27e2424475',1,'wait_for_federates(int socket_descriptor):&#160;rti_lib.c'],['../rti__lib_8h.html#a005cb43e8e6c7795c8f0db27e2424475',1,'wait_for_federates(int socket_descriptor):&#160;rti_lib.c']]],
+  ['wait_5ffor_5ffederates_0',['wait_for_federates',['../rti_8c.html#a005cb43e8e6c7795c8f0db27e2424475',1,'rti.c']]],
   ['wait_5funtil_1',['wait_until',['../reactor__threaded_8h.html#aae38fdb4e79b2dc10d5f5c3131a423ae',1,'reactor_threaded.h']]],
   ['wait_5funtil_5fport_5fstatus_5fknown_2',['wait_until_port_status_known',['../federate_8h.html#a64023b2373d1b7d76435afb2dcbf41a5',1,'federate.h']]],
   ['waiting_5ffor_5ftag_3',['waiting_for_TAG',['../structfederate__instance__t.html#a9812f0499dda0efd9f2718981be2e905',1,'federate_instance_t']]],
