@@ -14,5 +14,5 @@ var searchData=
   ['thread_5fnew_11',['thread_new',['../_thread_wrapper_8h.html#a3568e74f6efcbbebd1b84bca88b27846',1,'ThreadWrapper.h']]],
   ['thread_5fstart_12',['thread_start',['../_thread_wrapper_8h.html#a4af6feae8070f713ad31b02de0730a71',1,'ThreadWrapper.h']]],
   ['thread_5fterminate_13',['thread_terminate',['../_thread_wrapper_8h.html#aaac285a525d959905cd463a3adeb3828',1,'ThreadWrapper.h']]],
-  ['transitive_5fnext_5fevent_14',['transitive_next_event',['../rti_8c.html#aa067d8ff2e12b42f8c1f011758231be1',1,'rti.c']]]
+  ['transitive_5fnext_5fevent_14',['transitive_next_event',['../rti__lib_8c.html#aa067d8ff2e12b42f8c1f011758231be1',1,'transitive_next_event(federate_t *fed, tag_t candidate, bool visited[]):&#160;rti_lib.c'],['../rti__lib_8h.html#aa067d8ff2e12b42f8c1f011758231be1',1,'transitive_next_event(federate_t *fed, tag_t candidate, bool visited[]):&#160;rti_lib.c']]]
 ];
