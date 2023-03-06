@@ -30,9 +30,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * See trace.h file for instructions.
  */
 
-#ifdef RTI_TRACE
-#define LF_TRACE
-#endif
+#include "trace.h"
 
 #ifdef LF_TRACE
 
@@ -52,7 +50,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif // RTI_TRACE
 
 #include "reactor_common.h"
-#include "trace.h"
 #include "util.h"
 
 /** Macro to use when access to trace file fails. */
@@ -533,6 +530,15 @@ void tracepoint_scheduler_advancing_time_starts() {
  */
 void tracepoint_scheduler_advancing_time_ends() {
     tracepoint(scheduler_advancing_time_ends, NULL, NULL, -1, -1, NULL, NULL, 0);
+}
+
+/**
+ * Trace the occurrence of a deadline miss.
+ * @param reaction Pointer to the reaction_t struct for the reaction.
+ * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ */
+void tracepoint_reaction_deadline_missed(reaction_t *reaction, int worker) {
+    tracepoint(reaction_deadline_missed, reaction->self, NULL, reaction->number, worker, NULL, NULL, 0);
 }
 
 /**

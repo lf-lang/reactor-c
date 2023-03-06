@@ -44,6 +44,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * A sequence of traces, each of which begins with an int giving the length of the trace
  * followed by binary representations of the trace_record struct written using fwrite().
  */
+
+#ifdef RTI_TRACE
+#define LF_TRACE
+#endif
+
 #ifndef TRACE_H
 #define TRACE_H
 
@@ -61,6 +66,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 typedef enum {
     reaction_starts,
     reaction_ends,
+    reaction_deadline_missed,
     schedule_called,
     user_event,
     user_value,
@@ -128,6 +134,7 @@ typedef enum {
 static const char *trace_event_names[] = {
     "Reaction starts",
     "Reaction ends",
+    "Reaction deadline missed",
     "Schedule called",
     "User-defined event",
     "User-defined valued event",
@@ -183,7 +190,6 @@ static const char *trace_event_names[] = {
     // rti_from_fed_RESIGN,
     // rti_from_fed_PORT_ABSENT,
     // rti_from_fed_unidentified
-
 };
 
 // FIXME: Target property should specify the capacity of the trace buffer.
@@ -343,6 +349,15 @@ void tracepoint_scheduler_advancing_time_starts();
  */
 void tracepoint_scheduler_advancing_time_ends();
 
+
+/**
+ * Trace the occurence of a deadline miss.
+ * @param reaction Pointer to the reaction_t struct for the reaction.
+ * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ */
+void tracepoint_reaction_deadline_missed(reaction_t *reaction, int worker);
+
+
 ////////////////////////////////////////////////////////////
 //// For federated execution
 
@@ -406,6 +421,7 @@ void stop_trace(void);
 #define tracepoint_worker_wait_ends(...)
 #define tracepoint_scheduler_advancing_time_starts(...);
 #define tracepoint_scheduler_advancing_time_ends(...);
+#define tracepoint_reaction_deadline_missed(...);
 #define tracepoint_federate_to_RTI(...);
 #define tracepoint_federate_from_RTI(...);
 #define tracepoint_RTI_to_federate(...);
