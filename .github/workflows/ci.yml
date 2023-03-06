@@ -21,6 +21,7 @@ jobs:
 
   build-rti:
     uses: lf-lang/reactor-c/.github/workflows/build-rti.yml@main
+
   fetch-lf:
     uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@master
     with:
