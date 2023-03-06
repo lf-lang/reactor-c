@@ -46,30 +46,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Or we could bootstrap and implement it using Lingua Franca.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>      // Defines perror(), errno
-#include <sys/socket.h>
-#include <sys/types.h>  // Provides select() function to read from multiple sockets.
-#include <netinet/in.h> // Defines struct sockaddr_in
-#include <arpa/inet.h>  // inet_ntop & inet_pton
-#include <unistd.h>     // Defines read(), write(), and close()
-#include <netdb.h>      // Defines gethostbyname().
-#include <strings.h>    // Defines bzero().
-#include <assert.h>
-#include <sys/wait.h>   // Defines wait() for process to change state.
-#include <pthread.h>
-
-#include "platform.h"   // Platform-specific types and functions
-#include "util.h" // Defines print functions (e.g., lf_print).
-#include "net_util.h"   // Defines network functions.
-#include "net_common.h" // Defines message types, etc. Includes <pthread.h> and "reactor.h".
-#include "tag.h"        // Time-related types and functions.
-#include "rti.h"
-#ifdef __RTI_AUTH__
-#include <openssl/rand.h> // For secure random number generation.
-#include <openssl/hmac.h> // For HMAC authentication.
-#endif
+#include "rti_lib.h"
 /**
  * The state of this RTI instance.
  */
@@ -94,19 +71,6 @@ RTI_instance_t _RTI = {
     .clock_sync_exchanges_per_interval = 10,
     .authentication_enabled = false
 };
-
-/**
- * Mark a federate requesting stop.
- *
- * If the number of federates handling stop reaches the
- * NUM_OF_FEDERATES, broadcast MSG_TYPE_STOP_GRANTED to every federate.
- *
- * This function assumes the _RTI.rti_mutex is already locked.
- *
- * @param fed The federate that has requested a stop or has suddenly
- *  stopped (disconnected).
- */
-void mark_federate_requesting_stop(federate_t* fed);
 
 /**
  * Create a server and enable listening for socket connections.
@@ -2291,21 +2255,4 @@ int process_args(int argc, char* argv[]) {
         return 0;
     }
     return 1;
-}
-
-int main(int argc, char* argv[]) {
-    if (!process_args(argc, argv)) {
-        // Processing command-line arguments failed.
-        return -1;
-    }
-    printf("Starting RTI for %d federates in federation ID %s\n", _RTI.number_of_federates, _RTI.federation_id);
-    assert(_RTI.number_of_federates < UINT16_MAX);
-    _RTI.federates = (federate_t*)calloc(_RTI.number_of_federates, sizeof(federate_t));
-    for (uint16_t i = 0; i < _RTI.number_of_federates; i++) {
-        initialize_federate(i);
-    }
-    int socket_descriptor = start_rti_server(_RTI.user_specified_port);
-    wait_for_federates(socket_descriptor);
-    printf("RTI is exiting.\n");
-    return 0;
 }
