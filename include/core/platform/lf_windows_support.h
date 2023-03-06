@@ -62,15 +62,17 @@ extern int lf_clock_gettime(_instant_t* t);
  * critical sections are lighter and limited to one process
  * and thus fit the requirements of Lingua Franca.
  */
-typedef CRITICAL_SECTION _lf_mutex_t;
+typedef CRITICAL_SECTION lf_mutex_t;
 /**
  * For compatibility with other platform APIs, we assume
  * that mutex is analogous to critical section.
  */
-typedef _lf_mutex_t _lf_critical_section_t;
-
-typedef CONDITION_VARIABLE _lf_cond_t;
-typedef HANDLE _lf_thread_t;
+typedef lf_mutex_t _lf_critical_section_t;
+typedef struct {
+    _lf_critical_section_t* critical_section;
+    CONDITION_VARIABLE condition;
+} lf_cond_t;
+typedef HANDLE lf_thread_t;
 
 /**
  * Create a new thread, starting with execution of lf_thread
@@ -78,7 +80,7 @@ typedef HANDLE _lf_thread_t;
  *
  * @return 0 on success, errno otherwise.
  */
-static int lf_thread_create(_lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
+static int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     uintptr_t handle = _beginthreadex(NULL, 0, lf_thread, arguments, 0, NULL);
     *thread = (HANDLE)handle;
     if(handle == 0){
@@ -95,7 +97,7 @@ static int lf_thread_create(_lf_thread_t* thread, void *(*lf_thread) (void *), v
  *
  * @return 0 on success, EINVAL otherwise.
  */
-static int lf_thread_join(_lf_thread_t thread, void** thread_return) {
+static int lf_thread_join(lf_thread_t thread, void** thread_return) {
     DWORD retvalue = WaitForSingleObject(thread, INFINITE);
     if(retvalue == WAIT_FAILED){
         return EINVAL;
@@ -152,9 +154,10 @@ static int lf_mutex_unlock(_lf_critical_section_t* critical_section) {
  *
  * @return 0
  */
-static int lf_cond_init(_lf_cond_t* cond) {
+static int lf_cond_init(lf_cond_t* cond, _lf_critical_section_t* critical_section) {
     // The following Windows API does not return a value.
-    InitializeConditionVariable((PCONDITION_VARIABLE)cond);
+    cond->critical_section = critical_section;
+    InitializeConditionVariable((PCONDITION_VARIABLE)&cond->condition);
     return 0;
 }
 
@@ -163,9 +166,9 @@ static int lf_cond_init(_lf_cond_t* cond) {
  *
  * @return 0
  */
-static int lf_cond_broadcast(_lf_cond_t* cond) {
+static int lf_cond_broadcast(lf_cond_t* cond) {
     // The following Windows API does not return a value.
-    WakeAllConditionVariable((PCONDITION_VARIABLE)cond);
+    WakeAllConditionVariable((PCONDITION_VARIABLE)&cond->condition);
     return 0;
 }
 
@@ -174,9 +177,9 @@ static int lf_cond_broadcast(_lf_cond_t* cond) {
  *
  * @return 0
  */
-static int lf_cond_signal(_lf_cond_t* cond) {
+static int lf_cond_signal(lf_cond_t* cond) {
     // The following Windows API does not return a value.
-    WakeConditionVariable((PCONDITION_VARIABLE)cond);
+    WakeConditionVariable((PCONDITION_VARIABLE)&cond->condition);
     return 0;
 }
 
@@ -186,13 +189,13 @@ static int lf_cond_signal(_lf_cond_t* cond) {
  *
  * @return 0 on success, 1 otherwise.
  */
-static int lf_cond_wait(_lf_cond_t* cond, _lf_critical_section_t* critical_section) {
+static int lf_cond_wait(lf_cond_t* cond) {
     // According to synchapi.h, the following Windows API returns 0 on failure,
     // and non-zero on success.
     int return_value =
      (int)SleepConditionVariableCS(
-         (PCONDITION_VARIABLE)cond,
-         (PCRITICAL_SECTION)critical_section,
+         (PCONDITION_VARIABLE)&cond->condition,
+         (PCRITICAL_SECTION)cond->critical_section,
          INFINITE
      );
      switch (return_value) {
@@ -215,7 +218,7 @@ static int lf_cond_wait(_lf_cond_t* cond, _lf_critical_section_t* critical_secti
  *
  * @return 0 on success and LF_TIMEOUT on timeout, 1 otherwise.
  */
-static int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_section, _instant_t absolute_time_ns) {
+static int lf_cond_timedwait(lf_cond_t* cond, _instant_t absolute_time_ns) {
     // Convert the absolute time to a relative time
     _instant_t current_time_ns;
     lf_clock_gettime(&current_time_ns);
@@ -230,8 +233,8 @@ static int lf_cond_timedwait(_lf_cond_t* cond, _lf_critical_section_t* critical_
 
     int return_value =
      (int)SleepConditionVariableCS(
-         (PCONDITION_VARIABLE)cond,
-         (PCRITICAL_SECTION)critical_section,
+         (PCONDITION_VARIABLE)&cond->condition,
+         (PCRITICAL_SECTION)cond->critical_section,
          relative_time_ms
      );
     if (return_value == 0) {

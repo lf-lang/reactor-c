@@ -1,3 +1,4 @@
+#if defined(LF_THREADED)
 /* Semaphore utility for reactor C. */
 
 /*************
@@ -41,8 +42,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 semaphore_t* lf_semaphore_new(int count) {
     semaphore_t* semaphore = (semaphore_t*)malloc(sizeof(semaphore_t));
-    lf_cond_init(&semaphore->cond);
     lf_mutex_init(&semaphore->mutex);
+    lf_cond_init(&semaphore->cond, &semaphore->mutex);
     semaphore->count = count;
     return semaphore;
 }
@@ -70,7 +71,7 @@ void lf_semaphore_acquire(semaphore_t* semaphore) {
     assert(semaphore != NULL);
     lf_mutex_lock(&semaphore->mutex);
     while (semaphore->count == 0) {
-        lf_cond_wait(&semaphore->cond, &semaphore->mutex);
+        lf_cond_wait(&semaphore->cond);
     }
     semaphore->count--;
     lf_mutex_unlock(&semaphore->mutex);
@@ -85,7 +86,7 @@ void lf_semaphore_wait(semaphore_t* semaphore) {
     assert(semaphore != NULL);
     lf_mutex_lock(&semaphore->mutex);
     while (semaphore->count == 0) {
-        lf_cond_wait(&semaphore->cond, &semaphore->mutex);
+        lf_cond_wait(&semaphore->cond);
     }
     lf_mutex_unlock(&semaphore->mutex);
 }
@@ -99,3 +100,4 @@ void lf_semaphore_destroy(semaphore_t* semaphore) {
     assert(semaphore != NULL);
     free(semaphore);
 }
+#endif

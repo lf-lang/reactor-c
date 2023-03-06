@@ -1,3 +1,4 @@
+#ifdef PLATFORM_Linux
 /* MacOS API support for the C target of Lingua Franca. */
 
 /*************
@@ -72,3 +73,4 @@ int lf_sleep_until_locked(instant_t wakeup_time) {
 int lf_nanosleep(interval_t sleep_duration) {
     return lf_sleep(sleep_duration);
 }
+#endif

@@ -1,3 +1,4 @@
+#ifdef PLATFORM_NRF52
 /*************
 Copyright (c) 2022, The University of California at Berkeley.
 
@@ -291,3 +292,4 @@ int lf_notify_of_event() {
     _lf_async_event = true;
     return 0;
 }
+#endif

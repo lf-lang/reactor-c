@@ -1463,6 +1463,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
             // Check for deadline violation.
             if (downstream_to_execute_now->deadline == 0 || physical_time > current_tag.time + downstream_to_execute_now->deadline) {
                 // Deadline violation has occurred.
+                tracepoint_reaction_deadline_missed(downstream_to_execute_now, worker);
                 violation = true;
                 // Invoke the local handler, if there is one.
                 reaction_function_t handler = downstream_to_execute_now->deadline_violation_handler;

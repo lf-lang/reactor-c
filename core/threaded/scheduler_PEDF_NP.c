@@ -485,7 +485,7 @@ void _lf_sched_wait_for_work(size_t worker_number) {
         }
         // If no work has been assigned, wait for the signal from the scheduler
         LF_PRINT_DEBUG("Worker %d: Waiting on work to be handed out.", worker_number);
-        lf_cond_wait(&_lf_sched_threads_info[worker_number].cond, &_lf_sched_threads_info[worker_number].mutex);
+        lf_cond_wait(&_lf_sched_threads_info[worker_number].cond);
         lf_mutex_unlock(&_lf_sched_threads_info[worker_number].mutex);
     }
 }
@@ -539,8 +539,8 @@ void lf_sched_init(
             sizeof(_lf_sched_thread_info_t) * _lf_sched_instance->_lf_sched_number_of_workers);
 
     for (int i=0; i < _lf_sched_instance->_lf_sched_number_of_workers; i++) {
-        lf_cond_init(&_lf_sched_threads_info[i].cond);
         lf_mutex_init(&_lf_sched_threads_info[i].mutex);
+        lf_cond_init(&_lf_sched_threads_info[i].cond, &_lf_sched_threads_info[i].mutex);
         _lf_sched_threads_info[i].ready_reactions =
             pqueue_init(
                 queue_size,

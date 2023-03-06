@@ -36,9 +36,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h>
 #include <stdint.h> // For fixed-width integral types
 
-typedef mtx_t _lf_mutex_t;
-typedef cnd_t _lf_cond_t;
-typedef thrd_t _lf_thread_t;
+typedef mtx_t lf_mutex_t;
+typedef struct {
+    lf_mutex_t* mutex;
+    cnd_t condition;
+} lf_cond_t;
+typedef thrd_t lf_thread_t;
 
 #define _LF_TIMEOUT thrd_timedout
 
@@ -48,7 +51,7 @@ typedef thrd_t _lf_thread_t;
  *
  * @return 0 on success, error number otherwise (see thrd_create()).
  */
-static int lf_thread_create(_lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
+static int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     return thrd_create((thrd_t*)thread, (thrd_start_t)lf_thread, arguments);
 }
 
@@ -59,7 +62,7 @@ static int lf_thread_create(_lf_thread_t* thread, void *(*lf_thread) (void *), v
  *
  * @return 0 on success, error number otherwise (see thrd_join()).
  */
-static int lf_thread_join(_lf_thread_t thread, void** thread_return) {
+static int lf_thread_join(lf_thread_t thread, void** thread_return) {
     // thrd_join wants the second argument to be an int* rather than a void**
     return thrd_join((thrd_t)thread, (int*)thread_return);
 }
@@ -69,7 +72,7 @@ static int lf_thread_join(_lf_thread_t thread, void** thread_return) {
  *
  * @return 0 on success, error number otherwise (see mtx_init()).
  */
-static int lf_mutex_init(_lf_mutex_t* mutex) {
+static int lf_mutex_init(lf_mutex_t* mutex) {
     // Set up a timed and recursive mutex (default behavior)
     return mtx_init((mtx_t*)mutex, mtx_timed | mtx_recursive);
 }
@@ -79,7 +82,7 @@ static int lf_mutex_init(_lf_mutex_t* mutex) {
  *
  * @return 0 on success, error number otherwise (see mtx_lock()).
  */
-static int lf_mutex_lock(_lf_mutex_t* mutex) {
+static int lf_mutex_lock(lf_mutex_t* mutex) {
     return mtx_lock((mtx_t*) mutex);
 }
 
@@ -88,7 +91,7 @@ static int lf_mutex_lock(_lf_mutex_t* mutex) {
  *
  * @return 0 on success, error number otherwise (see mtx_unlock()).
  */
-static int lf_mutex_unlock(_lf_mutex_t* mutex) {
+static int lf_mutex_unlock(lf_mutex_t* mutex) {
     return mtx_unlock((mtx_t*) mutex);
 }
 
@@ -97,8 +100,9 @@ static int lf_mutex_unlock(_lf_mutex_t* mutex) {
  *
  * @return 0 on success, error number otherwise (see cnd_init()).
  */
-static int lf_cond_init(_lf_cond_t* cond) {
-    return cnd_init((cnd_t*)cond);
+static int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
+    cond->mutex = mutex;
+    return cnd_init((cnd_t*)&cond->condition);
 }
 
 /**
@@ -106,8 +110,8 @@ static int lf_cond_init(_lf_cond_t* cond) {
  *
  * @return 0 on success, error number otherwise (see cnd_broadcast()).
  */
-static int lf_cond_broadcast(_lf_cond_t* cond) {
-    return cnd_broadcast((cnd_t*)cond);
+static int lf_cond_broadcast(lf_cond_t* cond) {
+    return cnd_broadcast((cnd_t*)&cond->condition);
 }
 
 /**
@@ -115,8 +119,8 @@ static int lf_cond_broadcast(_lf_cond_t* cond) {
  *
  * @return 0 on success, error number otherwise (see cnd_signal()).
  */
-static int lf_cond_signal(_lf_cond_t* cond) {
-    return cnd_signal((cnd_t*)cond);
+static int lf_cond_signal(lf_cond_t* cond) {
+    return cnd_signal((cnd_t*)&cond->condition);
 }
 
 /**
@@ -125,8 +129,8 @@ static int lf_cond_signal(_lf_cond_t* cond) {
  *
  * @return 0 on success, error number otherwise (see cnd_wait()).
  */
-static int lf_cond_wait(_lf_cond_t* cond, _lf_mutex_t* mutex) {
-    return cnd_wait((cnd_t*)cond, (mtx_t*)mutex);
+static int lf_cond_wait(lf_cond_t* cond) {
+    return cnd_wait((cnd_t*)&cond->condition, (mtx_t*)cond->mutex);
 }
 
 /**
@@ -137,15 +141,15 @@ static int lf_cond_wait(_lf_cond_t* cond, _lf_mutex_t* mutex) {
  * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
  *  number otherwise (see pthread_cond_timedwait).
  */
-static int lf_cond_timedwait(_lf_cond_t* cond, _lf_mutex_t* mutex, int64_t absolute_time_ns) {
+static int lf_cond_timedwait(lf_cond_t* cond, int64_t absolute_time_ns) {
     // Convert the absolute time to a timespec.
     // timespec is seconds and nanoseconds.
     struct timespec timespec_absolute_time
             = {(time_t)absolute_time_ns / 1000000000LL, (long)absolute_time_ns % 1000000000LL};
     int return_value = 0;
     return_value = cnd_timedwait(
-        (cnd_t*)cond,
-        (mtx_t*)mutex,
+        (cnd_t*)&cond->condition,
+        (mtx_t*)cond->mutex,
         &timespec_absolute_time
     );
     switch (return_value) {
