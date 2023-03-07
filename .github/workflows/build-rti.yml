@@ -1,0 +1,19 @@
+name: Build the RTI
+
+on:
+  workflow_call:
+
+jobs:
+  run:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: Check out reactor-c repository
+        uses: actions/checkout@v2
+      - name: Build the RTI with AUTH=OFF
+        run: .github/scripts/build-rti.sh -DAUTH=OFF
+      - name: Build the RTI with AUTH=ON
+        run: .github/scripts/build-rti.sh -DAUTH=ON

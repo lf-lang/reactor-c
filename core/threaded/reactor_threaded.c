@@ -816,6 +816,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(int worker_number, reacti
         // Check for deadline violation.
         if (reaction->deadline == 0 || physical_time > current_tag.time + reaction->deadline) {
             // Deadline violation has occurred.
+            tracepoint_reaction_deadline_missed(reaction, worker_number);
             violation_occurred = true;
             // Invoke the local handler, if there is one.
             reaction_function_t handler = reaction->deadline_violation_handler;
