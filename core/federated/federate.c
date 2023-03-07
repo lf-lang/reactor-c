@@ -479,8 +479,8 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
     }
     ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
 #ifdef LF_TRACE
-    trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG) ? fed_to_rti_NET : fed_to_rti_LTC;
-    tracepoint_federate_to_RTI(event_type, _lf_my_fed_id, tag);
+    trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG) ? send_NET : send_LTC;
+    tracepoint_federate_to_RTI(event_type, _lf_my_fed_id, &tag);
 #endif // LF_TRACE
 
     if (bytes_written < (ssize_t)bytes_to_write) {
@@ -1997,7 +1997,7 @@ void handle_tag_advance_grant() {
     tag_t TAG = extract_tag(buffer);
 
 #ifdef LF_TRACE
-    tracepoint_federate_from_RTI(fed_from_rti_TAG, _lf_my_fed_id, TAG);
+    tracepoint_federate_from_RTI(receive_TAG, _lf_my_fed_id, &TAG);
 #endif // LF_TRACE
 
     lf_mutex_lock(&mutex);
@@ -2077,7 +2077,7 @@ void handle_provisional_tag_advance_grant() {
     tag_t PTAG = extract_tag(buffer);
 
 #ifdef LF_TRACE
-    tracepoint_federate_from_RTI(fed_from_rti_PTAG, _lf_my_fed_id, PTAG);
+    tracepoint_federate_from_RTI(receive_PTAG, _lf_my_fed_id, &PTAG);
 #endif // LF_TRACE
 
     // Note: it is important that last_known_status_tag of ports does not

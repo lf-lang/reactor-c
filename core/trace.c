@@ -584,17 +584,18 @@ void stop_trace() {
 #ifdef FEDERATED
 
 /**
- * Trace sending a Next Event Tag (NET) or Logical Tag Complete (LTC) message to the RTI.
- * @param type Either MSG_TYPE_NEXT_EVENT_TAG or MSG_TYPE_LOGICAL_TAG_COMPLETE.
- * @param fed_id The fedaerate identifier.
- * @param tag The tag that has been sent.
+ * Trace federate sending a message to the RTI.
+ * @param event_type Event type of the message. Possible values are:
+ * 
+ * @param fed_id The federate identifier.
+ * @param tag Pointer to the tag that has been sent, or NULL.
  */
-void tracepoint_federate_to_RTI(trace_event_t event_type, int fed_id, tag_t tag) {
+void tracepoint_federate_to_RTI(trace_event_t event_type, int fed_id, tag_t* tag) {
     tracepoint(event_type, 
         NULL,   // void* pointer,
-        &tag,   // tag* tag,
+        tag,   // tag* tag,
         fed_id, // int id_number,
-        0,      // int worker,
+        -1,     // int worker,
         NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
         0       // interval_t extra_delay
@@ -602,24 +603,64 @@ void tracepoint_federate_to_RTI(trace_event_t event_type, int fed_id, tag_t tag)
 }
 
 /**
- * Trace receiving a Tag Advance Grant (TAG) or Provisional Tag Advance Grant (PTAG) message from the RTI.
- * @param type Either MSG_TYPE_TAG_ADVANCE_GRANT or MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT.
- * @param fed_id The fedaerate identifier.
- * @param tag The tag that has been received.
+ * Trace federate receiving a message from the RTI.
+ * @param event_type Event type of the message. Possible values are:
+ * 
+ * @param fed_id The federate identifier.
+ * @param tag Pointer to the tag that has been received, or NULL.
  */
-void tracepoint_federate_from_RTI(trace_event_t event_type, int fed_id, tag_t tag) {
+void tracepoint_federate_from_RTI(trace_event_t event_type, int fed_id, tag_t* tag) {
     // trace_event_t event_type = (type == MSG_TYPE_TAG_ADVANCE_GRANT)? federate_TAG : federate_PTAG;
     tracepoint(event_type,
         NULL,   // void* pointer,
-        &tag,   // tag* tag,
+        tag,   // tag* tag,
         fed_id, // int id_number,
-        0,      // int worker,
+        -1,     // int worker,
         NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
         0       // interval_t extra_delay
     );
 }
 
+/**
+ * Trace federate sending a message to another federate.
+ * @param event_type Event type of the message. Possible values are:
+ *
+ * @param fed_id The federate identifier.
+ * @param partner_id The partner federate identifier.
+ * @param tag Pointer to the tag that has been sent, or NULL.
+ */
+void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
+    tracepoint(event_type,
+               NULL,   // void* pointer,
+               tag,   // tag* tag,
+               fed_id, // int id_number,
+               partner_id,     // int worker,
+               NULL,   // instant_t* physical_time (will be generated)
+               NULL,   // trigger_t* trigger,
+               0       // interval_t extra_delay
+    );
+}
+
+/**
+ * Trace federate receiving a message from another federate.
+ * @param event_type Event type of the message. Possible values are:
+ *
+ * @param fed_id The federate identifier.
+ * @param partner_id The partner federate identifier.
+ * @param tag Pointer to the tag that has been received, or NULL.
+ */
+void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
+    tracepoint(event_type,
+               NULL,   // void* pointer,
+               tag,   // tag* tag,
+               fed_id, // int id_number,
+               partner_id,     // int worker,
+               NULL,   // instant_t* physical_time (will be generated)
+               NULL,   // trigger_t* trigger,
+               0       // interval_t extra_delay
+    );
+}
 #endif // FEDERATED
 
 ////////////////////////////////////////////////////////////
@@ -627,27 +668,41 @@ void tracepoint_federate_from_RTI(trace_event_t event_type, int fed_id, tag_t ta
 
 #ifdef RTI_TRACE
 
-void tracepoint_RTI_to_federate(trace_event_t event_type, int fed_id, tag_t* tag) { 
+/**
+ * Trace RTI sending a message to a federate.
+ * @param event_type Event type of the message. Possible values are:
+ *
+ * @param fed_id The fedaerate ID.
+ * @param tag Pointer to the tag that has been sent, or NULL.
+ */
+void tracepoint_RTI_to_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
     tracepoint(event_type,
-               NULL, // void* pointer,
-               tag,  // tag_t* tag,
-               fed_id,  // int id_number,
-               0,    // int worker,
-               NULL, // instant_t* physical_time (will be generated)
-               NULL, // trigger_t* trigger,
-               0     // interval_t extra_delay
+               NULL,   // void* pointer,
+               tag,    // tag_t* tag,
+               fed_id, // int id_number, FIXME: Should become -1
+               0,      // int worker, FIXME: Should become fed_id
+               NULL,   // instant_t* physical_time (will be generated)
+               NULL,   // trigger_t* trigger,
+               0       // interval_t extra_delay
     );
 }
 
+/**
+ * Trace RTI receiving a message from a federate.
+ * @param event_type Event type of the message. Possible values are:
+ *
+ * @param fed_id The fedaerate ID.
+ * @param tag Pointer to the tag that has been received, or NULL.
+ */
 void tracepoint_RTI_from_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
     tracepoint(event_type,
-               NULL, // void* pointer,
-               tag,  // tag_t* tag,
-               fed_id,   // int id_number,
-               0,    // int worker,
-               NULL, // instant_t* physical_time (will be generated)
-               NULL, // trigger_t* trigger,
-               0     // interval_t extra_delay
+               NULL,   // void* pointer,
+               tag,    // tag_t* tag,
+               fed_id, // int id_number, FIXME: Should become -1
+               0,      // int worker, FIXME: Should become fed_id
+               NULL,   // instant_t* physical_time (will be generated)
+               NULL,   // trigger_t* trigger,
+               0       // interval_t extra_delay
     );
 }
 

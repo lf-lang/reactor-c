@@ -234,7 +234,7 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag) {
     // function. During this call, the socket might close, causing the following write_to_socket
     // to fail. Consider a failure here a soft failure and update the federate's status.
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_to_federate(rti_to_fed_TAG, fed->id, &tag);
+        tracepoint_RTI_to_federate(send_TAG, fed->id, &tag);
     }
     ssize_t bytes_written = write_to_socket(fed->socket, message_length, buffer);
     if (bytes_written < (ssize_t)message_length) {
@@ -349,7 +349,7 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
     // to fail. Consider a failure here a soft failure and update the federate's status.
     ssize_t bytes_written = write_to_socket(fed->socket, message_length, buffer);
     if (_RTI.tracing_enabled){
-        tracepoint_RTI_to_federate(rti_to_fed_PTAG, fed->id, &tag);
+        tracepoint_RTI_to_federate(send_PTAG, fed->id, &tag);
     }
 
     if (bytes_written < (ssize_t)message_length) {
@@ -613,8 +613,7 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
     uint16_t federate_id = extract_uint16(&(buffer[1 + sizeof(uint16_t)]));
 
     if (_RTI.tracing_enabled) {
-        tag_t tag = extract_tag(&(buffer[1 + 2 * sizeof(uint16_t)]));
-        // tracepoint_RTI_from_federate(rti_from_fed_PORT_ABSENT, federate_id, &tag);
+        tracepoint_RTI_from_federate(receive_PORT_ABS, federate_id, NULL);
     }
 
     // FIXME: Is it correct to move acquiring the lock after extracting the
@@ -686,7 +685,7 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     extract_timed_header(&(buffer[1]), &reactor_port_id, &federate_id, &length, &intended_tag);
 
     if (_RTI.tracing_enabled) {
-        // tracepoint_rti_from_federate(rti_from_fed_TAGGED_MESSAGE, federate_id, &intended_tag);
+        // tracepoint_rti_from_federate(receive_TAGGED_MESSAGE, federate_id, &intended_tag);
     }
 
     size_t total_bytes_to_read = length + header_size;
@@ -829,16 +828,17 @@ void handle_logical_tag_complete(federate_t* fed) {
 
     // FIXME: Moved tag extraction before mutex. Is it still correct?
     fed->completed = extract_tag(buffer);
-    if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(rti_from_fed_LTC, fed->id, &fed->completed);
+    if (_RTI.tracing_enabled)     {
+        tracepoint_RTI_from_federate(receive_LTC, fed->id, &(fed->completed));
     }
-    
+
     // FIXME: Consolidate this message with NET to get NMR (Next Message Request).
     // Careful with handling startup and shutdown.
     pthread_mutex_lock(&_RTI.rti_mutex);
 
     LF_PRINT_LOG("RTI received from federate %d the Logical Tag Complete (LTC) (%lld, %u).",
                 fed->id, fed->completed.time - start_time, fed->completed.microstep);
+
 
     // See if we can remove any of the recorded in-transit messages for this.
     clean_in_transit_message_record_up_to_tag(fed->in_transit_message_tags, fed->completed);
@@ -877,7 +877,7 @@ void handle_next_event_tag(federate_t* fed) {
 
     tag_t intended_tag = extract_tag(buffer);
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(rti_from_fed_NET, fed->id, &intended_tag);
+        tracepoint_RTI_from_federate(receive_NET, fed->id, &intended_tag);
     }
     LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) (%ld, %u).",
         fed->id, intended_tag.time - start_time,
@@ -987,7 +987,7 @@ void handle_stop_request_message(federate_t* fed) {
     tag_t proposed_stop_tag = extract_tag(buffer);
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(rti_from_fed_STOP_REQ, fed->id, &proposed_stop_tag);
+        tracepoint_RTI_from_federate(receive_STOP_REQ, fed->id, &proposed_stop_tag);
     }
 
     // Update the maximum stop tag received from federates
@@ -1025,7 +1025,7 @@ void handle_stop_request_message(federate_t* fed) {
             write_to_socket_errexit(_RTI.federates[i].socket, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer,
                     "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.", _RTI.federates[i].id);
             if (_RTI.tracing_enabled) {
-                tracepoint_RTI_to_federate(rti_to_fed_STOP_REQ, _RTI.federates[i].id, NULL);
+                tracepoint_RTI_to_federate(send_STOP_REQ, _RTI.federates[i].id, &_RTI.max_stop_tag);
             }
         }
     }
@@ -1051,7 +1051,7 @@ void handle_stop_request_reply(federate_t* fed) {
     tag_t federate_stop_tag = extract_tag(buffer_stop_time);
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(rti_from_fed_STOP_REQ_REP, fed->id, &federate_stop_tag);
+        tracepoint_RTI_from_federate(receive_STOP_REQ_REP, fed->id, &federate_stop_tag);
     }
 
     LF_PRINT_LOG("RTI received from federate %d STOP reply tag (%lld, %u).", fed->id,
@@ -1092,7 +1092,6 @@ void handle_address_query(uint16_t fed_id) {
     uint16_t remote_fed_id = extract_uint16(buffer);
 
     if (_RTI.tracing_enabled){
-        // tracepoint_RTI_from_federate(rti_from_fed_ADDRESS_QUERY, fed_id, NULL);
     }
 
     LF_PRINT_DEBUG("RTI received address query from %d for %d.", fed_id, remote_fed_id);
@@ -1153,7 +1152,7 @@ void handle_address_ad(uint16_t federate_id) {
     pthread_mutex_lock(&_RTI.rti_mutex);
     _RTI.federates[federate_id].server_port = server_port;
     if (_RTI.tracing_enabled) {
-        // tracepoint_RTI_from_federate(rti_from_fed_ADDRESS_ADVERTISEMENT, federate_id, NULL);
+        // FIXME: TODO
     }
      LF_PRINT_LOG("Received address advertisement from federate %d.", federate_id);
     pthread_mutex_unlock(&_RTI.rti_mutex);
@@ -1174,7 +1173,7 @@ void handle_timestamp(federate_t *my_fed) {
     int64_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t *)(&buffer)));
     if (_RTI.tracing_enabled) {
         tag_t tag = {.time = timestamp, .microstep = 0};
-        tracepoint_RTI_from_federate(rti_from_fed_TIMESTAMP, my_fed->id, &tag);
+        // FIXME: TODO
     }
     LF_PRINT_LOG("RTI received timestamp message: %lld.", timestamp);
 
@@ -1450,7 +1449,7 @@ void handle_federate_resign(federate_t *my_fed) {
     // close(my_fed->socket); //  from unistd.h
 
     if (_RTI.tracing_enabled) {
-        // tracepoint_RTI_from_federate(rti_from_fed_RESIGN, my_fed->id, &my_fed->completed);
+        tracepoint_RTI_from_federate(receive_RESIGN, my_fed->id, NULL);
     }
     lf_print("Federate %d has resigned.", my_fed->id);
 
@@ -1474,7 +1473,7 @@ void* federate_thread_TCP(void* fed) {
 
     // Reaching the thread creation means that the RTI acceptes the federate join request
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_to_federate(rti_to_fed_JOIN, my_fed->id, NULL); // Sentence should be corrected!
+        // FIXME: TODO
     }
 
     // Buffer for incoming messages.
@@ -1534,7 +1533,7 @@ void* federate_thread_TCP(void* fed) {
             default:
                 lf_print_error("RTI received from federate %d an unrecognized TCP message type: %u.", my_fed->id, buffer[0]);
                 if (_RTI.tracing_enabled) {
-                    // tracepoint_RTI_from_federate(rti_from_fed_UNIDENTIFIED, my_fed->id, NULL);
+                    tracepoint_RTI_from_federate(receive_UNIDENTIFIED, my_fed->id, NULL);
                 }
         }
     }
@@ -1558,7 +1557,6 @@ void send_reject(int socket_id, unsigned char error_code) {
     // FIXME: Ignore errors on this response.
     write_to_socket_errexit(socket_id, 2, response, "RTI failed to write MSG_TYPE_REJECT message on the socket.");
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_to_federate(rti_to_fed_REJECT, -2, NULL);
     }
     // Close the socket.
     close(socket_id);
