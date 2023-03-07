@@ -506,8 +506,8 @@ bool send_advance_grant_if_safe(federate_t* fed) {
         && lf_tag_compare(t_d, fed->last_granted) > 0  // The grant is not redundant.
     ) {
         // All upstream federates have events with a larger tag than fed, so it is safe to send a TAG.
-        LF_PRINT_LOG("Earliest upstream message time for fed %d is (%ld, %u) "
-                "(adjusted by after delay). Granting tag advance for (%ld, %u).",
+        LF_PRINT_LOG("Earliest upstream message time for fed %d is " PRINTF_TAG
+                "(adjusted by after delay). Granting tag advance for " PRINTF_TAG,
                 fed->id,
                 t_d.time - lf_time_start(), t_d.microstep,
                 fed->next_event.time - lf_time_start(),
@@ -520,8 +520,8 @@ bool send_advance_grant_if_safe(federate_t* fed) {
     ) {
         // Some upstream federate has an event that has the same tag as fed's next event, so we can only provisionally
         // grant a TAG (via a PTAG).
-        LF_PRINT_LOG("Earliest upstream message time for fed %d is (%lld, %u) "
-            "(adjusted by after delay). Granting provisional tag advance.",
+        LF_PRINT_LOG("Earliest upstream message time for fed %d is " PRINTF_TAG
+            " (adjusted by after delay). Granting provisional tag advance.",
             fed->id,
             t_d.time - start_time, t_d.microstep);
 
@@ -577,7 +577,7 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
     _RTI.federates[federate_id].next_event = next_event_tag;
 
     LF_PRINT_DEBUG(
-       "RTI: Updated the recorded next event tag for federate %d to (%ld, %u).",
+       "RTI: Updated the recorded next event tag for federate %d to " PRINTF_TAG,
        federate_id,
        next_event_tag.time - lf_time_start(),
        next_event_tag.microstep
@@ -702,7 +702,8 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
         bytes_to_read = FED_COM_BUFFER_SIZE - header_size;
     }
 
-    LF_PRINT_LOG("RTI received message from federate %d for federate %u port %u with intended tag (%ld, %u). Forwarding.",
+    LF_PRINT_LOG("RTI received message from federate %d for federate %u port %u with intended tag "
+            PRINTF_TAG ". Forwarding.",
             sending_federate->id, federate_id, reactor_port_id,
             intended_tag.time - lf_time_start(), intended_tag.microstep);
 
@@ -743,7 +744,7 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     int destination_socket = _RTI.federates[federate_id].socket;
 
     LF_PRINT_DEBUG(
-        "RTI forwarding message to port %d of federate %d of length %d.",
+        "RTI forwarding message to port %d of federate %hu of length %zu.",
         reactor_port_id,
         federate_id,
         length
@@ -757,15 +758,15 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
             intended_tag
         );
         LF_PRINT_DEBUG(
-            "RTI: Adding a message with tag (%ld, %u) to the list of in-transit messages for federate %d.",
+            "RTI: Adding a message with tag " PRINTF_TAG " to the list of in-transit messages for federate %d.",
             intended_tag.time - lf_time_start(),
             intended_tag.microstep,
             federate_id
         );
     } else {
         lf_print_error(
-            "RTI: Federate %d has already completed tag (%ld, %u) "
-            "but there is an in-transit message with tag (%ld, %u) from federate %d. "
+            "RTI: Federate %d has already completed tag " PRINTF_TAG
+            ", but there is an in-transit message with tag " PRINTF_TAG " from federate %hu. "
             "This is going to cause an STP violation under centralized coordination.",
             federate_id,
             _RTI.federates[federate_id].completed.time - lf_time_start(),
@@ -879,7 +880,7 @@ void handle_next_event_tag(federate_t* fed) {
     if (_RTI.tracing_enabled) {
         tracepoint_RTI_from_federate(receive_NET, fed->id, &intended_tag);
     }
-    LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) (%ld, %u).",
+    LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) " PRINTF_TAG,
         fed->id, intended_tag.time - start_time,
         intended_tag.microstep);
     update_federate_next_event_tag_locked(
