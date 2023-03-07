@@ -210,7 +210,8 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag) {
     // function. During this call, the socket might close, causing the following write_to_socket
     // to fail. Consider a failure here a soft failure and update the federate's status.
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_to_federate(send_TAG, fed->id, &tag);
+        instant_t send_message_physical_time = lf_time_physical();
+        tracepoint_RTI_to_federate(send_TAG, fed->id, &tag, &send_message_physical_time);
     }
     ssize_t bytes_written = write_to_socket(fed->socket, message_length, buffer);
     if (bytes_written < (ssize_t)message_length) {
@@ -289,10 +290,11 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
     // This function is called in send_advance_grant_if_safe(), which is a long
     // function. During this call, the socket might close, causing the following write_to_socket
     // to fail. Consider a failure here a soft failure and update the federate's status.
-    ssize_t bytes_written = write_to_socket(fed->socket, message_length, buffer);
     if (_RTI.tracing_enabled){
-        tracepoint_RTI_to_federate(send_PTAG, fed->id, &tag);
+        instant_t send_message_physical_time = lf_time_physical();
+        tracepoint_RTI_to_federate(send_PTAG, fed->id, &tag, &send_message_physical_time);
     }
+    ssize_t bytes_written = write_to_socket(fed->socket, message_length, buffer);
 
     if (bytes_written < (ssize_t)message_length) {
         lf_print_error("RTI failed to send time advance grant to federate %d.", fed->id);
@@ -486,7 +488,7 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
     free(visited);
 }
 
-void handle_port_absent_message(federate_t* sending_federate, unsigned char* buffer) {
+void handle_port_absent_message(federate_t* sending_federate, unsigned char* buffer, instant_t physical_time) {
     size_t message_size = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int64_t) + sizeof(uint32_t);
 
     read_from_socket_errexit(sending_federate->socket, message_size, &(buffer[1]),
@@ -497,7 +499,7 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
     uint16_t federate_id = extract_uint16(&(buffer[1 + sizeof(uint16_t)]));
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_PORT_ABS, federate_id, NULL);
+        tracepoint_RTI_from_federate(receive_PORT_ABS, federate_id, NULL, &physical_time);
     }
 
     // FIXME: Is it correct to move acquiring the lock after extracting the
@@ -548,7 +550,7 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
-void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
+void handle_timed_message(federate_t* sending_federate, unsigned char* buffer, instant_t physical_time) {
     size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t) + sizeof(int64_t) + sizeof(uint32_t);
     // Read the header, minus the first byte which has already been read.
     read_from_socket_errexit(sending_federate->socket, header_size - 1, &(buffer[1]), "RTI failed to read the timed message header from remote federate.");
@@ -561,7 +563,7 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     extract_timed_header(&(buffer[1]), &reactor_port_id, &federate_id, &length, &intended_tag);
 
     if (_RTI.tracing_enabled) {
-        // tracepoint_rti_from_federate(receive_TAGGED_MESSAGE, federate_id, &intended_tag);
+        // tracepoint_rti_from_federate(receive_TAGGED_MESSAGE, federate_id, &intended_tag, &physical_time);
     }
 
     size_t total_bytes_to_read = length + header_size;
@@ -690,7 +692,7 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
-void handle_logical_tag_complete(federate_t* fed) {
+void handle_logical_tag_complete(federate_t* fed, instant_t physical_time) {
     unsigned char buffer[sizeof(int64_t) + sizeof(uint32_t)];
     read_from_socket_errexit(fed->socket, sizeof(int64_t) + sizeof(uint32_t), buffer,
             "RTI failed to read the content of the logical tag complete from federate %d.", fed->id);
@@ -698,7 +700,7 @@ void handle_logical_tag_complete(federate_t* fed) {
     // FIXME: Moved tag extraction before mutex. Is it still correct?
     fed->completed = extract_tag(buffer);
     if (_RTI.tracing_enabled)     {
-        tracepoint_RTI_from_federate(receive_LTC, fed->id, &(fed->completed));
+        tracepoint_RTI_from_federate(receive_LTC, fed->id, &(fed->completed), &physical_time);
     }
 
     // FIXME: Consolidate this message with NET to get NMR (Next Message Request).
@@ -724,7 +726,7 @@ void handle_logical_tag_complete(federate_t* fed) {
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
-void handle_next_event_tag(federate_t* fed) {
+void handle_next_event_tag(federate_t* fed, instant_t physical_time) {
     unsigned char buffer[sizeof(int64_t) + sizeof(uint32_t)];
     read_from_socket_errexit(fed->socket, sizeof(int64_t) + sizeof(uint32_t), buffer,
             "RTI failed to read the content of the next event tag from federate %d.", fed->id);
@@ -739,7 +741,7 @@ void handle_next_event_tag(federate_t* fed) {
 
     tag_t intended_tag = extract_tag(buffer);
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_NET, fed->id, &intended_tag);
+        tracepoint_RTI_from_federate(receive_NET, fed->id, &intended_tag, &physical_time);
     }
     LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) " PRINTF_TAG,
         fed->id, intended_tag.time - start_time,
@@ -800,7 +802,7 @@ void mark_federate_requesting_stop(federate_t* fed) {
     }
 }
 
-void handle_stop_request_message(federate_t* fed) {
+void handle_stop_request_message(federate_t* fed, instant_t physical_time) {
     LF_PRINT_DEBUG("RTI handling stop_request from federate %d.", fed->id);
 
     size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
@@ -824,7 +826,7 @@ void handle_stop_request_message(federate_t* fed) {
     tag_t proposed_stop_tag = extract_tag(buffer);
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_STOP_REQ, fed->id, &proposed_stop_tag);
+        tracepoint_RTI_from_federate(receive_STOP_REQ, fed->id, &proposed_stop_tag, &physical_time);
     }
 
     // Update the maximum stop tag received from federates
@@ -859,11 +861,13 @@ void handle_stop_request_message(federate_t* fed) {
                 mark_federate_requesting_stop(&_RTI.federates[i]);
                 continue;
             }
+            if (_RTI.tracing_enabled) {
+                instant_t send_message_physical_time = lf_time_physical();
+                tracepoint_RTI_to_federate(send_STOP_REQ, _RTI.federates[i].id, &_RTI.max_stop_tag, &send_message_physical_time);
+            }
             write_to_socket_errexit(_RTI.federates[i].socket, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer,
                     "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.", _RTI.federates[i].id);
-            if (_RTI.tracing_enabled) {
-                tracepoint_RTI_to_federate(send_STOP_REQ, _RTI.federates[i].id, &_RTI.max_stop_tag);
-            }
+            
         }
     }
     LF_PRINT_LOG("RTI forwarded to federates MSG_TYPE_STOP_REQUEST with tag (%lld, %u).",
@@ -872,7 +876,7 @@ void handle_stop_request_message(federate_t* fed) {
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
-void handle_stop_request_reply(federate_t* fed) {
+void handle_stop_request_reply(federate_t* fed, instant_t physical_time) {
     size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_REPLY_LENGTH - 1;
     unsigned char buffer_stop_time[bytes_to_read];
     read_from_socket_errexit(fed->socket, bytes_to_read, buffer_stop_time,
@@ -881,7 +885,7 @@ void handle_stop_request_reply(federate_t* fed) {
     tag_t federate_stop_tag = extract_tag(buffer_stop_time);
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_STOP_REQ_REP, fed->id, &federate_stop_tag);
+        tracepoint_RTI_from_federate(receive_STOP_REQ_REP, fed->id, &federate_stop_tag, &physical_time);
     }
 
     LF_PRINT_LOG("RTI received from federate %d STOP reply tag (%lld, %u).", fed->id,
@@ -900,7 +904,7 @@ void handle_stop_request_reply(federate_t* fed) {
 
 //////////////////////////////////////////////////
 
-void handle_address_query(uint16_t fed_id) {
+void handle_address_query(uint16_t fed_id, instant_t physical_time) {
     // Use buffer both for reading and constructing the reply.
     // The length is what is needed for the reply.
     unsigned char buffer[sizeof(int32_t)];
@@ -936,7 +940,7 @@ void handle_address_query(uint16_t fed_id) {
     }
 }
 
-void handle_address_ad(uint16_t federate_id) {
+void handle_address_ad(uint16_t federate_id, instant_t physical_time) {
     // Read the port number of the federate that can be used for physical
     // connections to other federates
     int32_t server_port = -1;
@@ -962,7 +966,7 @@ void handle_address_ad(uint16_t federate_id) {
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
-void handle_timestamp(federate_t *my_fed) {
+void handle_timestamp(federate_t *my_fed, instant_t physical_time) {
     unsigned char buffer[sizeof(int64_t)];
     // Read bytes from the socket. We need 8 bytes.
     ssize_t bytes_read = read_from_socket(my_fed->socket, sizeof(int64_t), (unsigned char*)&buffer);
@@ -973,7 +977,7 @@ void handle_timestamp(federate_t *my_fed) {
     int64_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t *)(&buffer)));
     if (_RTI.tracing_enabled) {
         tag_t tag = {.time = timestamp, .microstep = 0};
-        // FIXME: TODO
+        // FIXME: TODO physical_time
     }
     LF_PRINT_LOG("RTI received timestamp message: %lld.", timestamp);
 
@@ -1169,7 +1173,7 @@ void* clock_synchronization_thread(void* noargs) {
     return NULL;
 }
 
-void handle_federate_resign(federate_t *my_fed) {
+void handle_federate_resign(federate_t *my_fed, instant_t physical_time) {
     // Nothing more to do. Close the socket and exit.
     pthread_mutex_lock(&_RTI.rti_mutex);
     my_fed->state = NOT_CONNECTED;
@@ -1189,7 +1193,7 @@ void handle_federate_resign(federate_t *my_fed) {
     // close(my_fed->socket); //  from unistd.h
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_RESIGN, my_fed->id, NULL);
+        tracepoint_RTI_from_federate(receive_RESIGN, my_fed->id, NULL, &physical_time);
     }
     lf_print("Federate %d has resigned.", my_fed->id);
 
@@ -1220,6 +1224,10 @@ void* federate_thread_TCP(void* fed) {
     while (my_fed->state != NOT_CONNECTED) {
         // Read no more than one byte to get the message type.
         ssize_t bytes_read = read_from_socket(my_fed->socket, 1, buffer);
+        instant_t read_message_physical_time = NULL;
+        if (_RTI.tracing_enabled) {
+            read_message_physical_time = lf_time_physical();
+        }
         if (bytes_read < 1) {
             // Socket is closed
             lf_print_warning("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->id);
@@ -1232,43 +1240,44 @@ void* federate_thread_TCP(void* fed) {
         LF_PRINT_DEBUG("RTI: Received message type %u from federate %d.", buffer[0], my_fed->id);
         switch(buffer[0]) {
             case MSG_TYPE_TIMESTAMP:
-                handle_timestamp(my_fed);
+                handle_timestamp(my_fed, read_message_physical_time);
                 break;
             case MSG_TYPE_ADDRESS_QUERY:
-                handle_address_query(my_fed->id);
+                handle_address_query(my_fed->id, read_message_physical_time);
                 break;
             case MSG_TYPE_ADDRESS_ADVERTISEMENT:
-                handle_address_ad(my_fed->id);
+                handle_address_ad(my_fed->id, read_message_physical_time);
                 break;
             case MSG_TYPE_TAGGED_MESSAGE:
-                handle_timed_message(my_fed, buffer);
+                handle_timed_message(my_fed, buffer, read_message_physical_time);
                 break;
             case MSG_TYPE_RESIGN:
-                handle_federate_resign(my_fed);
+                handle_federate_resign(my_fed, read_message_physical_time);
                 return NULL;
                 break;
             case MSG_TYPE_NEXT_EVENT_TAG:
-                handle_next_event_tag(my_fed);
+                handle_next_event_tag(my_fed, read_message_physical_time);
                 break;
             case MSG_TYPE_LOGICAL_TAG_COMPLETE:
-                handle_logical_tag_complete(my_fed);
+                handle_logical_tag_complete(my_fed, read_message_physical_time);
                 break;
             case MSG_TYPE_STOP_REQUEST:
-                handle_stop_request_message(my_fed); // FIXME: Reviewed until here.
-                                                     // Need to also look at
-                                                     // send_advance_grant_if_safe()
-                                                     // and send_downstream_advance_grants_if_safe()
+                handle_stop_request_message(my_fed, read_message_physical_time); 
+                                                // FIXME: Reviewed until here.
+                                                // Need to also look at
+                                                // send_advance_grant_if_safe()
+                                                // and send_downstream_advance_grants_if_safe()
                 break;
             case MSG_TYPE_STOP_REQUEST_REPLY:
-                handle_stop_request_reply(my_fed);
+                handle_stop_request_reply(my_fed, read_message_physical_time);
                 break;
             case MSG_TYPE_PORT_ABSENT:
-                handle_port_absent_message(my_fed, buffer);
+                handle_port_absent_message(my_fed, buffer, read_message_physical_time);
                 break;
             default:
                 lf_print_error("RTI received from federate %d an unrecognized TCP message type: %u.", my_fed->id, buffer[0]);
                 if (_RTI.tracing_enabled) {
-                    tracepoint_RTI_from_federate(receive_UNIDENTIFIED, my_fed->id, NULL);
+                    tracepoint_RTI_from_federate(receive_UNIDENTIFIED, my_fed->id, NULL, read_message_physical_time);
                 }
         }
     }
