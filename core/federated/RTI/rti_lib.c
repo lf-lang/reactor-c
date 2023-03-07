@@ -73,17 +73,6 @@ RTI_instance_t _RTI = {
     .tracing_enabled = false
 };
 
-/**
- * Create a server and enable listening for socket connections.
- *
- * @note This function is similar to create_server(...) in
- * federate.c. However, it contains logs that are specific
- * to the RTI.
- *
- * @param port The port number to use.
- * @param socket_type The type of the socket for the server (TCP or UDP).
- * @return The socket descriptor on which to accept connections.
- */
 int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_type) {
     // Timeout time for the communications of the server
     struct timeval timeout_time = {.tv_sec = TCP_TIMEOUT_TIME / BILLION, .tv_usec = (TCP_TIMEOUT_TIME % BILLION) / 1000};
@@ -199,19 +188,6 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
     return socket_descriptor;
 }
 
-/**
- * Send a tag advance grant (TAG) message to the specified federate.
- * Do not send it if a previously sent PTAG was greater or if a
- * previously sent TAG was greater or equal.
- *
- * This function will keep a record of this TAG in the federate's last_granted
- * field.
- *
- * This function assumes that the caller holds the mutex lock.
- *
- * @param fed The federate.
- * @param tag The tag to grant.
- */
 void send_tag_advance_grant(federate_t* fed, tag_t tag) {
     if (fed->state == NOT_CONNECTED
             || lf_tag_compare(tag, fed->last_granted) <= 0
@@ -251,28 +227,6 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag) {
     }
 }
 
-/**
- * Find the earliest tag at which the specified federate may
- * experience its next event. This is the least next event tag (NET)
- * of the specified federate and (transitively) upstream federates
- * (with delays of the connections added). For upstream federates,
- * we assume (conservatively) that federate upstream of those
- * may also send an event. The result will never be less than
- * the completion time of the federate (which may be NEVER,
- * if the federate has not yet completed a logical time).
- *
- * FIXME: This could be made less conservative by building
- * at code generation time a causality interface table indicating
- * which outputs can be triggered by which inputs. For now, we
- * assume any output can be triggered by any input.
- *
- * @param fed The federate.
- * @param candidate A candidate tag (for the first invocation,
- *  this should be fed->next_event).
- * @param visited An array of booleans indicating which federates
- *  have been visited (for the first invocation, this should be
- *  an array of falses of size _RTI.number_of_federates).
- */
 tag_t transitive_next_event(federate_t* fed, tag_t candidate, bool visited[]) {
     if (visited[fed->id] || fed->state == NOT_CONNECTED) {
         // Federate has stopped executing or we have visited it before.
@@ -314,18 +268,6 @@ tag_t transitive_next_event(federate_t* fed, tag_t candidate, bool visited[]) {
     return result;
 }
 
-/**
- * Send a provisional tag advance grant (PTAG) message to the specified federate.
- * Do not send it if a previously sent PTAG or TAG was greater or equal.
- *
- * This function will keep a record of this PTAG in the federate's last_provisionally_granted
- * field.
- *
- * This function assumes that the caller holds the mutex lock.
- *
- * @param fed The federate.
- * @param tag The tag to grant.
- */
 void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
     if (fed->state == NOT_CONNECTED
             || lf_tag_compare(tag, fed->last_granted) <= 0
@@ -396,35 +338,6 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
     }
 }
 
-/**
- * Determine whether the specified federate fed is eligible for a tag advance grant,
- * (TAG) and, if so, send it one. This is called upon receiving a LTC, NET
- * or resign from an upstream federate.
- *
- * This function calculates the minimum M over
- * all upstream federates of the "after" delay plus the most recently
- * received LTC from that federate. If M is greater than the
- * most recently sent TAG to fed or greater than or equal to the most
- * recently sent PTAG, then send a TAG(M) to fed and return.
- *
- * If the above conditions do not result in sending a TAG, then find the
- * minimum M of the earliest possible future message from upstream federates.
- * This is calculated by transitively looking at the most recently received
- * NET message from upstream federates.
- * If M is greater than the NET of the federate fed or the most recently
- * sent PTAG to that federate, then
- * send TAG to the federate with tag equal to the NET of fed or the PTAG.
- * If M is equal to the NET of the federate, then send PTAG(M).
- *
- * This should be called whenever an immediately upstream federate sends to
- * the RTI an LTC (Logical Tag Complete), or when a transitive upstream
- * federate sends a NET (Next Event Tag) message.
- * It is also called when an upstream federate resigns from the federation.
- *
- * This function assumes that the caller holds the mutex lock.
- *
- * @return True if the TAG message is sent and false otherwise.
- */
 bool send_advance_grant_if_safe(federate_t* fed) {
 
     // Find the earliest LTC of upstream federates.
@@ -530,16 +443,6 @@ bool send_advance_grant_if_safe(federate_t* fed) {
     return false;
 }
 
-/**
- * For all federates downstream of the specified federate, determine
- * whether they should be sent a TAG or PTAG and send it if so.
- *
- * This assumes the caller holds the mutex.
- *
- * @param fed The upstream federate.
- * @param visited An array of booleans used to determine whether a federate has
- *  been visited (initially all false).
- */
 void send_downstream_advance_grants_if_safe(federate_t* fed, bool visited[]) {
     visited[fed->id] = true;
     for (int i = 0; i < fed->num_downstream; i++) {
@@ -550,20 +453,6 @@ void send_downstream_advance_grants_if_safe(federate_t* fed, bool visited[]) {
     }
 }
 
-/**
- * @brief Update the next event tag of federate `federate_id`.
- *
- * It will update the recorded next event tag of federate `federate_id` to the minimum of `next_event_tag` and the
- * minimum tag of in-transit messages (if any) to the federate.
- *
- * Will try to see if the RTI can grant new TAG or PTAG messages to any
- * downstream federates based on this new next event tag.
- *
- * This function assumes that the caller is holding the _RTI.rti_mutex.
- *
- * @param federate_id The id of the federate that needs to be updated.
- * @param next_event_tag The next event tag for `federate_id`.
- */
 void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_event_tag) {
     tag_t min_in_transit_tag = get_minimum_in_transit_message_tag(_RTI.federates[federate_id].in_transit_message_tags);
     if (lf_tag_compare(
@@ -597,11 +486,6 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
     free(visited);
 }
 
-/**
- * Handle a port absent message being received rom a federate via the RIT.
- *
- * This function assumes the caller does not hold the mutex.
- */
 void handle_port_absent_message(federate_t* sending_federate, unsigned char* buffer) {
     size_t message_size = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int64_t) + sizeof(uint32_t);
 
@@ -664,14 +548,6 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
-/**
- * Handle a timed message being received from a federate by the RTI to relay to another federate.
- *
- * This function assumes the caller does not hold the mutex.
- *
- * @param sending_federate The sending federate.
- * @param buffer The buffer to read into (the first byte is already there).
- */
 void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     size_t header_size = 1 + sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t) + sizeof(int64_t) + sizeof(uint32_t);
     // Read the header, minus the first byte which has already been read.
@@ -814,14 +690,6 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
-/**
- * Handle a logical tag complete (LTC) message. @see
- * MSG_TYPE_LOGICAL_TAG_COMPLETE in rti.h.
- *
- * This function assumes the caller does not hold the mutex.
- *
- * @param fed The federate that has completed a logical tag.
- */
 void handle_logical_tag_complete(federate_t* fed) {
     unsigned char buffer[sizeof(int64_t) + sizeof(uint32_t)];
     read_from_socket_errexit(fed->socket, sizeof(int64_t) + sizeof(uint32_t), buffer,
@@ -856,13 +724,6 @@ void handle_logical_tag_complete(federate_t* fed) {
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
-/**
- * Handle a next event tag (NET) message. @see MSG_TYPE_NEXT_EVENT_TAG in rti.h.
- *
- * This function assumes the caller does not hold the mutex.
- *
- * @param fed The federate sending a NET message.
- */
 void handle_next_event_tag(federate_t* fed) {
     unsigned char buffer[sizeof(int64_t) + sizeof(uint32_t)];
     read_from_socket_errexit(fed->socket, sizeof(int64_t) + sizeof(uint32_t), buffer,
@@ -891,20 +752,13 @@ void handle_next_event_tag(federate_t* fed) {
 }
 
 /////////////////// STOP functions ////////////////////
+
 /**
  * Boolean used to prevent the RTI from sending the
  * MSG_TYPE_STOP_GRANTED message multiple times.
  */
 bool _lf_rti_stop_granted_already_sent_to_federates = false;
 
-/**
- * Once the RTI has seen proposed tags from all connected federates,
- * it will broadcast a MSG_TYPE_STOP_GRANTED carrying the _RTI.max_stop_tag.
- * This function also checks the most recently received NET from
- * each federate and resets that be no greater than the _RTI.max_stop_tag.
- *
- * This function assumes the caller holds the _RTI.rti_mutex lock.
- */
 void _lf_rti_broadcast_stop_time_to_federates_already_locked() {
     if (_lf_rti_stop_granted_already_sent_to_federates == true) {
         return;
@@ -932,17 +786,6 @@ void _lf_rti_broadcast_stop_time_to_federates_already_locked() {
     _lf_rti_stop_granted_already_sent_to_federates = true;
 }
 
-/**
- * Mark a federate requesting stop.
- *
- * If the number of federates handling stop reaches the
- * NUM_OF_FEDERATES, broadcast MSG_TYPE_STOP_GRANTED to every federate.
- *
- * This function assumes the _RTI.rti_mutex is already locked.
- *
- * @param fed The federate that has requested a stop or has suddenly
- *  stopped (disconnected).
- */
 void mark_federate_requesting_stop(federate_t* fed) {
     if (!fed->requested_stop) {
         // Assume that the federate
@@ -957,13 +800,6 @@ void mark_federate_requesting_stop(federate_t* fed) {
     }
 }
 
-/**
- * Handle a MSG_TYPE_STOP_REQUEST message.
- *
- * This function assumes the caller does not hold the mutex.
- *
- * @param fed The federate sending a MSG_TYPE_STOP_REQUEST message.
- */
 void handle_stop_request_message(federate_t* fed) {
     LF_PRINT_DEBUG("RTI handling stop_request from federate %d.", fed->id);
 
@@ -1036,13 +872,6 @@ void handle_stop_request_message(federate_t* fed) {
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
-/**
- * Handle a MSG_TYPE_STOP_REQUEST_REPLY message.
- *
- * This function assumes the caller does not hold the mutex.
- *
- * @param fed The federate replying the MSG_TYPE_STOP_REQUEST
- */
 void handle_stop_request_reply(federate_t* fed) {
     size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_REPLY_LENGTH - 1;
     unsigned char buffer_stop_time[bytes_to_read];
@@ -1071,17 +900,6 @@ void handle_stop_request_reply(federate_t* fed) {
 
 //////////////////////////////////////////////////
 
-/**
- * Handle address query messages.
- * This function reads the body of a MSG_TYPE_ADDRESS_QUERY (@see net_common.h) message
- * which is the requested destination federate ID and replies with the stored
- * port value for the socket server of that federate. The port values
- * are initialized to -1. If no MSG_TYPE_ADDRESS_ADVERTISEMENT message has been received from
- * the destination federate, the RTI will simply reply with -1 for the port.
- * The sending federate is responsible for checking back with the RTI after a
- * period of time. @see connect_to_federate() in federate.c. *
- * @param fed_id The federate sending a MSG_TYPE_ADDRESS_QUERY message.
- */
 void handle_address_query(uint16_t fed_id) {
     // Use buffer both for reading and constructing the reply.
     // The length is what is needed for the reply.
@@ -1118,21 +936,6 @@ void handle_address_query(uint16_t fed_id) {
     }
 }
 
-/**
- * Handle address advertisement messages (@see MSG_TYPE_ADDRESS_ADVERTISEMENT in net_common.h).
- * The federate is expected to send its server port number as the next
- * byte. The RTI will keep a record of this number in the .server_port
- * field of the _RTI.federates[federate_id] array of structs.
- *
- * The server_hostname and server_ip_addr fields are assigned
- * in connect_to_federates() upon accepting the socket
- * from the remote federate.
- *
- * This function assumes the caller does not hold the mutex.
- *
- * @param federate_id The id of the remote federate that is
- *  sending the address advertisement.
- */
 void handle_address_ad(uint16_t federate_id) {
     // Read the port number of the federate that can be used for physical
     // connections to other federates
@@ -1159,10 +962,6 @@ void handle_address_ad(uint16_t federate_id) {
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
-/**
- * A function to handle timestamp messages.
- * This function assumes the caller does not hold the mutex.
- */
 void handle_timestamp(federate_t *my_fed) {
     unsigned char buffer[sizeof(int64_t)];
     // Read bytes from the socket. We need 8 bytes.
@@ -1224,16 +1023,6 @@ void handle_timestamp(federate_t *my_fed) {
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
-/**
- * Take a snapshot of the physical clock time and send
- * it to federate fed_id.
- *
- * This version assumes the caller holds the mutex lock.
- *
- * @param message_type The type of the clock sync message (see net_common.h).
- * @param fed The federate to send the physical time to.
- * @param socket_type The socket type (TCP or UDP).
- */
 void send_physical_clock(unsigned char message_type, federate_t* fed, socket_type_t socket_type) {
     if (fed->state == NOT_CONNECTED) {
         lf_print_warning("Clock sync: RTI failed to send physical time to federate %d. Socket not connected.\n",
@@ -1269,19 +1058,6 @@ void send_physical_clock(unsigned char message_type, federate_t* fed, socket_typ
                  fed->id);
 }
 
-/**
- * Handle clock synchronization T3 messages from federates.
- * These will come in on the TCP channel during initialization
- * and on the UDP channel subsequently. In both cases, this
- * function will reply with a T4 message. If the channel is
- * the UDP channel, then it will follow the T4 message
- * immediately with a "coded probe" message, which will be
- * used by the federate to decide whether to discard this
- * clock synchronization round.
- *
- * @param my_fed The sending federate.
- * @param socket_type The RTI's socket type used for the communication (TCP or UDP)
- */
 void handle_physical_clock_sync_message(federate_t* my_fed, socket_type_t socket_type) {
     // Lock the mutex to prevent interference between sending the two
     // coded probe messages.
@@ -1296,17 +1072,6 @@ void handle_physical_clock_sync_message(federate_t* my_fed, socket_type_t socket
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
-/**
- * A (quasi-)periodic thread that performs clock synchronization with each
- * federate. It starts by waiting a time given by _RTI.clock_sync_period_ns
- * and then iterates over the federates, performing a complete clock synchronization
- * interaction with each federate before proceeding to the next federate.
- * The interaction starts with this RTI sending a snapshot of its physical clock
- * to the federate (message T1). It then waits for a reply and then sends another
- * snapshot of its physical clock (message T4).  It then follows that T4 message
- * with a coded probe message that the federate can use to discard the session if
- * the network is congested.
- */
 void* clock_synchronization_thread(void* noargs) {
 
     // Wait until all federates have been notified of the start time.
@@ -1404,32 +1169,6 @@ void* clock_synchronization_thread(void* noargs) {
     return NULL;
 }
 
-/**
- * A function to handle messages labeled
- * as MSG_TYPE_RESIGN sent by a federate. This
- * message is sent at the time of termination
- * after all shutdown events are processed
- * on the federate.
- *
- * This function assumes the caller does not hold the mutex.
- *
- * @note At this point, the RTI might have
- * outgoing messages to the federate. This
- * function thus first performs a shutdown
- * on the socket which sends an EOF. It then
- * waits for the remote socket to be closed
- * before closing the socket itself.
- *
- * Assumptions:
- * - We assume that the other side (the federates)
- *  are in charge of closing the socket (by calling
- *  close() on the socket), and then wait for the RTI
- *  to shutdown the socket.
- * - We assume that calling shutdown() follows the same
- *  shutdown procedure as stated in the TCP/IP specification.
- *
- * @param my_fed The federate sending a MSG_TYPE_RESIGN message.
- **/
 void handle_federate_resign(federate_t *my_fed) {
     // Nothing more to do. Close the socket and exit.
     pthread_mutex_lock(&_RTI.rti_mutex);
@@ -1464,11 +1203,6 @@ void handle_federate_resign(federate_t *my_fed) {
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 
-/**
- * Thread handling TCP communication with a federate.
- * @param fed A pointer to the federate's struct that has the
- *  socket descriptor for the federate.
- */
 void* federate_thread_TCP(void* fed) {
     federate_t* my_fed = (federate_t*)fed;
 
@@ -1545,11 +1279,6 @@ void* federate_thread_TCP(void* fed) {
     return NULL;
 }
 
-/**
- * Send a MSG_TYPE_REJECT message to the specified socket and close the socket.
- * @param socket_id The socket.
- * @param error_code An error code.
- */
 void send_reject(int socket_id, unsigned char error_code) {
     LF_PRINT_DEBUG("RTI sending MSG_TYPE_REJECT.");
     unsigned char response[2];
@@ -1563,16 +1292,6 @@ void send_reject(int socket_id, unsigned char error_code) {
     close(socket_id);
 }
 
-/**
- * Listen for a MSG_TYPE_FED_IDS message, which includes as a payload
- * a federate ID and a federation ID. If the federation ID
- * matches this federation, send an MSG_TYPE_ACK and otherwise send
- * a MSG_TYPE_REJECT message. Return 1 if the federate is accepted to
- * the federation and 0 otherwise.
- * @param socket_id The socket on which to listen.
- * @param client_fd The socket address.
- * @return The federate ID for success or -1 for failure.
- */
 int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* client_fd) {
     // Buffer for message ID, federate ID, and federation ID length.
     size_t length = 1 + sizeof(uint16_t) + 1; // Message ID, federate ID, length of fedration ID.
@@ -1677,10 +1396,6 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
     return (int32_t)fed_id;
 }
 
-/**
- * Listen for a MSG_TYPE_NEIGHBOR_STRUCTURE message, and upon receiving it, fill
- * out the relevant information in the federate's struct.
- */
 int receive_connection_information(int socket_id, uint16_t fed_id) {
     LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_NEIGHBOR_STRUCTURE from federate %d.", fed_id);
     unsigned char connection_info_header[MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE];
@@ -1749,18 +1464,6 @@ int receive_connection_information(int socket_id, uint16_t fed_id) {
     }
 }
 
-/**
- * Listen for a MSG_TYPE_UDP_PORT message, and upon receiving it, set up
- * clock synchronization and perform the initial clock synchronization.
- * Initial clock synchronization is performed only if the MSG_TYPE_UDP_PORT message
- * payload is not UINT16_MAX. If it is also not 0, then this function sets
- * up to perform runtime clock synchronization using the UDP port number
- * specified in the payload to communicate with the federate's clock
- * synchronization logic.
- * @param socket_id The socket on which to listen.
- * @param fed_id The federate ID.
- * @return 1 for success, 0 for failure.
- */
 int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id) {
     // Read the MSG_TYPE_UDP_PORT message from the federate regardless of the status of
     // clock synchronization. This message will tell the RTI whether the federate
@@ -1828,12 +1531,6 @@ int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id) {
     return 1;
 }
 
-/**
- * Authenticate incoming federate by performing HMAC-based authentication.
- * 
- * @param socket Socket for the incoming federate tryting to authenticate.
- * @return True if authentication is successful and false otherwise.
- */
 #ifdef __RTI_AUTH__
 bool authenticate_federate(int socket) {
     // Buffer for message type and federation RTI nonce.
@@ -1892,12 +1589,6 @@ bool authenticate_federate(int socket) {
 }
 #endif
 
-/**
- * Wait for one incoming connection request from each federate,
- * and upon receiving it, create a thread to communicate with
- * that federate. Return when all federates have connected.
- * @param socket_descriptor The socket on which to accept connections.
- */
 void connect_to_federates(int socket_descriptor) {
     for (int i = 0; i < _RTI.number_of_federates; i++) {
         // Wait for an incoming connection request.
@@ -1968,11 +1659,6 @@ void connect_to_federates(int socket_descriptor) {
     }
 }
 
-/**
- * Thread to respond to new connections, which could be federates of other
- * federations who are attempting to join the wrong federation.
- * @param nothing Nothing needed here.
- */
 void* respond_to_erroneous_connections(void* nothing) {
     while (true) {
         // Wait for an incoming connection request.
@@ -2000,9 +1686,6 @@ void* respond_to_erroneous_connections(void* nothing) {
     return NULL;
 }
 
-/** Initialize the federate with the specified ID.
- *  @param id The federate ID.
- */
 void initialize_federate(uint16_t id) {
     _RTI.federates[id].id = id;
     _RTI.federates[id].socket = -1;      // No socket.
@@ -2025,13 +1708,6 @@ void initialize_federate(uint16_t id) {
     _RTI.federates[id].requested_stop = false;
 }
 
-/**
- * Start the socket server for the runtime infrastructure (RTI) and
- * return the socket descriptor.
- * @param num_feds Number of federates.
- * @param port The port on which to listen for socket connections, or
- *  0 to use the default port range.
- */
 int32_t start_rti_server(uint16_t port) {
     int32_t specified_port = port;
     if (port == 0) {
@@ -2050,11 +1726,6 @@ int32_t start_rti_server(uint16_t port) {
     return _RTI.socket_descriptor_TCP;
 }
 
-/**
- * Start the runtime infrastructure (RTI) interaction with the federates
- * and wait for the federates to exit.
- * @param socket_descriptor The socket descriptor returned by start_rti_server().
- */
 void wait_for_federates(int socket_descriptor) {
     // Wait for connections from federates and create a thread for each.
     connect_to_federates(socket_descriptor);
@@ -2137,10 +1808,7 @@ void wait_for_federates(int socket_descriptor) {
     }
 }
 
-/**
- * Print a usage message.
- */
-void usage(int argc, char* argv[]) {
+void usage(int argc, const char* argv[]) {
     printf("\nCommand-line arguments: \n\n");
     printf("  -i, --id <n>\n");
     printf("   The ID of the federation that this RTI will control.\n\n");
@@ -2168,15 +1836,6 @@ void usage(int argc, char* argv[]) {
     printf("\n\n");
 }
 
-/**
- * Process command-line arguments related to clock synchronization. Will return
- * the last read position of argv if all related arguments are parsed or an
- * invalid argument is read.
- *
- * @param argc: Number of arguments in the list
- * @param argv: The list of arguments as a string
- * @return Current position (head) of argv;
- */
 int process_clock_sync_args(int argc, char* argv[]) {
     for (int i = 0; i < argc; i++) {
         if (strcmp(argv[i], "off") == 0) {
@@ -2239,12 +1898,7 @@ int process_clock_sync_args(int argc, char* argv[]) {
     return argc;
 }
 
-/**
- * Process the command-line arguments. If the command line arguments are not
- * understood, then print a usage message and return 0. Otherwise, return 1.
- * @return 1 if the arguments processed successfully, 0 otherwise.
- */
-int process_args(int argc, char* argv[]) {
+int process_args(int argc, const char* argv[]) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--id") == 0) {
             if (argc < i + 2) {
