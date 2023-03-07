@@ -1836,7 +1836,7 @@ void usage(int argc, const char* argv[]) {
     printf("\n\n");
 }
 
-int process_clock_sync_args(int argc, char* argv[]) {
+int process_clock_sync_args(int argc, const char* argv[]) {
     for (int i = 0; i < argc; i++) {
         if (strcmp(argv[i], "off") == 0) {
             _RTI.clock_sync_global_status = clock_sync_off;

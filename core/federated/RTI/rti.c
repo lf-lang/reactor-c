@@ -47,6 +47,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "rti_lib.h"
+#ifdef RTI_TRACE
+unsigned int _lf_number_of_workers = 0u;
+#endif
 
 extern RTI_instance_t _RTI;
 
@@ -55,13 +58,14 @@ extern RTI_instance_t _RTI;
  */
 char *rti_trace_file_name = "rti.lft";
 
-int main(int argc, char* argv[]) {
+int main(int argc, const char* argv[]) {
     if (!process_args(argc, argv)) {
         // Processing command-line arguments failed.
         return -1;
     }
     if (_RTI.tracing_enabled) {
 #ifdef RTI_TRACE
+        _lf_number_of_workers = _RTI.number_of_federates;
         start_trace(rti_trace_file_name);
         printf("Tracing the RTI execution in %s file.\n", rti_trace_file_name);
 #else

@@ -98,14 +98,6 @@ static FILE* _lf_trace_file;
 static object_description_t _lf_trace_object_descriptions[TRACE_OBJECT_TABLE_SIZE];
 static int _lf_trace_object_descriptions_size = 0;
 
-/**
- * Register a trace event.
- * @param pointer1 Pointer that identifies the object, typically to a reactor self struct.
- * @param pointer2 Further identifying pointer, typically to a trigger (action or timer) or NULL if irrelevant.
- * @param type The type of trace object.
- * @param description The human-readable description of the object.
- * @return 1 if successful, 0 if the trace object table is full.
- */
 int _lf_register_trace_event(void* pointer1, void* pointer2, _lf_trace_object_t type, char* description) {
     lf_mutex_lock(&_lf_trace_mutex);
     if (_lf_trace_object_descriptions_size >= TRACE_OBJECT_TABLE_SIZE) {
@@ -122,13 +114,6 @@ int _lf_register_trace_event(void* pointer1, void* pointer2, _lf_trace_object_t 
     return 1;
 }
 
-/**
- * Register a user trace event. This should be called once, providing a pointer to a string
- * that describes a phenomenon being traced. Use the same pointer as the first argument to
- * tracepoint_user_event() and tracepoint_user_value().
- * @param description Pointer to a human-readable description of the event.
- * @return 1 if successful, 0 if the trace object table is full.
- */
 int register_user_trace_event(char* description) {
     return _lf_register_trace_event(description, NULL, trace_user, description);
 }
@@ -326,10 +311,6 @@ void flush_trace_to_file(int worker) {
     }
 }
 
-/**
- * Open a trace file and start tracing.
- * @param filename The filename for the trace file.
- */
 void start_trace(char* filename) {
     lf_mutex_init(&_lf_trace_mutex);
     lf_cond_init(&_lf_flush_finished, &_lf_trace_mutex);
@@ -348,11 +329,7 @@ void start_trace(char* filename) {
     // Allocate an array of arrays of trace records, one per worker thread plus one
     // for the 0 thread (the main thread, or in an unthreaded program, the only
     // thread).
-#ifndef RTI_TRACE
     _lf_number_of_trace_buffers = _lf_number_of_workers + 1;
-#else
-    _lf_number_of_trace_buffers = 1;
-#endif
     _lf_trace_buffer = (trace_record_t**)malloc(sizeof(trace_record_t*) * _lf_number_of_trace_buffers);
     for (int i = 0; i < _lf_number_of_trace_buffers; i++) {
         _lf_trace_buffer[i] = (trace_record_t*)malloc(sizeof(trace_record_t) * TRACE_BUFFER_CAPACITY);
@@ -380,36 +357,21 @@ void start_trace(char* filename) {
     LF_PRINT_DEBUG("Started tracing.");
 }
 
-/**
- * Trace an event identified by a type and an identifying pointer.
- * The pointer can be, for example, to the self struct of the reactor instance.
- * This is a generic tracepoint function. It is better to use one of the specific functions.
- * @param event_type The type of event (see trace_event_t in trace.h)
- * @param pointer The identifying pointer.
- * @param tag Pointer to a tag or NULL to use current tag.
- * @param id_number The id number (e.g. of a reaction or federate) or -1 if the event has no id number.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution
- *  or -1 for an unknown thread.
- * @param physical_time If the caller has already accessed physical time, provide it here.
- *  Otherwise, provide NULL. This argument avoids a second call to lf_time_physical()
- *  and ensures that the physical time in the trace is the same as that used by the caller.
- * @param trigger Pointer to the trigger_t struct for calls to schedule or NULL otherwise.
- * @param extra_delay The extra delay passed to schedule(). If not relevant for this event
- *  type, pass 0.
- */
 void tracepoint(
         trace_event_t event_type,
         void* pointer,
         tag_t* tag,
-        int id_number,
         int worker,
+        int src_id,
+        int dst_id,
         instant_t* physical_time,
         trigger_t* trigger,
         interval_t extra_delay
 ) {
-    // printf("DEBUG: Creating trace record.\n");
-    // Flush the buffer if it is full.
+    // Worker argument determines which buffer to write to.
     int index = (worker >= 0) ? worker : 0;
+
+    // Flush the buffer if it is full.
     if (_lf_trace_buffer_size[index] >= TRACE_BUFFER_CAPACITY) {
         // No more room in the buffer. Write the buffer to the file.
         flush_trace_to_file(index);
@@ -419,8 +381,8 @@ void tracepoint(
     // Write to memory buffer.
     _lf_trace_buffer[index][i].event_type = event_type;
     _lf_trace_buffer[index][i].pointer = pointer;
-    _lf_trace_buffer[index][i].id_number = id_number;
-    _lf_trace_buffer[index][i].worker = worker;
+    _lf_trace_buffer[index][i].src_id = src_id;
+    _lf_trace_buffer[index][i].dst_id = dst_id;
     if (tag != NULL) {
         _lf_trace_buffer[index][i].logical_time = tag->time;
         _lf_trace_buffer[index][i].microstep = tag->microstep;
@@ -444,7 +406,7 @@ void tracepoint(
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_reaction_starts(reaction_t* reaction, int worker) {
-    tracepoint(reaction_starts, reaction->self, NULL, reaction->number, worker, NULL, NULL, 0);
+    tracepoint(reaction_starts, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0);
 }
 
 /**
@@ -453,7 +415,7 @@ void tracepoint_reaction_starts(reaction_t* reaction, int worker) {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_reaction_ends(reaction_t* reaction, int worker) {
-    tracepoint(reaction_ends, reaction->self, NULL, reaction->number, worker, NULL, NULL, 0);
+    tracepoint(reaction_ends, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0);
 }
 
 /**
@@ -471,7 +433,8 @@ void tracepoint_schedule(trigger_t* trigger, interval_t extra_delay) {
             && trigger->reactions[0] != NULL) {
         reactor = trigger->reactions[0]->self;
     }
-    tracepoint(schedule_called, reactor, NULL, 0, 0, NULL, trigger, extra_delay);
+    // FIXME: First 0 should be the worker.
+    tracepoint(schedule_called, reactor, NULL, 0, 0, 0, NULL, trigger, extra_delay);
 }
 
 /**
@@ -482,7 +445,8 @@ void tracepoint_schedule(trigger_t* trigger, interval_t extra_delay) {
  */
 void tracepoint_user_event(char* description) {
     // -1s indicate unknown reaction number and worker thread.
-    tracepoint(user_event, description,  NULL, -1, -1, NULL, NULL, 0);
+    // FIXME: Worker thread should be given?
+    tracepoint(user_event, description,  NULL, -1, -1, -1, NULL, NULL, 0);
 }
 
 /**
@@ -497,7 +461,8 @@ void tracepoint_user_event(char* description) {
  */
 void tracepoint_user_value(char* description, long long value) {
     // -1s indicate unknown reaction number and worker thread.
-    tracepoint(user_value, description,  NULL, -1, -1, NULL, NULL, value);
+    // FIXME: Worker thread should be given?
+    tracepoint(user_value, description,  NULL, -1, -1, -1, NULL, NULL, value);
 }
 
 /**
@@ -505,7 +470,7 @@ void tracepoint_user_value(char* description, long long value) {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_worker_wait_starts(int worker) {
-    tracepoint(worker_wait_starts, NULL, NULL, -1, worker, NULL, NULL, 0);
+    tracepoint(worker_wait_starts, NULL, NULL, worker, worker, -1, NULL, NULL, 0);
 }
 
 /**
@@ -513,7 +478,7 @@ void tracepoint_worker_wait_starts(int worker) {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_worker_wait_ends(int worker) {
-    tracepoint(worker_wait_ends, NULL, NULL, -1, worker, NULL, NULL, 0);
+    tracepoint(worker_wait_ends, NULL, NULL, worker, worker, -1, NULL, NULL, 0);
 }
 
 /**
@@ -521,7 +486,7 @@ void tracepoint_worker_wait_ends(int worker) {
  * appear on the event queue.
  */
 void tracepoint_scheduler_advancing_time_starts() {
-    tracepoint(scheduler_advancing_time_starts, NULL, NULL, -1, -1, NULL, NULL, 0);
+    tracepoint(scheduler_advancing_time_starts, NULL, NULL, -1, -1, -1, NULL, NULL, 0);
 }
 
 /**
@@ -529,7 +494,7 @@ void tracepoint_scheduler_advancing_time_starts() {
  * appear on the event queue.
  */
 void tracepoint_scheduler_advancing_time_ends() {
-    tracepoint(scheduler_advancing_time_ends, NULL, NULL, -1, -1, NULL, NULL, 0);
+    tracepoint(scheduler_advancing_time_ends, NULL, NULL, -1, -1, -1, NULL, NULL, 0);
 }
 
 /**
@@ -538,13 +503,9 @@ void tracepoint_scheduler_advancing_time_ends() {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_reaction_deadline_missed(reaction_t *reaction, int worker) {
-    tracepoint(reaction_deadline_missed, reaction->self, NULL, reaction->number, worker, NULL, NULL, 0);
+    tracepoint(reaction_deadline_missed, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0);
 }
 
-/**
- * Flush any buffered trace records to the trace file and
- * close the file.
- */
 void stop_trace() {
     if (_lf_trace_stop) {
         // Trace was already stopped. Nothing to do.
@@ -593,9 +554,10 @@ void stop_trace() {
 void tracepoint_federate_to_RTI(trace_event_t event_type, int fed_id, tag_t* tag) {
     tracepoint(event_type, 
         NULL,   // void* pointer,
-        tag,   // tag* tag,
-        fed_id, // int id_number,
-        -1,     // int worker,
+        tag,    // tag* tag,
+        -1,     // int worker, // no worker ID needed because this is called within a mutex
+        fed_id, // int src_id,
+        -1,     // int dst_id,
         NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
         0       // interval_t extra_delay
@@ -613,9 +575,10 @@ void tracepoint_federate_from_RTI(trace_event_t event_type, int fed_id, tag_t* t
     // trace_event_t event_type = (type == MSG_TYPE_TAG_ADVANCE_GRANT)? federate_TAG : federate_PTAG;
     tracepoint(event_type,
         NULL,   // void* pointer,
-        tag,   // tag* tag,
-        fed_id, // int id_number,
-        -1,     // int worker,
+        tag,    // tag* tag,
+        -1,     // int worker, // no worker ID needed because this is called within a mutex
+        fed_id, // int src_id,
+        -1,     // int dst_id,
         NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
         0       // interval_t extra_delay
@@ -632,13 +595,14 @@ void tracepoint_federate_from_RTI(trace_event_t event_type, int fed_id, tag_t* t
  */
 void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
     tracepoint(event_type,
-               NULL,   // void* pointer,
-               tag,   // tag* tag,
-               fed_id, // int id_number,
-               partner_id,     // int worker,
-               NULL,   // instant_t* physical_time (will be generated)
-               NULL,   // trigger_t* trigger,
-               0       // interval_t extra_delay
+        NULL,   // void* pointer,
+        tag,    // tag* tag,
+        -1,     // int worker, // no worker ID needed because this is called within a mutex
+        fed_id, // int src_id,
+        partner_id,     // int dst_id,
+        NULL,   // instant_t* physical_time (will be generated)
+        NULL,   // trigger_t* trigger,
+        0       // interval_t extra_delay
     );
 }
 
@@ -652,13 +616,14 @@ void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int p
  */
 void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
     tracepoint(event_type,
-               NULL,   // void* pointer,
-               tag,   // tag* tag,
-               fed_id, // int id_number,
-               partner_id,     // int worker,
-               NULL,   // instant_t* physical_time (will be generated)
-               NULL,   // trigger_t* trigger,
-               0       // interval_t extra_delay
+        NULL,   // void* pointer,
+        tag,   // tag* tag,
+        -1,     // int worker, // no worker ID needed because this is called within a mutex
+        fed_id, // int src_id,
+        partner_id,     // int dst_id,
+        NULL,   // instant_t* physical_time (will be generated)
+        NULL,   // trigger_t* trigger,
+        0       // interval_t extra_delay
     );
 }
 #endif // FEDERATED
@@ -677,13 +642,14 @@ void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int
  */
 void tracepoint_RTI_to_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
     tracepoint(event_type,
-               NULL,   // void* pointer,
-               tag,    // tag_t* tag,
-               fed_id, // int id_number, FIXME: Should become -1
-               0,      // int worker, FIXME: Should become fed_id
-               NULL,   // instant_t* physical_time (will be generated)
-               NULL,   // trigger_t* trigger,
-               0       // interval_t extra_delay
+        NULL,   // void* pointer,
+        tag,    // tag_t* tag,
+        fed_id, // int worker (one thread per federate)
+        -1,     // int src_id
+        fed_id, // int dst_id
+        NULL,   // instant_t* physical_time (will be generated)
+        NULL,   // trigger_t* trigger,
+        0       // interval_t extra_delay
     );
 }
 
@@ -696,13 +662,14 @@ void tracepoint_RTI_to_federate(trace_event_t event_type, int fed_id, tag_t* tag
  */
 void tracepoint_RTI_from_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
     tracepoint(event_type,
-               NULL,   // void* pointer,
-               tag,    // tag_t* tag,
-               fed_id, // int id_number, FIXME: Should become -1
-               0,      // int worker, FIXME: Should become fed_id
-               NULL,   // instant_t* physical_time (will be generated)
-               NULL,   // trigger_t* trigger,
-               0       // interval_t extra_delay
+        NULL,   // void* pointer,
+        tag,    // tag_t* tag,
+        fed_id, // int worker (one thread per federate)
+        -1,     // int src_id  (RTI is the source of the tracepoint)
+        fed_id, // int dst_id
+        NULL,   // instant_t* physical_time (will be generated)
+        NULL,   // trigger_t* trigger,
+        0       // interval_t extra_delay
     );
 }
 

@@ -75,6 +75,7 @@ typedef enum
     worker_wait_ends,
     scheduler_advancing_time_starts,
     scheduler_advancing_time_ends,
+    federated, // Everything above this is tracing federated interactions.
     // Sending messages
     send_ACK,
     send_TIMESTAMP,
@@ -126,6 +127,7 @@ static const char *trace_event_names[] = {
     "Worker wait ends",
     "Scheduler advancing time starts",
     "Scheduler advancing time ends",
+    "Federated marker",
     // Sending messages
     "Sending ACK",
     "Sending TIMESTAMP",
@@ -172,8 +174,8 @@ static const char *trace_event_names[] = {
 typedef struct trace_record_t {
     trace_event_t event_type;
     void* pointer;  // pointer identifying the record, e.g. to self struct for a reactor.
-    int id_number;
-    int worker;
+    int src_id;     // The ID number of the source (e.g. worker or federate) or -1 for no ID number.
+    int dst_id;     // The ID number of the destination (e.g. reaction or federate) or -1 for no ID number.
     instant_t logical_time;
     microstep_t microstep;
     instant_t physical_time;
@@ -229,11 +231,15 @@ void start_trace(char* filename);
 /**
  * Trace an event identified by a type and a pointer to the self struct of the reactor instance.
  * This is a generic tracepoint function. It is better to use one of the specific functions.
+ * The worker argument determines which buffer to write to.
+ * Hence, as long as this argument is distinct for each caller, the callers can be in
+ * different threads without the need for a mutex lock.
  * @param event_type The type of event (see trace_event_t in trace.h)
  * @param reactor The pointer to the self struct of the reactor instance in the trace table.
  * @param tag Pointer to a tag or NULL to use current tag.
- * @param id_number The id number (e.g. reaction or federate) or -1 if the event does not have an id number.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The ID of the worker thread (which determines which buffer to write to).
+ * @param src_id The ID number of the source (e.g. worker or federate) or -1 for no ID number.
+ * @param dst_id The ID number of the destination (e.g. reaction or federate) or -1 for no ID number.
  * @param physical_time If the caller has already accessed physical time, provide it here.
  *  Otherwise, provide NULL. This argument avoids a second call to lf_time_physical()
  *  and ensures that the physical time in the trace is the same as that used by the caller.
@@ -245,8 +251,9 @@ void tracepoint(
         trace_event_t event_type,
         void* reactor,
         tag_t* tag,
-        int id_number,
         int worker,
+        int src_id,
+        int dst_id,
         instant_t* physical_time,
         trigger_t* trigger,
         interval_t extra_delay
@@ -317,7 +324,6 @@ void tracepoint_scheduler_advancing_time_starts();
  */
 void tracepoint_scheduler_advancing_time_ends();
 
-
 /**
  * Trace the occurence of a deadline miss.
  * @param reaction Pointer to the reaction_t struct for the reaction.
@@ -325,6 +331,11 @@ void tracepoint_scheduler_advancing_time_ends();
  */
 void tracepoint_reaction_deadline_missed(reaction_t *reaction, int worker);
 
+/**
+ * Flush any buffered trace records to the trace file and
+ * close the files.
+ */
+void stop_trace(void);
 
 ////////////////////////////////////////////////////////////
 //// For federated execution
@@ -392,8 +403,6 @@ void tracepoint_RTI_to_federate(trace_event_t type, int fed_id, tag_t* tag);
 void tracepoint_RTI_from_federate(trace_event_t event_type, int fed_id, tag_t* tag);
 
 #endif // RTI_TRACE
-
-void stop_trace(void);
 
 #else
 
