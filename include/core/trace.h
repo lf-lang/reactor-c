@@ -391,18 +391,16 @@ void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int
  *
  * @param fed_id The fedaerate ID.
  * @param tag Pointer to the tag that has been sent, or NULL.
- * @param physical_time Pointer to the physical time instant at which the message was sent.
  */
-void tracepoint_RTI_to_federate(trace_event_t type, int fed_id, tag_t *tag, instant_t* physical_time);
+void tracepoint_RTI_to_federate(trace_event_t type, int fed_id, tag_t* tag);
 
 /**
  * Trace RTI receiving a message from a federate.
  * @param event_type The type of event.
  * @param fed_id The fedaerate ID.
  * @param tag The tag that has been sent, or NULL if none.
- * @param physical_time Pointer to the physical time instant at which the message was received.
  */
-void tracepoint_RTI_from_federate(trace_event_t event_type, int fed_id, tag_t *tag, instant_t *physical_time);
+void tracepoint_RTI_from_federate(trace_event_t event_type, int fed_id, tag_t* tag);
 
 #endif // RTI_TRACE
 

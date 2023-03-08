@@ -639,14 +639,8 @@ void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int
  *
  * @param fed_id The fedaerate ID.
  * @param tag Pointer to the tag that has been sent, or NULL.
- * @param physical_time Pointer to the physical time instant at which the message was sent.
  */
-void tracepoint_RTI_to_federate(
-        trace_event_t event_type, 
-        int fed_id, 
-        tag_t* tag, 
-        instant_t* physical_time
-) {
+void tracepoint_RTI_to_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
     tracepoint(event_type,
         NULL,   // void* pointer,
         tag,    // tag_t* tag,
@@ -665,21 +659,15 @@ void tracepoint_RTI_to_federate(
  *
  * @param fed_id The fedaerate ID.
  * @param tag Pointer to the tag that has been received, or NULL.
- * @param physical_time Pointer to the physical time instant at which the message was received.
  */
-void tracepoint_RTI_from_federate(
-        trace_event_t event_type, 
-        int fed_id,
-        tag_t* tag,
-        instant_t* physical_time
-) {
+void tracepoint_RTI_from_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
     tracepoint(event_type,
         NULL,   // void* pointer,
         tag,    // tag_t* tag,
         fed_id, // int worker (one thread per federate)
         -1,     // int src_id  (RTI is the source of the tracepoint)
         fed_id, // int dst_id
-        physical_time,   // instant_t* physical_time (will be generated)
+        NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
         0       // interval_t extra_delay
     );

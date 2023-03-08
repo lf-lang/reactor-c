@@ -362,7 +362,7 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
  *
  * This function assumes the caller does not hold the mutex.
  */
-void handle_port_absent_message(federate_t *sending_federate, unsigned char *buffer, instant_t physical_time);
+void handle_port_absent_message(federate_t* sending_federate, unsigned char* buffer);
 
 /**
  * Handle a timed message being received from a federate by the RTI to relay to another federate.
@@ -372,7 +372,7 @@ void handle_port_absent_message(federate_t *sending_federate, unsigned char *buf
  * @param sending_federate The sending federate.
  * @param buffer The buffer to read into (the first byte is already there).
  */
-void handle_timed_message(federate_t *sending_federate, unsigned char *buffer, instant_t physical_time);
+void handle_timed_message(federate_t* sending_federate, unsigned char* buffer);
 
 /**
  * Handle a logical tag complete (LTC) message. @see
@@ -382,7 +382,7 @@ void handle_timed_message(federate_t *sending_federate, unsigned char *buffer, i
  *
  * @param fed The federate that has completed a logical tag.
  */
-void handle_logical_tag_complete(federate_t* fed, instant_t physical_time);
+void handle_logical_tag_complete(federate_t* fed);
 
 /**
  * Handle a next event tag (NET) message. @see MSG_TYPE_NEXT_EVENT_TAG in rti.h.
@@ -391,7 +391,7 @@ void handle_logical_tag_complete(federate_t* fed, instant_t physical_time);
  *
  * @param fed The federate sending a NET message.
  */
-void handle_next_event_tag(federate_t* fed, instant_t physical_time);
+void handle_next_event_tag(federate_t* fed);
 
 /////////////////// STOP functions ////////////////////
 /**
@@ -424,7 +424,7 @@ void mark_federate_requesting_stop(federate_t* fed);
  *
  * @param fed The federate sending a MSG_TYPE_STOP_REQUEST message.
  */
-void handle_stop_request_message(federate_t* fed, instant_t physical_timef);
+void handle_stop_request_message(federate_t* fed);
 
 /**
  * Handle a MSG_TYPE_STOP_REQUEST_REPLY message.
@@ -433,7 +433,7 @@ void handle_stop_request_message(federate_t* fed, instant_t physical_timef);
  *
  * @param fed The federate replying the MSG_TYPE_STOP_REQUEST
  */
-void handle_stop_request_reply(federate_t* fed, instant_t physical_time);
+void handle_stop_request_reply(federate_t* fed);
 
 //////////////////////////////////////////////////
 
@@ -448,7 +448,7 @@ void handle_stop_request_reply(federate_t* fed, instant_t physical_time);
  * period of time. @see connect_to_federate() in federate.c. *
  * @param fed_id The federate sending a MSG_TYPE_ADDRESS_QUERY message.
  */
-void handle_address_query(uint16_t fed_id, instant_t physical_time);
+void handle_address_query(uint16_t fed_id);
 
 /**
  * Handle address advertisement messages (@see MSG_TYPE_ADDRESS_ADVERTISEMENT in net_common.h).
@@ -465,13 +465,13 @@ void handle_address_query(uint16_t fed_id, instant_t physical_time);
  * @param federate_id The id of the remote federate that is
  *  sending the address advertisement.
  */
-void handle_address_ad(uint16_t federate_id, instant_t physical_time);
+void handle_address_ad(uint16_t federate_id);
 
 /**
  * A function to handle timestamp messages.
  * This function assumes the caller does not hold the mutex.
  */
-void handle_timestamp(federate_t *my_fed, instant_t physical_time);
+void handle_timestamp(federate_t *my_fed);
 
 /**
  * Take a snapshot of the physical clock time and send
@@ -539,7 +539,7 @@ void* clock_synchronization_thread(void* noargs);
  *
  * @param my_fed The federate sending a MSG_TYPE_RESIGN message.
  **/
-void handle_federate_resign(federate_t *my_fed, instant_t physical_time);
+void handle_federate_resign(federate_t *my_fed);
 
 /**
  * Thread handling TCP communication with a federate.
