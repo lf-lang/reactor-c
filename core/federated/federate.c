@@ -430,14 +430,6 @@ void _lf_send_time(unsigned char type, instant_t time, bool exit_on_error) {
         lf_mutex_unlock(&outbound_socket_mutex);
         return;
     }
-
-#ifdef LF_TRACE
-    trace_event_t event_type = (type == MSG_TYPE_TIMESTAMP) ? send_TIMESTAMP : send_LTC;
-    instant_t physical_time = lf_time_physical();
-    tag_t tag = {.time = time, .microstep = 0};
-    tracepoint_federate_to_RTI(event_type, _lf_my_fed_id, &time, &physical_time);
-#endif // LF_TRACE
-    
     ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
     if (bytes_written < (ssize_t)bytes_to_write) {
         if (!exit_on_error) {
@@ -485,14 +477,12 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
         lf_mutex_unlock(&outbound_socket_mutex);
         return;
     }
-
+    ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
 #ifdef LF_TRACE
     trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG) ? send_NET : send_LTC;
     instant_t physical_time = lf_time_physical();
     tracepoint_federate_to_RTI(event_type, _lf_my_fed_id, &tag, &physical_time);
-#endif // LF_TRACE    
-
-    ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
+#endif // LF_TRACE
 
     if (bytes_written < (ssize_t)bytes_to_write) {
         if (!exit_on_error) {
@@ -553,11 +543,7 @@ void* handle_p2p_connections_from_federates(void* ignored) {
             if (bytes_read >= 0) {
                 unsigned char response[2];
                 response[0] = MSG_TYPE_REJECT;
-                response[1] = WRONG_SERVER; 
-#ifdef LF_TRACE
-                instant_t physical_time = lf_time_physical();
-                tracepoint_federate_to_federate(send_REJECT, _lf_my_fed_id, -3, NULL, &physical_time);
-#endif // LF_TRACE
+                response[1] = WRONG_SERVER;
                 // Ignore errors on this response.
                 write_to_socket(socket_id, 2, response);
             }
@@ -576,10 +562,6 @@ void* handle_p2p_connections_from_federates(void* ignored) {
                 unsigned char response[2];
                 response[0] = MSG_TYPE_REJECT;
                 response[1] = FEDERATION_ID_DOES_NOT_MATCH;
-#ifdef LF_TRACE
-                instant_t physical_time = lf_time_physical();
-                tracepoint_federate_to_federate(send_REJECT, _lf_my_fed_id, -3, NULL, &physical_time);
-#endif // LF_TRACE
                 // Ignore errors on this response.
                 write_to_socket(socket_id, 2, response);
             }
@@ -1686,24 +1668,18 @@ trigger_handle_t schedule_message_received_from_network_already_locked(
 int _lf_request_close_inbound_socket(int fed_id) {
     assert(fed_id >= 0 && fed_id < NUMBER_OF_FEDERATES);
 
-    if (_fed.sockets_for_inbound_p2p_connections[fed_id] < 1) return 0;
+     if (_fed.sockets_for_inbound_p2p_connections[fed_id] < 1) return 0;
 
-    // Send a MSG_TYPE_CLOSE_REQUEST message.
+       // Send a MSG_TYPE_CLOSE_REQUEST message.
     unsigned char message_marker = MSG_TYPE_CLOSE_REQUEST;
-    LF_PRINT_LOG("Sending MSG_TYPE_CLOSE_REQUEST message to upstream federate.");
-
-#ifdef LF_TRACE
-    instant_t physical_time = lf_time_physical();
-    tracepoint_federate_to_federate(send_REJECT, _lf_my_fed_id, fed_id, NULL, &physical_time);
-#endif// LF_TRACE
-    
+       LF_PRINT_LOG("Sending MSG_TYPE_CLOSE_REQUEST message to upstream federate.");
     ssize_t written = write_to_socket(
-            _fed.sockets_for_inbound_p2p_connections[fed_id],
+             _fed.sockets_for_inbound_p2p_connections[fed_id],
             1, &message_marker);
-            _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
+    _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
     if (written == 1) {
-        LF_PRINT_LOG("Sent MSG_TYPE_CLOSE_REQUEST message to upstream federate.");
-        return 1;
+           LF_PRINT_LOG("Sent MSG_TYPE_CLOSE_REQUEST message to upstream federate.");
+           return 1;
     } else {
         return 0;
     }
@@ -2390,12 +2366,6 @@ void terminate_execution() {
     // Resign the federation, which will close the socket to the RTI.
        if (_fed.socket_TCP_RTI >= 0) {
         unsigned char message_marker = MSG_TYPE_RESIGN;
-
-#ifdef LF_TRACE
-        instant_t physical_time = lf_time_physical();
-        tracepoint_federate_to_RTI(send_RESIGN, _lf_my_fed_id, NULL, &physical_time);
-#endif // LF_TRACE
-
         ssize_t written = write_to_socket(_fed.socket_TCP_RTI, 1, &message_marker);
         if (written == 1) {
             LF_PRINT_LOG("Resigned.");
