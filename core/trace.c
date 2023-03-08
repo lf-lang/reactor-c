@@ -547,24 +547,18 @@ void stop_trace() {
 /**
  * Trace federate sending a message to the RTI.
  * @param event_type Event type of the message. Possible values are:
- *
+ * 
  * @param fed_id The federate identifier.
  * @param tag Pointer to the tag that has been sent, or NULL.
- * @param physical_time Pointer to the physical time instant at which the message was sent.
  */
-void tracepoint_federate_to_RTI(
-        trace_event_t event_type, 
-        int fed_id, 
-        tag_t* tag, 
-        instant_t* physical_time
-) {
+void tracepoint_federate_to_RTI(trace_event_t event_type, int fed_id, tag_t* tag) {
     tracepoint(event_type, 
         NULL,   // void* pointer,
         tag,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
         fed_id, // int src_id,
         -1,     // int dst_id,
-        physical_time,   // instant_t* physical_time 
+        NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
         0       // interval_t extra_delay
     );
@@ -573,24 +567,19 @@ void tracepoint_federate_to_RTI(
 /**
  * Trace federate receiving a message from the RTI.
  * @param event_type Event type of the message. Possible values are:
- *
+ * 
  * @param fed_id The federate identifier.
  * @param tag Pointer to the tag that has been received, or NULL.
- * @param physical_time Pointer to the physical time instant at which the message was received.
  */
-void tracepoint_federate_from_RTI(
-        trace_event_t event_type, 
-        int fed_id, 
-        tag_t* tag, 
-        instant_t* physical_time
-) {
+void tracepoint_federate_from_RTI(trace_event_t event_type, int fed_id, tag_t* tag) {
+    // trace_event_t event_type = (type == MSG_TYPE_TAG_ADVANCE_GRANT)? federate_TAG : federate_PTAG;
     tracepoint(event_type,
         NULL,   // void* pointer,
         tag,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
         fed_id, // int src_id,
         -1,     // int dst_id,
-        physical_time,   // instant_t* physical_time 
+        NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
         0       // interval_t extra_delay
     );
@@ -603,22 +592,15 @@ void tracepoint_federate_from_RTI(
  * @param fed_id The federate identifier.
  * @param partner_id The partner federate identifier.
  * @param tag Pointer to the tag that has been sent, or NULL.
- * @param physical_time Pointer to the physical time instant at which the message was sent.
  */
-void tracepoint_federate_to_federate(
-        trace_event_t event_type, 
-        int fed_id, 
-        int partner_id, 
-        tag_t *tag,
-        instant_t* physical_time
-) {
+void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
     tracepoint(event_type,
         NULL,   // void* pointer,
         tag,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
         fed_id, // int src_id,
         partner_id,     // int dst_id,
-        physical_time,   // instant_t* physical_time 
+        NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
         0       // interval_t extra_delay
     );
@@ -631,22 +613,15 @@ void tracepoint_federate_to_federate(
  * @param fed_id The federate identifier.
  * @param partner_id The partner federate identifier.
  * @param tag Pointer to the tag that has been received, or NULL.
- * @param physical_time Pointer to the physical time instant at which the message was received.
  */
-void tracepoint_federate_from_federate(
-        trace_event_t event_type, 
-        int fed_id, 
-        int partner_id, 
-        tag_t *tag,
-        instant_t* physical_time
-) {
+void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
     tracepoint(event_type,
         NULL,   // void* pointer,
         tag,   // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
         fed_id, // int src_id,
         partner_id,     // int dst_id,
-        physical_time,   // instant_t* physical_time 
+        NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
         0       // interval_t extra_delay
     );
@@ -678,7 +653,7 @@ void tracepoint_RTI_to_federate(
         fed_id, // int worker (one thread per federate)
         -1,     // int src_id
         fed_id, // int dst_id
-        physical_time,   // instant_t* physical_time 
+        NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
         0       // interval_t extra_delay
     );
@@ -704,7 +679,7 @@ void tracepoint_RTI_from_federate(
         fed_id, // int worker (one thread per federate)
         -1,     // int src_id  (RTI is the source of the tracepoint)
         fed_id, // int dst_id
-        physical_time,   // instant_t* physical_time 
+        physical_time,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
         0       // interval_t extra_delay
     );
