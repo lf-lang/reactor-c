@@ -90,6 +90,8 @@ typedef enum
     send_JOIN,
     send_REJECT,
     send_RESIGN,
+    send_PORT_ABS,
+    send_CLOSE_REQ,
     // Receiving messages
     receive_ACK,
     receive_TIMESTAMP,
@@ -104,6 +106,7 @@ typedef enum
     receive_REJECT,
     receive_RESIGN,
     receive_PORT_ABS,
+    receive_CLOSE_REQ,
     receive_UNIDENTIFIED,
     // receive_ADDRESS_QUERY,
     // receive_ADDRESS_ADVERTISEMENT,
@@ -142,6 +145,8 @@ static const char *trace_event_names[] = {
     "Sending JOIN",
     "Sending REJECT",
     "Sending RESIGN",
+    "Sending PORT_ABS",
+    "Sending CLOSE_REQ",
     // Receiving messages
     "Receiving ACK",
     "Receiving TIMESTAMP",
@@ -156,10 +161,11 @@ static const char *trace_event_names[] = {
     "Receiving REJECT",
     "Receiving RESIGN",
     "Receiving PORT_ABS",
-    "Receiving UNIDENTIFIED"
+    "Receiving CLOSE_REQ",
+    "Receiving UNIDENTIFIED",
     // "Receiving ADDRESS_QUERY",
     // "Receiving ADDRESS_ADVERTISEMENT",
-    // "Receiving TAGGED_MESSAGE"
+    "Receiving TAGGED_MSG"
 };
 
 // FIXME: Target property should specify the capacity of the trace buffer.
