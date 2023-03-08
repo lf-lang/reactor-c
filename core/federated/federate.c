@@ -480,7 +480,8 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
     ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
 #ifdef LF_TRACE
     trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG) ? send_NET : send_LTC;
-    tracepoint_federate_to_RTI(event_type, _lf_my_fed_id, &tag);
+    instant_t physical_time = lf_time_physical();
+    tracepoint_federate_to_RTI(event_type, _lf_my_fed_id, &tag, &physical_time);
 #endif // LF_TRACE
 
     if (bytes_written < (ssize_t)bytes_to_write) {
@@ -1718,8 +1719,9 @@ void _lf_close_inbound_socket(int fed_id) {
  * @param socket The socket to read the message from
  * @param buffer The buffer to read
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
+ * @param physical_time The physical time instant at which the message was received.
  */
-void handle_port_absent_message(int socket, int fed_id) {
+void handle_port_absent_message(int socket, int fed_id, instant_t physical_time) {
     size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(socket, bytes_to_read, buffer,
@@ -1730,6 +1732,13 @@ void handle_port_absent_message(int socket, int fed_id) {
     // The next part of the message is the federate_id, but we don't need it.
     // unsigned short federate_id = extract_uint16(&(buffer[sizeof(uint16_t)]));
     tag_t intended_tag = extract_tag(&(buffer[sizeof(uint16_t)+sizeof(uint16_t)]));
+
+#ifdef LF_TRACE
+    if (fed_id == -1)
+        tracepoint_federate_from_RTI(receive_PORT_ABS, _lf_my_fed_id, &intended_tag, &physical_time);
+    else
+        tracepoint_federate_from_federate(receive_PORT_ABS, _lf_my_fed_id, fed_id, &intended_tag, &physical_time);
+#endif // LF_TRACE
 
     LF_PRINT_LOG("Handling port absent for tag " PRINTF_TAG " for port %hu of fed %d.",
             intended_tag.time - lf_time_start(),
@@ -1767,8 +1776,9 @@ void handle_port_absent_message(int socket, int fed_id) {
  * @param socket The socket to read the message from
  * @param buffer The buffer to read
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
+ * 
  */
-void handle_message(int socket, int fed_id) {
+void handle_message(int socket, int fed_id, instant_t physical_time) {
     // FIXME: Need better error handling?
     // Read the header.
     size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t);
@@ -1813,10 +1823,10 @@ void handle_message(int socket, int fed_id) {
  * the tag will not advance at all if the tag of the message is
  * now or in the past.
  * @param socket The socket to read the message from.
- * @param buffer The buffer to read.
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
+ * @param physical_time The physical time instant at which the message was received.
  */
-void handle_tagged_message(int socket, int fed_id) {
+void handle_tagged_message(int socket, int fed_id, instant_t physical_time) {
     // FIXME: Need better error handling?
     // Read the header which contains the timestamp.
     size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t)
@@ -1831,6 +1841,12 @@ void handle_tagged_message(int socket, int fed_id) {
     size_t length;
     tag_t intended_tag;
     extract_timed_header(buffer, &port_id, &federate_id, &length, &intended_tag);
+#ifdef LF_TRACE
+    if (fed_id == -1)
+        tracepoint_federate_from_RTI(receive_TAGGED_MSG, _lf_my_fed_id, &intended_tag, &physical_time);
+    else
+        tracepoint_federate_from_federate(receive_TAGGED_MSG, _lf_my_fed_id, fed_id, &intended_tag, &physical_time);
+#endif // LF_TRACE
     // Check if the message is intended for this federate
     assert(_lf_my_fed_id == federate_id);
     LF_PRINT_DEBUG("Receiving message to port %d of length %zu.", port_id, length);
@@ -1988,8 +2004,9 @@ void handle_tagged_message(int socket, int fed_id) {
  *
  * @note This function is very similar to handle_provisinal_tag_advance_grant() except that
  *  it sets last_TAG_was_provisional to false.
+ * @param physical_time The physical time instant at which the message was received.
  */
-void handle_tag_advance_grant() {
+void handle_tag_advance_grant(instant_t physical_time) {
     size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
@@ -1997,7 +2014,7 @@ void handle_tag_advance_grant() {
     tag_t TAG = extract_tag(buffer);
 
 #ifdef LF_TRACE
-    tracepoint_federate_from_RTI(receive_TAG, _lf_my_fed_id, &TAG);
+    tracepoint_federate_from_RTI(receive_TAG, _lf_my_fed_id, &TAG, &physical_time);
 #endif // LF_TRACE
 
     lf_mutex_lock(&mutex);
@@ -2068,8 +2085,9 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
  * @note This function is similar to handle_tag_advance_grant() except that
  *  it sets last_TAG_was_provisional to true and also it does not update the
  *  last known tag for input ports.
+ * @param physical_time The physical time instant at which the message was received.
  */
-void handle_provisional_tag_advance_grant() {
+void handle_provisional_tag_advance_grant(instant_t physical_time) {
     size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
@@ -2077,7 +2095,7 @@ void handle_provisional_tag_advance_grant() {
     tag_t PTAG = extract_tag(buffer);
 
 #ifdef LF_TRACE
-    tracepoint_federate_from_RTI(receive_PTAG, _lf_my_fed_id, &PTAG);
+    tracepoint_federate_from_RTI(receive_PTAG, _lf_my_fed_id, &PTAG, &physical_time);
 #endif // LF_TRACE
 
     // Note: it is important that last_known_status_tag of ports does not
@@ -2211,9 +2229,9 @@ void _lf_fd_send_stop_request_to_rti() {
  * called.
  *
  * This function assumes the caller does not hold
- * the mutex lock, therefore, it acquires it.
+ * @param physical_time The physical time instant at which the message was received.
  */
-void handle_stop_granted_message() {
+void handle_stop_granted_message(instant_t physical_time) {
     size_t bytes_to_read = MSG_TYPE_STOP_GRANTED_LENGTH - 1;
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
@@ -2224,6 +2242,10 @@ void handle_stop_granted_message() {
     lf_mutex_lock(&mutex);
 
     tag_t received_stop_tag = extract_tag(buffer);
+
+#ifdef LF_TRACE
+    tracepoint_federate_from_RTI(receive_STOP_GRN, _lf_my_fed_id, &received_stop_tag, &physical_time);
+#endif
 
     LF_PRINT_LOG("Received from RTI a MSG_TYPE_STOP_GRANTED message with elapsed tag " PRINTF_TAG ".",
             received_stop_tag.time - start_time, received_stop_tag.microstep);
@@ -2256,8 +2278,9 @@ void handle_stop_granted_message() {
  *
  * This function assumes the caller does not hold
  * the mutex lock, therefore, it acquires it.
+ * @param physical_time The physical time instant at which the message was received.
  */
-void handle_stop_request_message() {
+void handle_stop_request_message(instant_t physical_time) {
     size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
@@ -2274,6 +2297,10 @@ void handle_stop_request_message() {
     }
 
     tag_t tag_to_stop = extract_tag(buffer);
+
+#ifdef LF_TRACE
+    tracepoint_federate_from_RTI(receive_STOP_REQ, _lf_my_fed_id, &tag_to_stop, &physical_time);
+#endif // LF_TRACE
 
     LF_PRINT_LOG("Received from RTI a MSG_TYPE_STOP_REQUEST message with tag " PRINTF_TAG ".",
              tag_to_stop.time - start_time,
@@ -2406,6 +2433,10 @@ void* listen_to_federates(void* fed_id_ptr) {
         // Read one byte to get the message type.
         LF_PRINT_DEBUG("Waiting for a P2P message on socket %d.", socket_id);
         ssize_t bytes_read = read_from_socket(socket_id, 1, buffer);
+        instant_t read_message_physical_time = NULL;
+#ifdef LF_TRACE
+        read_message_physical_time = lf_time_physical();
+#endif // LF_TRACE
         if (bytes_read == 0) {
             // EOF occurred. This breaks the connection.
             lf_print("Received EOF from peer federate %d. Closing the socket.", fed_id);
@@ -2422,15 +2453,15 @@ void* listen_to_federates(void* fed_id_ptr) {
         switch (buffer[0]) {
             case MSG_TYPE_P2P_MESSAGE:
                 LF_PRINT_LOG("Received untimed message from federate %d.", fed_id);
-                handle_message(socket_id, fed_id);
+                handle_message(socket_id, fed_id, read_message_physical_time);
                 break;
             case MSG_TYPE_P2P_TAGGED_MESSAGE:
                 LF_PRINT_LOG("Received timed message from federate %d.", fed_id);
-                handle_tagged_message(socket_id, fed_id);
+                handle_tagged_message(socket_id, fed_id, read_message_physical_time);
                 break;
             case MSG_TYPE_PORT_ABSENT:
                 LF_PRINT_LOG("Received port absent message from federate %d.", fed_id);
-                handle_port_absent_message(socket_id, fed_id);
+                handle_port_absent_message(socket_id, fed_id, read_message_physical_time);
                 break;
             default:
                 bad_message = true;
@@ -2439,6 +2470,9 @@ void* listen_to_federates(void* fed_id_ptr) {
             // FIXME: Better error handling needed.
             lf_print_error("Received erroneous message type: %d. Closing the socket.", buffer[0]);
             break;
+#ifdef LF_TRACE
+            tracepoint_federate_from_federate(receive_UNIDENTIFIED, _lf_my_fed_id, fed_id, NULL, &read_message_physical_time);
+#endif // LF_TRACE
         }
     }
     free(fed_id_ptr);
@@ -2465,6 +2499,10 @@ void* listen_to_rti_TCP(void* args) {
         // Read one byte to get the message type.
         // This will exit if the read fails.
         ssize_t bytes_read = read_from_socket(_fed.socket_TCP_RTI, 1, buffer);
+        instant_t read_message_physical_time = NULL;
+#ifdef LF_TRACE
+        read_message_physical_time = lf_time_physical();
+#endif // LF_TRACE
         if (bytes_read < 0) {
             if (errno == ECONNRESET) {
                 lf_print_error("Socket connection to the RTI was closed by the RTI without"
@@ -2491,22 +2529,22 @@ void* listen_to_rti_TCP(void* args) {
         }
         switch (buffer[0]) {
             case MSG_TYPE_TAGGED_MESSAGE:
-                handle_tagged_message(_fed.socket_TCP_RTI, -1);
+                handle_tagged_message(_fed.socket_TCP_RTI, -1, read_message_physical_time);
                 break;
             case MSG_TYPE_TAG_ADVANCE_GRANT:
-                handle_tag_advance_grant();
+                handle_tag_advance_grant(read_message_physical_time);
                 break;
             case MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT:
-                handle_provisional_tag_advance_grant();
+                handle_provisional_tag_advance_grant(read_message_physical_time);
                 break;
             case MSG_TYPE_STOP_REQUEST:
-                handle_stop_request_message();
+                handle_stop_request_message(read_message_physical_time);
                 break;
             case MSG_TYPE_STOP_GRANTED:
-                handle_stop_granted_message();
+                handle_stop_granted_message(read_message_physical_time);
                 break;
             case MSG_TYPE_PORT_ABSENT:
-                handle_port_absent_message(_fed.socket_TCP_RTI, -1);
+                handle_port_absent_message(_fed.socket_TCP_RTI, -1, read_message_physical_time);
                 break;
             case MSG_TYPE_CLOCK_SYNC_T1:
             case MSG_TYPE_CLOCK_SYNC_T4:
@@ -2515,6 +2553,9 @@ void* listen_to_rti_TCP(void* args) {
                 break;
             default:
                 lf_print_error_and_exit("Received from RTI an unrecognized TCP message type: %hhx.", buffer[0]);
+#ifdef LF_TRACE
+                tracepoint_federate_from_RTI(receive_UNIDENTIFIED, _lf_my_fed_id, NULL, &read_message_physical_time);
+#endif // LF_TRACE
         }
     }
     return NULL;

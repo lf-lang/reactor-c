@@ -107,7 +107,7 @@ typedef enum
     receive_UNIDENTIFIED,
     // receive_ADDRESS_QUERY,
     // receive_ADDRESS_ADVERTISEMENT,
-    // receive_TAGGED_MESSAGE,
+    receive_TAGGED_MSG,
     NUM_EVENT_TYPES
 } trace_event_t;
 
@@ -345,18 +345,22 @@ void stop_trace(void);
 /**
  * Trace federate sending a message to the RTI.
  * @param event_type Event type of the message. Possible values are:
+ *
  * @param fed_id The federate identifier.
  * @param tag Pointer to the tag that has been sent, or NULL.
+ * @param physical_time Pointer to the physical time instant at which the message was sent.
  */
-void tracepoint_federate_to_RTI(trace_event_t event_type, int fed_id, tag_t* tag);
+void tracepoint_federate_to_RTI(trace_event_t event_type, int fed_id, tag_t* tag, instant_t* physical_time);
 
 /**
  * Trace federate receiving a message from the RTI.
  * @param event_type Event type of the message. Possible values are:
+ *
  * @param fed_id The federate identifier.
  * @param tag Pointer to the tag that has been received, or NULL.
+ * @param physical_time Pointer to the physical time instant at which the message was received.
  */
-void tracepoint_federate_from_RTI(trace_event_t event_type, int fed_id, tag_t* tag);
+void tracepoint_federate_from_RTI(trace_event_t event_type, int fed_id, tag_t *tag, instant_t *physical_time);
 
 /**
  * Trace federate sending a message to another federate.
@@ -365,8 +369,9 @@ void tracepoint_federate_from_RTI(trace_event_t event_type, int fed_id, tag_t* t
  * @param fed_id The federate identifier.
  * @param partner_id The partner federate identifier.
  * @param tag Pointer to the tag that has been sent, or NULL.
+ * @param physical_time Pointer to the physical time instant at which the message was sent.
  */
-void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag);
+void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag, instant_t *physical_time);
 
 /**
  * Trace federate receiving a message from another federate.
@@ -375,8 +380,9 @@ void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int p
  * @param fed_id The federate identifier.
  * @param partner_id The partner federate identifier.
  * @param tag Pointer to the tag that has been received, or NULL.
+ * @param physical_time Pointer to the physical time instant at which the message was received.
  */
-void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag);
+void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag, instant_t *physical_time);
 
 #endif // FEDERATED
 

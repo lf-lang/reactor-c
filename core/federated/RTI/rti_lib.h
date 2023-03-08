@@ -358,9 +358,12 @@ void send_downstream_advance_grants_if_safe(federate_t* fed, bool visited[]);
 void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_event_tag);
 
 /**
- * Handle a port absent message being received rom a federate via the RIT.
+ * Handle a port absent message being received from a federate via the RIT.
  *
  * This function assumes the caller does not hold the mutex.
+ * @param sending_federate The federate sending PORT_ABSCENT message
+ * @param buffer 
+ * @param physical_time The physical time instant at which the message was received.
  */
 void handle_port_absent_message(federate_t *sending_federate, unsigned char *buffer, instant_t physical_time);
 
@@ -371,6 +374,7 @@ void handle_port_absent_message(federate_t *sending_federate, unsigned char *buf
  *
  * @param sending_federate The sending federate.
  * @param buffer The buffer to read into (the first byte is already there).
+ * @param physical_time The physical time instant at which the message was received.
  */
 void handle_timed_message(federate_t *sending_federate, unsigned char *buffer, instant_t physical_time);
 
@@ -381,6 +385,7 @@ void handle_timed_message(federate_t *sending_federate, unsigned char *buffer, i
  * This function assumes the caller does not hold the mutex.
  *
  * @param fed The federate that has completed a logical tag.
+ * @param physical_time The physical time instant at which the message was received.
  */
 void handle_logical_tag_complete(federate_t* fed, instant_t physical_time);
 
@@ -390,6 +395,7 @@ void handle_logical_tag_complete(federate_t* fed, instant_t physical_time);
  * This function assumes the caller does not hold the mutex.
  *
  * @param fed The federate sending a NET message.
+ * @param physical_time The physical time instant at which the message was received.
  */
 void handle_next_event_tag(federate_t* fed, instant_t physical_time);
 
@@ -423,8 +429,9 @@ void mark_federate_requesting_stop(federate_t* fed);
  * This function assumes the caller does not hold the mutex.
  *
  * @param fed The federate sending a MSG_TYPE_STOP_REQUEST message.
+ * @param physical_time The physical time instant at which the message was received.
  */
-void handle_stop_request_message(federate_t* fed, instant_t physical_timef);
+void handle_stop_request_message(federate_t* fed, instant_t physical_time);
 
 /**
  * Handle a MSG_TYPE_STOP_REQUEST_REPLY message.
@@ -432,6 +439,7 @@ void handle_stop_request_message(federate_t* fed, instant_t physical_timef);
  * This function assumes the caller does not hold the mutex.
  *
  * @param fed The federate replying the MSG_TYPE_STOP_REQUEST
+ * @param physical_time The physical time instant at which the message was received.
  */
 void handle_stop_request_reply(federate_t* fed, instant_t physical_time);
 
@@ -447,6 +455,7 @@ void handle_stop_request_reply(federate_t* fed, instant_t physical_time);
  * The sending federate is responsible for checking back with the RTI after a
  * period of time. @see connect_to_federate() in federate.c. *
  * @param fed_id The federate sending a MSG_TYPE_ADDRESS_QUERY message.
+ * @param physical_time The physical time instant at which the message was received.
  */
 void handle_address_query(uint16_t fed_id, instant_t physical_time);
 
@@ -464,12 +473,15 @@ void handle_address_query(uint16_t fed_id, instant_t physical_time);
  *
  * @param federate_id The id of the remote federate that is
  *  sending the address advertisement.
+ * @param physical_time The physical time instant at which the message was received.
  */
 void handle_address_ad(uint16_t federate_id, instant_t physical_time);
 
 /**
  * A function to handle timestamp messages.
  * This function assumes the caller does not hold the mutex.
+ * @param my_fed The federate sending the timestamp message.
+ * @param physical_time The physical time instant at which the message was received.
  */
 void handle_timestamp(federate_t *my_fed, instant_t physical_time);
 
@@ -538,6 +550,7 @@ void* clock_synchronization_thread(void* noargs);
  *  shutdown procedure as stated in the TCP/IP specification.
  *
  * @param my_fed The federate sending a MSG_TYPE_RESIGN message.
+ * @param physical_time The physical time instant at which the message was received.
  **/
 void handle_federate_resign(federate_t *my_fed, instant_t physical_time);
 
