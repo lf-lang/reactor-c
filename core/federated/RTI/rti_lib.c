@@ -439,7 +439,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
             fed->id,
             min_upstream_completed.time - start_time, min_upstream_completed.microstep);
     if (lf_tag_compare(min_upstream_completed, fed->last_granted) > 0
-        && lf_tag_compare(min_upstream_completed, fed->next_event) > 0 // The federate doesn't have to advance its tag
+        && lf_tag_compare(min_upstream_completed, fed->next_event) >= 0 // The federate has to advance its tag
     ) {
         send_tag_advance_grant(fed, min_upstream_completed);
         return true;
