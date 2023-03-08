@@ -234,7 +234,7 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag) {
     // to fail. Consider a failure here a soft failure and update the federate's status.
     ssize_t bytes_written = write_to_socket(fed->socket, message_length, buffer);
     if (bytes_written < (ssize_t)message_length) {
-        lf_print_error("RTI failed to send time advance grant to federate %d.", fed->id);
+        lf_print_error("RTI failed to send tag advance grant to federate %d.", fed->id);
         if (bytes_written < 0) {
             fed->state = NOT_CONNECTED;
             // FIXME: We need better error handling, but don't stop other execution here.
@@ -242,7 +242,7 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag) {
         }
     } else {
         fed->last_granted = tag;
-        LF_PRINT_LOG("RTI sent to federate %d the Time Advance Grant (TAG) (%lld, %u).",
+        LF_PRINT_LOG("RTI sent to federate %d the tag advance grant (TAG) (%lld, %u).",
                 fed->id, tag.time - start_time, tag.microstep);
     }
 }
@@ -345,7 +345,7 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
     // to fail. Consider a failure here a soft failure and update the federate's status.
     ssize_t bytes_written = write_to_socket(fed->socket, message_length, buffer);
     if (bytes_written < (ssize_t)message_length) {
-        lf_print_error("RTI failed to send time advance grant to federate %d.", fed->id);
+        lf_print_error("RTI failed to send tag advance grant to federate %d.", fed->id);
         if (bytes_written < 0) {
             fed->state = NOT_CONNECTED;
             // FIXME: We need better error handling, but don't stop other execution here.
@@ -438,7 +438,9 @@ bool send_advance_grant_if_safe(federate_t* fed) {
             "(adjusted by after delay).",
             fed->id,
             min_upstream_completed.time - start_time, min_upstream_completed.microstep);
-    if (lf_tag_compare(min_upstream_completed, fed->last_granted) > 0) {
+    if (lf_tag_compare(min_upstream_completed, fed->last_granted) > 0
+        && lf_tag_compare(min_upstream_completed, fed->next_event) >= 0 // The federate has to advance its tag
+    ) {
         send_tag_advance_grant(fed, min_upstream_completed);
         return true;
     }
@@ -575,7 +577,7 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
        next_event_tag.microstep
     );
 
-    // Check to see whether we can reply now with a time advance grant.
+    // Check to see whether we can reply now with a tag advance grant.
     // If the federate has no upstream federates, then it does not wait for
     // nor expect a reply. It just proceeds to advance time.
     if (_RTI.federates[federate_id].num_upstream > 0) {
