@@ -90,6 +90,10 @@ typedef enum
     send_JOIN,
     send_REJECT,
     send_RESIGN,
+    send_PORT_ABS,
+    send_CLOSE_REQ,
+    send_TAGGED_MSG,
+    send_P2P_TAGGED_MSG,
     // Receiving messages
     receive_ACK,
     receive_TIMESTAMP,
@@ -104,10 +108,12 @@ typedef enum
     receive_REJECT,
     receive_RESIGN,
     receive_PORT_ABS,
+    receive_CLOSE_REQ,
     receive_UNIDENTIFIED,
     // receive_ADDRESS_QUERY,
     // receive_ADDRESS_ADVERTISEMENT,
-    // receive_TAGGED_MESSAGE,
+    receive_TAGGED_MSG,
+    receive_P2P_TAGGED_MSG,
     NUM_EVENT_TYPES
 } trace_event_t;
 
@@ -142,6 +148,10 @@ static const char *trace_event_names[] = {
     "Sending JOIN",
     "Sending REJECT",
     "Sending RESIGN",
+    "Sending PORT_ABS",
+    "Sending CLOSE_REQ",
+    "Sending TAGGED_MSG",
+    "Sending P2P_TAGGED_MSG",
     // Receiving messages
     "Receiving ACK",
     "Receiving TIMESTAMP",
@@ -156,10 +166,12 @@ static const char *trace_event_names[] = {
     "Receiving REJECT",
     "Receiving RESIGN",
     "Receiving PORT_ABS",
-    "Receiving UNIDENTIFIED"
+    "Receiving CLOSE_REQ",
+    "Receiving UNIDENTIFIED",
     // "Receiving ADDRESS_QUERY",
     // "Receiving ADDRESS_ADVERTISEMENT",
-    // "Receiving TAGGED_MESSAGE"
+    "Receiving TAGGED_MSG",
+    "Receiving P2P_TAGGED_MSG",
 };
 
 // FIXME: Target property should specify the capacity of the trace buffer.
@@ -344,7 +356,8 @@ void stop_trace(void);
 
 /**
  * Trace federate sending a message to the RTI.
- * @param event_type Event type of the message. Possible values are:
+ * @param event_type The type of event. Possible values are:
+ * 
  * @param fed_id The federate identifier.
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
@@ -352,7 +365,8 @@ void tracepoint_federate_to_RTI(trace_event_t event_type, int fed_id, tag_t* tag
 
 /**
  * Trace federate receiving a message from the RTI.
- * @param event_type Event type of the message. Possible values are:
+ * @param event_type The type of event. Possible values are:
+ * 
  * @param fed_id The federate identifier.
  * @param tag Pointer to the tag that has been received, or NULL.
  */
@@ -360,7 +374,7 @@ void tracepoint_federate_from_RTI(trace_event_t event_type, int fed_id, tag_t* t
 
 /**
  * Trace federate sending a message to another federate.
- * @param event_type Event type of the message. Possible values are:
+ * @param event_type The type of event. Possible values are:
  *
  * @param fed_id The federate identifier.
  * @param partner_id The partner federate identifier.
@@ -370,7 +384,7 @@ void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int p
 
 /**
  * Trace federate receiving a message from another federate.
- * @param event_type Event type of the message. Possible values are:
+ * @param event_type The type of event. Possible values are:
  *
  * @param fed_id The federate identifier.
  * @param partner_id The partner federate identifier.
@@ -387,18 +401,19 @@ void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int
 
 /**
  * Trace RTI sending a message to a federate.
- * @param event_type Event type of the message. Possible values are:
+ * @param event_type The type of event. Possible values are:
  *
  * @param fed_id The fedaerate ID.
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
-void tracepoint_RTI_to_federate(trace_event_t type, int fed_id, tag_t* tag);
+void tracepoint_RTI_to_federate(trace_event_t event_type, int fed_id, tag_t* tag);
 
 /**
  * Trace RTI receiving a message from a federate.
- * @param event_type The type of event.
+ * @param event_type The type of event. Possible values are:
+ * 
  * @param fed_id The fedaerate ID.
- * @param tag The tag that has been sent, or NULL if none.
+ * @param tag Pointer to the tag that has been sent, or NULL.
  */
 void tracepoint_RTI_from_federate(trace_event_t event_type, int fed_id, tag_t* tag);
 

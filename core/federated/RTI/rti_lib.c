@@ -206,12 +206,13 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag) {
     buffer[0] = MSG_TYPE_TAG_ADVANCE_GRANT;
     encode_int64(tag.time, &(buffer[1]));
     encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));
-    // This function is called in send_advance_grant_if_safe(), which is a long
-    // function. During this call, the socket might close, causing the following write_to_socket
-    // to fail. Consider a failure here a soft failure and update the federate's status.
+
     if (_RTI.tracing_enabled) {
         tracepoint_RTI_to_federate(send_TAG, fed->id, &tag);
     }
+    // This function is called in send_advance_grant_if_safe(), which is a long
+    // function. During this call, the socket might close, causing the following write_to_socket
+    // to fail. Consider a failure here a soft failure and update the federate's status.
     ssize_t bytes_written = write_to_socket(fed->socket, message_length, buffer);
     if (bytes_written < (ssize_t)message_length) {
         lf_print_error("RTI failed to send time advance grant to federate %d.", fed->id);
@@ -286,13 +287,14 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
     buffer[0] = MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT;
     encode_int64(tag.time, &(buffer[1]));
     encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));
+
+    if (_RTI.tracing_enabled){
+        tracepoint_RTI_to_federate(send_PTAG, fed->id, &tag);
+    }
     // This function is called in send_advance_grant_if_safe(), which is a long
     // function. During this call, the socket might close, causing the following write_to_socket
     // to fail. Consider a failure here a soft failure and update the federate's status.
     ssize_t bytes_written = write_to_socket(fed->socket, message_length, buffer);
-    if (_RTI.tracing_enabled){
-        tracepoint_RTI_to_federate(send_PTAG, fed->id, &tag);
-    }
 
     if (bytes_written < (ssize_t)message_length) {
         lf_print_error("RTI failed to send time advance grant to federate %d.", fed->id);
@@ -495,13 +497,12 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
 
     uint16_t reactor_port_id = extract_uint16(&(buffer[1]));
     uint16_t federate_id = extract_uint16(&(buffer[1 + sizeof(uint16_t)]));
-
+    // FIXME: Is it correct to move acquiring the lock after extracting the
+    // port id and federate id?
     if (_RTI.tracing_enabled) {
         tracepoint_RTI_from_federate(receive_PORT_ABS, federate_id, NULL);
     }
 
-    // FIXME: Is it correct to move acquiring the lock after extracting the
-    // port id and federate id?
     // Need to acquire the mutex lock to ensure that the thread handling
     // messages coming from the socket connected to the destination does not
     // issue a TAG before this message has been forwarded.
@@ -561,7 +562,7 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     extract_timed_header(&(buffer[1]), &reactor_port_id, &federate_id, &length, &intended_tag);
 
     if (_RTI.tracing_enabled) {
-        // tracepoint_rti_from_federate(receive_TAGGED_MESSAGE, federate_id, &intended_tag);
+        tracepoint_RTI_from_federate(receive_TAGGED_MSG, federate_id, &intended_tag);
     }
 
     size_t total_bytes_to_read = length + header_size;
@@ -858,6 +859,9 @@ void handle_stop_request_message(federate_t* fed) {
             if (_RTI.federates[i].state == NOT_CONNECTED) {
                 mark_federate_requesting_stop(&_RTI.federates[i]);
                 continue;
+            }
+            if (_RTI.tracing_enabled) {
+                tracepoint_RTI_to_federate(send_STOP_REQ, _RTI.federates[i].id, &_RTI.max_stop_tag);
             }
             write_to_socket_errexit(_RTI.federates[i].socket, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer,
                     "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.", _RTI.federates[i].id);
@@ -1170,6 +1174,9 @@ void* clock_synchronization_thread(void* noargs) {
 }
 
 void handle_federate_resign(federate_t *my_fed) {
+    if (_RTI.tracing_enabled) {
+        tracepoint_RTI_from_federate(receive_RESIGN, my_fed->id, NULL);
+    }
     // Nothing more to do. Close the socket and exit.
     pthread_mutex_lock(&_RTI.rti_mutex);
     my_fed->state = NOT_CONNECTED;
@@ -1188,9 +1195,6 @@ void handle_federate_resign(federate_t *my_fed) {
     // an orderly shutdown.
     // close(my_fed->socket); //  from unistd.h
 
-    if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_RESIGN, my_fed->id, NULL);
-    }
     lf_print("Federate %d has resigned.", my_fed->id);
 
     // Check downstream federates to see whether they should now be granted a TAG.

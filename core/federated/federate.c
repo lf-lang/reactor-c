@@ -401,6 +401,13 @@ int send_timed_message(interval_t additional_delay,
         lf_mutex_unlock(&outbound_socket_mutex);
         return 0;
     }
+#ifdef LF_TRACE
+    if (message_type == MSG_TYPE_TAGGED_MESSAGE) {
+        tracepoint_federate_to_RTI(send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
+    } else { // message_type == MSG_TYPE_P2P_TAGGED_MESSAGE
+        tracepoint_federate_to_federate(send_P2P_TAGGED_MSG, _lf_my_fed_id, federate, &current_message_intended_tag);
+    }
+#endif // LF_TRACE
     write_to_socket_errexit_with_mutex(socket, header_length, header_buffer, &outbound_socket_mutex,
             "Failed to send timed message header to %s.", next_destination_str);
     write_to_socket_errexit_with_mutex(socket, length, message, &outbound_socket_mutex,
@@ -430,6 +437,14 @@ void _lf_send_time(unsigned char type, instant_t time, bool exit_on_error) {
         lf_mutex_unlock(&outbound_socket_mutex);
         return;
     }
+#ifdef LF_TRACE
+    // FIXME: This is the only meant type? 
+    trace_event_t event_type = send_TIMESTAMP; // No such MSG_TYPE_TIME_ADVANCE_NOTICE
+    // FIXME: Is it correct to encapsulate the tag this way?
+    // This will help in matching
+    tag_t tag = {.time = time, .microstep = 0};
+    tracepoint_federate_to_RTI(event_type, _lf_my_fed_id, &time);
+#endif // LF_TRACE
     ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
     if (bytes_written < (ssize_t)bytes_to_write) {
         if (!exit_on_error) {
@@ -477,12 +492,11 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
         lf_mutex_unlock(&outbound_socket_mutex);
         return;
     }
-    ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
 #ifdef LF_TRACE
     trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG) ? send_NET : send_LTC;
     tracepoint_federate_to_RTI(event_type, _lf_my_fed_id, &tag);
 #endif // LF_TRACE
-
+    ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
     if (bytes_written < (ssize_t)bytes_to_write) {
         if (!exit_on_error) {
             lf_print_error("Failed to send tag " PRINTF_TAG " to the RTI."
@@ -543,6 +557,9 @@ void* handle_p2p_connections_from_federates(void* ignored) {
                 unsigned char response[2];
                 response[0] = MSG_TYPE_REJECT;
                 response[1] = WRONG_SERVER;
+#ifdef LF_TRACE
+                tracepoint_federate_to_federate(send_REJECT, _lf_my_fed_id, -3, NULL);
+#endif // LF_TRACE
                 // Ignore errors on this response.
                 write_to_socket(socket_id, 2, response);
             }
@@ -561,6 +578,9 @@ void* handle_p2p_connections_from_federates(void* ignored) {
                 unsigned char response[2];
                 response[0] = MSG_TYPE_REJECT;
                 response[1] = FEDERATION_ID_DOES_NOT_MATCH;
+#ifdef LF_TRACE
+                tracepoint_federate_to_federate(send_REJECT, _lf_my_fed_id, -3, NULL);
+#endif // LF_TRACE
                 // Ignore errors on this response.
                 write_to_socket(socket_id, 2, response);
             }
@@ -572,6 +592,10 @@ void* handle_p2p_connections_from_federates(void* ignored) {
         uint16_t remote_fed_id = extract_uint16((unsigned char*)&(buffer[1]));
         LF_PRINT_DEBUG("Received sending federate ID %d.", remote_fed_id);
 
+#ifdef LF_TRACE
+        tracepoint_federate_to_federate(receive_FED_ID, _lf_my_fed_id, remote_fed_id, NULL);
+#endif // LF_TRACE
+
         // Once we record the socket_id here, all future calls to close() on
         // the socket should be done while holding a mutex, and this array
         // element should be reset to -1 during that critical section.
@@ -581,6 +605,9 @@ void* handle_p2p_connections_from_federates(void* ignored) {
 
         // Send an MSG_TYPE_ACK message.
         unsigned char response = MSG_TYPE_ACK;
+#ifdef LF_TRACE
+        tracepoint_federate_to_federate(send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
+#endif // LF_TRACE
         write_to_socket_errexit(socket_id, 1, (unsigned char*)&response,
                 "Failed to write MSG_TYPE_ACK in response to federate %d.",
                 remote_fed_id);
@@ -619,7 +646,7 @@ void* handle_p2p_connections_from_federates(void* ignored) {
  * Close the socket that sends outgoing messages to the
  * specified federate ID. This function assumes the caller holds
  * the outbound_socket_mutex mutex lock.
- * @param The ID of the peer federate receiving messages from this
+ * @param fed_id The ID of the peer federate receiving messages from this
  *  federate, or -1 if the RTI (centralized coordination).
  */
 void _lf_close_outbound_socket(int fed_id) {
@@ -1672,14 +1699,22 @@ int _lf_request_close_inbound_socket(int fed_id) {
        // Send a MSG_TYPE_CLOSE_REQUEST message.
     unsigned char message_marker = MSG_TYPE_CLOSE_REQUEST;
        LF_PRINT_LOG("Sending MSG_TYPE_CLOSE_REQUEST message to upstream federate.");
-    ssize_t written = write_to_socket(
-             _fed.sockets_for_inbound_p2p_connections[fed_id],
-            1, &message_marker);
-    _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
-    if (written == 1) {
-           LF_PRINT_LOG("Sent MSG_TYPE_CLOSE_REQUEST message to upstream federate.");
-           return 1;
-    } else {
+
+#ifdef LF_TRACE
+       tracepoint_federate_to_federate(send_CLOSE_REQ, _lf_my_fed_id, fed_id, NULL);
+#endif // LF_TRACE
+
+       ssize_t written = write_to_socket(
+           _fed.sockets_for_inbound_p2p_connections[fed_id],
+           1, &message_marker);
+       _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
+       if (written == 1)
+       {
+        LF_PRINT_LOG("Sent MSG_TYPE_CLOSE_REQUEST message to upstream federate.");
+        return 1;
+       }
+       else
+       {
         return 0;
     }
 }
@@ -1730,6 +1765,13 @@ void handle_port_absent_message(int socket, int fed_id) {
     // The next part of the message is the federate_id, but we don't need it.
     // unsigned short federate_id = extract_uint16(&(buffer[sizeof(uint16_t)]));
     tag_t intended_tag = extract_tag(&(buffer[sizeof(uint16_t)+sizeof(uint16_t)]));
+
+#ifdef LF_TRACE
+    if (fed_id == -1)
+        tracepoint_federate_from_RTI(receive_PORT_ABS, _lf_my_fed_id, &intended_tag);
+    else
+        tracepoint_federate_from_federate(receive_PORT_ABS, _lf_my_fed_id, fed_id, &intended_tag);
+#endif // LF_TRACE
 
     LF_PRINT_LOG("Handling port absent for tag " PRINTF_TAG " for port %hu of fed %d.",
             intended_tag.time - lf_time_start(),
@@ -1831,6 +1873,12 @@ void handle_tagged_message(int socket, int fed_id) {
     size_t length;
     tag_t intended_tag;
     extract_timed_header(buffer, &port_id, &federate_id, &length, &intended_tag);
+#ifdef LF_TRACE
+    if (fed_id == -1)
+        tracepoint_federate_from_RTI(receive_TAGGED_MSG, _lf_my_fed_id, &intended_tag);
+    else
+        tracepoint_federate_from_federate(receive_P2P_TAGGED_MSG, _lf_my_fed_id, fed_id, &intended_tag);
+#endif // LF_TRACE
     // Check if the message is intended for this federate
     assert(_lf_my_fed_id == federate_id);
     LF_PRINT_DEBUG("Receiving message to port %d of length %zu.", port_id, length);
@@ -2225,6 +2273,10 @@ void handle_stop_granted_message() {
 
     tag_t received_stop_tag = extract_tag(buffer);
 
+#ifdef LF_TRACE
+    tracepoint_federate_from_RTI(receive_STOP_GRN, _lf_my_fed_id, &received_stop_tag);
+#endif
+
     LF_PRINT_LOG("Received from RTI a MSG_TYPE_STOP_GRANTED message with elapsed tag " PRINTF_TAG ".",
             received_stop_tag.time - start_time, received_stop_tag.microstep);
 
@@ -2274,6 +2326,10 @@ void handle_stop_request_message() {
     }
 
     tag_t tag_to_stop = extract_tag(buffer);
+
+#ifdef LF_TRACE
+    tracepoint_federate_from_RTI(receive_STOP_REQ, _lf_my_fed_id, &tag_to_stop);
+#endif // LF_TRACE
 
     LF_PRINT_LOG("Received from RTI a MSG_TYPE_STOP_REQUEST message with tag " PRINTF_TAG ".",
              tag_to_stop.time - start_time,
@@ -2340,6 +2396,9 @@ void terminate_execution() {
        if (_fed.socket_TCP_RTI >= 0) {
         unsigned char message_marker = MSG_TYPE_RESIGN;
         ssize_t written = write_to_socket(_fed.socket_TCP_RTI, 1, &message_marker);
+#ifdef LF_TRACE
+        tracepoint_federate_to_RTI(send_RESIGN, _lf_my_fed_id, NULL);
+#endif // LF_TRACE
         if (written == 1) {
             LF_PRINT_LOG("Resigned.");
         }
@@ -2439,6 +2498,9 @@ void* listen_to_federates(void* fed_id_ptr) {
             // FIXME: Better error handling needed.
             lf_print_error("Received erroneous message type: %d. Closing the socket.", buffer[0]);
             break;
+#ifdef LF_TRACE
+            tracepoint_federate_from_federate(receive_UNIDENTIFIED, _lf_my_fed_id, fed_id, NULL);
+#endif // LF_TRACE
         }
     }
     free(fed_id_ptr);
@@ -2515,7 +2577,10 @@ void* listen_to_rti_TCP(void* args) {
                 break;
             default:
                 lf_print_error_and_exit("Received from RTI an unrecognized TCP message type: %hhx.", buffer[0]);
-        }
+#ifdef LF_TRACE
+                tracepoint_federate_from_RTI(receive_UNIDENTIFIED, _lf_my_fed_id, NULL);
+#endif // LF_TRACE
+            }
     }
     return NULL;
 }
