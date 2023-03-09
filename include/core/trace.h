@@ -148,10 +148,10 @@ static const char *trace_event_names[] = {
     "Sending JOIN",
     "Sending REJECT",
     "Sending RESIGN",
-    "Sending PORT_ABS",
+    "Sending ABS",
     "Sending CLOSE_REQ",
-    "Sending TAGGED_MSG",
-    "Sending P2P_TAGGED_MSG",
+    "Sending MSG",
+    "Sending P2P_MSG",
     // Receiving messages
     "Receiving ACK",
     "Receiving TIMESTAMP",
@@ -165,13 +165,13 @@ static const char *trace_event_names[] = {
     "Receiving STOP_GRN",
     "Receiving REJECT",
     "Receiving RESIGN",
-    "Receiving PORT_ABS",
+    "Receiving ABS",
     "Receiving CLOSE_REQ",
     "Receiving UNIDENTIFIED",
     // "Receiving ADDRESS_QUERY",
     // "Receiving ADDRESS_ADVERTISEMENT",
-    "Receiving TAGGED_MSG",
-    "Receiving P2P_TAGGED_MSG",
+    "Receiving MSG",
+    "Receiving P2P_MSG",
 };
 
 // FIXME: Target property should specify the capacity of the trace buffer.
