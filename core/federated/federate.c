@@ -420,7 +420,7 @@ int send_timed_message(interval_t additional_delay,
  * Send a time to the RTI.
  * This is not synchronized.
  * It assumes the caller is.
- * @param type The message type (MSG_TYPE_TIMESTAMP or MSG_TYPE_TIME_ADVANCE_NOTICE).
+ * @param type The message type (MSG_TYPE_TIMESTAMP).
  * @param time The time.
  * @param exit_on_error If set to true, exit the program if sending 'time' fails.
  *  Print a soft error message otherwise
@@ -437,14 +437,9 @@ void _lf_send_time(unsigned char type, instant_t time, bool exit_on_error) {
         lf_mutex_unlock(&outbound_socket_mutex);
         return;
     }
-#ifdef LF_TRACE
-    // FIXME: This is the only meant type? 
-    trace_event_t event_type = send_TIMESTAMP; // No such MSG_TYPE_TIME_ADVANCE_NOTICE
-    // FIXME: Is it correct to encapsulate the tag this way?
-    // This will help in matching
     tag_t tag = {.time = time, .microstep = 0};
-    tracepoint_federate_to_RTI(event_type, _lf_my_fed_id, &time);
-#endif // LF_TRACE
+    tracepoint_federate_to_RTI(send_TIMESTAMP, _lf_my_fed_id, &tag);
+
     ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
     if (bytes_written < (ssize_t)bytes_to_write) {
         if (!exit_on_error) {
@@ -1185,6 +1180,10 @@ instant_t get_start_time_from_rti(instant_t my_physical_time) {
     }
 
     instant_t timestamp = extract_int64(&(buffer[1]));
+
+    tag_t tag = {.time = timestamp, .microstep = 0};
+    tracepoint_federate_from_RTI(receive_TIMESTAMP, _lf_my_fed_id, &tag);
+
     lf_print("Starting timestamp is: " PRINTF_TIME ".", timestamp);
     LF_PRINT_LOG("Current physical time is: " PRINTF_TIME ".", lf_time_physical());
 
@@ -1510,6 +1509,7 @@ void send_port_absent_to_federate(interval_t additional_delay,
 #endif
     // Do not write if the socket is closed.
     if (socket >= 0) {
+        tracepoint_federate_to_RTI(send_PORT_ABS, fed_ID, &current_message_intended_tag);
         write_to_socket_errexit_with_mutex(socket, message_length, buffer, &outbound_socket_mutex,
                 "Failed to send port absent message for port %hu to federate %hu.",
                 port_ID, fed_ID);
