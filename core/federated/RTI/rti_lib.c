@@ -497,10 +497,10 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
 
     uint16_t reactor_port_id = extract_uint16(&(buffer[1]));
     uint16_t federate_id = extract_uint16(&(buffer[1 + sizeof(uint16_t)]));
-    // FIXME: Is it correct to move acquiring the lock after extracting the
-    // port id and federate id?
+    tag_t tag = extract_tag(&(buffer[1 + 2 * sizeof(uint16_t)]));
+
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_PORT_ABS, federate_id, NULL);
+        tracepoint_RTI_from_federate(receive_PORT_ABS, federate_id, &tag);
     }
 
     // Need to acquire the mutex lock to ensure that the thread handling
@@ -543,6 +543,9 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
 
     // Forward the message.
     int destination_socket = _RTI.federates[federate_id].socket;
+    if (_RTI.tracing_enabled) {
+        tracepoint_RTI_to_federate(send_PORT_ABS, federate_id, &tag);
+    }
     write_to_socket_errexit(destination_socket, message_size + 1, buffer,
             "RTI failed to forward message to federate %d.", federate_id);
 
@@ -560,10 +563,6 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     tag_t intended_tag;
     // Extract information from the header.
     extract_timed_header(&(buffer[1]), &reactor_port_id, &federate_id, &length, &intended_tag);
-
-    if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_TAGGED_MSG, federate_id, &intended_tag);
-    }
 
     size_t total_bytes_to_read = length + header_size;
     size_t bytes_to_read = length;
@@ -589,6 +588,10 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     size_t bytes_read = bytes_to_read + header_size;
     // Following only works for string messages.
     // LF_PRINT_DEBUG("Message received by RTI: %s.", buffer + header_size);
+
+    if (_RTI.tracing_enabled) {
+        tracepoint_RTI_from_federate(receive_TAGGED_MSG, sending_federate->id, &intended_tag);
+    }
 
     // Need to acquire the mutex lock to ensure that the thread handling
     // messages coming from the socket connected to the destination does not
@@ -660,6 +663,10 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     while (_RTI.federates[federate_id].state == PENDING) {
         // Need to wait here.
         pthread_cond_wait(&_RTI.sent_start_time, &_RTI.rti_mutex);
+    }
+
+    if (_RTI.tracing_enabled) {
+        tracepoint_RTI_to_federate(send_TAGGED_MSG, federate_id, &intended_tag);
     }
 
     write_to_socket_errexit(destination_socket, bytes_read, buffer,
@@ -977,7 +984,7 @@ void handle_timestamp(federate_t *my_fed) {
     int64_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t *)(&buffer)));
     if (_RTI.tracing_enabled) {
         tag_t tag = {.time = timestamp, .microstep = 0};
-        // FIXME: TODO
+        tracepoint_RTI_from_federate(receive_TIMESTAMP, my_fed->id, &tag);
     }
     LF_PRINT_LOG("RTI received timestamp message: %lld.", timestamp);
 
@@ -1008,6 +1015,10 @@ void handle_timestamp(federate_t *my_fed) {
     start_time = _RTI.max_start_time + DELAY_START;
     encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
 
+    if (_RTI.tracing_enabled) {
+        tag_t tag = {.time = start_time, .microstep = 0};
+        tracepoint_RTI_to_federate(send_TIMESTAMP, my_fed->id, &tag);
+    }
     ssize_t bytes_written = write_to_socket(
         my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH,
         start_time_buffer
@@ -1021,7 +1032,6 @@ void handle_timestamp(federate_t *my_fed) {
     // message has been sent. That MSG_TYPE_TIMESTAMP message grants time advance to
     // the federate to the start time.
     my_fed->state = GRANTED;
-    // FIXME: re-acquire the lock.
     pthread_cond_broadcast(&_RTI.sent_start_time);
     LF_PRINT_LOG("RTI sent start time %lld to federate %d.", start_time, my_fed->id);
     pthread_mutex_unlock(&_RTI.rti_mutex);
