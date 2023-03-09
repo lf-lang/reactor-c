@@ -1317,11 +1317,10 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
 }
 
 #ifdef LF_THREADED
-// FIXME: modif4watchdogs
+
 void* run_watchdog(watchdog_t* watchdog) {
     watchdog->thread_active = true;
     self_base_t* base = watchdog->base;
-    // lf_mutex_lock(&(base->watchdog_mutex));
 
     while (lf_time_physical() < watchdog->expiration) {
         interval_t T = watchdog->expiration - lf_time_physical();
@@ -1329,34 +1328,29 @@ void* run_watchdog(watchdog_t* watchdog) {
         lf_nanosleep(T);
         lf_mutex_lock(&(base->watchdog_mutex));
     }
-    // WATCHDOG QUESTION: Had to change watchdog_function to not be
-    // a pointer because this threw error otherwise.
+
+
     watchdog_function_t watchdog_func = watchdog->watchdog_function;
     (*watchdog_func)(watchdog);
     lf_mutex_unlock(&(base->watchdog_mutex));
 }
 
-// FIXME: modif4watchdogs
 void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
     self_base_t* base = watchdog->base;
-    // lf_mutex_lock(&(base->watchdog_mutex));
-    // reinitialize expiration time
+
     watchdog->expiration = lf_time_logical() + watchdog->min_expiration + additional_timeout;
 
-    //check to see if thread is running
-    // WATCHDOG QUESTION: should I be using thread_join instead?
-    // WATCHDOG QUESTION: should I be calling watchdog stop for resets here?
+
     if (!watchdog->thread_active) {
         lf_thread_create(&(watchdog->thread_id), run_watchdog, watchdog);
     } 
 
     watchdog->thread_active = false;
-    // lf_mutex_unlock(&(base->watchdog_mutex));
 }
 
+//FIXME: modif4watchdogs
 void _lf_watchdog_stop(watchdog_t* watchdog) {
-    // WATCHDOG QUESTION: do I need to cancel thread
-    // If so, how?
+
 }
 #endif
 
@@ -1367,8 +1361,7 @@ void _lf_watchdog_stop(watchdog_t* watchdog) {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution (for tracing).
  */
 void _lf_invoke_reaction(reaction_t* reaction, int worker) {
-    //FIXME: modif4watchdogs, added mutex lock/unlock
-    //FIXME: also make sure to check warning about mutex lock in lf_reactor_c_main
+
 #ifdef LF_THREADED
     if (&(((self_base_t*) reaction->self)->watchdog_mutex) != NULL) {
         lf_mutex_lock(&(((self_base_t*) reaction->self)->watchdog_mutex));

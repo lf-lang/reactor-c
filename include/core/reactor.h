@@ -428,7 +428,6 @@ void _lf_trigger_startup_reactions(void);
 /**
  * Function to initialize mutexes for watchdogs
  */
-// FIXME: modif4watchdogs
 void _lf_initialize_watchdog_mutexes(void);
 
 
@@ -560,7 +559,13 @@ void _lf_fd_send_stop_request_to_rti(void);
 bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
 
 #ifdef LF_THREADED
-// FIXME: modif4watchdogs
+/** 
+ * Function to start the watchdog.
+ * 
+ * @param watchdog The watchdog to be started
+ * @param additional_timeout Additional timeout to be added to the watchdog's
+ * minimum expiration.
+ **/
 void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout);
 #endif
 

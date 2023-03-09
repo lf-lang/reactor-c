@@ -170,7 +170,13 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
 bool lf_check_deadline(void* self, bool invoke_deadline_handler);
 
 #ifdef LF_THREADED
-// FIXME: modif4watchdogs
+/**
+ * Begin the watchdog.
+ * 
+ * @param watchdog The watchdog to be started.
+ * @param additional_timeout The timeout to be added to the minimum
+ * experiation of the watchdog.
+ **/
 void lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout);
 #endif
 

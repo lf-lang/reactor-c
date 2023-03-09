@@ -146,7 +146,6 @@ typedef void(*reaction_function_t)(void*);
  * these watchdog functions is a pointer to the self struct
  * for the reactor.
  */
-// FIXME: modif4watchdogs
 typedef void(*watchdog_function_t)(void*); 
 
 /** Trigger struct representing an output, timer, action, or input. See below. */
@@ -218,14 +217,11 @@ struct event_t {
     event_t* next;            // Pointer to the next event lined up in superdense time.
 };
 
-//FIXME: modif4watchdogs
 /** Typdef for watchdog_t struct, used to call watchdog handler. */
 typedef struct watchdog_t watchdog_t;
 
 #ifdef LF_THREADED
 /** Watchdog struct for handler. */
-// WATCHDOG QUESTION: it might be issue that self type is self_base_t?
-// self_base_t does not give access to parameters or actions
 struct watchdog_t {
     struct self_base_t* base;                      // The reactor that contains the watchdog.
     instant_t expiration;                   // The expiration instant for the watchdog. (Initialized to NEVER)
@@ -303,13 +299,9 @@ typedef struct allocation_record_t {
  * for the reactor that will be freed by that function, allocate the
  * memory using {@link _lf_allocate(size_t,size_t,self_base_t*)}.
  */
-//FIXME: may need to change freeing and allocating with watchdogs
-// modif4watchdogs
-// WATCHDOG QUESTION: The mutex doesn't need to be a pointer right?
 typedef struct self_base_t {
 	struct allocation_record_t *allocations;
 	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
-    // WATCHDOG QUESTION: how to fix incomplete error? lf_mutex_t of type void
 #ifdef LF_THREADED
     lf_mutex_t watchdog_mutex; // The mutex for this reactor to be acquired before reaction
                                // invocation. 
