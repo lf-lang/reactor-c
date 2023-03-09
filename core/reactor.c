@@ -363,7 +363,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         _lf_trigger_startup_reactions();
         _lf_initialize_timers();
         //FIXME: modif4watchdogs
-        _lf_initialize_watchdog_mutexes();
+        //_lf_initialize_watchdog_mutexes();
         // If the stop_tag is (0,0), also insert the shutdown
         // reactions. This can only happen if the timeout time
         // was set to 0.
