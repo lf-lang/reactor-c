@@ -2393,7 +2393,7 @@ void terminate_execution() {
         _lf_close_outbound_socket(i);
     }
     // Resign the federation, which will close the socket to the RTI.
-       if (_fed.socket_TCP_RTI >= 0) {
+    if (_fed.socket_TCP_RTI >= 0) {
         unsigned char message_marker = MSG_TYPE_RESIGN;
         ssize_t written = write_to_socket(_fed.socket_TCP_RTI, 1, &message_marker);
 #ifdef LF_TRACE
