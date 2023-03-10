@@ -348,9 +348,11 @@ void start_trace(char* filename) {
     _lf_trace_stop = 0;
 
     // In case the user forgets to stop to the trace in wrapup.
-    if (atexit(stop_trace) != 0) {
-        lf_print_warning("Failed to register stop_trace function for execution upon termination.");
-    }
+    // NOTE: Removed because this results in premature stopping of the trace,
+    // before threads have finished writing to the trace buffer.
+    // if (atexit(stop_trace) != 0) {
+    //     lf_print_warning("Failed to register stop_trace function for execution upon termination.");
+    // }
 
     lf_thread_create(&_lf_flush_trace_thread, flush_trace, NULL);
 
@@ -507,11 +509,11 @@ void tracepoint_reaction_deadline_missed(reaction_t *reaction, int worker) {
 }
 
 void stop_trace() {
+    lf_mutex_lock(&_lf_trace_mutex);
     if (_lf_trace_stop) {
         // Trace was already stopped. Nothing to do.
         return;
     }
-    lf_mutex_lock(&_lf_trace_mutex);
     // In multithreaded execution, thread 0 invokes wrapup reactions, so we
     // put that trace last. However, it could also include some startup events.
     // In any case, the trace file does not guarantee any ordering.
