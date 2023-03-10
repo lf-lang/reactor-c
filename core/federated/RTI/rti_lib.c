@@ -1186,11 +1186,20 @@ void* clock_synchronization_thread(void* noargs) {
 }
 
 void handle_federate_resign(federate_t *my_fed) {
-    if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_RESIGN, my_fed->id, NULL);
-    }
     // Nothing more to do. Close the socket and exit.
     pthread_mutex_lock(&_RTI.rti_mutex);
+    if (_RTI.tracing_enabled) {
+        // Extract the tag, for tracing purposes
+        size_t header_size = 1 + sizeof(tag_t);
+        unsigned char buffer[header_size];
+        // Read the header, minus the first byte which has already been read.
+        read_from_socket_errexit(my_fed->socket, header_size - 1, &(buffer[1]),
+                                 "RTI failed to read the timed message header from remote federate.");
+        // Extract the tag sent by the resigning federate
+        tag_t tag = extract_tag(&(buffer[1]));
+        tracepoint_RTI_from_federate(receive_RESIGN, my_fed->id, &tag);
+    }
+
     my_fed->state = NOT_CONNECTED;
     // FIXME: The following results in spurious error messages.
     // mark_federate_requesting_stop(my_fed);

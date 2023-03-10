@@ -487,10 +487,8 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
         lf_mutex_unlock(&outbound_socket_mutex);
         return;
     }
-#ifdef LF_TRACE
     trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG) ? send_NET : send_LTC;
     tracepoint_federate_to_RTI(event_type, _lf_my_fed_id, &tag);
-#endif // LF_TRACE
     ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
     if (bytes_written < (ssize_t)bytes_to_write) {
         if (!exit_on_error) {
@@ -2394,12 +2392,16 @@ void terminate_execution() {
     }
     // Resign the federation, which will close the socket to the RTI.
     if (_fed.socket_TCP_RTI >= 0) {
-        unsigned char message_marker = MSG_TYPE_RESIGN;
-        ssize_t written = write_to_socket(_fed.socket_TCP_RTI, 1, &message_marker);
+        size_t bytes_to_write = 1 + sizeof(tag_t);
+        unsigned char buffer[bytes_to_write];
+        buffer[0] = MSG_TYPE_RESIGN;
+        tag_t tag = lf_tag();
+        encode_tag(&(buffer[1]), tag);
 #ifdef LF_TRACE
-        tracepoint_federate_to_RTI(send_RESIGN, _lf_my_fed_id, NULL);
+        tracepoint_federate_to_RTI(send_RESIGN, _lf_my_fed_id, &tag);
 #endif // LF_TRACE
-        if (written == 1) {
+        ssize_t written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, &buffer);
+        if (written == bytes_to_write) {
             LF_PRINT_LOG("Resigned.");
         }
     }
