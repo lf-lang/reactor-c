@@ -40,9 +40,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // FIXME: This is a hack to allow trace.c to get the threaded support API
 //  even though we are using a unthreaded runtime
-#define _LF_TRACE
+// #define _LF_TRACE
 #include "platform.h"
-#undef _LF_TRACE
+// #undef _LF_TRACE
 
 
 #ifdef RTI_TRACE
