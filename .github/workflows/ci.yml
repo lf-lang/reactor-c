@@ -43,7 +43,7 @@ jobs:
 
   lf-default-zephyr:
     needs: fetch-lf
-    uses: lf-lang/lingua-franca/.github/workflows/c-zephyr-tests.yml@master
+    uses: lf-lang/lingua-franca/.github/workflows/c-zephyr-tests.yml@disable-a-security-measure
     with:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
