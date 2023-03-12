@@ -57,6 +57,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 typedef enum {
     reaction_starts,
     reaction_ends,
+    reaction_deadline_missed,
     schedule_called,
     user_event,
     user_value,
@@ -74,6 +75,7 @@ typedef enum {
 static const char* trace_event_names[] = {
         "Reaction starts",
         "Reaction ends",
+        "Reaction deadline missed",
         "Schedule called",
         "User-defined event",
         "User-defined valued event",
@@ -235,6 +237,15 @@ void tracepoint_scheduler_advancing_time_starts();
  */
 void tracepoint_scheduler_advancing_time_ends();
 
+
+/**
+ * Trace the occurence of a deadline miss.
+ * @param reaction Pointer to the reaction_t struct for the reaction.
+ * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ */
+void tracepoint_reaction_deadline_missed(reaction_t *reaction, int worker);
+
+
 void stop_trace(void);
 
 #else
@@ -252,6 +263,7 @@ void stop_trace(void);
 #define tracepoint_worker_wait_ends(...)
 #define tracepoint_scheduler_advancing_time_starts(...);
 #define tracepoint_scheduler_advancing_time_ends(...);
+#define tracepoint_reaction_deadline_missed(...);
 
 #define start_trace(...)
 #define stop_trace(...)
