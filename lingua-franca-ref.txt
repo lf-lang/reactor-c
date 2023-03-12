@@ -1,1 +1,1 @@
-master
+do-not-report-warnings-as-errors
