@@ -2400,7 +2400,7 @@ void terminate_execution() {
 #ifdef LF_TRACE
         tracepoint_federate_to_RTI(send_RESIGN, _lf_my_fed_id, &tag);
 #endif // LF_TRACE
-        ssize_t written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, &buffer);
+        ssize_t written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, &(buffer[0]));
         if (written == bytes_to_write) {
             LF_PRINT_LOG("Resigned.");
         }
