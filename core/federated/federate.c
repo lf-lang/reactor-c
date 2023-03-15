@@ -208,6 +208,9 @@ void create_server(int specified_port) {
     unsigned char buffer[sizeof(int32_t) + 1];
     buffer[0] = MSG_TYPE_ADDRESS_ADVERTISEMENT;
     encode_int32(_fed.server_port, &(buffer[1]));
+#ifdef LF_TRACE
+    tracepoint_federate_to_RTI(send_ADR_AD, _lf_my_fed_id, NULL);
+#endif // LF_TRACE
     write_to_socket_errexit(_fed.socket_TCP_RTI, sizeof(int32_t) + 1, (unsigned char*)buffer,
                     "Failed to send address advertisement.");
     LF_PRINT_DEBUG("Sent port %d to the RTI.", _fed.server_port);
@@ -228,8 +231,8 @@ void create_server(int specified_port) {
  *  does not deal with time and timed_messages.
  *
  * @param message_type The type of the message being sent.
- *  Currently can be MSG_TYPE_TAGGED_MESSAGE for messages sent via
- *  RTI or MSG_TYPE_P2P_TAGGED_MESSAGE for messages sent between
+ *  Currently can be MSG_TYPE_MESSAGE for messages sent via
+ *  RTI or MSG_TYPE_P2P_MESSAGE for messages sent between
  *  federates.
  * @param port The ID of the destination port.
  * @param federate The ID of the destination federate.
@@ -237,6 +240,9 @@ void create_server(int specified_port) {
  * @param length The message length.
  * @param message The message.
  * @return 1 if the message has been sent, 0 otherwise.
+ * FIXME: Currently, federates can send untimed messages to RTI, but there is no
+ *        handling mechanism of MSG_TYPE_MESSAGE at the RTI side.
+ *        Is it really needed? Or should the RTI be updated?
  */
 int send_message(int message_type,
                   unsigned short port,
@@ -275,7 +281,7 @@ int send_message(int message_type,
     // First, check that the socket is still connected. This must done
     // while holding the mutex lock.
     int socket = -1;
-    if (message_type == MSG_TYPE_P2P_MESSAGE || message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
+    if (message_type == MSG_TYPE_P2P_MESSAGE) {
         socket = _fed.sockets_for_outbound_p2p_connections[federate];
     } else {
         socket = _fed.socket_TCP_RTI;
@@ -285,6 +291,13 @@ int send_message(int message_type,
         lf_mutex_unlock(&outbound_socket_mutex);
         return 0;
     }
+#ifdef LF_TRACE
+    if (message_type == MSG_TYPE_P2P_MESSAGE) {
+        tracepoint_federate_to_federate(send_P2P_MSG, _lf_my_fed_id, federate, NULL);
+    } else { // message_type == MSG_TYPE_MESSAGE)
+        tracepoint_federate_to_RTI(send_MSG, _lf_my_fed_id, NULL);
+    }
+#endif //LF_TRACE
     write_to_socket_errexit_with_mutex(socket, header_length, header_buffer, &outbound_socket_mutex,
             "Failed to send message header to to %s.", next_destination_str);
     write_to_socket_errexit_with_mutex(socket, length, message, &outbound_socket_mutex,
@@ -391,7 +404,7 @@ int send_timed_message(interval_t additional_delay,
     // First, check that the socket is still connected. This must done
     // while holding the mutex lock.
     int socket = -1;
-    if (message_type == MSG_TYPE_P2P_MESSAGE || message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
+    if (message_type == MSG_TYPE_P2P_TAGGED_MESSAGE) {
         socket = _fed.sockets_for_outbound_p2p_connections[federate];
     } else {
         socket = _fed.socket_TCP_RTI;
@@ -680,6 +693,9 @@ void* listen_for_upstream_messages_from_downstream_federates(void* fed_id_ptr) {
         if (bytes_read == 1 && message == MSG_TYPE_CLOSE_REQUEST) {
             // Received a request to close the socket.
             LF_PRINT_DEBUG("Received MSG_TYPE_CLOSE_REQUEST from federate %d.", fed_id);
+#ifdef LF_TRACE
+            tracepoint_federate_from_federate(receive_CLOSE_RQ, _lf_my_fed_id, fed_id, NULL);
+#endif // LF_TRACE
             _lf_close_outbound_socket(fed_id);
             break;
         }
@@ -730,6 +746,9 @@ void connect_to_federate(uint16_t remote_federate_id) {
 
         LF_PRINT_DEBUG("Sending address query for federate %d.", remote_federate_id);
 
+#ifdef LF_TRACE 
+        tracepoint_federate_to_RTI(send_ADR_QR, _lf_my_fed_id, NULL);
+#endif // LF_TRACE
         write_to_socket_errexit(_fed.socket_TCP_RTI, sizeof(uint16_t) + 1, buffer,
                 "Failed to send address query for federate %d to RTI.",
                 remote_federate_id);
@@ -839,6 +858,9 @@ void connect_to_federate(uint16_t remote_federate_id) {
             encode_uint16((uint16_t)_lf_my_fed_id, (unsigned char*)&(buffer[1]));
             unsigned char federation_id_length = (unsigned char)strnlen(federation_metadata.federation_id, 255);
             buffer[sizeof(uint16_t) + 1] = federation_id_length;
+#ifdef LF_TRACE
+            tracepoint_federate_to_federate(send_FED_ID, _lf_my_fed_id, remote_federate_id, NULL);
+#endif // LF_TRACE
             write_to_socket_errexit(socket_id,
                     buffer_length, buffer,
                     "Failed to send fed_id to federate %d.", remote_federate_id);
@@ -859,6 +881,9 @@ void connect_to_federate(uint16_t remote_federate_id) {
                 continue;
             } else {
                 lf_print("Connected to federate %d, port %d.", remote_federate_id, port);
+#ifdef LF_TRACE
+                tracepoint_federate_to_federate(receive_ACK, _lf_my_fed_id, remote_federate_id, NULL);
+#endif // LF_TRACE
             }
         }
     }
@@ -1095,6 +1120,10 @@ void connect_to_rti(const char* hostname, int port) {
             size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
             buffer[1 + sizeof(uint16_t)] = (unsigned char)(federation_id_length & 0xff);
 
+#ifdef LF_TRACE
+            tracepoint_federate_to_RTI(send_FED_ID, _lf_my_fed_id, NULL);
+#endif // LF_TRACE
+
             write_to_socket_errexit(_fed.socket_TCP_RTI, 2 + sizeof(uint16_t), buffer,
                     "Failed to send federate ID to RTI.");
 
@@ -1112,6 +1141,9 @@ void connect_to_rti(const char* hostname, int port) {
 
             read_from_socket_errexit(_fed.socket_TCP_RTI, 1, &response, "Failed to read response from RTI.");
             if (response == MSG_TYPE_REJECT) {
+#ifdef LF_TRACE
+                tracepoint_federate_from_RTI(receive_REJECT, _lf_my_fed_id, NULL);
+#endif // LF_TRACE
                 // Read one more byte to determine the cause of rejection.
                 unsigned char cause;
                 read_from_socket_errexit(_fed.socket_TCP_RTI, 1, &cause, "Failed to read the cause of rejection by the RTI.");
@@ -1124,6 +1156,9 @@ void connect_to_rti(const char* hostname, int port) {
                 lf_print_error_and_exit("RTI Rejected MSG_TYPE_FED_IDS message with response (see net_common.h): "
                         "%d. Error code: %d. Federate quits.\n", response, cause);
             } else if (response == MSG_TYPE_ACK) {
+#ifdef LF_TRACE
+                tracepoint_federate_from_RTI(receive_ACK, _lf_my_fed_id, NULL);
+#endif // LF_TRACE
                 LF_PRINT_LOG("Received acknowledgment from the RTI.");
 
                 // Call a generated (external) function that sends information
@@ -1180,8 +1215,9 @@ instant_t get_start_time_from_rti(instant_t my_physical_time) {
     instant_t timestamp = extract_int64(&(buffer[1]));
 
     tag_t tag = {.time = timestamp, .microstep = 0};
+#ifdef LF_TRACE
     tracepoint_federate_from_RTI(receive_TIMESTAMP, _lf_my_fed_id, &tag);
-
+#endif // LF_TRACE
     lf_print("Starting timestamp is: " PRINTF_TIME ".", timestamp);
     LF_PRINT_LOG("Current physical time is: " PRINTF_TIME ".", lf_time_physical());
 
@@ -1692,27 +1728,24 @@ trigger_handle_t schedule_message_received_from_network_already_locked(
 int _lf_request_close_inbound_socket(int fed_id) {
     assert(fed_id >= 0 && fed_id < NUMBER_OF_FEDERATES);
 
-     if (_fed.sockets_for_inbound_p2p_connections[fed_id] < 1) return 0;
+    if (_fed.sockets_for_inbound_p2p_connections[fed_id] < 1) return 0;
 
-       // Send a MSG_TYPE_CLOSE_REQUEST message.
+    // Send a MSG_TYPE_CLOSE_REQUEST message.
     unsigned char message_marker = MSG_TYPE_CLOSE_REQUEST;
-       LF_PRINT_LOG("Sending MSG_TYPE_CLOSE_REQUEST message to upstream federate.");
+    LF_PRINT_LOG("Sending MSG_TYPE_CLOSE_REQUEST message to upstream federate.");
 
 #ifdef LF_TRACE
-       tracepoint_federate_to_federate(send_CLOSE_REQ, _lf_my_fed_id, fed_id, NULL);
-#endif // LF_TRACE
+    tracepoint_federate_to_federate(send_CLOSE_RQ, _lf_my_fed_id, fed_id, NULL);
+#endif  // LF_TRACE
 
-       ssize_t written = write_to_socket(
-           _fed.sockets_for_inbound_p2p_connections[fed_id],
-           1, &message_marker);
-       _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
-       if (written == 1)
-       {
+    ssize_t written = write_to_socket(
+        _fed.sockets_for_inbound_p2p_connections[fed_id],
+        1, &message_marker);
+    _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
+    if (written == 1) {
         LF_PRINT_LOG("Sent MSG_TYPE_CLOSE_REQUEST message to upstream federate.");
         return 1;
-       }
-       else
-       {
+    } else {
         return 0;
     }
 }
@@ -1833,7 +1866,9 @@ void handle_message(int socket, int fed_id) {
     unsigned char* message_contents = (unsigned char*)malloc(length);
     read_from_socket_errexit(socket, length, message_contents,
             "Failed to read message body.");
-
+#ifdef LF_TRACE
+    tracepoint_federate_from_federate(receive_P2P_MSG, _lf_my_fed_id, federate_id, NULL);
+#endif // LF_TRACE
     LF_PRINT_LOG("Message received by federate: %s. Length: %zu.", message_contents, length);
 
     LF_PRINT_DEBUG("Calling schedule for message received on a physical connection.");
@@ -2242,6 +2277,9 @@ void _lf_fd_send_stop_request_to_rti() {
         lf_mutex_unlock(&outbound_socket_mutex);
         return;
     }
+#ifdef LF_TRACE
+    tracepoint_federate_to_RTI(send_STOP_REQ, _lf_my_fed_id, &current_tag);
+#endif
     write_to_socket_errexit_with_mutex(_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH,
             buffer, &outbound_socket_mutex,
             "Failed to send stop time " PRINTF_TIME " to the RTI.", current_tag.time - start_time);
@@ -2351,6 +2389,9 @@ void handle_stop_request_message() {
         lf_mutex_unlock(&mutex);
         return;
     }
+#ifdef LF_TRACE
+    tracepoint_federate_to_RTI(send_STOP_REQ_REP, _lf_my_fed_id, &tag_to_stop);
+#endif
     // Send the current logical time to the RTI. This message does not have an identifying byte since
     // since the RTI is waiting for a response from this federate.
     write_to_socket_errexit_with_mutex(
