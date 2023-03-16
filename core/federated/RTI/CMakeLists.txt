@@ -81,7 +81,7 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 target_compile_definitions(RTI PUBLIC LF_THREADED=1 FEDERATED=1)
 target_compile_definitions(RTI PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 
-# FIXME: Should be defined conditionnaly or always set when compiling?
+# Set RTI Tracing
 target_compile_definitions(RTI PUBLIC RTI_TRACE)
 
 # Find threads and link to it
