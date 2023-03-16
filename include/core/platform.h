@@ -79,8 +79,16 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error "Platform not supported"
 #endif
 
-#if !defined(LF_THREADED) && !defined(_LF_TRACE)
-    typedef void lf_mutex_t;
+#if defined(LF_UNTHREADED) 
+    #if defined(LF_TRACE)
+        typedef void *lf_mutex_t;
+        typedef void *lf_cond_t;
+        typedef void *lf_thread_t;
+    #else // !defined(_LF_TRACE) ???
+        // FIXME: Not sure if _LF_TRACE is needed anymore, as it is commented 
+        // out in trace.c. In both case, shouldn't it lf_mutex_t be void*?
+        typedef void lf_mutex_t;
+    #endif
 #endif
 
 #define LF_TIMEOUT _LF_TIMEOUT
@@ -333,5 +341,20 @@ extern int lf_sleep_until_locked(instant_t wakeup_time);
  * @deprecated version of "lf_sleep"
  */
 DEPRECATED(extern int lf_nanosleep(interval_t sleep_duration));
+
+// empty definition in case we have LF_UNTHREADED and LF_TRACE
+#if (defined LF_UNTHREADED && defined LF_TRACE)
+#define lf_available_cores(...);
+#define lf_thread_create(...);
+#define lf_thread_join(...);
+#define lf_mutex_init(...);
+#define lf_mutex_lock(...);
+#define lf_mutex_unlock(...);
+#define lf_cond_init(...);
+#define lf_cond_broadcast(...);
+#define lf_cond_signal(...);
+#define lf_cond_wait(...);
+#define lf_cond_timedwait(...);
+#endif // LF_UNTHREADED && LF_TRACE
 
 #endif // PLATFORM_H

@@ -356,6 +356,14 @@ void start_trace(char* filename) {
 
     lf_thread_create(&_lf_flush_trace_thread, flush_trace, NULL);
 
+#ifdef LF_UNTHREADED 
+    // FIXME: If LF_UNTHREADED is defined, then no thread will be create to 
+    //        flush the file (instruction above).
+    //        A sequential mechanism is needed for emptying the buffer into the
+    //        file when needed.
+    ; // WIP
+#endif // LF_UNTHREADED
+
     LF_PRINT_DEBUG("Started tracing.");
 }
 
