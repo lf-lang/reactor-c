@@ -305,6 +305,7 @@ typedef struct self_base_t {
 #ifdef LF_THREADED
     lf_mutex_t watchdog_mutex; // The mutex for this reactor to be acquired before reaction
                                // invocation. 
+    bool has_watchdog;       // Boolean signifying initialization of watchdog_mutex
 #endif
 #ifdef MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
