@@ -344,6 +344,18 @@ int lf_notify_of_event() {
    return 0;
 }
 
+int lf_wait_for_event(instant_t timeout) {
+    lf_critical_section_exit();
+    instant_t wait_until_time = lf_time_physical() + timeout;
+    // Busy wait.
+    while(!_lf_async_event && lf_time_physical() < wait_until_time) {}
+    if (_lf_async_event) {
+        _lf_async_event = false;
+        return 0;
+    }
+    return LF_TIMEOUT;
+}
+
 #endif
 
 

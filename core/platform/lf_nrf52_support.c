@@ -292,4 +292,12 @@ int lf_notify_of_event() {
     _lf_async_event = true;
     return 0;
 }
+
+int lf_wait_for_event(interval_t timeout) {
+    int result = lf_sleep_until_locked(lf_time_physical() + timeout);
+    if (result) {
+        return LF_TIMEOUT;
+    }
+    return 0;
+}
 #endif

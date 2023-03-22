@@ -34,6 +34,10 @@ int lf_notify_of_event() {
     return 0;
 }
 
+int lf_wait_for_event(interval_t timeout) {
+    return 0;
+}
+
 int lf_ack_events() {
     return 0;
 }

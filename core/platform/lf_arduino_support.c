@@ -175,6 +175,14 @@ int lf_notify_of_event() {
    return 0;
 }
 
+int lf_wait_for_event(interval_t timeout) {
+    int result = lf_sleep(timeout);
+    if (result) {
+        return LF_TIMEOUT;
+    }
+    return 0;
+}
+
 #else
 #warning "Threaded support on Arduino is still experimental"
 #include "ConditionWrapper.h"

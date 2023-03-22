@@ -125,6 +125,14 @@ extern int lf_critical_section_exit();
  */
 extern int lf_notify_of_event();
 
+/**
+ * @brief Wait for an event notification.
+ * The caller should call lf_critical_section_enter() before calling this function.
+ * @param timeout Maximum time to wait.
+ * @return 0 if event occurred and LF_TIMEOUT if timeout occurred.
+ */
+extern int lf_wait_for_event(interval_t timeout);
+
 // For platforms with threading support, the following functions
 // abstract the API so that the LF runtime remains portable.
 #if defined LF_THREADED || defined _LF_TRACE

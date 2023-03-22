@@ -1179,6 +1179,10 @@ int lf_notify_of_event() {
     return lf_cond_broadcast(&event_q_changed);
 }
 
+int lf_wait_for_event(instant_t timeout) {
+    return lf_cond_timedwait(&event_q_changed, lf_time_physical() + timeout);
+}
+
 /**
  * @brief Enter critical section by locking the global mutex.
  */
