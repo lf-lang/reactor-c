@@ -1892,10 +1892,11 @@ void handle_tagged_message(int socket, int fed_id) {
     tag_t intended_tag;
     extract_timed_header(buffer, &port_id, &federate_id, &length, &intended_tag);
     // Trace the event when tracing is enabled
-    if (fed_id == -1)
+    if (fed_id == -1) {
         tracepoint_federate_from_RTI(receive_TAGGED_MSG, _lf_my_fed_id, &intended_tag);
-    else
+    } else {
         tracepoint_federate_from_federate(receive_P2P_TAGGED_MSG, _lf_my_fed_id, fed_id, &intended_tag);
+    }
     // Check if the message is intended for this federate
     assert(_lf_my_fed_id == federate_id);
     LF_PRINT_DEBUG("Receiving message to port %d of length %zu.", port_id, length);
