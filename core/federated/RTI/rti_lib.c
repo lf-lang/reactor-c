@@ -1329,8 +1329,6 @@ void send_reject(int socket_id, unsigned char error_code) {
     response[1] = error_code;
     // FIXME: Ignore errors on this response.
     write_to_socket_errexit(socket_id, 2, response, "RTI failed to write MSG_TYPE_REJECT message on the socket.");
-    if (_RTI.tracing_enabled) {
-    }
     // Close the socket.
     close(socket_id);
 }

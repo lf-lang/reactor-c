@@ -54,7 +54,7 @@ extern RTI_instance_t _RTI;
 /**
  * RTI trace file name
  */
-char *rti_trace_file_name = "rti.lft";
+const char *rti_trace_file_name = "rti.lft";
 
 int main(int argc, const char* argv[]) {
     if (!process_args(argc, argv)) {
