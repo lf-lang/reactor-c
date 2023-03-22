@@ -115,7 +115,6 @@ bool _lf_trace_header_written = false;
  */
 int write_trace_header() {
     if (_lf_trace_file != NULL) {
-        lf_critical_section_enter();
         // The first item in the header is the start time.
         // This is both the starting physical time and the starting logical time.
         instant_t start_time = lf_time_start();
@@ -180,7 +179,6 @@ int write_trace_header() {
             );
             if (items_written != description_size + 1) _LF_TRACE_FAILURE(_lf_trace_file);
         }
-        lf_critical_section_exit();
     }
     return _lf_trace_object_descriptions_size;
 }
