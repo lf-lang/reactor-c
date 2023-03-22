@@ -1785,11 +1785,11 @@ void handle_port_absent_message(int socket, int fed_id) {
     tag_t intended_tag = extract_tag(&(buffer[sizeof(uint16_t)+sizeof(uint16_t)]));
 
     // Trace the event when tracing is enabled
-    if (fed_id == -1)
+    if (fed_id == -1) {
         tracepoint_federate_from_RTI(receive_PORT_ABS, _lf_my_fed_id, &intended_tag);
-    else
+    } else {
         tracepoint_federate_from_federate(receive_PORT_ABS, _lf_my_fed_id, fed_id, &intended_tag);
-
+    }
     LF_PRINT_LOG("Handling port absent for tag " PRINTF_TAG " for port %hu of fed %d.",
             intended_tag.time - lf_time_start(),
             intended_tag.microstep,
