@@ -38,12 +38,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <string.h>
 
-// FIXME: This is a hack to allow trace.c to get the threaded support API
-//  even though we are using a unthreaded runtime
-// #define _LF_TRACE
 #include "platform.h"
-// #undef _LF_TRACE
-
 
 #ifdef RTI_TRACE
 #include "net_common.h"  // Defines message types
