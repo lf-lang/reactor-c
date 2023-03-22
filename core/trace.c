@@ -58,30 +58,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         fprintf(stderr, "WARNING: Access to trace file failed.\n"); \
         fclose(trace_file); \
         trace_file = NULL; \
-        lf_mutex_unlock(&_lf_trace_mutex); \
+        lf_critical_section_exit(); \
         return -1; \
     } while(0)
 
-// Mutex used to prevent collisions between threads writing to the file.
-static lf_mutex_t _lf_trace_mutex;
-// Condition variable used to indicate when flushing a buffer is finished.
-static lf_cond_t _lf_flush_finished;
-// Condition variable used to indicate when a new trace needs to be flushed.
-static lf_cond_t _lf_flush_needed;
-// The thread that flushes to a file.
-static lf_thread_t _lf_flush_trace_thread;
-
 /**
  * Array of buffers into which traces are written.
- * When each buffer gets full, the trace is flushed to the trace file.
- * We use a double buffering strategy. When a buffer becomes full,
- * tracing continues in a new buffer while a separate thread writes
- * the old buffer to the file.
+ * When a buffer becomes full, the contents is flushed to the file,
+ * which will create a significant pause in the calling thread.
  */
 static trace_record_t** _lf_trace_buffer = NULL;
 static int* _lf_trace_buffer_size = NULL;
-static trace_record_t** _lf_trace_buffer_to_flush = NULL;
-static int* _lf_trace_buffer_size_to_flush = NULL;
 
 /** The number of trace buffers allocated when tracing starts. */
 static int _lf_number_of_trace_buffers;
@@ -99,9 +86,9 @@ static object_description_t _lf_trace_object_descriptions[TRACE_OBJECT_TABLE_SIZ
 static int _lf_trace_object_descriptions_size = 0;
 
 int _lf_register_trace_event(void* pointer1, void* pointer2, _lf_trace_object_t type, char* description) {
-    lf_mutex_lock(&_lf_trace_mutex);
+    lf_critical_section_enter();
     if (_lf_trace_object_descriptions_size >= TRACE_OBJECT_TABLE_SIZE) {
-        lf_mutex_unlock(&_lf_trace_mutex);
+        lf_critical_section_exit();
         fprintf(stderr, "WARNING: Exceeded trace object table size. Trace file will be incomplete.\n");
         return 0;
     }
@@ -110,7 +97,7 @@ int _lf_register_trace_event(void* pointer1, void* pointer2, _lf_trace_object_t 
     _lf_trace_object_descriptions[_lf_trace_object_descriptions_size].type = type;
     _lf_trace_object_descriptions[_lf_trace_object_descriptions_size].description = description;
     _lf_trace_object_descriptions_size++;
-    lf_mutex_unlock(&_lf_trace_mutex);
+    lf_critical_section_exit();
     return 1;
 }
 
@@ -128,7 +115,7 @@ bool _lf_trace_header_written = false;
  */
 int write_trace_header() {
     if (_lf_trace_file != NULL) {
-        lf_mutex_lock(&_lf_trace_mutex);
+        lf_critical_section_enter();
         // The first item in the header is the start time.
         // This is both the starting physical time and the starting logical time.
         instant_t start_time = lf_time_start();
@@ -193,41 +180,21 @@ int write_trace_header() {
             );
             if (items_written != description_size + 1) _LF_TRACE_FAILURE(_lf_trace_file);
         }
-        lf_mutex_unlock(&_lf_trace_mutex);
+        lf_critical_section_exit();
     }
     return _lf_trace_object_descriptions_size;
 }
 
 /**
- * Thread that actually flushes the buffers to a file.
+ * @brief Flush the specified buffer to a file.
+ * This assumes the caller has entered a critical section.
+ * @param worker Index specifying the trace to flush.
  */
-void* flush_trace(void* args) {
-    lf_mutex_lock(&_lf_trace_mutex);
-    while (_lf_trace_file != NULL) {
-        // Look for a buffer to flush.
-        int worker = -1;
-        for (int i = 0; i < _lf_number_of_trace_buffers; i++) {
-            if (_lf_trace_buffer_size_to_flush && _lf_trace_buffer_size_to_flush[i] > 0) {
-                // Found one.
-                worker = i;
-                break;
-            }
-        }
-        if (worker < 0) {
-            // There is no trace ready to flush.
-            if (_lf_trace_stop != 0) {
-                // Tracing has stopped.
-                lf_mutex_unlock(&_lf_trace_mutex);
-                return NULL;
-            }
-            // Wait for notification that there is a buffer ready to flush
-            // (or that tracing is being stopped).
-            lf_cond_wait(&_lf_flush_needed);
-            continue;
-        }
-        // Unlock the mutex to write to the file.
-        lf_mutex_unlock(&_lf_trace_mutex);
-
+void flush_trace_locked(int worker) {
+    if (_lf_trace_stop == 0 
+        && _lf_trace_file != NULL 
+        && _lf_trace_buffer_size[worker] > 0
+    ) {
         // If the trace header has not been written, write it now.
         // This is deferred to here so that user trace objects can be
         // registered in startup reactions.
@@ -238,7 +205,7 @@ void* flush_trace(void* args) {
 
         // Write first the length of the array.
         size_t items_written = fwrite(
-                &_lf_trace_buffer_size_to_flush[worker],
+                &_lf_trace_buffer_size[worker],
                 sizeof(int),
                 1,
                 _lf_trace_file
@@ -250,71 +217,34 @@ void* flush_trace(void* args) {
         } else {
             // Write the contents.
             items_written = fwrite(
-                    _lf_trace_buffer_to_flush[worker],
+                    _lf_trace_buffer[worker],
                     sizeof(trace_record_t),
-                    _lf_trace_buffer_size_to_flush[worker],
+                    _lf_trace_buffer_size[worker],
                     _lf_trace_file
             );
-            if (items_written != _lf_trace_buffer_size_to_flush[worker]) {
+            if (items_written != _lf_trace_buffer_size[worker]) {
                 fprintf(stderr, "WARNING: Access to trace file failed.\n");
                 fclose(_lf_trace_file);
                 _lf_trace_file = NULL;
             }
         }
-        // Acquire the mutex to update the size.
-        lf_mutex_lock(&_lf_trace_mutex);
-        _lf_trace_buffer_size_to_flush[worker] = 0;
-        // There may be more than one worker thread blocked waiting for a flush,
-        // so broadcast rather than just signal.
-        lf_cond_broadcast(&_lf_flush_finished);
-    }
-    return NULL;
-}
-
-/**
- * Flush trace so far to the trace file. This version assumes the mutex
- * is already held.
- * @param worker The worker thread or 0 for the main (or only) thread.
- */
-void flush_trace_to_file_locked(int worker) {
-    if (_lf_trace_file != NULL) {
-        // printf("DEBUG: Writing %d trace records.\n", _lf_trace_buffer_size[worker]);
-
-        // If the previous flush for this worker is not finished, wait for it to finish.
-        while (_lf_trace_buffer_size_to_flush[worker] != 0) {
-            lf_cond_wait(&_lf_flush_finished);
-        }
-        _lf_trace_buffer_size_to_flush[worker] = _lf_trace_buffer_size[worker];
-
-        // Swap the double buffer.
-        trace_record_t* tmp = _lf_trace_buffer[worker];
-        _lf_trace_buffer[worker] = _lf_trace_buffer_to_flush[worker];
-        _lf_trace_buffer_to_flush[worker] = tmp;
-
         _lf_trace_buffer_size[worker] = 0;
-        lf_cond_signal(&_lf_flush_needed);
     }
 }
 
 /**
- * Flush trace so far to the trace file. We use double buffering, so unless
- * the flush thread is busy flushing the previous buffer for this worker, this
- * returns immediately.
- * @param worker The worker thread or 0 for the main (or only) thread.
+ * @brief Flush the specified buffer to a file.
+ * @param worker Index specifying the trace to flush.
  */
-void flush_trace_to_file(int worker) {
-    if (_lf_trace_file != NULL) {
-        // printf("DEBUG: Writing %d trace records.\n", _lf_trace_buffer_size[worker]);
-        lf_mutex_lock(&_lf_trace_mutex);
-        flush_trace_to_file_locked(worker);
-        lf_mutex_unlock(&_lf_trace_mutex);
-    }
+void flush_trace(int worker) {
+    // To avoid having more than one worker writing to the file at the same time,
+    // enter a critical section.
+    lf_critical_section_enter();
+    flush_trace_locked(worker);
+    lf_critical_section_exit();
 }
 
 void start_trace(char* filename) {
-    lf_mutex_init(&_lf_trace_mutex);
-    lf_cond_init(&_lf_flush_finished, &_lf_trace_mutex);
-    lf_cond_init(&_lf_flush_needed, &_lf_trace_mutex);
     // FIXME: location of trace file should be customizable.
     _lf_trace_file = fopen(filename, "w");
     if (_lf_trace_file == NULL) {
@@ -337,24 +267,7 @@ void start_trace(char* filename) {
     // Array of counters that track the size of each trace record (per thread).
     _lf_trace_buffer_size = (int*)calloc(sizeof(int), _lf_number_of_trace_buffers);
 
-    // Allocate memory for double buffering.
-    _lf_trace_buffer_to_flush = (trace_record_t**)malloc(sizeof(trace_record_t*) * _lf_number_of_trace_buffers);
-    for (int i = 0; i < _lf_number_of_trace_buffers; i++) {
-        _lf_trace_buffer_to_flush[i] = (trace_record_t*)malloc(sizeof(trace_record_t) * TRACE_BUFFER_CAPACITY);
-    }
-    // Array of counters that track the size of each trace record (per thread).
-    _lf_trace_buffer_size_to_flush = (int*)calloc(sizeof(int), _lf_number_of_trace_buffers);
-
     _lf_trace_stop = 0;
-
-    // In case the user forgets to stop to the trace in wrapup.
-    // NOTE: Removed because this results in premature stopping of the trace,
-    // before threads have finished writing to the trace buffer.
-    // if (atexit(stop_trace) != 0) {
-    //     lf_print_warning("Failed to register stop_trace function for execution upon termination.");
-    // }
-
-    lf_thread_create(&_lf_flush_trace_thread, flush_trace, NULL);
 
     LF_PRINT_DEBUG("Started tracing.");
 }
@@ -376,9 +289,9 @@ void tracepoint(
     // Flush the buffer if it is full.
     if (_lf_trace_buffer_size[index] >= TRACE_BUFFER_CAPACITY) {
         // No more room in the buffer. Write the buffer to the file.
-        flush_trace_to_file(index);
+        flush_trace(index);
     }
-    // The above flush_trace_to_file resets the write pointer.
+    // The above flush_trace resets the write pointer.
     int i = _lf_trace_buffer_size[index];
     // Write to memory buffer.
     _lf_trace_buffer[index][i].event_type = event_type;
@@ -509,7 +422,7 @@ void tracepoint_reaction_deadline_missed(reaction_t *reaction, int worker) {
 }
 
 void stop_trace() {
-    lf_mutex_lock(&_lf_trace_mutex);
+    lf_critical_section_enter();
     if (_lf_trace_stop) {
         // Trace was already stopped. Nothing to do.
         return;
@@ -521,24 +434,17 @@ void stop_trace() {
         // Flush the buffer if it has data.
         // printf("DEBUG: Trace buffer %d has %d records.\n", i, _lf_trace_buffer_size[i]);
         if (_lf_trace_buffer_size && _lf_trace_buffer_size[i] > 0) {
-            flush_trace_to_file_locked(i);
+            flush_trace_locked(i);
         }
     }
     if (_lf_trace_buffer_size && _lf_trace_buffer_size[0] > 0) {
-        flush_trace_to_file_locked(0);
+        flush_trace_locked(0);
     }
     _lf_trace_stop = 1;
-    // Wake up the trace_flush thread.
-    lf_cond_signal(&_lf_flush_needed);
-    lf_mutex_unlock(&_lf_trace_mutex);
-
-    // Join trace_flush thread.
-    void* flush_trace_thread_exit_status;
-    lf_thread_join(_lf_flush_trace_thread, &flush_trace_thread_exit_status);
-
     fclose(_lf_trace_file);
     _lf_trace_file = NULL;
     LF_PRINT_DEBUG("Stopped tracing.");
+    lf_critical_section_exit();
 }
 
 ////////////////////////////////////////////////////////////
