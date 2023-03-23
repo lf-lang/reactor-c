@@ -362,8 +362,15 @@ void tracepoint_schedule(trigger_t* trigger, interval_t extra_delay) {
  */
 void tracepoint_user_event(char* description) {
     // -1s indicate unknown reaction number and worker thread.
-    // FIXME: Worker thread should be given?
+    // NOTE: We currently have no way to get the number of the worker that
+    // is executing the reaction that calls this, so we can't pass a worker
+    // number to the tracepoint function. We pass -1, indicating no worker.
+    // But to be safe, then, we have acquire a mutex before calling this
+    // because multiple reactions might be calling the same tracepoint function.
+    // There will be a performance hit for this.
+    lf_critical_section_enter();
     tracepoint(user_event, description,  NULL, -1, -1, -1, NULL, NULL, 0, false);
+    lf_critical_section_exit();
 }
 
 /**
@@ -378,8 +385,15 @@ void tracepoint_user_event(char* description) {
  */
 void tracepoint_user_value(char* description, long long value) {
     // -1s indicate unknown reaction number and worker thread.
-    // FIXME: Worker thread should be given?
+    // NOTE: We currently have no way to get the number of the worker that
+    // is executing the reaction that calls this, so we can't pass a worker
+    // number to the tracepoint function. We pass -1, indicating no worker.
+    // But to be safe, then, we have acquire a mutex before calling this
+    // because multiple reactions might be calling the same tracepoint function.
+    // There will be a performance hit for this.
+    lf_critical_section_enter();
     tracepoint(user_value, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
+    lf_critical_section_exit();
 }
 
 /**
