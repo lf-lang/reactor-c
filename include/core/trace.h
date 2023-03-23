@@ -268,6 +268,10 @@ void start_trace(char* filename);
  * @param trigger Pointer to the trigger_t struct for calls to schedule or NULL otherwise.
  * @param extra_delay The extra delay passed to schedule(). If not relevant for this event
  *  type, pass 0.
+ * @param is_interval_start True to indicate that this tracepoint is at the beginning of
+ *  time interval, such as reaction invocation, so that physical time is captured as late
+ *  as possible.  False to indicate that it is at the end of an interval, such as the end
+ *  of a reaction invocation, so that physical time is captured as early as possible.
  */
 void tracepoint(
         trace_event_t event_type,
@@ -278,7 +282,8 @@ void tracepoint(
         int dst_id,
         instant_t* physical_time,
         trigger_t* trigger,
-        interval_t extra_delay
+        interval_t extra_delay,
+        bool is_interval_start
 );
 
 /**
