@@ -162,7 +162,7 @@ tag_t get_minimum_in_transit_message_tag(in_transit_message_record_q_t* queue) {
 
     if (head_of_in_transit_messages != NULL) {
         LF_PRINT_DEBUG(
-            "RTI: Minimum tag of all in-transit messages: (%ld, %u).",
+            "RTI: Minimum tag of all in-transit messages: " PRINTF_TAG,
             head_of_in_transit_messages->tag.time - lf_time_start(),
             head_of_in_transit_messages->tag.microstep
         );

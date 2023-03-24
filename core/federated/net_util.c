@@ -699,7 +699,7 @@ void extract_rti_addr_info(const char* rti_addr, rti_addr_info_t* rti_addr_info)
     if (regexec(&regex_compiled, rti_addr, max_groups, group_array, 0) == 0) {
         // Check for matched username. group_array[0] is the entire matched string.
         for (int i = 1; i < max_groups; i++) {
-            LF_PRINT_DEBUG("runtime rti_addr regex: so: %lld   eo: %lld\n", group_array[i].rm_so, group_array[i].rm_eo);
+            LF_PRINT_DEBUG("runtime rti_addr regex: so: %d   eo: %d\n", group_array[i].rm_so, group_array[i].rm_eo);
         }
         if (!extract_match_groups(rti_addr, rti_addr_strs, rti_addr_flags, group_array, gids, max_lens, min_lens, err_msgs)) {
             memset(rti_addr_info, 0, sizeof(rti_addr_info_t));

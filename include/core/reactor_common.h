@@ -13,7 +13,6 @@
 //  ******** Global Variables :( ********  //
 extern unsigned int _lf_number_of_workers;
 extern bool fast;
-extern unsigned int _lf_number_of_workers;
 extern instant_t duration;
 extern bool _lf_execution_started;
 extern tag_t stop_tag;
