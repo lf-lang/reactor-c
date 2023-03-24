@@ -42,6 +42,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
+#include "lf_types.h"
+
 #if defined(LF_THREADED) && defined(LF_UNTHREADED)
 #error LF_UNTHREADED and LF_THREADED runtime requested
 #endif
@@ -84,23 +86,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #define LF_TIMEOUT _LF_TIMEOUT
-
-
-/**
- * Time instant. Both physical and logical times are represented
- * using this typedef.
- */
-typedef _instant_t instant_t;
-
-/**
- * Interval of time.
- */
-typedef _interval_t interval_t;
-
-/**
- * Microstep instant.
- */
-typedef _microstep_t microstep_t;
 
 /**
  * Enter a critical section where logical time and the event queue are guaranteed

@@ -47,8 +47,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stddef.h>
 #include <stdbool.h>
 
-#include "platform.h"
 #include "lf_types.h"
+#include "tag.h"
 
 typedef struct event_t event_t;
 typedef struct reaction_t reaction_t;
