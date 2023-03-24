@@ -29,6 +29,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 #include "message_record.h"
+#include "platform.h"
 #include <stdlib.h>
 
 /**
