@@ -629,6 +629,15 @@ bool authenticate_federate(int socket);
 void connect_to_federates(int socket_descriptor);
 
 /**
+ * Once all persistent federates have connected, continue to wait for incoming 
+ * connection requests from transient federates.
+ * Upon receiving it, it creates a thread to communicate with that federate.
+ * This thread continues to check whether the communication thread with a transient
+ * federate has exited, in which case it accepts other connections.
+ */
+void* connect_to_transient_federates_thread();
+
+/**
  * Thread to respond to new connections, which could be federates of other
  * federations who are attempting to join the wrong federation.
  * @param nothing Nothing needed here.

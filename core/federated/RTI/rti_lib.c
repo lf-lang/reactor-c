@@ -1342,7 +1342,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
     // FIXME: This should not exit with error but rather should just reject the connection.
     read_from_socket_errexit(socket_id, length, buffer, "RTI failed to read from accepted socket.");
 
-    uint16_t fed_id = _RTI.number_of_federates; // Initialize to an invalid value.
+    uint16_t fed_id = _RTI.number_of_federates + _RTI.number_of_transient_federates; // Initialize to an invalid value.
 
     // First byte received is the message type.
     if (buffer[0] != MSG_TYPE_FED_IDS) {
@@ -1397,7 +1397,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
             send_reject(socket_id, FEDERATION_ID_DOES_NOT_MATCH);
             return -1;
         } else {
-            if (fed_id >= _RTI.number_of_federates) {
+            if (fed_id >= _RTI.number_of_federates + _RTI.number_of_transient_federates) {
                 // Federate ID is out of range.
                 lf_print_error("RTI received federate ID %d, which is out of range.", fed_id);
                 if (_RTI.tracing_enabled){
@@ -1648,7 +1648,10 @@ bool authenticate_federate(int socket) {
 }
 #endif
 
+// FIXME: The socket descriptor here is not used. Should be removed?
 void connect_to_federates(int socket_descriptor) {
+    // This loop will accept both, persistent and transient federates.
+    // For transient, however, i will be decreased
     for (int i = 0; i < _RTI.number_of_federates; i++) {
         // Wait for an incoming connection request.
         struct sockaddr client_fd;
@@ -1683,6 +1686,9 @@ void connect_to_federates(int socket_descriptor) {
         
         // The first message from the federate should contain its ID and the federation ID.
         int32_t fed_id = receive_and_check_fed_id_message(socket_id, (struct sockaddr_in*)&client_fd);
+
+        // FIXME: THIS IS A TEMPORARY HACK THAT MAKES FEDERATES WITH EVEN IDs PERSISTENT
+        // AND THOSE WITH ODD IDs TRANSIENT!!!
         if (fed_id >= 0
                 && receive_connection_information(socket_id, (uint16_t)fed_id)
                 && receive_udp_message_and_set_up_clock_sync(socket_id, (uint16_t)fed_id)) {
@@ -1691,15 +1697,26 @@ void connect_to_federates(int socket_descriptor) {
             // This has to be done after clock synchronization is finished
             // or that thread may end up attempting to handle incoming clock
             // synchronization messages.
-            pthread_create(&(_RTI.federates[fed_id].thread_id), NULL, federate_thread_TCP, &(_RTI.federates[fed_id]));
-
+            // pthread_create(&(_RTI.federates[fed_id].thread_id), NULL, federate_thread_TCP, &(_RTI.federates[fed_id]));
+            
+            if (fed_id % 2 == 0) { // PART OF THE HACK, SAYING THAT THIS IS PERSISTENT
+                pthread_create(&(_RTI.federates[fed_id].thread_id), NULL, federate_thread_TCP, &(_RTI.federates[fed_id]));
+                _RTI.federates[fed_id].is_transient = false;
+            } else { // PART OF THE HACK, SAYING THAT THIS IS TRANSIENT
+                if (_RTI.number_of_connected_transient_federates < _RTI.number_of_transient_federates) {
+                    pthread_create(&(_RTI.federates[fed_id].thread_id), NULL, federate_thread_TCP, &(_RTI.federates[fed_id]));
+                    _RTI.number_of_connected_transient_federates++;
+                    _RTI.federates[fed_id].is_transient = true;
+                    i--;
+                }
+            }
         } else {
             // Received message was rejected. Try again.
             i--;
         }
     }
-    // All federates have connected.
-    LF_PRINT_DEBUG("All federates have connected to RTI.");
+    // All (persistent) federates have connected.
+    LF_PRINT_DEBUG("All (persistent) federates have connected to RTI.");
 
     if (_RTI.clock_sync_global_status >= clock_sync_on) {
         // Create the thread that performs periodic PTP clock synchronization sessions
@@ -1714,6 +1731,95 @@ void connect_to_federates(int socket_descriptor) {
         }
         if (_RTI.final_port_UDP != UINT16_MAX && clock_sync_enabled) {
             pthread_create(&_RTI.clock_thread, NULL, clock_synchronization_thread, NULL);
+        }
+    }
+}
+
+void* connect_to_transient_federates_thread() {
+    // This loop will continue to accept connections of transient federates, as
+    // soon as there is room
+    // This needs to terminate somehow...
+    // That will be part of the while condition
+    while (1) {
+        if (_RTI.number_of_connected_transient_federates < _RTI.number_of_transient_federates) {
+            // Continue waiting for an incoming connection requests from transients.
+            struct sockaddr client_fd;
+            uint32_t client_length = sizeof(client_fd);
+            // The following blocks until a federate connects.
+            int socket_id = -1;
+            while(1) {
+                socket_id = accept(_RTI.socket_descriptor_TCP, &client_fd, &client_length);
+                if (socket_id >= 0) {
+                    // Got a socket
+                    break;
+                } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
+                    lf_print_error_and_exit("RTI failed to accept the socket. %s.", strerror(errno));
+                } else {
+                    // Try again
+                    lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
+                    continue;
+                }
+            }
+
+            // Send RTI hello when RTI -a option is on.
+            #ifdef __RTI_AUTH__
+            if (_RTI.authentication_enabled) {
+                if (!authenticate_federate(socket_id)) {
+                    lf_print_warning("RTI failed to authenticate the incoming federate.");
+                    // Ignore the federate that failed authentication.
+                    i--;
+                    continue;
+                }
+            }
+            #endif
+            
+            // The first message from the federate should contain its ID and the federation ID.
+            int32_t fed_id = receive_and_check_fed_id_message(socket_id, (struct sockaddr_in*)&client_fd);
+            // FIXME: THIS IS A TEMPORARY HACK THAT MAKES FEDERATES WITH EVEN IDs PERSISTENT
+            // AND THOSE WITH ODD IDs TRANSIENT!!!
+            if (fed_id >= 0
+                    && receive_connection_information(socket_id, (uint16_t)fed_id)
+                    && receive_udp_message_and_set_up_clock_sync(socket_id, (uint16_t)fed_id)) {
+
+                // Create a thread to communicate with the federate.
+                // This has to be done after clock synchronization is finished
+                // or that thread may end up attempting to handle incoming clock
+                // synchronization messages.
+                pthread_create(&(_RTI.federates[fed_id].thread_id), NULL, federate_thread_TCP, &(_RTI.federates[fed_id]));
+                _RTI.federates[fed_id].is_transient = true;
+                _RTI.number_of_connected_transient_federates++;
+            }
+        }
+
+        // Check if transient federate threads did exit.
+        void *thread_exit_status;
+        if (_RTI.number_of_connected_transient_federates > 0 ) {
+            for (int i = 0; i < _RTI.number_of_transient_federates + _RTI.number_of_federates; i++) {
+                // Chaeck if this is a transient federate that has already joined at some point
+                if (_RTI.federates[i].thread_id != -1 && _RTI.federates[i].is_transient) {
+                    if (pthread_tryjoin_np(_RTI.federates[i].thread_id, &thread_exit_status) == 0) {
+                        free_in_transit_message_q(_RTI.federates[i].in_transit_message_tags);
+                        lf_print("RTI: Transient Federate %d thread exited.", _RTI.federates[i].id);
+                        // Update the number of connected transient federates
+                        _RTI.number_of_connected_transient_federates--;
+                        
+                        // Reinitialize the ststaus of the leaving federate
+                        _RTI.federates[i].thread_id = -1;
+                        _RTI.federates[i].socket = -1; // No socket.
+                        _RTI.federates[i].last_granted = NEVER_TAG;
+                        _RTI.federates[i].state = NOT_CONNECTED;
+                        _RTI.federates[i].mode = REALTIME;
+                        strncpy(_RTI.federates[i].server_hostname, "localhost", INET_ADDRSTRLEN);
+                        _RTI.federates[i].server_ip_addr.s_addr = 0;
+                        _RTI.federates[i].server_port = -1;
+                        _RTI.federates[i].requested_stop = false;
+                        // _RTI.federates[i].clock_synchronization_enabled = true;
+                        // _RTI.federates[i].completed = NEVER_TAG;
+                        // _RTI.federates[i].last_provisionally_granted = NEVER_TAG;
+                        // _RTI.federates[i].next_event = NEVER_TAG;
+                    }
+                }
+            }
         }
     }
 }
@@ -1791,24 +1897,36 @@ void wait_for_federates(int socket_descriptor) {
     // Wait for connections from federates and create a thread for each.
     connect_to_federates(socket_descriptor);
 
-    // All federates have connected.
-    lf_print("RTI: All expected federates have connected. Starting execution.");
+    // All persistent federates have connected.
+    lf_print("RTI: All expected (persistent) federates have connected. Starting execution.");
+    if (_RTI.number_of_transient_federates > 0) {
+        lf_print("RTI: Transient Federates can join and leave the federation at anytime.");
+    }
 
     // The socket server will not continue to accept connections after all the federates
     // have joined.
     // In case some other federation's federates are trying to join the wrong
     // federation, need to respond. Start a separate thread to do that.
     pthread_t responder_thread;
-    pthread_create(&responder_thread, NULL, respond_to_erroneous_connections, NULL);
+    // FIXME: temporary remove, so that federate are not confused
+    // pthread_create(&responder_thread, NULL, respond_to_erroneous_connections, NULL);
 
-    // Wait for federate threads to exit.
+    // Create a thread that will continue listening to joining and leaving transient
+    // federates 
+    pthread_t transient_thread;
+    pthread_create(&transient_thread, NULL, connect_to_transient_federates_thread, NULL);
+
+    // Wait for persistent federate threads to exit.
     void* thread_exit_status;
-    for (int i = 0; i < _RTI.number_of_federates; i++) {
-        lf_print("RTI: Waiting for thread handling federate %d.", _RTI.federates[i].id);
-        pthread_join(_RTI.federates[i].thread_id, &thread_exit_status);
-        free_in_transit_message_q(_RTI.federates[i].in_transit_message_tags);
-        lf_print("RTI: Federate %d thread exited.", _RTI.federates[i].id);
+    for (int i = 0; i < _RTI.number_of_federates + _RTI.number_of_transient_federates; i++) {
+        if (_RTI.federates[i].is_transient == false) {
+            lf_print("RTI: Waiting for thread handling federate %d.", _RTI.federates[i].id);
+            pthread_join(_RTI.federates[i].thread_id, &thread_exit_status);
+            free_in_transit_message_q(_RTI.federates[i].in_transit_message_tags);
+            lf_print("RTI: Federate %d thread exited.", _RTI.federates[i].id);
+        }
     }
+ 
 
     _RTI.all_federates_exited = true;
 
