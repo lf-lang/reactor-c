@@ -1746,6 +1746,7 @@ void* respond_to_erroneous_connections(void* nothing) {
 }
 
 void initialize_federate(uint16_t id) {
+    _RTI.federates[id].thread_id = -1;
     _RTI.federates[id].id = id;
     _RTI.federates[id].socket = -1;      // No socket.
     _RTI.federates[id].clock_synchronization_enabled = true;
@@ -1765,6 +1766,7 @@ void initialize_federate(uint16_t id) {
     _RTI.federates[id].server_ip_addr.s_addr = 0;
     _RTI.federates[id].server_port = -1;
     _RTI.federates[id].requested_stop = false;
+    _RTI.federates[id].is_transient = false;
 }
 
 int32_t start_rti_server(uint16_t port) {
@@ -1873,6 +1875,8 @@ void usage(int argc, const char* argv[]) {
     printf("   The ID of the federation that this RTI will control.\n\n");
     printf("  -n, --number_of_federates <n>\n");
     printf("   The number of federates in the federation that this RTI will control.\n\n");
+    printf("  -nt, --number_of_transient_federates <n>\n");
+    printf("   The number of transient federates in the federation that this RTI will control.\n\n");
     printf("  -p, --port <n>\n");
     printf("   The port number to use for the RTI. Must be larger than 0 and smaller than %d. Default is %d.\n\n", UINT16_MAX, STARTING_PORT);
     printf("  -c, --clock_sync [off|init|on] [period <n>] [exchanges-per-interval <n>]\n");
@@ -1983,6 +1987,21 @@ int process_args(int argc, const char* argv[]) {
             }
             _RTI.number_of_federates = (int32_t)num_federates; // FIXME: Loses numbers on 64-bit machines
             printf("RTI: Number of federates: %d\n", _RTI.number_of_federates);
+        } else if (strcmp(argv[i], "-nt") == 0 || strcmp(argv[i], "--number_of_transient_federates") == 0) {
+            if (argc < i + 2) {
+                fprintf(stderr, "Error: --number_of_transient_federates needs an integer argument.\n");
+                usage(argc, argv);
+                return 0;
+            }
+            i++;
+            long num_transient_federates = strtol(argv[i], NULL, 10);
+            if (num_transient_federates == 0L || num_transient_federates == LONG_MAX ||  num_transient_federates == LONG_MIN) {
+                fprintf(stderr, "Error: --number_of_transient_federates needs a valid positive integer argument.\n");
+                usage(argc, argv);
+                return 0;
+            }
+            _RTI.number_of_transient_federates = (int32_t)num_transient_federates; // FIXME: Loses numbers on 64-bit machines
+            printf("RTI: Number of transient federates: %d\n", _RTI.number_of_transient_federates);
         } else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
             if (argc < i + 2) {
                 fprintf(

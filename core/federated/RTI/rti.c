@@ -66,10 +66,17 @@ int main(int argc, const char* argv[]) {
         start_trace(rti_trace_file_name);
         printf("Tracing the RTI execution in %s file.\n", rti_trace_file_name);
     }
-    printf("Starting RTI for %d federates in federation ID %s\n", _RTI.number_of_federates, _RTI.federation_id);
+    printf("Starting RTI for %d perisistent federates and %d transient federates in federation ID %s\n", \
+        _RTI.number_of_federates, 
+        _RTI.number_of_transient_federates, 
+        _RTI.federation_id);
+    
+    // FIXME: Should number_of_federates + number_of_transient_federates be < UINT16_MAX?
     assert(_RTI.number_of_federates < UINT16_MAX);
-    _RTI.federates = (federate_t*)calloc(_RTI.number_of_federates, sizeof(federate_t));
-    for (uint16_t i = 0; i < _RTI.number_of_federates; i++) {
+    assert(_RTI.number_of_transient_federates < UINT16_MAX);
+
+    _RTI.federates = (federate_t *)calloc(_RTI.number_of_federates + _RTI.number_of_transient_federates, sizeof(federate_t));
+    for (uint16_t i = 0; i < _RTI.number_of_federates + _RTI.number_of_transient_federates; i++) {
         initialize_federate(i);
     }
     int socket_descriptor = start_rti_server(_RTI.user_specified_port);

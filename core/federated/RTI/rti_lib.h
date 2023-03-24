@@ -124,6 +124,7 @@ typedef struct federate_t {
     bool requested_stop;    // Indicates that the federate has requested stop or has replied
                             // to a request for stop from the RTI. Used to prevent double-counting
                             // a federate when handling lf_request_stop().
+    bool is_transient;      // Indicates whether the federate is transient or persistent.
 } federate_t;
 
 /**
@@ -152,8 +153,14 @@ typedef struct RTI_instance_t {
     // RTI's decided stop tag for federates
     tag_t max_stop_tag;
 
-    // Number of federates in the federation
+    // Number of (persistent) federates in the federation
     int32_t number_of_federates;
+
+    // Number of transient federates in the federation
+    int32_t number_of_transient_federates;
+
+    // Number of connected transient federates in the federation
+    int32_t number_of_connected_transient_federates;
 
     // The federates.
     federate_t* federates;
