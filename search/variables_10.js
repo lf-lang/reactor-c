@@ -16,6 +16,7 @@ var searchData=
   ['rti_5fport_13',['rti_port',['../structfederation__metadata__t.html#af75d81e35fab4ed398df21bd48a50b52',1,'federation_metadata_t']]],
   ['rti_5fport_5fstr_14',['rti_port_str',['../structrti__addr__info__t.html#a182bcc2f25e999e33b4065115287a6a0',1,'rti_addr_info_t']]],
   ['rti_5fsocket_5flistener_15',['RTI_socket_listener',['../structfederate__instance__t.html#a5b6b4b5912a7bb7df1c8987f38e12004',1,'federate_instance_t']]],
-  ['rti_5fuser_16',['rti_user',['../structfederation__metadata__t.html#acb5d86838516db68d87a30babcce36dd',1,'federation_metadata_t']]],
-  ['rti_5fuser_5fstr_17',['rti_user_str',['../structrti__addr__info__t.html#a3604fd6c5f95ce9afa7afcb188093ac8',1,'rti_addr_info_t']]]
+  ['rti_5ftrace_5ffile_5fname_16',['rti_trace_file_name',['../rti_8c.html#ab51bbf9201f21d31ea14e63cf880c09a',1,'rti.c']]],
+  ['rti_5fuser_17',['rti_user',['../structfederation__metadata__t.html#acb5d86838516db68d87a30babcce36dd',1,'federation_metadata_t']]],
+  ['rti_5fuser_5fstr_18',['rti_user_str',['../structrti__addr__info__t.html#a3604fd6c5f95ce9afa7afcb188093ac8',1,'rti_addr_info_t']]]
 ];

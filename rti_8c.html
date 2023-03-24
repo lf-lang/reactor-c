@@ -83,13 +83,17 @@ $(function() {
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a0ddf1224851353fc92bfbff6f499fa97"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#a0ddf1224851353fc92bfbff6f499fa97">main</a> (int argc, char *argv[])</td></tr>
-<tr class="separator:a0ddf1224851353fc92bfbff6f499fa97"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0f2228420376f4db7e1274f2b41667c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#ac0f2228420376f4db7e1274f2b41667c">main</a> (int argc, const char *argv[])</td></tr>
+<tr class="separator:ac0f2228420376f4db7e1274f2b41667c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
+<tr class="memitem:a01fd0d1404992f7d875791a764a26925"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#a01fd0d1404992f7d875791a764a26925">_lf_number_of_workers</a> = 0u</td></tr>
+<tr class="separator:a01fd0d1404992f7d875791a764a26925"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a104f9a0ac7ff4aa717e0462b8ac445ea"><td class="memItemLeft" align="right" valign="top"><a class="el" href="struct_r_t_i__instance__t.html">RTI_instance_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#a104f9a0ac7ff4aa717e0462b8ac445ea">_RTI</a></td></tr>
 <tr class="separator:a104f9a0ac7ff4aa717e0462b8ac445ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab51bbf9201f21d31ea14e63cf880c09a"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti_8c.html#ab51bbf9201f21d31ea14e63cf880c09a">rti_trace_file_name</a> = &quot;rti.lft&quot;</td></tr>
+<tr class="separator:ab51bbf9201f21d31ea14e63cf880c09a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
@@ -111,8 +115,8 @@ DESCRIPTION</h1>
 <p>This implementation sends messages in little endian order because Intel, RISC V, and Arm processors are little endian. This is not what is normally considered "network order", but we control both ends, and hence, for commonly used processors, this will be more efficient since it won't have to swap bytes.</p>
 <p>This implementation of the RTI should be considered a reference implementation. In the future it might be re-implemented in Java or Kotlin. Or we could bootstrap and implement it using Lingua Franca. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a0ddf1224851353fc92bfbff6f499fa97" name="a0ddf1224851353fc92bfbff6f499fa97"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0ddf1224851353fc92bfbff6f499fa97">&#9670;&#160;</a></span>main()</h2>
+<a id="ac0f2228420376f4db7e1274f2b41667c" name="ac0f2228420376f4db7e1274f2b41667c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac0f2228420376f4db7e1274f2b41667c">&#9670;&#160;</a></span>main()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -126,7 +130,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>argv</em>[]&#160;</td>
         </tr>
         <tr>
@@ -140,6 +144,20 @@ DESCRIPTION</h1>
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
+<a id="a01fd0d1404992f7d875791a764a26925" name="a01fd0d1404992f7d875791a764a26925"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a01fd0d1404992f7d875791a764a26925">&#9670;&#160;</a></span>_lf_number_of_workers</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">unsigned int _lf_number_of_workers = 0u</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a104f9a0ac7ff4aa717e0462b8ac445ea" name="a104f9a0ac7ff4aa717e0462b8ac445ea"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a104f9a0ac7ff4aa717e0462b8ac445ea">&#9670;&#160;</a></span>_RTI</h2>
 
@@ -160,6 +178,21 @@ DESCRIPTION</h1>
 </table>
 </div><div class="memdoc">
 <p>The state of this RTI instance. </p>
+
+</div>
+</div>
+<a id="ab51bbf9201f21d31ea14e63cf880c09a" name="ab51bbf9201f21d31ea14e63cf880c09a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab51bbf9201f21d31ea14e63cf880c09a">&#9670;&#160;</a></span>rti_trace_file_name</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* rti_trace_file_name = &quot;rti.lft&quot;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>RTI trace file name </p>
 
 </div>
 </div>

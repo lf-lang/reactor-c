@@ -99,8 +99,8 @@ Data Fields</h2></td></tr>
 <tr class="separator:aa4c4ac6c3b7d9bb27ba43c657247d49a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4cd2aa66b0ccc9099cb3b1b55f2d0f5d"><td class="memItemLeft" align="right" valign="top">volatile bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_t_i__instance__t.html#a4cd2aa66b0ccc9099cb3b1b55f2d0f5d">all_federates_exited</a></td></tr>
 <tr class="separator:a4cd2aa66b0ccc9099cb3b1b55f2d0f5d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa39e81560c6f01e9f52024419da889a6"><td class="memItemLeft" align="right" valign="top">char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_t_i__instance__t.html#aa39e81560c6f01e9f52024419da889a6">federation_id</a></td></tr>
-<tr class="separator:aa39e81560c6f01e9f52024419da889a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3bdc596ffc6ebe5c4d19edb0c70ca030"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_t_i__instance__t.html#a3bdc596ffc6ebe5c4d19edb0c70ca030">federation_id</a></td></tr>
+<tr class="separator:a3bdc596ffc6ebe5c4d19edb0c70ca030"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a448e81fcfc0ad12dc4617ae7ca0cce99"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_t_i__instance__t.html#a448e81fcfc0ad12dc4617ae7ca0cce99">user_specified_port</a></td></tr>
 <tr class="separator:a448e81fcfc0ad12dc4617ae7ca0cce99"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0a1bc83d71e093a5624466dc16c4c7d2"><td class="memItemLeft" align="right" valign="top">uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_t_i__instance__t.html#a0a1bc83d71e093a5624466dc16c4c7d2">final_port_TCP</a></td></tr>
@@ -121,6 +121,8 @@ Data Fields</h2></td></tr>
 <tr class="separator:a1466e9453684df457d1385b4ef57618f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a95c74156ee47dc498dd62bec26f436c8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_t_i__instance__t.html#a95c74156ee47dc498dd62bec26f436c8">authentication_enabled</a></td></tr>
 <tr class="separator:a95c74156ee47dc498dd62bec26f436c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aded9093ba331694d19ea48fbbdb11067"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="struct_r_t_i__instance__t.html#aded9093ba331694d19ea48fbbdb11067">tracing_enabled</a></td></tr>
+<tr class="separator:aded9093ba331694d19ea48fbbdb11067"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Structure that an RTI instance uses to keep track of its own and its corresponding federates' state. </p>
@@ -228,14 +230,14 @@ Data Fields</h2></td></tr>
 
 </div>
 </div>
-<a id="aa39e81560c6f01e9f52024419da889a6" name="aa39e81560c6f01e9f52024419da889a6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa39e81560c6f01e9f52024419da889a6">&#9670;&#160;</a></span>federation_id</h2>
+<a id="a3bdc596ffc6ebe5c4d19edb0c70ca030" name="a3bdc596ffc6ebe5c4d19edb0c70ca030"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3bdc596ffc6ebe5c4d19edb0c70ca030">&#9670;&#160;</a></span>federation_id</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char* RTI_instance_t::federation_id</td>
+          <td class="memname">const char* RTI_instance_t::federation_id</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -412,6 +414,21 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>The UDP socket descriptor for the socket server. </p>
+
+</div>
+</div>
+<a id="aded9093ba331694d19ea48fbbdb11067" name="aded9093ba331694d19ea48fbbdb11067"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aded9093ba331694d19ea48fbbdb11067">&#9670;&#160;</a></span>tracing_enabled</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool RTI_instance_t::tracing_enabled</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Boolean indicating that tracing is enabled. </p>
 
 </div>
 </div>

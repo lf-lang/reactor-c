@@ -99,6 +99,7 @@ $(function() {
 <code>#include &quot;<a class="el" href="net__util_8h_source.html">net_util.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="net__common_8h_source.html">net_common.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="tag_8h_source.html">tag.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="trace_8h_source.html">trace.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="message__record_8h_source.html">message_record/message_record.h</a>&quot;</code><br />
 </div>
@@ -149,6 +150,10 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a826d1582ddab93857dddcf900df4212f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti__lib_8h.html#a826d1582ddab93857dddcf900df4212f">lf_critical_section_enter</a> ()</td></tr>
+<tr class="separator:a826d1582ddab93857dddcf900df4212f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15016241de6a4f3c35115f39e0695084"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti__lib_8h.html#a15016241de6a4f3c35115f39e0695084">lf_critical_section_exit</a> ()</td></tr>
+<tr class="separator:a15016241de6a4f3c35115f39e0695084"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acde4076cd96817debe76e74fca261c70"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti__lib_8h.html#acde4076cd96817debe76e74fca261c70">create_server</a> (int32_t specified_port, uint16_t port, <a class="el" href="rti__lib_8h.html#a54c375e3893ff5969d20df65b90c8335">socket_type_t</a> socket_type)</td></tr>
 <tr class="separator:acde4076cd96817debe76e74fca261c70"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2c94ce50b24ed5cc0bfce3d548d8e59f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti__lib_8h.html#a2c94ce50b24ed5cc0bfce3d548d8e59f">send_tag_advance_grant</a> (<a class="el" href="structfederate__t.html">federate_t</a> *fed, <a class="el" href="structtag__t.html">tag_t</a> tag)</td></tr>
@@ -214,12 +219,12 @@ Functions</h2></td></tr>
 <tr class="separator:a6cc1fe69c154d09d88de1f1c06eb4b0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a005cb43e8e6c7795c8f0db27e2424475"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti__lib_8h.html#a005cb43e8e6c7795c8f0db27e2424475">wait_for_federates</a> (int socket_descriptor)</td></tr>
 <tr class="separator:a005cb43e8e6c7795c8f0db27e2424475"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeb5079a0bdbc96962460a991aa880725"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti__lib_8h.html#aeb5079a0bdbc96962460a991aa880725">usage</a> (int argc, char *argv[])</td></tr>
-<tr class="separator:aeb5079a0bdbc96962460a991aa880725"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6d07d769654a6bfec790c24e1c65cd77"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti__lib_8h.html#a6d07d769654a6bfec790c24e1c65cd77">process_clock_sync_args</a> (int argc, char *argv[])</td></tr>
-<tr class="separator:a6d07d769654a6bfec790c24e1c65cd77"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8de011aeee37cd0347b5e01d7e3baed4"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti__lib_8h.html#a8de011aeee37cd0347b5e01d7e3baed4">process_args</a> (int argc, char *argv[])</td></tr>
-<tr class="separator:a8de011aeee37cd0347b5e01d7e3baed4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f44f474f50286c4ba8c0ebac254bb28"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti__lib_8h.html#a7f44f474f50286c4ba8c0ebac254bb28">usage</a> (int argc, const char *argv[])</td></tr>
+<tr class="separator:a7f44f474f50286c4ba8c0ebac254bb28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad7d4392b21b300612a5239fbb1ffa274"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti__lib_8h.html#ad7d4392b21b300612a5239fbb1ffa274">process_clock_sync_args</a> (int argc, const char *argv[])</td></tr>
+<tr class="separator:ad7d4392b21b300612a5239fbb1ffa274"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80aaf4eeed3e2902f8fe9de80b45777d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="rti__lib_8h.html#a80aaf4eeed3e2902f8fe9de80b45777d">process_args</a> (int argc, const char *argv[])</td></tr>
+<tr class="separator:a80aaf4eeed3e2902f8fe9de80b45777d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
@@ -459,15 +464,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Authenticate incoming federate by performing HMAC-based authentication.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">socket</td><td>Socket for the incoming federate tryting to authenticate. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>True if authentication is successful and false otherwise. Wait for one incoming connection request from each federate, and upon receiving it, create a thread to communicate with that federate. Return when all federates have connected. </dd></dl>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Wait for one incoming connection request from each federate, and upon receiving it, create a thread to communicate with that federate. Return when all federates have connected. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">socket_descriptor</td><td>The socket on which to accept connections. </td></tr>
   </table>
@@ -879,6 +876,42 @@ DESCRIPTION</h1>
 
 </div>
 </div>
+<a id="a826d1582ddab93857dddcf900df4212f" name="a826d1582ddab93857dddcf900df4212f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a826d1582ddab93857dddcf900df4212f">&#9670;&#160;</a></span>lf_critical_section_enter()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lf_critical_section_enter </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Enter a critical section where logical time and the event queue are guaranteed to not change unless they are changed within the critical section. this can be implemented by disabling interrupts. Users of this function must ensure that lf_init_critical_sections() is called first and that <a class="el" href="rti__lib_8h.html#a15016241de6a4f3c35115f39e0695084">lf_critical_section_exit()</a> is called later. </p><dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a15016241de6a4f3c35115f39e0695084" name="a15016241de6a4f3c35115f39e0695084"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15016241de6a4f3c35115f39e0695084">&#9670;&#160;</a></span>lf_critical_section_exit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int lf_critical_section_exit </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Exit the critical section entered with lf_lock_time(). </p><dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise. </dd></dl>
+
+</div>
+</div>
 <a id="a97ac8c4d61e522fc3587a7469bdc7afb" name="a97ac8c4d61e522fc3587a7469bdc7afb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a97ac8c4d61e522fc3587a7469bdc7afb">&#9670;&#160;</a></span>mark_federate_requesting_stop()</h2>
 
@@ -906,8 +939,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a8de011aeee37cd0347b5e01d7e3baed4" name="a8de011aeee37cd0347b5e01d7e3baed4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8de011aeee37cd0347b5e01d7e3baed4">&#9670;&#160;</a></span>process_args()</h2>
+<a id="a80aaf4eeed3e2902f8fe9de80b45777d" name="a80aaf4eeed3e2902f8fe9de80b45777d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a80aaf4eeed3e2902f8fe9de80b45777d">&#9670;&#160;</a></span>process_args()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -921,7 +954,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>argv</em>[]&#160;</td>
         </tr>
         <tr>
@@ -931,12 +964,13 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Process the command-line arguments. If the command line arguments are not understood, then print a usage message and return 0. Otherwise, return 1. </p><dl class="section return"><dt>Returns</dt><dd>1 if the arguments processed successfully, 0 otherwise. </dd></dl>
+<p>Process the command-line arguments. If the command line arguments are not understood, then print a usage message and return 0. Otherwise, return 1. </p><dl class="section return"><dt>Returns</dt><dd>1 if the arguments processed successfully, 0 otherwise.</dd></dl>
+<p>Process the command-line arguments. If the command line arguments are not understood, then print a usage message and return 0. Otherwise, return 1. </p><dl class="section return"><dt>Returns</dt><dd>1 if the arguments processed successfully, 0 otherwise. TODO: Not necessary for NO_TTY </dd></dl>
 
 </div>
 </div>
-<a id="a6d07d769654a6bfec790c24e1c65cd77" name="a6d07d769654a6bfec790c24e1c65cd77"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6d07d769654a6bfec790c24e1c65cd77">&#9670;&#160;</a></span>process_clock_sync_args()</h2>
+<a id="ad7d4392b21b300612a5239fbb1ffa274" name="ad7d4392b21b300612a5239fbb1ffa274"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad7d4392b21b300612a5239fbb1ffa274">&#9670;&#160;</a></span>process_clock_sync_args()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -950,7 +984,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>argv</em>[]&#160;</td>
         </tr>
         <tr>
@@ -1415,16 +1449,6 @@ DESCRIPTION</h1>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">federate_id</td><td>The id of the federate that needs to be updated. </td></tr>
-    <tr><td class="paramname">next_event_tag</td><td>The next event tag for <code>federate_id</code>.</td></tr>
-  </table>
-  </dd>
-</dl>
-<p>It will update the recorded next event tag of federate <code>federate_id</code> to the minimum of <code>next_event_tag</code> and the minimum tag of in-transit messages (if any) to the federate.</p>
-<p>Will try to see if the RTI can grant new TAG or PTAG messages to any downstream federates based on this new next event tag.</p>
-<p>This function assumes that the caller is holding the _RTI.rti_mutex.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">federate_id</td><td>The id of the federate that needs to be updated. </td></tr>
     <tr><td class="paramname">next_event_tag</td><td>The next event tag for <code>federate_id</code>. </td></tr>
   </table>
   </dd>
@@ -1432,8 +1456,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="aeb5079a0bdbc96962460a991aa880725" name="aeb5079a0bdbc96962460a991aa880725"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeb5079a0bdbc96962460a991aa880725">&#9670;&#160;</a></span>usage()</h2>
+<a id="a7f44f474f50286c4ba8c0ebac254bb28" name="a7f44f474f50286c4ba8c0ebac254bb28"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7f44f474f50286c4ba8c0ebac254bb28">&#9670;&#160;</a></span>usage()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1447,7 +1471,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>argv</em>[]&#160;</td>
         </tr>
         <tr>
@@ -1457,7 +1481,8 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Print a usage message. </p>
+<p>Print a usage message.</p>
+<p>Print a usage message. TODO: This is not necessary for NO_TTY </p>
 
 </div>
 </div>
