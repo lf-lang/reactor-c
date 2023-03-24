@@ -2,6 +2,7 @@
 #include <time.h>
 #include <errno.h>
 
+#include "platform.h"
 #include "lf_unix_clock_support.h"
 
 /**
