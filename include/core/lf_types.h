@@ -146,7 +146,7 @@ typedef void(*reaction_function_t)(void*);
  * these watchdog functions is a pointer to the self struct
  * for the reactor.
  */
-typedef void(*watchdog_function_t)(void*); 
+typedef void(*watchdog_function_t)(void*);
 
 /** Trigger struct representing an output, timer, action, or input. See below. */
 typedef struct trigger_t trigger_t;
@@ -223,12 +223,12 @@ typedef struct watchdog_t watchdog_t;
 #ifdef LF_THREADED
 /** Watchdog struct for handler. */
 struct watchdog_t {
-    struct self_base_t* base;                      // The reactor that contains the watchdog.
+    struct self_base_t* base;               // The reactor that contains the watchdog.
     instant_t expiration;                   // The expiration instant for the watchdog. (Initialized to NEVER)
     interval_t min_expiration;              // The minimum expiration interval for the watchdog.
-    lf_thread_t thread_id;                 // The thread that the watchdog is meant to run on.
-    bool thread_active;                     // Boolean indicating whether or not thread is active.  
-    watchdog_function_t watchdog_function;  // The function/handler for the watchdog.
+    lf_thread_t thread_id;                  // The thread that the watchdog is meant to run on.
+    bool thread_active;                     // Boolean indicating whether or not thread is active.
+    watchdog_function_t watchdog_function; // The function/handler for the watchdog.
 };
 #endif 
 
