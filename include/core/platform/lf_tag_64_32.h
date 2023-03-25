@@ -38,7 +38,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // If you are targeting a platform that uses some other type
 // for time and microsteps, you can simply define
 // PRINTF_TIME and PRINTF_MICROSTEP directly in the same file that
-// defines the types _instant_t, _interval_t, and _microstep_t.
+// defines the types instant_t, interval_t, and microstep_t.
 #include <inttypes.h>
 #define PRINTF_TIME "%" PRId64
 #define PRINTF_MICROSTEP "%" PRIu32

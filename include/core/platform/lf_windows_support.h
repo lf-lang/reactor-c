@@ -50,9 +50,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define _LF_TIMEOUT ETIMEDOUT
 // Use 64-bit times and 32-bit unsigned microsteps
 #include "lf_tag_64_32.h"
+#include "tag.h"
 
 // Forward declare lf_clock_gettime which is needed by lf_cond_timedwait
-extern int lf_clock_gettime(_instant_t* t);
+extern int lf_clock_gettime(instant_t* t);
 
 #if defined LF_THREADED || defined _LF_TRACE
 #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
@@ -218,9 +219,9 @@ static int lf_cond_wait(lf_cond_t* cond) {
  *
  * @return 0 on success and LF_TIMEOUT on timeout, 1 otherwise.
  */
-static int lf_cond_timedwait(lf_cond_t* cond, _instant_t absolute_time_ns) {
+static int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
     // Convert the absolute time to a relative time
-    _instant_t current_time_ns;
+    instant_t current_time_ns;
     lf_clock_gettime(&current_time_ns);
     _interval_t relative_time_ns = (absolute_time_ns - current_time_ns);
     if (relative_time_ns <= 0) {
