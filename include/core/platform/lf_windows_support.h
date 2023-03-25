@@ -223,7 +223,7 @@ static int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
     // Convert the absolute time to a relative time
     instant_t current_time_ns;
     lf_clock_gettime(&current_time_ns);
-    _interval_t relative_time_ns = (absolute_time_ns - current_time_ns);
+    interval_t relative_time_ns = (absolute_time_ns - current_time_ns);
     if (relative_time_ns <= 0) {
       // physical time has already caught up sufficiently and we do not need to wait anymore
       return 0;
