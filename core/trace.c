@@ -29,20 +29,22 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Include this file instead of trace.h to get tracing.
  * See trace.h file for instructions.
  */
+
+#include "trace.h"
+
 #ifdef LF_TRACE
 
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
 
-// FIXME: This is a hack to allow trace.c to get the threaded support API
-//  even though we are using a unthreaded runtime
-#define _LF_TRACE
 #include "platform.h"
-#undef _LF_TRACE
+
+#ifdef RTI_TRACE
+#include "net_common.h"  // Defines message types
+#endif // RTI_TRACE
 
 #include "reactor_common.h"
-#include "trace.h"
 #include "util.h"
 
 /** Macro to use when access to trace file fails. */
@@ -51,30 +53,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         fprintf(stderr, "WARNING: Access to trace file failed.\n"); \
         fclose(trace_file); \
         trace_file = NULL; \
-        lf_mutex_unlock(&_lf_trace_mutex); \
+        lf_critical_section_exit(); \
         return -1; \
     } while(0)
 
-// Mutex used to prevent collisions between threads writing to the file.
-static lf_mutex_t _lf_trace_mutex;
-// Condition variable used to indicate when flushing a buffer is finished.
-static lf_cond_t _lf_flush_finished;
-// Condition variable used to indicate when a new trace needs to be flushed.
-static lf_cond_t _lf_flush_needed;
-// The thread that flushes to a file.
-static lf_thread_t _lf_flush_trace_thread;
-
 /**
  * Array of buffers into which traces are written.
- * When each buffer gets full, the trace is flushed to the trace file.
- * We use a double buffering strategy. When a buffer becomes full,
- * tracing continues in a new buffer while a separate thread writes
- * the old buffer to the file.
+ * When a buffer becomes full, the contents is flushed to the file,
+ * which will create a significant pause in the calling thread.
  */
 static trace_record_t** _lf_trace_buffer = NULL;
 static int* _lf_trace_buffer_size = NULL;
-static trace_record_t** _lf_trace_buffer_to_flush = NULL;
-static int* _lf_trace_buffer_size_to_flush = NULL;
 
 /** The number of trace buffers allocated when tracing starts. */
 static int _lf_number_of_trace_buffers;
@@ -91,18 +80,10 @@ static FILE* _lf_trace_file;
 static object_description_t _lf_trace_object_descriptions[TRACE_OBJECT_TABLE_SIZE];
 static int _lf_trace_object_descriptions_size = 0;
 
-/**
- * Register a trace event.
- * @param pointer1 Pointer that identifies the object, typically to a reactor self struct.
- * @param pointer2 Further identifying pointer, typically to a trigger (action or timer) or NULL if irrelevant.
- * @param type The type of trace object.
- * @param description The human-readable description of the object.
- * @return 1 if successful, 0 if the trace object table is full.
- */
 int _lf_register_trace_event(void* pointer1, void* pointer2, _lf_trace_object_t type, char* description) {
-    lf_mutex_lock(&_lf_trace_mutex);
+    lf_critical_section_enter();
     if (_lf_trace_object_descriptions_size >= TRACE_OBJECT_TABLE_SIZE) {
-        lf_mutex_unlock(&_lf_trace_mutex);
+        lf_critical_section_exit();
         fprintf(stderr, "WARNING: Exceeded trace object table size. Trace file will be incomplete.\n");
         return 0;
     }
@@ -111,17 +92,10 @@ int _lf_register_trace_event(void* pointer1, void* pointer2, _lf_trace_object_t 
     _lf_trace_object_descriptions[_lf_trace_object_descriptions_size].type = type;
     _lf_trace_object_descriptions[_lf_trace_object_descriptions_size].description = description;
     _lf_trace_object_descriptions_size++;
-    lf_mutex_unlock(&_lf_trace_mutex);
+    lf_critical_section_exit();
     return 1;
 }
 
-/**
- * Register a user trace event. This should be called once, providing a pointer to a string
- * that describes a phenomenon being traced. Use the same pointer as the first argument to
- * tracepoint_user_event() and tracepoint_user_value().
- * @param description Pointer to a human-readable description of the event.
- * @return 1 if successful, 0 if the trace object table is full.
- */
 int register_user_trace_event(char* description) {
     return _lf_register_trace_event(description, NULL, trace_user, description);
 }
@@ -136,7 +110,6 @@ bool _lf_trace_header_written = false;
  */
 int write_trace_header() {
     if (_lf_trace_file != NULL) {
-        lf_mutex_lock(&_lf_trace_mutex);
         // The first item in the header is the start time.
         // This is both the starting physical time and the starting logical time.
         instant_t start_time = lf_time_start();
@@ -201,41 +174,20 @@ int write_trace_header() {
             );
             if (items_written != description_size + 1) _LF_TRACE_FAILURE(_lf_trace_file);
         }
-        lf_mutex_unlock(&_lf_trace_mutex);
     }
     return _lf_trace_object_descriptions_size;
 }
 
 /**
- * Thread that actually flushes the buffers to a file.
+ * @brief Flush the specified buffer to a file.
+ * This assumes the caller has entered a critical section.
+ * @param worker Index specifying the trace to flush.
  */
-void* flush_trace(void* args) {
-    lf_mutex_lock(&_lf_trace_mutex);
-    while (_lf_trace_file != NULL) {
-        // Look for a buffer to flush.
-        int worker = -1;
-        for (int i = 0; i < _lf_number_of_trace_buffers; i++) {
-            if (_lf_trace_buffer_size_to_flush && _lf_trace_buffer_size_to_flush[i] > 0) {
-                // Found one.
-                worker = i;
-                break;
-            }
-        }
-        if (worker < 0) {
-            // There is no trace ready to flush.
-            if (_lf_trace_stop != 0) {
-                // Tracing has stopped.
-                lf_mutex_unlock(&_lf_trace_mutex);
-                return NULL;
-            }
-            // Wait for notification that there is a buffer ready to flush
-            // (or that tracing is being stopped).
-            lf_cond_wait(&_lf_flush_needed);
-            continue;
-        }
-        // Unlock the mutex to write to the file.
-        lf_mutex_unlock(&_lf_trace_mutex);
-
+void flush_trace_locked(int worker) {
+    if (_lf_trace_stop == 0 
+        && _lf_trace_file != NULL 
+        && _lf_trace_buffer_size[worker] > 0
+    ) {
         // If the trace header has not been written, write it now.
         // This is deferred to here so that user trace objects can be
         // registered in startup reactions.
@@ -246,7 +198,7 @@ void* flush_trace(void* args) {
 
         // Write first the length of the array.
         size_t items_written = fwrite(
-                &_lf_trace_buffer_size_to_flush[worker],
+                &_lf_trace_buffer_size[worker],
                 sizeof(int),
                 1,
                 _lf_trace_file
@@ -258,75 +210,34 @@ void* flush_trace(void* args) {
         } else {
             // Write the contents.
             items_written = fwrite(
-                    _lf_trace_buffer_to_flush[worker],
+                    _lf_trace_buffer[worker],
                     sizeof(trace_record_t),
-                    _lf_trace_buffer_size_to_flush[worker],
+                    _lf_trace_buffer_size[worker],
                     _lf_trace_file
             );
-            if (items_written != _lf_trace_buffer_size_to_flush[worker]) {
+            if (items_written != _lf_trace_buffer_size[worker]) {
                 fprintf(stderr, "WARNING: Access to trace file failed.\n");
                 fclose(_lf_trace_file);
                 _lf_trace_file = NULL;
             }
         }
-        // Acquire the mutex to update the size.
-        lf_mutex_lock(&_lf_trace_mutex);
-        _lf_trace_buffer_size_to_flush[worker] = 0;
-        // There may be more than one worker thread blocked waiting for a flush,
-        // so broadcast rather than just signal.
-        lf_cond_broadcast(&_lf_flush_finished);
-    }
-    return NULL;
-}
-
-/**
- * Flush trace so far to the trace file. This version assumes the mutex
- * is already held.
- * @param worker The worker thread or 0 for the main (or only) thread.
- */
-void flush_trace_to_file_locked(int worker) {
-    if (_lf_trace_file != NULL) {
-        // printf("DEBUG: Writing %d trace records.\n", _lf_trace_buffer_size[worker]);
-
-        // If the previous flush for this worker is not finished, wait for it to finish.
-        while (_lf_trace_buffer_size_to_flush[worker] != 0) {
-            lf_cond_wait(&_lf_flush_finished);
-        }
-        _lf_trace_buffer_size_to_flush[worker] = _lf_trace_buffer_size[worker];
-
-        // Swap the double buffer.
-        trace_record_t* tmp = _lf_trace_buffer[worker];
-        _lf_trace_buffer[worker] = _lf_trace_buffer_to_flush[worker];
-        _lf_trace_buffer_to_flush[worker] = tmp;
-
         _lf_trace_buffer_size[worker] = 0;
-        lf_cond_signal(&_lf_flush_needed);
     }
 }
 
 /**
- * Flush trace so far to the trace file. We use double buffering, so unless
- * the flush thread is busy flushing the previous buffer for this worker, this
- * returns immediately.
- * @param worker The worker thread or 0 for the main (or only) thread.
+ * @brief Flush the specified buffer to a file.
+ * @param worker Index specifying the trace to flush.
  */
-void flush_trace_to_file(int worker) {
-    if (_lf_trace_file != NULL) {
-        // printf("DEBUG: Writing %d trace records.\n", _lf_trace_buffer_size[worker]);
-        lf_mutex_lock(&_lf_trace_mutex);
-        flush_trace_to_file_locked(worker);
-        lf_mutex_unlock(&_lf_trace_mutex);
-    }
+void flush_trace(int worker) {
+    // To avoid having more than one worker writing to the file at the same time,
+    // enter a critical section.
+    lf_critical_section_enter();
+    flush_trace_locked(worker);
+    lf_critical_section_exit();
 }
 
-/**
- * Open a trace file and start tracing.
- * @param filename The filename for the trace file.
- */
 void start_trace(char* filename) {
-    lf_mutex_init(&_lf_trace_mutex);
-    lf_cond_init(&_lf_flush_finished, &_lf_trace_mutex);
-    lf_cond_init(&_lf_flush_needed, &_lf_trace_mutex);
     // FIXME: location of trace file should be customizable.
     _lf_trace_file = fopen(filename, "w");
     if (_lf_trace_file == NULL) {
@@ -349,76 +260,58 @@ void start_trace(char* filename) {
     // Array of counters that track the size of each trace record (per thread).
     _lf_trace_buffer_size = (int*)calloc(sizeof(int), _lf_number_of_trace_buffers);
 
-    // Allocate memory for double buffering.
-    _lf_trace_buffer_to_flush = (trace_record_t**)malloc(sizeof(trace_record_t*) * _lf_number_of_trace_buffers);
-    for (int i = 0; i < _lf_number_of_trace_buffers; i++) {
-        _lf_trace_buffer_to_flush[i] = (trace_record_t*)malloc(sizeof(trace_record_t) * TRACE_BUFFER_CAPACITY);
-    }
-    // Array of counters that track the size of each trace record (per thread).
-    _lf_trace_buffer_size_to_flush = (int*)calloc(sizeof(int), _lf_number_of_trace_buffers);
-
     _lf_trace_stop = 0;
-
-    // In case the user forgets to stop to the trace in wrapup.
-    if (atexit(stop_trace) != 0) {
-        lf_print_warning("Failed to register stop_trace function for execution upon termination.");
-    }
-
-    lf_thread_create(&_lf_flush_trace_thread, flush_trace, NULL);
 
     LF_PRINT_DEBUG("Started tracing.");
 }
 
-/**
- * Trace an event identified by a type and an identifying pointer.
- * The pointer can be, for example, to the self struct of the reactor instance.
- * This is a generic tracepoint function. It is better to use one of the specific functions.
- * @param event_type The type of event (see trace_event_t in trace.h)
- * @param pointer The identifying pointer.
- * @param reaction_number The number of the reaction or -1 if the trace is not of a reaction
- *  or the reaction number if not known.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution
- *  or -1 for an unknown thread.
- * @param physical_time If the caller has already accessed physical time, provide it here.
- *  Otherwise, provide NULL. This argument avoids a second call to lf_time_physical()
- *  and ensures that the physical time in the trace is the same as that used by the caller.
- * @param trigger Pointer to the trigger_t struct for calls to schedule or NULL otherwise.
- * @param extra_delay The extra delay passed to schedule(). If not relevant for this event
- *  type, pass 0.
- */
 void tracepoint(
         trace_event_t event_type,
         void* pointer,
-        int reaction_number,
+        tag_t* tag,
         int worker,
+        int src_id,
+        int dst_id,
         instant_t* physical_time,
         trigger_t* trigger,
-        interval_t extra_delay
+        interval_t extra_delay,
+        bool is_interval_start
 ) {
-    // printf("DEBUG: Creating trace record.\n");
-    // Flush the buffer if it is full.
+    instant_t time;
+    if (!is_interval_start && physical_time == NULL) {
+        time = lf_time_physical();
+        physical_time = &time;
+    }
+    // Worker argument determines which buffer to write to.
     int index = (worker >= 0) ? worker : 0;
+
+    // Flush the buffer if it is full.
     if (_lf_trace_buffer_size[index] >= TRACE_BUFFER_CAPACITY) {
         // No more room in the buffer. Write the buffer to the file.
-        flush_trace_to_file(index);
+        flush_trace(index);
     }
-    // The above flush_trace_to_file resets the write pointer.
+    // The above flush_trace resets the write pointer.
     int i = _lf_trace_buffer_size[index];
     // Write to memory buffer.
     _lf_trace_buffer[index][i].event_type = event_type;
     _lf_trace_buffer[index][i].pointer = pointer;
-    _lf_trace_buffer[index][i].reaction_number = reaction_number;
-    _lf_trace_buffer[index][i].worker = worker;
-    _lf_trace_buffer[index][i].logical_time = lf_time_logical();
-    _lf_trace_buffer[index][i].microstep = lf_tag().microstep;
-    if (physical_time != NULL) {
-        _lf_trace_buffer[index][i].physical_time = *physical_time;
+    _lf_trace_buffer[index][i].src_id = src_id;
+    _lf_trace_buffer[index][i].dst_id = dst_id;
+    if (tag != NULL) {
+        _lf_trace_buffer[index][i].logical_time = tag->time;
+        _lf_trace_buffer[index][i].microstep = tag->microstep;
     } else {
-        _lf_trace_buffer[index][i].physical_time = lf_time_physical();
+        _lf_trace_buffer[index][i].logical_time = lf_time_logical();
+        _lf_trace_buffer[index][i].microstep = lf_tag().microstep;
     }
-    _lf_trace_buffer_size[index]++;
     _lf_trace_buffer[index][i].trigger = trigger;
     _lf_trace_buffer[index][i].extra_delay = extra_delay;
+    if (is_interval_start && physical_time == NULL) {
+        time = lf_time_physical();
+        physical_time = &time;
+    }
+    _lf_trace_buffer[index][i].physical_time = *physical_time;
+    _lf_trace_buffer_size[index]++;
 }
 
 /**
@@ -427,7 +320,7 @@ void tracepoint(
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_reaction_starts(reaction_t* reaction, int worker) {
-    tracepoint(reaction_starts, reaction->self, reaction->number, worker, NULL, NULL, 0);
+    tracepoint(reaction_starts, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, true);
 }
 
 /**
@@ -436,7 +329,7 @@ void tracepoint_reaction_starts(reaction_t* reaction, int worker) {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_reaction_ends(reaction_t* reaction, int worker) {
-    tracepoint(reaction_ends, reaction->self, reaction->number, worker, NULL, NULL, 0);
+    tracepoint(reaction_ends, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
 }
 
 /**
@@ -454,7 +347,11 @@ void tracepoint_schedule(trigger_t* trigger, interval_t extra_delay) {
             && trigger->reactions[0] != NULL) {
         reactor = trigger->reactions[0]->self;
     }
-    tracepoint(schedule_called, reactor, 0, 0, NULL, trigger, extra_delay);
+    // NOTE: The -1 argument indicates no worker.
+    // This is OK because it is called only while holding the mutex lock.
+    // True argument specifies to record physical time as late as possible, when
+    // the event is already on the event queue.
+    tracepoint(schedule_called, reactor, NULL, -1, 0, 0, NULL, trigger, extra_delay, true);
 }
 
 /**
@@ -465,7 +362,15 @@ void tracepoint_schedule(trigger_t* trigger, interval_t extra_delay) {
  */
 void tracepoint_user_event(char* description) {
     // -1s indicate unknown reaction number and worker thread.
-    tracepoint(user_event, description,  -1, -1, NULL, NULL, 0);
+    // NOTE: We currently have no way to get the number of the worker that
+    // is executing the reaction that calls this, so we can't pass a worker
+    // number to the tracepoint function. We pass -1, indicating no worker.
+    // But to be safe, then, we have acquire a mutex before calling this
+    // because multiple reactions might be calling the same tracepoint function.
+    // There will be a performance hit for this.
+    lf_critical_section_enter();
+    tracepoint(user_event, description,  NULL, -1, -1, -1, NULL, NULL, 0, false);
+    lf_critical_section_exit();
 }
 
 /**
@@ -480,7 +385,15 @@ void tracepoint_user_event(char* description) {
  */
 void tracepoint_user_value(char* description, long long value) {
     // -1s indicate unknown reaction number and worker thread.
-    tracepoint(user_value, description,  -1, -1, NULL, NULL, value);
+    // NOTE: We currently have no way to get the number of the worker that
+    // is executing the reaction that calls this, so we can't pass a worker
+    // number to the tracepoint function. We pass -1, indicating no worker.
+    // But to be safe, then, we have acquire a mutex before calling this
+    // because multiple reactions might be calling the same tracepoint function.
+    // There will be a performance hit for this.
+    lf_critical_section_enter();
+    tracepoint(user_value, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
+    lf_critical_section_exit();
 }
 
 /**
@@ -488,7 +401,7 @@ void tracepoint_user_value(char* description, long long value) {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_worker_wait_starts(int worker) {
-    tracepoint(worker_wait_starts, NULL, -1, worker, NULL, NULL, 0);
+    tracepoint(worker_wait_starts, NULL, NULL, worker, worker, -1, NULL, NULL, 0, true);
 }
 
 /**
@@ -496,7 +409,7 @@ void tracepoint_worker_wait_starts(int worker) {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_worker_wait_ends(int worker) {
-    tracepoint(worker_wait_ends, NULL, -1, worker, NULL, NULL, 0);
+    tracepoint(worker_wait_ends, NULL, NULL, worker, worker, -1, NULL, NULL, 0, false);
 }
 
 /**
@@ -504,7 +417,7 @@ void tracepoint_worker_wait_ends(int worker) {
  * appear on the event queue.
  */
 void tracepoint_scheduler_advancing_time_starts() {
-    tracepoint(scheduler_advancing_time_starts, NULL, -1, -1, NULL, NULL, 0);
+    tracepoint(scheduler_advancing_time_starts, NULL, NULL, -1, -1, -1, NULL, NULL, 0, true);
 }
 
 /**
@@ -512,7 +425,7 @@ void tracepoint_scheduler_advancing_time_starts() {
  * appear on the event queue.
  */
 void tracepoint_scheduler_advancing_time_ends() {
-    tracepoint(scheduler_advancing_time_ends, NULL, -1, -1, NULL, NULL, 0);
+    tracepoint(scheduler_advancing_time_ends, NULL, NULL, -1, -1, -1, NULL, NULL, 0, false);
 }
 
 /**
@@ -521,19 +434,15 @@ void tracepoint_scheduler_advancing_time_ends() {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_reaction_deadline_missed(reaction_t *reaction, int worker) {
-    tracepoint(reaction_deadline_missed, reaction->self, reaction->number, worker, NULL, NULL, 0);
+    tracepoint(reaction_deadline_missed, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
 }
 
-/**
- * Flush any buffered trace records to the trace file and
- * close the file.
- */
 void stop_trace() {
+    lf_critical_section_enter();
     if (_lf_trace_stop) {
         // Trace was already stopped. Nothing to do.
         return;
     }
-    lf_mutex_lock(&_lf_trace_mutex);
     // In multithreaded execution, thread 0 invokes wrapup reactions, so we
     // put that trace last. However, it could also include some startup events.
     // In any case, the trace file does not guarantee any ordering.
@@ -541,24 +450,159 @@ void stop_trace() {
         // Flush the buffer if it has data.
         // printf("DEBUG: Trace buffer %d has %d records.\n", i, _lf_trace_buffer_size[i]);
         if (_lf_trace_buffer_size && _lf_trace_buffer_size[i] > 0) {
-            flush_trace_to_file_locked(i);
+            flush_trace_locked(i);
         }
     }
     if (_lf_trace_buffer_size && _lf_trace_buffer_size[0] > 0) {
-        flush_trace_to_file_locked(0);
+        flush_trace_locked(0);
     }
     _lf_trace_stop = 1;
-    // Wake up the trace_flush thread.
-    lf_cond_signal(&_lf_flush_needed);
-    lf_mutex_unlock(&_lf_trace_mutex);
-
-    // Join trace_flush thread.
-    void* flush_trace_thread_exit_status;
-    lf_thread_join(_lf_flush_trace_thread, &flush_trace_thread_exit_status);
-
     fclose(_lf_trace_file);
     _lf_trace_file = NULL;
     LF_PRINT_DEBUG("Stopped tracing.");
+    lf_critical_section_exit();
 }
+
+////////////////////////////////////////////////////////////
+//// For federated execution
+
+#ifdef FEDERATED
+
+/**
+ * Trace federate sending a message to the RTI.
+ * @param event_type The type of event. Possible values are:
+ *
+ * @param fed_id The federate identifier.
+ * @param tag Pointer to the tag that has been sent, or NULL.
+ */
+void tracepoint_federate_to_RTI(trace_event_t event_type, int fed_id, tag_t* tag) {
+    tracepoint(event_type, 
+        NULL,   // void* pointer,
+        tag,    // tag* tag,
+        -1,     // int worker, // no worker ID needed because this is called within a mutex
+        fed_id, // int src_id,
+        -1,     // int dst_id,
+        NULL,   // instant_t* physical_time (will be generated)
+        NULL,   // trigger_t* trigger,
+        0,      // interval_t extra_delay
+        true    // is_interval_start
+    );
+}
+
+/**
+ * Trace federate receiving a message from the RTI.
+ * @param event_type The type of event. Possible values are:
+ *
+ * @param fed_id The federate identifier.
+ * @param tag Pointer to the tag that has been received, or NULL.
+ */
+void tracepoint_federate_from_RTI(trace_event_t event_type, int fed_id, tag_t* tag) {
+    // trace_event_t event_type = (type == MSG_TYPE_TAG_ADVANCE_GRANT)? federate_TAG : federate_PTAG;
+    tracepoint(event_type,
+        NULL,   // void* pointer,
+        tag,    // tag* tag,
+        -1,     // int worker, // no worker ID needed because this is called within a mutex
+        fed_id, // int src_id,
+        -1,     // int dst_id,
+        NULL,   // instant_t* physical_time (will be generated)
+        NULL,   // trigger_t* trigger,
+        0,      // interval_t extra_delay
+        false   // is_interval_start
+    );
+}
+
+/**
+ * Trace federate sending a message to another federate.
+ * @param event_type The type of event. Possible values are:
+ *
+ * @param fed_id The federate identifier.
+ * @param partner_id The partner federate identifier.
+ * @param tag Pointer to the tag that has been sent, or NULL.
+ */
+void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
+    tracepoint(event_type,
+        NULL,   // void* pointer,
+        tag,    // tag* tag,
+        -1,     // int worker, // no worker ID needed because this is called within a mutex
+        fed_id, // int src_id,
+        partner_id,     // int dst_id,
+        NULL,   // instant_t* physical_time (will be generated)
+        NULL,   // trigger_t* trigger,
+        0,      // interval_t extra_delay
+        true    // is_interval_start
+    );
+}
+
+/**
+ * Trace federate receiving a message from another federate.
+ * @param event_type The type of event. Possible values are:
+ *
+ * @param fed_id The federate identifier.
+ * @param partner_id The partner federate identifier.
+ * @param tag Pointer to the tag that has been received, or NULL.
+ */
+void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
+    tracepoint(event_type,
+        NULL,   // void* pointer,
+        tag,    // tag* tag,
+        -1,     // int worker, // no worker ID needed because this is called within a mutex
+        fed_id, // int src_id,
+        partner_id,     // int dst_id,
+        NULL,   // instant_t* physical_time (will be generated)
+        NULL,   // trigger_t* trigger,
+        0,      // interval_t extra_delay
+        false   // is_interval_start
+    );
+}
+#endif // FEDERATED
+
+////////////////////////////////////////////////////////////
+//// For RTI execution
+
+#ifdef RTI_TRACE
+
+/**
+ * Trace RTI sending a message to a federate.
+ * @param event_type The type of event. Possible values are:
+ *
+ * @param fed_id The fedaerate ID.
+ * @param tag Pointer to the tag that has been sent, or NULL.
+ */
+void tracepoint_RTI_to_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
+    tracepoint(event_type,
+        NULL,   // void* pointer,
+        tag,    // tag_t* tag,
+        fed_id, // int worker (one thread per federate)
+        -1,     // int src_id
+        fed_id, // int dst_id
+        NULL,   // instant_t* physical_time (will be generated)
+        NULL,   // trigger_t* trigger,
+        0,      // interval_t extra_delay
+        true    // is_interval_start
+    );
+}
+
+/**
+ * Trace RTI receiving a message from a federate.
+ * @param event_type The type of event. Possible values are:
+ * 
+ * @param fed_id The fedaerate ID.
+ * @param tag Pointer to the tag that has been sent, or NULL.
+ */
+void tracepoint_RTI_from_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
+    tracepoint(event_type,
+        NULL,   // void* pointer,
+        tag,    // tag_t* tag,
+        fed_id, // int worker (one thread per federate)
+        -1,     // int src_id  (RTI is the source of the tracepoint)
+        fed_id, // int dst_id
+        NULL,   // instant_t* physical_time (will be generated)
+        NULL,   // trigger_t* trigger,
+        0,      // interval_t extra_delay
+        false   // is_interval_start
+    );
+}
+
+#endif // RTI_TRACE
 
 #endif // LF_TRACE
