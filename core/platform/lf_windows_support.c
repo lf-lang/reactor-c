@@ -34,11 +34,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @see https://gist.github.com/Soroosh129/127d1893fa4c1da6d3e1db33381bb273
  */
 
+#include <windows.h>  // Order in which windows.h is included does matter!
 #include <errno.h>
 #include <process.h>
 #include <sysinfoapi.h>
 #include <time.h>
-#include <windows.h>
 
 #include "lf_windows_support.h"
 #include "platform.h"
