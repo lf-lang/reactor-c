@@ -29,12 +29,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * This file detects the platform on which the C compiler is being run
  * (e.g. Windows, Linux, Mac) and conditionally includes platform-specific
  * files that define core datatypes and function signatures for Lingua Franca.
- * For example, the type instant_t represents a time value (long long on
- * most of the platforms). The conditionally included files define a type
- * _instant_t, and this file defines the type instant_t to be whatever
- * the included defines _instant_t to be. All platform-independent code
- * in Lingua Franca, therefore, should use the type instant_t for time
- * values.
  *
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  */
