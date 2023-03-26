@@ -60,8 +60,6 @@ double _lf_frequency_to_ns = 1.0;
 
 #define LF_MIN_SLEEP_NS USEC(10)
 
-#define BILLION 1000000000
-
 #if defined LF_THREADED || defined _LF_TRACE
 
 /**
