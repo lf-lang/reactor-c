@@ -169,6 +169,12 @@ typedef struct federate_instance_t {
     bool has_downstream;
 
     /**
+     * Indicator of whether this federate is transient.
+     * The default value of false may be overridden in _lf_initialize_trigger_objects.
+     */
+    bool is_transient;
+
+    /**
      * Used to prevent the federate from sending a REQUEST_STOP
      * message multiple times to the RTI.
      * This variable should only be accessed while holding the mutex lock.
