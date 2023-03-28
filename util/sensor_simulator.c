@@ -419,6 +419,7 @@ int start_sensor_simulator(
     _lf_sensor.message_q = NULL;
     _lf_sensor.message_recycle_q = NULL;
     _lf_sensor.thread_created = 0;
+    lf_cond_init(&_lf_sensor_simulator_cond_var, &_lf_sensor_mutex);
     if (_lf_sensor.thread_created == 0) {
         // Thread has not been created.
         // Zero out the trigger table.

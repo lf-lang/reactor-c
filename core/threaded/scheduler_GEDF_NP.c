@@ -298,7 +298,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
             worker_number, current_level);
         lf_mutex_lock(
             &_lf_sched_instance->_lf_sched_array_of_mutexes[current_level]);
-        LF_PRINT_DEBUG("Scheduler: Worker %d locked the mutex for level %d.",
+        LF_PRINT_DEBUG("Scheduler: Worker %d locked the mutex for level %zu.",
                     worker_number, current_level);
         reaction_t* reaction_to_return = (reaction_t*)pqueue_pop(
             (pqueue_t*)_lf_sched_instance->_lf_sched_executing_reactions);
