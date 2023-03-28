@@ -97,7 +97,8 @@ federate_instance_t _fed = {
         .min_delay_from_physical_action_to_federate_output = NEVER,
         .triggers_for_network_input_control_reactions = NULL,
         .triggers_for_network_input_control_reactions_size = 0,
-        .trigger_for_network_output_control_reactions = NULL
+        .trigger_for_network_output_control_reactions = NULL,
+        .is_transient = false
 };
 
 
@@ -554,7 +555,7 @@ void* handle_p2p_connections_from_federates(void* ignored) {
         }
         LF_PRINT_LOG("Accepted new connection from remote federate.");
 
-        size_t header_length = 1 + sizeof(uint16_t) + 1;
+        size_t header_length = 1 + sizeof(uint16_t) + 1 + 1;
         unsigned char buffer[header_length];
         ssize_t bytes_read = read_from_socket(socket_id, header_length, (unsigned char*)&buffer);
         if (bytes_read != (ssize_t)header_length || buffer[0] != MSG_TYPE_P2P_SENDING_FED_ID) {
@@ -594,6 +595,7 @@ void* handle_p2p_connections_from_federates(void* ignored) {
 
         // Extract the ID of the sending federate.
         uint16_t remote_fed_id = extract_uint16((unsigned char*)&(buffer[1]));
+        bool remote_fed_is_transient = buffer[1 + sizeof(uint16_t)];
         LF_PRINT_DEBUG("Received sending federate ID %d.", remote_fed_id);
 
         // Trace the event when tracing is enabled
@@ -841,7 +843,7 @@ void connect_to_federate(uint16_t remote_federate_id) {
             }
         } else {
             // Connect was successful.
-            size_t buffer_length = 1 + sizeof(uint16_t) + 1;
+            size_t buffer_length = 1 + sizeof(uint16_t) + 1 + 1;
             unsigned char buffer[buffer_length];
             buffer[0] = MSG_TYPE_P2P_SENDING_FED_ID;
             if (_lf_my_fed_id > UINT16_MAX) {
@@ -849,8 +851,9 @@ void connect_to_federate(uint16_t remote_federate_id) {
                 lf_print_error_and_exit("Too many federates! More than %d.", UINT16_MAX);
             }
             encode_uint16((uint16_t)_lf_my_fed_id, (unsigned char*)&(buffer[1]));
+            buffer[1 + sizeof(uint16_t)] = _fed.is_transient ? 1 : 0;
             unsigned char federation_id_length = (unsigned char)strnlen(federation_metadata.federation_id, 255);
-            buffer[sizeof(uint16_t) + 1] = federation_id_length;
+            buffer[sizeof(uint16_t) + 2] = federation_id_length;
             // Trace the event when tracing is enabled
             tracepoint_federate_to_federate(send_FED_ID, _lf_my_fed_id, remote_federate_id, NULL);
             write_to_socket_errexit(socket_id,
@@ -1090,7 +1093,7 @@ void connect_to_rti(const char* hostname, int port) {
             // Have connected to an RTI, but not sure it's the right RTI.
             // Send a MSG_TYPE_FED_IDS message and wait for a reply.
             // Notify the RTI of the ID of this federate and its federation.
-            unsigned char buffer[4];
+            unsigned char buffer[5];
 
 #ifdef FEDERATED_AUTHENTICATED
             LF_PRINT_LOG("Connected to an RTI. Performing HMAC-based authentication using federation ID.");
@@ -1106,15 +1109,17 @@ void connect_to_rti(const char* hostname, int port) {
                 lf_print_error_and_exit("Too many federates! More than %d.", UINT16_MAX);
             }
             encode_uint16((uint16_t)_lf_my_fed_id, &buffer[1]);
+            // Next send the federate type (persistent or transient)
+            buffer[1 + sizeof(uint16_t)] = _fed.is_transient? 1 : 0;
             // Next send the federation ID length.
             // The federation ID is limited to 255 bytes.
             size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
-            buffer[1 + sizeof(uint16_t)] = (unsigned char)(federation_id_length & 0xff);
+            buffer[2 + sizeof(uint16_t)] = (unsigned char)(federation_id_length & 0xff);
 
             // Trace the event when tracing is enabled
             tracepoint_federate_to_RTI(send_FED_ID, _lf_my_fed_id, NULL);
 
-            write_to_socket_errexit(_fed.socket_TCP_RTI, 2 + sizeof(uint16_t), buffer,
+            write_to_socket_errexit(_fed.socket_TCP_RTI, 3 + sizeof(uint16_t), buffer,
                     "Failed to send federate ID to RTI.");
 
             // Next send the federation ID itself.
