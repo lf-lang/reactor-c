@@ -82,22 +82,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LF_TIMEOUT _LF_TIMEOUT
 
 /**
- * Time instant. Both physical and logical times are represented
- * using this typedef.
- */
-typedef int64_t instant_t;
-
-/**
- * Interval of time.
- */
-typedef int64_t interval_t;
-
-/**
- * Microstep instant.
- */
-typedef uint32_t microstep_t;
-
-/**
  * Enter a critical section where logical time and the event queue are guaranteed
  * to not change unless they are changed within the critical section.
  * this can be implemented by disabling interrupts.

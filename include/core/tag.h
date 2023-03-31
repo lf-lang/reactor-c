@@ -70,6 +70,22 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <limits.h>
 
 /**
+ * Time instant. Both physical and logical times are represented
+ * using this typedef.
+ */
+typedef int64_t instant_t;
+
+/**
+ * Interval of time.
+ */
+typedef int64_t interval_t;
+
+/**
+ * Microstep instant.
+ */
+typedef uint32_t microstep_t;
+
+/**
  * Global physical clock offset.
  * Initially set according to the RTI's clock in federated
  * programs.
