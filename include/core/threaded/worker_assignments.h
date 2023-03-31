@@ -39,6 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "scheduler.h"
 #include "util.h"
+#include "platform.h"
 
 /** The queued reactions. */
 static reaction_t**** reactions_by_worker_by_level;
