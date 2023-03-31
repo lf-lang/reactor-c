@@ -41,7 +41,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define RESOLVE(i, o, in)  PASTE(convert__##i, _to__##o)(in)
 
-// Convention: toType convert__fromType_to__toType(fromType x)
+/// @name DO_CONVERT
+/// @param fromType Typename of <code> value </code> field
+/// @param toType Typename of desired type
+/// @param value Actual value of type <code> fromType </code>
+/// @brief  This macro to enable user to provide their own converter libraries
+///         as long as they follow the convention for naming their conversion functions this macro will work
+/// @attention Converter library functions must follow this convention
+///         <br> <code> toType convert__fromType_to__toType(fromType x) </code>
 #define DO_CONVERT(fromType, toType, value) RESOLVE(fromType, toType, value)
 
 #endif // TYPE_CONVERTER_H_
