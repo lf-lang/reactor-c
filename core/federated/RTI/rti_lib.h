@@ -53,6 +53,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "net_util.h"   // Defines network functions.
 #include "net_common.h" // Defines message types, etc. Includes <pthread.h> and "reactor.h".
 #include "tag.h"        // Time-related types and functions.
+#include "trace.h"      // Tracing related functions
+
 #ifdef __RTI_AUTH__
 #include <openssl/rand.h> // For secure random number generation.
 #include <openssl/hmac.h> // For HMAC authentication.
@@ -180,7 +182,7 @@ typedef struct RTI_instance_t {
      * This should be overridden with a command-line -i option to ensure
      * that each federate only joins its assigned federation.
      */
-    char* federation_id;
+    const char* federation_id;
 
     /************* TCP server information *************/
     /** The desired port specified by the user on the command line. */
@@ -223,7 +225,28 @@ typedef struct RTI_instance_t {
      * Boolean indicating that authentication is enabled.
      */
     bool authentication_enabled;
+
+    /**
+     * Boolean indicating that tracing is enabled.
+     */
+    bool tracing_enabled;
 } RTI_instance_t;
+
+/**
+ * Enter a critical section where logical time and the event queue are guaranteed
+ * to not change unless they are changed within the critical section.
+ * this can be implemented by disabling interrupts.
+ * Users of this function must ensure that lf_init_critical_sections() is
+ * called first and that lf_critical_section_exit() is called later.
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_critical_section_enter();
+
+/**
+ * Exit the critical section entered with lf_lock_time().
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+extern int lf_critical_section_exit();
 
 /**
  * Create a server and enable listening for socket connections.
@@ -580,13 +603,13 @@ int receive_connection_information(int socket_id, uint16_t fed_id);
  */
 int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id);
 
+#ifdef __RTI_AUTH__
 /**
  * Authenticate incoming federate by performing HMAC-based authentication.
  * 
  * @param socket Socket for the incoming federate tryting to authenticate.
  * @return True if authentication is successful and false otherwise.
  */
-#ifdef __RTI_AUTH__
 bool authenticate_federate(int socket);
 #endif
 
@@ -605,8 +628,9 @@ void connect_to_federates(int socket_descriptor);
  */
 void* respond_to_erroneous_connections(void* nothing);
 
-/** Initialize the federate with the specified ID.
- *  @param id The federate ID.
+/** 
+ * Initialize the federate with the specified ID.
+ * @param id The federate ID.
  */
 void initialize_federate(uint16_t id);
 
@@ -629,7 +653,7 @@ void wait_for_federates(int socket_descriptor);
 /**
  * Print a usage message.
  */
-void usage(int argc, char* argv[]);
+void usage(int argc, const char* argv[]);
 
 /**
  * Process command-line arguments related to clock synchronization. Will return
@@ -640,14 +664,14 @@ void usage(int argc, char* argv[]);
  * @param argv: The list of arguments as a string
  * @return Current position (head) of argv;
  */
-int process_clock_sync_args(int argc, char* argv[]);
+int process_clock_sync_args(int argc, const char* argv[]);
 
 /**
  * Process the command-line arguments. If the command line arguments are not
  * understood, then print a usage message and return 0. Otherwise, return 1.
  * @return 1 if the arguments processed successfully, 0 otherwise.
  */
-int process_args(int argc, char* argv[]);
+int process_args(int argc, const char* argv[]);
 
 
 
