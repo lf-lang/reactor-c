@@ -26,46 +26,22 @@ STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  * @section DESCRIPTION
+ * This file provides macro `DO_CONVERT(fromType, toType, value)`
+ * Sometimes the generic Reactor can work as a connector between two reactors
+ * We provide this macro to enable user to provide their own converter libraries
+ * as long as they follow the convention for naming their conversion functions this macro will work
  *
- * This file provides macros for Generic Reactors in C-Target
- * The macros are wrappers on compiler builtins and provide the
- * programmer to auto-infer types and conditionals based on types
+ * Convention: toType convert__fromType_to__toType(fromType x)
  */
 
-#ifndef GENERICS_H
-#define GENERICS_H
+#ifndef TYPE_CONVERTER_H_
+#define TYPE_CONVERTER_H_
 
-// If buitin are not available on target toolchain we may not be able to support generics
-#if defined __has_builtin
-// Auto-Deduce variable type based on assigned value
-#define auto_t __auto_type
+#define PASTE(x,y) x ## y
 
-// Checks if types of both `a` and `b` are same
-#define is_same_type(a, b) __builtin_types_compatible_p(__typeof__(a), __typeof__(b))
+#define RESOLVE(i, o, in)  PASTE(convert__##i, _to__##o)(in)
 
-// Checks if type of `b` is same as the specified `typename`
-#define is_same(typename, b) __builtin_types_compatible_p(typename, __typeof__(b))
+// Convention: toType convert__fromType_to__toType(fromType x)
+#define DO_CONVERT(fromType, toType, value) RESOLVE(fromType, toType, value)
 
-// Checks if `typename_a` and `typename_b` are same
-#define is_type_equal(typename_a, typename_b) __builtin_types_compatible_p(typename_a, typename_b)
-
-// Checks if the passed variable `p` is array or a pointer
-#define is_pointer_or_array(p)  (__builtin_classify_type(p) == 5)
-
-#define decay(p)  (&*__builtin_choose_expr(is_pointer_or_array(p), p, NULL))
-
-// Checks if passed variable `p` is a pointer
-#define is_pointer(p)  is_same_type(p, decay(p))
-
-#else // buitin are not available
-
-#define auto_t
-#define is_same_type(a, b)
-#define is_same(typename, b)
-#define is_pointer_or_array(p)
-#define decay(p)
-#define is_pointer(p)
-#endif // __has_builtin
-
-#endif // GENERICS_H
-
+#endif // TYPE_CONVERTER_H_
