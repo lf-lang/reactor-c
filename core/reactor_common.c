@@ -285,6 +285,12 @@ static pqueue_t* recycle_q;   // For recycling malloc'd events.
 static pqueue_t* next_q;      // For temporarily storing the next event lined
                        // up in superdense time.
 
+#ifdef FEDERATED
+hashset_t waiting_q;     // For reactions that are unsafe to queue (i.e. when upstream port statuses are unknown), 
+                         // place in a waiting set.
+#endif
+
+
 static trigger_handle_t _lf_handle = 1;
 
 /**
@@ -382,7 +388,7 @@ void _lf_pop_events() {
         }
 
 #ifdef MODAL_REACTORS
-        // If this event is associated with an incative it should haven been suspended and no longer on the event queue.
+        // If this event is associated with an inactive it should haven been suspended and no longer on the event queue.
         // FIXME This should not be possible
         if (!_lf_mode_is_active(event->trigger->mode)) {
             lf_print_warning("Assumption violated. There is an event on the event queue that is associated to an inactive mode.");
@@ -468,11 +474,11 @@ void _lf_pop_events() {
         event = (event_t*)pqueue_peek(event_q);
     };
 
-#ifdef FEDERATED
-    // Insert network dependent reactions for network input and output ports into
-    // the reaction queue
-    enqueue_network_control_reactions();
-#endif // FEDERATED
+// #ifdef FEDERATED
+//     // Insert network dependent reactions for network input and output ports into
+//     // the reaction queue
+//     enqueue_network_control_reactions();
+// #endif // FEDERATED
 
     LF_PRINT_DEBUG("There are %zu events deferred to the next microstep.", pqueue_size(next_q));
 
@@ -1691,11 +1697,15 @@ void initialize(void) {
 
     event_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_reverse_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
-    // NOTE: The recycle and next queue does not need to be sorted. But here it is.
+    // NOTE: The recycle, waiting, and next queue does not need to be sorted. But here it is.
     recycle_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
     next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
+    
+    #ifdef FEDERATED
+    waiting_q = hashset_create(3);
+    #endif
 
     // Initialize the trigger table.
     _lf_initialize_trigger_objects();

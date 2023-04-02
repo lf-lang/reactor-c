@@ -256,6 +256,16 @@ extern lf_cond_t port_status_changed;
 void send_neighbor_structure_to_RTI(int);
 
 /**
+ * @brief Determines whether the second reaction has a causal relationship with the first reaction 
+ * 
+ * @param reactionA 
+ * @param reactionB
+ * @return true if reaction has a causal relationship on portReaction
+ * @return false otherwise
+ */
+bool isCausalRelationship(reaction_t*, reaction_t*);
+
+/**
  * Connect to the federate with the specified id. This established
  * connection will then be used in functions such as send_timed_message()
  * to send messages directly to the specified federate.
@@ -352,6 +362,18 @@ void* handle_p2p_connections_from_federates(void*);
 void send_port_absent_to_federate(interval_t, unsigned short, unsigned short);
 
 /**
+ * Checks if all upstream port dependencies for a reaction are known when enqueuing a reaction to be executed.
+ *
+ * At compile time, all reactions are populated with chain ids indicating causal relationships with upstream reactions.
+ * This function iterates through all reactions corresponding to input network actions. 
+ * If any upstream ports are unknown, the reaction is unsafe to be scheduled and should be placed on a waiting queue.
+ * 
+ * @param reaction The reaction to check for whether all of its upstream input port values 
+ *                 are known (absent or present w. a value)
+ */
+bool all_upstream_port_statuses_known(reaction_t* reaction) ;
+
+/**
  * Send a message to another federate directly or via the RTI.
  * This method assumes that the caller does not hold the outbound_socket_mutex lock,
  * which it acquires to perform the send.
@@ -436,17 +458,17 @@ int send_timed_message(interval_t,
  */
 void synchronize_with_other_federates(void);
 
-/**
- * Wait until the status of network port "port_ID" is known.
- *
- * In decentralized coordination mode, the wait time is capped by STAA + STA,
- * after which the status of the port is presumed to be absent.
- *
- * This function assumes the holder does not hold a mutex.
- *
- * @param port_ID The ID of the network port
- * @param STAA The safe-to-assume-absent threshold for the port
- */
-void wait_until_port_status_known(int portID, interval_t STAA);
+// /**
+//  * Wait until the status of network port "port_ID" is known.
+//  *
+//  * In decentralized coordination mode, the wait time is capped by STAA + STA,
+//  * after which the status of the port is presumed to be absent.
+//  *
+//  * This function assumes the holder does not hold a mutex.
+//  *
+//  * @param port_ID The ID of the network port
+//  * @param STAA The safe-to-assume-absent threshold for the port
+//  */
+// void wait_until_port_status_known(int portID, interval_t STAA);
 
 #endif // FEDERATE_H

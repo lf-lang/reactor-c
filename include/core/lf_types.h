@@ -244,7 +244,7 @@ struct trigger_t {
 #ifdef FEDERATED
     tag_t last_known_status_tag;        // Last known status of the port, either via a timed message, a port absent, or a
                                         // TAG from the RTI.
-    bool is_a_control_reaction_waiting; // Indicates whether at least one control reaction is waiting for this trigger
+    bool is_a_control_reaction_waiting;  // Indicates whether the wait queue is waiting for a port update before 
                                         // if it belongs to a network input port. Must be false by default.
     tag_t intended_tag;                 // The amount of discrepency in logical time between the original intended
                                         // trigger time of this trigger and the actual trigger time. This currently
