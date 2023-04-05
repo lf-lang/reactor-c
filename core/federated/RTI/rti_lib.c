@@ -1716,8 +1716,8 @@ void connect_to_federates(int socket_descriptor) {
         // over the UDP channel, but only if the UDP channel is open and at least one
         // federate is performing runtime clock synchronization.
         bool clock_sync_enabled = false;
-        for (int i = 0; i < _RTI.number_of_federates; i++) {
-            if (_RTI.federates[i].clock_synchronization_enabled) {
+        for (int i = 0; i < _RTI.number_of_federates + _RTI.number_of_transient_federates; i++) {
+            if (_RTI.federates[i].clock_synchronization_enabled && !_RTI.federates[i].is_transient) {
                 clock_sync_enabled = true;
                 break;
             }
@@ -1795,21 +1795,8 @@ void* connect_to_transient_federates_thread() {
                         lf_print("RTI: Transient Federate %d thread exited.", _RTI.federates[i].id);
                         // Update the number of connected transient federates
                         _RTI.number_of_connected_transient_federates--;
-                        
-                        // Reinitialize the ststaus of the leaving federate
-                        _RTI.federates[i].thread_id = -1;
-                        _RTI.federates[i].socket = -1; // No socket.
-                        _RTI.federates[i].last_granted = NEVER_TAG;
-                        _RTI.federates[i].state = NOT_CONNECTED;
-                        _RTI.federates[i].mode = REALTIME;
-                        strncpy(_RTI.federates[i].server_hostname, "localhost", INET_ADDRSTRLEN);
-                        _RTI.federates[i].server_ip_addr.s_addr = 0;
-                        _RTI.federates[i].server_port = -1;
-                        _RTI.federates[i].requested_stop = false;
-                        // _RTI.federates[i].clock_synchronization_enabled = true;
-                        // _RTI.federates[i].completed = NEVER_TAG;
-                        // _RTI.federates[i].last_provisionally_granted = NEVER_TAG;
-                        // _RTI.federates[i].next_event = NEVER_TAG;
+                        // Reset the status of the leaving federate
+                        reset_transient_federate(_RTI.federates[i].id);
                     }
                 }
             }
@@ -1860,6 +1847,33 @@ void initialize_federate(uint16_t id) {
     _RTI.federates[id].num_upstream = 0;
     _RTI.federates[id].downstream = NULL;
     _RTI.federates[id].num_downstream = 0;
+    _RTI.federates[id].mode = REALTIME;
+    strncpy(_RTI.federates[id].server_hostname ,"localhost", INET_ADDRSTRLEN);
+    _RTI.federates[id].server_ip_addr.s_addr = 0;
+    _RTI.federates[id].server_port = -1;
+    _RTI.federates[id].requested_stop = false;
+    _RTI.federates[id].is_transient = true;
+}
+
+void reset_transient_federate(uint16_t id)
+{
+    // The commented lines highlignts the values that a transient federate needs 
+    // to passes to its future joining one
+    _RTI.federates[id].thread_id = -1;
+    // _RTI.federates[id].id = id;
+    _RTI.federates[id].socket = -1;      // No socket.
+    _RTI.federates[id].clock_synchronization_enabled = true;
+    // _RTI.federates[id].completed = NEVER_TAG;
+    _RTI.federates[id].last_granted = NEVER_TAG;
+    _RTI.federates[id].last_provisionally_granted = NEVER_TAG;
+    _RTI.federates[id].next_event = NEVER_TAG;
+    _RTI.federates[id].in_transit_message_tags = initialize_in_transit_message_q();
+    _RTI.federates[id].state = NOT_CONNECTED;
+    // _RTI.federates[id].upstream = NULL;
+    // _RTI.federates[id].upstream_delay = NULL;
+    // _RTI.federates[id].num_upstream = 0;
+    // _RTI.federates[id].downstream = NULL;
+    // _RTI.federates[id].num_downstream = 0;
     _RTI.federates[id].mode = REALTIME;
     strncpy(_RTI.federates[id].server_hostname ,"localhost", INET_ADDRSTRLEN);
     _RTI.federates[id].server_ip_addr.s_addr = 0;
