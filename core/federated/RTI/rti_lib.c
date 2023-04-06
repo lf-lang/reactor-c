@@ -1855,8 +1855,7 @@ void initialize_federate(uint16_t id) {
     _RTI.federates[id].is_transient = true;
 }
 
-void reset_transient_federate(uint16_t id)
-{
+void reset_transient_federate(uint16_t id) {
     // The commented lines highlignts the values that a transient federate needs 
     // to passes to its future joining one
     _RTI.federates[id].thread_id = -1;
@@ -2132,8 +2131,8 @@ int process_args(int argc, const char* argv[]) {
             }
             i++;
             long num_transient_federates = strtol(argv[i], NULL, 10);
-            if (num_transient_federates == 0L || num_transient_federates == LONG_MAX ||  num_transient_federates == LONG_MIN) {
-                fprintf(stderr, "Error: --number_of_transient_federates needs a valid positive integer argument.\n");
+            if (num_transient_federates == LONG_MAX ||  num_transient_federates == LONG_MIN) {
+                fprintf(stderr, "Error: --number_of_transient_federates needs a valid positive or null integer argument.\n");
                 usage(argc, argv);
                 return 0;
             }
