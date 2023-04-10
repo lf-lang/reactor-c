@@ -1013,52 +1013,69 @@ void handle_timestamp(federate_t *my_fed) {
     }
     LF_PRINT_LOG("RTI received timestamp message: %lld.", timestamp);
 
+
     pthread_mutex_lock(&_RTI.rti_mutex);
-    _RTI.num_feds_proposed_start++;
-    if (timestamp > _RTI.max_start_time) {
-        _RTI.max_start_time = timestamp;
-    }
-    if (_RTI.num_feds_proposed_start == _RTI.number_of_federates) {
-        // All federates have proposed a start time.
-        pthread_cond_broadcast(&_RTI.received_start_times);
-    } else {
-        // Some federates have not yet proposed a start time.
-        // wait for a notification.
-        while (_RTI.num_feds_proposed_start < _RTI.number_of_federates) {
-            // FIXME: Should have a timeout here?
-            pthread_cond_wait(&_RTI.received_start_times, &_RTI.rti_mutex);
+    // The behavior here depends on whether the message is received within the 
+    // startup phase or not. By startup phase, it is menat that all persistent federates
+    // have their start_time set (already started or about to start).
+    // If all persistent federates have started, then a TIMESTAMP message will be 
+    // received from a transient. In such case, the start_time of the newly joined 
+    // transient federate will depend on the NET of his updtream and downstream
+    // federates.
+    if (_RTI.num_feds_proposed_start < _RTI.number_of_federates) {
+        if (timestamp > _RTI.max_start_time) {
+            _RTI.max_start_time = timestamp;
         }
+        // Check that persistent federates did propose a start_time
+        if (!my_fed->is_transient) {
+            _RTI.num_feds_proposed_start++;
+        }
+        if (_RTI.num_feds_proposed_start == _RTI.number_of_federates) {
+            // All federates have proposed a start time.
+            pthread_cond_broadcast(&_RTI.received_start_times);
+        } else {
+            // Some federates have not yet proposed a start time.
+            // wait for a notification.
+            while (_RTI.num_feds_proposed_start < _RTI.number_of_federates) {
+                // FIXME: Should have a timeout here?
+                pthread_cond_wait(&_RTI.received_start_times, &_RTI.rti_mutex);
+            }
+        }
+
+        pthread_mutex_unlock(&_RTI.rti_mutex);
+
+        // Send back to the federate the maximum time plus an offset on a TIMESTAMP
+        // message.
+        unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_LENGTH];
+        start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
+        // Add an offset to this start time to get everyone starting together.
+        start_time = _RTI.max_start_time + DELAY_START;
+        encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
+
+        if (_RTI.tracing_enabled) {
+            tag_t tag = {.time = start_time, .microstep = 0};
+            tracepoint_RTI_to_federate(send_TIMESTAMP, my_fed->id, &tag);
+        }
+        ssize_t bytes_written = write_to_socket(
+            my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH,
+            start_time_buffer
+        );
+        if (bytes_written < MSG_TYPE_TIMESTAMP_LENGTH) {
+            lf_print_error("Failed to send the starting time to federate %d.", my_fed->id);
+        }
+
+        pthread_mutex_lock(&_RTI.rti_mutex);
+        // Update state for the federate to indicate that the MSG_TYPE_TIMESTAMP
+        // message has been sent. That MSG_TYPE_TIMESTAMP message grants time advance to
+        // the federate to the start time.
+        my_fed->state = GRANTED;
+        pthread_cond_broadcast(&_RTI.sent_start_time);
+        LF_PRINT_LOG("RTI sent start time %lld to federate %d.", start_time, my_fed->id);
+    } else {
+        // A transient has joined after the startup phase
+        
+        // Send NET_QUERY to all federates
     }
-
-    pthread_mutex_unlock(&_RTI.rti_mutex);
-
-    // Send back to the federate the maximum time plus an offset on a TIMESTAMP
-    // message.
-    unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_LENGTH];
-    start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
-    // Add an offset to this start time to get everyone starting together.
-    start_time = _RTI.max_start_time + DELAY_START;
-    encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
-
-    if (_RTI.tracing_enabled) {
-        tag_t tag = {.time = start_time, .microstep = 0};
-        tracepoint_RTI_to_federate(send_TIMESTAMP, my_fed->id, &tag);
-    }
-    ssize_t bytes_written = write_to_socket(
-        my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH,
-        start_time_buffer
-    );
-    if (bytes_written < MSG_TYPE_TIMESTAMP_LENGTH) {
-        lf_print_error("Failed to send the starting time to federate %d.", my_fed->id);
-    }
-
-    pthread_mutex_lock(&_RTI.rti_mutex);
-    // Update state for the federate to indicate that the MSG_TYPE_TIMESTAMP
-    // message has been sent. That MSG_TYPE_TIMESTAMP message grants time advance to
-    // the federate to the start time.
-    my_fed->state = GRANTED;
-    pthread_cond_broadcast(&_RTI.sent_start_time);
-    LF_PRINT_LOG("RTI sent start time %lld to federate %d.", start_time, my_fed->id);
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 

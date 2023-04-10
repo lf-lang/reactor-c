@@ -493,6 +493,14 @@ void handle_address_ad(uint16_t federate_id);
 /**
  * A function to handle timestamp messages.
  * This function assumes the caller does not hold the mutex.
+ * 
+ * The behavior here depends on whether the message is received within the
+ * startup phase or not. By startup phase, it is menat that all persistent federates
+ * have their start_time set (already started or about to start).
+ * If all persistent federates have started, then a TIMESTAMP message will be
+ * received from a transient. In such case, the start_time of the newly joined
+ * transient federate will depend on the NET of his updtream and downstream
+ * federates.
  */
 void handle_timestamp(federate_t *my_fed);
 
