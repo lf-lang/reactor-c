@@ -47,6 +47,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "rti_lib.h"
+#include "string.h"
+
 /**
  * The state of this RTI instance.
  */

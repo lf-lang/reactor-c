@@ -34,15 +34,16 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @see https://gist.github.com/Soroosh129/127d1893fa4c1da6d3e1db33381bb273
  */
 
-#include <windows.h>
+#include <windows.h>  // Order in which windows.h is included does matter!
+#include <errno.h>
 #include <process.h>
 #include <sysinfoapi.h>
-#include <errno.h>
+#include <time.h>
+
 #include "lf_windows_support.h"
 #include "platform.h"
-#include "util.h"
 #include "tag.h"
-#include <time.h>
+#include "util.h"
 
 /**
  * Indicate whether or not the underlying hardware
@@ -58,8 +59,6 @@ int _lf_use_performance_counter = 0;
 double _lf_frequency_to_ns = 1.0;
 
 #define LF_MIN_SLEEP_NS USEC(10)
-
-#define BILLION 1000000000
 
 #if defined LF_THREADED || defined _LF_TRACE
 

@@ -32,9 +32,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef FEDERATE_H
 #define FEDERATE_H
 
+#include <stdbool.h>
+
 #include "tag.h"
 #include "lf_types.h"
-#include <stdbool.h>
+#include "platform.h"
 
 #ifndef ADVANCE_MESSAGE_INTERVAL
 #define ADVANCE_MESSAGE_INTERVAL MSEC(10)

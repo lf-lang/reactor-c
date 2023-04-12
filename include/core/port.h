@@ -68,7 +68,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include "lf_token.h"     // Defines token types and lf_port_base_t, lf_sparse_io_record
-#include "utils/vector.h"
 
 /** Threshold for width of multiport s.t. sparse reading is supported. */
 #define LF_SPARSE_WIDTH_THRESHOLD 10
