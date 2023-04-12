@@ -51,6 +51,7 @@ static int64_t _lf_timer_epoch_duration_nsec;
 static int64_t _lf_timer_epoch_duration_usec;
 static uint32_t _lf_timer_max_tics;
 static volatile int64_t _lf_timer_last_epoch_nsec = 0;
+static uint32_t _lf_timer_freq;
 
 #if defined(LF_ZEPHYR_CLOCK_HI_RES)
 // Create semaphore for async wakeup from physical action
@@ -59,15 +60,11 @@ K_SEM_DEFINE(_lf_sem,0,1)
 static struct counter_alarm_cfg _lf_alarm_cfg;
 const struct device *const _lf_counter_dev = DEVICE_DT_GET(LF_TIMER);   
 static volatile bool _lf_alarm_fired;
-static uint32_t _lf_timer_freq;
-
-
 
 // Timer overflow callback
 static void  _lf_timer_overflow_callback(const struct device *dev, void *user_data) {
         _lf_timer_last_epoch_nsec += _lf_timer_epoch_duration_nsec;
 }
-
 
 static void _lf_wakeup_alarm(const struct device *counter_dev,
 				      uint8_t chan_id, uint32_t ticks,
@@ -85,7 +82,6 @@ static uint32_t _lf_num_nested_critical_sections=0;
 static volatile bool _lf_async_event = false;
 // Keep track of IRQ mask when entering critical section so we can enable again after
 static volatile unsigned _lf_irq_mask = 0;
-
 
 /**
  * Initialize the LF clock
@@ -127,7 +123,6 @@ void lf_initialize_clock() {
     }
 
     LF_PRINT_LOG("HW Clock has frequency of %u Hz and wraps every %u sec\n", _lf_timer_freq, _lf_timer_max_ticks/_lf_timer_freq);
-    
     
     // Prepare the alarm config
     _lf_alarm_cfg.flags = 0;
