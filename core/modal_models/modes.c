@@ -39,6 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <string.h>
 
+#include "platform.h"
 #include "lf_types.h"
 #include "modes.h"
 #include "reactor_common.h"

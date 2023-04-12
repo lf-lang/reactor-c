@@ -49,19 +49,9 @@
 #ifndef REACTOR_H
 #define REACTOR_H
 
-#include <errno.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
 #include "lf_types.h"
-#include "lf_token.h"
 #include "modes.h"     // Modal model support
-#include "platform.h"  // Platform-specific times and APIs
 #include "port.h"
-#include "pqueue.h"
 #include "tag.h"       // Time-related functions.
 #include "trace.h"
 #include "util.h"

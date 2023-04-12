@@ -34,10 +34,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef TAG_H
 #define TAG_H
 
-#include <limits.h>
-
-#include "platform.h"
-
 #define NSEC(t) (t * 1LL)
 #define NSECS(t) (t * 1LL)
 #define USEC(t) (t * 1000LL)
@@ -68,6 +64,26 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Convenience for converting times
 #define BILLION 1000000000LL
+
+#include <stdint.h>
+#include <stddef.h>
+#include <limits.h>
+
+/**
+ * Time instant. Both physical and logical times are represented
+ * using this typedef.
+ */
+typedef int64_t instant_t;
+
+/**
+ * Interval of time.
+ */
+typedef int64_t interval_t;
+
+/**
+ * Microstep instant.
+ */
+typedef uint32_t microstep_t;
 
 /**
  * Global physical clock offset.

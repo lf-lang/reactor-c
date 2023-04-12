@@ -46,18 +46,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PRINTF_MICROSTEP "%" PRIu32
 #define PRINTF_TAG "(%" PRId64 ", %" PRIu32 ")"
 
-typedef int64_t _instant_t;
-
-/**
- * Interval of time.
- */
-typedef int64_t _interval_t;
-
-/**
- * Microstep instant.
- */
-typedef uint32_t _microstep_t;
-
 /**
  * No mutex or condition variable needed for single threaded NRF platforms
  */
