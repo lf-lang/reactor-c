@@ -15,7 +15,7 @@ list(APPEND INFO_SOURCES ${GENERAL_SOURCES})
 # Create the core library
 add_library(core ${GENERAL_SOURCES})
 
-# Add sources for federated runtime
+# Add sources for either threaded or unthreaded runtime
 if (DEFINED FEDERATED)
     include(federated/CMakeLists.txt)
 endif()
@@ -50,7 +50,6 @@ target_include_directories(core PUBLIC ../include/core/platform)
 target_include_directories(core PUBLIC ../include/core/modal_models)
 target_include_directories(core PUBLIC ../include/core/threaded)
 target_include_directories(core PUBLIC ../include/core/utils)
-target_include_directories(core PUBLIC ../include/core/utils/hashset)
 
 # Link with thread library
 if(DEFINED LF_THREADED OR DEFINED LF_TRACE)

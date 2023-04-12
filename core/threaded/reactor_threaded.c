@@ -46,22 +46,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler.h"
 #include "tag.h"
 
-#ifdef FEDERATED
-#include "hashset/hashset.h"
-#include "hashset/hashset_itr.h"
-#include "federate.h"
-#endif
-
 /**
  * Global mutex and condition variable.
 */
 
 lf_mutex_t mutex;
 lf_cond_t event_q_changed;
-
-#ifdef FEDERATED
-extern hashset_t waiting_q;
-#endif
 
 
 /**
@@ -701,12 +691,6 @@ void lf_request_stop() {
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
 void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
-
-#ifdef FEDERATED
-//Check if reaction's upstream port statuses are safely known before triggering reaction
-if (all_upstream_port_statuses_known(reaction)) {
-#endif
-
 #ifdef MODAL_REACTORS
         // Check if reaction is disabled by mode inactivity
         if (_lf_mode_is_active(reaction->mode)) {
@@ -717,12 +701,6 @@ if (all_upstream_port_statuses_known(reaction)) {
             LF_PRINT_DEBUG("Suppressing downstream reaction %s due inactivity of mode %s.",
             		reaction->name, reaction->mode->name);
         }
-#endif
-#ifdef FEDERATED
-} else {
-// Place the reaction on a waiting queue until its safe to trigger.
-hashset_add(waiting_q, reaction);
-}
 #endif
 }
 
