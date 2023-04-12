@@ -125,6 +125,14 @@ typedef struct federate_t {
                             // to a request for stop from the RTI. Used to prevent double-counting
                             // a federate when handling lf_request_stop().
     bool is_transient;      // Indicates whether the federate is transient or persistent.
+    int64_t fed_start_time; // Records the start time of the federate, which is mainly useful for transient federates  
+    int num_of_conn_federates; // Records the total number of connected federates among the upstream and 
+                            // downstream federates. This is used only in the case of transient federate, for 
+                            // computing the start time.
+    int num_of_conn_federates_sent_net; // Records the total number of connected federates
+                            // that sent responded to the next event tag query form the RTI. 
+    bool start_time_is_set; // Boolean variable used to signal that all connected federates
+                            // have sent a response to next event tag query from the RTI.
 } federate_t;
 
 /**
@@ -703,6 +711,23 @@ int process_clock_sync_args(int argc, const char* argv[]);
  */
 int process_args(int argc, const char* argv[]);
 
+//////////////////////////////////////////////////////////
 
+/**
+ * Queries conn_fed for its Next Event Tag (using MSG_TYPE_NEXT_EVENT_TAG_QUERY). 
+ * If the function fails to send the query, for example in case the federate is 
+ * not connected (can be a transient one itself), then return false. In such case, 
+ * the RTI will not wait to receive an answer from it.
+ * 
+ * The fed_id of the transient federate is sent to conn_fed, which should be 
+ * returned as is within MSG_TYPE_NEXT_EVENT_TYPE_QUERY_RESPONSE. The aim is to 
+ * identify which of the transient federates has initiated the request. This enables 
+ * the support of two diffrent transient federates joining close eanough in time.
+ *
+ * @param conn_fed: the federate to which to send the NET request
+ * @param fed_id: The ID of the transient joining federate 
+ * @return true, if successfully sent, false otherwise.
+ */
+bool send_next_event_tag_query(federate_t* conn_fed, uint16_t fed_id);
 
 #endif // RTI_LIB_H

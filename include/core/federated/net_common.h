@@ -64,7 +64,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * When the federation IDs match, the RTI will respond with an
  * MSG_TYPE_ACK.
- * 
+ *
  * The next message to the RTI will be a MSG_TYPE_NEIGHBOR_STRUCTURE message
  * that informs the RTI about connections between this federate and other
  * federates where messages are routed through the RTI. Currently, this only
@@ -172,9 +172,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * each federate report a reading of its physical clock to the RTI on a
  * `MSG_TYPE_TIMESTAMP`. The RTI broadcasts the maximum of these readings plus
  * `DELAY_START` to all federates as the start time, again on a `MSG_TYPE_TIMESTAMP`.
- * 
- * The next step depends on the coordination type. 
- * 
+ *
+ * The next step depends on the coordination type.
+ *
  * Under centralized coordination, each federate will send a
  * `MSG_TYPE_NEXT_EVENT_TAG` to the RTI with the start tag. That is to say that
  * each federate has a valid event at the start tag (start time, 0) and it will
@@ -185,10 +185,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * have to wait for a `MSG_TYPE_TAG_ADVANCE_GRANT` or a
  * `MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT` before it can advance to a
  * particular tag.
- * 
+ *
  * Under decentralized coordination, the coordination is governed by STA and
  * STAAs, as further explained in https://doi.org/10.48550/arXiv.2109.07771.
- * 
+ *
  * FIXME: Expand this. Explain control reactions.
  *
  */
@@ -207,7 +207,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Default value is 1 sec.
  */
 #define UDP_TIMEOUT_TIME SEC(1)
-
 
 /**
  * Size of the buffer used for messages sent between federates.
@@ -345,7 +344,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * * One byte equal to MSG_TYPE_FED_RESPONSE.
  * * Eight bytes for federate's nonce.
  * * Two bytes (ushort) giving the federate ID.
- * * 32 bytes for HMAC tag based on SHA256. 
+ * * 32 bytes for HMAC tag based on SHA256.
  * The HMAC tag is composed of the following order:
  * * One byte equal to MSG_TYPE_FED_RESPONSE.
  * * Two bytes (ushort) giving the federate ID.
@@ -412,7 +411,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_TAGGED_MESSAGE 5
 
-/** 
+/**
  * Byte identifying a next event tag (NET) message sent from a federate in
  * centralized coordination. The next eight bytes will be the timestamp. The
  * next four bytes will be the microstep. This message from a federate tells the
@@ -428,7 +427,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_NEXT_EVENT_TAG 6
 
-/** 
+/**
  * Byte identifying a time advance grant (TAG) sent by the RTI to a federate
  * in centralized coordination. This message is a promise by the RTI to the federate
  * that no later message sent to the federate will have a tag earlier than or
@@ -438,7 +437,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_TAG_ADVANCE_GRANT 7
 
-/** 
+/**
  * Byte identifying a provisional time advance grant (PTAG) sent by the RTI to a federate
  * in centralized coordination. This message is a promise by the RTI to the federate
  * that no later message sent to the federate will have a tag earlier than the tag
@@ -448,7 +447,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT 8
 
-/** 
+/**
  * Byte identifying a logical tag complete (LTC) message sent by a federate
  * to the RTI.
  * The next eight bytes will be the timestep of the completed tag.
@@ -488,18 +487,20 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * that specifies the stop time on all other federates, then every federate
  * depends on every other federate and time cannot be advanced.
  * Hence, the actual stop time may be nondeterministic.
- * 
+ *
  * If, on the other hand, the federate requesting the stop is upstream of every
  * other federate, then it should be possible to respect its requested stop tag.
  */
 #define MSG_TYPE_STOP_REQUEST 10
 #define MSG_TYPE_STOP_REQUEST_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))
-#define ENCODE_STOP_REQUEST(buffer, time, microstep) do { \
-    buffer[0] = MSG_TYPE_STOP_REQUEST; \
-    encode_int64(time, &(buffer[1])); \
-    assert(microstep >= 0); \
-    encode_int32((int32_t)microstep, &(buffer[1 + sizeof(instant_t)])); \
-} while(0)
+#define ENCODE_STOP_REQUEST(buffer, time, microstep)                        \
+    do                                                                      \
+    {                                                                       \
+        buffer[0] = MSG_TYPE_STOP_REQUEST;                                  \
+        encode_int64(time, &(buffer[1]));                                   \
+        assert(microstep >= 0);                                             \
+        encode_int32((int32_t)microstep, &(buffer[1 + sizeof(instant_t)])); \
+    } while (0)
 
 /**
  * Byte indicating a federate's reply to a MSG_TYPE_STOP_REQUEST that was sent
@@ -511,28 +512,32 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_STOP_REQUEST_REPLY 11
 #define MSG_TYPE_STOP_REQUEST_REPLY_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))
-#define ENCODE_STOP_REQUEST_REPLY(buffer, time, microstep) do { \
-    buffer[0] = MSG_TYPE_STOP_REQUEST_REPLY; \
-    encode_int64(time, &(buffer[1])); \
-    assert(microstep >= 0); \
-    encode_int32((int32_t)microstep, &(buffer[1 + sizeof(instant_t)])); \
-} while(0)
+#define ENCODE_STOP_REQUEST_REPLY(buffer, time, microstep)                  \
+    do                                                                      \
+    {                                                                       \
+        buffer[0] = MSG_TYPE_STOP_REQUEST_REPLY;                            \
+        encode_int64(time, &(buffer[1]));                                   \
+        assert(microstep >= 0);                                             \
+        encode_int32((int32_t)microstep, &(buffer[1 + sizeof(instant_t)])); \
+    } while (0)
 
 /**
  * Byte sent by the RTI indicating that the stop request from some federate
  * has been granted. The payload is the tag at which all federates have
  * agreed that they can stop.
- * The next 8 bytes will be the time at which the federates will stop. * 
+ * The next 8 bytes will be the time at which the federates will stop. *
  * The next 4 bytes will be the microstep at which the federates will stop..
  */
 #define MSG_TYPE_STOP_GRANTED 12
 #define MSG_TYPE_STOP_GRANTED_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))
-#define ENCODE_STOP_GRANTED(buffer, time, microstep) do { \
-    buffer[0] = MSG_TYPE_STOP_GRANTED; \
-    encode_int64(time, &(buffer[1])); \
-    assert(microstep >= 0); \
-    encode_int32((int32_t)microstep, &(buffer[1 + sizeof(instant_t)])); \
-} while(0)
+#define ENCODE_STOP_GRANTED(buffer, time, microstep)                        \
+    do                                                                      \
+    {                                                                       \
+        buffer[0] = MSG_TYPE_STOP_GRANTED;                                  \
+        encode_int64(time, &(buffer[1]));                                   \
+        assert(microstep >= 0);                                             \
+        encode_int32((int32_t)microstep, &(buffer[1 + sizeof(instant_t)])); \
+    } while (0)
 
 /////////// End of lf_request_stop() messages ////////////////
 
@@ -570,7 +575,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * Byte identifying a message to send directly to another federate.
- * 
+ *
  * The next two bytes will be the ID of the destination port.
  * The next two bytes are the destination federate ID. This is checked against
  * the _lf_my_fed_id of the receiving federate to ensure the message was intended for
@@ -584,7 +589,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * This is a variant of @see MSG_TYPE_TAGGED_MESSAGE that is used in P2P connections between
  * federates. Having a separate message type for P2P connections between federates
  * will be useful in preventing crosstalk.
- * 
+ *
  * The next two bytes will be the ID of the destination port.
  * The next two bytes are the destination federate ID. This is checked against
  * the _lf_my_fed_id of the receiving federate to ensure the message was intended for
@@ -639,11 +644,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_CLOCK_SYNC_CODED_PROBE 22
 
-
 /**
  * A port absent message, informing the receiver that a given port
  * will not have event for the current logical time.
- * 
+ *
  * The next 2 bytes is the port id.
  * The next 2 bytes will be the federate id of the destination federate.
  *  This is needed for the centralized coordination so that the RTI knows where
@@ -653,21 +657,19 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_PORT_ABSENT 23
 
-
-
 /**
  * A message that informs the RTI about connections between this federate and
  * other federates where messages are routed through the RTI. Currently, this
  * only includes logical connections when the coordination is centralized. This
  * information is needed for the RTI to perform the centralized coordination.
- * 
+ *
  * @note Only information about the immediate neighbors is required. The RTI can
  * transitively obtain the structure of the federation based on each federate's
  * immediate neighbor information.
  *
- * The next 4 bytes is the number of upstream federates. 
+ * The next 4 bytes is the number of upstream federates.
  * The next 4 bytes is the number of downstream federates.
- * 
+ *
  * Depending on the first four bytes, the next bytes are pairs of (fed ID (2
  * bytes), delay (8 bytes)) for this federate's connection to upstream federates
  * (by direct connection). The delay is the minimum "after" delay of all
@@ -682,6 +684,52 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_NEIGHBOR_STRUCTURE 24
 #define MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE 9
+
+/////////// Messages used by joining transient federates ///////////////
+//// Overview of the algorithm:
+////  When a transient federate joins the deferation after the startup phase (all
+////  persistent federates have joined and received, or all least are receiveing
+////  their start_time), its start_time is decided based on the Next Event Tags
+////  of its upstream and downstream federates. Next Event Tags are queried by the
+////  RTI, by sending MSG_TYPE_NEXT_EVENT_TAG_QUERY. Federates will answer with
+////  MSG_TYPE_NEXT_EVENT_TAG_QUERY_RESPONSE.
+////  The start_time of the transient will be:
+////   * the maximun of all received MSG_TYPE_NEXT_EVENT_TAG_QUERY_RESPONSE, if
+////     different from the stop_time.
+////   * or either the maximum of all upstream or the minimum of all downstream,
+////     if there is an intersection.
+////  FIXME: Look for counter-examples to choose!
+////  Once decided about the start_time of the transient, all federates will be
+////  requested to halt up to the give time tag (start_time?).
+////  They will resume when they receive
+
+/**
+ * Byte identifying a query of a federate about its Next Event Tag. This is useful
+ * when deciding about the start_time of a joining transient federate.
+ */
+#define MSG_TYPE_NEXT_EVENT_TAG_QUERY 30
+
+/**
+ * Byte identifying a response to a MSG_TYPE_NEXT_EVENT_TAG_QUERY. This is useful
+ * when deciding about the start_time of a joining transient federate.
+ */
+#define MSG_TYPE_NEXT_EVENT_TAG_QUERY_RESPONSE 31
+
+/**
+ * Byte identifying a request sent by the RTI to upstream and downstream federates
+ * of a joining transient. It asks them to halt reactions at the given tag. This
+ * is useful for the synchronous logical start a joining transient federate.
+ */
+#define MSG_TYPE_HALT 32
+
+/**
+ * Byte identifying a request sent by the RTI to upstream and downstream federates
+ * of a joining transient to resume reactions at the tag sent within MSG_TYPE_HALT.
+ * This is useful for the synchronous logical start a joining transient federate.
+ */
+#define MSG_TYPE_RESUME 33
+
+/////////// End of messages used by joining transient federates ///////////////
 
 /////////////////////////////////////////////
 //// Rejection codes

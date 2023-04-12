@@ -248,6 +248,36 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag) {
     }
 }
 
+bool send_next_event_tag_query (federate_t* conn_fed, uint16_t fed_id) {
+    if (conn_fed->state == NOT_CONNECTED) {
+        return false;
+    }
+
+    // Write the message type and the related fed_id
+    size_t message_length = 1 + sizeof(uint16_t);
+    unsigned char buffer[message_length];
+    buffer[0] = MSG_TYPE_NEXT_EVENT_TAG_QUERY;
+    encode_uint16(fed_id, (unsigned char *)&(buffer[1]));
+
+    if (_RTI.tracing_enabled) {
+        tracepoint_RTI_to_federate(send_NET_QR, conn_fed->id, NULL);
+    }
+    // If write_to_socket fails, the consider it as soft failure and update the 
+    // federate's status.
+    ssize_t bytes_written = write_to_socket(conn_fed->socket, message_length, buffer);
+    if (bytes_written < (ssize_t)message_length) {
+        lf_print_error("RTI failed to send next event tag query to federate %d.", conn_fed->id);
+        if (bytes_written < 0) {
+            conn_fed->state = NOT_CONNECTED;
+        }
+        return false;
+    } else {
+        LF_PRINT_LOG("RTI sent to federate %d a next event tag query.", conn_fed->id);
+        return true;
+    }
+}
+
+
 tag_t transitive_next_event(federate_t* fed, tag_t candidate, bool visited[]) {
     if (visited[fed->id] || fed->state == NOT_CONNECTED) {
         // Federate has stopped executing or we have visited it before.
@@ -1013,15 +1043,11 @@ void handle_timestamp(federate_t *my_fed) {
     }
     LF_PRINT_LOG("RTI received timestamp message: %lld.", timestamp);
 
-
+    // FIXME: Should the lock be inside the if statement only?
     pthread_mutex_lock(&_RTI.rti_mutex);
-    // The behavior here depends on whether the message is received within the 
-    // startup phase or not. By startup phase, it is menat that all persistent federates
-    // have their start_time set (already started or about to start).
-    // If all persistent federates have started, then a TIMESTAMP message will be 
-    // received from a transient. In such case, the start_time of the newly joined 
-    // transient federate will depend on the NET of his updtream and downstream
-    // federates.
+    my_fed->fed_start_time = timestamp;
+    // Processing the TIMESTAMP depends on whether it is the startup phase (all 
+    // persistent federates joined) or not. 
     if (_RTI.num_feds_proposed_start < _RTI.number_of_federates) {
         if (timestamp > _RTI.max_start_time) {
             _RTI.max_start_time = timestamp;
@@ -1063,18 +1089,117 @@ void handle_timestamp(federate_t *my_fed) {
         if (bytes_written < MSG_TYPE_TIMESTAMP_LENGTH) {
             lf_print_error("Failed to send the starting time to federate %d.", my_fed->id);
         }
-
         pthread_mutex_lock(&_RTI.rti_mutex);
+        my_fed->fed_start_time = start_time;
         // Update state for the federate to indicate that the MSG_TYPE_TIMESTAMP
         // message has been sent. That MSG_TYPE_TIMESTAMP message grants time advance to
         // the federate to the start time.
         my_fed->state = GRANTED;
         pthread_cond_broadcast(&_RTI.sent_start_time);
         LF_PRINT_LOG("RTI sent start time %lld to federate %d.", start_time, my_fed->id);
+        pthread_mutex_unlock(&_RTI.rti_mutex);
     } else {
         // A transient has joined after the startup phase
-        
-        // Send NET_QUERY to all federates
+        // At this point, we already hold the mutex
+
+        // Iterate over the upstream federates to query the next event tag.
+        // Since they may not be connected (being themselves transient, for example)
+        // the total number of connected federates (my_fed->num_of_conn_federates)
+        // will be compared against those who already sent the NET query response
+        // (my_fed->num_of_conn_federates_sent_net)
+        for (int j = 0; j < my_fed->num_upstream; j++) {
+            federate_t* upstream = &_RTI.federates[my_fed->upstream[j]];
+            // Ignore this federate if it has resigned or if it a transient that 
+            // is absent
+            if (upstream->state == NOT_CONNECTED) {
+                continue;
+            }
+            if (send_next_event_tag_query(upstream, my_fed->id)) {
+                my_fed->num_of_conn_federates++;
+            }
+        }
+        // Iterate over the downstream federates to query the next event tag.
+        for (int j = 0; j < my_fed->num_downstream; j++) {
+            federate_t* downstream = &_RTI.federates[my_fed->downstream[j]];
+            // Ignore this federate if it has resigned.
+            if (downstream->state == NOT_CONNECTED) {
+                continue;
+            }
+            if (send_next_event_tag_query(downstream, my_fed->id)) {
+                my_fed->num_of_conn_federates++;
+            }
+        }
+
+        // If the transient federate has no connected upstream or downstream federates,
+        // then do not wait for the start time
+        if (my_fed->num_of_conn_federates == 0) {
+            my_fed->start_time_is_set = true;
+            lf_print_debug("the start time of transient is: %lld", my_fed->fed_start_time);
+        }
+        pthread_mutex_unlock(&_RTI.rti_mutex);
+        // Now wait until all connected federates have responded with their next 
+        // event logial time instant.
+
+        while(!my_fed->start_time_is_set);
+
+        // Once the start time set, sent it to the joining transient
+        unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_LENGTH];
+        start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
+        // FIXME: Sould we check if the time instant have passed or not, and if yes,
+        // add a delay?
+        start_time = my_fed->fed_start_time;
+        encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
+
+        if (_RTI.tracing_enabled) {
+            tag_t tag = {.time = start_time, .microstep = 0};
+            tracepoint_RTI_to_federate(send_TIMESTAMP, my_fed->id, &tag);
+        }
+        ssize_t bytes_written = write_to_socket(
+            my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH,
+            start_time_buffer
+        );
+        if (bytes_written < MSG_TYPE_TIMESTAMP_LENGTH) {
+            lf_print_error("Failed to send the starting time to federate %d.", my_fed->id);
+        }
+        pthread_mutex_lock(&_RTI.rti_mutex);
+        my_fed->state = GRANTED;
+        LF_PRINT_LOG("RTI sent start time %lld to federate %d.", start_time, my_fed->id);
+        pthread_mutex_unlock(&_RTI.rti_mutex);
+    }
+}
+
+void handle_next_event_tag_query_response(federate_t *my_fed) {
+    // Get the logical time instant and the transient fed_id from the socket
+    size_t buffer_size = 1 + sizeof(uint16_t) + sizeof(uint16_t);
+    unsigned char buffer[buffer_size];
+    // Read bytes from the socket. We need 8 bytes.
+    ssize_t bytes_read = read_from_socket(my_fed->socket, buffer_size, (unsigned char*)&buffer);
+    if (bytes_read < (ssize_t)sizeof(int64_t)) {
+        lf_print_error("ERROR reading next event query response from federate %d.\n", my_fed->id);
+    }
+
+    // Get the timestamp and the transient federate id
+    int64_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t *)(&(buffer[1]))));
+    uint16_t transient_fed_id = extract_uint16(buffer[9]);
+    if (_RTI.tracing_enabled) {
+        tag_t tag = {.time = timestamp, .microstep = 0};
+        tracepoint_RTI_from_federate(receive_NET_QR_RES, my_fed->id, &tag);
+    }
+    LF_PRINT_LOG("RTI received NET query response message: %lld.", timestamp);
+
+    // FIXME: Should the lock be inside the if statement only?
+    pthread_mutex_lock(&_RTI.rti_mutex);
+    // Processing the TIMESTAMP depends on whether it is the startup phase (all 
+    // persistent federates joined) or not. 
+    federate_t* transient = &(_RTI.federates[transient_fed_id]);
+    if (timestamp > transient->fed_start_time) {
+        transient->fed_start_time = timestamp;
+    }
+    // Check that upstream and downstream federates of the transient did propose a start_time
+    transient->num_of_conn_federates_sent_net++;
+    if (transient->num_of_conn_federates_sent_net == transient->num_of_conn_federates) {
+        // All expected connected federates to transient have sent responses with NET to RTI
+        transient->start_time_is_set = true;
     }
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
@@ -1293,6 +1418,9 @@ void* federate_thread_TCP(void* fed) {
         switch(buffer[0]) {
             case MSG_TYPE_TIMESTAMP:
                 handle_timestamp(my_fed);
+                break;
+            case MSG_TYPE_NEXT_EVENT_TAG_QUERY_RESPONSE:
+                handle_next_event_tag_query_response(my_fed);
                 break;
             case MSG_TYPE_ADDRESS_QUERY:
                 handle_address_query(my_fed->id);
@@ -1870,6 +1998,10 @@ void initialize_federate(uint16_t id) {
     _RTI.federates[id].server_port = -1;
     _RTI.federates[id].requested_stop = false;
     _RTI.federates[id].is_transient = true;
+    _RTI.federates[id].fed_start_time = 0LL;
+    _RTI.federates[id].num_of_conn_federates = 0;
+    _RTI.federates[id].num_of_conn_federates_sent_net = 0;
+    _RTI.federates[id].start_time_is_set = false;
 }
 
 void reset_transient_federate(uint16_t id) {
@@ -1896,6 +2028,10 @@ void reset_transient_federate(uint16_t id) {
     _RTI.federates[id].server_port = -1;
     _RTI.federates[id].requested_stop = false;
     _RTI.federates[id].is_transient = true;
+    _RTI.federates[id].fed_start_time = 0LL;
+    _RTI.federates[id].num_of_conn_federates = 0;
+    _RTI.federates[id].num_of_conn_federates_sent_net = 0;
+    _RTI.federates[id].start_time_is_set = false;
 }
 
 int32_t start_rti_server(uint16_t port) {

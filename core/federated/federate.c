@@ -2393,6 +2393,93 @@ void handle_stop_request_message() {
     lf_mutex_unlock(&mutex);
 }
 
+////////////////// Start of transient time coordination ////////////////////////
+
+/**
+ * Handle a Next Event Tag query received from the RTI. Such message is sent when
+ * a transient federate attempts to join a federation after the startup phase.
+ * The funtion will read the NET in the event queue and call
+ * send_next_event_tag_query_answer().
+ *
+ * FIXME: This function assumes the caller does hold the mutex lock?
+ */
+void handle_next_event_tag_query(){
+    tracepoint_federate_from_RTI(receive_NET_QR, _lf_my_fed_id, NULL);
+    // Extract the fed_id of the relative transient federate
+    // Read the header.
+    size_t bytes_to_read = 1 + sizeof(uint16_t);
+    unsigned char buffer[bytes_to_read];
+    read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
+                             "Failed to read the transient federate ID.");
+
+    uint16_t fed_id = extract_uint16(buffer + 1);
+    // Get the next event tag in the reactions queue
+    tag_t next_tag = get_next_event_tag();
+
+    instant_t logical_time = next_tag.time;
+
+    // Answer with the time instant of the next event tag
+    send_next_event_tag_query_response(logical_time, fed_id);
+}
+
+/**
+ * Send the answer to the next event tag query to the RTI.
+ * 
+ * @param time The time.
+ * @param fed_id The transient federate id to send back
+ *  Print a soft error message otherwise
+ */
+void send_next_event_tag_query_response(instant_t time, uint16_t fed_id) {
+    LF_PRINT_DEBUG("Sending logical time " PRINTF_TIME " to the RTI.", time);
+    size_t bytes_to_write = 1 + sizeof(instant_t) + sizeof(uint16_t);
+    unsigned char buffer[bytes_to_write];
+    buffer[0] = MSG_TYPE_NEXT_EVENT_TAG_QUERY_RESPONSE;
+    encode_int64(time, &(buffer[1]));
+    encode_uint16(fed_id, &(buffer[9]));
+    lf_mutex_lock(&outbound_socket_mutex);
+    if (_fed.socket_TCP_RTI < 0) {
+        lf_print_warning("Socket is no longer connected. Dropping message.");
+        lf_mutex_unlock(&outbound_socket_mutex);
+        return;
+    }
+
+    tag_t tag = {.time = time, .microstep = 0};
+    // Trace the event when tracing is enabled
+    tracepoint_federate_to_RTI(send_NET_QR_RES, _lf_my_fed_id, &tag);
+
+    ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
+    if (bytes_written < (ssize_t)bytes_to_write) {
+        lf_print_error_and_exit("Failed to send time " PRINTF_TIME " to the RTI."
+                                    " Error code %d: %s",
+                                    time - start_time,
+                                    errno,
+                                    strerror(errno)
+                                );
+    }
+    lf_mutex_unlock(&outbound_socket_mutex);
+}
+
+/**
+ * Handle a Halt message received form the RTI. This will cause the federation to 
+ * stop.
+ * 
+ * FIXME: WIP. Should it be  
+ */
+void handle_halt(){
+
+}
+
+/**
+ * Handle a RESUME message received from the RTI
+ * 
+ * FIXME: What to do exactly? Can it be mixed with handle_halt()? 
+ */
+void handle_resume(){
+    // tracepoint_federate_from_RTI(receive_TAG, _lf_my_fed_id, &TAG);
+}
+
+/////////////////// End of transient time coordination /////////////////////////
+
 /**
  * Close sockets used to communicate with other federates, if they are open,
  * and send a MSG_TYPE_RESIGN message to the RTI. This implements the function
@@ -2595,6 +2682,12 @@ void* listen_to_rti_TCP(void* args) {
             case MSG_TYPE_PORT_ABSENT:
                 handle_port_absent_message(_fed.socket_TCP_RTI, -1);
                 break;
+            case MSG_TYPE_NEXT_EVENT_TAG_QUERY:
+                handle_next_event_tag_query();
+                break;
+            case MSG_TYPE_HALT:
+                handle_halt();
+                break;
             case MSG_TYPE_CLOCK_SYNC_T1:
             case MSG_TYPE_CLOCK_SYNC_T4:
                 lf_print_error("Federate %d received unexpected clock sync message from RTI on TCP socket.",
@@ -2774,8 +2867,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
             LF_PRINT_DEBUG("Granted tag " PRINTF_TAG " because the federate has neither "
                     "upstream nor downstream federates.",
                     tag.time - start_time, tag.microstep);
-            return tag;
-        }
+            return tag;        }
 
         // If time advance (TAG or PTAG) has already been granted for this tag
         // or a larger tag, then return immediately.
