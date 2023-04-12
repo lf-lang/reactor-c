@@ -218,11 +218,11 @@ $(function() {
 <div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>    <span class="keywordtype">void</span>* pointer;  <span class="comment">// pointer identifying the record, e.g. to self struct for a reactor.</span></div>
 <div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>    <span class="keywordtype">int</span> src_id;     <span class="comment">// The ID number of the source (e.g. worker or federate) or -1 for no ID number.</span></div>
 <div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>    <span class="keywordtype">int</span> dst_id;     <span class="comment">// The ID number of the destination (e.g. reaction or federate) or -1 for no ID number.</span></div>
-<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>    <a class="code hl_typedef" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> logical_time;</div>
-<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>    <a class="code hl_typedef" href="platform_8h.html#aff94b88998d5bf37870fb520ad82526d">microstep_t</a> microstep;</div>
-<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>    <a class="code hl_typedef" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> physical_time;</div>
+<div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>    <a class="code hl_typedef" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> logical_time;</div>
+<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>    <a class="code hl_typedef" href="tag_8h.html#ad88f1caa8b9c216404eb196cb1850213">microstep_t</a> microstep;</div>
+<div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>    <a class="code hl_typedef" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> physical_time;</div>
 <div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>    <a class="code hl_struct" href="structtrigger__t.html">trigger_t</a>* trigger;</div>
-<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>    <a class="code hl_typedef" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay;</div>
+<div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>    <a class="code hl_typedef" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> extra_delay;</div>
 <div class="line"><a id="l00206" name="l00206"></a><span class="lineno">  206</span>} trace_record_t;</div>
 <div class="line"><a id="l00207" name="l00207"></a><span class="lineno">  207</span> </div>
 <div class="line"><a id="l00211" name="l00211"></a><span class="lineno">  211</span><span class="keyword">typedef</span> <span class="keyword">enum</span> {</div>
@@ -252,9 +252,9 @@ $(function() {
 <div class="line"><a id="l00280" name="l00280"></a><span class="lineno">  280</span>        <span class="keywordtype">int</span> worker,</div>
 <div class="line"><a id="l00281" name="l00281"></a><span class="lineno">  281</span>        <span class="keywordtype">int</span> src_id,</div>
 <div class="line"><a id="l00282" name="l00282"></a><span class="lineno">  282</span>        <span class="keywordtype">int</span> dst_id,</div>
-<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>        <a class="code hl_typedef" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>* physical_time,</div>
+<div class="line"><a id="l00283" name="l00283"></a><span class="lineno">  283</span>        <a class="code hl_typedef" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>* physical_time,</div>
 <div class="line"><a id="l00284" name="l00284"></a><span class="lineno">  284</span>        <a class="code hl_struct" href="structtrigger__t.html">trigger_t</a>* trigger,</div>
-<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span>        <a class="code hl_typedef" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay,</div>
+<div class="line"><a id="l00285" name="l00285"></a><span class="lineno">  285</span>        <a class="code hl_typedef" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> extra_delay,</div>
 <div class="line"><a id="l00286" name="l00286"></a><span class="lineno">  286</span>        <span class="keywordtype">bool</span> is_interval_start</div>
 <div class="line"><a id="l00287" name="l00287"></a><span class="lineno">  287</span>);</div>
 <div class="line"><a id="l00288" name="l00288"></a><span class="lineno">  288</span> </div>
@@ -262,7 +262,7 @@ $(function() {
 <div class="line"><a id="l00295" name="l00295"></a><span class="lineno">  295</span> </div>
 <div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span><span class="keywordtype">void</span> <a class="code hl_define" href="trace_8h.html#a6886c0b07fa8962e9e251bc5442fbae3">tracepoint_reaction_ends</a>(<a class="code hl_struct" href="structreaction__t.html">reaction_t</a>* reaction, <span class="keywordtype">int</span> worker);</div>
 <div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span> </div>
-<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span><span class="keywordtype">void</span> <a class="code hl_define" href="trace_8h.html#afce5f2514b7b2001611c45b2f0122cee">tracepoint_schedule</a>(<a class="code hl_struct" href="structtrigger__t.html">trigger_t</a>* trigger, <a class="code hl_typedef" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> extra_delay);</div>
+<div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span><span class="keywordtype">void</span> <a class="code hl_define" href="trace_8h.html#afce5f2514b7b2001611c45b2f0122cee">tracepoint_schedule</a>(<a class="code hl_struct" href="structtrigger__t.html">trigger_t</a>* trigger, <a class="code hl_typedef" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> extra_delay);</div>
 <div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span> </div>
 <div class="line"><a id="l00316" name="l00316"></a><span class="lineno">  316</span><span class="keywordtype">void</span> <a class="code hl_define" href="trace_8h.html#a4eaa42638286bf2cfdfed4b45d4a1036">tracepoint_user_event</a>(<span class="keywordtype">char</span>* description);</div>
 <div class="line"><a id="l00317" name="l00317"></a><span class="lineno">  317</span> </div>
@@ -332,12 +332,12 @@ $(function() {
 <div class="line"><a id="l00464" name="l00464"></a><span class="lineno">  464</span><span class="preprocessor">#endif </span><span class="comment">// TRACE_H</span></div>
 <div class="ttc" id="alf__types_8h_html"><div class="ttname"><a href="lf__types_8h.html">lf_types.h</a></div></div>
 <div class="ttc" id="anet__common_8h_html"><div class="ttname"><a href="net__common_8h.html">net_common.h</a></div></div>
-<div class="ttc" id="aplatform_8h_html_a0c4810f46596400a763cfe99b3cfa7b1"><div class="ttname"><a href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a></div><div class="ttdeci">_instant_t instant_t</div><div class="ttdef"><b>Definition:</b> platform.h:93</div></div>
-<div class="ttc" id="aplatform_8h_html_a25b148cb4bef9a108b00306879433f7b"><div class="ttname"><a href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a></div><div class="ttdeci">_interval_t interval_t</div><div class="ttdef"><b>Definition:</b> platform.h:98</div></div>
-<div class="ttc" id="aplatform_8h_html_aff94b88998d5bf37870fb520ad82526d"><div class="ttname"><a href="platform_8h.html#aff94b88998d5bf37870fb520ad82526d">microstep_t</a></div><div class="ttdeci">_microstep_t microstep_t</div><div class="ttdef"><b>Definition:</b> platform.h:103</div></div>
-<div class="ttc" id="astructreaction__t_html"><div class="ttname"><a href="structreaction__t.html">reaction_t</a></div><div class="ttdef"><b>Definition:</b> lf_types.h:158</div></div>
-<div class="ttc" id="astructtag__t_html"><div class="ttname"><a href="structtag__t.html">tag_t</a></div><div class="ttdef"><b>Definition:</b> tag.h:101</div></div>
-<div class="ttc" id="astructtrigger__t_html"><div class="ttname"><a href="structtrigger__t.html">trigger_t</a></div><div class="ttdef"><b>Definition:</b> lf_types.h:216</div></div>
+<div class="ttc" id="astructreaction__t_html"><div class="ttname"><a href="structreaction__t.html">reaction_t</a></div><div class="ttdef"><b>Definition:</b> lf_types.h:157</div></div>
+<div class="ttc" id="astructtag__t_html"><div class="ttname"><a href="structtag__t.html">tag_t</a></div><div class="ttdef"><b>Definition:</b> tag.h:117</div></div>
+<div class="ttc" id="astructtrigger__t_html"><div class="ttname"><a href="structtrigger__t.html">trigger_t</a></div><div class="ttdef"><b>Definition:</b> lf_types.h:215</div></div>
+<div class="ttc" id="atag_8h_html_a827080fd3c574bad5a32db9f7c367587"><div class="ttname"><a href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a></div><div class="ttdeci">int64_t instant_t</div><div class="ttdef"><b>Definition:</b> tag.h:76</div></div>
+<div class="ttc" id="atag_8h_html_ad88f1caa8b9c216404eb196cb1850213"><div class="ttname"><a href="tag_8h.html#ad88f1caa8b9c216404eb196cb1850213">microstep_t</a></div><div class="ttdeci">uint32_t microstep_t</div><div class="ttdef"><b>Definition:</b> tag.h:86</div></div>
+<div class="ttc" id="atag_8h_html_af5b4e62d03782997d813be6145316f4b"><div class="ttname"><a href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a></div><div class="ttdeci">int64_t interval_t</div><div class="ttdef"><b>Definition:</b> tag.h:81</div></div>
 <div class="ttc" id="atrace_8h_html_a00635edd06259391fe45fa81f2dd9cab"><div class="ttname"><a href="trace_8h.html#a00635edd06259391fe45fa81f2dd9cab">tracepoint_worker_wait_starts</a></div><div class="ttdeci">#define tracepoint_worker_wait_starts(...)</div><div class="ttdef"><b>Definition:</b> trace.h:448</div></div>
 <div class="ttc" id="atrace_8h_html_a0af1b0066f718ce8489be4ce8c5883b8"><div class="ttname"><a href="trace_8h.html#a0af1b0066f718ce8489be4ce8c5883b8">tracepoint_federate_from_RTI</a></div><div class="ttdeci">#define tracepoint_federate_from_RTI(...)</div><div class="ttdef"><b>Definition:</b> trace.h:454</div></div>
 <div class="ttc" id="atrace_8h_html_a1465b810c5f6e6c5cdea5d9b29f5ac50"><div class="ttname"><a href="trace_8h.html#a1465b810c5f6e6c5cdea5d9b29f5ac50">tracepoint_federate_to_federate</a></div><div class="ttdeci">#define tracepoint_federate_to_federate(...)</div><div class="ttdef"><b>Definition:</b> trace.h:455</div></div>

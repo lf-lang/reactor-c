@@ -1,9 +1,6 @@
 var searchData=
 [
-  ['_5finstant_5ft_0',['_instant_t',['../lf__arduino__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb',1,'_instant_t():&#160;lf_arduino_support.h'],['../lf__nrf52__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb',1,'_instant_t():&#160;lf_nrf52_support.h'],['../lf__tag__64__32_8h.html#af8f0f3e156808b8af18129b60baf8ceb',1,'_instant_t():&#160;lf_tag_64_32.h'],['../lf__zephyr__support_8h.html#af8f0f3e156808b8af18129b60baf8ceb',1,'_instant_t():&#160;lf_zephyr_support.h']]],
-  ['_5finterval_5ft_1',['_interval_t',['../lf__arduino__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8',1,'_interval_t():&#160;lf_arduino_support.h'],['../lf__nrf52__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8',1,'_interval_t():&#160;lf_nrf52_support.h'],['../lf__tag__64__32_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8',1,'_interval_t():&#160;lf_tag_64_32.h'],['../lf__zephyr__support_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8',1,'_interval_t():&#160;lf_zephyr_support.h']]],
-  ['_5flf_5fcond_5fvar_5ft_2',['_lf_cond_var_t',['../lf__nrf52__support_8h.html#aa985f1f1f508c8761ecdef3fe8a9edf5',1,'lf_nrf52_support.h']]],
-  ['_5flf_5fsensor_5fmessage_5ft_3',['_lf_sensor_message_t',['../sensor__simulator_8c.html#a67e4883b16f55f5e45ba5c498e4e5603',1,'sensor_simulator.c']]],
-  ['_5flf_5ftime_5ftype_4',['_lf_time_type',['../tag_8h.html#a54d7caccb6b46e7692ef0775b7f85023',1,'tag.h']]],
-  ['_5fmicrostep_5ft_5',['_microstep_t',['../lf__arduino__support_8h.html#a6fa587bab59881a6741957a2c1a13798',1,'_microstep_t():&#160;lf_arduino_support.h'],['../lf__nrf52__support_8h.html#a6fa587bab59881a6741957a2c1a13798',1,'_microstep_t():&#160;lf_nrf52_support.h'],['../lf__tag__64__32_8h.html#a6fa587bab59881a6741957a2c1a13798',1,'_microstep_t():&#160;lf_tag_64_32.h'],['../lf__zephyr__support_8h.html#a6fa587bab59881a6741957a2c1a13798',1,'_microstep_t():&#160;lf_zephyr_support.h']]]
+  ['_5flf_5fcond_5fvar_5ft_0',['_lf_cond_var_t',['../lf__nrf52__support_8h.html#aa985f1f1f508c8761ecdef3fe8a9edf5',1,'lf_nrf52_support.h']]],
+  ['_5flf_5fsensor_5fmessage_5ft_1',['_lf_sensor_message_t',['../sensor__simulator_8c.html#a67e4883b16f55f5e45ba5c498e4e5603',1,'sensor_simulator.c']]],
+  ['_5flf_5ftime_5ftype_2',['_lf_time_type',['../tag_8h.html#a54d7caccb6b46e7692ef0775b7f85023',1,'tag.h']]]
 ];

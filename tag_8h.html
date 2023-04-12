@@ -83,8 +83,9 @@ $(function() {
   <div class="headertitle"><div class="title">tag.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;limits.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="platform_8h_source.html">platform.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &lt;stdint.h&gt;</code><br />
+<code>#include &lt;stddef.h&gt;</code><br />
+<code>#include &lt;limits.h&gt;</code><br />
 </div>
 <p><a href="tag_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -148,6 +149,12 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
+<tr class="memitem:a827080fd3c574bad5a32db9f7c367587"><td class="memItemLeft" align="right" valign="top">typedef int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a></td></tr>
+<tr class="separator:a827080fd3c574bad5a32db9f7c367587"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5b4e62d03782997d813be6145316f4b"><td class="memItemLeft" align="right" valign="top">typedef int64_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a></td></tr>
+<tr class="separator:af5b4e62d03782997d813be6145316f4b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad88f1caa8b9c216404eb196cb1850213"><td class="memItemLeft" align="right" valign="top">typedef uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ad88f1caa8b9c216404eb196cb1850213">microstep_t</a></td></tr>
+<tr class="separator:ad88f1caa8b9c216404eb196cb1850213"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9921069499ea65eecb0aeed778a5b92c"><td class="memItemLeft" align="right" valign="top">typedef <a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a9921069499ea65eecb0aeed778a5b92c">tag_interval_t</a></td></tr>
 <tr class="separator:a9921069499ea65eecb0aeed778a5b92c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54d7caccb6b46e7692ef0775b7f85023"><td class="memItemLeft" align="right" valign="top">typedef enum <a class="el" href="tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5">_lf_time_type</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a54d7caccb6b46e7692ef0775b7f85023">_lf_time_type</a></td></tr>
@@ -172,50 +179,50 @@ Functions</h2></td></tr>
 <tr class="separator:a578a919fbb78cb28be3e41c9aa769c8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a596d8734432616c9c7847283fde63cfa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a596d8734432616c9c7847283fde63cfa">lf_tag_compare</a> (<a class="el" href="structtag__t.html">tag_t</a> tag1, <a class="el" href="structtag__t.html">tag_t</a> tag2)</td></tr>
 <tr class="separator:a596d8734432616c9c7847283fde63cfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae100cec052125d78384bd740d6f7e142"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ae100cec052125d78384bd740d6f7e142">_lf_delay_tag</a> (<a class="el" href="structtag__t.html">tag_t</a> tag, <a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> interval)</td></tr>
+<tr class="memitem:ae100cec052125d78384bd740d6f7e142"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ae100cec052125d78384bd740d6f7e142">_lf_delay_tag</a> (<a class="el" href="structtag__t.html">tag_t</a> tag, <a class="el" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> interval)</td></tr>
 <tr class="separator:ae100cec052125d78384bd740d6f7e142"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab3508bec310297ee386a5bde718c840d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ab3508bec310297ee386a5bde718c840d">_lf_physical_time</a> ()</td></tr>
+<tr class="memitem:ab3508bec310297ee386a5bde718c840d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ab3508bec310297ee386a5bde718c840d">_lf_physical_time</a> ()</td></tr>
 <tr class="separator:ab3508bec310297ee386a5bde718c840d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae837e2be4525d56b220a2b3497b7a708"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ae837e2be4525d56b220a2b3497b7a708">_lf_time</a> (<a class="el" href="tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5">_lf_time_type</a> type)</td></tr>
+<tr class="memitem:ae837e2be4525d56b220a2b3497b7a708"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ae837e2be4525d56b220a2b3497b7a708">_lf_time</a> (<a class="el" href="tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5">_lf_time_type</a> type)</td></tr>
 <tr class="separator:ae837e2be4525d56b220a2b3497b7a708"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a57369a6152ded211933cdb91893ed864"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a57369a6152ded211933cdb91893ed864">lf_time_logical</a> (void)</td></tr>
+<tr class="memitem:a57369a6152ded211933cdb91893ed864"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a57369a6152ded211933cdb91893ed864">lf_time_logical</a> (void)</td></tr>
 <tr class="separator:a57369a6152ded211933cdb91893ed864"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4703006e120ec461bd669e53f70a7058"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a4703006e120ec461bd669e53f70a7058">lf_time_logical_elapsed</a> (void)</td></tr>
+<tr class="memitem:a4703006e120ec461bd669e53f70a7058"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a4703006e120ec461bd669e53f70a7058">lf_time_logical_elapsed</a> (void)</td></tr>
 <tr class="separator:a4703006e120ec461bd669e53f70a7058"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7538766a655ba2e60ddde55f2e020e58"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a7538766a655ba2e60ddde55f2e020e58">lf_time_physical</a> (void)</td></tr>
+<tr class="memitem:a7538766a655ba2e60ddde55f2e020e58"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a7538766a655ba2e60ddde55f2e020e58">lf_time_physical</a> (void)</td></tr>
 <tr class="separator:a7538766a655ba2e60ddde55f2e020e58"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a98468f1c5132e3aa18d77f85d65bb6ec"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a98468f1c5132e3aa18d77f85d65bb6ec">lf_time_physical_elapsed</a> (void)</td></tr>
+<tr class="memitem:a98468f1c5132e3aa18d77f85d65bb6ec"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a98468f1c5132e3aa18d77f85d65bb6ec">lf_time_physical_elapsed</a> (void)</td></tr>
 <tr class="separator:a98468f1c5132e3aa18d77f85d65bb6ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8da2172c41ab13ff4748994a62ae34b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a8da2172c41ab13ff4748994a62ae34b5">lf_time_start</a> (void)</td></tr>
+<tr class="memitem:a8da2172c41ab13ff4748994a62ae34b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a8da2172c41ab13ff4748994a62ae34b5">lf_time_start</a> (void)</td></tr>
 <tr class="separator:a8da2172c41ab13ff4748994a62ae34b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a209c8df88a5ef884e0cf51d4727cda"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a3a209c8df88a5ef884e0cf51d4727cda">lf_set_physical_clock_offset</a> (<a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> offset)</td></tr>
+<tr class="memitem:a3a209c8df88a5ef884e0cf51d4727cda"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a3a209c8df88a5ef884e0cf51d4727cda">lf_set_physical_clock_offset</a> (<a class="el" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> offset)</td></tr>
 <tr class="separator:a3a209c8df88a5ef884e0cf51d4727cda"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a43509483b3e9886acd002c7d7b6482c8"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a43509483b3e9886acd002c7d7b6482c8">lf_readable_time</a> (char *buffer, <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> time)</td></tr>
+<tr class="memitem:a43509483b3e9886acd002c7d7b6482c8"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a43509483b3e9886acd002c7d7b6482c8">lf_readable_time</a> (char *buffer, <a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> time)</td></tr>
 <tr class="separator:a43509483b3e9886acd002c7d7b6482c8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae956f1688a3893b44cf4bced3c13ef9a"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ae956f1688a3893b44cf4bced3c13ef9a">lf_comma_separated_time</a> (char *buffer, <a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> time)</td></tr>
+<tr class="memitem:ae956f1688a3893b44cf4bced3c13ef9a"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ae956f1688a3893b44cf4bced3c13ef9a">lf_comma_separated_time</a> (char *buffer, <a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> time)</td></tr>
 <tr class="separator:ae956f1688a3893b44cf4bced3c13ef9a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7ffa6446464d5a939e848bb9a41ceab7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a7ffa6446464d5a939e848bb9a41ceab7">_lf_convert_volatile_tag_to_nonvolatile</a> (<a class="el" href="structtag__t.html">tag_t</a> volatile vtag)</td></tr>
 <tr class="separator:a7ffa6446464d5a939e848bb9a41ceab7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:ab11f867fe347f51594fdc4371362c96b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ab11f867fe347f51594fdc4371362c96b">_lf_time_physical_clock_offset</a></td></tr>
+<tr class="memitem:ab11f867fe347f51594fdc4371362c96b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ab11f867fe347f51594fdc4371362c96b">_lf_time_physical_clock_offset</a></td></tr>
 <tr class="separator:ab11f867fe347f51594fdc4371362c96b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af4f4076229307c5b0a64a250b4fac0bd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#af4f4076229307c5b0a64a250b4fac0bd">_lf_time_test_physical_clock_offset</a></td></tr>
+<tr class="memitem:af4f4076229307c5b0a64a250b4fac0bd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#af4f4076229307c5b0a64a250b4fac0bd">_lf_time_test_physical_clock_offset</a></td></tr>
 <tr class="separator:af4f4076229307c5b0a64a250b4fac0bd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a962118a511886e64b567046950876f60"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a962118a511886e64b567046950876f60">_lf_time_epoch_offset</a></td></tr>
+<tr class="memitem:a962118a511886e64b567046950876f60"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a962118a511886e64b567046950876f60">_lf_time_epoch_offset</a></td></tr>
 <tr class="separator:a962118a511886e64b567046950876f60"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1545de0581eee4dfe26fb54ee1039ffe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a1545de0581eee4dfe26fb54ee1039ffe">current_tag</a></td></tr>
 <tr class="separator:a1545de0581eee4dfe26fb54ee1039ffe"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afc91fb8110046fe2a5b10993c6618688"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#afc91fb8110046fe2a5b10993c6618688">physical_start_time</a></td></tr>
+<tr class="memitem:afc91fb8110046fe2a5b10993c6618688"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#afc91fb8110046fe2a5b10993c6618688">physical_start_time</a></td></tr>
 <tr class="separator:afc91fb8110046fe2a5b10993c6618688"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a20b56e8fb05c017508f1c4fa2e311a87"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a20b56e8fb05c017508f1c4fa2e311a87">start_time</a></td></tr>
+<tr class="memitem:a20b56e8fb05c017508f1c4fa2e311a87"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#a20b56e8fb05c017508f1c4fa2e311a87">start_time</a></td></tr>
 <tr class="separator:a20b56e8fb05c017508f1c4fa2e311a87"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:add35442c29c7b864362ef6672f35e7a5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#add35442c29c7b864362ef6672f35e7a5">_lf_global_physical_clock_drift</a></td></tr>
+<tr class="memitem:add35442c29c7b864362ef6672f35e7a5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#add35442c29c7b864362ef6672f35e7a5">_lf_global_physical_clock_drift</a></td></tr>
 <tr class="separator:add35442c29c7b864362ef6672f35e7a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae33f5d37733acaf7044864b1124240e0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ae33f5d37733acaf7044864b1124240e0">_lf_last_reported_physical_time_ns</a></td></tr>
+<tr class="memitem:ae33f5d37733acaf7044864b1124240e0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#ae33f5d37733acaf7044864b1124240e0">_lf_last_reported_physical_time_ns</a></td></tr>
 <tr class="separator:ae33f5d37733acaf7044864b1124240e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa69d28e60eef684c98f95a802681c4b9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#aa69d28e60eef684c98f95a802681c4b9">_lf_last_reported_unadjusted_physical_time_ns</a></td></tr>
+<tr class="memitem:aa69d28e60eef684c98f95a802681c4b9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="tag_8h.html#aa69d28e60eef684c98f95a802681c4b9">_lf_last_reported_unadjusted_physical_time_ns</a></td></tr>
 <tr class="separator:aa69d28e60eef684c98f95a802681c4b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
@@ -675,6 +682,51 @@ DESCRIPTION</h1>
 
 </div>
 </div>
+<a id="a827080fd3c574bad5a32db9f7c367587" name="a827080fd3c574bad5a32db9f7c367587"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a827080fd3c574bad5a32db9f7c367587">&#9670;&#160;</a></span>instant_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef int64_t <a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Time instant. Both physical and logical times are represented using this typedef. </p>
+
+</div>
+</div>
+<a id="af5b4e62d03782997d813be6145316f4b" name="af5b4e62d03782997d813be6145316f4b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af5b4e62d03782997d813be6145316f4b">&#9670;&#160;</a></span>interval_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef int64_t <a class="el" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Interval of time. </p>
+
+</div>
+</div>
+<a id="ad88f1caa8b9c216404eb196cb1850213" name="ad88f1caa8b9c216404eb196cb1850213"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad88f1caa8b9c216404eb196cb1850213">&#9670;&#160;</a></span>microstep_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef uint32_t <a class="el" href="tag_8h.html#ad88f1caa8b9c216404eb196cb1850213">microstep_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Microstep instant. </p>
+
+</div>
+</div>
 <a id="a9921069499ea65eecb0aeed778a5b92c" name="a9921069499ea65eecb0aeed778a5b92c"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9921069499ea65eecb0aeed778a5b92c">&#9670;&#160;</a></span>tag_interval_t</h2>
 
@@ -748,7 +800,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>&#160;</td>
           <td class="paramname"><em>interval</em>&#160;</td>
         </tr>
         <tr>
@@ -777,7 +829,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> _lf_physical_time </td>
+          <td class="memname"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> _lf_physical_time </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
@@ -795,7 +847,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> _lf_time </td>
+          <td class="memname"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> _lf_time </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="tag_8h.html#a2d07c34cb48cd21da0a0c307126d7fb5">_lf_time_type</a>&#160;</td>
           <td class="paramname"><em>type</em></td><td>)</td>
@@ -834,7 +886,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td>
           <td class="paramname"><em>time</em>&#160;</td>
         </tr>
         <tr>
@@ -878,7 +930,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td>
           <td class="paramname"><em>time</em>&#160;</td>
         </tr>
         <tr>
@@ -918,7 +970,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="memname">void lf_set_physical_clock_offset </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>&#160;</td>
           <td class="paramname"><em>offset</em></td><td>)</td>
           <td></td>
         </tr>
@@ -990,7 +1042,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> lf_time_logical </td>
+          <td class="memname"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> lf_time_logical </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -1011,7 +1063,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> lf_time_logical_elapsed </td>
+          <td class="memname"><a class="el" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> lf_time_logical_elapsed </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -1031,7 +1083,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> lf_time_physical </td>
+          <td class="memname"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> lf_time_physical </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -1051,7 +1103,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> lf_time_physical_elapsed </td>
+          <td class="memname"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> lf_time_physical_elapsed </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -1071,7 +1123,7 @@ DESCRIPTION</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> lf_time_start </td>
+          <td class="memname"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> lf_time_start </td>
           <td>(</td>
           <td class="paramtype">void&#160;</td>
           <td class="paramname"></td><td>)</td>
@@ -1095,7 +1147,7 @@ DESCRIPTION</h1>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> _lf_global_physical_clock_drift</td>
+          <td class="memname"><a class="el" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> _lf_global_physical_clock_drift</td>
         </tr>
       </table>
   </td>
@@ -1118,7 +1170,7 @@ DESCRIPTION</h1>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> _lf_last_reported_physical_time_ns</td>
+          <td class="memname"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> _lf_last_reported_physical_time_ns</td>
         </tr>
       </table>
   </td>
@@ -1141,7 +1193,7 @@ DESCRIPTION</h1>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> _lf_last_reported_unadjusted_physical_time_ns</td>
+          <td class="memname"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> _lf_last_reported_unadjusted_physical_time_ns</td>
         </tr>
       </table>
   </td>
@@ -1164,7 +1216,7 @@ DESCRIPTION</h1>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> _lf_time_epoch_offset</td>
+          <td class="memname"><a class="el" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> _lf_time_epoch_offset</td>
         </tr>
       </table>
   </td>
@@ -1188,7 +1240,7 @@ DESCRIPTION</h1>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> _lf_time_physical_clock_offset</td>
+          <td class="memname"><a class="el" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> _lf_time_physical_clock_offset</td>
         </tr>
       </table>
   </td>
@@ -1211,7 +1263,7 @@ DESCRIPTION</h1>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a25b148cb4bef9a108b00306879433f7b">interval_t</a> _lf_time_test_physical_clock_offset</td>
+          <td class="memname"><a class="el" href="tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> _lf_time_test_physical_clock_offset</td>
         </tr>
       </table>
   </td>
@@ -1257,7 +1309,7 @@ DESCRIPTION</h1>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> physical_start_time</td>
+          <td class="memname"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> physical_start_time</td>
         </tr>
       </table>
   </td>
@@ -1280,7 +1332,7 @@ DESCRIPTION</h1>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="platform_8h.html#a0c4810f46596400a763cfe99b3cfa7b1">instant_t</a> start_time</td>
+          <td class="memname"><a class="el" href="tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> start_time</td>
         </tr>
       </table>
   </td>

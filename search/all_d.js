@@ -21,7 +21,7 @@ var searchData=
   ['message_5frecord_2eh_18',['message_record.h',['../message__record_8h.html',1,'']]],
   ['message_5frecycle_5fq_19',['message_recycle_q',['../sensor__simulator_8c.html#af431a479d103fe1550833e760fb948e7',1,'sensor_simulator.c']]],
   ['microstep_20',['microstep',['../structtag__t.html#a2ecfcdcf77463769a58980f47d0a813c',1,'tag_t']]],
-  ['microstep_5ft_21',['microstep_t',['../platform_8h.html#aff94b88998d5bf37870fb520ad82526d',1,'platform.h']]],
+  ['microstep_5ft_21',['microstep_t',['../tag_8h.html#ad88f1caa8b9c216404eb196cb1850213',1,'tag.h']]],
   ['min_5fdelay_5ffrom_5fphysical_5faction_5fto_5ffederate_5foutput_22',['min_delay_from_physical_action_to_federate_output',['../structfederate__instance__t.html#a91a34b0d7f0f604c2f21cf062dbe0314',1,'federate_instance_t']]],
   ['minute_23',['MINUTE',['../tag_8h.html#a72e3dbcf6a85e8c0a04691cfb14d3876',1,'tag.h']]],
   ['minutes_24',['MINUTES',['../tag_8h.html#a694878332b974b464c7d58c7114ee6e9',1,'tag.h']]],

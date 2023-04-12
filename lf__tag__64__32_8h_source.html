@@ -116,7 +116,7 @@ $(function() {
 <div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="comment">// If you are targeting a platform that uses some other type</span></div>
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="comment">// for time and microsteps, you can simply define</span></div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="comment">// PRINTF_TIME and PRINTF_MICROSTEP directly in the same file that</span></div>
-<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="comment">// defines the types _instant_t, _interval_t, and _microstep_t.</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="comment">// defines the types instant_t, interval_t, and microstep_t.</span></div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">#include &lt;inttypes.h&gt;</span></div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno"><a class="line" href="lf__tag__64__32_8h.html#a291f54d612d8e6c53b96bf176e579b9a">   43</a></span><span class="preprocessor">#define PRINTF_TIME &quot;%&quot;</span> PRId64</div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno"><a class="line" href="lf__tag__64__32_8h.html#a1a993c1a57a54296ab361e669008b79e">   44</a></span><span class="preprocessor">#define PRINTF_MICROSTEP &quot;%&quot;</span> PRIu32</div>
@@ -126,16 +126,7 @@ $(function() {
 <div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span><span class="comment">//     printf(&quot;Tag is &quot; PRINTF_TAG &quot;\n&quot;, time_value, microstep);</span></div>
 <div class="line"><a id="l00049" name="l00049"></a><span class="lineno"><a class="line" href="lf__tag__64__32_8h.html#a8092ad9b0cfa72f49f205ca8a65d2736">   49</a></span><span class="preprocessor">#define PRINTF_TAG &quot;(&quot;</span> PRINTF_TIME &quot;, &quot; PRINTF_MICROSTEP &quot;)&quot;</div>
 <div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span> </div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno"><a class="line" href="lf__tag__64__32_8h.html#af8f0f3e156808b8af18129b60baf8ceb">   57</a></span><span class="keyword">typedef</span> int64_t <a class="code hl_typedef" href="lf__tag__64__32_8h.html#af8f0f3e156808b8af18129b60baf8ceb">_instant_t</a>;</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno"><a class="line" href="lf__tag__64__32_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">   62</a></span><span class="keyword">typedef</span> int64_t <a class="code hl_typedef" href="lf__tag__64__32_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">_interval_t</a>;</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
-<div class="line"><a id="l00067" name="l00067"></a><span class="lineno"><a class="line" href="lf__tag__64__32_8h.html#a6fa587bab59881a6741957a2c1a13798">   67</a></span><span class="keyword">typedef</span> uint32_t <a class="code hl_typedef" href="lf__tag__64__32_8h.html#a6fa587bab59881a6741957a2c1a13798">_microstep_t</a>;</div>
-<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span> </div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno"><a class="line" href="lf__tag__64__32_8h.html#acc2b8ac5ac3020137e71dfcdbaedf335">   83</a></span><span class="preprocessor">#define LF_TIME_BUFFER_LENGTH 80</span></div>
-<div class="ttc" id="alf__tag__64__32_8h_html_a5903c83266094ca1bc1b5cbd4c3bdad8"><div class="ttname"><a href="lf__tag__64__32_8h.html#a5903c83266094ca1bc1b5cbd4c3bdad8">_interval_t</a></div><div class="ttdeci">int64_t _interval_t</div><div class="ttdef"><b>Definition:</b> lf_tag_64_32.h:62</div></div>
-<div class="ttc" id="alf__tag__64__32_8h_html_a6fa587bab59881a6741957a2c1a13798"><div class="ttname"><a href="lf__tag__64__32_8h.html#a6fa587bab59881a6741957a2c1a13798">_microstep_t</a></div><div class="ttdeci">uint32_t _microstep_t</div><div class="ttdef"><b>Definition:</b> lf_tag_64_32.h:67</div></div>
-<div class="ttc" id="alf__tag__64__32_8h_html_af8f0f3e156808b8af18129b60baf8ceb"><div class="ttname"><a href="lf__tag__64__32_8h.html#af8f0f3e156808b8af18129b60baf8ceb">_instant_t</a></div><div class="ttdeci">int64_t _instant_t</div><div class="ttdef"><b>Definition:</b> lf_tag_64_32.h:57</div></div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno"><a class="line" href="lf__tag__64__32_8h.html#acc2b8ac5ac3020137e71dfcdbaedf335">   65</a></span><span class="preprocessor">#define LF_TIME_BUFFER_LENGTH 80</span></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
