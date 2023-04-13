@@ -34,7 +34,7 @@
  * Counter used to issue a warning if memory is
  * allocated for message payloads and never freed.
  */
-static int _lf_count_payload_allocations;
+int _lf_count_payload_allocations;
 
 #include <stdbool.h>
 #include <assert.h>
