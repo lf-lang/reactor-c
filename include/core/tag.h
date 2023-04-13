@@ -3,8 +3,8 @@
  * @author Edward A. Lee
  * @author Soroush Bateni
  * @author Hou Seng (Steven) Wong
- * @copyright (c) 2020-2023, The University of California at Berkeley
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ * @copyright (c) 2020-2023, The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
  * @brief Time and tag definitions and functions for Lingua Franca
  */
 
@@ -71,12 +71,6 @@ typedef struct {
     instant_t time;
     microstep_t microstep;
 } tag_t;
-
-/**
- * A tag interval indicates the
- * pairwise difference of two tags.
- */
-typedef tag_t tag_interval_t;
 
 ////////////////  Functions
 
