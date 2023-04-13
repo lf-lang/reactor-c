@@ -60,6 +60,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern tag_t current_tag;
 extern instant_t start_time;
 
+// Global variable defined in lf_token.c:
+extern int _lf_count_payload_allocations;
+
 /**
  * Indicator of whether to wait for physical time to match logical time.
  * By default, execution will wait. The command-line argument -fast will
