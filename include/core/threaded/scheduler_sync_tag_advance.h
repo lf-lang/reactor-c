@@ -30,10 +30,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "tag.h"
 
-/////////////////// External Variables /////////////////////////
-extern tag_t current_tag;
-extern tag_t stop_tag;
-
 /////////////////// External Functions /////////////////////////
 void _lf_next_locked();
 /**

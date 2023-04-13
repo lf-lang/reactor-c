@@ -1,7 +1,7 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author Hou Seng (Steven) Wong (housengw@berkeley.edu)
+ * @author Edward A. Lee
+ * @author Hou Seng (Steven) Wong
  *
  * @section LICENSE
 Copyright (c) 2020, The University of California at Berkeley.

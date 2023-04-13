@@ -1,6 +1,7 @@
-BSD 2-Clause License
+All files in this repository are copyrighted by their respective authors
+and/or institutions (as identified in each file) and bear a BSD 2-Clause License:
 
-Copyright (c) 2021, The Lingua Franca Coordination Language
+Copyright (c) 2021-2023, by the Authors
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
