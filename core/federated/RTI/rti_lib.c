@@ -1122,16 +1122,16 @@ void handle_timestamp(federate_t *my_fed) {
             }
         }
         // Iterate over the downstream federates to query the next event tag.
-        for (int j = 0; j < my_fed->num_downstream; j++) {
-            federate_t* downstream = &_RTI.federates[my_fed->downstream[j]];
-            // Ignore this federate if it has resigned.
-            if (downstream->state == NOT_CONNECTED) {
-                continue;
-            }
-            if (send_next_event_tag_query(downstream, my_fed->id)) {
-                my_fed->num_of_conn_federates++;
-            }
-        }
+        // for (int j = 0; j < my_fed->num_downstream; j++) {
+        //     federate_t* downstream = &_RTI.federates[my_fed->downstream[j]];
+        //     // Ignore this federate if it has resigned.
+        //     if (downstream->state == NOT_CONNECTED) {
+        //         continue;
+        //     }
+        //     if (send_next_event_tag_query(downstream, my_fed->id)) {
+        //         my_fed->num_of_conn_federates++;
+        //     }
+        // }
 
         // If the transient federate has no connected upstream or downstream federates,
         // then do not wait for the start time
@@ -1166,6 +1166,8 @@ void handle_timestamp(federate_t *my_fed) {
         }
         pthread_mutex_lock(&_RTI.rti_mutex);
         my_fed->state = GRANTED;
+        // tag_t tag = {.time= my_fed->fed_start_time, .microstep=0};
+        // send_tag_advance_grant(my_fed, tag);
         LF_PRINT_LOG("RTI sent start time %lld to transient federate %d.", my_fed->fed_start_time, my_fed->id);
         pthread_mutex_unlock(&_RTI.rti_mutex);
     }
@@ -1195,7 +1197,7 @@ void handle_next_event_tag_query_response(federate_t *my_fed) {
     // Processing the TIMESTAMP depends on whether it is the startup phase (all 
     // persistent federates joined) or not. 
     federate_t* transient = &(_RTI.federates[transient_fed_id]);
-    if (timestamp > transient->fed_start_time) {
+    if (timestamp < transient->fed_start_time) { // min of the LTC of upstream?
         transient->fed_start_time = timestamp;
     }
     // Check that upstream and downstream federates of the transient did propose a start_time
@@ -2001,7 +2003,7 @@ void initialize_federate(uint16_t id) {
     _RTI.federates[id].server_port = -1;
     _RTI.federates[id].requested_stop = false;
     _RTI.federates[id].is_transient = true;
-    _RTI.federates[id].fed_start_time = 0LL;
+    _RTI.federates[id].fed_start_time = FOREVER;
     _RTI.federates[id].num_of_conn_federates = 0;
     _RTI.federates[id].num_of_conn_federates_sent_net = 0;
     _RTI.federates[id].start_time_is_set = false;
@@ -2031,7 +2033,7 @@ void reset_transient_federate(uint16_t id) {
     _RTI.federates[id].server_port = -1;
     _RTI.federates[id].requested_stop = false;
     _RTI.federates[id].is_transient = true;
-    _RTI.federates[id].fed_start_time = 0LL;
+    _RTI.federates[id].fed_start_time = FOREVER;
     _RTI.federates[id].num_of_conn_federates = 0;
     _RTI.federates[id].num_of_conn_federates_sent_net = 0;
     _RTI.federates[id].start_time_is_set = false;

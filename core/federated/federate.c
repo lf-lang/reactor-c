@@ -1668,7 +1668,8 @@ trigger_handle_t schedule_message_received_from_network_already_locked(
     // of the message (timestamp, microstep) is
     // in the future relative to the tag of this
     // federate. By default, assume it is not.
-    bool message_tag_is_in_the_future = lf_tag_compare(tag, current_tag) > 0;
+    // FIXME: Changed '>' with '>='. Is it correct??????
+    bool message_tag_is_in_the_future = lf_tag_compare(tag, current_tag) >= 0;
 
     // Assign the intended tag
     trigger->intended_tag = tag;
@@ -2420,9 +2421,12 @@ void handle_next_event_tag_query(){
     LF_PRINT_DEBUG("Receiving NET query message regarding transient federate %d.", transient_id);
 
     // Get the next event tag in the reactions queue
-    tag_t next_tag = get_next_event_tag();
+    // tag_t next_tag = _fed.last_sent_LTC;
+    // tag_t next_tag = get_next_event_tag();
+    tag_t next_tag = lf_tag();
 
     instant_t logical_time = next_tag.time;
+    lf_print("!!!!!!!!!!!!! the net I am sending is: %lld.", logical_time);
 
     // Answer with the time instant of the next event tag
     send_next_event_tag_query_response(logical_time, transient_id);
