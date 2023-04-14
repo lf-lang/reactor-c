@@ -250,16 +250,16 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag) {
     }
 }
 
-bool send_next_event_tag_query (federate_t* conn_fed, uint16_t fed_id) {
+bool send_next_event_tag_query (federate_t* conn_fed, uint16_t transient_id) {
     if (conn_fed->state == NOT_CONNECTED) {
         return false;
     }
 
-    // Write the message type and the related fed_id
+    // Write the message type and the related transient_id
     size_t message_length = 1 + sizeof(uint16_t);
     unsigned char buffer[message_length];
     buffer[0] = MSG_TYPE_NEXT_EVENT_TAG_QUERY;
-    encode_uint16(fed_id, (unsigned char *)&(buffer[1]));
+    encode_uint16(transient_id, (unsigned char *)&(buffer[1]));
 
     if (_RTI.tracing_enabled) {
         tracepoint_RTI_to_federate(send_NET_QR, conn_fed->id, NULL);
@@ -1109,6 +1109,7 @@ void handle_timestamp(federate_t *my_fed) {
         // the total number of connected federates (my_fed->num_of_conn_federates)
         // will be compared against those who already sent the NET query response
         // (my_fed->num_of_conn_federates_sent_net)
+        LF_PRINT_DEBUG("RTI sends next event tag requests regarding transient %d.", my_fed->id);
         for (int j = 0; j < my_fed->num_upstream; j++) {
             federate_t* upstream = &_RTI.federates[my_fed->upstream[j]];
             // Ignore this federate if it has resigned or if it a transient that 
@@ -1136,21 +1137,21 @@ void handle_timestamp(federate_t *my_fed) {
         // then do not wait for the start time
         if (my_fed->num_of_conn_federates == 0) {
             my_fed->start_time_is_set = true;
-            lf_print_debug("the start time of transient is: %lld", my_fed->fed_start_time);
+            LF_PRINT_DEBUG("Transient federate %d has no upstream or downstrean federates. Its start time is The start time of transient is: %lld", my_fed->fed_start_time);
         }
         pthread_mutex_unlock(&_RTI.rti_mutex);
         // Now wait until all connected federates have responded with their next 
         // event logial time instant.
 
+        LF_PRINT_DEBUG("RTI waits for transient start time to be set.");
         while(!my_fed->start_time_is_set);
-
+        
         // Once the start time set, sent it to the joining transient
         unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_LENGTH];
         start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
-        // FIXME: Sould we check if the time instant have passed or not, and if yes,
-        // add a delay?
-        start_time = my_fed->fed_start_time;
-        encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
+        my_fed->fed_start_time += DELAY_START;
+        LF_PRINT_DEBUG("Transient federate %d start time is set and is %lld.", my_fed->id, my_fed->fed_start_time);
+        encode_int64(swap_bytes_if_big_endian_int64(my_fed->fed_start_time), &start_time_buffer[1]);
 
         if (_RTI.tracing_enabled) {
             tag_t tag = {.time = start_time, .microstep = 0};
@@ -1165,24 +1166,24 @@ void handle_timestamp(federate_t *my_fed) {
         }
         pthread_mutex_lock(&_RTI.rti_mutex);
         my_fed->state = GRANTED;
-        LF_PRINT_LOG("RTI sent start time %lld to federate %d.", start_time, my_fed->id);
+        LF_PRINT_LOG("RTI sent start time %lld to transient federate %d.", my_fed->fed_start_time, my_fed->id);
         pthread_mutex_unlock(&_RTI.rti_mutex);
     }
 }
 
 void handle_next_event_tag_query_response(federate_t *my_fed) {
     // Get the logical time instant and the transient fed_id from the socket
-    size_t buffer_size = 1 + sizeof(uint16_t) + sizeof(uint16_t);
+    size_t buffer_size = sizeof(instant_t) + sizeof(uint16_t);
     unsigned char buffer[buffer_size];
     // Read bytes from the socket. We need 8 bytes.
-    ssize_t bytes_read = read_from_socket(my_fed->socket, buffer_size, (unsigned char*)&buffer);
+    ssize_t bytes_read = read_from_socket(my_fed->socket, buffer_size, buffer);
     if (bytes_read < (ssize_t)sizeof(int64_t)) {
         lf_print_error("ERROR reading next event query response from federate %d.\n", my_fed->id);
     }
 
     // Get the timestamp and the transient federate id
-    int64_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t *)(&(buffer[1]))));
-    uint16_t transient_fed_id = extract_uint16(buffer[9]);
+    instant_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t *)(buffer)));
+    uint16_t transient_fed_id = extract_uint16((&buffer[8]));
     if (_RTI.tracing_enabled) {
         tag_t tag = {.time = timestamp, .microstep = 0};
         tracepoint_RTI_from_federate(receive_NET_QR_RES, my_fed->id, &tag);

@@ -2406,37 +2406,42 @@ void handle_stop_request_message() {
  */
 void handle_next_event_tag_query(){
     tracepoint_federate_from_RTI(receive_NET_QR, _lf_my_fed_id, NULL);
-    // Extract the fed_id of the relative transient federate
-    // Read the header.
-    size_t bytes_to_read = 1 + sizeof(uint16_t);
+    
+    // Extract the transient federate Id 
+    size_t bytes_to_read = sizeof(uint16_t);
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
                              "Failed to read the transient federate ID.");
 
-    uint16_t fed_id = extract_uint16(buffer + 1);
+    // Read it
+    uint16_t transient_id = extract_uint16(buffer);
+    // Check if the message is intended for this federate
+    assert(_lf_my_fed_id != transient_id);
+    LF_PRINT_DEBUG("Receiving NET query message regarding transient federate %d.", transient_id);
+
     // Get the next event tag in the reactions queue
     tag_t next_tag = get_next_event_tag();
 
     instant_t logical_time = next_tag.time;
 
     // Answer with the time instant of the next event tag
-    send_next_event_tag_query_response(logical_time, fed_id);
+    send_next_event_tag_query_response(logical_time, transient_id);
 }
 
 /**
  * Send the answer to the next event tag query to the RTI.
- * 
+ *
  * @param time The time.
- * @param fed_id The transient federate id to send back
+ * @param transient_id The transient federate id to send back
  *  Print a soft error message otherwise
  */
-void send_next_event_tag_query_response(instant_t time, uint16_t fed_id) {
-    LF_PRINT_DEBUG("Sending logical time " PRINTF_TIME " to the RTI.", time);
+void send_next_event_tag_query_response(instant_t time, uint16_t transient_id) {
+    LF_PRINT_DEBUG("Sending logical time " PRINTF_TIME " to the RTI regarding NET QR RES of trabsient %d.", time, transient_id);
     size_t bytes_to_write = 1 + sizeof(instant_t) + sizeof(uint16_t);
     unsigned char buffer[bytes_to_write];
     buffer[0] = MSG_TYPE_NEXT_EVENT_TAG_QUERY_RESPONSE;
     encode_int64(time, &(buffer[1]));
-    encode_uint16(fed_id, &(buffer[9]));
+    encode_uint16(transient_id, &(buffer[9]));
     lf_mutex_lock(&outbound_socket_mutex);
     if (_fed.socket_TCP_RTI < 0) {
         lf_print_warning("Socket is no longer connected. Dropping message.");
