@@ -38,6 +38,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include "platform.h"
 #include "clock-sync.h"
 #include "net_common.h"
 #include "net_util.h"
