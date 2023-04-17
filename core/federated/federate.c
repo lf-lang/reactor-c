@@ -1668,8 +1668,7 @@ trigger_handle_t schedule_message_received_from_network_already_locked(
     // of the message (timestamp, microstep) is
     // in the future relative to the tag of this
     // federate. By default, assume it is not.
-    // FIXME: Changed '>' with '>='. Is it correct??????
-    bool message_tag_is_in_the_future = lf_tag_compare(tag, current_tag) >= 0;
+    bool message_tag_is_in_the_future = lf_tag_compare(tag, current_tag) > 0;
 
     // Assign the intended tag
     trigger->intended_tag = tag;
