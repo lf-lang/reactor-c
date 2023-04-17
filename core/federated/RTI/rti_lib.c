@@ -1,33 +1,10 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
+ * @author Edward A. Lee
  * @author Soroush Bateni
- *
- * @section LICENSE
-Copyright (c) 2020, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
- * Runtime infrastructure for distributed Lingua Franca programs.
+ * @copyright (c) 2020-2023, The University of California at Berkeley
+ * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ * @brief Runtime infrastructure (RTI) for distributed Lingua Franca programs.
  *
  * This implementation creates one thread per federate so as to be able
  * to take advantage of multiple cores. It may be more efficient, however,
@@ -47,7 +24,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "rti_lib.h"
-#include "string.h"
+#include <string.h>
+
+// Global variables defined in tag.c:
+extern instant_t start_time;
 
 /**
  * The state of this RTI instance.
@@ -278,7 +258,7 @@ tag_t transitive_next_event(federate_t* fed, tag_t candidate, bool visited[]) {
                 &_RTI.federates[fed->upstream[i]], result, visited);
 
         // Add the "after" delay of the connection to the result.
-        upstream_result = _lf_delay_tag(upstream_result, fed->upstream_delay[i]);
+        upstream_result = lf_delay_tag(upstream_result, fed->upstream_delay[i]);
 
         // If the adjusted event time is less than the result so far, update the result.
         if (lf_tag_compare(upstream_result, result) < 0) {
@@ -373,7 +353,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
         // Ignore this federate if it has resigned.
         if (upstream->state == NOT_CONNECTED) continue;
 
-        tag_t candidate = _lf_delay_tag(upstream->completed, fed->upstream_delay[j]);
+        tag_t candidate = lf_delay_tag(upstream->completed, fed->upstream_delay[j]);
 
         if (lf_tag_compare(candidate, min_upstream_completed) < 0) {
             min_upstream_completed = candidate;
@@ -426,7 +406,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
         // Adjust by the "after" delay.
         // Note that "no delay" is encoded as NEVER,
         // whereas one microstep delay is encoded as 0LL.
-        tag_t candidate = _lf_delay_tag(upstream_next_event, fed->upstream_delay[j]);
+        tag_t candidate = lf_delay_tag(upstream_next_event, fed->upstream_delay[j]);
 
         if (lf_tag_compare(candidate, t_d) < 0) {
             t_d = candidate;
