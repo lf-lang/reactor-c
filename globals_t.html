@@ -9,6 +9,10 @@
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
@@ -23,6 +27,7 @@
   <td id="projectalign">
    <div id="projectname">reactor-c
    </div>
+   <div id="projectbrief">C Runtime for Lingua Franca</div>
   </td>
  </tr>
  </tbody>
@@ -47,6 +52,22 @@ $(function() {
 </script>
 <div id="main-nav"></div>
 </div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(document).ready(function(){initNavTree('globals_t.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -72,60 +93,62 @@ $(function() {
 <div class="textblock">Here is a list of all functions, variables, defines, enums, and typedefs with links to the files they belong to:</div>
 
 <h3><a id="index_t" name="index_t"></a>- t -</h3><ul>
-<li>tag_interval_t&#160;:&#160;<a class="el" href="tag_8h.html#a9921069499ea65eecb0aeed778a5b92c">tag.h</a></li>
-<li>TCP&#160;:&#160;<a class="el" href="rti__lib_8h.html#a54c375e3893ff5969d20df65b90c8335aa040cd7feeb588104634cdadf35abf1c">rti_lib.h</a></li>
-<li>TCP_TIMEOUT_TIME&#160;:&#160;<a class="el" href="net__common_8h.html#ab1edbb864391382835b9ad71408c5c53">net_common.h</a></li>
-<li>terminate_execution()&#160;:&#160;<a class="el" href="reactor_8h.html#aa85f1178460dc4747d6161ffc66ea4b3">reactor.h</a>, <a class="el" href="src__gen__stub_8c.html#a114c79dc673219d5df3b794552ca88d7">src_gen_stub.c</a></li>
-<li>termination()&#160;:&#160;<a class="el" href="reactor__common_8c.html#aa329f59a16f5617b5195f2c05872c9e9">reactor_common.c</a>, <a class="el" href="reactor_8h.html#aa329f59a16f5617b5195f2c05872c9e9">reactor.h</a>, <a class="el" href="reactor__common_8h.html#aa329f59a16f5617b5195f2c05872c9e9">reactor_common.h</a></li>
-<li>test_get()&#160;:&#160;<a class="el" href="hashmap__test_8c.html#a9cbf8a60e28ad1f04512b85eacc0d961">hashmap_test.c</a></li>
-<li>test_pop()&#160;:&#160;<a class="el" href="vector__test_8c.html#ab99487c8772f0a2352d4fc7c19c852ee">vector_test.c</a></li>
-<li>test_push()&#160;:&#160;<a class="el" href="vector__test_8c.html#a33e88bfb6ebc1b959a7b1eccfda7b972">vector_test.c</a></li>
-<li>test_pushall()&#160;:&#160;<a class="el" href="vector__test_8c.html#a9df69439a437b74bb3e71fe53a38beff">vector_test.c</a></li>
-<li>test_put()&#160;:&#160;<a class="el" href="hashmap__test_8c.html#a0288244b2ea6b62ea72403eb8f3835bb">hashmap_test.c</a></li>
-<li>test_random_access()&#160;:&#160;<a class="el" href="vector__test_8c.html#a2ff1464413a77e8995205324cf6a2841">vector_test.c</a></li>
-<li>test_vote()&#160;:&#160;<a class="el" href="vector__test_8c.html#a299e216c88627899d75dc49ec80dc065">vector_test.c</a></li>
-<li>thread_created&#160;:&#160;<a class="el" href="sensor__simulator_8c.html#a413abe5862c9af4154bcabf47cbde022">sensor_simulator.c</a></li>
-<li>thread_delete()&#160;:&#160;<a class="el" href="_thread_wrapper_8h.html#a7e13d8cd4be82282f670d872bc95bf81">ThreadWrapper.h</a></li>
-<li>thread_join()&#160;:&#160;<a class="el" href="_thread_wrapper_8h.html#a55361ff32a457702594486bd3d9a1869">ThreadWrapper.h</a></li>
-<li>thread_new()&#160;:&#160;<a class="el" href="_thread_wrapper_8h.html#a3568e74f6efcbbebd1b84bca88b27846">ThreadWrapper.h</a></li>
-<li>thread_start()&#160;:&#160;<a class="el" href="_thread_wrapper_8h.html#a4af6feae8070f713ad31b02de0730a71">ThreadWrapper.h</a></li>
-<li>thread_terminate()&#160;:&#160;<a class="el" href="_thread_wrapper_8h.html#aaac285a525d959905cd463a3adeb3828">ThreadWrapper.h</a></li>
-<li>tick_cursor_x&#160;:&#160;<a class="el" href="sensor__simulator_8c.html#a694b3b10a1c18c5d3fdf32c62e2326db">sensor_simulator.c</a></li>
-<li>tick_cursor_y&#160;:&#160;<a class="el" href="sensor__simulator_8c.html#a738704b6f923ff895b40f06a19f375e5">sensor_simulator.c</a></li>
-<li>tick_window&#160;:&#160;<a class="el" href="sensor__simulator_8c.html#a682ef20deffe76d72ab94e4e1ac037cc">sensor_simulator.c</a></li>
-<li>tick_window_width&#160;:&#160;<a class="el" href="sensor__simulator_8c.html#a89502730b2655e279c83afb299e8ded5">sensor_simulator.c</a></li>
-<li>TOKEN_AND_VALUE_FREED&#160;:&#160;<a class="el" href="lf__token_8h.html#abe23a36a87d2f0c076da417eb0114c7ea02ef194d373714ee3ac62226729e0cb0">lf_token.h</a></li>
-<li>token_freed&#160;:&#160;<a class="el" href="lf__token_8h.html#abe23a36a87d2f0c076da417eb0114c7e">lf_token.h</a></li>
-<li>TOKEN_FREED&#160;:&#160;<a class="el" href="lf__token_8h.html#abe23a36a87d2f0c076da417eb0114c7ea0a6094445d7a54e61aa3a43f6d017e2b">lf_token.h</a></li>
-<li>token_template_t&#160;:&#160;<a class="el" href="lf__token_8h.html#ad0befcbc6fe23c8dd0b6f483d4067e45">lf_token.h</a></li>
-<li>token_type_t&#160;:&#160;<a class="el" href="lf__token_8h.html#a58dc2f4a624d2f3030b7e5f3596e58d6">lf_token.h</a></li>
-<li>trace_event_t&#160;:&#160;<a class="el" href="trace_8h.html#ab02e9e69539d60297cedb38c2193a453">trace.h</a></li>
-<li>TRACE_H&#160;:&#160;<a class="el" href="trace_8h.html#ae594945e35ccf287b44f0de67d6194d1">trace.h</a></li>
-<li>tracepoint&#160;:&#160;<a class="el" href="trace_8h.html#aeae0efb071b08e657d36788eee20c1a7">trace.h</a></li>
-<li>tracepoint_federate_from_federate&#160;:&#160;<a class="el" href="trace_8h.html#af806014e6928610cb32caa7ab79e522b">trace.h</a></li>
-<li>tracepoint_federate_from_RTI&#160;:&#160;<a class="el" href="trace_8h.html#a0af1b0066f718ce8489be4ce8c5883b8">trace.h</a></li>
-<li>tracepoint_federate_to_federate&#160;:&#160;<a class="el" href="trace_8h.html#a1465b810c5f6e6c5cdea5d9b29f5ac50">trace.h</a></li>
-<li>tracepoint_federate_to_RTI&#160;:&#160;<a class="el" href="trace_8h.html#a3898b24f52dc6449c0fe6848bd5d7420">trace.h</a></li>
-<li>tracepoint_reaction_deadline_missed&#160;:&#160;<a class="el" href="trace_8h.html#aa608d6a7b724896211cc9a279bacfbbf">trace.h</a></li>
-<li>tracepoint_reaction_ends&#160;:&#160;<a class="el" href="trace_8h.html#a6886c0b07fa8962e9e251bc5442fbae3">trace.h</a></li>
-<li>tracepoint_reaction_starts&#160;:&#160;<a class="el" href="trace_8h.html#a618fd3947984f4585e5071ec945f4908">trace.h</a></li>
-<li>tracepoint_RTI_from_federate&#160;:&#160;<a class="el" href="trace_8h.html#a2792eb16622ca6e1ffd40b1378d0dc74">trace.h</a></li>
-<li>tracepoint_RTI_to_federate&#160;:&#160;<a class="el" href="trace_8h.html#aead32360a221d3d3339d1562129ee8cd">trace.h</a></li>
-<li>tracepoint_schedule&#160;:&#160;<a class="el" href="trace_8h.html#afce5f2514b7b2001611c45b2f0122cee">trace.h</a></li>
-<li>tracepoint_scheduler_advancing_time_ends&#160;:&#160;<a class="el" href="trace_8h.html#ac91dba72663dc0f17ce46d105ff3f511">trace.h</a></li>
-<li>tracepoint_scheduler_advancing_time_starts&#160;:&#160;<a class="el" href="trace_8h.html#a2b43a4d257b235afe8066e4a3f1bfe7f">trace.h</a></li>
-<li>tracepoint_user_event&#160;:&#160;<a class="el" href="trace_8h.html#a4eaa42638286bf2cfdfed4b45d4a1036">trace.h</a></li>
-<li>tracepoint_user_value&#160;:&#160;<a class="el" href="trace_8h.html#adc24126d062442704b43b2ea2f95042c">trace.h</a></li>
-<li>tracepoint_worker_wait_ends&#160;:&#160;<a class="el" href="trace_8h.html#a9dc20d411fb600c803f04572bde501ff">trace.h</a></li>
-<li>tracepoint_worker_wait_starts&#160;:&#160;<a class="el" href="trace_8h.html#a00635edd06259391fe45fa81f2dd9cab">trace.h</a></li>
-<li>transitive_next_event()&#160;:&#160;<a class="el" href="rti__lib_8c.html#aa067d8ff2e12b42f8c1f011758231be1">rti_lib.c</a>, <a class="el" href="rti__lib_8h.html#aa067d8ff2e12b42f8c1f011758231be1">rti_lib.h</a></li>
-<li>trigger_handle_t&#160;:&#160;<a class="el" href="lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">lf_types.h</a></li>
-<li>trigger_t&#160;:&#160;<a class="el" href="lf__types_8h.html#ae98c19a4a03c495fdd3044c206e99afc">lf_types.h</a></li>
+<li>TCP&#160;:&#160;<a class="el" href="d3/d90/rti__lib_8h.html#a54c375e3893ff5969d20df65b90c8335aa040cd7feeb588104634cdadf35abf1c">rti_lib.h</a></li>
+<li>TCP_TIMEOUT_TIME&#160;:&#160;<a class="el" href="d9/da6/net__common_8h.html#ab1edbb864391382835b9ad71408c5c53">net_common.h</a></li>
+<li>terminate_execution()&#160;:&#160;<a class="el" href="dc/d85/reactor_8h.html#aa85f1178460dc4747d6161ffc66ea4b3">reactor.h</a>, <a class="el" href="d8/d9c/src__gen__stub_8c.html#a114c79dc673219d5df3b794552ca88d7">src_gen_stub.c</a></li>
+<li>termination()&#160;:&#160;<a class="el" href="dd/d37/reactor__common_8c.html#aa329f59a16f5617b5195f2c05872c9e9">reactor_common.c</a>, <a class="el" href="dc/d85/reactor_8h.html#aa329f59a16f5617b5195f2c05872c9e9">reactor.h</a>, <a class="el" href="d7/d0e/reactor__common_8h.html#aa329f59a16f5617b5195f2c05872c9e9">reactor_common.h</a></li>
+<li>test_get()&#160;:&#160;<a class="el" href="d7/de8/hashmap__test_8c.html#a9cbf8a60e28ad1f04512b85eacc0d961">hashmap_test.c</a></li>
+<li>test_pop()&#160;:&#160;<a class="el" href="d1/d88/vector__test_8c.html#ab99487c8772f0a2352d4fc7c19c852ee">vector_test.c</a></li>
+<li>test_push()&#160;:&#160;<a class="el" href="d1/d88/vector__test_8c.html#a33e88bfb6ebc1b959a7b1eccfda7b972">vector_test.c</a></li>
+<li>test_pushall()&#160;:&#160;<a class="el" href="d1/d88/vector__test_8c.html#a9df69439a437b74bb3e71fe53a38beff">vector_test.c</a></li>
+<li>test_put()&#160;:&#160;<a class="el" href="d7/de8/hashmap__test_8c.html#a0288244b2ea6b62ea72403eb8f3835bb">hashmap_test.c</a></li>
+<li>test_random_access()&#160;:&#160;<a class="el" href="d1/d88/vector__test_8c.html#a2ff1464413a77e8995205324cf6a2841">vector_test.c</a></li>
+<li>test_vote()&#160;:&#160;<a class="el" href="d1/d88/vector__test_8c.html#a299e216c88627899d75dc49ec80dc065">vector_test.c</a></li>
+<li>thread_created&#160;:&#160;<a class="el" href="d7/d58/sensor__simulator_8c.html#a413abe5862c9af4154bcabf47cbde022">sensor_simulator.c</a></li>
+<li>thread_delete()&#160;:&#160;<a class="el" href="d3/d74/_thread_wrapper_8h.html#a7e13d8cd4be82282f670d872bc95bf81">ThreadWrapper.h</a></li>
+<li>thread_join()&#160;:&#160;<a class="el" href="d3/d74/_thread_wrapper_8h.html#a55361ff32a457702594486bd3d9a1869">ThreadWrapper.h</a></li>
+<li>thread_new()&#160;:&#160;<a class="el" href="d3/d74/_thread_wrapper_8h.html#a3568e74f6efcbbebd1b84bca88b27846">ThreadWrapper.h</a></li>
+<li>thread_start()&#160;:&#160;<a class="el" href="d3/d74/_thread_wrapper_8h.html#a4af6feae8070f713ad31b02de0730a71">ThreadWrapper.h</a></li>
+<li>thread_terminate()&#160;:&#160;<a class="el" href="d3/d74/_thread_wrapper_8h.html#aaac285a525d959905cd463a3adeb3828">ThreadWrapper.h</a></li>
+<li>tick_cursor_x&#160;:&#160;<a class="el" href="d7/d58/sensor__simulator_8c.html#a694b3b10a1c18c5d3fdf32c62e2326db">sensor_simulator.c</a></li>
+<li>tick_cursor_y&#160;:&#160;<a class="el" href="d7/d58/sensor__simulator_8c.html#a738704b6f923ff895b40f06a19f375e5">sensor_simulator.c</a></li>
+<li>tick_window&#160;:&#160;<a class="el" href="d7/d58/sensor__simulator_8c.html#a682ef20deffe76d72ab94e4e1ac037cc">sensor_simulator.c</a></li>
+<li>tick_window_width&#160;:&#160;<a class="el" href="d7/d58/sensor__simulator_8c.html#a89502730b2655e279c83afb299e8ded5">sensor_simulator.c</a></li>
+<li>TOKEN_AND_VALUE_FREED&#160;:&#160;<a class="el" href="d2/dff/lf__token_8h.html#abe23a36a87d2f0c076da417eb0114c7ea02ef194d373714ee3ac62226729e0cb0">lf_token.h</a></li>
+<li>token_freed&#160;:&#160;<a class="el" href="d2/dff/lf__token_8h.html#abe23a36a87d2f0c076da417eb0114c7e">lf_token.h</a></li>
+<li>TOKEN_FREED&#160;:&#160;<a class="el" href="d2/dff/lf__token_8h.html#abe23a36a87d2f0c076da417eb0114c7ea0a6094445d7a54e61aa3a43f6d017e2b">lf_token.h</a></li>
+<li>token_template_t&#160;:&#160;<a class="el" href="d2/dff/lf__token_8h.html#ad0befcbc6fe23c8dd0b6f483d4067e45">lf_token.h</a></li>
+<li>token_type_t&#160;:&#160;<a class="el" href="d2/dff/lf__token_8h.html#a58dc2f4a624d2f3030b7e5f3596e58d6">lf_token.h</a></li>
+<li>trace_event_t&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#ab02e9e69539d60297cedb38c2193a453">trace.h</a></li>
+<li>TRACE_H&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#ae594945e35ccf287b44f0de67d6194d1">trace.h</a></li>
+<li>tracepoint&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#aeae0efb071b08e657d36788eee20c1a7">trace.h</a></li>
+<li>tracepoint_federate_from_federate&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#af806014e6928610cb32caa7ab79e522b">trace.h</a></li>
+<li>tracepoint_federate_from_RTI&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#a0af1b0066f718ce8489be4ce8c5883b8">trace.h</a></li>
+<li>tracepoint_federate_to_federate&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#a1465b810c5f6e6c5cdea5d9b29f5ac50">trace.h</a></li>
+<li>tracepoint_federate_to_RTI&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#a3898b24f52dc6449c0fe6848bd5d7420">trace.h</a></li>
+<li>tracepoint_reaction_deadline_missed&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#aa608d6a7b724896211cc9a279bacfbbf">trace.h</a></li>
+<li>tracepoint_reaction_ends&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#a6886c0b07fa8962e9e251bc5442fbae3">trace.h</a></li>
+<li>tracepoint_reaction_starts&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#a618fd3947984f4585e5071ec945f4908">trace.h</a></li>
+<li>tracepoint_RTI_from_federate&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#a2792eb16622ca6e1ffd40b1378d0dc74">trace.h</a></li>
+<li>tracepoint_RTI_to_federate&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#aead32360a221d3d3339d1562129ee8cd">trace.h</a></li>
+<li>tracepoint_schedule&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#afce5f2514b7b2001611c45b2f0122cee">trace.h</a></li>
+<li>tracepoint_scheduler_advancing_time_ends&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#ac91dba72663dc0f17ce46d105ff3f511">trace.h</a></li>
+<li>tracepoint_scheduler_advancing_time_starts&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#a2b43a4d257b235afe8066e4a3f1bfe7f">trace.h</a></li>
+<li>tracepoint_user_event&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#a4eaa42638286bf2cfdfed4b45d4a1036">trace.h</a></li>
+<li>tracepoint_user_value&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#adc24126d062442704b43b2ea2f95042c">trace.h</a></li>
+<li>tracepoint_worker_wait_ends&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#a9dc20d411fb600c803f04572bde501ff">trace.h</a></li>
+<li>tracepoint_worker_wait_starts&#160;:&#160;<a class="el" href="d1/d1b/trace_8h.html#a00635edd06259391fe45fa81f2dd9cab">trace.h</a></li>
+<li>transitive_next_event()&#160;:&#160;<a class="el" href="de/d0d/rti__lib_8c.html#aa067d8ff2e12b42f8c1f011758231be1">rti_lib.c</a>, <a class="el" href="d3/d90/rti__lib_8h.html#aa067d8ff2e12b42f8c1f011758231be1">rti_lib.h</a></li>
+<li>trigger_handle_t&#160;:&#160;<a class="el" href="d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">lf_types.h</a></li>
+<li>trigger_t&#160;:&#160;<a class="el" href="d6/d1d/lf__types_8h.html#ae98c19a4a03c495fdd3044c206e99afc">lf_types.h</a></li>
 </ul>
 </div><!-- contents -->
+</div><!-- doc-content -->
 <!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6
-</small></address>
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6 </li>
+  </ul>
+</div>
 </body>
 </html>

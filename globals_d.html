@@ -9,6 +9,10 @@
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
@@ -23,6 +27,7 @@
   <td id="projectalign">
    <div id="projectname">reactor-c
    </div>
+   <div id="projectbrief">C Runtime for Lingua Franca</div>
   </td>
  </tr>
  </tbody>
@@ -47,6 +52,22 @@ $(function() {
 </script>
 <div id="main-nav"></div>
 </div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(document).ready(function(){initNavTree('globals_d.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -72,34 +93,37 @@ $(function() {
 <div class="textblock">Here is a list of all functions, variables, defines, enums, and typedefs with links to the files they belong to:</div>
 
 <h3><a id="index_d" name="index_d"></a>- d -</h3><ul>
-<li>DAY&#160;:&#160;<a class="el" href="tag_8h.html#a8393c538440a761b4439623e536a7c91">tag.h</a></li>
-<li>DAYS&#160;:&#160;<a class="el" href="tag_8h.html#a987a486d1ad1ff15346b2395847280ab">tag.h</a></li>
-<li>DEADLINE&#160;:&#160;<a class="el" href="reactor_8h.html#a4aab573132838d44997ee99002d3e6d0">reactor.h</a></li>
-<li>default_argc&#160;:&#160;<a class="el" href="reactor__common_8c.html#aab46895a3a4d1341a19b689a0ea902d1">reactor_common.c</a>, <a class="el" href="reactor__common_8h.html#aab46895a3a4d1341a19b689a0ea902d1">reactor_common.h</a></li>
-<li>default_argv&#160;:&#160;<a class="el" href="reactor__common_8c.html#ad0fd32b8326e2d630ee8f4a431ea2867">reactor_common.c</a>, <a class="el" href="reactor__common_8h.html#ad0fd32b8326e2d630ee8f4a431ea2867">reactor_common.h</a></li>
-<li>DEFAULT_MAX_REACTION_LEVEL&#160;:&#160;<a class="el" href="scheduler_8h.html#a7c3f7c6b1c85f7572b42fa34fa853973">scheduler.h</a></li>
-<li>default_window&#160;:&#160;<a class="el" href="sensor__simulator_8c.html#a9029bf378e52a9f85a25eb0ba9095fe3">sensor_simulator.c</a></li>
-<li>defer&#160;:&#160;<a class="el" href="lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a893b1cf0de04eaf44a009fecabd16b90">lf_types.h</a></li>
-<li>DELAY_START&#160;:&#160;<a class="el" href="net__common_8h.html#a4b8c713b515dba0c86d9205dc0caf4ed">net_common.h</a></li>
-<li>DEPRECATED&#160;:&#160;<a class="el" href="platform_8h.html#af67a6ff1a54b41b2a6e4bd36bc47b118">platform.h</a></li>
-<li>deque_initialize()&#160;:&#160;<a class="el" href="deque_8c.html#a0e4768355c448b3b0489d851271515bc">deque.c</a>, <a class="el" href="deque_8h.html#a0e4768355c448b3b0489d851271515bc">deque.h</a></li>
-<li>deque_is_empty()&#160;:&#160;<a class="el" href="deque_8c.html#ac22527818b92ea67851c2fd4a2790cb7">deque.c</a>, <a class="el" href="deque_8h.html#ac22527818b92ea67851c2fd4a2790cb7">deque.h</a></li>
-<li>deque_node_t&#160;:&#160;<a class="el" href="deque_8c.html#a9c53ad2a54f6caf5f58c6090e90c6141">deque.c</a></li>
-<li>deque_peek_back()&#160;:&#160;<a class="el" href="deque_8c.html#a3530b26ded106a84ef8571fab0e73d9e">deque.c</a>, <a class="el" href="deque_8h.html#a3530b26ded106a84ef8571fab0e73d9e">deque.h</a></li>
-<li>deque_peek_front()&#160;:&#160;<a class="el" href="deque_8c.html#a4b9e8a9de89f124d0cdc1199debb70be">deque.c</a>, <a class="el" href="deque_8h.html#a4b9e8a9de89f124d0cdc1199debb70be">deque.h</a></li>
-<li>deque_pop_back()&#160;:&#160;<a class="el" href="deque_8c.html#a841ec80a70a2e63f08aab990e528e1f9">deque.c</a>, <a class="el" href="deque_8h.html#a841ec80a70a2e63f08aab990e528e1f9">deque.h</a></li>
-<li>deque_pop_front()&#160;:&#160;<a class="el" href="deque_8c.html#a4acd616a7c971b1c137010c64801d746">deque.c</a>, <a class="el" href="deque_8h.html#a4acd616a7c971b1c137010c64801d746">deque.h</a></li>
-<li>deque_push_back()&#160;:&#160;<a class="el" href="deque_8c.html#ac1ffd77da7496612086ea430f7d29563">deque.c</a>, <a class="el" href="deque_8h.html#ac1ffd77da7496612086ea430f7d29563">deque.h</a></li>
-<li>deque_push_front()&#160;:&#160;<a class="el" href="deque_8c.html#a19a0d218efcb14cc2c3d7b009a5d0f16">deque.c</a>, <a class="el" href="deque_8h.html#a19a0d218efcb14cc2c3d7b009a5d0f16">deque.h</a></li>
-<li>deque_size()&#160;:&#160;<a class="el" href="deque_8c.html#ad7e6969a2e1a7e7529575558103d512d">deque.c</a>, <a class="el" href="deque_8h.html#ad7e6969a2e1a7e7529575558103d512d">deque.h</a></li>
-<li>deque_t&#160;:&#160;<a class="el" href="deque_8h.html#afc1887f5ebd7da3ce7dfc73beb195598">deque.h</a></li>
-<li>drop&#160;:&#160;<a class="el" href="lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019">lf_types.h</a></li>
-<li>duration&#160;:&#160;<a class="el" href="reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77">reactor_common.c</a>, <a class="el" href="reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77">reactor_common.h</a></li>
+<li>DAY&#160;:&#160;<a class="el" href="d2/dcd/tag_8h.html#a8393c538440a761b4439623e536a7c91">tag.h</a></li>
+<li>DAYS&#160;:&#160;<a class="el" href="d2/dcd/tag_8h.html#a987a486d1ad1ff15346b2395847280ab">tag.h</a></li>
+<li>DEADLINE&#160;:&#160;<a class="el" href="dc/d85/reactor_8h.html#a4aab573132838d44997ee99002d3e6d0">reactor.h</a></li>
+<li>default_argc&#160;:&#160;<a class="el" href="dd/d37/reactor__common_8c.html#aab46895a3a4d1341a19b689a0ea902d1">reactor_common.c</a>, <a class="el" href="d7/d0e/reactor__common_8h.html#aab46895a3a4d1341a19b689a0ea902d1">reactor_common.h</a></li>
+<li>default_argv&#160;:&#160;<a class="el" href="dd/d37/reactor__common_8c.html#ad0fd32b8326e2d630ee8f4a431ea2867">reactor_common.c</a>, <a class="el" href="d7/d0e/reactor__common_8h.html#ad0fd32b8326e2d630ee8f4a431ea2867">reactor_common.h</a></li>
+<li>DEFAULT_MAX_REACTION_LEVEL&#160;:&#160;<a class="el" href="d2/dd8/scheduler_8h.html#a7c3f7c6b1c85f7572b42fa34fa853973">scheduler.h</a></li>
+<li>default_window&#160;:&#160;<a class="el" href="d7/d58/sensor__simulator_8c.html#a9029bf378e52a9f85a25eb0ba9095fe3">sensor_simulator.c</a></li>
+<li>defer&#160;:&#160;<a class="el" href="d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a893b1cf0de04eaf44a009fecabd16b90">lf_types.h</a></li>
+<li>DELAY_START&#160;:&#160;<a class="el" href="d9/da6/net__common_8h.html#a4b8c713b515dba0c86d9205dc0caf4ed">net_common.h</a></li>
+<li>DEPRECATED&#160;:&#160;<a class="el" href="de/d03/platform_8h.html#af67a6ff1a54b41b2a6e4bd36bc47b118">platform.h</a></li>
+<li>deque_initialize()&#160;:&#160;<a class="el" href="da/dcd/deque_8c.html#a0e4768355c448b3b0489d851271515bc">deque.c</a>, <a class="el" href="dc/d44/deque_8h.html#a0e4768355c448b3b0489d851271515bc">deque.h</a></li>
+<li>deque_is_empty()&#160;:&#160;<a class="el" href="da/dcd/deque_8c.html#ac22527818b92ea67851c2fd4a2790cb7">deque.c</a>, <a class="el" href="dc/d44/deque_8h.html#ac22527818b92ea67851c2fd4a2790cb7">deque.h</a></li>
+<li>deque_node_t&#160;:&#160;<a class="el" href="da/dcd/deque_8c.html#a9c53ad2a54f6caf5f58c6090e90c6141">deque.c</a></li>
+<li>deque_peek_back()&#160;:&#160;<a class="el" href="da/dcd/deque_8c.html#a3530b26ded106a84ef8571fab0e73d9e">deque.c</a>, <a class="el" href="dc/d44/deque_8h.html#a3530b26ded106a84ef8571fab0e73d9e">deque.h</a></li>
+<li>deque_peek_front()&#160;:&#160;<a class="el" href="da/dcd/deque_8c.html#a4b9e8a9de89f124d0cdc1199debb70be">deque.c</a>, <a class="el" href="dc/d44/deque_8h.html#a4b9e8a9de89f124d0cdc1199debb70be">deque.h</a></li>
+<li>deque_pop_back()&#160;:&#160;<a class="el" href="da/dcd/deque_8c.html#a841ec80a70a2e63f08aab990e528e1f9">deque.c</a>, <a class="el" href="dc/d44/deque_8h.html#a841ec80a70a2e63f08aab990e528e1f9">deque.h</a></li>
+<li>deque_pop_front()&#160;:&#160;<a class="el" href="da/dcd/deque_8c.html#a4acd616a7c971b1c137010c64801d746">deque.c</a>, <a class="el" href="dc/d44/deque_8h.html#a4acd616a7c971b1c137010c64801d746">deque.h</a></li>
+<li>deque_push_back()&#160;:&#160;<a class="el" href="da/dcd/deque_8c.html#ac1ffd77da7496612086ea430f7d29563">deque.c</a>, <a class="el" href="dc/d44/deque_8h.html#ac1ffd77da7496612086ea430f7d29563">deque.h</a></li>
+<li>deque_push_front()&#160;:&#160;<a class="el" href="da/dcd/deque_8c.html#a19a0d218efcb14cc2c3d7b009a5d0f16">deque.c</a>, <a class="el" href="dc/d44/deque_8h.html#a19a0d218efcb14cc2c3d7b009a5d0f16">deque.h</a></li>
+<li>deque_size()&#160;:&#160;<a class="el" href="da/dcd/deque_8c.html#ad7e6969a2e1a7e7529575558103d512d">deque.c</a>, <a class="el" href="dc/d44/deque_8h.html#ad7e6969a2e1a7e7529575558103d512d">deque.h</a></li>
+<li>deque_t&#160;:&#160;<a class="el" href="dc/d44/deque_8h.html#afc1887f5ebd7da3ce7dfc73beb195598">deque.h</a></li>
+<li>drop&#160;:&#160;<a class="el" href="d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019">lf_types.h</a></li>
+<li>duration&#160;:&#160;<a class="el" href="dd/d37/reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77">reactor_common.c</a>, <a class="el" href="d7/d0e/reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77">reactor_common.h</a></li>
 </ul>
 </div><!-- contents -->
+</div><!-- doc-content -->
 <!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6
-</small></address>
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6 </li>
+  </ul>
+</div>
 </body>
 </html>

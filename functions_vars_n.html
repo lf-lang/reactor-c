@@ -9,6 +9,10 @@
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
@@ -23,6 +27,7 @@
   <td id="projectalign">
    <div id="projectname">reactor-c
    </div>
+   <div id="projectbrief">C Runtime for Lingua Franca</div>
   </td>
  </tr>
  </tbody>
@@ -47,6 +52,22 @@ $(function() {
 </script>
 <div id="main-nav"></div>
 </div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(document).ready(function(){initNavTree('functions_vars_n.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -72,34 +93,37 @@ $(function() {
 &#160;
 
 <h3><a id="index_n" name="index_n"></a>- n -</h3><ul>
-<li>n_deleted_items&#160;:&#160;<a class="el" href="structhashset__st.html#a507237ecc37b9c45f79df318534f1109">hashset_st</a></li>
-<li>name&#160;:&#160;<a class="el" href="structreaction__t.html#a5af95a97a0b83dbf7954236378f1bfa2">reaction_t</a></li>
-<li>nbits&#160;:&#160;<a class="el" href="structhashset__st.html#afaeab28ca2127ce6b5c2e454b3e7b9fd">hashset_st</a></li>
-<li>network_stat_round_trip_delay_max&#160;:&#160;<a class="el" href="structsocket__stat__t.html#a2d53d66644d18d6e948aafd2913b638d">socket_stat_t</a></li>
-<li>network_stat_sample_index&#160;:&#160;<a class="el" href="structsocket__stat__t.html#a5782a45124508e912999a1e5a723e07d">socket_stat_t</a></li>
-<li>network_stat_samples&#160;:&#160;<a class="el" href="structsocket__stat__t.html#a334228438ef47a0f2befc117ee0d9d47">socket_stat_t</a></li>
-<li>next&#160;:&#160;<a class="el" href="struct__lf__sensor__message__t.html#a96731ca0567d1b00ef6f677a35a95228">_lf_sensor_message_t</a>, <a class="el" href="structallocation__record__t.html#ad4d48c8b6826fa989e498cd7e629fd6a">allocation_record_t</a>, <a class="el" href="structdeque__node__t.html#acb76ff2d2cf94776a57a57350554d110">deque_node_t</a>, <a class="el" href="structevent__t.html#a51ac1505b09e624cf35376047e992126">event_t</a>, <a class="el" href="structlf__multiport__iterator__t.html#afecdacfcd14db12bb12e5c0b0589dba3">lf_multiport_iterator_t</a>, <a class="el" href="structlf__token__t.html#a318e7910743e63444e08cca50281fd2c">lf_token_t</a>, <a class="el" href="structvector__t.html#a5fa7e662c81935085f83c4d248c53eea">vector_t</a></li>
-<li>next_event&#160;:&#160;<a class="el" href="structfederate__t.html#a9ec221b4f8c6b9a36bc30943998e322d">federate_t</a></li>
-<li>nitems&#160;:&#160;<a class="el" href="structhashset__st.html#a83faab3dd9ef40a1f919e74bdd195796">hashset_st</a></li>
-<li>num_channels&#160;:&#160;<a class="el" href="structlf__wav__format__t.html#a94176b96fa481451960f8b727746a886">lf_wav_format_t</a>, <a class="el" href="structlf__waveform__t.html#ac1821431ece937edd64e32209a793018">lf_waveform_t</a></li>
-<li>num_destinations&#160;:&#160;<a class="el" href="structlf__port__base__t.html#abb1d021a0d2668988d927e9754b699dc">lf_port_base_t</a></li>
-<li>num_downstream&#160;:&#160;<a class="el" href="structfederate__t.html#a5818815895ea37489f73045167f91fe5">federate_t</a></li>
-<li>num_feds_handling_stop&#160;:&#160;<a class="el" href="struct_r_t_i__instance__t.html#aa4c4ac6c3b7d9bb27ba43c657247d49a">RTI_instance_t</a></li>
-<li>num_feds_proposed_start&#160;:&#160;<a class="el" href="struct_r_t_i__instance__t.html#a0a94ef1833837e0a8effdbdce15403c5">RTI_instance_t</a></li>
-<li>num_outputs&#160;:&#160;<a class="el" href="structreaction__t.html#ac0bd71c667c13a7d2f96cb856d297cc0">reaction_t</a></li>
-<li>num_reactions_per_level&#160;:&#160;<a class="el" href="structsched__params__t.html#a826bb0752d0c9e915bf5abdefe9ee62d">sched_params_t</a></li>
-<li>num_reactions_per_level_size&#160;:&#160;<a class="el" href="structsched__params__t.html#a15d5c083329a86fde98d5990c21e43a4">sched_params_t</a></li>
-<li>num_upstream&#160;:&#160;<a class="el" href="structfederate__t.html#a1d82ef50c2cd3d4f82252350e04f273a">federate_t</a></li>
-<li>number&#160;:&#160;<a class="el" href="structreaction__t.html#aab519d27f6f52545358a4f5da15f3a18">reaction_t</a></li>
-<li>number_of_federates&#160;:&#160;<a class="el" href="struct_r_t_i__instance__t.html#a962fc3d8abb05cd5ce91d8982025a5b0">RTI_instance_t</a></li>
-<li>number_of_inbound_p2p_connections&#160;:&#160;<a class="el" href="structfederate__instance__t.html#a6b728a970ccb1ef778dbb9779582d2f2">federate_instance_t</a></li>
-<li>number_of_outbound_p2p_connections&#160;:&#160;<a class="el" href="structfederate__instance__t.html#a2edee0c930dc6f10437a5a58306a097c">federate_instance_t</a></li>
-<li>number_of_reactions&#160;:&#160;<a class="el" href="structtrigger__t.html#a53bebeaf8708d9dbe859df99972fb667">trigger_t</a></li>
+<li>n_deleted_items&#160;:&#160;<a class="el" href="dd/dab/structhashset__st.html#a507237ecc37b9c45f79df318534f1109">hashset_st</a></li>
+<li>name&#160;:&#160;<a class="el" href="d2/d35/structreaction__t.html#a5af95a97a0b83dbf7954236378f1bfa2">reaction_t</a></li>
+<li>nbits&#160;:&#160;<a class="el" href="dd/dab/structhashset__st.html#afaeab28ca2127ce6b5c2e454b3e7b9fd">hashset_st</a></li>
+<li>network_stat_round_trip_delay_max&#160;:&#160;<a class="el" href="d9/d67/structsocket__stat__t.html#a2d53d66644d18d6e948aafd2913b638d">socket_stat_t</a></li>
+<li>network_stat_sample_index&#160;:&#160;<a class="el" href="d9/d67/structsocket__stat__t.html#a5782a45124508e912999a1e5a723e07d">socket_stat_t</a></li>
+<li>network_stat_samples&#160;:&#160;<a class="el" href="d9/d67/structsocket__stat__t.html#a334228438ef47a0f2befc117ee0d9d47">socket_stat_t</a></li>
+<li>next&#160;:&#160;<a class="el" href="d7/dd0/struct__lf__sensor__message__t.html#a96731ca0567d1b00ef6f677a35a95228">_lf_sensor_message_t</a>, <a class="el" href="d8/df0/structallocation__record__t.html#ad4d48c8b6826fa989e498cd7e629fd6a">allocation_record_t</a>, <a class="el" href="db/dab/structdeque__node__t.html#acb76ff2d2cf94776a57a57350554d110">deque_node_t</a>, <a class="el" href="da/d67/structevent__t.html#a51ac1505b09e624cf35376047e992126">event_t</a>, <a class="el" href="d4/d7d/structlf__multiport__iterator__t.html#afecdacfcd14db12bb12e5c0b0589dba3">lf_multiport_iterator_t</a>, <a class="el" href="d6/d80/structlf__token__t.html#a318e7910743e63444e08cca50281fd2c">lf_token_t</a>, <a class="el" href="d3/d8b/structvector__t.html#a5fa7e662c81935085f83c4d248c53eea">vector_t</a></li>
+<li>next_event&#160;:&#160;<a class="el" href="d9/d2f/structfederate__t.html#a9ec221b4f8c6b9a36bc30943998e322d">federate_t</a></li>
+<li>nitems&#160;:&#160;<a class="el" href="dd/dab/structhashset__st.html#a83faab3dd9ef40a1f919e74bdd195796">hashset_st</a></li>
+<li>num_channels&#160;:&#160;<a class="el" href="d1/d3f/structlf__wav__format__t.html#a94176b96fa481451960f8b727746a886">lf_wav_format_t</a>, <a class="el" href="d7/dc9/structlf__waveform__t.html#ac1821431ece937edd64e32209a793018">lf_waveform_t</a></li>
+<li>num_destinations&#160;:&#160;<a class="el" href="da/de8/structlf__port__base__t.html#abb1d021a0d2668988d927e9754b699dc">lf_port_base_t</a></li>
+<li>num_downstream&#160;:&#160;<a class="el" href="d9/d2f/structfederate__t.html#a5818815895ea37489f73045167f91fe5">federate_t</a></li>
+<li>num_feds_handling_stop&#160;:&#160;<a class="el" href="d3/d99/struct_r_t_i__instance__t.html#aa4c4ac6c3b7d9bb27ba43c657247d49a">RTI_instance_t</a></li>
+<li>num_feds_proposed_start&#160;:&#160;<a class="el" href="d3/d99/struct_r_t_i__instance__t.html#a0a94ef1833837e0a8effdbdce15403c5">RTI_instance_t</a></li>
+<li>num_outputs&#160;:&#160;<a class="el" href="d2/d35/structreaction__t.html#ac0bd71c667c13a7d2f96cb856d297cc0">reaction_t</a></li>
+<li>num_reactions_per_level&#160;:&#160;<a class="el" href="dc/da2/structsched__params__t.html#a826bb0752d0c9e915bf5abdefe9ee62d">sched_params_t</a></li>
+<li>num_reactions_per_level_size&#160;:&#160;<a class="el" href="dc/da2/structsched__params__t.html#a15d5c083329a86fde98d5990c21e43a4">sched_params_t</a></li>
+<li>num_upstream&#160;:&#160;<a class="el" href="d9/d2f/structfederate__t.html#a1d82ef50c2cd3d4f82252350e04f273a">federate_t</a></li>
+<li>number&#160;:&#160;<a class="el" href="d2/d35/structreaction__t.html#aab519d27f6f52545358a4f5da15f3a18">reaction_t</a></li>
+<li>number_of_federates&#160;:&#160;<a class="el" href="d3/d99/struct_r_t_i__instance__t.html#a962fc3d8abb05cd5ce91d8982025a5b0">RTI_instance_t</a></li>
+<li>number_of_inbound_p2p_connections&#160;:&#160;<a class="el" href="d6/d7a/structfederate__instance__t.html#a6b728a970ccb1ef778dbb9779582d2f2">federate_instance_t</a></li>
+<li>number_of_outbound_p2p_connections&#160;:&#160;<a class="el" href="d6/d7a/structfederate__instance__t.html#a2edee0c930dc6f10437a5a58306a097c">federate_instance_t</a></li>
+<li>number_of_reactions&#160;:&#160;<a class="el" href="d6/d13/structtrigger__t.html#a53bebeaf8708d9dbe859df99972fb667">trigger_t</a></li>
 </ul>
 </div><!-- contents -->
+</div><!-- doc-content -->
 <!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6
-</small></address>
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6 </li>
+  </ul>
+</div>
 </body>
 </html>

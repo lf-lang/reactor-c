@@ -9,6 +9,10 @@
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
@@ -23,6 +27,7 @@
   <td id="projectalign">
    <div id="projectname">reactor-c
    </div>
+   <div id="projectbrief">C Runtime for Lingua Franca</div>
   </td>
  </tr>
  </tbody>
@@ -47,6 +52,22 @@ $(function() {
 </script>
 <div id="main-nav"></div>
 </div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(document).ready(function(){initNavTree('functions_vars_l.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -72,21 +93,24 @@ $(function() {
 &#160;
 
 <h3><a id="index_l" name="index_l"></a>- l -</h3><ul>
-<li>last&#160;:&#160;<a class="el" href="structtrigger__t.html#ab1ea5c50bb1ca98f03d2e0aedd7ea454">trigger_t</a></li>
-<li>last_enabling_reaction&#160;:&#160;<a class="el" href="structreaction__t.html#acbf0778e73f7eeedbb89345d1beb09b6">reaction_t</a></li>
-<li>last_granted&#160;:&#160;<a class="el" href="structfederate__t.html#a426f1683c5b95daae0ac0b21dab4d648">federate_t</a></li>
-<li>last_provisionally_granted&#160;:&#160;<a class="el" href="structfederate__t.html#a0d12fb57d188ef7496268b93ea65481a">federate_t</a></li>
-<li>last_sent_LTC&#160;:&#160;<a class="el" href="structfederate__instance__t.html#ae95f54a01b0367048faa6460ff86e987">federate_instance_t</a></li>
-<li>last_sent_NET&#160;:&#160;<a class="el" href="structfederate__instance__t.html#a42618a45ae75b42e1caec4b373471d96">federate_instance_t</a></li>
-<li>last_TAG&#160;:&#160;<a class="el" href="structfederate__instance__t.html#aa66a2f08ea9173743106c7ff18f1846a">federate_instance_t</a></li>
-<li>length&#160;:&#160;<a class="el" href="structlf__token__t.html#a953c95d30422caa9f4bfcfbc7d12b0b3">lf_token_t</a>, <a class="el" href="structlf__waveform__t.html#a04db217ea68b2e445ff25f2f53f855cd">lf_waveform_t</a>, <a class="el" href="structtoken__template__t.html#a19c2f4ac754a3fdf0419052f00d341da">token_template_t</a></li>
-<li>local_delay&#160;:&#160;<a class="el" href="structsocket__stat__t.html#a645afb48648fcee15ce3625456eb5c21">socket_stat_t</a></li>
-<li>local_physical_clock_snapshot_T2&#160;:&#160;<a class="el" href="structsocket__stat__t.html#af084180438ba84b4ec8e8fd873222605">socket_stat_t</a></li>
+<li>last&#160;:&#160;<a class="el" href="d6/d13/structtrigger__t.html#ab1ea5c50bb1ca98f03d2e0aedd7ea454">trigger_t</a></li>
+<li>last_enabling_reaction&#160;:&#160;<a class="el" href="d2/d35/structreaction__t.html#acbf0778e73f7eeedbb89345d1beb09b6">reaction_t</a></li>
+<li>last_granted&#160;:&#160;<a class="el" href="d9/d2f/structfederate__t.html#a426f1683c5b95daae0ac0b21dab4d648">federate_t</a></li>
+<li>last_provisionally_granted&#160;:&#160;<a class="el" href="d9/d2f/structfederate__t.html#a0d12fb57d188ef7496268b93ea65481a">federate_t</a></li>
+<li>last_sent_LTC&#160;:&#160;<a class="el" href="d6/d7a/structfederate__instance__t.html#ae95f54a01b0367048faa6460ff86e987">federate_instance_t</a></li>
+<li>last_sent_NET&#160;:&#160;<a class="el" href="d6/d7a/structfederate__instance__t.html#a42618a45ae75b42e1caec4b373471d96">federate_instance_t</a></li>
+<li>last_TAG&#160;:&#160;<a class="el" href="d6/d7a/structfederate__instance__t.html#aa66a2f08ea9173743106c7ff18f1846a">federate_instance_t</a></li>
+<li>length&#160;:&#160;<a class="el" href="d6/d80/structlf__token__t.html#a953c95d30422caa9f4bfcfbc7d12b0b3">lf_token_t</a>, <a class="el" href="d7/dc9/structlf__waveform__t.html#a04db217ea68b2e445ff25f2f53f855cd">lf_waveform_t</a>, <a class="el" href="de/d6b/structtoken__template__t.html#a19c2f4ac754a3fdf0419052f00d341da">token_template_t</a></li>
+<li>local_delay&#160;:&#160;<a class="el" href="d9/d67/structsocket__stat__t.html#a645afb48648fcee15ce3625456eb5c21">socket_stat_t</a></li>
+<li>local_physical_clock_snapshot_T2&#160;:&#160;<a class="el" href="d9/d67/structsocket__stat__t.html#af084180438ba84b4ec8e8fd873222605">socket_stat_t</a></li>
 </ul>
 </div><!-- contents -->
+</div><!-- doc-content -->
 <!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6
-</small></address>
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6 </li>
+  </ul>
+</div>
 </body>
 </html>

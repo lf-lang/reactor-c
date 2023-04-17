@@ -9,6 +9,10 @@
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
+<link href="navtree.css" rel="stylesheet" type="text/css"/>
+<script type="text/javascript" src="resize.js"></script>
+<script type="text/javascript" src="navtreedata.js"></script>
+<script type="text/javascript" src="navtree.js"></script>
 <link href="search/search.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
@@ -23,6 +27,7 @@
   <td id="projectalign">
    <div id="projectname">reactor-c
    </div>
+   <div id="projectbrief">C Runtime for Lingua Franca</div>
   </td>
  </tr>
  </tbody>
@@ -47,6 +52,22 @@ $(function() {
 </script>
 <div id="main-nav"></div>
 </div><!-- top -->
+<div id="side-nav" class="ui-resizable side-nav-resizable">
+  <div id="nav-tree">
+    <div id="nav-tree-contents">
+      <div id="nav-sync" class="sync"></div>
+    </div>
+  </div>
+  <div id="splitbar" style="-moz-user-select:none;" 
+       class="ui-resizable-handle">
+  </div>
+</div>
+<script type="text/javascript">
+/* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
+$(document).ready(function(){initNavTree('functions_t.html',''); initResizable(); });
+/* @license-end */
+</script>
+<div id="doc-content">
 <!-- window showing the filter options -->
 <div id="MSearchSelectWindow"
      onmouseover="return searchBox.OnSearchSelectShow()"
@@ -72,27 +93,30 @@ $(function() {
 <div class="textblock">Here is a list of all struct and union fields with links to the structures/unions they belong to:</div>
 
 <h3><a id="index_t" name="index_t"></a>- t -</h3><ul>
-<li>tag&#160;:&#160;<a class="el" href="structin__transit__message__record.html#a7ccae5cefbb9f0d060c0690cae817800">in_transit_message_record</a></li>
-<li>thread_id&#160;:&#160;<a class="el" href="structfederate__t.html#ab248a8454865da80f9dba35e8ab4f1f5">federate_t</a></li>
-<li>time&#160;:&#160;<a class="el" href="structevent__t.html#aeff8ee74b3835a35460f05a3b45f710c">event_t</a>, <a class="el" href="structtag__t.html#ad6fc78329d72e52bc7e449036f64937d">tag_t</a></li>
-<li>tmplt&#160;:&#160;<a class="el" href="structlf__action__base__t.html#a09b0a1d42be1f4df2b1c460f966937d3">lf_action_base_t</a>, <a class="el" href="structlf__port__base__t.html#adeb3a2cb66dffc49426a16b8057d1736">lf_port_base_t</a>, <a class="el" href="structtrigger__t.html#a83a162f60d2b51505348c20650943f38">trigger_t</a></li>
-<li>token&#160;:&#160;<a class="el" href="structevent__t.html#a85bacc8397754414c8942221d79e4edb">event_t</a>, <a class="el" href="structtoken__template__t.html#a076f845b64482f5cf083da333bfc60de">token_template_t</a></li>
-<li>tracing_enabled&#160;:&#160;<a class="el" href="struct_r_t_i__instance__t.html#aded9093ba331694d19ea48fbbdb11067">RTI_instance_t</a></li>
-<li>transfer_queue&#160;:&#160;<a class="el" href="structin__transit__message__record__q__t.html#a1b2b485d15a61d63350e4d35298eba3d">in_transit_message_record_q_t</a></li>
-<li>trigger&#160;:&#160;<a class="el" href="structevent__t.html#a0687a08899f1c750aedcc2f44e47f308">event_t</a>, <a class="el" href="structlf__action__base__t.html#aacf5d85cce69c1ed02a1717a3fcbb46e">lf_action_base_t</a></li>
-<li>trigger_for_network_output_control_reactions&#160;:&#160;<a class="el" href="structfederate__instance__t.html#a786701f771e06e14c369be4b0a6519b5">federate_instance_t</a></li>
-<li>triggered_sizes&#160;:&#160;<a class="el" href="structreaction__t.html#a9b8474ec66b8b956699cc4a1e2370508">reaction_t</a></li>
-<li>triggers&#160;:&#160;<a class="el" href="structreaction__t.html#a75ea18d69a144fdb181857cc413ae62c">reaction_t</a></li>
-<li>triggers_for_network_input_control_reactions&#160;:&#160;<a class="el" href="structfederate__instance__t.html#a8385397cd2996dbf5f79828e077926f2">federate_instance_t</a></li>
-<li>triggers_for_network_input_control_reactions_size&#160;:&#160;<a class="el" href="structfederate__instance__t.html#aa5363f015c5ece818a390b8639b4be77">federate_instance_t</a></li>
-<li>tv_nsec&#160;:&#160;<a class="el" href="structtimespec.html#ae3c7510dafa8cbcaede866ed13c99683">timespec</a></li>
-<li>tv_sec&#160;:&#160;<a class="el" href="structtimespec.html#a6919fa4ce675f41c89ad8f53b0e9cce4">timespec</a></li>
-<li>type&#160;:&#160;<a class="el" href="struct__lf__sensor__message__t.html#a985768458c6b00559db82b549f2870a4">_lf_sensor_message_t</a>, <a class="el" href="structlf__token__t.html#a9c197ef8846eab66823cef19cbb35848">lf_token_t</a>, <a class="el" href="structtoken__template__t.html#a7a7e76104c33f7d019670420033d5d12">token_template_t</a></li>
+<li>tag&#160;:&#160;<a class="el" href="da/d66/structin__transit__message__record.html#a7ccae5cefbb9f0d060c0690cae817800">in_transit_message_record</a></li>
+<li>thread_id&#160;:&#160;<a class="el" href="d9/d2f/structfederate__t.html#ab248a8454865da80f9dba35e8ab4f1f5">federate_t</a></li>
+<li>time&#160;:&#160;<a class="el" href="da/d67/structevent__t.html#aeff8ee74b3835a35460f05a3b45f710c">event_t</a>, <a class="el" href="db/df7/structtag__t.html#ad6fc78329d72e52bc7e449036f64937d">tag_t</a></li>
+<li>tmplt&#160;:&#160;<a class="el" href="d8/d4b/structlf__action__base__t.html#a09b0a1d42be1f4df2b1c460f966937d3">lf_action_base_t</a>, <a class="el" href="da/de8/structlf__port__base__t.html#adeb3a2cb66dffc49426a16b8057d1736">lf_port_base_t</a>, <a class="el" href="d6/d13/structtrigger__t.html#a83a162f60d2b51505348c20650943f38">trigger_t</a></li>
+<li>token&#160;:&#160;<a class="el" href="da/d67/structevent__t.html#a85bacc8397754414c8942221d79e4edb">event_t</a>, <a class="el" href="de/d6b/structtoken__template__t.html#a076f845b64482f5cf083da333bfc60de">token_template_t</a></li>
+<li>tracing_enabled&#160;:&#160;<a class="el" href="d3/d99/struct_r_t_i__instance__t.html#aded9093ba331694d19ea48fbbdb11067">RTI_instance_t</a></li>
+<li>transfer_queue&#160;:&#160;<a class="el" href="d0/d8f/structin__transit__message__record__q__t.html#a1b2b485d15a61d63350e4d35298eba3d">in_transit_message_record_q_t</a></li>
+<li>trigger&#160;:&#160;<a class="el" href="da/d67/structevent__t.html#a0687a08899f1c750aedcc2f44e47f308">event_t</a>, <a class="el" href="d8/d4b/structlf__action__base__t.html#aacf5d85cce69c1ed02a1717a3fcbb46e">lf_action_base_t</a></li>
+<li>trigger_for_network_output_control_reactions&#160;:&#160;<a class="el" href="d6/d7a/structfederate__instance__t.html#a786701f771e06e14c369be4b0a6519b5">federate_instance_t</a></li>
+<li>triggered_sizes&#160;:&#160;<a class="el" href="d2/d35/structreaction__t.html#a9b8474ec66b8b956699cc4a1e2370508">reaction_t</a></li>
+<li>triggers&#160;:&#160;<a class="el" href="d2/d35/structreaction__t.html#a75ea18d69a144fdb181857cc413ae62c">reaction_t</a></li>
+<li>triggers_for_network_input_control_reactions&#160;:&#160;<a class="el" href="d6/d7a/structfederate__instance__t.html#a8385397cd2996dbf5f79828e077926f2">federate_instance_t</a></li>
+<li>triggers_for_network_input_control_reactions_size&#160;:&#160;<a class="el" href="d6/d7a/structfederate__instance__t.html#aa5363f015c5ece818a390b8639b4be77">federate_instance_t</a></li>
+<li>tv_nsec&#160;:&#160;<a class="el" href="da/d1c/structtimespec.html#ae3c7510dafa8cbcaede866ed13c99683">timespec</a></li>
+<li>tv_sec&#160;:&#160;<a class="el" href="da/d1c/structtimespec.html#a6919fa4ce675f41c89ad8f53b0e9cce4">timespec</a></li>
+<li>type&#160;:&#160;<a class="el" href="d7/dd0/struct__lf__sensor__message__t.html#a985768458c6b00559db82b549f2870a4">_lf_sensor_message_t</a>, <a class="el" href="d6/d80/structlf__token__t.html#a9c197ef8846eab66823cef19cbb35848">lf_token_t</a>, <a class="el" href="de/d6b/structtoken__template__t.html#a7a7e76104c33f7d019670420033d5d12">token_template_t</a></li>
 </ul>
 </div><!-- contents -->
+</div><!-- doc-content -->
 <!-- start footer part -->
-<hr class="footer"/><address class="footer"><small>
-Generated by&#160;<a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6
-</small></address>
+<div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
+  <ul>
+    <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6 </li>
+  </ul>
+</div>
 </body>
 </html>
