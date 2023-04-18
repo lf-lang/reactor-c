@@ -3,40 +3,13 @@
  * @author Edward A. Lee
  * @author Soroush Bateni
  * @author Hou Seng (Steven) Wong
- *
- * @section LICENSE
-Copyright (c) 2020, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
- * Header file for tag functions for Lingua Franca programs.
+ * @copyright (c) 2020-2023, The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief Time and tag definitions and functions for Lingua Franca
  */
 
 #ifndef TAG_H
 #define TAG_H
-
-#include <limits.h>
-
-#include "platform.h"
 
 #define NSEC(t) (t * 1LL)
 #define NSECS(t) (t * 1LL)
@@ -69,31 +42,27 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Convenience for converting times
 #define BILLION 1000000000LL
 
-/**
- * Global physical clock offset.
- * Initially set according to the RTI's clock in federated
- * programs.
- */
-extern interval_t _lf_time_physical_clock_offset;
+#include <stdint.h>
+#include <stddef.h>
+#include <limits.h>
+
+////////////////  Type definitions
 
 /**
- * A test offset that is applied to the clock.
- * The clock synchronization algorithm must correct for this offset.
- * This offset is especially useful to test clock synchronization on the
- * same machine.
+ * Time instant. Both physical and logical times are represented
+ * using this typedef.
  */
-extern interval_t _lf_time_test_physical_clock_offset;
+typedef int64_t instant_t;
 
 /**
- * Offset to _LF_CLOCK that would convert it
- * to epoch time. This is applied to the physical clock
- * to get a more meaningful and universal time.
- *
- * For CLOCK_REALTIME, this offset is always zero.
- * For CLOCK_MONOTONIC, it is the difference between those
- * clocks at the start of the execution.
+ * Interval of time.
  */
-extern interval_t _lf_time_epoch_offset;
+typedef int64_t interval_t;
+
+/**
+ * Microstep instant.
+ */
+typedef uint32_t microstep_t;
 
 /**
  * A tag is a time, microstep pair.
@@ -103,11 +72,7 @@ typedef struct {
     microstep_t microstep;
 } tag_t;
 
-/**
- * A tag interval indicates the
- * pairwise difference of two tags.
- */
-typedef tag_t tag_interval_t;
+////////////////  Functions
 
 /**
  * Return the current tag, a logical time, microstep pair.
@@ -126,23 +91,23 @@ tag_t lf_tag();
  */
 int lf_tag_compare(tag_t tag1, tag_t tag2);
 
-tag_t _lf_delay_tag(tag_t tag, interval_t interval);
-
-instant_t _lf_physical_time();
-
 /**
- * An enum for specifying the desired tag when calling "lf_time"
+ * Delay a tag by the specified time interval to realize the "after" keyword.
+ * If either the time interval or the time field of the tag is NEVER,
+ * return the unmodified tag.
+ * If the time interval is 0LL, add one to the microstep, leave
+ * the time field alone, and return the result.
+ * Otherwise, add the interval to the time field of the tag and reset
+ * the microstep to 0.
+ * If the sum overflows, saturate the time value at FOREVER.
+ *
+ * Note that normally it makes no sense to call this with a negative
+ * interval (except NEVER), but this is not checked.
+ *
+ * @param tag The tag to increment.
+ * @param interval The time interval.
  */
-typedef enum _lf_time_type {
-    LF_LOGICAL,
-    LF_PHYSICAL,
-    LF_ELAPSED_LOGICAL,
-    LF_ELAPSED_PHYSICAL,
-    LF_START
-} _lf_time_type;
-
-instant_t _lf_time(_lf_time_type type);
-
+tag_t lf_delay_tag(tag_t tag, interval_t interval);
 
 /**
  * Return the current logical time in nanoseconds.
@@ -153,14 +118,12 @@ instant_t _lf_time(_lf_time_type type);
  */
 instant_t lf_time_logical(void);
 
-
 /**
  * Return the elapsed logical time in nanoseconds
  * since the start of execution.
  * @return A time interval.
  */
 interval_t lf_time_logical_elapsed(void);
-
 
 /**
  * Return the current physical time in nanoseconds.
@@ -169,7 +132,6 @@ interval_t lf_time_logical_elapsed(void);
  * @return A time instant.
  */
 instant_t lf_time_physical(void);
-
 
 /**
  * Return the elapsed physical time in nanoseconds.
@@ -221,37 +183,5 @@ size_t lf_readable_time(char* buffer, instant_t time);
  * @return The number of characters written (not counting the null terminator).
  */
 size_t lf_comma_separated_time(char* buffer, instant_t time);
-
-/**
- * Set a fixed offset to the physical clock.
- * After calling this, the value returned by lf_time_physical()
- * and get_elpased_physical_time() will have this specified offset
- * added to what it would have returned before the call.
- */
-void lf_set_physical_clock_offset(interval_t offset);
-
-/**
- * For C++ compatibility, take a volatile tag_t and return a non-volatile
- * variant.
- */
-#ifdef __cplusplus
-tag_t _lf_convert_volatile_tag_to_nonvolatile(tag_t volatile const& vtag);
-#else
-/**
- * @note This is an undefined behavior in C and should
- *  be used with utmost caution. See Section 6.7.2 of the C99 standard.
- */
-tag_t _lf_convert_volatile_tag_to_nonvolatile(tag_t volatile vtag);
-#endif
-
-// Global variables :(
-extern tag_t current_tag;
-extern instant_t physical_start_time;
-extern instant_t start_time;
-extern interval_t _lf_time_physical_clock_offset;
-extern interval_t _lf_global_physical_clock_drift;
-extern interval_t _lf_time_test_physical_clock_offset;
-extern instant_t _lf_last_reported_physical_time_ns;
-extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
 
 #endif // TAG_H

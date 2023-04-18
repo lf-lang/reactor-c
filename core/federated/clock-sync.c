@@ -38,10 +38,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include "platform.h"
 #include "clock-sync.h"
 #include "net_common.h"
 #include "net_util.h"
 #include "util.h"
+
+// Global variables defined in tag.c:
+extern interval_t _lf_time_physical_clock_offset;
+extern interval_t _lf_time_test_physical_clock_offset;
 
 /**
  * Keep a record of connection statistics
@@ -395,12 +400,6 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
         // Note that estimated_clock_error is calculated using lf_time_physical() which includes
         // the _lf_time_physical_clock_offset adjustment.
         adjustment = estimated_clock_error / _LF_CLOCK_SYNC_ATTENUATION;
-
-        // FIXME: Adjust drift.
-        // _lf_global_physical_clock_drift = ((r1 - t1) -
-        //                                    (_lf_rti_socket_stat.local_physical_clock_snapshot_T2 -
-        //                                    _lf_rti_socket_stat.remote_physical_clock_snapshot_T1)) /
-        //                                    (t1 - _lf_rti_socket_stat.remote_physical_clock_snapshot_T1);
     } else {
         // Use of TCP socket means we are in the startup phase, so
         // rather than adjust the clock offset, we simply set it to the
