@@ -374,7 +374,7 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
 
             // To handle cycles, need to create a boolean array to keep
             // track of which upstream federates have been visited.
-            bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
+            bool* visited = (bool*)calloc(_RTI.number_of_federates + _RTI.number_of_transient_federates, sizeof(bool)); // Initializes to 0.
 
             // Find the (transitive) next event tag upstream.
             tag_t upstream_next_event = transitive_next_event(
@@ -429,7 +429,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
 
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream federates have been visited.
-    bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
+    bool* visited = (bool*)calloc(_RTI.number_of_federates + _RTI.number_of_transient_federates, sizeof(bool)); // Initializes to 0.
 
     // Find the tag of the earliest possible incoming message from
     // upstream federates.
@@ -537,7 +537,7 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
     // Check downstream federates to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream federates have been visited.
-    bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
+    bool* visited = (bool*)calloc(_RTI.number_of_federates + _RTI.number_of_transient_federates, sizeof(bool)); // Initializes to 0.
     send_downstream_advance_grants_if_safe(&_RTI.federates[federate_id], visited);
     free(visited);
 }
@@ -777,7 +777,7 @@ void handle_logical_tag_complete(federate_t* fed) {
     for (int i = 0; i < fed->num_downstream; i++) {
         federate_t* downstream = &_RTI.federates[fed->downstream[i]];
         send_advance_grant_if_safe(downstream);
-        bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
+        bool* visited = (bool*)calloc(_RTI.number_of_federates + _RTI.number_of_transient_federates, sizeof(bool)); // Initializes to 0.
         send_downstream_advance_grants_if_safe(downstream, visited);
         free(visited);
     }
@@ -829,7 +829,7 @@ void _lf_rti_broadcast_stop_time_to_federates_already_locked() {
     ENCODE_STOP_GRANTED(outgoing_buffer, _RTI.max_stop_tag.time, _RTI.max_stop_tag.microstep);
 
     // Iterate over federates and send each the message.
-    for (int i = 0; i < _RTI.number_of_federates; i++) {
+    for (int i = 0; i < _RTI.number_of_federates + _RTI.number_of_transient_federates; i++) {
         if (_RTI.federates[i].state == NOT_CONNECTED) {
             continue;
         }
@@ -854,7 +854,10 @@ void mark_federate_requesting_stop(federate_t* fed) {
     if (!fed->requested_stop) {
         // Assume that the federate
         // has requested stop
-        _RTI.num_feds_handling_stop++;
+        // FIXME: Inc only if it is a persistent federate
+        if (fed->is_transient == false) {
+            _RTI.num_feds_handling_stop++;
+        }
         fed->requested_stop = true;
     }
     if (_RTI.num_feds_handling_stop == _RTI.number_of_federates) {
@@ -917,7 +920,7 @@ void handle_stop_request_message(federate_t* fed) {
 
     // Iterate over federates and send each the MSG_TYPE_STOP_REQUEST message
     // if we do not have a stop_time already for them.
-    for (int i = 0; i < _RTI.number_of_federates; i++) {
+    for (int i = 0; i < _RTI.number_of_federates + _RTI.number_of_transient_federates; i++) {
         if (_RTI.federates[i].id != fed->id && _RTI.federates[i].requested_stop == false) {
             if (_RTI.federates[i].state == NOT_CONNECTED) {
                 mark_federate_requesting_stop(&_RTI.federates[i]);
@@ -1288,7 +1291,7 @@ void* clock_synchronization_thread(void* noargs) {
         // Sleep
         nanosleep(&sleep_time, &remaining_time); // Can be interrupted
         any_federates_connected = false;
-        for (int fed = 0; fed < _RTI.number_of_federates; fed++) {
+        for (int fed = 0; fed < _RTI.number_of_federates + _RTI.number_of_transient_federates ; fed++) {
             if (_RTI.federates[fed].state == NOT_CONNECTED) {
                 // FIXME: We need better error handling here, but clock sync failure
                 // should not stop execution.
@@ -1391,7 +1394,7 @@ void handle_federate_resign(federate_t *my_fed) {
     // Check downstream federates to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream federates have been visited.
-    bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
+    bool* visited = (bool*)calloc(_RTI.number_of_federates + _RTI.number_of_transient_federates, sizeof(bool)); // Initializes to 0.
     send_downstream_advance_grants_if_safe(my_fed, visited);
     free(visited);
 
@@ -1516,8 +1519,12 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
     } else {
         // Received federate ID.
         fed_id = extract_uint16(buffer + 1);
-        is_transient = (buffer[sizeof(uint16_t) + 1] == 1)? true : false ;
-        printf("\nRTI received federate ID: %d. which is transient: %d\n", fed_id, is_transient);
+        is_transient = (buffer[sizeof(uint16_t) + 1] == 1)? true : false;
+        if(is_transient) {
+            LF_PRINT_LOG("RTI received federate ID: %d, which is transient.", fed_id);
+        } else {
+            LF_PRINT_LOG("RTI received federate ID: %d, which is persistent.", fed_id);
+        }
 
         // Read the federation ID.  First read the length, which is one byte.
         size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 2];
@@ -1851,6 +1858,7 @@ void connect_to_federates(int socket_descriptor) {
             
             if (_RTI.federates[fed_id].is_transient) {                    
                 _RTI.number_of_connected_transient_federates++;
+                assert(_RTI.number_of_connected_transient_federates <= _RTI.number_of_transient_federates);
                 i--;
             }
         } else {
@@ -1938,7 +1946,7 @@ void* connect_to_transient_federates_thread() {
         void *thread_exit_status;
         if (_RTI.number_of_connected_transient_federates > 0 ) {
             for (int i = 0; i < _RTI.number_of_transient_federates + _RTI.number_of_federates; i++) {
-                // Chaeck if this is a transient federate that has already joined at some point
+                // Check if this is a transient federate that has already joined at some point
                 if (_RTI.federates[i].thread_id != -1 && _RTI.federates[i].is_transient) {
                     if (pthread_tryjoin_np(_RTI.federates[i].thread_id, &thread_exit_status) == 0) {
                         free_in_transit_message_q(_RTI.federates[i].in_transit_message_tags);
@@ -2066,9 +2074,6 @@ void wait_for_federates(int socket_descriptor) {
     if (_RTI.number_of_transient_federates > 0) {
         lf_print("RTI: Transient Federates can join and leave the federation at anytime.");
     }
-
-    // Set all the remaining deferates as transient
-    // for (int i = 0; i < _RTI.number_of_federates + _RT)
 
     // The socket server will not continue to accept connections after all the federates
     // have joined.
