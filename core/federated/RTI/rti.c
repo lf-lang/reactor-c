@@ -62,15 +62,16 @@ int main(int argc, const char* argv[]) {
         return -1;
     }
     if (_RTI.tracing_enabled) {
-        _lf_number_of_workers = _RTI.number_of_federates;
+        _lf_number_of_workers = _RTI.number_of_federates + _RTI.number_of_transient_federates;
         start_trace(rti_trace_file_name);
-        printf("Tracing the RTI execution in %s file.\n", rti_trace_file_name);
+        lf_print("Tracing the RTI execution in %s file.", rti_trace_file_name);
     }
-    printf("Starting RTI for %d perisistent federates and %d transient federates in federation ID %s\n", \
+    lf_print("Starting RTI for %d persistent federates and %d transient federates in federation ID %s", \
         _RTI.number_of_federates, 
         _RTI.number_of_transient_federates, 
         _RTI.federation_id);
-    
+    lf_print("Number of workers is: %d.", _lf_number_of_workers);
+
     // FIXME: Should number_of_federates + number_of_transient_federates be < UINT16_MAX?
     assert(_RTI.number_of_federates < UINT16_MAX);
     assert(_RTI.number_of_transient_federates < UINT16_MAX);
