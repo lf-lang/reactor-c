@@ -70,7 +70,6 @@ int main(int argc, const char* argv[]) {
         _RTI.number_of_federates, 
         _RTI.number_of_transient_federates, 
         _RTI.federation_id);
-    lf_print("Number of workers is: %d.", _lf_number_of_workers);
 
     // FIXME: Should number_of_federates + number_of_transient_federates be < UINT16_MAX?
     assert(_RTI.number_of_federates < UINT16_MAX);
