@@ -57,6 +57,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Checks if passed variable `p` is a pointer
 #define is_pointer(p)  is_same_type(p, decay(p))
 
+// Returns the pointer for specified `p`
+#define get_pointer(p) __builtin_choose_expr(is_pointer(p), p, &p)
+
 #else // buitin are not available
 
 #define auto_t
@@ -65,6 +68,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define is_pointer_or_array(p)
 #define decay(p)
 #define is_pointer(p)
+#define get_pointer(p)
+
 #endif // __has_builtin
 
 #endif // GENERICS_H
