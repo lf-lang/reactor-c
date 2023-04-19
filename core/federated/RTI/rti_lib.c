@@ -495,6 +495,10 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
     free(visited);
 }
 
+void send_upstream_next_downstream_event_tag(federate_t* fed, tag_t next_event_tag) {
+    // Fixme: Fill this function.
+}
+
 void handle_port_absent_message(federate_t* sending_federate, unsigned char* buffer) {
     size_t message_size = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int64_t) + sizeof(uint32_t);
 
@@ -762,6 +766,8 @@ void handle_next_event_tag(federate_t* fed) {
         fed->id,
         intended_tag
     );
+    // FIXME: uncomment below function after implementing it.
+    //send_upstream_next_downstream_event_tag(fed, intended_tag);
     pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 

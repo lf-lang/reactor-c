@@ -2395,6 +2395,15 @@ void handle_stop_request_message() {
 }
 
 /**
+ * Handle a MSG_TYPE_NEXT_DOWNSTREAM_MESSAGE from the RTI
+ * 
+ * 
+*/
+void handle_next_downstream_event_tag() {
+    // FIXME: Fill this function.
+}
+
+/**
  * Close sockets used to communicate with other federates, if they are open,
  * and send a MSG_TYPE_RESIGN message to the RTI. This implements the function
  * defined in reactor.h. For unfederated execution, the code generator
@@ -2595,6 +2604,9 @@ void* listen_to_rti_TCP(void* args) {
                 break;
             case MSG_TYPE_PORT_ABSENT:
                 handle_port_absent_message(_fed.socket_TCP_RTI, -1);
+                break;
+            case MSG_TYPE_NEXT_DOWNSTREAM_EVENT_TAG:
+                handle_next_downstream_event_tag();
                 break;
             case MSG_TYPE_CLOCK_SYNC_T1:
             case MSG_TYPE_CLOCK_SYNC_T4:
