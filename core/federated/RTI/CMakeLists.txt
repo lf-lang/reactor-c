@@ -62,6 +62,7 @@ add_executable(
     RTI
     rti.c
     rti_lib.c
+    ${CoreLib}/trace.c
     ${LF_PLATFORM_FILE}
     ${CoreLib}/platform/lf_unix_clock_support.c
     ${CoreLib}/utils/util.c
@@ -79,6 +80,9 @@ ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 # Set LF_THREADING to get the threaded support and FEDERATED to get federated compilation support
 target_compile_definitions(RTI PUBLIC LF_THREADED=1 FEDERATED=1)
 target_compile_definitions(RTI PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
+
+# Set RTI Tracing
+target_compile_definitions(RTI PUBLIC RTI_TRACE)
 
 # Find threads and link to it
 find_package(Threads REQUIRED)

@@ -13,7 +13,6 @@
 //  ******** Global Variables :( ********  //
 extern unsigned int _lf_number_of_workers;
 extern bool fast;
-extern unsigned int _lf_number_of_workers;
 extern instant_t duration;
 extern bool _lf_execution_started;
 extern tag_t stop_tag;
@@ -47,8 +46,6 @@ parse_rti_code_t parse_rti_addr(const char* rti_addr);
 void set_federation_id(const char* fid);
 #endif
 
-void* _lf_allocate(size_t count, size_t size, struct allocation_record_t** head);
-
 extern struct allocation_record_t* _lf_reactors_to_free;
 void* _lf_new_reactor(size_t size);
 void _lf_free(struct allocation_record_t** head);
@@ -75,9 +72,16 @@ event_t* _lf_create_dummy_events(
 int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token);
 trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_token_t* token);
 trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t* token);
+
+/**
+ * Advance from the current tag to the next. If the given next_time is equal to
+ * the current time, then increase the microstep. Otherwise, update the current
+ * time and set the microstep to zero.
+ * @param next_time The time step to advance to.
+ */
 void _lf_advance_logical_time(instant_t next_time);
+
 trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value);
-bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
 void _lf_invoke_reaction(reaction_t* reaction, int worker);
 void schedule_output_reactions(reaction_t* reaction, int worker);
 int process_args(int argc, const char* argv[]);

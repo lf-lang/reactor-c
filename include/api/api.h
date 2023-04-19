@@ -1,7 +1,7 @@
 /**
  * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author Hou Seng (Steven) Wong (housengw@berkeley.edu)
+ * @author Edward A. Lee
+ * @author Hou Seng (Steven) Wong
  *
  * @section LICENSE
 Copyright (c) 2020, The University of California at Berkeley.
@@ -35,6 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef API_H
 #define API_H
 
+#include <stdio.h> // Included for backwards compatibility so that users do not need to explicitly include this
 #include "lf_types.h"
 #include "tag.h"
 

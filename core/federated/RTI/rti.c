@@ -47,13 +47,24 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "rti_lib.h"
+unsigned int _lf_number_of_workers = 0u;
 
 extern RTI_instance_t _RTI;
 
-int main(int argc, char* argv[]) {
+/**
+ * RTI trace file name
+ */
+const char *rti_trace_file_name = "rti.lft";
+
+int main(int argc, const char* argv[]) {
     if (!process_args(argc, argv)) {
         // Processing command-line arguments failed.
         return -1;
+    }
+    if (_RTI.tracing_enabled) {
+        _lf_number_of_workers = _RTI.number_of_federates;
+        start_trace(rti_trace_file_name);
+        printf("Tracing the RTI execution in %s file.\n", rti_trace_file_name);
     }
     printf("Starting RTI for %d federates in federation ID %s\n", _RTI.number_of_federates, _RTI.federation_id);
     assert(_RTI.number_of_federates < UINT16_MAX);
@@ -63,6 +74,9 @@ int main(int argc, char* argv[]) {
     }
     int socket_descriptor = start_rti_server(_RTI.user_specified_port);
     wait_for_federates(socket_descriptor);
+    if (_RTI.tracing_enabled) {
+        stop_trace();
+    }
     printf("RTI is exiting.\n");
     return 0;
 }
