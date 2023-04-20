@@ -158,6 +158,22 @@ instant_t lf_time_start(void);
 void lf_set_physical_clock_offset(interval_t offset);
 
 /**
+ * For user-friendly reporting of time values, the buffer length required.
+ * This is calculated as follows, based on 64-bit time in nanoseconds:
+ * Maximum number of weeks is 15,250
+ * Maximum number of days is 6
+ * Maximum number of hours is 23
+ * Maximum number of minutes is 59
+ * Maximum number of seconds is 59
+ * Maximum number of nanoseconds is 999,999,999
+ * Maximum number of microsteps is 4,294,967,295
+ * Total number of characters for the above is 24.
+ * Text descriptions and spaces add an additional 55,
+ * for a total of 79. One more allows for a null terminator.
+ */
+#define LF_TIME_BUFFER_LENGTH 80
+
+/**
  * Store into the specified buffer a string giving a human-readable
  * rendition of the specified time. The buffer must have length at least
  * equal to LF_TIME_BUFFER_LENGTH. The format is:
