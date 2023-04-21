@@ -1324,10 +1324,6 @@ void* run_watchdog(void* arg) {
     self_base_t* base = watchdog->base;
     lf_mutex_lock(&(base->watchdog_mutex));
 
-    watchdog->thread_active = true;
-    self_base_t* base = watchdog->base;
-    lf_mutex_lock(&(base->watchdog_mutex));
-
     while (lf_time_physical() < watchdog->expiration) {
         interval_t T = watchdog->expiration - lf_time_physical();
         lf_mutex_unlock(&(base->watchdog_mutex));
@@ -1341,10 +1337,8 @@ void* run_watchdog(void* arg) {
     }
     watchdog->thread_active = false;
 
-    watchdog_function_t watchdog_func = watchdog->watchdog_function;
-    (*watchdog_func)(base);
     lf_mutex_unlock(&(base->watchdog_mutex));
-    
+    watchdog->thread_active = false;
     return NULL;
 }
 
@@ -1357,6 +1351,7 @@ void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
 
     if (!watchdog->thread_active) {
         lf_thread_create(&(watchdog->thread_id), run_watchdog, watchdog);
+        watchdog->thread_active = true;
     } 
 }
 
