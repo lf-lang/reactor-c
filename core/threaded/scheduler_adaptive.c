@@ -66,7 +66,7 @@ static void advance_level_and_unlock(size_t worker) {
                 return;
             }
         } else {
-            set_level(current_level + 1);
+            set_level(try_advance_level(&current_level));
         }
         size_t total_num_reactions = get_num_reactions();
         if (total_num_reactions) {

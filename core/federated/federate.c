@@ -79,6 +79,11 @@ char* ERROR_SENDING_MESSAGE = "ERROR sending message to federate via RTI";
 lf_mutex_t outbound_socket_mutex;
 lf_cond_t port_status_changed;
 
+// Variable to track how far in the reaction queue we can go until we need to wait for more network port statuses to be known.
+int max_level_allowed_to_advance;
+
+bool waiting_to_advance_level;
+
 /**
  * The state of this federate instance.
  */
@@ -1306,11 +1311,12 @@ void update_last_known_status_on_input_ports(tag_t tag) {
                 tag.microstep
             );
             input_port_action->trigger->last_known_status_tag = tag;
-            if (input_port_action->trigger->is_a_control_reaction_waiting) {
+            //if (waiting_to_advance_level) {
                 notify = true;
-            }
+            //}
         }
     }
+    update_max_level(false);
     // Then, check if any control reaction is waiting.
     // If so, notify them.
     // FIXME: We could put a condition variable into the trigger_t
@@ -1354,10 +1360,11 @@ void update_last_known_status_on_input_port(tag_t tag, int port_id) {
         );
         input_port_action->last_known_status_tag = tag;
         // If any control reaction is waiting, notify them that the status has changed
-        if (input_port_action->is_a_control_reaction_waiting) {
+        //if (waitingToAdvance) {
             // The last known status tag of the port has changed. Notify any waiting threads.
-            lf_cond_broadcast(&port_status_changed);
-        }
+        update_max_level(false);
+        lf_cond_broadcast(&port_status_changed);
+        //}
     } else {
         lf_print_warning("Attempt to update the last known status tag "
                "of network input port %d to an earlier tag was ignored.", port_id);
@@ -1374,16 +1381,17 @@ void reset_status_fields_on_input_port_triggers() {
     for (int i = 0; i < _fed.triggers_for_network_input_control_reactions_size; i++) {
         set_network_port_status(i, unknown);
     }
+    update_max_level(false);
 }
 
 /**
  * Mark the trigger associated with the specified port to
  * indicate whether a control reaction is waiting.
  */
-void mark_control_reaction_waiting(int portID, bool waiting) {
-    trigger_t* network_input_port_action = _lf_action_for_port(portID)->trigger;
-    network_input_port_action->is_a_control_reaction_waiting = waiting;
-}
+// void mark_control_reaction_waiting(int portID, bool waiting) {
+//     trigger_t* network_input_port_action = _lf_action_for_port(portID)->trigger;
+//     network_input_port_action->is_a_control_reaction_waiting = waiting;
+// }
 
 /**
  * Return the status of the port at the current tag.
@@ -1422,74 +1430,74 @@ port_status_t get_current_port_status(int portID) {
  * given network input port is going to be present at the current logical time
  * or absent.
  */
-void enqueue_network_input_control_reactions() {
-#ifdef FEDERATED_CENTRALIZED
-    if (!_fed.has_upstream) {
-        // This federate is not connected to any upstream federates via a
-        // logical connection. No need to trigger network input control
-        // reactions.
-        return;
-    }
-#endif
-    for (int i = 0; i < _fed.triggers_for_network_input_control_reactions_size; i++) {
-        // Reaction 0 should always be the network input control reaction
-        if (get_current_port_status(i) == unknown) {
-            reaction_t *reaction = _fed.triggers_for_network_input_control_reactions[i]->reactions[0];
-            if (reaction->status == inactive) {
-                reaction->is_a_control_reaction = true;
-                LF_PRINT_DEBUG("Inserting network input control reaction on reaction queue.");
-                lf_sched_trigger_reaction(reaction, -1);
-                mark_control_reaction_waiting(i, true);
-            }
-        }
-    }
-}
+// void enqueue_network_input_control_reactions() {
+// #ifdef FEDERATED_CENTRALIZED
+//     if (!_fed.has_upstream) {
+//         // This federate is not connected to any upstream federates via a
+//         // logical connection. No need to trigger network input control
+//         // reactions.
+//         return;
+//     }
+// #endif
+//     for (int i = 0; i < _fed.triggers_for_network_input_control_reactions_size; i++) {
+//         // Reaction 0 should always be the network input control reaction
+//         if (get_current_port_status(i) == unknown) {
+//             reaction_t *reaction = _fed.triggers_for_network_input_control_reactions[i]->reactions[0];
+//             if (reaction->status == inactive) {
+//                 reaction->is_a_control_reaction = true;
+//                 LF_PRINT_DEBUG("Inserting network input control reaction on reaction queue.");
+//                 lf_sched_trigger_reaction(reaction, -1);
+//                 mark_control_reaction_waiting(i, true);
+//             }
+//         }
+//     }
+// }
 
-/**
- * Enqueue network output control reactions that will send a MSG_TYPE_PORT_ABSENT
- * message to downstream federates if a given network output port is not present.
- */
-void enqueue_network_output_control_reactions(){
-#ifdef FEDERATED_CENTRALIZED
-    if (!_fed.has_downstream) {
-        // This federate is not connected to any downstream federates via a
-        // logical connection. No need to trigger network output control
-        // reactions.
-        return;
-    }
-#endif
-    LF_PRINT_DEBUG("Enqueueing output control reactions.");
-    if (_fed.trigger_for_network_output_control_reactions == NULL) {
-        // There are no network output control reactions
-        LF_PRINT_DEBUG("No output control reactions.");
-        return;
-    }
-    for (int i = 0; i < _fed.trigger_for_network_output_control_reactions->number_of_reactions; i++) {
-        reaction_t* reaction = _fed.trigger_for_network_output_control_reactions->reactions[i];
-        if (reaction->status == inactive) {
-            reaction->is_a_control_reaction = true;
-            LF_PRINT_DEBUG("Inserting network output control reaction on reaction queue.");
-            lf_sched_trigger_reaction(reaction, -1);
-        }
-    }
-}
+// /**
+//  * Enqueue network output control reactions that will send a MSG_TYPE_PORT_ABSENT
+//  * message to downstream federates if a given network output port is not present.
+//  */
+// void enqueue_network_output_control_reactions(){
+// #ifdef FEDERATED_CENTRALIZED
+//     if (!_fed.has_downstream) {
+//         // This federate is not connected to any downstream federates via a
+//         // logical connection. No need to trigger network output control
+//         // reactions.
+//         return;
+//     }
+// #endif
+//     LF_PRINT_DEBUG("Enqueueing output control reactions.");
+//     if (_fed.trigger_for_network_output_control_reactions == NULL) {
+//         // There are no network output control reactions
+//         LF_PRINT_DEBUG("No output control reactions.");
+//         return;
+//     }
+//     for (int i = 0; i < _fed.trigger_for_network_output_control_reactions->number_of_reactions; i++) {
+//         reaction_t* reaction = _fed.trigger_for_network_output_control_reactions->reactions[i];
+//         if (reaction->status == inactive) {
+//             reaction->is_a_control_reaction = true;
+//             LF_PRINT_DEBUG("Inserting network output control reaction on reaction queue.");
+//             lf_sched_trigger_reaction(reaction, -1);
+//         }
+//     }
+// }
 
 
 /**
  * Enqueue network control reactions.
  */
-void enqueue_network_control_reactions() {
-    enqueue_network_output_control_reactions();
-#ifdef FEDERATED_CENTRALIZED
-    // If the granted tag is not provisional, there is no
-    // need for network input control reactions
-    if (lf_tag_compare(_fed.last_TAG, lf_tag()) != 0
-            || _fed.is_last_TAG_provisional == false) {
-        return;
-    }
-#endif
-    enqueue_network_input_control_reactions();
-}
+// void enqueue_network_control_reactions() {
+//     enqueue_network_output_control_reactions();
+// #ifdef FEDERATED_CENTRALIZED
+//     // If the granted tag is not provisional, there is no
+//     // need for network input control reactions
+//     if (lf_tag_compare(_fed.last_TAG, lf_tag()) != 0
+//             || _fed.is_last_TAG_provisional == false) {
+//         return;
+//     }
+// #endif
+//     enqueue_network_input_control_reactions();
+// }
 
 /**
  * Send a port absent message to federate with fed_ID, informing the
@@ -1866,6 +1874,44 @@ void handle_message(int socket, int fed_id) {
     _lf_schedule_value(action, 0, message_contents, length);
 }
 
+void stall_advance_level_federation(size_t curr_reaction_level){
+    interval_t wait_until_time = FOREVER;
+    #ifdef FEDERATED_DECENTRALIZED // Only applies to decentralized coordination
+    // The wait time for port status in the decentralized
+    // coordination is capped by the STAA offset assigned
+    // to the port plus the global STA offset for this federate.
+    wait_until_time = current_tag.time + STAA + _lf_fed_STA_offset;
+    #endif
+    if(max_level_allowed_to_advance != -1 && curr_reaction_level > max_level_allowed_to_advance) {
+        if (wait_until_time != current_tag.time) {
+            while(!wait_until(wait_until_time, &port_status_changed)) {
+                if(max_level_allowed_to_advance == -1 || curr_reaction_level <= max_level_allowed_to_advance){
+                    return;
+                }
+            }
+        }
+        #ifdef FEDERATED_DECENTRALIZED 
+        // Only applies in decentralized coordination
+        // The wait has timed out. However, a message header
+        // for the current tag could have been received in time
+        // but not the the body of the message.
+        // Wait on the tag barrier based on the current tag.
+        _lf_wait_on_global_tag_barrier(lf_tag());
+
+        // Done waiting
+        // If the status does not change, 
+        if(max_level_allowed_to_advance != -1 && curr_reaction_level > max_level_allowed_to_advance) {
+            // Port will not be triggered at the
+            // current logical time. Advance the level
+            // TODO: May need to fix logic
+            update_max_level(true);
+            // set_network_port_status(port_ID, absent);
+        }
+        //lf_mutex_unlock(&mutex);
+#endif
+    }
+}
+
 /**
  * Handle a timed message being received from a remote federate via the RTI
  * or directly from other federates.
@@ -2008,8 +2054,9 @@ void handle_tagged_message(int socket, int fed_id) {
         // that is because the network receiver reaction is now in the reaction queue
         // keeping the precedence order intact.
         set_network_port_status(port_id, present);
-        // Port is now present. Therefore, notify the network input control reactions to
-        // stop waiting and re-check the port status.
+
+        // Port is now present. Therefore, notify the level advancer to proceed
+        update_max_level(false);
         lf_cond_broadcast(&port_status_changed);
     } else {
         // If no control reaction is waiting for this message, or if the intended
@@ -2122,6 +2169,29 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
     _fed.last_sent_LTC = tag_to_send;
 }
 
+
+void update_max_level(bool assumeAbsent) {
+    if (assumeAbsent) {
+        max_level_allowed_to_advance = -1;
+    } else {
+        bool anyUnknowns = false;
+        int maxPossible = -1;
+        for (int i = 0; i < _fed.triggers_for_network_input_control_reactions_size; i++) {
+            lf_action_base_t* input_port_action = _lf_action_for_port(i);
+            if (input_port_action->trigger->status == unknown){
+                anyUnknowns = true;
+            } else {
+                maxPossible = LF_MAX(maxPossible, LF_LEVEL(input_port_action->trigger->reactions[0]->index));
+            }
+        }
+        if (!anyUnknowns) {
+            max_level_allowed_to_advance = -1;
+        } else{
+            max_level_allowed_to_advance = maxPossible;
+        }
+    }
+}
+
 /**
  * Handle a provisional tag advance grant (PTAG) message from the RTI.
  * This updates the last known TAG/PTAG and broadcasts
@@ -2176,14 +2246,11 @@ void handle_provisional_tag_advance_grant() {
     // Even if we don't modify the event queue, we need to broadcast a change
     // because we do not need to continue to wait for a TAG.
     lf_cond_broadcast(&event_q_changed);
-    // Notify control reactions that are blocked.
-    // Check here whether there is any control reaction waiting
-    // before broadcasting to avoid an unnecessary broadcast.
-    // This also avoids problems waking up threads before execution
-    // has started (while they are waiting for the start time).
-    if (is_input_control_reaction_blocked()) {
+    // Notify level advance thread which is blocked.
+    //if (waiting_to_advance_level) {
+    update_max_level(false);
         lf_cond_broadcast(&port_status_changed);
-    }
+    //}
 
     // Possibly insert a dummy event into the event queue if current time is behind
     // (which it should be). Do not do this if the federate has not fully

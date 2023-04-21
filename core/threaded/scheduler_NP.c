@@ -125,7 +125,7 @@ int _lf_sched_distribute_ready_reactions() {
     // locking a mutex.
     for (; _lf_sched_instance->_lf_sched_next_reaction_level <=
            _lf_sched_instance->max_reaction_level;
-         _lf_sched_instance->_lf_sched_next_reaction_level++
+         try_advance_level(&_lf_sched_instance->_lf_sched_next_reaction_level)
     ) {
 
         _lf_sched_instance->_lf_sched_executing_reactions =
@@ -357,6 +357,7 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
         // Calculate the current level of reactions to execute
         size_t current_level =
             _lf_sched_instance->_lf_sched_next_reaction_level - 1;
+        
         reaction_t* reaction_to_return = NULL;
 #ifdef FEDERATED
         // Need to lock the mutex because federate.c could trigger reactions at

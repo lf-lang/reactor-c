@@ -929,6 +929,12 @@ void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
     reaction->is_STP_violated = false;
 }
 
+void try_advance_level(size_t* curr_reaction_level) {
+    #ifdef FEDERATED
+    stall_advance_level_federation(*curr_reaction_level);
+    #endif 
+    *curr_reaction_level += 1;
+}
 /**
  * The main looping logic of each LF worker thread.
  * This function assumes the caller holds the mutex lock.

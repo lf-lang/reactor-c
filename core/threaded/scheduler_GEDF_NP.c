@@ -93,7 +93,7 @@ int _lf_sched_distribute_ready_reactions() {
     // a mutex.
     for (; _lf_sched_instance->_lf_sched_next_reaction_level <=
            _lf_sched_instance->max_reaction_level;
-         _lf_sched_instance->_lf_sched_next_reaction_level++) {
+         try_advance_level(&_lf_sched_instance->_lf_sched_next_reaction_level)) {
         tmp_queue = ((pqueue_t**)_lf_sched_instance->_lf_sched_triggered_reactions)
                         [_lf_sched_instance->_lf_sched_next_reaction_level];
         size_t reactions_to_execute = pqueue_size(tmp_queue);
