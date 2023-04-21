@@ -1320,22 +1320,32 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
 
 void* run_watchdog(void* arg) {
     watchdog_t* watchdog = (watchdog_t*)arg;
+
     self_base_t* base = watchdog->base;
     lf_mutex_lock(&(base->watchdog_mutex));
-    lf_print("physical in run watchdog: " PRINTF_TIME, lf_time_physical());
-    lf_print("expiration in run watchdog: " PRINTF_TIME, watchdog->expiration);
+
+    watchdog->thread_active = true;
+    self_base_t* base = watchdog->base;
+    lf_mutex_lock(&(base->watchdog_mutex));
+
     while (lf_time_physical() < watchdog->expiration) {
         interval_t T = watchdog->expiration - lf_time_physical();
         lf_mutex_unlock(&(base->watchdog_mutex));
         lf_sleep(T);
         lf_mutex_lock(&(base->watchdog_mutex));
     }
+
     if (watchdog->expiration != NEVER) {
         watchdog_function_t watchdog_func = watchdog->watchdog_function;
         (*watchdog_func)(base);
     }
     watchdog->thread_active = false;
+
+    watchdog_function_t watchdog_func = watchdog->watchdog_function;
+    (*watchdog_func)(base);
     lf_mutex_unlock(&(base->watchdog_mutex));
+    
+    return NULL;
 }
 
 void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
@@ -1347,7 +1357,6 @@ void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
 
     if (!watchdog->thread_active) {
         lf_thread_create(&(watchdog->thread_id), run_watchdog, watchdog);
-        watchdog->thread_active = true;
     } 
 }
 

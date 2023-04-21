@@ -146,7 +146,7 @@ typedef void(*reaction_function_t)(void*);
  * these watchdog functions is a pointer to the self struct
  * for the reactor.
  */
-typedef void(*watchdog_function_t)(void*); 
+typedef void(*watchdog_function_t)(void*);
 
 /** Trigger struct representing an output, timer, action, or input. See below. */
 typedef struct trigger_t trigger_t;
