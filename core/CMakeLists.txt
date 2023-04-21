@@ -51,6 +51,12 @@ target_include_directories(core PUBLIC ../include/core/modal_models)
 target_include_directories(core PUBLIC ../include/core/threaded)
 target_include_directories(core PUBLIC ../include/core/utils)
 
+# Link with OpenSSL library
+if(DEFINED FEDERATED_AUTHENTICATED)
+    find_package(OpenSSL REQUIRED)
+    target_link_libraries(core PUBLIC OpenSSL::SSL)
+endif()
+
 # Link with thread library
 if(DEFINED LF_THREADED OR DEFINED LF_TRACE)
     find_package(Threads REQUIRED)
