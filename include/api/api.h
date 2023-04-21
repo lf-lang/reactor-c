@@ -178,6 +178,8 @@ bool lf_check_deadline(void* self, bool invoke_deadline_handler);
  * experiation of the watchdog.
  **/
 void lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout);
+
+void lf_watchdog_stop(watchdog_t* watchdog);
 #endif
 
 /**

@@ -567,6 +567,8 @@ bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
  * minimum expiration.
  **/
 void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout);
+
+void _lf_watchdog_stop(watchdog_t* watchdog);
 #endif
 
 /**
