@@ -39,7 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "trace.h"
 #include "util.h"
 
-/////////////////// External Variables /////////////////////////
+// Global variable defined in tag.c:
 extern tag_t current_tag;
 extern tag_t stop_tag;
 

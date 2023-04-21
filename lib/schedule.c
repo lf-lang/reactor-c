@@ -190,7 +190,14 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
  * @return True if the specified deadline has passed and false otherwise.
  */
 bool lf_check_deadline(void* self, bool invoke_deadline_handler) {
-	return _lf_check_deadline((self_base_t*)self, invoke_deadline_handler);
+    reaction_t* reaction = ((self_base_t*)self)->executing_reaction;
+    if (lf_time_physical() > lf_time_logical() + reaction->deadline) {
+        if (invoke_deadline_handler) {
+            reaction->deadline_violation_handler(self);
+        }
+        return true;
+    }
+    return false;
 }
 
 #ifdef LF_THREADED

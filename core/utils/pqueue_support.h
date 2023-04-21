@@ -24,15 +24,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * @file pqueue_support.h
- * 
- * @author{Edward A. Lee <eal@berkeley.edu>}
- * @author{Marten Lohstroh <marten@berkeley.edu>}
- * 
+ * @author Edward A. Lee
+ * @author Marten Lohstroh
  * @brief Header-only support functions for pqueue.
- * @version 0.1
- * @date 2021-12-04
- * 
- * @copyright Copyright (c) 2022, The University of California at Berkeley. 
  */
 
 #ifndef PQUEUE_SUPPORT_H

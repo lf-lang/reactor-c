@@ -26,3 +26,4 @@ clean: Makefile
 doxygen: Makefile
 	doxygen Doxyfile.in
 
+all: doxygen

@@ -180,12 +180,6 @@ extern lf_token_t* _lf_tokens_allocated_in_reactions;
 
 /**
  * Counter used to issue a warning if memory is
- * allocated for message payloads and never freed.
- */
-static int _lf_count_payload_allocations;
-
-/**
- * Counter used to issue a warning if memory is
  * allocated for tokens and never freed. Note that
  * every trigger will have one token allocated for
  * it. That token is not counted because it is not

@@ -38,6 +38,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
 
 #include "platform.h"
 #include "lf_types.h"
@@ -55,9 +56,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "hashset/hashset.h"
 #include "hashset/hashset_itr.h"
 
-////////////////////////////////////////////////////////////
-//// Global variables :(
+// Global variable defined in tag.c:
+extern tag_t current_tag;
+extern instant_t start_time;
 
+// Global variable defined in lf_token.c:
+extern int _lf_count_payload_allocations;
 
 /**
  * Indicator of whether to wait for physical time to match logical time.
@@ -1236,13 +1240,6 @@ trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_d
     return return_value;
 }
 
-/**
- * Advance from the current tag to the next. If the given next_time is equal to
- * the current time, then increase the microstep. Otherwise, update the current
- * time and set the microstep to zero.
- *
- * @param next_time The time step to advance to.
- */
 void _lf_advance_logical_time(instant_t next_time) {
     // FIXME: The following checks that _lf_advance_logical_time()
     // is being called correctly. Namely, check if logical time
@@ -1294,28 +1291,6 @@ trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_del
     return _lf_schedule_value(action, extra_delay, container, 1);
 }
 
-/**
- * Check the deadline of the currently executing reaction against the
- * current physical time. If the deadline has passed, invoke the deadline
- * handler (if invoke_deadline_handler parameter is set true) and return true.
- * Otherwise, return false.
- *
- * @param self The self struct of the reactor.
- * @param invoke_deadline_handler When this is set true, also invoke deadline
- *  handler if the deadline has passed.
- * @return True if the specified deadline has passed and false otherwise.
- */
-bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler) {
-    reaction_t* reaction = self->executing_reaction;
-    if (lf_time_physical() > lf_time_logical() + reaction->deadline) {
-        if (invoke_deadline_handler) {
-            reaction->deadline_violation_handler(self);
-        }
-        return true;
-    }
-    return false;
-}
-
 #ifdef LF_THREADED
 
 void* run_watchdog(void* arg) {
@@ -1355,13 +1330,13 @@ void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
     } 
 }
 
-//FIXME: modif4watchdogs
 void _lf_watchdog_stop(watchdog_t* watchdog) {
     watchdog->expiration = NEVER;
 }
 #endif
 
 /**
+
  * Invoke the given reaction
  *
  * @param reaction The reaction that has just executed.
@@ -1759,13 +1734,12 @@ void initialize(void) {
     // Initialize the trigger table.
     _lf_initialize_trigger_objects();
 
-    physical_start_time = lf_time_physical();
-    current_tag.time = physical_start_time;
-    start_time = current_tag.time;
+    start_time = lf_time_physical();
+    current_tag.time = start_time;
 
     LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
 
-    struct timespec physical_time_timespec = {physical_start_time / BILLION, physical_start_time % BILLION};
+    struct timespec physical_time_timespec = {start_time / BILLION, start_time % BILLION};
 
     printf("---- Start execution at time %s---- plus %ld nanoseconds.\n",
             ctime(&physical_time_timespec.tv_sec), physical_time_timespec.tv_nsec);
@@ -1820,9 +1794,9 @@ void termination(void) {
         lf_comma_separated_time(time_buffer, elapsed_time);
         printf("---- Elapsed logical time (in nsec): %s\n", time_buffer);
 
-        // If physical_start_time is 0, then execution didn't get far enough along
+        // If start_time is 0, then execution didn't get far enough along
         // to initialize this.
-        if (physical_start_time > 0LL) {
+        if (start_time > 0LL) {
             lf_comma_separated_time(time_buffer, lf_time_physical_elapsed());
             printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
         }

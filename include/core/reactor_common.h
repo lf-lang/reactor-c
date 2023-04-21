@@ -46,8 +46,6 @@ parse_rti_code_t parse_rti_addr(const char* rti_addr);
 void set_federation_id(const char* fid);
 #endif
 
-void* _lf_allocate(size_t count, size_t size, struct allocation_record_t** head);
-
 extern struct allocation_record_t* _lf_reactors_to_free;
 void* _lf_new_reactor(size_t size);
 void _lf_free(struct allocation_record_t** head);
@@ -74,9 +72,16 @@ event_t* _lf_create_dummy_events(
 int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token);
 trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_token_t* token);
 trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t* token);
+
+/**
+ * Advance from the current tag to the next. If the given next_time is equal to
+ * the current time, then increase the microstep. Otherwise, update the current
+ * time and set the microstep to zero.
+ * @param next_time The time step to advance to.
+ */
 void _lf_advance_logical_time(instant_t next_time);
+
 trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value);
-bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
 #ifdef LF_THREADED
 void* run_watchdog(void* arg);
 void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout);

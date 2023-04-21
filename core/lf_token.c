@@ -30,6 +30,12 @@
  * Functions supporting token types.  See lf_token.h for docs.
  */
 
+/**
+ * Counter used to issue a warning if memory is
+ * allocated for message payloads and never freed.
+ */
+int _lf_count_payload_allocations;
+
 #include <stdbool.h>
 #include <assert.h>
 #include <string.h>  // Defines memcpy

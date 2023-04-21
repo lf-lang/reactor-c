@@ -2,11 +2,14 @@
 #include <time.h>
 #include <errno.h>
 
+#include "platform.h"
 #include "lf_unix_clock_support.h"
 
 /**
  * Offset to _LF_CLOCK that would convert it
- * to epoch time.
+ * to epoch time. This is applied to the physical clock
+ * to get a more meaningful and universal time.
+ *
  * For CLOCK_REALTIME, this offset is always zero.
  * For CLOCK_MONOTONIC, it is the difference between those
  * clocks at the start of the execution.

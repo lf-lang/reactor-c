@@ -49,19 +49,9 @@
 #ifndef REACTOR_H
 #define REACTOR_H
 
-#include <errno.h>
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
-
 #include "lf_types.h"
-#include "lf_token.h"
 #include "modes.h"     // Modal model support
-#include "platform.h"  // Platform-specific times and APIs
 #include "port.h"
-#include "pqueue.h"
 #include "tag.h"       // Time-related functions.
 #include "trace.h"
 #include "util.h"
@@ -545,18 +535,6 @@ trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, 
  */
 void _lf_fd_send_stop_request_to_rti(void);
 
-/**
- * Check the deadline of the currently executing reaction against the
- * current physical time. If the deadline has passed, invoke the deadline
- * handler (if invoke_deadline_handler parameter is set true) and return true.
- * Otherwise, return false.
- *
- * @param self The self struct of the reactor.
- * @param invoke_deadline_handler When this is set true, also invoke deadline
- *  handler if the deadline has passed.
- * @return True if the specified deadline has passed and false otherwise.
- */
-bool _lf_check_deadline(self_base_t* self, bool invoke_deadline_handler);
 
 #ifdef LF_THREADED
 /** 
