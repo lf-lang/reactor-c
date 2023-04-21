@@ -9,6 +9,7 @@ var tag_8h =
     [ "FOREVER_TAG_INITIALIZER", "d2/dcd/tag_8h.html#a33ccb2b8fb9f20ab29ea298b9051443a", null ],
     [ "HOUR", "d2/dcd/tag_8h.html#a3cf238d5a1a842131a5adf916d571d12", null ],
     [ "HOURS", "d2/dcd/tag_8h.html#a2249e1bedc7aeaad64ed3fefdd6e7951", null ],
+    [ "LF_TIME_BUFFER_LENGTH", "d2/dcd/tag_8h.html#acc2b8ac5ac3020137e71dfcdbaedf335", null ],
     [ "MINUTE", "d2/dcd/tag_8h.html#a72e3dbcf6a85e8c0a04691cfb14d3876", null ],
     [ "MINUTES", "d2/dcd/tag_8h.html#a694878332b974b464c7d58c7114ee6e9", null ],
     [ "MSEC", "d2/dcd/tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8", null ],

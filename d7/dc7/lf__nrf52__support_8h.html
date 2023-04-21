@@ -113,8 +113,6 @@ Macros</h2></td></tr>
 <tr class="separator:a1a993c1a57a54296ab361e669008b79e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8092ad9b0cfa72f49f205ca8a65d2736"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/dc7/lf__nrf52__support_8h.html#a8092ad9b0cfa72f49f205ca8a65d2736">PRINTF_TAG</a>&#160;&#160;&#160;&quot;(%&quot; PRId64 &quot;, %&quot; PRIu32 &quot;)&quot;</td></tr>
 <tr class="separator:a8092ad9b0cfa72f49f205ca8a65d2736"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acc2b8ac5ac3020137e71dfcdbaedf335"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/dc7/lf__nrf52__support_8h.html#acc2b8ac5ac3020137e71dfcdbaedf335">LF_TIME_BUFFER_LENGTH</a>&#160;&#160;&#160;80</td></tr>
-<tr class="separator:acc2b8ac5ac3020137e71dfcdbaedf335"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a98d0737d9461f08293ba054a2f754fc4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/dc7/lf__nrf52__support_8h.html#a98d0737d9461f08293ba054a2f754fc4">_LF_CLOCK</a>&#160;&#160;&#160;CLOCK_MONOTONIC</td></tr>
 <tr class="separator:a98d0737d9461f08293ba054a2f754fc4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -137,21 +135,6 @@ Typedefs</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-
-</div>
-</div>
-<a id="acc2b8ac5ac3020137e71dfcdbaedf335" name="acc2b8ac5ac3020137e71dfcdbaedf335"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acc2b8ac5ac3020137e71dfcdbaedf335">&#9670;&#160;</a></span>LF_TIME_BUFFER_LENGTH</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define LF_TIME_BUFFER_LENGTH&#160;&#160;&#160;80</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>For user-friendly reporting of time values, the buffer length required. This is calculated as follows, based on 64-bit time in nanoseconds: Maximum number of weeks is 15,250 Maximum number of days is 6 Maximum number of hours is 23 Maximum number of minutes is 59 Maximum number of seconds is 59 Maximum number of nanoseconds is 999,999,999 Maximum number of microsteps is 4,294,967,295 Total number of characters for the above is 24. Text descriptions and spaces add an additional 55, for a total of 79. One more allows for a null terminator. </p>
 
 </div>
 </div>

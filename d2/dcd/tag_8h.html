@@ -164,6 +164,8 @@ Macros</h2></td></tr>
 <tr class="separator:a33ccb2b8fb9f20ab29ea298b9051443a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31f99d9c502b52b5f36dc7e2028c2e80"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/dcd/tag_8h.html#a31f99d9c502b52b5f36dc7e2028c2e80">BILLION</a>&#160;&#160;&#160;1000000000LL</td></tr>
 <tr class="separator:a31f99d9c502b52b5f36dc7e2028c2e80"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acc2b8ac5ac3020137e71dfcdbaedf335"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/dcd/tag_8h.html#acc2b8ac5ac3020137e71dfcdbaedf335">LF_TIME_BUFFER_LENGTH</a>&#160;&#160;&#160;80</td></tr>
+<tr class="separator:acc2b8ac5ac3020137e71dfcdbaedf335"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -333,6 +335,21 @@ Hou Seng (Steven) Wong </dd></dl>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="acc2b8ac5ac3020137e71dfcdbaedf335" name="acc2b8ac5ac3020137e71dfcdbaedf335"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc2b8ac5ac3020137e71dfcdbaedf335">&#9670;&#160;</a></span>LF_TIME_BUFFER_LENGTH</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LF_TIME_BUFFER_LENGTH&#160;&#160;&#160;80</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>For user-friendly reporting of time values, the buffer length required. This is calculated as follows, based on 64-bit time in nanoseconds: Maximum number of weeks is 15,250 Maximum number of days is 6 Maximum number of hours is 23 Maximum number of minutes is 59 Maximum number of seconds is 59 Maximum number of nanoseconds is 999,999,999 Maximum number of microsteps is 4,294,967,295 Total number of characters for the above is 24. Text descriptions and spaces add an additional 55, for a total of 79. One more allows for a null terminator. </p>
 
 </div>
 </div>

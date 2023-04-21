@@ -18,7 +18,7 @@ var searchData=
   ['lf_5fset_5ftoken_15',['lf_set_token',['../d4/d13/set_8h.html#a1aa76760517d7100306d59b92fd41a26',1,'set.h']]],
   ['lf_5fsparse_5fcapacity_5fdivider_16',['LF_SPARSE_CAPACITY_DIVIDER',['../da/d00/port_8h.html#a3e66ec583172bbad678982af8c57001b',1,'port.h']]],
   ['lf_5fsparse_5fwidth_5fthreshold_17',['LF_SPARSE_WIDTH_THRESHOLD',['../da/d00/port_8h.html#aafcc3f0b909a44166db182035ca759c6',1,'port.h']]],
-  ['lf_5ftime_5fbuffer_5flength_18',['LF_TIME_BUFFER_LENGTH',['../d7/dc7/lf__nrf52__support_8h.html#acc2b8ac5ac3020137e71dfcdbaedf335',1,'LF_TIME_BUFFER_LENGTH():&#160;lf_nrf52_support.h'],['../d5/da7/lf__tag__64__32_8h.html#acc2b8ac5ac3020137e71dfcdbaedf335',1,'LF_TIME_BUFFER_LENGTH():&#160;lf_tag_64_32.h']]],
+  ['lf_5ftime_5fbuffer_5flength_18',['LF_TIME_BUFFER_LENGTH',['../d2/dcd/tag_8h.html#acc2b8ac5ac3020137e71dfcdbaedf335',1,'tag.h']]],
   ['lf_5ftimeout_19',['LF_TIMEOUT',['../de/d03/platform_8h.html#a2cb0837301dbf928d9e6a4753e0fb52e',1,'platform.h']]],
   ['lf_5fzephyr_5fclock_5flo_5fres_20',['LF_ZEPHYR_CLOCK_LO_RES',['../d2/df0/lf__zephyr__board__support_8h.html#aed0e3b388fbf6327a9d375a01068e66c',1,'lf_zephyr_board_support.h']]],
   ['llong_5fmax_21',['LLONG_MAX',['../d3/d79/lf__arduino__support_8h.html#a23ec2cf7fc07ea8f817bbac758402baf',1,'lf_arduino_support.h']]],
