@@ -53,6 +53,9 @@ target_include_directories(core PUBLIC ../include/core/utils)
 
 # Link with OpenSSL library
 if(DEFINED FEDERATED_AUTHENTICATED)
+    if (APPLE)
+        set(OPENSSL_ROOT_DIR /usr/local/opt/openssl)
+    endif()
     find_package(OpenSSL REQUIRED)
     target_link_libraries(core PUBLIC OpenSSL::SSL)
 endif()
