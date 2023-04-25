@@ -335,7 +335,6 @@ void lf_sched_free() {
         free(((reaction_t***)_lf_sched_instance->_lf_sched_triggered_reactions)[j]);
     }
     free(_lf_sched_instance->_lf_sched_triggered_reactions);
-    free(_lf_sched_instance->_lf_sched_executing_reactions);
     lf_semaphore_destroy(_lf_sched_instance->_lf_sched_semaphore);
 }
 
