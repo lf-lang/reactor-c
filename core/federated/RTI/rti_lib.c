@@ -376,6 +376,8 @@ bool send_advance_grant_if_safe(federate_t* fed) {
 
     // Find the earliest LTC of upstream federates.
     tag_t min_upstream_completed = FOREVER_TAG;
+    // Count the number of that connected upstream federates 
+    uint16_t number_of_connected_upstream_federates = 0; 
 
     for (int j = 0; j < fed->num_upstream; j++) {
         federate_t* upstream = &_RTI.federates[fed->upstream[j]];
@@ -383,12 +385,21 @@ bool send_advance_grant_if_safe(federate_t* fed) {
         // Ignore this federate if it has resigned.
         if (upstream->state == NOT_CONNECTED) continue;
 
+        number_of_connected_upstream_federates++;
+
         tag_t candidate = lf_delay_tag(upstream->completed, fed->upstream_delay[j]);
 
         if (lf_tag_compare(candidate, min_upstream_completed) < 0) {
             min_upstream_completed = candidate;
         }
     }
+
+    // If none of the upstream federates is connected, then nothing to do.
+    // It is equivelent to not having upstream federates at all.
+    if (number_of_connected_upstream_federates == 0) {
+        return false;
+    }
+
     LF_PRINT_LOG("Minimum upstream LTC for fed %d is (%lld, %u) "
             "(adjusted by after delay).",
             fed->id,
@@ -652,8 +663,16 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
                 _RTI.federates[federate_id].last_provisionally_granted.microstep
         );
         return;
+    } else { 
+        tag_t fed_start_tag = {.time=_RTI.federates[federate_id].fed_start_time, .microstep=0};
+        if(lf_tag_compare(intended_tag, fed_start_tag) < 0) {
+            // Do not forward the message if the federate is connected, but its 
+            // start_time is not reached yet
+            pthread_mutex_unlock(&_RTI.rti_mutex);
+            return;
+        }
     }
-
+    
     // Forward the message or message chunk.
     int destination_socket = _RTI.federates[federate_id].socket;
 
@@ -1120,7 +1139,7 @@ void handle_timestamp(federate_t *my_fed) {
         // then do not wait for the start time
         if (my_fed->num_of_conn_federates == 0) {
             my_fed->start_time_is_set = true;
-            LF_PRINT_DEBUG("Transient federate %d has no upstream or downstrean federates. Its start time is The start time of transient is: %lld", my_fed->fed_start_time);
+            LF_PRINT_DEBUG("Transient federate %d has no upstream or downstrean federates. Its start time is: %lld", my_fed->fed_start_time);
         }
         pthread_mutex_unlock(&_RTI.rti_mutex);
         // Now wait until all connected federates have responded with their next 
@@ -1180,7 +1199,10 @@ void handle_next_event_tag_query_response(federate_t *my_fed) {
     // Processing the TIMESTAMP depends on whether it is the startup phase (all 
     // persistent federates joined) or not. 
     federate_t* transient = &(_RTI.federates[transient_fed_id]);
-    if (timestamp < transient->fed_start_time) { // min of the LTC of upstream?
+    
+    // Set the start_time of the transient federate to be the maximum among 
+    // current tag of upstreams and the physical time at which it joined 
+    if (timestamp > transient->fed_start_time) { 
         transient->fed_start_time = timestamp;
     }
     // Check that upstream and downstream federates of the transient did propose a start_time
@@ -1991,7 +2013,7 @@ void initialize_federate(uint16_t id) {
     _RTI.federates[id].server_port = -1;
     _RTI.federates[id].requested_stop = false;
     _RTI.federates[id].is_transient = true;
-    _RTI.federates[id].fed_start_time = FOREVER;
+    _RTI.federates[id].fed_start_time = 0LL;
     _RTI.federates[id].num_of_conn_federates = 0;
     _RTI.federates[id].num_of_conn_federates_sent_net = 0;
     _RTI.federates[id].start_time_is_set = false;
@@ -2021,7 +2043,7 @@ void reset_transient_federate(uint16_t id) {
     _RTI.federates[id].server_port = -1;
     _RTI.federates[id].requested_stop = false;
     _RTI.federates[id].is_transient = true;
-    _RTI.federates[id].fed_start_time = FOREVER;
+    _RTI.federates[id].fed_start_time = 0LL;
     _RTI.federates[id].num_of_conn_federates = 0;
     _RTI.federates[id].num_of_conn_federates_sent_net = 0;
     _RTI.federates[id].start_time_is_set = false;
@@ -2055,19 +2077,18 @@ void wait_for_federates(int socket_descriptor) {
         lf_print("RTI: Transient Federates can join and leave the federation at anytime.");
     }
 
-    // The socket server will not continue to accept connections after all the federates
-    // have joined.
+    // The socket server will only continue to accept connections from transient 
+    // federates.
     // In case some other federation's federates are trying to join the wrong
     // federation, need to respond. Start a separate thread to do that.
     pthread_t responder_thread;
-    // FIXME: temporary remove, so that federate are not confused
-    // pthread_create(&responder_thread, NULL, respond_to_erroneous_connections, NULL);
-
-    // Create a thread that will continue listening to joining and leaving transient
-    // federates, if any
-    // FIXME: 
     pthread_t transient_thread;
-    if (_RTI.number_of_transient_federates > 0) {
+    // If the federation does not include transient federates, then respond to 
+    // erronous connections. Otherwise, continue to accept transients joining and 
+    // respond to duplicate joing requests.
+    if (_RTI.number_of_transient_federates == 0) {
+        pthread_create(&responder_thread, NULL, respond_to_erroneous_connections, NULL);
+    } else if (_RTI.number_of_transient_federates > 0) {
         pthread_create(&transient_thread, NULL, connect_to_transient_federates_thread, NULL);
     }
 

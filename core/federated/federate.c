@@ -2430,7 +2430,6 @@ void handle_next_event_tag_query(){
     tag_t next_tag = lf_tag();
 
     instant_t logical_time = next_tag.time;
-    lf_print("!!!!!!!!!!!!! the net I am sending is: %lld.", logical_time);
 
     // Answer with the time instant of the next event tag
     send_next_event_tag_query_response(logical_time, transient_id);
