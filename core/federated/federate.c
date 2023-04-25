@@ -66,6 +66,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <openssl/hmac.h> // For HMAC-based authentication of federates.
 #endif
 
+// Global variables defined in tag.c:
+extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
+extern tag_t current_tag;
+extern instant_t start_time;
+
 // Error messages.
 char* ERROR_SENDING_HEADER = "ERROR sending header information to federate via RTI";
 char* ERROR_SENDING_MESSAGE = "ERROR sending message to federate via RTI";
@@ -377,7 +382,7 @@ int send_timed_message(interval_t additional_delay,
 
     // Apply the additional delay to the current tag and use that as the intended
     // tag of the outgoing message
-    tag_t current_message_intended_tag = _lf_delay_tag(lf_tag(),
+    tag_t current_message_intended_tag = lf_delay_tag(lf_tag(),
                                                     additional_delay);
 
     // Next 8 + 4 will be the tag (timestamp, microstep)
@@ -1342,7 +1347,7 @@ void update_last_known_status_on_input_port(tag_t tag, int port_id) {
                 if (lf_tag_compare(tag,
                         input_port_action->last_known_status_tag) == 0) {
                     // If the intended tag for an input port is equal to the last known status, we need
-                    // to increment the microstep. This is a direct result of the behavior of the _lf_delay_tag()
+                    // to increment the microstep. This is a direct result of the behavior of the lf_delay_tag()
                     // semantics in tag.h.
                     tag.microstep++;
                 }
@@ -1512,7 +1517,7 @@ void send_port_absent_to_federate(interval_t additional_delay,
 
     // Apply the additional delay to the current tag and use that as the intended
     // tag of the outgoing message
-    tag_t current_message_intended_tag = _lf_delay_tag(lf_tag(),
+    tag_t current_message_intended_tag = lf_delay_tag(lf_tag(),
                                                     additional_delay);
 
     LF_PRINT_LOG("Sending port "
