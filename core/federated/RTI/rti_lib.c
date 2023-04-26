@@ -1443,7 +1443,6 @@ void* federate_thread_TCP(void* fed) {
                 break;
             case MSG_TYPE_RESIGN:
                 handle_federate_resign(my_fed);
-                return NULL;
                 break;
             case MSG_TYPE_NEXT_EVENT_TAG:
                 handle_next_event_tag(my_fed);
@@ -1473,6 +1472,21 @@ void* federate_thread_TCP(void* fed) {
 
     // Nothing more to do. Close the socket and exit.
     close(my_fed->socket); //  from unistd.h
+
+    // Manual clean, in case of a transient federate 
+    // FIXME: Should free_in_transit_message_q be called in case of persistent federates as well?
+    if (my_fed->is_transient) {
+        free_in_transit_message_q(my_fed->in_transit_message_tags);
+        lf_print("RTI: Transient Federate %d thread exited.", my_fed->id);
+
+        // Update the number of connected transient federates
+        pthread_mutex_lock(&_RTI.rti_mutex);
+        _RTI.number_of_connected_transient_federates--;
+        
+        // Reset the status of the leaving federate
+        reset_transient_federate(my_fed->id);
+        pthread_mutex_unlock(&_RTI.rti_mutex);
+    }
 
     return NULL;
 }
@@ -1940,24 +1954,6 @@ void* connect_to_transient_federates_thread() {
                 pthread_create(&(_RTI.federates[fed_id].thread_id), NULL, federate_thread_TCP, &(_RTI.federates[fed_id]));
                 _RTI.federates[fed_id].is_transient = true;
                 _RTI.number_of_connected_transient_federates++;
-            }
-        }
-
-        // Check if transient federate threads did exit.
-        void *thread_exit_status;
-        if (_RTI.number_of_connected_transient_federates > 0 ) {
-            for (int i = 0; i < _RTI.number_of_transient_federates + _RTI.number_of_federates; i++) {
-                // Check if this is a transient federate that has already joined at some point
-                if (_RTI.federates[i].is_transient) {
-                    if (pthread_tryjoin_np(_RTI.federates[i].thread_id, &thread_exit_status) == 0) {
-                        free_in_transit_message_q(_RTI.federates[i].in_transit_message_tags);
-                        lf_print("RTI: Transient Federate %d thread exited.", _RTI.federates[i].id);
-                        // Update the number of connected transient federates
-                        _RTI.number_of_connected_transient_federates--;
-                        // Reset the status of the leaving federate
-                        reset_transient_federate(_RTI.federates[i].id);
-                    }
-                }
             }
         }
     }
