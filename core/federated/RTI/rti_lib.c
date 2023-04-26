@@ -1920,7 +1920,6 @@ void* connect_to_transient_federates_thread() {
                 if (!authenticate_federate(socket_id)) {
                     lf_print_warning("RTI failed to authenticate the incoming federate.");
                     // Ignore the federate that failed authentication.
-                    i--;
                     continue;
                 }
             }
