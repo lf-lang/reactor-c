@@ -689,31 +689,26 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //// Overview of the algorithm:
 ////  When a transient federate joins the deferation after the startup phase (all
 ////  persistent federates have joined and received, or all least are receiveing
-////  their start_time), its start_time is decided based on the Next Event Tags
-////  of its upstream and downstream federates. Next Event Tags are queried by the
-////  RTI, by sending MSG_TYPE_NEXT_EVENT_TAG_QUERY. Federates will answer with
-////  MSG_TYPE_NEXT_EVENT_TAG_QUERY_RESPONSE.
-////  The start_time of the transient will be:
-////   * the maximun of all received MSG_TYPE_NEXT_EVENT_TAG_QUERY_RESPONSE, if
-////     different from the stop_time.
-////   * or either the maximum of all upstream or the minimum of all downstream,
-////     if there is an intersection.
-////  FIXME: Look for counter-examples to choose!
-////  Once decided about the start_time of the transient, all federates will be
-////  requested to halt up to the give time tag (start_time?).
-////  They will resume when they receive
+////  their start_time), its start_time is decided based on the current Tags
+////  of its upstream federates and its own physical join time. Current Tags are
+////  queried by the RTI, by sending MSG_TYPE_CURRENT_TAG_QUERY. Federates will 
+////  answer with MSG_TYPE_CURRENT_TAG_QUERY_RESPONSE.
+////  The start_time of the transient will be the the maximun of all received 
+////  MSG_TYPE_CURRENT_TAG_QUERY_RESPONSE and its physical join time. 
+////  This choice avoids deadline violations and enables hot join (without any 
+////  federate to halt its execution).
 
 /**
- * Byte identifying a query of a federate about its Next Event Tag. This is useful
+ * Byte identifying a query of a federate about its current Tag. This is useful
  * when deciding about the start_time of a joining transient federate.
  */
-#define MSG_TYPE_NEXT_EVENT_TAG_QUERY 30
+#define MSG_TYPE_CURRENT_TAG_QUERY 30
 
 /**
- * Byte identifying a response to a MSG_TYPE_NEXT_EVENT_TAG_QUERY. This is useful
+ * Byte identifying a response to a MSG_TYPE_CURRENT_TAG_QUERY. This is useful
  * when deciding about the start_time of a joining transient federate.
  */
-#define MSG_TYPE_NEXT_EVENT_TAG_QUERY_RESPONSE 31
+#define MSG_TYPE_CURRENT_TAG_QUERY_RESPONSE 31
 
 /**
  * Byte identifying a request sent by the RTI to upstream and downstream federates

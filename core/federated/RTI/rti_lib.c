@@ -230,7 +230,7 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag) {
     }
 }
 
-bool send_next_event_tag_query (federate_t* conn_fed, uint16_t transient_id) {
+bool send_current_tag_query (federate_t* conn_fed, uint16_t transient_id) {
     if (conn_fed->state == NOT_CONNECTED) {
         return false;
     }
@@ -238,7 +238,7 @@ bool send_next_event_tag_query (federate_t* conn_fed, uint16_t transient_id) {
     // Write the message type and the related transient_id
     size_t message_length = 1 + sizeof(uint16_t);
     unsigned char buffer[message_length];
-    buffer[0] = MSG_TYPE_NEXT_EVENT_TAG_QUERY;
+    buffer[0] = MSG_TYPE_CURRENT_TAG_QUERY;
     encode_uint16(transient_id, (unsigned char *)&(buffer[1]));
 
     if (_RTI.tracing_enabled) {
@@ -1119,7 +1119,7 @@ void handle_timestamp(federate_t *my_fed) {
             if (upstream->state == NOT_CONNECTED) {
                 continue;
             }
-            if (send_next_event_tag_query(upstream, my_fed->id)) {
+            if (send_current_tag_query(upstream, my_fed->id)) {
                 my_fed->num_of_conn_federates++;
             }
         }
@@ -1130,7 +1130,7 @@ void handle_timestamp(federate_t *my_fed) {
         //     if (downstream->state == NOT_CONNECTED) {
         //         continue;
         //     }
-        //     if (send_next_event_tag_query(downstream, my_fed->id)) {
+        //     if (send_current_tag_query(downstream, my_fed->id)) {
         //         my_fed->num_of_conn_federates++;
         //     }
         // }
@@ -1139,7 +1139,7 @@ void handle_timestamp(federate_t *my_fed) {
         // then do not wait for the start time
         if (my_fed->num_of_conn_federates == 0) {
             my_fed->start_time_is_set = true;
-            LF_PRINT_DEBUG("Transient federate %d has no upstream or downstrean federates. Its start time is: %lld", my_fed->fed_start_time);
+            LF_PRINT_DEBUG("Transient federate %d has no upstream or downstrean federates. Its start time is: %lld", my_fed->id, my_fed->fed_start_time);
         }
         pthread_mutex_unlock(&_RTI.rti_mutex);
         // Now wait until all connected federates have responded with their next 
@@ -1175,7 +1175,7 @@ void handle_timestamp(federate_t *my_fed) {
     }
 }
 
-void handle_next_event_tag_query_response(federate_t *my_fed) {
+void handle_current_tag_query_response(federate_t *my_fed) {
     // Get the logical time instant and the transient fed_id from the socket
     size_t buffer_size = sizeof(instant_t) + sizeof(uint16_t);
     unsigned char buffer[buffer_size];
@@ -1192,7 +1192,7 @@ void handle_next_event_tag_query_response(federate_t *my_fed) {
         tag_t tag = {.time = timestamp, .microstep = 0};
         tracepoint_RTI_from_federate(receive_NET_QR_RES, my_fed->id, &tag);
     }
-    LF_PRINT_LOG("RTI received NET query response message: %lld.", timestamp);
+    LF_PRINT_LOG("RTI received current TAG query response message: %lld.", timestamp);
 
     // FIXME: Should the lock be inside the if statement only?
     pthread_mutex_lock(&_RTI.rti_mutex);
@@ -1201,7 +1201,7 @@ void handle_next_event_tag_query_response(federate_t *my_fed) {
     federate_t* transient = &(_RTI.federates[transient_fed_id]);
     
     // Set the start_time of the transient federate to be the maximum among 
-    // current tag of upstreams and the physical time at which it joined 
+    // current tag of upstreams and the physical time at which it joined .
     if (timestamp > transient->fed_start_time) { 
         transient->fed_start_time = timestamp;
     }
@@ -1429,8 +1429,8 @@ void* federate_thread_TCP(void* fed) {
             case MSG_TYPE_TIMESTAMP:
                 handle_timestamp(my_fed);
                 break;
-            case MSG_TYPE_NEXT_EVENT_TAG_QUERY_RESPONSE:
-                handle_next_event_tag_query_response(my_fed);
+            case MSG_TYPE_CURRENT_TAG_QUERY_RESPONSE:
+                handle_current_tag_query_response(my_fed);
                 break;
             case MSG_TYPE_ADDRESS_QUERY:
                 handle_address_query(my_fed->id);

@@ -2405,7 +2405,7 @@ void handle_stop_request_message() {
  * Handle a Next Event Tag query received from the RTI. Such message is sent when
  * a transient federate attempts to join a federation after the startup phase.
  * The funtion will read the NET in the event queue and call
- * send_next_event_tag_query_answer().
+ * send_current_tag_query_answer().
  *
  * FIXME: This function assumes the caller does hold the mutex lock?
  */
@@ -2432,21 +2432,21 @@ void handle_next_event_tag_query(){
     instant_t logical_time = next_tag.time;
 
     // Answer with the time instant of the next event tag
-    send_next_event_tag_query_response(logical_time, transient_id);
+    send_current_tag_query_response(logical_time, transient_id);
 }
 
 /**
- * Send the answer to the next event tag query to the RTI.
+ * Send to RTI the answer to current tag query.
  *
  * @param time The time.
  * @param transient_id The transient federate id to send back
  *  Print a soft error message otherwise
  */
-void send_next_event_tag_query_response(instant_t time, uint16_t transient_id) {
+void send_current_tag_query_response(instant_t time, uint16_t transient_id) {
     LF_PRINT_DEBUG("Sending logical time " PRINTF_TIME " to the RTI regarding NET QR RES of trabsient %d.", time, transient_id);
     size_t bytes_to_write = 1 + sizeof(instant_t) + sizeof(uint16_t);
     unsigned char buffer[bytes_to_write];
-    buffer[0] = MSG_TYPE_NEXT_EVENT_TAG_QUERY_RESPONSE;
+    buffer[0] = MSG_TYPE_CURRENT_TAG_QUERY_RESPONSE;
     encode_int64(time, &(buffer[1]));
     encode_uint16(transient_id, &(buffer[9]));
     lf_mutex_lock(&outbound_socket_mutex);
@@ -2695,7 +2695,7 @@ void* listen_to_rti_TCP(void* args) {
             case MSG_TYPE_PORT_ABSENT:
                 handle_port_absent_message(_fed.socket_TCP_RTI, -1);
                 break;
-            case MSG_TYPE_NEXT_EVENT_TAG_QUERY:
+            case MSG_TYPE_CURRENT_TAG_QUERY:
                 handle_next_event_tag_query();
                 break;
             case MSG_TYPE_HALT:

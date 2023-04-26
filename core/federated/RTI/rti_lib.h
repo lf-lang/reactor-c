@@ -691,13 +691,13 @@ int process_args(int argc, const char* argv[]);
 //////////////////////////////////////////////////////////
 
 /**
- * Queries conn_fed for its Next Event Tag (using MSG_TYPE_NEXT_EVENT_TAG_QUERY). 
+ * Queries conn_fed for its current Tag (using MSG_TYPE_CURRENT_TAG_QUERY). 
  * If the function fails to send the query, for example in case the federate is 
  * not connected (can be a transient one itself), then return false. In such case, 
  * the RTI will not wait to receive an answer from it.
  * 
  * The fed_id of the transient federate is sent to conn_fed, which should be 
- * returned as is within MSG_TYPE_NEXT_EVENT_TYPE_QUERY_RESPONSE. The aim is to 
+ * returned as is within MSG_TYPE_CURRENT_TAG_QUERY_RESPONSE. The aim is to 
  * identify which of the transient federates has initiated the request. This enables 
  * the support of two diffrent transient federates joining close eanough in time.
  *
@@ -705,6 +705,12 @@ int process_args(int argc, const char* argv[]);
  * @param fed_id: The ID of the transient joining federate 
  * @return true, if successfully sent, false otherwise.
  */
-bool send_next_event_tag_query(federate_t* conn_fed, uint16_t fed_id);
+bool send_current_tag_query(federate_t* conn_fed, uint16_t fed_id);
 
+/**
+ * Handles current tag query response received form my_fed.
+ * 
+ * @param my_fed: the federate from whom the response is received.
+ */
+void handle_current_tag_query_response(federate_t *my_fed);
 #endif // RTI_LIB_H
