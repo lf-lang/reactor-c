@@ -2410,7 +2410,7 @@ void handle_stop_request_message() {
  * FIXME: This function assumes the caller does hold the mutex lock?
  */
 void handle_next_event_tag_query(){
-    tracepoint_federate_from_RTI(receive_NET_QR, _lf_my_fed_id, NULL);
+    tracepoint_federate_from_RTI(receive_CuTAG_QR, _lf_my_fed_id, NULL);
     
     // Extract the transient federate Id 
     size_t bytes_to_read = sizeof(uint16_t);
@@ -2458,7 +2458,7 @@ void send_current_tag_query_response(instant_t time, uint16_t transient_id) {
 
     tag_t tag = {.time = time, .microstep = 0};
     // Trace the event when tracing is enabled
-    tracepoint_federate_to_RTI(send_NET_QR_RES, _lf_my_fed_id, &tag);
+    tracepoint_federate_to_RTI(send_CuTAG_QR_RES, _lf_my_fed_id, &tag);
 
     ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
     if (bytes_written < (ssize_t)bytes_to_write) {

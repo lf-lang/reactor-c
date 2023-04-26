@@ -242,7 +242,7 @@ bool send_current_tag_query (federate_t* conn_fed, uint16_t transient_id) {
     encode_uint16(transient_id, (unsigned char *)&(buffer[1]));
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_to_federate(send_NET_QR, conn_fed->id, NULL);
+        tracepoint_RTI_to_federate(send_CuTAG_QR, conn_fed->id, NULL);
     }
     // If write_to_socket fails, the consider it as soft failure and update the 
     // federate's status.
@@ -1190,7 +1190,7 @@ void handle_current_tag_query_response(federate_t *my_fed) {
     uint16_t transient_fed_id = extract_uint16((&buffer[8]));
     if (_RTI.tracing_enabled) {
         tag_t tag = {.time = timestamp, .microstep = 0};
-        tracepoint_RTI_from_federate(receive_NET_QR_RES, my_fed->id, &tag);
+        tracepoint_RTI_from_federate(receive_CuTAG_QR_RES, my_fed->id, &tag);
     }
     LF_PRINT_LOG("RTI received current TAG query response message: %lld.", timestamp);
 
