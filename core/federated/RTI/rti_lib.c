@@ -1948,7 +1948,7 @@ void* connect_to_transient_federates_thread() {
         if (_RTI.number_of_connected_transient_federates > 0 ) {
             for (int i = 0; i < _RTI.number_of_transient_federates + _RTI.number_of_federates; i++) {
                 // Check if this is a transient federate that has already joined at some point
-                if (_RTI.federates[i].thread_id != -1 && _RTI.federates[i].is_transient) {
+                if (_RTI.federates[i].is_transient) {
                     if (pthread_tryjoin_np(_RTI.federates[i].thread_id, &thread_exit_status) == 0) {
                         free_in_transit_message_q(_RTI.federates[i].in_transit_message_tags);
                         lf_print("RTI: Transient Federate %d thread exited.", _RTI.federates[i].id);
@@ -1991,7 +1991,6 @@ void* respond_to_erroneous_connections(void* nothing) {
 }
 
 void initialize_federate(uint16_t id) {
-    _RTI.federates[id].thread_id = -1;
     _RTI.federates[id].id = id;
     _RTI.federates[id].socket = -1;      // No socket.
     _RTI.federates[id].clock_synchronization_enabled = true;
@@ -2021,7 +2020,6 @@ void initialize_federate(uint16_t id) {
 void reset_transient_federate(uint16_t id) {
     // The commented lines highlignts the values that a transient federate needs 
     // to passes to its future joining one
-    _RTI.federates[id].thread_id = -1;
     // _RTI.federates[id].id = id;
     _RTI.federates[id].socket = -1;      // No socket.
     _RTI.federates[id].clock_synchronization_enabled = true;
