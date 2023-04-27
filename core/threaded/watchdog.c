@@ -10,20 +10,13 @@
 #include "watchdog.h"
 
 extern int _lf_watchdog_number;
-
-/** 
- * Watchdog function type. The argument passed to one of 
- * these watchdog functions is a pointer to the self struct
- * for the reactor.
- */
-typedef void(*watchdog_function_t)(void*);
+extern watchdog_t* _lf_watchdogs;
 
 void _lf_initialize_watchdog_mutexes() {
     for (int i = 0; i < _lf_watchdog_number; i++) {
-        self_base_t* current_base = _lf_watchdogs[i]->base;
-        if (&(current_base->watchdog_mutex) == NULL) {
-            lf_mutex_init(&(current_base->watchdog_mutex));
-            current_base->has_watchdog = true;
+        self_base_t* current_base = _lf_watchdogs[i].base;
+        if (current_base->reaction_mutex != NULL) {
+            lf_mutex_init((lf_mutex_t*)(current_base->reaction_mutex));
         }
     }
 }
@@ -33,13 +26,13 @@ void* _lf_run_watchdog(void* arg) {
 
     self_base_t* base = watchdog->base;
     assert(base->reaction_mutex != NULL);
-    lf_mutex_lock((lf_mutex*)base->reaction_mutex);
+    lf_mutex_lock((lf_mutex_t*)(base->reaction_mutex));
 
     while (lf_time_physical() < watchdog->expiration) {
         interval_t T = watchdog->expiration - lf_time_physical();
-        lf_mutex_unlock((lf_mutex*)base->reaction_mutex);
+        lf_mutex_unlock((lf_mutex_t*)base->reaction_mutex);
         lf_sleep(T);
-        lf_mutex_lock((lf_mutex*)base->reaction_mutex);
+        lf_mutex_lock((lf_mutex_t*)(base->reaction_mutex));
     }
 
     if (watchdog->expiration != NEVER) {
@@ -48,7 +41,7 @@ void* _lf_run_watchdog(void* arg) {
     }
     watchdog->thread_active = false;
 
-    lf_mutex_unlock((lf_mutex*)base->reaction_mutex);
+    lf_mutex_unlock((lf_mutex_t*)(base->reaction_mutex));
     watchdog->thread_active = false;
     return NULL;
 }

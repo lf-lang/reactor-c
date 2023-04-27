@@ -1302,7 +1302,7 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
 
 #ifdef LF_THREADED
     if (((self_base_t*) reaction->self)->reaction_mutex != NULL) {
-        lf_mutex_lock((lf_mutex*)((self_base_t*)reaction->self)->reaction_mutex);
+        lf_mutex_lock((lf_mutex_t*)((self_base_t*)reaction->self)->reaction_mutex);
     }
 #endif
 
@@ -1315,7 +1315,7 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
 
 #ifdef LF_THREADED
     if (((self_base_t*) reaction->self)->reaction_mutex != NULL) {
-        lf_mutex_unlock((lf_mutex*)((self_base_t*)reaction->self)->reaction_mutex);
+        lf_mutex_unlock((lf_mutex_t*)((self_base_t*)reaction->self)->reaction_mutex);
     }
 #endif
 }

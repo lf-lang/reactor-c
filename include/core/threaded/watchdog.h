@@ -9,6 +9,13 @@
 
 #include "platform.h"
 
+/** 
+ * Watchdog function type. The argument passed to one of 
+ * these watchdog functions is a pointer to the self struct
+ * for the reactor.
+ */
+typedef void(*watchdog_function_t)(void*);
+
 /** Typdef for watchdog_t struct, used to call watchdog handler. */
 typedef struct watchdog_t watchdog_t;
 
