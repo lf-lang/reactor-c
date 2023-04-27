@@ -2421,7 +2421,7 @@ void terminate_execution() {
         size_t bytes_to_write = 1 + sizeof(tag_t);
         unsigned char buffer[bytes_to_write];
         buffer[0] = MSG_TYPE_RESIGN;
-        tag_t tag = lf_tag();
+        tag_t tag = lf_tag(NULL);
         encode_tag(&(buffer[1]), tag);
         // Trace the event when tracing is enabled
         tracepoint_federate_to_RTI(send_RESIGN, _lf_my_fed_id, &tag);
