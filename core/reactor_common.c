@@ -1777,15 +1777,6 @@ void termination(void) {
         interval_t event_time = event->time - start_time;
         lf_print_warning("---- The first future event has timestamp " PRINTF_TIME " after start time.", event_time);
     }
-    // Issue a warning if a memory leak has been detected.
-    if (_lf_count_payload_allocations > 0) {
-        lf_print_warning("Memory allocated for messages has not been freed.");
-        lf_print_warning("Number of unfreed messages: %d.", _lf_count_payload_allocations);
-    }
-    if (_lf_count_token_allocations > 0) {
-        lf_print_warning("Memory allocated for tokens has not been freed!");
-        lf_print_warning("Number of unfreed tokens: %d.", _lf_count_token_allocations);
-    }
     // Print elapsed times.
     // If these are negative, then the program failed to start up.
     interval_t elapsed_time = lf_time_logical_elapsed();
@@ -1802,6 +1793,15 @@ void termination(void) {
         }
     }
     _lf_free_all_tokens(); // Must be done before freeing reactors.
+    // Issue a warning if a memory leak has been detected.
+    if (_lf_count_payload_allocations > 0) {
+        lf_print_warning("Memory allocated for messages has not been freed.");
+        lf_print_warning("Number of unfreed messages: %d.", _lf_count_payload_allocations);
+    }
+    if (_lf_count_token_allocations > 0) {
+        lf_print_warning("Memory allocated for tokens has not been freed!");
+        lf_print_warning("Number of unfreed tokens: %d.", _lf_count_token_allocations);
+    }
     _lf_free_all_reactors();
     free(_lf_is_present_fields);
     free(_lf_is_present_fields_abbreviated);

@@ -80,7 +80,7 @@ do { \
 } while (0)
 
 /**
- * Version of lf_set for output types given as 'type[]' where you
+ * Version of lf_set for output types given as `type[]` or `type*` where you
  * want to send a previously dynamically allocated array.
  *
  * The deallocation is delegated to downstream reactors, which
@@ -95,7 +95,7 @@ do { \
 #define SET_ARRAY(out, val, elem_size, length) \
 do { \
         _Pragma ("Warning \"'SET_ARRAY' is deprecated.\""); \
-        _LF_SET_ARRAY(out, val, length); \
+        lf_set_array(out, val, length); \
 } while (0)
 
 /**

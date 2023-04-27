@@ -2,66 +2,34 @@
  * @file
  * @author Edward A. Lee
  * @author Soroush Bateni
+ * @copyright (c) 2020-2023, The University of California at Berkeley and UT Dallas.
+ * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ * 
+ * @brief Utility function for playing audio on Linux or MacOS.
  *
- * @section LICENSE
-Copyright (c) 2020, The University of California at Berkeley and UT Dallas
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
- *
- * Audio functions for Linux. To start an audio loop, call
- * `lf_start_audio_loop`, passing it the logical time at which
+ * Audio functions for Linux or MacOS. To start an audio loop, call
+ * `lf_start_audio_loop()`, passing it the logical time at which
  * you would like the loop to start.  To play a waveform,
  * call `lf_play_audio_waveform()`.  A waveform may be
  * synthesized or read from a .wav file using
  * `read_wave_file()` (see wave_file_reader.h).
  *
- * To use this, include the following flags in your target properties:
- * If you are running on Linux:
+ * To use this, include the following in your target properties:
  * <pre>
- * target C {
- *     flags: "-lasound -lm",
- *     files: ["/lib/C/util/audio_loop_linux.c", "/lib/C/util/audio_loop.h"]
- * };
- * </pre>
- * If you are running on Mac:
- * <pre>
- * target C {
- *     flags: "-framework AudioToolbox -framework CoreFoundation -lm",
- *     files: ["/lib/C/util/audio_loop_mac.c", "/lib/C/util/audio_loop.h"]
- * };
+    files: [
+        "/lib/c/reactor-c/util/audio_loop_mac.c",
+        "/lib/c/reactor-c/util/audio_loop.h",
+        "/lib/c/reactor-c/util/audio_loop_linux.c",
+    ],
+    cmake-include: [
+        "/lib/c/reactor-c/util/audio_loop.cmake"
+    ]
  * </pre>
  *
  * In addition, you need this in your Lingua Franca file:
- * If you are running on Linux:
  * <pre>
  * preamble {=
- *     #include "audio_loop_linux.c"
- * =}
- * </pre>
- * If you are running on Mac:
- * <pre>
- * preamble {=
- *     #include "audio_loop_mac.c"
+ *     #include "audio_loop.h"
  * =}
  * </pre>
  */
