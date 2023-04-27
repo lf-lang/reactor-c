@@ -354,9 +354,9 @@ DESCRIPTION</h1>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> { \</div>
 <div class="line">        _Pragma (<span class="stringliteral">&quot;Warning \&quot;&#39;SET_ARRAY&#39; is deprecated.\&quot;&quot;</span>); \</div>
-<div class="line">        _LF_SET_ARRAY(out, val, length); \</div>
+<div class="line">        lf_set_array(out, val, length); \</div>
 <div class="line">} <span class="keywordflow">while</span> (0)</div>
-</div><!-- fragment --><p>Version of lf_set for output types given as 'type[]' where you want to send a previously dynamically allocated array.</p>
+</div><!-- fragment --><p>Version of lf_set for output types given as <code>type[]</code> or <code>type*</code> where you want to send a previously dynamically allocated array.</p>
 <p>The deallocation is delegated to downstream reactors, which automatically deallocate when the reference count drops to zero. It also sets the corresponding _is_present variable in the self struct to true (which causes the object message to be sent). </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">out</td><td>The output port (by name). </td></tr>

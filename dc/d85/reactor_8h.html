@@ -113,8 +113,8 @@ Macros</h2></td></tr>
 <tr class="separator:ac783147cb265dcb8f2920def647037e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af5f7e281be573bc680ed652ad54f5386"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#af5f7e281be573bc680ed652ad54f5386">_LF_SET</a>(out,  val)</td></tr>
 <tr class="separator:af5f7e281be573bc680ed652ad54f5386"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ade8db75c1a1f095de1246663fa86b941"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#ade8db75c1a1f095de1246663fa86b941">_LF_SET_ARRAY</a>(out,  val,  length)</td></tr>
-<tr class="separator:ade8db75c1a1f095de1246663fa86b941"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2cffa9125232d59af736fd77a0232edd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#a2cffa9125232d59af736fd77a0232edd">lf_set_array</a>(out,  val,  length)</td></tr>
+<tr class="separator:a2cffa9125232d59af736fd77a0232edd"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae6d69be73768b3d144a524fa87f0d069"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#ae6d69be73768b3d144a524fa87f0d069">_LF_SET_NEW</a>(out)</td></tr>
 <tr class="separator:ae6d69be73768b3d144a524fa87f0d069"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a64c4d124085ac4279bac7158ad144218"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#a64c4d124085ac4279bac7158ad144218">_LF_SET_NEW_ARRAY</a>(out,  len)</td></tr>
@@ -264,56 +264,6 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="ade8db75c1a1f095de1246663fa86b941" name="ade8db75c1a1f095de1246663fa86b941"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ade8db75c1a1f095de1246663fa86b941">&#9670;&#160;</a></span>_LF_SET_ARRAY</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define _LF_SET_ARRAY</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">out, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">val, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname">length&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> { \</div>
-<div class="line">    _lf_set_present((<a class="code hl_struct" href="../../da/de8/structlf__port__base__t.html">lf_port_base_t</a>*)out); \</div>
-<div class="line">    <a class="code hl_struct" href="../../d6/d80/structlf__token__t.html">lf_token_t</a>* token = <a class="code hl_function" href="../../d4/d37/lf__token_8c.html#ac171b72d59f37653f012d30cad72a2d2">_lf_initialize_token_with_value</a>((<a class="code hl_struct" href="../../de/d6b/structtoken__template__t.html">token_template_t</a>*)out, val, length); \</div>
-<div class="line">    out-&gt;value = token-&gt;<a class="code hl_variable" href="../../d6/d80/structlf__token__t.html#a96f790f8f8dcc01474dbc255e05ceaa8">value</a>; \</div>
-<div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="astructlf__token__t_html_a96f790f8f8dcc01474dbc255e05ceaa8"><div class="ttname"><a href="../../d6/d80/structlf__token__t.html#a96f790f8f8dcc01474dbc255e05ceaa8">lf_token_t::value</a></div><div class="ttdeci">void * value</div><div class="ttdef"><b>Definition:</b> lf_token.h:115</div></div>
-</div><!-- fragment --><p>Version of set for output types given as 'type[]' where you want to send a previously dynamically allocated array.</p>
-<p>The deallocation is delegated to downstream reactors, which automatically deallocate when the reference count drops to zero. It also sets the corresponding _is_present variable in the self struct to true (which causes the object message to be sent). </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">out</td><td>The output port (by name). </td></tr>
-    <tr><td class="paramname">val</td><td>The array to send (a pointer to the first element). </td></tr>
-    <tr><td class="paramname">length</td><td>The length of the array to send. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="../../d6/d80/structlf__token__t.html">lf_token_t</a> </dd></dl>
-
-</div>
-</div>
 <a id="ae61c75cd543539c62c6021a0837737d9" name="ae61c75cd543539c62c6021a0837737d9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae61c75cd543539c62c6021a0837737d9">&#9670;&#160;</a></span>_LF_SET_COPY_CONSTRUCTOR</h2>
 
@@ -414,6 +364,7 @@ DESCRIPTION</h1>
 <div class="line">    out-&gt;value = token-&gt;<a class="code hl_variable" href="../../d6/d80/structlf__token__t.html#a96f790f8f8dcc01474dbc255e05ceaa8">value</a>; \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
 <div class="ttc" id="alf__token_8c_html_a6e2c7940f2e59f5ff57807df6b41f5fe"><div class="ttname"><a href="../../d4/d37/lf__token_8c.html#a6e2c7940f2e59f5ff57807df6b41f5fe">_lf_initialize_token</a></div><div class="ttdeci">lf_token_t * _lf_initialize_token(token_template_t *tmplt, size_t length)</div><div class="ttdef"><b>Definition:</b> lf_token.c:280</div></div>
+<div class="ttc" id="astructlf__token__t_html_a96f790f8f8dcc01474dbc255e05ceaa8"><div class="ttname"><a href="../../d6/d80/structlf__token__t.html#a96f790f8f8dcc01474dbc255e05ceaa8">lf_token_t::value</a></div><div class="ttdeci">void * value</div><div class="ttdef"><b>Definition:</b> lf_token.h:115</div></div>
 </div><!-- fragment --><p>Version of set() for output types given as 'type*' that allocates a new object of the type of the specified output port.</p>
 <p>This macro dynamically allocates enough memory to contain one instance of the output datatype and sets the variable named by the argument to point to the newly allocated memory. The user code can then populate it with whatever value it wishes to send.</p>
 <p>This macro also sets the corresponding _is_present variable in the self struct to true (which causes the object message to be sent), </p><dl class="params"><dt>Parameters</dt><dd>
@@ -543,6 +494,55 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p>Macro for extracting the deadline from the index of a reaction. The reaction queue is sorted according to this index, and the use of the deadline here results in an earliest deadline first (EDF) scheduling poicy. </p>
+
+</div>
+</div>
+<a id="a2cffa9125232d59af736fd77a0232edd" name="a2cffa9125232d59af736fd77a0232edd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2cffa9125232d59af736fd77a0232edd">&#9670;&#160;</a></span>lf_set_array</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define lf_set_array</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">out, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">val, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">length&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line"><span class="keywordflow">do</span> { \</div>
+<div class="line">    _lf_set_present((<a class="code hl_struct" href="../../da/de8/structlf__port__base__t.html">lf_port_base_t</a>*)out); \</div>
+<div class="line">    <a class="code hl_struct" href="../../d6/d80/structlf__token__t.html">lf_token_t</a>* token = <a class="code hl_function" href="../../d4/d37/lf__token_8c.html#ac171b72d59f37653f012d30cad72a2d2">_lf_initialize_token_with_value</a>((<a class="code hl_struct" href="../../de/d6b/structtoken__template__t.html">token_template_t</a>*)out, val, length); \</div>
+<div class="line">    out-&gt;value = token-&gt;<a class="code hl_variable" href="../../d6/d80/structlf__token__t.html#a96f790f8f8dcc01474dbc255e05ceaa8">value</a>; \</div>
+<div class="line">} <span class="keywordflow">while</span>(0)</div>
+</div><!-- fragment --><p>Version of set for output types given as 'type[]' where you want to send a previously dynamically allocated array.</p>
+<p>The deallocation is delegated to downstream reactors, which automatically deallocate when the reference count drops to zero. It also sets the corresponding _is_present variable in the self struct to true (which causes the object message to be sent). </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">out</td><td>The output port (by name). </td></tr>
+    <tr><td class="paramname">val</td><td>The array to send (a pointer to the first element). </td></tr>
+    <tr><td class="paramname">length</td><td>The length of the array to send. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="../../d6/d80/structlf__token__t.html">lf_token_t</a> </dd></dl>
 
 </div>
 </div>

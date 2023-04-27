@@ -96,6 +96,9 @@ $(document).ready(function(){initNavTree('d1/dcb/audio__loop_8h.html','../../');
   <div class="headertitle"><div class="title">audio_loop.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Utility function for playing audio on Linux or MacOS.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="../../d3/d8a/wave__file__reader_8h_source.html">wave_file_reader.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d2/dcd/tag_8h_source.html">tag.h</a>&quot;</code><br />
 </div>
@@ -126,40 +129,26 @@ Functions</h2></td></tr>
 <tr class="separator:a20d5fc7b37764eb8c3a4e917e93ad7d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee </dd>
+<div class="textblock"><p>Utility function for playing audio on Linux or MacOS. </p>
+<dl class="section author"><dt>Author</dt><dd>Edward A. Lee </dd>
 <dd>
-Soroush Bateni</dd></dl>
-<h1><a class="anchor" id="LICENSE"></a>
-LICENSE</h1>
-<p>Copyright (c) 2020, The University of California at Berkeley and UT Dallas</p>
-<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
-<ol type="1">
-<li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
-<li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
-</ol>
-<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
-<h1><a class="anchor" id="DESCRIPTION"></a>
-DESCRIPTION</h1>
-<p>Audio functions for Linux. To start an audio loop, call <code>lf_start_audio_loop</code>, passing it the logical time at which you would like the loop to start. To play a waveform, call <code><a class="el" href="../../d1/dcb/audio__loop_8h.html#a20d5fc7b37764eb8c3a4e917e93ad7d7">lf_play_audio_waveform()</a></code>. A waveform may be synthesized or read from a .wav file using <code><a class="el" href="../../dd/da2/wave__file__reader_8c.html#a149d009d65a3c20d73bcf2ae7c9d6814">read_wave_file()</a></code> (see <a class="el" href="../../d3/d8a/wave__file__reader_8h.html">wave_file_reader.h</a>).</p>
-<p>To use this, include the following flags in your target properties: If you are running on Linux: </p><pre>
-   target C {
-       flags: "-lasound -lm",
-       files: ["/lib/C/util/audio_loop_linux.c", "/lib/C/util/audio_loop.h"]
-   };
-   </pre><p> If you are running on Mac: </p><pre>
-   target C {
-       flags: "-framework AudioToolbox -framework CoreFoundation -lm",
-       files: ["/lib/C/util/audio_loop_mac.c", "/lib/C/util/audio_loop.h"]
-   };
-   </pre><p>In addition, you need this in your Lingua Franca file: If you are running on Linux: </p><pre>
-   preamble {=
-       #include "audio_loop_linux.c"
-   =}
-   </pre><p> If you are running on Mac: </p><pre>
-   preamble {=
-       #include "audio_loop_mac.c"
-   =}
-   </pre> </div><h2 class="groupheader">Macro Definition Documentation</h2>
+Soroush Bateni </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2020-2023, The University of California at Berkeley and UT Dallas. License in <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a></dd></dl>
+<p>Audio functions for Linux or MacOS. To start an audio loop, call <code><a class="el" href="../../d1/dcb/audio__loop_8h.html#a7e03b277fd2f2b3ae6aa029e5256da3e">lf_start_audio_loop()</a></code>, passing it the logical time at which you would like the loop to start. To play a waveform, call <code><a class="el" href="../../d1/dcb/audio__loop_8h.html#a20d5fc7b37764eb8c3a4e917e93ad7d7">lf_play_audio_waveform()</a></code>. A waveform may be synthesized or read from a .wav file using <code><a class="el" href="../../dd/da2/wave__file__reader_8c.html#a149d009d65a3c20d73bcf2ae7c9d6814">read_wave_file()</a></code> (see <a class="el" href="../../d3/d8a/wave__file__reader_8h.html" title="Utility function for reading WAV audio files.">wave_file_reader.h</a>).</p>
+<p>To use this, include the following in your target properties: </p><pre>
+ files: [
+     "/lib/c/reactor-c/util/audio_loop_mac.c",
+     "/lib/c/reactor-c/util/audio_loop.h",
+     "/lib/c/reactor-c/util/audio_loop_linux.c",
+ ],
+ cmake-include: [
+     "/lib/c/reactor-c/util/audio_loop.cmake"
+ ]
+</pre><p>In addition, you need this in your Lingua Franca file: </p><pre>
+preamble {=
+    #include "audio_loop.h"
+=}
+</pre> </div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a1d48237cb63c5ae67aab6d00cc64afb6" name="a1d48237cb63c5ae67aab6d00cc64afb6"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1d48237cb63c5ae67aab6d00cc64afb6">&#9670;&#160;</a></span>AUDIO_BUFFER_SIZE</h2>
 

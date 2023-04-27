@@ -100,6 +100,9 @@ $(document).ready(function(){initNavTree('d7/d58/sensor__simulator_8c.html','../
   <div class="headertitle"><div class="title">sensor_simulator.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Simple terminal-based user interface based on ncurses. See <a class="el" href="../../dc/de9/sensor__simulator_8h.html" title="Simple terminal-based user interface based on ncurses.">sensor_simulator.h</a>.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;pthread.h&gt;</code><br />
 <code>#include &lt;ncurses.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
@@ -136,8 +139,8 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a0e21915a1152dda872b68aa7254249c4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d58/sensor__simulator_8c.html#a0e21915a1152dda872b68aa7254249c4">_lf_show_message</a> (char *message_lines[], int number_of_lines)</td></tr>
-<tr class="separator:a0e21915a1152dda872b68aa7254249c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a534b9ed47beea3d046d9652899744b7a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d58/sensor__simulator_8c.html#a534b9ed47beea3d046d9652899744b7a">_lf_show_message</a> (const char *message_lines[], int number_of_lines)</td></tr>
+<tr class="separator:a534b9ed47beea3d046d9652899744b7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae5a65cee79299573890b78d9b7a10996"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d58/sensor__simulator_8c.html#ae5a65cee79299573890b78d9b7a10996">_lf_start_tick_window</a> (int width)</td></tr>
 <tr class="separator:ae5a65cee79299573890b78d9b7a10996"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afa21343db2cbddc2217a5056e48eda62"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d58/sensor__simulator_8c.html#afa21343db2cbddc2217a5056e48eda62">_lf_start_print_window</a> (int above, int right)</td></tr>
@@ -152,10 +155,10 @@ Functions</h2></td></tr>
 <tr class="separator:a9c13d5616818c224a03bece7056ef76a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a562a694d5b2ed8c935aa08d78c488114"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d58/sensor__simulator_8c.html#a562a694d5b2ed8c935aa08d78c488114">end_sensor_simulator</a> ()</td></tr>
 <tr class="separator:a562a694d5b2ed8c935aa08d78c488114"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adfb8c4dc96d976367deb805452b8a3b2"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d58/sensor__simulator_8c.html#adfb8c4dc96d976367deb805452b8a3b2">start_sensor_simulator</a> (char *message_lines[], int number_of_lines, int <a class="el" href="../../d7/d58/sensor__simulator_8c.html#a89502730b2655e279c83afb299e8ded5">tick_window_width</a>, char *<a class="el" href="../../d7/d58/sensor__simulator_8c.html#ab936051f5aaca44c6c3c41dee0d19c36">log_file</a>, int log_level)</td></tr>
-<tr class="separator:adfb8c4dc96d976367deb805452b8a3b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad9a70cc616c82bab0563369a662e5cc0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d58/sensor__simulator_8c.html#ad9a70cc616c82bab0563369a662e5cc0">show_tick</a> (char *character)</td></tr>
-<tr class="separator:ad9a70cc616c82bab0563369a662e5cc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a491b52110965df05da5f18cb820ae99f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d58/sensor__simulator_8c.html#a491b52110965df05da5f18cb820ae99f">start_sensor_simulator</a> (const char *message_lines[], int number_of_lines, int <a class="el" href="../../d7/d58/sensor__simulator_8c.html#a89502730b2655e279c83afb299e8ded5">tick_window_width</a>, char *<a class="el" href="../../d7/d58/sensor__simulator_8c.html#ab936051f5aaca44c6c3c41dee0d19c36">log_file</a>, int log_level)</td></tr>
+<tr class="separator:a491b52110965df05da5f18cb820ae99f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3c9ec0901afe8264c0e75d40c940bd5a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d58/sensor__simulator_8c.html#a3c9ec0901afe8264c0e75d40c940bd5a">show_tick</a> (const char *character)</td></tr>
+<tr class="separator:a3c9ec0901afe8264c0e75d40c940bd5a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a196614841046dea5b94b2a60108fff40"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d58/sensor__simulator_8c.html#a196614841046dea5b94b2a60108fff40">register_sensor_key</a> (char <a class="el" href="../../d6/df3/hashmap_8h.html#abb68df22c7c60360f0fa5f26876399c3">key</a>, void *action)</td></tr>
 <tr class="separator:a196614841046dea5b94b2a60108fff40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -196,8 +199,8 @@ Variables</h2></td></tr>
 <tr class="separator:a9cd0b00de2eb05ca8ea53c06082a4b14"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac107c00985bbaeaceacebeb8fbebac71"><td class="memItemLeft" >&#160;&#160;&#160;FILE *&#160;&#160;&#160;<a class="el" href="../../d7/d58/sensor__simulator_8c.html#ab936051f5aaca44c6c3c41dee0d19c36">log_file</a></td></tr>
 <tr class="separator:ac107c00985bbaeaceacebeb8fbebac71"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2e7191617ec76099c436635312874eab"><td class="memItemLeft" >&#160;&#160;&#160;char **&#160;&#160;&#160;<a class="el" href="../../d7/d58/sensor__simulator_8c.html#a03b142cb38481e1ae252f84274ec14e1">welcome_message</a></td></tr>
-<tr class="separator:a2e7191617ec76099c436635312874eab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a91b575557ec9b2c054b2a3bcf17451be"><td class="memItemLeft" >&#160;&#160;&#160;const char **&#160;&#160;&#160;<a class="el" href="../../d7/d58/sensor__simulator_8c.html#a804ebc691e188c33045120c13bdda8f4">welcome_message</a></td></tr>
+<tr class="separator:a91b575557ec9b2c054b2a3bcf17451be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abfd45e9f3e91cb9199e5b8001f814d8a"><td class="memItemLeft" >&#160;&#160;&#160;int&#160;&#160;&#160;<a class="el" href="../../d7/d58/sensor__simulator_8c.html#aed914099b551105b7294552e79e13b16">welcome_message_length</a></td></tr>
 <tr class="separator:abfd45e9f3e91cb9199e5b8001f814d8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a70de91b86c07ab383c0ab5e9b31416f2"><td class="memItemLeft" >&#160;&#160;&#160;struct <a class="el" href="../../d7/dd0/struct__lf__sensor__message__t.html">_lf_sensor_message_t</a> *&#160;&#160;&#160;<a class="el" href="../../d7/d58/sensor__simulator_8c.html#acbf6adab5b84074242e5ad7aa71c5d15">message_q</a></td></tr>
@@ -210,19 +213,9 @@ Variables</h2></td></tr>
 <tr class="separator:aa31421e2302e39963b9c3ac64e031507"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>)</dd></dl>
-<h1><a class="anchor" id="LICENSE"></a>
-LICENSE</h1>
-<p>Copyright (c) 2020, The University of California at Berkeley.</p>
-<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
-<ol type="1">
-<li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
-<li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
-</ol>
-<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
-<h1><a class="anchor" id="DESCRIPTION"></a>
-DESCRIPTION</h1>
-<p>See <a class="el" href="../../dc/de9/sensor__simulator_8h.html">sensor_simulator.h</a>. </p>
+<div class="textblock"><p>Simple terminal-based user interface based on ncurses. See <a class="el" href="../../dc/de9/sensor__simulator_8h.html" title="Simple terminal-based user interface based on ncurses.">sensor_simulator.h</a>. </p>
+<dl class="section author"><dt>Author</dt><dd>Edward A. Lee </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2020-2023, The University of California at Berkeley and UT Dallas. License in <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a> </dd></dl>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a253dc085a62ce4d344b4b97c2fea4ac0" name="a253dc085a62ce4d344b4b97c2fea4ac0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a253dc085a62ce4d344b4b97c2fea4ac0">&#9670;&#160;</a></span>LF_SENSOR_TRIGGER_TABLE_SIZE</h2>
@@ -390,8 +383,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a0e21915a1152dda872b68aa7254249c4" name="a0e21915a1152dda872b68aa7254249c4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0e21915a1152dda872b68aa7254249c4">&#9670;&#160;</a></span>_lf_show_message()</h2>
+<a id="a534b9ed47beea3d046d9652899744b7a" name="a534b9ed47beea3d046d9652899744b7a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a534b9ed47beea3d046d9652899744b7a">&#9670;&#160;</a></span>_lf_show_message()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -399,7 +392,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="memname">void _lf_show_message </td>
           <td>(</td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>message_lines</em>[], </td>
         </tr>
         <tr>
@@ -528,7 +521,8 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p>Register a keyboard key to trigger the specified action. Printable ASCII characters (codes 32 to 127) are supported plus '<br  />
-' and '\0', where the latter registers a trigger to invoked when any key is pressed. If a specific key is registered and any key ('\0') is also registered, the any key trigger will be scheduled after the specific key is scheduled. If these triggers belong to different reactors, they could be invoked in parallel. This will fail if the specified key has already been registered (error code 1), or the key is not a supported key (error code 2) or if the trigger is NULL (error code 3). </p><dl class="params"><dt>Parameters</dt><dd>
+' and '\0', where the latter registers a trigger to invoked when any key is pressed. If a specific key is registered and any key ('\0') is also registered, the any key trigger will be scheduled after the specific key is scheduled. If these triggers belong to different reactors, they could be invoked in parallel. This will fail if the specified key has already been registered (error code 1), or the key is not a supported key or a newline ‘<br  />
+’ or any key '\0' (error code 2) or if the trigger is NULL (error code 3). </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">key</td><td>The key to register. </td></tr>
     <tr><td class="paramname">action</td><td>The action to trigger when the key is pressed (a pointer to a <a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a> struct). </td></tr>
@@ -539,8 +533,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="ad9a70cc616c82bab0563369a662e5cc0" name="ad9a70cc616c82bab0563369a662e5cc0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad9a70cc616c82bab0563369a662e5cc0">&#9670;&#160;</a></span>show_tick()</h2>
+<a id="a3c9ec0901afe8264c0e75d40c940bd5a" name="a3c9ec0901afe8264c0e75d40c940bd5a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3c9ec0901afe8264c0e75d40c940bd5a">&#9670;&#160;</a></span>show_tick()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -548,7 +542,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="memname">void show_tick </td>
           <td>(</td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>character</em></td><td>)</td>
           <td></td>
         </tr>
@@ -563,8 +557,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="adfb8c4dc96d976367deb805452b8a3b2" name="adfb8c4dc96d976367deb805452b8a3b2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adfb8c4dc96d976367deb805452b8a3b2">&#9670;&#160;</a></span>start_sensor_simulator()</h2>
+<a id="a491b52110965df05da5f18cb820ae99f" name="a491b52110965df05da5f18cb820ae99f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a491b52110965df05da5f18cb820ae99f">&#9670;&#160;</a></span>start_sensor_simulator()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -572,7 +566,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="memname">int start_sensor_simulator </td>
           <td>(</td>
-          <td class="paramtype">char *&#160;</td>
+          <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>message_lines</em>[], </td>
         </tr>
         <tr>
@@ -926,14 +920,14 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a03b142cb38481e1ae252f84274ec14e1" name="a03b142cb38481e1ae252f84274ec14e1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a03b142cb38481e1ae252f84274ec14e1">&#9670;&#160;</a></span>welcome_message</h2>
+<a id="a804ebc691e188c33045120c13bdda8f4" name="a804ebc691e188c33045120c13bdda8f4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a804ebc691e188c33045120c13bdda8f4">&#9670;&#160;</a></span>welcome_message</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">char** welcome_message</td>
+          <td class="memname">const char** welcome_message</td>
         </tr>
       </table>
 </div><div class="memdoc">
