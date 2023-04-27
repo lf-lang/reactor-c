@@ -535,20 +535,6 @@ trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, 
  */
 void _lf_fd_send_stop_request_to_rti(void);
 
-
-#ifdef LF_THREADED
-/** 
- * Function to start the watchdog.
- * 
- * @param watchdog The watchdog to be started
- * @param additional_timeout Additional timeout to be added to the watchdog's
- * minimum expiration.
- **/
-void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout);
-
-void _lf_watchdog_stop(watchdog_t* watchdog);
-#endif
-
 /**
  * These functions must be implemented by both threaded and unthreaded
  * runtime. Should be routed to appropriate API calls in platform.h

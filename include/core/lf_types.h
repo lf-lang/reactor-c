@@ -140,13 +140,6 @@ typedef pqueue_pri_t index_t;
  */
 typedef void(*reaction_function_t)(void*);
 
-/** 
- * Watchdog function type. The argument passed to one of 
- * these watchdog functions is a pointer to the self struct
- * for the reactor.
- */
-typedef void(*watchdog_function_t)(void*);
-
 /** Trigger struct representing an output, timer, action, or input. See below. */
 typedef struct trigger_t trigger_t;
 
@@ -215,23 +208,6 @@ struct event_t {
 #endif
     event_t* next;            // Pointer to the next event lined up in superdense time.
 };
-
-/** Typdef for watchdog_t struct, used to call watchdog handler. */
-typedef struct watchdog_t watchdog_t;
-
-#ifdef LF_THREADED
-/** Watchdog struct for handler. */
-struct watchdog_t {
-    struct self_base_t* base;                // The reactor that contains the watchdog.
-    trigger_t* trigger;                      // The trigger associated with this watchdog.
-    instant_t expiration;                   // The expiration instant for the watchdog. (Initialized to NEVER)
-    interval_t min_expiration;              // The minimum expiration interval for the watchdog.
-    lf_thread_t thread_id;                  // The thread that the watchdog is meant to run on.
-    bool thread_active;                     // Boolean indicating whether or not thread is active.  
-    watchdog_function_t watchdog_function;  // The function/handler for the watchdog.
-};
-#endif 
-
 
 /**
  * Trigger struct representing an output, timer, action, or input.
@@ -303,9 +279,7 @@ typedef struct self_base_t {
 	struct allocation_record_t *allocations;
 	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
 #ifdef LF_THREADED
-    lf_mutex_t watchdog_mutex; // The mutex for this reactor to be acquired before reaction
-                               // invocation. 
-    bool has_watchdog;       // Boolean signifying initialization of watchdog_mutex
+    void* reaction_mutex; // If not null, this is expected to point to an lf_mutex.
 #endif
 #ifdef MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).

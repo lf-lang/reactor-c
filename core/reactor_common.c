@@ -1291,50 +1291,6 @@ trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_del
     return _lf_schedule_value(action, extra_delay, container, 1);
 }
 
-#ifdef LF_THREADED
-
-void* run_watchdog(void* arg) {
-    watchdog_t* watchdog = (watchdog_t*)arg;
-
-    self_base_t* base = watchdog->base;
-    lf_mutex_lock(&(base->watchdog_mutex));
-
-    while (lf_time_physical() < watchdog->expiration) {
-        interval_t T = watchdog->expiration - lf_time_physical();
-        lf_mutex_unlock(&(base->watchdog_mutex));
-        lf_sleep(T);
-        lf_mutex_lock(&(base->watchdog_mutex));
-    }
-
-    if (watchdog->expiration != NEVER) {
-        watchdog_function_t watchdog_func = watchdog->watchdog_function;
-        (*watchdog_func)(base);
-    }
-    watchdog->thread_active = false;
-
-    lf_mutex_unlock(&(base->watchdog_mutex));
-    watchdog->thread_active = false;
-    return NULL;
-}
-
-void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
-    // Assumes reaction mutex is already held.
-
-    self_base_t* base = watchdog->base;
-
-    watchdog->expiration = lf_time_logical() + watchdog->min_expiration + additional_timeout;
-
-    if (!watchdog->thread_active) {
-        lf_thread_create(&(watchdog->thread_id), run_watchdog, watchdog);
-        watchdog->thread_active = true;
-    } 
-}
-
-void _lf_watchdog_stop(watchdog_t* watchdog) {
-    watchdog->expiration = NEVER;
-}
-#endif
-
 /**
 
  * Invoke the given reaction
@@ -1345,8 +1301,8 @@ void _lf_watchdog_stop(watchdog_t* watchdog) {
 void _lf_invoke_reaction(reaction_t* reaction, int worker) {
 
 #ifdef LF_THREADED
-    if (((self_base_t*) reaction->self)->has_watchdog == true) {
-        lf_mutex_lock(&(((self_base_t*) reaction->self)->watchdog_mutex));
+    if (((self_base_t*) reaction->self)->reaction_mutex != NULL) {
+        lf_mutex_lock((lf_mutex*)((self_base_t*)reaction->self)->reaction_mutex);
     }
 #endif
 
@@ -1358,8 +1314,8 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker) {
 
 
 #ifdef LF_THREADED
-    if (((self_base_t*) reaction->self)->has_watchdog == true) {
-        lf_mutex_unlock(&(((self_base_t*) reaction->self)->watchdog_mutex));
+    if (((self_base_t*) reaction->self)->reaction_mutex != NULL) {
+        lf_mutex_unlock((lf_mutex*)((self_base_t*)reaction->self)->reaction_mutex);
     }
 #endif
 }

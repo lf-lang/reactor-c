@@ -82,11 +82,6 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
 void _lf_advance_logical_time(instant_t next_time);
 
 trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value);
-#ifdef LF_THREADED
-void* run_watchdog(void* arg);
-void _lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout);
-void _lf_watchdog_stop(watchdog_t* watchdog);
-#endif
 void _lf_invoke_reaction(reaction_t* reaction, int worker);
 void schedule_output_reactions(reaction_t* reaction, int worker);
 int process_args(int argc, const char* argv[]);
