@@ -34,6 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Mehrdad Niknami <mniknami@berkeley.edu>}
  *  @author{Soroush Bateni <soroush@utdallas.edu}
  *  @author{Alexander Schulz-Rosengarten <als@informatik.uni-kiel.de>}
+ *  @author{Erling Rennemo Jellum <erling.r.jellum0@ntnu.no>}
  */
 #include <assert.h>
 #include <stdio.h>
@@ -521,7 +522,7 @@ void _lf_initialize_timer(trigger_t* timer) {
         // && (timer->offset != 0 || timer->period != 0)) {
         event_t* e = _lf_get_new_event();
         e->trigger = timer;
-        e->time = lf_time_logical() + timer->offset;
+        e->time = lf_time_logical(NULL) + timer->offset;
         _lf_add_suspended_event(e);
         return;
     }
@@ -546,7 +547,7 @@ void _lf_initialize_timer(trigger_t* timer) {
     // Recycle event_t structs, if possible.
     event_t* e = _lf_get_new_event();
     e->trigger = timer;
-    e->time = lf_time_logical() + delay;
+    e->time = lf_time_logical(NULL) + delay;
     // NOTE: No lock is being held. Assuming this only happens at startup.
     pqueue_insert(event_q, e);
     tracepoint_schedule(timer, delay); // Trace even though schedule is not called.
@@ -640,8 +641,9 @@ static void _lf_replace_token(event_t* event, lf_token_t* token) {
  *  or -1 for error (the tag is equal to or less than the current tag).
  */
 int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
+    self_base_t * reactor = (self_base_t *) trigger->parent;
 
-    tag_t current_logical_tag = lf_tag();
+    tag_t current_logical_tag = lf_tag(reactor);
 
     LF_PRINT_DEBUG("_lf_schedule_at_tag() called with tag " PRINTF_TAG " at tag " PRINTF_TAG ".",
                   tag.time - start_time, tag.microstep,
@@ -660,7 +662,7 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
 
     // Do not schedule events if the tag is after the stop tag
     if (_lf_is_tag_after_stop_tag(tag)) {
-        lf_print_warning("_lf_schedule_at_tag: event time is past the timeout. Discarding event.");
+         LF_PRINT_DEBUG("_lf_schedule_at_tag: event time is past the timeout. Discarding event.");
         _lf_done_using(token);
         return -1;
     }
@@ -1012,8 +1014,8 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
                 default:
                     if (existing->time == env->current_tag.time &&
                             pqueue_find_equal_same_priority(event_q, existing) != NULL) {
-                        if (_lf_is_tag_after_stop_tag((tag_t){.time=existing->time,.microstep=lf_tag().microstep+1})) {
-                            // Scheduling e will incur a microstep at timeout,
+                        if (_lf_is_tag_after_stop_tag((tag_t){.time=existing->time,.microstep=now.microstep+1})) {
+                            // Scheduling e will incur a microstep at timeout, 
                             // which is illegal.
                             _lf_recycle_event(e);
                             return 0;
@@ -1122,7 +1124,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
     // Check if the trigger has violated the STP offset
     bool is_STP_violated = false;
 #ifdef FEDERATED
-    if (lf_tag_compare(trigger->intended_tag, lf_tag()) < 0) {
+    if (lf_tag_compare(trigger->intended_tag, current_tag) < 0) {
         is_STP_violated = true;
     }
 #ifdef FEDERATED_CENTRALIZED
@@ -1133,8 +1135,8 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
                              "This should not happen under centralized coordination. Intended tag: " PRINTF_TAG ". Current tag: " PRINTF_TAG ").",
                              trigger->intended_tag.time - lf_time_start(),
                              trigger->intended_tag.microstep,
-                             lf_time_logical_elapsed(),
-                             lf_tag().microstep);
+                             lf_time_logical_elapsed(NULL), 
+                             lf_tag(NULL).microstep);
     }
 #endif
 #endif
@@ -1164,7 +1166,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
         if (reaction->status == inactive) {
             reaction->is_STP_violated = is_STP_violated;
             _lf_trigger_reaction(reaction, -1);
-            LF_PRINT_LOG("Enqueued reaction %s at time " PRINTF_TIME ".", reaction->name, lf_time_logical());
+            LF_PRINT_LOG("Enqueued reaction %s at time " PRINTF_TIME ".", reaction->name, lf_time_logical(NULL));
         }
     }
 
@@ -1298,6 +1300,7 @@ trigger_handle_t _lf_schedule_int(environment_t *env, lf_action_base_t* action, 
  * @param worker The thread number of the worker thread or 0 for unthreaded execution (for tracing).
  */
 void _lf_invoke_reaction(reaction_t* reaction, int worker) {
+    ((self_base_t*) reaction->self)->current_tag = current_tag;
     tracepoint_reaction_starts(reaction, worker);
     ((self_base_t*) reaction->self)->executing_reaction = reaction;
     reaction->function(reaction->self);
@@ -1720,7 +1723,7 @@ void termination(environment_t *env) {
     }
     // Print elapsed times.
     // If these are negative, then the program failed to start up.
-    interval_t elapsed_time = lf_time_logical_elapsed();
+    interval_t elapsed_time = lf_time_logical_elapsed(NULL);
     if (elapsed_time >= 0LL) {
         char time_buffer[29]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
         lf_comma_separated_time(time_buffer, elapsed_time);

@@ -293,6 +293,15 @@ void tracepoint(
     // The above flush_trace resets the write pointer.
     int i = _lf_trace_buffer_size[index];
     // Write to memory buffer.
+    // Get the correct time of the event
+    tag_t tag;
+    if (trigger) {
+        self_base_t* reactor = (self_base_t *) trigger->reactions[0]->self;
+        tag = lf_tag(reactor);
+    } else {
+        tag = lf_tag(pointer);
+    }
+
     _lf_trace_buffer[index][i].event_type = event_type;
     _lf_trace_buffer[index][i].pointer = pointer;
     _lf_trace_buffer[index][i].src_id = src_id;
@@ -301,8 +310,8 @@ void tracepoint(
         _lf_trace_buffer[index][i].logical_time = tag->time;
         _lf_trace_buffer[index][i].microstep = tag->microstep;
     } else {
-        _lf_trace_buffer[index][i].logical_time = lf_time_logical();
-        _lf_trace_buffer[index][i].microstep = lf_tag().microstep;
+        _lf_trace_buffer[index][i].logical_time = lf_time_logical(pointer);
+        _lf_trace_buffer[index][i].microstep = lf_tag(pointer).microstep;
     }
     _lf_trace_buffer[index][i].trigger = trigger;
     _lf_trace_buffer[index][i].extra_delay = extra_delay;

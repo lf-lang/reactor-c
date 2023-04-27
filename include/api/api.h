@@ -185,6 +185,6 @@ int lf_tag_compare(tag_t tag1, tag_t tag2);
 /**
  * Return the current tag, a logical time, microstep pair.
  */
-tag_t lf_tag();
+tag_t lf_tag(void * self);
 
 #endif // API_H

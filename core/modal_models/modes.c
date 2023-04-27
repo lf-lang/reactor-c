@@ -416,7 +416,7 @@ void _lf_process_mode_changes(
                         } else if (state->next_mode != state->current_mode && event->trigger != NULL) { // History transition to a different mode
                             // Remaining time that the event would have been waiting before mode was left
                             instant_t local_remaining_delay = event->time - (state->next_mode->deactivation_time != 0 ? state->next_mode->deactivation_time : lf_time_start());
-                            tag_t current_logical_tag = lf_tag();
+                            tag_t current_logical_tag = lf_tag(NULL);
 
                             // Reschedule event with original local delay
                             LF_PRINT_DEBUG("Modes: Re-enqueuing event with a suspended delay of " PRINTF_TIME
@@ -461,7 +461,7 @@ void _lf_process_mode_changes(
                 // Apply transition effect
                 if (state->next_mode != NULL) {
                     // Save time when mode was left to handle suspended events in the future
-                    state->current_mode->deactivation_time = lf_time_logical();
+                    state->current_mode->deactivation_time = lf_time_logical(NULL);
 
                     // Apply transition
                     state->current_mode = state->next_mode;

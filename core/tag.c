@@ -15,7 +15,10 @@
 #include "tag.h"
 #include "util.h"
 #include "platform.h"
+#include "reactor.h"
 #include "util.h"
+#include "lf_types.h"
+
 
 /**
  * An enum for specifying the desired tag when calling "lf_time"
@@ -186,12 +189,16 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval) {
     return result;
 }
 
-instant_t lf_time_logical(void) {
-    return _lf_time(LF_LOGICAL);
+instant_t lf_time_logical(void *self) {
+    if (self) return ((self_base_t *) self)->current_tag.time;
+    else return _lf_time(LF_LOGICAL);
 }
 
-interval_t lf_time_logical_elapsed(void) {
-    return _lf_time(LF_ELAPSED_LOGICAL);
+/**
+ * Return the elapsed logical time in nanoseconds since the start of execution.
+ */
+interval_t lf_time_logical_elapsed(void *self) {
+    return lf_time_logical(self) - start_time;
 }
 
 instant_t lf_time_physical(void) {

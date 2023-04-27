@@ -240,6 +240,7 @@ struct trigger_t {
                               //   downstream messages have been produced for the same port for the same logical time.
     reactor_mode_t* mode;     // The enclosing mode of this reaction (if exists).
                               // If enclosed in multiple, this will point to the innermost mode.
+    void* parent;             // Pointer to reactor which contains the trigger
 #ifdef FEDERATED
     tag_t last_known_status_tag;        // Last known status of the port, either via a timed message, a port absent, or a
                                         // TAG from the RTI.
