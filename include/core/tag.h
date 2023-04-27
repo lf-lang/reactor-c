@@ -77,7 +77,7 @@ typedef struct {
 /**
  * Return the current tag, a logical time, microstep pair.
  */
-tag_t lf_tag();
+tag_t lf_tag(void* self);
 
 /**
  * Compare two tags. Return -1 if the first is less than
@@ -116,14 +116,14 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval);
  *
  * @return A time instant.
  */
-instant_t lf_time_logical(void);
+instant_t lf_time_logical(void* self);
 
 /**
  * Return the elapsed logical time in nanoseconds
  * since the start of execution.
  * @return A time interval.
  */
-interval_t lf_time_logical_elapsed(void);
+interval_t lf_time_logical_elapsed(void *self);
 
 /**
  * Return the current physical time in nanoseconds.

@@ -381,7 +381,7 @@ int send_timed_message(interval_t additional_delay,
 
     // Apply the additional delay to the current tag and use that as the intended
     // tag of the outgoing message
-    tag_t current_message_intended_tag = lf_delay_tag(lf_tag(),
+    tag_t current_message_intended_tag = _lf_delay_tag(lf_tag(NULL),
                                                     additional_delay);
 
     // Next 8 + 4 will be the tag (timestamp, microstep)
@@ -1402,13 +1402,13 @@ port_status_t get_current_port_status(int portID) {
         // The status of the trigger is absent.
         return absent;
     } else if (network_input_port_action->status == unknown
-            && lf_tag_compare(network_input_port_action->last_known_status_tag, lf_tag()) >= 0) {
+            && lf_tag_compare(network_input_port_action->last_known_status_tag, lf_tag(NULL)) >= 0) {
         // We have a known status for this port in a future tag. Therefore, no event is going
         // to be present for this port at the current tag.
         set_network_port_status(portID, absent);
         return absent;
     } else if (_fed.is_last_TAG_provisional
-            && lf_tag_compare(_fed.last_TAG, lf_tag()) > 0) {
+            && lf_tag_compare(_fed.last_TAG, lf_tag(NULL)) > 0) {
         // In this case, a PTAG has been received with a larger tag than the current tag,
         // which means that the input port is known to be absent.
         set_network_port_status(portID, absent);
@@ -1483,7 +1483,7 @@ void enqueue_network_control_reactions() {
 #ifdef FEDERATED_CENTRALIZED
     // If the granted tag is not provisional, there is no
     // need for network input control reactions
-    if (lf_tag_compare(_fed.last_TAG, lf_tag()) != 0
+    if (lf_tag_compare(_fed.last_TAG, lf_tag(NULL)) != 0
             || _fed.is_last_TAG_provisional == false) {
         return;
     }
@@ -1512,7 +1512,7 @@ void send_port_absent_to_federate(interval_t additional_delay,
 
     // Apply the additional delay to the current tag and use that as the intended
     // tag of the outgoing message
-    tag_t current_message_intended_tag = lf_delay_tag(lf_tag(),
+    tag_t current_message_intended_tag = _lf_delay_tag(lf_tag(NULL),
                                                     additional_delay);
 
     LF_PRINT_LOG("Sending port "
@@ -1617,8 +1617,8 @@ void wait_until_port_status_known(int port_ID, interval_t STAA) {
     // The wait has timed out. However, a message header
     // for the current tag could have been received in time
     // but not the the body of the message.
-    // Wait on the tag barrier based on the current tag.
-    _lf_wait_on_global_tag_barrier(lf_tag());
+    // Wait on the tag barrier based on the current tag. 
+    _lf_wait_on_global_tag_barrier(lf_tag(NULL));
 
     // Done waiting
     // If the status of the port is still unknown, assume it is absent.
@@ -1685,7 +1685,7 @@ trigger_handle_t schedule_message_received_from_network_already_locked(
         lf_print_error_and_exit("Received a message at tag " PRINTF_TAG " that"
                                 " has a tag " PRINTF_TAG " that has violated the STP offset. "
                                 "Centralized coordination should not have these types of messages.",
-                                current_tag.time - start_time, lf_tag().microstep,
+                                current_tag.time - start_time, lf_tag(NULL).microstep,
                                 tag.time - start_time, tag.microstep);
 #else
         // Set the delay back to 0
@@ -1699,7 +1699,7 @@ trigger_handle_t schedule_message_received_from_network_already_locked(
         // In case the message is in the future, call
         // _lf_schedule_at_tag() so that the microstep is respected.
         LF_PRINT_LOG("Received a message that is (" PRINTF_TIME " nanoseconds, " PRINTF_MICROSTEP " microsteps) "
-                "in the future.", extra_delay, tag.microstep - lf_tag().microstep);
+                "in the future.", extra_delay, tag.microstep - lf_tag(NULL).microstep);
         return_value = _lf_schedule_at_tag(trigger, tag, token);
     }
     // Notify the main thread in case it is waiting for physical time to elapse.
@@ -1931,7 +1931,7 @@ void handle_tagged_message(int socket, int fed_id) {
 #endif
     LF_PRINT_LOG("Received message with tag: " PRINTF_TAG ", Current tag: " PRINTF_TAG ".",
             intended_tag.time - start_time, intended_tag.microstep,
-            lf_time_logical_elapsed(), lf_tag().microstep);
+            lf_time_logical_elapsed(NULL), lf_tag(NULL).microstep);
 
     // Read the payload.
     // Allocate memory for the message contents.
@@ -1984,7 +1984,7 @@ void handle_tagged_message(int socket, int fed_id) {
     // to exit. The port status is on the other hand changed in this thread, and thus,
     // can be checked in this scenario without this race condition. The message with
     // intended_tag of 9 in this case needs to wait one microstep to be processed.
-    if (lf_tag_compare(intended_tag, lf_tag()) <= 0 && // The event is meant for the current or a previous tag.
+    if (lf_tag_compare(intended_tag, lf_tag(NULL)) <= 0 && // The event is meant for the current or a previous tag.
             ((action->trigger->is_a_control_reaction_waiting && // Check if a control reaction is waiting and
              action->trigger->status == unknown) ||             // if the status of the port is still unknown.
              (_lf_execution_started == false))         // Or, execution hasn't even started, so it's safe to handle this event.
@@ -1995,9 +1995,9 @@ void handle_tagged_message(int socket, int fed_id) {
         LF_PRINT_LOG(
             "Inserting reactions directly at tag " PRINTF_TAG ". "
             "Intended tag: " PRINTF_TAG ".",
-            lf_tag().time - lf_time_start(),
-            lf_tag().microstep,
-            intended_tag.time - lf_time_start(),
+            lf_tag(NULL).time - lf_time_start(),
+            lf_tag(NULL).microstep, 
+            intended_tag.time - lf_time_start(), 
             intended_tag.microstep
         );
         action->trigger->intended_tag = intended_tag;
@@ -2017,12 +2017,12 @@ void handle_tagged_message(int socket, int fed_id) {
 
         // Before that, if the current time >= stop time, discard the message.
         // But only if the stop time is not equal to the start time!
-        if (lf_tag_compare(lf_tag(), stop_tag) >= 0) {
+        if (lf_tag_compare(lf_tag(NULL), stop_tag) >= 0) {
             lf_mutex_unlock(&mutex);
             lf_print_error("Received message too late. Already at stop tag.\n"
             		"Current tag is " PRINTF_TAG " and intended tag is " PRINTF_TAG ".\n"
             		"Discarding message.",
-					lf_tag().time - start_time, lf_tag().microstep,
+					lf_tag(NULL).time - start_time, lf_tag(NULL).microstep,
 					intended_tag.time - start_time, intended_tag.microstep);
             return;
         }
@@ -2304,7 +2304,7 @@ void handle_stop_granted_message() {
             received_stop_tag.time - start_time, received_stop_tag.microstep);
 
     // Sanity check.
-    tag_t current_tag = lf_tag();
+    tag_t current_tag = lf_tag(NULL);
     if (lf_tag_compare(received_stop_tag, current_tag) <= 0) {
         lf_print_error("RTI granted a MSG_TYPE_STOP_GRANTED tag that is equal to or less than this federate's current tag " PRINTF_TAG ". "
                 "Stopping at the next microstep instead.",
