@@ -381,7 +381,7 @@ int send_timed_message(interval_t additional_delay,
 
     // Apply the additional delay to the current tag and use that as the intended
     // tag of the outgoing message
-    tag_t current_message_intended_tag = _lf_delay_tag(lf_tag(NULL),
+    tag_t current_message_intended_tag = lf_delay_tag(lf_tag(NULL),
                                                     additional_delay);
 
     // Next 8 + 4 will be the tag (timestamp, microstep)
@@ -1512,7 +1512,7 @@ void send_port_absent_to_federate(interval_t additional_delay,
 
     // Apply the additional delay to the current tag and use that as the intended
     // tag of the outgoing message
-    tag_t current_message_intended_tag = _lf_delay_tag(lf_tag(NULL),
+    tag_t current_message_intended_tag = lf_delay_tag(lf_tag(NULL),
                                                     additional_delay);
 
     LF_PRINT_LOG("Sending port "
