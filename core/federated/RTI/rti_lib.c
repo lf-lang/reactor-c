@@ -375,9 +375,9 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
 bool send_advance_grant_if_safe(federate_t* fed) {
 
     // Find the earliest LTC of upstream federates.
-    tag_t min_upstream_completed = FOREVER_TAG;
-    // Count the number of that connected upstream federates 
-    uint16_t number_of_connected_upstream_federates = 0; 
+    tag_t min_upstream_completed = fed->next_event;
+    // // Count the number of that connected upstream federates 
+    // uint16_t number_of_connected_upstream_federates = 0; 
 
     for (int j = 0; j < fed->num_upstream; j++) {
         federate_t* upstream = &_RTI.federates[fed->upstream[j]];
@@ -385,7 +385,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
         // Ignore this federate if it has resigned.
         if (upstream->state == NOT_CONNECTED) continue;
 
-        number_of_connected_upstream_federates++;
+        // number_of_connected_upstream_federates++;
 
         tag_t candidate = lf_delay_tag(upstream->completed, fed->upstream_delay[j]);
 
@@ -396,9 +396,9 @@ bool send_advance_grant_if_safe(federate_t* fed) {
 
     // If none of the upstream federates is connected, then nothing to do.
     // It is equivelent to not having upstream federates at all.
-    if (number_of_connected_upstream_federates == 0) {
-        return false;
-    }
+    // if (number_of_connected_upstream_federates == 0) {
+    //     return true;
+    // }
 
     LF_PRINT_LOG("Minimum upstream LTC for fed %d is (%lld, %u) "
             "(adjusted by after delay).",
