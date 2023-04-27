@@ -258,7 +258,7 @@ int register_user_trace_event(char* description);
  * Open a trace file and start tracing.
  * @param filename The filename for the trace file.
  */
-void start_trace(char* filename);
+void start_trace(const char* filename);
 
 /**
  * Trace an event identified by a type and a pointer to the self struct of the reactor instance.
