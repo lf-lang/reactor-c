@@ -39,6 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <string.h>
 
+#include "platform.h"
 #include "lf_types.h"
 #include "modes.h"
 #include "reactor_common.h"
@@ -529,7 +530,7 @@ void _lf_process_mode_changes(
         if (_lf_mode_triggered_reactions_request) {
             // Insert a dummy event in the event queue for the next microstep to make
             // sure startup/reset reactions (if any) are triggered as soon as possible.
-            pqueue_insert(event_q, _lf_create_dummy_events(NULL, current_tag.time, NULL, 1));
+            pqueue_insert(event_q, _lf_create_dummy_events(NULL, lf_tag().time, NULL, 1));
         }
     }
 }

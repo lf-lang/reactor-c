@@ -1,34 +1,12 @@
 /**
-@file
-@author Edward A. Lee (eal@berkeley.edu)
-
-@section LICENSE
-Copyright (c) 2020, The University of California at Berkeley.
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-@section DESCRIPTION
-
-See sensor_simulator.h.
-*/
+ * @file
+ * @author Edward A. Lee
+ * @copyright (c) 2020-2023, The University of California at Berkeley and UT Dallas.
+ * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ * 
+ * @brief Simple terminal-based user interface based on ncurses.
+ * See sensor_simulator.h.
+ */
 
 #include <pthread.h>
 #include <ncurses.h>
@@ -64,7 +42,7 @@ enum _lf_sensor_message_type {
 
 typedef struct _lf_sensor_message_t {
 	enum _lf_sensor_message_type type;
-	char* message;
+    char* message;
 	struct _lf_sensor_message_t* next;
 } _lf_sensor_message_t;
 
@@ -101,7 +79,7 @@ struct {
 	FILE* log_file;
 
 	/** The welcome message. */
-	char** welcome_message;
+	const char** welcome_message;
 
 	/** The length of the welcome message. */
 	int welcome_message_length;
@@ -122,7 +100,7 @@ struct {
  * @param message_lines The message lines.
  * @param number_of_lines The number of lines.
  */
-void _lf_show_message(char* message_lines[], int number_of_lines) {
+void _lf_show_message(const char* message_lines[], int number_of_lines) {
     int term_height, term_width;
     int message_width = 0;
     // Find the widest message in the list.
@@ -367,9 +345,6 @@ void* _lf_sensor_simulator_thread(void* ignored) {
     return NULL;
 }
 
-/**
- * End ncurses control of the terminal.
- */
 void end_sensor_simulator() {
     lf_register_print_function(NULL, -1);
 	_lf_sensor_post_message(_lf_sensor_close_windows, NULL);
@@ -386,27 +361,8 @@ void end_sensor_simulator() {
 	}
 }
 
-/**
- * Start the sensor simulator if it has not been already
- * started. This must be called at least once before any
- * call to register_sensor_key.  The specified message
- * is an initial message to display at the upper left,
- * typically a set of instructions, that remains displayed
- * throughout the lifetime of the window. Please ensure that
- * the message_lines array and its contained strings are not
- * on the stack because they will be used later in a separate
- * thread.
- * @param message_lines The message lines.
- * @param number_of_lines The number of lines.
- * @param tick_window_width The width of the tick window or 0 for none.
- * @param log_file If non-NULL, the name of a file to which to write logging messages.
- * @param log_level The level of log messages to redirect to the file.
- *  The level should be one of LOG_LEVEL_ERROR, LOG_LEVEL_WARNING,
- *  LOG_LEVEL_INFO, LOG_LEVEL_LOG, LOG_LEVEL_DEBUG, or LOG_LEVEL_ALL.
- * @return 0 for success, error code for failure.
- */
 int start_sensor_simulator(
-		char* message_lines[],
+		const char* message_lines[],
 		int number_of_lines,
 		int tick_window_width,
 		char* log_file,
@@ -454,34 +410,14 @@ int start_sensor_simulator(
     return result;
 }
 
-/**
- * Place a tick (usually a single character) in the tick window.
- * @param character The tick character.
- */
-void show_tick(char* character) {
+void show_tick(const char* character) {
     if (character != NULL) {
-    	_lf_sensor_post_message(_lf_sensor_tick, character);
+        char* copy;
+        asprintf(&copy, "%s", character);
+    	_lf_sensor_post_message(_lf_sensor_tick, copy);
     }
 }
 
-/**
- * Register a keyboard key to trigger the specified action.
- * Printable ASCII characters (codes 32 to 127) are supported
- * plus '\n' and '\0', where the latter registers a trigger
- * to invoked when any key is pressed. If a specific key is
- * registered and any key ('\0') is also registered, the
- * any key trigger will be scheduled after the specific key
- * is scheduled. If these triggers belong to different reactors,
- * they could be invoked in parallel.
- * This will fail if the specified key has already been
- * registered (error code 1), or the key is not a supported key
- * (error code 2) or if the trigger is NULL
- * (error code 3).
- * @param key The key to register.
- * @param action The action to trigger when the key is pressed
- *  (a pointer to a trigger_t struct).
- * @return 0 for success, error code for failure.
- */
 int register_sensor_key(char key, void* action) {
     if (action == NULL) {
         return 3;

@@ -39,6 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "scheduler.h"
 #include "util.h"
+#include "platform.h"
 
 /** The queued reactions. */
 static reaction_t**** reactions_by_worker_by_level;
@@ -64,8 +65,10 @@ static size_t num_workers;
 
 #include "data_collection.h"
 
+#if !defined(DOXYGEN_SHOULD_SKIP_THIS)
 static void worker_states_lock(size_t worker);
 static void worker_states_unlock(size_t worker);
+#endif // DOXYGEN_SHOULD_SKIP_THIS
 
 /**
  * @brief Set the level to be executed now. This function assumes that concurrent calls to it are
