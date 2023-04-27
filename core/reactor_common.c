@@ -662,7 +662,7 @@ int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token) {
 
     // Do not schedule events if the tag is after the stop tag
     if (_lf_is_tag_after_stop_tag(tag)) {
-         LF_PRINT_DEBUG("_lf_schedule_at_tag: event time is past the timeout. Discarding event.");
+         lf_print_warning("_lf_schedule_at_tag: event time is past the timeout. Discarding event.");
         _lf_done_using(token);
         return -1;
     }
