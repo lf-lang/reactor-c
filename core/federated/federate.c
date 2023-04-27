@@ -2472,25 +2472,6 @@ void send_current_tag_query_response(instant_t time, uint16_t transient_id) {
     lf_mutex_unlock(&outbound_socket_mutex);
 }
 
-/**
- * Handle a Halt message received form the RTI. This will cause the federation to 
- * stop.
- * 
- * FIXME: WIP. Should it be  
- */
-void handle_halt(){
-
-}
-
-/**
- * Handle a RESUME message received from the RTI
- * 
- * FIXME: What to do exactly? Can it be mixed with handle_halt()? 
- */
-void handle_resume(){
-    // tracepoint_federate_from_RTI(receive_TAG, _lf_my_fed_id, &TAG);
-}
-
 /////////////////// End of transient time coordination /////////////////////////
 
 /**
@@ -2697,9 +2678,6 @@ void* listen_to_rti_TCP(void* args) {
                 break;
             case MSG_TYPE_CURRENT_TAG_QUERY:
                 handle_next_event_tag_query();
-                break;
-            case MSG_TYPE_HALT:
-                handle_halt();
                 break;
             case MSG_TYPE_CLOCK_SYNC_T1:
             case MSG_TYPE_CLOCK_SYNC_T4:
