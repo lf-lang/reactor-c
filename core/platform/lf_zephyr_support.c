@@ -362,10 +362,9 @@ int lf_notify_of_event() {
 #define NUMBER_OF_WORKERS 1
 #endif
 
-// FIXME: Make it possible to specify
-// If USER_THREADS is not specified, then default to 1.
+// If USER_THREADS is not specified, then default to 0.
 #if !defined(USER_THREADS)
-#define USER_THREADS 1
+#define USER_THREADS 0
 #endif
 
 #define NUMBER_OF_THREADS (NUMBER_OF_WORKERS \
