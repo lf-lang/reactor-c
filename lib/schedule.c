@@ -199,5 +199,3 @@ bool lf_check_deadline(void* self, bool invoke_deadline_handler) {
     }
     return false;
 }
-
-#endif

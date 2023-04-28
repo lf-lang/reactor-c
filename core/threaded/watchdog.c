@@ -7,6 +7,7 @@
  * @brief Definitions for watchdogs.
  */
 
+#include <assert.h>
 #include "watchdog.h"
 
 extern int _lf_watchdog_number;
