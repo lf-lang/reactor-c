@@ -553,12 +553,17 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
     // issue a TAG before this message has been forwarded.
     pthread_mutex_lock(&_RTI.rti_mutex);
 
-    // If the destination federate is no longer connected, issue a warning
-    // and return.
+    // If the destination federate is persistent and is no longer connected, issue
+    // a warning and return. If, however, it is transient, then print a message.
     if (_RTI.federates[federate_id].state == NOT_CONNECTED) {
         pthread_mutex_unlock(&_RTI.rti_mutex);
-        lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
-                federate_id);
+        if (!_RTI.federates[federate_id].is_transient) {
+            lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
+                    federate_id);
+        } else {
+            lf_print("RTI: Destination transient federate %d is currently not connected. Dropping message.",
+                    federate_id);
+        }
         LF_PRINT_LOG("Fed status: next_event (%lld, %d), "
                 "completed (%lld, %d), "
                 "last_granted (%lld, %d), "
@@ -643,12 +648,17 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     // issue a TAG before this message has been forwarded.
     pthread_mutex_lock(&_RTI.rti_mutex);
 
-    // If the destination federate is no longer connected, issue a warning
-    // and return.
+    // If the destination federate is persistent and is no longer connected, issue
+    // a warning and return. If, however, it is transient, then print a message.
     if (_RTI.federates[federate_id].state == NOT_CONNECTED) {
         pthread_mutex_unlock(&_RTI.rti_mutex);
-        lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
-                federate_id);
+        if (!_RTI.federates[federate_id].is_transient) {
+            lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
+                    federate_id);
+        } else {
+            lf_print("RTI: Destination transient federate %d is currently not connected. Dropping message.",
+                    federate_id);
+        }
         LF_PRINT_LOG("Fed status: next_event (%lld, %d), "
                 "completed (%lld, %d), "
                 "last_granted (%lld, %d), "
