@@ -31,7 +31,13 @@ struct watchdog_t {
 };
 
 /** 
- * Start or restart the watchdog.
+ * @brief Start or restart the watchdog timer.
+ * This function sets the expiration time of the watchdog to the current logical time
+ * plus the minimum timeout of the watchdog plus the specified `additional_timeout`.
+ * If a watchdog timer thread is not already running, then this function will start one.
+ * This function assumes the reactor mutex is held when it is called; this assumption
+ * is satisfied whenever this function is called from within a reaction that declares
+ * the watchdog as an effect.
  * 
  * @param watchdog The watchdog to be started
  * @param additional_timeout Additional timeout to be added to the watchdog's
@@ -39,4 +45,10 @@ struct watchdog_t {
  */
 void lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout);
 
+/**
+ * @brief Stop the specified watchdog without invoking the expiration handler.
+ * This function sets the expiration time of the watchdog to `NEVER`.
+ * 
+ * @param watchdog The watchdog.
+ */
 void lf_watchdog_stop(watchdog_t* watchdog);

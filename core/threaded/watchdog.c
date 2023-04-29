@@ -13,27 +13,46 @@
 extern int _lf_watchdog_number;
 extern watchdog_t* _lf_watchdogs;
 
+/**
+ * @brief Initialize watchdog mutexes.
+ * For any reactor with one or more watchdogs, the self struct should have a non-NULL
+ * `reactor_mutex` field which points to an instance of `lf_mutex_t`.
+ * This function initializes those mutexes.
+ */
 void _lf_initialize_watchdog_mutexes() {
     for (int i = 0; i < _lf_watchdog_number; i++) {
         self_base_t* current_base = _lf_watchdogs[i].base;
-        if (current_base->reaction_mutex != NULL) {
-            lf_mutex_init((lf_mutex_t*)(current_base->reaction_mutex));
+        if (current_base->reactor_mutex != NULL) {
+            lf_mutex_init((lf_mutex_t*)(current_base->reactor_mutex));
         }
     }
 }
 
+/**
+ * @brief Thread function for watchdog.
+ * This function sleeps until physical time exceeds the expiration time of
+ * the watchdog and then invokes the watchdog expiration handler function.
+ * In normal usage, the expiration time is incremented while the thread is
+ * sleeping, so the watchdog never expires and the handler function is never
+ * invoked.
+ * This function acquires the reaction mutex and releases it while sleeping.
+ * 
+ * @param arg A pointer to the watchdog struct
+ * @return NULL
+ */
 void* _lf_run_watchdog(void* arg) {
     watchdog_t* watchdog = (watchdog_t*)arg;
 
     self_base_t* base = watchdog->base;
-    assert(base->reaction_mutex != NULL);
-    lf_mutex_lock((lf_mutex_t*)(base->reaction_mutex));
-
-    while (lf_time_physical() < watchdog->expiration) {
-        interval_t T = watchdog->expiration - lf_time_physical();
-        lf_mutex_unlock((lf_mutex_t*)base->reaction_mutex);
+    assert(base->reactor_mutex != NULL);
+    lf_mutex_lock((lf_mutex_t*)(base->reactor_mutex));
+    instant_t physical_time = lf_time_physical();
+    while (physical_time < watchdog->expiration) {
+        interval_t T = watchdog->expiration - physical_time;
+        lf_mutex_unlock((lf_mutex_t*)base->reactor_mutex);
         lf_sleep(T);
-        lf_mutex_lock((lf_mutex_t*)(base->reaction_mutex));
+        lf_mutex_lock((lf_mutex_t*)(base->reactor_mutex));
+        physical_time = lf_time_physical();
     }
 
     if (watchdog->expiration != NEVER) {
@@ -42,8 +61,7 @@ void* _lf_run_watchdog(void* arg) {
     }
     watchdog->thread_active = false;
 
-    lf_mutex_unlock((lf_mutex_t*)(base->reaction_mutex));
-    watchdog->thread_active = false;
+    lf_mutex_unlock((lf_mutex_t*)(base->reactor_mutex));
     return NULL;
 }
 
