@@ -152,9 +152,7 @@ instant_t _lf_time(_lf_time_type type) {
 ////////////////  Functions declared in tag.h
 
 tag_t lf_tag(void* self) {
-    if (self == NULL) {
-        return current_tag;
-    } else if (((self_base_t *) self)->executing_reaction) {
+    if (self != NULL && ((self_base_t *) self)->executing_reaction != NULL) {
         return ((self_base_t *) self)->current_tag;
     } else {
         return current_tag;

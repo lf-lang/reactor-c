@@ -302,9 +302,6 @@ int next(void) {
 
 /**
  * Stop execution at the conclusion of the next microstep.
- * FIXME: If this is called from a LET reaction we will either:
- * A) requrest a stop tag "in the past" if we are using reactors local tag
- * B) request stop sometime "in the futre" if we use global tag <- This is what we are doing now
  */
 void lf_request_stop() {
 	tag_t new_stop_tag;
