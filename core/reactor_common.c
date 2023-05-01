@@ -55,7 +55,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vector.h"
 #include "hashset/hashset.h"
 #include "hashset/hashset_itr.h"
+
+#ifdef LF_THREADED
 #include "watchdog.h"
+
+// Code generated global variables.
+extern int _lf_watchdog_number;
+extern watchdog_t* _lf_watchdogs;
+#endif
 
 // Global variable defined in tag.c:
 extern tag_t current_tag;
@@ -63,10 +70,6 @@ extern instant_t start_time;
 
 // Global variable defined in lf_token.c:
 extern int _lf_count_payload_allocations;
-
-// Code generated global variables.
-extern int _lf_watchdog_number;
-extern watchdog_t* _lf_watchdogs;
 
 /**
  * Indicator of whether to wait for physical time to match logical time.
@@ -1763,11 +1766,13 @@ void termination(void) {
         lf_print_warning("Memory allocated for tokens has not been freed!");
         lf_print_warning("Number of unfreed tokens: %d.", _lf_count_token_allocations);
     }
+#ifdef LF_THREADED
     for (int i = 0; i < _lf_watchdog_number; i++) {
         if (_lf_watchdogs[i].base->reactor_mutex != NULL) {
             free(_lf_watchdogs[i].base->reactor_mutex);
         }
     }
+#endif
     _lf_free_all_reactors();
     free(_lf_is_present_fields);
     free(_lf_is_present_fields_abbreviated);
