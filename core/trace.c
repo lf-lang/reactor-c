@@ -37,6 +37,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "platform.h"
 
@@ -237,9 +238,56 @@ void flush_trace(int worker) {
     lf_critical_section_exit();
 }
 
+/**
+ * This utility function helps creating a new file trace, if already one exists.
+ * This is particularly useful for transient federates, since each joining one will
+ * have a different trace file.
+ * @param n the integer to convert into a string
+ * @return the converted string
+ */
+char * convert_int_to_string(int n) {
+    // Count the number of digits in n
+    int n_ = n;
+    int number_of_digits = 0;
+    while (n_) {
+        number_of_digits++;
+        n_ /= 10;
+    }
+
+    // Construct the array of chars to return
+    char *string_of_int;
+    string_of_int = (char *)malloc(number_of_digits + 1);
+
+    // Extract the digits and convert them into chars
+    int index = 0;
+    for (int i = 0; i < number_of_digits ; i++) {
+        string_of_int[number_of_digits - i - 1] = n % 10 + '0';
+        n /= 10;
+    }
+    // Add the null character and return
+    string_of_int[number_of_digits] = '\0';
+    return (char *)string_of_int;
+}
+
 void start_trace(const char* filename) {
     // FIXME: location of trace file should be customizable.
-    _lf_trace_file = fopen(filename, "w");
+
+    // If a file already exists with the same file name, then derive another one. 
+    char filename_[strlen(filename) + 10];
+    strcpy(filename_, filename);
+    int i = 0;
+    while (access(filename_, F_OK) == 0) {
+        // Get the root of the original file name
+        memset(filename_, '\0', sizeof(filename_));
+        strncpy(filename_, filename, strlen(filename) - 4);
+        // Add an index
+        char *ind = convert_int_to_string(i++);
+        strcat(filename_, ind);
+        // Add the file extension
+        strcat(filename_, ".lft");
+    }
+    
+    _lf_trace_file = fopen(filename_, "w");
     if (_lf_trace_file == NULL) {
         fprintf(stderr, "WARNING: Failed to open log file with error code %d."
                 "No log will be written.\n", errno);
