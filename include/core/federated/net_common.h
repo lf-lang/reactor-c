@@ -377,11 +377,20 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Byte identifying a timestamp message, which is 64 bits long.
  * Each federate sends its starting physical time as a message of this
- * type, and the RTI broadcasts to all the federates the starting logical
- * time as a message of this type.
- s*/
+ * type.
+ */
 #define MSG_TYPE_TIMESTAMP 2
 #define MSG_TYPE_TIMESTAMP_LENGTH (1 + sizeof(int64_t))
+
+/**
+ * As an answer to MSG_TYPE_TIMESTAMP, the RTI broadcasts to all persistent 
+ * federates, or sends to newly joining transient federate, a message of 
+ * MSG_TYPE_STIMESTAMP_START. It includes the starting logical time of the
+ * federation, together with the effective starting logical time. The latter
+ * is useful for transient federates.
+ */
+#define MSG_TYPE_TIMESTAMP_START 50
+#define MSG_TYPE_TIMESTAMP_START_LENGTH (1 + sizeof(int64_t) + sizeof(int64_t))
 
 /** Byte identifying a message to forward to another federate.
  *  The next two bytes will be the ID of the destination port.

@@ -1084,23 +1084,26 @@ void handle_timestamp(federate_t *my_fed) {
 
         pthread_mutex_unlock(&_RTI.rti_mutex);
 
-        // Send back to the federate the maximum time plus an offset on a TIMESTAMP
+        // Send back to the federate the maximum time plus an offset on a TIMESTAMP_START
         // message.
-        unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_LENGTH];
-        start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
+        // In the startup phase, federates will receive identical start_time and 
+        // effective_start_time
+        unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_START_LENGTH];
+        start_time_buffer[0] = MSG_TYPE_TIMESTAMP_START;
         // Add an offset to this start time to get everyone starting together.
         start_time = _RTI.max_start_time + DELAY_START;
         encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
+        encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[9]);
 
         if (_RTI.tracing_enabled) {
             tag_t tag = {.time = start_time, .microstep = 0};
             tracepoint_RTI_to_federate(send_TIMESTAMP, my_fed->id, &tag);
         }
         ssize_t bytes_written = write_to_socket(
-            my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH,
+            my_fed->socket, MSG_TYPE_TIMESTAMP_START_LENGTH,
             start_time_buffer
         );
-        if (bytes_written < MSG_TYPE_TIMESTAMP_LENGTH) {
+        if (bytes_written < MSG_TYPE_TIMESTAMP_START_LENGTH) {
             lf_print_error("Failed to send the starting time to federate %d.", my_fed->id);
         }
         pthread_mutex_lock(&_RTI.rti_mutex);
@@ -1110,18 +1113,17 @@ void handle_timestamp(federate_t *my_fed) {
         // the federate to the start time.
         my_fed->state = GRANTED;
         pthread_cond_broadcast(&_RTI.sent_start_time);
-        LF_PRINT_LOG("RTI sent start time %lld to federate %d.", start_time, my_fed->id);
         pthread_mutex_unlock(&_RTI.rti_mutex);
     } else {
         // A transient has joined after the startup phase
         // At this point, we already hold the mutex
 
-        // Iterate over the upstream federates to query the next event tag.
+        // Iterate over the upstream federates to query the current tag.
         // Since they may not be connected (being themselves transient, for example)
         // the total number of connected federates (my_fed->num_of_conn_federates)
-        // will be compared against those who already sent the NET query response
+        // will be compared against those who already sent the query response
         // (my_fed->num_of_conn_federates_sent_net)
-        LF_PRINT_DEBUG("RTI sends next event tag requests regarding transient %d.", my_fed->id);
+        LF_PRINT_DEBUG("RTI sends current tag requests regarding transient %d.", my_fed->id);
         for (int j = 0; j < my_fed->num_upstream; j++) {
             federate_t* upstream = &_RTI.federates[my_fed->upstream[j]];
             // Ignore this federate if it has resigned or if it a transient that 
@@ -1133,17 +1135,17 @@ void handle_timestamp(federate_t *my_fed) {
                 my_fed->num_of_conn_federates++;
             }
         }
-        // Iterate over the downstream federates to query the next event tag.
-        // for (int j = 0; j < my_fed->num_downstream; j++) {
-        //     federate_t* downstream = &_RTI.federates[my_fed->downstream[j]];
-        //     // Ignore this federate if it has resigned.
-        //     if (downstream->state == NOT_CONNECTED) {
-        //         continue;
-        //     }
-        //     if (send_current_tag_query(downstream, my_fed->id)) {
-        //         my_fed->num_of_conn_federates++;
-        //     }
-        // }
+        // Iterate over the downstream federates to query the current event tag.
+        for (int j = 0; j < my_fed->num_downstream; j++) {
+            federate_t* downstream = &_RTI.federates[my_fed->downstream[j]];
+            // Ignore this federate if it has resigned.
+            if (downstream->state == NOT_CONNECTED) {
+                continue;
+            }
+            if (send_current_tag_query(downstream, my_fed->id)) {
+                my_fed->num_of_conn_federates++;
+            }
+        }
 
         // If the transient federate has no connected upstream or downstream federates,
         // then do not wait for the start time
@@ -1158,22 +1160,28 @@ void handle_timestamp(federate_t *my_fed) {
         LF_PRINT_DEBUG("RTI waits for transient start time to be set.");
         while(!my_fed->start_time_is_set);
         
-        // Once the start time set, sent it to the joining transient
-        unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_LENGTH];
-        start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
+        // Once the effective start time set, sent it to the joining transient,
+        // together with the start time of the federation.
+        unsigned char start_time_buffer[MSG_TYPE_TIMESTAMP_START_LENGTH];
+        start_time_buffer[0] = MSG_TYPE_TIMESTAMP_START;
         my_fed->fed_start_time += DELAY_START;
-        LF_PRINT_DEBUG("Transient federate %d start time is set and is %lld.", my_fed->id, my_fed->fed_start_time);
-        encode_int64(swap_bytes_if_big_endian_int64(my_fed->fed_start_time), &start_time_buffer[1]);
+
+        encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
+        encode_int64(swap_bytes_if_big_endian_int64(my_fed->fed_start_time), &start_time_buffer[9]);
+
+        lf_print("Transient federate %d effective start time is set and is %lld. "
+                       " The federation start time is %lld.",
+                       my_fed->id, my_fed->fed_start_time, start_time);
 
         if (_RTI.tracing_enabled) {
-            tag_t tag = {.time = start_time, .microstep = 0};
+            tag_t tag = {.time = my_fed->fed_start_time, .microstep = 0};
             tracepoint_RTI_to_federate(send_TIMESTAMP, my_fed->id, &tag);
         }
         ssize_t bytes_written = write_to_socket(
-            my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH,
+            my_fed->socket, MSG_TYPE_TIMESTAMP_START_LENGTH,
             start_time_buffer
         );
-        if (bytes_written < MSG_TYPE_TIMESTAMP_LENGTH) {
+        if (bytes_written < MSG_TYPE_TIMESTAMP_START_LENGTH) {
             lf_print_error("Failed to send the starting time to federate %d.", my_fed->id);
         }
         pthread_mutex_lock(&_RTI.rti_mutex);
@@ -1373,15 +1381,17 @@ void* clock_synchronization_thread(void* noargs) {
 void handle_federate_resign(federate_t *my_fed) {
     // Nothing more to do. Close the socket and exit.
     pthread_mutex_lock(&_RTI.rti_mutex);
+ 
+    // Extract the tag
+    size_t header_size = 1 + sizeof(tag_t);
+    unsigned char buffer[header_size];
+    // Read the header, minus the first byte which has already been read.
+    read_from_socket_errexit(my_fed->socket, header_size - 1, &(buffer[1]),
+                             "RTI failed to read the timed message header from remote federate.");
+    // Extract the tag sent by the resigning federate
+    tag_t tag = extract_tag(&(buffer[1]));
+
     if (_RTI.tracing_enabled) {
-        // Extract the tag, for tracing purposes
-        size_t header_size = 1 + sizeof(tag_t);
-        unsigned char buffer[header_size];
-        // Read the header, minus the first byte which has already been read.
-        read_from_socket_errexit(my_fed->socket, header_size - 1, &(buffer[1]),
-                                 "RTI failed to read the timed message header from remote federate.");
-        // Extract the tag sent by the resigning federate
-        tag_t tag = extract_tag(&(buffer[1]));
         tracepoint_RTI_from_federate(receive_RESIGN, my_fed->id, &tag);
     }
 
@@ -1964,6 +1974,7 @@ void* connect_to_transient_federates_thread() {
                 pthread_create(&(_RTI.federates[fed_id].thread_id), NULL, federate_thread_TCP, &(_RTI.federates[fed_id]));
                 _RTI.federates[fed_id].is_transient = true;
                 _RTI.number_of_connected_transient_federates++;
+                lf_print("Federate %d joined.", _RTI.federates[fed_id].id);
             }
         }
     }
@@ -2098,19 +2109,28 @@ void wait_for_federates(int socket_descriptor) {
     // Wait for persistent federate threads to exit.
     void* thread_exit_status;
     for (int i = 0; i < _RTI.number_of_federates + _RTI.number_of_transient_federates; i++) {
-        if (_RTI.federates[i].is_transient == false) {
-            lf_print("RTI: Waiting for thread handling federate %d.", _RTI.federates[i].id);
+        if (!_RTI.federates[i].is_transient) {
+            lf_print("RTI: Waiting for thread handling peristent federate %d.", _RTI.federates[i].id);
             pthread_join(_RTI.federates[i].thread_id, &thread_exit_status);
             free_in_transit_message_q(_RTI.federates[i].in_transit_message_tags);
             lf_print("RTI: Federate %d thread exited.", _RTI.federates[i].id);
         }
     }
 
-    // FIXME: Once persistent federates exited, send stop requests to transient federates
-    // ???
-    // and kill thread_exit_status?
+    // Wait for transient federate threads to exit.
+    // NOTE: It is important to separate the waiting of persistent federates from  
+    // the transient federates. The reason is that if, for example, federate 0 is 
+    // transienet, and it did leave in the middle of a federation execution, then
+    // we will no more wait for the thread of a future joining instance to pthread_join.  
     if (_RTI.number_of_transient_federates > 0) {
-        // WIP
+        for (int i = 0; i < _RTI.number_of_federates + _RTI.number_of_transient_federates; i++) {
+            if (_RTI.federates[i].is_transient) {
+                lf_print("RTI: Waiting for thread handling transient federate %d.", _RTI.federates[i].id);
+                pthread_join(_RTI.federates[i].thread_id, &thread_exit_status);
+                free_in_transit_message_q(_RTI.federates[i].in_transit_message_tags);
+                lf_print("RTI: Federate %d thread exited.", _RTI.federates[i].id);
+            }
+        }
     }
 
     _RTI.all_federates_exited = true;
