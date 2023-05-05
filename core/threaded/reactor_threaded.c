@@ -770,7 +770,7 @@ void _lf_initialize_start_tag() {
     // which will selectively block reactions that depend on network input ports
     // until they receive further instructions (to unblock) from the RTI or the
     // upstream federates.
-    enqueue_network_control_reactions();
+    enqueue_network_output_control_reactions();
 #endif
 
 #ifdef FEDERATED_DECENTRALIZED

@@ -205,38 +205,17 @@ typedef struct federate_instance_t {
      */
     instant_t min_delay_from_physical_action_to_federate_output;
 
-    /**
-     * This list is also used to determine the status of a given network
-     * input port at a given logical time. The status of the port (trigger->status) can be:
-     * present, absent, or unknown. To determine the status of that port, for a given trigger
-     * 't' in this list, a (number of) network input control reactions are inserted into the
-     * reaction queue, which is are special kind of reaction that wait long enough until the
-     * status of the port becomes known. In the centralized coordination, this wait is until
-     * the RTI informs the reaction of the status of the port. In the decentralized coordination,
-     * this wait is until the STP offset expires (or the status is somehow becomes known sooner).
-     */
-
-    /**
-     * List of triggers for network input control reactions, used
-     * to trigger these reaction at the beginning of every tag.
-     */
-    trigger_t** triggers_for_network_input_control_reactions;
-    size_t triggers_for_network_input_control_reactions_size;
-
-
-    /**
-     * The triggers for all network output control reactions.
-     *
-     * This is used to trigger network output
-     * control reactions that will potentially send an ABSENT
-     * message to any downstream federate that might be blocking
-     * on the network port. The ABSENT message will only be sent if
-     * the output is not present.
-     */
-    trigger_t* trigger_for_network_output_control_reactions;
-
 } federate_instance_t;
 
+//#ifdef FEDERATED_DECENTRALIZED
+typedef struct staa {
+    lf_action_base_t** actions;
+    size_t STAA;
+    size_t numActions;
+} staa_t;
+
+
+//#endif
 
 typedef struct federation_metadata_t {
     const char* federation_id;
@@ -247,6 +226,7 @@ typedef struct federation_metadata_t {
 
 extern lf_mutex_t outbound_socket_mutex;
 extern lf_cond_t port_status_changed;
+extern lf_cond_t logical_time_changed;
 
 /**
 * Generated function that sends information about connections between this federate and
@@ -352,6 +332,21 @@ void* handle_p2p_connections_from_federates(void*);
  * @param fed_ID The fed ID of the receiving federate.
  */
 void send_port_absent_to_federate(interval_t, unsigned short, unsigned short);
+
+/**
+ * @brief Prevent the advancement to the next level of the reaction queue until the 
+ *        level we try to advance to is known to be under the max level allowed to advance.
+ * 
+ * @param curr_reaction_level 
+ */
+void stall_advance_level_federation(size_t);
+
+/**
+ * @brief Attempts to update the max level the reaction queue is allowed to advance to
+ * for the current logical timestep.
+ * 
+ */
+void update_max_level(void);
 
 /**
  * Send a message to another federate directly or via the RTI.
