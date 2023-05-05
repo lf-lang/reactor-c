@@ -618,7 +618,7 @@ void* handle_p2p_connections_from_federates(void* ignored) {
         // Send an MSG_TYPE_ACK message.
         unsigned char response = MSG_TYPE_ACK;
         // Trace the event when tracing is enabled
-        tracepoint_federate_to_federate(send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
+        tracepoint_federate_to_federate(send_ACK, _lf_my_fed_id, remote_fed_id, &NEVER_TAG);
         write_to_socket_errexit(socket_id, 1, (unsigned char*)&response,
                 "Failed to write MSG_TYPE_ACK in response to federate %d.",
                 remote_fed_id);
@@ -884,7 +884,7 @@ void connect_to_federate(uint16_t remote_federate_id) {
             } else {
                 lf_print("Connected to federate %d, port %d.", remote_federate_id, port);
                 // Trace the event when tracing is enabled
-                tracepoint_federate_to_federate(receive_ACK, _lf_my_fed_id, remote_federate_id, NULL);
+                tracepoint_federate_to_federate(receive_ACK, _lf_my_fed_id, remote_federate_id, &NEVER_TAG);
             }
         }
     }
@@ -1158,7 +1158,7 @@ void connect_to_rti(const char* hostname, int port) {
                         "%d. Error code: %d. Federate quits.\n", response, cause);
             } else if (response == MSG_TYPE_ACK) {
                 // Trace the event when tracing is enabled
-                tracepoint_federate_from_RTI(receive_ACK, _lf_my_fed_id, NULL);
+                tracepoint_federate_from_RTI(receive_ACK, _lf_my_fed_id, &NEVER_TAG);
                 LF_PRINT_LOG("Received acknowledgment from the RTI.");
 
                 // Call a generated (external) function that sends information
@@ -2415,8 +2415,8 @@ void handle_stop_request_message() {
  * FIXME: This function assumes the caller does hold the mutex lock?
  */
 void handle_next_event_tag_query(){
-    tracepoint_federate_from_RTI(receive_CuTAG_QR, _lf_my_fed_id, NULL);
-    
+    tracepoint_federate_from_RTI(receive_CuTAG_QR, _lf_my_fed_id, &NEVER_TAG);
+
     // Extract the transient federate Id 
     size_t bytes_to_read = sizeof(uint16_t);
     unsigned char buffer[bytes_to_read];

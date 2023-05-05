@@ -242,7 +242,7 @@ bool send_current_tag_query (federate_t* conn_fed, uint16_t transient_id) {
     encode_uint16(transient_id, (unsigned char *)&(buffer[1]));
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_to_federate(send_CuTAG_QR, conn_fed->id, NULL);
+        tracepoint_RTI_to_federate(send_CuTAG_QR, conn_fed->id, &NEVER_TAG);
     }
     // If write_to_socket fails, the consider it as soft failure and update the 
     // federate's status.
@@ -1642,7 +1642,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
     // Send an MSG_TYPE_ACK message.
     unsigned char ack_message = MSG_TYPE_ACK;
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_to_federate(send_ACK, fed_id, NULL);
+        tracepoint_RTI_to_federate(send_ACK, fed_id, &NEVER_TAG);
     }
     write_to_socket_errexit(socket_id, 1, &ack_message,
             "RTI failed to write MSG_TYPE_ACK message to federate %d.", fed_id);
