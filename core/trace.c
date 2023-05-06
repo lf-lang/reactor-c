@@ -37,7 +37,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
 
 #include "platform.h"
 
@@ -276,7 +275,13 @@ void start_trace(const char* filename) {
     char filename_[strlen(filename) + 10];
     strcpy(filename_, filename);
     int i = 0;
-    while (access(filename_, F_OK) == 0) {
+    FILE *test_file_exists;
+    while (true) {
+        test_file_exists = fopen(filename_, "r");
+        if (test_file_exists == NULL) {
+            break;
+        }
+        fclose(test_file_exists);
         // Get the root of the original file name
         memset(filename_, '\0', sizeof(filename_));
         strncpy(filename_, filename, strlen(filename) - 4);
