@@ -14,6 +14,8 @@ list(APPEND INFO_SOURCES ${GENERAL_SOURCES})
 
 # Create the core library
 add_library(core ${GENERAL_SOURCES})
+SET(CMAKE_C_ARCHIVE_FINISH   "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+SET(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
 
 # Add sources for either threaded or unthreaded runtime
 if (DEFINED FEDERATED)
