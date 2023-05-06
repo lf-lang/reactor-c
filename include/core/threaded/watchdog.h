@@ -7,7 +7,14 @@
  * @brief Declarations for watchdogs.
  */
 
+#ifndef WATCHDOG_H
+#define WATCHDOG_H 1
+
 #include "platform.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /** 
  * Watchdog function type. The argument passed to one of 
@@ -52,3 +59,9 @@ void lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout);
  * @param watchdog The watchdog.
  */
 void lf_watchdog_stop(watchdog_t* watchdog);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
