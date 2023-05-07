@@ -83,13 +83,6 @@ lf_cond_t logical_time_changed;
 // Variable to track how far in the reaction queue we can go until we need to wait for more network port statuses to be known.
 int max_level_allowed_to_advance;
 
-//bool waiting_to_advance_level;
-
-#ifdef FEDERATED_DECENTRALIZED
-staa_t* staa_lst[];
-int staa_lst_size;
-#endif
-
 /**
  * The state of this federate instance.
  */
@@ -1233,6 +1226,10 @@ extern reaction_t* networkInputReactions[];
 extern size_t numNetworkInputReactions;
 extern reaction_t* portAbsentReaction[];
 extern size_t numSenderReactions;
+#ifdef FEDERATED_DECENTRALIZED
+extern staa_t* staa_lst[];
+extern size_t staa_lst_size;
+#endif
 
 /**
  * Return a pointer to the action struct for the action
