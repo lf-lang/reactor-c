@@ -46,6 +46,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler.h"
 #include "tag.h"
 
+#ifdef FEDERATED
+#include "federate.h"
+#endif
+
 // Global variables defined in tag.c:
 extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
 extern tag_t current_tag;
@@ -929,6 +933,14 @@ void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
     reaction->is_STP_violated = false;
 }
 
+/**
+ * @brief Attempt to advance the current reaction level to the next level
+ * in the reaction queue. For federated runtimes, this function should
+ * stall the advance until we know that we can safely execute the next level
+ * given knowledge about upstream network port statuses.
+ * 
+ * @param curr_reaction_level 
+ */
 void try_advance_level(size_t* curr_reaction_level) {
     #ifdef FEDERATED
     stall_advance_level_federation(*curr_reaction_level);

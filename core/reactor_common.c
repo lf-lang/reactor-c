@@ -45,6 +45,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef MODAL_REACTORS
 #include "modes.h"
 #endif
+#ifdef FEDERATED
+#include "federate.h"
+#endif
 #include "port.h"
 #include "pqueue.h"
 #include "reactor.h"

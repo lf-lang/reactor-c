@@ -51,6 +51,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "semaphore.h"
 #include "trace.h"
 #include "util.h"
+#include "reactor_threaded.h"
 
 /////////////////// External Variables /////////////////////////
 extern lf_mutex_t mutex;
