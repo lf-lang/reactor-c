@@ -83,7 +83,7 @@ lf_cond_t logical_time_changed;
 // Variable to track how far in the reaction queue we can go until we need to wait for more network port statuses to be known.
 int max_level_allowed_to_advance;
 
-bool waiting_to_advance_level;
+//bool waiting_to_advance_level;
 
 #ifdef FEDERATED_DECENTRALIZED
 staa_t* staa_lst[];
@@ -1460,10 +1460,10 @@ port_status_t get_current_port_status(int portID) {
 //     }
 // }
 
-// /**
-//  * Enqueue network output control reactions that will send a MSG_TYPE_PORT_ABSENT
-//  * message to downstream federates if a given network output port is not present.
-//  */
+/**
+ * Enqueue network output control reactions that will send a MSG_TYPE_PORT_ABSENT
+ * message to downstream federates if a given network output port is not present.
+ */
 void enqueue_network_output_control_reactions(){
 #ifdef FEDERATED_CENTRALIZED
     if (!_fed.has_downstream) {
@@ -2175,7 +2175,12 @@ void update_max_level() {
     
 }
 
-//#ifdef FEDERATED_DECENTRALIZED
+#ifdef FEDERATED_DECENTRALIZED
+/**
+ * @brief Given a list of staa offsets and its associated triggers,
+ * have a single thread work to set ports to absent at a given logical time
+ * 
+ */
 void update_ports_from_staa_offsets(){
     while(1){
         bool restart = false;
@@ -2201,7 +2206,7 @@ void update_ports_from_staa_offsets(){
     }
     
 }
-//#endif
+#endif
 
 /**
  * Handle a provisional tag advance grant (PTAG) message from the RTI.

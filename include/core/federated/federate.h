@@ -207,15 +207,13 @@ typedef struct federate_instance_t {
 
 } federate_instance_t;
 
-//#ifdef FEDERATED_DECENTRALIZED
+#ifdef FEDERATED_DECENTRALIZED
 typedef struct staa {
     lf_action_base_t** actions;
     size_t STAA;
     size_t numActions;
 } staa_t;
-
-
-//#endif
+#endif
 
 typedef struct federation_metadata_t {
     const char* federation_id;
@@ -332,6 +330,12 @@ void* handle_p2p_connections_from_federates(void*);
  * @param fed_ID The fed ID of the receiving federate.
  */
 void send_port_absent_to_federate(interval_t, unsigned short, unsigned short);
+
+/**
+ * Enqueue network output control reactions that will send a PORT_ABSENT
+ * message to downstream federates if a given network output port is not present.
+ */
+void enqueue_network_output_control_reactions(void);
 
 /**
  * @brief Prevent the advancement to the next level of the reaction queue until the 

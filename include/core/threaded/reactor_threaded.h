@@ -11,12 +11,9 @@ extern lf_cond_t global_tag_barrier_requestors_reached_zero;
  * or absent.
  */
 void enqueue_network_input_control_reactions();
+void try_advance_level(size_t*);
 
-/**
- * Enqueue network output control reactions that will send a PORT_ABSENT
- * message to downstream federates if a given network output port is not present.
- */
-void enqueue_network_output_control_reactions();
+
 void _lf_increment_global_tag_barrier_already_locked(tag_t future_tag);
 void _lf_increment_global_tag_barrier(tag_t future_tag);
 void _lf_decrement_global_tag_barrier_locked();
