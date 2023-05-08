@@ -2172,14 +2172,14 @@ void update_max_level() {
     
 }
 
-#ifdef FEDERATED_DECENTRALIZED
 /**
  * @brief Given a list of staa offsets and its associated triggers,
  * have a single thread work to set ports to absent at a given logical time
  * 
  */
-void update_ports_from_staa_offsets(){
-    while(1){
+#ifdef FEDERATED_DECENTRALIZED
+void* update_ports_from_staa_offsets(void* args){
+    while(1) {
         bool restart = false;
         for(int i = 0; i < staa_lst_size; ++i) {
             staa_t* staaElem = staa_lst[i];
@@ -2201,7 +2201,15 @@ void update_ports_from_staa_offsets(){
         if(restart) continue;
         lf_cond_wait(&logical_time_changed);
     }
-    
+}
+
+/**
+ * @brief Spawns a thread to iterate through STAA structs, setting its associated ports absent
+ * at an offset if the port is not present with a value by a certain physical time.
+ * 
+ */
+void spawn_staa_thread(){
+    lf_thread_create(&_fed.staaSetter, update_ports_from_staa_offsets, NULL);
 }
 #endif
 
@@ -2727,7 +2735,6 @@ void synchronize_with_other_federates() {
     //  from the RTI in a sequential manner in the main thread. From now on, a
     //  separate thread is created to allow for asynchronous communication.
     lf_thread_create(&_fed.RTI_socket_listener, listen_to_rti_TCP, NULL);
-
     lf_thread_t thread_id;
     if (create_clock_sync_thread(&thread_id)) {
         lf_print_warning("Failed to create thread to handle clock synchronization.");

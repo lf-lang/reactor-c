@@ -786,6 +786,7 @@ void _lf_initialize_start_tag() {
     // once the complete message has been read. Here, we wait for that barrier
     // to be removed, if appropriate before proceeding to executing tag (0,0).
     _lf_wait_on_global_tag_barrier((tag_t){.time=start_time,.microstep=0});
+    spawn_staa_thread();
 #endif // FEDERATED_DECENTRALIZED
 
     // Set the following boolean so that other thread(s), including federated threads,

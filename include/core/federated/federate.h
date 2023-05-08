@@ -59,6 +59,14 @@ typedef struct federate_instance_t {
     lf_thread_t RTI_socket_listener;
 
     /**
+     * Thread responsible for setting ports to absent by an STAA offset if they
+     * aren't already known.
+     */
+    #ifdef FEDERATED_DECENTRALIZED
+    lf_thread_t staaSetter;
+    #endif
+
+    /**
      * Number of inbound physical connections to the federate.
      * This can be either physical connections, or logical connections
      * in the decentralized coordination, or both.
@@ -71,6 +79,7 @@ typedef struct federate_instance_t {
      * number_of_inbound_p2p_connections.
      */
     lf_thread_t *inbound_socket_listeners;
+
 
     /**
      * Number of outbound peer-to-peer connections from the federate.
@@ -234,6 +243,15 @@ extern lf_cond_t logical_time_changed;
 * @see MSG_TYPE_NEIGHBOR_STRUCTURE in net_common.h
 */
 void send_neighbor_structure_to_RTI(int);
+
+/**
+ * @brief Spawns a thread to iterate through STAA structs, setting its associated ports absent
+ * at an offset if the port is not present with a value by a certain physical time.
+ * 
+ */
+#ifdef FEDERATED_DECENTRALIZED
+void spawn_staa_thread(void);
+#endif
 
 /**
  * Connect to the federate with the specified id. This established

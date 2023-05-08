@@ -349,7 +349,10 @@ void _lf_start_time_step() {
     // Reset absent fields on network ports because
     // their status is unknown
     reset_status_fields_on_input_port_triggers();
+    // Signal the helper thread to reset its progress since the logical time has changed.
+    lf_cond_signal(&logical_time_changed);
 #endif
+
     _lf_is_present_fields_abbreviated_size = 0;
 }
 
