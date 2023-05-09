@@ -1884,10 +1884,12 @@ void handle_message(int socket, int fed_id) {
  * 
  * @param curr_reaction_level 
  */
-void stall_advance_level_federation(size_t curr_reaction_level){
+void stall_advance_level_federation(size_t curr_reaction_level) {
+    lf_mutex_lock(&mutex);
     while(max_level_allowed_to_advance != -1 && (curr_reaction_level+1) > max_level_allowed_to_advance) {
         lf_cond_wait(&port_status_changed);
     }
+    lf_mutex_unlock(&mutex);
 }
 
 /**
@@ -2181,25 +2183,34 @@ void update_max_level() {
 void* update_ports_from_staa_offsets(void* args){
     while(1) {
         bool restart = false;
+        tag_t startTag = lf_tag();
         for(int i = 0; i < staa_lst_size; ++i) {
             staa_t* staaElem = staa_lst[i];
             interval_t wait_until_time = current_tag.time + staaElem->STAA + _lf_fed_STA_offset;
-            if(wait_until(wait_until_time, &logical_time_changed)){
+            lf_mutex_lock(&mutex);
+            if(lf_tag() == startTag && wait_until(wait_until_time, &logical_time_changed)){
                 for(int j = 0; j < staaElem->numActions; ++j){
                     lf_action_base_t* input_port_action = staaElem->actions[j];
                     if (input_port_action->trigger->status == unknown) {
                         input_port_action->trigger->status = absent;
-                        lf_cond_signal(&port_status_changed);
+                        lf_cond_broadcast(&port_status_changed);
                     }
                 }
+                lf_mutex_unlock(&mutex);
             }else{
                 //We have committed to a new tag before we finish processing the list. Start over.
                 restart = true;
+                lf_mutex_unlock(&mutex);
                 break;
             }
         }
         if(restart) continue;
-        lf_cond_wait(&logical_time_changed);
+
+        lf_mutex_lock(&mutex);
+        while(lf_tag() == startTag) {
+            lf_cond_wait(&logical_time_changed);
+        }
+        lf_mutex_unlock(&mutex);
     }
 }
 
