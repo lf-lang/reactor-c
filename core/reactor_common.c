@@ -1354,6 +1354,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
                     LF_PRINT_DEBUG("Trigger %p lists %d reactions.", trigger, trigger->number_of_reactions);
                     for (int k=0; k < trigger->number_of_reactions; k++) {
                         reaction_t* downstream_reaction = trigger->reactions[k];
+                        _lf_trigger_reaction(downstream_reaction, worker);
 #ifdef FEDERATED_DECENTRALIZED // Only pass down tardiness for federated LF programs
                         // Set the is_STP_violated for the downstream reaction
                         if (downstream_reaction != NULL) {
@@ -1362,119 +1363,119 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
                                     downstream_reaction->is_STP_violated, downstream_reaction->name);
                         }
 #endif
-                        if (downstream_reaction != NULL && downstream_reaction != downstream_to_execute_now) {
-                            num_downstream_reactions++;
-                            // If there is exactly one downstream reaction that is enabled by this
-                            // reaction, then we can execute that reaction immediately without
-                            // going through the reaction queue. In multithreaded execution, this
-                            // avoids acquiring a mutex lock.
-                            // FIXME: Check the earliest deadline on the reaction queue.
-                            // This optimization could violate EDF scheduling otherwise.
-                            if (num_downstream_reactions == 1 && downstream_reaction->last_enabling_reaction == reaction) {
-                                // So far, this downstream reaction is a candidate to execute now.
-                                downstream_to_execute_now = downstream_reaction;
-                            } else {
-                                // If there is a previous candidate reaction to execute now,
-                                // it is no longer a candidate.
-                                if (downstream_to_execute_now != NULL) {
-                                    // More than one downstream reaction is enabled.
-                                    // In this case, if we were to execute the downstream reaction
-                                    // immediately without changing any queues, then the second
-                                    // downstream reaction would be blocked because this reaction
-                                    // remains on the executing queue. Hence, the optimization
-                                    // is not valid. Put the candidate reaction on the queue.
-                                    _lf_trigger_reaction(downstream_to_execute_now, worker);
-                                    downstream_to_execute_now = NULL;
-                                }
-                                // Queue the reaction.
-                                _lf_trigger_reaction(downstream_reaction, worker);
-                            }
-                        }
-                    }
+                    //     if (downstream_reaction != NULL && downstream_reaction != downstream_to_execute_now) {
+                    //         num_downstream_reactions++;
+                    //         // If there is exactly one downstream reaction that is enabled by this
+                    //         // reaction, then we can execute that reaction immediately without
+                    //         // going through the reaction queue. In multithreaded execution, this
+                    //         // avoids acquiring a mutex lock.
+                    //         // FIXME: Check the earliest deadline on the reaction queue.
+                    //         // This optimization could violate EDF scheduling otherwise.
+                    //         if (num_downstream_reactions == 1 && downstream_reaction->last_enabling_reaction == reaction) {
+                    //             // So far, this downstream reaction is a candidate to execute now.
+                    //             downstream_to_execute_now = downstream_reaction;
+                    //         } else {
+                    //             // If there is a previous candidate reaction to execute now,
+                    //             // it is no longer a candidate.
+                    //             if (downstream_to_execute_now != NULL) {
+                    //                 // More than one downstream reaction is enabled.
+                    //                 // In this case, if we were to execute the downstream reaction
+                    //                 // immediately without changing any queues, then the second
+                    //                 // downstream reaction would be blocked because this reaction
+                    //                 // remains on the executing queue. Hence, the optimization
+                    //                 // is not valid. Put the candidate reaction on the queue.
+                    //                 _lf_trigger_reaction(downstream_to_execute_now, worker);
+                    //                 downstream_to_execute_now = NULL;
+                    //             }
+                    //             // Queue the reaction.
+                    //             _lf_trigger_reaction(downstream_reaction, worker);
+                    //         }
+                    //     }
+                    // }
                 }
             }
         }
     }
-    if (downstream_to_execute_now != NULL) {
-        LF_PRINT_LOG("Worker %d: Optimizing and executing downstream reaction now: %s", worker, downstream_to_execute_now->name);
-        bool violation = false;
-#ifdef FEDERATED_DECENTRALIZED // Only use the STP handler for federated programs that use decentralized coordination
-        // If the is_STP_violated for the reaction is true,
-        // an input trigger to this reaction has been triggered at a later
-        // logical time than originally anticipated. In this case, a special
-        // STP handler will be invoked.
-        // FIXME: Note that the STP handler will be invoked
-        // at most once per logical time value. If the STP handler triggers the
-        // same reaction at the current time value, even if at a future superdense time,
-        // then the reaction will be invoked and the STP handler will not be invoked again.
-        // However, input ports to a federate reactor are network port types so this possibly should
-        // be disallowed.
-        // @note The STP handler and the deadline handler are not mutually exclusive.
-        //  In other words, both can be invoked for a reaction if it is triggered late
-        //  in logical time (STP offset is violated) and also misses the constraint on
-        //  physical time (deadline).
-        // @note In absence of a STP handler, the is_STP_violated will be passed down the reaction
-        //  chain until it is dealt with in a downstream STP handler.
-        if (downstream_to_execute_now->is_STP_violated == true) {
-            // Tardiness has occurred
-            LF_PRINT_LOG("Event has STP violation.");
-            reaction_function_t handler = downstream_to_execute_now->STP_handler;
-            // Invoke the STP handler if there is one.
-            if (handler != NULL) {
-                // There is a violation and it is being handled here
-                // If there is no STP handler, pass the is_STP_violated
-                // to downstream reactions.
-                violation = true;
-                LF_PRINT_LOG("Invoke tardiness handler.");
-                (*handler)(downstream_to_execute_now->self);
-
-                // If the reaction produced outputs, put the resulting
-                // triggered reactions into the queue or execute them directly if possible.
-                schedule_output_reactions(downstream_to_execute_now, worker);
-
-                // Reset the tardiness because it has been dealt with in the
-                // STP handler
-                downstream_to_execute_now->is_STP_violated = false;
-                LF_PRINT_DEBUG("Reset reaction's is_STP_violated field to false: %s",
-                        downstream_to_execute_now->name);
-            }
-        }
-#endif
-        if (downstream_to_execute_now->deadline >= 0LL) {
-            // Get the current physical time.
-            instant_t physical_time = lf_time_physical();
-            // Check for deadline violation.
-            if (downstream_to_execute_now->deadline == 0 || physical_time > current_tag.time + downstream_to_execute_now->deadline) {
-                // Deadline violation has occurred.
-                tracepoint_reaction_deadline_missed(downstream_to_execute_now, worker);
-                violation = true;
-                // Invoke the local handler, if there is one.
-                reaction_function_t handler = downstream_to_execute_now->deadline_violation_handler;
-                if (handler != NULL) {
-                    // Assume the mutex is still not held.
-                    (*handler)(downstream_to_execute_now->self);
-
-                    // If the reaction produced outputs, put the resulting
-                    // triggered reactions into the queue or execute them directly if possible.
-                    schedule_output_reactions(downstream_to_execute_now, worker);
-                }
-            }
-        }
-        if (!violation) {
-            // Invoke the downstream_reaction function.
-            _lf_invoke_reaction(downstream_to_execute_now, worker);
-
-            // If the downstream_reaction produced outputs, put the resulting triggered
-            // reactions into the queue (or execute them directly, if possible).
-            schedule_output_reactions(downstream_to_execute_now, worker);
-        }
-
-        // Reset the is_STP_violated because it has been passed
-        // down the chain
-        downstream_to_execute_now->is_STP_violated = false;
-        LF_PRINT_DEBUG("Finally, reset reaction's is_STP_violated field to false: %s",
-                downstream_to_execute_now->name);
     }
+//     if (downstream_to_execute_now != NULL) { LF_PRINT_LOG("Worker %d: Optimizing and executing downstream reaction now: %s", worker, downstream_to_execute_now->name);
+//         bool violation = false;
+// #ifdef FEDERATED_DECENTRALIZED // Only use the STP handler for federated programs that use decentralized coordination
+//         // If the is_STP_violated for the reaction is true,
+//         // an input trigger to this reaction has been triggered at a later
+//         // logical time than originally anticipated. In this case, a special
+//         // STP handler will be invoked.
+//         // FIXME: Note that the STP handler will be invoked
+//         // at most once per logical time value. If the STP handler triggers the
+//         // same reaction at the current time value, even if at a future superdense time,
+//         // then the reaction will be invoked and the STP handler will not be invoked again.
+//         // However, input ports to a federate reactor are network port types so this possibly should
+//         // be disallowed.
+//         // @note The STP handler and the deadline handler are not mutually exclusive.
+//         //  In other words, both can be invoked for a reaction if it is triggered late
+//         //  in logical time (STP offset is violated) and also misses the constraint on
+//         //  physical time (deadline).
+//         // @note In absence of a STP handler, the is_STP_violated will be passed down the reaction
+//         //  chain until it is dealt with in a downstream STP handler.
+//         if (downstream_to_execute_now->is_STP_violated == true) {
+//             // Tardiness has occurred
+//             LF_PRINT_LOG("Event has STP violation.");
+//             reaction_function_t handler = downstream_to_execute_now->STP_handler;
+//             // Invoke the STP handler if there is one.
+//             if (handler != NULL) {
+//                 // There is a violation and it is being handled here
+//                 // If there is no STP handler, pass the is_STP_violated
+//                 // to downstream reactions.
+//                 violation = true;
+//                 LF_PRINT_LOG("Invoke tardiness handler.");
+//                 (*handler)(downstream_to_execute_now->self);
+
+//                 // If the reaction produced outputs, put the resulting
+//                 // triggered reactions into the queue or execute them directly if possible.
+//                 schedule_output_reactions(downstream_to_execute_now, worker);
+
+//                 // Reset the tardiness because it has been dealt with in the
+//                 // STP handler
+//                 downstream_to_execute_now->is_STP_violated = false;
+//                 LF_PRINT_DEBUG("Reset reaction's is_STP_violated field to false: %s",
+//                         downstream_to_execute_now->name);
+//             }
+//         }
+// #endif
+//         if (downstream_to_execute_now->deadline >= 0LL) {
+//             // Get the current physical time.
+//             instant_t physical_time = lf_time_physical();
+//             // Check for deadline violation.
+//             if (downstream_to_execute_now->deadline == 0 || physical_time > current_tag.time + downstream_to_execute_now->deadline) {
+//                 // Deadline violation has occurred.
+//                 tracepoint_reaction_deadline_missed(downstream_to_execute_now, worker);
+//                 violation = true;
+//                 // Invoke the local handler, if there is one.
+//                 reaction_function_t handler = downstream_to_execute_now->deadline_violation_handler;
+//                 if (handler != NULL) {
+//                     // Assume the mutex is still not held.
+//                     (*handler)(downstream_to_execute_now->self);
+
+//                     // If the reaction produced outputs, put the resulting
+//                     // triggered reactions into the queue or execute them directly if possible.
+//                     schedule_output_reactions(downstream_to_execute_now, worker);
+//                 }
+//             }
+//         }
+//         if (!violation) {
+//             // Invoke the downstream_reaction function.
+//             _lf_invoke_reaction(downstream_to_execute_now, worker);
+
+//             // If the downstream_reaction produced outputs, put the resulting triggered
+//             // reactions into the queue (or execute them directly, if possible).
+//             schedule_output_reactions(downstream_to_execute_now, worker);
+//         }
+
+//         // Reset the is_STP_violated because it has been passed
+//         // down the chain
+//         downstream_to_execute_now->is_STP_violated = false;
+//         LF_PRINT_DEBUG("Finally, reset reaction's is_STP_violated field to false: %s",
+//                 downstream_to_execute_now->name);
+//     }
 }
 
 /**
@@ -1754,4 +1755,44 @@ void termination(void) {
     _lf_free_all_reactors();
     free(_lf_is_present_fields);
     free(_lf_is_present_fields_abbreviated);
+}
+
+// FIXME: Document
+void lf_main_loop(int worker_number) {
+    // Keep track of whether we have decremented the idle thread count.
+    // Obtain a reaction from the scheduler that is ready to execute
+    // (i.e., it is not blocked by concurrently executing reactions
+    // that it depends on).
+    // lf_print_snapshot(); // This is quite verbose (but very useful in debugging reaction deadlocks).
+    reaction_t* current_reaction_to_execute = NULL;
+    while ((current_reaction_to_execute =
+            lf_get_ready_reaction(worker_number))
+            != NULL) {
+        // Got a reaction that is ready to run.
+        LF_PRINT_DEBUG("Worker %d: Got from scheduler reaction %s: "
+                "level: %lld, is control reaction: %d, chain ID: %llu, and deadline " PRINTF_TIME ".",
+                worker_number,
+                current_reaction_to_execute->name,
+                LF_LEVEL(current_reaction_to_execute->index),
+                current_reaction_to_execute->is_a_control_reaction,
+                current_reaction_to_execute->chain_id,
+                current_reaction_to_execute->deadline);
+
+        bool violation = lf_handle_violations(
+            worker_number,
+            current_reaction_to_execute
+        );
+
+        if (!violation) {
+            // Invoke the reaction function.
+            _lf_invoke_reaction(current_reaction_to_execute, worker_number);
+        }
+
+        schedule_output_reactions(current_reaction_to_execute, worker_number);
+
+        LF_PRINT_DEBUG("Worker %d: Done with reaction %s.",
+                worker_number, current_reaction_to_execute->name);
+
+        lf_done_with_reaction(worker_number, current_reaction_to_execute);
+    }
 }

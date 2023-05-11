@@ -58,6 +58,7 @@ extern lf_mutex_t mutex;
 /////////////////// Scheduler Variables and Structs /////////////////////////
 _lf_sched_instance_t* _lf_sched_instance;
 
+
 /////////////////// Scheduler Private API /////////////////////////
 /**
  * @brief Insert 'reaction' into
@@ -350,7 +351,25 @@ void lf_sched_free() {
  * @return reaction_t* A reaction for the worker to execute. NULL if the calling
  * worker thread should exit.
  */
+// FIXME: Chain docs
 reaction_t* lf_sched_get_ready_reaction(int worker_number) {
+
+    // See if this worker has a potential chain:
+    if (_lf_sched_instance->_lf_sched_chain[worker_number].proposed_next) {
+        reaction_t* next = 
+            _lf_sched_instance->_lf_sched_chain[worker_number].proposed_next ;
+        // If this is the beginning of the chain, store the pointer to it
+        // FIXME: May not be needed
+        if (!_lf_sched_instance->_lf_sched_chain[worker_number].start) {
+            _lf_sched_instance->_lf_sched_chain[worker_number].start = next;
+        }
+
+        // Reset the prposed next of chain
+        _lf_sched_instance->_lf_sched_chain[worker_number].proposed_next = NULL; 
+        return next;
+    }
+
+
     // Iterate until the stop tag is reached or reaction vectors are empty
     while (!_lf_sched_instance->_lf_sched_should_stop) {
         // Calculate the current level of reactions to execute
@@ -407,11 +426,24 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
  * finished executing 'done_reaction'.
  * @param done_reaction The reaction that is done.
  */
+// FIXME: CHain docs
 void lf_sched_done_with_reaction(size_t worker_number,
                                  reaction_t* done_reaction) {
-    if (!lf_bool_compare_and_swap(&done_reaction->status, queued, inactive)) {
-        lf_print_error_and_exit("Unexpected reaction status: %d. Expected %d.",
-                             done_reaction->status, queued);
+
+    // FIXME: If a chain was running and there is no proposed_next. then we 
+    //  finish the chain. This might be unneccessary, see comment below
+    if (_lf_sched_instance->_lf_sched_chain[worker_number].start &&
+        !_lf_sched_instance->_lf_sched_chain[worker_number].proposed_next) {
+            _lf_sched_instance->_lf_sched_chain[worker_number].start = NULL;
+        }
+
+    // FIXME: Is it a problem if the start-of-chain is set to inactive?
+    //  in the original chain-code this was deferred to after the chain completed.
+    if (!_lf_sched_instance->_lf_sched_chain[worker_number].start) {
+        if (!lf_bool_compare_and_swap(&done_reaction->status, queued, inactive)) {
+            lf_print_error_and_exit("Unexpected reaction status: %d. Expected %d.",
+                                done_reaction->status, queued);
+        }
     }
 }
 
@@ -434,13 +466,35 @@ void lf_sched_done_with_reaction(size_t worker_number,
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  *
  */
+// FIXME: Chain docs
 void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     if (reaction == NULL || !lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
         return;
     }
-    LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld.",
+
+    // If reaction is triggered outside a "worker-context", then insert it and
+    //  dont do chain optimization
+    if (worker_number < 0) {
+        LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld for later execution.",
             reaction->name, LF_LEVEL(reaction->index));
-    _lf_sched_insert_reaction(reaction);
+        _lf_sched_insert_reaction(reaction);
+        return;
+    }
+
+    // If this is the first reaction triggered by this worker, we have a potential 
+    //  chain.
+    if (_lf_sched_instance->_lf_sched_chain[worker_number].proposed_next == NULL) {
+        LF_PRINT_DEBUG("Scheduler: Proposing reaction %s for a chain.", reaction->name);
+        _lf_sched_instance->_lf_sched_chain[worker_number].proposed_next = reaction;
+    } else {
+        // No chain, also insert the proposed next chain reaction
+        _lf_sched_insert_reaction(_lf_sched_instance->_lf_sched_chain[worker_number].proposed_next);
+        LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld for later execution.",
+            reaction->name, LF_LEVEL(reaction->index));
+        _lf_sched_insert_reaction(reaction);
+        // Reset the proposed_next
+        _lf_sched_instance->_lf_sched_chain[worker_number].proposed_next = NULL;
+    }
 }
 #endif
 #endif
