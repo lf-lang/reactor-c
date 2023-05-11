@@ -46,6 +46,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <signal.h> // To trap ctrl-c and invoke termination().
 #endif
 
+// Global variable defined in tag.c:
+extern tag_t current_tag;
+extern instant_t start_time;
+
 /**
  * @brief Queue of triggered reactions at the current tag.
  *
