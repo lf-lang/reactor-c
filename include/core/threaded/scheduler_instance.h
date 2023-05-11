@@ -47,6 +47,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 extern lf_mutex_t mutex;
 
+// FIXME: Document
+// FIXME: Do these have to be volatile
+typedef struct {
+    reaction_t * start;
+    reaction_t * proposed_next;
+} _lf_sched_chain_t;
 
 /**
  * @brief Paramters used in schedulers of the threaded reactor C runtime.
@@ -132,6 +138,11 @@ typedef struct {
      *
      */
     volatile size_t _lf_sched_next_reaction_level;
+
+    // A pointer to the reaction at the start of the chain currently executed
+    // by the worker
+    volatile _lf_sched_chain_t * _lf_sched_chain;
+
 } _lf_sched_instance_t;
 
 /**
@@ -181,6 +192,10 @@ bool init_sched_instance(
     (*instance)->_lf_sched_next_reaction_level = 1;
 
     (*instance)->_lf_sched_should_stop = false;
+
+    (*instance)->_lf_sched_chain = 
+        (_lf_sched_chain_t *) calloc(number_of_workers, sizeof(_lf_sched_chain_t));
+
 
     return true;
 }

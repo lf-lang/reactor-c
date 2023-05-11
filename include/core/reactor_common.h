@@ -88,4 +88,9 @@ int process_args(int argc, const char* argv[]);
 void initialize(void);
 void termination(void);
 
+// FIXME: Document functions and should they be prepended by underscore?
+void lf_main_loop(int worker_number);
+reaction_t * lf_get_ready_reaction(int worker_number);
+bool lf_handle_violations(int worker_number, reaction_t *reaction);
+void lf_done_with_reaction(int worker_number, reaction_t *reaction);
 #endif

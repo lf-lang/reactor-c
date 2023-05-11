@@ -899,7 +899,7 @@ bool _lf_worker_handle_STP_violation_for_reaction(int worker_number, reaction_t*
  *
  * @return true if a violation occurred. false otherwise.
  */
-bool _lf_worker_handle_violations(int worker_number, reaction_t* reaction) {
+bool lf_handle_violations(int worker_number, reaction_t* reaction) {
     bool violation = false;
 
     violation = _lf_worker_handle_deadline_violation_for_reaction(worker_number, reaction) ||
@@ -908,70 +908,11 @@ bool _lf_worker_handle_violations(int worker_number, reaction_t* reaction) {
 }
 
 /**
- * Invoke 'reaction' and schedule any resulting triggered reaction(s) on the
- * reaction queue.
- * The mutex should NOT be locked when this function is called. It might acquire
- * the mutex when scheduling the reactions that are triggered as a result of
- * executing 'reaction'.
- */
-void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
-    LF_PRINT_LOG("Worker %d: Invoking reaction %s at elapsed tag " PRINTF_TAG ".",
-            worker_number,
-            reaction->name,
-            current_tag.time - start_time,
-            current_tag.microstep);
-    _lf_invoke_reaction(reaction, worker_number);
-
-    // If the reaction produced outputs, put the resulting triggered
-    // reactions into the queue or execute them immediately.
-    schedule_output_reactions(reaction, worker_number);
-
-    reaction->is_STP_violated = false;
-}
-
-/**
  * The main looping logic of each LF worker thread.
  * This function assumes the caller holds the mutex lock.
  *
  * @param worker_number The number assigned to this worker thread
  */
-void _lf_worker_do_work(int worker_number) {
-    // Keep track of whether we have decremented the idle thread count.
-    // Obtain a reaction from the scheduler that is ready to execute
-    // (i.e., it is not blocked by concurrently executing reactions
-    // that it depends on).
-    // lf_print_snapshot(); // This is quite verbose (but very useful in debugging reaction deadlocks).
-    reaction_t* current_reaction_to_execute = NULL;
-    while ((current_reaction_to_execute =
-            lf_sched_get_ready_reaction(worker_number))
-            != NULL) {
-        // Got a reaction that is ready to run.
-        LF_PRINT_DEBUG("Worker %d: Got from scheduler reaction %s: "
-                "level: %lld, is control reaction: %d, chain ID: %llu, and deadline " PRINTF_TIME ".",
-                worker_number,
-                current_reaction_to_execute->name,
-                LF_LEVEL(current_reaction_to_execute->index),
-                current_reaction_to_execute->is_a_control_reaction,
-                current_reaction_to_execute->chain_id,
-                current_reaction_to_execute->deadline);
-
-        bool violation = _lf_worker_handle_violations(
-            worker_number,
-            current_reaction_to_execute
-        );
-
-        if (!violation) {
-            // Invoke the reaction function.
-            _lf_worker_invoke_reaction(worker_number, current_reaction_to_execute);
-        }
-
-        LF_PRINT_DEBUG("Worker %d: Done with reaction %s.",
-                worker_number, current_reaction_to_execute->name);
-
-        lf_sched_done_with_reaction(worker_number, current_reaction_to_execute);
-    }
-}
-
 /**
  * Worker thread for the thread pool.
  * This acquires the mutex lock and releases it to wait for time to
@@ -983,7 +924,7 @@ void* worker(void* arg) {
     LF_PRINT_LOG("Worker thread %d started.", worker_number);
     lf_mutex_unlock(&mutex);
 
-    _lf_worker_do_work(worker_number);
+    lf_main_loop(worker_number);
 
     lf_mutex_lock(&mutex);
 
@@ -1190,4 +1131,14 @@ int lf_critical_section_enter() {
 int lf_critical_section_exit() {
     return lf_mutex_unlock(&mutex); 
 }
+
+reaction_t *lf_get_ready_reaction(int worker_number) {
+    return lf_sched_get_ready_reaction(worker_number);
+}
+
+void lf_done_with_reaction(int worker_number, reaction_t * reaction) {
+    lf_sched_done_with_reaction(worker_number, reaction);
+}
+
+
 #endif
