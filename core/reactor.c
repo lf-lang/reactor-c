@@ -135,83 +135,6 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
     }
 }
 
-/**
- * Execute all the reactions in the reaction queue at the current tag.
- *
- * @return Returns 1 if the execution should continue and 0 if the execution
- *  should stop.
- */
-int _lf_do_step(void) {
-    // Invoke reactions.
-    while(pqueue_size(reaction_q) > 0) {
-        // lf_print_snapshot();
-        reaction_t* reaction = (reaction_t*)pqueue_pop(reaction_q);
-        reaction->status = running;
-
-        LF_PRINT_LOG("Invoking reaction %s at elapsed logical tag " PRINTF_TAG ".",
-        		reaction->name,
-                current_tag.time - start_time, current_tag.microstep);
-
-        bool violation = false;
-
-        // FIXME: These comments look outdated. We may need to update them.
-        // If the reaction has a deadline, compare to current physical time
-        // and invoke the deadline violation reaction instead of the reaction function
-        // if a violation has occurred. Note that the violation reaction will be invoked
-        // at most once per logical time value. If the violation reaction triggers the
-        // same reaction at the current time value, even if at a future superdense time,
-        // then the reaction will be invoked and the violation reaction will not be invoked again.
-        if (reaction->deadline >= 0LL) {
-            // Get the current physical time.
-            instant_t physical_time = lf_time_physical();
-            // FIXME: These comments look outdated. We may need to update them.
-            // Check for deadline violation.
-            // There are currently two distinct deadline mechanisms:
-            // local deadlines are defined with the reaction;
-            // container deadlines are defined in the container.
-            // They can have different deadlines, so we have to check both.
-            // Handle the local deadline first.
-            if (reaction->deadline == 0 || physical_time > current_tag.time + reaction->deadline) {
-                LF_PRINT_LOG("Deadline violation. Invoking deadline handler.");
-                tracepoint_reaction_deadline_missed(reaction, 0);
-                // Deadline violation has occurred.
-                violation = true;
-                // Invoke the local handler, if there is one.
-                reaction_function_t handler = reaction->deadline_violation_handler;
-                if (handler != NULL) {
-                    (*handler)(reaction->self);
-                    // If the reaction produced outputs, put the resulting
-                    // triggered reactions into the queue.
-                    schedule_output_reactions(reaction, 0);
-                }
-            }
-        }
-
-        if (!violation) {
-            // Invoke the reaction function.
-            _lf_invoke_reaction(reaction, 0);   // 0 indicates unthreaded.
-
-            // If the reaction produced outputs, put the resulting triggered
-            // reactions into the queue.
-            schedule_output_reactions(reaction, 0);
-        }
-        // There cannot be any subsequent events that trigger this reaction at the
-        //  current tag, so it is safe to conclude that it is now inactive.
-        reaction->status = inactive;
-    }
-
-#ifdef MODAL_REACTORS
-    // At the end of the step, perform mode transitions
-    _lf_handle_mode_changes();
-#endif
-
-    if (lf_tag_compare(current_tag, stop_tag) >= 0) {
-        return 0;
-    }
-
-    return 1;
-}
-
 // Wait until physical time matches or exceeds the time of the least tag
 // on the event queue. If there is no event in the queue, return 0.
 // After this wait, advance current_tag.time to match
@@ -227,6 +150,7 @@ int _lf_do_step(void) {
 // Also return 0 if there are no more events in the queue and
 // the keepalive command-line option has not been given.
 // Otherwise, return 1.
+// FIXME: Update docs, this is no longer recursive.Update with new scheduler API stuff
 int next(void) {
     // Enter the critical section and do not leave until we have
     // determined which tag to commit to and start invoking reactions for.
@@ -297,7 +221,7 @@ int next(void) {
         lf_print_error_and_exit("Could not leave critical section");
     }
 
-    return _lf_do_step();
+    return 0;
 }
 
 /**
@@ -375,13 +299,83 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         }
         LF_PRINT_DEBUG("Running the program's main loop.");
         // Handle reactions triggered at time (T,m).
-        if (_lf_do_step()) {
-            while (next() != 0);
-        }
+        lf_main_loop(0);
         // pqueue_free(reaction_q); FIXME: This might be causing weird memory errors
         return 0;
     } else {
         return -1;
     }
 }
+
+reaction_t * _get_next_reaction() {
+    // Check if there are more reactions at the current tag
+    if (pqueue_size(reaction_q) > 0) {
+        reaction_t* reaction = (reaction_t*)pqueue_pop(reaction_q);
+        reaction->status = running;
+
+        LF_PRINT_LOG("Invoking reaction %s at elapsed logical tag " PRINTF_TAG ".",
+            reaction->name,
+            current_tag.time - start_time, current_tag.microstep);
+        return reaction;
+    } else {
+        return NULL;
+    }
+}
+
+reaction_t * lf_get_ready_reaction(int worker_number) {
+    
+    reaction_t * reaction_to_return;
+    if ((reaction_to_return = _get_next_reaction())) {
+        return reaction_to_return;
+    }
+
+    // Current tag is finished
+    #ifdef MODAL_REACTORS
+        // At the end of the step, perform mode transitions
+    _lf_handle_mode_changes();
+    #endif
+
+    if (lf_tag_compare(current_tag, stop_tag) >= 0) {
+        return NULL;
+    }
+
+    while (next() != 0)
+    reaction_to_return = _get_next_reaction();
+
+
+    return reaction_to_return;
+}
+
+bool lf_handle_violations(int worker_number, reaction_t *reaction) {
+    bool violation = false;
+    if (reaction->deadline >= 0LL) {
+        // Get the current physical time.
+        instant_t physical_time = lf_time_physical();
+        // FIXME: These comments look outdated. We may need to update them.
+        // Check for deadline violation.
+        // There are currently two distinct deadline mechanisms:
+        // local deadlines are defined with the reaction;
+        // container deadlines are defined in the container.
+        // They can have different deadlines, so we have to check both.
+        // Handle the local deadline first.
+        if (reaction->deadline == 0 || physical_time > current_tag.time + reaction->deadline) {
+            violation = true;
+            LF_PRINT_LOG("Deadline violation. Invoking deadline handler.");
+            tracepoint_reaction_deadline_missed(reaction, 0);
+            // Deadline violation has occurred.
+            // Invoke the local handler, if there is one.
+            reaction_function_t handler = reaction->deadline_violation_handler;
+            if (handler != NULL) {
+                (*handler)(reaction->self);
+                // If the reaction produced outputs, put the resulting
+            }
+        }
+    }
+    return violation;
+}
+
+void lf_done_with_reaction(int worker_number, reaction_t *reaction) {
+    reaction->status = inactive;
+}
+
 #endif
