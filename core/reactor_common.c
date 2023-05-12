@@ -1346,7 +1346,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
                     LF_PRINT_DEBUG("Trigger %p lists %d reactions.", trigger, trigger->number_of_reactions);
                     for (int k=0; k < trigger->number_of_reactions; k++) {
                         reaction_t* downstream_reaction = trigger->reactions[k];
-                        _lf_trigger_reaction(downstream_reaction, worker);
+                        _lf_enable_downstream_reaction(reaction, downstream_reaction, worker);
 #ifdef FEDERATED_DECENTRALIZED // Only pass down tardiness for federated LF programs
                         // Set the is_STP_violated for the downstream reaction
                         if (downstream_reaction != NULL) {
