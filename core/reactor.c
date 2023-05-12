@@ -55,6 +55,8 @@ extern instant_t start_time;
  *
  */
 pqueue_t* reaction_q;
+reaction_t *chain_reaction = NULL;
+
 
 /**
  * Mark the given port's is_present field as true. This is_present field
@@ -116,6 +118,7 @@ void lf_print_snapshot() {
  *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
+// FIXME: Add docs on chain opt
 void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
 #ifdef MODAL_REACTORS
     // Check if reaction is disabled by mode inactivity
@@ -126,11 +129,32 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
 #endif
     // Do not enqueue this reaction twice.
     if (reaction->status == inactive) {
-        LF_PRINT_DEBUG("Enqueing downstream reaction %s, which has level %lld.",
-        		reaction->name, reaction->index & 0xffffLL);
-        reaction->status = queued;
-        if (pqueue_insert(reaction_q, reaction) != 0) {
-            lf_print_error_and_exit("Could not insert reaction into reaction_q");
+
+        // Do chain optimization
+        bool enqueue_reaction = true;
+        if (worker_number == 0) {
+            if (!chain_reaction) {
+                chain_reaction = reaction;
+                enqueue_reaction = false;
+            } else {
+                // Second reaction triggered at current step. Enqueue both 
+                LF_PRINT_DEBUG("Enqueing downstream reaction %s, which has level %lld.",
+                        chain_reaction->name, chain_reaction->index & 0xffffLL);
+                chain_reaction->status = queued;
+                if (pqueue_insert(reaction_q, chain_reaction) != 0) {
+                    lf_print_error_and_exit("Could not insert reaction into reaction_q");
+                }
+                chain_reaction = NULL;
+            }
+        }
+
+        if(enqueue_reaction) {
+            LF_PRINT_DEBUG("Enqueing downstream reaction %s, which has level %lld.",
+                    reaction->name, reaction->index & 0xffffLL);
+            reaction->status = queued;
+            if (pqueue_insert(reaction_q, reaction) != 0) {
+                lf_print_error_and_exit("Could not insert reaction into reaction_q");
+            }
         }
     }
 }
@@ -324,7 +348,13 @@ reaction_t * _get_next_reaction() {
 
 reaction_t * lf_get_ready_reaction(int worker_number) {
     
-    reaction_t * reaction_to_return;
+    reaction_t * reaction_to_return = NULL;
+    if ((reaction_to_return = chain_reaction)) {
+        chain_reaction = NULL;
+        return reaction_to_return;
+    }
+
+
     if ((reaction_to_return = _get_next_reaction())) {
         return reaction_to_return;
     }
@@ -332,16 +362,19 @@ reaction_t * lf_get_ready_reaction(int worker_number) {
     // Current tag is finished
     #ifdef MODAL_REACTORS
         // At the end of the step, perform mode transitions
-    _lf_handle_mode_changes();
+        _lf_handle_mode_changes();
     #endif
 
+    // Check if this was the stop tag
     if (lf_tag_compare(current_tag, stop_tag) >= 0) {
         return NULL;
     }
 
-    while (next() != 0)
-    reaction_to_return = _get_next_reaction();
+    // Advance until next tag
+    while (next() != 0) {}
 
+    // Fetch the next reaction
+    reaction_to_return = _get_next_reaction();
 
     return reaction_to_return;
 }
