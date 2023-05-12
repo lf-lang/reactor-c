@@ -478,29 +478,20 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
 
 // FIXME: Chain docs
 void lf_sched_enable_downstream_reaction(reaction_t* upstream,  reaction_t *downstream, int worker_number) {
-    if (downstream == NULL || !lf_bool_compare_and_swap(&downstream->status, inactive, queued)) {
+    if (downstream == NULL || upstream == NULL || !lf_bool_compare_and_swap(&downstream->status, inactive, queued)) {
         return;
     }
 
-    // If reaction is triggered outside a "worker-context", then insert it and
-    //  dont do chain optimization
-    if (worker_number < 0) {
-        LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld for later execution.",
-            downstream->name, LF_LEVEL(downstream->index));
-        _lf_sched_insert_reaction(downstream);
-        return;
-    }
-
+    assert(upstream && downstream && worker_number>=0);
 
     // This could be the start of a chain if:
     // 1) This is the first downstream reaction enabled
     // 2) The upstream reaction is the last enablig downstream reaction
-    if (_lf_sched_instance->_lf_sched_chain[worker_number].proposed_next == NULL &&
-        downstream->last_enabling_reaction == upstream
-    
-    )  {
-        LF_PRINT_DEBUG("Scheduler: Proposing reaction %s for a chain.", downstream->name);
-        _lf_sched_instance->_lf_sched_chain[worker_number].proposed_next = downstream;
+    if (_lf_sched_instance->_lf_sched_chain[worker_number].proposed_next == NULL) {
+        if (downstream->last_enabling_reaction == upstream) {
+            LF_PRINT_DEBUG("Scheduler: Proposing reaction %s for a chain.", downstream->name);
+            _lf_sched_instance->_lf_sched_chain[worker_number].proposed_next = downstream;
+        }
     } else {
         // No chain, also insert the proposed next chain reaction
         _lf_sched_insert_reaction(_lf_sched_instance->_lf_sched_chain[worker_number].proposed_next);
