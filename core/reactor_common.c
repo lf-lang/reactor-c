@@ -1170,7 +1170,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
         // Do not enqueue this reaction twice.
         if (reaction->status == inactive) {
             reaction->is_STP_violated = is_STP_violated;
-            _lf_trigger_reaction(reaction, -1);
+            _lf_trigger_reaction(reaction,  -1);
             LF_PRINT_LOG("Enqueued reaction %s at time " PRINTF_TIME ".", reaction->name, lf_time_logical(NULL));
         }
     }
@@ -1354,7 +1354,7 @@ void schedule_output_reactions(reaction_t* reaction, int worker) {
                     LF_PRINT_DEBUG("Trigger %p lists %d reactions.", trigger, trigger->number_of_reactions);
                     for (int k=0; k < trigger->number_of_reactions; k++) {
                         reaction_t* downstream_reaction = trigger->reactions[k];
-                        _lf_trigger_reaction(downstream_reaction, worker);
+                        _lf_enable_downstream_reaction(reaction, downstream_reaction, worker);
 #ifdef FEDERATED_DECENTRALIZED // Only pass down tardiness for federated LF programs
                         // Set the is_STP_violated for the downstream reaction
                         if (downstream_reaction != NULL) {
