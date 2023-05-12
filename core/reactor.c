@@ -132,21 +132,21 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
 
         // Do chain optimization
         bool enqueue_reaction = true;
-        if (worker_number == 0) {
-            if (!chain_reaction) {
-                chain_reaction = reaction;
-                enqueue_reaction = false;
-            } else {
-                // Second reaction triggered at current step. Enqueue both 
-                LF_PRINT_DEBUG("Enqueing downstream reaction %s, which has level %lld.",
-                        chain_reaction->name, chain_reaction->index & 0xffffLL);
-                chain_reaction->status = queued;
-                if (pqueue_insert(reaction_q, chain_reaction) != 0) {
-                    lf_print_error_and_exit("Could not insert reaction into reaction_q");
-                }
-                chain_reaction = NULL;
-            }
-        }
+        // if (worker_number == 0) {
+        //     if (!chain_reaction) {
+        //         chain_reaction = reaction;
+        //         enqueue_reaction = false;
+        //     } else {
+        //         // Second reaction triggered at current step. Enqueue both 
+        //         LF_PRINT_DEBUG("Enqueing downstream reaction %s, which has level %lld.",
+        //                 chain_reaction->name, chain_reaction->index & 0xffffLL);
+        //         chain_reaction->status = queued;
+        //         if (pqueue_insert(reaction_q, chain_reaction) != 0) {
+        //             lf_print_error_and_exit("Could not insert reaction into reaction_q");
+        //         }
+        //         chain_reaction = NULL;
+        //     }
+        // }
 
         if(enqueue_reaction) {
             LF_PRINT_DEBUG("Enqueing downstream reaction %s, which has level %lld.",
@@ -409,6 +409,10 @@ bool lf_handle_violations(int worker_number, reaction_t *reaction) {
 
 void lf_done_with_reaction(int worker_number, reaction_t *reaction) {
     reaction->status = inactive;
+}
+
+void _lf_enable_downstream_reaction(reaction_t* upstream, reaction_t * downstream, int worker_number) {
+    _lf_trigger_reaction(downstream, worker_number);
 }
 
 #endif
