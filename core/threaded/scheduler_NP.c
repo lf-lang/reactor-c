@@ -353,20 +353,27 @@ void lf_sched_free() {
  */
 // FIXME: Chain docs
 reaction_t* lf_sched_get_ready_reaction(int worker_number) {
+    reaction_t *reaction_to_return = NULL;
 
+    // FIXME: We might want to put all chain calculations into a separate file
+    //  so all schedulers can use it.
     // See if this worker has a potential chain:
     if (_lf_sched_instance->_lf_sched_chain[worker_number].proposed_next) {
-        reaction_t* next = 
-            _lf_sched_instance->_lf_sched_chain[worker_number].proposed_next ;
+        reaction_to_return = _lf_sched_instance->_lf_sched_chain[worker_number].proposed_next ;
+        LF_PRINT_DEBUG("Worker %u execute chain-reaction %s", worker_number, reaction_to_return->name);
         // If this is the beginning of the chain, store the pointer to it
         // FIXME: May not be needed
         if (!_lf_sched_instance->_lf_sched_chain[worker_number].start) {
-            _lf_sched_instance->_lf_sched_chain[worker_number].start = next;
+            _lf_sched_instance->_lf_sched_chain[worker_number].start = reaction_to_return;
         }
+    }
 
-        // Reset the prposed next of chain
-        _lf_sched_instance->_lf_sched_chain[worker_number].proposed_next = NULL; 
-        return next;
+    // Reset chain stuff
+    _lf_sched_instance->_lf_sched_chain[worker_number].proposed_next = NULL; 
+    _lf_sched_instance->_lf_sched_chain[worker_number].is_candidate = true; 
+    
+    if (reaction_to_return) {
+        return reaction_to_return;
     }
 
 
@@ -375,7 +382,6 @@ reaction_t* lf_sched_get_ready_reaction(int worker_number) {
         // Calculate the current level of reactions to execute
         size_t current_level =
             _lf_sched_instance->_lf_sched_next_reaction_level - 1;
-        reaction_t* reaction_to_return = NULL;
 #ifdef FEDERATED
         // Need to lock the mutex because federate.c could trigger reactions at
         // the current level (if there is a causality loop)
@@ -478,37 +484,42 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
 
 // FIXME: Chain docs
 void lf_sched_enable_downstream_reaction(reaction_t* upstream,  reaction_t *downstream, int worker_number) {
-    if (downstream == NULL || !lf_bool_compare_and_swap(&downstream->status, inactive, queued)) {
+    if (downstream == NULL || upstream == NULL || !lf_bool_compare_and_swap(&downstream->status, inactive, queued)) {
         return;
     }
+    _lf_sched_chain_t * chain = &_lf_sched_instance->_lf_sched_chain[worker_number];
 
-    // If reaction is triggered outside a "worker-context", then insert it and
-    //  dont do chain optimization
-    if (worker_number < 0) {
-        LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld for later execution.",
-            downstream->name, LF_LEVEL(downstream->index));
-        _lf_sched_insert_reaction(downstream);
-        return;
-    }
+    // Figure out if
+    // 1) We should schedule the downstream we got now
+    // 2) We should schedule a downstream stored in the `proposed_next` field of the chain struct
+    bool schedule_now = false;
+    bool schedule_proposed_now = false;
 
-
-    // This could be the start of a chain if:
-    // 1) This is the first downstream reaction enabled
-    // 2) The upstream reaction is the last enablig downstream reaction
-    if (_lf_sched_instance->_lf_sched_chain[worker_number].proposed_next == NULL &&
-        downstream->last_enabling_reaction == upstream
-    
-    )  {
-        LF_PRINT_DEBUG("Scheduler: Proposing reaction %s for a chain.", downstream->name);
-        _lf_sched_instance->_lf_sched_chain[worker_number].proposed_next = downstream;
+    if (chain->is_candidate) {
+        if (chain->proposed_next == NULL ) {
+            if (downstream->last_enabling_reaction == upstream) {
+                LF_PRINT_DEBUG("Worker %u: Proposing reaction %s for a chain.", worker_number, downstream->name);
+                _lf_sched_instance->_lf_sched_chain[worker_number].proposed_next = downstream;
+            } else {
+                schedule_now = true;
+            }
+        } else {
+            schedule_now = true;
+            schedule_proposed_now = true;
+        }
     } else {
-        // No chain, also insert the proposed next chain reaction
-        _lf_sched_insert_reaction(_lf_sched_instance->_lf_sched_chain[worker_number].proposed_next);
-        LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld for later execution.",
-            downstream->name, LF_LEVEL(downstream->index));
+        schedule_now = true;
+    }
+
+    if (schedule_proposed_now) {
+        _lf_sched_insert_reaction(chain->proposed_next);
+        chain->is_candidate = false;
+        chain->proposed_next = NULL;
+    }
+
+    if (schedule_now) {
         _lf_sched_insert_reaction(downstream);
-        // Reset the proposed_next
-        _lf_sched_instance->_lf_sched_chain[worker_number].proposed_next = NULL;
+        chain->is_candidate = false;
     }
 }
 #endif
