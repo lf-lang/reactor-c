@@ -52,6 +52,7 @@ extern lf_mutex_t mutex;
 typedef struct {
     reaction_t * start;
     reaction_t * proposed_next;
+    bool is_candidate;
 } _lf_sched_chain_t;
 
 /**
@@ -141,7 +142,8 @@ typedef struct {
 
     // A pointer to the reaction at the start of the chain currently executed
     // by the worker
-    volatile _lf_sched_chain_t * _lf_sched_chain;
+    // FIXME: should it be volatile?
+    _lf_sched_chain_t * _lf_sched_chain;
 
 } _lf_sched_instance_t;
 

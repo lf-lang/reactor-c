@@ -362,4 +362,7 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
             reaction->name, LF_LEVEL(reaction->index));
     _lf_sched_insert_reaction(reaction);
 }
+void lf_sched_enable_downstream_reaction(reaction_t* upstream,  reaction_t *downstream, int worker_number) {
+    lf_sched_trigger_reaction(downstream, worker_number);
+}
 #endif
