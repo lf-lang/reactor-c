@@ -712,13 +712,13 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
 void _lf_enable_downstream_reaction(reaction_t* upstream, reaction_t * downstream, int worker_number) {
 #ifdef MODAL_REACTORS
         // Check if reaction is disabled by mode inactivity
-        if (_lf_mode_is_active(reaction->mode)) {
+        if (_lf_mode_is_active(downstream->mode)) {
 #endif
     lf_sched_enable_downstream_reaction(upstream, downstream, worker_number);
 #ifdef MODAL_REACTORS
         } else { // Suppress reaction by preventing entering reaction queue
             LF_PRINT_DEBUG("Suppressing downstream reaction %s due inactivity of mode %s.",
-            		reaction->name, reaction->mode->name);
+            		downstream->name, downstream->mode->name);
         }
 #endif
 
