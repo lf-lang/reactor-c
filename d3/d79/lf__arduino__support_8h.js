@@ -2,6 +2,7 @@ var lf__arduino__support_8h =
 [
     [ "timespec", "da/d1c/structtimespec.html", "da/d1c/structtimespec" ],
     [ "__STDC_FORMAT_MACROS", "d3/d79/lf__arduino__support_8h.html#aacbb9e1f38be71e22df1584a37c56693", null ],
+    [ "__timespec_defined", "d3/d79/lf__arduino__support_8h.html#a9a6523e491af42964ed2bdfa53a6bd49", null ],
     [ "_LF_TIMEOUT", "d3/d79/lf__arduino__support_8h.html#a648705f106259061531b75d252c66f79", null ],
     [ "_SYS__TIMESPEC_H_", "d3/d79/lf__arduino__support_8h.html#abb50862d2e0e95d4abacd7eb12b34060", null ],
     [ "AVR", "d3/d79/lf__arduino__support_8h.html#a1519396040c1c9c28f597ccfbae61843", null ],
