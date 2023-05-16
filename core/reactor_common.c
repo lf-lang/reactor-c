@@ -1641,13 +1641,16 @@ void termination(void) {
     free(_lf_is_present_fields_abbreviated);
 }
 
-// FIXME: Document
+// FIXME: Document properly
+// FIXME: Make it consistent whether or not a function is `lf_do_something` or `_lf_do_something`
+// lf_main_loop is the main loop executed by both the unthreaded runtime and by each worker in the threaded runtime.
+// It uses a very simple API which must be implemented by both the threaded and the unthreaded runtime.
+//  1. `lf_get_ready_reaction` for fetching the next reaction to execute
+//  2. `lf_handle_violations` to check whether there was a deadline violation
+//  3. `_lf_invoke_reaction` to execute the reaction body
+//  4. `schedule_outputs` to enable downstream reactions triggered by the finished reaction
+//  5. `lf_done_with_reaction` to potentially clean up after the reaction execution
 void lf_main_loop(int worker_number) {
-    // Keep track of whether we have decremented the idle thread count.
-    // Obtain a reaction from the scheduler that is ready to execute
-    // (i.e., it is not blocked by concurrently executing reactions
-    // that it depends on).
-    // lf_print_snapshot(); // This is quite verbose (but very useful in debugging reaction deadlocks).
     reaction_t* current_reaction_to_execute = NULL;
     while ((current_reaction_to_execute =
             lf_get_ready_reaction(worker_number))

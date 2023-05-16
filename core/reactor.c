@@ -118,7 +118,6 @@ void lf_print_snapshot() {
  *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
-// FIXME: Add docs on chain opt
 void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
 #ifdef MODAL_REACTORS
     // Check if reaction is disabled by mode inactivity
@@ -129,32 +128,11 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
 #endif
     // Do not enqueue this reaction twice.
     if (reaction->status == inactive) {
-
-        // Do chain optimization
-        bool enqueue_reaction = true;
-        // if (worker_number == 0) {
-        //     if (!chain_reaction) {
-        //         chain_reaction = reaction;
-        //         enqueue_reaction = false;
-        //     } else {
-        //         // Second reaction triggered at current step. Enqueue both 
-        //         LF_PRINT_DEBUG("Enqueing downstream reaction %s, which has level %lld.",
-        //                 chain_reaction->name, chain_reaction->index & 0xffffLL);
-        //         chain_reaction->status = queued;
-        //         if (pqueue_insert(reaction_q, chain_reaction) != 0) {
-        //             lf_print_error_and_exit("Could not insert reaction into reaction_q");
-        //         }
-        //         chain_reaction = NULL;
-        //     }
-        // }
-
-        if(enqueue_reaction) {
-            LF_PRINT_DEBUG("Enqueing downstream reaction %s, which has level %lld.",
-                    reaction->name, reaction->index & 0xffffLL);
-            reaction->status = queued;
-            if (pqueue_insert(reaction_q, reaction) != 0) {
-                lf_print_error_and_exit("Could not insert reaction into reaction_q");
-            }
+        LF_PRINT_DEBUG("Enqueing downstream reaction %s, which has level %lld.",
+                reaction->name, reaction->index & 0xffffLL);
+        reaction->status = queued;
+        if (pqueue_insert(reaction_q, reaction) != 0) {
+            lf_print_error_and_exit("Could not insert reaction into reaction_q");
         }
     }
 }
@@ -331,7 +309,8 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     }
 }
 
-reaction_t * _get_next_reaction() {
+// FIXME: Document. This is for getting the next reaction from the reaciton quque
+reaction_t * _lf_get_next_reaction() {
     // Check if there are more reactions at the current tag
     if (pqueue_size(reaction_q) > 0) {
         reaction_t* reaction = (reaction_t*)pqueue_pop(reaction_q);
@@ -346,16 +325,18 @@ reaction_t * _get_next_reaction() {
     }
 }
 
+// FIXME: Document 
 reaction_t * lf_get_ready_reaction(int worker_number) {
     
     reaction_t * reaction_to_return = NULL;
-    if ((reaction_to_return = chain_reaction)) {
-        chain_reaction = NULL;
-        return reaction_to_return;
-    }
+    // FIXME: Chain optimization is removed
+    // if ((reaction_to_return = chain_reaction)) {
+    //     chain_reaction = NULL;
+    //     return reaction_to_return;
+    // }
 
 
-    if ((reaction_to_return = _get_next_reaction())) {
+    if ((reaction_to_return = _lf_get_next_reaction())) {
         return reaction_to_return;
     }
 
@@ -374,11 +355,12 @@ reaction_t * lf_get_ready_reaction(int worker_number) {
     while (next() != 0) {}
 
     // Fetch the next reaction
-    reaction_to_return = _get_next_reaction();
+    reaction_to_return = _lf_get_next_reaction();
 
     return reaction_to_return;
 }
 
+// FIXME: Document
 bool lf_handle_violations(int worker_number, reaction_t *reaction) {
     bool violation = false;
     if (reaction->deadline >= 0LL) {
@@ -407,10 +389,12 @@ bool lf_handle_violations(int worker_number, reaction_t *reaction) {
     return violation;
 }
 
+// FIXME: Document
 void lf_done_with_reaction(int worker_number, reaction_t *reaction) {
     reaction->status = inactive;
 }
 
+// FIXME: Implement chain optimization (is it actually worth it in hte unthreaded case?)
 void _lf_enable_downstream_reaction(reaction_t* upstream, reaction_t * downstream, int worker_number) {
     _lf_trigger_reaction(downstream, worker_number);
 }

@@ -135,6 +135,11 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  */
 void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number);
 
+// FIXME: Proper docs
+// This function is used to _enable_ reactions, which is distinct from triggering them
+// A reaction writing to a port enables other reactions, an action triggers reactions.
+// We separate these because enabled reactions, as defined above, can be executed in a chain
+// by the worker executing the upstream, if there is only a single downstream enabled.
 void lf_sched_enable_downstream_reaction(reaction_t * upstream, reaction_t* downstream, int worker_number);
 
 #endif // LF_SCHEDULER_H
