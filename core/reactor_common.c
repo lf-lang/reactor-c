@@ -60,7 +60,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "watchdog.h"
 
 // Code generated global variables.
-extern int _lf_watchdog_number;
+extern int _lf_watchdog_count;
 extern watchdog_t* _lf_watchdogs;
 #endif
 
@@ -1767,7 +1767,7 @@ void termination(void) {
         lf_print_warning("Number of unfreed tokens: %d.", _lf_count_token_allocations);
     }
 #ifdef LF_THREADED
-    for (int i = 0; i < _lf_watchdog_number; i++) {
+    for (int i = 0; i < _lf_watchdog_count; i++) {
         if (_lf_watchdogs[i].base->reactor_mutex != NULL) {
             free(_lf_watchdogs[i].base->reactor_mutex);
         }

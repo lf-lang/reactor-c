@@ -10,7 +10,7 @@
 #include <assert.h>
 #include "watchdog.h"
 
-extern int _lf_watchdog_number;
+extern int _lf_watchdog_count;
 extern watchdog_t* _lf_watchdogs;
 
 /**
@@ -20,7 +20,7 @@ extern watchdog_t* _lf_watchdogs;
  * This function initializes those mutexes.
  */
 void _lf_initialize_watchdog_mutexes() {
-    for (int i = 0; i < _lf_watchdog_number; i++) {
+    for (int i = 0; i < _lf_watchdog_count; i++) {
         self_base_t* current_base = _lf_watchdogs[i].base;
         if (current_base->reactor_mutex != NULL) {
             lf_mutex_init((lf_mutex_t*)(current_base->reactor_mutex));
