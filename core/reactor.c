@@ -367,6 +367,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         _lf_execution_started = true;
         _lf_trigger_startup_reactions();
         _lf_initialize_timers();
+
         // If the stop_tag is (0,0), also insert the shutdown
         // reactions. This can only happen if the timeout time
         // was set to 0.

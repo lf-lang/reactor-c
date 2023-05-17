@@ -56,6 +56,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "hashset/hashset.h"
 #include "hashset/hashset_itr.h"
 
+#ifdef LF_THREADED
+#include "watchdog.h"
+
+// Code generated global variables.
+extern int _lf_watchdog_count;
+extern watchdog_t* _lf_watchdogs;
+#endif
+
 // Global variable defined in tag.c:
 extern tag_t current_tag;
 extern instant_t start_time;
@@ -1292,17 +1300,32 @@ trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_del
 }
 
 /**
+
  * Invoke the given reaction
  *
  * @param reaction The reaction that has just executed.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution (for tracing).
  */
 void _lf_invoke_reaction(reaction_t* reaction, int worker) {
+
+#ifdef LF_THREADED
+    if (((self_base_t*) reaction->self)->reactor_mutex != NULL) {
+        lf_mutex_lock((lf_mutex_t*)((self_base_t*)reaction->self)->reactor_mutex);
+    }
+#endif
+
     tracepoint_reaction_starts(reaction, worker);
     ((self_base_t*) reaction->self)->executing_reaction = reaction;
     reaction->function(reaction->self);
     ((self_base_t*) reaction->self)->executing_reaction = NULL;
     tracepoint_reaction_ends(reaction, worker);
+
+
+#ifdef LF_THREADED
+    if (((self_base_t*) reaction->self)->reactor_mutex != NULL) {
+        lf_mutex_unlock((lf_mutex_t*)((self_base_t*)reaction->self)->reactor_mutex);
+    }
+#endif
 }
 
 /**
@@ -1743,6 +1766,13 @@ void termination(void) {
         lf_print_warning("Memory allocated for tokens has not been freed!");
         lf_print_warning("Number of unfreed tokens: %d.", _lf_count_token_allocations);
     }
+#ifdef LF_THREADED
+    for (int i = 0; i < _lf_watchdog_count; i++) {
+        if (_lf_watchdogs[i].base->reactor_mutex != NULL) {
+            free(_lf_watchdogs[i].base->reactor_mutex);
+        }
+    }
+#endif
     _lf_free_all_reactors();
     free(_lf_is_present_fields);
     free(_lf_is_present_fields_abbreviated);

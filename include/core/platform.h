@@ -36,6 +36,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "lf_types.h"
 
 #if defined(LF_THREADED) && defined(LF_UNTHREADED)
@@ -312,5 +316,9 @@ extern int lf_sleep_until_locked(instant_t wakeup_time);
  * @deprecated version of "lf_sleep"
  */
 DEPRECATED(extern int lf_nanosleep(interval_t sleep_duration));
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // PLATFORM_H
