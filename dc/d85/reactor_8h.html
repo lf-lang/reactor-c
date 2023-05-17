@@ -171,6 +171,9 @@ Functions</h2></td></tr>
 <tr class="separator:a614db4eae4106d99075a46880ce8d132"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e5e9ac34ff7bb853050e940a2ec8148"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#a4e5e9ac34ff7bb853050e940a2ec8148">_lf_trigger_startup_reactions</a> (void)</td></tr>
 <tr class="separator:a4e5e9ac34ff7bb853050e940a2ec8148"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac0d8f6ec1ee33ba9c0d23f54b76b0962"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#ac0d8f6ec1ee33ba9c0d23f54b76b0962">_lf_initialize_watchdog_mutexes</a> (void)</td></tr>
+<tr class="memdesc:ac0d8f6ec1ee33ba9c0d23f54b76b0962"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize watchdog mutexes. For any reactor with one or more watchdogs, the self struct should have a non-NULL <code>reactor_mutex</code> field which points to an instance of <code>lf_mutex_t</code>. This function initializes those mutexes.  <br /></td></tr>
+<tr class="separator:ac0d8f6ec1ee33ba9c0d23f54b76b0962"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa85f1178460dc4747d6161ffc66ea4b3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#aa85f1178460dc4747d6161ffc66ea4b3">terminate_execution</a> (void)</td></tr>
 <tr class="separator:aa85f1178460dc4747d6161ffc66ea4b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa329f59a16f5617b5195f2c05872c9e9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#aa329f59a16f5617b5195f2c05872c9e9">termination</a> (void)</td></tr>
@@ -189,6 +192,15 @@ Functions</h2></td></tr>
 <tr class="separator:ac45c3ce53ac9974a6a597cd36c9dc0cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4e7d759bc02a2b6dabb262fde1793ef5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#a4e7d759bc02a2b6dabb262fde1793ef5">_lf_fd_send_stop_request_to_rti</a> (void)</td></tr>
 <tr class="separator:a4e7d759bc02a2b6dabb262fde1793ef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af5ddc4ae4f8618d38c67e2b04744788b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#af5ddc4ae4f8618d38c67e2b04744788b">_lf_notify_of_event</a> ()</td></tr>
+<tr class="memdesc:af5ddc4ae4f8618d38c67e2b04744788b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Notify other threads of new events on the event queue.  <br /></td></tr>
+<tr class="separator:af5ddc4ae4f8618d38c67e2b04744788b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1a228e27703a177d8860d82df78d1738"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#a1a228e27703a177d8860d82df78d1738">_lf_critical_section_enter</a> ()</td></tr>
+<tr class="memdesc:a1a228e27703a177d8860d82df78d1738"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter critical section. Must be paired with a <code><a class="el" href="../../dc/d85/reactor_8h.html#ae2cd0624deca6f7863e8785040cfd04a" title="Leave critical section.">_lf_critical_section_exit()</a></code>  <br /></td></tr>
+<tr class="separator:a1a228e27703a177d8860d82df78d1738"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae2cd0624deca6f7863e8785040cfd04a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#ae2cd0624deca6f7863e8785040cfd04a">_lf_critical_section_exit</a> ()</td></tr>
+<tr class="memdesc:ae2cd0624deca6f7863e8785040cfd04a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leave critical section.  <br /></td></tr>
+<tr class="separator:ae2cd0624deca6f7863e8785040cfd04a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
@@ -714,6 +726,44 @@ DESCRIPTION</h1>
 
 </div>
 </div>
+<a id="a1a228e27703a177d8860d82df78d1738" name="a1a228e27703a177d8860d82df78d1738"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1a228e27703a177d8860d82df78d1738">&#9670;&#160;</a></span>_lf_critical_section_enter()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_critical_section_enter </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enter critical section. Must be paired with a <code><a class="el" href="../../dc/d85/reactor_8h.html#ae2cd0624deca6f7863e8785040cfd04a" title="Leave critical section.">_lf_critical_section_exit()</a></code> </p>
+
+</div>
+</div>
+<a id="ae2cd0624deca6f7863e8785040cfd04a" name="ae2cd0624deca6f7863e8785040cfd04a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae2cd0624deca6f7863e8785040cfd04a">&#9670;&#160;</a></span>_lf_critical_section_exit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_critical_section_exit </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Leave critical section. </p>
+
+</div>
+</div>
 <a id="a2cbf5933b5a212e90ebe9de72362fabc" name="a2cbf5933b5a212e90ebe9de72362fabc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a2cbf5933b5a212e90ebe9de72362fabc">&#9670;&#160;</a></span>_lf_executable_preamble()</h2>
 
@@ -869,6 +919,27 @@ DESCRIPTION</h1>
 
 </div>
 </div>
+<a id="ac0d8f6ec1ee33ba9c0d23f54b76b0962" name="ac0d8f6ec1ee33ba9c0d23f54b76b0962"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac0d8f6ec1ee33ba9c0d23f54b76b0962">&#9670;&#160;</a></span>_lf_initialize_watchdog_mutexes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_initialize_watchdog_mutexes </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Initialize watchdog mutexes. For any reactor with one or more watchdogs, the self struct should have a non-NULL <code>reactor_mutex</code> field which points to an instance of <code>lf_mutex_t</code>. This function initializes those mutexes. </p>
+<p>Function to initialize mutexes for watchdogs </p>
+
+</div>
+</div>
 <a id="a906a0d04740b6228fe3719624d11c14a" name="a906a0d04740b6228fe3719624d11c14a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a906a0d04740b6228fe3719624d11c14a">&#9670;&#160;</a></span>_lf_new_reactor()</h2>
 
@@ -896,6 +967,26 @@ DESCRIPTION</h1>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="af5ddc4ae4f8618d38c67e2b04744788b" name="af5ddc4ae4f8618d38c67e2b04744788b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af5ddc4ae4f8618d38c67e2b04744788b">&#9670;&#160;</a></span>_lf_notify_of_event()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_notify_of_event </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Notify other threads of new events on the event queue. </p>
+<p>These functions must be implemented by both threaded and unthreaded runtime. Should be routed to appropriate API calls in <a class="el" href="../../de/d03/platform_8h.html">platform.h</a>  </p>
 
 </div>
 </div>

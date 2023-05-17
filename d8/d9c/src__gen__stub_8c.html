@@ -112,6 +112,9 @@ Functions</h2></td></tr>
 <tr class="separator:aab3994336fae3b238f40283885873995"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3260d94d4fb70236a49c2b782470bb6e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d9c/src__gen__stub_8c.html#a3260d94d4fb70236a49c2b782470bb6e">_lf_initialize_timers</a> ()</td></tr>
 <tr class="separator:a3260d94d4fb70236a49c2b782470bb6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a13c2f54f700bce3d4572600bb87ab055"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d9c/src__gen__stub_8c.html#a13c2f54f700bce3d4572600bb87ab055">_lf_initialize_watchdog_mutexes</a> ()</td></tr>
+<tr class="memdesc:a13c2f54f700bce3d4572600bb87ab055"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize watchdog mutexes. For any reactor with one or more watchdogs, the self struct should have a non-NULL <code>reactor_mutex</code> field which points to an instance of <code>lf_mutex_t</code>. This function initializes those mutexes.  <br /></td></tr>
+<tr class="separator:a13c2f54f700bce3d4572600bb87ab055"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad96dd94446ff66184dcf0f8f65cdb4f0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d9c/src__gen__stub_8c.html#ad96dd94446ff66184dcf0f8f65cdb4f0">logical_tag_complete</a> (<a class="el" href="../../db/df7/structtag__t.html">tag_t</a> tag_to_send)</td></tr>
 <tr class="separator:ad96dd94446ff66184dcf0f8f65cdb4f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -151,6 +154,27 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Generated function that produces a table containing all triggers (i.e., inputs, timers, and actions). </p>
+
+</div>
+</div>
+<a id="a13c2f54f700bce3d4572600bb87ab055" name="a13c2f54f700bce3d4572600bb87ab055"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a13c2f54f700bce3d4572600bb87ab055">&#9670;&#160;</a></span>_lf_initialize_watchdog_mutexes()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_initialize_watchdog_mutexes </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Initialize watchdog mutexes. For any reactor with one or more watchdogs, the self struct should have a non-NULL <code>reactor_mutex</code> field which points to an instance of <code>lf_mutex_t</code>. This function initializes those mutexes. </p>
+<p>Function to initialize mutexes for watchdogs </p>
 
 </div>
 </div>

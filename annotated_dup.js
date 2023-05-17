@@ -41,5 +41,6 @@ var annotated_dup =
     [ "token_template_t", "de/d6b/structtoken__template__t.html", "de/d6b/structtoken__template__t" ],
     [ "token_type_t", "db/d12/structtoken__type__t.html", "db/d12/structtoken__type__t" ],
     [ "trigger_t", "d6/d13/structtrigger__t.html", "d6/d13/structtrigger__t" ],
-    [ "vector_t", "d3/d8b/structvector__t.html", "d3/d8b/structvector__t" ]
+    [ "vector_t", "d3/d8b/structvector__t.html", "d3/d8b/structvector__t" ],
+    [ "watchdog_t", "d3/dc4/structwatchdog__t.html", "d3/dc4/structwatchdog__t" ]
 ];
