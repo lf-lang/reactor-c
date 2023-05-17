@@ -237,7 +237,7 @@ void flush_trace(int worker) {
     lf_critical_section_exit();
 }
 
-void start_trace(char* filename) {
+void start_trace(const char* filename) {
     // FIXME: location of trace file should be customizable.
     _lf_trace_file = fopen(filename, "w");
     if (_lf_trace_file == NULL) {

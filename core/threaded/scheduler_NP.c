@@ -331,11 +331,10 @@ void lf_sched_init(
  * This must be called when the scheduler is no longer needed.
  */
 void lf_sched_free() {
-    // for (size_t j = 0; j <= _lf_sched_instance->max_reaction_level; j++) {
-    //     free(((reaction_t***)_lf_sched_instance->_lf_sched_triggered_reactions)[j]);
-    // }
+    for (size_t j = 0; j <= _lf_sched_instance->max_reaction_level; j++) {
+        free(((reaction_t***)_lf_sched_instance->_lf_sched_triggered_reactions)[j]);
+    }
     free(_lf_sched_instance->_lf_sched_triggered_reactions);
-    free(_lf_sched_instance->_lf_sched_executing_reactions);
     lf_semaphore_destroy(_lf_sched_instance->_lf_sched_semaphore);
 }
 
