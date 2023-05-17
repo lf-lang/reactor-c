@@ -369,7 +369,7 @@ void _lf_free_all_reactors(void);
  * Free memory recorded on the allocations list of the specified reactor.
  * @param self The self struct of the reactor.
  */
-void _lf_free_reactor(struct self_base_t *self);
+void _lf_free_reactor(self_base_t *self);
 
 /**
  * Generated function that optionally sets default command-line options.
@@ -380,7 +380,7 @@ void _lf_set_default_command_line_options(void);
  * Generated function that resets outputs to be absent at the
  * start of a new time step.
  */
-void _lf_start_time_step(void);
+void _lf_start_time_step(environment_t *env);
 
 /**
  * Generated function that produces a table containing all triggers
@@ -393,7 +393,7 @@ void _lf_initialize_trigger_objects(void);
  * the reactions triggered by these events, and stick them into the reaction
  * queue.
  */
-void _lf_pop_events(void);
+void _lf_pop_events(environment_t *env);
 
 /**
  * Internal version of the lf_schedule() function, used by generated
@@ -403,7 +403,7 @@ void _lf_pop_events(void);
  * @param token The token payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t delay, lf_token_t* token);
+trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t delay, lf_token_t* token);
 
 /**
  * Function (to be code generated) to schedule timers.
@@ -422,7 +422,7 @@ void _lf_trigger_startup_reactions(void);
  */
 void terminate_execution(void);
 
-void termination(void);
+void termination(environment_t *env);
 
 /**
  * Function (to be code generated) to trigger shutdown reactions.
@@ -439,7 +439,7 @@ bool _lf_trigger_shutdown_reactions(void);
  * @param value The value to send.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value);
+trigger_handle_t _lf_schedule_int(lenvironment_t *env, f_action_base_t* action, interval_t extra_delay, int value);
 
 /**
  * Create a dummy event to be used as a spacer in the event queue.
@@ -493,7 +493,7 @@ event_t* _lf_create_dummy_event(trigger_t* trigger, instant_t time, event_t* nex
  * @param token The token to carry the payload or null for no payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule_token(lf_action_base_t* action, interval_t extra_delay, lf_token_t* token);
+trigger_handle_t _lf_schedule_token(environment_t *env, lf_action_base_t* action, interval_t extra_delay, lf_token_t* token);
 
 /**
  * Variant of schedule_token that creates a token to carry the specified value.
@@ -507,7 +507,7 @@ trigger_handle_t _lf_schedule_token(lf_action_base_t* action, interval_t extra_d
  *  scalar and 0 for no payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_delay, void* value, size_t length);
+trigger_handle_t _lf_schedule_value(environment_t *env, lf_action_base_t* action, interval_t extra_delay, void* value, size_t length);
 
 /**
  * Schedule an action to occur with the specified value and time offset
@@ -522,7 +522,7 @@ trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_d
  * @param length The length, if an array, 1 if a scalar, and 0 if value is NULL.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, void* value, size_t length);
+trigger_handle_t _lf_schedule_copy(environment_t *env, lf_action_base_t* action, interval_t offset, void* value, size_t length);
 
 /**
  * For a federated execution, send a STOP_REQUEST message

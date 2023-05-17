@@ -48,7 +48,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Global variables defined in tag.c:
 extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
-extern tag_t current_tag;
+extern tag_t env->current_tag;
 extern instant_t start_time;
 
 /**
@@ -142,7 +142,7 @@ void _lf_increment_global_tag_barrier_already_locked(tag_t future_tag) {
         future_tag = stop_tag;
     }
     // Check to see if future_tag is actually in the future.
-    if (lf_tag_compare(future_tag, current_tag) > 0) {
+    if (lf_tag_compare(future_tag, env->current_tag) > 0) {
         // Future tag is actually in the future.
         // See whether it is smaller than any pre-existing barrier.
         if (lf_tag_compare(future_tag, _lf_global_tag_advancement_barrier.horizon) < 0) {
@@ -164,7 +164,7 @@ void _lf_increment_global_tag_barrier_already_locked(tag_t future_tag) {
             // Prevent logical time from advancing further so that the measure of
             // STP violation properly reflects the amount of time (logical or physical)
             // that has elapsed after the incoming message would have violated the STP offset.
-            _lf_global_tag_advancement_barrier.horizon = current_tag;
+            _lf_global_tag_advancement_barrier.horizon = env->current_tag;
             _lf_global_tag_advancement_barrier.horizon.microstep++;
             LF_PRINT_DEBUG("Raised barrier at elapsed tag " PRINTF_TAG ".",
                         _lf_global_tag_advancement_barrier.horizon.time - start_time,
@@ -416,9 +416,9 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
             // Wait did not time out, which means that there
             // may have been an asynchronous call to lf_schedule().
             // Continue waiting.
-            // Do not adjust current_tag.time here. If there was an asynchronous
+            // Do not adjust env->current_tag.time here. If there was an asynchronous
             // call to lf_schedule(), it will have put an event on the event queue,
-            // and current_tag.time will be set to that time when that event is pulled.
+            // and env->current_tag.time will be set to that time when that event is pulled.
             return_value = false;
         } else {
             // Reached timeout.
@@ -453,15 +453,15 @@ tag_t get_next_event_tag() {
     tag_t next_tag = FOREVER_TAG;
     if (event != NULL) {
         // There is an event in the event queue.
-        if (event->time < current_tag.time) {
+        if (event->time < env->current_tag.time) {
             lf_print_error_and_exit("get_next_event_tag(): Earliest event on the event queue (" PRINTF_TIME ") is "
                                   "earlier than the current time (" PRINTF_TIME ").",
                                   event->time - start_time,
-                                  current_tag.time - start_time);
+                                  env->current_tag.time - start_time);
         }
 
         next_tag.time = event->time;
-        if (next_tag.time == current_tag.time) {
+        if (next_tag.time == env->current_tag.time) {
         	LF_PRINT_DEBUG("Earliest event matches current time. Incrementing microstep. Event is dummy: %d.",
         			event->is_dummy);
             next_tag.microstep =  lf_tag().microstep + 1;
@@ -569,7 +569,7 @@ void _lf_next_locked() {
         // keepalive is not set so we should stop.
         // Note that federated programs with decentralized coordination always have
         // keepalive = true
-        _lf_set_stop_tag((tag_t){.time=current_tag.time,.microstep=current_tag.microstep+1});
+        _lf_set_stop_tag((tag_t){.time=env->current_tag.time,.microstep=env->current_tag.microstep+1});
 
         // Stop tag has changed. Need to check next_tag again.
         next_tag = get_next_event_tag();
@@ -618,11 +618,11 @@ void _lf_next_locked() {
 #endif // FEDERATED
 
     // If the first event in the event queue has a tag greater than or equal to the
-    // stop time, and the current_tag matches the stop tag (meaning that we have already
+    // stop time, and the env->current_tag matches the stop tag (meaning that we have already
     // executed microstep 0 at the timeout time), then we are done. The above code prevents the next_tag
     // from exceeding the stop_tag, so we have to do further checks if
     // they are equal.
-    if (lf_tag_compare(next_tag, stop_tag) >= 0 && lf_tag_compare(current_tag, stop_tag) >= 0) {
+    if (lf_tag_compare(next_tag, stop_tag) >= 0 && lf_tag_compare(env->current_tag, stop_tag) >= 0) {
         // If we pop anything further off the event queue with this same time or larger,
         // then it will be assigned a tag larger than the stop tag.
         return;
@@ -636,13 +636,13 @@ void _lf_next_locked() {
     // Advance current time to match that of the first event on the queue.
     _lf_advance_logical_time(next_tag.time);
 
-    if (lf_tag_compare(current_tag, stop_tag) >= 0) {
+    if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {
         // Pop shutdown events
         LF_PRINT_DEBUG("Scheduling shutdown reactions.");
         _lf_trigger_shutdown_reactions();
     }
 
-    // Pop all events from event_q with timestamp equal to current_tag.time,
+    // Pop all events from event_q with timestamp equal to env->current_tag.time,
     // extract all the reactions triggered by these events, and
     // stick them into the reaction queue.
     _lf_pop_events();
@@ -659,7 +659,7 @@ void _lf_next_locked() {
 void lf_request_stop() {
     lf_mutex_lock(&mutex);
     // Check if already at the previous stop tag.
-    if (lf_tag_compare(current_tag, stop_tag) >= 0) {
+    if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {
         // If so, ignore the stop request since the program
         // is already stopping at the current tag.
         lf_mutex_unlock(&mutex);
@@ -675,7 +675,7 @@ void lf_request_stop() {
     // logical time.
 #else
     // In a non-federated program, the stop_tag will be the next microstep
-    _lf_set_stop_tag((tag_t) {.time = current_tag.time, .microstep = current_tag.microstep+1});
+    _lf_set_stop_tag((tag_t) {.time = env->current_tag.time, .microstep = env->current_tag.microstep+1});
     // We signal instead of broadcast under the assumption that only
     // one worker thread can call wait_until at a given time because
     // the call to wait_until is protected by a mutex lock
@@ -727,7 +727,7 @@ void _lf_initialize_start_tag() {
 
     // Get a start_time from the RTI
     synchronize_with_other_federates(); // Resets start_time in federated execution according to the RTI.
-    current_tag = (tag_t){.time = start_time, .microstep = 0u};
+    env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
 #endif
 
     _lf_initialize_timers();
@@ -735,7 +735,7 @@ void _lf_initialize_start_tag() {
     // If the stop_tag is (0,0), also insert the shutdown
     // reactions. This can only happen if the timeout time
     // was set to 0.
-    if (lf_tag_compare(current_tag, stop_tag) >= 0) {
+    if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {
         _lf_trigger_shutdown_reactions();
     }
 
@@ -764,7 +764,7 @@ void _lf_initialize_start_tag() {
 
     // Each federate executes the start tag (which is the current
     // tag). Inform the RTI of this if needed.
-    send_next_event_tag(current_tag, true);
+    send_next_event_tag(env->current_tag, true);
 
     // Depending on RTI's answer, if any, enqueue network control reactions,
     // which will selectively block reactions that depend on network input ports
@@ -812,7 +812,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(int worker_number, reacti
         // Get the current physical time.
         instant_t physical_time = lf_time_physical();
         // Check for deadline violation.
-        if (reaction->deadline == 0 || physical_time > current_tag.time + reaction->deadline) {
+        if (reaction->deadline == 0 || physical_time > env->current_tag.time + reaction->deadline) {
             // Deadline violation has occurred.
             tracepoint_reaction_deadline_missed(reaction, worker_number);
             violation_occurred = true;
@@ -918,8 +918,8 @@ void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
     LF_PRINT_LOG("Worker %d: Invoking reaction %s at elapsed tag " PRINTF_TAG ".",
             worker_number,
             reaction->name,
-            current_tag.time - start_time,
-            current_tag.microstep);
+            env->current_tag.time - start_time,
+            env->current_tag.microstep);
     _lf_invoke_reaction(reaction, worker_number);
 
     // If the reaction produced outputs, put the resulting triggered

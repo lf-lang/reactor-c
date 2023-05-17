@@ -49,7 +49,7 @@ void set_federation_id(const char* fid);
 extern struct allocation_record_t* _lf_reactors_to_free;
 void* _lf_new_reactor(size_t size);
 void _lf_free(struct allocation_record_t** head);
-void _lf_free_reactor(struct self_base_t *self);
+void _lf_free_reactor(self_base_t *self);
 void _lf_free_all_reactors(void);
 void _lf_set_stop_tag(tag_t tag);
 extern interval_t lf_get_stp_offset();
@@ -58,9 +58,9 @@ void lf_set_stp_offset(interval_t offset);
 extern pqueue_t* event_q;
 
 void _lf_trigger_reaction(reaction_t* reaction, int worker_number);
-void _lf_start_time_step();
+void _lf_start_time_step(environment_t *env);
 bool _lf_is_tag_after_stop_tag(tag_t tag);
-void _lf_pop_events();
+void _lf_pop_events(environment_t *env);
 void _lf_initialize_timer(trigger_t* timer);
 void _lf_recycle_event(event_t* e);
 event_t* _lf_create_dummy_events(
@@ -70,7 +70,7 @@ event_t* _lf_create_dummy_events(
     microstep_t offset
 );
 int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token);
-trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t extra_delay, lf_token_t* token);
+trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t extra_delay, lf_token_t* token);
 trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t* token);
 
 /**
@@ -79,13 +79,13 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
  * time and set the microstep to zero.
  * @param next_time The time step to advance to.
  */
-void _lf_advance_logical_time(instant_t next_time);
+void _lf_advance_logical_time(environment_t *env, instant_t next_time);
 
-trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value);
+trigger_handle_t _lf_schedule_int(environment_t *env, lf_action_base_t* action, interval_t extra_delay, int value);
 void _lf_invoke_reaction(reaction_t* reaction, int worker);
-void schedule_output_reactions(reaction_t* reaction, int worker);
+void schedule_output_reactions(environment_t *env, reaction_t* reaction, int worker);
 int process_args(int argc, const char* argv[]);
-void initialize(void);
-void termination(void);
+void initialize(environment_t *env);
+void termination(environment_t *env);
 
 #endif

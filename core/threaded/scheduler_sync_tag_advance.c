@@ -40,8 +40,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 // Global variable defined in tag.c:
-extern tag_t current_tag;
-extern tag_t stop_tag;
+// extern tag_t env->current_tag;
+// extern tag_t stop_tag;
 
 /////////////////// External Functions /////////////////////////
 /**
@@ -66,7 +66,7 @@ bool _lf_sched_should_stop_locked() {
     if (_lf_logical_tag_completed) {
         // If we are at the stop tag, do not call _lf_next_locked()
         // to prevent advancing the logical time.
-        if (lf_tag_compare(current_tag, stop_tag) >= 0) {
+        if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {
             return true;
         }
     }
@@ -82,7 +82,7 @@ bool _lf_sched_should_stop_locked() {
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
 bool _lf_sched_advance_tag_locked() {
-    logical_tag_complete(current_tag);
+    logical_tag_complete(env->current_tag);
 
     if (_lf_sched_should_stop_locked()) {
         return true;

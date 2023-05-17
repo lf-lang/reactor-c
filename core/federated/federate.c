@@ -68,7 +68,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Global variables defined in tag.c:
 extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
-extern tag_t current_tag;
+extern tag_t env->current_tag;
 extern instant_t start_time;
 
 // Error messages.
@@ -1585,16 +1585,16 @@ void wait_until_port_status_known(int port_ID, interval_t STAA) {
     // The wait time for port status in the decentralized
     // coordination is capped by the STAA offset assigned
     // to the port plus the global STA offset for this federate.
-    wait_until_time = current_tag.time + STAA + _lf_fed_STA_offset;
+    wait_until_time = env->current_tag.time + STAA + _lf_fed_STA_offset;
 #endif
 
     // Perform the wait, unless the STAA is zero.
-    if (wait_until_time != current_tag.time) {
+    if (wait_until_time != env->current_tag.time) {
         LF_PRINT_LOG("------ Waiting until time " PRINTF_TIME "ns for network input port %d at tag (%llu, %d).",
                 wait_until_time,
                 port_ID,
-                current_tag.time - start_time,
-                current_tag.microstep);
+                env->current_tag.time - start_time,
+                env->current_tag.microstep);
         while(!wait_until(wait_until_time, &port_status_changed)) {
             // Interrupted
             LF_PRINT_DEBUG("------ Wait for network input port %d interrupted.", port_ID);
@@ -1668,14 +1668,14 @@ trigger_handle_t schedule_message_received_from_network_already_locked(
     // of the message (timestamp, microstep) is
     // in the future relative to the tag of this
     // federate. By default, assume it is not.
-    bool message_tag_is_in_the_future = lf_tag_compare(tag, current_tag) > 0;
+    bool message_tag_is_in_the_future = lf_tag_compare(tag, env->current_tag) > 0;
 
     // Assign the intended tag
     trigger->intended_tag = tag;
 
     // Calculate the extra_delay required to be passed
     // to the schedule function.
-    interval_t extra_delay = tag.time - current_tag.time;
+    interval_t extra_delay = tag.time - env->current_tag.time;
     if (!message_tag_is_in_the_future) {
 #ifdef FEDERATED_CENTRALIZED
         // If the coordination is centralized, receiving a message
@@ -1685,7 +1685,7 @@ trigger_handle_t schedule_message_received_from_network_already_locked(
         lf_print_error_and_exit("Received a message at tag " PRINTF_TAG " that"
                                 " has a tag " PRINTF_TAG " that has violated the STP offset. "
                                 "Centralized coordination should not have these types of messages.",
-                                current_tag.time - start_time, lf_tag().microstep,
+                                env->current_tag.time - start_time, lf_tag().microstep,
                                 tag.time - start_time, tag.microstep);
 #else
         // Set the delay back to 0
@@ -2170,7 +2170,7 @@ void handle_provisional_tag_advance_grant() {
     _fed.waiting_for_TAG = false;
     _fed.is_last_TAG_provisional = true;
     LF_PRINT_LOG("At tag " PRINTF_TAG ", received Provisional Tag Advance Grant (PTAG): " PRINTF_TAG ".",
-            current_tag.time - start_time, current_tag.microstep,
+            env->current_tag.time - start_time, env->current_tag.microstep,
             _fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
 
     // Even if we don't modify the event queue, we need to broadcast a change
@@ -2192,7 +2192,7 @@ void handle_provisional_tag_advance_grant() {
     instant_t dummy_event_time = PTAG.time;
     microstep_t dummy_event_relative_microstep = PTAG.microstep;
 
-    if (lf_tag_compare(current_tag, PTAG) == 0) {
+    if (lf_tag_compare(env->current_tag, PTAG) == 0) {
         // The current tag can equal the PTAG if we are at the start time
         // or if this federate has been able to advance time to the current
         // tag (e.g., it has no upstream federates). In either case, either
@@ -2201,7 +2201,7 @@ void handle_provisional_tag_advance_grant() {
         // a LTC message shortly. In either case, there is nothing more to do.
            lf_mutex_unlock(&mutex);
         return;
-    } else if (lf_tag_compare(current_tag, PTAG) > 0) {
+    } else if (lf_tag_compare(env->current_tag, PTAG) > 0) {
         // Current tag is greater than the PTAG.
         // It could be that we have sent an LTC that crossed with the incoming
         // PTAG or that we have advanced to a tag greater than the PTAG.
@@ -2215,18 +2215,18 @@ void handle_provisional_tag_advance_grant() {
         // Nothing more to do.
            lf_mutex_unlock(&mutex);
         return;
-    } else if (PTAG.time == current_tag.time) {
-        // We now know current_tag < PTAG, but the times are equal.
+    } else if (PTAG.time == env->current_tag.time) {
+        // We now know env->current_tag < PTAG, but the times are equal.
         // Adjust the microstep for scheduling the dummy event.
-        dummy_event_relative_microstep -= current_tag.microstep;
+        dummy_event_relative_microstep -= env->current_tag.microstep;
     }
-    // We now know current_tag < PTAG.
+    // We now know env->current_tag < PTAG.
 
     if (dummy_event_time != FOREVER) {
         // Schedule a dummy event at the specified time and (relative) microstep.
         LF_PRINT_DEBUG("At tag " PRINTF_TAG ", inserting into the event queue a dummy event "
                "with time " PRINTF_TIME " and (relative) microstep " PRINTF_MICROSTEP ".",
-        current_tag.time - start_time, current_tag.microstep,
+        env->current_tag.time - start_time, env->current_tag.microstep,
         dummy_event_time - start_time, dummy_event_relative_microstep);
         // Dummy event points to a NULL trigger and NULL real event.
         event_t* dummy = _lf_create_dummy_events(
@@ -2253,12 +2253,12 @@ void _lf_fd_send_stop_request_to_rti() {
     }
     LF_PRINT_LOG("Requesting the whole program to stop.");
     // Raise a logical time barrier at the current tag.
-    _lf_increment_global_tag_barrier_already_locked(current_tag);
+    _lf_increment_global_tag_barrier_already_locked(env->current_tag);
 
     // Send a stop request with the current tag to the RTI
     unsigned char buffer[MSG_TYPE_STOP_REQUEST_LENGTH];
     // Stop at the next microstep
-    ENCODE_STOP_REQUEST(buffer, current_tag.time, current_tag.microstep + 1);
+    ENCODE_STOP_REQUEST(buffer, env->current_tag.time, env->current_tag.microstep + 1);
 
     lf_mutex_lock(&outbound_socket_mutex);
     if (_fed.socket_TCP_RTI < 0) {
@@ -2267,10 +2267,10 @@ void _lf_fd_send_stop_request_to_rti() {
         return;
     }
     // Trace the event when tracing is enabled
-    tracepoint_federate_to_RTI(send_STOP_REQ, _lf_my_fed_id, &current_tag);
+    tracepoint_federate_to_RTI(send_STOP_REQ, _lf_my_fed_id, &env->current_tag);
     write_to_socket_errexit_with_mutex(_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH,
             buffer, &outbound_socket_mutex,
-            "Failed to send stop time " PRINTF_TIME " to the RTI.", current_tag.time - start_time);
+            "Failed to send stop time " PRINTF_TIME " to the RTI.", env->current_tag.time - start_time);
     lf_mutex_unlock(&outbound_socket_mutex);
     _fed.sent_a_stop_request_to_rti = true;
 }
@@ -2304,12 +2304,12 @@ void handle_stop_granted_message() {
             received_stop_tag.time - start_time, received_stop_tag.microstep);
 
     // Sanity check.
-    tag_t current_tag = lf_tag();
-    if (lf_tag_compare(received_stop_tag, current_tag) <= 0) {
+    tag_t env->current_tag = lf_tag();
+    if (lf_tag_compare(received_stop_tag, env->current_tag) <= 0) {
         lf_print_error("RTI granted a MSG_TYPE_STOP_GRANTED tag that is equal to or less than this federate's current tag " PRINTF_TAG ". "
                 "Stopping at the next microstep instead.",
-                current_tag.time - start_time, current_tag.microstep);
-        received_stop_tag = current_tag;
+                env->current_tag.time - start_time, env->current_tag.microstep);
+        received_stop_tag = env->current_tag;
         received_stop_tag.microstep++;
     }
 
@@ -2359,9 +2359,9 @@ void handle_stop_request_message() {
 
     // Encode the current logical time plus one microstep
     // or the requested tag_to_stop, whichever is bigger.
-    if (lf_tag_compare(tag_to_stop, current_tag) <= 0) {
+    if (lf_tag_compare(tag_to_stop, env->current_tag) <= 0) {
         // Can't stop at the requested tag. Make a counteroffer.
-        tag_to_stop = current_tag;
+        tag_to_stop = env->current_tag;
         tag_to_stop.microstep++;
     }
 

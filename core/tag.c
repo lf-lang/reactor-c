@@ -40,7 +40,7 @@ instant_t start_time = NEVER;
  * This is not in scope for reactors.
  * This should only ever be accessed while holding the mutex lock.
  */
-tag_t current_tag = {.time = 0LL, .microstep = 0};
+// tag_t env->current_tag = {.time = 0LL, .microstep = 0};
 
 /**
  * Global physical clock offset.
@@ -132,11 +132,11 @@ instant_t _lf_time(_lf_time_type type) {
     switch (type)
     {
     case LF_LOGICAL:
-        return current_tag.time;
+        return env->current_tag.time;
     case LF_PHYSICAL:
         return _lf_physical_time();
     case LF_ELAPSED_LOGICAL:
-        return current_tag.time - start_time;
+        return env->current_tag.time - start_time;
     case LF_ELAPSED_PHYSICAL:
         return _lf_physical_time() - start_time;
     case LF_START:
@@ -148,8 +148,8 @@ instant_t _lf_time(_lf_time_type type) {
 
 ////////////////  Functions declared in tag.h
 
-tag_t lf_tag() {
-    return current_tag;
+tag_t lf_tag(environment_t *env) {
+    return env->current_tag;
 }
 
 int lf_tag_compare(tag_t tag1, tag_t tag2) {

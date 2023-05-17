@@ -280,10 +280,14 @@ struct _lf_tag_advancement_barrier;
  */
 typedef struct environment_t {
     tag_t current_tag;
-    bool** _lf_is_present_fields = NULL;
-    int _lf_is_present_fields_size = 0;
-    bool** _lf_is_present_fields_abbreviated = NULL;
-    int _lf_is_present_fields_abbreviated_size = 0;
+    tag_t stop_tag;
+    pqueue_t *event_q;
+    pqueue_t *recycle_q;
+    pqueue_t *next_w;
+    bool** _lf_is_present_fields;
+    int _lf_is_present_fields_size;
+    bool** _lf_is_present_fields_abbreviated;
+    int _lf_is_present_fields_abbreviated_size;
 #ifdef LF_THREADED
     lf_mutex_t mutex;
     lf_cond_t event_q_changed;
@@ -292,8 +296,8 @@ typedef struct environment_t {
     lf_cond_t global_tag_barrier_requestors_reached_zero;
 #endif // LF_THREADED
 #ifdef FEDERATED
-    tag_t** _lf_intended_tag_fields = NULL;
-    int _lf_intended_tag_fields_size = 0;
+    tag_t** _lf_intended_tag_fields;
+    int _lf_intended_tag_fields_size;
 #endif // FEDERATED
 } environment_t;
 
@@ -309,6 +313,7 @@ typedef struct environment_t {
 typedef struct self_base_t {
 	struct allocation_record_t *allocations;
 	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
+    environment_t * environment;
 #ifdef MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif
