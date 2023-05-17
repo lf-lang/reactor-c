@@ -50,7 +50,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * This does not acquire the mutex lock. It assumes the lock is already held.
  */
-void _lf_next_locked();
 
 /**
  * @brief Indicator that execution of at least one tag has completed.
@@ -61,12 +60,12 @@ static bool _lf_logical_tag_completed = false;
  * Return true if the worker should stop now; false otherwise.
  * This function assumes the caller holds the mutex lock.
  */
-bool _lf_sched_should_stop_locked() {
+bool _lf_sched_should_stop_locked(_lf_sched_instance_t * sched) {
     // If this is not the very first step, check against the stop tag to see whether this is the last step.
     if (_lf_logical_tag_completed) {
         // If we are at the stop tag, do not call _lf_next_locked()
         // to prevent advancing the logical time.
-        if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {
+        if (lf_tag_compare(sched->env->current_tag, sched->env->stop_tag) >= 0) {
             return true;
         }
     }
@@ -81,10 +80,10 @@ bool _lf_sched_should_stop_locked() {
  *
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
-bool _lf_sched_advance_tag_locked() {
-    logical_tag_complete(env->current_tag);
+bool _lf_sched_advance_tag_locked(_lf_sched_instance_t * sched) {
+    logical_tag_complete(sched->env->current_tag);
 
-    if (_lf_sched_should_stop_locked()) {
+    if (_lf_sched_should_stop_locked(sched)) {
         return true;
     }
 
@@ -94,7 +93,7 @@ bool _lf_sched_advance_tag_locked() {
     // _lf_next_locked() may block waiting for real time to pass or events to appear.
     // to appear on the event queue. Note that we already
     tracepoint_scheduler_advancing_time_starts();
-    _lf_next_locked();
+    _lf_next_locked(sched->env);
     tracepoint_scheduler_advancing_time_ends();
 
     LF_PRINT_DEBUG("Scheduler: Done waiting for _lf_next_locked().");

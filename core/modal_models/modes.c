@@ -461,7 +461,7 @@ void _lf_process_mode_changes(
                 // Apply transition effect
                 if (state->next_mode != NULL) {
                     // Save time when mode was left to handle suspended events in the future
-                    state->current_mode->deactivation_time = lf_time_logical(NULL);
+                    state->current_mode->deactivation_time = lf_time_logical(env);
 
                     // Apply transition
                     state->current_mode = state->next_mode;

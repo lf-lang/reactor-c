@@ -90,7 +90,7 @@ void lf_sched_init(size_t number_of_workers, sched_params_t* params) {
     init_called = true;
 }
 
-void lf_sched_free() {
+void lf_sched_free(_lf_sched_instance_t* _lf_sched_instance) {
     worker_states_free();
     worker_assignments_free();
 }

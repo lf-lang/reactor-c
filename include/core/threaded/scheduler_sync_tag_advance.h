@@ -29,9 +29,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdbool.h>
 
 #include "tag.h"
+#include "scheduler_instance.h"
 
 /////////////////// External Functions /////////////////////////
-void _lf_next_locked();
+void _lf_next_locked(struct environment_t* env);
 /**
  * Placeholder for code-generated function that will, in a federated
  * execution, be used to coordinate the advancement of tag. It will notify
@@ -41,7 +42,7 @@ void _lf_next_locked();
  * @param tag_to_send The tag to send.
  */
 void logical_tag_complete(tag_t tag_to_send);
-bool _lf_sched_should_stop_locked();
-bool _lf_sched_advance_tag_locked();
+bool _lf_sched_should_stop_locked(_lf_sched_instance_t * sched);
+bool _lf_sched_advance_tag_locked(_lf_sched_instance_t * sched);
 
 #endif // LF_C11_THREADS_SUPPORT_H

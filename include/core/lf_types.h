@@ -42,6 +42,7 @@
 #include "utils/pqueue.h"
 #include "lf_token.h"
 #include "platform.h"
+#include "scheduler_instance.h"
 
 /**
  * ushort type. Redefine here for portability if sys/types.h is not included.
@@ -268,7 +269,7 @@ typedef struct allocation_record_t {
 } allocation_record_t;
 
 // Forward declarations so that a pointers can appear in the environment struct.
-struct _lf_sched_instance_t;
+// struct _lf_sched_instance_t;
 struct _lf_tag_advancement_barrier;
 
 /**
@@ -292,7 +293,7 @@ typedef struct environment_t {
 #ifdef LF_THREADED
     lf_mutex_t mutex;
     lf_cond_t event_q_changed;
-    struct _lf_sched_instance_t* scheduler;
+    _lf_sched_instance_t* scheduler;
     struct _lf_tag_advancement_barrier*  barrier;
     lf_cond_t global_tag_barrier_requestors_reached_zero;
 #endif // LF_THREADED

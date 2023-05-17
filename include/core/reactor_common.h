@@ -11,6 +11,7 @@
 
 
 //  ******** Global Variables :( ********  //
+extern environment_t _lf_environment;
 extern unsigned int _lf_number_of_workers;
 extern bool fast;
 extern instant_t duration;
@@ -57,11 +58,11 @@ void lf_set_stp_offset(interval_t offset);
 
 extern pqueue_t* event_q;
 
-void _lf_trigger_reaction(reaction_t* reaction, int worker_number);
+void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number);
 void _lf_start_time_step(environment_t *env);
 bool _lf_is_tag_after_stop_tag(tag_t tag);
 void _lf_pop_events(environment_t *env);
-void _lf_initialize_timer(trigger_t* timer);
+void _lf_initialize_timer(environment_t* env, trigger_t* timer);
 void _lf_recycle_event(event_t* e);
 event_t* _lf_create_dummy_events(
     trigger_t* trigger,
@@ -71,7 +72,7 @@ event_t* _lf_create_dummy_events(
 );
 int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token);
 trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t extra_delay, lf_token_t* token);
-trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t* token);
+trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t* trigger, lf_token_t* token);
 
 /**
  * Advance from the current tag to the next. If the given next_time is equal to
@@ -86,6 +87,6 @@ void _lf_invoke_reaction(reaction_t* reaction, int worker);
 void schedule_output_reactions(environment_t *env, reaction_t* reaction, int worker);
 int process_args(int argc, const char* argv[]);
 void initialize(environment_t *env);
-void termination(environment_t *env);
+void termination();
 
 #endif

@@ -57,6 +57,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "hashset/hashset.h"
 #include "hashset/hashset_itr.h"
 
+
+environment_t _lf_environment;
+
 // Global variable defined in tag.c:
 // extern tag_t env->current_tag;
 extern instant_t start_time;
@@ -301,7 +304,7 @@ static trigger_handle_t _lf_handle = 1;
  *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
-void _lf_trigger_reaction(reaction_t* reaction, int worker_number);
+void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number);
 
 /**
  * Use tables to reset is_present fields to false,
@@ -432,7 +435,7 @@ void _lf_pop_events(environment_t *env) {
                 }
 #endif
                 LF_PRINT_DEBUG("Triggering reaction %s.", reaction->name);
-                _lf_trigger_reaction(reaction, -1);
+                _lf_trigger_reaction(env, reaction, -1);
             } else {
                 LF_PRINT_DEBUG("Reaction is already triggered: %s", reaction->name);
             }
@@ -511,7 +514,7 @@ static event_t* _lf_get_new_event() {
  * If this timer is to trigger reactions at a _future_ tag as well,
  * schedule it accordingly.
  */
-void _lf_initialize_timer(trigger_t* timer) {
+void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     interval_t delay = 0;
 
 #ifdef MODAL_REACTORS
@@ -522,14 +525,14 @@ void _lf_initialize_timer(trigger_t* timer) {
         // && (timer->offset != 0 || timer->period != 0)) {
         event_t* e = _lf_get_new_event();
         e->trigger = timer;
-        e->time = lf_time_logical(NULL) + timer->offset;
+        e->time = lf_time_logical(env) + timer->offset;
         _lf_add_suspended_event(e);
         return;
     }
 #endif
     if (timer->offset == 0) {
         for (int i = 0; i < timer->number_of_reactions; i++) {
-            _lf_trigger_reaction(timer->reactions[i], -1);
+            _lf_trigger_reaction(env, timer->reactions[i], -1);
             tracepoint_schedule(timer, 0LL); // Trace even though schedule is not called.
         }
         if (timer->period == 0) {
@@ -547,7 +550,7 @@ void _lf_initialize_timer(trigger_t* timer) {
     // Recycle event_t structs, if possible.
     event_t* e = _lf_get_new_event();
     e->trigger = timer;
-    e->time = lf_time_logical(NULL) + delay;
+    e->time = lf_time_logical(env) + delay;
     // NOTE: No lock is being held. Assuming this only happens at startup.
     pqueue_insert(event_q, e);
     tracepoint_schedule(timer, delay); // Trace even though schedule is not called.
@@ -1014,7 +1017,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
                 default:
                     if (existing->time == env->current_tag.time &&
                             pqueue_find_equal_same_priority(event_q, existing) != NULL) {
-                        if (_lf_is_tag_after_stop_tag((tag_t){.time=existing->time,.microstep=now.microstep+1})) {
+                        if (_lf_is_tag_after_stop_tag((tag_t){.time=existing->time,.microstep=env->current_tag.microstep+1})) {
                             // Scheduling e will incur a microstep at timeout, 
                             // which is illegal.
                             _lf_recycle_event(e);
@@ -1096,7 +1099,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
  * @return 1 if successful, or 0 if no new reaction was scheduled because the function
  *  was called incorrectly.
  */
-trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t* token) {
+trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t* trigger, lf_token_t* token) {
     // The trigger argument could be null, meaning that nothing is triggered.
     // Doing this after incrementing the reference count ensures that the
     // payload will be freed, if there is one.
@@ -1165,8 +1168,8 @@ trigger_handle_t _lf_insert_reactions_for_trigger(trigger_t* trigger, lf_token_t
         // Do not enqueue this reaction twice.
         if (reaction->status == inactive) {
             reaction->is_STP_violated = is_STP_violated;
-            _lf_trigger_reaction(reaction, -1);
-            LF_PRINT_LOG("Enqueued reaction %s at time " PRINTF_TIME ".", reaction->name, lf_time_logical(NULL));
+            _lf_trigger_reaction(env, reaction, -1);
+            LF_PRINT_LOG("Enqueued reaction %s at time " PRINTF_TIME ".", reaction->name, lf_time_logical(env));
         }
     }
 
@@ -1300,7 +1303,6 @@ trigger_handle_t _lf_schedule_int(environment_t *env, lf_action_base_t* action, 
  * @param worker The thread number of the worker thread or 0 for unthreaded execution (for tracing).
  */
 void _lf_invoke_reaction(reaction_t* reaction, int worker) {
-    ((self_base_t*) reaction->self)->current_tag = current_tag;
     tracepoint_reaction_starts(reaction, worker);
     ((self_base_t*) reaction->self)->executing_reaction = reaction;
     reaction->function(reaction->self);
@@ -1378,11 +1380,11 @@ void schedule_output_reactions(environment_t *env, reaction_t* reaction, int wor
                                     // downstream reaction would be blocked because this reaction
                                     // remains on the executing queue. Hence, the optimization
                                     // is not valid. Put the candidate reaction on the queue.
-                                    _lf_trigger_reaction(downstream_to_execute_now, worker);
+                                    _lf_trigger_reaction(env, downstream_to_execute_now, worker);
                                     downstream_to_execute_now = NULL;
                                 }
                                 // Queue the reaction.
-                                _lf_trigger_reaction(downstream_reaction, worker);
+                                _lf_trigger_reaction(env, downstream_reaction, worker);
                             }
                         }
                     }
@@ -1699,7 +1701,8 @@ void initialize(environment_t *env) {
  * memory allocated by set_new, set_new_array, or lf_writable_copy
  * has not been freed.
  */
-void termination(environment_t *env) {
+void termination() {
+    environment_t *env = &_lf_environment;
     // Invoke the code generated termination function.
     terminate_execution();
 
@@ -1707,6 +1710,7 @@ void termination(environment_t *env) {
     stop_trace();
 
     // In order to free tokens, we perform the same actions we would have for a new time step.
+    // FIXME: The termination function should NOT depend on the environment
     _lf_start_time_step(env);
 
 #ifdef MODAL_REACTORS
@@ -1723,7 +1727,7 @@ void termination(environment_t *env) {
     }
     // Print elapsed times.
     // If these are negative, then the program failed to start up.
-    interval_t elapsed_time = lf_time_logical_elapsed(NULL);
+    interval_t elapsed_time = lf_time_logical_elapsed(env);
     if (elapsed_time >= 0LL) {
         char time_buffer[29]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
         lf_comma_separated_time(time_buffer, elapsed_time);

@@ -325,7 +325,7 @@ void lf_print_snapshot(void);
  * a later logical time determined by the RTI so that
  * all federates stop at the same logical time.
  */
-void lf_request_stop(void);
+void lf_request_stop(environment_t *env);
 
 /**
  * Allocate zeroed-out memory and record the allocated memory on
@@ -422,7 +422,7 @@ void _lf_trigger_startup_reactions(void);
  */
 void terminate_execution(void);
 
-void termination(environment_t *env);
+void termination();
 
 /**
  * Function (to be code generated) to trigger shutdown reactions.
@@ -439,7 +439,7 @@ bool _lf_trigger_shutdown_reactions(void);
  * @param value The value to send.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule_int(lenvironment_t *env, f_action_base_t* action, interval_t extra_delay, int value);
+trigger_handle_t _lf_schedule_int(environment_t *env, lf_action_base_t* action, interval_t extra_delay, int value);
 
 /**
  * Create a dummy event to be used as a spacer in the event queue.
