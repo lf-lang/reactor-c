@@ -497,6 +497,16 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
 
 void send_upstream_next_downstream_event_tag(federate_t* fed, tag_t next_event_tag) {
     // Fixme: Fill this function.
+    // The RTI receives next_event_tag from the federated fed. 
+    // It has to send NDET messages to the upstream federates of fed
+    // if the LTC message from an upstream federate is ealrier than the next_event_tag.
+
+    for (int i = 0; i < fed->num_upstream; i++) {
+        if (lf_tag_compare(_RTI.federates[i].completed, next_event_tag) < 0) {
+            // completed or granted?
+            // send next downstream event tag to the _RTI.federates[i]
+        }
+    }
 }
 
 void handle_port_absent_message(federate_t* sending_federate, unsigned char* buffer) {
