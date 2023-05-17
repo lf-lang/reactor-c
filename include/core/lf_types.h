@@ -40,8 +40,8 @@
 
 #include "modal_models/modes.h" // Modal model support
 #include "utils/pqueue.h"
-#include "tag.h"
 #include "lf_token.h"
+#include "platform.h"
 
 /**
  * ushort type. Redefine here for portability if sys/types.h is not included.
@@ -265,6 +265,37 @@ typedef struct allocation_record_t {
 	void* allocated;
 	struct allocation_record_t *next;
 } allocation_record_t;
+
+// Forward declarations so that a pointers can appear in the environment struct.
+struct _lf_sched_instance_t;
+struct _lf_tag_advancement_barrier;
+
+/**
+ * @brief Execution environment.
+ * This struct contains information about the execution environment.
+ * An execution environment maintains a notion of a "current tag"
+ * and has its own event queue and scheduler.
+ * Normally, there is only one execution environment, but if you use
+ * scheduling enclaves, then there will be one for each enclave.
+ */
+typedef struct environment_t {
+    tag_t current_tag;
+    bool** _lf_is_present_fields = NULL;
+    int _lf_is_present_fields_size = 0;
+    bool** _lf_is_present_fields_abbreviated = NULL;
+    int _lf_is_present_fields_abbreviated_size = 0;
+#ifdef LF_THREADED
+    lf_mutex_t mutex;
+    lf_cond_t event_q_changed;
+    struct _lf_sched_instance_t* scheduler;
+    struct _lf_tag_advancement_barrier*  barrier;
+    lf_cond_t global_tag_barrier_requestors_reached_zero;
+#endif // LF_THREADED
+#ifdef FEDERATED
+    tag_t** _lf_intended_tag_fields = NULL;
+    int _lf_intended_tag_fields_size = 0;
+#endif // FEDERATED
+} environment_t;
 
 /**
  * The first element of every self struct defined in generated code
