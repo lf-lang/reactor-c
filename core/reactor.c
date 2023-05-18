@@ -303,7 +303,7 @@ int next(environment_t* env) {
 /**
  * Stop execution at the conclusion of the next microstep.
  */
-void lf_request_stop() {
+void _lf_request_stop(environmet_t *env) {
 	tag_t new_stop_tag;
 	new_stop_tag.time = env->current_tag.time;
 	new_stop_tag.microstep = env->current_tag.microstep + 1;

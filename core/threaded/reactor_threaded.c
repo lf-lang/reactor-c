@@ -649,7 +649,7 @@ void _lf_next_locked(environment_t *env) {
  * a later logical time determined by the RTI so that
  * all federates stop at the same logical time.
  */
-void lf_request_stop(environment_t *env) {
+void _lf_request_stop(environment_t *env) {
     lf_mutex_lock(&env->mutex);
     // Check if already at the previous stop tag.
     if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {

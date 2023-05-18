@@ -219,6 +219,8 @@ do { \
 #define get_microstep() get_microstep(self->base.environment)
 
 #define lf_new_token(x,y,z) lf_new_token(self->base.environment,x,y,z)
+#define lf_request_stop() _lf_request_stop(self->base.environment)
+
 #define lf_time_logical() lf_time_logical(self->base.environment)
 #define lf_time_logical_elapsed() lf_time_logical_elapsed(self->base.environment)
 #define get_elapsed_logical_time() get_elapsed_logical_time(self->base.environment)

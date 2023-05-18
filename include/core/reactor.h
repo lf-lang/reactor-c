@@ -326,7 +326,7 @@ void lf_print_snapshot(void);
  * a later logical time determined by the RTI so that
  * all federates stop at the same logical time.
  */
-void lf_request_stop(environment_t *env);
+void _lf_request_stop(environment_t *env);
 
 /**
  * Allocate zeroed-out memory and record the allocated memory on
