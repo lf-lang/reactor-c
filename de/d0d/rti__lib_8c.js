@@ -39,5 +39,8 @@ var rti__lib_8c =
     [ "wait_for_federates", "de/d0d/rti__lib_8c.html#a005cb43e8e6c7795c8f0db27e2424475", null ],
     [ "_lf_rti_stop_granted_already_sent_to_federates", "de/d0d/rti__lib_8c.html#a94849214863f76b3f7c59a78bd2ad624", null ],
     [ "_RTI", "de/d0d/rti__lib_8c.html#a104f9a0ac7ff4aa717e0462b8ac445ea", null ],
+    [ "received_start_times", "de/d0d/rti__lib_8c.html#aba3e256a278f326c6101984491262800", null ],
+    [ "rti_mutex", "de/d0d/rti__lib_8c.html#a900138c50464733b007a7cec4bb050ca", null ],
+    [ "sent_start_time", "de/d0d/rti__lib_8c.html#a087a6339668b8a501563603be151e6e9", null ],
     [ "start_time", "de/d0d/rti__lib_8c.html#a20b56e8fb05c017508f1c4fa2e311a87", null ]
 ];

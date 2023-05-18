@@ -186,6 +186,12 @@ Variables</h2></td></tr>
 <tr class="separator:a20b56e8fb05c017508f1c4fa2e311a87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a104f9a0ac7ff4aa717e0462b8ac445ea"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d99/struct_r_t_i__instance__t.html">RTI_instance_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d0d/rti__lib_8c.html#a104f9a0ac7ff4aa717e0462b8ac445ea">_RTI</a></td></tr>
 <tr class="separator:a104f9a0ac7ff4aa717e0462b8ac445ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a900138c50464733b007a7cec4bb050ca"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../de/d03/platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d0d/rti__lib_8c.html#a900138c50464733b007a7cec4bb050ca">rti_mutex</a></td></tr>
+<tr class="separator:a900138c50464733b007a7cec4bb050ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba3e256a278f326c6101984491262800"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d0d/rti__lib_8c.html#aba3e256a278f326c6101984491262800">received_start_times</a></td></tr>
+<tr class="separator:aba3e256a278f326c6101984491262800"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a087a6339668b8a501563603be151e6e9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d0d/rti__lib_8c.html#a087a6339668b8a501563603be151e6e9">sent_start_time</a></td></tr>
+<tr class="separator:a087a6339668b8a501563603be151e6e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a94849214863f76b3f7c59a78bd2ad624"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d0d/rti__lib_8c.html#a94849214863f76b3f7c59a78bd2ad624">_lf_rti_stop_granted_already_sent_to_federates</a> = false</td></tr>
 <tr class="separator:a94849214863f76b3f7c59a78bd2ad624"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -1324,9 +1330,6 @@ Soroush Bateni </dd></dl>
       </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= {</div>
-<div class="line">    .rti_mutex = PTHREAD_MUTEX_INITIALIZER,</div>
-<div class="line">    .received_start_times = PTHREAD_COND_INITIALIZER,</div>
-<div class="line">    .sent_start_time = PTHREAD_COND_INITIALIZER,</div>
 <div class="line">    .max_stop_tag = <a class="code hl_define" href="../../d2/dcd/tag_8h.html#afc2f39e1818a6a8b68ca46e7c9dc2704">NEVER_TAG</a>,</div>
 <div class="line">    .max_start_time = 0LL,</div>
 <div class="line">    .number_of_federates = 0,</div>
@@ -1345,10 +1348,55 @@ Soroush Bateni </dd></dl>
 <div class="line">    .authentication_enabled = <span class="keyword">false</span>,</div>
 <div class="line">    .tracing_enabled = <span class="keyword">false</span></div>
 <div class="line">}</div>
-<div class="ttc" id="arti__lib_8h_html_a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558"><div class="ttname"><a href="../../d3/d90/rti__lib_8h.html#a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558">clock_sync_init</a></div><div class="ttdeci">@ clock_sync_init</div><div class="ttdef"><b>Definition:</b> rti_lib.h:111</div></div>
+<div class="ttc" id="arti__lib_8h_html_a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558"><div class="ttname"><a href="../../d3/d90/rti__lib_8h.html#a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558">clock_sync_init</a></div><div class="ttdeci">@ clock_sync_init</div><div class="ttdef"><b>Definition:</b> rti_lib.h:110</div></div>
 <div class="ttc" id="atag_8h_html_a673a8ebab8ec621a1cf731871dd170c8"><div class="ttname"><a href="../../d2/dcd/tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8">MSEC</a></div><div class="ttdeci">#define MSEC(t)</div><div class="ttdef"><b>Definition:</b> tag.h:18</div></div>
 <div class="ttc" id="atag_8h_html_afc2f39e1818a6a8b68ca46e7c9dc2704"><div class="ttname"><a href="../../d2/dcd/tag_8h.html#afc2f39e1818a6a8b68ca46e7c9dc2704">NEVER_TAG</a></div><div class="ttdeci">#define NEVER_TAG</div><div class="ttdef"><b>Definition:</b> tag.h:35</div></div>
 </div><!-- fragment --><p>The state of this RTI instance. </p>
+
+</div>
+</div>
+<a id="aba3e256a278f326c6101984491262800" name="aba3e256a278f326c6101984491262800"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba3e256a278f326c6101984491262800">&#9670;&#160;</a></span>received_start_times</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> received_start_times</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Condition variable used to signal receipt of all proposed start times. </p>
+
+</div>
+</div>
+<a id="a900138c50464733b007a7cec4bb050ca" name="a900138c50464733b007a7cec4bb050ca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a900138c50464733b007a7cec4bb050ca">&#9670;&#160;</a></span>rti_mutex</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../de/d03/platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a> rti_mutex</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>The main mutex lock for the RTI. </p>
+
+</div>
+</div>
+<a id="a087a6339668b8a501563603be151e6e9" name="a087a6339668b8a501563603be151e6e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a087a6339668b8a501563603be151e6e9">&#9670;&#160;</a></span>sent_start_time</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> sent_start_time</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Condition variable used to signal that a start time has been sent to a federate. </p>
 
 </div>
 </div>

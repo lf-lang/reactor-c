@@ -62,5 +62,8 @@ var rti__lib_8h =
     [ "transitive_next_event", "d3/d90/rti__lib_8h.html#aa067d8ff2e12b42f8c1f011758231be1", null ],
     [ "update_federate_next_event_tag_locked", "d3/d90/rti__lib_8h.html#a7190c8d1000afb0a5e8898011d041917", null ],
     [ "usage", "d3/d90/rti__lib_8h.html#a7f44f474f50286c4ba8c0ebac254bb28", null ],
-    [ "wait_for_federates", "d3/d90/rti__lib_8h.html#a005cb43e8e6c7795c8f0db27e2424475", null ]
+    [ "wait_for_federates", "d3/d90/rti__lib_8h.html#a005cb43e8e6c7795c8f0db27e2424475", null ],
+    [ "received_start_times", "d3/d90/rti__lib_8h.html#aba3e256a278f326c6101984491262800", null ],
+    [ "rti_mutex", "d3/d90/rti__lib_8h.html#a900138c50464733b007a7cec4bb050ca", null ],
+    [ "sent_start_time", "d3/d90/rti__lib_8h.html#a087a6339668b8a501563603be151e6e9", null ]
 ];

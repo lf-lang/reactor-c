@@ -94,7 +94,8 @@ $(document).ready(function(){initNavTree('d3/d90/rti__lib_8h.html','../../'); in
 <a href="#nested-classes">Data Structures</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">rti_lib.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -113,7 +114,6 @@ $(document).ready(function(){initNavTree('d3/d90/rti__lib_8h.html','../../'); in
 <code>#include &lt;strings.h&gt;</code><br />
 <code>#include &lt;assert.h&gt;</code><br />
 <code>#include &lt;sys/wait.h&gt;</code><br />
-<code>#include &lt;pthread.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="../../de/d03/platform_8h_source.html">platform.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d8/d3c/util_8h_source.html">util.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../dd/d97/net__util_8h_source.html">net_util.h</a>&quot;</code><br />
@@ -245,6 +245,15 @@ Functions</h2></td></tr>
 <tr class="separator:ad7d4392b21b300612a5239fbb1ffa274"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a80aaf4eeed3e2902f8fe9de80b45777d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a80aaf4eeed3e2902f8fe9de80b45777d">process_args</a> (int argc, const char *argv[])</td></tr>
 <tr class="separator:a80aaf4eeed3e2902f8fe9de80b45777d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a900138c50464733b007a7cec4bb050ca"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../de/d03/platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a900138c50464733b007a7cec4bb050ca">rti_mutex</a></td></tr>
+<tr class="separator:a900138c50464733b007a7cec4bb050ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba3e256a278f326c6101984491262800"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#aba3e256a278f326c6101984491262800">received_start_times</a></td></tr>
+<tr class="separator:aba3e256a278f326c6101984491262800"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a087a6339668b8a501563603be151e6e9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a087a6339668b8a501563603be151e6e9">sent_start_time</a></td></tr>
+<tr class="separator:a087a6339668b8a501563603be151e6e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Declarations for runtime infrastructure (RTI) for distributed Lingua Franca programs. </p>
@@ -1517,6 +1526,76 @@ Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a id="aba3e256a278f326c6101984491262800" name="aba3e256a278f326c6101984491262800"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba3e256a278f326c6101984491262800">&#9670;&#160;</a></span>received_start_times</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> received_start_times</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Condition variable used to signal receipt of all proposed start times. </p>
+
+</div>
+</div>
+<a id="a900138c50464733b007a7cec4bb050ca" name="a900138c50464733b007a7cec4bb050ca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a900138c50464733b007a7cec4bb050ca">&#9670;&#160;</a></span>rti_mutex</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../de/d03/platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a> rti_mutex</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>The main mutex lock for the RTI. </p>
+
+</div>
+</div>
+<a id="a087a6339668b8a501563603be151e6e9" name="a087a6339668b8a501563603be151e6e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a087a6339668b8a501563603be151e6e9">&#9670;&#160;</a></span>sent_start_time</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> sent_start_time</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Condition variable used to signal that a start time has been sent to a federate. </p>
 
 </div>
 </div>

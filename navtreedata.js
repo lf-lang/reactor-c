@@ -77,7 +77,8 @@ var NAVTREEINDEX =
 "d7/d0e/reactor__common_8h.html#aa329f59a16f5617b5195f2c05872c9e9",
 "d9/da6/net__common_8h.html#a59a69d0685fdc2a216718f1efa083c4c",
 "dc/d66/pqueue_8h.html#a2d3f38e461194d3684590cef4d61d324",
-"de/d03/platform_8h.html#a9a43894d4caf7e2fc1e75b9b49d7285d"
+"de/d03/platform_8h.html#a9a43894d4caf7e2fc1e75b9b49d7285d",
+"index.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

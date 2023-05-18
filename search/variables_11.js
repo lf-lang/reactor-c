@@ -3,7 +3,7 @@ var searchData=
   ['sample_5frate_0',['sample_rate',['../d1/d3f/structlf__wav__format__t.html#a0c32112d0731f41f6997ebbd647ae8f4',1,'lf_wav_format_t']]],
   ['self_1',['self',['../d2/d35/structreaction__t.html#a534c11eeddbe4c0272fc2d77abb82168',1,'reaction_t']]],
   ['sent_5fa_5fstop_5frequest_5fto_5frti_2',['sent_a_stop_request_to_rti',['../d6/d7a/structfederate__instance__t.html#a5bed997749ef910209491c67e3ece6b4',1,'federate_instance_t']]],
-  ['sent_5fstart_5ftime_3',['sent_start_time',['../d3/d99/struct_r_t_i__instance__t.html#ab9c47a2acea1ddc68a5c024852fac28a',1,'RTI_instance_t']]],
+  ['sent_5fstart_5ftime_3',['sent_start_time',['../d3/d90/rti__lib_8h.html#a087a6339668b8a501563603be151e6e9',1,'sent_start_time():&#160;rti_lib.c'],['../de/d0d/rti__lib_8c.html#a087a6339668b8a501563603be151e6e9',1,'sent_start_time():&#160;rti_lib.c']]],
   ['server_5fhostname_4',['server_hostname',['../d9/d2f/structfederate__t.html#a9f1036714019b8b0c5161dc9613605e5',1,'federate_t']]],
   ['server_5fip_5faddr_5',['server_ip_addr',['../d9/d2f/structfederate__t.html#a5442949769973da0defafa15154428f3',1,'federate_t']]],
   ['server_5fport_6',['server_port',['../d9/d2f/structfederate__t.html#a24da23c5b4db458364795823e03ddff2',1,'federate_t::server_port()'],['../d6/d7a/structfederate__instance__t.html#a309c9672d657f20cd1d3661edc7d5179',1,'federate_instance_t::server_port()']]],
