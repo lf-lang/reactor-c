@@ -133,7 +133,7 @@ void _lf_increment_global_tag_barrier_already_locked(environment_t *env, tag_t f
         lf_print_warning("Attempting to raise a barrier after the stop tag.");
         future_tag = stop_tag;
     }
-    tag_t current_tag = lf_tag(NULL);
+    tag_t current_tag = lf_tag(env);
     // Check to see if future_tag is actually in the future.
     if (lf_tag_compare(future_tag, env->current_tag) > 0) {
         // Future tag is actually in the future.
@@ -457,7 +457,7 @@ tag_t get_next_event_tag(environment_t *env) {
         if (next_tag.time == env->current_tag.time) {
         	LF_PRINT_DEBUG("Earliest event matches current time. Incrementing microstep. Event is dummy: %d.",
         			event->is_dummy);
-            next_tag.microstep =  lf_tag(NULL).microstep + 1;
+            next_tag.microstep =  lf_tag(env).microstep + 1;
         } else {
             next_tag.microstep = 0;
         }

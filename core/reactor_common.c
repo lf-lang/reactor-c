@@ -1140,7 +1140,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
                              trigger->intended_tag.time - lf_time_start(),
                              trigger->intended_tag.microstep,
                              lf_time_logical_elapsed(NULL), 
-                             lf_tag(NULL).microstep);
+                             lf_tag(env).microstep);
     }
 #endif
 #endif
