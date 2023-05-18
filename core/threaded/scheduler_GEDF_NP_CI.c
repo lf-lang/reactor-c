@@ -59,9 +59,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MAX_REACTION_LEVEL INITIAL_REACT_QUEUE_SIZE
 #endif
 
-/////////////////// External Variables /////////////////////////
-extern lf_mutex_t mutex;
-
 /////////////////// Scheduler Variables and Structs /////////////////////////
 _lf_sched_instance_t* _lf_sched_instance;
 

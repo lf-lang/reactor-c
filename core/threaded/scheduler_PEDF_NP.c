@@ -50,9 +50,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "semaphore.h"
 #include "vector.h"
 
-/////////////////// External Variables /////////////////////////
-extern lf_mutex_t mutex;
-
 
 /////////////////// Scheduler Variables and Structs /////////////////////////
 _lf_sched_instance_t* _lf_sched_instance;

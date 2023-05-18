@@ -56,9 +56,6 @@ extern size_t current_level;
 extern size_t** num_reactions_by_worker_by_level;
 extern size_t max_num_workers;
 
-/** See reactor_threaded.c for documentation. */
-extern lf_mutex_t mutex;
-
 /** See reactor_common.c for documentation. */
 extern bool fast;
 

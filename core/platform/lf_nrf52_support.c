@@ -241,13 +241,13 @@ int lf_sleep_until_locked(instant_t wakeup_time) {
         }
 
         // Leave critical section
-        lf_critical_section_exit();
+        lf_critical_section_exit(env);
         
         // wait for exception
         __WFE();
 
         // Enter critical section again
-        lf_critical_section_enter();
+        lf_critical_section_enter(env);
 
         // Redo while loop and go back to sleep if:
         //  1) We didnt have async event AND
@@ -270,7 +270,7 @@ int lf_sleep_until_locked(instant_t wakeup_time) {
  * @brief Enter critical section. Let NRF Softdevice handle nesting
  * @return int 
  */
-int lf_critical_section_enter() {
+int lf_platform_enable_interrupts_nested() {
     return sd_nvic_critical_region_enter(&_lf_nested_region);
 }
 
@@ -279,7 +279,7 @@ int lf_critical_section_enter() {
  * 
  * @return int 
  */
-int lf_critical_section_exit() {
+int lf_platform_disable_interrupts_nested() {
     return sd_nvic_critical_region_exit(_lf_nested_region);
 }
 
@@ -288,7 +288,7 @@ int lf_critical_section_exit() {
  * 
  * @return int 
  */
-int lf_notify_of_event() {
+int lf_platform_notify_of_event() {
     _lf_async_event = true;
     return 0;
 }

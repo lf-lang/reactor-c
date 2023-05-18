@@ -48,8 +48,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define DEFAULT_MAX_REACTION_LEVEL 100
 
-extern lf_mutex_t mutex;
-
 
 /**
  * @brief Paramters used in schedulers of the threaded reactor C runtime.
@@ -175,6 +173,7 @@ typedef struct {
  *  initialized (checked in a thread-safe way).
  */
 bool init_sched_instance(
+    struct environment_t* env,
     _lf_sched_instance_t** instance,
     size_t number_of_workers,
     sched_params_t* params);

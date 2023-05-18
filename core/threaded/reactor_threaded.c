@@ -48,15 +48,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Global variables defined in tag.c:
 extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
-// extern tag_t env->current_tag;
 extern instant_t start_time;
-
-/**
- * Global mutex and condition variable.
-*/
-lf_mutex_t mutex;
-lf_cond_t event_q_changed;
-
 
 /**
  * The maximum amount of time a worker thread should stall
@@ -204,9 +196,9 @@ void _lf_increment_global_tag_barrier_already_locked(environment_t *env, tag_t f
  * will freeze advancement of tag.
  */
 void _lf_increment_global_tag_barrier(environment_t *env, tag_t future_tag) {
-    lf_mutex_lock(&mutex);
+    lf_mutex_lock(&env->mutex);
     _lf_increment_global_tag_barrier_already_locked(env, future_tag);
-    lf_mutex_unlock(&mutex);
+    lf_mutex_unlock(&env->mutex);
 }
 
 /**
@@ -581,7 +573,7 @@ void _lf_next_locked(environment_t *env) {
     // This can be interrupted if a physical action triggers (e.g., a message
     // arrives from an upstream federate or a local physical action triggers).
     LF_PRINT_LOG("Waiting until elapsed time " PRINTF_TIME ".", (next_tag.time - start_time));
-    while (!wait_until(next_tag.time, &event_q_changed)) {
+    while (!wait_until(next_tag.time, &env->event_q_changed)) {
         LF_PRINT_DEBUG("_lf_next_locked(): Wait until time interrupted.");
         // Sleep was interrupted.  Check for a new next_event.
         // The interruption could also have been due to a call to lf_request_stop().
@@ -658,12 +650,12 @@ void _lf_next_locked(environment_t *env) {
  * all federates stop at the same logical time.
  */
 void lf_request_stop(environment_t *env) {
-    lf_mutex_lock(&mutex);
+    lf_mutex_lock(&env->mutex);
     // Check if already at the previous stop tag.
     if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {
         // If so, ignore the stop request since the program
         // is already stopping at the current tag.
-        lf_mutex_unlock(&mutex);
+        lf_mutex_unlock(&env->mutex);
         return;
     }
 #ifdef FEDERATED
@@ -680,9 +672,9 @@ void lf_request_stop(environment_t *env) {
     // We signal instead of broadcast under the assumption that only
     // one worker thread can call wait_until at a given time because
     // the call to wait_until is protected by a mutex lock
-    lf_cond_signal(&event_q_changed);
+    lf_cond_signal(&env->event_q_changed);
 #endif
-    lf_mutex_unlock(&mutex);
+    lf_mutex_unlock(&env->mutex);
 }
 
 /**
@@ -981,14 +973,14 @@ void _lf_worker_do_work(environment_t *env, int worker_number) {
  */
 void* worker(void* arg) {
     environment_t *env = &_lf_environment;
-    lf_mutex_lock(&mutex);
+    lf_mutex_lock(&env->mutex);
     int worker_number = worker_thread_count++;
     LF_PRINT_LOG("Worker thread %d started.", worker_number);
-    lf_mutex_unlock(&mutex);
+    lf_mutex_unlock(&env->mutex);
 
     _lf_worker_do_work(env, worker_number);
 
-    lf_mutex_lock(&mutex);
+    lf_mutex_lock(&env->mutex);
 
     // This thread is exiting, so don't count it anymore.
     worker_thread_count--;
@@ -1000,10 +992,10 @@ void* worker(void* arg) {
         send_next_event_tag(FOREVER_TAG, false);
     }
 
-    lf_cond_signal(&event_q_changed);
+    lf_cond_signal(&env->event_q_changed);
 
     LF_PRINT_DEBUG("Worker %d: Stop requested. Exiting.", worker_number);
-    lf_mutex_unlock(&mutex);
+    lf_mutex_unlock(&env->mutex);
     // timeout has been requested.
     return NULL;
 }
@@ -1100,11 +1092,11 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // of the predicate.”  This seems like a bug in the implementation of
     // pthreads. Maybe it has been fixed?
     // The one and only mutex lock.
-    lf_mutex_init(&mutex);
+    lf_mutex_init(&env->mutex);
 
     // Initialize condition variables used for notification between threads.
-    lf_cond_init(&event_q_changed, &mutex);
-    lf_cond_init(&global_tag_barrier_requestors_reached_zero, &mutex);
+    lf_cond_init(&env->event_q_changed, &env->mutex);
+    lf_cond_init(&global_tag_barrier_requestors_reached_zero, &env->mutex);
 
     if (atexit(termination) != 0) {
         lf_print_warning("Failed to register termination function!");
@@ -1124,7 +1116,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 
         determine_number_of_workers();
 
-        lf_mutex_lock(&mutex);
+        lf_mutex_lock(&env->mutex);
         initialize(env); // Sets start_time
 #ifdef MODAL_REACTORS
         // Set up modal infrastructure
@@ -1146,7 +1138,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 
         start_threads();
 
-        lf_mutex_unlock(&mutex);
+        lf_mutex_unlock(&env->mutex);
         LF_PRINT_DEBUG("Waiting for worker threads to exit.");
 
         // Wait for the worker threads to exit.
@@ -1179,21 +1171,21 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 /**
  * @brief Notify of new event by broadcasting on a condition variable. 
  */
-int lf_notify_of_event() {
-    return lf_cond_broadcast(&event_q_changed);
+int lf_notify_of_event(environment_t* env) {
+    return lf_cond_broadcast(&env->event_q_changed);
 }
 
 /**
  * @brief Enter critical section by locking the global mutex.
  */
-int lf_critical_section_enter() {
-    return lf_mutex_lock(&mutex);
+int lf_critical_section_enter(environment_t* env) {
+    return lf_mutex_lock(&env->mutex);
 }
 
 /**
  * @brief Leave a critical section by unlocking the global mutex.
  */
-int lf_critical_section_exit() {
-    return lf_mutex_unlock(&mutex); 
+int lf_critical_section_exit(environment_t* env) {
+    return lf_mutex_unlock(&env->mutex); 
 }
 #endif

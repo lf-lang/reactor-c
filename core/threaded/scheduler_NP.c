@@ -52,9 +52,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "trace.h"
 #include "util.h"
 
-/////////////////// External Variables /////////////////////////
-extern lf_mutex_t mutex;
-
 /////////////////// Scheduler Variables and Structs /////////////////////////
 // _lf_sched_instance_t* _lf_sched_instance;
 
@@ -194,6 +191,7 @@ void _lf_sched_signal_stop(_lf_sched_instance_t* _lf_sched_instance) {
  */
 void _lf_sched_try_advance_tag_and_distribute(_lf_sched_instance_t* _lf_sched_instance) {
     // Reset the index
+    environment_t *env = _lf_sched_instance->env;
     _lf_sched_instance
         ->_lf_sched_indexes[_lf_sched_instance->_lf_sched_next_reaction_level -
                             1] = 0;
@@ -203,17 +201,17 @@ void _lf_sched_try_advance_tag_and_distribute(_lf_sched_instance_t* _lf_sched_in
         if (_lf_sched_instance->_lf_sched_next_reaction_level ==
             (_lf_sched_instance->max_reaction_level + 1)) {
             _lf_sched_instance->_lf_sched_next_reaction_level = 0;
-            lf_mutex_lock(&mutex);
+            lf_mutex_lock(&env->mutex);
             // Nothing more happening at this tag.
             LF_PRINT_DEBUG("Scheduler: Advancing tag.");
             // This worker thread will take charge of advancing tag.
             if (_lf_sched_advance_tag_locked(_lf_sched_instance)) {
                 LF_PRINT_DEBUG("Scheduler: Reached stop tag.");
                 _lf_sched_signal_stop(_lf_sched_instance);
-                lf_mutex_unlock(&mutex);
+                lf_mutex_unlock(&env->mutex);
                 break;
             }
-            lf_mutex_unlock(&mutex);
+            lf_mutex_unlock(&env->mutex);
         }
 
         if (_lf_sched_distribute_ready_reactions(_lf_sched_instance) > 0) {
@@ -274,10 +272,10 @@ void lf_sched_init(
     sched_params_t* params
 ) {
     LF_PRINT_DEBUG("Scheduler: Initializing with %zu workers", number_of_workers);
-
+        
     // This scheduler is unique in that it requires `num_reactions_per_level` to
     // work correctly.
-    if (init_sched_instance(&env->scheduler, number_of_workers, params)) {
+    if (init_sched_instance(env, &env->scheduler, number_of_workers, params)) {
         // Scheduler has not been initialized before.
         if (params == NULL || params->num_reactions_per_level == NULL) {
             lf_print_error_and_exit(
@@ -320,8 +318,6 @@ void lf_sched_init(
         // Initialize the mutexes for the reaction vectors
         lf_mutex_init(&env->scheduler->_lf_sched_array_of_mutexes[i]);
 
-        // Setup environment pointer within the scheudler
-        env->scheduler->env = env;
     }
 
     env->scheduler->_lf_sched_executing_reactions =

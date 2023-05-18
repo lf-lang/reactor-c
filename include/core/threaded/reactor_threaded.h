@@ -1,9 +1,5 @@
 #ifndef REACTOR_THREADED_H
 #define REACTOR_THREADED_H
-extern lf_mutex_t mutex;
-extern lf_cond_t event_q_changed;
-extern lf_cond_t global_tag_barrier_requestors_reached_zero;
-
 /**
  * Enqueue network input control reactions that determine if the trigger for a
  * given network input port is going to be present at the current logical time

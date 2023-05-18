@@ -117,7 +117,7 @@ instant_t _lf_physical_time() {
 ////////////////  Functions declared in tag.h
 
 tag_t lf_tag(void *env) {
-    return ((environment_t *) env)->current_tag;
+    return ((environment_t *)env)->current_tag;
 }
 
 int lf_tag_compare(tag_t tag1, tag_t tag2) {

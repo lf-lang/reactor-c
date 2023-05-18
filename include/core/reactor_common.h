@@ -70,8 +70,8 @@ event_t* _lf_create_dummy_events(
     event_t* next,
     microstep_t offset
 );
-int _lf_schedule_at_tag(trigger_t* trigger, tag_t tag, lf_token_t* token);
-trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t extra_delay, lf_token_t* token);
+int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_token_t* token);
+trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger, interval_t extra_delay, lf_token_t* token);
 trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t* trigger, lf_token_t* token);
 
 /**
@@ -82,11 +82,15 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
  */
 void _lf_advance_logical_time(environment_t *env, instant_t next_time);
 
-trigger_handle_t _lf_schedule_int(environment_t *env, lf_action_base_t* action, interval_t extra_delay, int value);
+trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value);
 void _lf_invoke_reaction(reaction_t* reaction, int worker);
 void schedule_output_reactions(environment_t *env, reaction_t* reaction, int worker);
 int process_args(int argc, const char* argv[]);
 void initialize(environment_t *env);
 void termination();
+
+int lf_notify_of_event(environment_t* env);
+int lf_critical_section_enter(environment_t* env);
+int lf_critical_section_exit(environment_t* env);
 
 #endif

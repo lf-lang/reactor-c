@@ -64,6 +64,9 @@
 
 #include <stdlib.h> // Defines size_t
 
+// Forward declarations
+struct environment_t;
+
 //////////////////////////////////////////////////////////
 //// Constants and enums
 
@@ -208,7 +211,7 @@ static int _lf_count_token_allocations;
  * @param len The length, or 1 if it not an array.
  * @return A pointer to a lf_token_t struct. 
  */
-lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len);
+lf_token_t* lf_new_token(void *env, void* port_or_action, void* val, size_t len);
 
 /**
  * Return a writable copy of the token in the specified template.
@@ -223,7 +226,7 @@ lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len);
  * is no need for a writable copy. Return NULL.
  * @param port An input port.
  */
-lf_token_t* lf_writable_copy(lf_port_base_t* port);
+lf_token_t* lf_writable_copy(struct environment_t* env, lf_port_base_t* port);
 
 //////////////////////////////////////////////////////////
 //// Functions not intended to be used by users
@@ -242,7 +245,7 @@ lf_token_t* lf_writable_copy(lf_port_base_t* port);
  *  was freed, TOKEN_FREED if only the token was freed, and
  *  TOKEN_AND_VALUE_FREED if both the value and the token were freed.
  */
-token_freed _lf_free_token(lf_token_t* token);
+token_freed _lf_free_token(struct environment_t* env, lf_token_t* token);
 
 /**
  * @brief Return a new token with the specified type, value, and length.
@@ -257,7 +260,7 @@ token_freed _lf_free_token(lf_token_t* token);
  *  or 0 to have no value.
  * @return lf_token_t* 
  */
-lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length);
+lf_token_t* _lf_new_token(struct environment_t* env, token_type_t* type, void* value, size_t length);
 
 /**
  * Get a token for the specified template.
@@ -268,7 +271,7 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length);
  * @param tmplt The template. // template is a C++ keyword.
  * @return A new or recycled lf_token_t struct.
  */
-lf_token_t* _lf_get_token(token_template_t* tmplt);
+lf_token_t* _lf_get_token(struct environment_t* env, token_template_t* tmplt);
 
 /**
  * Initialize the specified template to contain a token that is an
@@ -280,7 +283,7 @@ lf_token_t* _lf_get_token(token_template_t* tmplt);
  * @param tmplt The template. // template is a C++ keyword.
  * @param element_size The element size.
  */
-void _lf_initialize_template(token_template_t* tmplt, size_t element_size);
+void _lf_initialize_template(struct environment_t* env, token_template_t* tmplt, size_t element_size);
 
 /**
  * Return a token storing the specified value, which is assumed to
@@ -298,7 +301,7 @@ void _lf_initialize_template(token_template_t* tmplt, size_t element_size);
  * @return Either the specified token or a new one, in each case with a value
  *  field pointing to newly allocated memory.
  */
-lf_token_t* _lf_initialize_token_with_value(token_template_t* tmplt, void* value, size_t length);
+lf_token_t* _lf_initialize_token_with_value(struct environment_t* env, token_template_t* tmplt, void* value, size_t length);
 
 /**
  * Return a token for storing an array of the specified length
@@ -317,14 +320,14 @@ lf_token_t* _lf_initialize_token_with_value(token_template_t* tmplt, void* value
  * @return Either the template's token or a new one, in each case with a value
  *  field pointing to newly allocated memory.
  */
-lf_token_t* _lf_initialize_token(token_template_t* tmplt, size_t length);
+lf_token_t* _lf_initialize_token(struct environment_t* env, token_template_t* tmplt, size_t length);
 
 /**
  * @brief Free all tokens.
  * Free tokens on the _lf_token_recycling_bin hashset and all
  * template tokens.
  */
-void _lf_free_all_tokens();
+void _lf_free_all_tokens(struct environment_t* env);
 
 /**
  * @brief Replace the token in the specified template, if there is one,
@@ -333,7 +336,7 @@ void _lf_free_all_tokens();
  * @param tmplt Pointer to a template. // template is a C++ keyword.
  * @param newtoken The replacement token.
  */
-void _lf_replace_template_token(token_template_t* tmplt, lf_token_t* newtoken);
+void _lf_replace_template_token(struct environment_t* env, token_template_t* tmplt, lf_token_t* newtoken);
 
 /**
  * Decrement the reference count of the specified token.
@@ -345,14 +348,14 @@ void _lf_replace_template_token(token_template_t* tmplt, lf_token_t* newtoken);
  *  was freed, TOKEN_FREED if only the token was freed, and
  *  TOKEN_AND_VALUE_FREED if both the value and the token were freed.
  */
-token_freed _lf_done_using(lf_token_t* token);
+token_freed _lf_done_using(struct environment_t* env, lf_token_t* token);
 
 /**
  * @brief Free token copies made for mutable inputs.
  * This function should be called at the beginning of each time step
  * to avoid memory leaks.
  */
-void _lf_free_token_copies();
+void _lf_free_token_copies(struct environment_t* env);
 
 #endif /* LF_TOKEN_H */
 /** @} */
