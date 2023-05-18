@@ -51,6 +51,13 @@ target_include_directories(core PUBLIC ../include/core/modal_models)
 target_include_directories(core PUBLIC ../include/core/threaded)
 target_include_directories(core PUBLIC ../include/core/utils)
 
+if (APPLE)
+    SET(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    SET(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+    SET(CMAKE_C_ARCHIVE_FINISH   "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+    SET(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+endif()
+
 # Link with OpenSSL library
 if(DEFINED FEDERATED_AUTHENTICATED)
     if (APPLE)
