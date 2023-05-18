@@ -200,15 +200,18 @@ typedef struct RTI_instance_t {
 } RTI_instance_t;
 
 /**
- * RTI synchronization variables
+ * The main mutex lock for the RTI.
  */ 
-// The main mutex lock.
 extern lf_mutex_t rti_mutex;
 
-// Condition variable used to signal receipt of all proposed start times.
+/**
+ * Condition variable used to signal receipt of all proposed start times.
+ */
 extern lf_cond_t received_start_times;
 
-// Condition variable used to signal that a start time has been sent to a federate.
+/**
+ * Condition variable used to signal that a start time has been sent to a federate.
+ */
 extern lf_cond_t sent_start_time;
 
 /**
