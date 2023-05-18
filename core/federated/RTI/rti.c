@@ -57,6 +57,11 @@ extern RTI_instance_t _RTI;
 const char *rti_trace_file_name = "rti.lft";
 
 int main(int argc, const char* argv[]) {
+
+    lf_mutex_init(&rti_mutex);
+    lf_cond_init(&received_start_times, &rti_mutex);
+    lf_cond_init(&sent_start_time, &rti_mutex);
+
     if (!process_args(argc, argv)) {
         // Processing command-line arguments failed.
         return -1;
