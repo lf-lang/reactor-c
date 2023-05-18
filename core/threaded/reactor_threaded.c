@@ -632,7 +632,7 @@ void _lf_next_locked(environment_t *env) {
     if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {
         // Pop shutdown events
         LF_PRINT_DEBUG("Scheduling shutdown reactions.");
-        _lf_trigger_shutdown_reactions();
+        _lf_trigger_shutdown_reactions(env);
     }
 
     // Pop all events from event_q with timestamp equal to env->current_tag.time,
@@ -711,7 +711,7 @@ void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_n
 void _lf_initialize_start_tag(environment_t *env) {
 
     // Add reactions invoked at tag (0,0) (including startup reactions) to the reaction queue
-    _lf_trigger_startup_reactions();
+    _lf_trigger_startup_reactions(env);
 
 #ifdef FEDERATED
     // Reset status fields before talking to the RTI to set network port
@@ -723,13 +723,13 @@ void _lf_initialize_start_tag(environment_t *env) {
     env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
 #endif
 
-    _lf_initialize_timers();
+    _lf_initialize_timers(env);
 
     // If the stop_tag is (0,0), also insert the shutdown
     // reactions. This can only happen if the timeout time
     // was set to 0.
     if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {
-        _lf_trigger_shutdown_reactions();
+        _lf_trigger_shutdown_reactions(env);
     }
 
 #ifdef FEDERATED

@@ -113,7 +113,8 @@ do { \
     if (((token_template_t*)out)->token != NULL) { \
         /* The cast "*((void**) &out->value)" is a hack to make the code */ \
         /* compile with non-token types where value is not a pointer. */ \
-        lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, *((void**) &out->value), 1); \
+        /* FIXME: We need the environment from the port using self assumes we are inside a reaction body */\
+        lf_token_t* token = _lf_initialize_token_with_value(self->base.environment, (token_template_t*)out, *((void**) &out->value), 1); \
     } \
 } while(0)
 
@@ -407,13 +408,13 @@ trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger, interval_t
 
 /**
  * Function (to be code generated) to schedule timers.
- */
-void _lf_initialize_timers(void);
+ */ 
+void _lf_initialize_timers(environment_t* env);
 
 /**
  * Function (to be code generated) to trigger startup reactions.
  */
-void _lf_trigger_startup_reactions(void);
+void _lf_trigger_startup_reactions(environment_t* env);
 
 
 /**
@@ -427,7 +428,7 @@ void termination();
 /**
  * Function (to be code generated) to trigger shutdown reactions.
  */
-bool _lf_trigger_shutdown_reactions(void);
+bool _lf_trigger_shutdown_reactions(environment_t *env);
 
 /**
  * Schedule the specified action with an integer value at a later logical

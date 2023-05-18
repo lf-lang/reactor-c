@@ -227,7 +227,7 @@ int _lf_do_step(void) {
 // Also return 0 if there are no more events in the queue and
 // the keepalive command-line option has not been given.
 // Otherwise, return 1.
-int next(void) {
+int next(environment_t* env) {
     // Enter the critical section and do not leave until we have
     // determined which tag to commit to and start invoking reactions for.
     if (lf_critical_section_enter(env) != 0) {
@@ -282,7 +282,7 @@ int next(void) {
     
     // Trigger shutdown reactions if appropriate.
     if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {        
-        _lf_trigger_shutdown_reactions();
+        _lf_trigger_shutdown_reactions(env);
     }
 
     // Invoke code that must execute before starting a new logical time round,
@@ -331,6 +331,7 @@ bool _lf_is_blocked_by_executing_reaction(void) {
  * at compile time.
  */
 int lf_reactor_c_main(int argc, const char* argv[]) {
+    environment_t *env = &_lf_environment;
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
 
@@ -365,18 +366,18 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 
         env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
         _lf_execution_started = true;
-        _lf_trigger_startup_reactions();
-        _lf_initialize_timers();
+        _lf_trigger_startup_reactions(env);
+        _lf_initialize_timers(env);
         // If the stop_tag is (0,0), also insert the shutdown
         // reactions. This can only happen if the timeout time
         // was set to 0.
         if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {
-            _lf_trigger_shutdown_reactions();
+            _lf_trigger_shutdown_reactions(env);
         }
         LF_PRINT_DEBUG("Running the program's main loop.");
         // Handle reactions triggered at time (T,m).
         if (_lf_do_step()) {
-            while (next() != 0);
+            while (next(env) != 0);
         }
         // pqueue_free(reaction_q); FIXME: This might be causing weird memory errors
         return 0;
