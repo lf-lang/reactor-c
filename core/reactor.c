@@ -47,7 +47,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 // Global variable defined in tag.c:
-extern tag_t current_tag;
+extern tag_t env->current_tag;
 extern instant_t start_time;
 
 /**
@@ -150,7 +150,7 @@ int _lf_do_step(void) {
 
         LF_PRINT_LOG("Invoking reaction %s at elapsed logical tag " PRINTF_TAG ".",
         		reaction->name,
-                current_tag.time - start_time, current_tag.microstep);
+                env->current_tag.time - start_time, env->current_tag.microstep);
 
         bool violation = false;
 
@@ -171,7 +171,7 @@ int _lf_do_step(void) {
             // container deadlines are defined in the container.
             // They can have different deadlines, so we have to check both.
             // Handle the local deadline first.
-            if (reaction->deadline == 0 || physical_time > current_tag.time + reaction->deadline) {
+            if (reaction->deadline == 0 || physical_time > env->current_tag.time + reaction->deadline) {
                 LF_PRINT_LOG("Deadline violation. Invoking deadline handler.");
                 tracepoint_reaction_deadline_missed(reaction, 0);
                 // Deadline violation has occurred.
@@ -205,7 +205,7 @@ int _lf_do_step(void) {
     _lf_handle_mode_changes();
 #endif
 
-    if (lf_tag_compare(current_tag, stop_tag) >= 0) {
+    if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {
         return 0;
     }
 
@@ -214,7 +214,7 @@ int _lf_do_step(void) {
 
 // Wait until physical time matches or exceeds the time of the least tag
 // on the event queue. If there is no event in the queue, return 0.
-// After this wait, advance current_tag.time to match
+// After this wait, advance env->current_tag.time to match
 // this tag. Then pop the next event(s) from the
 // event queue that all have the same tag, and extract from those events
 // the reactions that are to be invoked at this logical time.
@@ -230,7 +230,7 @@ int _lf_do_step(void) {
 int next(void) {
     // Enter the critical section and do not leave until we have
     // determined which tag to commit to and start invoking reactions for.
-    if (lf_critical_section_enter() != 0) {
+    if (lf_critical_section_enter(env) != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
     event_t* event = (event_t*)pqueue_peek(event_q);
@@ -242,13 +242,13 @@ int next(void) {
         // No event in the queue.
         if (!keepalive_specified) {
             _lf_set_stop_tag(
-                (tag_t){.time=current_tag.time, .microstep=current_tag.microstep+1}
+                (tag_t){.time=env->current_tag.time, .microstep=env->current_tag.microstep+1}
             );
         }
     } else {
         next_tag.time = event->time;
         // Deduce the microstep
-        if (next_tag.time == current_tag.time) {
+        if (next_tag.time == env->current_tag.time) {
             next_tag.microstep = lf_tag().microstep + 1;
         } else {
             next_tag.microstep = 0;
@@ -270,7 +270,7 @@ int next(void) {
         // gets scheduled from an interrupt service routine.
         // In this case, check the event queue again to make sure to
         // advance time to the correct tag.
-        if(lf_critical_section_exit() != 0) {
+        if(lf_critical_section_exit(env) != 0) {
             lf_print_error_and_exit("Could not leave critical section");
         }
         return 1;
@@ -281,7 +281,7 @@ int next(void) {
     _lf_advance_logical_time(next_tag.time);
     
     // Trigger shutdown reactions if appropriate.
-    if (lf_tag_compare(current_tag, stop_tag) >= 0) {        
+    if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {        
         _lf_trigger_shutdown_reactions();
     }
 
@@ -289,11 +289,11 @@ int next(void) {
     // such as initializing outputs to be absent.
     _lf_start_time_step();
 
-    // Pop all events from event_q with timestamp equal to current_tag.time,
+    // Pop all events from event_q with timestamp equal to env->current_tag.time,
     // extract all the reactions triggered by these events, and
     // stick them into the reaction queue.
     _lf_pop_events();
-    if(lf_critical_section_exit() != 0) {
+    if(lf_critical_section_exit(env) != 0) {
         lf_print_error_and_exit("Could not leave critical section");
     }
 
@@ -305,8 +305,8 @@ int next(void) {
  */
 void lf_request_stop() {
 	tag_t new_stop_tag;
-	new_stop_tag.time = current_tag.time;
-	new_stop_tag.microstep = current_tag.microstep + 1;
+	new_stop_tag.time = env->current_tag.time;
+	new_stop_tag.microstep = env->current_tag.microstep + 1;
 	_lf_set_stop_tag(new_stop_tag);
 }
 
@@ -363,14 +363,14 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         reaction_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
                 get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
 
-        current_tag = (tag_t){.time = start_time, .microstep = 0u};
+        env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
         _lf_execution_started = true;
         _lf_trigger_startup_reactions();
         _lf_initialize_timers();
         // If the stop_tag is (0,0), also insert the shutdown
         // reactions. This can only happen if the timeout time
         // was set to 0.
-        if (lf_tag_compare(current_tag, stop_tag) >= 0) {
+        if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {
             _lf_trigger_shutdown_reactions();
         }
         LF_PRINT_DEBUG("Running the program's main loop.");
@@ -383,5 +383,26 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     } else {
         return -1;
     }
+}
+
+/**
+ * @brief Notify of new event by broadcasting on a condition variable. 
+ */
+int lf_notify_of_event(environment_t* env) {
+    return lf_platform_notify_of_event();
+}
+
+/**
+ * @brief Enter critical section by locking the global mutex.
+ */
+int lf_critical_section_enter(environment_t* env) {
+    return lf_platform_disable_interrupts_nester();
+}
+
+/**
+ * @brief Leave a critical section by unlocking the global mutex.
+ */
+int lf_critical_section_exit(environment_t* env) {
+    return lf_platform_enable_interrupts_nester();
 }
 #endif

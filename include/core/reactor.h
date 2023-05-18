@@ -325,7 +325,7 @@ void lf_print_snapshot(void);
  * a later logical time determined by the RTI so that
  * all federates stop at the same logical time.
  */
-void lf_request_stop(void);
+void lf_request_stop(environment_t *env);
 
 /**
  * Allocate zeroed-out memory and record the allocated memory on
@@ -369,7 +369,7 @@ void _lf_free_all_reactors(void);
  * Free memory recorded on the allocations list of the specified reactor.
  * @param self The self struct of the reactor.
  */
-void _lf_free_reactor(struct self_base_t *self);
+void _lf_free_reactor(self_base_t *self);
 
 /**
  * Generated function that optionally sets default command-line options.
@@ -380,7 +380,7 @@ void _lf_set_default_command_line_options(void);
  * Generated function that resets outputs to be absent at the
  * start of a new time step.
  */
-void _lf_start_time_step(void);
+void _lf_start_time_step(environment_t *env);
 
 /**
  * Generated function that produces a table containing all triggers
@@ -393,7 +393,7 @@ void _lf_initialize_trigger_objects(void);
  * the reactions triggered by these events, and stick them into the reaction
  * queue.
  */
-void _lf_pop_events(void);
+void _lf_pop_events(environment_t *env);
 
 /**
  * Internal version of the lf_schedule() function, used by generated
@@ -403,7 +403,7 @@ void _lf_pop_events(void);
  * @param token The token payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t delay, lf_token_t* token);
+trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger, interval_t delay, lf_token_t* token);
 
 /**
  * Function (to be code generated) to schedule timers.
@@ -422,7 +422,7 @@ void _lf_trigger_startup_reactions(void);
  */
 void terminate_execution(void);
 
-void termination(void);
+void termination();
 
 /**
  * Function (to be code generated) to trigger shutdown reactions.

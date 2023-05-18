@@ -85,28 +85,18 @@ extern "C" {
 
 #define LF_TIMEOUT _LF_TIMEOUT
 
-/**
- * Enter a critical section where logical time and the event queue are guaranteed
- * to not change unless they are changed within the critical section.
- * this can be implemented by disabling interrupts.
- * Users of this function must ensure that lf_init_critical_sections() is
- * called first and that lf_critical_section_exit() is called later.
- * @return 0 on success, platform-specific error number otherwise.
- */
-extern int lf_critical_section_enter();
+#if defined (LF_UNTHREADED)
+    int lf_platform_disable_interrupts_nested();
+    int lf_platform_enable_interrupts_nested();
+    int lf_platform_notify_of_event();
+#endif
 
-/**
- * Exit the critical section entered with lf_lock_time().
- * @return 0 on success, platform-specific error number otherwise.
- */
-extern int lf_critical_section_exit();
 
 /**
  * Notify any listeners that an event has been created.
- * The caller should call lf_critical_section_enter() before calling this function.
+ * The caller should call lf_critical_section_enter(env) before calling this function.
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_notify_of_event();
 
 // For platforms with threading support, the following functions
 // abstract the API so that the LF runtime remains portable.

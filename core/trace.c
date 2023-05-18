@@ -53,7 +53,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         fprintf(stderr, "WARNING: Access to trace file failed.\n"); \
         fclose(trace_file); \
         trace_file = NULL; \
-        lf_critical_section_exit(); \
+        lf_critical_section_exit(env); \
         return -1; \
     } while(0)
 
@@ -81,9 +81,9 @@ static object_description_t _lf_trace_object_descriptions[TRACE_OBJECT_TABLE_SIZ
 static int _lf_trace_object_descriptions_size = 0;
 
 int _lf_register_trace_event(void* pointer1, void* pointer2, _lf_trace_object_t type, char* description) {
-    lf_critical_section_enter();
+    lf_critical_section_enter(env);
     if (_lf_trace_object_descriptions_size >= TRACE_OBJECT_TABLE_SIZE) {
-        lf_critical_section_exit();
+        lf_critical_section_exit(env);
         fprintf(stderr, "WARNING: Exceeded trace object table size. Trace file will be incomplete.\n");
         return 0;
     }
@@ -92,7 +92,7 @@ int _lf_register_trace_event(void* pointer1, void* pointer2, _lf_trace_object_t 
     _lf_trace_object_descriptions[_lf_trace_object_descriptions_size].type = type;
     _lf_trace_object_descriptions[_lf_trace_object_descriptions_size].description = description;
     _lf_trace_object_descriptions_size++;
-    lf_critical_section_exit();
+    lf_critical_section_exit(env);
     return 1;
 }
 
@@ -232,9 +232,9 @@ void flush_trace_locked(int worker) {
 void flush_trace(int worker) {
     // To avoid having more than one worker writing to the file at the same time,
     // enter a critical section.
-    lf_critical_section_enter();
+    lf_critical_section_enter(env);
     flush_trace_locked(worker);
-    lf_critical_section_exit();
+    lf_critical_section_exit(env);
 }
 
 void start_trace(const char* filename) {
@@ -293,6 +293,8 @@ void tracepoint(
     // The above flush_trace resets the write pointer.
     int i = _lf_trace_buffer_size[index];
     // Write to memory buffer.
+    // Get the correct time of the event
+    
     _lf_trace_buffer[index][i].event_type = event_type;
     _lf_trace_buffer[index][i].pointer = pointer;
     _lf_trace_buffer[index][i].src_id = src_id;
@@ -301,8 +303,8 @@ void tracepoint(
         _lf_trace_buffer[index][i].logical_time = tag->time;
         _lf_trace_buffer[index][i].microstep = tag->microstep;
     } else {
-        _lf_trace_buffer[index][i].logical_time = lf_time_logical();
-        _lf_trace_buffer[index][i].microstep = lf_tag().microstep;
+        _lf_trace_buffer[index][i].logical_time = lf_time_logical(pointer);
+        _lf_trace_buffer[index][i].microstep = lf_tag(pointer).microstep;
     }
     _lf_trace_buffer[index][i].trigger = trigger;
     _lf_trace_buffer[index][i].extra_delay = extra_delay;
@@ -368,9 +370,9 @@ void tracepoint_user_event(char* description) {
     // But to be safe, then, we have acquire a mutex before calling this
     // because multiple reactions might be calling the same tracepoint function.
     // There will be a performance hit for this.
-    lf_critical_section_enter();
+    lf_critical_section_enter(env);
     tracepoint(user_event, description,  NULL, -1, -1, -1, NULL, NULL, 0, false);
-    lf_critical_section_exit();
+    lf_critical_section_exit(env);
 }
 
 /**
@@ -391,9 +393,9 @@ void tracepoint_user_value(char* description, long long value) {
     // But to be safe, then, we have acquire a mutex before calling this
     // because multiple reactions might be calling the same tracepoint function.
     // There will be a performance hit for this.
-    lf_critical_section_enter();
+    lf_critical_section_enter(env);
     tracepoint(user_value, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
-    lf_critical_section_exit();
+    lf_critical_section_exit(env);
 }
 
 /**
@@ -438,7 +440,7 @@ void tracepoint_reaction_deadline_missed(reaction_t *reaction, int worker) {
 }
 
 void stop_trace() {
-    lf_critical_section_enter();
+    lf_critical_section_enter(env);
     if (_lf_trace_stop) {
         // Trace was already stopped. Nothing to do.
         return;
@@ -460,7 +462,7 @@ void stop_trace() {
     fclose(_lf_trace_file);
     _lf_trace_file = NULL;
     LF_PRINT_DEBUG("Stopped tracing.");
-    lf_critical_section_exit();
+    lf_critical_section_exit(env);
 }
 
 ////////////////////////////////////////////////////////////

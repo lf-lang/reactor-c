@@ -60,10 +60,10 @@ RTI_instance_t _RTI = {
  * to not change unless they are changed within the critical section.
  * this can be implemented by disabling interrupts.
  * Users of this function must ensure that lf_init_critical_sections() is
- * called first and that lf_critical_section_exit() is called later.
+ * called first and that lf_critical_section_exit(env) is called later.
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_critical_section_enter() {
+extern int lf_critical_section_enter(env) {
     return pthread_mutex_lock(&_RTI.rti_mutex);
 }
 
@@ -71,7 +71,7 @@ extern int lf_critical_section_enter() {
  * Exit the critical section entered with lf_lock_time().
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_critical_section_exit() {
+extern int lf_critical_section_exit(env) {
     return pthread_mutex_unlock(&_RTI.rti_mutex);
 }
 

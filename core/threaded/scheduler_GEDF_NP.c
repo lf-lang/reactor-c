@@ -52,9 +52,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "trace.h"
 #include "util.h"
 
-/////////////////// External Variables /////////////////////////
-extern lf_mutex_t mutex;
-
 /////////////////// Scheduler Variables and Structs /////////////////////////
 _lf_sched_instance_t* _lf_sched_instance;
 
@@ -266,7 +263,7 @@ void lf_sched_init(
  *
  * This must be called when the scheduler is no longer needed.
  */
-void lf_sched_free() {
+void lf_sched_free(_lf_sched_instance_t* _lf_sched_instance) {
     // for (size_t j = 0; j <= _lf_sched_instance->max_reaction_level; j++) {
     //     pqueue_free(_lf_sched_instance->_lf_sched_triggered_reactions[j]);
     //     FIXME: This is causing weird memory errors.

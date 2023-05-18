@@ -39,7 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LF_SCHEDULER_H
 
 #include "lf_types.h"
-
+#include "scheduler_instance.h"
 /**
  * @brief Default value that is assumed to be the maximum reaction level in the
  *  program.
@@ -47,27 +47,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Can be overriden by passing the appropriate `parameters` argument to
  * `lf_sched_init`.
  */
-#define DEFAULT_MAX_REACTION_LEVEL 100
 
-/**
- * @brief Struct representing the most common scheduler parameters.
- *
- * @param num_reactions_per_level Optional. Default: NULL. An array of
- *  non-negative integers, where each element represents a reaction level
- *  (corresponding to the index), and the value of the element represents the
- *  maximum number of reactions in the program for that level. For example,
- *  num_reactions_per_level = { 2, 3 } indicates that there will be a maximum of
- *  2 reactions in the program with a level of 0, and a maximum of 3 reactions
- *  in the program with a level of 1. Can be NULL.
- * @param num_reactions_per_level_size Optional. The size of the
- * `num_reactions_per_level` array if it is not NULL. If set, it should be the
- * maximum level over all reactions in the program plus 1. If not set,
- * `DEFAULT_MAX_REACTION_LEVEL` will be used.
- */
-typedef struct {
-    size_t* num_reactions_per_level;
-    size_t num_reactions_per_level_size;
-} sched_params_t;
 
 /**
  * @brief Initialize the scheduler.
@@ -81,6 +61,7 @@ typedef struct {
  *  scheduler parameters. Can be NULL.
  */
 void lf_sched_init(
+    environment_t* env,
     size_t number_of_workers,
     sched_params_t* parameters
 );
@@ -90,7 +71,7 @@ void lf_sched_init(
  *
  * This must be called when the scheduler is no longer needed.
  */
-void lf_sched_free();
+void lf_sched_free(_lf_sched_instance_t* _lf_sched_instance);
 
 /**
  * @brief Ask the scheduler for one more reaction.
@@ -103,7 +84,7 @@ void lf_sched_free();
  * @return reaction_t* A reaction for the worker to execute. NULL if the calling
  * worker thread should exit.
  */
-reaction_t* lf_sched_get_ready_reaction(int worker_number);
+reaction_t* lf_sched_get_ready_reaction(_lf_sched_instance_t* _lf_sched_instance, int worker_number);
 
 /**
  * @brief Inform the scheduler that worker thread 'worker_number' is done
@@ -133,6 +114,6 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  *
  */
-void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number);
+void lf_sched_trigger_reaction(_lf_sched_instance_t* _lf_sched_instance, reaction_t* reaction, int worker_number);
 
 #endif // LF_SCHEDULER_H

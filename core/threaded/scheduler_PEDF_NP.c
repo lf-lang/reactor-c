@@ -50,9 +50,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "semaphore.h"
 #include "vector.h"
 
-/////////////////// External Variables /////////////////////////
-extern lf_mutex_t mutex;
-
 
 /////////////////// Scheduler Variables and Structs /////////////////////////
 _lf_sched_instance_t* _lf_sched_instance;
@@ -563,7 +560,7 @@ void lf_sched_init(
  *
  * This must be called when the scheduler is no longer needed.
  */
-void lf_sched_free() {
+void lf_sched_free(_lf_sched_instance_t* _lf_sched_instance) {
     for (int i=0; i < _lf_sched_instance->_lf_sched_number_of_workers; i++) {
         pqueue_free(_lf_sched_threads_info[i].ready_reactions);
         vector_free(&_lf_sched_threads_info[i].output_reactions);

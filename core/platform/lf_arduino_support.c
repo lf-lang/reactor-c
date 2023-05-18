@@ -69,14 +69,14 @@ static volatile uint32_t _lf_time_us_low_last = 0;
 int lf_sleep_until_locked(instant_t wakeup) {
     instant_t now;
     _lf_async_event = false;
-    lf_critical_section_exit();
+    lf_critical_section_exit(env);
 
     // Do busy sleep
     do {
         lf_clock_gettime(&now);
     } while ((now < wakeup) && !_lf_async_event);
 
-    lf_critical_section_enter();
+    lf_critical_section_enter(env);
 
     if (_lf_async_event) {
         _lf_async_event = false;
@@ -135,7 +135,7 @@ int lf_clock_gettime(instant_t* t) {
  * Enter a critical section by disabling interrupts, supports
  * nested critical sections.
 */
-int lf_critical_section_enter() {
+int lf_platform_enable_interrupts_nested() {
     if (_lf_num_nested_critical_sections++ == 0) {
         // First nested entry into a critical section.
         // If interrupts are not initially enabled, then increment again to prevent
@@ -153,10 +153,10 @@ int lf_critical_section_enter() {
  * As such, physical actions are not yet supported.
  *
  * If interrupts were enabled when the matching call to
- * lf_critical_section_enter()
+ * lf_critical_section_enter(env)
  * occurred, then they will be re-enabled here.
  */
-int lf_critical_section_exit() {
+int lf_platform_disable_interrupts_nested() {
     if (_lf_num_nested_critical_sections <= 0) {
         return 1;
     }
@@ -170,7 +170,7 @@ int lf_critical_section_exit() {
  * Handle notifications from the runtime of changes to the event queue.
  * If a sleep is in progress, it should be interrupted.
 */
-int lf_notify_of_event() {
+int lf_platform_notify_of_event() {
    _lf_async_event = true;
    return 0;
 }

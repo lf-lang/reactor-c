@@ -15,7 +15,10 @@
 #include "tag.h"
 #include "util.h"
 #include "platform.h"
+#include "reactor.h"
 #include "util.h"
+#include "lf_types.h"
+
 
 /**
  * An enum for specifying the desired tag when calling "lf_time"
@@ -40,7 +43,7 @@ instant_t start_time = NEVER;
  * This is not in scope for reactors.
  * This should only ever be accessed while holding the mutex lock.
  */
-tag_t current_tag = {.time = 0LL, .microstep = 0};
+// tag_t env->current_tag = {.time = 0LL, .microstep = 0};
 
 /**
  * Global physical clock offset.
@@ -111,45 +114,10 @@ instant_t _lf_physical_time() {
     return _lf_last_reported_physical_time_ns;
 }
 
-/**
- * Get the time specified by "type".
- *
- * Example use cases:
- * - Getting the starting time:
- * _lf_time(LF_START)
- *
- * - Getting the elapsed physical time:
- * _lf_time(LF_ELAPSED_PHYSICAL)
- *
- * - Getting the logical time
- * _lf_time(LF_LOGICAL)
- *
- * @param type A field in an enum specifying the time type.
- *             See enum "lf_time_type" above.
- * @return The desired time
- */
-instant_t _lf_time(_lf_time_type type) {
-    switch (type)
-    {
-    case LF_LOGICAL:
-        return current_tag.time;
-    case LF_PHYSICAL:
-        return _lf_physical_time();
-    case LF_ELAPSED_LOGICAL:
-        return current_tag.time - start_time;
-    case LF_ELAPSED_PHYSICAL:
-        return _lf_physical_time() - start_time;
-    case LF_START:
-        return start_time;
-    default:
-        return NEVER;
-    }
-}
-
 ////////////////  Functions declared in tag.h
 
-tag_t lf_tag() {
-    return current_tag;
+tag_t lf_tag(void *env) {
+    return ((environment_t *)env)->current_tag;
 }
 
 int lf_tag_compare(tag_t tag1, tag_t tag2) {
@@ -186,24 +154,27 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval) {
     return result;
 }
 
-instant_t lf_time_logical(void) {
-    return _lf_time(LF_LOGICAL);
+instant_t lf_time_logical(void *env) {
+    return ((environment_t *) env)->current_tag.time;
 }
 
-interval_t lf_time_logical_elapsed(void) {
-    return _lf_time(LF_ELAPSED_LOGICAL);
+/**
+ * Return the elapsed logical time in nanoseconds since the start of execution.
+ */
+interval_t lf_time_logical_elapsed(void *env) {
+    return lf_time_logical(env) - start_time;
 }
 
 instant_t lf_time_physical(void) {
-    return _lf_time(LF_PHYSICAL);
+    return _lf_physical_time();
 }
 
 instant_t lf_time_physical_elapsed(void) {
-    return _lf_time(LF_ELAPSED_PHYSICAL);
+    return _lf_physical_time() - start_time;
 }
 
 instant_t lf_time_start(void) {
-    return _lf_time(LF_START);
+    return start_time;
 }
 
 void lf_set_physical_clock_offset(interval_t offset) {

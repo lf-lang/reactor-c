@@ -22,15 +22,15 @@
  * 
  * @return int 
  */
-int lf_critical_section_enter() {
+int lf_platform_disable_interrupts_nested() {
     return 0;
 }
 
-int lf_critical_section_exit() {
+int lf_platform_enable_interrupts_nested() {
     return 0;
 }
 
-int lf_notify_of_event() {
+int lf_platform_notify_of_event() {
     return 0;
 }
 

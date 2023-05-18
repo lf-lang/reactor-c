@@ -43,9 +43,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif  // NUMBER_OF_WORKERS
 
 #include "semaphore.h"
-#include "scheduler.h"
+#include <stdbool.h>
+// #include "scheduler.h"
 
-extern lf_mutex_t mutex;
+#define DEFAULT_MAX_REACTION_LEVEL 100
 
 
 /**
@@ -54,7 +55,11 @@ extern lf_mutex_t mutex;
  * @note Members of this struct are added based on existing schedulers' needs.
  *  These should be expanded to accommodate new schedulers.
  */
+
+struct environment_t;
+
 typedef struct {
+    struct environment_t * env;
     /**
      * @brief Maximum number of levels for reactions in the program.
      *
@@ -135,6 +140,26 @@ typedef struct {
 } _lf_sched_instance_t;
 
 /**
+ * @brief Struct representing the most common scheduler parameters.
+ *
+ * @param num_reactions_per_level Optional. Default: NULL. An array of
+ *  non-negative integers, where each element represents a reaction level
+ *  (corresponding to the index), and the value of the element represents the
+ *  maximum number of reactions in the program for that level. For example,
+ *  num_reactions_per_level = { 2, 3 } indicates that there will be a maximum of
+ *  2 reactions in the program with a level of 0, and a maximum of 3 reactions
+ *  in the program with a level of 1. Can be NULL.
+ * @param num_reactions_per_level_size Optional. The size of the
+ * `num_reactions_per_level` array if it is not NULL. If set, it should be the
+ * maximum level over all reactions in the program plus 1. If not set,
+ * `DEFAULT_MAX_REACTION_LEVEL` will be used.
+ */
+typedef struct {
+    size_t* num_reactions_per_level;
+    size_t num_reactions_per_level_size;
+} sched_params_t;
+
+/**
  * @brief Initialize `instance` using the provided information.
  *
  * No-op if `instance` is already initialized (i.e., not NULL).
@@ -148,41 +173,10 @@ typedef struct {
  *  initialized (checked in a thread-safe way).
  */
 bool init_sched_instance(
+    struct environment_t* env,
     _lf_sched_instance_t** instance,
     size_t number_of_workers,
-    sched_params_t* params) {
+    sched_params_t* params);
 
-    // Check if the instance is already initialized
-    lf_mutex_lock(&mutex); // Safeguard against multiple threads calling this
-                           // function.
-    if (*instance != NULL) {
-        // Already initialized
-        lf_mutex_unlock(&mutex);
-        return false;
-    } else {
-        *instance =
-            (_lf_sched_instance_t*)calloc(1, sizeof(_lf_sched_instance_t));
-    }
-    lf_mutex_unlock(&mutex);
-
-    if (params == NULL || params->num_reactions_per_level_size == 0) {
-        (*instance)->max_reaction_level = DEFAULT_MAX_REACTION_LEVEL;
-    }
-
-    if (params != NULL) {
-        if (params->num_reactions_per_level != NULL) {
-            (*instance)->max_reaction_level =
-                params->num_reactions_per_level_size - 1;
-        }
-    }
-
-    (*instance)->_lf_sched_semaphore = lf_semaphore_new(0);
-    (*instance)->_lf_sched_number_of_workers = number_of_workers;
-    (*instance)->_lf_sched_next_reaction_level = 1;
-
-    (*instance)->_lf_sched_should_stop = false;
-
-    return true;
-}
 
 #endif // LF_SCHEDULER_PARAMS_H

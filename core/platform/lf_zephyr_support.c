@@ -205,9 +205,9 @@ int lf_sleep_until_locked(instant_t wakeup) {
             lf_print_error_and_exit("Could not setup alarm for sleeping. Errno %i", err);
         }
         
-        lf_critical_section_exit();
+        lf_critical_section_exit(env);
         k_sem_take(&_lf_sem, K_FOREVER);
-        lf_critical_section_enter();
+        lf_critical_section_enter(env);
 
         // Then calculating remaining sleep, unless we got woken up by an event
         if (!_lf_async_event) {
@@ -250,14 +250,14 @@ int lf_clock_gettime(instant_t* t) {
 
 int lf_sleep_until_locked(instant_t wakeup) {
     _lf_async_event=false;    
-    lf_critical_section_exit();
+    lf_critical_section_exit(env);
 
     instant_t now;
     do {
     lf_clock_gettime(&now);
     } while ( (now<wakeup) && !_lf_async_event);
     
-    lf_critical_section_enter();
+    lf_critical_section_enter(env);
 
     if (_lf_async_event) {
         _lf_async_event=false;
@@ -310,7 +310,7 @@ int lf_nanosleep(interval_t sleep_duration) {
  * 
  * @return int 
  */
-int lf_critical_section_enter() {
+int lf_platform_enable_interrupts_nested() {
     if (_lf_num_nested_critical_sections++ == 0) {
         _lf_irq_mask = irq_lock();
     }
@@ -322,7 +322,7 @@ int lf_critical_section_enter() {
  * 
  * @return int 
  */
-int lf_critical_section_exit() {
+int lf_platform_disable_interrupts_nested() {
     if (_lf_num_nested_critical_sections <= 0) {
         return 1;
     }
@@ -333,7 +333,7 @@ int lf_critical_section_exit() {
     return 0;
 }
 
-int lf_notify_of_event() {
+int lf_platform_notify_of_event() {
    _lf_async_event = true;
    // If we are using the HI_RES clock. Then we interrupt a sleep through
    // a semaphore. The LO_RES clock does a busy wait and is woken up by
@@ -522,20 +522,20 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
  * 
  */
 int _zephyr_atomic_fetch_add(int *ptr, int value) {
-    lf_critical_section_enter();
+    lf_critical_section_enter(env);
     int res = *ptr;
     *ptr += value;
-    lf_critical_section_exit();
+    lf_critical_section_exit(env);
     return res;
 }
 /**
  * @brief Add `value` to `*ptr` and return new updated value of `*ptr`
  */
 int _zephyr_atomic_add_fetch(int *ptr, int value) {
-    lf_critical_section_enter();
+    lf_critical_section_enter(env);
     int res = *ptr + value;
     *ptr = res;
-    lf_critical_section_exit();
+    lf_critical_section_exit(env);
     return res;
 }
 
@@ -545,13 +545,13 @@ int _zephyr_atomic_add_fetch(int *ptr, int value) {
  * with `newval`. If not do nothing. Retruns true on overwrite.
  */
 bool _zephyr_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
-    lf_critical_section_enter();
+    lf_critical_section_enter(env);
     bool res = false;
     if (*ptr == value) {
         *ptr = newval;
         res = true;
     }
-    lf_critical_section_exit();
+    lf_critical_section_exit(env);
     return res;
 }
 
@@ -561,12 +561,12 @@ bool _zephyr_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
  * the original value of `*ptr`.
  */
 int  _zephyr_val_compare_and_swap(int *ptr, int value, int newval) {
-    lf_critical_section_enter();
+    lf_critical_section_enter(env);
     int res = *ptr;
     if (*ptr == value) {
         *ptr = newval;
     }
-    lf_critical_section_exit();
+    lf_critical_section_exit(env);
     return res;
 }
 
