@@ -135,14 +135,14 @@ do { \
 #define lf_set_array(out, val, length) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
+    lf_token_t* token = _lf_initialize_token_with_value(self->base.environment, (token_template_t*)out, val, length); \
     out->value = token->value; \
 } while(0)
 #else
 #define lf_set_array(out, val, length) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
+    lf_token_t* token = _lf_initialize_token_with_value(self->base.environment, (token_template_t*)out, val, length); \
     out->value = static_cast<decltype(out->value)>(token->value); \
 } while(0)
 #endif
@@ -165,14 +165,14 @@ do { \
 #define _LF_SET_NEW(out) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
+    lf_token_t* token = _lf_initialize_token(self->base.environment, (token_template_t*)out, 1); \
     out->value = token->value; \
 } while(0)
 #else
 #define _LF_SET_NEW(out) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
+    lf_token_t* token = _lf_initialize_token(self->base.environment, (token_template_t*)out, 1); \
     out->value = static_cast<decltype(out->value)>(token->value); \
 } while(0)
 #endif // __cplusplus
@@ -194,7 +194,7 @@ do { \
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
+    lf_token_t* token = _lf_initialize_token(self->base.environment, (token_template_t*)out, len); \
     out->value = token->value; \
     out->length = len; \
 } while(0)
@@ -202,7 +202,7 @@ do { \
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
+    lf_token_t* token = _lf_initialize_token(self->base.environment, (token_template_t*)out, len); \
     out->value = static_cast<decltype(out->value)>(token->value); \
     out->length = len; \
 } while(0)
@@ -234,7 +234,7 @@ do { \
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    _lf_replace_template_token((token_template_t*)out, newtoken); \
+    _lf_replace_template_token(self->base.environment, (token_template_t*)out, newtoken); \
     out->value = newtoken->value; \
     out->length = newtoken->length; \
 } while(0)
@@ -242,7 +242,7 @@ do { \
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
     _lf_set_present((lf_port_base_t*)out); \
-    _lf_replace_template_token((token_template_t*)out, newtoken); \
+    _lf_replace_template_token(self->base.environment, (token_template_t*)out, newtoken); \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
     out->length = newtoken->length; \
 } while(0)
