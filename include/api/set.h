@@ -214,11 +214,12 @@ do { \
 
 // For simplicity and backward compatability, dont require the self-pointer when calling the timing API.
 // Since this is always done from the context of a reaction `self` is in scope and is a pointer to the self-struct
-#define lf_tag() lf_tag(self)
-#define get_current_tag() get_current_tag(self)
-#define get_microstep() get_microstep(self)
+#define lf_tag() lf_tag(self->base.environment)
+#define get_current_tag() get_current_tag(self->base.environment)
+#define get_microstep() get_microstep(self->base.environment)
 
-#define lf_time_logical() lf_time_logical(self)
-#define lf_time_logical_elapsed() lf_time_logical_elapsed(self)
-#define get_elapsed_logical_time() get_elapsed_logical_time(self)
-#define get_logical_time() get_logical_time(self)
+#define lf_new_token(x,y,z) lf_new_token(self->base.environment,x,y,z)
+#define lf_time_logical() lf_time_logical(self->base.environment)
+#define lf_time_logical_elapsed() lf_time_logical_elapsed(self->base.environment)
+#define get_elapsed_logical_time() get_elapsed_logical_time(self->base.environment)
+#define get_logical_time() get_logical_time(self->base.environment)
