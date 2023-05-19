@@ -68,7 +68,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Global variables defined in tag.c:
 extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
-extern tag_t env->current_tag;
 extern instant_t start_time;
 
 // Error messages.
@@ -344,7 +343,8 @@ int send_message(int message_type,
  * @param message The message.
  * @return 1 if the message has been sent, 0 otherwise.
  */
-int send_timed_message(interval_t additional_delay,
+int send_timed_message(environment_t* env,
+                        interval_t additional_delay,
                         int message_type,
                         unsigned short port,
                         unsigned short federate,
@@ -1392,7 +1392,7 @@ void mark_control_reaction_waiting(int portID, bool waiting) {
  *
  * @param portID the ID of the port to determine status for
  */
-port_status_t get_current_port_status(int portID) {
+port_status_t get_current_port_status(environment_t* env, int portID) {
     // Check whether the status of the port is known at the current tag.
     trigger_t* network_input_port_action = _lf_action_for_port(portID)->trigger;
     if (network_input_port_action->status == present) {
@@ -1478,7 +1478,7 @@ void enqueue_network_output_control_reactions(){
 /**
  * Enqueue network control reactions.
  */
-void enqueue_network_control_reactions() {
+void enqueue_network_control_reactions(environment_t *env) {
     enqueue_network_output_control_reactions();
 #ifdef FEDERATED_CENTRALIZED
     // If the granted tag is not provisional, there is no
@@ -1503,7 +1503,7 @@ void enqueue_network_control_reactions() {
  * @param port_ID The ID of the receiving port.
  * @param fed_ID The fed ID of the receiving federate.
  */
-void send_port_absent_to_federate(interval_t additional_delay,
+void send_port_absent_to_federate(environment_t* env, interval_t additional_delay,
                                     unsigned short port_ID,
                                   unsigned short fed_ID) {
     // Construct the message
@@ -1882,7 +1882,7 @@ void handle_message(int socket, int fed_id) {
  * @param buffer The buffer to read.
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  */
-void handle_tagged_message(int socket, int fed_id) {
+void handle_tagged_message(environment_t* env, int socket, int fed_id) {
     // FIXME: Need better error handling?
     // Read the header which contains the timestamp.
     size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t)
@@ -2140,7 +2140,7 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
  *  it sets last_TAG_was_provisional to true and also it does not update the
  *  last known tag for input ports.
  */
-void handle_provisional_tag_advance_grant() {
+void handle_provisional_tag_advance_grant(environment_t* env) {
     size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
@@ -2246,7 +2246,7 @@ void handle_provisional_tag_advance_grant() {
  *
  * This function assumes the caller holds the mutex lock.
  */
-void _lf_fd_send_stop_request_to_rti() {
+void _lf_fd_send_stop_request_to_rti(environment_t* env) {
     // Do not send a stop request twice.
     if (_fed.sent_a_stop_request_to_rti == true) {
         return;
@@ -2285,7 +2285,7 @@ void _lf_fd_send_stop_request_to_rti() {
  * This function assumes the caller does not hold
  * the mutex lock, therefore, it acquires it.
  */
-void handle_stop_granted_message() {
+void handle_stop_granted_message(environment_t* env) {
     size_t bytes_to_read = MSG_TYPE_STOP_GRANTED_LENGTH - 1;
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
@@ -2332,7 +2332,7 @@ void handle_stop_granted_message() {
  * This function assumes the caller does not hold
  * the mutex lock, therefore, it acquires it.
  */
-void handle_stop_request_message() {
+void handle_stop_request_message(environment_t* env) {
     size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
@@ -2400,7 +2400,7 @@ void handle_stop_request_message() {
  * defined in reactor.h. For unfederated execution, the code generator
  * generates an empty implementation.
  */
-void terminate_execution() {
+void terminate_execution(environment_t* env) {
     // Check for all outgoing physical connections in
     // _fed.sockets_for_outbound_p2p_connections and
     // if the socket ID is not -1, the connection is still open.
@@ -2624,7 +2624,7 @@ void* listen_to_rti_TCP(void* args) {
  *
  * FIXME: Possibly should be renamed
  */
-void synchronize_with_other_federates() {
+void synchronize_with_other_federates(environment_t* env) {
 
     LF_PRINT_DEBUG("Synchronizing with other federates.");
 
@@ -2757,7 +2757,7 @@ bool _lf_bounded_NET(tag_t* tag) {
  * @param tag The tag.
  * @param wait_for_reply If true, wait for a reply.
  */
-tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
+tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply) {
     while (true) {
         if (!_fed.has_downstream && !_fed.has_upstream) {
             // This federate is not connected (except possibly by physical links)

@@ -214,7 +214,7 @@ typedef struct RTI_instance_t {
  * to not change unless they are changed within the critical section.
  * this can be implemented by disabling interrupts.
  * Users of this function must ensure that lf_init_critical_sections() is
- * called first and that lf_critical_section_exit(env) is called later.
+ * called first and that lf_critical_section_exit() is called later.
  * @return 0 on success, platform-specific error number otherwise.
  */
 extern int lf_critical_section_enter(env);
@@ -223,7 +223,7 @@ extern int lf_critical_section_enter(env);
  * Exit the critical section entered with lf_lock_time().
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_critical_section_exit(env);
+extern int lf_critical_section_exit();
 
 /**
  * Create a server and enable listening for socket connections.
