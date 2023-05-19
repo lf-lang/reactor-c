@@ -31,6 +31,11 @@
  * @section DESCRIPTION
  *
  * Type definitions that are widely used across different parts of the runtime.
+ * 
+ * <b>IMPORTANT:</b> Many of the structs defined here require matching layouts
+ * and, if changed, will require changes in the code generator.
+ * See <a href="https://github.com/lf-lang/reactor-c/wiki/Structs-in-the-Reactor-C-Runtime">
+ * Structs in the Reactor-C Runtime</a>.
  */
 
 #ifndef TYPES_H
@@ -288,18 +293,31 @@ typedef struct self_base_t {
 } self_base_t;
 
 /**
+ * @brief Base struct for ports and actions.
+ */
+typedef struct {
+	token_template_t tmplt;    // Type and token information (template is a C++ keyword).
+    bool is_present;
+    self_base_t* parent;
+} lf_port_or_action_t;
+
+/**
  * Action structs are customized types because their payloads are type
  * specific.  This struct represents their common features. Given any
  * pointer to an action struct, it can be cast to lf_action_base_t,
  * to token_template_t, or to token_type_t to access these common fields.
- * IMPORTANT: If this is changed, it must also be changed in
- * CActionGenerator.java generateAuxiliaryStruct().
  */
-typedef struct lf_action_base_t {
-	token_template_t tmplt;    // Type and token information (template is a C++ keyword).
-	bool is_present;
+typedef struct {
+	lf_port_or_action_t base;
+	trigger_t* trigger;        // THIS HAS TO MATCH lf_action_internal_t
 	bool has_value;
-	trigger_t* trigger;
 } lf_action_base_t;
+
+/**
+ * Internal part of the action structs.
+ */
+typedef struct {
+	trigger_t* trigger;
+} lf_action_internal_t;
 
 #endif
