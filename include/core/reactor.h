@@ -396,6 +396,8 @@ void _lf_initialize_trigger_objects(environment_t* env);
  */
 void _lf_pop_events(environment_t *env);
 
+
+
 /**
  * Internal version of the lf_schedule() function, used by generated
  * _lf_start_timers() function.
@@ -530,6 +532,10 @@ trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, 
  * to the RTI.
  */
 void _lf_fd_send_stop_request_to_rti(void);
+
+// To be implemented in code generated main program
+int _lf_get_environments(environment_t **envs);
+void _lf_create_environments();
 
 #endif /* REACTOR_H */
 /** @} */

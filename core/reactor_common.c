@@ -57,9 +57,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "hashset/hashset.h"
 #include "hashset/hashset_itr.h"
 
-
-environment_t _lf_environment = ENVIRONMENT_INIT;
-
 // Global variable defined in tag.c:
 // extern tag_t env->current_tag;
 extern instant_t start_time;
@@ -1185,9 +1182,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
  */
 trigger_handle_t _lf_schedule_token(lf_action_base_t* action, interval_t extra_delay, lf_token_t* token) {
     environment_t* env = ((self_base_t *)(action->trigger->parent))->environment;
-    if (env != &_lf_environment) {
-        lf_print_error_and_exit("Wrong environment pointer");
-    }
+    
     if (lf_critical_section_enter(env) != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
@@ -1685,17 +1680,8 @@ void initialize(environment_t *env) {
             get_event_position, set_event_position, event_matches, print_event);
 
     // Initialize the trigger table.
-    _lf_initialize_trigger_objects(env);
+    env->initialize_trigger_objects(env);
 
-    start_time = lf_time_physical();
-    env->current_tag.time = start_time;
-
-    LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
-
-    struct timespec physical_time_timespec = {start_time / BILLION, start_time % BILLION};
-
-    printf("---- Start execution at time %s---- plus %ld nanoseconds.\n",
-            ctime(&physical_time_timespec.tv_sec), physical_time_timespec.tv_nsec);
     tag_t stop_tag = FOREVER_TAG_INITIALIZER;
     if (duration >= 0LL) {
         // A duration has been specified. Calculate the stop time.
@@ -1711,7 +1697,9 @@ void initialize(environment_t *env) {
  * has not been freed.
  */
 void termination() {
-    environment_t *env = &_lf_environment;
+    // FIXME: Do all environments here...
+    environment_t *env;
+    int num_envs = _lf_get_environments(&env);
     // Invoke the code generated termination function.
     terminate_execution();
 

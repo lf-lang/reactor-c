@@ -45,6 +45,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "reactor.h"
 #include "scheduler.h"
 #include "tag.h"
+#include "environment.h"
 
 // Global variables defined in tag.c:
 extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
@@ -67,34 +68,17 @@ extern instant_t start_time;
  */
 #define MIN_SLEEP_DURATION USEC(10)
 
-/*
- * A struct representing a barrier in threaded
- * Lingua Franca programs that can prevent advancement
- * of tag if
- * 1- Number of requestors is larger than 0
- * 2- Value of horizon is not (FOREVER, 0)
- */
-typedef struct _lf_tag_advancement_barrier {
-    int requestors; // Used to indicate the number of
-                    // requestors that have asked
-                    // for a barrier to be raised
-                    // on tag.
-    tag_t horizon;  // If semaphore is larger than 0
-                    // then the runtime should not
-                    // advance its tag beyond the
-                    // horizon.
-} _lf_tag_advancement_barrier;
 
 
 /**
  * Create a global tag barrier and
  * initialize the barrier's semaphore to 0 and its horizon to FOREVER_TAG.
  */
-_lf_tag_advancement_barrier _lf_global_tag_advancement_barrier = {0, FOREVER_TAG_INITIALIZER};
+// _lf_tag_advancement_barrier _lf_global_tag_advancement_barrier = {0, FOREVER_TAG_INITIALIZER};
 
 // A condition variable that notifies threads whenever the number
 // of requestors on the tag barrier reaches zero.
-lf_cond_t global_tag_barrier_requestors_reached_zero;
+// lf_cond_t global_tag_barrier_requestors_reached_zero;
 
 /**
  * Raise a barrier to prevent the current tag from advancing to or
@@ -138,14 +122,14 @@ void _lf_increment_global_tag_barrier_already_locked(environment_t *env, tag_t f
     if (lf_tag_compare(future_tag, env->current_tag) > 0) {
         // Future tag is actually in the future.
         // See whether it is smaller than any pre-existing barrier.
-        if (lf_tag_compare(future_tag, _lf_global_tag_advancement_barrier.horizon) < 0) {
+        if (lf_tag_compare(future_tag, env->barrier.horizon) < 0) {
             // The future tag is smaller than the current horizon of the barrier.
             // Therefore, we should prevent logical time from reaching the
             // future tag.
-            _lf_global_tag_advancement_barrier.horizon = future_tag;
+            env->barrier.horizon = future_tag;
             LF_PRINT_DEBUG("Raised barrier at elapsed tag " PRINTF_TAG ".",
-                        _lf_global_tag_advancement_barrier.horizon.time - start_time,
-                        _lf_global_tag_advancement_barrier.horizon.microstep);
+                        env->barrier.horizon.time - start_time,
+                        env->barrier.horizon.microstep);
         }
     } else {
             // The future_tag is not in the future.
@@ -157,14 +141,14 @@ void _lf_increment_global_tag_barrier_already_locked(environment_t *env, tag_t f
             // Prevent logical time from advancing further so that the measure of
             // STP violation properly reflects the amount of time (logical or physical)
             // that has elapsed after the incoming message would have violated the STP offset.
-            _lf_global_tag_advancement_barrier.horizon = env->current_tag;
-            _lf_global_tag_advancement_barrier.horizon.microstep++;
+            env->barrier.horizon = env->current_tag;
+            env->barrier.horizon.microstep++;
             LF_PRINT_DEBUG("Raised barrier at elapsed tag " PRINTF_TAG ".",
-                        _lf_global_tag_advancement_barrier.horizon.time - start_time,
-                        _lf_global_tag_advancement_barrier.horizon.microstep);
+                        env->barrier.horizon.time - start_time,
+                        env->barrier.horizon.microstep);
     }
     // Increment the number of requestors
-    _lf_global_tag_advancement_barrier.requestors++;
+    env->barrier.requestors++;
 }
 
 /**
@@ -213,23 +197,23 @@ void _lf_increment_global_tag_barrier(environment_t *env, tag_t future_tag) {
  *  certain non-blocking functionalities such as receiving timed messages
  *  over the network or handling stop in the federated execution.
  */
-void _lf_decrement_global_tag_barrier_locked() {
+void _lf_decrement_global_tag_barrier_locked(environment_t* env) {
     // Decrement the number of requestors for the tag barrier.
-    _lf_global_tag_advancement_barrier.requestors--;
+    env->barrier.requestors--;
     // Check to see if the semaphore is negative, which indicates that
     // a mismatched call was placed for this function.
-    if (_lf_global_tag_advancement_barrier.requestors < 0) {
+    if (env->barrier.requestors < 0) {
         lf_print_error_and_exit("Mismatched use of _lf_increment_global_tag_barrier()"
                 " and  _lf_decrement_global_tag_barrier_locked().");
-    } else if (_lf_global_tag_advancement_barrier.requestors == 0) {
+    } else if (env->barrier.requestors == 0) {
         // When the semaphore reaches zero, reset the horizon to forever.
-        _lf_global_tag_advancement_barrier.horizon = FOREVER_TAG;
+        env->barrier.horizon = FOREVER_TAG;
         // Notify waiting threads that the semaphore has reached zero.
-        lf_cond_broadcast(&global_tag_barrier_requestors_reached_zero);
+        lf_cond_broadcast(&env->global_tag_barrier_requestors_reached_zero);
     }
     LF_PRINT_DEBUG("Barrier is at tag " PRINTF_TAG ".",
-                 _lf_global_tag_advancement_barrier.horizon.time,
-                 _lf_global_tag_advancement_barrier.horizon.microstep);
+                 env->barrier.horizon.time,
+                 env->barrier.horizon.microstep);
 }
 
 /**
@@ -255,7 +239,7 @@ void _lf_decrement_global_tag_barrier_locked() {
  */
 int _lf_wait_on_global_tag_barrier(environment_t* env, tag_t proposed_tag) {
     // Check the most common case first.
-    if (_lf_global_tag_advancement_barrier.requestors == 0) return 0;
+    if (env->barrier.requestors == 0) return 0;
 
     // Do not wait for tags after the stop tag
     if (_lf_is_tag_after_stop_tag(env, proposed_tag)) {
@@ -269,13 +253,13 @@ int _lf_wait_on_global_tag_barrier(environment_t* env, tag_t proposed_tag) {
     int result = 0;
     // Wait until the global barrier semaphore on logical time is zero
     // and the proposed_time is larger than or equal to the horizon.
-    while (_lf_global_tag_advancement_barrier.requestors > 0
-            && lf_tag_compare(proposed_tag, _lf_global_tag_advancement_barrier.horizon) >= 0
+    while (env->barrier.requestors > 0
+            && lf_tag_compare(proposed_tag, env->barrier.horizon) >= 0
     ) {
         result = 1;
         LF_PRINT_LOG("Waiting on barrier for tag " PRINTF_TAG ".", proposed_tag.time - start_time, proposed_tag.microstep);
         // Wait until no requestor remains for the barrier on logical time
-        lf_cond_wait(&global_tag_barrier_requestors_reached_zero);
+        lf_cond_wait(&env->global_tag_barrier_requestors_reached_zero);
 
         // The stop tag may have changed during the wait.
         if (_lf_is_tag_after_stop_tag(env, proposed_tag)) {
@@ -973,7 +957,7 @@ void _lf_worker_do_work(environment_t *env, int worker_number) {
  * elapse or for asynchronous events and also releases it to execute reactions.
  */
 void* worker(void* arg) {
-    environment_t *env = &_lf_environment;
+    environment_t *env = (environment_t* ) arg;
     lf_mutex_lock(&env->mutex);
     int worker_number = worker_thread_count++;
     LF_PRINT_LOG("Worker thread %d started.", worker_number);
@@ -1018,15 +1002,11 @@ void lf_print_snapshot(environment_t* env) {
     }
 }
 
-// Array of thread IDs (to be dynamically allocated).
-lf_thread_t* _lf_thread_ids;
-
 // Start threads in the thread pool.
-void start_threads() {
-    LF_PRINT_LOG("Starting %u worker threads.", _lf_number_of_workers);
-    _lf_thread_ids = (lf_thread_t*)malloc(_lf_number_of_workers * sizeof(lf_thread_t));
-    for (unsigned int i = 0; i < _lf_number_of_workers; i++) {
-        if (lf_thread_create(&_lf_thread_ids[i], worker, NULL) != 0) {
+void start_threads(environment_t* env) {
+    LF_PRINT_LOG("Starting %u worker threads in environment", env->num_workers);
+    for (unsigned int i = 0; i < env->num_workers; i++) {
+        if (lf_thread_create(&env->thread_ids[i], worker, env) != 0) {
             lf_print_error_and_exit("Could not start thread-%u", i);
         }
     }
@@ -1077,28 +1057,11 @@ void determine_number_of_workers(void) {
  * at compile time.
  */
 int lf_reactor_c_main(int argc, const char* argv[]) {
-    environment_t *env = &_lf_environment;
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
 
-    // Initialize the one and only mutex to be recursive, meaning that it is OK
-    // for the same thread to lock and unlock the mutex even if it already holds
-    // the lock.
-    // FIXME: This is dangerous. The docs say this: "It is advised that an
-    // application should not use a PTHREAD_MUTEX_RECURSIVE mutex with
-    // condition variables because the implicit unlock performed for a
-    // pthread_cond_wait() or pthread_cond_timedwait() may not actually
-    // release the mutex (if it had been locked multiple times).
-    // If this happens, no other thread can satisfy the condition
-    // of the predicate.”  This seems like a bug in the implementation of
-    // pthreads. Maybe it has been fixed?
-    // The one and only mutex lock.
-    lf_mutex_init(&env->mutex);
-
-    // Initialize condition variables used for notification between threads.
-    lf_cond_init(&env->event_q_changed, &env->mutex);
-    lf_cond_init(&global_tag_barrier_requestors_reached_zero, &env->mutex);
-
+    _lf_create_environments();
+    
     if (atexit(termination) != 0) {
         lf_print_warning("Failed to register termination function!");
     }
@@ -1116,38 +1079,76 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
             && process_args(argc, argv)) {
 
         determine_number_of_workers();
+        start_time = lf_time_physical() + SEC(1);
 
+        LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
+        struct timespec physical_time_timespec = {start_time / BILLION, start_time % BILLION};
+        printf("---- Start execution at time %s---- plus %ld nanoseconds.\n",
+            ctime(&physical_time_timespec.tv_sec), physical_time_timespec.tv_nsec);
+
+    } else {
+        return -1;
+    }
+    environment_t *envs;
+    int num_envs = _lf_get_environments(&envs);
+    
+    // For now, we just use the first environment straight
+    // In the future we want to loop through all etc
+
+    for (int i = 0; i<num_envs; i++) {
+        environment_t *env = &envs[i];
+        // Initialize the one and only mutex to be recursive, meaning that it is OK
+        // for the same thread to lock and unlock the mutex even if it already holds
+        // the lock.
+        // FIXME: This is dangerous. The docs say this: "It is advised that an
+        // application should not use a PTHREAD_MUTEX_RECURSIVE mutex with
+        // condition variables because the implicit unlock performed for a
+        // pthread_cond_wait() or pthread_cond_timedwait() may not actually
+        // release the mutex (if it had been locked multiple times).
+        // If this happens, no other thread can satisfy the condition
+        // of the predicate.”  This seems like a bug in the implementation of
+        // pthreads. Maybe it has been fixed?
+        // The one and only mutex lock.
+        lf_mutex_init(&env->mutex);
+
+        // Initialize condition variables used for notification between threads.
+        lf_cond_init(&env->event_q_changed, &env->mutex);
+        lf_cond_init(&env->global_tag_barrier_requestors_reached_zero, &env->mutex);
+
+        // FIXME: Why lock this so early?
         lf_mutex_lock(&env->mutex);
         initialize(env); // Sets start_time
-#ifdef MODAL_REACTORS
+    #ifdef MODAL_REACTORS
         // Set up modal infrastructure
         _lf_initialize_modes();
-#endif
+    #endif
 
-        lf_print("---- Using %d workers.", _lf_number_of_workers);
+        env->current_tag.time = start_time;
+        lf_print("Environment %u: ---- Using %d workers.",env->id, env->num_workers);
 
         // Initialize the scheduler
         lf_sched_init(
             env,
-            (size_t)_lf_number_of_workers,
+            (size_t)env->num_workers,
             NULL);
-    
-#include "scheduler_instance.h"
+        
+
         // Call the following function only once, rather than per worker thread (although
         // it can be probably called in that manner as well).
         _lf_initialize_start_tag(env);
-
-        start_threads();
-
+    
+    
+        start_threads(env);
         lf_mutex_unlock(&env->mutex);
-        LF_PRINT_DEBUG("Waiting for worker threads to exit.");
-
+    }
+    
+    for (int i = 0; i<num_envs; i++) {
         // Wait for the worker threads to exit.
+        environment_t* env = &envs[i];
         void* worker_thread_exit_status = NULL;
-        LF_PRINT_DEBUG("Number of threads: %d.", _lf_number_of_workers);
         int ret = 0;
-        for (int i = 0; i < _lf_number_of_workers; i++) {
-        	int failure = lf_thread_join(_lf_thread_ids[i], &worker_thread_exit_status);
+        for (int i = 0; i < env->num_workers; i++) {
+        	int failure = lf_thread_join(env->thread_ids[i], &worker_thread_exit_status);
         	if (failure) {
         		lf_print_error("Failed to join thread listening for incoming messages: %s", strerror(failure));
         	}
@@ -1156,18 +1157,18 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
                 ret = 1;
         	}
         }
-
+        
         if (ret == 0) {
             LF_PRINT_LOG("---- All worker threads exited successfully.");
         }
-
-        lf_sched_free(env->scheduler);
-        free(_lf_thread_ids);
-        return ret;
-    } else {
-        return -1;
     }
-}
+
+    for (int i = 0; i<num_envs; i++) {
+        environment_free(&envs[i]);
+    }
+
+    return 0;
+}   
 
 /**
  * @brief Notify of new event by broadcasting on a condition variable. 

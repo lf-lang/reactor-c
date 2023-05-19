@@ -70,6 +70,24 @@ typedef unsigned short int ushort;
 #define NP 5
 #define PEDF_NP 6
 
+/*
+ * A struct representing a barrier in threaded
+ * Lingua Franca programs that can prevent advancement
+ * of tag if
+ * 1- Number of requestors is larger than 0
+ * 2- Value of horizon is not (FOREVER, 0)
+ */
+typedef struct _lf_tag_advancement_barrier {
+    int requestors; // Used to indicate the number of
+                    // requestors that have asked
+                    // for a barrier to be raised
+                    // on tag.
+    tag_t horizon;  // If semaphore is larger than 0
+                    // then the runtime should not
+                    // advance its tag beyond the
+                    // horizon.
+} _lf_tag_advancement_barrier;
+
 /**
  * Policy for handling scheduled events that violate the specified
  * minimum interarrival time.
@@ -282,6 +300,7 @@ struct _lf_tag_advancement_barrier;
  * scheduling enclaves, then there will be one for each enclave.
  */
 typedef struct environment_t {
+    int id;
     tag_t current_tag;
     tag_t stop_tag;
     pqueue_t *event_q;
@@ -294,22 +313,30 @@ typedef struct environment_t {
     vector_t _lf_sparse_io_record_sizes;
     int _lf_count_payload_allocations;
     trigger_handle_t _lf_handle;
+    trigger_t** _lf_timer_triggers;
+    int _lf_timer_triggers_size;
+    reaction_t** _lf_startup_reactions;
+    int _lf_startup_reactions_size;
+    reaction_t** _lf_shutdown_reactions;
+    int _lf_shutdown_reactions_size;
+    reaction_t** _lf_reset_reactions;
+    int _lf_reset_reactions_size;
+    int num_workers;
+    lf_thread_t* thread_ids;
 #ifdef LF_THREADED
     lf_mutex_t mutex;
     lf_cond_t event_q_changed;
     _lf_sched_instance_t* scheduler;
-    struct _lf_tag_advancement_barrier*  barrier;
+    _lf_tag_advancement_barrier  barrier;
     lf_cond_t global_tag_barrier_requestors_reached_zero;
 #endif // LF_THREADED
 #ifdef FEDERATED
     tag_t** _lf_intended_tag_fields;
     int _lf_intended_tag_fields_size;
 #endif // FEDERATED
+    void (*initialize_trigger_objects)(struct environment_t *);
 } environment_t;
 
-#define ENVIRONMENT_INIT {\
-    ._lf_handle = 1\
-}
 
 
 
