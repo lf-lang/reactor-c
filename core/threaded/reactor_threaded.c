@@ -129,9 +129,9 @@ void _lf_increment_global_tag_barrier_already_locked(environment_t *env, tag_t f
     // Check if future_tag is after stop tag.
     // This will only occur when a federate receives a timed message with
     // a tag that is after the stop tag
-    if (_lf_is_tag_after_stop_tag(future_tag)) {
+    if (_lf_is_tag_after_stop_tag(env, future_tag)) {
         lf_print_warning("Attempting to raise a barrier after the stop tag.");
-        future_tag = stop_tag;
+        future_tag = env->stop_tag;
     }
     tag_t current_tag = lf_tag(env);
     // Check to see if future_tag is actually in the future.
@@ -253,13 +253,13 @@ void _lf_decrement_global_tag_barrier_locked() {
  * @param proposed_tag The tag that the runtime wants to advance to.
  * @return 0 if no wait was needed and 1 if a wait actually occurred.
  */
-int _lf_wait_on_global_tag_barrier(tag_t proposed_tag) {
+int _lf_wait_on_global_tag_barrier(environment_t* env, tag_t proposed_tag) {
     // Check the most common case first.
     if (_lf_global_tag_advancement_barrier.requestors == 0) return 0;
 
     // Do not wait for tags after the stop tag
-    if (_lf_is_tag_after_stop_tag(proposed_tag)) {
-        proposed_tag = stop_tag;
+    if (_lf_is_tag_after_stop_tag(env, proposed_tag)) {
+        proposed_tag = env->stop_tag;
     }
     // Do not wait forever
     if (proposed_tag.time == FOREVER) {
@@ -278,8 +278,8 @@ int _lf_wait_on_global_tag_barrier(tag_t proposed_tag) {
         lf_cond_wait(&global_tag_barrier_requestors_reached_zero);
 
         // The stop tag may have changed during the wait.
-        if (_lf_is_tag_after_stop_tag(proposed_tag)) {
-            proposed_tag = stop_tag;
+        if (_lf_is_tag_after_stop_tag(env, proposed_tag)) {
+            proposed_tag = env->stop_tag;
         }
     }
     return result;
@@ -291,11 +291,12 @@ int _lf_wait_on_global_tag_barrier(tag_t proposed_tag) {
  * This assumes that the mutex is not held.
  * @param port A pointer to the port struct.
  */
-void _lf_set_present(lf_port_base_t* port) {
+// FIXME: Avoid this with parent pointer
+void _lf_set_present(environment_t *env, lf_port_base_t* port) {
 	bool* is_present_field = &port->is_present;
-    int ipfas = lf_atomic_fetch_add(&_lf_is_present_fields_abbreviated_size, 1);
-    if (ipfas < _lf_is_present_fields_size) {
-        _lf_is_present_fields_abbreviated[ipfas] = is_present_field;
+    int ipfas = lf_atomic_fetch_add(&env->_lf_is_present_fields_abbreviated_size, 1);
+    if (ipfas < env->_lf_is_present_fields_size) {
+        env->_lf_is_present_fields_abbreviated[ipfas] = is_present_field;
     }
     *is_present_field = true;
 
@@ -442,7 +443,7 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
  */
 tag_t get_next_event_tag(environment_t *env) {
     // Peek at the earliest event in the event queue.
-    event_t* event = (event_t*)pqueue_peek(event_q);
+    event_t* event = (event_t*)pqueue_peek(env->event_q);
     tag_t next_tag = FOREVER_TAG;
     if (event != NULL) {
         // There is an event in the event queue.
@@ -465,11 +466,11 @@ tag_t get_next_event_tag(environment_t *env) {
 
     // If a timeout tag was given, adjust the next_tag from the
     // event tag to that timeout tag.
-    if (_lf_is_tag_after_stop_tag(next_tag)) {
-        next_tag = stop_tag;
+    if (_lf_is_tag_after_stop_tag(env, next_tag)) {
+        next_tag = env->stop_tag;
     }
     LF_PRINT_LOG("Earliest event on the event queue (or stop time if empty) is " PRINTF_TAG ". Event queue has size %zu.",
-            next_tag.time - start_time, next_tag.microstep, pqueue_size(event_q));
+            next_tag.time - start_time, next_tag.microstep, pqueue_size(env->event_q));
     return next_tag;
 }
 
@@ -556,13 +557,13 @@ void _lf_next_locked(environment_t *env) {
     // behavior with centralized coordination as with unfederated execution.
 
 #else  // not FEDERATED_CENTRALIZED
-    if (pqueue_peek(event_q) == NULL && !keepalive_specified) {
+    if (pqueue_peek(env->event_q) == NULL && !keepalive_specified) {
         // There is no event on the event queue and keepalive is false.
         // No event in the queue
         // keepalive is not set so we should stop.
         // Note that federated programs with decentralized coordination always have
         // keepalive = true
-        _lf_set_stop_tag((tag_t){.time=env->current_tag.time,.microstep=env->current_tag.microstep+1});
+        _lf_set_stop_tag(env, (tag_t){.time=env->current_tag.time,.microstep=env->current_tag.microstep+1});
 
         // Stop tag has changed. Need to check next_tag again.
         next_tag = get_next_event_tag(env);
@@ -580,7 +581,7 @@ void _lf_next_locked(environment_t *env) {
         next_tag = get_next_event_tag(env);
 
         // If this (possibly new) next tag is past the stop time, return.
-        if (_lf_is_tag_after_stop_tag(next_tag)) {
+        if (_lf_is_tag_after_stop_tag(env, next_tag)) {
             return;
         }
     }
@@ -589,7 +590,7 @@ void _lf_next_locked(environment_t *env) {
     next_tag = get_next_event_tag(env);
 
     // If this (possibly new) next tag is past the stop time, return.
-    if (_lf_is_tag_after_stop_tag(next_tag)) { // lf_tag_compare(tag, stop_tag) > 0
+    if (_lf_is_tag_after_stop_tag(env, next_tag)) { // lf_tag_compare(tag, stop_tag) > 0
         return;
     }
 
@@ -615,7 +616,7 @@ void _lf_next_locked(environment_t *env) {
     // executed microstep 0 at the timeout time), then we are done. The above code prevents the next_tag
     // from exceeding the stop_tag, so we have to do further checks if
     // they are equal.
-    if (lf_tag_compare(next_tag, stop_tag) >= 0 && lf_tag_compare(env->current_tag, stop_tag) >= 0) {
+    if (lf_tag_compare(next_tag, env->stop_tag) >= 0 && lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {
         // If we pop anything further off the event queue with this same time or larger,
         // then it will be assigned a tag larger than the stop tag.
         return;
@@ -629,7 +630,7 @@ void _lf_next_locked(environment_t *env) {
     // Advance current time to match that of the first event on the queue.
     _lf_advance_logical_time(env, next_tag.time);
 
-    if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {
+    if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {
         // Pop shutdown events
         LF_PRINT_DEBUG("Scheduling shutdown reactions.");
         _lf_trigger_shutdown_reactions(env);
@@ -652,7 +653,7 @@ void _lf_next_locked(environment_t *env) {
 void _lf_request_stop(environment_t *env) {
     lf_mutex_lock(&env->mutex);
     // Check if already at the previous stop tag.
-    if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {
+    if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {
         // If so, ignore the stop request since the program
         // is already stopping at the current tag.
         lf_mutex_unlock(&env->mutex);
@@ -668,7 +669,7 @@ void _lf_request_stop(environment_t *env) {
     // logical time.
 #else
     // In a non-federated program, the stop_tag will be the next microstep
-    _lf_set_stop_tag((tag_t) {.time = env->current_tag.time, .microstep = env->current_tag.microstep+1});
+    _lf_set_stop_tag(env, (tag_t) {.time = env->current_tag.time, .microstep = env->current_tag.microstep+1});
     // We signal instead of broadcast under the assumption that only
     // one worker thread can call wait_until at a given time because
     // the call to wait_until is protected by a mutex lock
@@ -728,7 +729,7 @@ void _lf_initialize_start_tag(environment_t *env) {
     // If the stop_tag is (0,0), also insert the shutdown
     // reactions. This can only happen if the timeout time
     // was set to 0.
-    if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {
+    if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {
         _lf_trigger_shutdown_reactions(env);
     }
 
@@ -750,7 +751,7 @@ void _lf_initialize_start_tag(environment_t *env) {
             start_time, _lf_fed_STA_offset);
     // Ignore interrupts to this wait. We don't want to start executing until
     // physical time matches or exceeds the logical start time.
-    while (!wait_until(start_time, &event_q_changed)) {}
+    while (!wait_until(start_time, &env->event_q_changed)) {}
     LF_PRINT_DEBUG("Done waiting for start time " PRINTF_TIME ".", start_time);
     LF_PRINT_DEBUG("Physical time is ahead of current time by " PRINTF_TIME ". This should be small.",
             lf_time_physical() - start_time);
@@ -1004,15 +1005,15 @@ void* worker(void* arg) {
  * If DEBUG logging is enabled, prints the status of the event queue,
  * the reaction queue, and the executing queue.
  */
-void lf_print_snapshot() {
+void lf_print_snapshot(environment_t* env) {
     if(LOG_LEVEL > LOG_LEVEL_LOG) {
         LF_PRINT_DEBUG(">>> START Snapshot");
         LF_PRINT_DEBUG("Pending:");
         // pqueue_dump(reaction_q, print_reaction); FIXME: reaction_q is not
         // accessible here
         LF_PRINT_DEBUG("Event queue size: %zu. Contents:",
-                        pqueue_size(event_q));
-        pqueue_dump(event_q, print_reaction);
+                        pqueue_size(env->event_q));
+        pqueue_dump(env->event_q, print_reaction);
         LF_PRINT_DEBUG(">>> END Snapshot");
     }
 }

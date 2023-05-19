@@ -42,6 +42,7 @@
 #include "utils/pqueue.h"
 #include "lf_token.h"
 #include "platform.h"
+#include "vector.h"
 #include "scheduler_instance.h"
 
 /**
@@ -285,11 +286,14 @@ typedef struct environment_t {
     tag_t stop_tag;
     pqueue_t *event_q;
     pqueue_t *recycle_q;
-    pqueue_t *next_w;
+    pqueue_t *next_q;
     bool** _lf_is_present_fields;
     int _lf_is_present_fields_size;
     bool** _lf_is_present_fields_abbreviated;
     int _lf_is_present_fields_abbreviated_size;
+    vector_t _lf_sparse_io_record_sizes;
+    int _lf_count_payload_allocations;
+    trigger_handle_t _lf_handle;
 #ifdef LF_THREADED
     lf_mutex_t mutex;
     lf_cond_t event_q_changed;
@@ -302,6 +306,13 @@ typedef struct environment_t {
     int _lf_intended_tag_fields_size;
 #endif // FEDERATED
 } environment_t;
+
+#define ENVIRONMENT_INIT {\
+    ._lf_handle = 1\
+}
+
+
+
 
 /**
  * The first element of every self struct defined in generated code

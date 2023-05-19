@@ -77,7 +77,7 @@
  * This assumes that the mutex is not held.
  * @param port A pointer to the port struct.
  */
-void _lf_set_present(lf_port_base_t* port);
+void _lf_set_present(environment_t* env, lf_port_base_t* port);
 
 // NOTE: Ports passed to these macros can be cast to:
 // lf_port_base_t: which has the field bool is_present (and more);
@@ -109,7 +109,7 @@ do { \
     /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
     /* even if it is a literal */ \
     out->value = val; \
-    _lf_set_present((lf_port_base_t*)out); \
+    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
     if (((token_template_t*)out)->token != NULL) { \
         /* The cast "*((void**) &out->value)" is a hack to make the code */ \
         /* compile with non-token types where value is not a pointer. */ \
@@ -134,14 +134,14 @@ do { \
 #ifndef __cplusplus
 #define lf_set_array(out, val, length) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value(self->base.environment, (token_template_t*)out, val, length); \
     out->value = token->value; \
 } while(0)
 #else
 #define lf_set_array(out, val, length) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value(self->base.environment, (token_template_t*)out, val, length); \
     out->value = static_cast<decltype(out->value)>(token->value); \
 } while(0)
@@ -164,14 +164,14 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW(out) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token(self->base.environment, (token_template_t*)out, 1); \
     out->value = token->value; \
 } while(0)
 #else
 #define _LF_SET_NEW(out) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token(self->base.environment, (token_template_t*)out, 1); \
     out->value = static_cast<decltype(out->value)>(token->value); \
 } while(0)
@@ -193,7 +193,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token(self->base.environment, (token_template_t*)out, len); \
     out->value = token->value; \
     out->length = len; \
@@ -201,7 +201,7 @@ do { \
 #else
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token(self->base.environment, (token_template_t*)out, len); \
     out->value = static_cast<decltype(out->value)>(token->value); \
     out->length = len; \
@@ -218,7 +218,7 @@ do { \
  */
 #define lf_set_present(out) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
 } while(0)
 
 /**
@@ -233,7 +233,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
     _lf_replace_template_token(self->base.environment, (token_template_t*)out, newtoken); \
     out->value = newtoken->value; \
     out->length = newtoken->length; \
@@ -241,7 +241,7 @@ do { \
 #else
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
     _lf_replace_template_token(self->base.environment, (token_template_t*)out, newtoken); \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
     out->length = newtoken->length; \
@@ -316,7 +316,7 @@ void lf_set_stp_offset(interval_t offset);
  * Print a snapshot of the priority queues used during execution
  * (for debugging).
  */
-void lf_print_snapshot(void);
+void lf_print_snapshot(environment_t* env);
 
 /**
  * Request a stop to execution as soon as possible.
@@ -387,7 +387,7 @@ void _lf_start_time_step(environment_t *env);
  * Generated function that produces a table containing all triggers
  * (i.e., inputs, timers, and actions).
  */
-void _lf_initialize_trigger_objects(void);
+void _lf_initialize_trigger_objects(environment_t* env);
 
 /**
  * Pop all events from event_q with timestamp equal to current_time, extract all

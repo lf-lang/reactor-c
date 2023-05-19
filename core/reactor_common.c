@@ -58,14 +58,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "hashset/hashset_itr.h"
 
 
-environment_t _lf_environment;
+environment_t _lf_environment = ENVIRONMENT_INIT;
 
 // Global variable defined in tag.c:
 // extern tag_t env->current_tag;
 extern instant_t start_time;
 
 // Global variable defined in lf_token.c:
-extern int _lf_count_payload_allocations;
+// extern int _lf_count_payload_allocations;
 
 /**
  * Indicator of whether to wait for physical time to match logical time.
@@ -95,6 +95,7 @@ instant_t duration = -1LL;
  * Indicates whether or not the execution
  * has started.
  */
+// FIXME: Is this ever used?
 bool _lf_execution_started = false;
 
 /**
@@ -105,7 +106,7 @@ bool _lf_execution_started = false;
  *
  * FIXME: This variable might need to be volatile
  */
-tag_t stop_tag = FOREVER_TAG_INITIALIZER;
+// tag_t stop_tag = FOREVER_TAG_INITIALIZER;
 
 /** Indicator of whether the keepalive command-line option was given. */
 bool keepalive_specified = false;
@@ -113,8 +114,8 @@ bool keepalive_specified = false;
 // Define the array of pointers to the _is_present fields of all the
 // self structs that need to be reinitialized at the start of each time step.
 // NOTE: This may have to be resized for a mutation.
-bool** _lf_is_present_fields = NULL;
-int _lf_is_present_fields_size = 0;
+// bool** _lf_is_present_fields = NULL;
+// int _lf_is_present_fields_size = 0;
 
 // Define an array of pointers to the _is_present fields
 // that have been set to true during the execution of a tag
@@ -125,14 +126,14 @@ int _lf_is_present_fields_size = 0;
 // are set multiple times at the same tag. In such cases, we fall back
 // to resetting all is_present fields at the start of the next time
 // step.
-bool** _lf_is_present_fields_abbreviated = NULL;
-int _lf_is_present_fields_abbreviated_size = 0;
+// bool** _lf_is_present_fields_abbreviated = NULL;
+// int _lf_is_present_fields_abbreviated_size = 0;
 
 // Define the array of pointers to the intended_tag fields of all
 // ports and actions that need to be reinitialized at the start
 // of each time step.
-tag_t** _lf_intended_tag_fields = NULL;
-int _lf_intended_tag_fields_size = 0;
+// tag_t** _lf_intended_tag_fields = NULL;
+// int _lf_intended_tag_fields_size = 0;
 
 /**
  * Global STP offset uniformly applied to advancement of each
@@ -151,9 +152,9 @@ interval_t _lf_fed_STA_offset = 0LL;
 // FIXME: The original call to vector_new appears to never have been implemented.
 // Fortunately if it is initialized to all zeros, we avoid undefined behavior.
 // This is a bit of a hack.
-vector_t _lf_sparse_io_record_sizes = {
-    NULL, NULL, NULL, 0, 0
-};
+// vector_t _lf_sparse_io_record_sizes = {
+//     NULL, NULL, NULL, 0, 0
+// };
 
 /**
  * Allocate memory using calloc (so the allocated memory is zeroed out)
@@ -253,9 +254,9 @@ void _lf_free_all_reactors(void) {
  * @note In threaded programs, the mutex must be locked before
  *  calling this function.
  */
-void _lf_set_stop_tag(tag_t tag) {
-    if (lf_tag_compare(tag, stop_tag) < 0) {
-        stop_tag = tag;
+void _lf_set_stop_tag(environment_t* env, tag_t tag) {
+    if (lf_tag_compare(tag, env->stop_tag) < 0) {
+        env->stop_tag = tag;
     }
 }
 
@@ -287,13 +288,13 @@ void lf_set_stp_offset(interval_t offset) {
 // The following is not in scope for reactors:
 
 /** Priority queues. */
-pqueue_t* event_q;     // For sorting by time.
+// pqueue_t* event_q;     // For sorting by time.
 
-static pqueue_t* recycle_q;   // For recycling malloc'd events.
-static pqueue_t* next_q;      // For temporarily storing the next event lined
-                       // up in superdense time.
+// static pqueue_t* recycle_q;   // For recycling malloc'd events.
+// static pqueue_t* next_q;      // For temporarily storing the next event lined
+//                        // up in superdense time.
 
-static trigger_handle_t _lf_handle = 1;
+// static trigger_handle_t _lf_handle = 1;
 
 /**
  * Trigger 'reaction'.
@@ -317,22 +318,22 @@ void _lf_start_time_step(environment_t *env) {
     // Handle dynamically created tokens for mutable inputs.
     _lf_free_token_copies(env);
 
-    bool** is_present_fields = _lf_is_present_fields_abbreviated;
-    int size = _lf_is_present_fields_abbreviated_size;
-    if (_lf_is_present_fields_abbreviated_size > _lf_is_present_fields_size) {
-        size = _lf_is_present_fields_size;
-        is_present_fields = _lf_is_present_fields;
+    bool** is_present_fields = env->_lf_is_present_fields_abbreviated;
+    int size = env->_lf_is_present_fields_abbreviated_size;
+    if (env->_lf_is_present_fields_abbreviated_size > env->_lf_is_present_fields_size) {
+        size = env->_lf_is_present_fields_size;
+        is_present_fields = env->_lf_is_present_fields;
     }
     for(int i = 0; i < size; i++) {
         *is_present_fields[i] = false;
     }
     // Reset sparse IO record sizes to 0, if any.
-    if (_lf_sparse_io_record_sizes.start != NULL) {
-        for (size_t i = 0; i < vector_size(&_lf_sparse_io_record_sizes); i++) {
+    if (env->_lf_sparse_io_record_sizes.start != NULL) {
+        for (size_t i = 0; i < vector_size(&env->_lf_sparse_io_record_sizes); i++) {
             // NOTE: vector_at does not return the element at
             // the index, but rather returns a pointer to that element, which is
             // itself a pointer.
-            int** sizep = (int**)vector_at(&_lf_sparse_io_record_sizes, i);
+            int** sizep = (int**)vector_at(&env->_lf_sparse_io_record_sizes, i);
             if (sizep != NULL && *sizep != NULL) {
                 **sizep = 0;
             }
@@ -340,10 +341,10 @@ void _lf_start_time_step(environment_t *env) {
     }
 
 #ifdef FEDERATED_DECENTRALIZED
-    for (int i = 0; i < _lf_is_present_fields_size; i++) {
+    for (int i = 0; i < env->_lf_is_present_fields_size; i++) {
         // FIXME: For now, an intended tag of (NEVER, 0)
         // indicates that it has never been set.
-        *_lf_intended_tag_fields[i] = (tag_t) {NEVER, 0};
+        *env->_lf_intended_tag_fields[i] = (tag_t) {NEVER, 0};
     }
 #endif
 #ifdef FEDERATED
@@ -351,7 +352,7 @@ void _lf_start_time_step(environment_t *env) {
     // their status is unknown
     reset_status_fields_on_input_port_triggers();
 #endif
-    _lf_is_present_fields_abbreviated_size = 0;
+    env->_lf_is_present_fields_abbreviated_size = 0;
 }
 
 /**
@@ -359,8 +360,8 @@ void _lf_start_time_step(environment_t *env) {
  *
  * @param tag The tag to check against stop tag
  */
-bool _lf_is_tag_after_stop_tag(tag_t tag) {
-    return (lf_tag_compare(tag, stop_tag) > 0);
+bool _lf_is_tag_after_stop_tag(environment_t* env, tag_t tag) {
+    return (lf_tag_compare(tag, env->stop_tag) > 0);
 }
 
 /**
@@ -373,19 +374,19 @@ void _lf_pop_events(environment_t *env) {
     _lf_handle_mode_triggered_reactions();
 #endif
 
-    event_t* event = (event_t*)pqueue_peek(event_q);
+    event_t* event = (event_t*)pqueue_peek(env->event_q);
     while(event != NULL && event->time == env->current_tag.time) {
-        event = (event_t*)pqueue_pop(event_q);
+        event = (event_t*)pqueue_pop(env->event_q);
 
         if (event->is_dummy) {
             LF_PRINT_DEBUG("Popped dummy event from the event queue.");
             if (event->next != NULL) {
                 LF_PRINT_DEBUG("Putting event from the event queue for the next microstep.");
-                pqueue_insert(next_q, event->next);
+                pqueue_insert(env->next_q, event->next);
             }
-            _lf_recycle_event(event);
+            _lf_recycle_event(env, event);
             // Peek at the next event in the event queue.
-            event = (event_t*)pqueue_peek(event_q);
+            event = (event_t*)pqueue_peek(env->event_q);
             continue;
         }
 
@@ -467,13 +468,13 @@ void _lf_pop_events(environment_t *env) {
         // If this event points to a next event, insert it into the next queue.
         if (event->next != NULL) {
             // Insert the next event into the next queue.
-            pqueue_insert(next_q, event->next);
+            pqueue_insert(env->next_q, event->next);
         }
 
-        _lf_recycle_event(event);
+        _lf_recycle_event(env, event);
 
         // Peek at the next event in the event queue.
-        event = (event_t*)pqueue_peek(event_q);
+        event = (event_t*)pqueue_peek(env->event_q);
     };
 
 #ifdef FEDERATED
@@ -482,12 +483,12 @@ void _lf_pop_events(environment_t *env) {
     enqueue_network_control_reactions();
 #endif // FEDERATED
 
-    LF_PRINT_DEBUG("There are %zu events deferred to the next microstep.", pqueue_size(next_q));
+    LF_PRINT_DEBUG("There are %zu events deferred to the next microstep.", pqueue_size(env->next_q));
 
     // After populating the reaction queue, see if there are things on the
     // next queue to put back into the event queue.
-    while(pqueue_peek(next_q) != NULL) {
-        pqueue_insert(event_q, pqueue_pop(next_q));
+    while(pqueue_peek(env->next_q) != NULL) {
+        pqueue_insert(env->event_q, pqueue_pop(env->next_q));
     }
 }
 
@@ -495,9 +496,9 @@ void _lf_pop_events(environment_t *env) {
  * Get a new event. If there is a recycled event available, use that.
  * If not, allocate a new one. In either case, all fields will be zero'ed out.
  */
-static event_t* _lf_get_new_event() {
+static event_t* _lf_get_new_event(environment_t* env) {
     // Recycle event_t structs, if possible.
-    event_t* e = (event_t*)pqueue_pop(recycle_q);
+    event_t* e = (event_t*)pqueue_pop(env->recycle_q);
     if (e == NULL) {
         e = (event_t*)calloc(1, sizeof(struct event_t));
         if (e == NULL) lf_print_error_and_exit("Out of memory!");
@@ -523,7 +524,7 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
         // FIXME: The following check might not be working as
         // intended
         // && (timer->offset != 0 || timer->period != 0)) {
-        event_t* e = _lf_get_new_event();
+        event_t* e = _lf_get_new_event(env);
         e->trigger = timer;
         e->time = lf_time_logical(env) + timer->offset;
         _lf_add_suspended_event(e);
@@ -548,11 +549,11 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
 
     // Get an event_t struct to put on the event queue.
     // Recycle event_t structs, if possible.
-    event_t* e = _lf_get_new_event();
+    event_t* e = _lf_get_new_event(env);
     e->trigger = timer;
     e->time = lf_time_logical(env) + delay;
     // NOTE: No lock is being held. Assuming this only happens at startup.
-    pqueue_insert(event_q, e);
+    pqueue_insert(env->event_q, e);
     tracepoint_schedule(timer, delay); // Trace even though schedule is not called.
 }
 
@@ -560,7 +561,7 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
  * Recycle the given event.
  * Zero it out and pushed it onto the recycle queue.
  */
-void _lf_recycle_event(event_t* e) {
+void _lf_recycle_event(environment_t* env, event_t* e) {
     e->time = 0LL;
     e->trigger = NULL;
     e->pos = 0;
@@ -570,7 +571,7 @@ void _lf_recycle_event(event_t* e) {
     e->intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
 #endif
     e->next = NULL;
-    pqueue_insert(recycle_q, e);
+    pqueue_insert(env->recycle_q, e);
 }
 
 /**
@@ -581,8 +582,8 @@ void _lf_recycle_event(event_t* e) {
  * @param offset The number of dummy events to insert.
  * @return A pointer to the first dummy event.
  */
-event_t* _lf_create_dummy_events(trigger_t* trigger, instant_t time, event_t* next, microstep_t offset) {
-    event_t* first_dummy = _lf_get_new_event();
+event_t* _lf_create_dummy_events(environment_t* env, trigger_t* trigger, instant_t time, event_t* next, microstep_t offset) {
+    event_t* first_dummy = _lf_get_new_event(env);
     event_t* dummy = first_dummy;
     dummy->time = time;
     dummy->is_dummy = true;
@@ -592,7 +593,7 @@ event_t* _lf_create_dummy_events(trigger_t* trigger, instant_t time, event_t* ne
             dummy->next = next;
             break;
         }
-        dummy->next = _lf_get_new_event();
+        dummy->next = _lf_get_new_event(env);
         dummy = dummy->next;
         dummy->time = time;
         dummy->is_dummy = true;
@@ -664,13 +665,13 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
     }
 
     // Do not schedule events if the tag is after the stop tag
-    if (_lf_is_tag_after_stop_tag(tag)) {
+    if (_lf_is_tag_after_stop_tag(env, tag)) {
          lf_print_warning("_lf_schedule_at_tag: event time is past the timeout. Discarding event.");
         _lf_done_using(env, token);
         return -1;
     }
 
-    event_t* e = _lf_get_new_event();
+    event_t* e = _lf_get_new_event(env);
     // Set the event time
     e->time = tag.time;
 
@@ -688,7 +689,7 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
     e->intended_tag = trigger->intended_tag;
 #endif
 
-    event_t* found = (event_t *)pqueue_find_equal_same_priority(event_q, e);
+    event_t* found = (event_t *)pqueue_find_equal_same_priority(env->event_q, e);
     if (found != NULL) {
         if (tag.microstep == 0u) {
                 // The microstep is 0, which means that the event is being scheduled
@@ -702,23 +703,23 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
                         if (found->token != token) {
                             _lf_done_using(env, token);
                         }
-                        _lf_recycle_event(e);
+                        _lf_recycle_event(env, e);
                         return(0);
                         break;
                     case replace:
                         // Replace the payload of the event at the head with our
                         // current payload.
                         _lf_replace_token(env, found, token);
-                        _lf_recycle_event(e);
+                        _lf_recycle_event(env, e);
                         return 0;
                         break;
                     default:
                         // Adding a microstep to the original
                         // intended tag.
-                        if (_lf_is_tag_after_stop_tag((tag_t) {.time=found->time,.microstep=1})) {
+                        if (_lf_is_tag_after_stop_tag(env, (tag_t) {.time=found->time,.microstep=1})) {
                             // Scheduling e will incur a microstep after the stop tag,
                             // which is illegal.
-                            _lf_recycle_event(e);
+                            _lf_recycle_event(env, e);
                             return 0;
                         }
                         if (found->next != NULL) {
@@ -752,7 +753,7 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
                     // then we don't need a dummy. Otherwise, we do.
                     microstep_t undershot_by = (tag.microstep - 1) - microstep_of_found;
                     if (undershot_by > 0) {
-                        found->next = _lf_create_dummy_events(trigger, tag.time, e, undershot_by);
+                        found->next = _lf_create_dummy_events(env, trigger, tag.time, e, undershot_by);
                     } else {
                         found->next = e;
                     }
@@ -770,23 +771,23 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
                         if (found->next->token != token) {
                             _lf_done_using(env, token);
                         }
-                        _lf_recycle_event(e);
+                        _lf_recycle_event(env, e);
                         return 0;
                         break;
                     case replace:
                         // Replace the payload of the event at the head with our
                         // current payload.
                         _lf_replace_token(env, found->next, token);
-                        _lf_recycle_event(e);
+                        _lf_recycle_event(env, e);
                         return 0;
                         break;
                     default:
                         // Adding a microstep to the original
                         // intended tag.
-                        if (_lf_is_tag_after_stop_tag((tag_t){.time=found->time,.microstep=microstep_of_found+1})) {
+                        if (_lf_is_tag_after_stop_tag(env, (tag_t){.time=found->time,.microstep=microstep_of_found+1})) {
                             // Scheduling e will incur a microstep at timeout,
                             // which is illegal.
-                            _lf_recycle_event(e);
+                            _lf_recycle_event(env, e);
                             return 0;
                         }
                         if (found->next->next != NULL) {
@@ -807,11 +808,11 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
                 tag.microstep == 0) {
             // Do not need a dummy event if we are scheduling at 1 microstep
             // in the future at current time or at microstep 0 in a future time.
-            pqueue_insert(event_q, e);
+            pqueue_insert(env->event_q, e);
         } else {
             // Create a dummy event. Insert it into the queue, and let its next
             // pointer point to the actual event.
-            pqueue_insert(event_q, _lf_create_dummy_events(trigger, tag.time, e, relative_microstep));
+            pqueue_insert(env->event_q, _lf_create_dummy_events(env, trigger, tag.time, e, relative_microstep));
         }
     }
     return 1;
@@ -850,7 +851,7 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
  * @return A handle to the event, or 0 if no new event was scheduled, or -1 for error.
  */
 trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
-    if (_lf_is_tag_after_stop_tag(env->current_tag)) {
+    if (_lf_is_tag_after_stop_tag(env, env->current_tag)) {
         // If schedule is called after stop_tag
         // This is a critical condition.
         _lf_done_using(env, token);
@@ -895,7 +896,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
             env->current_tag.time, delay);
     interval_t min_spacing = trigger->period;
 
-    event_t* e = _lf_get_new_event();
+    event_t* e = _lf_get_new_event(env);
 
     // Initialize the next pointer.
     e->next = NULL;
@@ -944,7 +945,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
         // No minimum spacing defined.
         tag_t intended_tag = (tag_t) {.time = intended_time, .microstep = 0u};
         e->time = intended_tag.time;
-        event_t* found = (event_t *)pqueue_find_equal_same_priority(event_q, e);
+        event_t* found = (event_t *)pqueue_find_equal_same_priority(env->event_q, e);
         // Check for conflicts. Let events pile up in super dense time.
         if (found != NULL) {
             intended_tag.microstep++;
@@ -953,11 +954,11 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
                 found = found->next;
                 intended_tag.microstep++;
             }
-            if (_lf_is_tag_after_stop_tag(intended_tag)) {
+            if (_lf_is_tag_after_stop_tag(env, intended_tag)) {
                 LF_PRINT_DEBUG("Attempt to schedule an event after stop_tag was rejected.");
                 // Scheduling an event will incur a microstep
                 // after the stop tag.
-                _lf_recycle_event(e);
+                _lf_recycle_event(env, e);
                 return 0;
             }
             // Hook the event into the list.
@@ -982,12 +983,12 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
                 case drop:
                     LF_PRINT_DEBUG("Policy is drop. Dropping the event.");
                     if (min_spacing > 0 ||
-                            pqueue_find_equal_same_priority(event_q, existing) != NULL) {
+                            pqueue_find_equal_same_priority(env->event_q, existing) != NULL) {
                         // Recycle the new event and the token.
                         if (existing->token != token) {
                             _lf_done_using(env, token);
                         }
-                        _lf_recycle_event(e);
+                        _lf_recycle_event(env, e);
                         return(0);
                     }
                 case replace:
@@ -1003,11 +1004,11 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
                     // been handled yet.
                     if (existing->time > env->current_tag.time ||
                             (existing->time == env->current_tag.time &&
-                            pqueue_find_equal_same_priority(event_q, existing) != NULL)) {
+                            pqueue_find_equal_same_priority(env->event_q, existing) != NULL)) {
                         // Recycle the existing token and the new event
                         // and update the token of the existing event.
                         _lf_replace_token(env, existing, token);
-                        _lf_recycle_event(e);
+                        _lf_recycle_event(env, e);
                         return(0);
                     }
                     // If the preceding event _has_ been handled, then adjust
@@ -1016,11 +1017,11 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
                     break;
                 default:
                     if (existing->time == env->current_tag.time &&
-                            pqueue_find_equal_same_priority(event_q, existing) != NULL) {
-                        if (_lf_is_tag_after_stop_tag((tag_t){.time=existing->time,.microstep=env->current_tag.microstep+1})) {
+                            pqueue_find_equal_same_priority(env->event_q, existing) != NULL) {
+                        if (_lf_is_tag_after_stop_tag(env, (tag_t){.time=existing->time,.microstep=env->current_tag.microstep+1})) {
                             // Scheduling e will incur a microstep at timeout, 
                             // which is illegal.
-                            _lf_recycle_event(e);
+                            _lf_recycle_event(env, e);
                             return 0;
                         }
                         // If the last event hasn't been handled yet, insert
@@ -1054,11 +1055,11 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
 
     // Do not schedule events if if the event time is past the stop time
     // (current microsteps are checked earlier).
-    LF_PRINT_DEBUG("Comparing event with elapsed time " PRINTF_TIME " against stop time " PRINTF_TIME ".", e->time - start_time, stop_tag.time - start_time);
-    if (e->time > stop_tag.time) {
+    LF_PRINT_DEBUG("Comparing event with elapsed time " PRINTF_TIME " against stop time " PRINTF_TIME ".", e->time - start_time, env->stop_tag.time - start_time);
+    if (e->time > env->stop_tag.time) {
         LF_PRINT_DEBUG("_lf_schedule: event time is past the timeout. Discarding event.");
         _lf_done_using(env, token);
-        _lf_recycle_event(e);
+        _lf_recycle_event(env, e);
         return(0);
     }
 
@@ -1076,7 +1077,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     // same time will automatically be executed at the next microstep.
     LF_PRINT_LOG("Inserting event in the event queue with elapsed time " PRINTF_TIME ".",
             e->time - start_time);
-    pqueue_insert(event_q, e);
+    pqueue_insert(env->event_q, e);
 
     tracepoint_schedule(trigger, e->time - env->current_tag.time);
 
@@ -1084,9 +1085,9 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     // NOTE: Rather than wrapping around to get a negative number,
     // we reset the handle on the assumption that much earlier
     // handles are irrelevant.
-    int return_value = _lf_handle++;
-    if (_lf_handle < 0) {
-        _lf_handle = 1;
+    int return_value = env->_lf_handle++;
+    if (env->_lf_handle < 0) {
+        env->_lf_handle = 1;
     }
     return return_value;
 }
@@ -1261,7 +1262,7 @@ void _lf_advance_logical_time(environment_t *env, instant_t next_time) {
     // be a need for a target property that enables these kinds of logic
     // assertions for development purposes only.
     #ifndef NDEBUG
-    event_t* next_event = (event_t*)pqueue_peek(event_q);
+    event_t* next_event = (event_t*)pqueue_peek(env->event_q);
     if (next_event != NULL) {
         if (next_time > next_event->time) {
             lf_print_error_and_exit("_lf_advance_logical_time(): Attempted to move time to " PRINTF_TIME ", which is "
@@ -1670,21 +1671,21 @@ int process_args(int argc, const char* argv[]) {
  * physical time. This also prints a message reporting the start time.
  */
 void initialize(environment_t *env) {
-    _lf_count_payload_allocations = 0;
+    env->_lf_count_payload_allocations = 0;
     _lf_count_token_allocations = 0;
 
     // Initialize our priority queues.
 
-    event_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_reverse_order, get_event_time,
+    env->event_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_reverse_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
     // NOTE: The recycle and next queue does not need to be sorted. But here it is.
-    recycle_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
+    env->recycle_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
-    next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
+    env->next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
 
     // Initialize the trigger table.
-    _lf_initialize_trigger_objects();
+    _lf_initialize_trigger_objects(env);
 
     start_time = lf_time_physical();
     env->current_tag.time = start_time;
@@ -1695,11 +1696,13 @@ void initialize(environment_t *env) {
 
     printf("---- Start execution at time %s---- plus %ld nanoseconds.\n",
             ctime(&physical_time_timespec.tv_sec), physical_time_timespec.tv_nsec);
-    
+    tag_t stop_tag = FOREVER_TAG_INITIALIZER;
     if (duration >= 0LL) {
         // A duration has been specified. Calculate the stop time.
-        _lf_set_stop_tag((tag_t) {.time = env->current_tag.time + duration, .microstep = 0});
+        stop_tag.time = env->current_tag.time + duration;
+        stop_tag.microstep = 0;
     }
+    env->stop_tag = stop_tag;
 }
 
 /**
@@ -1725,9 +1728,9 @@ void termination() {
 #endif
 
     // If the event queue still has events on it, report that.
-    if (event_q != NULL && pqueue_size(event_q) > 0) {
-        lf_print_warning("---- There are %zu unprocessed future events on the event queue.", pqueue_size(event_q));
-        event_t* event = (event_t*)pqueue_peek(event_q);
+    if (env->event_q != NULL && pqueue_size(env->event_q) > 0) {
+        lf_print_warning("---- There are %zu unprocessed future events on the event queue.", pqueue_size(env->event_q));
+        event_t* event = (event_t*)pqueue_peek(env->event_q);
         interval_t event_time = event->time - start_time;
         lf_print_warning("---- The first future event has timestamp " PRINTF_TIME " after start time.", event_time);
     }
@@ -1748,15 +1751,15 @@ void termination() {
     }
     _lf_free_all_tokens(env); // Must be done before freeing reactors.
     // Issue a warning if a memory leak has been detected.
-    if (_lf_count_payload_allocations > 0) {
+    if (env->_lf_count_payload_allocations > 0) {
         lf_print_warning("Memory allocated for messages has not been freed.");
-        lf_print_warning("Number of unfreed messages: %d.", _lf_count_payload_allocations);
+        lf_print_warning("Number of unfreed messages: %d.", env->_lf_count_payload_allocations);
     }
     if (_lf_count_token_allocations > 0) {
         lf_print_warning("Memory allocated for tokens has not been freed!");
         lf_print_warning("Number of unfreed tokens: %d.", _lf_count_token_allocations);
     }
     _lf_free_all_reactors();
-    free(_lf_is_present_fields);
-    free(_lf_is_present_fields_abbreviated);
+    free(env->_lf_is_present_fields);
+    free(env->_lf_is_present_fields_abbreviated);
 }

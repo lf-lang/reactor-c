@@ -34,7 +34,7 @@
  * Counter used to issue a warning if memory is
  * allocated for message payloads and never freed.
  */
-int _lf_count_payload_allocations;
+// int _lf_count_payload_allocations;
 
 #include <stdbool.h>
 #include <assert.h>
@@ -113,7 +113,7 @@ lf_token_t* lf_writable_copy(struct environment_t* env, lf_port_base_t* port) {
     LF_PRINT_DEBUG("lf_writable_copy: Allocated memory for payload (token value): %p", copy);
 
     // Count allocations to issue a warning if this is never freed.
-    _lf_count_payload_allocations++;
+    env->_lf_count_payload_allocations++;
 
     // Create a new, dynamically allocated token.
     lf_token_t* result = _lf_new_token(env, (token_type_t*)port, copy, token->length);
@@ -129,10 +129,10 @@ lf_token_t* lf_writable_copy(struct environment_t* env, lf_port_base_t* port) {
 ////////////////////////////////////////////////////////////////////
 //// Internal functions.
 
-void _lf_free_token_value(lf_token_t* token) {
+void _lf_free_token_value(environment_t* env, lf_token_t* token) {
     if (token->value != NULL) {
         // Count frees to issue a warning if this is never freed.
-        _lf_count_payload_allocations--;
+        env->_lf_count_payload_allocations--;
         // Free the value field (the payload).
         // First check whether the value field is garbage collected (e.g. in the
         // Python target), in which case the payload should not be freed.
@@ -153,7 +153,7 @@ token_freed _lf_free_token(struct environment_t* env, lf_token_t* token) {
     token_freed result = NOT_FREED;
     if (token == NULL) return result;
     if (token->ref_count > 0) return result;
-    _lf_free_token_value(token);
+    _lf_free_token_value(env, token);
 
     // Tokens that are created at the start of execution and associated with
     // output ports or actions persist until they are overwritten.
@@ -224,7 +224,7 @@ lf_token_t* _lf_get_token(struct environment_t* env, token_template_t* tmplt) {
             LF_PRINT_DEBUG("_lf_get_token: Reusing template token: %p with ref_count %zu",
                     tmplt->token, tmplt->token->ref_count);
             // Free any previous value in the token.
-            _lf_free_token_value(tmplt->token);
+            _lf_free_token_value(env, tmplt->token);
             return tmplt->token;
         } else {
             // Liberate the token.
@@ -253,7 +253,7 @@ void _lf_initialize_template(environment_t* env, token_template_t* tmplt, size_t
         if (tmplt->token->ref_count == 1 && tmplt->token->type->element_size == element_size) {
             // Template token is already set.
             // If it has a value, free it.
-            _lf_free_token_value(tmplt->token);
+            _lf_free_token_value(env, tmplt->token);
             // Make sure its reference count is 1 (it should not be 0).
             tmplt->token->ref_count = 1;
             return;
@@ -273,7 +273,7 @@ lf_token_t* _lf_initialize_token_with_value(struct environment_t* env, token_tem
     lf_token_t* result = _lf_get_token(env, tmplt);
     result->value = value;
     // Count allocations to issue a warning if this is never freed.
-    _lf_count_payload_allocations++;
+    env->_lf_count_payload_allocations++;
     result->length = length;
     return result;
 }

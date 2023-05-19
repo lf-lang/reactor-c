@@ -55,7 +55,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Forward declaration of functions and variables supplied by reactor_common.c
 void _lf_trigger_reaction(reaction_t* reaction, int worker_number);
 event_t* _lf_create_dummy_events(trigger_t* trigger, instant_t time, event_t* next, microstep_t offset);
-extern pqueue_t* event_q;
+// extern pqueue_t* event_q;
 
 // ----------------------------------------------------------------------------
 
@@ -435,7 +435,7 @@ void _lf_process_mode_changes(
                             }
                         }
                         // A fresh event was created by schedule, hence, recycle old one
-                        _lf_recycle_event(event);
+                        _lf_recycle_event(env, event);
 
                         // Remove suspended event and continue
                         suspended_event = _lf_remove_suspended_event(suspended_event);
@@ -500,15 +500,15 @@ void _lf_process_mode_changes(
         }
 
         // Retract all events from the event queue that are associated with now inactive modes
-        if (event_q != NULL) {
-            size_t q_size = pqueue_size(event_q);
+        if (env->event_q != NULL) {
+            size_t q_size = pqueue_size(env->event_q);
             if (q_size > 0) {
                 event_t** delayed_removal = (event_t**) calloc(q_size, sizeof(event_t*));
                 size_t delayed_removal_count = 0;
 
                 // Find events
                 for (size_t i = 0; i < q_size; i++) {
-                    event_t* event = (event_t*)event_q->d[i + 1]; // internal queue data structure omits index 0
+                    event_t* event = (event_t*)env->event_q->d[i + 1]; // internal queue data structure omits index 0
                     if (event != NULL && event->trigger != NULL && !_lf_mode_is_active(event->trigger->mode)) {
                         delayed_removal[delayed_removal_count++] = event;
                         // This will store the event including possibly those chained up in super dense time
@@ -520,7 +520,7 @@ void _lf_process_mode_changes(
                 LF_PRINT_DEBUG("Modes: Pulling %zu events from the event queue to suspend them. %d events are now suspended.",
                 		delayed_removal_count, _lf_suspended_events_num);
                 for (size_t i = 0; i < delayed_removal_count; i++) {
-                    pqueue_remove(event_q, delayed_removal[i]);
+                    pqueue_remove(env->event_q, delayed_removal[i]);
                 }
 
                 free(delayed_removal);
@@ -530,7 +530,7 @@ void _lf_process_mode_changes(
         if (_lf_mode_triggered_reactions_request) {
             // Insert a dummy event in the event queue for the next microstep to make
             // sure startup/reset reactions (if any) are triggered as soon as possible.
-            pqueue_insert(event_q, _lf_create_dummy_events(NULL, lf_tag(env).time, NULL, 1));
+            pqueue_insert(env->event_q, _lf_create_dummy_events(NULL, lf_tag(env).time, NULL, 1));
         }
     }
 }

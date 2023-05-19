@@ -16,18 +16,17 @@ extern unsigned int _lf_number_of_workers;
 extern bool fast;
 extern instant_t duration;
 extern bool _lf_execution_started;
-extern tag_t stop_tag;
 extern bool keepalive_specified;
-extern bool** _lf_is_present_fields;
+// extern bool** _lf_is_present_fields;
 extern interval_t _lf_fed_STA_offset;
-extern int _lf_is_present_fields_size;
-extern bool** _lf_is_present_fields_abbreviated;
-extern int _lf_is_present_fields_abbreviated_size;
-extern tag_t** _lf_intended_tag_fields;
-extern int _lf_intended_tag_fields_size;
-extern vector_t _lf_sparse_io_record_sizes;
+// extern int _lf_is_present_fields_size;
+// extern bool** _lf_is_present_fields_abbreviated;
+// extern int _lf_is_present_fields_abbreviated_size;
+// extern tag_t** _lf_intended_tag_fields;
+// extern int _lf_intended_tag_fields_size;
+// extern vector_t _lf_sparse_io_record_sizes;
 
-extern pqueue_t* event_q;
+// extern pqueue_t* event_q;
 
 extern int default_argc;
 extern const char** default_argv;
@@ -52,19 +51,20 @@ void* _lf_new_reactor(size_t size);
 void _lf_free(struct allocation_record_t** head);
 void _lf_free_reactor(self_base_t *self);
 void _lf_free_all_reactors(void);
-void _lf_set_stop_tag(tag_t tag);
+void _lf_set_stop_tag(environment_t* env, tag_t tag);
 extern interval_t lf_get_stp_offset();
 void lf_set_stp_offset(interval_t offset);
 
-extern pqueue_t* event_q;
+// extern pqueue_t* event_q;
 
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number);
 void _lf_start_time_step(environment_t *env);
-bool _lf_is_tag_after_stop_tag(tag_t tag);
+bool _lf_is_tag_after_stop_tag(environment_t* env, tag_t tag);
 void _lf_pop_events(environment_t *env);
 void _lf_initialize_timer(environment_t* env, trigger_t* timer);
-void _lf_recycle_event(event_t* e);
+void _lf_recycle_event(environment_t* env, event_t* e);
 event_t* _lf_create_dummy_events(
+    environment_t* env,
     trigger_t* trigger,
     instant_t time,
     event_t* next,

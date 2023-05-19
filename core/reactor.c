@@ -63,11 +63,11 @@ pqueue_t* reaction_q;
  */
 void _lf_set_present(lf_port_base_t* port) {
 	bool* is_present_field = &port->is_present;
-    if (_lf_is_present_fields_abbreviated_size < _lf_is_present_fields_size) {
-        _lf_is_present_fields_abbreviated[_lf_is_present_fields_abbreviated_size]
+    if (env->_lf_is_present_fields_abbreviated_size < env->_lf_is_present_fields_size) {
+        env->_lf_is_present_fields_abbreviated[env->_lf_is_present_fields_abbreviated_size]
             = is_present_field;
     }
-    _lf_is_present_fields_abbreviated_size++;
+    env->_lf_is_present_fields_abbreviated_size++;
     *is_present_field = true;
 
     // Support for sparse destination multiports.
@@ -99,7 +99,7 @@ int wait_until(instant_t wakeup_time) {
     return 0;
 }
 
-void lf_print_snapshot() {
+void lf_print_snapshot(environment_t* env) {
     if(LOG_LEVEL > LOG_LEVEL_LOG) {
         LF_PRINT_DEBUG(">>> START Snapshot");
         pqueue_dump(reaction_q, reaction_q->prt);
@@ -205,7 +205,7 @@ int _lf_do_step(void) {
     _lf_handle_mode_changes();
 #endif
 
-    if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {
+    if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {
         return 0;
     }
 
@@ -233,7 +233,7 @@ int next(environment_t* env) {
     if (lf_critical_section_enter(env) != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
-    event_t* event = (event_t*)pqueue_peek(event_q);
+    event_t* event = (event_t*)pqueue_peek(env->event_q);
     //pqueue_dump(event_q, event_q->prt);
     // If there is no next event and -keepalive has been specified
     // on the command line, then we will wait the maximum time possible.
@@ -241,7 +241,7 @@ int next(environment_t* env) {
     if (event == NULL) {
         // No event in the queue.
         if (!keepalive_specified) {
-            _lf_set_stop_tag(
+            _lf_set_stop_tag( env,
                 (tag_t){.time=env->current_tag.time, .microstep=env->current_tag.microstep+1}
             );
         }
@@ -255,9 +255,9 @@ int next(environment_t* env) {
         }
     }
 
-    if (_lf_is_tag_after_stop_tag(next_tag)) {
+    if (_lf_is_tag_after_stop_tag(env, next_tag)) {
         // Cannot process events after the stop tag.
-        next_tag = stop_tag;
+        next_tag = env->stop_tag;
     }
 
     LF_PRINT_LOG("Next event (elapsed) time is " PRINTF_TIME ".", next_tag.time - start_time);
@@ -281,7 +281,7 @@ int next(environment_t* env) {
     _lf_advance_logical_time(next_tag.time);
     
     // Trigger shutdown reactions if appropriate.
-    if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {        
+    if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {        
         _lf_trigger_shutdown_reactions(env);
     }
 
@@ -307,7 +307,7 @@ void _lf_request_stop(environmet_t *env) {
 	tag_t new_stop_tag;
 	new_stop_tag.time = env->current_tag.time;
 	new_stop_tag.microstep = env->current_tag.microstep + 1;
-	_lf_set_stop_tag(new_stop_tag);
+	_lf_set_stop_tag(env, new_stop_tag);
 }
 
 /**
@@ -371,7 +371,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         // If the stop_tag is (0,0), also insert the shutdown
         // reactions. This can only happen if the timeout time
         // was set to 0.
-        if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {
+        if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {
             _lf_trigger_shutdown_reactions(env);
         }
         LF_PRINT_DEBUG("Running the program's main loop.");

@@ -397,7 +397,7 @@ int send_timed_message(interval_t additional_delay,
     // Header:  message_type + port_id + federate_id + length of message + timestamp + microstep
     size_t header_length = buffer_head;
 
-    if (_lf_is_tag_after_stop_tag(current_message_intended_tag)) {
+    if (_lf_is_tag_after_stop_tag(env, current_message_intended_tag)) {
         // Message tag is past the timeout time (the stop time) so it should
         // not be sent.
         return 0;
@@ -1704,7 +1704,7 @@ trigger_handle_t schedule_message_received_from_network_already_locked(
     }
     // Notify the main thread in case it is waiting for physical time to elapse.
     LF_PRINT_DEBUG("Broadcasting notification that event queue changed.");
-    lf_cond_broadcast(&event_q_changed);
+    lf_cond_broadcast(&env->event_q_changed);
     return return_value;
 }
 
@@ -2017,7 +2017,7 @@ void handle_tagged_message(int socket, int fed_id) {
 
         // Before that, if the current time >= stop time, discard the message.
         // But only if the stop time is not equal to the start time!
-        if (lf_tag_compare(lf_tag(env), stop_tag) >= 0) {
+        if (lf_tag_compare(lf_tag(env), env->stop_tag) >= 0) {
             lf_mutex_unlock(&mutex);
             lf_print_error("Received message too late. Already at stop tag.\n"
             		"Current tag is " PRINTF_TAG " and intended tag is " PRINTF_TAG ".\n"
@@ -2098,7 +2098,7 @@ void handle_tag_advance_grant() {
 
     _fed.waiting_for_TAG = false;
     // Notify everything that is blocked.
-    lf_cond_broadcast(&event_q_changed);
+    lf_cond_broadcast(&env->event_q_changed);
 
     lf_mutex_unlock(&mutex);
 }
@@ -2175,7 +2175,7 @@ void handle_provisional_tag_advance_grant() {
 
     // Even if we don't modify the event queue, we need to broadcast a change
     // because we do not need to continue to wait for a TAG.
-    lf_cond_broadcast(&event_q_changed);
+    lf_cond_broadcast(&env->event_q_changed);
     // Notify control reactions that are blocked.
     // Check here whether there is any control reaction waiting
     // before broadcasting to avoid an unnecessary broadcast.
@@ -2231,7 +2231,7 @@ void handle_provisional_tag_advance_grant() {
         // Dummy event points to a NULL trigger and NULL real event.
         event_t* dummy = _lf_create_dummy_events(
                 NULL, dummy_event_time, NULL, dummy_event_relative_microstep);
-        pqueue_insert(event_q, dummy);
+        pqueue_insert(env->event_q, dummy);
     }
 
     lf_mutex_unlock(&mutex);
@@ -2313,16 +2313,16 @@ void handle_stop_granted_message() {
         received_stop_tag.microstep++;
     }
 
-    stop_tag = received_stop_tag;
+    env->stop_tag = received_stop_tag;
     LF_PRINT_DEBUG("Setting the stop tag to " PRINTF_TAG ".",
-                stop_tag.time - start_time,
-                stop_tag.microstep);
+                env->stop_tag.time - start_time,
+                env->stop_tag.microstep);
 
     _lf_decrement_global_tag_barrier_locked();
     // We signal instead of broadcast under the assumption that only
     // one worker thread can call wait_until at a given time because
     // the call to wait_until is protected by a mutex lock
-    lf_cond_signal(&event_q_changed);
+    lf_cond_signal(&env->event_q_changed);
     lf_mutex_unlock(&mutex);
 }
 
@@ -2638,7 +2638,7 @@ void synchronize_with_other_federates() {
 
     if (duration >= 0LL) {
         // A duration has been specified. Recalculate the stop time.
-       stop_tag = ((tag_t) {.time = start_time + duration, .microstep = 0});
+       env->stop_tag = ((tag_t) {.time = start_time + duration, .microstep = 0});
     }
 
     // Start a thread to listen for incoming TCP messages from the RTI.
@@ -2835,7 +2835,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
                 // Wait until either something changes on the event queue or
                 // the RTI has responded with a TAG.
                 LF_PRINT_DEBUG("Waiting for a TAG from the RTI.");
-                if (lf_cond_wait(&event_q_changed) != 0) {
+                if (lf_cond_wait(&env->event_q_changed) != 0) {
                     lf_print_error("Wait error.");
                 }
                 // Either a TAG or PTAG arrived or something appeared on the event queue.
@@ -2859,7 +2859,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
             // Create a dummy event that will force this federate to advance time and subsequently enable progress for
             // downstream federates.
             event_t* dummy = _lf_create_dummy_events(NULL, tag.time, NULL, 0);
-            pqueue_insert(event_q, dummy);
+            pqueue_insert(env->event_q, dummy);
         }
 
         LF_PRINT_DEBUG("Inserted a dummy event for logical time " PRINTF_TIME ".",
@@ -2889,7 +2889,7 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply) {
             wait_until_time_ns = original_tag.time;
         }
 
-        lf_cond_timedwait(&event_q_changed, wait_until_time_ns);
+        lf_cond_timedwait(&env->event_q_changed, wait_until_time_ns);
 
         LF_PRINT_DEBUG("Wait finished or interrupted.");
 
