@@ -37,6 +37,7 @@
 #include <assert.h>
 #include <stdbool.h>
 
+#include "platform.h"
 #include "pqueue.h"
 #include "util.h"
 #include "lf_types.h"

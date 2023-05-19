@@ -46,10 +46,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler.h"
 #include "tag.h"
 
+// Global variables defined in tag.c:
+extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
+extern tag_t current_tag;
+extern instant_t start_time;
+
 /**
  * Global mutex and condition variable.
 */
-
 lf_mutex_t mutex;
 lf_cond_t event_q_changed;
 
@@ -137,7 +141,6 @@ void _lf_increment_global_tag_barrier_already_locked(tag_t future_tag) {
         lf_print_warning("Attempting to raise a barrier after the stop tag.");
         future_tag = stop_tag;
     }
-    tag_t current_tag = lf_tag();
     // Check to see if future_tag is actually in the future.
     if (lf_tag_compare(future_tag, current_tag) > 0) {
         // Future tag is actually in the future.
@@ -758,11 +761,6 @@ void _lf_initialize_start_tag() {
     LF_PRINT_DEBUG("Done waiting for start time " PRINTF_TIME ".", start_time);
     LF_PRINT_DEBUG("Physical time is ahead of current time by " PRINTF_TIME ". This should be small.",
             lf_time_physical() - start_time);
-
-    // Reinitialize the physical start time to match the start_time.
-    // Otherwise, reports of lf_time_physical() are not very meaningful
-    // w.r.t. logical time.
-    physical_start_time = start_time;
 
     // Each federate executes the start tag (which is the current
     // tag). Inform the RTI of this if needed.

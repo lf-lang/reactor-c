@@ -34,6 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.h"
 #include "utils/pqueue.h"
 #include "utils/util.h"
+#include "platform.h"
 
 // ********** Priority Queue Support Start
 /**
