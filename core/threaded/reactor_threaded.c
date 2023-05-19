@@ -299,7 +299,7 @@ int _lf_wait_on_global_tag_barrier(tag_t proposed_tag) {
  * @param port A pointer to the port struct.
  */
 void _lf_set_present(lf_port_base_t* port) {
-	bool* is_present_field = &port->is_present;
+	bool* is_present_field = &port->base.is_present;
     int ipfas = lf_atomic_fetch_add(&_lf_is_present_fields_abbreviated_size, 1);
     if (ipfas < _lf_is_present_fields_size) {
         _lf_is_present_fields_abbreviated[ipfas] = is_present_field;

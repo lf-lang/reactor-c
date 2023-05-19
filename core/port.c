@@ -34,6 +34,7 @@
 
 #include "port.h"
 #include "vector.h"
+#include "lf_types.h"
 
 /**
  * Compare two non-negative integers pointed to. Return -1 if a < b, 0 if a == b,
@@ -88,7 +89,7 @@ lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t** port, int w
 	// Fallback is to iterate over all port structs representing channels.
 	int start = 0;
 	while(start < width) {
-		if (port[start]->is_present) {
+		if (port[start]->base.is_present) {
 			result.next = start;
 			return result;
 		}
@@ -129,7 +130,7 @@ int lf_multiport_next(lf_multiport_iterator_t* iterator) {
 		// Fall back to iterate over all port structs representing channels.
 		int start = iterator->next + 1;
 		while(start < iterator->width) {
-			if (iterator->port[start]->is_present) {
+			if (iterator->port[start]->base.is_present) {
 				iterator->next = start;
 				return iterator->next;
 			}

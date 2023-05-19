@@ -320,4 +320,30 @@ typedef struct {
 	trigger_t* trigger;
 } lf_action_internal_t;
 
+/**
+ * @brief Base type for ports.
+ * Port structs are customized types because their payloads are type
+ * specific. This struct represents their common features. Given any
+ * pointer to a port struct, it can be cast to lf_port_base_t and then
+ * these common fields can be accessed.
+ * IMPORTANT: If this is changed, it must also be changed in
+ * CPortGenerator.java generateAuxiliaryStruct().
+ */
+typedef struct lf_port_base_t {
+    lf_port_or_action_t base;
+	lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
+	int destination_channel;              // -1 if there is no destination.
+    int num_destinations;                 // The number of destination reactors this port writes to.
+} lf_port_base_t;
+
+/**
+ * @brief Internal part of the action structs.
+ * HAS TO MATCH lf_port_base_t after the base!
+ */
+typedef struct {
+	lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
+	int destination_channel;              // -1 if there is no destination.
+    int num_destinations;                 // The number of destination reactors this port writes to.
+} lf_port_internal_t;
+
 #endif
