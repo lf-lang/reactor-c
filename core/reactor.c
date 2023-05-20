@@ -62,7 +62,7 @@ pqueue_t* reaction_q;
  * @param port A pointer to the port struct.
  */
 void _lf_set_present(lf_port_base_t* port) {
-	bool* is_present_field = &port->base.is_present;
+	bool* is_present_field = &port->is_present;
     if (_lf_is_present_fields_abbreviated_size < _lf_is_present_fields_size) {
         _lf_is_present_fields_abbreviated[_lf_is_present_fields_abbreviated_size]
             = is_present_field;
