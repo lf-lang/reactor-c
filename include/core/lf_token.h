@@ -64,9 +64,6 @@
 
 #include <stdlib.h> // Defines size_t
 
-// Forward declarations for types in lf_types.h
-typedef struct lf_port_base_t lf_port_base_t;
-
 //////////////////////////////////////////////////////////
 //// Constants and enums
 
@@ -147,6 +144,23 @@ typedef struct token_template_t {
     size_t length;       // The token's length, for convenient access in reactions.
 } token_template_t;
 
+/**
+ * @brief Base type for ports.
+ * Port structs are customized types because their payloads are type
+ * specific. This struct represents their common features. Given any
+ * pointer to a port struct, it can be cast to lf_port_base_t and then
+ * these common fields can be accessed.
+ * IMPORTANT: If this is changed, it must also be changed in
+ * CPortGenerator.java generateAuxiliaryStruct().
+ */
+typedef struct lf_port_base_t {
+	token_template_t tmplt;               // Type and token information (template is a C++ keyword).
+	bool is_present;
+	lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
+	int destination_channel;              // -1 if there is no destination.
+    int num_destinations;                 // The number of destination reactors this port writes to.
+} lf_port_base_t;
+
 //////////////////////////////////////////////////////////
 //// Global variables
 
@@ -209,7 +223,7 @@ lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len);
  * is no need for a writable copy. Return NULL.
  * @param port An input port.
  */
-lf_token_t* lf_writable_copy(struct lf_port_base_t* port);
+lf_token_t* lf_writable_copy(lf_port_base_t* port);
 
 //////////////////////////////////////////////////////////
 //// Functions not intended to be used by users

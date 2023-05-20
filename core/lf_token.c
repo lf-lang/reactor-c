@@ -39,7 +39,7 @@ int _lf_count_payload_allocations;
 #include <stdbool.h>
 #include <assert.h>
 #include <string.h>  // Defines memcpy
-#include "lf_types.h"
+#include "lf_token.h"
 #include "hashset/hashset_itr.h"
 #include "util.h"
 #include "platform.h" // Defines lf_critical_section_enter() and exit.
@@ -76,10 +76,10 @@ lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len) {
     return _lf_new_token((token_type_t*)port_or_action, val, len);
 }
 
-lf_token_t* lf_writable_copy(struct lf_port_base_t* port) {
+lf_token_t* lf_writable_copy(lf_port_base_t* port) {
     assert(port != NULL);
 
-    lf_token_t* token = port->base.tmplt.token;
+    lf_token_t* token = port->tmplt.token;
     if (token == NULL) return NULL;
     LF_PRINT_DEBUG("lf_writable_copy: Requesting writable copy of token %p with reference count %zu.",
             token, token->ref_count);
@@ -92,9 +92,9 @@ lf_token_t* lf_writable_copy(struct lf_port_base_t* port) {
             token->ref_count);
     // Copy the payload.
     void* copy;
-    if (port->base.tmplt.type.copy_constructor == NULL) {
+    if (port->tmplt.type.copy_constructor == NULL) {
         LF_PRINT_DEBUG("lf_writable_copy: Copy constructor is NULL. Using default strategy.");
-        size_t size = port->base.tmplt.type.element_size * token->length;
+        size_t size = port->tmplt.type.element_size * token->length;
         if (size == 0) {
             return token;
         }
@@ -103,11 +103,11 @@ lf_token_t* lf_writable_copy(struct lf_port_base_t* port) {
         memcpy(copy, token->value, size);
     } else {
         LF_PRINT_DEBUG("lf_writable_copy: Copy constructor is not NULL. Using copy constructor.");
-        if (port->base.tmplt.type.destructor == NULL) {
+        if (port->tmplt.type.destructor == NULL) {
             lf_print_warning("lf_writable_copy: Using non-default copy constructor "
                     "without setting destructor. Potential memory leak.");
         }
-        copy = port->base.tmplt.type.copy_constructor(token->value);
+        copy = port->tmplt.type.copy_constructor(token->value);
     }
     LF_PRINT_DEBUG("lf_writable_copy: Allocated memory for payload (token value): %p", copy);
 
