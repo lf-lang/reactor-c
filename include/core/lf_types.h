@@ -267,8 +267,8 @@ struct trigger_t {
  * pointer to allocated memory, rather than directly to the allocated memory.
  */
 typedef struct allocation_record_t {
-	void* allocated;
-	struct allocation_record_t *next;
+    void* allocated;
+    struct allocation_record_t *next;
 } allocation_record_t;
 
 /**
@@ -281,8 +281,8 @@ typedef struct allocation_record_t {
  * memory using {@link _lf_allocate(size_t,size_t,self_base_t*)}.
  */
 typedef struct self_base_t {
-	struct allocation_record_t *allocations;
-	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
+    struct allocation_record_t *allocations;
+    struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
 #ifdef LF_THREADED
     void* reactor_mutex; // If not null, this is expected to point to an lf_mutex_t.
                           // It is not declared as such to avoid a dependence on platform.h.
@@ -293,31 +293,34 @@ typedef struct self_base_t {
 } self_base_t;
 
 /**
- * @brief Base struct for ports and actions.
- */
-typedef struct {
-	token_template_t tmplt;    // Type and token information (template is a C++ keyword).
-    bool is_present;
-    self_base_t* parent;
-} lf_port_or_action_t;
-
-/**
  * Action structs are customized types because their payloads are type
  * specific.  This struct represents their common features. Given any
  * pointer to an action struct, it can be cast to lf_action_base_t,
  * to token_template_t, or to token_type_t to access these common fields.
  */
 typedef struct {
-	lf_port_or_action_t base;
-	trigger_t* trigger;        // THIS HAS TO MATCH lf_action_internal_t
-	bool has_value;
+    token_template_t tmplt;    // Type and token information (template is a C++ keyword).
+    bool is_present;
+    trigger_t* trigger;        // THIS HAS TO MATCH lf_action_internal_t
+    self_base_t* parent;
+    bool has_value;
 } lf_action_base_t;
 
 /**
  * Internal part of the action structs.
  */
 typedef struct {
-	trigger_t* trigger;
+    trigger_t* trigger;
 } lf_action_internal_t;
+
+/**
+  * @brief Internal part of the action structs.
+  * HAS TO MATCH lf_port_base_t after the base!
+  */
+typedef struct {
+    lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
+    int destination_channel;              // -1 if there is no destination.
+    int num_destinations;                 // The number of destination reactors this port writes to.
+} lf_port_internal_t;
 
 #endif
