@@ -278,6 +278,10 @@ typedef struct allocation_record_t {
 typedef struct self_base_t {
 	struct allocation_record_t *allocations;
 	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
+#ifdef LF_THREADED
+    void* reactor_mutex; // If not null, this is expected to point to an lf_mutex_t.
+                          // It is not declared as such to avoid a dependence on platform.h.
+#endif
 #ifdef MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif

@@ -23,7 +23,6 @@
 #include <strings.h>    // Defines bzero().
 #include <assert.h>
 #include <sys/wait.h>   // Defines wait() for process to change state.
-#include <pthread.h>
 
 #include "platform.h"   // Platform-specific types and functions
 #include "util.h" // Defines print functions (e.g., lf_print).
@@ -71,7 +70,7 @@ typedef enum fed_state_t {
  */
 typedef struct federate_t {
     uint16_t id;            // ID of this federate.
-    pthread_t thread_id;    // The ID of the thread handling communication with this federate.
+    lf_thread_t thread_id;    // The ID of the thread handling communication with this federate.
     int socket;             // The TCP socket descriptor for communicating with this federate.
     struct sockaddr_in UDP_addr;           // The UDP address for the federate.
     bool clock_synchronization_enabled;    // Indicates the status of clock synchronization
@@ -117,15 +116,6 @@ typedef enum clock_sync_stat {
  * corresponding federates' state.
  */
 typedef struct RTI_instance_t {
-    // The main mutex lock.
-    pthread_mutex_t rti_mutex;
-
-    // Condition variable used to signal receipt of all proposed start times.
-    pthread_cond_t received_start_times;
-
-    // Condition variable used to signal that a start time has been sent to a federate.
-    pthread_cond_t sent_start_time;
-
     // RTI's decided stop tag for federates
     tag_t max_stop_tag;
 
@@ -180,7 +170,7 @@ typedef struct RTI_instance_t {
 
     /************* Clock synchronization information *************/
     /* Thread performing PTP clock sync sessions periodically. */
-    pthread_t clock_thread;
+    lf_thread_t clock_thread;
 
     /**
      * Indicates whether clock sync is globally on for the federation. Federates
@@ -208,6 +198,21 @@ typedef struct RTI_instance_t {
      */
     bool tracing_enabled;
 } RTI_instance_t;
+
+/**
+ * The main mutex lock for the RTI.
+ */ 
+extern lf_mutex_t rti_mutex;
+
+/**
+ * Condition variable used to signal receipt of all proposed start times.
+ */
+extern lf_cond_t received_start_times;
+
+/**
+ * Condition variable used to signal that a start time has been sent to a federate.
+ */
+extern lf_cond_t sent_start_time;
 
 /**
  * Enter a critical section where logical time and the event queue are guaranteed
