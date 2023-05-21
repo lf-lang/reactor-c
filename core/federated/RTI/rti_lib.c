@@ -496,15 +496,18 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
 }
 
 void send_upstream_next_downstream_event_tag(federate_t* fed, tag_t next_event_tag) {
-    // Fixme: Fill this function.
+    // TODO: Fill this function.
     // The RTI receives next_event_tag from the federated fed. 
     // It has to send NDET messages to the upstream federates of fed
     // if the LTC message from an upstream federate is ealrier than the next_event_tag.
+    unsigned char next_downstream_event_tag_buffer[MSG_TYPE_NEXT_DOWNSTREAM_EVENT_TAG_LENGTH];
+    ENCODE_NEXT_DOWNSTREAM_EVENT_TAG(next_downstream_event_tag_buffer, next_event_tag.time, next_event_tag.microstep);
 
     for (int i = 0; i < fed->num_upstream; i++) {
         if (lf_tag_compare(_RTI.federates[i].completed, next_event_tag) < 0) {
-            // completed or granted?
             // send next downstream event tag to the _RTI.federates[i]
+            write_to_socket_errexit(_RTI.federates[i].socket, MSG_TYPE_NEXT_DOWNSTREAM_EVENT_TAG_LENGTH, next_downstream_event_tag_buffer,
+                    "RTI failed to send MSG_TYPE_NEXT_DOWNSTREAM_EVENT_TAG message to federate %d.", _RTI.federates[i].id);            
         }
     }
 }
