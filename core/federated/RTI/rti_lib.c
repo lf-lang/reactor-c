@@ -213,7 +213,7 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag) {
     if (_RTI.tracing_enabled) {
         tracepoint_RTI_to_federate(send_TAG, fed->enclave.id, &tag);
     }
-    // This function is called in send_advance_grant_if_safe(), which is a long
+    // This function is called in notify_advance_grant_if_safe(), which is a long
     // function. During this call, the socket might close, causing the following write_to_socket
     // to fail. Consider a failure here a soft failure and update the federate's status.
     ssize_t bytes_written = write_to_socket(fed->socket, message_length, buffer);
@@ -294,7 +294,7 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
     if (_RTI.tracing_enabled){
         tracepoint_RTI_to_federate(send_PTAG, fed->enclave.id, &tag);
     }
-    // This function is called in send_advance_grant_if_safe(), which is a long
+    // This function is called in notify_advance_grant_if_safe(), which is a long
     // function. During this call, the socket might close, causing the following write_to_socket
     // to fail. Consider a failure here a soft failure and update the federate's status.
     ssize_t bytes_written = write_to_socket(fed->socket, message_length, buffer);
@@ -343,120 +343,14 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
     }
 }
 
-bool send_advance_grant_if_safe(federate_t* fed) {
-
-    // Find the earliest LTC of upstream federates.
-    tag_t min_upstream_completed = FOREVER_TAG;
-
-    for (int j = 0; j < fed->enclave.num_upstream; j++) {
-        federate_t* upstream = &_RTI.federates[fed->enclave.upstream[j]];
-
-        // Ignore this federate if it has resigned.
-        if (upstream->enclave.state == NOT_CONNECTED) continue;
-
-        tag_t candidate = lf_delay_tag(upstream->enclave.completed, fed->enclave.upstream_delay[j]);
-
-        if (lf_tag_compare(candidate, min_upstream_completed) < 0) {
-            min_upstream_completed = candidate;
+void notify_advance_grant_if_safe(enclave_t* e) {
+    tag_advance_grant_t grant = tag_advance_grant_if_safe(e);
+    if (lf_tag_compare(grant.tag, NEVER_TAG) != 0) {
+        if (grant.is_provisional) {
+            send_provisional_tag_advance_grant((federate_t*)e, grant.tag);
+        } else {
+            send_tag_advance_grant((federate_t*)e, grant.tag);
         }
-    }
-    LF_PRINT_LOG("Minimum upstream LTC for fed %d is (%lld, %u) "
-            "(adjusted by after delay).",
-            fed->enclave.id,
-            min_upstream_completed.time - start_time, min_upstream_completed.microstep);
-    if (lf_tag_compare(min_upstream_completed, fed->enclave.last_granted) > 0
-        && lf_tag_compare(min_upstream_completed, fed->enclave.next_event) >= 0 // The federate has to advance its tag
-    ) {
-        send_tag_advance_grant(fed, min_upstream_completed);
-        return true;
-    }
-
-    // Can't make progress based only on upstream LTCs.
-    // If all (transitive) upstream federates of the federate
-    // have earliest event tags such that the
-    // federate can now advance its tag, then send it a TAG message.
-    // Find the earliest event time of each such upstream federate,
-    // adjusted by delays on the connections.
-
-    // To handle cycles, need to create a boolean array to keep
-    // track of which upstream federates have been visited.
-    bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
-
-    // Find the tag of the earliest possible incoming message from
-    // upstream federates.
-    tag_t t_d = FOREVER_TAG;
-    LF_PRINT_DEBUG("NOTE: FOREVER is displayed as (%lld, %u) and NEVER as (%lld, %u)",
-            FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
-            NEVER - start_time, 0u);
-
-    for (int j = 0; j < fed->enclave.num_upstream; j++) {
-        federate_t* upstream = &_RTI.federates[fed->enclave.upstream[j]];
-
-        // Ignore this federate if it has resigned.
-        if (upstream->enclave.state == NOT_CONNECTED) continue;
-
-        // Find the (transitive) next event tag upstream.
-        tag_t upstream_next_event = transitive_next_event(
-                upstream, upstream->enclave.next_event, visited);
-
-        LF_PRINT_DEBUG("Earliest next event upstream of fed %d at fed %d has tag (%lld, %u).",
-                fed->enclave.id,
-                upstream->enclave.id,
-                upstream_next_event.time - start_time, upstream_next_event.microstep);
-
-        // Adjust by the "after" delay.
-        // Note that "no delay" is encoded as NEVER,
-        // whereas one microstep delay is encoded as 0LL.
-        tag_t candidate = lf_delay_tag(upstream_next_event, fed->enclave.upstream_delay[j]);
-
-        if (lf_tag_compare(candidate, t_d) < 0) {
-            t_d = candidate;
-        }
-    }
-    free(visited);
-
-    LF_PRINT_LOG("Earliest next event upstream has tag (%lld, %u).",
-            t_d.time - start_time, t_d.microstep);
-
-    if (
-        lf_tag_compare(t_d, fed->enclave.next_event) > 0       // The federate has something to do.
-        && lf_tag_compare(t_d, fed->enclave.last_provisionally_granted) >= 0  // The grant is not redundant
-                                                                      // (equal is important to override any previous
-                                                                      // PTAGs).
-        && lf_tag_compare(t_d, fed->enclave.last_granted) > 0  // The grant is not redundant.
-    ) {
-        // All upstream federates have events with a larger tag than fed, so it is safe to send a TAG.
-        LF_PRINT_LOG("Earliest upstream message time for fed %d is " PRINTF_TAG
-                "(adjusted by after delay). Granting tag advance for " PRINTF_TAG,
-                fed->enclave.id,
-                t_d.time - lf_time_start(), t_d.microstep,
-                fed->enclave.next_event.time - lf_time_start(),
-                fed->enclave.next_event.microstep);
-        send_tag_advance_grant(fed, fed->enclave.next_event);
-    } else if (
-        lf_tag_compare(t_d, fed->enclave.next_event) == 0      // The federate has something to do.
-        && lf_tag_compare(t_d, fed->enclave.last_provisionally_granted) > 0  // The grant is not redundant.
-        && lf_tag_compare(t_d, fed->enclave.last_granted) > 0  // The grant is not redundant.
-    ) {
-        // Some upstream federate has an event that has the same tag as fed's next event, so we can only provisionally
-        // grant a TAG (via a PTAG).
-        LF_PRINT_LOG("Earliest upstream message time for fed %d is " PRINTF_TAG
-            " (adjusted by after delay). Granting provisional tag advance.",
-            fed->enclave.id,
-            t_d.time - start_time, t_d.microstep);
-
-        send_provisional_tag_advance_grant(fed, t_d);
-    }
-    return false;
-}
-
-void send_downstream_advance_grants_if_safe(federate_t* fed, bool visited[]) {
-    visited[fed->enclave.id] = true;
-    for (int i = 0; i < fed->enclave.num_downstream; i++) {
-        federate_t* downstream = &_RTI.federates[fed->enclave.downstream[i]];
-        if (visited[downstream->enclave.id]) continue;
-        send_advance_grant_if_safe(downstream);
-        send_downstream_advance_grants_if_safe(downstream, visited);
     }
 }
 
@@ -483,13 +377,13 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
     // If the federate has no upstream federates, then it does not wait for
     // nor expect a reply. It just proceeds to advance time.
     if (_RTI.federates[federate_id].enclave.num_upstream > 0) {
-        send_advance_grant_if_safe(&_RTI.federates[federate_id]);
+        notify_advance_grant_if_safe(&_RTI.federates[federate_id]);
     }
     // Check downstream federates to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream federates have been visited.
     bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
-    send_downstream_advance_grants_if_safe(&_RTI.federates[federate_id], visited);
+    notify_downstream_advance_grant_if_safe(&_RTI.federates[federate_id], visited);
     free(visited);
 }
 
@@ -1209,7 +1103,7 @@ void handle_federate_resign(federate_t *my_fed) {
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream federates have been visited.
     bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
-    send_downstream_advance_grants_if_safe(my_fed, visited);
+    notify_downstream_advance_grant_if_safe(my_fed, visited);
     free(visited);
 
     lf_mutex_unlock(&rti_mutex);
@@ -1263,8 +1157,8 @@ void* federate_thread_TCP(void* fed) {
             case MSG_TYPE_STOP_REQUEST:
                 handle_stop_request_message(my_fed); // FIXME: Reviewed until here.
                                                      // Need to also look at
-                                                     // send_advance_grant_if_safe()
-                                                     // and send_downstream_advance_grants_if_safe()
+                                                     // notify_advance_grant_if_safe()
+                                                     // and notify_downstream_advance_grant_if_safe()
                 break;
             case MSG_TYPE_STOP_REQUEST_REPLY:
                 handle_stop_request_reply(my_fed);

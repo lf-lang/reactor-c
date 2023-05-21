@@ -48,4 +48,60 @@ typedef struct enclave_t {
 // FIXME: Docs
 void logical_tag_complete(enclave_t* enclave, tag_t completed);
 
+typedef struct {
+    tag_t tag;           // NEVER if there is no tag advance grant.
+    bool is_provisional; // True for PTAG, false for TAG.
+} tag_advance_grant_t;
+
+/**
+ * For all enclaves downstream of the specified enclave, determine
+ * whether they should be notified of a TAG or PTAG and notify them if so.
+ *
+ * This assumes the caller holds the mutex.
+ *
+ * @param e The upstream enclave.
+ * @param visited An array of booleans used to determine whether an enclave has
+ *  been visited (initially all false).
+ */
+void notify_downstream_advance_grant_if_safe(enclave_t* e, bool visited[]);
+
+/**
+ * @brief Either send to a federate or unblock an enclave to give it a tag.
+ * This function requires two different implementations, one for enclaves
+ * and one for federates.
+ * FIXME: This is only implemented for federates right now.
+ * @param e The enclave.
+ */
+void notify_advance_grant_if_safe(enclave_t* e);
+
+/**
+ * Determine whether the specified enclave is eligible for a tag advance grant,
+ * (TAG) and, if so, return the details. This is called upon receiving a LTC, NET
+ * or resign from an upstream enclave.
+ *
+ * This function calculates the minimum M over
+ * all upstream enclaves of the "after" delay plus the most recently
+ * received LTC from that enclave. If M is greater than the
+ * most recent TAG to e or greater than or equal to the most
+ * recent PTAG, then return TAG(M).
+ *
+ * If the above conditions do not result in returning a TAG, then find the
+ * minimum M of the earliest possible future message from upstream federates.
+ * This is calculated by transitively looking at the most recently received
+ * NET calls from upstream enclaves.
+ * If M is greater than the NET of e or the most recent PTAG to e, then
+ * return a TAG with tag equal to the NET of e or the PTAG.
+ * If M is equal to the NET of the federate, then return PTAG(M).
+ *
+ * This should be called whenever an immediately upstream federate sends to
+ * the RTI an LTC (Logical Tag Complete), or when a transitive upstream
+ * federate sends a NET (Next Event Tag) message.
+ * It is also called when an upstream federate resigns from the federation.
+ *
+ * This function assumes that the caller holds the mutex lock.
+ *
+ * @return True if the TAG message is sent and false otherwise.
+ */
+tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e);
+
 #endif // ENCLAVE_H

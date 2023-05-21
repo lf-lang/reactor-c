@@ -260,49 +260,6 @@ tag_t transitive_next_event(federate_t* fed, tag_t candidate, bool visited[]);
 void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag);
 
 /**
- * Determine whether the specified federate fed is eligible for a tag advance grant,
- * (TAG) and, if so, send it one. This is called upon receiving a LTC, NET
- * or resign from an upstream federate.
- *
- * This function calculates the minimum M over
- * all upstream federates of the "after" delay plus the most recently
- * received LTC from that federate. If M is greater than the
- * most recently sent TAG to fed or greater than or equal to the most
- * recently sent PTAG, then send a TAG(M) to fed and return.
- *
- * If the above conditions do not result in sending a TAG, then find the
- * minimum M of the earliest possible future message from upstream federates.
- * This is calculated by transitively looking at the most recently received
- * NET message from upstream federates.
- * If M is greater than the NET of the federate fed or the most recently
- * sent PTAG to that federate, then
- * send TAG to the federate with tag equal to the NET of fed or the PTAG.
- * If M is equal to the NET of the federate, then send PTAG(M).
- *
- * This should be called whenever an immediately upstream federate sends to
- * the RTI an LTC (Logical Tag Complete), or when a transitive upstream
- * federate sends a NET (Next Event Tag) message.
- * It is also called when an upstream federate resigns from the federation.
- *
- * This function assumes that the caller holds the mutex lock.
- *
- * @return True if the TAG message is sent and false otherwise.
- */
-bool send_advance_grant_if_safe(federate_t* fed);
-
-/**
- * For all federates downstream of the specified federate, determine
- * whether they should be sent a TAG or PTAG and send it if so.
- *
- * This assumes the caller holds the mutex.
- *
- * @param fed The upstream federate.
- * @param visited An array of booleans used to determine whether a federate has
- *  been visited (initially all false).
- */
-void send_downstream_advance_grants_if_safe(federate_t* fed, bool visited[]);
-
-/**
  * @brief Update the next event tag of federate `federate_id`.
  *
  * It will update the recorded next event tag of federate `federate_id` to the minimum of `next_event_tag` and the
