@@ -192,15 +192,15 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
 }
 
 void send_tag_advance_grant(federate_t* fed, tag_t tag) {
-    if (fed->state == NOT_CONNECTED
-            || lf_tag_compare(tag, fed->last_granted) <= 0
-            || lf_tag_compare(tag, fed->last_provisionally_granted) < 0
+    if (fed->enclave.state == NOT_CONNECTED
+            || lf_tag_compare(tag, fed->enclave.last_granted) <= 0
+            || lf_tag_compare(tag, fed->enclave.last_provisionally_granted) < 0
     ) {
         return;
     }
     // Need to make sure that the destination federate's thread has already
     // sent the starting MSG_TYPE_TIMESTAMP message.
-    while (_RTI.federates[fed->id].state == PENDING) {
+    while (_RTI.federates[fed->enclave.id].enclave.state == PENDING) {
         // Need to wait here.
         lf_cond_wait(&sent_start_time);
     }
@@ -211,35 +211,35 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag) {
     encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_to_federate(send_TAG, fed->id, &tag);
+        tracepoint_RTI_to_federate(send_TAG, fed->enclave.id, &tag);
     }
     // This function is called in send_advance_grant_if_safe(), which is a long
     // function. During this call, the socket might close, causing the following write_to_socket
     // to fail. Consider a failure here a soft failure and update the federate's status.
     ssize_t bytes_written = write_to_socket(fed->socket, message_length, buffer);
     if (bytes_written < (ssize_t)message_length) {
-        lf_print_error("RTI failed to send tag advance grant to federate %d.", fed->id);
+        lf_print_error("RTI failed to send tag advance grant to federate %d.", fed->enclave.id);
         if (bytes_written < 0) {
-            fed->state = NOT_CONNECTED;
+            fed->enclave.state = NOT_CONNECTED;
             // FIXME: We need better error handling, but don't stop other execution here.
             // mark_federate_requesting_stop(fed);
         }
     } else {
-        fed->last_granted = tag;
+        fed->enclave.last_granted = tag;
         LF_PRINT_LOG("RTI sent to federate %d the tag advance grant (TAG) (%lld, %u).",
-                fed->id, tag.time - start_time, tag.microstep);
+                fed->enclave.id, tag.time - start_time, tag.microstep);
     }
 }
 
 tag_t transitive_next_event(federate_t* fed, tag_t candidate, bool visited[]) {
-    if (visited[fed->id] || fed->state == NOT_CONNECTED) {
+    if (visited[fed->enclave.id] || fed->enclave.state == NOT_CONNECTED) {
         // Federate has stopped executing or we have visited it before.
         // No point in checking upstream federates.
         return candidate;
     }
 
-    visited[fed->id] = true;
-    tag_t result = fed->next_event;
+    visited[fed->enclave.id] = true;
+    tag_t result = fed->enclave.next_event;
 
     // If the candidate is less than this federate's next_event, use the candidate.
     if (lf_tag_compare(candidate, result) < 0) {
@@ -254,34 +254,34 @@ tag_t transitive_next_event(federate_t* fed, tag_t candidate, bool visited[]) {
 
     // Check upstream federates to see whether any of them might send
     // an event that would result in an earlier next event.
-    for (int i = 0; i < fed->num_upstream; i++) {
+    for (int i = 0; i < fed->enclave.num_upstream; i++) {
         tag_t upstream_result = transitive_next_event(
-                &_RTI.federates[fed->upstream[i]], result, visited);
+                &_RTI.federates[fed->enclave.upstream[i]], result, visited);
 
         // Add the "after" delay of the connection to the result.
-        upstream_result = lf_delay_tag(upstream_result, fed->upstream_delay[i]);
+        upstream_result = lf_delay_tag(upstream_result, fed->enclave.upstream_delay[i]);
 
         // If the adjusted event time is less than the result so far, update the result.
         if (lf_tag_compare(upstream_result, result) < 0) {
             result = upstream_result;
         }
     }
-    if (lf_tag_compare(result, fed->completed) < 0) {
-        result = fed->completed;
+    if (lf_tag_compare(result, fed->enclave.completed) < 0) {
+        result = fed->enclave.completed;
     }
     return result;
 }
 
 void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
-    if (fed->state == NOT_CONNECTED
-            || lf_tag_compare(tag, fed->last_granted) <= 0
-            || lf_tag_compare(tag, fed->last_provisionally_granted) <= 0
+    if (fed->enclave.state == NOT_CONNECTED
+            || lf_tag_compare(tag, fed->enclave.last_granted) <= 0
+            || lf_tag_compare(tag, fed->enclave.last_provisionally_granted) <= 0
     ) {
         return;
     }
     // Need to make sure that the destination federate's thread has already
     // sent the starting MSG_TYPE_TIMESTAMP message.
-    while (_RTI.federates[fed->id].state == PENDING) {
+    while (_RTI.federates[fed->enclave.id].enclave.state == PENDING) {
         // Need to wait here.
         lf_cond_wait(&sent_start_time);
     }
@@ -292,7 +292,7 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
     encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));
 
     if (_RTI.tracing_enabled){
-        tracepoint_RTI_to_federate(send_PTAG, fed->id, &tag);
+        tracepoint_RTI_to_federate(send_PTAG, fed->enclave.id, &tag);
     }
     // This function is called in send_advance_grant_if_safe(), which is a long
     // function. During this call, the socket might close, causing the following write_to_socket
@@ -300,16 +300,16 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
     ssize_t bytes_written = write_to_socket(fed->socket, message_length, buffer);
 
     if (bytes_written < (ssize_t)message_length) {
-        lf_print_error("RTI failed to send tag advance grant to federate %d.", fed->id);
+        lf_print_error("RTI failed to send tag advance grant to federate %d.", fed->enclave.id);
         if (bytes_written < 0) {
-            fed->state = NOT_CONNECTED;
+            fed->enclave.state = NOT_CONNECTED;
             // FIXME: We need better error handling, but don't stop other execution here.
             // mark_federate_requesting_stop(fed);
         }
     } else {
-        fed->last_provisionally_granted = tag;
+        fed->enclave.last_provisionally_granted = tag;
         LF_PRINT_LOG("RTI sent to federate %d the Provisional Tag Advance Grant (PTAG) (%lld, %u).",
-                fed->id, tag.time - start_time, tag.microstep);
+                fed->enclave.id, tag.time - start_time, tag.microstep);
 
         // Send PTAG to all upstream federates, if they have not had
         // a later or equal PTAG or TAG sent previously and if their transitive
@@ -317,11 +317,11 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
         // NOTE: This could later be replaced with a TNET mechanism once
         // we have an available encoding of causality interfaces.
         // That might be more efficient.
-        for (int j = 0; j < fed->num_upstream; j++) {
-            federate_t* upstream = &_RTI.federates[fed->upstream[j]];
+        for (int j = 0; j < fed->enclave.num_upstream; j++) {
+            federate_t* upstream = &_RTI.federates[fed->enclave.upstream[j]];
 
             // Ignore this federate if it has resigned.
-            if (upstream->state == NOT_CONNECTED) continue;
+            if (upstream->enclave.state == NOT_CONNECTED) continue;
 
             // To handle cycles, need to create a boolean array to keep
             // track of which upstream federates have been visited.
@@ -329,7 +329,7 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
 
             // Find the (transitive) next event tag upstream.
             tag_t upstream_next_event = transitive_next_event(
-                    upstream, upstream->next_event, visited);
+                    upstream, upstream->enclave.next_event, visited);
             free(visited);
 
             // If these tags are equal, then
@@ -348,13 +348,13 @@ bool send_advance_grant_if_safe(federate_t* fed) {
     // Find the earliest LTC of upstream federates.
     tag_t min_upstream_completed = FOREVER_TAG;
 
-    for (int j = 0; j < fed->num_upstream; j++) {
-        federate_t* upstream = &_RTI.federates[fed->upstream[j]];
+    for (int j = 0; j < fed->enclave.num_upstream; j++) {
+        federate_t* upstream = &_RTI.federates[fed->enclave.upstream[j]];
 
         // Ignore this federate if it has resigned.
-        if (upstream->state == NOT_CONNECTED) continue;
+        if (upstream->enclave.state == NOT_CONNECTED) continue;
 
-        tag_t candidate = lf_delay_tag(upstream->completed, fed->upstream_delay[j]);
+        tag_t candidate = lf_delay_tag(upstream->enclave.completed, fed->enclave.upstream_delay[j]);
 
         if (lf_tag_compare(candidate, min_upstream_completed) < 0) {
             min_upstream_completed = candidate;
@@ -362,10 +362,10 @@ bool send_advance_grant_if_safe(federate_t* fed) {
     }
     LF_PRINT_LOG("Minimum upstream LTC for fed %d is (%lld, %u) "
             "(adjusted by after delay).",
-            fed->id,
+            fed->enclave.id,
             min_upstream_completed.time - start_time, min_upstream_completed.microstep);
-    if (lf_tag_compare(min_upstream_completed, fed->last_granted) > 0
-        && lf_tag_compare(min_upstream_completed, fed->next_event) >= 0 // The federate has to advance its tag
+    if (lf_tag_compare(min_upstream_completed, fed->enclave.last_granted) > 0
+        && lf_tag_compare(min_upstream_completed, fed->enclave.next_event) >= 0 // The federate has to advance its tag
     ) {
         send_tag_advance_grant(fed, min_upstream_completed);
         return true;
@@ -389,25 +389,25 @@ bool send_advance_grant_if_safe(federate_t* fed) {
             FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
             NEVER - start_time, 0u);
 
-    for (int j = 0; j < fed->num_upstream; j++) {
-        federate_t* upstream = &_RTI.federates[fed->upstream[j]];
+    for (int j = 0; j < fed->enclave.num_upstream; j++) {
+        federate_t* upstream = &_RTI.federates[fed->enclave.upstream[j]];
 
         // Ignore this federate if it has resigned.
-        if (upstream->state == NOT_CONNECTED) continue;
+        if (upstream->enclave.state == NOT_CONNECTED) continue;
 
         // Find the (transitive) next event tag upstream.
         tag_t upstream_next_event = transitive_next_event(
-                upstream, upstream->next_event, visited);
+                upstream, upstream->enclave.next_event, visited);
 
         LF_PRINT_DEBUG("Earliest next event upstream of fed %d at fed %d has tag (%lld, %u).",
-                fed->id,
-                upstream->id,
+                fed->enclave.id,
+                upstream->enclave.id,
                 upstream_next_event.time - start_time, upstream_next_event.microstep);
 
         // Adjust by the "after" delay.
         // Note that "no delay" is encoded as NEVER,
         // whereas one microstep delay is encoded as 0LL.
-        tag_t candidate = lf_delay_tag(upstream_next_event, fed->upstream_delay[j]);
+        tag_t candidate = lf_delay_tag(upstream_next_event, fed->enclave.upstream_delay[j]);
 
         if (lf_tag_compare(candidate, t_d) < 0) {
             t_d = candidate;
@@ -419,30 +419,30 @@ bool send_advance_grant_if_safe(federate_t* fed) {
             t_d.time - start_time, t_d.microstep);
 
     if (
-        lf_tag_compare(t_d, fed->next_event) > 0       // The federate has something to do.
-        && lf_tag_compare(t_d, fed->last_provisionally_granted) >= 0  // The grant is not redundant
+        lf_tag_compare(t_d, fed->enclave.next_event) > 0       // The federate has something to do.
+        && lf_tag_compare(t_d, fed->enclave.last_provisionally_granted) >= 0  // The grant is not redundant
                                                                       // (equal is important to override any previous
                                                                       // PTAGs).
-        && lf_tag_compare(t_d, fed->last_granted) > 0  // The grant is not redundant.
+        && lf_tag_compare(t_d, fed->enclave.last_granted) > 0  // The grant is not redundant.
     ) {
         // All upstream federates have events with a larger tag than fed, so it is safe to send a TAG.
         LF_PRINT_LOG("Earliest upstream message time for fed %d is " PRINTF_TAG
                 "(adjusted by after delay). Granting tag advance for " PRINTF_TAG,
-                fed->id,
+                fed->enclave.id,
                 t_d.time - lf_time_start(), t_d.microstep,
-                fed->next_event.time - lf_time_start(),
-                fed->next_event.microstep);
-        send_tag_advance_grant(fed, fed->next_event);
+                fed->enclave.next_event.time - lf_time_start(),
+                fed->enclave.next_event.microstep);
+        send_tag_advance_grant(fed, fed->enclave.next_event);
     } else if (
-        lf_tag_compare(t_d, fed->next_event) == 0      // The federate has something to do.
-        && lf_tag_compare(t_d, fed->last_provisionally_granted) > 0  // The grant is not redundant.
-        && lf_tag_compare(t_d, fed->last_granted) > 0  // The grant is not redundant.
+        lf_tag_compare(t_d, fed->enclave.next_event) == 0      // The federate has something to do.
+        && lf_tag_compare(t_d, fed->enclave.last_provisionally_granted) > 0  // The grant is not redundant.
+        && lf_tag_compare(t_d, fed->enclave.last_granted) > 0  // The grant is not redundant.
     ) {
         // Some upstream federate has an event that has the same tag as fed's next event, so we can only provisionally
         // grant a TAG (via a PTAG).
         LF_PRINT_LOG("Earliest upstream message time for fed %d is " PRINTF_TAG
             " (adjusted by after delay). Granting provisional tag advance.",
-            fed->id,
+            fed->enclave.id,
             t_d.time - start_time, t_d.microstep);
 
         send_provisional_tag_advance_grant(fed, t_d);
@@ -451,10 +451,10 @@ bool send_advance_grant_if_safe(federate_t* fed) {
 }
 
 void send_downstream_advance_grants_if_safe(federate_t* fed, bool visited[]) {
-    visited[fed->id] = true;
-    for (int i = 0; i < fed->num_downstream; i++) {
-        federate_t* downstream = &_RTI.federates[fed->downstream[i]];
-        if (visited[downstream->id]) continue;
+    visited[fed->enclave.id] = true;
+    for (int i = 0; i < fed->enclave.num_downstream; i++) {
+        federate_t* downstream = &_RTI.federates[fed->enclave.downstream[i]];
+        if (visited[downstream->enclave.id]) continue;
         send_advance_grant_if_safe(downstream);
         send_downstream_advance_grants_if_safe(downstream, visited);
     }
@@ -470,7 +470,7 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
         next_event_tag = min_in_transit_tag;
     }
 
-    _RTI.federates[federate_id].next_event = next_event_tag;
+    _RTI.federates[federate_id].enclave.next_event = next_event_tag;
 
     LF_PRINT_DEBUG(
        "RTI: Updated the recorded next event tag for federate %d to " PRINTF_TAG,
@@ -482,7 +482,7 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
     // Check to see whether we can reply now with a tag advance grant.
     // If the federate has no upstream federates, then it does not wait for
     // nor expect a reply. It just proceeds to advance time.
-    if (_RTI.federates[federate_id].num_upstream > 0) {
+    if (_RTI.federates[federate_id].enclave.num_upstream > 0) {
         send_advance_grant_if_safe(&_RTI.federates[federate_id]);
     }
     // Check downstream federates to see whether they should now be granted a TAG.
@@ -498,7 +498,7 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
 
     read_from_socket_errexit(sending_federate->socket, message_size, &(buffer[1]),
                             " RTI failed to read port absent message from federate %u.",
-                            sending_federate->id);
+                            sending_federate->enclave.id);
 
     uint16_t reactor_port_id = extract_uint16(&(buffer[1]));
     uint16_t federate_id = extract_uint16(&(buffer[1 + sizeof(uint16_t)]));
@@ -515,7 +515,7 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
 
     // If the destination federate is no longer connected, issue a warning
     // and return.
-    if (_RTI.federates[federate_id].state == NOT_CONNECTED) {
+    if (_RTI.federates[federate_id].enclave.state == NOT_CONNECTED) {
         lf_mutex_unlock(&rti_mutex);
         lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
                 federate_id);
@@ -523,14 +523,14 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
                 "completed (%lld, %d), "
                 "last_granted (%lld, %d), "
                 "last_provisionally_granted (%lld, %d).",
-                _RTI.federates[federate_id].next_event.time - start_time,
-                _RTI.federates[federate_id].next_event.microstep,
-                _RTI.federates[federate_id].completed.time - start_time,
-                _RTI.federates[federate_id].completed.microstep,
-                _RTI.federates[federate_id].last_granted.time - start_time,
-                _RTI.federates[federate_id].last_granted.microstep,
-                _RTI.federates[federate_id].last_provisionally_granted.time - start_time,
-                _RTI.federates[federate_id].last_provisionally_granted.microstep
+                _RTI.federates[federate_id].enclave.next_event.time - start_time,
+                _RTI.federates[federate_id].enclave.next_event.microstep,
+                _RTI.federates[federate_id].enclave.completed.time - start_time,
+                _RTI.federates[federate_id].enclave.completed.microstep,
+                _RTI.federates[federate_id].enclave.last_granted.time - start_time,
+                _RTI.federates[federate_id].enclave.last_granted.microstep,
+                _RTI.federates[federate_id].enclave.last_provisionally_granted.time - start_time,
+                _RTI.federates[federate_id].enclave.last_provisionally_granted.microstep
         );
         return;
     }
@@ -541,7 +541,7 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
 
     // Need to make sure that the destination federate's thread has already
     // sent the starting MSG_TYPE_TIMESTAMP message.
-    while (_RTI.federates[federate_id].state == PENDING) {
+    while (_RTI.federates[federate_id].enclave.state == PENDING) {
         // Need to wait here.
         lf_cond_wait(&sent_start_time);
     }
@@ -585,7 +585,7 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
 
     LF_PRINT_LOG("RTI received message from federate %d for federate %u port %u with intended tag "
             PRINTF_TAG ". Forwarding.",
-            sending_federate->id, federate_id, reactor_port_id,
+            sending_federate->enclave.id, federate_id, reactor_port_id,
             intended_tag.time - lf_time_start(), intended_tag.microstep);
 
     read_from_socket_errexit(sending_federate->socket, bytes_to_read, &(buffer[header_size]),
@@ -595,7 +595,7 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     // LF_PRINT_DEBUG("Message received by RTI: %s.", buffer + header_size);
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_TAGGED_MSG, sending_federate->id, &intended_tag);
+        tracepoint_RTI_from_federate(receive_TAGGED_MSG, sending_federate->enclave.id, &intended_tag);
     }
 
     // Need to acquire the mutex lock to ensure that the thread handling
@@ -605,7 +605,7 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
 
     // If the destination federate is no longer connected, issue a warning
     // and return.
-    if (_RTI.federates[federate_id].state == NOT_CONNECTED) {
+    if (_RTI.federates[federate_id].enclave.state == NOT_CONNECTED) {
         lf_mutex_unlock(&rti_mutex);
         lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
                 federate_id);
@@ -613,14 +613,14 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
                 "completed (%lld, %d), "
                 "last_granted (%lld, %d), "
                 "last_provisionally_granted (%lld, %d).",
-                _RTI.federates[federate_id].next_event.time - start_time,
-                _RTI.federates[federate_id].next_event.microstep,
-                _RTI.federates[federate_id].completed.time - start_time,
-                _RTI.federates[federate_id].completed.microstep,
-                _RTI.federates[federate_id].last_granted.time - start_time,
-                _RTI.federates[federate_id].last_granted.microstep,
-                _RTI.federates[federate_id].last_provisionally_granted.time - start_time,
-                _RTI.federates[federate_id].last_provisionally_granted.microstep
+                _RTI.federates[federate_id].enclave.next_event.time - start_time,
+                _RTI.federates[federate_id].enclave.next_event.microstep,
+                _RTI.federates[federate_id].enclave.completed.time - start_time,
+                _RTI.federates[federate_id].enclave.completed.microstep,
+                _RTI.federates[federate_id].enclave.last_granted.time - start_time,
+                _RTI.federates[federate_id].enclave.last_granted.microstep,
+                _RTI.federates[federate_id].enclave.last_provisionally_granted.time - start_time,
+                _RTI.federates[federate_id].enclave.last_provisionally_granted.microstep
         );
         return;
     }
@@ -636,7 +636,7 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     );
 
     // Record this in-transit message in federate's in-transit message queue.
-    if (lf_tag_compare(_RTI.federates[federate_id].completed, intended_tag) < 0) {
+    if (lf_tag_compare(_RTI.federates[federate_id].enclave.completed, intended_tag) < 0) {
         // Add a record of this message to the list of in-transit messages to this federate.
         add_in_transit_message_record(
             _RTI.federates[federate_id].in_transit_message_tags,
@@ -654,18 +654,18 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
             ", but there is an in-transit message with tag " PRINTF_TAG " from federate %hu. "
             "This is going to cause an STP violation under centralized coordination.",
             federate_id,
-            _RTI.federates[federate_id].completed.time - lf_time_start(),
-            _RTI.federates[federate_id].completed.microstep,
+            _RTI.federates[federate_id].enclave.completed.time - lf_time_start(),
+            _RTI.federates[federate_id].enclave.completed.microstep,
             intended_tag.time - lf_time_start(),
             intended_tag.microstep,
-            sending_federate->id
+            sending_federate->enclave.id
         );
         // FIXME: Drop the federate?
     }
 
     // Need to make sure that the destination federate's thread has already
     // sent the starting MSG_TYPE_TIMESTAMP message.
-    while (_RTI.federates[federate_id].state == PENDING) {
+    while (_RTI.federates[federate_id].enclave.state == PENDING) {
         // Need to wait here.
         lf_cond_wait(&sent_start_time);
     }
@@ -706,40 +706,21 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
 void handle_logical_tag_complete(federate_t* fed) {
     unsigned char buffer[sizeof(int64_t) + sizeof(uint32_t)];
     read_from_socket_errexit(fed->socket, sizeof(int64_t) + sizeof(uint32_t), buffer,
-            "RTI failed to read the content of the logical tag complete from federate %d.", fed->id);
+            "RTI failed to read the content of the logical tag complete from federate %d.", fed->enclave.id);
+    tag_t completed = extract_tag(buffer);
+    logical_tag_complete(&fed->enclave, completed);
 
-    // FIXME: Consolidate this message with NET to get NMR (Next Message Request).
-    // Careful with handling startup and shutdown.
+    // FIXME: Should this function be in the enclave version?
     lf_mutex_lock(&rti_mutex);
-
-    fed->completed = extract_tag(buffer);
-    if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_LTC, fed->id, &(fed->completed));
-    }
-
-    LF_PRINT_LOG("RTI received from federate %d the Logical Tag Complete (LTC) (%lld, %u).",
-                fed->id, fed->completed.time - start_time, fed->completed.microstep);
-
-
     // See if we can remove any of the recorded in-transit messages for this.
-    clean_in_transit_message_record_up_to_tag(fed->in_transit_message_tags, fed->completed);
-
-    // Check downstream federates to see whether they should now be granted a TAG.
-    for (int i = 0; i < fed->num_downstream; i++) {
-        federate_t* downstream = &_RTI.federates[fed->downstream[i]];
-        send_advance_grant_if_safe(downstream);
-        bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
-        send_downstream_advance_grants_if_safe(downstream, visited);
-        free(visited);
-    }
-
+    clean_in_transit_message_record_up_to_tag(fed->in_transit_message_tags, fed->enclave.completed);
     lf_mutex_unlock(&rti_mutex);
 }
 
 void handle_next_event_tag(federate_t* fed) {
     unsigned char buffer[sizeof(int64_t) + sizeof(uint32_t)];
     read_from_socket_errexit(fed->socket, sizeof(int64_t) + sizeof(uint32_t), buffer,
-            "RTI failed to read the content of the next event tag from federate %d.", fed->id);
+            "RTI failed to read the content of the next event tag from federate %d.", fed->enclave.id);
 
     // Acquire a mutex lock to ensure that this state does not change while a
     // message is in transport or being used to determine a TAG.
@@ -751,13 +732,13 @@ void handle_next_event_tag(federate_t* fed) {
 
     tag_t intended_tag = extract_tag(buffer);
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_NET, fed->id, &intended_tag);
+        tracepoint_RTI_from_federate(receive_NET, fed->enclave.id, &intended_tag);
     }
     LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) " PRINTF_TAG,
-        fed->id, intended_tag.time - start_time,
+        fed->enclave.id, intended_tag.time - start_time,
         intended_tag.microstep);
     update_federate_next_event_tag_locked(
-        fed->id,
+        fed->enclave.id,
         intended_tag
     );
     lf_mutex_unlock(&rti_mutex);
@@ -781,18 +762,18 @@ void _lf_rti_broadcast_stop_time_to_federates_already_locked() {
 
     // Iterate over federates and send each the message.
     for (int i = 0; i < _RTI.number_of_federates; i++) {
-        if (_RTI.federates[i].state == NOT_CONNECTED) {
+        if (_RTI.federates[i].enclave.state == NOT_CONNECTED) {
             continue;
         }
-        if (lf_tag_compare(_RTI.federates[i].next_event, _RTI.max_stop_tag) >= 0) {
+        if (lf_tag_compare(_RTI.federates[i].enclave.next_event, _RTI.max_stop_tag) >= 0) {
             // Need the next_event to be no greater than the stop tag.
-            _RTI.federates[i].next_event = _RTI.max_stop_tag;
+            _RTI.federates[i].enclave.next_event = _RTI.max_stop_tag;
         }
         if (_RTI.tracing_enabled) {
-            tracepoint_RTI_to_federate(send_STOP_GRN, _RTI.federates[i].id, &_RTI.max_stop_tag);
+            tracepoint_RTI_to_federate(send_STOP_GRN, _RTI.federates[i].enclave.id, &_RTI.max_stop_tag);
         }
         write_to_socket_errexit(_RTI.federates[i].socket, MSG_TYPE_STOP_GRANTED_LENGTH, outgoing_buffer,
-                "RTI failed to send MSG_TYPE_STOP_GRANTED message to federate %d.", _RTI.federates[i].id);
+                "RTI failed to send MSG_TYPE_STOP_GRANTED message to federate %d.", _RTI.federates[i].enclave.id);
     }
 
     LF_PRINT_LOG("RTI sent to federates MSG_TYPE_STOP_GRANTED with tag (%lld, %u).",
@@ -802,11 +783,11 @@ void _lf_rti_broadcast_stop_time_to_federates_already_locked() {
 }
 
 void mark_federate_requesting_stop(federate_t* fed) {
-    if (!fed->requested_stop) {
+    if (!fed->enclave.requested_stop) {
         // Assume that the federate
         // has requested stop
         _RTI.num_feds_handling_stop++;
-        fed->requested_stop = true;
+        fed->enclave.requested_stop = true;
     }
     if (_RTI.num_feds_handling_stop == _RTI.number_of_federates) {
         // We now have information about the stop time of all
@@ -816,12 +797,12 @@ void mark_federate_requesting_stop(federate_t* fed) {
 }
 
 void handle_stop_request_message(federate_t* fed) {
-    LF_PRINT_DEBUG("RTI handling stop_request from federate %d.", fed->id);
+    LF_PRINT_DEBUG("RTI handling stop_request from federate %d.", fed->enclave.id);
 
     size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(fed->socket, bytes_to_read, buffer,
-            "RTI failed to read the MSG_TYPE_STOP_REQUEST payload from federate %d.", fed->id);
+            "RTI failed to read the MSG_TYPE_STOP_REQUEST payload from federate %d.", fed->enclave.id);
 
     // Acquire a mutex lock to ensure that this state does change while a
     // message is in transport or being used to determine a TAG.
@@ -829,7 +810,7 @@ void handle_stop_request_message(federate_t* fed) {
 
     // Check whether we have already received a stop_tag
     // from this federate
-    if (_RTI.federates[fed->id].requested_stop) {
+    if (_RTI.federates[fed->enclave.id].enclave.requested_stop) {
         // Ignore this request
         lf_mutex_unlock(&rti_mutex);
         return;
@@ -839,7 +820,7 @@ void handle_stop_request_message(federate_t* fed) {
     tag_t proposed_stop_tag = extract_tag(buffer);
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_STOP_REQ, fed->id, &proposed_stop_tag);
+        tracepoint_RTI_from_federate(receive_STOP_REQ, fed->enclave.id, &proposed_stop_tag);
     }
 
     // Update the maximum stop tag received from federates
@@ -848,7 +829,7 @@ void handle_stop_request_message(federate_t* fed) {
     }
 
     LF_PRINT_LOG("RTI received from federate %d a MSG_TYPE_STOP_REQUEST message with tag (%lld, %u).",
-            fed->id, proposed_stop_tag.time - start_time, proposed_stop_tag.microstep);
+            fed->enclave.id, proposed_stop_tag.time - start_time, proposed_stop_tag.microstep);
 
     // If this federate has not already asked
     // for a stop, add it to the tally.
@@ -869,18 +850,18 @@ void handle_stop_request_message(federate_t* fed) {
     // Iterate over federates and send each the MSG_TYPE_STOP_REQUEST message
     // if we do not have a stop_time already for them.
     for (int i = 0; i < _RTI.number_of_federates; i++) {
-        if (_RTI.federates[i].id != fed->id && _RTI.federates[i].requested_stop == false) {
-            if (_RTI.federates[i].state == NOT_CONNECTED) {
+        if (_RTI.federates[i].enclave.id != fed->enclave.id && _RTI.federates[i].enclave.requested_stop == false) {
+            if (_RTI.federates[i].enclave.state == NOT_CONNECTED) {
                 mark_federate_requesting_stop(&_RTI.federates[i]);
                 continue;
             }
             if (_RTI.tracing_enabled) {
-                tracepoint_RTI_to_federate(send_STOP_REQ, _RTI.federates[i].id, &_RTI.max_stop_tag);
+                tracepoint_RTI_to_federate(send_STOP_REQ, _RTI.federates[i].enclave.id, &_RTI.max_stop_tag);
             }
             write_to_socket_errexit(_RTI.federates[i].socket, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer,
-                    "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.", _RTI.federates[i].id);
+                    "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.", _RTI.federates[i].enclave.id);
             if (_RTI.tracing_enabled) {
-                tracepoint_RTI_to_federate(send_STOP_REQ, _RTI.federates[i].id, &_RTI.max_stop_tag);
+                tracepoint_RTI_to_federate(send_STOP_REQ, _RTI.federates[i].enclave.id, &_RTI.max_stop_tag);
             }
         }
     }
@@ -894,15 +875,15 @@ void handle_stop_request_reply(federate_t* fed) {
     size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_REPLY_LENGTH - 1;
     unsigned char buffer_stop_time[bytes_to_read];
     read_from_socket_errexit(fed->socket, bytes_to_read, buffer_stop_time,
-            "RTI failed to read the reply to MSG_TYPE_STOP_REQUEST message from federate %d.", fed->id);
+            "RTI failed to read the reply to MSG_TYPE_STOP_REQUEST message from federate %d.", fed->enclave.id);
 
     tag_t federate_stop_tag = extract_tag(buffer_stop_time);
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_STOP_REQ_REP, fed->id, &federate_stop_tag);
+        tracepoint_RTI_from_federate(receive_STOP_REQ_REP, fed->enclave.id, &federate_stop_tag);
     }
 
-    LF_PRINT_LOG("RTI received from federate %d STOP reply tag (%lld, %u).", fed->id,
+    LF_PRINT_LOG("RTI received from federate %d STOP reply tag (%lld, %u).", fed->enclave.id,
             federate_stop_tag.time - start_time,
             federate_stop_tag.microstep);
 
@@ -963,7 +944,7 @@ void handle_address_ad(uint16_t federate_id) {
     ssize_t bytes_read = read_from_socket(_RTI.federates[federate_id].socket, sizeof(int32_t), (unsigned char *)buffer);
 
     if (bytes_read < (ssize_t)sizeof(int32_t)) {
-        LF_PRINT_DEBUG("Error reading port data from federate %d.", _RTI.federates[federate_id].id);
+        LF_PRINT_DEBUG("Error reading port data from federate %d.", _RTI.federates[federate_id].enclave.id);
         // Leave the server port at -1, which means "I don't know".
         return;
     }
@@ -986,13 +967,13 @@ void handle_timestamp(federate_t *my_fed) {
     // Read bytes from the socket. We need 8 bytes.
     ssize_t bytes_read = read_from_socket(my_fed->socket, sizeof(int64_t), (unsigned char*)&buffer);
     if (bytes_read < (ssize_t)sizeof(int64_t)) {
-        lf_print_error("ERROR reading timestamp from federate %d.\n", my_fed->id);
+        lf_print_error("ERROR reading timestamp from federate %d.\n", my_fed->enclave.id);
     }
 
     int64_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t *)(&buffer)));
     if (_RTI.tracing_enabled) {
         tag_t tag = {.time = timestamp, .microstep = 0};
-        tracepoint_RTI_from_federate(receive_TIMESTAMP, my_fed->id, &tag);
+        tracepoint_RTI_from_federate(receive_TIMESTAMP, my_fed->enclave.id, &tag);
     }
     LF_PRINT_LOG("RTI received timestamp message: %lld.", timestamp);
 
@@ -1025,30 +1006,30 @@ void handle_timestamp(federate_t *my_fed) {
 
     if (_RTI.tracing_enabled) {
         tag_t tag = {.time = start_time, .microstep = 0};
-        tracepoint_RTI_to_federate(send_TIMESTAMP, my_fed->id, &tag);
+        tracepoint_RTI_to_federate(send_TIMESTAMP, my_fed->enclave.id, &tag);
     }
     ssize_t bytes_written = write_to_socket(
         my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH,
         start_time_buffer
     );
     if (bytes_written < MSG_TYPE_TIMESTAMP_LENGTH) {
-        lf_print_error("Failed to send the starting time to federate %d.", my_fed->id);
+        lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
     }
 
     lf_mutex_lock(&rti_mutex);
     // Update state for the federate to indicate that the MSG_TYPE_TIMESTAMP
     // message has been sent. That MSG_TYPE_TIMESTAMP message grants time advance to
     // the federate to the start time.
-    my_fed->state = GRANTED;
+    my_fed->enclave.state = GRANTED;
     lf_cond_broadcast(&sent_start_time);
-    LF_PRINT_LOG("RTI sent start time %lld to federate %d.", start_time, my_fed->id);
+    LF_PRINT_LOG("RTI sent start time %lld to federate %d.", start_time, my_fed->enclave.id);
     lf_mutex_unlock(&rti_mutex);
 }
 
 void send_physical_clock(unsigned char message_type, federate_t* fed, socket_type_t socket_type) {
-    if (fed->state == NOT_CONNECTED) {
+    if (fed->enclave.state == NOT_CONNECTED) {
         lf_print_warning("Clock sync: RTI failed to send physical time to federate %d. Socket not connected.\n",
-                fed->id);
+                fed->enclave.id);
         return;
     }
     unsigned char buffer[sizeof(int64_t) + 1];
@@ -1064,7 +1045,7 @@ void send_physical_clock(unsigned char message_type, federate_t* fed, socket_typ
                                 (struct sockaddr*)&fed->UDP_addr, sizeof(fed->UDP_addr));
         if (bytes_written < (ssize_t)sizeof(int64_t) + 1) {
             lf_print_warning("Clock sync: RTI failed to send physical time to federate %d: %s\n",
-                        fed->id,
+                        fed->enclave.id,
                         strerror(errno));
             return;
         }
@@ -1072,12 +1053,12 @@ void send_physical_clock(unsigned char message_type, federate_t* fed, socket_typ
         LF_PRINT_DEBUG("Clock sync:  RTI sending TCP message type %u.", buffer[0]);
         write_to_socket_errexit(fed->socket, 1 + sizeof(int64_t), buffer,
                         "Clock sync: RTI failed to send physical time to federate %d: %s.",
-                        fed->id,
+                        fed->enclave.id,
                         strerror(errno));
     }
     LF_PRINT_DEBUG("Clock sync: RTI sent PHYSICAL_TIME_SYNC_MESSAGE with timestamp %lld to federate %d.",
                  current_physical_time,
-                 fed->id);
+                 fed->enclave.id);
 }
 
 void handle_physical_clock_sync_message(federate_t* my_fed, socket_type_t socket_type) {
@@ -1125,10 +1106,10 @@ void* clock_synchronization_thread(void* noargs) {
         nanosleep(&sleep_time, &remaining_time); // Can be interrupted
         any_federates_connected = false;
         for (int fed = 0; fed < _RTI.number_of_federates; fed++) {
-            if (_RTI.federates[fed].state == NOT_CONNECTED) {
+            if (_RTI.federates[fed].enclave.state == NOT_CONNECTED) {
                 // FIXME: We need better error handling here, but clock sync failure
                 // should not stop execution.
-                lf_print_error("Clock sync failed with federate %d. Not connected.", _RTI.federates[fed].id);
+                lf_print_error("Clock sync failed with federate %d. Not connected.", _RTI.federates[fed].enclave.id);
                 // mark_federate_requesting_stop(&_RTI.federates[fed]);
                 continue;
             } else if (!_RTI.federates[fed].clock_synchronization_enabled) {
@@ -1154,11 +1135,11 @@ void* clock_synchronization_thread(void* noargs) {
                     if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
                         int32_t fed_id = extract_int32(&(buffer[1]));
                         // Check that this message came from the correct federate.
-                        if (fed_id != _RTI.federates[fed].id) {
+                        if (fed_id != _RTI.federates[fed].enclave.id) {
                             // Message is from the wrong federate. Discard the message.
                             lf_print_warning("Clock sync: Received T3 message from federate %d, "
                                     "but expected one from %d. Discarding message.",
-                                    fed_id, _RTI.federates[fed].id);
+                                    fed_id, _RTI.federates[fed].enclave.id);
                             continue;
                         }
                         LF_PRINT_DEBUG("Clock sync: RTI received T3 message from federate %d.", fed_id);
@@ -1172,14 +1153,14 @@ void* clock_synchronization_thread(void* noargs) {
                                 "Discarding message.",
                                 buffer[0],
                                 MSG_TYPE_CLOCK_SYNC_T3,
-                                _RTI.federates[fed].id);
+                                _RTI.federates[fed].enclave.id);
                         continue;
                     }
                 } else {
                     lf_print_warning("Clock sync: Read from UDP socket failed: %s. "
                             "Skipping clock sync round for federate %d.",
                             strerror(errno),
-                            _RTI.federates[fed].id);
+                            _RTI.federates[fed].enclave.id);
                     remaining_attempts = -1;
                 }
             }
@@ -1203,15 +1184,15 @@ void handle_federate_resign(federate_t *my_fed) {
                                  "RTI failed to read the timed message header from remote federate.");
         // Extract the tag sent by the resigning federate
         tag_t tag = extract_tag(&(buffer[1]));
-        tracepoint_RTI_from_federate(receive_RESIGN, my_fed->id, &tag);
+        tracepoint_RTI_from_federate(receive_RESIGN, my_fed->enclave.id, &tag);
     }
 
-    my_fed->state = NOT_CONNECTED;
+    my_fed->enclave.state = NOT_CONNECTED;
     // FIXME: The following results in spurious error messages.
     // mark_federate_requesting_stop(my_fed);
 
     // Indicate that there will no further events from this federate.
-    my_fed->next_event = FOREVER_TAG;
+    my_fed->enclave.next_event = FOREVER_TAG;
 
     // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
     // the close should happen when receiving a 0 length message from the other end.
@@ -1222,7 +1203,7 @@ void handle_federate_resign(federate_t *my_fed) {
     // an orderly shutdown.
     // close(my_fed->socket); //  from unistd.h
 
-    lf_print("Federate %d has resigned.", my_fed->id);
+    lf_print("Federate %d has resigned.", my_fed->enclave.id);
 
     // Check downstream federates to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
@@ -1243,28 +1224,28 @@ void* federate_thread_TCP(void* fed) {
     unsigned char buffer[FED_COM_BUFFER_SIZE];
 
     // Listen for messages from the federate.
-    while (my_fed->state != NOT_CONNECTED) {
+    while (my_fed->enclave.state != NOT_CONNECTED) {
         // Read no more than one byte to get the message type.
         ssize_t bytes_read = read_from_socket(my_fed->socket, 1, buffer);
         if (bytes_read < 1) {
             // Socket is closed
-            lf_print_warning("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->id);
-            my_fed->state = NOT_CONNECTED;
+            lf_print_warning("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
+            my_fed->enclave.state = NOT_CONNECTED;
             my_fed->socket = -1;
             // FIXME: We need better error handling here, but this is probably not the right thing to do.
             // mark_federate_requesting_stop(my_fed);
             break;
         }
-        LF_PRINT_DEBUG("RTI: Received message type %u from federate %d.", buffer[0], my_fed->id);
+        LF_PRINT_DEBUG("RTI: Received message type %u from federate %d.", buffer[0], my_fed->enclave.id);
         switch(buffer[0]) {
             case MSG_TYPE_TIMESTAMP:
                 handle_timestamp(my_fed);
                 break;
             case MSG_TYPE_ADDRESS_QUERY:
-                handle_address_query(my_fed->id);
+                handle_address_query(my_fed->enclave.id);
                 break;
             case MSG_TYPE_ADDRESS_ADVERTISEMENT:
-                handle_address_ad(my_fed->id);
+                handle_address_ad(my_fed->enclave.id);
                 break;
             case MSG_TYPE_TAGGED_MESSAGE:
                 handle_timed_message(my_fed, buffer);
@@ -1292,9 +1273,9 @@ void* federate_thread_TCP(void* fed) {
                 handle_port_absent_message(my_fed, buffer);
                 break;
             default:
-                lf_print_error("RTI received from federate %d an unrecognized TCP message type: %u.", my_fed->id, buffer[0]);
+                lf_print_error("RTI received from federate %d an unrecognized TCP message type: %u.", my_fed->enclave.id, buffer[0]);
                 if (_RTI.tracing_enabled) {
-                    tracepoint_RTI_from_federate(receive_UNIDENTIFIED, my_fed->id, NULL);
+                    tracepoint_RTI_from_federate(receive_UNIDENTIFIED, my_fed->enclave.id, NULL);
                 }
         }
     }
@@ -1389,7 +1370,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
                 send_reject(socket_id, FEDERATE_ID_OUT_OF_RANGE);
                 return -1;
             } else {
-                if (_RTI.federates[fed_id].state != NOT_CONNECTED) {
+                if (_RTI.federates[fed_id].enclave.state != NOT_CONNECTED) {
                     lf_print_error("RTI received duplicate federate ID: %d.", fed_id);
                     if (_RTI.tracing_enabled) {
                         tracepoint_RTI_to_federate(send_REJECT, fed_id, NULL);
@@ -1424,7 +1405,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
     // Set the federate's state as pending
     // because it is waiting for the start time to be
     // sent by the RTI before beginning its execution.
-    _RTI.federates[fed_id].state = PENDING;
+    _RTI.federates[fed_id].enclave.state = PENDING;
 
     LF_PRINT_DEBUG("RTI responding with MSG_TYPE_ACK to federate %d.", fed_id);
     // Send an MSG_TYPE_ACK message.
@@ -1456,26 +1437,26 @@ int receive_connection_information(int socket_id, uint16_t fed_id) {
         return 0;
     } else {
         // Read the number of upstream and downstream connections
-        _RTI.federates[fed_id].num_upstream = extract_int32(&(connection_info_header[1]));
-        _RTI.federates[fed_id].num_downstream = extract_int32(&(connection_info_header[1 + sizeof(int32_t)]));
+        _RTI.federates[fed_id].enclave.num_upstream = extract_int32(&(connection_info_header[1]));
+        _RTI.federates[fed_id].enclave.num_downstream = extract_int32(&(connection_info_header[1 + sizeof(int32_t)]));
         LF_PRINT_DEBUG(
             "RTI got %d upstreams and %d downstreams from federate %d.",
-            _RTI.federates[fed_id].num_upstream,
-            _RTI.federates[fed_id].num_downstream,
+            _RTI.federates[fed_id].enclave.num_upstream,
+            _RTI.federates[fed_id].enclave.num_downstream,
             fed_id);
 
         // Allocate memory for the upstream and downstream pointers
-        _RTI.federates[fed_id].upstream = (int*)malloc(sizeof(federate_t*) * _RTI.federates[fed_id].num_upstream);
-        _RTI.federates[fed_id].downstream = (int*)malloc(sizeof(federate_t*) * _RTI.federates[fed_id].num_downstream);
+        _RTI.federates[fed_id].enclave.upstream = (int*)malloc(sizeof(federate_t*) * _RTI.federates[fed_id].enclave.num_upstream);
+        _RTI.federates[fed_id].enclave.downstream = (int*)malloc(sizeof(federate_t*) * _RTI.federates[fed_id].enclave.num_downstream);
 
         // Allocate memory for the upstream delay pointers
-        _RTI.federates[fed_id].upstream_delay =
+        _RTI.federates[fed_id].enclave.upstream_delay =
             (interval_t*)malloc(
-                sizeof(interval_t) * _RTI.federates[fed_id].num_upstream
+                sizeof(interval_t) * _RTI.federates[fed_id].enclave.num_upstream
             );
 
         size_t connections_info_body_size = ((sizeof(uint16_t) + sizeof(int64_t)) *
-            _RTI.federates[fed_id].num_upstream) + (sizeof(uint16_t) * _RTI.federates[fed_id].num_downstream);
+            _RTI.federates[fed_id].enclave.num_upstream) + (sizeof(uint16_t) * _RTI.federates[fed_id].enclave.num_downstream);
         unsigned char* connections_info_body = (unsigned char*)malloc(connections_info_body_size);
         read_from_socket_errexit(
             socket_id,
@@ -1488,16 +1469,16 @@ int receive_connection_information(int socket_id, uint16_t fed_id) {
         // Keep track of where we are in the buffer
         size_t message_head = 0;
         // First, read the info about upstream federates
-        for (int i=0; i<_RTI.federates[fed_id].num_upstream; i++) {
-            _RTI.federates[fed_id].upstream[i] = extract_uint16(&(connections_info_body[message_head]));
+        for (int i=0; i<_RTI.federates[fed_id].enclave.num_upstream; i++) {
+            _RTI.federates[fed_id].enclave.upstream[i] = extract_uint16(&(connections_info_body[message_head]));
             message_head += sizeof(uint16_t);
-            _RTI.federates[fed_id].upstream_delay[i] = extract_int64(&(connections_info_body[message_head]));
+            _RTI.federates[fed_id].enclave.upstream_delay[i] = extract_int64(&(connections_info_body[message_head]));
             message_head += sizeof(int64_t);
         }
 
         // Next, read the info about downstream federates
-        for (int i=0; i<_RTI.federates[fed_id].num_downstream; i++) {
-            _RTI.federates[fed_id].downstream[i] = extract_uint16(&(connections_info_body[message_head]));
+        for (int i=0; i<_RTI.federates[fed_id].enclave.num_downstream; i++) {
+            _RTI.federates[fed_id].enclave.downstream[i] = extract_uint16(&(connections_info_body[message_head]));
             message_head += sizeof(uint16_t);
         }
 
@@ -1729,25 +1710,25 @@ void* respond_to_erroneous_connections(void* nothing) {
 }
 
 void initialize_federate(uint16_t id) {
-    _RTI.federates[id].id = id;
+    _RTI.federates[id].enclave.id = id;
     _RTI.federates[id].socket = -1;      // No socket.
     _RTI.federates[id].clock_synchronization_enabled = true;
-    _RTI.federates[id].completed = NEVER_TAG;
-    _RTI.federates[id].last_granted = NEVER_TAG;
-    _RTI.federates[id].last_provisionally_granted = NEVER_TAG;
-    _RTI.federates[id].next_event = NEVER_TAG;
+    _RTI.federates[id].enclave.completed = NEVER_TAG;
+    _RTI.federates[id].enclave.last_granted = NEVER_TAG;
+    _RTI.federates[id].enclave.last_provisionally_granted = NEVER_TAG;
+    _RTI.federates[id].enclave.next_event = NEVER_TAG;
     _RTI.federates[id].in_transit_message_tags = initialize_in_transit_message_q();
-    _RTI.federates[id].state = NOT_CONNECTED;
-    _RTI.federates[id].upstream = NULL;
-    _RTI.federates[id].upstream_delay = NULL;
-    _RTI.federates[id].num_upstream = 0;
-    _RTI.federates[id].downstream = NULL;
-    _RTI.federates[id].num_downstream = 0;
-    _RTI.federates[id].mode = REALTIME;
+    _RTI.federates[id].enclave.state = NOT_CONNECTED;
+    _RTI.federates[id].enclave.upstream = NULL;
+    _RTI.federates[id].enclave.upstream_delay = NULL;
+    _RTI.federates[id].enclave.num_upstream = 0;
+    _RTI.federates[id].enclave.downstream = NULL;
+    _RTI.federates[id].enclave.num_downstream = 0;
+    _RTI.federates[id].enclave.mode = REALTIME;
     strncpy(_RTI.federates[id].server_hostname ,"localhost", INET_ADDRSTRLEN);
     _RTI.federates[id].server_ip_addr.s_addr = 0;
     _RTI.federates[id].server_port = -1;
-    _RTI.federates[id].requested_stop = false;
+    _RTI.federates[id].enclave.requested_stop = false;
 }
 
 int32_t start_rti_server(uint16_t port) {
@@ -1785,10 +1766,10 @@ void wait_for_federates(int socket_descriptor) {
     // Wait for federate threads to exit.
     void* thread_exit_status;
     for (int i = 0; i < _RTI.number_of_federates; i++) {
-        lf_print("RTI: Waiting for thread handling federate %d.", _RTI.federates[i].id);
+        lf_print("RTI: Waiting for thread handling federate %d.", _RTI.federates[i].enclave.id);
         lf_thread_join(_RTI.federates[i].thread_id, &thread_exit_status);
         free_in_transit_message_q(_RTI.federates[i].in_transit_message_tags);
-        lf_print("RTI: Federate %d thread exited.", _RTI.federates[i].id);
+        lf_print("RTI: Federate %d thread exited.", _RTI.federates[i].enclave.id);
     }
 
     _RTI.all_federates_exited = true;
