@@ -1,14 +1,14 @@
 var indexSectionsWithContent =
 {
   0: "/_abcdefghiklmnopqrstuvw",
-  1: "_adefhilmnprstvw",
-  2: "acdfhlmnprstuvw",
+  1: "_adefghilmnprstvw",
+  2: "acdfhilmnprstuvw",
   3: "_acdefghilmprstuvw",
   4: "_abcdefghiklmnoprstuvw",
   5: "_acdefhilmprstuvw",
   6: "_ceflprst",
   7: "_acdfgilnpqrstuvw",
-  8: "_abcdefghklmnoprstuvw",
+  8: "_abcdefghiklmnoprstuvw",
   9: "/dhlrs"
 };
 

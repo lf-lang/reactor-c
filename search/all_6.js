@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['element_5fsize_0',['element_size',['../db/d12/structtoken__type__t.html#a68cbb1b9a12c72df5dd5e7f356f50eba',1,'token_type_t']]],
+  ['element_5fsize_0',['element_size',['../db/d12/structtoken__type__t.html#a68cbb1b9a12c72df5dd5e7f356f50eba',1,'token_type_t::element_size()'],['../da/dc0/structgeneric__port__instance__struct.html#aed7dee39a2cc95dca6f1988ab6594e06',1,'generic_port_instance_struct::element_size()']]],
   ['encode_5fint32_1',['encode_int32',['../dd/d97/net__util_8h.html#afc6b3d0e0e777738422c11fa07b35e0f',1,'net_util.h']]],
   ['encode_5fint64_2',['encode_int64',['../dd/d97/net__util_8h.html#ae233fa02382ed619a78b1c32e14a8657',1,'net_util.h']]],
   ['encode_5fstop_5fgranted_3',['ENCODE_STOP_GRANTED',['../d9/da6/net__common_8h.html#a8086398bfefdc0104767df037e59daa5',1,'net_common.h']]],
