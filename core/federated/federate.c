@@ -1046,12 +1046,12 @@ void connect_to_rti(const char* hostname, int port) {
         char str[6];
         sprintf(str,"%u",uport);
 
-        // Get address structures matching hostname, port and hints criteria
-        // There should only ever be one matching address structure, and
-        // we connect to that.
+        // Get address structure matching hostname and hints criteria, and
+        // set port to the port number provided in str. There should only 
+        // ever be one matching address structure, and we connect to that.
         int server = getaddrinfo(hostname, &str, &hints, &res);
         if (server != 0) {
-            lf_print_error_and_exit("No host for RTI matching given hostname and port: %s:%s", hostname, str);
+            lf_print_error_and_exit("No host for RTI matching given hostname: %s", hostname);
         }
 
         // Create a socket matching hints criteria
