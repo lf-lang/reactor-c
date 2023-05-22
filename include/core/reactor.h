@@ -114,7 +114,7 @@ do { \
         /* The cast "*((void**) &out->value)" is a hack to make the code */ \
         /* compile with non-token types where value is not a pointer. */ \
         /* FIXME: We need the environment from the port using self assumes we are inside a reaction body */\
-        lf_token_t* token = _lf_initialize_token_with_value(self->base.environment, (token_template_t*)out, *((void**) &out->value), 1); \
+        lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, *((void**) &out->value), 1); \
     } \
 } while(0)
 
@@ -142,7 +142,7 @@ do { \
 #define lf_set_array(out, val, length) \
 do { \
     _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token_with_value(self->base.environment, (token_template_t*)out, val, length); \
+    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
     out->value = static_cast<decltype(out->value)>(token->value); \
 } while(0)
 #endif
@@ -234,7 +234,7 @@ do { \
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
     _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
-    _lf_replace_template_token(self->base.environment, (token_template_t*)out, newtoken); \
+    _lf_replace_template_token((token_template_t*)out, newtoken); \
     out->value = newtoken->value; \
     out->length = newtoken->length; \
 } while(0)
@@ -242,7 +242,7 @@ do { \
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
     _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
-    _lf_replace_template_token(self->base.environment, (token_template_t*)out, newtoken); \
+    _lf_replace_template_token((token_template_t*)out, newtoken); \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
     out->length = newtoken->length; \
 } while(0)
@@ -387,7 +387,7 @@ void _lf_start_time_step(environment_t *env);
  * Generated function that produces a table containing all triggers
  * (i.e., inputs, timers, and actions).
  */
-void _lf_initialize_trigger_objects(environment_t* env);
+void _lf_initialize_trigger_objects();
 
 /**
  * Pop all events from event_q with timestamp equal to current_time, extract all
@@ -526,6 +526,7 @@ trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_d
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
 trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, void* value, size_t length);
+trigger_handle_t _lf_schedule_copy_enclave(environment_t *env, lf_action_base_t* action, tag_t tag, void* value, size_t length);
 
 /**
  * For a federated execution, send a STOP_REQUEST message
@@ -536,6 +537,7 @@ void _lf_fd_send_stop_request_to_rti(void);
 // To be implemented in code generated main program
 int _lf_get_environments(environment_t **envs);
 void _lf_create_environments();
+
 
 #endif /* REACTOR_H */
 /** @} */

@@ -68,7 +68,10 @@ extern instant_t start_time;
  */
 #define MIN_SLEEP_DURATION USEC(10)
 
-
+/**
+ * Global mutex .
+*/
+lf_mutex_t global_mutex;
 
 /**
  * Create a global tag barrier and
@@ -1079,7 +1082,11 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
             && process_args(argc, argv)) {
 
         determine_number_of_workers();
-        start_time = lf_time_physical() + SEC(1);
+        // FIXME: Set the start time for the program
+        start_time = lf_time_physical();
+
+        // FIXME: How to do keep-alive stuff with enclaves?
+        keepalive_specified = true;
 
         LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
         struct timespec physical_time_timespec = {start_time / BILLION, start_time % BILLION};
@@ -1089,6 +1096,15 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     } else {
         return -1;
     }
+
+    // Initialize the one global mutex
+    if (lf_mutex_init(&global_mutex) != 0) {
+        lf_print_error_and_exit("Could not initialize global mutex");
+    }
+
+    // Initialize the global payload and token allocation counts and the trigger table
+    initialize_global();
+
     environment_t *envs;
     int num_envs = _lf_get_environments(&envs);
     
@@ -1109,15 +1125,23 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         // of the predicate.”  This seems like a bug in the implementation of
         // pthreads. Maybe it has been fixed?
         // The one and only mutex lock.
-        lf_mutex_init(&env->mutex);
+        if (lf_mutex_init(&env->mutex) != 0) {
+            lf_print_error_and_exit("Could not initialize environment mutex");
+        }
 
         // Initialize condition variables used for notification between threads.
-        lf_cond_init(&env->event_q_changed, &env->mutex);
-        lf_cond_init(&env->global_tag_barrier_requestors_reached_zero, &env->mutex);
+        if (lf_cond_init(&env->event_q_changed, &env->mutex) != 0) {
+            lf_print_error_and_exit("Could not initialize environment event queue condition variable");
+        }
+        if (lf_cond_init(&env->global_tag_barrier_requestors_reached_zero, &env->mutex)) {
+            lf_print_error_and_exit("Could not initialize environment tag barrier condition variable");
+        }
 
         // FIXME: Why lock this so early?
-        lf_mutex_lock(&env->mutex);
-        initialize(env); // Sets start_time
+        if (lf_mutex_lock(&env->mutex) != 0) {
+            lf_print_error_and_exit("Could not lock environment mutex");
+        }
+        initialize_environment(env); // Initialize priority queues and set stop time
     #ifdef MODAL_REACTORS
         // Set up modal infrastructure
         _lf_initialize_modes();
@@ -1181,13 +1205,21 @@ int lf_notify_of_event(environment_t* env) {
  * @brief Enter critical section by locking the global mutex.
  */
 int lf_critical_section_enter(environment_t* env) {
-    return lf_mutex_lock(&env->mutex);
+    if (env == GLOBAL_ENVIRONMENT) {
+        return lf_mutex_lock(&global_mutex);
+    } else {
+        return lf_mutex_lock(&env->mutex);
+    }
 }
 
 /**
  * @brief Leave a critical section by unlocking the global mutex.
  */
 int lf_critical_section_exit(environment_t* env) {
-    return lf_mutex_unlock(&env->mutex); 
+    if (env == GLOBAL_ENVIRONMENT) {
+        return lf_mutex_unlock(&global_mutex);
+    } else {
+        return lf_mutex_unlock(&env->mutex);
+    }
 }
 #endif

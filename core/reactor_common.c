@@ -62,7 +62,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern instant_t start_time;
 
 // Global variable defined in lf_token.c:
-// extern int _lf_count_payload_allocations;
+extern int _lf_count_payload_allocations;
 
 /**
  * Indicator of whether to wait for physical time to match logical time.
@@ -451,13 +451,15 @@ void _lf_pop_events(environment_t *env) {
         // Copy the token pointer into the trigger struct so that the
         // reactions can access it. This overwrites the previous template token,
         // for which we decrement the reference count.
-        _lf_replace_template_token(env, (token_template_t*)event->trigger, token);
+        LF_PRINT_DEBUG("env-%u replacing token %p", env->id, event->trigger->tmplt);
+        _lf_replace_template_token((token_template_t*)event->trigger, token);
 
         // Decrement the reference count because the event queue no longer needs this token.
         // This has to be done after the above call to _lf_replace_template_token because
         // that call will increment the reference count and we need to not let the token be
         // freed prematurely.
-        _lf_done_using(env, token);
+        LF_PRINT_DEBUG("env-%u done-using token %p", env->id, event->trigger->tmplt);
+        _lf_done_using(token);
 
         // Mark the trigger present.
         event->trigger->status = present;
@@ -606,10 +608,10 @@ event_t* _lf_create_dummy_events(environment_t* env, trigger_t* trigger, instant
  * @param event The event.
  * @param token The token.
  */
-static void _lf_replace_token(environment_t* env, event_t* event, lf_token_t* token) {
+static void _lf_replace_token(event_t* event, lf_token_t* token) {
     if (event->token != token) {
         // Free the existing token, if any
-        _lf_done_using(env, event->token);
+        _lf_done_using(event->token);
     }
     // Replace the token with ours.
     event->token = token;
@@ -664,7 +666,7 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
     // Do not schedule events if the tag is after the stop tag
     if (_lf_is_tag_after_stop_tag(env, tag)) {
          lf_print_warning("_lf_schedule_at_tag: event time is past the timeout. Discarding event.");
-        _lf_done_using(env, token);
+        _lf_done_using(token);
         return -1;
     }
 
@@ -698,7 +700,7 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
                 switch (trigger->policy) {
                     case drop:
                         if (found->token != token) {
-                            _lf_done_using(env, token);
+                            _lf_done_using(token);
                         }
                         _lf_recycle_event(env, e);
                         return(0);
@@ -706,7 +708,7 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
                     case replace:
                         // Replace the payload of the event at the head with our
                         // current payload.
-                        _lf_replace_token(env, found, token);
+                        _lf_replace_token(found, token);
                         _lf_recycle_event(env, e);
                         return 0;
                         break;
@@ -766,7 +768,7 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
                 switch (trigger->policy) {
                     case drop:
                         if (found->next->token != token) {
-                            _lf_done_using(env, token);
+                            _lf_done_using(token);
                         }
                         _lf_recycle_event(env, e);
                         return 0;
@@ -774,7 +776,7 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
                     case replace:
                         // Replace the payload of the event at the head with our
                         // current payload.
-                        _lf_replace_token(env, found->next, token);
+                        _lf_replace_token(found->next, token);
                         _lf_recycle_event(env, e);
                         return 0;
                         break;
@@ -851,7 +853,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     if (_lf_is_tag_after_stop_tag(env, env->current_tag)) {
         // If schedule is called after stop_tag
         // This is a critical condition.
-        _lf_done_using(env, token);
+        _lf_done_using(token);
         lf_print_warning("lf_schedule() called after stop tag.");
         return 0;
     }
@@ -875,7 +877,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     // Doing this after incrementing the reference count ensures that the
     // payload will be freed, if there is one.
     if (trigger == NULL) {
-        _lf_done_using(env, token);
+        _lf_done_using(token);
         return 0;
     }
 
@@ -983,7 +985,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
                             pqueue_find_equal_same_priority(env->event_q, existing) != NULL) {
                         // Recycle the new event and the token.
                         if (existing->token != token) {
-                            _lf_done_using(env, token);
+                            _lf_done_using(token);
                         }
                         _lf_recycle_event(env, e);
                         return(0);
@@ -1004,7 +1006,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
                             pqueue_find_equal_same_priority(env->event_q, existing) != NULL)) {
                         // Recycle the existing token and the new event
                         // and update the token of the existing event.
-                        _lf_replace_token(env, existing, token);
+                        _lf_replace_token(existing, token);
                         _lf_recycle_event(env, e);
                         return(0);
                     }
@@ -1055,7 +1057,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     LF_PRINT_DEBUG("Comparing event with elapsed time " PRINTF_TIME " against stop time " PRINTF_TIME ".", e->time - start_time, env->stop_tag.time - start_time);
     if (e->time > env->stop_tag.time) {
         LF_PRINT_DEBUG("_lf_schedule: event time is past the timeout. Discarding event.");
-        _lf_done_using(env, token);
+        _lf_done_using(token);
         _lf_recycle_event(env, e);
         return(0);
     }
@@ -1104,7 +1106,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
     // payload will be freed, if there is one.
     if (trigger == NULL) {
         lf_print_warning("_lf_schedule_init_reactions() called with a NULL trigger");
-        _lf_done_using(env, token);
+        _lf_done_using(token);
         return 0;
     }
 
@@ -1146,7 +1148,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
     // Copy the token pointer into the trigger struct so that the
     // reactions can access it. This overwrites the previous template token,
     // for which we decrement the reference count.
-    _lf_replace_template_token(env, (token_template_t*)trigger, token);
+    _lf_replace_template_token((token_template_t*)trigger, token);
 
     // Mark the trigger present.
     trigger->status = present;
@@ -1214,7 +1216,7 @@ trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, 
         lf_print_error_and_exit("Could not enter critical section");
     }
     // Initialize token with an array size of length and a reference count of 0.
-    lf_token_t* token = _lf_initialize_token(env, template, length);
+    lf_token_t* token = _lf_initialize_token(template, length);
     // Copy the value into the newly allocated memory.
     memcpy(token->value, value, template->type.element_size * length);
     // The schedule function will increment the reference count.
@@ -1227,6 +1229,34 @@ trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, 
     return result;
 }
 
+trigger_handle_t _lf_schedule_copy_enclave(environment_t *env, lf_action_base_t* action, tag_t tag, void* value, size_t length) {
+    if (value == NULL) {
+        // FIXME: Handle this, what scenario is that?
+        // return _lf_schedule_token(action, offset, NULL);
+    }
+    token_template_t* template = (token_template_t*)action;
+    if (action == NULL || template->type.element_size <= 0) {
+        lf_print_error("schedule: Invalid element size.");
+        return -1;
+    }
+    if (lf_critical_section_enter(env) != 0) {
+        lf_print_error_and_exit("Could not enter critical section");
+    }
+    // Initialize token with an array size of length and a reference count of 0.
+    lf_token_t* token = _lf_initialize_token(template, length);
+    // Copy the value into the newly allocated memory.
+    memcpy(token->value, value, template->type.element_size * length);
+    // The schedule function will increment the reference count.
+    trigger_handle_t result = _lf_schedule_at_tag(env, action->trigger, tag, token);
+    // Notify the main thread in case it is waiting for physical time to elapse.
+    lf_notify_of_event(env);
+    if(lf_critical_section_exit(env) != 0) {
+        lf_print_error_and_exit("Could not leave critical section");
+    }
+    return result;
+}
+
+
 /**
  * Variant of schedule_token that creates a token to carry the specified value.
  * See reactor.h for documentation.
@@ -1237,7 +1267,7 @@ trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_d
     if (lf_critical_section_enter(env) != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
-    lf_token_t* token = _lf_initialize_token_with_value(env, template, value, length);
+    lf_token_t* token = _lf_initialize_token_with_value(template, value, length);
     int return_value = _lf_schedule(env, action->trigger, extra_delay, token);
     // Notify the main thread in case it is waiting for physical time to elapse.
     lf_notify_of_event(env);
@@ -1665,10 +1695,17 @@ int process_args(int argc, const char* argv[]) {
  * Initialize the priority queues and set logical time to match
  * physical time. This also prints a message reporting the start time.
  */
-void initialize(environment_t *env) {
-    env->_lf_count_payload_allocations = 0;
+void initialize_global() {
+    _lf_count_payload_allocations = 0;
     _lf_count_token_allocations = 0;
+    
+    // Call the code-generated function to initialize all actions, timers, and ports
+    // This is done for all environments/enclaves at the same time.
+    _lf_initialize_trigger_objects() ;
+}
 
+
+void initialize_environment(environment_t *env) {
     // Initialize our priority queues.
 
     env->event_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_reverse_order, get_event_time,
@@ -1678,9 +1715,6 @@ void initialize(environment_t *env) {
             get_event_position, set_event_position, event_matches, print_event);
     env->next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
-
-    // Initialize the trigger table.
-    env->initialize_trigger_objects(env);
 
     tag_t stop_tag = FOREVER_TAG_INITIALIZER;
     if (duration >= 0LL) {
@@ -1739,9 +1773,9 @@ void termination() {
     }
     _lf_free_all_tokens(env); // Must be done before freeing reactors.
     // Issue a warning if a memory leak has been detected.
-    if (env->_lf_count_payload_allocations > 0) {
+    if (_lf_count_payload_allocations > 0) {
         lf_print_warning("Memory allocated for messages has not been freed.");
-        lf_print_warning("Number of unfreed messages: %d.", env->_lf_count_payload_allocations);
+        lf_print_warning("Number of unfreed messages: %d.", _lf_count_payload_allocations);
     }
     if (_lf_count_token_allocations > 0) {
         lf_print_warning("Memory allocated for tokens has not been freed!");

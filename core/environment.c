@@ -13,12 +13,9 @@ int environment_init(
     int num_timers, 
     int num_startup_reactions, 
     int num_shutdown_reactions, 
-    int num_reset_reactions,
-    void (*initialize_trigger_ojects_func)(environment_t* env)
+    int num_reset_reactions
 ) {
     env->id = id;
-    env->num_workers = num_workers;
-    env->thread_ids = (lf_thread_t*)calloc(num_workers, sizeof(lf_thread_t));
 
     env->_lf_timer_triggers_size=num_timers;
     env->_lf_timer_triggers = (trigger_t **) calloc(num_timers, sizeof(trigger_t));
@@ -47,10 +44,12 @@ int environment_init(
 
 
     env->_lf_handle=1;
+    #ifdef LF_THREADED
+    env->num_workers = num_workers;
+    env->thread_ids = (lf_thread_t*)calloc(num_workers, sizeof(lf_thread_t));
     env->barrier.requestors = 0;
     env->barrier.horizon = FOREVER_TAG;
-
-    env->initialize_trigger_objects = initialize_trigger_ojects_func;
+    #endif
 
 
     return 0;

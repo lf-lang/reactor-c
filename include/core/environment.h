@@ -10,8 +10,7 @@ int environment_init(
     int num_timers, 
     int num_startup_reactions, 
     int num_shutdown_reactions, 
-    int num_reset_reactions,
-    void (*initialize_trigger_ojects_func)(environment_t* env)
+    int num_reset_reactions
 );
 
 void environment_free(environment_t* env);

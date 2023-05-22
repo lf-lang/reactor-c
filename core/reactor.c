@@ -331,7 +331,6 @@ bool _lf_is_blocked_by_executing_reaction(void) {
  * at compile time.
  */
 int lf_reactor_c_main(int argc, const char* argv[]) {
-    environment_t *env = &_lf_environment;
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
 
