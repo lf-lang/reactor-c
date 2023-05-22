@@ -48,6 +48,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #define DEFAULT_MAX_REACTION_LEVEL 100
 
+// Forward declarations
+typedef struct environment_t environment_t;
+
 
 /**
  * @brief Paramters used in schedulers of the threaded reactor C runtime.
@@ -56,9 +59,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  These should be expanded to accommodate new schedulers.
  */
 
-struct environment_t;
 
-typedef struct {
+typedef struct _lf_sched_instance_t {
     struct environment_t * env;
     /**
      * @brief Maximum number of levels for reactions in the program.

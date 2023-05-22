@@ -289,7 +289,7 @@ typedef struct allocation_record_t {
 // Forward declarations so that a pointers can appear in the environment struct.
 // struct _lf_sched_instance_t;
 struct _lf_tag_advancement_barrier;
-struct _lf_sched_instance_t;
+typedef struct _lf_sched_instance_t _lf_sched_instance_t;
 
 #define GLOBAL_ENVIRONMENT NULL
 /**

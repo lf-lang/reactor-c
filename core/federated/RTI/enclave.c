@@ -39,7 +39,7 @@ void logical_tag_complete(enclave_t* enclave, tag_t completed) {
         tracepoint_RTI_from_federate(receive_LTC, enclave->id, &(enclave->completed));
     }
 
-    LF_PRINT_LOG("RTI received from federate %d the Logical Tag Complete (LTC) (%lld, %u).",
+    LF_PRINT_LOG("RTI received from federate %d the Logical Tag Complete (LTC) (" PRINTF_TIME ", %u).",
                 enclave->id, enclave->completed.time - start_time, enclave->completed.microstep);
 
     // See if we can remove any of the recorded in-transit messages for this.
@@ -79,7 +79,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
             min_upstream_completed = candidate;
         }
     }
-    LF_PRINT_LOG("Minimum upstream LTC for fed %d is (%lld, %u) "
+    LF_PRINT_LOG("Minimum upstream LTC for fed %d is (" PRINTF_TIME ", %u) "
             "(adjusted by after delay).",
             e->id,
             min_upstream_completed.time - start_time, min_upstream_completed.microstep);
@@ -104,7 +104,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
     // Find the tag of the earliest possible incoming message from
     // upstream federates.
     tag_t t_d = FOREVER_TAG;
-    LF_PRINT_DEBUG("NOTE: FOREVER is displayed as (%lld, %u) and NEVER as (%lld, %u)",
+    LF_PRINT_DEBUG("NOTE: FOREVER is displayed as (" PRINTF_TAG ") and NEVER as (" PRINTF_TAG ")",
             FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
             NEVER - start_time, 0u);
 
@@ -118,7 +118,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
         tag_t upstream_next_event = transitive_next_event(
                 upstream, upstream->enclave.next_event, visited);
 
-        LF_PRINT_DEBUG("Earliest next event upstream of fed %d at fed %d has tag (%lld, %u).",
+        LF_PRINT_DEBUG("Earliest next event upstream of fed %d at fed %d has tag (" PRINTF_TIME ", %u).",
                 e->id,
                 upstream->enclave.id,
                 upstream_next_event.time - start_time, upstream_next_event.microstep);
@@ -134,7 +134,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
     }
     free(visited);
 
-    LF_PRINT_LOG("Earliest next event upstream has tag (%lld, %u).",
+    LF_PRINT_LOG("Earliest next event upstream has tag (" PRINTF_TIME ", %u).",
             t_d.time - start_time, t_d.microstep);
 
     if (

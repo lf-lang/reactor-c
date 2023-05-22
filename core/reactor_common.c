@@ -459,14 +459,12 @@ void _lf_pop_events(environment_t *env) {
         // Copy the token pointer into the trigger struct so that the
         // reactions can access it. This overwrites the previous template token,
         // for which we decrement the reference count.
-        LF_PRINT_DEBUG("env-%u replacing token %p", env->id, event->trigger->tmplt);
         _lf_replace_template_token((token_template_t*)event->trigger, token);
 
         // Decrement the reference count because the event queue no longer needs this token.
         // This has to be done after the above call to _lf_replace_template_token because
         // that call will increment the reference count and we need to not let the token be
         // freed prematurely.
-        LF_PRINT_DEBUG("env-%u done-using token %p", env->id, event->trigger->tmplt);
         _lf_done_using(token);
 
         // Mark the trigger present.
