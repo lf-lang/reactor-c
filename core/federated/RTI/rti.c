@@ -57,6 +57,11 @@ extern RTI_instance_t _RTI;
 const char *rti_trace_file_name = "rti.lft";
 
 int main(int argc, const char* argv[]) {
+
+    lf_mutex_init(&rti_mutex);
+    lf_cond_init(&received_start_times, &rti_mutex);
+    lf_cond_init(&sent_start_time, &rti_mutex);
+
     if (!process_args(argc, argv)) {
         // Processing command-line arguments failed.
         return -1;
@@ -70,7 +75,7 @@ int main(int argc, const char* argv[]) {
     assert(_RTI.number_of_federates < UINT16_MAX);
     _RTI.federates = (federate_t*)calloc(_RTI.number_of_federates, sizeof(federate_t));
     for (uint16_t i = 0; i < _RTI.number_of_federates; i++) {
-        initialize_federate(i);
+        initialize_federate(&_RTI.federates[i], i);
     }
     int socket_descriptor = start_rti_server(_RTI.user_specified_port);
     wait_for_federates(socket_descriptor);

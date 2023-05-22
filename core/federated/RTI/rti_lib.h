@@ -11,9 +11,6 @@
 #ifndef RTI_LIB_H
 #define RTI_LIB_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <errno.h>      // Defines perror(), errno
 #include <sys/socket.h>
 #include <sys/types.h>  // Provides select() function to read from multiple sockets.
 #include <netinet/in.h> // Defines struct sockaddr_in
@@ -21,16 +18,9 @@
 #include <unistd.h>     // Defines read(), write(), and close()
 #include <netdb.h>      // Defines gethostbyname().
 #include <strings.h>    // Defines bzero().
-#include <assert.h>
 #include <sys/wait.h>   // Defines wait() for process to change state.
-#include <pthread.h>
 
-#include "platform.h"   // Platform-specific types and functions
-#include "util.h" // Defines print functions (e.g., lf_print).
-#include "net_util.h"   // Defines network functions.
-#include "net_common.h" // Defines message types, etc. Includes <pthread.h> and "reactor.h".
-#include "tag.h"        // Time-related types and functions.
-#include "trace.h"      // Tracing related functions
+#include "enclave.h"
 
 #ifdef __RTI_AUTH__
 #include <openssl/rand.h> // For secure random number generation.
@@ -48,19 +38,6 @@ typedef enum socket_type_t {
     UDP
 } socket_type_t;
 
-/** Mode of execution of a federate. */
-typedef enum execution_mode_t {
-    FAST,
-    REALTIME
-} execution_mode_t;
-
-/** State of a federate during execution. */
-typedef enum fed_state_t {
-    NOT_CONNECTED,  // The federate has not connected.
-    GRANTED,        // Most recent MSG_TYPE_NEXT_EVENT_TAG has been granted.
-    PENDING         // Waiting for upstream federates.
-} fed_state_t;
-
 /**
  * Information about a federate known to the RTI, including its runtime state,
  * mode of execution, and connectivity with other federates.
@@ -70,27 +47,15 @@ typedef enum fed_state_t {
  * any scheduling constraints.
  */
 typedef struct federate_t {
-    uint16_t id;            // ID of this federate.
-    pthread_t thread_id;    // The ID of the thread handling communication with this federate.
+    enclave_t enclave;
+    lf_thread_t thread_id;    // The ID of the thread handling communication with this federate.
     int socket;             // The TCP socket descriptor for communicating with this federate.
     struct sockaddr_in UDP_addr;           // The UDP address for the federate.
     bool clock_synchronization_enabled;    // Indicates the status of clock synchronization
                                            // for this federate. Enabled by default.
-    tag_t completed;        // The largest logical tag completed by the federate (or NEVER if no LTC has been received).
-    tag_t last_granted;     // The maximum TAG that has been granted so far (or NEVER if none granted)
-    tag_t last_provisionally_granted;      // The maximum PTAG that has been provisionally granted (or NEVER if none granted)
-    tag_t next_event;       // Most recent NET received from the federate (or NEVER if none received).
     in_transit_message_record_q_t* in_transit_message_tags; // Record of in-transit messages to this federate that are not
                                                             // yet processed. This record is ordered based on the time
                                                             // value of each message for a more efficient access.
-    fed_state_t state;      // State of the federate.
-    int* upstream;          // Array of upstream federate ids.
-    interval_t* upstream_delay;    // Minimum delay on connections from upstream federates.
-    							   // Here, NEVER encodes no delay. 0LL is a microstep delay.
-    int num_upstream;              // Size of the array of upstream federates and delays.
-    int* downstream;        // Array of downstream federate ids.
-    int num_downstream;     // Size of the array of downstream federates.
-    execution_mode_t mode;  // FAST or REALTIME.
     char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
     int32_t server_port;    // port number of the socket server of the federate
                             // if it has any incoming direct connections from other federates.
@@ -98,9 +63,6 @@ typedef struct federate_t {
                             // RTI has not been informed of the port number.
     struct in_addr server_ip_addr; // Information about the IP address of the socket
                                 // server of the federate.
-    bool requested_stop;    // Indicates that the federate has requested stop or has replied
-                            // to a request for stop from the RTI. Used to prevent double-counting
-                            // a federate when handling lf_request_stop().
 } federate_t;
 
 /**
@@ -117,15 +79,6 @@ typedef enum clock_sync_stat {
  * corresponding federates' state.
  */
 typedef struct RTI_instance_t {
-    // The main mutex lock.
-    pthread_mutex_t rti_mutex;
-
-    // Condition variable used to signal receipt of all proposed start times.
-    pthread_cond_t received_start_times;
-
-    // Condition variable used to signal that a start time has been sent to a federate.
-    pthread_cond_t sent_start_time;
-
     // RTI's decided stop tag for federates
     tag_t max_stop_tag;
 
@@ -180,7 +133,7 @@ typedef struct RTI_instance_t {
 
     /************* Clock synchronization information *************/
     /* Thread performing PTP clock sync sessions periodically. */
-    pthread_t clock_thread;
+    lf_thread_t clock_thread;
 
     /**
      * Indicates whether clock sync is globally on for the federation. Federates
@@ -210,6 +163,21 @@ typedef struct RTI_instance_t {
 } RTI_instance_t;
 
 /**
+ * The main mutex lock for the RTI.
+ */ 
+extern lf_mutex_t rti_mutex;
+
+/**
+ * Condition variable used to signal receipt of all proposed start times.
+ */
+extern lf_cond_t received_start_times;
+
+/**
+ * Condition variable used to signal that a start time has been sent to a federate.
+ */
+extern lf_cond_t sent_start_time;
+
+/**
  * Enter a critical section where logical time and the event queue are guaranteed
  * to not change unless they are changed within the critical section.
  * this can be implemented by disabling interrupts.
@@ -217,7 +185,7 @@ typedef struct RTI_instance_t {
  * called first and that lf_critical_section_exit() is called later.
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_critical_section_enter(env);
+extern int lf_critical_section_enter();
 
 /**
  * Exit the critical section entered with lf_lock_time().
@@ -237,21 +205,6 @@ extern int lf_critical_section_exit();
  * @return The socket descriptor on which to accept connections.
  */
 int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_type);
-
-/**
- * Send a tag advance grant (TAG) message to the specified federate.
- * Do not send it if a previously sent PTAG was greater or if a
- * previously sent TAG was greater or equal.
- *
- * This function will keep a record of this TAG in the federate's last_granted
- * field.
- *
- * This function assumes that the caller holds the mutex lock.
- *
- * @param fed The federate.
- * @param tag The tag to grant.
- */
-void send_tag_advance_grant(federate_t* fed, tag_t tag);
 
 /**
  * Find the earliest tag at which the specified federate may
@@ -276,63 +229,6 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag);
  *  an array of falses of size _RTI.number_of_federates).
  */
 tag_t transitive_next_event(federate_t* fed, tag_t candidate, bool visited[]);
-
-/**
- * Send a provisional tag advance grant (PTAG) message to the specified federate.
- * Do not send it if a previously sent PTAG or TAG was greater or equal.
- *
- * This function will keep a record of this PTAG in the federate's last_provisionally_granted
- * field.
- *
- * This function assumes that the caller holds the mutex lock.
- *
- * @param fed The federate.
- * @param tag The tag to grant.
- */
-void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag);
-
-/**
- * Determine whether the specified federate fed is eligible for a tag advance grant,
- * (TAG) and, if so, send it one. This is called upon receiving a LTC, NET
- * or resign from an upstream federate.
- *
- * This function calculates the minimum M over
- * all upstream federates of the "after" delay plus the most recently
- * received LTC from that federate. If M is greater than the
- * most recently sent TAG to fed or greater than or equal to the most
- * recently sent PTAG, then send a TAG(M) to fed and return.
- *
- * If the above conditions do not result in sending a TAG, then find the
- * minimum M of the earliest possible future message from upstream federates.
- * This is calculated by transitively looking at the most recently received
- * NET message from upstream federates.
- * If M is greater than the NET of the federate fed or the most recently
- * sent PTAG to that federate, then
- * send TAG to the federate with tag equal to the NET of fed or the PTAG.
- * If M is equal to the NET of the federate, then send PTAG(M).
- *
- * This should be called whenever an immediately upstream federate sends to
- * the RTI an LTC (Logical Tag Complete), or when a transitive upstream
- * federate sends a NET (Next Event Tag) message.
- * It is also called when an upstream federate resigns from the federation.
- *
- * This function assumes that the caller holds the mutex lock.
- *
- * @return True if the TAG message is sent and false otherwise.
- */
-bool send_advance_grant_if_safe(federate_t* fed);
-
-/**
- * For all federates downstream of the specified federate, determine
- * whether they should be sent a TAG or PTAG and send it if so.
- *
- * This assumes the caller holds the mutex.
- *
- * @param fed The upstream federate.
- * @param visited An array of booleans used to determine whether a federate has
- *  been visited (initially all false).
- */
-void send_downstream_advance_grants_if_safe(federate_t* fed, bool visited[]);
 
 /**
  * @brief Update the next event tag of federate `federate_id`.
@@ -609,7 +505,7 @@ void* respond_to_erroneous_connections(void* nothing);
  * Initialize the federate with the specified ID.
  * @param id The federate ID.
  */
-void initialize_federate(uint16_t id);
+void initialize_federate(federate_t* fed, uint16_t id);
 
 /**
  * Start the socket server for the runtime infrastructure (RTI) and

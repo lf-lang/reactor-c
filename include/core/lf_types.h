@@ -43,7 +43,6 @@
 #include "lf_token.h"
 #include "platform.h"
 #include "vector.h"
-#include "scheduler_instance.h"
 
 /**
  * ushort type. Redefine here for portability if sys/types.h is not included.
@@ -290,6 +289,7 @@ typedef struct allocation_record_t {
 // Forward declarations so that a pointers can appear in the environment struct.
 // struct _lf_sched_instance_t;
 struct _lf_tag_advancement_barrier;
+struct _lf_sched_instance_t;
 
 /**
  * @brief Execution environment.
@@ -326,7 +326,7 @@ typedef struct environment_t {
 #ifdef LF_THREADED
     lf_mutex_t mutex;
     lf_cond_t event_q_changed;
-    _lf_sched_instance_t* scheduler;
+    struct _lf_sched_instance_t* scheduler;
     _lf_tag_advancement_barrier  barrier;
     lf_cond_t global_tag_barrier_requestors_reached_zero;
 #endif // LF_THREADED
@@ -354,6 +354,10 @@ typedef struct self_base_t {
 	struct allocation_record_t *allocations;
 	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
     environment_t * environment;
+#ifdef LF_THREADED
+    void* reactor_mutex; // If not null, this is expected to point to an lf_mutex_t.
+                          // It is not declared as such to avoid a dependence on platform.h.
+#endif
 #ifdef MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif

@@ -418,6 +418,11 @@ void _lf_initialize_timers(environment_t* env);
  */
 void _lf_trigger_startup_reactions(environment_t* env);
 
+/**
+ * Function to initialize mutexes for watchdogs
+ */
+void _lf_initialize_watchdog_mutexes(void);
+
 
 /**
  * Function (to be code generated) to terminate execution.

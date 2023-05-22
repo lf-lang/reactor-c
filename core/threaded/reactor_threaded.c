@@ -1137,7 +1137,8 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         // it can be probably called in that manner as well).
         _lf_initialize_start_tag(env);
     
-    
+        _lf_initialize_watchdog_mutexes();
+
         start_threads(env);
         lf_mutex_unlock(&env->mutex);
     }
