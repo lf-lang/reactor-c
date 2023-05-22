@@ -159,3 +159,60 @@ void notify_downstream_advance_grant_if_safe(enclave_t* e, bool visited[]) {
         notify_downstream_advance_grant_if_safe(downstream, visited);
     }
 }
+
+void update_enclave_next_event_tag_locked(enclave_t* e, tag_t next_event_tag) {
+    e->next_event = next_event_tag;
+
+    LF_PRINT_DEBUG(
+       "RTI: Updated the recorded next event tag for enclave %d to " PRINTF_TAG,
+       e->id,
+       next_event_tag.time - lf_time_start(),
+       next_event_tag.microstep
+    );
+
+    // Check to see whether we can reply now with a tag advance grant.
+    // If the federate has no upstream federates, then it does not wait for
+    // nor expect a reply. It just proceeds to advance time.
+    if (e->num_upstream > 0) {
+        notify_advance_grant_if_safe(e);
+    }
+    // Check downstream federates to see whether they should now be granted a TAG.
+    // To handle cycles, need to create a boolean array to keep
+    // track of which upstream federates have been visited.
+    bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
+    notify_downstream_advance_grant_if_safe(e, visited);
+    free(visited);
+}
+
+tag_advance_grant_t next_event_tag(enclave_t* e, tag_t next_event_tag) {
+    tag_advance_grant_t result;
+
+    // First, update the enclave data structure to record this next_event_tag,
+    // and notify any downstream enclaves, and unblock them if appropriate.
+    lf_mutex_lock(&rti_mutex);
+
+    tag_t previous_tag = e->last_granted;
+    tag_t previous_ptag = e->last_provisionally_granted;
+
+    update_enclave_next_event_tag_locked(e, next_event_tag);
+
+    while(true) {
+        // Determine whether the above call notified e of a TAG or PTAG.
+        // If so, return that value.
+        if (lf_tag_compare(previous_tag, e->last_granted) < 0) {
+            result.tag = e->last_granted;
+            result.is_provisional = false;
+            lf_mutex_unlock(&rti_mutex);
+            return result;
+        }
+        if (lf_tag_compare(previous_ptag, e->last_provisionally_granted) < 0) {
+            result.tag = e->last_provisionally_granted;
+            result.is_provisional = true;
+            lf_mutex_unlock(&rti_mutex);
+            return result;
+        }
+
+        // If not, block.
+        lf_cond_wait(&e->next_event_condition);
+    }
+}

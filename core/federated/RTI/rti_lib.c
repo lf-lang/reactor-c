@@ -363,28 +363,7 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
     ) {
         next_event_tag = min_in_transit_tag;
     }
-
-    _RTI.federates[federate_id].enclave.next_event = next_event_tag;
-
-    LF_PRINT_DEBUG(
-       "RTI: Updated the recorded next event tag for federate %d to " PRINTF_TAG,
-       federate_id,
-       next_event_tag.time - lf_time_start(),
-       next_event_tag.microstep
-    );
-
-    // Check to see whether we can reply now with a tag advance grant.
-    // If the federate has no upstream federates, then it does not wait for
-    // nor expect a reply. It just proceeds to advance time.
-    if (_RTI.federates[federate_id].enclave.num_upstream > 0) {
-        notify_advance_grant_if_safe(&_RTI.federates[federate_id]);
-    }
-    // Check downstream federates to see whether they should now be granted a TAG.
-    // To handle cycles, need to create a boolean array to keep
-    // track of which upstream federates have been visited.
-    bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
-    notify_downstream_advance_grant_if_safe(&_RTI.federates[federate_id], visited);
-    free(visited);
+    update_enclave_next_event_tag_locked(&_RTI.federates[federate_id].enclave, next_event_tag);
 }
 
 void handle_port_absent_message(federate_t* sending_federate, unsigned char* buffer) {
@@ -1103,7 +1082,7 @@ void handle_federate_resign(federate_t *my_fed) {
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream federates have been visited.
     bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
-    notify_downstream_advance_grant_if_safe(my_fed, visited);
+    notify_downstream_advance_grant_if_safe(&my_fed->enclave, visited);
     free(visited);
 
     lf_mutex_unlock(&rti_mutex);

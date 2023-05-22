@@ -43,6 +43,10 @@ typedef struct enclave_t {
     bool requested_stop;    // Indicates that the federate has requested stop or has replied
                             // to a request for stop from the RTI. Used to prevent double-counting
                             // a federate when handling lf_request_stop().
+    lf_cond_t next_event_condition; // Condition variable used by enclaves to notify an enclave
+                                    // that it's call to next_event_tag() should unblock.
+// FIXME: This has to be initialized!
+// lf_cond_init(&next_event_condition, &rti_mutex);
 } enclave_t;
 
 // FIXME: Docs
@@ -103,5 +107,33 @@ void notify_advance_grant_if_safe(enclave_t* e);
  * @return True if the TAG message is sent and false otherwise.
  */
 tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e);
+
+/**
+ * @brief Get the tag to advance to.
+ *
+ * An enclave should call this function when it is ready to advance its tag,
+ * passing as the second argument the tag of the earliest event on its event queue.
+ * The returned tag may be less than or equal to the argument tag and is interpreted
+ * by the enclave as the tag to which it can advance.
+ * 
+ * This will also notify downstream enclaves with a TAG or PTAG if appropriate,
+ * possibly unblocking their own calls to this same function.
+ *
+ * @param e The enclave.
+ * @param next_event_tag The next event tag for e.
+ */
+tag_advance_grant_t next_event_tag(enclave_t* e, tag_t next_event_tag);
+
+/**
+ * @brief Update the next event tag of an enclave.
+ *
+ * This will notify downstream enclaves with a TAG or PTAG if appropriate.
+ *
+ * This function assumes that the caller is holding the rti_mutex.
+ *
+ * @param e The enclave.
+ * @param next_event_tag The next event tag for e.
+ */
+void update_enclave_next_event_tag_locked(enclave_t* e, tag_t next_event_tag);
 
 #endif // ENCLAVE_H
