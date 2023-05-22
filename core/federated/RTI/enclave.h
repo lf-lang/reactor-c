@@ -45,8 +45,6 @@ typedef struct enclave_t {
                             // a federate when handling lf_request_stop().
     lf_cond_t next_event_condition; // Condition variable used by enclaves to notify an enclave
                                     // that it's call to next_event_tag() should unblock.
-// FIXME: This has to be initialized!
-// lf_cond_init(&next_event_condition, &rti_mutex);
 } enclave_t;
 
 // FIXME: Docs
@@ -56,6 +54,12 @@ typedef struct {
     tag_t tag;           // NEVER if there is no tag advance grant.
     bool is_provisional; // True for PTAG, false for TAG.
 } tag_advance_grant_t;
+
+/** 
+ * Initialize the enclave with the specified ID.
+ * @param id The enclave ID.
+ */
+void initialize_enclave(enclave_t* e, uint16_t id);
 
 /**
  * For all enclaves downstream of the specified enclave, determine
@@ -70,13 +74,48 @@ typedef struct {
 void notify_downstream_advance_grant_if_safe(enclave_t* e, bool visited[]);
 
 /**
+ * Notify a tag advance grant (TAG) message to the specified federate.
+ * Do not notify it if a previously sent PTAG was greater or if a
+ * previously sent TAG was greater or equal.
+ *
+ * This function will keep a record of this TAG in the federate's last_granted
+ * field.
+ *
+ * This function assumes that the caller holds the mutex lock.
+ * 
+ * FIXME: This needs two implementations, one for enclaves and one for federates.
+ *
+ * @param e The enclave.
+ * @param tag The tag to grant.
+ */
+void notify_tag_advance_grant(enclave_t* e, tag_t tag);
+
+/**
  * @brief Either send to a federate or unblock an enclave to give it a tag.
  * This function requires two different implementations, one for enclaves
  * and one for federates.
- * FIXME: This is only implemented for federates right now.
+ * 
+ * This assumes the caller holds the mutex.
+ * 
  * @param e The enclave.
  */
 void notify_advance_grant_if_safe(enclave_t* e);
+
+/**
+ * Nontify a provisional tag advance grant (PTAG) message to the specified enclave.
+ * Do not notify it if a previously sent PTAG or TAG was greater or equal.
+ *
+ * This function will keep a record of this PTAG in the federate's last_provisionally_granted
+ * field.
+ *
+ * This function assumes that the caller holds the mutex lock.
+ *
+ * FIXME: This needs two implementations, one for enclaves and one for federates.
+ *
+ * @param e The enclave.
+ * @param tag The tag to grant.
+ */
+void notify_provisional_tag_advance_grant(enclave_t* e, tag_t tag);
 
 /**
  * Determine whether the specified enclave is eligible for a tag advance grant,

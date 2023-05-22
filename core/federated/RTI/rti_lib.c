@@ -191,16 +191,16 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
     return socket_descriptor;
 }
 
-void send_tag_advance_grant(federate_t* fed, tag_t tag) {
-    if (fed->enclave.state == NOT_CONNECTED
-            || lf_tag_compare(tag, fed->enclave.last_granted) <= 0
-            || lf_tag_compare(tag, fed->enclave.last_provisionally_granted) < 0
+void notify_tag_advance_grant(enclave_t* e, tag_t tag) {
+    if (e->state == NOT_CONNECTED
+            || lf_tag_compare(tag, e->last_granted) <= 0
+            || lf_tag_compare(tag, e->last_provisionally_granted) < 0
     ) {
         return;
     }
     // Need to make sure that the destination federate's thread has already
     // sent the starting MSG_TYPE_TIMESTAMP message.
-    while (_RTI.federates[fed->enclave.id].enclave.state == PENDING) {
+    while (_RTI.federates[e->id].enclave.state == PENDING) {
         // Need to wait here.
         lf_cond_wait(&sent_start_time);
     }
@@ -211,23 +211,23 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag) {
     encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_to_federate(send_TAG, fed->enclave.id, &tag);
+        tracepoint_RTI_to_federate(send_TAG, e->id, &tag);
     }
     // This function is called in notify_advance_grant_if_safe(), which is a long
     // function. During this call, the socket might close, causing the following write_to_socket
     // to fail. Consider a failure here a soft failure and update the federate's status.
-    ssize_t bytes_written = write_to_socket(fed->socket, message_length, buffer);
+    ssize_t bytes_written = write_to_socket(((federate_t*)e)->socket, message_length, buffer);
     if (bytes_written < (ssize_t)message_length) {
-        lf_print_error("RTI failed to send tag advance grant to federate %d.", fed->enclave.id);
+        lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
         if (bytes_written < 0) {
-            fed->enclave.state = NOT_CONNECTED;
+            e->state = NOT_CONNECTED;
             // FIXME: We need better error handling, but don't stop other execution here.
             // mark_federate_requesting_stop(fed);
         }
     } else {
-        fed->enclave.last_granted = tag;
+        e->last_granted = tag;
         LF_PRINT_LOG("RTI sent to federate %d the tag advance grant (TAG) (%lld, %u).",
-                fed->enclave.id, tag.time - start_time, tag.microstep);
+                e->id, tag.time - start_time, tag.microstep);
     }
 }
 
@@ -272,16 +272,16 @@ tag_t transitive_next_event(federate_t* fed, tag_t candidate, bool visited[]) {
     return result;
 }
 
-void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
-    if (fed->enclave.state == NOT_CONNECTED
-            || lf_tag_compare(tag, fed->enclave.last_granted) <= 0
-            || lf_tag_compare(tag, fed->enclave.last_provisionally_granted) <= 0
+void notify_provisional_tag_advance_grant(enclave_t* e, tag_t tag) {
+    if (e->state == NOT_CONNECTED
+            || lf_tag_compare(tag, e->last_granted) <= 0
+            || lf_tag_compare(tag, e->last_provisionally_granted) <= 0
     ) {
         return;
     }
     // Need to make sure that the destination federate's thread has already
     // sent the starting MSG_TYPE_TIMESTAMP message.
-    while (_RTI.federates[fed->enclave.id].enclave.state == PENDING) {
+    while (_RTI.federates[e->id].enclave.state == PENDING) {
         // Need to wait here.
         lf_cond_wait(&sent_start_time);
     }
@@ -292,24 +292,24 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
     encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));
 
     if (_RTI.tracing_enabled){
-        tracepoint_RTI_to_federate(send_PTAG, fed->enclave.id, &tag);
+        tracepoint_RTI_to_federate(send_PTAG, e->id, &tag);
     }
     // This function is called in notify_advance_grant_if_safe(), which is a long
     // function. During this call, the socket might close, causing the following write_to_socket
     // to fail. Consider a failure here a soft failure and update the federate's status.
-    ssize_t bytes_written = write_to_socket(fed->socket, message_length, buffer);
+    ssize_t bytes_written = write_to_socket(((federate_t*)e)->socket, message_length, buffer);
 
     if (bytes_written < (ssize_t)message_length) {
-        lf_print_error("RTI failed to send tag advance grant to federate %d.", fed->enclave.id);
+        lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
         if (bytes_written < 0) {
-            fed->enclave.state = NOT_CONNECTED;
+            e->state = NOT_CONNECTED;
             // FIXME: We need better error handling, but don't stop other execution here.
             // mark_federate_requesting_stop(fed);
         }
     } else {
-        fed->enclave.last_provisionally_granted = tag;
+        e->last_provisionally_granted = tag;
         LF_PRINT_LOG("RTI sent to federate %d the Provisional Tag Advance Grant (PTAG) (%lld, %u).",
-                fed->enclave.id, tag.time - start_time, tag.microstep);
+                e->id, tag.time - start_time, tag.microstep);
 
         // Send PTAG to all upstream federates, if they have not had
         // a later or equal PTAG or TAG sent previously and if their transitive
@@ -317,8 +317,8 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
         // NOTE: This could later be replaced with a TNET mechanism once
         // we have an available encoding of causality interfaces.
         // That might be more efficient.
-        for (int j = 0; j < fed->enclave.num_upstream; j++) {
-            federate_t* upstream = &_RTI.federates[fed->enclave.upstream[j]];
+        for (int j = 0; j < e->num_upstream; j++) {
+            federate_t* upstream = &_RTI.federates[e->upstream[j]];
 
             // Ignore this federate if it has resigned.
             if (upstream->enclave.state == NOT_CONNECTED) continue;
@@ -337,19 +337,8 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
             // in which case, another will not be sent. But it
             // may not have been already granted.
             if (lf_tag_compare(upstream_next_event, tag) >= 0) {
-                send_provisional_tag_advance_grant(upstream, tag);
+                notify_provisional_tag_advance_grant(&upstream->enclave, tag);
             }
-        }
-    }
-}
-
-void notify_advance_grant_if_safe(enclave_t* e) {
-    tag_advance_grant_t grant = tag_advance_grant_if_safe(e);
-    if (lf_tag_compare(grant.tag, NEVER_TAG) != 0) {
-        if (grant.is_provisional) {
-            send_provisional_tag_advance_grant((federate_t*)e, grant.tag);
-        } else {
-            send_tag_advance_grant((federate_t*)e, grant.tag);
         }
     }
 }
@@ -1582,26 +1571,14 @@ void* respond_to_erroneous_connections(void* nothing) {
     return NULL;
 }
 
-void initialize_federate(uint16_t id) {
-    _RTI.federates[id].enclave.id = id;
-    _RTI.federates[id].socket = -1;      // No socket.
-    _RTI.federates[id].clock_synchronization_enabled = true;
-    _RTI.federates[id].enclave.completed = NEVER_TAG;
-    _RTI.federates[id].enclave.last_granted = NEVER_TAG;
-    _RTI.federates[id].enclave.last_provisionally_granted = NEVER_TAG;
-    _RTI.federates[id].enclave.next_event = NEVER_TAG;
-    _RTI.federates[id].in_transit_message_tags = initialize_in_transit_message_q();
-    _RTI.federates[id].enclave.state = NOT_CONNECTED;
-    _RTI.federates[id].enclave.upstream = NULL;
-    _RTI.federates[id].enclave.upstream_delay = NULL;
-    _RTI.federates[id].enclave.num_upstream = 0;
-    _RTI.federates[id].enclave.downstream = NULL;
-    _RTI.federates[id].enclave.num_downstream = 0;
-    _RTI.federates[id].enclave.mode = REALTIME;
-    strncpy(_RTI.federates[id].server_hostname ,"localhost", INET_ADDRSTRLEN);
-    _RTI.federates[id].server_ip_addr.s_addr = 0;
-    _RTI.federates[id].server_port = -1;
-    _RTI.federates[id].enclave.requested_stop = false;
+void initialize_federate(federate_t* fed, uint16_t id) {
+    initialize_enclave(&fed->enclave, id);
+    fed->socket = -1;      // No socket.
+    fed->clock_synchronization_enabled = true;
+    fed->in_transit_message_tags = initialize_in_transit_message_q();
+    strncpy(fed->server_hostname ,"localhost", INET_ADDRSTRLEN);
+    fed->server_ip_addr.s_addr = 0;
+    fed->server_port = -1;
 }
 
 int32_t start_rti_server(uint16_t port) {

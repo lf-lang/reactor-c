@@ -207,21 +207,6 @@ extern int lf_critical_section_exit();
 int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_type);
 
 /**
- * Send a tag advance grant (TAG) message to the specified federate.
- * Do not send it if a previously sent PTAG was greater or if a
- * previously sent TAG was greater or equal.
- *
- * This function will keep a record of this TAG in the federate's last_granted
- * field.
- *
- * This function assumes that the caller holds the mutex lock.
- *
- * @param fed The federate.
- * @param tag The tag to grant.
- */
-void send_tag_advance_grant(federate_t* fed, tag_t tag);
-
-/**
  * Find the earliest tag at which the specified federate may
  * experience its next event. This is the least next event tag (NET)
  * of the specified federate and (transitively) upstream federates
@@ -244,20 +229,6 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag);
  *  an array of falses of size _RTI.number_of_federates).
  */
 tag_t transitive_next_event(federate_t* fed, tag_t candidate, bool visited[]);
-
-/**
- * Send a provisional tag advance grant (PTAG) message to the specified federate.
- * Do not send it if a previously sent PTAG or TAG was greater or equal.
- *
- * This function will keep a record of this PTAG in the federate's last_provisionally_granted
- * field.
- *
- * This function assumes that the caller holds the mutex lock.
- *
- * @param fed The federate.
- * @param tag The tag to grant.
- */
-void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag);
 
 /**
  * @brief Update the next event tag of federate `federate_id`.
@@ -534,7 +505,7 @@ void* respond_to_erroneous_connections(void* nothing);
  * Initialize the federate with the specified ID.
  * @param id The federate ID.
  */
-void initialize_federate(uint16_t id);
+void initialize_federate(federate_t* fed, uint16_t id);
 
 /**
  * Start the socket server for the runtime infrastructure (RTI) and

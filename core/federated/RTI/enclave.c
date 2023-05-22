@@ -10,6 +10,25 @@ extern instant_t start_time;
 
 // FIXME: rename "federate" everywhere in this file.
 
+void initialize_enclave(enclave_t* e, uint16_t id) {
+    e->id = id;
+    e->completed = NEVER_TAG;
+    e->last_granted = NEVER_TAG;
+    e->last_provisionally_granted = NEVER_TAG;
+    e->next_event = NEVER_TAG;
+    e->state = NOT_CONNECTED;
+    e->upstream = NULL;
+    e->upstream_delay = NULL;
+    e->num_upstream = 0;
+    e->downstream = NULL;
+    e->num_downstream = 0;
+    e->mode = REALTIME;
+    e->requested_stop = false;
+
+    // Initialize the next event condition variable.
+    lf_cond_init(&e->next_event_condition, &rti_mutex);
+}
+
 void logical_tag_complete(enclave_t* enclave, tag_t completed) {
     // FIXME: Consolidate this message with NET to get NMR (Next Message Request).
     // Careful with handling startup and shutdown.
@@ -191,6 +210,8 @@ tag_advance_grant_t next_event_tag(enclave_t* e, tag_t next_event_tag) {
     // and notify any downstream enclaves, and unblock them if appropriate.
     lf_mutex_lock(&rti_mutex);
 
+    // FIXME: If last_granted is already greater than next_event_tag, return next_event_tag.
+
     tag_t previous_tag = e->last_granted;
     tag_t previous_ptag = e->last_provisionally_granted;
 
@@ -214,5 +235,16 @@ tag_advance_grant_t next_event_tag(enclave_t* e, tag_t next_event_tag) {
 
         // If not, block.
         lf_cond_wait(&e->next_event_condition);
+    }
+}
+
+void notify_advance_grant_if_safe(enclave_t* e) {
+    tag_advance_grant_t grant = tag_advance_grant_if_safe(e);
+    if (lf_tag_compare(grant.tag, NEVER_TAG) != 0) {
+        if (grant.is_provisional) {
+            notify_provisional_tag_advance_grant(e, grant.tag);
+        } else {
+            notify_tag_advance_grant(e, grant.tag);
+        }
     }
 }
