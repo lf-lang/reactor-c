@@ -7,6 +7,7 @@ set(
     scheduler_NP.c
     scheduler_PEDF_NP.c
     scheduler_sync_tag_advance.c
+    watchdog.c
 )
 list(APPEND INFO_SOURCES ${THREADED_SOURCES})
 

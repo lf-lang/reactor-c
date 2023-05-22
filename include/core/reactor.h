@@ -415,6 +415,11 @@ void _lf_initialize_timers(void);
  */
 void _lf_trigger_startup_reactions(void);
 
+/**
+ * Function to initialize mutexes for watchdogs
+ */
+void _lf_initialize_watchdog_mutexes(void);
+
 
 /**
  * Function (to be code generated) to terminate execution.
@@ -529,6 +534,29 @@ trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, 
  * to the RTI.
  */
 void _lf_fd_send_stop_request_to_rti(void);
+
+/**
+ * These functions must be implemented by both threaded and unthreaded
+ * runtime. Should be routed to appropriate API calls in platform.h
+*/
+
+/**
+ * @brief Notify other threads of new events on the event queue.
+ * 
+ */
+void _lf_notify_of_event();
+
+/**
+ * @brief Enter critical section. Must be paired with a
+ * `_lf_critical_section_exit()`
+ * 
+ */
+void _lf_critical_section_enter();
+
+/**
+ * @brief Leave critical section
+ */
+void _lf_critical_section_exit();
 
 #endif /* REACTOR_H */
 /** @} */
