@@ -315,12 +315,15 @@ typedef struct {
 
 /**
   * @brief Internal part of the port structs.
-  * HAS TO MATCH lf_port_base_t after the base!
+  * HAS TO MATCH lf_port_base_t after tmplt and is_present.
   */
 typedef struct {
     lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
     int destination_channel;              // -1 if there is no destination.
     int num_destinations;                 // The number of destination reactors this port writes to.
+    self_base_t* source_reactor;          // Pointer to the self struct of the reactor that provides data to this port.
+                                          // If this is an input, that reactor will normally be the container of the
+                                          // output port that sends it data.
 } lf_port_internal_t;
 
 #endif
