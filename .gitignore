@@ -1,7 +1,11 @@
 /.idea/
 /docs/_build
 /docs/api
-/.vscode/
+**/.vscode
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
 /build/
 **/.DS_Store
 /core/federated/RTI/build/
