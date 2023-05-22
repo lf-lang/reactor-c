@@ -34,7 +34,7 @@
  * Counter used to issue a warning if memory is
  * allocated for message payloads and never freed.
  */
-// int _lf_count_payload_allocations;
+int _lf_count_payload_allocations;
 
 #include <stdbool.h>
 #include <assert.h>
@@ -55,6 +55,7 @@ lf_token_t* _lf_tokens_allocated_in_reactions = NULL;
  * Tokens always have the same size in memory so they are easily recycled.
  * When a token is freed, it is inserted into this recycling bin.
  */
+// FIXME: Fix for enclaves
 static hashset_t _lf_token_recycling_bin = NULL;
 
 /**
@@ -73,11 +74,11 @@ static hashset_t _lf_token_templates = NULL;
 ////////////////////////////////////////////////////////////////////
 //// Functions that users may call.
 
-lf_token_t* lf_new_token(void *env, void* port_or_action, void* val, size_t len) {
-    return _lf_new_token((environment_t*)env, (token_type_t*)port_or_action, val, len);
+lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len) {
+    return _lf_new_token((token_type_t*)port_or_action, val, len);
 }
 
-lf_token_t* lf_writable_copy(struct environment_t* env, lf_port_base_t* port) {
+lf_token_t* lf_writable_copy(lf_port_base_t* port) {
     assert(port != NULL);
 
     lf_token_t* token = port->tmplt.token;
@@ -113,10 +114,10 @@ lf_token_t* lf_writable_copy(struct environment_t* env, lf_port_base_t* port) {
     LF_PRINT_DEBUG("lf_writable_copy: Allocated memory for payload (token value): %p", copy);
 
     // Count allocations to issue a warning if this is never freed.
-    env->_lf_count_payload_allocations++;
+    _lf_count_payload_allocations++;
 
     // Create a new, dynamically allocated token.
-    lf_token_t* result = _lf_new_token(env, (token_type_t*)port, copy, token->length);
+    lf_token_t* result = _lf_new_token((token_type_t*)port, copy, token->length);
     result->ref_count = 1;
     // Arrange for the token to be released (and possibly freed) at
     // the start of the next time step.
@@ -129,10 +130,10 @@ lf_token_t* lf_writable_copy(struct environment_t* env, lf_port_base_t* port) {
 ////////////////////////////////////////////////////////////////////
 //// Internal functions.
 
-void _lf_free_token_value(environment_t* env, lf_token_t* token) {
+void _lf_free_token_value(lf_token_t* token) {
     if (token->value != NULL) {
         // Count frees to issue a warning if this is never freed.
-        env->_lf_count_payload_allocations--;
+        _lf_count_payload_allocations--;
         // Free the value field (the payload).
         // First check whether the value field is garbage collected (e.g. in the
         // Python target), in which case the payload should not be freed.
@@ -149,22 +150,22 @@ void _lf_free_token_value(environment_t* env, lf_token_t* token) {
     }
 }
 
-token_freed _lf_free_token(struct environment_t* env, lf_token_t* token) {
+token_freed _lf_free_token(lf_token_t* token) {
     token_freed result = NOT_FREED;
     if (token == NULL) return result;
     if (token->ref_count > 0) return result;
-    _lf_free_token_value(env, token);
+    _lf_free_token_value(token);
 
     // Tokens that are created at the start of execution and associated with
     // output ports or actions persist until they are overwritten.
     // Need to acquire a mutex to access the recycle bin.
-    if (lf_critical_section_enter(env) != 0) {
+    if (lf_critical_section_enter(GLOBAL_ENVIRONMENT) != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
     if (_lf_token_recycling_bin == NULL) {
         _lf_token_recycling_bin = hashset_create(4); // Initial size is 16.
         if (_lf_token_recycling_bin == NULL) {
-            lf_critical_section_exit(env);
+            lf_critical_section_exit(GLOBAL_ENVIRONMENT);
             lf_print_error_and_exit("Out of memory: failed to setup _lf_token_recycling_bin");
         }
     }
@@ -179,7 +180,7 @@ token_freed _lf_free_token(struct environment_t* env, lf_token_t* token) {
         LF_PRINT_DEBUG("_lf_free_token: Freeing allocated memory for token: %p", token);
         free(token);
     }
-    if(lf_critical_section_exit(env) != 0) {
+    if(lf_critical_section_exit(GLOBAL_ENVIRONMENT) != 0) {
         lf_print_error_and_exit("Could not leave critical section");
     }
     _lf_count_token_allocations--;
@@ -188,10 +189,10 @@ token_freed _lf_free_token(struct environment_t* env, lf_token_t* token) {
     return result;
 }
 
-lf_token_t* _lf_new_token(struct environment_t* env, token_type_t* type, void* value, size_t length) {
+lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
     lf_token_t* result = NULL;
     // Check the recycling bin.
-    if (lf_critical_section_enter(env) != 0) {
+    if (lf_critical_section_enter(GLOBAL_ENVIRONMENT) != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
     if (_lf_token_recycling_bin != NULL) {
@@ -203,7 +204,7 @@ lf_token_t* _lf_new_token(struct environment_t* env, token_type_t* type, void* v
         }
         free(iterator);
     }
-    if(lf_critical_section_exit(env) != 0) {
+    if(lf_critical_section_exit(GLOBAL_ENVIRONMENT) != 0) {
         lf_print_error_and_exit("Could not leave critical section");
     }
     if (result == NULL) {
@@ -218,77 +219,80 @@ lf_token_t* _lf_new_token(struct environment_t* env, token_type_t* type, void* v
     return result;
 }
 
-lf_token_t* _lf_get_token(struct environment_t* env, token_template_t* tmplt) {
+// YOu want a token to carry a new value. In C target values are per]sistent.
+// You want to free the value here, because this is the point you overwrite it.
+lf_token_t* _lf_get_token(token_template_t* tmplt) {
     if (tmplt->token != NULL) {
         if (tmplt->token->ref_count == 1) {
             LF_PRINT_DEBUG("_lf_get_token: Reusing template token: %p with ref_count %zu",
                     tmplt->token, tmplt->token->ref_count);
             // Free any previous value in the token.
-            _lf_free_token_value(env, tmplt->token);
+            _lf_free_token_value(tmplt->token);
             return tmplt->token;
         } else {
             // Liberate the token.
-            _lf_done_using(env, tmplt->token);
+            _lf_done_using(tmplt->token);
         }
     }
     // If we get here, we need a new token.
-    tmplt->token = _lf_new_token(env, (token_type_t*)tmplt, NULL, 0);
+    tmplt->token = _lf_new_token((token_type_t*)tmplt, NULL, 0);
     tmplt->token->ref_count = 1;
     return tmplt->token;
 }
 
-void _lf_initialize_template(environment_t* env, token_template_t* tmplt, size_t element_size) {
+void _lf_initialize_template(token_template_t* tmplt, size_t element_size) {
     assert(tmplt != NULL);
-    if (lf_critical_section_enter(env) != 0) {
+    if (lf_critical_section_enter(GLOBAL_ENVIRONMENT) != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
     if (_lf_token_templates == NULL) {
         _lf_token_templates = hashset_create(4); // Initial size is 16.
     }
     hashset_add(_lf_token_templates, tmplt);
-    if(lf_critical_section_exit(env) != 0) {
+    if(lf_critical_section_exit(GLOBAL_ENVIRONMENT) != 0) {
         lf_print_error_and_exit("Could not leave critical section");
     }
     if (tmplt->token != NULL) {
         if (tmplt->token->ref_count == 1 && tmplt->token->type->element_size == element_size) {
             // Template token is already set.
             // If it has a value, free it.
-            _lf_free_token_value(env, tmplt->token);
+            _lf_free_token_value(tmplt->token);
             // Make sure its reference count is 1 (it should not be 0).
             tmplt->token->ref_count = 1;
             return;
         }
         // Replace the token.
-        _lf_done_using(env, tmplt->token);
+        _lf_done_using(tmplt->token);
         tmplt->token = NULL;
     }
     tmplt->type.element_size = element_size;
-    tmplt->token = _lf_new_token(env, (token_type_t*)tmplt, NULL, 0);
+    tmplt->token = _lf_new_token((token_type_t*)tmplt, NULL, 0);
     tmplt->token->ref_count = 1;
 }
 
-lf_token_t* _lf_initialize_token_with_value(struct environment_t* env, token_template_t* tmplt, void* value, size_t length) {
+// Free up anything currently residing in the tmplt, then create/reuse a token for the tmplt. Finally copy value into the token.
+lf_token_t* _lf_initialize_token_with_value(token_template_t* tmplt, void* value, size_t length) {
     assert(tmplt != NULL);
     LF_PRINT_DEBUG("_lf_initialize_token_with_value: template %p, value %p", tmplt, value);
-    lf_token_t* result = _lf_get_token(env, tmplt);
+    lf_token_t* result = _lf_get_token(tmplt);
     result->value = value;
     // Count allocations to issue a warning if this is never freed.
-    env->_lf_count_payload_allocations++;
+    _lf_count_payload_allocations++;
     result->length = length;
     return result;
 }
 
-lf_token_t* _lf_initialize_token(struct environment_t* env, token_template_t* tmplt, size_t length) {
+lf_token_t* _lf_initialize_token(token_template_t* tmplt, size_t length) {
     assert(tmplt != NULL);
     // Allocate memory for storing the array.
     void* value = calloc(length, tmplt->type.element_size);
-    lf_token_t* result = _lf_initialize_token_with_value(env, tmplt, value, length);
+    lf_token_t* result = _lf_initialize_token_with_value(tmplt, value, length);
     return result;
 }
 
 void _lf_free_all_tokens(environment_t* env) {
     // Free template tokens.
-    if (lf_critical_section_enter(env) != 0) {
+    if (lf_critical_section_enter(GLOBAL_ENVIRONMENT) != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
     // It is possible for a token to be a template token for more than one port
@@ -297,7 +301,7 @@ void _lf_free_all_tokens(environment_t* env) {
         hashset_itr_t iterator = hashset_iterator(_lf_token_templates);
         while (hashset_iterator_next(iterator) >= 0) {
             token_template_t* tmplt = (token_template_t*)hashset_iterator_value(iterator);
-            _lf_done_using(env, tmplt->token);
+            _lf_done_using(tmplt->token);
             tmplt->token = NULL;
         }
         free(iterator);
@@ -316,17 +320,17 @@ void _lf_free_all_tokens(environment_t* env) {
         hashset_destroy(_lf_token_recycling_bin);
         _lf_token_recycling_bin = NULL;
     }
-    if(lf_critical_section_exit(env) != 0) {
+    if(lf_critical_section_exit(GLOBAL_ENVIRONMENT) != 0) {
         lf_print_error_and_exit("Could not leave critical section");
     }
 }
 
-void _lf_replace_template_token(struct environment_t *env, token_template_t* tmplt, lf_token_t* newtoken) {
+void _lf_replace_template_token(token_template_t* tmplt, lf_token_t* newtoken) {
     assert(tmplt != NULL);
     LF_PRINT_DEBUG("_lf_replace_template_token: template: %p newtoken: %p.", tmplt, newtoken);
     if (tmplt->token != newtoken) {
         if (tmplt->token != NULL) {
-            _lf_done_using(env, tmplt->token);
+            _lf_done_using(tmplt->token);
         }
         if (newtoken != NULL) {
             newtoken->ref_count++;
@@ -337,7 +341,7 @@ void _lf_replace_template_token(struct environment_t *env, token_template_t* tmp
     }
 }
 
-token_freed _lf_done_using(struct environment_t* env, lf_token_t* token) {
+token_freed _lf_done_using(lf_token_t* token) {
     if (token == NULL) {
         return NOT_FREED;
     }
@@ -347,13 +351,13 @@ token_freed _lf_done_using(struct environment_t* env, lf_token_t* token) {
         return NOT_FREED;
     }
     token->ref_count--;
-    return _lf_free_token(env, token);
+    return _lf_free_token(token);
 }
 
 void _lf_free_token_copies(struct environment_t* env) {
     while (_lf_tokens_allocated_in_reactions != NULL) {
         lf_token_t* next = _lf_tokens_allocated_in_reactions->next;
-        _lf_done_using(env, _lf_tokens_allocated_in_reactions);
+        _lf_done_using(_lf_tokens_allocated_in_reactions);
         _lf_tokens_allocated_in_reactions = next;
     }
 }

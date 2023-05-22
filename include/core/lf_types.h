@@ -291,6 +291,7 @@ typedef struct allocation_record_t {
 struct _lf_tag_advancement_barrier;
 struct _lf_sched_instance_t;
 
+#define GLOBAL_ENVIRONMENT NULL
 /**
  * @brief Execution environment.
  * This struct contains information about the execution environment.
@@ -299,10 +300,11 @@ struct _lf_sched_instance_t;
  * Normally, there is only one execution environment, but if you use
  * scheduling enclaves, then there will be one for each enclave.
  */
+// FIXME: Can we avoid the #ifdefs wrt threading, federation and modes?
 typedef struct environment_t {
     int id;
     tag_t current_tag;
-    tag_t stop_tag;
+    tag_t stop_tag; // Make global protected by global mutex
     pqueue_t *event_q;
     pqueue_t *recycle_q;
     pqueue_t *next_q;
@@ -311,7 +313,6 @@ typedef struct environment_t {
     bool** _lf_is_present_fields_abbreviated;
     int _lf_is_present_fields_abbreviated_size;
     vector_t _lf_sparse_io_record_sizes;
-    int _lf_count_payload_allocations;
     trigger_handle_t _lf_handle;
     trigger_t** _lf_timer_triggers;
     int _lf_timer_triggers_size;
@@ -321,20 +322,19 @@ typedef struct environment_t {
     int _lf_shutdown_reactions_size;
     reaction_t** _lf_reset_reactions;
     int _lf_reset_reactions_size;
+#ifdef LF_THREADED
     int num_workers;
     lf_thread_t* thread_ids;
-#ifdef LF_THREADED
     lf_mutex_t mutex;
     lf_cond_t event_q_changed;
-    struct _lf_sched_instance_t* scheduler;
-    _lf_tag_advancement_barrier  barrier;
+    _lf_sched_instance_t* scheduler;
+    _lf_tag_advancement_barrier barrier;
     lf_cond_t global_tag_barrier_requestors_reached_zero;
 #endif // LF_THREADED
 #ifdef FEDERATED
     tag_t** _lf_intended_tag_fields;
     int _lf_intended_tag_fields_size;
 #endif // FEDERATED
-    void (*initialize_trigger_objects)(struct environment_t *);
 } environment_t;
 
 

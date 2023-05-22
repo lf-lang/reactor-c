@@ -138,6 +138,7 @@ trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_toke
  *  error.
  */
 trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, int length);
+trigger_handle_t lf_schedule_copy_enclave(environment_t *env, void* action, tag_t tag, void* value, int length);
 
 /**
  * Variant of lf_schedule_token that creates a token to carry the specified value.

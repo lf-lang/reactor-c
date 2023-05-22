@@ -86,7 +86,8 @@ trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_del
 void _lf_invoke_reaction(reaction_t* reaction, int worker);
 void schedule_output_reactions(environment_t *env, reaction_t* reaction, int worker);
 int process_args(int argc, const char* argv[]);
-void initialize(environment_t *env);
+void initialize_environment(environment_t *env);
+void initialize_global();
 void termination();
 
 int lf_notify_of_event(environment_t* env);
