@@ -217,10 +217,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define FED_COM_BUFFER_SIZE 256u
 
 /**
- * Number of seconds that elapse between a federate's attempts
+ * Number of nanoseconds that elapse between a federate's attempts
  * to connect to the RTI.
  */
-#define CONNECT_RETRY_INTERVAL 2
+#define CONNECT_RETRY_INTERVAL 2000000000LL
 
 /**
  * Bound on the number of retries to connect to the RTI.
