@@ -314,7 +314,7 @@ typedef struct {
 } lf_action_internal_t;
 
 /**
-  * @brief Internal part of the action structs.
+  * @brief Internal part of the port structs.
   * HAS TO MATCH lf_port_base_t after the base!
   */
 typedef struct {
