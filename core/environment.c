@@ -13,7 +13,8 @@ int environment_init(
     int num_timers, 
     int num_startup_reactions, 
     int num_shutdown_reactions, 
-    int num_reset_reactions
+    int num_reset_reactions,
+    int num_is_present_fields
 ) {
     env->id = id;
 
@@ -41,9 +42,20 @@ int environment_init(
         return 1;
     }
 
+    env->_lf_is_present_fields_size = num_is_present_fields;
+    env->_lf_is_present_fields_abbreviated_size = num_is_present_fields;
 
+    env->_lf_is_present_fields = (bool**)calloc(num_is_present_fields, sizeof(bool*));
+    if (env->_lf_is_present_fields == NULL) {
+        return 1;
+    }
 
-    env->_lf_handle=1;
+    env->_lf_is_present_fields_abbreviated = (bool**)calloc(num_is_present_fields, sizeof(bool*));
+    if (env->_lf_is_present_fields_abbreviated == NULL) {
+        return 1;
+    }
+
+    env->_lf_handle=1; // FIXME: What is this?
     #ifdef LF_THREADED
     env->num_workers = num_workers;
     env->thread_ids = (lf_thread_t*)calloc(num_workers, sizeof(lf_thread_t));
