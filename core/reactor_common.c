@@ -1810,6 +1810,4 @@ void termination() {
     }
 #endif
     _lf_free_all_reactors();
-    free(env->_lf_is_present_fields);
-    free(env->_lf_is_present_fields_abbreviated);
 }

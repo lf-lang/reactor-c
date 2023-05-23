@@ -1105,6 +1105,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Initialize the global payload and token allocation counts and the trigger table
     initialize_global();
 
+    // FIXME: Consider making watchdogs environment-specific.
+    _lf_initialize_watchdog_mutexes();
+    
     environment_t *envs;
     int num_envs = _lf_get_environments(&envs);
     
@@ -1161,7 +1164,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         // it can be probably called in that manner as well).
         _lf_initialize_start_tag(env);
     
-        _lf_initialize_watchdog_mutexes();
 
         start_threads(env);
         lf_mutex_unlock(&env->mutex);

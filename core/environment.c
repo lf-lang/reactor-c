@@ -43,7 +43,7 @@ int environment_init(
     }
 
     env->_lf_is_present_fields_size = num_is_present_fields;
-    env->_lf_is_present_fields_abbreviated_size = num_is_present_fields;
+    env->_lf_is_present_fields_abbreviated_size = 0;
 
     env->_lf_is_present_fields = (bool**)calloc(num_is_present_fields, sizeof(bool*));
     if (env->_lf_is_present_fields == NULL) {
@@ -73,5 +73,8 @@ void environment_free(environment_t* env) {
     free(env->_lf_shutdown_reactions);
     free(env->_lf_reset_reactions);
     free(env->thread_ids);
+    free(env->_lf_is_present_fields);
+    free(env->_lf_is_present_fields_abbreviated);
     lf_sched_free(env->scheduler);   
+
 }
