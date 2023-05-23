@@ -78,24 +78,15 @@ typedef enum clock_sync_stat {
  * Structure that an RTI instance uses to keep track of its own and its
  * corresponding federates' state.
  */
-typedef struct RTI_instance_t {
-    // RTI's decided stop tag for federates
-    tag_t max_stop_tag;
-
-    // Number of federates in the federation
-    int32_t number_of_federates;
-
-    // The federates.
-    federate_t* federates;
+typedef struct federation_RTI_t {
+    // Enclave RTI
+    enclave_RTI_t enclave_rti;
 
     // Maximum start time seen so far from the federates.
     int64_t max_start_time;
 
     // Number of federates that have proposed start times.
     int num_feds_proposed_start;
-
-    // Number of federates handling stop
-    int num_feds_handling_stop;
 
     /**
      * Boolean indicating that all federates have exited.
@@ -160,12 +151,12 @@ typedef struct RTI_instance_t {
      * Boolean indicating that tracing is enabled.
      */
     bool tracing_enabled;
-} RTI_instance_t;
+} federation_RTI_t;
 
-/**
- * The main mutex lock for the RTI.
- */ 
-extern lf_mutex_t rti_mutex;
+// /**
+//  * The main mutex lock for the RTI.
+//  */ 
+// extern lf_mutex_t rti_mutex;
 
 /**
  * Condition variable used to signal receipt of all proposed start times.
@@ -205,30 +196,6 @@ extern int lf_critical_section_exit();
  * @return The socket descriptor on which to accept connections.
  */
 int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_type);
-
-/**
- * Find the earliest tag at which the specified federate may
- * experience its next event. This is the least next event tag (NET)
- * of the specified federate and (transitively) upstream federates
- * (with delays of the connections added). For upstream federates,
- * we assume (conservatively) that federate upstream of those
- * may also send an event. The result will never be less than
- * the completion time of the federate (which may be NEVER,
- * if the federate has not yet completed a logical time).
- *
- * FIXME: This could be made less conservative by building
- * at code generation time a causality interface table indicating
- * which outputs can be triggered by which inputs. For now, we
- * assume any output can be triggered by any input.
- *
- * @param fed The federate.
- * @param candidate A candidate tag (for the first invocation,
- *  this should be fed->next_event).
- * @param visited An array of booleans indicating which federates
- *  have been visited (for the first invocation, this should be
- *  an array of falses of size _RTI.number_of_federates).
- */
-tag_t transitive_next_event(federate_t* fed, tag_t candidate, bool visited[]);
 
 /**
  * @brief Update the next event tag of federate `federate_id`.

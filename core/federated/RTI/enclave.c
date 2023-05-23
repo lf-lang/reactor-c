@@ -1,12 +1,12 @@
 #include "enclave.h"
 
-// FIXME: This should not be here.
-#include "rti_lib.h"
-
-extern RTI_instance_t _RTI;
+extern enclave_RTI_t _RTI;
 
 // Global variables defined in tag.c:
 extern instant_t start_time;
+
+// RTI mutex, which is the main lock  
+extern lf_mutex_t rti_mutex;
 
 // FIXME: rename "federate" everywhere in this file.
 
@@ -48,11 +48,11 @@ void logical_tag_complete(enclave_t* enclave, tag_t completed) {
 
     // Check downstream federates to see whether they should now be granted a TAG.
     for (int i = 0; i < enclave->num_downstream; i++) {
-        // FIXME: Shouldn't use federate_t here.
-        federate_t* downstream = &_RTI.federates[enclave->downstream[i]];
+        // FIXME: Shouldn't use enclave_t here.
+        enclave_t* downstream = &_RTI.enclaves[enclave->downstream[i]];
         // Notify downstream federate if appropriate.
         notify_advance_grant_if_safe((enclave_t*)downstream);
-        bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
+        bool* visited = (bool*)calloc(_RTI.number_of_enclaves, sizeof(bool)); // Initializes to 0.
         // Notify enclaves downstream of downstream if appropriate.
         notify_downstream_advance_grant_if_safe((enclave_t*)downstream, visited);
         free(visited);
@@ -68,12 +68,12 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
     tag_t min_upstream_completed = FOREVER_TAG;
 
     for (int j = 0; j < e->num_upstream; j++) {
-        federate_t* upstream = &_RTI.federates[e->upstream[j]];
+        enclave_t* upstream = &_RTI.enclaves[e->upstream[j]];
 
         // Ignore this federate if it has resigned.
-        if (upstream->enclave.state == NOT_CONNECTED) continue;
+        if (upstream->state == NOT_CONNECTED) continue;
 
-        tag_t candidate = lf_delay_tag(upstream->enclave.completed, e->upstream_delay[j]);
+        tag_t candidate = lf_delay_tag(upstream->completed, e->upstream_delay[j]);
 
         if (lf_tag_compare(candidate, min_upstream_completed) < 0) {
             min_upstream_completed = candidate;
@@ -99,7 +99,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
 
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream federates have been visited.
-    bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
+    bool* visited = (bool*)calloc(_RTI.number_of_enclaves, sizeof(bool)); // Initializes to 0.
 
     // Find the tag of the earliest possible incoming message from
     // upstream federates.
@@ -109,18 +109,18 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
             NEVER - start_time, 0u);
 
     for (int j = 0; j < e->num_upstream; j++) {
-        federate_t* upstream = &_RTI.federates[e->upstream[j]];
+        enclave_t* upstream = &_RTI.enclaves[e->upstream[j]];
 
         // Ignore this federate if it has resigned.
-        if (upstream->enclave.state == NOT_CONNECTED) continue;
+        if (upstream->state == NOT_CONNECTED) continue;
 
         // Find the (transitive) next event tag upstream.
         tag_t upstream_next_event = transitive_next_event(
-                upstream, upstream->enclave.next_event, visited);
+                upstream, upstream->next_event, visited);
 
         LF_PRINT_DEBUG("Earliest next event upstream of fed %d at fed %d has tag (" PRINTF_TIME ", %u).",
                 e->id,
-                upstream->enclave.id,
+                upstream->id,
                 upstream_next_event.time - start_time, upstream_next_event.microstep);
 
         // Adjust by the "after" delay.
@@ -172,7 +172,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
 void notify_downstream_advance_grant_if_safe(enclave_t* e, bool visited[]) {
     visited[e->id] = true;
     for (int i = 0; i < e->num_downstream; i++) {
-        enclave_t* downstream = (enclave_t*)&_RTI.federates[e->downstream[i]];
+        enclave_t* downstream = (enclave_t*)&_RTI.enclaves[e->downstream[i]];
         if (visited[downstream->id]) continue;
         notify_advance_grant_if_safe(downstream);
         notify_downstream_advance_grant_if_safe(downstream, visited);
@@ -198,7 +198,7 @@ void update_enclave_next_event_tag_locked(enclave_t* e, tag_t next_event_tag) {
     // Check downstream federates to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream federates have been visited.
-    bool* visited = (bool*)calloc(_RTI.number_of_federates, sizeof(bool)); // Initializes to 0.
+    bool* visited = (bool*)calloc(_RTI.number_of_enclaves, sizeof(bool)); // Initializes to 0.
     notify_downstream_advance_grant_if_safe(e, visited);
     free(visited);
 }
@@ -247,4 +247,45 @@ void notify_advance_grant_if_safe(enclave_t* e) {
             notify_tag_advance_grant(e, grant.tag);
         }
     }
+}
+
+tag_t transitive_next_event(enclave_t* e, tag_t candidate, bool visited[]) {
+    if (visited[e->id] || e->state == NOT_CONNECTED) {
+        // Federate has stopped executing or we have visited it before.
+        // No point in checking upstream federates.
+        return candidate;
+    }
+
+    visited[e->id] = true;
+    tag_t result = e->next_event;
+
+    // If the candidate is less than this federate's next_event, use the candidate.
+    if (lf_tag_compare(candidate, result) < 0) {
+        result = candidate;
+    }
+
+    // The result cannot be earlier than the start time.
+    if (result.time < start_time) {
+        // Earliest next event cannot be before the start time.
+        result = (tag_t){.time = start_time, .microstep = 0u};
+    }
+
+    // Check upstream federates to see whether any of them might send
+    // an event that would result in an earlier next event.
+    for (int i = 0; i < e->num_upstream; i++) {
+        tag_t upstream_result = transitive_next_event(
+                &_RTI.enclaves[e->upstream[i]], result, visited);
+
+        // Add the "after" delay of the connection to the result.
+        upstream_result = lf_delay_tag(upstream_result, e->upstream_delay[i]);
+
+        // If the adjusted event time is less than the result so far, update the result.
+        if (lf_tag_compare(upstream_result, result) < 0) {
+            result = upstream_result;
+        }
+    }
+    if (lf_tag_compare(result, e->completed) < 0) {
+        result = e->completed;
+    }
+    return result;
 }

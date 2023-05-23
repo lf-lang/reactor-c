@@ -47,6 +47,30 @@ typedef struct enclave_t {
                                     // that it's call to next_event_tag() should unblock.
 } enclave_t;
 
+/**
+ * Structure that an enclave RTI instance uses to keep track of its own and its
+ * corresponding enclaves'state.
+ */
+typedef struct enclave_RTI_t {
+    // The enclaves.
+    enclave_t **enclaves;
+
+    // Number of enclaves
+    int32_t number_of_enclaves;
+
+    // RTI's decided stop tag for federates
+    tag_t max_stop_tag;
+
+    // Number of federates handling stop
+    int num_feds_handling_stop;
+
+    /**
+     * Boolean indicating that tracing is enabled.
+     */
+    bool tracing_enabled;
+} enclave_RTI_t;
+
+
 // FIXME: Docs
 void logical_tag_complete(enclave_t* enclave, tag_t completed);
 
@@ -174,5 +198,29 @@ tag_advance_grant_t next_event_tag(enclave_t* e, tag_t next_event_tag);
  * @param next_event_tag The next event tag for e.
  */
 void update_enclave_next_event_tag_locked(enclave_t* e, tag_t next_event_tag);
+
+/**
+ * Find the earliest tag at which the specified federate may
+ * experience its next event. This is the least next event tag (NET)
+ * of the specified federate and (transitively) upstream federates
+ * (with delays of the connections added). For upstream federates,
+ * we assume (conservatively) that federate upstream of those
+ * may also send an event. The result will never be less than
+ * the completion time of the federate (which may be NEVER,
+ * if the federate has not yet completed a logical time).
+ *
+ * FIXME: This could be made less conservative by building
+ * at code generation time a causality interface table indicating
+ * which outputs can be triggered by which inputs. For now, we
+ * assume any output can be triggered by any input.
+ *
+ * @param fed The federate.
+ * @param candidate A candidate tag (for the first invocation,
+ *  this should be fed->next_event).
+ * @param visited An array of booleans indicating which federates
+ *  have been visited (for the first invocation, this should be
+ *  an array of falses of size _RTI.number_of_federates).
+ */
+tag_t transitive_next_event(enclave_t *e, tag_t candidate, bool visited[]);
 
 #endif // ENCLAVE_H

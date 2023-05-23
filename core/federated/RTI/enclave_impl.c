@@ -1,7 +1,7 @@
 #include "enclave.h"
 
 // FIXME: This should not be here.
-#include "rti_lib.h"
+#include "enclave_impl.h"
 #include "platform.h"
 
 void notify_tag_advance_grant(enclave_t* e, tag_t tag) {
