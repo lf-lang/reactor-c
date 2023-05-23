@@ -75,9 +75,10 @@ int main(int argc, const char* argv[]) {
     }
     printf("Starting RTI for %d federates in federation ID %s\n", _RTI.enclave_rti.number_of_enclaves, _RTI.federation_id);
     assert(_RTI.enclave_rti.number_of_enclaves < UINT16_MAX);
-    _RTI.enclave_rti.enclaves = (federate_t*)calloc(_RTI.enclave_rti.number_of_enclaves, sizeof(federate_t));
+    _RTI.enclave_rti.enclaves = (federate_t**)calloc(_RTI.enclave_rti.number_of_enclaves, sizeof(federate_t*));
     for (uint16_t i = 0; i < _RTI.enclave_rti.number_of_enclaves; i++) {
-        initialize_federate((federate_t*)&_RTI.enclave_rti.enclaves[i], i);
+        _RTI.enclave_rti.enclaves[i] = (federate_t *)malloc(sizeof(federate_t));
+        initialize_federate((federate_t *)_RTI.enclave_rti.enclaves[i], i);
     }
     int socket_descriptor = start_rti_server(_RTI.user_specified_port);
     wait_for_federates(socket_descriptor);
