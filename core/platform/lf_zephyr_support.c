@@ -414,9 +414,15 @@ int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arg
                                  (void *) lf_thread, arguments, NULL,
                                  _LF_THREAD_PRIORITY, 0, K_NO_WAIT);
 
+
+    // Pass the pointer to the k_thread struct out. This is needed
+    // to join on the thread later
+    *thread = &threads[tid];   
+
+    // Increment the tid counter so that next call to `lf_thread_create`
+    // uses the next available k_thread struct and stack 
     tid++; 
 
-    *thread = my_tid;   
 
     k_mutex_unlock(&thread_mutex);
 
