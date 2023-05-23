@@ -303,8 +303,8 @@ void tracepoint(
         _lf_trace_buffer[index][i].logical_time = tag->time;
         _lf_trace_buffer[index][i].microstep = tag->microstep;
     } else {
-        _lf_trace_buffer[index][i].logical_time = lf_time_logical(pointer);
-        _lf_trace_buffer[index][i].microstep = lf_tag(pointer).microstep;
+        _lf_trace_buffer[index][i].logical_time = ((self_base_t *)pointer)->environment->current_tag.time;
+        _lf_trace_buffer[index][i].microstep = ((self_base_t *)pointer)->environment->current_tag.microstep;
     }
     _lf_trace_buffer[index][i].trigger = trigger;
     _lf_trace_buffer[index][i].extra_delay = extra_delay;
