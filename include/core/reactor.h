@@ -428,7 +428,7 @@ void _lf_initialize_watchdog_mutexes(void);
  * Function (to be code generated) to terminate execution.
  * This will be invoked after all shutdown actions have completed.
  */
-void terminate_execution(void);
+void terminate_execution(environment_t* env);
 
 void termination();
 
@@ -537,7 +537,7 @@ trigger_handle_t _lf_schedule_copy_enclave(environment_t *env, lf_action_base_t*
  * For a federated execution, send a STOP_REQUEST message
  * to the RTI.
  */
-void _lf_fd_send_stop_request_to_rti(void);
+void _lf_fd_send_stop_request_to_rti(environment_t* env);
 
 // To be implemented in code generated main program
 int _lf_get_environments(environment_t **envs);

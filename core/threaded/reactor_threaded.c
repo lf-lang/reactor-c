@@ -47,7 +47,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.h"
 #include "environment.h"
 
-// Global variables defined in tag.c:
+// Global variables defined in tag.c and shared across environments
 extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
 extern instant_t start_time;
 
@@ -533,7 +533,7 @@ void _lf_next_locked(environment_t *env) {
     // Granted tag is greater than or equal to next event tag that we sent to the RTI.
     // Since send_next_event_tag releases the mutex lock internally, we need to check
     // again for what the next tag is (e.g., the stop time could have changed).
-    next_tag = get_next_event_tag();
+    next_tag = get_next_event_tag(env);
 
     // FIXME: Do starvation analysis for centralized coordination.
     // Specifically, if the event queue is empty on *all* federates, this
@@ -592,9 +592,9 @@ void _lf_next_locked(environment_t *env) {
     // from exceeding the timestamp of the message. It will remove that barrier
     // once the complete message has been read. Here, we wait for that barrier
     // to be removed, if appropriate.
-    if(_lf_wait_on_global_tag_barrier(next_tag)) {
+    if(_lf_wait_on_global_tag_barrier(env, next_tag)) {
         // A wait actually occurred, so the next_tag may have changed again.
-        next_tag = get_next_event_tag();
+        next_tag = get_next_event_tag(env);
     }
 #endif // FEDERATED
 
@@ -647,7 +647,7 @@ void _lf_request_stop(environment_t *env) {
         return;
     }
 #ifdef FEDERATED
-    _lf_fd_send_stop_request_to_rti();
+    _lf_fd_send_stop_request_to_rti(env);
     // Do not set stop_requested
     // since the RTI might grant a
     // later stop tag than the current

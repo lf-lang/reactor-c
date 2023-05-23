@@ -1134,7 +1134,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
     // Check if the trigger has violated the STP offset
     bool is_STP_violated = false;
 #ifdef FEDERATED
-    if (lf_tag_compare(trigger->intended_tag, current_tag) < 0) {
+    if (lf_tag_compare(trigger->intended_tag, env->current_tag) < 0) {
         is_STP_violated = true;
     }
 #ifdef FEDERATED_CENTRALIZED
@@ -1756,7 +1756,8 @@ void termination() {
     environment_t *env;
     int num_envs = _lf_get_environments(&env);
     // Invoke the code generated termination function.
-    terminate_execution();
+    // FIXME: The following function should only be invoked for the top-level
+    terminate_execution(env);
 
     // Stop any tracing, if it is running.
     stop_trace();

@@ -351,7 +351,7 @@ void* handle_p2p_connections_from_federates(void*);
  * @param port_ID The ID of the receiving port.
  * @param fed_ID The fed ID of the receiving federate.
  */
-void send_port_absent_to_federate(interval_t, unsigned short, unsigned short);
+void send_port_absent_to_federate(environment_t* env, interval_t, unsigned short, unsigned short);
 
 /**
  * Send a message to another federate directly or via the RTI.
@@ -416,7 +416,8 @@ int send_message(int message_type,
  * @param message The message.
  * @return 1 if the message has been sent, 0 otherwise.
  */
-int send_timed_message(interval_t,
+int send_timed_message(environment_t*,
+                        interval_t,
                         int,
                         unsigned short,
                         unsigned short,
@@ -436,7 +437,7 @@ int send_timed_message(interval_t,
  * not wait for physical time to match the logical start time
  * returned by the RTI.
  */
-void synchronize_with_other_federates(void);
+void synchronize_with_other_federates(environment_t* env);
 
 /**
  * Wait until the status of network port "port_ID" is known.
@@ -449,6 +450,6 @@ void synchronize_with_other_federates(void);
  * @param port_ID The ID of the network port
  * @param STAA The safe-to-assume-absent threshold for the port
  */
-void wait_until_port_status_known(int portID, interval_t STAA);
+void wwwait_until_port_status_known(int portID, interval_t STAA);
 
 #endif // FEDERATE_H
