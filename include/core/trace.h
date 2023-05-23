@@ -275,6 +275,7 @@ void start_trace(const char* filename);
  */
 void tracepoint(
         trace_event_t event_type,
+        void* environment_t,
         void* reactor,
         tag_t* tag,
         int worker,
@@ -291,21 +292,21 @@ void tracepoint(
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
-void tracepoint_reaction_starts(reaction_t* reaction, int worker);
+void tracepoint_reaction_starts(environment_t* env, reaction_t* reaction, int worker);
 
 /**
  * Trace the end of a reaction execution.
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
-void tracepoint_reaction_ends(reaction_t* reaction, int worker);
+void tracepoint_reaction_ends(environment_t* env, reaction_t* reaction, int worker);
 
 /**
  * Trace a call to schedule.
  * @param trigger Pointer to the trigger_t struct for the trigger.
  * @param extra_delay The extra delay passed to schedule().
  */
-void tracepoint_schedule(trigger_t* trigger, interval_t extra_delay);
+void tracepoint_schedule(environment_t* env, trigger_t* trigger, interval_t extra_delay);
 
 /**
  * Trace a user-defined event. Before calling this, you must call
@@ -331,32 +332,32 @@ void tracepoint_user_value(char* description, long long value);
  * Trace the start of a worker waiting for something to change on the reaction queue.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
-void tracepoint_worker_wait_starts(int worker);
+void tracepoint_worker_wait_starts(environment_t* env, int worker);
 
 /**
  * Trace the end of a worker waiting for something to change on reaction queue.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
-void tracepoint_worker_wait_ends(int worker);
+void tracepoint_worker_wait_ends(environment_t* env, int worker);
 
 /**
  * Trace the start of the scheduler waiting for logical time to advance or an event to
  * appear on the event queue.
  */
-void tracepoint_scheduler_advancing_time_starts();
+void tracepoint_scheduler_advancing_time_starts(environment_t* env);
 
 /**
  * Trace the end of the scheduler waiting for logical time to advance or an event to
  * appear on the event queue.
  */
-void tracepoint_scheduler_advancing_time_ends();
+void tracepoint_scheduler_advancing_time_ends(environment_t* env);
 
 /**
  * Trace the occurence of a deadline miss.
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
-void tracepoint_reaction_deadline_missed(reaction_t *reaction, int worker);
+void tracepoint_reaction_deadline_missed(environment_t* env, reaction_t *reaction, int worker);
 
 /**
  * Flush any buffered trace records to the trace file and

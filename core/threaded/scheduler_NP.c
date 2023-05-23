@@ -351,6 +351,7 @@ void lf_sched_free(_lf_sched_instance_t* _lf_sched_instance) {
  * worker thread should exit.
  */
 reaction_t* lf_sched_get_ready_reaction(_lf_sched_instance_t* _lf_sched_instance, int worker_number) {
+    environment_t *env = _lf_sched_instance->env;
     // Iterate until the stop tag is reached or reaction vectors are empty
     while (!_lf_sched_instance->_lf_sched_should_stop) {
         // Calculate the current level of reactions to execute
@@ -390,9 +391,9 @@ reaction_t* lf_sched_get_ready_reaction(_lf_sched_instance_t* _lf_sched_instance
         LF_PRINT_DEBUG("Worker %d is out of ready reactions.", worker_number);
 
         // Ask the scheduler for more work and wait
-        tracepoint_worker_wait_starts(worker_number);
+        tracepoint_worker_wait_starts(env, worker_number);
         _lf_sched_wait_for_work(_lf_sched_instance, worker_number);
-        tracepoint_worker_wait_ends(worker_number);
+        tracepoint_worker_wait_ends(env, worker_number);
     }
 
     // It's time for the worker thread to stop and exit.

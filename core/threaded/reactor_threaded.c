@@ -795,7 +795,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(environment_t *env, int w
         // Check for deadline violation.
         if (reaction->deadline == 0 || physical_time > env->current_tag.time + reaction->deadline) {
             // Deadline violation has occurred.
-            tracepoint_reaction_deadline_missed(reaction, worker_number);
+            tracepoint_reaction_deadline_missed(env, reaction, worker_number);
             violation_occurred = true;
             // Invoke the local handler, if there is one.
             reaction_function_t handler = reaction->deadline_violation_handler;
@@ -901,7 +901,7 @@ void _lf_worker_invoke_reaction(environment_t *env, int worker_number, reaction_
             reaction->name,
             env->current_tag.time - start_time,
             env->current_tag.microstep);
-    _lf_invoke_reaction(reaction, worker_number);
+    _lf_invoke_reaction(env, reaction, worker_number);
 
     // If the reaction produced outputs, put the resulting triggered
     // reactions into the queue or execute them immediately.

@@ -81,7 +81,8 @@ bool _lf_sched_should_stop_locked(_lf_sched_instance_t * sched) {
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
 bool _lf_sched_advance_tag_locked(_lf_sched_instance_t * sched) {
-    logical_tag_complete(sched->env->current_tag);
+    environment_t* env = sched->env;
+    logical_tag_complete(env->current_tag);
 
     if (_lf_sched_should_stop_locked(sched)) {
         return true;
@@ -92,9 +93,9 @@ bool _lf_sched_advance_tag_locked(_lf_sched_instance_t * sched) {
     // Advance time.
     // _lf_next_locked() may block waiting for real time to pass or events to appear.
     // to appear on the event queue. Note that we already
-    tracepoint_scheduler_advancing_time_starts();
-    _lf_next_locked(sched->env);
-    tracepoint_scheduler_advancing_time_ends();
+    tracepoint_scheduler_advancing_time_starts(env);
+    _lf_next_locked(env);
+    tracepoint_scheduler_advancing_time_ends(env);
 
     LF_PRINT_DEBUG("Scheduler: Done waiting for _lf_next_locked().");
     return false;

@@ -83,7 +83,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
 void _lf_advance_logical_time(environment_t *env, instant_t next_time);
 
 trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value);
-void _lf_invoke_reaction(reaction_t* reaction, int worker);
+void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker);
 void schedule_output_reactions(environment_t *env, reaction_t* reaction, int worker);
 int process_args(int argc, const char* argv[]);
 void initialize_environment(environment_t *env);
