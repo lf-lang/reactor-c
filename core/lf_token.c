@@ -290,7 +290,7 @@ lf_token_t* _lf_initialize_token(token_template_t* tmplt, size_t length) {
     return result;
 }
 
-void _lf_free_all_tokens(environment_t* env) {
+void _lf_free_all_tokens() {
     // Free template tokens.
     if (lf_critical_section_enter(GLOBAL_ENVIRONMENT) != 0) {
         lf_print_error_and_exit("Could not enter critical section");

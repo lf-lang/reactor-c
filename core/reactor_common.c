@@ -1763,36 +1763,40 @@ void termination() {
 
     // In order to free tokens, we perform the same actions we would have for a new time step.
     // FIXME: The termination function should NOT depend on the environment
-    _lf_start_time_step(env);
+    for (int i = 0; i<num_envs; i++) {
+        lf_print("---- Terminating environment %u", env->id);
+        _lf_start_time_step(env);
 
-#ifdef MODAL_REACTORS
-    // Free events and tokens suspended by modal reactors.
-    _lf_terminate_modal_reactors();
-#endif
+    #ifdef MODAL_REACTORS
+        // Free events and tokens suspended by modal reactors.
+        _lf_terminate_modal_reactors(); // FIXME: Enclaves
+    #endif
 
-    // If the event queue still has events on it, report that.
-    if (env->event_q != NULL && pqueue_size(env->event_q) > 0) {
-        lf_print_warning("---- There are %zu unprocessed future events on the event queue.", pqueue_size(env->event_q));
-        event_t* event = (event_t*)pqueue_peek(env->event_q);
-        interval_t event_time = event->time - start_time;
-        lf_print_warning("---- The first future event has timestamp " PRINTF_TIME " after start time.", event_time);
-    }
-    // Print elapsed times.
-    // If these are negative, then the program failed to start up.
-    interval_t elapsed_time = lf_time_logical_elapsed(env);
-    if (elapsed_time >= 0LL) {
-        char time_buffer[29]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
-        lf_comma_separated_time(time_buffer, elapsed_time);
-        printf("---- Elapsed logical time (in nsec): %s\n", time_buffer);
-
-        // If start_time is 0, then execution didn't get far enough along
-        // to initialize this.
-        if (start_time > 0LL) {
-            lf_comma_separated_time(time_buffer, lf_time_physical_elapsed());
-            printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
+        // If the event queue still has events on it, report that.
+        if (env->event_q != NULL && pqueue_size(env->event_q) > 0) {
+            lf_print_warning("---- There are %zu unprocessed future events on the event queue.", pqueue_size(env->event_q));
+            event_t* event = (event_t*)pqueue_peek(env->event_q);
+            interval_t event_time = event->time - start_time;
+            lf_print_warning("---- The first future event has timestamp " PRINTF_TIME " after start time.", event_time);
         }
+        // Print elapsed times.
+        // If these are negative, then the program failed to start up.
+        interval_t elapsed_time = lf_time_logical_elapsed(env);
+        if (elapsed_time >= 0LL) {
+            char time_buffer[29]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
+            lf_comma_separated_time(time_buffer, elapsed_time);
+            printf("---- Elapsed logical time (in nsec): %s\n", time_buffer);
+
+            // If start_time is 0, then execution didn't get far enough along
+            // to initialize this.
+            if (start_time > 0LL) {
+                lf_comma_separated_time(time_buffer, lf_time_physical_elapsed());
+                printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
+            }
+        }
+        env++;
     }
-    _lf_free_all_tokens(env); // Must be done before freeing reactors.
+    _lf_free_all_tokens(); // Must be done before freeing reactors.
     // Issue a warning if a memory leak has been detected.
     if (_lf_count_payload_allocations > 0) {
         lf_print_warning("Memory allocated for messages has not been freed.");

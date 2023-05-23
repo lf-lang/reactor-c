@@ -328,7 +328,7 @@ lf_token_t* _lf_initialize_token(token_template_t* tmplt, size_t length);
  * Free tokens on the _lf_token_recycling_bin hashset and all
  * template tokens.
  */
-void _lf_free_all_tokens(struct environment_t* env);
+void _lf_free_all_tokens();
 
 /**
  * @brief Replace the token in the specified template, if there is one,

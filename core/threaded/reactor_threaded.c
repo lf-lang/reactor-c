@@ -1082,8 +1082,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
             && process_args(argc, argv)) {
 
         determine_number_of_workers();
-        // FIXME: Set the start time for the program
-        start_time = lf_time_physical();
 
         // FIXME: How to do keep-alive stuff with enclaves?
         keepalive_specified = true;
@@ -1104,6 +1102,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 
     // Initialize the global payload and token allocation counts and the trigger table
     initialize_global();
+        
+    // FIXME: Set the start time for the program. Must occur after initialize_global since the clock isnt set up until then
+    start_time = lf_time_physical();
 
     // FIXME: Consider making watchdogs environment-specific.
     _lf_initialize_watchdog_mutexes();
