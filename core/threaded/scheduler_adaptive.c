@@ -90,7 +90,7 @@ void lf_sched_init(size_t number_of_workers, sched_params_t* params) {
     init_called = true;
 }
 
-void lf_sched_free(_lf_sched_instance_t* _lf_sched_instance) {
+void lf_sched_free(lf_scheduler_t* scheduler) {
     worker_states_free();
     worker_assignments_free();
 }
@@ -122,7 +122,7 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
     done_reaction->status = inactive;
 }
 
-void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
+void lf_scheduler_trigger_reaction(reaction_t* reaction, int worker_number) {
     assert(worker_number >= -1);
     if (!lf_bool_compare_and_swap(&reaction->status, inactive, queued)) return;
     worker_assignments_put(reaction);

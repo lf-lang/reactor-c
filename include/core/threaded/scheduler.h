@@ -71,7 +71,7 @@ void lf_sched_init(
  *
  * This must be called when the scheduler is no longer needed.
  */
-void lf_sched_free(_lf_sched_instance_t* _lf_sched_instance);
+void lf_sched_free(lf_scheduler_t* scheduler);
 
 /**
  * @brief Ask the scheduler for one more reaction.
@@ -84,7 +84,7 @@ void lf_sched_free(_lf_sched_instance_t* _lf_sched_instance);
  * @return reaction_t* A reaction for the worker to execute. NULL if the calling
  * worker thread should exit.
  */
-reaction_t* lf_sched_get_ready_reaction(_lf_sched_instance_t* _lf_sched_instance, int worker_number);
+reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_number);
 
 /**
  * @brief Inform the scheduler that worker thread 'worker_number' is done
@@ -114,6 +114,6 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  *
  */
-void lf_sched_trigger_reaction(_lf_sched_instance_t* _lf_sched_instance, reaction_t* reaction, int worker_number);
+void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number);
 
 #endif // LF_SCHEDULER_H

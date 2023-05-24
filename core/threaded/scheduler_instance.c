@@ -5,7 +5,7 @@
 
 bool init_sched_instance(
     environment_t * env,
-    _lf_sched_instance_t** instance,
+    lf_scheduler_t** instance,
     size_t number_of_workers,
     sched_params_t* params) {
     // FIXME: env pointer in the sched instance must be set by now
@@ -17,7 +17,7 @@ bool init_sched_instance(
         return false;
     } else {
         *instance =
-            (_lf_sched_instance_t*)calloc(1, sizeof(_lf_sched_instance_t));
+            (lf_scheduler_t*)calloc(1, sizeof(lf_scheduler_t));
     }
     lf_mutex_unlock(&env->mutex);
 
@@ -32,11 +32,11 @@ bool init_sched_instance(
         }
     }
 
-    (*instance)->_lf_sched_semaphore = lf_semaphore_new(0);
-    (*instance)->_lf_sched_number_of_workers = number_of_workers;
-    (*instance)->_lf_sched_next_reaction_level = 1;
+    (*instance)->semaphore = lf_semaphore_new(0);
+    (*instance)->number_of_workers = number_of_workers;
+    (*instance)->next_reaction_level = 1;
 
-    (*instance)->_lf_sched_should_stop = false;
+    (*instance)->should_stop = false;
     (*instance)->env = env;
 
     return true;

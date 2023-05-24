@@ -60,7 +60,7 @@ static bool _lf_logical_tag_completed = false;
  * Return true if the worker should stop now; false otherwise.
  * This function assumes the caller holds the mutex lock.
  */
-bool _lf_sched_should_stop_locked(_lf_sched_instance_t * sched) {
+bool should_stop_locked(lf_scheduler_t * sched) {
     // If this is not the very first step, check against the stop tag to see whether this is the last step.
     if (_lf_logical_tag_completed) {
         // If we are at the stop tag, do not call _lf_next_locked()
@@ -80,11 +80,11 @@ bool _lf_sched_should_stop_locked(_lf_sched_instance_t * sched) {
  *
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
-bool _lf_sched_advance_tag_locked(_lf_sched_instance_t * sched) {
+bool _lf_sched_advance_tag_locked(lf_scheduler_t * sched) {
     environment_t* env = sched->env;
     logical_tag_complete(env->current_tag);
 
-    if (_lf_sched_should_stop_locked(sched)) {
+    if (should_stop_locked(sched)) {
         return true;
     }
 

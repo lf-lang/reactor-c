@@ -292,9 +292,9 @@ typedef struct allocation_record_t {
 } allocation_record_t;
 
 // Forward declarations so that a pointers can appear in the environment struct.
-// struct _lf_sched_instance_t;
+// struct lf_scheduler_t;
 struct _lf_tag_advancement_barrier;
-typedef struct _lf_sched_instance_t _lf_sched_instance_t;
+typedef struct lf_scheduler_t lf_scheduler_t;
 
 #define GLOBAL_ENVIRONMENT NULL
 /**
@@ -332,7 +332,7 @@ typedef struct environment_t {
     lf_thread_t* thread_ids;
     lf_mutex_t mutex;
     lf_cond_t event_q_changed;
-    _lf_sched_instance_t* scheduler;
+    lf_scheduler_t* scheduler;
     _lf_tag_advancement_barrier barrier;
     lf_cond_t global_tag_barrier_requestors_reached_zero;
 #endif // LF_THREADED

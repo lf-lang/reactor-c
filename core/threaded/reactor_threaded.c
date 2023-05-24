@@ -679,7 +679,7 @@ void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_n
         // Check if reaction is disabled by mode inactivity
         if (_lf_mode_is_active(reaction->mode)) {
 #endif
-    lf_sched_trigger_reaction(env->scheduler, reaction, worker_number);
+    lf_scheduler_trigger_reaction(env->scheduler, reaction, worker_number);
 #ifdef MODAL_REACTORS
         } else { // Suppress reaction by preventing entering reaction queue
             LF_PRINT_DEBUG("Suppressing downstream reaction %s due inactivity of mode %s.",
