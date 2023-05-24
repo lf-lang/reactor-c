@@ -61,9 +61,7 @@ typedef struct {
     lf_token_t* token;                       // token_template_t
     size_t length;                           // token_template_t
     bool is_present;                         // lf_port_base_t
-    lf_sparse_io_record_t* sparse_record;    // lf_port_base_t
-    int destination_channel;                 // lf_port_base_t
-    int num_destinations;                    // lf_port_base_t
+    lf_port_internal_t _base;                // lf_port_internal_t
     PyObject* value;
     FEDERATED_GENERIC_EXTENSION
 } generic_port_instance_struct;
