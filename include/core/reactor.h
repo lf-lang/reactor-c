@@ -423,6 +423,11 @@ void _lf_trigger_startup_reactions(environment_t* env);
  */
 void _lf_initialize_watchdog_mutexes(void);
 
+/**
+ * Function to initialize mutexes for watchdogs
+ */
+void _lf_initialize_watchdog_mutexes(void);
+
 
 /**
  * Function (to be code generated) to terminate execution.
@@ -543,6 +548,29 @@ void _lf_fd_send_stop_request_to_rti(environment_t* env);
 int _lf_get_environments(environment_t **envs);
 void _lf_create_environments();
 
+
+/**
+ * These functions must be implemented by both threaded and unthreaded
+ * runtime. Should be routed to appropriate API calls in platform.h
+*/
+
+/**
+ * @brief Notify other threads of new events on the event queue.
+ * 
+ */
+void _lf_notify_of_event();
+
+/**
+ * @brief Enter critical section. Must be paired with a
+ * `_lf_critical_section_exit()`
+ * 
+ */
+void _lf_critical_section_enter();
+
+/**
+ * @brief Leave critical section
+ */
+void _lf_critical_section_exit();
 
 #endif /* REACTOR_H */
 /** @} */

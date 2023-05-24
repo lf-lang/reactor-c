@@ -1167,7 +1167,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         // Call the following function only once, rather than per worker thread (although
         // it can be probably called in that manner as well).
         _lf_initialize_start_tag(env);
-    
 
         start_threads(env);
         lf_mutex_unlock(&env->mutex);

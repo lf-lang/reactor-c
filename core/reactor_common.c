@@ -66,6 +66,14 @@ extern int _lf_watchdog_count;
 extern watchdog_t* _lf_watchdogs;
 #endif
 
+#ifdef LF_THREADED
+#include "watchdog.h"
+
+// Code generated global variables.
+extern int _lf_watchdog_count;
+extern watchdog_t* _lf_watchdogs;
+#endif
+
 // Global variable defined in tag.c:
 // extern tag_t env->current_tag;
 extern instant_t start_time;

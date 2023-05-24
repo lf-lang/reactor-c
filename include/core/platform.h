@@ -36,7 +36,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
