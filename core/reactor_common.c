@@ -1705,7 +1705,6 @@ void initialize_environment(environment_t *env) {
  * has not been freed.
  */
 void termination() {
-    // FIXME: Do all environments here...
     environment_t *env;
     int num_envs = _lf_get_environments(&env);
     // Invoke the code generated termination function.
