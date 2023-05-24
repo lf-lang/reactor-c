@@ -484,7 +484,7 @@ void stop_trace() {
  */
 void tracepoint_federate_to_RTI(trace_event_t event_type, int fed_id, tag_t* tag) {
     tracepoint(event_type, 
-        NULL,   // void* pointer,
+        NULL,   // void* environment pointer,
         NULL,   // void* pointer,
         tag,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
@@ -507,7 +507,7 @@ void tracepoint_federate_to_RTI(trace_event_t event_type, int fed_id, tag_t* tag
 void tracepoint_federate_from_RTI(trace_event_t event_type, int fed_id, tag_t* tag) {
     // trace_event_t event_type = (type == MSG_TYPE_TAG_ADVANCE_GRANT)? federate_TAG : federate_PTAG;
     tracepoint(event_type,
-        NULL,   // void* pointer,
+        NULL,   // void* environment pointer,
         NULL,   // void* pointer,
         tag,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
@@ -530,7 +530,7 @@ void tracepoint_federate_from_RTI(trace_event_t event_type, int fed_id, tag_t* t
  */
 void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
     tracepoint(event_type,
-        NULL,   // void* pointer,
+        NULL,   // void* environment pointer,
         NULL,   // void* pointer,
         tag,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
@@ -553,7 +553,7 @@ void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int p
  */
 void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
     tracepoint(event_type,
-        NULL,   // void* pointer,
+        NULL,   // void* environment pointer,
         NULL,   // void* pointer,
         tag,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
@@ -581,7 +581,7 @@ void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int
  */
 void tracepoint_RTI_to_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
     tracepoint(event_type,
-        NULL,   // void* pointer,
+        NULL,   // void* environment pointer,
         NULL,   // void* pointer,
         tag,    // tag_t* tag,
         fed_id, // int worker (one thread per federate)
@@ -603,6 +603,7 @@ void tracepoint_RTI_to_federate(trace_event_t event_type, int fed_id, tag_t* tag
  */
 void tracepoint_RTI_from_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
     tracepoint(event_type,
+        NULL,   // void* environment pointer,
         NULL,   // void* pointer,
         tag,    // tag_t* tag,
         fed_id, // int worker (one thread per federate)
