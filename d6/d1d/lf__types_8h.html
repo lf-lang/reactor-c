@@ -120,6 +120,11 @@ Data Structures</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d4b/structlf__action__internal__t.html">lf_action_internal_t</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d8c/structlf__port__internal__t.html">lf_port_internal_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Internal part of the port structs. HAS TO MATCH <a class="el" href="../../da/de8/structlf__port__base__t.html" title="Base type for ports. Port structs are customized types because their payloads are type specific....">lf_port_base_t</a> after tmplt and is_present.  <a href="../../d9/d8c/structlf__port__internal__t.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
@@ -158,8 +163,6 @@ Typedefs</h2></td></tr>
 <tr class="separator:a416845ec4469b3186de047c32402f5e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6202eb05c29c30bfd6a8fc203de6422f"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d1d/lf__types_8h.html#a6202eb05c29c30bfd6a8fc203de6422f">self_base_t</a></td></tr>
 <tr class="separator:a6202eb05c29c30bfd6a8fc203de6422f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a37ca78c364cf78731b86967dbdcc1f2f"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d1d/lf__types_8h.html#a37ca78c364cf78731b86967dbdcc1f2f">lf_action_base_t</a></td></tr>
-<tr class="separator:a37ca78c364cf78731b86967dbdcc1f2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -198,7 +201,8 @@ LICENSE</h1>
 <p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 <h1><a class="anchor" id="DESCRIPTION"></a>
 DESCRIPTION</h1>
-<p>Type definitions that are widely used across different parts of the runtime. </p>
+<p>Type definitions that are widely used across different parts of the runtime.</p>
+<p><b>IMPORTANT:</b> Many of the structs defined here require matching layouts and, if changed, will require changes in the code generator. See <a href="https://github.com/lf-lang/reactor-c/wiki/Structs-in-the-Reactor-C-Runtime">Structs in the Reactor-C Runtime</a>. </p>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a464391e568178aa10799bce40d9a7792" name="a464391e568178aa10799bce40d9a7792"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a464391e568178aa10799bce40d9a7792">&#9670;&#160;</a></span>ADAPTIVE</h2>
@@ -328,21 +332,6 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p>Topological order index for reactions. </p>
-
-</div>
-</div>
-<a id="a37ca78c364cf78731b86967dbdcc1f2f" name="a37ca78c364cf78731b86967dbdcc1f2f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a37ca78c364cf78731b86967dbdcc1f2f">&#9670;&#160;</a></span>lf_action_base_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">typedef struct <a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a> <a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Action structs are customized types because their payloads are type specific. This struct represents their common features. Given any pointer to an action struct, it can be cast to <a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a>, to <a class="el" href="../../de/d6b/structtoken__template__t.html" title="Base type for ports (lf_port_base_t) and actions (trigger_t), which can carry tokens....">token_template_t</a>, or to <a class="el" href="../../db/d12/structtoken__type__t.html" title="Type information for tokens. Specifically, this struct contains the fields needed to support token ty...">token_type_t</a> to access these common fields. IMPORTANT: If this is changed, it must also be changed in CActionGenerator.java generateAuxiliaryStruct(). </p>
 
 </div>
 </div>

@@ -15,7 +15,7 @@ var searchData=
   ['notes_12',['notes',['../d5/daa/audio__loop__mac_8c.html#aa289199cd513300864295dd003b671e2',1,'notes():&#160;audio_loop_mac.c'],['../da/d0e/audio__loop__linux_8c.html#aa289199cd513300864295dd003b671e2',1,'notes():&#160;audio_loop_linux.c']]],
   ['nothing_13',['nothing',['../d6/df3/hashmap_8h.html#abddc82f328c9384f6c66210d6740e6aa',1,'hashmap.h']]],
   ['num_5fchannels_14',['num_channels',['../d7/dc9/structlf__waveform__t.html#ac1821431ece937edd64e32209a793018',1,'lf_waveform_t::num_channels()'],['../d1/d3f/structlf__wav__format__t.html#a94176b96fa481451960f8b727746a886',1,'lf_wav_format_t::num_channels()']]],
-  ['num_5fdestinations_15',['num_destinations',['../da/de8/structlf__port__base__t.html#abb1d021a0d2668988d927e9754b699dc',1,'lf_port_base_t::num_destinations()'],['../da/dc0/structgeneric__port__instance__struct.html#a19b8f6fecf7a9793305289e3c662308d',1,'generic_port_instance_struct::num_destinations()']]],
+  ['num_5fdestinations_15',['num_destinations',['../da/de8/structlf__port__base__t.html#abb1d021a0d2668988d927e9754b699dc',1,'lf_port_base_t::num_destinations()'],['../d9/d8c/structlf__port__internal__t.html#a7948ecbc67381ccbe57c033272d6544f',1,'lf_port_internal_t::num_destinations()']]],
   ['num_5fdownstream_16',['num_downstream',['../d9/d2f/structfederate__t.html#a5818815895ea37489f73045167f91fe5',1,'federate_t']]],
   ['num_5fentries_17',['num_entries',['../d6/df3/hashmap_8h.html#abf777aba6f6200c8f2fe2b88d58208d8',1,'hashmap.h']]],
   ['num_5ffeds_5fhandling_5fstop_18',['num_feds_handling_stop',['../d3/d99/struct_r_t_i__instance__t.html#aa4c4ac6c3b7d9bb27ba43c657247d49a',1,'RTI_instance_t']]],

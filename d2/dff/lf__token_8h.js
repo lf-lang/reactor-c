@@ -8,6 +8,7 @@ var lf__token_8h =
     [ "lf_port_base_t", "d2/dff/lf__token_8h.html#a91b17c088cd50ce69df73f1470a18799", null ],
     [ "lf_sparse_io_record_t", "d2/dff/lf__token_8h.html#aa6696d69bef6bb4bdd52ef9ab9d2c614", null ],
     [ "lf_token_t", "d2/dff/lf__token_8h.html#a973e404c4c1bd798a54501d0e1d640f9", null ],
+    [ "self_base_t", "d2/dff/lf__token_8h.html#a6202eb05c29c30bfd6a8fc203de6422f", null ],
     [ "token_freed", "d2/dff/lf__token_8h.html#a0cb4f0fedba2f1e1fd3893440ab53647", null ],
     [ "token_template_t", "d2/dff/lf__token_8h.html#ad0befcbc6fe23c8dd0b6f483d4067e45", null ],
     [ "token_type_t", "d2/dff/lf__token_8h.html#a58dc2f4a624d2f3030b7e5f3596e58d6", null ],

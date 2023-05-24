@@ -112,18 +112,28 @@ Data Fields</h2></td></tr>
 <tr class="separator:a1fbe8cff811ec4527c7d69e49be2d8af"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9c01e0f1634b218351eb76cc8ac878b8"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dc0/structgeneric__port__instance__struct.html#a9c01e0f1634b218351eb76cc8ac878b8">is_present</a></td></tr>
 <tr class="separator:a9c01e0f1634b218351eb76cc8ac878b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a02ba982c4c216fcd3366ae142b909a59"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../de/d9c/structlf__sparse__io__record__t.html">lf_sparse_io_record_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dc0/structgeneric__port__instance__struct.html#a02ba982c4c216fcd3366ae142b909a59">sparse_record</a></td></tr>
-<tr class="separator:a02ba982c4c216fcd3366ae142b909a59"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae5a755cb446c87ec4d5479ab7087d49c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dc0/structgeneric__port__instance__struct.html#ae5a755cb446c87ec4d5479ab7087d49c">destination_channel</a></td></tr>
-<tr class="separator:ae5a755cb446c87ec4d5479ab7087d49c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a19b8f6fecf7a9793305289e3c662308d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dc0/structgeneric__port__instance__struct.html#a19b8f6fecf7a9793305289e3c662308d">num_destinations</a></td></tr>
-<tr class="separator:a19b8f6fecf7a9793305289e3c662308d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9e4b6b158ecc9da6dd5f3612871d98d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d8c/structlf__port__internal__t.html">lf_port_internal_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dc0/structgeneric__port__instance__struct.html#ab9e4b6b158ecc9da6dd5f3612871d98d">_base</a></td></tr>
+<tr class="separator:ab9e4b6b158ecc9da6dd5f3612871d98d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e8ba95e2738d6d3631c159e35082873"><td class="memItemLeft" align="right" valign="top">PyObject *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/dc0/structgeneric__port__instance__struct.html#a3e8ba95e2738d6d3631c159e35082873">value</a></td></tr>
 <tr class="separator:a3e8ba95e2738d6d3631c159e35082873"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The struct used to instantiate a port in Lingua Franca. This is used in the PythonGenerator instead of redefining a struct for each port. This can be used for any Python object, including lists and tuples. PyObject* value is the value of the port with the generic Python type. NOTE: The structure here must follow exactly that of <a class="el" href="../../da/de8/structlf__port__base__t.html" title="Base type for ports. Port structs are customized types because their payloads are type specific....">lf_port_base_t</a>, which includes as its first element a <a class="el" href="../../de/d6b/structtoken__template__t.html" title="Base type for ports (lf_port_base_t) and actions (trigger_t), which can carry tokens....">token_template_t</a>, which includes as its first element a <a class="el" href="../../db/d12/structtoken__type__t.html" title="Type information for tokens. Specifically, this struct contains the fields needed to support token ty...">token_type_t</a>. </p>
 </div><h2 class="groupheader">Field Documentation</h2>
+<a id="ab9e4b6b158ecc9da6dd5f3612871d98d" name="ab9e4b6b158ecc9da6dd5f3612871d98d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab9e4b6b158ecc9da6dd5f3612871d98d">&#9670;&#160;</a></span>_base</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d9/d8c/structlf__port__internal__t.html">lf_port_internal_t</a> generic_port_instance_struct::_base</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a91dc1a062dbad3a91c4b692c28308360" name="a91dc1a062dbad3a91c4b692c28308360"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a91dc1a062dbad3a91c4b692c28308360">&#9670;&#160;</a></span>copy_constructor</h2>
 
@@ -132,20 +142,6 @@ Data Fields</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">void *(* generic_port_instance_struct::copy_constructor) (void *<a class="el" href="../../da/dc0/structgeneric__port__instance__struct.html#a3e8ba95e2738d6d3631c159e35082873">value</a>)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ae5a755cb446c87ec4d5479ab7087d49c" name="ae5a755cb446c87ec4d5479ab7087d49c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae5a755cb446c87ec4d5479ab7087d49c">&#9670;&#160;</a></span>destination_channel</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int generic_port_instance_struct::destination_channel</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -202,34 +198,6 @@ Data Fields</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">size_t generic_port_instance_struct::length</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a19b8f6fecf7a9793305289e3c662308d" name="a19b8f6fecf7a9793305289e3c662308d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a19b8f6fecf7a9793305289e3c662308d">&#9670;&#160;</a></span>num_destinations</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int generic_port_instance_struct::num_destinations</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a02ba982c4c216fcd3366ae142b909a59" name="a02ba982c4c216fcd3366ae142b909a59"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a02ba982c4c216fcd3366ae142b909a59">&#9670;&#160;</a></span>sparse_record</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../de/d9c/structlf__sparse__io__record__t.html">lf_sparse_io_record_t</a>* generic_port_instance_struct::sparse_record</td>
         </tr>
       </table>
 </div><div class="memdoc">

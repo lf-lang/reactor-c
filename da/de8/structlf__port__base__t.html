@@ -113,6 +113,8 @@ Data Fields</h2></td></tr>
 <tr class="separator:ab7734e3cdd562ad5f6ad94f97e095822"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abb1d021a0d2668988d927e9754b699dc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/de8/structlf__port__base__t.html#abb1d021a0d2668988d927e9754b699dc">num_destinations</a></td></tr>
 <tr class="separator:abb1d021a0d2668988d927e9754b699dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9fbec79179af05ce7a6d0eaf7a605873"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="../../d2/dff/lf__token_8h.html#a6202eb05c29c30bfd6a8fc203de6422f">self_base_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/de8/structlf__port__base__t.html#a9fbec79179af05ce7a6d0eaf7a605873">source_reactor</a></td></tr>
+<tr class="separator:a9fbec79179af05ce7a6d0eaf7a605873"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Base type for ports. Port structs are customized types because their payloads are type specific. This struct represents their common features. Given any pointer to a port struct, it can be cast to <a class="el" href="../../da/de8/structlf__port__base__t.html" title="Base type for ports. Port structs are customized types because their payloads are type specific....">lf_port_base_t</a> and then these common fields can be accessed. IMPORTANT: If this is changed, it must also be changed in CPortGenerator.java generateAuxiliaryStruct(). </p>
@@ -153,6 +155,20 @@ Data Fields</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">int lf_port_base_t::num_destinations</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a9fbec79179af05ce7a6d0eaf7a605873" name="a9fbec79179af05ce7a6d0eaf7a605873"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9fbec79179af05ce7a6d0eaf7a605873">&#9670;&#160;</a></span>source_reactor</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">struct <a class="el" href="../../d2/dff/lf__token_8h.html#a6202eb05c29c30bfd6a8fc203de6422f">self_base_t</a>* lf_port_base_t::source_reactor</td>
         </tr>
       </table>
 </div><div class="memdoc">

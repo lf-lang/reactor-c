@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.6"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>reactor-c: lf_action_base_t Struct Reference</title>
+<title>reactor-c: lf_port_internal_t Struct Reference</title>
 <link href="../../tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="../../jquery.js"></script>
 <script type="text/javascript" src="../../dynsections.js"></script>
@@ -64,7 +64,7 @@ $(function() {
 </div>
 <script type="text/javascript">
 /* @license magnet:?xt=urn:btih:d3d9a9a6595521f9666a5e94cc830dab83b65699&amp;dn=expat.txt MIT */
-$(document).ready(function(){initNavTree('d8/d4b/structlf__action__base__t.html','../../'); initResizable(); });
+$(document).ready(function(){initNavTree('d9/d8c/structlf__port__internal__t.html','../../'); initResizable(); });
 /* @license-end */
 </script>
 <div id="doc-content">
@@ -92,92 +92,79 @@ $(document).ready(function(){initNavTree('d8/d4b/structlf__action__base__t.html'
 <div class="header">
   <div class="summary">
 <a href="#pub-attribs">Data Fields</a>  </div>
-  <div class="headertitle"><div class="title">lf_action_base_t Struct Reference</div></div>
+  <div class="headertitle"><div class="title">lf_port_internal_t Struct Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Internal part of the port structs. HAS TO MATCH <a class="el" href="../../da/de8/structlf__port__base__t.html" title="Base type for ports. Port structs are customized types because their payloads are type specific....">lf_port_base_t</a> after tmplt and is_present.  
+ <a href="../../d9/d8c/structlf__port__internal__t.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="../../d6/d1d/lf__types_8h_source.html">lf_types.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Data Fields</h2></td></tr>
-<tr class="memitem:a09b0a1d42be1f4df2b1c460f966937d3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../de/d6b/structtoken__template__t.html">token_template_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d4b/structlf__action__base__t.html#a09b0a1d42be1f4df2b1c460f966937d3">tmplt</a></td></tr>
-<tr class="separator:a09b0a1d42be1f4df2b1c460f966937d3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2ffef0622ed175d43758f8a50046ed50"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d4b/structlf__action__base__t.html#a2ffef0622ed175d43758f8a50046ed50">is_present</a></td></tr>
-<tr class="separator:a2ffef0622ed175d43758f8a50046ed50"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aacf5d85cce69c1ed02a1717a3fcbb46e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d4b/structlf__action__base__t.html#aacf5d85cce69c1ed02a1717a3fcbb46e">trigger</a></td></tr>
-<tr class="separator:aacf5d85cce69c1ed02a1717a3fcbb46e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf564683446cb923e96bef03be159fac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d4b/structlf__action__base__t.html#abf564683446cb923e96bef03be159fac">parent</a></td></tr>
-<tr class="separator:abf564683446cb923e96bef03be159fac"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aaa41924b6862c8128e8ea02b1c964c52"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d4b/structlf__action__base__t.html#aaa41924b6862c8128e8ea02b1c964c52">has_value</a></td></tr>
-<tr class="separator:aaa41924b6862c8128e8ea02b1c964c52"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaa9ff391953ce66424abf4828777c89b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../de/d9c/structlf__sparse__io__record__t.html">lf_sparse_io_record_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d8c/structlf__port__internal__t.html#aaa9ff391953ce66424abf4828777c89b">sparse_record</a></td></tr>
+<tr class="separator:aaa9ff391953ce66424abf4828777c89b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c70e1156dfb93174d5af2175ba58191"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d8c/structlf__port__internal__t.html#a7c70e1156dfb93174d5af2175ba58191">destination_channel</a></td></tr>
+<tr class="separator:a7c70e1156dfb93174d5af2175ba58191"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7948ecbc67381ccbe57c033272d6544f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d8c/structlf__port__internal__t.html#a7948ecbc67381ccbe57c033272d6544f">num_destinations</a></td></tr>
+<tr class="separator:a7948ecbc67381ccbe57c033272d6544f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a58c08982921f3d4ef3c0525975f06e40"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d8c/structlf__port__internal__t.html#a58c08982921f3d4ef3c0525975f06e40">source_reactor</a></td></tr>
+<tr class="separator:a58c08982921f3d4ef3c0525975f06e40"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Action structs are customized types because their payloads are type specific. This struct represents their common features. Given any pointer to an action struct, it can be cast to <a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a>, to <a class="el" href="../../de/d6b/structtoken__template__t.html" title="Base type for ports (lf_port_base_t) and actions (trigger_t), which can carry tokens....">token_template_t</a>, or to <a class="el" href="../../db/d12/structtoken__type__t.html" title="Type information for tokens. Specifically, this struct contains the fields needed to support token ty...">token_type_t</a> to access these common fields. </p>
+<div class="textblock"><p>Internal part of the port structs. HAS TO MATCH <a class="el" href="../../da/de8/structlf__port__base__t.html" title="Base type for ports. Port structs are customized types because their payloads are type specific....">lf_port_base_t</a> after tmplt and is_present. </p>
 </div><h2 class="groupheader">Field Documentation</h2>
-<a id="aaa41924b6862c8128e8ea02b1c964c52" name="aaa41924b6862c8128e8ea02b1c964c52"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aaa41924b6862c8128e8ea02b1c964c52">&#9670;&#160;</a></span>has_value</h2>
+<a id="a7c70e1156dfb93174d5af2175ba58191" name="a7c70e1156dfb93174d5af2175ba58191"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7c70e1156dfb93174d5af2175ba58191">&#9670;&#160;</a></span>destination_channel</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool lf_action_base_t::has_value</td>
+          <td class="memname">int lf_port_internal_t::destination_channel</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a2ffef0622ed175d43758f8a50046ed50" name="a2ffef0622ed175d43758f8a50046ed50"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2ffef0622ed175d43758f8a50046ed50">&#9670;&#160;</a></span>is_present</h2>
+<a id="a7948ecbc67381ccbe57c033272d6544f" name="a7948ecbc67381ccbe57c033272d6544f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7948ecbc67381ccbe57c033272d6544f">&#9670;&#160;</a></span>num_destinations</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">bool lf_action_base_t::is_present</td>
+          <td class="memname">int lf_port_internal_t::num_destinations</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="abf564683446cb923e96bef03be159fac" name="abf564683446cb923e96bef03be159fac"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abf564683446cb923e96bef03be159fac">&#9670;&#160;</a></span>parent</h2>
+<a id="a58c08982921f3d4ef3c0525975f06e40" name="a58c08982921f3d4ef3c0525975f06e40"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a58c08982921f3d4ef3c0525975f06e40">&#9670;&#160;</a></span>source_reactor</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a>* lf_action_base_t::parent</td>
+          <td class="memname"><a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a>* lf_port_internal_t::source_reactor</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a09b0a1d42be1f4df2b1c460f966937d3" name="a09b0a1d42be1f4df2b1c460f966937d3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a09b0a1d42be1f4df2b1c460f966937d3">&#9670;&#160;</a></span>tmplt</h2>
+<a id="aaa9ff391953ce66424abf4828777c89b" name="aaa9ff391953ce66424abf4828777c89b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaa9ff391953ce66424abf4828777c89b">&#9670;&#160;</a></span>sparse_record</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../de/d6b/structtoken__template__t.html">token_template_t</a> lf_action_base_t::tmplt</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="aacf5d85cce69c1ed02a1717a3fcbb46e" name="aacf5d85cce69c1ed02a1717a3fcbb46e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aacf5d85cce69c1ed02a1717a3fcbb46e">&#9670;&#160;</a></span>trigger</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a>* lf_action_base_t::trigger</td>
+          <td class="memname"><a class="el" href="../../de/d9c/structlf__sparse__io__record__t.html">lf_sparse_io_record_t</a>* lf_port_internal_t::sparse_record</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -192,7 +179,7 @@ Data Fields</h2></td></tr>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="navelem"><a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a></li>
+    <li class="navelem"><a class="el" href="../../d9/d8c/structlf__port__internal__t.html">lf_port_internal_t</a></li>
     <li class="footer">Generated by <a href="https://www.doxygen.org/index.html"><img class="footer" src="../../doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.6 </li>
   </ul>
 </div>

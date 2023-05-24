@@ -133,6 +133,8 @@ Typedefs</h2></td></tr>
 <tr class="memitem:ad0befcbc6fe23c8dd0b6f483d4067e45"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../de/d6b/structtoken__template__t.html">token_template_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/dff/lf__token_8h.html#ad0befcbc6fe23c8dd0b6f483d4067e45">token_template_t</a></td></tr>
 <tr class="memdesc:ad0befcbc6fe23c8dd0b6f483d4067e45"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base type for ports (<a class="el" href="../../da/de8/structlf__port__base__t.html" title="Base type for ports. Port structs are customized types because their payloads are type specific....">lf_port_base_t</a>) and actions (<a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a>), which can carry tokens. The structs <a class="el" href="../../da/de8/structlf__port__base__t.html" title="Base type for ports. Port structs are customized types because their payloads are type specific....">lf_port_base_t</a> and <a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a> should start with an instance of this struct so that they can be cast to this struct to access these fields in a uniform way.  <br /></td></tr>
 <tr class="separator:ad0befcbc6fe23c8dd0b6f483d4067e45"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6202eb05c29c30bfd6a8fc203de6422f"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/dff/lf__token_8h.html#a6202eb05c29c30bfd6a8fc203de6422f">self_base_t</a></td></tr>
+<tr class="separator:a6202eb05c29c30bfd6a8fc203de6422f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a91b17c088cd50ce69df73f1470a18799"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../da/de8/structlf__port__base__t.html">lf_port_base_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/dff/lf__token_8h.html#a91b17c088cd50ce69df73f1470a18799">lf_port_base_t</a></td></tr>
 <tr class="memdesc:a91b17c088cd50ce69df73f1470a18799"><td class="mdescLeft">&#160;</td><td class="mdescRight">Base type for ports. Port structs are customized types because their payloads are type specific. This struct represents their common features. Given any pointer to a port struct, it can be cast to <a class="el" href="../../da/de8/structlf__port__base__t.html" title="Base type for ports. Port structs are customized types because their payloads are type specific....">lf_port_base_t</a> and then these common fields can be accessed. IMPORTANT: If this is changed, it must also be changed in CPortGenerator.java generateAuxiliaryStruct().  <br /></td></tr>
 <tr class="separator:a91b17c088cd50ce69df73f1470a18799"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -248,6 +250,20 @@ DESCRIPTION</h1>
 <p>Token type for dynamically allocated arrays and structs sent as messages.</p>
 <p>This struct is the wrapper around the dynamically allocated memory that carries the message. The message can be an array of values, where the size of each value is element_size (in bytes). If it is not an array, or is not to be treated as an array, the length == 1.</p>
 <p>In the C LF target, a type for an output that ends in '*' or '[]' is treated specially. The value carried by the output is assumed to be in dynamically allocated memory, and, using reference counting, after the last downstream reader of the value has finished, the memory will be freed. To prevent this freeing from occurring, the output type can be specified using the syntax {= type* =}; this will not be treated as dynamically allocated memory. Alternatively, the programmer can give a typedef in the preamble that masks the trailing *. </p>
+
+</div>
+</div>
+<a id="a6202eb05c29c30bfd6a8fc203de6422f" name="a6202eb05c29c30bfd6a8fc203de6422f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6202eb05c29c30bfd6a8fc203de6422f">&#9670;&#160;</a></span>self_base_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a> <a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

@@ -31,7 +31,7 @@ var searchData=
   ['nsecs_28',['NSECS',['../d2/dcd/tag_8h.html#aea80ae7708f69d05cd44126f08a08cf3',1,'tag.h']]],
   ['num_5fchannels_29',['num_channels',['../d7/dc9/structlf__waveform__t.html#ac1821431ece937edd64e32209a793018',1,'lf_waveform_t::num_channels()'],['../d1/d3f/structlf__wav__format__t.html#a94176b96fa481451960f8b727746a886',1,'lf_wav_format_t::num_channels()']]],
   ['num_5fchannels_30',['NUM_CHANNELS',['../d1/dcb/audio__loop_8h.html#ae5597ce31d23d11493e6e674fe257d73',1,'audio_loop.h']]],
-  ['num_5fdestinations_31',['num_destinations',['../da/dc0/structgeneric__port__instance__struct.html#a19b8f6fecf7a9793305289e3c662308d',1,'generic_port_instance_struct::num_destinations()'],['../da/de8/structlf__port__base__t.html#abb1d021a0d2668988d927e9754b699dc',1,'lf_port_base_t::num_destinations()']]],
+  ['num_5fdestinations_31',['num_destinations',['../d9/d8c/structlf__port__internal__t.html#a7948ecbc67381ccbe57c033272d6544f',1,'lf_port_internal_t::num_destinations()'],['../da/de8/structlf__port__base__t.html#abb1d021a0d2668988d927e9754b699dc',1,'lf_port_base_t::num_destinations()']]],
   ['num_5fdownstream_32',['num_downstream',['../d9/d2f/structfederate__t.html#a5818815895ea37489f73045167f91fe5',1,'federate_t']]],
   ['num_5fentries_33',['num_entries',['../d6/df3/hashmap_8h.html#abf777aba6f6200c8f2fe2b88d58208d8',1,'hashmap.h']]],
   ['num_5fevent_5ftypes_34',['NUM_EVENT_TYPES',['../d1/d1b/trace_8h.html#ab02e9e69539d60297cedb38c2193a453ac009e126725584df074102abf50cc134',1,'trace.h']]],
