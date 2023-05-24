@@ -34,6 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define UTIL_H
 
 #include <stdarg.h>   // Defines va_list
+#include <stdbool.h>
 
 // To silence warnings about a function being a candidate for format checking
 // with gcc, add an attribute.
@@ -246,6 +247,10 @@ void lf_vprint_warning(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF
  */
 void lf_print_error_and_exit(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
+/**
+ * A shorthand for checking if a condition is true and if not, print an error and exit.
+ * 
+ */
 void lf_assert(bool condition, const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
 
 /**
