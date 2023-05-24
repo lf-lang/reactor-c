@@ -1083,8 +1083,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 
         determine_number_of_workers();
 
-        // FIXME: How to do keep-alive stuff with enclaves?
-        keepalive_specified = true;
 
         LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
         struct timespec physical_time_timespec = {start_time / BILLION, start_time % BILLION};
@@ -1111,6 +1109,11 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     
     environment_t *envs;
     int num_envs = _lf_get_environments(&envs);
+    if (num_envs > 1) {
+        // FIXME: How to do keep-alive stuff with enclaves?
+        keepalive_specified = true;
+    }
+    
     
     // For now, we just use the first environment straight
     // In the future we want to loop through all etc
