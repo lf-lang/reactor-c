@@ -1190,11 +1190,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
             LF_PRINT_LOG("---- All worker threads exited successfully.");
         }
     }
-
-    for (int i = 0; i<num_envs; i++) {
-        environment_free(&envs[i]);
-    }
-
     return 0;
 }   
 

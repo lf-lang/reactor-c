@@ -56,6 +56,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "vector.h"
 #include "hashset/hashset.h"
 #include "hashset/hashset_itr.h"
+#include "environment.h"
 
 #ifdef LF_THREADED
 #include "watchdog.h"
@@ -1795,6 +1796,10 @@ void termination() {
                 printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
             }
         }
+        
+        // Free up memory associated with environment
+        environment_free(env);
+
         env++;
     }
     _lf_free_all_tokens(); // Must be done before freeing reactors.
