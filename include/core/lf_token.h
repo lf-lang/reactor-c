@@ -144,6 +144,9 @@ typedef struct token_template_t {
     size_t length;       // The token's length, for convenient access in reactions.
 } token_template_t;
 
+// Forward declaration for self_base_t
+typedef struct self_base_t self_base_t;
+
 /**
  * @brief Base type for ports.
  * Port structs are customized types because their payloads are type
@@ -159,6 +162,9 @@ typedef struct lf_port_base_t {
 	lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
 	int destination_channel;              // -1 if there is no destination.
     int num_destinations;                 // The number of destination reactors this port writes to.
+    struct self_base_t* source_reactor;          // Pointer to the self struct of the reactor that provides data to this port.
+                                          // If this is an input, that reactor will normally be the container of the
+                                          // output port that sends it data.
 } lf_port_base_t;
 
 //////////////////////////////////////////////////////////
