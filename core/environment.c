@@ -1,10 +1,9 @@
 #include "environment.h"
 #include "util.h"
-#include "scheduler.h"
 #include "lf_types.h"
-
-// FIXME: Maybe use RTI to agree on start time amongst the enclaves?
-extern instant_t start_time;
+#ifdef LF_THREADED
+#include "scheduler.h"
+#endif
 
 int environment_init(
     environment_t* env,
@@ -17,6 +16,7 @@ int environment_init(
     int num_is_present_fields
 ) {
     env->id = id;
+    env->stop_tag = FOREVER_TAG;
 
     env->_lf_timer_triggers_size=num_timers;
     env->_lf_timer_triggers = (trigger_t **) calloc(num_timers, sizeof(trigger_t));
@@ -72,9 +72,10 @@ void environment_free(environment_t* env) {
     free(env->_lf_startup_reactions);
     free(env->_lf_shutdown_reactions);
     free(env->_lf_reset_reactions);
-    free(env->thread_ids);
     free(env->_lf_is_present_fields);
     free(env->_lf_is_present_fields_abbreviated);
+    #ifdef LF_THREADED
+    free(env->thread_ids);
     lf_sched_free(env->scheduler);   
-
+    #endif
 }

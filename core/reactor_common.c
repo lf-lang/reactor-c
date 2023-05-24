@@ -104,42 +104,8 @@ instant_t duration = -1LL;
 // FIXME: Is this ever used?
 bool _lf_execution_started = false;
 
-/**
- * The tag at which the Lingua Franca program should stop.
- * It will be initially set to timeout if it is set. However,
- * starvation or calling lf_request_stop() can also alter the stop_tag by moving it
- * earlier.
- *
- * FIXME: This variable might need to be volatile
- */
-// tag_t stop_tag = FOREVER_TAG_INITIALIZER;
-
 /** Indicator of whether the keepalive command-line option was given. */
 bool keepalive_specified = false;
-
-// Define the array of pointers to the _is_present fields of all the
-// self structs that need to be reinitialized at the start of each time step.
-// NOTE: This may have to be resized for a mutation.
-// bool** _lf_is_present_fields = NULL;
-// int _lf_is_present_fields_size = 0;
-
-// Define an array of pointers to the _is_present fields
-// that have been set to true during the execution of a tag
-// so that at the conclusion of the tag, these fields can be reset to
-// false. Usually, this list will have fewer records than will
-// _lf_is_present_fields, allowing for some time to be saved.
-// However, it is possible for it to have more records if some ports
-// are set multiple times at the same tag. In such cases, we fall back
-// to resetting all is_present fields at the start of the next time
-// step.
-// bool** _lf_is_present_fields_abbreviated = NULL;
-// int _lf_is_present_fields_abbreviated_size = 0;
-
-// Define the array of pointers to the intended_tag fields of all
-// ports and actions that need to be reinitialized at the start
-// of each time step.
-// tag_t** _lf_intended_tag_fields = NULL;
-// int _lf_intended_tag_fields_size = 0;
 
 /**
  * Global STP offset uniformly applied to advancement of each
@@ -148,19 +114,6 @@ bool keepalive_specified = false;
  * calling lf_set_stp_offset(interval_t offset).
  */
 interval_t _lf_fed_STA_offset = 0LL;
-
-/**
- * A vector of pointers to the size fields of instances of
- * lf_sparse_io_record_t so that these can be set to 0 between iterations.
- * The start field of this struct will be NULL initially, so calling
- * vector_new(_lf_sparse_io_record_sizes) will be necessary to use this.
- */
-// FIXME: The original call to vector_new appears to never have been implemented.
-// Fortunately if it is initialized to all zeros, we avoid undefined behavior.
-// This is a bit of a hack.
-// vector_t _lf_sparse_io_record_sizes = {
-//     NULL, NULL, NULL, 0, 0
-// };
 
 /**
  * Allocate memory using calloc (so the allocated memory is zeroed out)
@@ -290,17 +243,6 @@ void lf_set_stp_offset(interval_t offset) {
     }
 }
 
-/////////////////////////////
-// The following is not in scope for reactors:
-
-/** Priority queues. */
-// pqueue_t* event_q;     // For sorting by time.
-
-// static pqueue_t* recycle_q;   // For recycling malloc'd events.
-// static pqueue_t* next_q;      // For temporarily storing the next event lined
-//                        // up in superdense time.
-
-// static trigger_handle_t _lf_handle = 1;
 
 /**
  * Trigger 'reaction'.
@@ -1738,6 +1680,8 @@ void initialize_environment(environment_t *env) {
     env->next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
 
+    env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
+    
     tag_t stop_tag = FOREVER_TAG_INITIALIZER;
     if (duration >= 0LL) {
         // A duration has been specified. Calculate the stop time.

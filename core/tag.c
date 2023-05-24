@@ -39,13 +39,6 @@ instant_t start_time = NEVER;
 //////////////// Global variables not declared in tag.h (must be declared extern if used elsewhere):
 
 /**
- * Current time in nanoseconds since January 1, 1970
- * This is not in scope for reactors.
- * This should only ever be accessed while holding the mutex lock.
- */
-// tag_t env->current_tag = {.time = 0LL, .microstep = 0};
-
-/**
  * Global physical clock offset.
  * Initially set according to the RTI's clock in federated
  * programs.
