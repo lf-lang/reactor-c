@@ -78,6 +78,12 @@ char* ERROR_SENDING_MESSAGE = "ERROR sending message to federate via RTI";
 lf_mutex_t outbound_socket_mutex;
 lf_cond_t port_status_changed;
 
+// Struct for passing arguments to listen_to_federates
+typedef struct  {
+    environment_t* env;
+    uint16_t fed_id;
+} listen_to_federates_args_t;
+
 /**
  * The state of this federate instance.
  */
@@ -628,22 +634,16 @@ void* handle_p2p_connections_from_federates(void* env_arg) {
         // We cannot pass a pointer to remote_fed_id to the thread we need to create
         // because that variable is on the stack. Instead, we malloc memory.
         // The created thread is responsible for calling free().
-        void **listen_to_federates_args = (void **)calloc(2, sizeof(void*));
-        if (listen_to_federates_args == NULL) {
+        listen_to_federates_args_t* args = (listen_to_federates_args_t*)malloc(sizeof(listen_to_federates_args_t));
+        if (args == NULL) {
             lf_print_error_and_exit("calloc failed.");
         }
-        listen_to_federates_args[0] = (void *) env;
-        listen_to_federates_args[1] = (void *) &remote_fed_id;
-        // FIXME: Verify that this works
-        // uint16_t* remote_fed_id_copy = (uint16_t*)malloc(sizeof(uint16_t));
-        // if (remote_fed_id_copy == NULL) {
-        //     lf_print_error_and_exit("malloc failed.");
-        // }
-        // *remote_fed_id_copy = remote_fed_id;
+        args->env = env;
+        args->fed_id = remote_fed_id;
         int result = lf_thread_create(
                 &_fed.inbound_socket_listeners[received_federates],
                 listen_to_federates,
-                (void *) listen_to_federates_args);
+                (void *) args);
         if (result != 0) {
             // Failed to create a listening thread.
             close(socket_id);
@@ -2048,7 +2048,7 @@ void handle_tagged_message(environment_t* env, int socket, int fed_id) {
 #ifdef FEDERATED_DECENTRALIZED // Only applicable for federated programs with decentralized coordination
     // Finally, decrement the barrier to allow the execution to continue
     // past the raised barrier
-    _lf_decrement_global_tag_barrier_locked();
+    _lf_decrement_global_tag_barrier_locked(env);
 #endif
 
     // The mutex is unlocked here after the barrier on
@@ -2330,7 +2330,7 @@ void handle_stop_granted_message(environment_t* env) {
                 env->stop_tag.time - start_time,
                 env->stop_tag.microstep);
 
-    _lf_decrement_global_tag_barrier_locked();
+    _lf_decrement_global_tag_barrier_locked(env);
     // We signal instead of broadcast under the assumption that only
     // one worker thread can call wait_until at a given time because
     // the call to wait_until is protected by a mutex lock
@@ -2486,11 +2486,12 @@ void terminate_execution(environment_t* env) {
  * @param fed_id_ptr A pointer to a uint16_t containing federate ID being listened to.
  *  This procedure frees the memory pointed to before returning.
  */
-void* listen_to_federates(void* args_ptr) {
+void* listen_to_federates(void* _args) {
 
+    listen_to_federates_args_t *args = (listen_to_federates_args_t *) _args;
     // Decode the two arguments handed over 
-    environment_t * env = (environment_t *) args_ptr;
-    uint16_t fed_id = *((uint16_t*)(++args_ptr));
+    environment_t * env = args->env;
+    uint16_t fed_id = args->fed_id;
 
     LF_PRINT_LOG("Listening to federate %d.", fed_id);
 
@@ -2543,8 +2544,7 @@ void* listen_to_federates(void* args_ptr) {
             tracepoint_federate_from_federate(receive_UNIDENTIFIED, _lf_my_fed_id, fed_id, NULL);
         }
     }
-    free(env);
-    free(&fed_id);
+    free(args);
     return NULL;
 }
 
@@ -2862,7 +2862,7 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
                     return _fed.last_TAG;
                 }
                 // Check whether the new event on the event queue requires sending a new NET.
-                tag_t next_tag = get_next_event_tag();
+                tag_t next_tag = get_next_event_tag(env);
                 if (lf_tag_compare(next_tag, tag) != 0) {
                     _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag, wait_for_reply);
                     _fed.last_sent_NET = next_tag;
@@ -2914,7 +2914,7 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
         // put onto the event queue. In either case, we can just loop around.
         // The next iteration will determine whether another
         // NET should be sent or not.
-        tag = get_next_event_tag();
+        tag = get_next_event_tag(env);
     }
 }
 

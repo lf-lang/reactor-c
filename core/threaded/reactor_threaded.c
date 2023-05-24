@@ -314,7 +314,7 @@ void _lf_set_present(environment_t *env, lf_port_base_t* port) {
  * not wait for physical time to match the logical start time
  * returned by the RTI.
  */
-void synchronize_with_other_federates();
+void synchronize_with_other_federates(environment_t* env);
 
 /**
  * Wait until physical time matches or exceeds the specified logical time,
@@ -463,7 +463,7 @@ tag_t get_next_event_tag(environment_t *env) {
 
 #ifdef FEDERATED_CENTRALIZED
 // The following is defined in federate.c and used in the following function.
-tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply);
+tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply);
 #endif
 
 /**
@@ -479,9 +479,9 @@ tag_t _lf_send_next_event_tag(tag_t tag, bool wait_for_reply);
  * @param wait_for_reply If true, wait for the RTI to respond.
  * @return The tag to which it is safe to advance.
  */
-tag_t send_next_event_tag(tag_t tag, bool wait_for_reply) {
+tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply) {
 #ifdef FEDERATED_CENTRALIZED
-    return _lf_send_next_event_tag(tag, wait_for_reply);
+    return _lf_send_next_event_tag(env, tag, wait_for_reply);
 #else
     return tag;
 #endif
@@ -522,7 +522,7 @@ void _lf_next_locked(environment_t *env) {
     // tag to the next tag. Specifically, it blocks if there are upstream
     // federates. If an action triggers during that wait, it will unblock
     // and return with a time (typically) less than the next_time.
-    tag_t grant_tag = send_next_event_tag(next_tag, true); // true means this blocks.
+    tag_t grant_tag = send_next_event_tag(env, next_tag, true); // true means this blocks.
     if (lf_tag_compare(grant_tag, next_tag) < 0) {
         // RTI has granted tag advance to an earlier tag or the wait
         // for the RTI response was interrupted by a local physical action with
@@ -707,7 +707,7 @@ void _lf_initialize_start_tag(environment_t *env) {
     reset_status_fields_on_input_port_triggers();
 
     // Get a start_time from the RTI
-    synchronize_with_other_federates(); // Resets start_time in federated execution according to the RTI.
+    synchronize_with_other_federates(env); // Resets start_time in federated execution according to the RTI.
     env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
 #endif
 
@@ -745,13 +745,13 @@ void _lf_initialize_start_tag(environment_t *env) {
 
     // Each federate executes the start tag (which is the current
     // tag). Inform the RTI of this if needed.
-    send_next_event_tag(env->current_tag, true);
+    send_next_event_tag(env, env->current_tag, true);
 
     // Depending on RTI's answer, if any, enqueue network control reactions,
     // which will selectively block reactions that depend on network input ports
     // until they receive further instructions (to unblock) from the RTI or the
     // upstream federates.
-    enqueue_network_control_reactions();
+    enqueue_network_control_reactions(env);
 #endif
 
 #ifdef FEDERATED_DECENTRALIZED
@@ -977,7 +977,7 @@ void* worker(void* arg) {
         // The last worker thread to exit will inform the RTI if needed.
         // Notify the RTI that there will be no more events (if centralized coord).
         // False argument means don't wait for a reply.
-        send_next_event_tag(FOREVER_TAG, false);
+        send_next_event_tag(env, FOREVER_TAG, false);
     }
 
     lf_cond_signal(&env->event_q_changed);
@@ -1088,7 +1088,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 
         LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
         struct timespec physical_time_timespec = {start_time / BILLION, start_time % BILLION};
-        printf("---- Start execution at time %s---- plus %ld nanoseconds.\n",
+        lf_print("---- Start execution at time %s---- plus %ld nanoseconds",
             ctime(&physical_time_timespec.tv_sec), physical_time_timespec.tv_nsec);
 
     } else {
