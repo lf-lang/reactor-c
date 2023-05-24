@@ -604,6 +604,7 @@ void tracepoint_RTI_to_federate(trace_event_t event_type, int fed_id, tag_t* tag
 void tracepoint_RTI_from_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
     tracepoint(event_type,
         NULL,   // void* pointer,
+        NULL,   // void* pointer,
         tag,    // tag_t* tag,
         fed_id, // int worker (one thread per federate)
         -1,     // int src_id  (RTI is the source of the tracepoint)
