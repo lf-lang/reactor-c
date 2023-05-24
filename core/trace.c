@@ -306,10 +306,8 @@ void tracepoint(
     } else if (env != NULL) {
         _lf_trace_buffer[index][i].logical_time = ((environment_t *)env)->current_tag.time;
         _lf_trace_buffer[index][i].microstep = ((environment_t*)env)->current_tag.microstep;
-    } else if (reactor != NULL) {
-        _lf_trace_buffer[index][i].logical_time = ((self_base_t *)reactor)->environment->current_tag.time;
-        _lf_trace_buffer[index][i].microstep = ((self_base_t*)reactor)->environment->current_tag.microstep;
     }
+    
     _lf_trace_buffer[index][i].trigger = trigger;
     _lf_trace_buffer[index][i].extra_delay = extra_delay;
     if (is_interval_start && physical_time == NULL) {
@@ -376,7 +374,7 @@ void tracepoint_user_event(char* description) {
     // because multiple reactions might be calling the same tracepoint function.
     // There will be a performance hit for this.
     lf_critical_section_enter(GLOBAL_ENVIRONMENT);
-    tracepoint(user_event, description, NULL, NULL, -1, -1, -1, NULL, NULL, 0, false);
+    tracepoint(user_event, NULL, description, NULL, -1, -1, -1, NULL, NULL, 0, false);
     lf_critical_section_exit(GLOBAL_ENVIRONMENT);
 }
 
