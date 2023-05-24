@@ -450,6 +450,6 @@ void synchronize_with_other_federates(environment_t* env);
  * @param port_ID The ID of the network port
  * @param STAA The safe-to-assume-absent threshold for the port
  */
-void wait_until_port_status_known(int portID, interval_t STAA);
+void wait_until_port_status_known(environment_t* env, int portID, interval_t STAA);
 
 #endif // FEDERATE_H

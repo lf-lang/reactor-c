@@ -633,7 +633,7 @@ void* handle_p2p_connections_from_federates(void* env_arg) {
             lf_print_error_and_exit("calloc failed.");
         }
         listen_to_federates_args[0] = (void *) env;
-        listen_to_federates_args[1] = (void *) remote_fed_id;
+        listen_to_federates_args[1] = (void *) &remote_fed_id;
         // FIXME: Verify that this works
         // uint16_t* remote_fed_id_copy = (uint16_t*)malloc(sizeof(uint16_t));
         // if (remote_fed_id_copy == NULL) {
@@ -847,7 +847,7 @@ void connect_to_federate(uint16_t remote_federate_id) {
                             remote_federate_id, CONNECT_NUM_RETRIES);
                 return;
             }
-            lf_print_warning("Could not connect to federate %d. Will try again every " PRINTF_TIME " nanoseconds.\n",
+            lf_print_warning("Could not connect to federate %d. Will try again every %lld nanoseconds.\n",
                    remote_federate_id, ADDRESS_QUERY_RETRY_INTERVAL);
             // Wait CONNECT_RETRY_INTERVAL seconds.
             struct timespec wait_time = {0L, ADDRESS_QUERY_RETRY_INTERVAL};
@@ -1449,7 +1449,7 @@ void enqueue_network_input_control_reactions(environment_t* env) {
             if (reaction->status == inactive) {
                 reaction->is_a_control_reaction = true;
                 LF_PRINT_DEBUG("Inserting network input control reaction on reaction queue.");
-                lf_sched_trigger_reaction(env, reaction, -1);
+                lf_sched_trigger_reaction(env->scheduler, reaction, -1);
                 mark_control_reaction_waiting(i, true);
             }
         }
@@ -1480,7 +1480,7 @@ void enqueue_network_output_control_reactions(environment_t* env){
         if (reaction->status == inactive) {
             reaction->is_a_control_reaction = true;
             LF_PRINT_DEBUG("Inserting network output control reaction on reaction queue.");
-            lf_sched_trigger_reaction(env, reaction, -1);
+            lf_sched_trigger_reaction(env->scheduler, reaction, -1);
         }
     }
 }
@@ -1601,7 +1601,7 @@ void wait_until_port_status_known(environment_t* env, int port_ID, interval_t ST
 
     // Perform the wait, unless the STAA is zero.
     if (wait_until_time != env->current_tag.time) {
-        LF_PRINT_LOG("------ Waiting until time " PRINTF_TIME "ns for network input port %d at tag (%llu, %d).",
+        LF_PRINT_LOG("------ Waiting until time " PRINTF_TIME "ns for network input port %d at tag ("PRINTF_TAG").",
                 wait_until_time,
                 port_ID,
                 env->current_tag.time - start_time,
