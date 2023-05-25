@@ -306,11 +306,8 @@ typedef struct lf_scheduler_t lf_scheduler_t;
  * scheduling enclaves, then there will be one for each enclave.
  */
 
-typedef struct mode_environment_t {
-    uint8_t triggered_reactions_request;
-    reactor_mode_state_t** modal_reactor_states;
-    int modal_reactor_states_size;
-} mode_environment_t;
+typedef struct mode_environment_t mode_environment_t;
+
 
 // FIXME: Can we avoid the #ifdefs wrt threading, federation and modes?
 typedef struct environment_t {
@@ -350,9 +347,13 @@ typedef struct environment_t {
     mode_environment_t* modes;
 } environment_t;
 
-
-
-
+#ifdef MODAL_REACTORS
+struct mode_environment_t {
+    uint8_t triggered_reactions_request;
+    reactor_mode_state_t** modal_reactor_states;
+    int modal_reactor_states_size;
+} mode_environment_t;
+#endif
 
 /**
  * The first element of every self struct defined in generated code
