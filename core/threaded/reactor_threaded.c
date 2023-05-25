@@ -281,9 +281,9 @@ int _lf_wait_on_global_tag_barrier(environment_t* env, tag_t proposed_tag) {
 // FIXME: Avoid this with parent pointer
 void _lf_set_present(environment_t *env, lf_port_base_t* port) {
 	bool* is_present_field = &port->is_present;
-    int ipfas = lf_atomic_fetch_add(&env->_lf_is_present_fields_abbreviated_size, 1);
-    if (ipfas < env->_lf_is_present_fields_size) {
-        env->_lf_is_present_fields_abbreviated[ipfas] = is_present_field;
+    int ipfas = lf_atomic_fetch_add(&env->is_present_fields_abbreviated_size, 1);
+    if (ipfas < env->is_present_fields_size) {
+        env->is_present_fields_abbreviated[ipfas] = is_present_field;
     }
     *is_present_field = true;
 

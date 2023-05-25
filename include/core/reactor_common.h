@@ -17,14 +17,14 @@ extern bool fast;
 extern instant_t duration;
 extern bool _lf_execution_started;
 extern bool keepalive_specified;
-// extern bool** _lf_is_present_fields;
+// extern bool** is_present_fields;
 extern interval_t _lf_fed_STA_offset;
-// extern int _lf_is_present_fields_size;
-// extern bool** _lf_is_present_fields_abbreviated;
-// extern int _lf_is_present_fields_abbreviated_size;
+// extern int is_present_fields_size;
+// extern bool** is_present_fields_abbreviated;
+// extern int is_present_fields_abbreviated_size;
 // extern tag_t** _lf_intended_tag_fields;
 // extern int _lf_intended_tag_fields_size;
-// extern vector_t _lf_sparse_io_record_sizes;
+// extern vector_t sparse_io_record_sizes;
 
 // extern pqueue_t* event_q;
 

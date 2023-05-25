@@ -62,11 +62,11 @@ pqueue_t* reaction_q;
  */
 void _lf_set_present(environment_t *env, lf_port_base_t* port) {
 	bool* is_present_field = &port->is_present;
-    if (env->_lf_is_present_fields_abbreviated_size < env->_lf_is_present_fields_size) {
-        env->_lf_is_present_fields_abbreviated[env->_lf_is_present_fields_abbreviated_size]
+    if (env->is_present_fields_abbreviated_size < env->is_present_fields_size) {
+        env->is_present_fields_abbreviated[env->is_present_fields_abbreviated_size]
             = is_present_field;
     }
-    env->_lf_is_present_fields_abbreviated_size++;
+    env->is_present_fields_abbreviated_size++;
     *is_present_field = true;
 
     // Support for sparse destination multiports.

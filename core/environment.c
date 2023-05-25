@@ -23,26 +23,26 @@ int environment_init(
     env->timer_triggers = (trigger_t **) calloc(num_timers, sizeof(trigger_t));
     lf_assert(env->timer_triggers != NULL, "Out of memory");
 
-    env->_lf_startup_reactions_size=num_startup_reactions;
-    env->_lf_startup_reactions = (reaction_t **) calloc(num_startup_reactions, sizeof(reaction_t));
-    lf_assert(env->_lf_startup_reactions != NULL, "Out of memory");
+    env->startup_reactions_size=num_startup_reactions;
+    env->startup_reactions = (reaction_t **) calloc(num_startup_reactions, sizeof(reaction_t));
+    lf_assert(env->startup_reactions != NULL, "Out of memory");
 
-    env->_lf_shutdown_reactions_size=num_shutdown_reactions;
-    env->_lf_shutdown_reactions = (reaction_t **) calloc(num_shutdown_reactions, sizeof(reaction_t));
-    lf_assert(env->_lf_shutdown_reactions != NULL, "Out of memory");
+    env->shutdown_reactions_size=num_shutdown_reactions;
+    env->shutdown_reactions = (reaction_t **) calloc(num_shutdown_reactions, sizeof(reaction_t));
+    lf_assert(env->shutdown_reactions != NULL, "Out of memory");
 
-    env->_lf_reset_reactions_size=num_reset_reactions;
-    env->_lf_reset_reactions = (reaction_t **) calloc(num_reset_reactions, sizeof(reaction_t));
-    lf_assert(env->_lf_reset_reactions != NULL, "Out of memory");
+    env->reset_reactions_size=num_reset_reactions;
+    env->reset_reactions = (reaction_t **) calloc(num_reset_reactions, sizeof(reaction_t));
+    lf_assert(env->reset_reactions != NULL, "Out of memory");
 
-    env->_lf_is_present_fields_size = num_is_present_fields;
-    env->_lf_is_present_fields_abbreviated_size = 0;
+    env->is_present_fields_size = num_is_present_fields;
+    env->is_present_fields_abbreviated_size = 0;
 
-    env->_lf_is_present_fields = (bool**)calloc(num_is_present_fields, sizeof(bool*));
-    lf_assert(env->_lf_is_present_fields != NULL, "Out of memory");
+    env->is_present_fields = (bool**)calloc(num_is_present_fields, sizeof(bool*));
+    lf_assert(env->is_present_fields != NULL, "Out of memory");
 
-    env->_lf_is_present_fields_abbreviated = (bool**)calloc(num_is_present_fields, sizeof(bool*));
-    lf_assert(env->_lf_is_present_fields_abbreviated != NULL, "Out of memory");
+    env->is_present_fields_abbreviated = (bool**)calloc(num_is_present_fields, sizeof(bool*));
+    lf_assert(env->is_present_fields_abbreviated != NULL, "Out of memory");
 
     env->_lf_handle=1; // FIXME: What is this?
     #ifdef LF_THREADED
@@ -73,11 +73,11 @@ int environment_init(
 
 void environment_free(environment_t* env) {
     free(env->timer_triggers);
-    free(env->_lf_startup_reactions);
-    free(env->_lf_shutdown_reactions);
-    free(env->_lf_reset_reactions);
-    free(env->_lf_is_present_fields);
-    free(env->_lf_is_present_fields_abbreviated);
+    free(env->startup_reactions);
+    free(env->shutdown_reactions);
+    free(env->reset_reactions);
+    free(env->is_present_fields);
+    free(env->is_present_fields_abbreviated);
     #ifdef LF_THREADED
     free(env->thread_ids);
     lf_sched_free(env->scheduler);   

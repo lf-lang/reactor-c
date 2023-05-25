@@ -274,22 +274,22 @@ void _lf_start_time_step(environment_t *env) {
     // Handle dynamically created tokens for mutable inputs.
     _lf_free_token_copies(env);
 
-    bool** is_present_fields = env->_lf_is_present_fields_abbreviated;
-    int size = env->_lf_is_present_fields_abbreviated_size;
-    if (env->_lf_is_present_fields_abbreviated_size > env->_lf_is_present_fields_size) {
-        size = env->_lf_is_present_fields_size;
-        is_present_fields = env->_lf_is_present_fields;
+    bool** is_present_fields = env->is_present_fields_abbreviated;
+    int size = env->is_present_fields_abbreviated_size;
+    if (env->is_present_fields_abbreviated_size > env->is_present_fields_size) {
+        size = env->is_present_fields_size;
+        is_present_fields = env->is_present_fields;
     }
     for(int i = 0; i < size; i++) {
         *is_present_fields[i] = false;
     }
     // Reset sparse IO record sizes to 0, if any.
-    if (env->_lf_sparse_io_record_sizes.start != NULL) {
-        for (size_t i = 0; i < vector_size(&env->_lf_sparse_io_record_sizes); i++) {
+    if (env->sparse_io_record_sizes.start != NULL) {
+        for (size_t i = 0; i < vector_size(&env->sparse_io_record_sizes); i++) {
             // NOTE: vector_at does not return the element at
             // the index, but rather returns a pointer to that element, which is
             // itself a pointer.
-            int** sizep = (int**)vector_at(&env->_lf_sparse_io_record_sizes, i);
+            int** sizep = (int**)vector_at(&env->sparse_io_record_sizes, i);
             if (sizep != NULL && *sizep != NULL) {
                 **sizep = 0;
             }
@@ -297,7 +297,7 @@ void _lf_start_time_step(environment_t *env) {
     }
 
 #ifdef FEDERATED_DECENTRALIZED
-    for (int i = 0; i < env->_lf_is_present_fields_size; i++) {
+    for (int i = 0; i < env->is_present_fields_size; i++) {
         // FIXME: For now, an intended tag of (NEVER, 0)
         // indicates that it has never been set.
         *env->_lf_intended_tag_fields[i] = (tag_t) {NEVER, 0};
@@ -308,7 +308,7 @@ void _lf_start_time_step(environment_t *env) {
     // their status is unknown
     reset_status_fields_on_input_port_triggers();
 #endif
-    env->_lf_is_present_fields_abbreviated_size = 0;
+    env->is_present_fields_abbreviated_size = 0;
 }
 
 /**
