@@ -218,7 +218,6 @@ do { \
 #define get_current_tag() get_current_tag(self->base.environment)
 #define get_microstep() get_microstep(self->base.environment)
 
-#define lf_new_token(x,y,z) lf_new_token(self->base.environment,x,y,z)
 #define lf_request_stop() _lf_request_stop(self->base.environment)
 
 #define lf_time_logical() lf_time_logical(self->base.environment)
