@@ -53,6 +53,7 @@ int environment_init(
     env->barrier.horizon = FOREVER_TAG;
     #endif
 
+    #ifdef MODAL_REACTORS
     if (num_modes > 0) {
         env->modes = (mode_environment_t *) malloc(sizeof(mode_environment_t));
         lf_assert(env->modes != NULL, "Out of memory");
@@ -61,12 +62,10 @@ int environment_init(
         env->modes->modal_reactor_states_size = num_modes;
         env->modes->triggered_reactions_request = 0;
 
-        #ifndef MODAL_REACTORS
-        #error MODAL_REACTORS not defined but environment_init called with num_modes>0 
-        #endif
     } else {
         env->modes = NULL;
     }
+    #endif
     
     return 0;
 }
