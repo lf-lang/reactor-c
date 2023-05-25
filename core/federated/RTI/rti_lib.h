@@ -513,6 +513,9 @@ int process_clock_sync_args(int argc, const char* argv[]);
  */
 int process_args(int argc, const char* argv[]);
 
-
+/**
+ * Initialize the _RTI instance.
+ */
+void initialize_RTI();
 
 #endif // RTI_LIB_H
