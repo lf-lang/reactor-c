@@ -46,7 +46,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <process.h>
 #include <windef.h>
 #include <stdint.h> // For fixed-width integral types
-#include <pthread.h> // For struct timespec used to print start time
+#include <time.h>
 
 #define _LF_TIMEOUT ETIMEDOUT
 // Use 64-bit times and 32-bit unsigned microsteps
