@@ -305,6 +305,13 @@ typedef struct lf_scheduler_t lf_scheduler_t;
  * Normally, there is only one execution environment, but if you use
  * scheduling enclaves, then there will be one for each enclave.
  */
+
+typedef struct mode_environment_t {
+    uint8_t triggered_reactions_request;
+    reactor_mode_state_t** modal_reactor_states;
+    int modal_reactor_states_size;
+} mode_environment_t;
+
 // FIXME: Can we avoid the #ifdefs wrt threading, federation and modes?
 typedef struct environment_t {
     int id;
@@ -319,8 +326,8 @@ typedef struct environment_t {
     int _lf_is_present_fields_abbreviated_size;
     vector_t _lf_sparse_io_record_sizes;
     trigger_handle_t _lf_handle;
-    trigger_t** _lf_timer_triggers;
-    int _lf_timer_triggers_size;
+    trigger_t** timer_triggers;
+    int timer_triggers_size;
     reaction_t** _lf_startup_reactions;
     int _lf_startup_reactions_size;
     reaction_t** _lf_shutdown_reactions;
@@ -340,6 +347,7 @@ typedef struct environment_t {
     tag_t** _lf_intended_tag_fields;
     int _lf_intended_tag_fields_size;
 #endif // FEDERATED
+    mode_environment_t* modes;
 } environment_t;
 
 

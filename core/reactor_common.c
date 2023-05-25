@@ -327,7 +327,7 @@ bool _lf_is_tag_after_stop_tag(environment_t* env, tag_t tag) {
  */
 void _lf_pop_events(environment_t *env) {
 #ifdef MODAL_REACTORS
-    _lf_handle_mode_triggered_reactions();
+    _lf_handle_mode_triggered_reactions(env);
 #endif
 
     event_t* event = (event_t*)pqueue_peek(env->event_q);
@@ -601,9 +601,7 @@ static void _lf_replace_token(event_t* event, lf_token_t* token) {
  *  or -1 for error (the tag is equal to or less than the current tag).
  */
 int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_token_t* token) {
-    self_base_t * reactor = (self_base_t *) trigger->parent;
-
-    tag_t current_logical_tag = lf_tag(reactor);
+    tag_t current_logical_tag = env->current_tag;
 
     LF_PRINT_DEBUG("_lf_schedule_at_tag() called with tag " PRINTF_TAG " at tag " PRINTF_TAG ".",
                   tag.time - start_time, tag.microstep,
@@ -1722,7 +1720,7 @@ void termination() {
 
     #ifdef MODAL_REACTORS
         // Free events and tokens suspended by modal reactors.
-        _lf_terminate_modal_reactors(); // FIXME: Enclaves
+        _lf_terminate_modal_reactors(env); // FIXME: Enclaves
     #endif
 
         // If the event queue still has events on it, report that.

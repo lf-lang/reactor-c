@@ -509,7 +509,7 @@ tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply) {
 void _lf_next_locked(environment_t *env) {
 #ifdef MODAL_REACTORS
     // Perform mode transitions
-    _lf_handle_mode_changes();
+    _lf_handle_mode_changes(env);
 #endif
 
     // Previous logical time is complete.
@@ -1151,7 +1151,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         initialize_environment(env); // Initialize priority queues and set stop time
     #ifdef MODAL_REACTORS
         // Set up modal infrastructure
-        _lf_initialize_modes();
+        _lf_initialize_modes(env);
     #endif
 
         env->current_tag.time = start_time;

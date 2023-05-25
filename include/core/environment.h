@@ -11,7 +11,8 @@ int environment_init(
     int num_startup_reactions, 
     int num_shutdown_reactions, 
     int num_reset_reactions,
-    int num_is_present_fields
+    int num_is_present_fields,
+    int num_modes
 );
 
 void environment_free(environment_t* env);
