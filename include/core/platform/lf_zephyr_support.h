@@ -50,7 +50,7 @@ typedef struct {
     lf_mutex_t* mutex;
     struct k_condvar condition;
 } lf_cond_t;
-typedef k_tid_t lf_thread_t;
+typedef struct k_thread* lf_thread_t;
 
 extern lf_mutex_t mutex;
 extern lf_cond_t event_q_changed;
