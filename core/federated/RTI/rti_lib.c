@@ -1384,7 +1384,7 @@ bool authenticate_federate(int socket) {
 
     // Check HMAC of received FED_RESPONSE message.
     unsigned int hmac_length = SHA256_HMAC_LENGTH;
-    size_t federation_id_length = strnlen(_F_RTI.federation_id, 255);
+    size_t federation_id_length = strnlen(_F_RTI->federation_id, 255);
     size_t fed_id_length = sizeof(uint16_t);
 
     unsigned char received[1 + NONCE_LENGTH + fed_id_length + hmac_length];
