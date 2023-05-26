@@ -656,19 +656,19 @@ void handle_stop_request_message(federate_t* fed) {
     // Iterate over federates and send each the MSG_TYPE_STOP_REQUEST message
     // if we do not have a stop_time already for them.
     for (int i = 0; i < _F_RTI->number_of_enclaves; i++) {
-        federate_t *fed = _F_RTI->enclaves[i];
-        if (fed->enclave.id != fed->enclave.id && fed->enclave.requested_stop == false) {
-            if (fed->enclave.state == NOT_CONNECTED) {
-                mark_federate_requesting_stop(fed);
+        federate_t *f = _F_RTI->enclaves[i];
+        if (f->enclave.id != fed->enclave.id && f->enclave.requested_stop == false) {
+            if (f->enclave.state == NOT_CONNECTED) {
+                mark_federate_requesting_stop(f);
                 continue;
             }
             if (_F_RTI->tracing_enabled) {
-                tracepoint_RTI_to_federate(send_STOP_REQ, fed->enclave.id, &_F_RTI->max_stop_tag);
+                tracepoint_RTI_to_federate(send_STOP_REQ, f->enclave.id, &_F_RTI->max_stop_tag);
             }
-            write_to_socket_errexit(fed->socket, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer,
-                    "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.", fed->enclave.id);
+            write_to_socket_errexit(f->socket, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer,
+                    "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.", f->enclave.id);
             if (_F_RTI->tracing_enabled) {
-                tracepoint_RTI_to_federate(send_STOP_REQ, fed->enclave.id, &_F_RTI->max_stop_tag);
+                tracepoint_RTI_to_federate(send_STOP_REQ, f->enclave.id, &_F_RTI->max_stop_tag);
             }
         }
     }
