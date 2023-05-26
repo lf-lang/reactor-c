@@ -1383,8 +1383,8 @@ bool authenticate_federate(int socket) {
     write_to_socket(socket, message_length, rti_hello_buffer);
 
     // Check HMAC of received FED_RESPONSE message.
-    size_t hmac_length = SHA256_HMAC_LENGTH;
-    size_t federation_id_length = strnlen(_F_RTI->federation_id, 255);
+    unsigned int hmac_length = SHA256_HMAC_LENGTH;
+    size_t federation_id_length = strnlen(_RTI.federation_id, 255);
     size_t fed_id_length = sizeof(uint16_t);
 
     unsigned char received[1 + NONCE_LENGTH + fed_id_length + hmac_length];
@@ -1784,6 +1784,11 @@ int process_args(int argc, const char* argv[]) {
            i++;
            i += process_clock_sync_args((argc-i), &argv[i]);
         } else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--auth") == 0) {
+            #ifndef __RTI_AUTH__
+            fprintf(stderr, "Error: --auth requires the RTI to be built with the -DAUTH=ON option.\n");
+            usage(argc, argv);
+            return 0;
+            #endif
             _F_RTI->authentication_enabled = true;
         } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tracing") == 0) {
             _F_RTI->tracing_enabled = true;
