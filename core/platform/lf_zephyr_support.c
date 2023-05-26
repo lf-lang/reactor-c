@@ -416,11 +416,11 @@ int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arg
 
 
     // Pass the pointer to the k_thread struct out. This is needed
-    // to join on the thread later
+    // to join on the thread later.
     *thread = &threads[tid];   
 
     // Increment the tid counter so that next call to `lf_thread_create`
-    // uses the next available k_thread struct and stack 
+    // uses the next available k_thread struct and stack.
     tid++; 
 
 
