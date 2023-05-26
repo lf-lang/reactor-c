@@ -49,7 +49,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "rti_lib.h"
 unsigned int _lf_number_of_workers = 0u;
 
-extern federation_RTI_t *_RTI;
+/**
+ * References to the federation RTI and the enclave RTI.
+ * They both point to the same enclaves stuctures. In the case of federation RTI,
+ * however, enclaves are encapsulated in federates.    
+ */
+extern enclave_RTI_t * _E_RTI;
+extern federation_RTI_t* _F_RTI;
 
 extern lf_mutex_t rti_mutex;
 
@@ -70,21 +76,28 @@ int main(int argc, const char* argv[]) {
         // Processing command-line arguments failed.
         return -1;
     }
-    if (_RTI->enclave_rti.tracing_enabled) {
-        _lf_number_of_workers = _RTI->enclave_rti.number_of_enclaves;
+    if (_F_RTI->tracing_enabled) {
+        _lf_number_of_workers = _F_RTI->number_of_enclaves;
         start_trace(rti_trace_file_name);
         printf("Tracing the RTI execution in %s file.\n", rti_trace_file_name);
     }
-    printf("Starting RTI for %d federates in federation ID %s\n", _RTI->enclave_rti.number_of_enclaves, _RTI->federation_id);
-    assert(_RTI->enclave_rti.number_of_enclaves < UINT16_MAX);
-    _RTI->enclave_rti.enclaves = (federate_t**)calloc(_RTI->enclave_rti.number_of_enclaves, sizeof(federate_t*));
-    for (uint16_t i = 0; i < _RTI->enclave_rti.number_of_enclaves; i++) {
-        _RTI->enclave_rti.enclaves[i] = (federate_t *)malloc(sizeof(federate_t));
-        initialize_federate((federate_t *)_RTI->enclave_rti.enclaves[i], i);
+
+    printf("Starting RTI for %d federates in federation ID %s\n", _F_RTI->number_of_enclaves, _F_RTI->federation_id);
+    assert(_F_RTI->number_of_enclaves < UINT16_MAX);
+    
+    // Allocate memory for the federates
+    _F_RTI->enclaves = (federate_t**)calloc(_F_RTI->number_of_enclaves, sizeof(federate_t*));
+    for (uint16_t i = 0; i < _F_RTI->number_of_enclaves; i++) {
+        _F_RTI->enclaves[i] = (federate_t *)malloc(sizeof(federate_t));
+        initialize_federate(_F_RTI->enclaves[i], i);
     }
-    int socket_descriptor = start_rti_server(_RTI->user_specified_port);
+
+    // Initialize the RTI enclaves
+    _E_RTI = (enclave_RTI_t*)_F_RTI;
+
+    int socket_descriptor = start_rti_server(_F_RTI->user_specified_port);
     wait_for_federates(socket_descriptor);
-    if (_RTI->enclave_rti.tracing_enabled) {
+    if (_F_RTI->tracing_enabled) {
         stop_trace();
     }
     printf("RTI is exiting.\n");

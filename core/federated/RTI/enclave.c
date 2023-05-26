@@ -1,7 +1,9 @@
 #include "enclave.h"
 
-
-extern enclave_RTI_t* _RTI;
+/**
+ * Reference to enclave_RTI_t instance.
+ */
+enclave_RTI_t* _E_RTI;
 
 // Global variables defined in tag.c:
 extern instant_t start_time;
@@ -36,11 +38,11 @@ void logical_tag_complete(enclave_t* enclave, tag_t completed) {
     lf_mutex_lock(&rti_mutex);
 
     enclave->completed = completed;
-    if ((enclave_RTI_t*)_RTI->tracing_enabled) {
+    if (_E_RTI->tracing_enabled) {
         tracepoint_RTI_from_federate(receive_LTC, enclave->id, &(enclave->completed));
     }
 
-    LF_PRINT_LOG("RTI received from federate %d the Logical Tag Complete (LTC) (%lld, %u).",
+    LF_PRINT_LOG("RTI received from federate %d the Logical Tag Complete (LTC) " PRINTF_TAG ".",
                 enclave->id, enclave->completed.time - start_time, enclave->completed.microstep);
 
     // See if we can remove any of the recorded in-transit messages for this.
@@ -50,12 +52,12 @@ void logical_tag_complete(enclave_t* enclave, tag_t completed) {
     // Check downstream federates to see whether they should now be granted a TAG.
     for (int i = 0; i < enclave->num_downstream; i++) {
         // FIXME: Shouldn't use enclave_t here.
-        enclave_t *downstream = (enclave_RTI_t *)_RTI->enclaves[enclave->downstream[i]];
+        enclave_t *downstream = _E_RTI->enclaves[enclave->downstream[i]];
         // Notify downstream federate if appropriate.
-        notify_advance_grant_if_safe((enclave_t*)downstream);
-        bool *visited = (bool *)calloc((enclave_RTI_t *)_RTI->number_of_enclaves, sizeof(bool)); // Initializes to 0.
+        notify_advance_grant_if_safe(downstream);
+        bool *visited = (bool *)calloc(_E_RTI->number_of_enclaves, sizeof(bool)); // Initializes to 0.
         // Notify enclaves downstream of downstream if appropriate.
-        notify_downstream_advance_grant_if_safe((enclave_t*)downstream, visited);
+        notify_downstream_advance_grant_if_safe(downstream, visited);
         free(visited);
     }
 
@@ -69,7 +71,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
     tag_t min_upstream_completed = FOREVER_TAG;
 
     for (int j = 0; j < e->num_upstream; j++) {
-        enclave_t *upstream = (enclave_RTI_t *)_RTI->enclaves[e->upstream[j]];
+        enclave_t *upstream = _E_RTI->enclaves[e->upstream[j]];
 
         // Ignore this federate if it has resigned.
         if (upstream->state == NOT_CONNECTED) continue;
@@ -80,7 +82,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
             min_upstream_completed = candidate;
         }
     }
-    LF_PRINT_LOG("Minimum upstream LTC for fed %d is (%lld, %u) "
+    LF_PRINT_LOG("Minimum upstream LTC for fed %d is " PRINTF_TAG 
             "(adjusted by after delay).",
             e->id,
             min_upstream_completed.time - start_time, min_upstream_completed.microstep);
@@ -100,17 +102,17 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
 
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream federates have been visited.
-    bool *visited = (bool *)calloc((enclave_RTI_t *)_RTI->number_of_enclaves, sizeof(bool)); // Initializes to 0.
+    bool *visited = (bool *)calloc(_E_RTI->number_of_enclaves, sizeof(bool)); // Initializes to 0.
 
     // Find the tag of the earliest possible incoming message from
     // upstream federates.
     tag_t t_d = FOREVER_TAG;
-    LF_PRINT_DEBUG("NOTE: FOREVER is displayed as (%lld, %u) and NEVER as (%lld, %u)",
-            FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
-            NEVER - start_time, 0u);
+    LF_PRINT_DEBUG("NOTE: FOREVER is displayed as" PRINTF_TAG "and NEVER as " PRINTF_TAG,
+                   FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
+                   NEVER - start_time, 0u);
 
     for (int j = 0; j < e->num_upstream; j++) {
-        enclave_t *upstream = (enclave_RTI_t *)_RTI->enclaves[e->upstream[j]];
+        enclave_t *upstream = _E_RTI->enclaves[e->upstream[j]];
 
         // Ignore this federate if it has resigned.
         if (upstream->state == NOT_CONNECTED) continue;
@@ -119,7 +121,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
         tag_t upstream_next_event = transitive_next_event(
                 upstream, upstream->next_event, visited);
 
-        LF_PRINT_DEBUG("Earliest next event upstream of fed %d at fed %d has tag (%lld, %u).",
+        LF_PRINT_DEBUG("Earliest next event upstream of fed %d at fed %d has tag " PRINTF_TAG ".",
                 e->id,
                 upstream->id,
                 upstream_next_event.time - start_time, upstream_next_event.microstep);
@@ -135,7 +137,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
     }
     free(visited);
 
-    LF_PRINT_LOG("Earliest next event upstream has tag (%lld, %u).",
+    LF_PRINT_LOG("Earliest next event upstream has tag " PRINTF_TAG ".",
             t_d.time - start_time, t_d.microstep);
 
     if (
@@ -173,7 +175,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
 void notify_downstream_advance_grant_if_safe(enclave_t* e, bool visited[]) {
     visited[e->id] = true;
     for (int i = 0; i < e->num_downstream; i++) {
-        enclave_t* downstream = (enclave_t*)_RTI->enclaves[e->downstream[i]];
+        enclave_t* downstream = _E_RTI->enclaves[e->downstream[i]];
         if (visited[downstream->id]) continue;
         notify_advance_grant_if_safe(downstream);
         notify_downstream_advance_grant_if_safe(downstream, visited);
@@ -199,7 +201,7 @@ void update_enclave_next_event_tag_locked(enclave_t* e, tag_t next_event_tag) {
     // Check downstream federates to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream federates have been visited.
-    bool *visited = (bool *)calloc((enclave_RTI_t *)_RTI->number_of_enclaves, sizeof(bool)); // Initializes to 0.
+    bool *visited = (bool *)calloc(_E_RTI->number_of_enclaves, sizeof(bool)); // Initializes to 0.
     notify_downstream_advance_grant_if_safe(e, visited);
     free(visited);
 }
@@ -275,7 +277,7 @@ tag_t transitive_next_event(enclave_t* e, tag_t candidate, bool visited[]) {
     // an event that would result in an earlier next event.
     for (int i = 0; i < e->num_upstream; i++) {
         tag_t upstream_result = transitive_next_event(
-            (enclave_RTI_t *)_RTI->enclaves[e->upstream[i]], result, visited);
+            _E_RTI->enclaves[e->upstream[i]], result, visited);
 
         // Add the "after" delay of the connection to the result.
         upstream_result = lf_delay_tag(upstream_result, e->upstream_delay[i]);

@@ -80,7 +80,24 @@ typedef enum clock_sync_stat {
  */
 typedef struct federation_RTI_t {
     // Enclave RTI
-    enclave_RTI_t enclave_rti;
+    // enclave_RTI_t enclave_rti;
+
+    // The federates.
+    federate_t **enclaves;
+
+    // Number of enclaves
+    int32_t number_of_enclaves;
+
+    // RTI's decided stop tag for federates
+    tag_t max_stop_tag;
+
+    // Number of federates handling stop
+    int num_feds_handling_stop;
+
+    /**
+     * Boolean indicating that tracing is enabled.
+     */
+    bool tracing_enabled;
 
     // Maximum start time seen so far from the federates.
     int64_t max_start_time;
@@ -146,11 +163,6 @@ typedef struct federation_RTI_t {
      * Boolean indicating that authentication is enabled.
      */
     bool authentication_enabled;
-
-    /**
-     * Boolean indicating that tracing is enabled.
-     */
-    bool tracing_enabled;
 } federation_RTI_t;
 
 // /**
