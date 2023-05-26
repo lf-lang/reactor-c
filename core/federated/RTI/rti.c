@@ -58,11 +58,13 @@ extern enclave_RTI_t * _E_RTI;
 extern federation_RTI_t* _F_RTI;
 
 extern lf_mutex_t rti_mutex;
+extern lf_cond_t received_start_times;
+extern lf_cond_t sent_start_time;
 
-/**
- * RTI trace file name
- */
-const char *rti_trace_file_name = "rti.lft";
+    /**
+     * RTI trace file name
+     */
+    const char *rti_trace_file_name = "rti.lft";
 
 int main(int argc, const char* argv[]) {
 

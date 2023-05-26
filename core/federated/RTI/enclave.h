@@ -19,13 +19,21 @@ typedef enum execution_mode_t {
     REALTIME
 } execution_mode_t;
 
-/** State of a federate during execution. */
+/** State of a enclave during execution. */
 typedef enum fed_state_t {
     NOT_CONNECTED,  // The federate has not connected.
     GRANTED,        // Most recent MSG_TYPE_NEXT_EVENT_TAG has been granted.
     PENDING         // Waiting for upstream federates.
 } fed_state_t;
 
+/**
+ * Information about enclave known to the RTI, including its runtime state,
+ * mode of execution, and connectivity with other enclaves.
+ * The list of upstream and downstream enclaves does not include
+ * those that are connected via a "physical" connection (one
+ * denoted with ~>) because those connections do not impose
+ * any scheduling constraints.
+ */
 typedef struct enclave_t {
     uint16_t id;            // ID of this enclave.
     tag_t completed;        // The largest logical tag completed by the federate (or NEVER if no LTC has been received).
@@ -50,7 +58,13 @@ typedef struct enclave_t {
 /**
  * Structure that an enclave RTI instance uses to keep track of its own and its
  * corresponding enclaves'state.
+ *     // **************** IMPORTANT!!! ********************
+ *     // **   If you make any change to this struct,     **
+ *     // **  you MUST also change federation_RTI_t in    **
+ *     // ** (rti_lib.h)! The change must exactly match.  **
+ *     // **************************************************
  */
+
 typedef struct enclave_RTI_t {
     // The enclaves.
     enclave_t **enclaves;
@@ -58,11 +72,11 @@ typedef struct enclave_RTI_t {
     // Number of enclaves
     int32_t number_of_enclaves;
 
-    // RTI's decided stop tag for federates
+    // RTI's decided stop tag for enclaves
     tag_t max_stop_tag;
 
-    // Number of federates handling stop
-    int num_feds_handling_stop;
+    // Number of enclaves handling stop
+    int num_enclaves_handling_stop;
 
     /**
      * Boolean indicating that tracing is enabled.

@@ -77,10 +77,18 @@ typedef enum clock_sync_stat {
 /**
  * Structure that an RTI instance uses to keep track of its own and its
  * corresponding federates' state.
+ * It is a special case of `enclave_RTI_t` (declared in enclave.h). Inheritence
+ * is mimicked by having the first attributes to be the same as of enclave_RTI_t,
+ * except that enclaves attribute here is of type `federate_t**`, while it
+ * is of type `enclave_t**` in `enclave_RTI_t`.
+ *     // **************** IMPORTANT!!! ********************
+ *     // **   If you make any change to this struct,     **
+ *     // **   you MUST also change  enclave_RTI_t in     **
+ *     // ** (enclave.h)! The change must exactly match.  **
+ *     // **************************************************
  */
 typedef struct federation_RTI_t {
-    // Enclave RTI
-    // enclave_RTI_t enclave_rti;
+    ////////////////// Enclave specific attributes //////////////////
 
     // The federates.
     federate_t **enclaves;
@@ -88,16 +96,16 @@ typedef struct federation_RTI_t {
     // Number of enclaves
     int32_t number_of_enclaves;
 
-    // RTI's decided stop tag for federates
+    // RTI's decided stop tag for enclaves
     tag_t max_stop_tag;
 
-    // Number of federates handling stop
-    int num_feds_handling_stop;
+    // Number of enclaves handling stop
+    int num_enclaves_handling_stop;
 
-    /**
-     * Boolean indicating that tracing is enabled.
-     */
+    // Boolean indicating that tracing is enabled.
     bool tracing_enabled;
+
+    ////////////// Federation only specific attributes //////////////
 
     // Maximum start time seen so far from the federates.
     int64_t max_start_time;
@@ -164,21 +172,6 @@ typedef struct federation_RTI_t {
      */
     bool authentication_enabled;
 } federation_RTI_t;
-
-// /**
-//  * The main mutex lock for the RTI.
-//  */ 
-// extern lf_mutex_t rti_mutex;
-
-/**
- * Condition variable used to signal receipt of all proposed start times.
- */
-extern lf_cond_t received_start_times;
-
-/**
- * Condition variable used to signal that a start time has been sent to a federate.
- */
-extern lf_cond_t sent_start_time;
 
 /**
  * Enter a critical section where logical time and the event queue are guaranteed

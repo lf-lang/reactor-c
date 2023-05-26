@@ -513,6 +513,9 @@ void handle_logical_tag_complete(federate_t* fed) {
     read_from_socket_errexit(fed->socket, sizeof(int64_t) + sizeof(uint32_t), buffer,
             "RTI failed to read the content of the logical tag complete from federate %d.", fed->enclave.id);
     tag_t completed = extract_tag(buffer);
+    if (_F_RTI->tracing_enabled) {
+        tracepoint_RTI_from_federate(receive_LTC, fed->enclave.id, &completed);
+    }
     logical_tag_complete(&(fed->enclave), completed);
 
     // FIXME: Should this function be in the enclave version?
@@ -592,10 +595,10 @@ void mark_federate_requesting_stop(federate_t* fed) {
     if (!fed->enclave.requested_stop) {
         // Assume that the federate
         // has requested stop
-        _F_RTI->num_feds_handling_stop++;
+        _F_RTI->num_enclaves_handling_stop++;
         fed->enclave.requested_stop = true;
     }
-    if (_F_RTI->num_feds_handling_stop == _F_RTI->number_of_enclaves) {
+    if (_F_RTI->num_enclaves_handling_stop == _F_RTI->number_of_enclaves) {
         // We now have information about the stop time of all
         // federates.
         _lf_rti_broadcast_stop_time_to_federates_already_locked();
@@ -641,7 +644,7 @@ void handle_stop_request_message(federate_t* fed) {
     // for a stop, add it to the tally.
     mark_federate_requesting_stop(fed);
 
-    if (_F_RTI->num_feds_handling_stop == _F_RTI->number_of_enclaves) {
+    if (_F_RTI->num_enclaves_handling_stop == _F_RTI->number_of_enclaves) {
         // We now have information about the stop time of all
         // federates. This is extremely unlikely, but it can occur
         // all federates call lf_request_stop() at the same tag.
@@ -1806,7 +1809,7 @@ void initialize_RTI(){
     // enclave_rti related initializations
     _F_RTI->max_stop_tag = NEVER_TAG,
     _F_RTI->number_of_enclaves = 0,
-    _F_RTI->num_feds_handling_stop = 0,
+    _F_RTI->num_enclaves_handling_stop = 0,
     // federation_rti related initializations
     _F_RTI->max_start_time = 0LL,
     _F_RTI->num_feds_proposed_start = 0,
