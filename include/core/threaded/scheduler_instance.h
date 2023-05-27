@@ -50,6 +50,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Forward declarations
 typedef struct environment_t environment_t;
 
+typedef struct custom_scheduler_data_t custom_scheduler_data_t;
 
 /**
  * @brief Paramters used in schedulers of the threaded reactor C runtime.
@@ -138,6 +139,12 @@ typedef struct lf_scheduler_t {
      *
      */
     volatile size_t next_reaction_level;
+
+    // Pointer to an optional custom data structure that each scheduler can define.
+    // The type is forward declared here and must be declared again in the scheduler source file
+    // Is not touched by `init_sched_instance` and must be initialized by each scheduler that needs it
+    custom_scheduler_data_t * custom_data;
+
 } lf_scheduler_t;
 
 /**
