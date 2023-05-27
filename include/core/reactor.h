@@ -440,7 +440,7 @@ void termination();
 /**
  * Function (to be code generated) to trigger shutdown reactions.
  */
-bool _lf_trigger_shutdown_reactions(environment_t *env);
+void _lf_trigger_shutdown_reactions(environment_t *env);
 
 /**
  * Schedule the specified action with an integer value at a later logical
