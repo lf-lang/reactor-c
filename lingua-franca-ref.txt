@@ -1,1 +1,1 @@
-enclaves
+enclaves-win-debug
