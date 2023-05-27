@@ -14,7 +14,8 @@ int environment_init(
     int num_shutdown_reactions, 
     int num_reset_reactions,
     int num_is_present_fields,
-    int num_modes
+    int num_modes,
+    int num_state_resets
 ) {
     env->id = id;
     env->stop_tag = FOREVER_TAG;
@@ -55,12 +56,18 @@ int environment_init(
 
     #ifdef MODAL_REACTORS
     if (num_modes > 0) {
-        env->modes = (mode_environment_t *) malloc(sizeof(mode_environment_t));
-        lf_assert(env->modes != NULL, "Out of memory");
-        env->modes->modal_reactor_states = (reactor_mode_state_t**) calloc(num_modes, sizeof(reactor_mode_state_t*));
-        lf_assert(env->modes->modal_reactor_states != NULL, "Out of memory");
-        env->modes->modal_reactor_states_size = num_modes;
-        env->modes->triggered_reactions_request = 0;
+        mode_environment_t* modes = (mode_environment_t *) malloc(sizeof(mode_environment_t));
+        lf_assert(modes != NULL, "Out of memory");
+        modes->modal_reactor_states = (reactor_mode_state_t**) calloc(num_modes, sizeof(reactor_mode_state_t*));
+        lf_assert(modes->modal_reactor_states != NULL, "Out of memory");
+        modes->modal_reactor_states_size = num_modes;
+        modes->triggered_reactions_request = 0;
+
+        modes->state_resets = (mode_state_variable_reset_data_t *) calloc(num_state_resets, sizeof(mode_state_variable_reset_data_t));
+        lf_assert(modes->state_resets != NULL, "Out of memory");
+        modes->state_resets_size = num_state_resets;
+
+        env->modes = modes;
 
     } else {
         env->modes = NULL;

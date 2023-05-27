@@ -352,7 +352,9 @@ struct mode_environment_t {
     uint8_t triggered_reactions_request;
     reactor_mode_state_t** modal_reactor_states;
     int modal_reactor_states_size;
-} mode_environment_t;
+    mode_state_variable_reset_data_t* state_resets;
+    int state_resets_size;
+};
 #endif
 
 /**
