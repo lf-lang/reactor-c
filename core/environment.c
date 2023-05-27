@@ -74,6 +74,12 @@ int environment_init(
     }
     #endif
     
+    
+    #ifdef FEDERATED_DECENTRALIZED
+    env->_lf_intended_tag_fields = (bool**)calloc(num_is_present_fields, sizeof(tag_t*));
+    lf_assert(env->_lf_intended_tag_fields != NULL, "Out of memory");
+    env->_lf_intended_tag_fields_size = num_is_present_fields;
+    #endif
     return 0;
 }
 
