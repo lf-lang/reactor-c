@@ -762,7 +762,7 @@ void _lf_initialize_start_tag(environment_t *env) {
     // from exceeding the timestamp of the message. It will remove that barrier
     // once the complete message has been read. Here, we wait for that barrier
     // to be removed, if appropriate before proceeding to executing tag (0,0).
-    _lf_wait_on_global_tag_barrier((tag_t){.time=start_time,.microstep=0});
+    _lf_wait_on_global_tag_barrier(env, (tag_t){.time=start_time,.microstep=0});
 #endif // FEDERATED_DECENTRALIZED
 
     // Set the following boolean so that other thread(s), including federated threads,
@@ -1063,7 +1063,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
 
-    _lf_create_environments();
     
     if (atexit(termination) != 0) {
         lf_print_warning("Failed to register termination function!");
@@ -1092,6 +1091,8 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     } else {
         return -1;
     }
+    // Create the environments for each enclave
+    _lf_create_environments();
 
     // Initialize the one global mutex
     if (lf_mutex_init(&global_mutex) != 0) {

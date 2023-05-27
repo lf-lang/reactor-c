@@ -1629,7 +1629,7 @@ void wait_until_port_status_known(environment_t* env, int port_ID, interval_t ST
     // for the current tag could have been received in time
     // but not the the body of the message.
     // Wait on the tag barrier based on the current tag. 
-    _lf_wait_on_global_tag_barrier(lf_tag(env));
+    _lf_wait_on_global_tag_barrier(env, env->current_tag);
 
     // Done waiting
     // If the status of the port is still unknown, assume it is absent.
@@ -1705,7 +1705,7 @@ static trigger_handle_t schedule_message_received_from_network_already_locked(
         LF_PRINT_LOG("Calling schedule with 0 delay and intended tag " PRINTF_TAG ".",
                     trigger->intended_tag.time - start_time,
                     trigger->intended_tag.microstep);
-        return_value = _lf_schedule(trigger, extra_delay, token);
+        return_value = _lf_schedule(env, trigger, extra_delay, token);
 #endif
     } else {
         // In case the message is in the future, call
@@ -1940,11 +1940,11 @@ void handle_tagged_message(environment_t* env, int socket, int fed_id) {
     // by the message. If this tag is in the past, the function will cause
     // the tag to freeze at the current level.
     // If something happens, make sure to release the barrier.
-    _lf_increment_global_tag_barrier(intended_tag);
+    _lf_increment_global_tag_barrier(env, intended_tag);
 #endif
     LF_PRINT_LOG("Received message with tag: " PRINTF_TAG ", Current tag: " PRINTF_TAG ".",
             intended_tag.time - start_time, intended_tag.microstep,
-            lf_time_logical_elapsed(NULL), lf_tag(env).microstep);
+            lf_time_logical_elapsed(env), lf_tag(env).microstep);
 
     // Read the payload.
     // Allocate memory for the message contents.

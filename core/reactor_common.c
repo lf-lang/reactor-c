@@ -1094,7 +1094,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
                              "This should not happen under centralized coordination. Intended tag: " PRINTF_TAG ". Current tag: " PRINTF_TAG ").",
                              trigger->intended_tag.time - lf_time_start(),
                              trigger->intended_tag.microstep,
-                             lf_time_logical_elapsed(NULL), 
+                             lf_time_logical_elapsed(env), 
                              lf_tag(env).microstep);
     }
 #endif
@@ -1429,7 +1429,7 @@ void schedule_output_reactions(environment_t *env, reaction_t* reaction, int wor
 
                 // If the reaction produced outputs, put the resulting
                 // triggered reactions into the queue or execute them directly if possible.
-                schedule_output_reactions(downstream_to_execute_now, worker);
+                schedule_output_reactions(env, downstream_to_execute_now, worker);
 
                 // Reset the tardiness because it has been dealt with in the
                 // STP handler
