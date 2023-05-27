@@ -88,7 +88,7 @@ void _lf_set_present(environment_t* env, lf_port_base_t* port);
  * @brief Forward declaration for the executable preamble;
  * 
  */
-void _lf_executable_preamble();
+void _lf_executable_preamble(environment_t* env);
 
 /**
  * Set the specified output (or input of a contained reactor)
