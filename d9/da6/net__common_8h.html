@@ -106,7 +106,7 @@ Macros</h2></td></tr>
 <tr class="separator:aac9f4a449d302b4f39e69a14b3a4c8d5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc95612e1d2dbbdf34afe76d50e75223"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/da6/net__common_8h.html#acc95612e1d2dbbdf34afe76d50e75223">FED_COM_BUFFER_SIZE</a>&#160;&#160;&#160;256u</td></tr>
 <tr class="separator:acc95612e1d2dbbdf34afe76d50e75223"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab2106828de539188aed925f592751c12"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/da6/net__common_8h.html#ab2106828de539188aed925f592751c12">CONNECT_RETRY_INTERVAL</a>&#160;&#160;&#160;2</td></tr>
+<tr class="memitem:ab2106828de539188aed925f592751c12"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/da6/net__common_8h.html#ab2106828de539188aed925f592751c12">CONNECT_RETRY_INTERVAL</a>&#160;&#160;&#160;2000000000LL</td></tr>
 <tr class="separator:ab2106828de539188aed925f592751c12"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ea56eac4d92cb13df332bd6765c3601"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/da6/net__common_8h.html#a0ea56eac4d92cb13df332bd6765c3601">CONNECT_NUM_RETRIES</a>&#160;&#160;&#160;500</td></tr>
 <tr class="separator:a0ea56eac4d92cb13df332bd6765c3601"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -264,11 +264,11 @@ LICENSE</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define CONNECT_RETRY_INTERVAL&#160;&#160;&#160;2</td>
+          <td class="memname">#define CONNECT_RETRY_INTERVAL&#160;&#160;&#160;2000000000LL</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Number of seconds that elapse between a federate's attempts to connect to the RTI. </p>
+<p>Number of nanoseconds that elapse between a federate's attempts to connect to the RTI. </p>
 
 </div>
 </div>
