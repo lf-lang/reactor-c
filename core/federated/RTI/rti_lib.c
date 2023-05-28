@@ -1109,20 +1109,14 @@ void* clock_synchronization_thread(void* noargs) {
     interval_t ns_to_wait = start_time - lf_time_physical();
 
     if (ns_to_wait > 0LL) {
-        struct timespec wait_time = {ns_to_wait / BILLION, ns_to_wait % BILLION};
-        struct timespec rem_time;
-        nanosleep(&wait_time, &rem_time);
+        lf_sleep(ns_to_wait);
     }
 
     // Initiate a clock synchronization every _RTI.clock_sync_period_ns
-    struct timespec sleep_time = {(time_t) _RTI.clock_sync_period_ns / BILLION,
-                                  _RTI.clock_sync_period_ns % BILLION};
-    struct timespec remaining_time;
-
     bool any_federates_connected = true;
     while (any_federates_connected) {
         // Sleep
-        nanosleep(&sleep_time, &remaining_time); // Can be interrupted
+        lf_sleep(_RTI.clock_sync_period_ns); // Can be interrupted
         any_federates_connected = false;
         for (int fed = 0; fed < _RTI.number_of_federates; fed++) {
             if (_RTI.federates[fed].state == NOT_CONNECTED) {
