@@ -1702,7 +1702,7 @@ void initialize_environment(environment_t *env) {
  * memory allocated by set_new, set_new_array, or lf_writable_copy
  * has not been freed.
  */
-void termination() {
+void termination(void) {
     environment_t *env;
     int num_envs = _lf_get_environments(&env);
     // Invoke the code generated termination function.

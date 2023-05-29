@@ -88,7 +88,7 @@ void schedule_output_reactions(environment_t *env, reaction_t* reaction, int wor
 int process_args(int argc, const char* argv[]);
 void initialize_environment(environment_t *env);
 void initialize_global();
-void termination();
+void termination(void);
 
 int lf_notify_of_event(environment_t* env);
 int lf_critical_section_enter(environment_t* env);
