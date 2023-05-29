@@ -97,6 +97,9 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
     if (setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEADDR, &true_variable, sizeof(int32_t)) < 0) {
         lf_print_error("RTI failed to set SO_REUSEADDR option on the socket: %s.", strerror(errno));
     }
+    if (setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEPORT, &true_variable, sizeof(int32_t)) < 0) {
+        lf_print_error("RTI failed to set SO_REUSEPORT option on the socket: %s.", strerror(errno));
+    }
     // Set the timeout on the socket so that read and write operations don't block for too long
     if (setsockopt(socket_descriptor, SOL_SOCKET, SO_RCVTIMEO, (const char*)&timeout_time, sizeof(timeout_time)) < 0) {
         lf_print_error("RTI failed to set SO_RCVTIMEO option on the socket: %s.", strerror(errno));
