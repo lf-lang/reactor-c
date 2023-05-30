@@ -39,6 +39,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdlib.h> //malloc, calloc, free, realloc
 
 #include <zephyr/kernel.h>
+#include <zephyr/posix/sys/socket.h>
+#include <zephyr/posix/netdb.h>
 
 #define NO_TTY
 #define _LF_TIMEOUT 1

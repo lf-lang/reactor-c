@@ -33,6 +33,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef FEDERATED
 #ifdef PLATFORM_ARDUINO
 #error To be implemented. No support for federation on Arduino yet.
+#elif PLATFORM_ZEPHYR
+#warning Federated support on Zephyr is still experimental.
 #else
 #include <arpa/inet.h>  // inet_ntop & inet_pton
 #include <netdb.h>      // Defines getaddrinfo(), freeaddrinfo() and struct addrinfo.
@@ -2414,6 +2416,7 @@ void terminate_execution() {
     // possibility of deadlock. To ensure this, this
     // function should NEVER be called while holding any mutex lock.
     lf_mutex_lock(&outbound_socket_mutex);
+    // FIXME: Should this be _fed.number_of_outbound_p2p_connections instead?
     for (int i=0; i < NUMBER_OF_FEDERATES; i++) {
         // Close outbound connections, in case they have not closed themselves.
         // This will result in EOF being sent to the remote federate, I think.
