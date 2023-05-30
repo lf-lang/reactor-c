@@ -15,7 +15,7 @@ var searchData=
   ['defer_12',['defer',['../d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a893b1cf0de04eaf44a009fecabd16b90',1,'lf_types.h']]],
   ['definitions_2eh_13',['definitions.h',['../d6/dc2/definitions_8h.html',1,'']]],
   ['delay_5fstart_14',['DELAY_START',['../d9/da6/net__common_8h.html#a4b8c713b515dba0c86d9205dc0caf4ed',1,'net_common.h']]],
-  ['deprecated_15',['DEPRECATED',['../de/d03/platform_8h.html#aa321c5ff2c1afca6cd771e8602972052',1,'DEPRECATED(extern int lf_nanosleep(interval_t sleep_duration)):&#160;platform.h'],['../de/d03/platform_8h.html#af67a6ff1a54b41b2a6e4bd36bc47b118',1,'DEPRECATED():&#160;platform.h']]],
+  ['deprecated_15',['DEPRECATED',['../de/d03/platform_8h.html#af67a6ff1a54b41b2a6e4bd36bc47b118',1,'DEPRECATED():&#160;platform.h'],['../de/d03/platform_8h.html#aa321c5ff2c1afca6cd771e8602972052',1,'DEPRECATED(extern int lf_nanosleep(interval_t sleep_duration)):&#160;platform.h']]],
   ['deprecated_20list_16',['Deprecated List',['../da/d58/deprecated.html',1,'']]],
   ['deque_2ec_17',['deque.c',['../da/dcd/deque_8c.html',1,'']]],
   ['deque_2eh_18',['deque.h',['../dc/d44/deque_8h.html',1,'']]],
@@ -23,7 +23,7 @@ var searchData=
   ['deque_5fis_5fempty_20',['deque_is_empty',['../dc/d44/deque_8h.html#ac22527818b92ea67851c2fd4a2790cb7',1,'deque_is_empty(deque_t *d):&#160;deque.c'],['../da/dcd/deque_8c.html#ac22527818b92ea67851c2fd4a2790cb7',1,'deque_is_empty(deque_t *d):&#160;deque.c']]],
   ['deque_5fnode_5ft_21',['deque_node_t',['../db/dab/structdeque__node__t.html',1,'deque_node_t'],['../da/dcd/deque_8c.html#a9c53ad2a54f6caf5f58c6090e90c6141',1,'deque_node_t():&#160;deque.c']]],
   ['deque_5fpeek_5fback_22',['deque_peek_back',['../dc/d44/deque_8h.html#a3530b26ded106a84ef8571fab0e73d9e',1,'deque_peek_back(deque_t *d):&#160;deque.c'],['../da/dcd/deque_8c.html#a3530b26ded106a84ef8571fab0e73d9e',1,'deque_peek_back(deque_t *d):&#160;deque.c']]],
-  ['deque_5fpeek_5ffront_23',['deque_peek_front',['../da/dcd/deque_8c.html#a4b9e8a9de89f124d0cdc1199debb70be',1,'deque_peek_front(deque_t *d):&#160;deque.c'],['../dc/d44/deque_8h.html#a4b9e8a9de89f124d0cdc1199debb70be',1,'deque_peek_front(deque_t *d):&#160;deque.c']]],
+  ['deque_5fpeek_5ffront_23',['deque_peek_front',['../dc/d44/deque_8h.html#a4b9e8a9de89f124d0cdc1199debb70be',1,'deque_peek_front(deque_t *d):&#160;deque.c'],['../da/dcd/deque_8c.html#a4b9e8a9de89f124d0cdc1199debb70be',1,'deque_peek_front(deque_t *d):&#160;deque.c']]],
   ['deque_5fpop_5fback_24',['deque_pop_back',['../da/dcd/deque_8c.html#a841ec80a70a2e63f08aab990e528e1f9',1,'deque_pop_back(deque_t *d):&#160;deque.c'],['../dc/d44/deque_8h.html#a841ec80a70a2e63f08aab990e528e1f9',1,'deque_pop_back(deque_t *d):&#160;deque.c']]],
   ['deque_5fpop_5ffront_25',['deque_pop_front',['../da/dcd/deque_8c.html#a4acd616a7c971b1c137010c64801d746',1,'deque_pop_front(deque_t *d):&#160;deque.c'],['../dc/d44/deque_8h.html#a4acd616a7c971b1c137010c64801d746',1,'deque_pop_front(deque_t *d):&#160;deque.c']]],
   ['deque_5fpush_5fback_26',['deque_push_back',['../da/dcd/deque_8c.html#ac1ffd77da7496612086ea430f7d29563',1,'deque_push_back(deque_t *d, void *value):&#160;deque.c'],['../dc/d44/deque_8h.html#ac1ffd77da7496612086ea430f7d29563',1,'deque_push_back(deque_t *d, void *value):&#160;deque.c']]],
@@ -34,8 +34,9 @@ var searchData=
   ['destroy_5faction_5fcapsule_31',['destroy_action_capsule',['../db/df4/pythontarget_8c.html#ad52c5f970c1f6a4dde6f3457c92402ae',1,'pythontarget.c']]],
   ['destructor_32',['destructor',['../db/d12/structtoken__type__t.html#a304b9805bf712b9e1745432f8bd9796c',1,'token_type_t::destructor()'],['../da/dc0/structgeneric__port__instance__struct.html#a26752c879bfe4b2fbbf8cd9cd632e216',1,'generic_port_instance_struct::destructor()']]],
   ['digits_33',['digits',['../d6/da6/structmixed__radix__int__t.html#a0e7296e98823c245fa1e3d7b6b590e4d',1,'mixed_radix_int_t']]],
-  ['done_5freactions_34',['done_reactions',['../d7/d73/struct__lf__sched__thread__info__t.html#a0aa63072819d25d22fdbc59bf55f39f6',1,'_lf_sched_thread_info_t']]],
-  ['downstream_35',['downstream',['../d9/d2f/structfederate__t.html#a70e3719658ccc1ed171389b566ec5631',1,'federate_t']]],
-  ['drop_36',['drop',['../d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019',1,'lf_types.h']]],
-  ['duration_37',['duration',['../dd/d37/reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration():&#160;reactor_common.c'],['../d7/d0e/reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration():&#160;reactor_common.c']]]
+  ['do_5fconvert_34',['DO_CONVERT',['../dd/d77/type__converter_8h.html#a9cbcaad341a5b5a807196f116619b9c0',1,'type_converter.h']]],
+  ['done_5freactions_35',['done_reactions',['../d7/d73/struct__lf__sched__thread__info__t.html#a0aa63072819d25d22fdbc59bf55f39f6',1,'_lf_sched_thread_info_t']]],
+  ['downstream_36',['downstream',['../d9/d2f/structfederate__t.html#a70e3719658ccc1ed171389b566ec5631',1,'federate_t']]],
+  ['drop_37',['drop',['../d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019',1,'lf_types.h']]],
+  ['duration_38',['duration',['../dd/d37/reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration():&#160;reactor_common.c'],['../d7/d0e/reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration():&#160;reactor_common.c']]]
 ];
