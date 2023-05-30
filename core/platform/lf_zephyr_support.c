@@ -49,7 +49,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Keep track of overflows to keep clocks monotonic
 static int64_t _lf_timer_epoch_duration_nsec;
 static int64_t _lf_timer_epoch_duration_usec;
+static uint32_t _lf_timer_max_tics;
 static volatile int64_t _lf_timer_last_epoch_nsec = 0;
+static uint32_t _lf_timer_freq;
 
 #if defined(LF_ZEPHYR_CLOCK_HI_RES)
 // Create semaphore for async wakeup from physical action
@@ -58,15 +60,11 @@ K_SEM_DEFINE(_lf_sem,0,1)
 static struct counter_alarm_cfg _lf_alarm_cfg;
 const struct device *const _lf_counter_dev = DEVICE_DT_GET(LF_TIMER);   
 static volatile bool _lf_alarm_fired;
-static uint32_t _lf_timer_freq;
-
-
 
 // Timer overflow callback
 static void  _lf_timer_overflow_callback(const struct device *dev, void *user_data) {
         _lf_timer_last_epoch_nsec += _lf_timer_epoch_duration_nsec;
 }
-
 
 static void _lf_wakeup_alarm(const struct device *counter_dev,
 				      uint8_t chan_id, uint32_t ticks,
@@ -85,7 +83,6 @@ static volatile bool _lf_async_event = false;
 // Keep track of IRQ mask when entering critical section so we can enable again after
 static volatile unsigned _lf_irq_mask = 0;
 
-
 /**
  * Initialize the LF clock
  */
@@ -100,34 +97,32 @@ void lf_initialize_clock() {
     // Verify that we have the device
     // FIXME: Try lf_print_error_and_exit? Or terminate in some way? Maybe return non-zero from this function
     if (!device_is_ready(_lf_counter_dev)) {
-
 		lf_print_error_and_exit("ERROR: counter device not ready.\n");
     }
 
     // Verify that it is working as we think
     if(!counter_is_counting_up(_lf_counter_dev)) {
         lf_print_error_and_exit("ERROR: Timer is counting down \n");
-        while(1) {};
     }
+    
+    // Get the frequency of the timer
+    _lf_timer_freq = counter_get_frequency(_lf_counter_dev);
 
     // Calculate the duration of an epoch. Compute both
     //  nsec and usec now at boot to avoid these computations later
-    counter_max_ticks = counter_get_max_top_value(_lf_counter_dev);
-    _lf_timer_epoch_duration_usec = counter_ticks_to_us(_lf_counter_dev, counter_max_ticks);
+    _lf_timer_max_ticks = counter_get_max_top_value(_lf_counter_dev);
+    _lf_timer_epoch_duration_usec = counter_ticks_to_us(_lf_counter_dev, _lf_timer_max_ticks);
     _lf_timer_epoch_duration_nsec = _lf_timer_epoch_duration_usec * 1000LL;
     
     // Set the max_top value to be the maximum
-    counter_max_ticks = counter_get_max_top_value(_lf_counter_dev);
-    counter_top_cfg.ticks = counter_max_ticks;
+    counter_top_cfg.ticks = _lf_timer_max_ticks;
     counter_top_cfg.callback = _lf_timer_overflow_callback;
     res = counter_set_top_value(_lf_counter_dev, &counter_top_cfg);
     if (res != 0) {
         lf_print_error_and_exit("ERROR: Timer couldnt set top value\n");
-        while(1) {};
     }
 
-    LF_PRINT_LOG("HW Clock has frequency of %u Hz and wraps every %u sec\n", _lf_timer_freq, counter_max_ticks/_lf_timer_freq);
-    
+    LF_PRINT_LOG("HW Clock has frequency of %u Hz and wraps every %u sec\n", _lf_timer_freq, _lf_timer_max_ticks/_lf_timer_freq);
     
     // Prepare the alarm config
     _lf_alarm_cfg.flags = 0;
@@ -139,7 +134,8 @@ void lf_initialize_clock() {
     counter_start(_lf_counter_dev);
     #else
     LF_PRINT_LOG("Using Low resolution zephyr kernel clock");
-    LF_PRINT_LOG("Kernel Clock has frequency of %u Hz\n", CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC);
+    _lf_timer_freq = CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC;
+    LF_PRINT_LOG("Kernel Clock has frequency of %u Hz\n", _lf_timer_freq);
     _lf_timer_last_epoch_nsec = 0;
     // Compute the duration of an epoch. Compute both
     //  nsec and usec now at boot to avoid these computations later
@@ -349,7 +345,7 @@ int lf_notify_of_event() {
 
 
 #ifdef LF_THREADED
-#error "Threaded support on Zephyr is not supported"
+#warning "Threaded support on Zephyr is still experimental."
 
 // FIXME: What is an appropriate stack size?
 #define _LF_STACK_SIZE 1024
@@ -362,8 +358,18 @@ int lf_notify_of_event() {
 #define NUMBER_OF_WORKERS 1
 #endif
 
-static K_THREAD_STACK_ARRAY_DEFINE(stacks, NUMBER_OF_WORKERS, _LF_STACK_SIZE);
-static struct k_thread threads[NUMBER_OF_WORKERS];
+// If USER_THREADS is not specified, then default to 0.
+#if !defined(USER_THREADS)
+#define USER_THREADS 0
+#endif
+
+#define NUMBER_OF_THREADS (NUMBER_OF_WORKERS \
+                           + USER_THREADS)
+
+K_MUTEX_DEFINE(thread_mutex);
+
+static K_THREAD_STACK_ARRAY_DEFINE(stacks, NUMBER_OF_THREADS, _LF_STACK_SIZE);
+static struct k_thread threads[NUMBER_OF_THREADS];
 
 // Typedef that represents the function pointers passed by LF runtime into lf_thread_create
 typedef void *(*lf_function_t) (void *);
@@ -393,23 +399,33 @@ int lf_available_cores() {
  *  it must be removed from the API.
  */
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
+    k_mutex_lock(&thread_mutex, K_FOREVER);
+
     // Use static id to map each created thread to a 
     static int tid = 0;
 
     // Make sure we dont try to create too many threads
-    if (tid > (NUMBER_OF_WORKERS-1)) {
+    if (tid > (NUMBER_OF_THREADS-1)) {
         return -1;
     }
-
 
     k_tid_t my_tid = k_thread_create(&threads[tid], &stacks[tid][0],
                                     _LF_STACK_SIZE, zephyr_worker_entry,
                                  (void *) lf_thread, arguments, NULL,
                                  _LF_THREAD_PRIORITY, 0, K_NO_WAIT);
 
+
+    // Pass the pointer to the k_thread struct out. This is needed
+    // to join on the thread later.
+    *thread = &threads[tid];   
+
+    // Increment the tid counter so that next call to `lf_thread_create`
+    // uses the next available k_thread struct and stack.
     tid++; 
 
-    *thread = my_tid;   
+
+    k_mutex_unlock(&thread_mutex);
+
     return 0;
 }
 
