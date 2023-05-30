@@ -418,7 +418,7 @@ void lf_sched_init(
         set_reaction_position, reaction_matches, print_reaction);
 
     // Create the custom scheduler data struct. It contains a pqueue for each worker thread
-    env->scheduler->custom_data = (custom_scheduler_data_t*)malloc(sizeof(custom_scheduler_data_t));
+    env->scheduler->custom_data = (custom_scheduler_data_t*)calloc(1, sizeof(custom_scheduler_data_t));
     env->scheduler->custom_data->output_reactions_size = number_of_workers;
     env->scheduler->custom_data->output_reactions = (pqueue_t **) calloc(number_of_workers, sizeof(pqueue_t*));
     for (int i = 0; i < env->scheduler->number_of_workers; i++) {

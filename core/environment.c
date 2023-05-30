@@ -56,7 +56,7 @@ int environment_init(
 
     #ifdef MODAL_REACTORS
     if (num_modes > 0) {
-        mode_environment_t* modes = (mode_environment_t *) malloc(sizeof(mode_environment_t));
+        mode_environment_t* modes = (mode_environment_t *) calloc(1, sizeof(mode_environment_t));
         lf_assert(modes != NULL, "Out of memory");
         modes->modal_reactor_states = (reactor_mode_state_t**) calloc(num_modes, sizeof(reactor_mode_state_t*));
         lf_assert(modes->modal_reactor_states != NULL, "Out of memory");

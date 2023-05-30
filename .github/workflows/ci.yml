@@ -65,10 +65,10 @@ jobs:
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
       scheduler: GEDF_NP_CI
 
-  # lf-adaptive:
-    # needs: fetch-lf
-    # uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
-    # with:
-    #   runtime-ref: ${{ github.ref }}
-    #   compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
-    #   scheduler: ADAPTIVE
+  lf-adaptive:
+    needs: fetch-lf
+    uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
+    with:
+      runtime-ref: ${{ github.ref }}
+      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+      scheduler: ADAPTIVE
