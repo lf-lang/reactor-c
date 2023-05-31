@@ -186,8 +186,8 @@ static void environment_free_modes(environment_t* env) {
 #ifdef MODAL_REACTORS
     if (env->modes) {
         free(env->modes->modal_reactor_states);
-        free(env->modes->mode_state_reset);
-        free(env->modes)
+        free(env->modes->state_resets);
+        free(env->modes);
     }
 #endif
 }
