@@ -23,6 +23,7 @@
 #include <strings.h>    // Defines bzero().
 #include <assert.h>
 #include <sys/wait.h>   // Defines wait() for process to change state.
+#include <signal.h>     // To trap ctrl-c and invoke a clean stop to save the trace file, if needed.
 
 #include "platform.h"   // Platform-specific types and functions
 #include "util.h" // Defines print functions (e.g., lf_print).
