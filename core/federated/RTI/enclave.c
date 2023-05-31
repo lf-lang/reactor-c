@@ -110,9 +110,9 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
     // Find the tag of the earliest possible incoming message from
     // upstream enclaves.
     tag_t t_d = FOREVER_TAG;
-    LF_PRINT_DEBUG("NOTE: FOREVER is displayed as" PRINTF_TAG "and NEVER as " PRINTF_TAG,
+    LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG,
                    FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
-                   NEVER - start_time, 0u);
+                   NEVER_TAG.time - start_time, 0);
 
     for (int j = 0; j < e->num_upstream; j++) {
         enclave_t *upstream = _E_RTI->enclaves[e->upstream[j]];

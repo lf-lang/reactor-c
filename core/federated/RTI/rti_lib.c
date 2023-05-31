@@ -836,7 +836,7 @@ void handle_timestamp(federate_t *my_fed) {
     // the federate to the start time.
     my_fed->enclave.state = GRANTED;
     lf_cond_broadcast(&sent_start_time);
-    LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->id);
+    LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
     lf_mutex_unlock(&rti_mutex);
 }
 
@@ -907,7 +907,7 @@ void* clock_synchronization_thread(void* noargs) {
         lf_sleep(ns_to_wait);
     }
 
-    // Initiate a clock synchronization every _RTI.clock_sync_period_ns
+    // Initiate a clock synchronization every _F_RTI.clock_sync_period_ns
     // Initiate a clock synchronization every _F_RTI->clock_sync_period_ns
     struct timespec sleep_time = {(time_t) _F_RTI->clock_sync_period_ns / BILLION,
                                   _F_RTI->clock_sync_period_ns % BILLION};
@@ -916,7 +916,7 @@ void* clock_synchronization_thread(void* noargs) {
     bool any_federates_connected = true;
     while (any_federates_connected) {
         // Sleep
-        lf_sleep(_RTI.clock_sync_period_ns); // Can be interrupted
+        lf_sleep(_F_RTI->clock_sync_period_ns); // Can be interrupted
         any_federates_connected = false;
         for (int fed_id = 0; fed_id < _F_RTI->number_of_enclaves; fed_id++) {
             federate_t* fed = _F_RTI->enclaves[fed_id];
