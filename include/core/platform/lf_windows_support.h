@@ -30,9 +30,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Erling Jellum <erling.r.jellum@ntnu>}
  *  
  * The API is implemented in the header files. This is also the case for Linux
- * and macos. This is to enable having both the unthreaded and the threaded API
- * available in the same program. This is needed for unthreaded programs with 
- * tracing. trace.c can then do #define _LF_TRACE and then include this file
+ * and macos. 
  *  
  * All functions return 0 on success.
  *
@@ -56,7 +54,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Forward declare lf_clock_gettime which is needed by lf_cond_timedwait
 extern int lf_clock_gettime(instant_t* t);
 
-#if defined LF_THREADED || defined _LF_TRACE
+#if defined LF_THREADED
 #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
 /**
  * On Windows, one could use both a mutex or

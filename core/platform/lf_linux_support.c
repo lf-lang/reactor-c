@@ -39,7 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LF_MAX_SLEEP_NS USEC(UINT64_MAX)
 #define LF_MIN_SLEEP_NS USEC(10)
 
-#if defined LF_UNTHREADED && !defined _LF_TRACE
+#if defined LF_UNTHREADED
     #include "lf_os_single_threaded_support.c"
 #endif
 

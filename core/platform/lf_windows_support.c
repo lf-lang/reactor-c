@@ -60,7 +60,7 @@ double _lf_frequency_to_ns = 1.0;
 
 #define LF_MIN_SLEEP_NS USEC(10)
 
-#if defined LF_THREADED || defined _LF_TRACE
+#if defined LF_THREADED
 
 /**
  * @brief Get the number of cores on the host machine.

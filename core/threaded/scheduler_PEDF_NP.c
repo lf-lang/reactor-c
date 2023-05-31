@@ -532,8 +532,8 @@ void lf_sched_init(
         get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
 
     _lf_scheduler_threads_info =
-        (_lf_scheduler_thread_info_t*)malloc(
-            sizeof(_lf_scheduler_thread_info_t) * scheduler->number_of_workers);
+        (_lf_scheduler_thread_info_t*)calloc(
+            1, sizeof(_lf_scheduler_thread_info_t) * scheduler->number_of_workers);
 
     for (int i=0; i < scheduler->number_of_workers; i++) {
         lf_mutex_init(&_lf_scheduler_threads_info[i].mutex);

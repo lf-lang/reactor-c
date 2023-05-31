@@ -79,28 +79,41 @@ extern "C" {
 #error "Platform not supported"
 #endif
 
-#if !defined(LF_THREADED) && !defined(_LF_TRACE)
+#if !defined(LF_THREADED)
     typedef void lf_mutex_t;
 #endif
 
 #define LF_TIMEOUT _LF_TIMEOUT
 
+
+// To support the unthreaded runtime, we need the following functions. They
+//  are not required by the threaded runtime and is thus hidden behind a #ifdef.
 #if defined (LF_UNTHREADED)
+    /**
+     * @brief Disable interrupts with support for nested calls
+     * 
+     * @return int 
+     */
     int lf_platform_disable_interrupts_nested();
+    /**
+     * @brief  Enable interrupts after potentially multiple callse to `lf_platform_disable_interrupts_nested`
+     * 
+     * @return int 
+     */
     int lf_platform_enable_interrupts_nested();
+
+    /**
+     * @brief Notify sleeping workers of new event on the event queue
+     * 
+     * @return int 
+     */
     int lf_platform_notify_of_event();
 #endif
 
 
-/**
- * Notify any listeners that an event has been created.
- * The caller should call lf_critical_section_enter(env) before calling this function.
- * @return 0 on success, platform-specific error number otherwise.
- */
-
 // For platforms with threading support, the following functions
 // abstract the API so that the LF runtime remains portable.
-#if defined LF_THREADED || defined _LF_TRACE
+#if defined LF_THREADED
 
 /**
  * @brief Get the number of cores on the host machine.
