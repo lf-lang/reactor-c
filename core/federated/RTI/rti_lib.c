@@ -226,7 +226,7 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag) {
         }
     } else {
         fed->last_granted = tag;
-        LF_PRINT_LOG("RTI sent to federate %d the tag advance grant (TAG) (%lld, %u).",
+        LF_PRINT_LOG("RTI sent to federate %d the tag advance grant (TAG) " PRINTF_TAG ".",
                 fed->id, tag.time - start_time, tag.microstep);
     }
 }
@@ -308,7 +308,7 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
         }
     } else {
         fed->last_provisionally_granted = tag;
-        LF_PRINT_LOG("RTI sent to federate %d the Provisional Tag Advance Grant (PTAG) (%lld, %u).",
+        LF_PRINT_LOG("RTI sent to federate %d the Provisional Tag Advance Grant (PTAG) " PRINTF_TAG ".",
                 fed->id, tag.time - start_time, tag.microstep);
 
         // Send PTAG to all upstream federates, if they have not had
@@ -360,7 +360,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
             min_upstream_completed = candidate;
         }
     }
-    LF_PRINT_LOG("Minimum upstream LTC for fed %d is (%lld, %u) "
+    LF_PRINT_LOG("Minimum upstream LTC for fed %d is " PRINTF_TAG " "
             "(adjusted by after delay).",
             fed->id,
             min_upstream_completed.time - start_time, min_upstream_completed.microstep);
@@ -385,7 +385,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
     // Find the tag of the earliest possible incoming message from
     // upstream federates.
     tag_t t_d = FOREVER_TAG;
-    LF_PRINT_DEBUG("NOTE: FOREVER is displayed as (%lld, %u) and NEVER as (%lld, %u)",
+    LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG ".",
             FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
             NEVER - start_time, 0u);
 
@@ -399,7 +399,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
         tag_t upstream_next_event = transitive_next_event(
                 upstream, upstream->next_event, visited);
 
-        LF_PRINT_DEBUG("Earliest next event upstream of fed %d at fed %d has tag (%lld, %u).",
+        LF_PRINT_DEBUG("Earliest next event upstream of fed %d at fed %d has tag " PRINTF_TAG ".",
                 fed->id,
                 upstream->id,
                 upstream_next_event.time - start_time, upstream_next_event.microstep);
@@ -415,7 +415,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
     }
     free(visited);
 
-    LF_PRINT_LOG("Earliest next event upstream has tag (%lld, %u).",
+    LF_PRINT_LOG("Earliest next event upstream has tag " PRINTF_TAG ".",
             t_d.time - start_time, t_d.microstep);
 
     if (
@@ -519,10 +519,10 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
         lf_mutex_unlock(&rti_mutex);
         lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
                 federate_id);
-        LF_PRINT_LOG("Fed status: next_event (%lld, %d), "
-                "completed (%lld, %d), "
-                "last_granted (%lld, %d), "
-                "last_provisionally_granted (%lld, %d).",
+        LF_PRINT_LOG("Fed status: next_event (" PRINTF_TIME ", %d), "
+                "completed (" PRINTF_TIME ", %d), "
+                "last_granted (" PRINTF_TIME ", %d), "
+                "last_provisionally_granted (" PRINTF_TIME ", %d).",
                 _RTI.federates[federate_id].next_event.time - start_time,
                 _RTI.federates[federate_id].next_event.microstep,
                 _RTI.federates[federate_id].completed.time - start_time,
@@ -609,10 +609,10 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
         lf_mutex_unlock(&rti_mutex);
         lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
                 federate_id);
-        LF_PRINT_LOG("Fed status: next_event (%lld, %d), "
-                "completed (%lld, %d), "
-                "last_granted (%lld, %d), "
-                "last_provisionally_granted (%lld, %d).",
+        LF_PRINT_LOG("Fed status: next_event " PRINTF_TAG ", "
+                "completed " PRINTF_TAG ", "
+                "last_granted " PRINTF_TAG ", "
+                "last_provisionally_granted " PRINTF_TAG ".",
                 _RTI.federates[federate_id].next_event.time - start_time,
                 _RTI.federates[federate_id].next_event.microstep,
                 _RTI.federates[federate_id].completed.time - start_time,
@@ -717,7 +717,7 @@ void handle_logical_tag_complete(federate_t* fed) {
         tracepoint_RTI_from_federate(receive_LTC, fed->id, &(fed->completed));
     }
 
-    LF_PRINT_LOG("RTI received from federate %d the Logical Tag Complete (LTC) (%lld, %u).",
+    LF_PRINT_LOG("RTI received from federate %d the Logical Tag Complete (LTC) " PRINTF_TAG ".",
                 fed->id, fed->completed.time - start_time, fed->completed.microstep);
 
 
@@ -795,7 +795,7 @@ void _lf_rti_broadcast_stop_time_to_federates_already_locked() {
                 "RTI failed to send MSG_TYPE_STOP_GRANTED message to federate %d.", _RTI.federates[i].id);
     }
 
-    LF_PRINT_LOG("RTI sent to federates MSG_TYPE_STOP_GRANTED with tag (%lld, %u).",
+    LF_PRINT_LOG("RTI sent to federates MSG_TYPE_STOP_GRANTED with tag " PRINTF_TAG ".",
                 _RTI.max_stop_tag.time - start_time,
                 _RTI.max_stop_tag.microstep);
     _lf_rti_stop_granted_already_sent_to_federates = true;
@@ -847,7 +847,7 @@ void handle_stop_request_message(federate_t* fed) {
         _RTI.max_stop_tag = proposed_stop_tag;
     }
 
-    LF_PRINT_LOG("RTI received from federate %d a MSG_TYPE_STOP_REQUEST message with tag (%lld, %u).",
+    LF_PRINT_LOG("RTI received from federate %d a MSG_TYPE_STOP_REQUEST message with tag " PRINTF_TAG ".",
             fed->id, proposed_stop_tag.time - start_time, proposed_stop_tag.microstep);
 
     // If this federate has not already asked
@@ -884,7 +884,7 @@ void handle_stop_request_message(federate_t* fed) {
             }
         }
     }
-    LF_PRINT_LOG("RTI forwarded to federates MSG_TYPE_STOP_REQUEST with tag (%lld, %u).",
+    LF_PRINT_LOG("RTI forwarded to federates MSG_TYPE_STOP_REQUEST with tag " PRINTF_TAG ".",
                 _RTI.max_stop_tag.time - start_time,
                 _RTI.max_stop_tag.microstep);
     lf_mutex_unlock(&rti_mutex);
@@ -902,7 +902,7 @@ void handle_stop_request_reply(federate_t* fed) {
         tracepoint_RTI_from_federate(receive_STOP_REQ_REP, fed->id, &federate_stop_tag);
     }
 
-    LF_PRINT_LOG("RTI received from federate %d STOP reply tag (%lld, %u).", fed->id,
+    LF_PRINT_LOG("RTI received from federate %d STOP reply tag " PRINTF_TAG ".", fed->id,
             federate_stop_tag.time - start_time,
             federate_stop_tag.microstep);
 
@@ -994,7 +994,7 @@ void handle_timestamp(federate_t *my_fed) {
         tag_t tag = {.time = timestamp, .microstep = 0};
         tracepoint_RTI_from_federate(receive_TIMESTAMP, my_fed->id, &tag);
     }
-    LF_PRINT_LOG("RTI received timestamp message: %lld.", timestamp);
+    LF_PRINT_LOG("RTI received timestamp message: " PRINTF_TIME ".", timestamp);
 
     lf_mutex_lock(&rti_mutex);
     _RTI.num_feds_proposed_start++;
@@ -1041,7 +1041,7 @@ void handle_timestamp(federate_t *my_fed) {
     // the federate to the start time.
     my_fed->state = GRANTED;
     lf_cond_broadcast(&sent_start_time);
-    LF_PRINT_LOG("RTI sent start time %lld to federate %d.", start_time, my_fed->id);
+    LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->id);
     lf_mutex_unlock(&rti_mutex);
 }
 
@@ -1075,7 +1075,7 @@ void send_physical_clock(unsigned char message_type, federate_t* fed, socket_typ
                         fed->id,
                         strerror(errno));
     }
-    LF_PRINT_DEBUG("Clock sync: RTI sent PHYSICAL_TIME_SYNC_MESSAGE with timestamp %lld to federate %d.",
+    LF_PRINT_DEBUG("Clock sync: RTI sent PHYSICAL_TIME_SYNC_MESSAGE with timestamp " PRINTF_TIME " to federate %d.",
                  current_physical_time,
                  fed->id);
 }
@@ -1901,7 +1901,7 @@ int process_clock_sync_args(int argc, const char* argv[]) {
                 continue; // Try to parse the rest of the arguments as clock sync args.
             }
             _RTI.clock_sync_period_ns = (int64_t)period_ns;
-            printf("RTI: Clock sync period: %lld\n", (long long int)_RTI.clock_sync_period_ns);
+            printf("RTI: Clock sync period: " PRINTF_TIME "\n", (long long int)_RTI.clock_sync_period_ns);
         } else if (strcmp(argv[i], "exchanges-per-interval") == 0) {
             if (_RTI.clock_sync_global_status != clock_sync_on && _RTI.clock_sync_global_status != clock_sync_init) {
                 fprintf(stderr, "Error: clock sync exchanges-per-interval can only be set if\n");
