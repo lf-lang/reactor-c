@@ -359,7 +359,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         initialize_global();
         // Set start time
         start_time = lf_time_physical();
-        initialize_environment(env);
+        environment_init_tags(start_time, duration);
 #ifdef MODAL_REACTORS
         // Set up modal infrastructure
         _lf_initialize_modes();

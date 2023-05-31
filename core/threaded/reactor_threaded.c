@@ -1062,8 +1062,8 @@ void determine_number_of_workers(void) {
 int lf_reactor_c_main(int argc, const char* argv[]) {
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
-
     
+    // Register the termination function
     if (atexit(termination) != 0) {
         lf_print_warning("Failed to register termination function!");
     }
@@ -1077,21 +1077,26 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Instead, cause an EPIPE error to be set when write() fails.
     signal(SIGPIPE, SIG_IGN);
 #endif // SIGPIPE
-    if (process_args(default_argc, default_argv)
-            && process_args(argc, argv)) {
 
-        determine_number_of_workers();
-
-
-        LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
-        struct timespec physical_time_timespec = {start_time / BILLION, start_time % BILLION};
-        lf_print("---- Start execution at time %s---- plus %ld nanoseconds",
-            ctime(&physical_time_timespec.tv_sec), physical_time_timespec.tv_nsec);
-
-    } else {
+    // Parse command line arguments. Sets globalvariables like duration, fast, number_of_workers.
+    if (!(process_args(default_argc, default_argv)
+            && process_args(argc, argv))) {
         return -1;
     }
-    // Create the environments for each enclave
+    // Determine number of workers based on user request and available parallelism
+    // FIXME: Revisit this for enclaves.
+    determine_number_of_workers();
+    
+    // Initialize the clock through the platform API. No reading of physical time before this.
+    lf_initialize_clock();
+    start_time = lf_time_physical();
+
+    LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
+    struct timespec physical_time_timespec = {start_time / BILLION, start_time % BILLION};
+    lf_print("---- Start execution at time %s---- plus %ld nanoseconds",
+        ctime(&physical_time_timespec.tv_sec), physical_time_timespec.tv_nsec);
+    
+    // Create and initialize the environments for each enclave
     _lf_create_environments();
 
     // Initialize the one global mutex
@@ -1102,9 +1107,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Initialize the global payload and token allocation counts and the trigger table
     initialize_global();
         
-    // FIXME: Set the start time for the program. Must occur after initialize_global since the clock isnt set up until then
-    start_time = lf_time_physical();
-
     // FIXME: Consider making watchdogs environment-specific.
     _lf_initialize_watchdog_mutexes();
     
@@ -1115,61 +1117,33 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         keepalive_specified = true;
     }
     
-    
-    // For now, we just use the first environment straight
-    // In the future we want to loop through all etc
-
+    // Do environment-specific setup
     for (int i = 0; i<num_envs; i++) {
         environment_t *env = &envs[i];
-        // Initialize the one and only mutex to be recursive, meaning that it is OK
-        // for the same thread to lock and unlock the mutex even if it already holds
-        // the lock.
-        // FIXME: This is dangerous. The docs say this: "It is advised that an
-        // application should not use a PTHREAD_MUTEX_RECURSIVE mutex with
-        // condition variables because the implicit unlock performed for a
-        // pthread_cond_wait() or pthread_cond_timedwait() may not actually
-        // release the mutex (if it had been locked multiple times).
-        // If this happens, no other thread can satisfy the condition
-        // of the predicate.”  This seems like a bug in the implementation of
-        // pthreads. Maybe it has been fixed?
-        // The one and only mutex lock.
-        if (lf_mutex_init(&env->mutex) != 0) {
-            lf_print_error_and_exit("Could not initialize environment mutex");
-        }
 
-        // Initialize condition variables used for notification between threads.
-        if (lf_cond_init(&env->event_q_changed, &env->mutex) != 0) {
-            lf_print_error_and_exit("Could not initialize environment event queue condition variable");
-        }
-        if (lf_cond_init(&env->global_tag_barrier_requestors_reached_zero, &env->mutex)) {
-            lf_print_error_and_exit("Could not initialize environment tag barrier condition variable");
-        }
-
-        // FIXME: Why lock this so early?
-        if (lf_mutex_lock(&env->mutex) != 0) {
-            lf_print_error_and_exit("Could not lock environment mutex");
-        }
-        initialize_environment(env); // Initialize priority queues and set stop time
+        // Initialize the start and stop tags of the environment
+        environment_init_tags(env, start_time, duration);
     #ifdef MODAL_REACTORS
         // Set up modal infrastructure
         _lf_initialize_modes(env);
     #endif
 
-        env->current_tag.time = start_time;
-        lf_print("Environment %u: ---- Using %d workers.",env->id, env->num_workers);
-
         // Initialize the scheduler
-        lf_sched_init(
-            env,
-            (size_t)env->num_workers,
-            NULL);
-        
+        // FIXME: Why is this called here and in `_lf_initialize_trigger objects`?
+        lf_sched_init(env, (size_t)env->num_workers, NULL);  
 
         // Call the following function only once, rather than per worker thread (although
         // it can be probably called in that manner as well).
         _lf_initialize_start_tag(env);
 
+        // Lock mutex and spawn threads.
+        if (lf_mutex_lock(&env->mutex) != 0) {
+            lf_print_error_and_exit("Could not lock environment mutex");
+        }
+
+        lf_print("Environment %u: ---- Spawning %d workers.",env->id, env->num_workers);
         start_threads(env);
+        // Unlock mutex and allow threads proceed
         lf_mutex_unlock(&env->mutex);
     }
     

@@ -69,7 +69,7 @@ static volatile uint32_t _lf_time_us_low_last = 0;
 int lf_sleep_until_locked(instant_t wakeup) {
     instant_t now;
     _lf_async_event = false;
-    lf_platform_disable_interrupts_nested();
+    lf_platform_disable_interrupts_nester();
 
     // Do busy sleep
     do {

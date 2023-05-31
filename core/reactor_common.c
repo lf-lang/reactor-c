@@ -1674,29 +1674,6 @@ void initialize_global() {
     _lf_initialize_trigger_objects() ;
 }
 
-
-void initialize_environment(environment_t *env) {
-    // Initialize our priority queues.
-
-    env->event_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_reverse_order, get_event_time,
-            get_event_position, set_event_position, event_matches, print_event);
-    // NOTE: The recycle and next queue does not need to be sorted. But here it is.
-    env->recycle_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
-            get_event_position, set_event_position, event_matches, print_event);
-    env->next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
-            get_event_position, set_event_position, event_matches, print_event);
-
-    env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
-    
-    tag_t stop_tag = FOREVER_TAG_INITIALIZER;
-    if (duration >= 0LL) {
-        // A duration has been specified. Calculate the stop time.
-        stop_tag.time = env->current_tag.time + duration;
-        stop_tag.microstep = 0;
-    }
-    env->stop_tag = stop_tag;
-}
-
 /**
  * Report elapsed logical and physical times and report if any
  * memory allocated by set_new, set_new_array, or lf_writable_copy

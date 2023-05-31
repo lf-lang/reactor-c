@@ -201,9 +201,9 @@ int lf_sleep_until_locked(instant_t wakeup) {
             lf_print_error_and_exit("Could not setup alarm for sleeping. Errno %i", err);
         }
         
-        lf_platform_enable_interrupts_nested();
+        lf_critical_section_exit(env);
         k_sem_take(&_lf_sem, K_FOREVER);
-        lf_platform_disable_interrupts_nested();
+        lf_critical_section_enter(env);
 
         // Then calculating remaining sleep, unless we got woken up by an event
         if (!_lf_async_event) {
@@ -246,14 +246,14 @@ int lf_clock_gettime(instant_t* t) {
 
 int lf_sleep_until_locked(instant_t wakeup) {
     _lf_async_event=false;    
-    lf_platform_enable_interrupts_nested();
+    lf_critical_section_exit(env);
 
     instant_t now;
     do {
     lf_clock_gettime(&now);
     } while ( (now<wakeup) && !_lf_async_event);
     
-    lf_platform_disable_interrupts_nested();
+    lf_critical_section_enter(env);
 
     if (_lf_async_event) {
         _lf_async_event=false;
@@ -538,20 +538,20 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
  * 
  */
 int _zephyr_atomic_fetch_add(int *ptr, int value) {
-    lf_platform_disable_interrupts_nested();
+    lf_critical_section_enter(env);
     int res = *ptr;
     *ptr += value;
-    lf_platform_enable_interrupts_nested();
+    lf_critical_section_exit(env);
     return res;
 }
 /**
  * @brief Add `value` to `*ptr` and return new updated value of `*ptr`
  */
 int _zephyr_atomic_add_fetch(int *ptr, int value) {
-    lf_platform_disable_interrupts_nested();
+    lf_critical_section_enter(env);
     int res = *ptr + value;
     *ptr = res;
-    lf_platform_enable_interrupts_nested();
+    lf_critical_section_exit(env);
     return res;
 }
 
@@ -561,13 +561,13 @@ int _zephyr_atomic_add_fetch(int *ptr, int value) {
  * with `newval`. If not do nothing. Retruns true on overwrite.
  */
 bool _zephyr_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
-    lf_platform_disable_interrupts_nested();
+    lf_critical_section_enter(env);
     bool res = false;
     if (*ptr == value) {
         *ptr = newval;
         res = true;
     }
-    lf_platform_enable_interrupts_nested();
+    lf_critical_section_exit(env);
     return res;
 }
 
@@ -577,12 +577,12 @@ bool _zephyr_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
  * the original value of `*ptr`.
  */
 int  _zephyr_val_compare_and_swap(int *ptr, int value, int newval) {
-    lf_platform_disable_interrupts_nested();
+    lf_critical_section_enter(env);
     int res = *ptr;
     if (*ptr == value) {
         *ptr = newval;
     }
-    lf_platform_enable_interrupts_nested();
+    lf_critical_section_exit(env);
     return res;
 }
 

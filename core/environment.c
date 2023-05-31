@@ -46,12 +46,34 @@ int environment_init(
     lf_assert(env->is_present_fields_abbreviated != NULL, "Out of memory");
 
     env->_lf_handle=1; // FIXME: What is this?
+    
+    // Initialize our priority queues.
+    env->event_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_reverse_order, get_event_time,
+            get_event_position, set_event_position, event_matches, print_event);
+    env->recycle_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
+            get_event_position, set_event_position, event_matches, print_event);
+    env->next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
+            get_event_position, set_event_position, event_matches, print_event);
+
+    // Initialize objects only needed by threaded runtime
     #ifdef LF_THREADED
     env->num_workers = num_workers;
     env->thread_ids = (lf_thread_t*)calloc(num_workers, sizeof(lf_thread_t));
     lf_assert(env->thread_ids != NULL, "Out of memory");
     env->barrier.requestors = 0;
     env->barrier.horizon = FOREVER_TAG;
+    
+    // Initialize synchronization objects
+    if (lf_mutex_init(&env->mutex) != 0) {
+        lf_print_error_and_exit("Could not initialize environment mutex");
+    }
+    if (lf_cond_init(&env->event_q_changed, &env->mutex) != 0) {
+        lf_print_error_and_exit("Could not initialize environment event queue condition variable");
+    }
+    if (lf_cond_init(&env->global_tag_barrier_requestors_reached_zero, &env->mutex)) {
+        lf_print_error_and_exit("Could not initialize environment tag barrier condition variable");
+    }
+
     #endif
 
     #ifdef MODAL_REACTORS
@@ -81,6 +103,21 @@ int environment_init(
     env->_lf_intended_tag_fields_size = num_is_present_fields;
     #endif
     return 0;
+}
+
+void environment_init_tags(
+    environment_t *env, instant_t start_time, interval_t duration
+) {
+
+    env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
+    
+    tag_t stop_tag = FOREVER_TAG_INITIALIZER;
+    if (duration >= 0LL) {
+        // A duration has been specified. Calculate the stop time.
+        stop_tag.time = env->current_tag.time + duration;
+        stop_tag.microstep = 0;
+    }
+    env->stop_tag = stop_tag;
 }
 
 void environment_free(environment_t* env) {
