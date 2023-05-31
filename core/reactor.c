@@ -40,6 +40,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_types.h"
 #include "platform.h"
 #include "reactor_common.h"
+#include "environment.h"
 
 // Embedded platforms with no TTY shouldnt have signals
 #if !defined(NO_TTY)
