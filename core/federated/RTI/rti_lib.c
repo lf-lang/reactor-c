@@ -789,6 +789,7 @@ void handle_timestamp(federate_t *my_fed) {
         tracepoint_RTI_from_federate(receive_TIMESTAMP, my_fed->enclave.id, &tag);
     }
     LF_PRINT_LOG("RTI received timestamp message: %ld.", timestamp);
+    LF_PRINT_LOG("RTI received timestamp message: " PRINTF_TIME ".", timestamp);
 
     lf_mutex_lock(&rti_mutex);
     _F_RTI->num_feds_proposed_start++;
@@ -835,7 +836,7 @@ void handle_timestamp(federate_t *my_fed) {
     // the federate to the start time.
     my_fed->enclave.state = GRANTED;
     lf_cond_broadcast(&sent_start_time);
-    LF_PRINT_LOG("RTI sent start time %ld to federate %d.", start_time, my_fed->enclave.id);
+    LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->id);
     lf_mutex_unlock(&rti_mutex);
 }
 
@@ -869,7 +870,7 @@ void send_physical_clock(unsigned char message_type, federate_t* fed, socket_typ
                         fed->enclave.id,
                         strerror(errno));
     }
-    LF_PRINT_DEBUG("Clock sync: RTI sent PHYSICAL_TIME_SYNC_MESSAGE with timestamp %ld to federate %d.",
+    LF_PRINT_DEBUG("Clock sync: RTI sent PHYSICAL_TIME_SYNC_MESSAGE with timestamp " PRINTF_TIME " to federate %d.",
                  current_physical_time,
                  fed->enclave.id);
 }
@@ -903,11 +904,10 @@ void* clock_synchronization_thread(void* noargs) {
     interval_t ns_to_wait = start_time - lf_time_physical();
 
     if (ns_to_wait > 0LL) {
-        struct timespec wait_time = {ns_to_wait / BILLION, ns_to_wait % BILLION};
-        struct timespec rem_time;
-        nanosleep(&wait_time, &rem_time);
+        lf_sleep(ns_to_wait);
     }
 
+    // Initiate a clock synchronization every _RTI.clock_sync_period_ns
     // Initiate a clock synchronization every _F_RTI->clock_sync_period_ns
     struct timespec sleep_time = {(time_t) _F_RTI->clock_sync_period_ns / BILLION,
                                   _F_RTI->clock_sync_period_ns % BILLION};
@@ -916,7 +916,7 @@ void* clock_synchronization_thread(void* noargs) {
     bool any_federates_connected = true;
     while (any_federates_connected) {
         // Sleep
-        nanosleep(&sleep_time, &remaining_time); // Can be interrupted
+        lf_sleep(_RTI.clock_sync_period_ns); // Can be interrupted
         any_federates_connected = false;
         for (int fed_id = 0; fed_id < _F_RTI->number_of_enclaves; fed_id++) {
             federate_t* fed = _F_RTI->enclaves[fed_id];

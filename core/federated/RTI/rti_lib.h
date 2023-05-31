@@ -19,6 +19,7 @@
 #include <netdb.h>      // Defines gethostbyname().
 #include <strings.h>    // Defines bzero().
 #include <sys/wait.h>   // Defines wait() for process to change state.
+#include <signal.h>     // To trap ctrl-c and invoke a clean stop to save the trace file, if needed.
 
 #include "enclave.h"
 

@@ -47,6 +47,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "rti_lib.h"
+
+/** Termination function */
+void termination();
+
 unsigned int _lf_number_of_workers = 0u;
 
 /**
@@ -74,6 +78,12 @@ int main(int argc, const char* argv[]) {
     lf_cond_init(&received_start_times, &rti_mutex);
     lf_cond_init(&sent_start_time, &rti_mutex);
 
+    // Catch the Ctrl-C signal, for a clean exit that does not loose the trace information
+    signal(SIGINT, exit);
+    if (atexit(termination) != 0) {
+        lf_print_warning("Failed to register termination function!");
+    }
+
     if (!process_args(argc, argv)) {
         // Processing command-line arguments failed.
         return -1;
@@ -99,9 +109,20 @@ int main(int argc, const char* argv[]) {
 
     int socket_descriptor = start_rti_server(_F_RTI->user_specified_port);
     wait_for_federates(socket_descriptor);
+    
+    termination();
+
+    return 0;
+}
+
+/**
+ * @brief A clean termination of the RTI will write the trace file, if tracing is
+ * enabled, before exiting.
+ */
+void termination() {
     if (_F_RTI->tracing_enabled) {
         stop_trace();
-    }
+        printf("RTI trace file saved.\n");
+    }   
     printf("RTI is exiting.\n");
-    return 0;
 }
