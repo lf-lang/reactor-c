@@ -241,13 +241,13 @@ int lf_sleep_until_locked(instant_t wakeup_time) {
         }
 
         // Leave critical section
-        lf_critical_section_exit(env);
+        lf_platform_enable_interrupts_nested();
         
         // wait for exception
         __WFE();
 
         // Enter critical section again
-        lf_critical_section_enter(env);
+        lf_platform_disable_interrupts_nested();
 
         // Redo while loop and go back to sleep if:
         //  1) We didnt have async event AND
