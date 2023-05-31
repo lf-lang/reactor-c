@@ -256,7 +256,7 @@ int next(environment_t* env) {
 
     LF_PRINT_LOG("Next event (elapsed) time is " PRINTF_TIME ".", next_tag.time - start_time);
     // Wait until physical time >= event.time.
-    int finished_sleep = wait_until(next_tag.time);
+    int finished_sleep = wait_until(env, next_tag.time);
     LF_PRINT_LOG("Next event (elapsed) time is " PRINTF_TIME ".", next_tag.time - start_time);
     if (finished_sleep != 0) {
         LF_PRINT_DEBUG("***** wait_until was interrupted.");

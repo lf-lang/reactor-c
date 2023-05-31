@@ -1599,7 +1599,7 @@ void wait_until_port_status_known(environment_t* env, int port_ID, interval_t ST
                 port_ID,
                 env->current_tag.time - start_time,
                 env->current_tag.microstep);
-        while(!wait_until(wait_until_time, &port_status_changed)) {
+        while(!wait_until(env, wait_until_time, &port_status_changed)) {
             // Interrupted
             LF_PRINT_DEBUG("------ Wait for network input port %d interrupted.", port_ID);
             // Check if the status of the port is known

@@ -340,7 +340,7 @@ void synchronize_with_other_federates(environment_t* env);
  *  the stop time, if one was specified. Return true if the full wait time
  *  was reached.
  */
-bool wait_until(instant_t logical_time, lf_cond_t* condition) {
+bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition) {
     LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time " PRINTF_TIME, logical_time);
     bool return_value = true;
     interval_t wait_until_time_ns = logical_time;
@@ -415,7 +415,7 @@ bool wait_until(instant_t logical_time, lf_cond_t* condition) {
             }
             LF_PRINT_DEBUG("-------- lf_cond_timedwait claims to have timed out, "
                     "but it did not reach the target time. Waiting again.");
-            return wait_until(wait_until_time_ns, condition);
+            return wait_until(env, wait_until_time_ns, condition);
         }
 
         LF_PRINT_DEBUG("-------- Returned from wait, having waited " PRINTF_TIME " ns.", lf_time_physical() - current_physical_time);
@@ -561,7 +561,7 @@ void _lf_next_locked(environment_t *env) {
     // This can be interrupted if a physical action triggers (e.g., a message
     // arrives from an upstream federate or a local physical action triggers).
     LF_PRINT_LOG("Waiting until elapsed time " PRINTF_TIME ".", (next_tag.time - start_time));
-    while (!wait_until(next_tag.time, &env->event_q_changed)) {
+    while (!wait_until(env, next_tag.time, &env->event_q_changed)) {
         LF_PRINT_DEBUG("_lf_next_locked(): Wait until time interrupted.");
         // Sleep was interrupted.  Check for a new next_event.
         // The interruption could also have been due to a call to lf_request_stop().
