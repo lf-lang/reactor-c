@@ -63,7 +63,7 @@ instant_t _lf_last_reported_physical_time_ns = 0LL;
  * Records the most recent time reported by the physical clock
  * when accessed by lf_time_physical(). This will be an epoch time
  * (number of nanoseconds since Jan. 1, 1970), as reported when
- * you call lf_clock_gettime(CLOCK_REALTIME, ...). This differs from
+ * you call _lf_clock_now(CLOCK_REALTIME, ...). This differs from
  * _lf_last_reported_physical_time_ns by _lf_time_physical_clock_offset
  * plus any calculated drift adjustement, which are adjustments made
  * by clock synchronization.
@@ -78,7 +78,7 @@ instant_t _lf_last_reported_unadjusted_physical_time_ns = NEVER;
  */
 instant_t _lf_physical_time() {
     // Get the current clock value
-    int result = lf_clock_gettime(&_lf_last_reported_unadjusted_physical_time_ns);
+    int result = _lf_clock_now(&_lf_last_reported_unadjusted_physical_time_ns);
 
     if (result != 0) {
         lf_print_error("Failed to read the physical clock.");

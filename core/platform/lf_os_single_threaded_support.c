@@ -22,15 +22,15 @@
  * 
  * @return int 
  */
-int lf_platform_disable_interrupts_nested() {
+int lf_disable_interrupts_nested() {
     return 0;
 }
 
-int lf_platform_enable_interrupts_nested() {
+int lf_enable_interrupts_nested() {
     return 0;
 }
 
-int lf_platform_notify_of_event() {
+int lf_unthreaded_notify_of_event() {
     return 0;
 }
 

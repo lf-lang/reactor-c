@@ -1088,7 +1088,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     determine_number_of_workers();
     
     // Initialize the clock through the platform API. No reading of physical time before this.
-    lf_initialize_clock();
+    _lf_initialize_clock();
     start_time = lf_time_physical();
 
     LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);

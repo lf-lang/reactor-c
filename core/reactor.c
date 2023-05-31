@@ -85,10 +85,10 @@ void _lf_set_present(environment_t *env, lf_port_base_t* port) {
  * requested logical time.
  * @return 0 if the wait was completed, -1 if it was skipped or interrupted.
  */ 
-int wait_until(instant_t wakeup_time) {
+int wait_until(environment_t* env, instant_t wakeup_time) {
     if (!fast) {
         LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", wakeup_time - start_time);
-        return lf_sleep_until_locked(wakeup_time);
+        return _lf_interruptable_sleep_until_locked(env, wakeup_time);
     }
     return 0;
 }
@@ -327,7 +327,7 @@ bool _lf_is_blocked_by_executing_reaction(void) {
 int lf_reactor_c_main(int argc, const char* argv[]) {
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
-    lf_initialize_clock();
+    _lf_initialize_clock();
 
     LF_PRINT_DEBUG("Processing command line arguments.");
     if (process_args(default_argc, default_argv)
@@ -387,20 +387,20 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
  * @brief Notify of new event by broadcasting on a condition variable. 
  */
 int lf_notify_of_event(environment_t* env) {
-    return lf_platform_notify_of_event();
+    return lf_unthreaded_notify_of_event();
 }
 
 /**
  * @brief Enter critical section by locking the global mutex.
  */
 int lf_critical_section_enter(environment_t* env) {
-    return lf_platform_disable_interrupts_nested();
+    return lf_disable_interrupts_nested();
 }
 
 /**
  * @brief Leave a critical section by unlocking the global mutex.
  */
 int lf_critical_section_exit(environment_t* env) {
-    return lf_platform_enable_interrupts_nested();
+    return lf_enable_interrupts_nested();
 }
 #endif

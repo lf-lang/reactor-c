@@ -66,17 +66,17 @@ static volatile uint32_t _lf_time_us_low_last = 0;
  * @param wakeup int64_t time of wakeup
  * @return int 0 if successful sleep, -1 if awoken by async event
  */
-int lf_sleep_until_locked(instant_t wakeup) {
+int _lf_interruptable_sleep_until_locked(instant_t wakeup) {
     instant_t now;
     _lf_async_event = false;
-    lf_platform_disable_interrupts_nested();
+    lf_disable_interrupts_nested();
 
     // Do busy sleep
     do {
-        lf_clock_gettime(&now);
+        _lf_clock_now(&now);
     } while ((now < wakeup) && !_lf_async_event);
 
-    lf_platform_enable_interrupts_nested();
+    lf_enable_interrupts_nested();
 
     if (_lf_async_event) {
         _lf_async_event = false;
@@ -84,7 +84,6 @@ int lf_sleep_until_locked(instant_t wakeup) {
     } else {
         return 0;
     }
-
 }
 
 /**
@@ -95,17 +94,20 @@ int lf_sleep_until_locked(instant_t wakeup) {
  */
 int lf_sleep(interval_t sleep_duration) {
     instant_t now;
-    lf_clock_gettime(&now);
+    _lf_clock_now(&now);
     instant_t wakeup = now + sleep_duration;
 
-    return lf_sleep_until_locked(wakeup);
+    // Do busy sleep
+    do {
+        _lf_clock_now(&now);
+    } while ((now < wakeup));
 
 }
 
 /**
  * Initialize the LF clock. Arduino auto-initializes its clock, so we don't do anything.
  */
-void lf_initialize_clock() {}
+void _lf_initialize_clock() {}
 
 /**
  * Write the current time in nanoseconds into the location given by the argument.
@@ -113,14 +115,14 @@ void lf_initialize_clock() {}
  * This has to be called at least once per 35 minutes to properly handle overflows of the 32-bit clock.
  * TODO: This is only addressable by setting up interrupts on a timer peripheral to occur at wrap.
  */
-int lf_clock_gettime(instant_t* t) {
+int _lf_clock_now(instant_t* t) {
 
     assert(t != NULL);
 
     uint32_t now_us_low = micros();
 
     // Detect whether overflow has occured since last read
-    // TODO: This assumes that we lf_clock_gettime is called at least once per overflow
+    // TODO: This assumes that we _lf_clock_now is called at least once per overflow
     if (now_us_low < _lf_time_us_low_last) {
         _lf_time_us_high++;
     }
@@ -134,7 +136,7 @@ int lf_clock_gettime(instant_t* t) {
 /**
 * Enable interrupts to enter a critical section, with support for nested critical sections
 */
-int lf_platform_enable_interrupts_nested() {
+int lf_enable_interrupts_nested() {
     if (_lf_num_nested_critical_sections++ == 0) {
         // First nested entry into a critical section.
         // If interrupts are not initially enabled, then increment again to prevent
@@ -151,7 +153,7 @@ int lf_platform_enable_interrupts_nested() {
  * TODO: Arduino currently has bugs with its interrupt process, so we disable it for now.
  * As such, physical actions are not yet supported.
  */
-int lf_platform_disable_interrupts_nested() {
+int lf_disable_interrupts_nested() {
     if (_lf_num_nested_critical_sections <= 0) {
         return 1;
     }
@@ -165,7 +167,7 @@ int lf_platform_disable_interrupts_nested() {
  * Handle notifications from the runtime of changes to the event queue.
  * If a sleep is in progress, it should be interrupted.
 */
-int lf_platform_notify_of_event() {
+int lf_unthreaded_notify_of_event() {
    _lf_async_event = true;
    return 0;
 }
@@ -292,7 +294,7 @@ int lf_cond_wait(lf_cond_t* cond) {
  */
 int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
     instant_t now;
-    lf_clock_gettime(&now);
+    _lf_clock_now(&now);
     interval_t sleep_duration_ns = absolute_time_ns - now;
     bool res = condition_wait_for(*cond, sleep_duration_ns);
     if (!res) {

@@ -1573,7 +1573,7 @@ int32_t start_rti_server(uint16_t port) {
         // Use the default starting port.
         port = STARTING_PORT;
     }
-    lf_initialize_clock();
+    _lf_initialize_clock();
     // Create the TCP socket server
     _RTI.socket_descriptor_TCP = create_server(specified_port, port, TCP);
     lf_print("RTI: Listening for federates.");
