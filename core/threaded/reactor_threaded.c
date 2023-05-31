@@ -1131,15 +1131,17 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         // Initialize the scheduler
         // FIXME: Why is this called here and in `_lf_initialize_trigger objects`?
         lf_sched_init(env, (size_t)env->num_workers, NULL);  
+        
+        // Lock mutex and spawn threads. This must be done before `_lf_initialize_start_tag` since it is using 
+        //  a cond var
+        if (lf_mutex_lock(&env->mutex) != 0) {
+            lf_print_error_and_exit("Could not lock environment mutex");
+        }
 
         // Call the following function only once, rather than per worker thread (although
         // it can be probably called in that manner as well).
         _lf_initialize_start_tag(env);
 
-        // Lock mutex and spawn threads.
-        if (lf_mutex_lock(&env->mutex) != 0) {
-            lf_print_error_and_exit("Could not lock environment mutex");
-        }
 
         lf_print("Environment %u: ---- Spawning %d workers.",env->id, env->num_workers);
         start_threads(env);
