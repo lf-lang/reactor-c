@@ -331,6 +331,9 @@ typedef struct environment_t {
     int shutdown_reactions_size;
     reaction_t** reset_reactions;
     int reset_reactions_size;
+#ifdef LF_UNTHREADED
+    pqueue_t *reaction_q;
+#endif 
 #ifdef LF_THREADED
     int num_workers;
     lf_thread_t* thread_ids;

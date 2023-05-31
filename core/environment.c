@@ -5,6 +5,16 @@
 #include "scheduler.h"
 #endif
 
+static void environment_init_threaded(environment_t* env, int num_workers);
+static void environment_init_unthreaded(environment_t* env);
+static void environment_init_modes(environment_t* env, int num_modes, int num_state_resets);
+static void environment_init_federated(environment_t* env, int num_is_present_fields);
+
+static void environment_free_threaded(environment_t* env);
+static void environment_free_unthreaded(environment_t* env);
+static void environment_free_modes(environment_t* env);
+static void environment_free_federated(environment_t* env);
+
 int environment_init(
     environment_t* env,
     int id,
@@ -55,8 +65,17 @@ int environment_init(
     env->next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
 
-    // Initialize objects only needed by threaded runtime
-    #ifdef LF_THREADED
+    // Initialize functionality depending on target properties.
+    environment_init_threaded(env, num_workers);
+    environment_init_unthreaded(env);
+    environment_init_modes(env, num_modes, num_state_resets);
+    environment_init_federated(env, num_is_present_fields);
+
+    return 0;
+}
+
+static void environment_init_threaded(environment_t* env, int num_workers) {
+#ifdef LF_THREADED
     env->num_workers = num_workers;
     env->thread_ids = (lf_thread_t*)calloc(num_workers, sizeof(lf_thread_t));
     lf_assert(env->thread_ids != NULL, "Out of memory");
@@ -74,9 +93,22 @@ int environment_init(
         lf_print_error_and_exit("Could not initialize environment tag barrier condition variable");
     }
 
-    #endif
 
-    #ifdef MODAL_REACTORS
+#endif
+}
+static void environment_init_unthreaded(environment_t* env) {
+#ifdef LF_UNTHREADED
+    // Reaction queue ordered first by deadline, then by level.
+    // The index of the reaction holds the deadline in the 48 most significant bits,
+    // the level in the 16 least significant bits.
+    env->reaction_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
+                get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
+
+#endif
+}
+
+static void environment_init_modes(environment_t* env, int num_modes, int num_state_resets) {
+#ifdef MODAL_REACTORS
     if (num_modes > 0) {
         mode_environment_t* modes = (mode_environment_t *) calloc(1, sizeof(mode_environment_t));
         lf_assert(modes != NULL, "Out of memory");
@@ -94,21 +126,21 @@ int environment_init(
     } else {
         env->modes = NULL;
     }
-    #endif
-    
-    
-    #ifdef FEDERATED_DECENTRALIZED
+
+#endif
+}
+
+static void environment_init_federated(environment_t* env, int num_is_present_fields) {
+#ifdef FEDERATED_DECENTRALIZED
     env->_lf_intended_tag_fields = (bool**)calloc(num_is_present_fields, sizeof(tag_t*));
     lf_assert(env->_lf_intended_tag_fields != NULL, "Out of memory");
     env->_lf_intended_tag_fields_size = num_is_present_fields;
-    #endif
-    return 0;
+#endif
 }
 
-void environment_init_tags(
-    environment_t *env, instant_t start_time, interval_t duration
-) {
 
+
+void environment_init_tags( environment_t *env, instant_t start_time, interval_t duration) {
     env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
     
     tag_t stop_tag = FOREVER_TAG_INITIALIZER;
@@ -127,8 +159,41 @@ void environment_free(environment_t* env) {
     free(env->reset_reactions);
     free(env->is_present_fields);
     free(env->is_present_fields_abbreviated);
-    #ifdef LF_THREADED
+    pqueue_free(env->event_q);
+    pqueue_free(env->recycle_q);
+    pqueue_free(env->next_q);
+
+    environment_free_threaded(env);
+    environment_free_unthreaded(env);
+    environment_free_modes(env);
+    environment_free_federated(env);
+}
+
+static void environment_free_threaded(environment_t* env) {
+#ifdef LF_THREADED
     free(env->thread_ids);
     lf_sched_free(env->scheduler);   
-    #endif
+#endif
+}
+
+static void environment_free_unthreaded(environment_t* env) {
+#ifdef LF_UNTHREADED
+    pqueue_free(env->reaction_q);
+#endif
+}
+
+static void environment_free_modes(environment_t* env) {
+#ifdef MODAL_REACTORS
+    if (env->modes) {
+        free(env->modes->modal_reactor_states);
+        free(env->modes->mode_state_reset);
+        free(env->modes)
+    }
+#endif
+}
+
+static void environment_free_federated(environment_t* env) {
+#ifdef FEDERATED_DECENTRALIZED
+    free(env->_lf_intendend_tag_fields);
+#endif
 }

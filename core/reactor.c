@@ -51,12 +51,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern instant_t start_time;
 
 /**
- * @brief Queue of triggered reactions at the current tag.
- *
- */
-pqueue_t* reaction_q;
-
-/**
  * Mark the given port's is_present field as true. This is_present field
  * will later be cleaned up by _lf_start_time_step.
  * @param port A pointer to the port struct.
@@ -102,7 +96,7 @@ int wait_until(instant_t wakeup_time) {
 void lf_print_snapshot(environment_t* env) {
     if(LOG_LEVEL > LOG_LEVEL_LOG) {
         LF_PRINT_DEBUG(">>> START Snapshot");
-        pqueue_dump(reaction_q, reaction_q->prt);
+        pqueue_dump(env->reaction_q, env->reaction_q->prt);
         LF_PRINT_DEBUG(">>> END Snapshot");
     }
 }
@@ -129,7 +123,7 @@ void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_n
         LF_PRINT_DEBUG("Enqueing downstream reaction %s, which has level %lld.",
         		reaction->name, reaction->index & 0xffffLL);
         reaction->status = queued;
-        if (pqueue_insert(reaction_q, reaction) != 0) {
+        if (pqueue_insert(env->reaction_q, reaction) != 0) {
             lf_print_error_and_exit("Could not insert reaction into reaction_q");
         }
     }
@@ -143,9 +137,9 @@ void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_n
  */
 int _lf_do_step(environment_t* env) {
     // Invoke reactions.
-    while(pqueue_size(reaction_q) > 0) {
+    while(pqueue_size(env->reaction_q) > 0) {
         // lf_print_snapshot();
-        reaction_t* reaction = (reaction_t*)pqueue_pop(reaction_q);
+        reaction_t* reaction = (reaction_t*)pqueue_pop(env->reaction_q);
         reaction->status = running;
 
         LF_PRINT_LOG("Invoking reaction %s at elapsed logical tag " PRINTF_TAG ".",
@@ -333,12 +327,7 @@ bool _lf_is_blocked_by_executing_reaction(void) {
 int lf_reactor_c_main(int argc, const char* argv[]) {
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
-    _lf_create_environments();
-    environment_t *env;
-    int num_environments = _lf_get_environments(&env);
-    if (num_environments != 1) {
-        lf_print_error_and_exit("Found %u environments. Only 1 can be used with the unthreaded runtime", num_environments);
-    }
+    lf_initialize_clock();
 
     LF_PRINT_DEBUG("Processing command line arguments.");
     if (process_args(default_argc, default_argv)
@@ -355,6 +344,13 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 #ifndef NO_TTY
         signal(SIGINT, exit);
 #endif
+        // Create and initialize environment
+        _lf_create_environments();
+        environment_t *env;
+        int num_environments = _lf_get_environments(&env);
+        if (num_environments != 1) {
+            lf_print_error_and_exit("Found %u environments. Only 1 can be used with the unthreaded runtime", num_environments);
+        }
         
         LF_PRINT_DEBUG("Initializing.");
         initialize_global();
@@ -366,11 +362,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         _lf_initialize_modes(env);
 #endif
 
-        // Reaction queue ordered first by deadline, then by level.
-        // The index of the reaction holds the deadline in the 48 most significant bits,
-        // the level in the 16 least significant bits.
-        reaction_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
-                get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
 
         _lf_execution_started = true;
         _lf_trigger_startup_reactions(env);
@@ -386,7 +377,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         if (_lf_do_step(env)) {
             while (next(env) != 0);
         }
-        // pqueue_free(reaction_q); FIXME: This might be causing weird memory errors
         return 0;
     } else {
         return -1;
