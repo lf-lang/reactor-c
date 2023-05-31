@@ -69,14 +69,14 @@ static volatile uint32_t _lf_time_us_low_last = 0;
 int lf_sleep_until_locked(instant_t wakeup) {
     instant_t now;
     _lf_async_event = false;
-    lf_critical_section_exit(env);
+    lf_platform_disable_interrupts_nester();
 
     // Do busy sleep
     do {
         lf_clock_gettime(&now);
     } while ((now < wakeup) && !_lf_async_event);
 
-    lf_critical_section_enter(env);
+    lf_platform_enable_interrupts_nested();
 
     if (_lf_async_event) {
         _lf_async_event = false;
@@ -132,8 +132,7 @@ int lf_clock_gettime(instant_t* t) {
 #ifndef LF_THREADED
 
 /**
- * Enter a critical section by disabling interrupts, supports
- * nested critical sections.
+* Enable interrupts to enter a critical section, with support for nested critical sections
 */
 int lf_platform_enable_interrupts_nested() {
     if (_lf_num_nested_critical_sections++ == 0) {
@@ -147,14 +146,10 @@ int lf_platform_enable_interrupts_nested() {
 }
 
 /**
- * @brief Exit a critical section.
+ * @brief Exit a potentially nested critical section by disabling interrupts.
  *
  * TODO: Arduino currently has bugs with its interrupt process, so we disable it for now.
  * As such, physical actions are not yet supported.
- *
- * If interrupts were enabled when the matching call to
- * lf_critical_section_enter(env)
- * occurred, then they will be re-enabled here.
  */
 int lf_platform_disable_interrupts_nested() {
     if (_lf_num_nested_critical_sections <= 0) {
