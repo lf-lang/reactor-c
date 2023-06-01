@@ -47,18 +47,32 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "rti_lib.h"
-
-/** Termination function */
-void termination();
-
-unsigned int _lf_number_of_workers = 0u;
+#include <signal.h>     // To trap ctrl-c and invoke a clean stop to save the trace file, if needed.
 
 extern RTI_instance_t _RTI;
+
+/**
+ * The tracing mechanism uses the number of workers variable `_lf_number_of_workers`.
+ * For RTI tracing, the number of workers is set as the number of federates.
+ */
+unsigned int _lf_number_of_workers = 0u;
 
 /**
  * RTI trace file name
  */
 const char *rti_trace_file_name = "rti.lft";
+
+/**
+ * @brief A clean termination of the RTI will write the trace file, if tracing is
+ * enabled, before exiting.
+ */
+void termination() {
+    if (_RTI.tracing_enabled) {
+        stop_trace();
+        printf("RTI trace file saved.\n");
+    }   
+    printf("RTI is exiting.\n");
+}
 
 int main(int argc, const char* argv[]) {
 
@@ -89,20 +103,6 @@ int main(int argc, const char* argv[]) {
     }
     int socket_descriptor = start_rti_server(_RTI.user_specified_port);
     wait_for_federates(socket_descriptor);
-    
-    termination();
 
     return 0;
-}
-
-/**
- * @brief A clean termination of the RTI will write the trace file, if tracing is
- * enabled, before exiting.
- */
-void termination() {
-    if (_RTI.tracing_enabled) {
-        stop_trace();
-        printf("RTI trace file saved.\n");
-    }   
-    printf("RTI is exiting.\n");
 }
