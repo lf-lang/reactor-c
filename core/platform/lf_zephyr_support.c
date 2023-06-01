@@ -305,7 +305,7 @@ int lf_nanosleep(interval_t sleep_duration) {
  * 
  * @return int 
  */
-int lf_enable_interrupts_nested() {
+int lf_disable_interrupts_nested() {
     if (_lf_num_nested_critical_sections++ == 0) {
         _lf_irq_mask = irq_lock();
     }
@@ -317,7 +317,7 @@ int lf_enable_interrupts_nested() {
  * 
  * @return int 
  */
-int lf_disable_interrupts_nested() {
+int lf_enable_interrupts_nested() {
     if (_lf_num_nested_critical_sections <= 0) {
         return 1;
     }
@@ -329,7 +329,7 @@ int lf_disable_interrupts_nested() {
 }
 
 
-int lf_unthreaded_notify_of_event() {
+int _lf_unthreaded_notify_of_event() {
    _lf_async_event = true;
    // If we are using the HI_RES clock. Then we interrupt a sleep through
    // a semaphore. The LO_RES clock does a busy wait and is woken up by

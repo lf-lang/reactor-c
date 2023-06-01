@@ -387,7 +387,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
  * @brief Notify of new event by broadcasting on a condition variable. 
  */
 int lf_notify_of_event(environment_t* env) {
-    return lf_unthreaded_notify_of_event();
+    return _lf_unthreaded_notify_of_event();
 }
 
 /**

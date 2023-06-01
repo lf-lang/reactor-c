@@ -30,7 +30,7 @@ int lf_enable_interrupts_nested() {
     return 0;
 }
 
-int lf_unthreaded_notify_of_event() {
+int _lf_unthreaded_notify_of_event() {
     return 0;
 }
 

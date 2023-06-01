@@ -288,7 +288,7 @@ int lf_disable_interrupts_nested() {
  * 
  * @return int 
  */
-int lf_unthreaded_notify_of_event() {
+int _lf_unthreaded_notify_of_event() {
     _lf_async_event = true;
     return 0;
 }

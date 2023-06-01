@@ -110,7 +110,7 @@ typedef struct environment_t environment_t;
      * 
      * @return int 
      */
-    int lf_unthreaded_notify_of_event();
+    int _lf_unthreaded_notify_of_event();
 #endif
 
 
