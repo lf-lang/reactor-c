@@ -109,7 +109,8 @@ do { \
     /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
     /* even if it is a literal */ \
     out->value = val; \
-    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
+    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     if (((token_template_t*)out)->token != NULL) { \
         /* The cast "*((void**) &out->value)" is a hack to make the code */ \
         /* compile with non-token types where value is not a pointer. */ \
@@ -134,14 +135,16 @@ do { \
 #ifndef __cplusplus
 #define lf_set_array(out, val, length) \
 do { \
-    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
+    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
     out->value = token->value; \
 } while(0)
 #else
 #define lf_set_array(out, val, length) \
 do { \
-    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
+    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
     out->value = static_cast<decltype(out->value)>(token->value); \
 } while(0)
@@ -164,14 +167,16 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW(out) \
 do { \
-    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
+    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
     out->value = token->value; \
 } while(0)
 #else
 #define _LF_SET_NEW(out) \
 do { \
-    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
+    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
     out->value = static_cast<decltype(out->value)>(token->value); \
 } while(0)
@@ -193,7 +198,8 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
+    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
     out->value = token->value; \
     out->length = len; \
@@ -201,7 +207,8 @@ do { \
 #else
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
+    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
     out->value = static_cast<decltype(out->value)>(token->value); \
     out->length = len; \
@@ -218,7 +225,8 @@ do { \
  */
 #define lf_set_present(out) \
 do { \
-    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
+    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
 } while(0)
 
 /**
@@ -233,7 +241,8 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
+    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     _lf_replace_template_token((token_template_t*)out, newtoken); \
     out->value = newtoken->value; \
     out->length = newtoken->length; \
@@ -241,7 +250,8 @@ do { \
 #else
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    _lf_set_present(self->base.environment, (lf_port_base_t*)out); \
+    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     _lf_replace_template_token((token_template_t*)out, newtoken); \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
     out->length = newtoken->length; \
@@ -545,6 +555,7 @@ trigger_handle_t _lf_schedule_copy_enclave(environment_t *env, lf_action_base_t*
 void _lf_fd_send_stop_request_to_rti(environment_t* env);
 
 // To be implemented in code generated main program
+//FIXME Document
 int _lf_get_environments(environment_t **envs);
 void _lf_create_environments();
 

@@ -1138,7 +1138,7 @@ trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t*
  * See reactor.h for documentation.
  */
 trigger_handle_t _lf_schedule_token(lf_action_base_t* action, interval_t extra_delay, lf_token_t* token) {
-    environment_t* env = ((self_base_t *)(action->trigger->parent))->environment;
+    environment_t* env = action->parent->environment;
     
     if (lf_critical_section_enter(env) != 0) {
         lf_print_error_and_exit("Could not enter critical section");
@@ -1161,7 +1161,7 @@ trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, 
     if (value == NULL) {
         return _lf_schedule_token(action, offset, NULL);
     }
-    environment_t* env = ((self_base_t *)(action->trigger->parent))->environment;
+    environment_t* env = action->parent->environment;
     token_template_t* template = (token_template_t*)action;
     if (action == NULL || template->type.element_size <= 0) {
         lf_print_error("schedule: Invalid element size.");
@@ -1184,33 +1184,6 @@ trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, 
     return result;
 }
 
-trigger_handle_t _lf_schedule_copy_enclave(environment_t *env, lf_action_base_t* action, tag_t tag, void* value, size_t length) {
-    if (value == NULL) {
-        // FIXME: Handle this, what scenario is that?
-        // return _lf_schedule_token(action, offset, NULL);
-    }
-    token_template_t* template = (token_template_t*)action;
-    if (action == NULL || template->type.element_size <= 0) {
-        lf_print_error("schedule: Invalid element size.");
-        return -1;
-    }
-    if (lf_critical_section_enter(env) != 0) {
-        lf_print_error_and_exit("Could not enter critical section");
-    }
-    // Initialize token with an array size of length and a reference count of 0.
-    lf_token_t* token = _lf_initialize_token(template, length);
-    // Copy the value into the newly allocated memory.
-    memcpy(token->value, value, template->type.element_size * length);
-    // The schedule function will increment the reference count.
-    trigger_handle_t result = _lf_schedule_at_tag(env, action->trigger, tag, token);
-    // Notify the main thread in case it is waiting for physical time to elapse.
-    lf_notify_of_event(env);
-    if(lf_critical_section_exit(env) != 0) {
-        lf_print_error_and_exit("Could not leave critical section");
-    }
-    return result;
-}
-
 
 /**
  * Variant of schedule_token that creates a token to carry the specified value.
@@ -1218,7 +1191,7 @@ trigger_handle_t _lf_schedule_copy_enclave(environment_t *env, lf_action_base_t*
  */
 trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_delay, void* value, size_t length) {
     token_template_t* template = (token_template_t*)action;
-    environment_t* env = ((self_base_t *)(action->trigger->parent))->environment;
+    environment_t* env = action->parent->environment;
     if (lf_critical_section_enter(env) != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }

@@ -196,7 +196,7 @@ int _lf_do_step(environment_t* env) {
 
 #ifdef MODAL_REACTORS
     // At the end of the step, perform mode transitions
-    _lf_handle_mode_changes();
+    _lf_handle_mode_changes(env);
 #endif
 
     if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {
