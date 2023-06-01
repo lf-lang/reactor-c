@@ -50,7 +50,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Keep track of overflows to keep clocks monotonic
 static int64_t _lf_timer_epoch_duration_nsec;
 static int64_t _lf_timer_epoch_duration_usec;
-static uint32_t _lf_timer_max_tics;
+static uint32_t _lf_timer_max_ticks;
 static volatile int64_t _lf_timer_last_epoch_nsec = 0;
 static uint32_t _lf_timer_freq;
 
