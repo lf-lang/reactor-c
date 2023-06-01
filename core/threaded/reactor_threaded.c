@@ -738,7 +738,7 @@ void _lf_initialize_start_tag(environment_t *env) {
             start_time, _lf_fed_STA_offset);
     // Ignore interrupts to this wait. We don't want to start executing until
     // physical time matches or exceeds the logical start time.
-    while (!wait_until(start_time, &env->event_q_changed)) {}
+    while (!wait_until(env, start_time, &env->event_q_changed)) {}
     LF_PRINT_DEBUG("Done waiting for start time " PRINTF_TIME ".", start_time);
     LF_PRINT_DEBUG("Physical time is ahead of current time by " PRINTF_TIME ". This should be small.",
             lf_time_physical() - start_time);
