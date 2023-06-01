@@ -132,7 +132,7 @@ static void environment_init_modes(environment_t* env, int num_modes, int num_st
 
 static void environment_init_federated(environment_t* env, int num_is_present_fields) {
 #ifdef FEDERATED_DECENTRALIZED
-    env->_lf_intended_tag_fields = (bool**)calloc(num_is_present_fields, sizeof(tag_t*));
+    env->_lf_intended_tag_fields = (tag_t**) calloc(num_is_present_fields, sizeof(tag_t*));
     lf_assert(env->_lf_intended_tag_fields != NULL, "Out of memory");
     env->_lf_intended_tag_fields_size = num_is_present_fields;
 #endif
@@ -194,6 +194,6 @@ static void environment_free_modes(environment_t* env) {
 
 static void environment_free_federated(environment_t* env) {
 #ifdef FEDERATED_DECENTRALIZED
-    free(env->_lf_intendend_tag_fields);
+    free(env->_lf_intended_tag_fields);
 #endif
 }
