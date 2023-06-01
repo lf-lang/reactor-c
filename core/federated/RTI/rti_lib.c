@@ -907,7 +907,7 @@ void* clock_synchronization_thread(void* noargs) {
         lf_sleep(ns_to_wait);
     }
 
-    // Initiate a clock synchronization every _F_RTI.clock_sync_period_ns
+    // Initiate a clock synchronization every _F_RTI->clock_sync_period_ns
     // Initiate a clock synchronization every _F_RTI->clock_sync_period_ns
     struct timespec sleep_time = {(time_t) _F_RTI->clock_sync_period_ns / BILLION,
                                   _F_RTI->clock_sync_period_ns % BILLION};
@@ -1638,82 +1638,82 @@ void wait_for_federates(int socket_descriptor) {
 }
 
 void usage(int argc, const char* argv[]) {
-    printf("\nCommand-line arguments: \n\n");
-    printf("  -i, --id <n>\n");
-    printf("   The ID of the federation that this RTI will control.\n\n");
-    printf("  -n, --number_of_federates <n>\n");
-    printf("   The number of federates in the federation that this RTI will control.\n\n");
-    printf("  -p, --port <n>\n");
-    printf("   The port number to use for the RTI. Must be larger than 0 and smaller than %d. Default is %d.\n\n", UINT16_MAX, STARTING_PORT);
-    printf("  -c, --clock_sync [off|init|on] [period <n>] [exchanges-per-interval <n>]\n");
-    printf("   The status of clock synchronization for this federate.\n");
-    printf("       - off: Clock synchronization is off.\n");
-    printf("       - init (default): Clock synchronization is done only during startup.\n");
-    printf("       - on: Clock synchronization is done both at startup and during the execution.\n");
-    printf("   Relevant parameters that can be set: \n");
-    printf("       - period <n>(in nanoseconds): Controls how often a clock synchronization attempt is made\n");
-    printf("          (period in nanoseconds, default is 5 msec). Only applies to 'on'.\n");
-    printf("       - exchanges-per-interval <n>: Controls the number of messages that are exchanged for each\n");
-    printf("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n\n");
-    printf("  -a, --auth Turn on HMAC authentication options.\n\n");
-    printf("  -t, --tracing Turn on tracing.\n\n");
+    lf_print("\nCommand-line arguments: \n");
+    lf_print("  -i, --id <n>");
+    lf_print("   The ID of the federation that this RTI will control.\n");
+    lf_print("  -n, --number_of_federates <n>");
+    lf_print("   The number of federates in the federation that this RTI will control.\n");
+    lf_print("  -p, --port <n>");
+    lf_print("   The port number to use for the RTI. Must be larger than 0 and smaller than %d. Default is %d.\n", UINT16_MAX, STARTING_PORT);
+    lf_print("  -c, --clock_sync [off|init|on] [period <n>] [exchanges-per-interval <n>]");
+    lf_print("   The status of clock synchronization for this federate.");
+    lf_print("       - off: Clock synchronization is off.");
+    lf_print("       - init (default): Clock synchronization is done only during startup.");
+    lf_print("       - on: Clock synchronization is done both at startup and during the execution.");
+    lf_print("   Relevant parameters that can be set: ");
+    lf_print("       - period <n>(in nanoseconds): Controls how often a clock synchronization attempt is made");
+    lf_print("          (period in nanoseconds, default is 5 msec). Only applies to 'on'.");
+    lf_print("       - exchanges-per-interval <n>: Controls the number of messages that are exchanged for each");
+    lf_print("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n");
+    lf_print("  -a, --auth Turn on HMAC authentication options.\n");
+    lf_print("  -t, --tracing Turn on tracing.\n");
 
-    printf("Command given:\n");
+    lf_print("Command given:");
     for (int i = 0; i < argc; i++) {
-        printf("%s ", argv[i]);
+        lf_print("%s ", argv[i]);
     }
-    printf("\n\n");
+    lf_print("\n");
 }
 
 int process_clock_sync_args(int argc, const char* argv[]) {
     for (int i = 0; i < argc; i++) {
         if (strcmp(argv[i], "off") == 0) {
             _F_RTI->clock_sync_global_status = clock_sync_off;
-            printf("RTI: Clock sync: off\n");
+            lf_print("RTI: Clock sync: off");
         } else if (strcmp(argv[i], "init") == 0 || strcmp(argv[i], "initial") == 0) {
             _F_RTI->clock_sync_global_status = clock_sync_init;
-            printf("RTI: Clock sync: init\n");
+            lf_print("RTI: Clock sync: init");
         } else if (strcmp(argv[i], "on") == 0) {
             _F_RTI->clock_sync_global_status = clock_sync_on;
-            printf("RTI: Clock sync: on\n");
+            lf_print("RTI: Clock sync: on");
         } else if (strcmp(argv[i], "period") == 0) {
             if (_F_RTI->clock_sync_global_status != clock_sync_on) {
-                fprintf(stderr, "Error: clock sync period can only be set if --clock-sync is set to on.\n");
+                lf_print_error("clock sync period can only be set if --clock-sync is set to on.");
                 usage(argc, argv);
                 i++;
                 continue; // Try to parse the rest of the arguments as clock sync args.
             } else if (argc < i + 2) {
-                fprintf(stderr, "Error: clock sync period needs a time (in nanoseconds) argument.\n");
+                lf_print_error("clock sync period needs a time (in nanoseconds) argument.");
                 usage(argc, argv);
                 continue;
             }
             i++;
             long long period_ns = strtoll(argv[i], NULL, 10);
             if (period_ns == 0LL || period_ns == LLONG_MAX || period_ns == LLONG_MIN) {
-                fprintf(stderr, "Error: clock sync period value is invalid.\n");
+                lf_print_error("clock sync period value is invalid.");
                 continue; // Try to parse the rest of the arguments as clock sync args.
             }
             _F_RTI->clock_sync_period_ns = (int64_t)period_ns;
-            printf("RTI: Clock sync period: %lld\n", (long long int)_F_RTI->clock_sync_period_ns);
+            lf_print("RTI: Clock sync period: " PRINTF_TIME, (long long int)_F_RTI->clock_sync_period_ns);
         } else if (strcmp(argv[i], "exchanges-per-interval") == 0) {
             if (_F_RTI->clock_sync_global_status != clock_sync_on && _F_RTI->clock_sync_global_status != clock_sync_init) {
-                fprintf(stderr, "Error: clock sync exchanges-per-interval can only be set if\n");
-                fprintf(stderr, "--clock-sync is set to on or init.\n");
+                lf_print_error("clock sync exchanges-per-interval can only be set if\n"
+                               "--clock-sync is set to on or init.");
                 usage(argc, argv);
                 continue; // Try to parse the rest of the arguments as clock sync args.
             } else if (argc < i + 2) {
-                fprintf(stderr, "Error: clock sync exchanges-per-interval needs an integer argument.\n");
+                lf_print_error("clock sync exchanges-per-interval needs an integer argument.");
                 usage(argc, argv);
                 continue; // Try to parse the rest of the arguments as clock sync args.
             }
             i++;
             long exchanges = (long)strtol(argv[i], NULL, 10);
             if (exchanges == 0L || exchanges == LONG_MAX ||  exchanges == LONG_MIN) {
-                 fprintf(stderr, "Error: clock sync exchanges-per-interval value is invalid.\n");
+                 lf_print_error("clock sync exchanges-per-interval value is invalid.");
                  continue; // Try to parse the rest of the arguments as clock sync args.
              }
             _F_RTI->clock_sync_exchanges_per_interval = (int32_t)exchanges; // FIXME: Loses numbers on 64-bit machines
-            printf("RTI: Clock sync exchanges per interval: %d\n", _F_RTI->clock_sync_exchanges_per_interval);
+            lf_print("RTI: Clock sync exchanges per interval: %d", _F_RTI->clock_sync_exchanges_per_interval);
         } else if (strcmp(argv[i], " ") == 0) {
             // Tolerate spaces
             continue;
@@ -1731,33 +1731,32 @@ int process_args(int argc, const char* argv[]) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--id") == 0) {
             if (argc < i + 2) {
-                fprintf(stderr, "Error: --id needs a string argument.\n");
+                lf_print_error("--id needs a string argument.");
                 usage(argc, argv);
                 return 0;
             }
             i++;
-            printf("RTI: Federation ID: %s\n", argv[i]);
+            lf_print("RTI: Federation ID: %s", argv[i]);
             _F_RTI->federation_id = argv[i];
         } else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--number_of_federates") == 0) {
             if (argc < i + 2) {
-                fprintf(stderr, "Error: --number_of_federates needs an integer argument.\n");
+                lf_print_error("--number_of_federates needs an integer argument.");
                 usage(argc, argv);
                 return 0;
             }
             i++;
             long num_federates = strtol(argv[i], NULL, 10);
             if (num_federates == 0L || num_federates == LONG_MAX ||  num_federates == LONG_MIN) {
-                fprintf(stderr, "Error: --number_of_federates needs a valid positive integer argument.\n");
+                lf_print_error("--number_of_federates needs a valid positive integer argument.");
                 usage(argc, argv);
                 return 0;
             }
             _F_RTI->number_of_enclaves = (int32_t)num_federates; // FIXME: Loses numbers on 64-bit machines
-            printf("RTI: Number of federates: %d\n", _F_RTI->number_of_enclaves);
+            lf_print("RTI: Number of federates: %d\n", _F_RTI->number_of_enclaves);
         } else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
             if (argc < i + 2) {
-                fprintf(
-                    stderr,
-                    "Error: --port needs a short unsigned integer argument ( > 0 and < %d).\n",
+                lf_print_error(
+                    "--port needs a short unsigned integer argument ( > 0 and < %d).",
                     UINT16_MAX
                 );
                 usage(argc, argv);
@@ -1766,9 +1765,8 @@ int process_args(int argc, const char* argv[]) {
             i++;
             uint32_t RTI_port = (uint32_t)strtoul(argv[i], NULL, 10);
             if (RTI_port <= 0 || RTI_port >= UINT16_MAX) {
-                fprintf(
-                    stderr,
-                    "Error: --port needs a short unsigned integer argument ( > 0 and < %d).\n",
+                lf_print_error(
+                    "--port needs a short unsigned integer argument ( > 0 and < %d).",
                     UINT16_MAX
                 );
                 usage(argc, argv);
@@ -1777,7 +1775,7 @@ int process_args(int argc, const char* argv[]) {
             _F_RTI->user_specified_port = (uint16_t)RTI_port;
         } else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--clock_sync") == 0) {
             if (argc < i + 2) {
-               fprintf(stderr, "Error: --clock-sync needs off|init|on.\n");
+               lf_print_error("--clock-sync needs off|init|on.");
                usage(argc, argv);
                return 0;
            }
@@ -1785,7 +1783,7 @@ int process_args(int argc, const char* argv[]) {
            i += process_clock_sync_args((argc-i), &argv[i]);
         } else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--auth") == 0) {
             #ifndef __RTI_AUTH__
-            fprintf(stderr, "Error: --auth requires the RTI to be built with the -DAUTH=ON option.\n");
+            lf_print_error("--auth requires the RTI to be built with the -DAUTH=ON option.");
             usage(argc, argv);
             return 0;
             #endif
@@ -1796,13 +1794,13 @@ int process_args(int argc, const char* argv[]) {
             // Tolerate spaces
             continue;
         }  else {
-           fprintf(stderr, "Error: Unrecognized command-line argument: %s\n", argv[i]);
+           lf_print_error("Unrecognized command-line argument: %s", argv[i]);
            usage(argc, argv);
            return 0;
        }
     }
     if (_F_RTI->number_of_enclaves == 0) {
-        fprintf(stderr, "Error: --number_of_federates needs a valid positive integer argument.\n");
+        lf_print_error("--number_of_federates needs a valid positive integer argument.");
         usage(argc, argv);
         return 0;
     }
