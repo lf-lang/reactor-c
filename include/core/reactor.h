@@ -109,7 +109,7 @@ do { \
     /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
     /* even if it is a literal */ \
     out->value = val; \
-    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    self_base_t* self_base = out->_base.source_reactor;\
     _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     if (((token_template_t*)out)->token != NULL) { \
         /* The cast "*((void**) &out->value)" is a hack to make the code */ \
@@ -135,7 +135,7 @@ do { \
 #ifndef __cplusplus
 #define lf_set_array(out, val, length) \
 do { \
-    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    self_base_t* self_base = out->_base.source_reactor;\
     _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
     out->value = token->value; \
@@ -143,7 +143,7 @@ do { \
 #else
 #define lf_set_array(out, val, length) \
 do { \
-    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    self_base_t* self_base = out->_base.source_reactor;\
     _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
     out->value = static_cast<decltype(out->value)>(token->value); \
@@ -167,7 +167,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW(out) \
 do { \
-    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    self_base_t* self_base = out->_base.source_reactor;\
     _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
     out->value = token->value; \
@@ -175,7 +175,7 @@ do { \
 #else
 #define _LF_SET_NEW(out) \
 do { \
-    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    self_base_t* self_base = out->_base.source_reactor;\
     _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
     out->value = static_cast<decltype(out->value)>(token->value); \
@@ -198,7 +198,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    self_base_t* self_base = out->_base.source_reactor;\
     _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
     out->value = token->value; \
@@ -207,7 +207,7 @@ do { \
 #else
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    self_base_t* self_base = out->_base.source_reactor;\
     _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
     out->value = static_cast<decltype(out->value)>(token->value); \
@@ -225,7 +225,7 @@ do { \
  */
 #define lf_set_present(out) \
 do { \
-    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    self_base_t* self_base = out->_base.source_reactor;\
     _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
 } while(0)
 
@@ -241,7 +241,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    self_base_t* self_base = out->_base.source_reactor;\
     _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     _lf_replace_template_token((token_template_t*)out, newtoken); \
     out->value = newtoken->value; \
@@ -250,7 +250,7 @@ do { \
 #else
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    self_base_t* self_base = ((lf_port_base_t *) out)->source_reactor;\
+    self_base_t* self_base = out->_base.source_reactor;\
     _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
     _lf_replace_template_token((token_template_t*)out, newtoken); \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
