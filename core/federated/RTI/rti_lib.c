@@ -387,7 +387,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
     tag_t t_d = FOREVER_TAG;
     LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG ".",
             FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
-            NEVER - start_time, 0u);
+            NEVER_TAG.time - start_time, 0u);
 
     for (int j = 0; j < fed->num_upstream; j++) {
         federate_t* upstream = &_RTI.federates[fed->upstream[j]];
@@ -1845,31 +1845,31 @@ void wait_for_federates(int socket_descriptor) {
 }
 
 void usage(int argc, const char* argv[]) {
-    printf("\nCommand-line arguments: \n\n");
-    printf("  -i, --id <n>\n");
-    printf("   The ID of the federation that this RTI will control.\n\n");
-    printf("  -n, --number_of_federates <n>\n");
-    printf("   The number of federates in the federation that this RTI will control.\n\n");
-    printf("  -p, --port <n>\n");
-    printf("   The port number to use for the RTI. Must be larger than 0 and smaller than %d. Default is %d.\n\n", UINT16_MAX, STARTING_PORT);
-    printf("  -c, --clock_sync [off|init|on] [period <n>] [exchanges-per-interval <n>]\n");
-    printf("   The status of clock synchronization for this federate.\n");
-    printf("       - off: Clock synchronization is off.\n");
-    printf("       - init (default): Clock synchronization is done only during startup.\n");
-    printf("       - on: Clock synchronization is done both at startup and during the execution.\n");
-    printf("   Relevant parameters that can be set: \n");
-    printf("       - period <n>(in nanoseconds): Controls how often a clock synchronization attempt is made\n");
-    printf("          (period in nanoseconds, default is 5 msec). Only applies to 'on'.\n");
-    printf("       - exchanges-per-interval <n>: Controls the number of messages that are exchanged for each\n");
-    printf("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n\n");
-    printf("  -a, --auth Turn on HMAC authentication options.\n\n");
-    printf("  -t, --tracing Turn on tracing.\n\n");
+    lf_print("\nCommand-line arguments: \n");
+    lf_print("  -i, --id <n>");
+    lf_print("   The ID of the federation that this RTI will control.\n");
+    lf_print("  -n, --number_of_federates <n>");
+    lf_print("   The number of federates in the federation that this RTI will control.\n");
+    lf_print("  -p, --port <n>");
+    lf_print("   The port number to use for the RTI. Must be larger than 0 and smaller than %d. Default is %d.\n", UINT16_MAX, STARTING_PORT);
+    lf_print("  -c, --clock_sync [off|init|on] [period <n>] [exchanges-per-interval <n>]");
+    lf_print("   The status of clock synchronization for this federate.");
+    lf_print("       - off: Clock synchronization is off.");
+    lf_print("       - init (default): Clock synchronization is done only during startup.");
+    lf_print("       - on: Clock synchronization is done both at startup and during the execution.");
+    lf_print("   Relevant parameters that can be set: ");
+    lf_print("       - period <n>(in nanoseconds): Controls how often a clock synchronization attempt is made");
+    lf_print("          (period in nanoseconds, default is 5 msec). Only applies to 'on'.");
+    lf_print("       - exchanges-per-interval <n>: Controls the number of messages that are exchanged for each");
+    lf_print("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n");
+    lf_print("  -a, --auth Turn on HMAC authentication options.\n");
+    lf_print("  -t, --tracing Turn on tracing.\n");
 
-    printf("Command given:\n");
+    lf_print("Command given:");
     for (int i = 0; i < argc; i++) {
-        printf("%s ", argv[i]);
+        lf_print("%s ", argv[i]);
     }
-    printf("\n\n");
+    lf_print("\n");
 }
 
 int process_clock_sync_args(int argc, const char* argv[]) {

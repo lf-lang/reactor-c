@@ -69,9 +69,9 @@ const char *rti_trace_file_name = "rti.lft";
 void termination() {
     if (_RTI.tracing_enabled) {
         stop_trace();
-        printf("RTI trace file saved.\n");
+        lf_print("RTI trace file saved.");
     }   
-    printf("RTI is exiting.\n");
+    lf_print("RTI is exiting.");
 }
 
 int main(int argc, const char* argv[]) {
@@ -93,9 +93,9 @@ int main(int argc, const char* argv[]) {
     if (_RTI.tracing_enabled) {
         _lf_number_of_workers = _RTI.number_of_federates;
         start_trace(rti_trace_file_name);
-        printf("Tracing the RTI execution in %s file.\n", rti_trace_file_name);
+        lf_print("Tracing the RTI execution in %s file.", rti_trace_file_name);
     }
-    printf("Starting RTI for %d federates in federation ID %s\n", _RTI.number_of_federates, _RTI.federation_id);
+    lf_print("Starting RTI for %d federates in federation ID %s.", _RTI.number_of_federates, _RTI.federation_id);
     assert(_RTI.number_of_federates < UINT16_MAX);
     _RTI.federates = (federate_t*)calloc(_RTI.number_of_federates, sizeof(federate_t));
     for (uint16_t i = 0; i < _RTI.number_of_federates; i++) {
