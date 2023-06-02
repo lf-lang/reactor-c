@@ -1,7 +1,11 @@
-/* nRF52832 API support for the C target of Lingua Franca. */
-
-/*************
-Copyright (c) 2021, The University of California at Berkeley.
+/**
+ * @file
+ * @author Soroush Bateni (soroush@utdallas.edu)
+ * @autohr Hou Seng Wong (housengw@berkeley.edu)
+ *
+ * @section LICENSE
+Copyright (c) 2022, The University of California at Berkeley.
+Copyright (c) 2021, The University of Texas at Dallas.
 
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
@@ -22,37 +26,19 @@ PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR B
 INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
 THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-***************/
 
-/** nrf52 API support for the C target of Lingua Franca.
- *  
- *  @author{Soroush Bateni <soroush@utdallas.edu>}
- *  @author{Abhi Gundrala <gundralaa@berkeley.edu>}
- *  @author{Erling Rennemo Jellum <erling.r.jellum@ntnu.no>}
+ * @section DESCRIPTION
+ * Implementation of functions defined in @see pythontarget.h
  */
 
-#ifndef LF_NRF52_SUPPORT_H
-#define LF_NRF52_SUPPORT_H
+///////// Time-keeping functions //////////
+PyObject* py_lf_time_logical(PyObject *self, PyObject *args);
+PyObject* py_lf_time_logical_elapsed(PyObject *self, PyObject *args);
+PyObject* py_lf_time_physical(PyObject *self, PyObject *args);
+PyObject* py_lf_time_physical_elapsed(PyObject *self, PyObject *args);
+PyObject* py_lf_time_start(PyObject *self, PyObject *args);
 
-// This embedded platform has no TTY suport
-#define NO_TTY 
+extern PyTypeObject PyTimeType;
 
-#include <stdint.h> // For fixed-width integral types
-#include <time.h>   // For CLOCK_MONOTONIC
-#include <stdbool.h>
-
-#include <inttypes.h>  // Needed to define PRId64 and PRIu32
-#define PRINTF_TIME "%" PRId64
-#define PRINTF_MICROSTEP "%" PRIu32
-#define PRINTF_TAG "(%" PRId64 ", %" PRIu32 ")"
-
-/**
- * No mutex or condition variable needed for single threaded NRF platforms
- */
-typedef void lf_mutex_t;
-typedef void _lf_cond_var_t;
-
-// The underlying physical clock for Linux
-#define _LF_CLOCK CLOCK_MONOTONIC
-
-#endif // LF_nRF52832_SUPPORT_H
+extern PyMethodDef PyTimeTypeMethods[];
+extern PyTypeObject PyTimeType;

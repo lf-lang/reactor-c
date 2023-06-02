@@ -4,7 +4,7 @@ This directory contains source files for use by Lingua Franca programs using the
 C target. To use a file in this directory, specify a target property as follows:
 ```
 target C {
-    files: ["/lib/C/util/filename", ...],
+    files: ["/lib/c/reactor-c/util/filename", ...],
     ...
 };
 ```

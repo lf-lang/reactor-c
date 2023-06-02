@@ -31,6 +31,11 @@
  * @section DESCRIPTION
  *
  * Type definitions that are widely used across different parts of the runtime.
+ * 
+ * <b>IMPORTANT:</b> Many of the structs defined here require matching layouts
+ * and, if changed, will require changes in the code generator.
+ * See <a href="https://github.com/lf-lang/reactor-c/wiki/Structs-in-the-Reactor-C-Runtime">
+ * Structs in the Reactor-C Runtime</a>.
  */
 
 #ifndef TYPES_H
@@ -262,8 +267,8 @@ struct trigger_t {
  * pointer to allocated memory, rather than directly to the allocated memory.
  */
 typedef struct allocation_record_t {
-	void* allocated;
-	struct allocation_record_t *next;
+    void* allocated;
+    struct allocation_record_t *next;
 } allocation_record_t;
 
 /**
@@ -276,8 +281,12 @@ typedef struct allocation_record_t {
  * memory using {@link _lf_allocate(size_t,size_t,self_base_t*)}.
  */
 typedef struct self_base_t {
-	struct allocation_record_t *allocations;
-	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
+    struct allocation_record_t *allocations;
+    struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
+#ifdef LF_THREADED
+    void* reactor_mutex; // If not null, this is expected to point to an lf_mutex_t.
+                          // It is not declared as such to avoid a dependence on platform.h.
+#endif
 #ifdef MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif
@@ -288,14 +297,33 @@ typedef struct self_base_t {
  * specific.  This struct represents their common features. Given any
  * pointer to an action struct, it can be cast to lf_action_base_t,
  * to token_template_t, or to token_type_t to access these common fields.
- * IMPORTANT: If this is changed, it must also be changed in
- * CActionGenerator.java generateAuxiliaryStruct().
  */
-typedef struct lf_action_base_t {
-	token_template_t tmplt;    // Type and token information (template is a C++ keyword).
-	bool is_present;
-	bool has_value;
-	trigger_t* trigger;
+typedef struct {
+    token_template_t tmplt;    // Type and token information (template is a C++ keyword).
+    bool is_present;
+    trigger_t* trigger;        // THIS HAS TO MATCH lf_action_internal_t
+    self_base_t* parent;
+    bool has_value;
 } lf_action_base_t;
+
+/**
+ * Internal part of the action structs.
+ */
+typedef struct {
+    trigger_t* trigger;
+} lf_action_internal_t;
+
+/**
+  * @brief Internal part of the port structs.
+  * HAS TO MATCH lf_port_base_t after tmplt and is_present.
+  */
+typedef struct {
+    lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
+    int destination_channel;              // -1 if there is no destination.
+    int num_destinations;                 // The number of destination reactors this port writes to.
+    self_base_t* source_reactor;          // Pointer to the self struct of the reactor that provides data to this port.
+                                          // If this is an input, that reactor will normally be the container of the
+                                          // output port that sends it data.
+} lf_port_internal_t;
 
 #endif
