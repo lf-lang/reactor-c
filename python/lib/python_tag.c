@@ -43,7 +43,7 @@ PyObject* py_lf_tag(PyObject *self, PyObject *args) {
     if (t == NULL) {
         return NULL;
     }
-    t->tag = lf_tag();
+    t->tag = lf_tag(global_environment);
     return (PyObject *) t;
 }
 
