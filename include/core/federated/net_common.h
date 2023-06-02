@@ -336,7 +336,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * between the RTI and the federate.
  * The next eight bytes are RTI's 8-byte nonce (RTI nonce).
  */
-#define MSG_TYPE_RTI_NONCE 100
+#define MSG_TYPE_FED_NONCE 100
 
 /**
  * Byte identifying a message from federate to RTI as a response to the RTI Hello
@@ -351,7 +351,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * * Two bytes (ushort) giving the federate ID.
  * * Eight bytes for received RTI's nonce.
  */
-#define MSG_TYPE_FED_RESPONSE 101
+#define MSG_TYPE_RTI_RESPONSE 101
 
 /**
  * Byte identifying a message from RTI to a federate as a response to the FED_RESPONSE
@@ -363,7 +363,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * * One byte equal to MSG_TYPE_RTI_RESPONSE.
  * * Eight bytes for received federate's nonce.
  */
-#define MSG_TYPE_RTI_RESPONSE 102
+#define MSG_TYPE_FED_RESPONSE 102
 
 /**
  * The randomly created nonce size will be 8 bytes.
