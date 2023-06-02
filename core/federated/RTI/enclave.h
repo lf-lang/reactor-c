@@ -1,8 +1,6 @@
 #ifndef ENCLAVE_H
 #define ENCLAVE_H
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <errno.h>      // Defines perror(), errno
 #include <assert.h>
 #include "platform.h"   // Platform-specific types and functions

@@ -16,9 +16,7 @@
 #include <netinet/in.h> // Defines struct sockaddr_in
 #include <arpa/inet.h>  // inet_ntop & inet_pton
 #include <unistd.h>     // Defines read(), write(), and close()
-#include <netdb.h>      // Defines gethostbyname().
 #include <strings.h>    // Defines bzero().
-#include <sys/wait.h>   // Defines wait() for process to change state.
 
 #include "enclave.h"
 
