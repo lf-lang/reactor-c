@@ -44,10 +44,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #warning Federated support on Zephyr is still experimental.
 #else
 #include <sys/socket.h>
-#include <regex.h>
 #endif
 
 #include <sys/types.h>
+#include <regex.h>
 #include <stdbool.h>
 
 #include "../platform.h"
@@ -347,7 +347,6 @@ bool validate_host(const char* host);
  */
 bool validate_user(const char* user);
 
-#ifndef PLATFORM_ZEPHYR
 
 /**
  * Extract one match group from the rti_addr regex .
@@ -356,13 +355,13 @@ bool validate_user(const char* user);
 bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group,
 		int max_len, int min_len, const char* err_msg);
 
+
 /**
  * Extract match groups from the rti_addr regex.
  * @return true if success, else false.
  */
 bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti_addr_flags, regmatch_t* group_array, int* gids, int* max_lens, int* min_lens, const char** err_msgs);
 
-#endif
 
 /**
  * Extract the host, port and user from rti_addr.
