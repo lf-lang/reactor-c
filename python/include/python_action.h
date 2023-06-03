@@ -59,8 +59,9 @@ typedef struct {
     lf_token_t* token;
     size_t length;
     bool is_present;
+    lf_action_internal_t _base;
+    self_base_t* parent;
     bool has_value;
-    trigger_t* trigger;
     PyObject* value;
     FEDERATED_GENERIC_EXTENSION
 } generic_action_instance_struct;
