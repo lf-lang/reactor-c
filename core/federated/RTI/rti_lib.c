@@ -1027,6 +1027,9 @@ void handle_timestamp(federate_t *my_fed) {
         tag_t tag = {.time = start_time, .microstep = 0};
         tracepoint_RTI_to_federate(send_TIMESTAMP, my_fed->id, &tag);
     }
+    #ifdef __RTI_SST__
+    my_fed->socket = my_fed->saved_socket; 
+    #endif
     ssize_t bytes_written = write_to_socket(
         my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH,
         start_time_buffer
@@ -1250,7 +1253,7 @@ void* federate_thread_TCP(void* fed) {
         // Temporarily save socket.
         my_fed->saved_socket = my_fed->socket; //TODO: Need dup()?? Copying file descriptors.
         // Change socket to point decrypted buffer function descriptor.
-        my_fed->socket = temp;
+        my_fed->socket = temp; //TODO: Need dup()?
         //TODO: Error handling is not applied. Need to change.
         #endif
 
