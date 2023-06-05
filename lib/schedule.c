@@ -191,7 +191,7 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
  */
 bool lf_check_deadline(void* self, bool invoke_deadline_handler) {
     reaction_t* reaction = ((self_base_t*)self)->executing_reaction;
-    if (lf_time_physical() > lf_time_logical(self) + reaction->deadline) {
+    if (lf_time_physical() > lf_time_logical( ((self_base_t *)self)->environment + reaction->deadline)) {
         if (invoke_deadline_handler) {
             reaction->deadline_violation_handler(self);
         }

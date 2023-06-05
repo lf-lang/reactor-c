@@ -151,14 +151,14 @@ int lf_reactor_c_main(int argc, const char *argv[]);
  * Prototype for lf_request_stop().
  * @see reactor.h
  */
-void lf_request_stop();
+void _lf_request_stop(environment_t* env);
 
 ///////////////// Other useful functions /////////////////////
 /**
  * Stop execution at the conclusion of the current logical time.
  */
 PyObject* py_request_stop(PyObject *self, PyObject *args) {
-    lf_request_stop();
+    _lf_request_stop(global_environment);
 
     Py_INCREF(Py_None);
     return Py_None;

@@ -74,6 +74,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern PyObject *globalPythonModule;
 extern PyObject *globalPythonModuleDict;
 extern PyObject* global_pickler;
+extern environment_t* global_environment;
 
 //////////////////////////////////////////////////////////////
 /////////////  schedule Functions (to schedule an action)
