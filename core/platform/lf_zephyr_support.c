@@ -267,20 +267,11 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
 /**
  * @brief Pause execution for a given duration.
  * 
- * This implementation performs a busy-wait because it is unclear what will
- * happen if this function is called from within an ISR.
- * 
  * @param sleep_duration 
  * @return 0 for success, or -1 for failure.
  */
 int lf_sleep(interval_t sleep_duration) {
-    instant_t target_time;
-    instant_t current_time;
-    _lf_clock_now(&current_time);
-    target_time = current_time + sleep_duration;
-    while (current_time <= target_time) {
-        _lf_clock_now(&current_time);
-    }
+    k_sleep(K_NSEC(sleep_duration));
     return 0;
 }
 
