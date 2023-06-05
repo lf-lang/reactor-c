@@ -1997,6 +1997,19 @@ int process_args(int argc, const char* argv[]) {
             return 0;
             #endif
             _RTI.authentication_enabled = true;
+        } else if (strcmp(argv[i], "-sst") == 0) {
+            #ifndef __RTI_SST__
+            fprintf(stderr, "Error: --sst requires the RTI to be built with the -DSST=ON option.\n");
+            usage(argc, argv);
+            return 0;
+            #endif
+            if (argc < i + 2) {
+               fprintf(stderr, "Error: --sst needs path of configuration file.\n");
+               usage(argc, argv);
+               return 0;
+           }
+            i++;
+            _RTI.sst_config_path = argv[i];
         } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tracing") == 0) {
             _RTI.tracing_enabled = true;
         } else if (strcmp(argv[i], " ") == 0) {

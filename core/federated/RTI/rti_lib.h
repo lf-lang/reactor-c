@@ -36,6 +36,10 @@
 #include <openssl/hmac.h> // For HMAC authentication.
 #endif
 
+#ifdef __RTI_SST__
+#include "../sst-c-api/c_api.h"
+#endif
+
 #include "lf_types.h"
 #include "message_record/message_record.h"
 
@@ -192,6 +196,11 @@ typedef struct RTI_instance_t {
      * Boolean indicating that authentication is enabled.
      */
     bool authentication_enabled;
+
+    /**
+     * The path of the SST configuration file.
+     */
+    char* sst_config_path;
 
     /**
      * Boolean indicating that tracing is enabled.

@@ -97,6 +97,23 @@ IF(AUTH MATCHES ON)
   target_link_libraries(RTI OpenSSL::SSL)
 ENDIF(AUTH MATCHES ON)
 
+option(SST "SST security enabled." OFF)
+IF(SST MATCHES ON)
+  add_compile_definitions(__RTI_SST__)
+  find_package(OpenSSL REQUIRED)
+  target_link_libraries(RTI OpenSSL::SSL)
+  set(SSTDir ../sst-c-api)
+  add_library(
+    SST_LIB 
+    ${SSTDir}/c_api.c
+    ${SSTDir}/c_common.c
+    ${SSTDir}/c_crypto.c
+    ${SSTDir}/c_secure_comm.c
+    ${SSTDir}/load_config.c
+  )
+  target_link_libraries(RTI SST_LIB)
+ENDIF(SST MATCHES ON)
+
 install(
     TARGETS RTI
     DESTINATION bin
