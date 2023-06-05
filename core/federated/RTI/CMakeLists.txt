@@ -111,6 +111,8 @@ IF(SST MATCHES ON)
     ${SSTDir}/c_secure_comm.c
     ${SSTDir}/load_config.c
   )
+  # Link OpenSSL to SST_LIB
+  target_link_libraries(SST_LIB OpenSSL::SSL)
   target_link_libraries(RTI SST_LIB)
 ENDIF(SST MATCHES ON)
 
