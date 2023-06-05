@@ -80,7 +80,7 @@ int main(int argc, const char* argv[]) {
     lf_cond_init(&received_start_times, &rti_mutex);
     lf_cond_init(&sent_start_time, &rti_mutex);
 
-    // Catch the Ctrl-C signal, for a clean exit that does not loose the trace information
+    // Catch the Ctrl-C signal, for a clean exit that does not lose the trace information
     signal(SIGINT, exit);
     if (atexit(termination) != 0) {
         lf_print_warning("Failed to register termination function!");
