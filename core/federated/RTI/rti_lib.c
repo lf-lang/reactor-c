@@ -1230,7 +1230,9 @@ void handle_federate_resign(federate_t *my_fed) {
 
 void* federate_thread_TCP(void* fed) {
     federate_t* my_fed = (federate_t*)fed;
-
+    #ifdef __RTI_SST__
+    unsigned char sst_buffer[1024]; //TODO: Check here.
+    #endif
     // Buffer for incoming messages.
     // This does not constrain the message size because messages
     // are forwarded piece by piece.
@@ -1238,6 +1240,20 @@ void* federate_thread_TCP(void* fed) {
 
     // Listen for messages from the federate.
     while (my_fed->state != NOT_CONNECTED) {
+        #ifdef __RTI_SST__
+        ssize_t sst_bytes_read = read_from_socket(my_fed->socket, sizeof(sst_buffer), sst_buffer); //TODO: input buffer size?
+        unsigned char *decrypted_buf = return_decrypted_buf(sst_buffer, sst_bytes_read, my_fed->session_ctx);
+
+        FILE * file_descriptor = fmemopen(decrypted_buf, sizeof(decrypted_buf), "r");
+        //  Change FILE pointer to file descriptor
+        int temp = fileno(file_descriptor);
+        // Temporarily save socket.
+        my_fed->saved_socket = my_fed->socket; //TODO: Need dup()?? Copying file descriptors.
+        // Change socket to point decrypted buffer function descriptor.
+        my_fed->socket = temp;
+        //TODO: Error handling is not applied. Need to change.
+        #endif
+
         // Read no more than one byte to get the message type.
         ssize_t bytes_read = read_from_socket(my_fed->socket, 1, buffer);
         if (bytes_read < 1) {
@@ -1626,6 +1642,12 @@ bool authenticate_federate(int socket) {
 #endif
 
 void connect_to_federates(int socket_descriptor) {
+    #ifdef __RTI_SST__
+    // Initialize SST setting read form sst_config.
+    SST_ctx_t *ctx = init_SST(_RTI.sst_config_path);
+    // Initialize an empty session key list.
+    INIT_SESSION_KEY_LIST(s_key_list);
+    #endif
     for (int i = 0; i < _RTI.number_of_federates; i++) {
         // Wait for an incoming connection request.
         struct sockaddr client_fd;
@@ -1663,7 +1685,13 @@ void connect_to_federates(int socket_descriptor) {
         if (fed_id >= 0
                 && receive_connection_information(socket_id, (uint16_t)fed_id)
                 && receive_udp_message_and_set_up_clock_sync(socket_id, (uint16_t)fed_id)) {
-
+            #ifdef __RTI_SST__
+            // Wait for the federates get session keys from the Auth.
+            // The RTI will get requests for communication from the federates by session key id.
+            // Then RTI will request the corresponding session key to the Auth.
+            SST_session_ctx_t *session_ctx = server_secure_comm_setup(ctx, socket_id, &s_key_list);
+            _RTI.federates[fed_id].session_ctx = session_ctx;
+            #endif
             // Create a thread to communicate with the federate.
             // This has to be done after clock synchronization is finished
             // or that thread may end up attempting to handle incoming clock
@@ -1863,6 +1891,7 @@ void usage(int argc, const char* argv[]) {
     printf("       - exchanges-per-interval <n>: Controls the number of messages that are exchanged for each\n");
     printf("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n\n");
     printf("  -a, --auth Turn on HMAC authentication options.\n\n");
+    printf("  -sst [path_to_config] Turn on SST authentication options. \n\n");
     printf("  -t, --tracing Turn on tracing.\n\n");
 
     printf("Command given:\n");

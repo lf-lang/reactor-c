@@ -104,6 +104,11 @@ typedef struct federate_t {
     bool requested_stop;    // Indicates that the federate has requested stop or has replied
                             // to a request for stop from the RTI. Used to prevent double-counting
                             // a federate when handling lf_request_stop().
+    #ifdef __RTI_SST__
+    SST_session_ctx_t *session_ctx; // Indicates the information of the secure session.
+    int fd;                 // Indicates the decrypted buffer.
+    int saved_socket;
+    #endif
 } federate_t;
 
 /**
@@ -200,7 +205,7 @@ typedef struct RTI_instance_t {
     /**
      * The path of the SST configuration file.
      */
-    char* sst_config_path;
+    const char* sst_config_path;
 
     /**
      * Boolean indicating that tracing is enabled.
