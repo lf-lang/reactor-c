@@ -2173,15 +2173,15 @@ void update_max_level() {
  *
  */
 #ifdef FEDERATED_DECENTRALIZED
-void* update_ports_from_staa_offsets(void* args){
-    while(1) {
+void* update_ports_from_staa_offsets(void* args) {
+    while (1) {
         bool restart = false;
-        tag_t startTag = lf_tag();
-        for(int i = 0; i < staa_lst_size; ++i) {
+        tag_t start_tag = lf_tag();
+        for (int i = 0; i < staa_lst_size; ++i) {
             staa_t* staaElem = staa_lst[i];
             interval_t wait_until_time = current_tag.time + staaElem->STAA + _lf_fed_STA_offset;
             lf_mutex_lock(&mutex);
-            if(lf_tag() == startTag && wait_until(wait_until_time, &logical_time_changed)){
+            if (lf_tag_compare(lf_tag(), start_tag) == 0 && wait_until(wait_until_time, &logical_time_changed)){
                 for(int j = 0; j < staaElem->numActions; ++j){
                     lf_action_base_t* input_port_action = staaElem->actions[j];
                     if (input_port_action->trigger->status == unknown) {
@@ -2190,17 +2190,17 @@ void* update_ports_from_staa_offsets(void* args){
                     }
                 }
                 lf_mutex_unlock(&mutex);
-            }else{
+            } else {
                 //We have committed to a new tag before we finish processing the list. Start over.
                 restart = true;
                 lf_mutex_unlock(&mutex);
                 break;
             }
         }
-        if(restart) continue;
+        if (restart) continue;
 
         lf_mutex_lock(&mutex);
-        while(lf_tag() == startTag) {
+        while (lf_tag_compare(lf_tag(), start_tag) == 0) {
             lf_cond_wait(&logical_time_changed);
         }
         lf_mutex_unlock(&mutex);
