@@ -911,7 +911,7 @@ void connect_to_federate(uint16_t remote_federate_id) {
 /**
  * Perform HMAC-based authentication with the RTI, using the federation ID
  * as an HMAC key.
- * 
+ *
  * @param rti_socket TCP socket for connection with the RTI.
  */
 void perform_hmac_authentication(int rti_socket) {
@@ -937,7 +937,7 @@ void perform_hmac_authentication(int rti_socket) {
     if (ret == NULL) {
         lf_print_error_and_exit("HMAC failure for MSG_TYPE_FED_RESPONSE.");
     }
-    
+
     // Buffer for message type, federate's nonce, federate ID, and HMAC tag.
     unsigned char sender[1 + NONCE_LENGTH + sizeof(uint16_t) + hmac_length];
     sender[0] = MSG_TYPE_FED_RESPONSE;
@@ -1469,14 +1469,14 @@ void enqueue_network_output_control_reactions(){
         LF_PRINT_DEBUG("No output control reactions.");
         return;
     }
-    for (int i = 0; i < numSenderReactions; i++) {
-        reaction_t* reaction = portAbsentReaction[i];
-        if (reaction->status == inactive) {
-            reaction->is_a_control_reaction = true;
-            LF_PRINT_DEBUG("Executing network output control reaction on reaction queue.");
-            _lf_trigger_reaction(reaction, -1);
-        }
-    }
+    // for (int i = 0; i < numSenderReactions; i++) {
+    //     reaction_t* reaction = portAbsentReaction[i];
+    //     if (reaction->status == inactive) {
+    //         reaction->is_a_control_reaction = true;
+    //         LF_PRINT_DEBUG("Executing network output control reaction on reaction queue.");
+    //         _lf_trigger_reaction(reaction, -1);
+    //     }
+    // }
 }
 
 
@@ -1872,10 +1872,10 @@ void handle_message(int socket, int fed_id) {
 }
 
 /**
- * @brief Prevent the advancement to the next level of the reaction queue until the 
+ * @brief Prevent the advancement to the next level of the reaction queue until the
  *        level we try to advance to is known to be under the max level allowed to advance.
- * 
- * @param curr_reaction_level 
+ *
+ * @param curr_reaction_level
  */
 void stall_advance_level_federation(size_t curr_reaction_level) {
     lf_mutex_lock(&mutex);
@@ -2145,10 +2145,10 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
 /**
  * @brief Attempts to update the max level the reaction queue is allowed to advance to
  * for the current logical timestep.
- * 
+ *
  */
 void update_max_level() {
-    
+
     bool anyUnknowns = false;
     int maxPossible = -1;
     for (int i = 0; i < _lf_action_table_size; i++) {
@@ -2164,13 +2164,13 @@ void update_max_level() {
     } else{
         max_level_allowed_to_advance = maxPossible;
     }
-    
+
 }
 
 /**
  * @brief Given a list of staa offsets and its associated triggers,
  * have a single thread work to set ports to absent at a given logical time
- * 
+ *
  */
 #ifdef FEDERATED_DECENTRALIZED
 void* update_ports_from_staa_offsets(void* args){
@@ -2210,7 +2210,7 @@ void* update_ports_from_staa_offsets(void* args){
 /**
  * @brief Spawns a thread to iterate through STAA structs, setting its associated ports absent
  * at an offset if the port is not present with a value by a certain physical time.
- * 
+ *
  */
 void spawn_staa_thread(){
     lf_thread_create(&_fed.staaSetter, update_ports_from_staa_offsets, NULL);
