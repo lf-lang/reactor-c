@@ -55,12 +55,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Forward declaration of functions and variables supplied by reactor_common.c
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number);
 event_t* _lf_create_dummy_events(environment_t* env, trigger_t* trigger, instant_t time, event_t* next, microstep_t offset);
-// extern pqueue_t* event_q;
-
-// ----------------------------------------------------------------------------
-
-// Global variable to communicate mode triggered reactions
-uint8_t _lf_mode_triggered_reactions_request = 0;
 
 // ----------------------------------------------------------------------------
 
@@ -194,7 +188,7 @@ void _lf_initialize_mode_states(environment_t* env, reactor_mode_state_t* states
         }
     }
     // Register execution of special triggers
-    _lf_mode_triggered_reactions_request |= _LF_MODE_FLAG_MASK_NEEDS_STARTUP;
+    env->modes->triggered_reactions_request |= _LF_MODE_FLAG_MASK_NEEDS_STARTUP;
 }
 
 /**
@@ -232,7 +226,7 @@ void _lf_handle_mode_startup_reset_reactions(
         int states_size
 ) {
     // Handle startup reactions
-    if (_lf_mode_triggered_reactions_request & _LF_MODE_FLAG_MASK_NEEDS_STARTUP) {
+    if (env->modes->triggered_reactions_request & _LF_MODE_FLAG_MASK_NEEDS_STARTUP) {
         if (startup_reactions != NULL) {
             for (int i = 0; i < startup_reactions_size; i++) {
                 reaction_t* reaction = startup_reactions[i];
@@ -251,7 +245,7 @@ void _lf_handle_mode_startup_reset_reactions(
     }
 
     // Handle reset reactions
-    if (_lf_mode_triggered_reactions_request & _LF_MODE_FLAG_MASK_NEEDS_RESET) {
+    if (env->modes->triggered_reactions_request & _LF_MODE_FLAG_MASK_NEEDS_RESET) {
         if (reset_reactions != NULL) {
             for (int i = 0; i < reset_reactions_size; i++) {
                 reaction_t* reaction = reset_reactions[i];
@@ -287,7 +281,7 @@ void _lf_handle_mode_startup_reset_reactions(
     }
 
     // Clear request
-    _lf_mode_triggered_reactions_request = 0;
+    env->modes->triggered_reactions_request = 0;
 }
 
 /**
@@ -496,7 +490,7 @@ void _lf_process_mode_changes(
                     // Register execution of special triggers
                     // This is not done when setting the flag because actual triggering
                     // might be delayed by parent mode inactivity.
-                    _lf_mode_triggered_reactions_request |= state->current_mode->flags &
+                    env->modes->triggered_reactions_request |= state->current_mode->flags &
                             (_LF_MODE_FLAG_MASK_NEEDS_STARTUP | _LF_MODE_FLAG_MASK_NEEDS_RESET);
                 }
             }
@@ -530,7 +524,7 @@ void _lf_process_mode_changes(
             }
         }
 
-        if (_lf_mode_triggered_reactions_request) {
+        if (env->modes->triggered_reactions_request) {
             // Insert a dummy event in the event queue for the next microstep to make
             // sure startup/reset reactions (if any) are triggered as soon as possible.
             pqueue_insert(env->event_q, _lf_create_dummy_events(env, NULL, env->current_tag.time, NULL, 1));
