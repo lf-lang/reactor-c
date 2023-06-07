@@ -3,6 +3,10 @@
 
 #include "lf_types.h"
 
+/**
+ * @brief Initialize an environment struct with parameters given in the arguments.
+ * 
+ */
 int environment_init(
     environment_t* env,
     int id,
@@ -16,12 +20,19 @@ int environment_init(
     int num_state_resets
 );
 
+/**
+ * @brief Free the dynamically allocated memory on the environment struct
+ * 
+ * @param env 
+ */
 void environment_free(environment_t* env);
 
+/**
+ * @brief Initialize the start and stop tags on the environment struct
+ * 
+ */
 void environment_init_tags(
     environment_t *env, instant_t start_time, interval_t duration
 );
-
-
 
 #endif
