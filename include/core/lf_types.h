@@ -353,7 +353,6 @@ struct mode_environment_t {
     int modal_reactor_states_size;
     mode_state_variable_reset_data_t* state_resets;
     int state_resets_size;
-    uint8_t triggered_reactions_request;
 };
 #endif
 
