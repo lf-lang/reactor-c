@@ -53,6 +53,7 @@ extern instant_t start_time;
 /**
  * Mark the given port's is_present field as true. This is_present field
  * will later be cleaned up by _lf_start_time_step.
+ * @param env Environment in which we are executing
  * @param port A pointer to the port struct.
  */
 void _lf_set_present(environment_t *env, lf_port_base_t* port) {
@@ -83,6 +84,7 @@ void _lf_set_present(environment_t *env, lf_port_base_t* port) {
  * Wait until physical time matches the given logical time or the time of a 
  * concurrently scheduled physical action, which might be earlier than the 
  * requested logical time.
+ * @param env Environment in which we are executing
  * @return 0 if the wait was completed, -1 if it was skipped or interrupted.
  */ 
 int wait_until(environment_t* env, instant_t wakeup_time) {
@@ -104,6 +106,7 @@ void lf_print_snapshot(environment_t* env) {
 /**
  * Trigger 'reaction'.
  *
+ * @param env Environment in which we are executing
  * @param reaction The reaction.
  * @param worker_number The ID of the worker that is making this call. 0 should be
  *  used if there is only one worker (e.g., when the program is using the
@@ -131,7 +134,8 @@ void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_n
 
 /**
  * Execute all the reactions in the reaction queue at the current tag.
- *
+ * 
+ * @param env Environment in which we are executing
  * @return Returns 1 if the execution should continue and 0 if the execution
  *  should stop.
  */
@@ -208,7 +212,7 @@ int _lf_do_step(environment_t* env) {
 
 // Wait until physical time matches or exceeds the time of the least tag
 // on the event queue. If there is no event in the queue, return 0.
-// After this wait, advance env->current_tag.time to match
+// After this wait, advance current_tag of the environment to match
 // this tag. Then pop the next event(s) from the
 // event queue that all have the same tag, and extract from those events
 // the reactions that are to be invoked at this logical time.
@@ -296,6 +300,7 @@ int next(environment_t* env) {
 
 /**
  * Stop execution at the conclusion of the next microstep.
+ * @param env Environment in which we are executing
  */
 void _lf_request_stop(environment_t *env) {
 	tag_t new_stop_tag;
@@ -348,9 +353,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         _lf_create_environments();
         environment_t *env;
         int num_environments = _lf_get_environments(&env);
-        if (num_environments != 1) {
-            lf_print_error_and_exit("Found %u environments. Only 1 can be used with the unthreaded runtime", num_environments);
-        }
+        lf_assert(num_environments == 1,"Found %u environments. Only 1 can be used with the unthreaded runtime");
         
         LF_PRINT_DEBUG("Initializing.");
         initialize_global();
@@ -361,8 +364,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         // Set up modal infrastructure
         _lf_initialize_modes(env);
 #endif
-
-
         _lf_execution_started = true;
         _lf_trigger_startup_reactions(env);
         _lf_initialize_timers(env);
@@ -384,21 +385,24 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 }
 
 /**
- * @brief Notify of new event by broadcasting on a condition variable. 
+ * @brief Notify of new event by calling the unthreaded platform API
+ * @param env Environment in which we are execution
  */
 int lf_notify_of_event(environment_t* env) {
     return _lf_unthreaded_notify_of_event();
 }
 
 /**
- * @brief Enter critical section by locking the global mutex.
+ * @brief Enter critical section by disabling interrupts
+ * @param env Environment in which we are execution
  */
 int lf_critical_section_enter(environment_t* env) {
     return lf_disable_interrupts_nested();
 }
 
 /**
- * @brief Leave a critical section by unlocking the global mutex.
+ * @brief Leave a critical section by enabling interrupts
+ * @param env Environment in which we are execution
  */
 int lf_critical_section_exit(environment_t* env) {
     return lf_enable_interrupts_nested();
