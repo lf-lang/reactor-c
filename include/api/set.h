@@ -149,7 +149,7 @@ do { \
 #define SET_PRESENT(out) \
 do { \
 	_Pragma ("Warning \"'SET_PRESENT' is deprecated.\""); \
-        _lf_set_present(((lf_port_base_t*)out)->source_reactor->environment, (lf_port_base_t*)out); \
+        _lf_set_present((lf_port_base_t*)out); \
 } while (0)
 
 /**

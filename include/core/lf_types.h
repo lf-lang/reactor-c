@@ -264,7 +264,6 @@ struct trigger_t {
                               //   downstream messages have been produced for the same port for the same logical time.
     reactor_mode_t* mode;     // The enclosing mode of this reaction (if exists).
                               // If enclosed in multiple, this will point to the innermost mode.
-    void* parent;             // Pointer to reactor which contains the trigger
 #ifdef FEDERATED
     tag_t last_known_status_tag;        // Last known status of the port, either via a timed message, a port absent, or a
                                         // TAG from the RTI.
@@ -292,8 +291,7 @@ typedef struct allocation_record_t {
 } allocation_record_t;
 
 // Forward declarations so that a pointers can appear in the environment struct.
-// struct lf_scheduler_t;
-struct _lf_tag_advancement_barrier;
+typedef struct _lf_tag_advancement_barrier;
 typedef struct lf_scheduler_t lf_scheduler_t;
 
 #define GLOBAL_ENVIRONMENT NULL
@@ -309,7 +307,6 @@ typedef struct lf_scheduler_t lf_scheduler_t;
 typedef struct mode_environment_t mode_environment_t;
 
 
-// FIXME: Can we avoid the #ifdefs wrt threading, federation and modes?
 typedef struct environment_t {
     int id;
     tag_t current_tag;
