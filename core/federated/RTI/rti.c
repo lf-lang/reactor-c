@@ -63,14 +63,6 @@ extern federation_RTI_t* _F_RTI;
  */
 unsigned int _lf_number_of_workers = 0u;
 
-/**
- * References to the federation RTI and the enclave RTI.
- * They both point to the same enclaves stuctures. In the case of federation RTI,
- * however, enclaves are encapsulated in federates.    
- */
-extern enclave_RTI_t * _E_RTI;
-extern federation_RTI_t* _F_RTI;
-
 extern lf_mutex_t rti_mutex;
 extern lf_cond_t received_start_times;
 extern lf_cond_t sent_start_time;
