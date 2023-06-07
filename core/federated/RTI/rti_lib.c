@@ -226,7 +226,7 @@ void send_tag_advance_grant(federate_t* fed, tag_t tag) {
         }
     } else {
         fed->last_granted = tag;
-        LF_PRINT_LOG("RTI sent to federate %d the tag advance grant (TAG) (%lld, %u).",
+        LF_PRINT_LOG("RTI sent to federate %d the tag advance grant (TAG) " PRINTF_TAG ".",
                 fed->id, tag.time - start_time, tag.microstep);
     }
 }
@@ -308,7 +308,7 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
         }
     } else {
         fed->last_provisionally_granted = tag;
-        LF_PRINT_LOG("RTI sent to federate %d the Provisional Tag Advance Grant (PTAG) (%lld, %u).",
+        LF_PRINT_LOG("RTI sent to federate %d the Provisional Tag Advance Grant (PTAG) " PRINTF_TAG ".",
                 fed->id, tag.time - start_time, tag.microstep);
 
         // Send PTAG to all upstream federates, if they have not had
@@ -360,7 +360,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
             min_upstream_completed = candidate;
         }
     }
-    LF_PRINT_LOG("Minimum upstream LTC for fed %d is (%lld, %u) "
+    LF_PRINT_LOG("Minimum upstream LTC for fed %d is " PRINTF_TAG " "
             "(adjusted by after delay).",
             fed->id,
             min_upstream_completed.time - start_time, min_upstream_completed.microstep);
@@ -385,9 +385,9 @@ bool send_advance_grant_if_safe(federate_t* fed) {
     // Find the tag of the earliest possible incoming message from
     // upstream federates.
     tag_t t_d = FOREVER_TAG;
-    LF_PRINT_DEBUG("NOTE: FOREVER is displayed as (%lld, %u) and NEVER as (%lld, %u)",
+    LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG ".",
             FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
-            NEVER - start_time, 0u);
+            NEVER_TAG.time - start_time, 0u);
 
     for (int j = 0; j < fed->num_upstream; j++) {
         federate_t* upstream = &_RTI.federates[fed->upstream[j]];
@@ -399,7 +399,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
         tag_t upstream_next_event = transitive_next_event(
                 upstream, upstream->next_event, visited);
 
-        LF_PRINT_DEBUG("Earliest next event upstream of fed %d at fed %d has tag (%lld, %u).",
+        LF_PRINT_DEBUG("Earliest next event upstream of fed %d at fed %d has tag " PRINTF_TAG ".",
                 fed->id,
                 upstream->id,
                 upstream_next_event.time - start_time, upstream_next_event.microstep);
@@ -415,7 +415,7 @@ bool send_advance_grant_if_safe(federate_t* fed) {
     }
     free(visited);
 
-    LF_PRINT_LOG("Earliest next event upstream has tag (%lld, %u).",
+    LF_PRINT_LOG("Earliest next event upstream has tag " PRINTF_TAG ".",
             t_d.time - start_time, t_d.microstep);
 
     if (
@@ -519,10 +519,10 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
         lf_mutex_unlock(&rti_mutex);
         lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
                 federate_id);
-        LF_PRINT_LOG("Fed status: next_event (%lld, %d), "
-                "completed (%lld, %d), "
-                "last_granted (%lld, %d), "
-                "last_provisionally_granted (%lld, %d).",
+        LF_PRINT_LOG("Fed status: next_event (" PRINTF_TIME ", %d), "
+                "completed (" PRINTF_TIME ", %d), "
+                "last_granted (" PRINTF_TIME ", %d), "
+                "last_provisionally_granted (" PRINTF_TIME ", %d).",
                 _RTI.federates[federate_id].next_event.time - start_time,
                 _RTI.federates[federate_id].next_event.microstep,
                 _RTI.federates[federate_id].completed.time - start_time,
@@ -609,10 +609,10 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
         lf_mutex_unlock(&rti_mutex);
         lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
                 federate_id);
-        LF_PRINT_LOG("Fed status: next_event (%lld, %d), "
-                "completed (%lld, %d), "
-                "last_granted (%lld, %d), "
-                "last_provisionally_granted (%lld, %d).",
+        LF_PRINT_LOG("Fed status: next_event " PRINTF_TAG ", "
+                "completed " PRINTF_TAG ", "
+                "last_granted " PRINTF_TAG ", "
+                "last_provisionally_granted " PRINTF_TAG ".",
                 _RTI.federates[federate_id].next_event.time - start_time,
                 _RTI.federates[federate_id].next_event.microstep,
                 _RTI.federates[federate_id].completed.time - start_time,
@@ -717,7 +717,7 @@ void handle_logical_tag_complete(federate_t* fed) {
         tracepoint_RTI_from_federate(receive_LTC, fed->id, &(fed->completed));
     }
 
-    LF_PRINT_LOG("RTI received from federate %d the Logical Tag Complete (LTC) (%lld, %u).",
+    LF_PRINT_LOG("RTI received from federate %d the Logical Tag Complete (LTC) " PRINTF_TAG ".",
                 fed->id, fed->completed.time - start_time, fed->completed.microstep);
 
 
@@ -795,7 +795,7 @@ void _lf_rti_broadcast_stop_time_to_federates_already_locked() {
                 "RTI failed to send MSG_TYPE_STOP_GRANTED message to federate %d.", _RTI.federates[i].id);
     }
 
-    LF_PRINT_LOG("RTI sent to federates MSG_TYPE_STOP_GRANTED with tag (%lld, %u).",
+    LF_PRINT_LOG("RTI sent to federates MSG_TYPE_STOP_GRANTED with tag " PRINTF_TAG ".",
                 _RTI.max_stop_tag.time - start_time,
                 _RTI.max_stop_tag.microstep);
     _lf_rti_stop_granted_already_sent_to_federates = true;
@@ -847,7 +847,7 @@ void handle_stop_request_message(federate_t* fed) {
         _RTI.max_stop_tag = proposed_stop_tag;
     }
 
-    LF_PRINT_LOG("RTI received from federate %d a MSG_TYPE_STOP_REQUEST message with tag (%lld, %u).",
+    LF_PRINT_LOG("RTI received from federate %d a MSG_TYPE_STOP_REQUEST message with tag " PRINTF_TAG ".",
             fed->id, proposed_stop_tag.time - start_time, proposed_stop_tag.microstep);
 
     // If this federate has not already asked
@@ -884,7 +884,7 @@ void handle_stop_request_message(federate_t* fed) {
             }
         }
     }
-    LF_PRINT_LOG("RTI forwarded to federates MSG_TYPE_STOP_REQUEST with tag (%lld, %u).",
+    LF_PRINT_LOG("RTI forwarded to federates MSG_TYPE_STOP_REQUEST with tag " PRINTF_TAG ".",
                 _RTI.max_stop_tag.time - start_time,
                 _RTI.max_stop_tag.microstep);
     lf_mutex_unlock(&rti_mutex);
@@ -902,7 +902,7 @@ void handle_stop_request_reply(federate_t* fed) {
         tracepoint_RTI_from_federate(receive_STOP_REQ_REP, fed->id, &federate_stop_tag);
     }
 
-    LF_PRINT_LOG("RTI received from federate %d STOP reply tag (%lld, %u).", fed->id,
+    LF_PRINT_LOG("RTI received from federate %d STOP reply tag " PRINTF_TAG ".", fed->id,
             federate_stop_tag.time - start_time,
             federate_stop_tag.microstep);
 
@@ -994,7 +994,7 @@ void handle_timestamp(federate_t *my_fed) {
         tag_t tag = {.time = timestamp, .microstep = 0};
         tracepoint_RTI_from_federate(receive_TIMESTAMP, my_fed->id, &tag);
     }
-    LF_PRINT_LOG("RTI received timestamp message: %lld.", timestamp);
+    LF_PRINT_LOG("RTI received timestamp message: " PRINTF_TIME ".", timestamp);
 
     lf_mutex_lock(&rti_mutex);
     _RTI.num_feds_proposed_start++;
@@ -1041,7 +1041,7 @@ void handle_timestamp(federate_t *my_fed) {
     // the federate to the start time.
     my_fed->state = GRANTED;
     lf_cond_broadcast(&sent_start_time);
-    LF_PRINT_LOG("RTI sent start time %lld to federate %d.", start_time, my_fed->id);
+    LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->id);
     lf_mutex_unlock(&rti_mutex);
 }
 
@@ -1075,7 +1075,7 @@ void send_physical_clock(unsigned char message_type, federate_t* fed, socket_typ
                         fed->id,
                         strerror(errno));
     }
-    LF_PRINT_DEBUG("Clock sync: RTI sent PHYSICAL_TIME_SYNC_MESSAGE with timestamp %lld to federate %d.",
+    LF_PRINT_DEBUG("Clock sync: RTI sent PHYSICAL_TIME_SYNC_MESSAGE with timestamp " PRINTF_TIME " to federate %d.",
                  current_physical_time,
                  fed->id);
 }
@@ -1855,82 +1855,82 @@ void wait_for_federates(int socket_descriptor) {
 }
 
 void usage(int argc, const char* argv[]) {
-    printf("\nCommand-line arguments: \n\n");
-    printf("  -i, --id <n>\n");
-    printf("   The ID of the federation that this RTI will control.\n\n");
-    printf("  -n, --number_of_federates <n>\n");
-    printf("   The number of federates in the federation that this RTI will control.\n\n");
-    printf("  -p, --port <n>\n");
-    printf("   The port number to use for the RTI. Must be larger than 0 and smaller than %d. Default is %d.\n\n", UINT16_MAX, STARTING_PORT);
-    printf("  -c, --clock_sync [off|init|on] [period <n>] [exchanges-per-interval <n>]\n");
-    printf("   The status of clock synchronization for this federate.\n");
-    printf("       - off: Clock synchronization is off.\n");
-    printf("       - init (default): Clock synchronization is done only during startup.\n");
-    printf("       - on: Clock synchronization is done both at startup and during the execution.\n");
-    printf("   Relevant parameters that can be set: \n");
-    printf("       - period <n>(in nanoseconds): Controls how often a clock synchronization attempt is made\n");
-    printf("          (period in nanoseconds, default is 5 msec). Only applies to 'on'.\n");
-    printf("       - exchanges-per-interval <n>: Controls the number of messages that are exchanged for each\n");
-    printf("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n\n");
-    printf("  -a, --auth Turn on HMAC authentication options.\n\n");
-    printf("  -t, --tracing Turn on tracing.\n\n");
+    lf_print("\nCommand-line arguments: \n");
+    lf_print("  -i, --id <n>");
+    lf_print("   The ID of the federation that this RTI will control.\n");
+    lf_print("  -n, --number_of_federates <n>");
+    lf_print("   The number of federates in the federation that this RTI will control.\n");
+    lf_print("  -p, --port <n>");
+    lf_print("   The port number to use for the RTI. Must be larger than 0 and smaller than %d. Default is %d.\n", UINT16_MAX, STARTING_PORT);
+    lf_print("  -c, --clock_sync [off|init|on] [period <n>] [exchanges-per-interval <n>]");
+    lf_print("   The status of clock synchronization for this federate.");
+    lf_print("       - off: Clock synchronization is off.");
+    lf_print("       - init (default): Clock synchronization is done only during startup.");
+    lf_print("       - on: Clock synchronization is done both at startup and during the execution.");
+    lf_print("   Relevant parameters that can be set: ");
+    lf_print("       - period <n>(in nanoseconds): Controls how often a clock synchronization attempt is made");
+    lf_print("          (period in nanoseconds, default is 5 msec). Only applies to 'on'.");
+    lf_print("       - exchanges-per-interval <n>: Controls the number of messages that are exchanged for each");
+    lf_print("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n");
+    lf_print("  -a, --auth Turn on HMAC authentication options.\n");
+    lf_print("  -t, --tracing Turn on tracing.\n");
 
-    printf("Command given:\n");
+    lf_print("Command given:");
     for (int i = 0; i < argc; i++) {
-        printf("%s ", argv[i]);
+        lf_print("%s ", argv[i]);
     }
-    printf("\n\n");
+    lf_print("\n");
 }
 
 int process_clock_sync_args(int argc, const char* argv[]) {
     for (int i = 0; i < argc; i++) {
         if (strcmp(argv[i], "off") == 0) {
             _RTI.clock_sync_global_status = clock_sync_off;
-            printf("RTI: Clock sync: off\n");
+            lf_print("RTI: Clock sync: off");
         } else if (strcmp(argv[i], "init") == 0 || strcmp(argv[i], "initial") == 0) {
             _RTI.clock_sync_global_status = clock_sync_init;
-            printf("RTI: Clock sync: init\n");
+            lf_print("RTI: Clock sync: init");
         } else if (strcmp(argv[i], "on") == 0) {
             _RTI.clock_sync_global_status = clock_sync_on;
-            printf("RTI: Clock sync: on\n");
+            lf_print("RTI: Clock sync: on");
         } else if (strcmp(argv[i], "period") == 0) {
             if (_RTI.clock_sync_global_status != clock_sync_on) {
-                fprintf(stderr, "Error: clock sync period can only be set if --clock-sync is set to on.\n");
+                lf_print_error("clock sync period can only be set if --clock-sync is set to on.");
                 usage(argc, argv);
                 i++;
                 continue; // Try to parse the rest of the arguments as clock sync args.
             } else if (argc < i + 2) {
-                fprintf(stderr, "Error: clock sync period needs a time (in nanoseconds) argument.\n");
+                lf_print_error("clock sync period needs a time (in nanoseconds) argument.");
                 usage(argc, argv);
                 continue;
             }
             i++;
             long long period_ns = strtoll(argv[i], NULL, 10);
             if (period_ns == 0LL || period_ns == LLONG_MAX || period_ns == LLONG_MIN) {
-                fprintf(stderr, "Error: clock sync period value is invalid.\n");
+                lf_print_error("clock sync period value is invalid.");
                 continue; // Try to parse the rest of the arguments as clock sync args.
             }
             _RTI.clock_sync_period_ns = (int64_t)period_ns;
-            printf("RTI: Clock sync period: %lld\n", (long long int)_RTI.clock_sync_period_ns);
+            lf_print("RTI: Clock sync period: " PRINTF_TIME, (long long int)_RTI.clock_sync_period_ns);
         } else if (strcmp(argv[i], "exchanges-per-interval") == 0) {
             if (_RTI.clock_sync_global_status != clock_sync_on && _RTI.clock_sync_global_status != clock_sync_init) {
-                fprintf(stderr, "Error: clock sync exchanges-per-interval can only be set if\n");
-                fprintf(stderr, "--clock-sync is set to on or init.\n");
+                lf_print_error("clock sync exchanges-per-interval can only be set if\n"
+                               "--clock-sync is set to on or init.");
                 usage(argc, argv);
                 continue; // Try to parse the rest of the arguments as clock sync args.
             } else if (argc < i + 2) {
-                fprintf(stderr, "Error: clock sync exchanges-per-interval needs an integer argument.\n");
+                lf_print_error("clock sync exchanges-per-interval needs an integer argument.");
                 usage(argc, argv);
                 continue; // Try to parse the rest of the arguments as clock sync args.
             }
             i++;
             long exchanges = (long)strtol(argv[i], NULL, 10);
             if (exchanges == 0L || exchanges == LONG_MAX ||  exchanges == LONG_MIN) {
-                 fprintf(stderr, "Error: clock sync exchanges-per-interval value is invalid.\n");
+                 lf_print_error("clock sync exchanges-per-interval value is invalid.");
                  continue; // Try to parse the rest of the arguments as clock sync args.
              }
             _RTI.clock_sync_exchanges_per_interval = (int32_t)exchanges; // FIXME: Loses numbers on 64-bit machines
-            printf("RTI: Clock sync exchanges per interval: %d\n", _RTI.clock_sync_exchanges_per_interval);
+            lf_print("RTI: Clock sync exchanges per interval: %d", _RTI.clock_sync_exchanges_per_interval);
         } else if (strcmp(argv[i], " ") == 0) {
             // Tolerate spaces
             continue;
@@ -1948,33 +1948,32 @@ int process_args(int argc, const char* argv[]) {
     for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--id") == 0) {
             if (argc < i + 2) {
-                fprintf(stderr, "Error: --id needs a string argument.\n");
+                lf_print_error("--id needs a string argument.");
                 usage(argc, argv);
                 return 0;
             }
             i++;
-            printf("RTI: Federation ID: %s\n", argv[i]);
+            lf_print("RTI: Federation ID: %s", argv[i]);
             _RTI.federation_id = argv[i];
         } else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--number_of_federates") == 0) {
             if (argc < i + 2) {
-                fprintf(stderr, "Error: --number_of_federates needs an integer argument.\n");
+                lf_print_error("--number_of_federates needs an integer argument.");
                 usage(argc, argv);
                 return 0;
             }
             i++;
             long num_federates = strtol(argv[i], NULL, 10);
             if (num_federates == 0L || num_federates == LONG_MAX ||  num_federates == LONG_MIN) {
-                fprintf(stderr, "Error: --number_of_federates needs a valid positive integer argument.\n");
+                lf_print_error("--number_of_federates needs a valid positive integer argument.");
                 usage(argc, argv);
                 return 0;
             }
             _RTI.number_of_federates = (int32_t)num_federates; // FIXME: Loses numbers on 64-bit machines
-            printf("RTI: Number of federates: %d\n", _RTI.number_of_federates);
+            lf_print("RTI: Number of federates: %d\n", _RTI.number_of_federates);
         } else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
             if (argc < i + 2) {
-                fprintf(
-                    stderr,
-                    "Error: --port needs a short unsigned integer argument ( > 0 and < %d).\n",
+                lf_print_error(
+                    "--port needs a short unsigned integer argument ( > 0 and < %d).",
                     UINT16_MAX
                 );
                 usage(argc, argv);
@@ -1983,9 +1982,8 @@ int process_args(int argc, const char* argv[]) {
             i++;
             uint32_t RTI_port = (uint32_t)strtoul(argv[i], NULL, 10);
             if (RTI_port <= 0 || RTI_port >= UINT16_MAX) {
-                fprintf(
-                    stderr,
-                    "Error: --port needs a short unsigned integer argument ( > 0 and < %d).\n",
+                lf_print_error(
+                    "--port needs a short unsigned integer argument ( > 0 and < %d).",
                     UINT16_MAX
                 );
                 usage(argc, argv);
@@ -1994,7 +1992,7 @@ int process_args(int argc, const char* argv[]) {
             _RTI.user_specified_port = (uint16_t)RTI_port;
         } else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--clock_sync") == 0) {
             if (argc < i + 2) {
-               fprintf(stderr, "Error: --clock-sync needs off|init|on.\n");
+               lf_print_error("--clock-sync needs off|init|on.");
                usage(argc, argv);
                return 0;
            }
@@ -2002,7 +2000,7 @@ int process_args(int argc, const char* argv[]) {
            i += process_clock_sync_args((argc-i), &argv[i]);
         } else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--auth") == 0) {
             #ifndef __RTI_AUTH__
-            fprintf(stderr, "Error: --auth requires the RTI to be built with the -DAUTH=ON option.\n");
+            lf_print_error("--auth requires the RTI to be built with the -DAUTH=ON option.");
             usage(argc, argv);
             return 0;
             #endif
@@ -2013,13 +2011,13 @@ int process_args(int argc, const char* argv[]) {
             // Tolerate spaces
             continue;
         }  else {
-           fprintf(stderr, "Error: Unrecognized command-line argument: %s\n", argv[i]);
+           lf_print_error("Unrecognized command-line argument: %s", argv[i]);
            usage(argc, argv);
            return 0;
        }
     }
     if (_RTI.number_of_federates == 0) {
-        fprintf(stderr, "Error: --number_of_federates needs a valid positive integer argument.\n");
+        lf_print_error("--number_of_federates needs a valid positive integer argument.");
         usage(argc, argv);
         return 0;
     }

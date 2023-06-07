@@ -1838,7 +1838,7 @@ void handle_message(int socket, int fed_id) {
     read_from_socket_errexit(socket, length, message_contents,
             "Failed to read message body.");
     // Trace the event when tracing is enabled
-    tracepoint_federate_from_federate(receive_P2P_MSG, _lf_my_fed_id, federate_id, NULL);
+    tracepoint_federate_from_federate(receive_P2P_MSG, _lf_my_fed_id, fed_id, NULL);
     LF_PRINT_LOG("Message received by federate: %s. Length: %zu.", message_contents, length);
 
     LF_PRINT_DEBUG("Calling schedule for message received on a physical connection.");
