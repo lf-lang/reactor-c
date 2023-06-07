@@ -55,7 +55,6 @@ lf_token_t* _lf_tokens_allocated_in_reactions = NULL;
  * Tokens always have the same size in memory so they are easily recycled.
  * When a token is freed, it is inserted into this recycling bin.
  */
-// FIXME: Fix for enclaves
 static hashset_t _lf_token_recycling_bin = NULL;
 
 /**
@@ -219,8 +218,6 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
     return result;
 }
 
-// YOu want a token to carry a new value. In C target values are per]sistent.
-// You want to free the value here, because this is the point you overwrite it.
 lf_token_t* _lf_get_token(token_template_t* tmplt) {
     if (tmplt->token != NULL) {
         if (tmplt->token->ref_count == 1) {
@@ -270,7 +267,6 @@ void _lf_initialize_template(token_template_t* tmplt, size_t element_size) {
     tmplt->token->ref_count = 1;
 }
 
-// Free up anything currently residing in the tmplt, then create/reuse a token for the tmplt. Finally copy value into the token.
 lf_token_t* _lf_initialize_token_with_value(token_template_t* tmplt, void* value, size_t length) {
     assert(tmplt != NULL);
     LF_PRINT_DEBUG("_lf_initialize_token_with_value: template %p, value %p", tmplt, value);
