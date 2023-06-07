@@ -69,19 +69,10 @@ extern instant_t start_time;
 #define MIN_SLEEP_DURATION USEC(10)
 
 /**
- * Global mutex .
+ * Global mutex, used for synchronizing across environments. Mainly used for token-management
 */
 lf_mutex_t global_mutex;
 
-/**
- * Create a global tag barrier and
- * initialize the barrier's semaphore to 0 and its horizon to FOREVER_TAG.
- */
-// _lf_tag_advancement_barrier _lf_global_tag_advancement_barrier = {0, FOREVER_TAG_INITIALIZER};
-
-// A condition variable that notifies threads whenever the number
-// of requestors on the tag barrier reaches zero.
-// lf_cond_t global_tag_barrier_requestors_reached_zero;
 
 /**
  * Raise a barrier to prevent the current tag from advancing to or
@@ -107,6 +98,7 @@ lf_mutex_t global_mutex;
  *  certain non-blocking functionalities such as receiving timed messages
  *  over the network or handling stop in a federated execution.
  *
+ * @param env Environment within which we are executing.
  * @param future_tag A desired tag for the barrier. This function will guarantee
  * that current logical time will not go past future_tag if it is in the future.
  * If future_tag is in the past (or equals to current logical time), the runtime
@@ -397,9 +389,9 @@ bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition
             // Wait did not time out, which means that there
             // may have been an asynchronous call to lf_schedule().
             // Continue waiting.
-            // Do not adjust env->current_tag.time here. If there was an asynchronous
+            // Do not adjust logical tag here. If there was an asynchronous
             // call to lf_schedule(), it will have put an event on the event queue,
-            // and env->current_tag.time will be set to that time when that event is pulled.
+            // and logical tag will be set to that time when that event is pulled.
             return_value = false;
         } else {
             // Reached timeout.
@@ -599,7 +591,7 @@ void _lf_next_locked(environment_t *env) {
 #endif // FEDERATED
 
     // If the first event in the event queue has a tag greater than or equal to the
-    // stop time, and the env->current_tag matches the stop tag (meaning that we have already
+    // stop time, and the current tag matches the stop tag (meaning that we have already
     // executed microstep 0 at the timeout time), then we are done. The above code prevents the next_tag
     // from exceeding the stop_tag, so we have to do further checks if
     // they are equal.
@@ -1078,13 +1070,12 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     signal(SIGPIPE, SIG_IGN);
 #endif // SIGPIPE
 
-    // Parse command line arguments. Sets globalvariables like duration, fast, number_of_workers.
+    // Parse command line arguments. Sets global variables like duration, fast, number_of_workers.
     if (!(process_args(default_argc, default_argv)
             && process_args(argc, argv))) {
         return -1;
     }
-    // Determine number of workers based on user request and available parallelism
-    // FIXME: Revisit this for enclaves.
+    // Determine global number of workers based on user request and available parallelism
     determine_number_of_workers();
     
     // Initialize the clock through the platform API. No reading of physical time before this.
@@ -1107,13 +1098,13 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Initialize the global payload and token allocation counts and the trigger table
     initialize_global();
         
-    // FIXME: Consider making watchdogs environment-specific.
+    // Initialize the watchdog-specific mutexes. This is still handled globally and not per-environment
     _lf_initialize_watchdog_mutexes();
     
     environment_t *envs;
     int num_envs = _lf_get_environments(&envs);
     if (num_envs > 1) {
-        // FIXME: How to do keep-alive stuff with enclaves?
+        // TODO: This must be refined when we introduce multiple enclaves
         keepalive_specified = true;
     }
     
