@@ -537,7 +537,7 @@ void _lf_trigger_startup_reactions(environment_t* env) {
         }
     }
 
-    #ifdef MODAL_MODELS
+    #ifdef MODAL_REACTORS
     if (env->modes) {
         _lf_handle_mode_startup_reset_reactions(
             env,
