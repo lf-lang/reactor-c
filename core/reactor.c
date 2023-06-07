@@ -56,7 +56,8 @@ extern instant_t start_time;
  * @param env Environment in which we are executing
  * @param port A pointer to the port struct.
  */
-void _lf_set_present(environment_t *env, lf_port_base_t* port) {
+void _lf_set_present(lf_port_base_t* port) {
+    environment_t *env = port->source_reactor->environment;
 	bool* is_present_field = &port->is_present;
     if (env->is_present_fields_abbreviated_size < env->is_present_fields_size) {
         env->is_present_fields_abbreviated[env->is_present_fields_abbreviated_size]
