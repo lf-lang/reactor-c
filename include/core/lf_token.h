@@ -165,7 +165,7 @@ typedef struct lf_port_base_t {
 	lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
 	int destination_channel;              // -1 if there is no destination.
     int num_destinations;                 // The number of destination reactors this port writes to.
-    struct self_base_t* source_reactor;          // Pointer to the self struct of the reactor that provides data to this port.
+    self_base_t* source_reactor;          // Pointer to the self struct of the reactor that provides data to this port.
                                           // If this is an input, that reactor will normally be the container of the
                                           // output port that sends it data.
 } lf_port_base_t;
@@ -277,7 +277,6 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length);
  * @param tmplt The template. // template is a C++ keyword.
  * @return A new or recycled lf_token_t struct.
  */
-// FIXME: SHould this be a void function? It is modifying the tmplt arg
 lf_token_t* _lf_get_token(token_template_t* tmplt);
 
 /**

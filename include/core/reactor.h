@@ -77,7 +77,7 @@
  * This assumes that the mutex is not held.
  * @param port A pointer to the port struct.
  */
-void _lf_set_present(environment_t* env, lf_port_base_t* port);
+void _lf_set_present(lf_port_base_t* port);
 
 // NOTE: Ports passed to these macros can be cast to:
 // lf_port_base_t: which has the field bool is_present (and more);
@@ -110,7 +110,7 @@ do { \
     /* even if it is a literal */ \
     out->value = val; \
     self_base_t* self_base = out->_base.source_reactor;\
-    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     if (((token_template_t*)out)->token != NULL) { \
         /* The cast "*((void**) &out->value)" is a hack to make the code */ \
         /* compile with non-token types where value is not a pointer. */ \
@@ -136,7 +136,7 @@ do { \
 #define lf_set_array(out, val, length) \
 do { \
     self_base_t* self_base = out->_base.source_reactor;\
-    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
     out->value = token->value; \
 } while(0)
@@ -144,7 +144,7 @@ do { \
 #define lf_set_array(out, val, length) \
 do { \
     self_base_t* self_base = out->_base.source_reactor;\
-    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
     out->value = static_cast<decltype(out->value)>(token->value); \
 } while(0)
@@ -168,7 +168,7 @@ do { \
 #define _LF_SET_NEW(out) \
 do { \
     self_base_t* self_base = out->_base.source_reactor;\
-    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
     out->value = token->value; \
 } while(0)
@@ -176,7 +176,7 @@ do { \
 #define _LF_SET_NEW(out) \
 do { \
     self_base_t* self_base = out->_base.source_reactor;\
-    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
     out->value = static_cast<decltype(out->value)>(token->value); \
 } while(0)
@@ -199,7 +199,7 @@ do { \
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
     self_base_t* self_base = out->_base.source_reactor;\
-    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
     out->value = token->value; \
     out->length = len; \
@@ -208,7 +208,7 @@ do { \
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
     self_base_t* self_base = out->_base.source_reactor;\
-    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
     out->value = static_cast<decltype(out->value)>(token->value); \
     out->length = len; \
@@ -226,7 +226,7 @@ do { \
 #define lf_set_present(out) \
 do { \
     self_base_t* self_base = out->_base.source_reactor;\
-    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
 } while(0)
 
 /**
@@ -242,7 +242,7 @@ do { \
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
     self_base_t* self_base = out->_base.source_reactor;\
-    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     _lf_replace_template_token((token_template_t*)out, newtoken); \
     out->value = newtoken->value; \
     out->length = newtoken->length; \
@@ -251,7 +251,7 @@ do { \
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
     self_base_t* self_base = out->_base.source_reactor;\
-    _lf_set_present(self_base->environment, (lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     _lf_replace_template_token((token_template_t*)out, newtoken); \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
     out->length = newtoken->length; \
