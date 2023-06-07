@@ -549,6 +549,23 @@ void _lf_trigger_startup_reactions(environment_t* env) {
     #endif
 }
 
+void _lf_trigger_shutdown_reactions(environment_t *env) {
+    for (int i = 0; i < env->shutdown_reactions_size; i++) {
+        if (env->shutdown_reactions[i] != NULL) {
+            if (env->shutdown_reactions[i]->mode != NULL) {
+                // Skip reactions in modes
+                continue;
+            }
+            _lf_trigger_reaction(env, env->shutdown_reactions[i], -1);
+        }
+    }
+#ifdef MODAL_REACTORS
+    if (env->modes) {
+        _lf_handle_mode_shutdown_reactions(env, env->shutdown_reactions, env->shutdown_reactions_size);
+    }
+#endif
+}
+
 /**
  * Recycle the given event.
  * Zero it out and pushed it onto the recycle queue.

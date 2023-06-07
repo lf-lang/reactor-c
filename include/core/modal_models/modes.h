@@ -123,19 +123,10 @@ struct mode_state_variable_reset_data_t {
 //// Forward declaration for generated code.
 typedef struct environment_t environment_t;
 
-/**
- * Function (to be code generated) to initialize modes.
- */
 void _lf_initialize_modes(environment_t* env);
 
-/**
- * Function (to be code generated) to handle mode changes.
- */
 void _lf_handle_mode_changes(environment_t* env);
 
-/**
- * Function (to be code generated) to handle mode triggered reactions.
- */
 void _lf_handle_mode_triggered_reactions(environment_t* env);
 
 bool _lf_mode_is_active(reactor_mode_t* mode);

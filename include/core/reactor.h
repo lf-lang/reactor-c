@@ -424,11 +424,6 @@ trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger, interval_t
  */
 void _lf_initialize_watchdog_mutexes(void);
 
-/**
- * Function to initialize mutexes for watchdogs
- */
-void _lf_initialize_watchdog_mutexes(void);
-
 
 /**
  * Function (to be code generated) to terminate execution.
@@ -438,10 +433,6 @@ void terminate_execution(environment_t* env);
 
 void termination();
 
-/**
- * Function (to be code generated) to trigger shutdown reactions.
- */
-void _lf_trigger_shutdown_reactions(environment_t *env);
 
 /**
  * Schedule the specified action with an integer value at a later logical
