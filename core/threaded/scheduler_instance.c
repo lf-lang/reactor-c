@@ -1,6 +1,7 @@
 #include "scheduler_instance.h"
 #include "reactor_common.h"
 #include "lf_types.h"
+#include "util.h"
 
 
 bool init_sched_instance(
@@ -8,7 +9,9 @@ bool init_sched_instance(
     lf_scheduler_t** instance,
     size_t number_of_workers,
     sched_params_t* params) {
-    // FIXME: env pointer in the sched instance must be set by now
+    
+    lf_assert(env, "`init_sched_instance` called without env pointer being set");
+
     // Check if the instance is already initialized
     lf_critical_section_enter(env);
     if (*instance != NULL) {
