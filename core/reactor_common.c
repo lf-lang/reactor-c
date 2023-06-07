@@ -514,6 +514,18 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
 }
 
 /**
+ * @brief Initialize all the timers in an environment
+ * 
+ * @param env the environment
+ */
+void _lf_initialize_timers(environment_t* env) {
+    for (int i = 0; i < env->timer_triggers_size; i++) {
+        if (env->timer_triggers[i] != NULL) {
+            _lf_initialize_timer(env, env->timer_triggers[i]);
+        }
+    }
+}
+/**
  * Recycle the given event.
  * Zero it out and pushed it onto the recycle queue.
  */

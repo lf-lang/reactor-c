@@ -62,6 +62,7 @@ void _lf_start_time_step(environment_t *env);
 bool _lf_is_tag_after_stop_tag(environment_t* env, tag_t tag);
 void _lf_pop_events(environment_t *env);
 void _lf_initialize_timer(environment_t* env, trigger_t* timer);
+void _lf_initialize_timers(environment_t* env);
 void _lf_recycle_event(environment_t* env, event_t* e);
 event_t* _lf_create_dummy_events(
     environment_t* env,

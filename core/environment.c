@@ -55,7 +55,7 @@ int environment_init(
     env->is_present_fields_abbreviated = (bool**)calloc(num_is_present_fields, sizeof(bool*));
     lf_assert(env->is_present_fields_abbreviated != NULL, "Out of memory");
 
-    env->_lf_handle=1; // FIXME: What is this?
+    env->_lf_handle=1;
     
     // Initialize our priority queues.
     env->event_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_reverse_order, get_event_time,

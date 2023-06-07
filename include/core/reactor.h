@@ -419,11 +419,6 @@ void _lf_pop_events(environment_t *env);
 trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger, interval_t delay, lf_token_t* token);
 
 /**
- * Function (to be code generated) to schedule timers.
- */ 
-void _lf_initialize_timers(environment_t* env);
-
-/**
  * Function (to be code generated) to trigger startup reactions.
  */
 void _lf_trigger_startup_reactions(environment_t* env);
@@ -557,6 +552,9 @@ void _lf_fd_send_stop_request_to_rti(environment_t* env);
 // To be implemented in code generated main program
 //FIXME Document
 int _lf_get_environments(environment_t **envs);
+
+
+// FIXME: Docs
 void _lf_create_environments();
 
 

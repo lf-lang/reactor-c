@@ -22,10 +22,6 @@ void environment_init_tags(
     environment_t *env, instant_t start_time, interval_t duration
 );
 
-#define ENVIRONMENT_INIT {\
-    ._lf_handle = 1\
-}
-
 
 
 #endif
