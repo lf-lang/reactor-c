@@ -69,7 +69,7 @@ extern instant_t start_time;
 #define MIN_SLEEP_DURATION USEC(10)
 
 /**
- * Global mutex, used for synchronizing across environments. Mainly used for token-management
+ * Global mutex, used for synchronizing across environments. Mainly used for token-management and tracing
 */
 lf_mutex_t global_mutex;
 

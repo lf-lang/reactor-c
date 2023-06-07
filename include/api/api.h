@@ -138,7 +138,6 @@ trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_toke
  *  error.
  */
 trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, int length);
-trigger_handle_t lf_schedule_copy_enclave(environment_t *env, void* action, tag_t tag, void* value, int length);
 
 /**
  * Variant of lf_schedule_token that creates a token to carry the specified value.
@@ -186,9 +185,9 @@ int lf_tag_compare(tag_t tag1, tag_t tag2);
 /**
  * Return the current tag of a reactor. If NULL is passed to this function it
  * will return the "global tag" of the runtime.  
- * @param self A pointer to the self-struct of the reactor. 
+ * @param self A pointer to the environment of which you want the current tag
  * @return the current tag 
  */
-tag_t lf_tag(void* self);
+tag_t lf_tag(void* env);
 
 #endif // API_H

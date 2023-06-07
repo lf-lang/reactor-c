@@ -528,7 +528,6 @@ trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_d
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
 trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, void* value, size_t length);
-trigger_handle_t _lf_schedule_copy_enclave(environment_t *env, lf_action_base_t* action, tag_t tag, void* value, size_t length);
 
 /**
  * For a federated execution, send a STOP_REQUEST message
