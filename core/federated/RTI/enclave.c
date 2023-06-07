@@ -11,9 +11,8 @@ extern instant_t start_time;
 // RTI mutex, which is the main lock  
 extern lf_mutex_t rti_mutex;
 
-// FIXME: rename "federate" everywhere in this file.
-// FIXME: Done, except for log and debug message. What sould be kept: 'enclave', 
-//        'federate', or 'enlcave/federate'?
+// FIXME: For log and debug message in this file, what sould be kept: 'enclave', 
+//        'federate', or 'enlcave/federate'? Currently its is 'enclave/federate'.
 // FIXME: Should enclaves tracing use the same mechanism as federates? 
 //        It needs to account a federate having itself a number of enclaves.
 //        Currently, all calls to tracepoint_from_federate() and 
@@ -48,13 +47,8 @@ void logical_tag_complete(enclave_t* enclave, tag_t completed) {
     LF_PRINT_LOG("RTI received from federate/enclave %d the Logical Tag Complete (LTC) " PRINTF_TAG ".",
                 enclave->id, enclave->completed.time - start_time, enclave->completed.microstep);
 
-    // See if we can remove any of the recorded in-transit messages for this.
-    // FIXME: Should this be here?
-    // clean_in_transit_message_record_up_to_tag(enclave->in_transit_message_tags, enclave->completed);
-
     // Check downstream enclaves to see whether they should now be granted a TAG.
     for (int i = 0; i < enclave->num_downstream; i++) {
-        // FIXME: Shouldn't use enclave_t here.
         enclave_t *downstream = _E_RTI->enclaves[enclave->downstream[i]];
         // Notify downstream enclave if appropriate.
         notify_advance_grant_if_safe(downstream);
