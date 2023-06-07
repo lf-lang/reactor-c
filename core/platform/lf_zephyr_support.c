@@ -149,7 +149,6 @@ void _lf_initialize_clock() {
 // Clock and sleep implementation for the HI_RES clock based on 
 // Zephyrs Counter API
 
-/**
  * Return the current time in nanoseconds. It gets the current value
  * of the hi-res counter device and also keeps track of overflows
  * to deliver a monotonically increasing clock.
@@ -168,6 +167,7 @@ int _lf_clock_now(instant_t* t) {
 /**
  * @brief Sleep until an absolute time.
  *  
+ * @param env The environment in which we would like to sleep
  * @param wakeup int64_t time of wakeup 
  * @return int 0 if successful sleep, -1 if awoken by async event
  */
@@ -357,9 +357,6 @@ int _lf_unthreaded_notify_of_event() {
 
 K_MUTEX_DEFINE(thread_mutex);
 
-// Forward declare the global_mutex to implement atomics
-extern lf_mutex_t global_mutex;
-
 static K_THREAD_STACK_ARRAY_DEFINE(stacks, NUMBER_OF_THREADS, _LF_STACK_SIZE);
 static struct k_thread threads[NUMBER_OF_THREADS];
 
@@ -532,20 +529,20 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
  * 
  */
 int _zephyr_atomic_fetch_add(int *ptr, int value) {
-    lf_mutex_lock(&global_mutex);
+    lf_disable_interrupts_nested();
     int res = *ptr;
     *ptr += value;
-    lf_mutex_unlock(&global_mutex);
+    lf_enable_interrupts_nested();
     return res;
 }
 /**
  * @brief Add `value` to `*ptr` and return new updated value of `*ptr`
  */
 int _zephyr_atomic_add_fetch(int *ptr, int value) {
-    lf_mutex_lock(&global_mutex);
+    lf_disable_interrupts_nested();
     int res = *ptr + value;
     *ptr = res;
-    lf_mutex_unlock(&global_mutex);
+    lf_enable_interrupts_nested();
     return res;
 }
 
@@ -555,13 +552,13 @@ int _zephyr_atomic_add_fetch(int *ptr, int value) {
  * with `newval`. If not do nothing. Retruns true on overwrite.
  */
 bool _zephyr_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
-    lf_mutex_lock(&global_mutex);
+    lf_disable_interrupts_nested();
     bool res = false;
     if (*ptr == value) {
         *ptr = newval;
         res = true;
     }
-    lf_mutex_unlock(&global_mutex);
+    lf_enable_interrupts_nested();
     return res;
 }
 
@@ -571,12 +568,12 @@ bool _zephyr_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
  * the original value of `*ptr`.
  */
 int  _zephyr_val_compare_and_swap(int *ptr, int value, int newval) {
-    lf_mutex_lock(&global_mutex);
+    lf_disable_interrupts_nested();
     int res = *ptr;
     if (*ptr == value) {
         *ptr = newval;
     }
-    lf_mutex_unlock(&global_mutex);
+    lf_enable_interrupts_nested();
     return res;
 }
 
