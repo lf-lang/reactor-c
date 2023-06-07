@@ -1569,7 +1569,7 @@ int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id) {
 
 #ifdef __RTI_AUTH__
 bool authenticate_federate(int socket) {
-    // Received MSG_TYPE_FED_NONCE
+    // Wait for MSG_TYPE_FED_NONCE from federate.
     size_t fed_id_length = sizeof(uint16_t);
     unsigned char buffer[1 + fed_id_length + NONCE_LENGTH];
     read_from_socket_errexit(socket, 1 + fed_id_length + NONCE_LENGTH, buffer,
@@ -1593,7 +1593,7 @@ bool authenticate_federate(int socket) {
     if (ret == NULL) {
         lf_print_error_and_exit("HMAC construction failed for MSG_TYPE_RTI_RESPONSE.");
     }
-    // Make buffer for message type, rti's nonce, and HMAC tag.
+    // Make buffer for message type, RTI's nonce, and HMAC tag.
     unsigned char sender[1 + NONCE_LENGTH + hmac_length];
     sender[0] = MSG_TYPE_RTI_RESPONSE;
     unsigned char rti_nonce[NONCE_LENGTH];
@@ -1602,17 +1602,17 @@ bool authenticate_federate(int socket) {
     memcpy(&sender[1 + NONCE_LENGTH], hmac_tag, hmac_length);
     write_to_socket(socket, 1 + NONCE_LENGTH + hmac_length, sender);
 
-    // Received MSG_TYPE_FED_RESPONSE
+    // Wait for MSG_TYPE_FED_RESPONSE
     unsigned char received[1 + hmac_length];
     read_from_socket_errexit(socket, 1 + hmac_length, received,
-                             "Failed to read RTI response.");
+                             "Failed to read federate response.");
     if (received[0] != MSG_TYPE_FED_RESPONSE) {
         lf_print_error_and_exit(
             "Received unexpected response %u from the federate (see net_common.h).",
             received[0]);
         return false;
     }
-    // HMAC tag is created with MSG_TYPE and rti's nonce.
+    // HMAC tag is created with MSG_TYPE_FED_RESPONSE and RTI's nonce.
     unsigned char mac_buf2[1 + NONCE_LENGTH];
     mac_buf2[0] = MSG_TYPE_FED_RESPONSE;
     memcpy(&mac_buf2[1], rti_nonce, NONCE_LENGTH);
@@ -1656,7 +1656,7 @@ void connect_to_federates(int socket_descriptor) {
             }
         }
 
-        // Send RTI hello when RTI -a option is on.
+        // Wait for the first message from the federate when RTI -a option is on.
         #ifdef __RTI_AUTH__
         if (_RTI.authentication_enabled) {
             if (!authenticate_federate(socket_id)) {

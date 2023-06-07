@@ -915,7 +915,7 @@ void connect_to_federate(uint16_t remote_federate_id) {
  */
 void perform_hmac_authentication(int rti_socket) {
 
-    // Send buffer of message type, federate ID, federate's nonce.
+    // Send buffer including message type, federate ID, federate's nonce.
     size_t fed_id_length = sizeof(uint16_t);
     size_t message_length = 1 + fed_id_length + NONCE_LENGTH;
     unsigned char fed_hello_buf[message_length];
@@ -957,9 +957,9 @@ void perform_hmac_authentication(int rti_socket) {
             "Federate failed to write MSG_TYPE_REJECT message on the socket.");
         close(rti_socket);
     }
-    else{
+    else {
         LF_PRINT_LOG("HMAC verified.");
-        // HMAC tag is created with MSG_TYPE and received federate nonce.
+        // HMAC tag is created with MSG_TYPE_FED_RESPONSE and received federate nonce.
         unsigned char mac_buf[1 + NONCE_LENGTH];
         mac_buf[0] = MSG_TYPE_FED_RESPONSE;
         memcpy(&mac_buf[1], &received[1], NONCE_LENGTH);
