@@ -63,6 +63,14 @@ bool _lf_is_tag_after_stop_tag(environment_t* env, tag_t tag);
 void _lf_pop_events(environment_t *env);
 void _lf_initialize_timer(environment_t* env, trigger_t* timer);
 void _lf_initialize_timers(environment_t* env);
+/**
+ * Function (to be code generated) to trigger startup reactions.
+ */
+void _lf_trigger_startup_reactions(environment_t* env);
+/**
+ * Function (to be code generated) to trigger startup reactions.
+ */
+void _lf_trigger_startup_reactions(environment_t* env);
 void _lf_recycle_event(environment_t* env, event_t* e);
 event_t* _lf_create_dummy_events(
     environment_t* env,

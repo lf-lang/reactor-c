@@ -525,6 +525,30 @@ void _lf_initialize_timers(environment_t* env) {
         }
     }
 }
+void _lf_trigger_startup_reactions(environment_t* env) {
+
+    for (int i = 0; i < env->startup_reactions_size; i++) {
+        if (env->startup_reactions[i] != NULL) {
+            if (env->startup_reactions[i]->mode != NULL) {
+                // Skip reactions in modes
+                continue;
+            }
+            _lf_trigger_reaction(env, env->startup_reactions[i], -1);
+        }
+    }
+
+    #ifdef MODAL_MODELS
+    if (env->modes) {
+        _lf_handle_mode_startup_reset_reactions(
+            env,
+            env->startup_reactions, env->startup_reactions_size,
+            NULL, 0,
+            env->modes->modal_reactor_states, env->modes->modal_reactor_states_size
+        );
+    }
+    #endif
+}
+
 /**
  * Recycle the given event.
  * Zero it out and pushed it onto the recycle queue.

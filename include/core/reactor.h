@@ -418,10 +418,6 @@ void _lf_pop_events(environment_t *env);
  */
 trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger, interval_t delay, lf_token_t* token);
 
-/**
- * Function (to be code generated) to trigger startup reactions.
- */
-void _lf_trigger_startup_reactions(environment_t* env);
 
 /**
  * Function to initialize mutexes for watchdogs
