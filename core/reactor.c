@@ -243,7 +243,7 @@ int next(environment_t* env) {
         next_tag.time = event->time;
         // Deduce the microstep
         if (next_tag.time == env->current_tag.time) {
-            next_tag.microstep = lf_tag(env).microstep + 1;
+            next_tag.microstep = env->current_tag.microstep + 1;
         } else {
             next_tag.microstep = 0;
         }

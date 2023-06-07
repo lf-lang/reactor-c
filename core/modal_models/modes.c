@@ -419,7 +419,7 @@ void _lf_process_mode_changes(
                         } else if (state->next_mode != state->current_mode && event->trigger != NULL) { // History transition to a different mode
                             // Remaining time that the event would have been waiting before mode was left
                             instant_t local_remaining_delay = event->time - (state->next_mode->deactivation_time != 0 ? state->next_mode->deactivation_time : lf_time_start());
-                            tag_t current_logical_tag = lf_tag(env);
+                            tag_t current_logical_tag = env->current_tag;
 
                             // Reschedule event with original local delay
                             LF_PRINT_DEBUG("Modes: Re-enqueuing event with a suspended delay of " PRINTF_TIME
@@ -533,7 +533,7 @@ void _lf_process_mode_changes(
         if (_lf_mode_triggered_reactions_request) {
             // Insert a dummy event in the event queue for the next microstep to make
             // sure startup/reset reactions (if any) are triggered as soon as possible.
-            pqueue_insert(env->event_q, _lf_create_dummy_events(env, NULL, lf_tag(env).time, NULL, 1));
+            pqueue_insert(env->event_q, _lf_create_dummy_events(env, NULL, env->current_tag.time, NULL, 1));
         }
     }
 }
