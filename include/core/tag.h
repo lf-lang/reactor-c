@@ -76,6 +76,7 @@ typedef struct {
 
 /**
  * Return the current tag, a logical time, microstep pair.
+ * @param env A pointer to the environment from which we want the current tag.
  */
 tag_t lf_tag(void* env);
 
@@ -114,16 +115,18 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval);
  * On many platforms, this is the number of nanoseconds
  * since January 1, 1970, but it is actually platform dependent.
  *
+ * @param env The environment from which we want to curren time
  * @return A time instant.
  */
-instant_t lf_time_logical(void* self);
+instant_t lf_time_logical(void* env);
 
 /**
  * Return the elapsed logical time in nanoseconds
  * since the start of execution.
+ * @param env The environment from which we want to elapsed time
  * @return A time interval.
  */
-interval_t lf_time_logical_elapsed(void *self);
+interval_t lf_time_logical_elapsed(void *env);
 
 /**
  * Return the current physical time in nanoseconds.

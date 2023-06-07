@@ -289,6 +289,7 @@ void tracepoint(
 
 /**
  * Trace the start of a reaction execution.
+ * @param env The environment in which we are executing
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
@@ -296,6 +297,7 @@ void tracepoint_reaction_starts(environment_t* env, reaction_t* reaction, int wo
 
 /**
  * Trace the end of a reaction execution.
+ * @param env The environment in which we are executing
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
@@ -303,6 +305,7 @@ void tracepoint_reaction_ends(environment_t* env, reaction_t* reaction, int work
 
 /**
  * Trace a call to schedule.
+ * @param env The environment in which we are executing
  * @param trigger Pointer to the trigger_t struct for the trigger.
  * @param extra_delay The extra delay passed to schedule().
  */
@@ -330,12 +333,14 @@ void tracepoint_user_value(char* description, long long value);
 
 /**
  * Trace the start of a worker waiting for something to change on the reaction queue.
+ * @param env The environment in which we are executing
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_worker_wait_starts(environment_t* env, int worker);
 
 /**
  * Trace the end of a worker waiting for something to change on reaction queue.
+ * @param env The environment in which we are executing
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_worker_wait_ends(environment_t* env, int worker);
@@ -343,17 +348,20 @@ void tracepoint_worker_wait_ends(environment_t* env, int worker);
 /**
  * Trace the start of the scheduler waiting for logical time to advance or an event to
  * appear on the event queue.
+ * @param env The environment in which we are executing
  */
 void tracepoint_scheduler_advancing_time_starts(environment_t* env);
 
 /**
  * Trace the end of the scheduler waiting for logical time to advance or an event to
  * appear on the event queue.
+ * @param env The environment in which we are executing
  */
 void tracepoint_scheduler_advancing_time_ends(environment_t* env);
 
 /**
  * Trace the occurence of a deadline miss.
+ * @param env The environment in which we are executing
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */

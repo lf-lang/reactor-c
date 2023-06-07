@@ -249,7 +249,6 @@ void lf_print_error_and_exit(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1,
 
 /**
  * A shorthand for checking if a condition is true and if not, print an error and exit.
- * 
  */
 void lf_assert(bool condition, const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
 

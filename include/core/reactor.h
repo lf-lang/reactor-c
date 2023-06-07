@@ -86,6 +86,7 @@ void _lf_set_present(lf_port_base_t* port);
 
 /**
  * @brief Forward declaration for the executable preamble;
+ * @param env Environment in which to execute to preamble
  * 
  */
 void _lf_executable_preamble(environment_t* env);
@@ -109,12 +110,10 @@ do { \
     /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
     /* even if it is a literal */ \
     out->value = val; \
-    self_base_t* self_base = out->_base.source_reactor;\
    _lf_set_present((lf_port_base_t*)out); \
     if (((token_template_t*)out)->token != NULL) { \
         /* The cast "*((void**) &out->value)" is a hack to make the code */ \
         /* compile with non-token types where value is not a pointer. */ \
-        /* FIXME: We need the environment from the port using self assumes we are inside a reaction body */\
         lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, *((void**) &out->value), 1); \
     } \
 } while(0)
@@ -135,7 +134,6 @@ do { \
 #ifndef __cplusplus
 #define lf_set_array(out, val, length) \
 do { \
-    self_base_t* self_base = out->_base.source_reactor;\
    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
     out->value = token->value; \
@@ -143,7 +141,6 @@ do { \
 #else
 #define lf_set_array(out, val, length) \
 do { \
-    self_base_t* self_base = out->_base.source_reactor;\
    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
     out->value = static_cast<decltype(out->value)>(token->value); \
@@ -167,7 +164,6 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW(out) \
 do { \
-    self_base_t* self_base = out->_base.source_reactor;\
    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
     out->value = token->value; \
@@ -175,7 +171,6 @@ do { \
 #else
 #define _LF_SET_NEW(out) \
 do { \
-    self_base_t* self_base = out->_base.source_reactor;\
    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
     out->value = static_cast<decltype(out->value)>(token->value); \
@@ -198,7 +193,6 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    self_base_t* self_base = out->_base.source_reactor;\
    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
     out->value = token->value; \
@@ -207,7 +201,6 @@ do { \
 #else
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    self_base_t* self_base = out->_base.source_reactor;\
    _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
     out->value = static_cast<decltype(out->value)>(token->value); \
@@ -225,7 +218,6 @@ do { \
  */
 #define lf_set_present(out) \
 do { \
-    self_base_t* self_base = out->_base.source_reactor;\
    _lf_set_present((lf_port_base_t*)out); \
 } while(0)
 
@@ -241,7 +233,6 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    self_base_t* self_base = out->_base.source_reactor;\
    _lf_set_present((lf_port_base_t*)out); \
     _lf_replace_template_token((token_template_t*)out, newtoken); \
     out->value = newtoken->value; \
@@ -250,7 +241,6 @@ do { \
 #else
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    self_base_t* self_base = out->_base.source_reactor;\
    _lf_set_present((lf_port_base_t*)out); \
     _lf_replace_template_token((token_template_t*)out, newtoken); \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
@@ -325,6 +315,7 @@ void lf_set_stp_offset(interval_t offset);
 /**
  * Print a snapshot of the priority queues used during execution
  * (for debugging).
+ * @param env The environment in which we are execution
  */
 void lf_print_snapshot(environment_t* env);
 
@@ -335,6 +326,7 @@ void lf_print_snapshot(environment_t* env);
  * In a federated execution, it will likely occur at
  * a later logical time determined by the RTI so that
  * all federates stop at the same logical time.
+ * @param env The environment in which we are execution
  */
 void _lf_request_stop(environment_t *env);
 
@@ -390,6 +382,7 @@ void _lf_set_default_command_line_options(void);
 /**
  * Generated function that resets outputs to be absent at the
  * start of a new time step.
+ * @param env The environment in which we are executing
  */
 void _lf_start_time_step(environment_t *env);
 
@@ -403,6 +396,7 @@ void _lf_initialize_trigger_objects();
  * Pop all events from event_q with timestamp equal to current_time, extract all
  * the reactions triggered by these events, and stick them into the reaction
  * queue.
+ * @param env The environment in which we are executing
  */
 void _lf_pop_events(environment_t *env);
 
@@ -411,6 +405,7 @@ void _lf_pop_events(environment_t *env);
 /**
  * Internal version of the lf_schedule() function, used by generated
  * _lf_start_timers() function.
+ * @param env The environment in which we are executing
  * @param trigger The action or timer to be triggered.
  * @param delay Offset of the event release.
  * @param token The token payload.
@@ -428,6 +423,7 @@ void _lf_initialize_watchdog_mutexes(void);
 /**
  * Function (to be code generated) to terminate execution.
  * This will be invoked after all shutdown actions have completed.
+ * @param env The environment in which we are executing
  */
 void terminate_execution(environment_t* env);
 
@@ -532,15 +528,23 @@ trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, 
 /**
  * For a federated execution, send a STOP_REQUEST message
  * to the RTI.
+ * @param env The environment in which we are executing
  */
 void _lf_fd_send_stop_request_to_rti(environment_t* env);
 
-// To be implemented in code generated main program
-//FIXME Document
+/**
+ * @brief Will update the argument to point to the beginning of the array of environments in this program
+ * @note Is code-generated by the compiler
+ * @param envs A double pointer which will be dereferenced and modified
+ * @return int The number of environments in the array
+ */
 int _lf_get_environments(environment_t **envs);
 
 
-// FIXME: Docs
+/**
+ * @brief Will create and initialize the required number of environments for the program
+ * @note Will be code generated by the compiler
+ */
 void _lf_create_environments();
 
 

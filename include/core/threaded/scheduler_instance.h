@@ -49,7 +49,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Forward declarations
 typedef struct environment_t environment_t;
-
 typedef struct custom_scheduler_data_t custom_scheduler_data_t;
 
 /**
@@ -58,8 +57,6 @@ typedef struct custom_scheduler_data_t custom_scheduler_data_t;
  * @note Members of this struct are added based on existing schedulers' needs.
  *  These should be expanded to accommodate new schedulers.
  */
-
-
 typedef struct lf_scheduler_t { 
     struct environment_t * env;
     /**
@@ -84,13 +81,11 @@ typedef struct lf_scheduler_t {
 
     /**
      * @brief Indicate whether the program should stop
-     *
      */
     volatile bool should_stop;
 
     /**
      * @brief Hold triggered reactions.
-     *
      */
     void* triggered_reactions;
 
@@ -122,21 +117,17 @@ typedef struct lf_scheduler_t {
 
     /**
      * @brief Number of workers that this scheduler is managing.
-     *
      */
     size_t number_of_workers;
 
     /**
      * @brief Number of workers that are idle.
-     *
      * Adding to/subtracting from this variable must be done atomically.
-     *
      */
     volatile size_t number_of_idle_workers;
 
     /**
      * @brief The next level of reactions to execute.
-     *
      */
     volatile size_t next_reaction_level;
 
@@ -144,7 +135,6 @@ typedef struct lf_scheduler_t {
     // The type is forward declared here and must be declared again in the scheduler source file
     // Is not touched by `init_sched_instance` and must be initialized by each scheduler that needs it
     custom_scheduler_data_t * custom_data;
-
 } lf_scheduler_t;
 
 /**
@@ -185,6 +175,5 @@ bool init_sched_instance(
     lf_scheduler_t** instance,
     size_t number_of_workers,
     sched_params_t* params);
-
 
 #endif // LF_SCHEDULER_PARAMS_H

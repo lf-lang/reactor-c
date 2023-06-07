@@ -344,6 +344,7 @@ void* handle_p2p_connections_from_federates(void*);
  * remote federate that the current federate will not produce an event
  * on this network port at the current logical time.
  *
+ * @param env The environment in which we are executing
  * @param additional_delay The offset applied to the timestamp
  *  using after. The additional delay will be greater or equal to zero
  *  if an after is used on the connection. If no after is given in the
@@ -400,6 +401,7 @@ int send_message(int message_type,
  * @note This function is similar to send_message() except that it
  *   sends timed messages and also contains logics related to time.
  *
+ * @param env The environment in which we are executing
  * @param additional_delay The offset applied to the timestamp
  *  using after. The additional delay will be greater or equal to zero
  *  if an after is used on the connection. If no after is given in the
@@ -436,6 +438,7 @@ int send_timed_message(environment_t*,
  * and then returns. If --fast was specified, then this does
  * not wait for physical time to match the logical start time
  * returned by the RTI.
+ * @param env The environment in which we are executing
  */
 void synchronize_with_other_federates(environment_t* env);
 
@@ -447,6 +450,7 @@ void synchronize_with_other_federates(environment_t* env);
  *
  * This function assumes the holder does not hold a mutex.
  *
+ * @param env The environment in which we are executing
  * @param port_ID The ID of the network port
  * @param STAA The safe-to-assume-absent threshold for the port
  */

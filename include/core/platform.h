@@ -40,16 +40,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error LF_UNTHREADED and LF_THREADED runtime requested
 #endif
 
-#if !defined(LF_THREADED) && !defined(LF_UNTHREADED)
-#error Must define either LF_UNTHREADED or LF_THREADED runtime
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 #include "tag.h"
-
 
 // Forward declarations
 typedef struct environment_t environment_t;

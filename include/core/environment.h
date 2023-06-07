@@ -21,7 +21,7 @@ int environment_init(
 
 /**
  * @brief Free the dynamically allocated memory on the environment struct
- * @param env 
+ * @param env The environment in which we are execution
  */
 void environment_free(environment_t* env);
 
