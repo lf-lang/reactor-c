@@ -61,9 +61,6 @@ typedef struct federate_t {
                             // RTI has not been informed of the port number.
     struct in_addr server_ip_addr; // Information about the IP address of the socket
                                 // server of the federate.
-    bool requested_stop;    // Indicates that the federate has requested stop or has replied
-                            // to a request for stop from the RTI. Used to prevent double-counting
-                            // a federate when handling lf_request_stop().
     bool is_transient;      // Indicates whether the federate is transient or persistent.
     int64_t fed_start_time; // Records the start time of the federate, which is mainly useful for transient federates  
     int num_of_conn_federates; // Records the total number of connected federates among the upstream and 
@@ -109,14 +106,13 @@ typedef struct federation_RTI_t {
     // RTI's decided stop tag for enclaves
     tag_t max_stop_tag;
 
-////////////// Federation only specific attributes //////////////
+    // Number of enclaves handling stop
+    int num_enclaves_handling_stop;
 
-    // Number of transient federates in the federation
-    int32_t number_of_transient_federates;
+    // Boolean indicating that tracing is enabled.
+    bool tracing_enabled;
 
-    // Number of connected transient federates in the federation
-    int32_t number_of_connected_transient_federates;
-
+    ////////////// Federation only specific attributes //////////////
 
     // Maximum start time seen so far from the federates.
     int64_t max_start_time;
@@ -182,6 +178,13 @@ typedef struct federation_RTI_t {
      * Boolean indicating that authentication is enabled.
      */
     bool authentication_enabled;
+
+    // Number of transient federates in the federation
+    int32_t number_of_transient_federates;
+
+    // Number of connected transient federates in the federation
+    int32_t number_of_connected_transient_federates;
+
 } federation_RTI_t;
 
 /**
@@ -503,6 +506,7 @@ void* respond_to_erroneous_connections(void* nothing);
 
 /** 
  * Initialize the federate with the specified ID.
+ * @param fed A pointer to the federate
  * @param id The federate ID.
  */
 void initialize_federate(federate_t* fed, uint16_t id);
@@ -510,9 +514,9 @@ void initialize_federate(federate_t* fed, uint16_t id);
 
 /** 
  * Reset the federate with the specified ID. The federate has to be transient.
- * @param id The transient federate ID.
+ * @param fed A pointer to the federate
  */
-void reset_transient_federate(uint16_t id);
+void reset_transient_federate(federate_t* fed);
 
 /**
  * Start the socket server for the runtime infrastructure (RTI) and
@@ -553,11 +557,13 @@ int process_clock_sync_args(int argc, const char* argv[]);
  */
 int process_args(int argc, const char* argv[]);
 
-//////////////////////////////////////////////////////////
 /**
  * Initialize the _RTI instance.
  */
 void initialize_RTI();
+
+//////////////////////////////////////////////////////////
+
 /**
  * Queries conn_fed for its current Tag (using MSG_TYPE_CURRENT_TAG_QUERY). 
  * If the function fails to send the query, for example in case the federate is 
@@ -581,4 +587,6 @@ bool send_current_tag_query(federate_t* conn_fed, uint16_t fed_id);
  * @param my_fed: the federate from whom the response is received.
  */
 void handle_current_tag_query_response(federate_t *my_fed);
+
+//////////////////////////////////////////////////////////
 #endif // RTI_LIB_H

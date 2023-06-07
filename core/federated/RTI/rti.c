@@ -102,24 +102,25 @@ int main(int argc, const char* argv[]) {
         // Processing command-line arguments failed.
         return -1;
     }
+
     if (_F_RTI->tracing_enabled) {
         _lf_number_of_workers = _F_RTI->number_of_enclaves;
         start_trace(rti_trace_file_name);
         lf_print("Tracing the RTI execution in %s file.", rti_trace_file_name);
-        lf_print("Tracing the RTI execution in %s file.", rti_trace_file_name);
     }
-    lf_print("Starting RTI for %d persistent federates and %d transient federates in federation ID %s", \
-        _RTI.number_of_federates, 
-        _RTI.number_of_transient_federates, 
-        _RTI.federation_id);
+    lf_print("Starting RTI for a total of %d federates, with %d being transient, in federation ID %s", \
+        _F_RTI->number_of_enclaves, 
+        _F_RTI->number_of_transient_federates, 
+        _F_RTI->federation_id);
 
-    // FIXME: Should number_of_federates + number_of_transient_federates be < UINT16_MAX?
-    assert(_RTI.number_of_federates < UINT16_MAX);
-    assert(_RTI.number_of_transient_federates < UINT16_MAX);
+    assert(_F_RTI->number_of_enclaves < UINT16_MAX);
+    assert(_F_RTI->number_of_transient_federates < UINT16_MAX);
 
-    _RTI.federates = (federate_t *)calloc(_RTI.number_of_federates + _RTI.number_of_transient_federates, sizeof(federate_t));
-    for (uint16_t i = 0; i < _RTI.number_of_federates + _RTI.number_of_transient_federates; i++) {
-        initialize_federate(i);
+    // Allocate memory for the federates
+    _F_RTI->enclaves = (federate_t**)calloc(_F_RTI->number_of_enclaves, sizeof(federate_t*));
+    for (uint16_t i = 0; i < _F_RTI->number_of_enclaves; i++) {
+        _F_RTI->enclaves[i] = (federate_t *)malloc(sizeof(federate_t));
+        initialize_federate(_F_RTI->enclaves[i], i);
     }
 
     // Initialize the RTI enclaves
