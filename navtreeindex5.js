@@ -1,5 +1,6 @@
 var NAVTREEINDEX5 =
 {
+"da/dcd/deque_8c.html#ac22527818b92ea67851c2fd4a2790cb7":[9,0,5,3,4],
 "da/dcd/deque_8c.html#ad7e6969a2e1a7e7529575558103d512d":[9,0,5,3,11],
 "da/de8/structlf__port__base__t.html":[8,0,22],
 "da/de8/structlf__port__base__t.html#a200acd25d821c527b5290a4137dc261b":[8,0,22,4],
@@ -248,6 +249,5 @@ var NAVTREEINDEX5 =
 "dd/d37/reactor__common_8c.html#a9efe22aaead3a5e936b5df459de02eba":[9,0,0,9,22],
 "dd/d37/reactor__common_8c.html#aa329f59a16f5617b5195f2c05872c9e9":[9,0,0,9,27],
 "dd/d37/reactor__common_8c.html#aa985dff5d30c38625609d0eb356c536e":[9,0,0,9,7],
-"dd/d37/reactor__common_8c.html#aa9a90770d732e0ca1c78f131981dc4c9":[9,0,0,9,45],
-"dd/d37/reactor__common_8c.html#aab46895a3a4d1341a19b689a0ea902d1":[9,0,0,9,42]
+"dd/d37/reactor__common_8c.html#aa9a90770d732e0ca1c78f131981dc4c9":[9,0,0,9,45]
 };

@@ -1,5 +1,6 @@
 var NAVTREEINDEX2 =
 {
+"d4/dac/lf__unix__clock__support_8h.html":[9,0,1,1,2,8],
 "d4/dac/lf__unix__clock__support_8h.html#a3c5a1dbd80de5d5bf2a93c195df784c3":[9,0,1,1,2,8,0],
 "d4/dac/lf__unix__clock__support_8h.html#a40772fc7ae095d3f85d990620952addc":[9,0,1,1,2,8,3],
 "d4/dac/lf__unix__clock__support_8h.html#a8a8a7b7282ac4e56d2834b68824452a5":[9,0,1,1,2,8,4],
@@ -248,6 +249,5 @@ var NAVTREEINDEX2 =
 "d6/df3/hashmap_8h.html#a8747d841d1bffb751bf1223e2020e49d":[9,0,1,1,4,1,0,0],
 "d6/df3/hashmap_8h.html#a8cd842f29595524580f36ac339471bc0":[9,0,1,1,4,1,0,15],
 "d6/df3/hashmap_8h.html#a8e6b2068271907802fcd4b9b567adab1":[9,0,1,1,4,1,0,13],
-"d6/df3/hashmap_8h.html#a97d832ae23af4f215e801e37e4f94254":[9,0,1,1,4,1,0,2],
-"d6/df3/hashmap_8h.html#aba6a66e60b2db6671c7f4b720258488e":[9,0,1,1,4,1,0,4]
+"d6/df3/hashmap_8h.html#a97d832ae23af4f215e801e37e4f94254":[9,0,1,1,4,1,0,2]
 };

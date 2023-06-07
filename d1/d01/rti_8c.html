@@ -97,18 +97,22 @@ $(document).ready(function(){initNavTree('d1/d01/rti_8c.html','../../'); initRes
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="../../d3/d90/rti__lib_8h_source.html">rti_lib.h</a>&quot;</code><br />
+<code>#include &lt;signal.h&gt;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a06d2cf592cdae0fc5924998df16fa6b5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d01/rti_8c.html#a06d2cf592cdae0fc5924998df16fa6b5">termination</a> ()</td></tr>
+<tr class="memdesc:a06d2cf592cdae0fc5924998df16fa6b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">A clean termination of the RTI will write the trace file, if tracing is enabled, before exiting.  <br /></td></tr>
+<tr class="separator:a06d2cf592cdae0fc5924998df16fa6b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0f2228420376f4db7e1274f2b41667c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d01/rti_8c.html#ac0f2228420376f4db7e1274f2b41667c">main</a> (int argc, const char *argv[])</td></tr>
 <tr class="separator:ac0f2228420376f4db7e1274f2b41667c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a01fd0d1404992f7d875791a764a26925"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d01/rti_8c.html#a01fd0d1404992f7d875791a764a26925">_lf_number_of_workers</a> = 0u</td></tr>
-<tr class="separator:a01fd0d1404992f7d875791a764a26925"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a104f9a0ac7ff4aa717e0462b8ac445ea"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d99/struct_r_t_i__instance__t.html">RTI_instance_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d01/rti_8c.html#a104f9a0ac7ff4aa717e0462b8ac445ea">_RTI</a></td></tr>
 <tr class="separator:a104f9a0ac7ff4aa717e0462b8ac445ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01fd0d1404992f7d875791a764a26925"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d01/rti_8c.html#a01fd0d1404992f7d875791a764a26925">_lf_number_of_workers</a> = 0u</td></tr>
+<tr class="separator:a01fd0d1404992f7d875791a764a26925"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab51bbf9201f21d31ea14e63cf880c09a"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d01/rti_8c.html#ab51bbf9201f21d31ea14e63cf880c09a">rti_trace_file_name</a> = &quot;rti.lft&quot;</td></tr>
 <tr class="separator:ab51bbf9201f21d31ea14e63cf880c09a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -160,6 +164,26 @@ DESCRIPTION</h1>
 
 </div>
 </div>
+<a id="a06d2cf592cdae0fc5924998df16fa6b5" name="a06d2cf592cdae0fc5924998df16fa6b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a06d2cf592cdae0fc5924998df16fa6b5">&#9670;&#160;</a></span>termination()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void termination </td>
+          <td>(</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>A clean termination of the RTI will write the trace file, if tracing is enabled, before exiting. </p>
+
+</div>
+</div>
 <h2 class="groupheader">Variable Documentation</h2>
 <a id="a01fd0d1404992f7d875791a764a26925" name="a01fd0d1404992f7d875791a764a26925"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a01fd0d1404992f7d875791a764a26925">&#9670;&#160;</a></span>_lf_number_of_workers</h2>
@@ -172,6 +196,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>The tracing mechanism uses the number of workers variable <code>_lf_number_of_workers</code>. For RTI tracing, the number of workers is set as the number of federates. </p>
 
 </div>
 </div>
