@@ -1738,9 +1738,9 @@ void wait_for_federates(int socket_descriptor) {
     lf_print("All transient threads exited.");
 
     if (_f_rti->number_of_transient_federates == 0) {
-        lf_thread_join(&responder_thread, &thread_exit_status);
+        lf_thread_join(responder_thread, &thread_exit_status);
     } else if (_f_rti->number_of_transient_federates > 0) {
-        lf_thread_join(&transient_thread, &thread_exit_status);
+        lf_thread_join(transient_thread, &thread_exit_status);
     }
     
     // Shutdown and close the socket so that the accept() call in
