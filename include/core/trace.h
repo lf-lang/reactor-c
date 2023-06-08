@@ -493,6 +493,7 @@ void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int
  * @param fed_id The fedaerate ID.
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
+// FIXME: Here we need to pass an environment pointer also.
 void tracepoint_RTI_to_federate(trace_event_t event_type, int fed_id, tag_t* tag);
 
 /**
@@ -502,6 +503,7 @@ void tracepoint_RTI_to_federate(trace_event_t event_type, int fed_id, tag_t* tag
  * @param fed_id The fedaerate ID.
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
+// FIXME: Pass an environment here.
 void tracepoint_RTI_from_federate(trace_event_t event_type, int fed_id, tag_t* tag);
 
 #endif // RTI_TRACE

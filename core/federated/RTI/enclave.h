@@ -119,7 +119,7 @@ void notify_downstream_advance_grant_if_safe(enclave_t* e, bool visited[]);
  *
  * This function assumes that the caller holds the mutex lock.
  * 
- * FIXME: This needs two implementations, one for enclaves and one for federates.
+ * FIXME: This needs two implementations, one for enclaves and one for the RTI.
  *
  * @param e The enclave.
  * @param tag The tag to grant.
