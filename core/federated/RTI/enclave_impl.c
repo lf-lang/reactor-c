@@ -1,7 +1,7 @@
 #include "enclave.h"
 
-// FIXME: This should not be here.
-#include "platform.h"
+// References to the enclave RTI.    
+extern enclave_RTI_t * _E_RTI;
 
 void notify_tag_advance_grant(enclave_t* e, tag_t tag) {
     if (e->state == NOT_CONNECTED
@@ -10,7 +10,7 @@ void notify_tag_advance_grant(enclave_t* e, tag_t tag) {
     ) {
         return;
     }
-    if (_RTI.tracing_enabled) {
+    if (_E_RTI->tracing_enabled) {
         tracepoint_RTI_to_federate(send_TAG, e->id, &tag);
     }
     e->last_granted = tag;
