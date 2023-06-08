@@ -16,9 +16,7 @@
 #include <netinet/in.h> // Defines struct sockaddr_in
 #include <arpa/inet.h>  // inet_ntop & inet_pton
 #include <unistd.h>     // Defines read(), write(), and close()
-#include <netdb.h>      // Defines gethostbyname().
 #include <strings.h>    // Defines bzero().
-#include <sys/wait.h>   // Defines wait() for process to change state.
 
 #include "enclave.h"
 
@@ -77,25 +75,41 @@ typedef enum clock_sync_stat {
 /**
  * Structure that an RTI instance uses to keep track of its own and its
  * corresponding federates' state.
+ * It is a special case of `enclave_RTI_t` (declared in enclave.h). Inheritence
+ * is mimicked by having the first attributes to be the same as of enclave_RTI_t,
+ * except that enclaves attribute here is of type `federate_t**`, while it
+ * is of type `enclave_t**` in `enclave_RTI_t`.
+ *     // **************** IMPORTANT!!! ********************
+ *     // **   If you make any change to this struct,     **
+ *     // **   you MUST also change  enclave_RTI_t in     **
+ *     // ** (enclave.h)! The change must exactly match.  **
+ *     // **************************************************
  */
-typedef struct RTI_instance_t {
-    // RTI's decided stop tag for federates
-    tag_t max_stop_tag;
-
-    // Number of federates in the federation
-    int32_t number_of_federates;
+typedef struct federation_RTI_t {
+    ////////////////// Enclave specific attributes //////////////////
 
     // The federates.
-    federate_t* federates;
+    federate_t **enclaves;
+
+    // Number of enclaves
+    int32_t number_of_enclaves;
+
+    // RTI's decided stop tag for enclaves
+    tag_t max_stop_tag;
+
+    // Number of enclaves handling stop
+    int num_enclaves_handling_stop;
+
+    // Boolean indicating that tracing is enabled.
+    bool tracing_enabled;
+
+    ////////////// Federation only specific attributes //////////////
 
     // Maximum start time seen so far from the federates.
     int64_t max_start_time;
 
     // Number of federates that have proposed start times.
     int num_feds_proposed_start;
-
-    // Number of federates handling stop
-    int num_feds_handling_stop;
 
     /**
      * Boolean indicating that all federates have exited.
@@ -155,27 +169,7 @@ typedef struct RTI_instance_t {
      * Boolean indicating that authentication is enabled.
      */
     bool authentication_enabled;
-
-    /**
-     * Boolean indicating that tracing is enabled.
-     */
-    bool tracing_enabled;
-} RTI_instance_t;
-
-/**
- * The main mutex lock for the RTI.
- */ 
-extern lf_mutex_t rti_mutex;
-
-/**
- * Condition variable used to signal receipt of all proposed start times.
- */
-extern lf_cond_t received_start_times;
-
-/**
- * Condition variable used to signal that a start time has been sent to a federate.
- */
-extern lf_cond_t sent_start_time;
+} federation_RTI_t;
 
 /**
  * Enter a critical section where logical time and the event queue are guaranteed
@@ -205,30 +199,6 @@ extern int lf_critical_section_exit();
  * @return The socket descriptor on which to accept connections.
  */
 int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_type);
-
-/**
- * Find the earliest tag at which the specified federate may
- * experience its next event. This is the least next event tag (NET)
- * of the specified federate and (transitively) upstream federates
- * (with delays of the connections added). For upstream federates,
- * we assume (conservatively) that federate upstream of those
- * may also send an event. The result will never be less than
- * the completion time of the federate (which may be NEVER,
- * if the federate has not yet completed a logical time).
- *
- * FIXME: This could be made less conservative by building
- * at code generation time a causality interface table indicating
- * which outputs can be triggered by which inputs. For now, we
- * assume any output can be triggered by any input.
- *
- * @param fed The federate.
- * @param candidate A candidate tag (for the first invocation,
- *  this should be fed->next_event).
- * @param visited An array of booleans indicating which federates
- *  have been visited (for the first invocation, this should be
- *  an array of falses of size _RTI.number_of_federates).
- */
-tag_t transitive_next_event(federate_t* fed, tag_t candidate, bool visited[]);
 
 /**
  * @brief Update the next event tag of federate `federate_id`.
@@ -546,6 +516,9 @@ int process_clock_sync_args(int argc, const char* argv[]);
  */
 int process_args(int argc, const char* argv[]);
 
-
+/**
+ * Initialize the _RTI instance.
+ */
+void initialize_RTI();
 
 #endif // RTI_LIB_H

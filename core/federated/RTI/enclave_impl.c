@@ -1,7 +1,6 @@
 #include "enclave.h"
 
 // FIXME: This should not be here.
-#include "rti_lib.h"
 #include "platform.h"
 
 void notify_tag_advance_grant(enclave_t* e, tag_t tag) {
@@ -17,3 +16,5 @@ void notify_tag_advance_grant(enclave_t* e, tag_t tag) {
     e->last_granted = tag;
     lf_cond_signal(&e->next_event_condition);
 }
+
+

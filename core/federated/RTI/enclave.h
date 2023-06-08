@@ -1,8 +1,6 @@
 #ifndef ENCLAVE_H
 #define ENCLAVE_H
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <errno.h>      // Defines perror(), errno
 #include <assert.h>
 #include "platform.h"   // Platform-specific types and functions
@@ -19,13 +17,21 @@ typedef enum execution_mode_t {
     REALTIME
 } execution_mode_t;
 
-/** State of a federate during execution. */
+/** State of a enclave during execution. */
 typedef enum fed_state_t {
     NOT_CONNECTED,  // The federate has not connected.
     GRANTED,        // Most recent MSG_TYPE_NEXT_EVENT_TAG has been granted.
     PENDING         // Waiting for upstream federates.
 } fed_state_t;
 
+/**
+ * Information about enclave known to the RTI, including its runtime state,
+ * mode of execution, and connectivity with other enclaves.
+ * The list of upstream and downstream enclaves does not include
+ * those that are connected via a "physical" connection (one
+ * denoted with ~>) because those connections do not impose
+ * any scheduling constraints.
+ */
 typedef struct enclave_t {
     uint16_t id;            // ID of this enclave.
     tag_t completed;        // The largest logical tag completed by the federate (or NEVER if no LTC has been received).
@@ -46,6 +52,36 @@ typedef struct enclave_t {
     lf_cond_t next_event_condition; // Condition variable used by enclaves to notify an enclave
                                     // that it's call to next_event_tag() should unblock.
 } enclave_t;
+
+/**
+ * Structure that an enclave RTI instance uses to keep track of its own and its
+ * corresponding enclaves'state.
+ *     // **************** IMPORTANT!!! ********************
+ *     // **   If you make any change to this struct,     **
+ *     // **  you MUST also change federation_RTI_t in    **
+ *     // ** (rti_lib.h)! The change must exactly match.  **
+ *     // **************************************************
+ */
+
+typedef struct enclave_RTI_t {
+    // The enclaves.
+    enclave_t **enclaves;
+
+    // Number of enclaves
+    int32_t number_of_enclaves;
+
+    // RTI's decided stop tag for enclaves
+    tag_t max_stop_tag;
+
+    // Number of enclaves handling stop
+    int num_enclaves_handling_stop;
+
+    /**
+     * Boolean indicating that tracing is enabled.
+     */
+    bool tracing_enabled;
+} enclave_RTI_t;
+
 
 // FIXME: Docs
 void logical_tag_complete(enclave_t* enclave, tag_t completed);
@@ -174,5 +210,29 @@ tag_advance_grant_t next_event_tag(enclave_t* e, tag_t next_event_tag);
  * @param next_event_tag The next event tag for e.
  */
 void update_enclave_next_event_tag_locked(enclave_t* e, tag_t next_event_tag);
+
+/**
+ * Find the earliest tag at which the specified federate may
+ * experience its next event. This is the least next event tag (NET)
+ * of the specified federate and (transitively) upstream federates
+ * (with delays of the connections added). For upstream federates,
+ * we assume (conservatively) that federate upstream of those
+ * may also send an event. The result will never be less than
+ * the completion time of the federate (which may be NEVER,
+ * if the federate has not yet completed a logical time).
+ *
+ * FIXME: This could be made less conservative by building
+ * at code generation time a causality interface table indicating
+ * which outputs can be triggered by which inputs. For now, we
+ * assume any output can be triggered by any input.
+ *
+ * @param fed The federate.
+ * @param candidate A candidate tag (for the first invocation,
+ *  this should be fed->next_event).
+ * @param visited An array of booleans indicating which federates
+ *  have been visited (for the first invocation, this should be
+ *  an array of falses of size _RTI.number_of_federates).
+ */
+tag_t transitive_next_event(enclave_t *e, tag_t candidate, bool visited[]);
 
 #endif // ENCLAVE_H
