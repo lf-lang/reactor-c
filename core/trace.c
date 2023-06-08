@@ -79,6 +79,7 @@ trace_t* trace_new(environment_t* env, const char * filename) {
 }
 
 void trace_free(trace_t *trace) {
+    free(trace->filename);
     free(trace);
 }
 

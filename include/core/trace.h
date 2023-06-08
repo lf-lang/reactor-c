@@ -264,8 +264,20 @@ typedef struct trace_t {
 } trace_t;
 
 
-
+/**
+ * @brief Dynamically allocate a new tracing object. 
+ * 
+ * @param env The environment in which we are tracing. If passed NULL we use the GLOBAL_ENVIRONMENT
+ * @param filename Name of the file in which to store the trace
+ * @return trace_t* A newly allocated trace object with environment pointer and filename initialized
+ */
 trace_t* trace_new(environment_t *env, const char *filename);
+
+/**
+ * @brief Free the memory allocated for the trace object
+ * 
+ * @param trace 
+ */
 void trace_free(trace_t *trace);
 
 
