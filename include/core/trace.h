@@ -249,6 +249,9 @@ typedef struct trace_t {
     /** The file into which traces are written. */
     FILE* _lf_trace_file;
 
+    /** The file name where the traces are written*/
+    char *filename;
+
     /** Table of pointers to a description of the object. */
     object_description_t _lf_trace_object_descriptions[TRACE_OBJECT_TABLE_SIZE];
     int _lf_trace_object_descriptions_size;
@@ -262,7 +265,7 @@ typedef struct trace_t {
 
 
 
-trace_t* trace_new();
+trace_t* trace_new(environment_t *env, const char *filename);
 void trace_free(trace_t *trace);
 
 
@@ -290,7 +293,7 @@ int register_user_trace_event(void* self, char* description);
  * Open a trace file and start tracing.
  * @param filename The filename for the trace file.
  */
-void start_trace(trace_t* trace, const char* filename);
+void start_trace(trace_t* trace);
 
 /**
  * Trace an event identified by a type and a pointer to the self struct of the reactor instance.

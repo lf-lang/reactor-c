@@ -146,7 +146,6 @@ void environment_free(environment_t* env) {
 
 int environment_init(
     environment_t* env,
-    const char * name,
     int id,
     int num_workers,
     int num_timers, 
@@ -155,13 +154,9 @@ int environment_init(
     int num_reset_reactions,
     int num_is_present_fields,
     int num_modes,
-    int num_state_resets
+    int num_state_resets,
+    const char * trace_file_name
 ) {
-    
-    size_t len = strlen(name) + 1;
-    env->name = malloc(len * sizeof(char));
-    lf_assert(env->name, "Out of memory");
-    strcpy(env->name, name);
 
     env->id = id;
     env->stop_tag = FOREVER_TAG;
@@ -202,7 +197,7 @@ int environment_init(
             get_event_position, set_event_position, event_matches, print_event);
 
     // If tracing is enabled. Initialize a tracing struct on the env struct
-    env->trace = trace_new();
+    env->trace = trace_new(env, trace_file_name);
 
     // Initialize functionality depending on target properties.
     environment_init_threaded(env, num_workers);

@@ -1120,7 +1120,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     #endif
 
         // Start tracing, if specified
-        start_trace(env->trace, env->name);
+        start_trace(env->trace);
 
         // Initialize the scheduler
         // FIXME: Why is this called here and in `_lf_initialize_trigger objects`?

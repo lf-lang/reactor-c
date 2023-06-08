@@ -58,11 +58,23 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     } while(0)
 
 
-trace_t* trace_new() {
+trace_t* trace_new(environment_t* env, const char * filename) {
     trace_t * trace = (trace_t *) calloc(1, sizeof(trace_t));
     lf_assert(trace, "Out of memory");
 
     trace->_lf_trace_stop=1;
+    trace->env = env;
+
+    // Determine length of the filename
+    size_t len = strlen(filename)  + 1;
+
+    // Allocate memory for the filename on the trace struct
+    trace->filename = (char*) malloc(len * sizeof(char));
+    lf_assert(trace->filename, "Out of memory");
+
+    // Copy it to the struct
+    strncpy(trace->filename, filename, len);
+
     return trace;
 }
 
@@ -229,16 +241,9 @@ void flush_trace(trace_t* trace, int worker) {
     lf_critical_section_exit(GLOBAL_ENVIRONMENT);
 }
 
-void start_trace(trace_t* trace, const char* name) {
-    lf_assert(trace, "start_trace called with uninitialized trace pointer");
-    size_t len = strlen(name) + strlen(".lft") + 1;
-    // Allocate memory for new string
-    char* filename = malloc(len * sizeof(char));
-    lf_assert(filename, "Out of memory");
-    snprintf(filename, len, "%s.lft",name);
-
+void start_trace(trace_t* trace) {
     // FIXME: location of trace file should be customizable.
-    trace->_lf_trace_file = fopen(filename, "w");
+    trace->_lf_trace_file = fopen(trace->filename, "w");
     if (trace->_lf_trace_file == NULL) {
         fprintf(stderr, "WARNING: Failed to open log file with error code %d."
                 "No log will be written.\n", errno);
@@ -260,9 +265,6 @@ void start_trace(trace_t* trace, const char* name) {
     trace->_lf_trace_buffer_size = (int*)calloc(sizeof(int), trace->_lf_number_of_trace_buffers);
 
     trace->_lf_trace_stop = 0;
-
-    free(filename);
-
     LF_PRINT_DEBUG("Started tracing.");
 }
 

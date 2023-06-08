@@ -8,7 +8,6 @@
  */
 int environment_init(
     environment_t* env,
-    const char * name,
     int id,
     int num_workers,
     int num_timers, 
@@ -17,7 +16,8 @@ int environment_init(
     int num_reset_reactions,
     int num_is_present_fields,
     int num_modes,
-    int num_state_resets
+    int num_state_resets,
+    const char * trace_file_name
 );
 
 /**
