@@ -385,12 +385,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * As an answer to MSG_TYPE_TIMESTAMP, the RTI broadcasts to all persistent 
  * federates, or sends to newly joining transient federate, a message of 
- * MSG_TYPE_STIMESTAMP_START. It includes the starting logical time of the
- * federation, together with the effective starting logical time. The latter
- * is useful for transient federates.
+ * MSG_TYPE_STIMESTAMP_START. It includes the starting time of the federation, 
+ * together with the effective starting logical tag. The latter is useful for
+ * transient federates.
  */
 #define MSG_TYPE_TIMESTAMP_START 50
-#define MSG_TYPE_TIMESTAMP_START_LENGTH (1 + sizeof(int64_t) + sizeof(int64_t))
+#define MSG_TYPE_TIMESTAMP_START_LENGTH (1 + sizeof(instant_t) + sizeof(tag_t))
 
 /** Byte identifying a message to forward to another federate.
  *  The next two bytes will be the ID of the destination port.

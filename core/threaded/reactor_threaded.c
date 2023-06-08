@@ -50,7 +50,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
 extern tag_t current_tag;
 extern instant_t start_time;
-extern instant_t effective_start_time;
+extern tag_t effective_start_tag;
 
 /**
  * Global mutex and condition variable.
@@ -728,7 +728,7 @@ void _lf_initialize_start_tag() {
 
     // Get a start_time from the RTI
     synchronize_with_other_federates(); // Resets start_time in federated execution according to the RTI.
-    current_tag = (tag_t){.time = effective_start_time, .microstep = 0u};
+    current_tag = effective_start_tag;
 #endif
 
     _lf_initialize_timers();

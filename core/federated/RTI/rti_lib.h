@@ -349,12 +349,26 @@ void handle_address_ad(uint16_t federate_id);
  * The behavior here depends on whether the message is received within the
  * startup phase or not. By startup phase, it is menat that all persistent federates
  * have their start_time set (already started or about to start).
- * If all persistent federates have started, then a TIMESTAMP message will be
- * received from a transient. In such case, the start_time of the newly joined
- * transient federate will depend on the NET of his updtream and downstream
- * federates.
+ * 
+ * @param my_fed the federate that sent a MSG_TYPE_TIMESTAMP message.
  */
 void handle_timestamp(federate_t *my_fed);
+
+/**
+ * Send to the start time to the federate my_fed.
+ * This function assumes the caller does not hold the mutex.
+ * 
+ * If it is the startup phase, the start_time will be the maximum received timestamps
+ * plus an offset. The federate will then receive identical federation_start_time 
+ * and federate_start_tag.time (the federate_start_tag.microstep will be 0).
+ * If, however, the startup phase is passed, the federate will receive different 
+ * values than sateted above.
+ * 
+ * @param my_fed the federate to send the start time to.
+ * @param federation_start_time the federation start_time
+ * @param federate_start_tag the federate effective start tag
+ */
+void send_start_tag(federate_t* my_fed, instant_t federation_start_time, tag_t federate_start_tag);
 
 /**
  * Take a snapshot of the physical clock time and send
@@ -489,15 +503,6 @@ bool authenticate_federate(int socket);
 void connect_to_federates(int socket_descriptor);
 
 /**
- * Once all persistent federates have connected, continue to wait for incoming 
- * connection requests from transient federates.
- * Upon receiving it, it creates a thread to communicate with that federate.
- * This thread continues to check whether the communication thread with a transient
- * federate has exited, in which case it accepts other connections.
- */
-void* connect_to_transient_federates_thread();
-
-/**
  * Thread to respond to new connections, which could be federates of other
  * federations who are attempting to join the wrong federation.
  * @param nothing Nothing needed here.
@@ -510,13 +515,6 @@ void* respond_to_erroneous_connections(void* nothing);
  * @param id The federate ID.
  */
 void initialize_federate(federate_t* fed, uint16_t id);
-
-
-/** 
- * Reset the federate with the specified ID. The federate has to be transient.
- * @param fed A pointer to the federate
- */
-void reset_transient_federate(federate_t* fed);
 
 /**
  * Start the socket server for the runtime infrastructure (RTI) and
@@ -563,6 +561,21 @@ int process_args(int argc, const char* argv[]);
 void initialize_RTI();
 
 //////////////////////////////////////////////////////////
+
+/**
+ * Once all persistent federates have connected, continue to wait for incoming 
+ * connection requests from transient federates.
+ * Upon receiving it, it creates a thread to communicate with that federate.
+ * This thread continues to check whether the communication thread with a transient
+ * federate has exited, in which case it accepts other connections.
+ */
+void* connect_to_transient_federates_thread();
+
+/** 
+ * Reset the federate with the specified ID. The federate has to be transient.
+ * @param fed A pointer to the federate
+ */
+void reset_transient_federate(federate_t* fed);
 
 /**
  * Queries conn_fed for its current Tag (using MSG_TYPE_CURRENT_TAG_QUERY). 

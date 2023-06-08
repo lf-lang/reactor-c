@@ -70,7 +70,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
 extern tag_t current_tag;
 extern instant_t start_time;
-extern instant_t effective_start_time;
+extern tag_t effective_start_tag;
 
 // Error messages.
 char* ERROR_SENDING_HEADER = "ERROR sending header information to federate via RTI";
@@ -1208,13 +1208,13 @@ instant_t get_start_time_from_rti(instant_t my_physical_time) {
 
     // Read the federation start_time first, then the effective start_time after
     instant_t timestamp = extract_int64(&(buffer[1]));
-    effective_start_time = extract_int64(&(buffer[9]));
-
-    tag_t tag = {.time = effective_start_time, .microstep = 0};
+    effective_start_tag.time = extract_int64(&(buffer[9]));
+    effective_start_tag.microstep = extract_int32(&(buffer[9+8]));
+    
     // Trace the event when tracing is enabled.
-    // Note that we report in the trace the effective_start_time.
+    // Note that we report in the trace the effective_start_tag.
     // This is rather a choice. To be changed, if needed, of course.
-    tracepoint_federate_from_RTI(receive_TIMESTAMP, _lf_my_fed_id, &tag);
+    tracepoint_federate_from_RTI(receive_TIMESTAMP, _lf_my_fed_id, &effective_start_tag);
     LF_PRINT_LOG("Current physical time is: " PRINTF_TIME ".", lf_time_physical());
 
     return timestamp;
@@ -2723,7 +2723,7 @@ void synchronize_with_other_federates() {
     }
 
     lf_print_log("Start time of the federation is " PRINTF_TIME ".", start_time);
-    lf_print_log("Effective start time of federate %d is: " PRINTF_TIME ".", _lf_my_fed_id, effective_start_time);
+    lf_print_log("Effective start time of federate %d is: " PRINTF_TIME ".", _lf_my_fed_id, effective_start_tag.time);
 
     // Start a thread to listen for incoming TCP messages from the RTI.
     // @note Up until this point, the federate has been listening for messages

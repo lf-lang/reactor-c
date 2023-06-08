@@ -37,7 +37,7 @@ instant_t start_time = NEVER;
  * Only useful for transient federates. It records the effective start time, to 
  * be used at startup. Elapsed logical time calculations will use start_time. 
  */
-instant_t effective_start_time = NEVER;
+instant_t effective_start_tag = NEVER;
 
 //////////////// Global variables not declared in tag.h (must be declared extern if used elsewhere):
 
