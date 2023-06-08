@@ -8,6 +8,7 @@
  */
 int environment_init(
     environment_t* env,
+    const char * name,
     int id,
     int num_workers,
     int num_timers, 

@@ -48,68 +48,60 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 /** Macro to use when access to trace file fails. */
-#define _LF_TRACE_FAILURE(trace_file) \
+#define _LF_TRACE_FAILURE(trace) \
     do { \
         fprintf(stderr, "WARNING: Access to trace file failed.\n"); \
-        fclose(trace_file); \
-        trace_file = NULL; \
-        lf_critical_section_exit(GLOBAL_ENVIRONMENT); \
+        fclose(trace->_lf_trace_file); \
+        trace->_lf_trace_file = NULL; \
+        lf_critical_section_exit(trace->env); \
         return -1; \
     } while(0)
 
-/**
- * Array of buffers into which traces are written.
- * When a buffer becomes full, the contents is flushed to the file,
- * which will create a significant pause in the calling thread.
- */
-static trace_record_t** _lf_trace_buffer = NULL;
-static int* _lf_trace_buffer_size = NULL;
 
-/** The number of trace buffers allocated when tracing starts. */
-static int _lf_number_of_trace_buffers;
+trace_t* trace_new() {
+    trace_t * trace = (trace_t *) calloc(1, sizeof(trace_t));
+    lf_assert(trace, "Out of memory");
 
-/** Marker that tracing is stopping or has stopped. */
-static int _lf_trace_stop = 1;
+    trace->_lf_trace_stop=1;
+    return trace;
+}
 
-/** The file into which traces are written. */
-static FILE* _lf_trace_file;
+void trace_free(trace_t *trace) {
+    free(trace);
+}
 
-/**
- * Table of pointers to a description of the object.
- */
-static object_description_t _lf_trace_object_descriptions[TRACE_OBJECT_TABLE_SIZE];
-static int _lf_trace_object_descriptions_size = 0;
 
-int _lf_register_trace_event(void* pointer1, void* pointer2, _lf_trace_object_t type, char* description) {
-    lf_critical_section_enter(GLOBAL_ENVIRONMENT);
-    if (_lf_trace_object_descriptions_size >= TRACE_OBJECT_TABLE_SIZE) {
-        lf_critical_section_exit(GLOBAL_ENVIRONMENT);
+int _lf_register_trace_event(environment_t* env, void* pointer1, void* pointer2, _lf_trace_object_t type, char* description) {
+    trace_t* trace = env->trace;
+    lf_critical_section_enter(trace->env);
+    if (trace->_lf_trace_object_descriptions_size >= TRACE_OBJECT_TABLE_SIZE) {
+        lf_critical_section_exit(trace->env);
         fprintf(stderr, "WARNING: Exceeded trace object table size. Trace file will be incomplete.\n");
         return 0;
     }
-    _lf_trace_object_descriptions[_lf_trace_object_descriptions_size].pointer = pointer1;
-    _lf_trace_object_descriptions[_lf_trace_object_descriptions_size].trigger = pointer2;
-    _lf_trace_object_descriptions[_lf_trace_object_descriptions_size].type = type;
-    _lf_trace_object_descriptions[_lf_trace_object_descriptions_size].description = description;
-    _lf_trace_object_descriptions_size++;
-    lf_critical_section_exit(GLOBAL_ENVIRONMENT);
+    trace->_lf_trace_object_descriptions[trace->_lf_trace_object_descriptions_size].pointer = pointer1;
+    trace->_lf_trace_object_descriptions[trace->_lf_trace_object_descriptions_size].trigger = pointer2;
+    trace->_lf_trace_object_descriptions[trace->_lf_trace_object_descriptions_size].type = type;
+    trace->_lf_trace_object_descriptions[trace->_lf_trace_object_descriptions_size].description = description;
+    trace->_lf_trace_object_descriptions_size++;
+    lf_critical_section_exit(trace->env);
     return 1;
 }
 
-int register_user_trace_event(char* description) {
-    return _lf_register_trace_event(description, NULL, trace_user, description);
+int register_user_trace_event(void *self, char* description) {
+    lf_assert(self, "Need a pointer to a self struct to register a user trace event");
+    environment_t * env = ((self_base_t *) self)->environment;
+    return _lf_register_trace_event(env, description, NULL, trace_user, description);
 }
 
-/** Indicator that the trace header information has been written to the file. */
-bool _lf_trace_header_written = false;
 
 /**
  * Write the trace header information.
  * See trace.h.
  * @return The number of items written to the object table or -1 for failure.
  */
-int write_trace_header() {
-    if (_lf_trace_file != NULL) {
+int write_trace_header(trace_t* trace) {
+    if (trace->_lf_trace_file != NULL) {
         // The first item in the header is the start time.
         // This is both the starting physical time and the starting logical time.
         instant_t start_time = lf_time_start();
@@ -118,64 +110,64 @@ int write_trace_header() {
                 &start_time,
                 sizeof(instant_t),
                 1,
-                _lf_trace_file
+                trace->_lf_trace_file
         );
-        if (items_written != 1) _LF_TRACE_FAILURE(_lf_trace_file);
+        if (items_written != 1) _LF_TRACE_FAILURE(trace);
 
         // The next item in the header is the size of the
         // _lf_trace_object_descriptions table.
         // printf("DEBUG: Table size written to trace file is %d.\n", _lf_trace_object_descriptions_size);
         items_written = fwrite(
-                &_lf_trace_object_descriptions_size,
+                &trace->_lf_trace_object_descriptions_size,
                 sizeof(int),
                 1,
-                _lf_trace_file
+                trace->_lf_trace_file
         );
-        if (items_written != 1) _LF_TRACE_FAILURE(_lf_trace_file);
+        if (items_written != 1) _LF_TRACE_FAILURE(trace);
 
         // Next we write the table.
-        for (int i = 0; i < _lf_trace_object_descriptions_size; i++) {
+        for (int i = 0; i < trace->_lf_trace_object_descriptions_size; i++) {
             // printf("DEBUG: Object pointer: %p.\n", _lf_trace_object_descriptions[i].pointer);
             // Write the pointer to the self struct.
             items_written = fwrite(
-                        &_lf_trace_object_descriptions[i].pointer,
+                        &trace->_lf_trace_object_descriptions[i].pointer,
                         sizeof(void*),
                         1,
-                        _lf_trace_file
+                        trace->_lf_trace_file
             );
-            if (items_written != 1) _LF_TRACE_FAILURE(_lf_trace_file);
+            if (items_written != 1) _LF_TRACE_FAILURE(trace);
 
             // Write the pointer to the trigger_t struct.
             items_written = fwrite(
-                        &_lf_trace_object_descriptions[i].trigger,
+                        &trace->_lf_trace_object_descriptions[i].trigger,
                         sizeof(trigger_t*),
                         1,
-                        _lf_trace_file
+                        trace->_lf_trace_file
             );
-            if (items_written != 1) _LF_TRACE_FAILURE(_lf_trace_file);
+            if (items_written != 1) _LF_TRACE_FAILURE(trace);
 
             // Write the object type.
             items_written = fwrite(
-                        &_lf_trace_object_descriptions[i].type, // Write the pointer value.
+                        &trace->_lf_trace_object_descriptions[i].type, // Write the pointer value.
                         sizeof(_lf_trace_object_t),
                         1,
-                        _lf_trace_file
+                        trace->_lf_trace_file
             );
-            if (items_written != 1) _LF_TRACE_FAILURE(_lf_trace_file);
+            if (items_written != 1) _LF_TRACE_FAILURE(trace);
 
             // Write the description.
-            int description_size = strlen(_lf_trace_object_descriptions[i].description);
-            // printf("DEBUG: Object description: %s.\n", _lf_trace_object_descriptions[i].description);
+            int description_size = strlen(trace->_lf_trace_object_descriptions[i].description);
+            // printf("DEBUG: Object description: %s.\n", trace->_lf_trace_object_descriptions[i].description);
             items_written = fwrite(
-                        _lf_trace_object_descriptions[i].description,
+                        trace->_lf_trace_object_descriptions[i].description,
                         sizeof(char),
                         description_size + 1, // Include null terminator.
-                        _lf_trace_file
+                        trace->_lf_trace_file
             );
-            if (items_written != description_size + 1) _LF_TRACE_FAILURE(_lf_trace_file);
+            if (items_written != description_size + 1) _LF_TRACE_FAILURE(trace);
         }
     }
-    return _lf_trace_object_descriptions_size;
+    return trace->_lf_trace_object_descriptions_size;
 }
 
 /**
@@ -183,45 +175,45 @@ int write_trace_header() {
  * This assumes the caller has entered a critical section.
  * @param worker Index specifying the trace to flush.
  */
-void flush_trace_locked(int worker) {
-    if (_lf_trace_stop == 0 
-        && _lf_trace_file != NULL 
-        && _lf_trace_buffer_size[worker] > 0
+void flush_trace_locked(trace_t* trace, int worker) {
+    if (trace->_lf_trace_stop == 0 
+        && trace->_lf_trace_file != NULL 
+        && trace->_lf_trace_buffer_size[worker] > 0
     ) {
         // If the trace header has not been written, write it now.
         // This is deferred to here so that user trace objects can be
         // registered in startup reactions.
-        if (!_lf_trace_header_written) {
-            write_trace_header();
-            _lf_trace_header_written = true;
+        if (!trace->_lf_trace_header_written) {
+            write_trace_header(trace);
+            trace->_lf_trace_header_written = true;
         }
 
         // Write first the length of the array.
         size_t items_written = fwrite(
-                &_lf_trace_buffer_size[worker],
+                &trace->_lf_trace_buffer_size[worker],
                 sizeof(int),
                 1,
-                _lf_trace_file
+                trace->_lf_trace_file
         );
         if (items_written != 1) {
             fprintf(stderr, "WARNING: Access to trace file failed.\n");
-            fclose(_lf_trace_file);
-            _lf_trace_file = NULL;
+            fclose(trace->_lf_trace_file);
+            trace->_lf_trace_file = NULL;
         } else {
             // Write the contents.
             items_written = fwrite(
-                    _lf_trace_buffer[worker],
+                    trace->_lf_trace_buffer[worker],
                     sizeof(trace_record_t),
-                    _lf_trace_buffer_size[worker],
-                    _lf_trace_file
+                    trace->_lf_trace_buffer_size[worker],
+                    trace->_lf_trace_file
             );
-            if (items_written != _lf_trace_buffer_size[worker]) {
+            if (items_written != trace->_lf_trace_buffer_size[worker]) {
                 fprintf(stderr, "WARNING: Access to trace file failed.\n");
-                fclose(_lf_trace_file);
-                _lf_trace_file = NULL;
+                fclose(trace->_lf_trace_file);
+                trace->_lf_trace_file = NULL;
             }
         }
-        _lf_trace_buffer_size[worker] = 0;
+        trace->_lf_trace_buffer_size[worker] = 0;
     }
 }
 
@@ -229,38 +221,47 @@ void flush_trace_locked(int worker) {
  * @brief Flush the specified buffer to a file.
  * @param worker Index specifying the trace to flush.
  */
-void flush_trace(int worker) {
+void flush_trace(trace_t* trace, int worker) {
     // To avoid having more than one worker writing to the file at the same time,
     // enter a critical section.
     lf_critical_section_enter(GLOBAL_ENVIRONMENT);
-    flush_trace_locked(worker);
+    flush_trace_locked(trace, worker);
     lf_critical_section_exit(GLOBAL_ENVIRONMENT);
 }
 
-void start_trace(const char* filename) {
+void start_trace(trace_t* trace, const char* name) {
+    lf_assert(trace, "start_trace called with uninitialized trace pointer");
+    size_t len = strlen(name) + strlen(".lft") + 1;
+    // Allocate memory for new string
+    char* filename = malloc(len * sizeof(char));
+    lf_assert(filename, "Out of memory");
+    snprintf(filename, len, "%s.lft",name);
+
     // FIXME: location of trace file should be customizable.
-    _lf_trace_file = fopen(filename, "w");
-    if (_lf_trace_file == NULL) {
+    trace->_lf_trace_file = fopen(filename, "w");
+    if (trace->_lf_trace_file == NULL) {
         fprintf(stderr, "WARNING: Failed to open log file with error code %d."
                 "No log will be written.\n", errno);
     }
     // Do not write the trace header information to the file yet
     // so that startup reactions can register user-defined trace objects.
     // write_trace_header();
-    _lf_trace_header_written = false;
+    trace->_lf_trace_header_written = false;
 
     // Allocate an array of arrays of trace records, one per worker thread plus one
     // for the 0 thread (the main thread, or in an unthreaded program, the only
     // thread).
-    _lf_number_of_trace_buffers = _lf_number_of_workers + 1;
-    _lf_trace_buffer = (trace_record_t**)malloc(sizeof(trace_record_t*) * _lf_number_of_trace_buffers);
-    for (int i = 0; i < _lf_number_of_trace_buffers; i++) {
-        _lf_trace_buffer[i] = (trace_record_t*)malloc(sizeof(trace_record_t) * TRACE_BUFFER_CAPACITY);
+    trace->_lf_number_of_trace_buffers = _lf_number_of_workers + 1;
+    trace->_lf_trace_buffer = (trace_record_t**)malloc(sizeof(trace_record_t*) * trace->_lf_number_of_trace_buffers);
+    for (int i = 0; i < trace->_lf_number_of_trace_buffers; i++) {
+        trace->_lf_trace_buffer[i] = (trace_record_t*)malloc(sizeof(trace_record_t) * TRACE_BUFFER_CAPACITY);
     }
     // Array of counters that track the size of each trace record (per thread).
-    _lf_trace_buffer_size = (int*)calloc(sizeof(int), _lf_number_of_trace_buffers);
+    trace->_lf_trace_buffer_size = (int*)calloc(sizeof(int), trace->_lf_number_of_trace_buffers);
 
-    _lf_trace_stop = 0;
+    trace->_lf_trace_stop = 0;
+
+    free(filename);
 
     LF_PRINT_DEBUG("Started tracing.");
 }
@@ -283,39 +284,43 @@ void tracepoint(
         time = lf_time_physical();
         physical_time = &time;
     }
+
+    lf_assert(env, "We need an env-pointer to trace an event");
+    trace_t* trace = ((environment_t *)env)->trace;
+
     // Worker argument determines which buffer to write to.
     int index = (worker >= 0) ? worker : 0;
 
     // Flush the buffer if it is full.
-    if (_lf_trace_buffer_size[index] >= TRACE_BUFFER_CAPACITY) {
+    if (trace->_lf_trace_buffer_size[index] >= TRACE_BUFFER_CAPACITY) {
         // No more room in the buffer. Write the buffer to the file.
-        flush_trace(index);
+        flush_trace(trace, index);
     }
     // The above flush_trace resets the write pointer.
-    int i = _lf_trace_buffer_size[index];
+    int i = trace->_lf_trace_buffer_size[index];
     // Write to memory buffer.
     // Get the correct time of the event
     
-    _lf_trace_buffer[index][i].event_type = event_type;
-    _lf_trace_buffer[index][i].pointer = reactor;
-    _lf_trace_buffer[index][i].src_id = src_id;
-    _lf_trace_buffer[index][i].dst_id = dst_id;
+    trace->_lf_trace_buffer[index][i].event_type = event_type;
+    trace->_lf_trace_buffer[index][i].pointer = reactor;
+    trace->_lf_trace_buffer[index][i].src_id = src_id;
+    trace->_lf_trace_buffer[index][i].dst_id = dst_id;
     if (tag != NULL) {
-        _lf_trace_buffer[index][i].logical_time = tag->time;
-        _lf_trace_buffer[index][i].microstep = tag->microstep;
+        trace->_lf_trace_buffer[index][i].logical_time = tag->time;
+        trace->_lf_trace_buffer[index][i].microstep = tag->microstep;
     } else if (env != NULL) {
-        _lf_trace_buffer[index][i].logical_time = ((environment_t *)env)->current_tag.time;
-        _lf_trace_buffer[index][i].microstep = ((environment_t*)env)->current_tag.microstep;
+        trace->_lf_trace_buffer[index][i].logical_time = ((environment_t *)env)->current_tag.time;
+        trace->_lf_trace_buffer[index][i].microstep = ((environment_t*)env)->current_tag.microstep;
     }
     
-    _lf_trace_buffer[index][i].trigger = trigger;
-    _lf_trace_buffer[index][i].extra_delay = extra_delay;
+    trace->_lf_trace_buffer[index][i].trigger = trigger;
+    trace->_lf_trace_buffer[index][i].extra_delay = extra_delay;
     if (is_interval_start && physical_time == NULL) {
         time = lf_time_physical();
         physical_time = &time;
     }
-    _lf_trace_buffer[index][i].physical_time = *physical_time;
-    _lf_trace_buffer_size[index]++;
+    trace->_lf_trace_buffer[index][i].physical_time = *physical_time;
+    trace->_lf_trace_buffer_size[index]++;
 }
 
 /**
@@ -375,13 +380,11 @@ void tracepoint_user_event(void* self, char* description) {
     // But to be safe, then, we have acquire a mutex before calling this
     // because multiple reactions might be calling the same tracepoint function.
     // There will be a performance hit for this.
-    environment_t *env = NULL;
-    if (self != NULL) {
-        env = ((self_base_t *)self)->environment;
-    }
-    lf_critical_section_enter(GLOBAL_ENVIRONMENT);
+    lf_assert(self, "A pointer to the self struct is needed to trace an event");
+    environment_t *env = ((self_base_t *)self)->environment;
+    lf_critical_section_enter(env);
     tracepoint(user_event, env, description, NULL, -1, -1, -1, NULL, NULL, 0, false);
-    lf_critical_section_exit(GLOBAL_ENVIRONMENT);
+    lf_critical_section_exit(env);
 }
 
 /**
@@ -409,9 +412,9 @@ void tracepoint_user_value(void* self, char* description, long long value) {
     if (self != NULL) {
         env = ((self_base_t *)self)->environment;
     }
-    lf_critical_section_enter(GLOBAL_ENVIRONMENT);
+    lf_critical_section_enter(env);
     tracepoint(user_value, env, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
-    lf_critical_section_exit(GLOBAL_ENVIRONMENT);
+    lf_critical_section_exit(env);
 }
 
 /**
@@ -455,30 +458,30 @@ void tracepoint_reaction_deadline_missed(environment_t* env, reaction_t *reactio
     tracepoint(reaction_deadline_missed, env, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
 }
 
-void stop_trace() {
-    lf_critical_section_enter(GLOBAL_ENVIRONMENT);
-    if (_lf_trace_stop) {
+void stop_trace(trace_t* trace) {
+    lf_critical_section_enter(trace->env);
+    if (trace->_lf_trace_stop) {
         // Trace was already stopped. Nothing to do.
         return;
     }
     // In multithreaded execution, thread 0 invokes wrapup reactions, so we
     // put that trace last. However, it could also include some startup events.
     // In any case, the trace file does not guarantee any ordering.
-    for (int i = 1; i < _lf_number_of_trace_buffers; i++) {
+    for (int i = 1; i < trace->_lf_number_of_trace_buffers; i++) {
         // Flush the buffer if it has data.
-        // printf("DEBUG: Trace buffer %d has %d records.\n", i, _lf_trace_buffer_size[i]);
-        if (_lf_trace_buffer_size && _lf_trace_buffer_size[i] > 0) {
-            flush_trace_locked(i);
+        // printf("DEBUG: Trace buffer %d has %d records.\n", i, trace->_lf_trace_buffer_size[i]);
+        if (trace->_lf_trace_buffer_size && trace->_lf_trace_buffer_size[i] > 0) {
+            flush_trace_locked(trace, i);
         }
     }
-    if (_lf_trace_buffer_size && _lf_trace_buffer_size[0] > 0) {
-        flush_trace_locked(0);
+    if (trace->_lf_trace_buffer_size && trace->_lf_trace_buffer_size[0] > 0) {
+        flush_trace_locked(trace, 0);
     }
-    _lf_trace_stop = 1;
-    fclose(_lf_trace_file);
-    _lf_trace_file = NULL;
+    trace->_lf_trace_stop = 1;
+    fclose(trace->_lf_trace_file);
+    trace->_lf_trace_file = NULL;
     LF_PRINT_DEBUG("Stopped tracing.");
-    lf_critical_section_exit(GLOBAL_ENVIRONMENT);
+    lf_critical_section_exit(trace->env);
 }
 
 ////////////////////////////////////////////////////////////

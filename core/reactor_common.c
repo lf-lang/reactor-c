@@ -1716,11 +1716,11 @@ void termination(void) {
     // It should only be called for the top-level environment, which, after convention, is the first environment.
     terminate_execution(env);
 
-    // Stop any tracing, if it is running.
-    stop_trace();
 
     // In order to free tokens, we perform the same actions we would have for a new time step.
     for (int i = 0; i<num_envs; i++) {
+        // Stop any tracing, if it is running.
+        stop_trace(env->trace);
         lf_print("---- Terminating environment %u", env->id);
         _lf_start_time_step(env);
 

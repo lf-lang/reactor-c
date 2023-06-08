@@ -53,6 +53,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define TRACE_H
 
 #include "lf_types.h"
+#include <stdio.h>
 
 #ifdef FEDERATED
 #include "net_common.h"
@@ -224,16 +225,57 @@ struct object_description_t {
     _lf_trace_object_t type;  // The type of trace object.
     char* description; // A NULL terminated string.
 };
+/**
+ * 
+ * @brief This struct holds all the state associated with tracing in a single environment.
+ * Each environment which has tracing enabled will have such a struct on its environment struct.
+ * 
+ */
+typedef struct trace_t {
+    /**
+     * Array of buffers into which traces are written.
+     * When a buffer becomes full, the contents is flushed to the file,
+     * which will create a significant pause in the calling thread.
+     */
+    trace_record_t** _lf_trace_buffer;
+    int* _lf_trace_buffer_size;
+
+    /** The number of trace buffers allocated when tracing starts. */
+    int _lf_number_of_trace_buffers;
+
+    /** Marker that tracing is stopping or has stopped. */
+    int _lf_trace_stop;
+
+    /** The file into which traces are written. */
+    FILE* _lf_trace_file;
+
+    /** Table of pointers to a description of the object. */
+    object_description_t _lf_trace_object_descriptions[TRACE_OBJECT_TABLE_SIZE];
+    int _lf_trace_object_descriptions_size;
+
+    /** Indicator that the trace header information has been written to the file. */
+    bool _lf_trace_header_written;
+
+    /** Pointer back to the environment which we are tracing within*/
+    environment_t* env;
+} trace_t;
+
+
+
+trace_t* trace_new();
+void trace_free(trace_t *trace);
+
 
 /**
  * Register a trace object.
+ * @param env Pointer to the environment in which the event is traced
  * @param pointer1 Pointer that identifies the object, typically to a reactor self struct.
  * @param pointer2 Further identifying pointer, typically to a trigger (action or timer) or NULL if irrelevant.
  * @param type The type of trace object.
  * @param description The human-readable description of the object.
  * @return 1 if successful, 0 if the trace object table is full.
  */
-int _lf_register_trace_event(void* pointer1, void* pointer2, _lf_trace_object_t type, char* description);
+int _lf_register_trace_event(environment_t* env, void* pointer1, void* pointer2, _lf_trace_object_t type, char* description);
 
 /**
  * Register a user trace event. This should be called once, providing a pointer to a string
@@ -242,13 +284,13 @@ int _lf_register_trace_event(void* pointer1, void* pointer2, _lf_trace_object_t 
  * @param description Pointer to a human-readable description of the event.
  * @return 1 if successful, 0 if the trace object table is full.
  */
-int register_user_trace_event(char* description);
+int register_user_trace_event(void* self, char* description);
 
 /**
  * Open a trace file and start tracing.
  * @param filename The filename for the trace file.
  */
-void start_trace(const char* filename);
+void start_trace(trace_t* trace, const char* filename);
 
 /**
  * Trace an event identified by a type and a pointer to the self struct of the reactor instance.
@@ -377,7 +419,7 @@ void tracepoint_reaction_deadline_missed(environment_t* env, reaction_t *reactio
  * Flush any buffered trace records to the trace file and
  * close the files.
  */
-void stop_trace(void);
+void stop_trace(trace_t* trace);
 
 ////////////////////////////////////////////////////////////
 //// For federated execution
@@ -474,6 +516,9 @@ void tracepoint_RTI_from_federate(trace_event_t event_type, int fed_id, tag_t* t
 
 #define start_trace(...)
 #define stop_trace(...)
+#define trace_new(...) NULL
+#define trace_free(...)
+
 
 #endif // LF_TRACE
 #endif // TRACE_H

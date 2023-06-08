@@ -1119,6 +1119,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         _lf_initialize_modes(env);
     #endif
 
+        // Start tracing, if specified
+        start_trace(env->trace, env->name);
+
         // Initialize the scheduler
         // FIXME: Why is this called here and in `_lf_initialize_trigger objects`?
         lf_sched_init(env, (size_t)env->num_workers, NULL);  

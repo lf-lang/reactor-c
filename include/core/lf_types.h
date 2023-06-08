@@ -292,6 +292,7 @@ typedef struct allocation_record_t {
 
 // Forward declarations so that a pointers can appear in the environment struct.
 typedef struct lf_scheduler_t lf_scheduler_t;
+typedef struct trace_t trace_t;
 
 #define GLOBAL_ENVIRONMENT NULL
 /**
@@ -307,6 +308,7 @@ typedef struct mode_environment_t mode_environment_t;
 
 
 typedef struct environment_t {
+    char * name;
     int id;
     tag_t current_tag;
     tag_t stop_tag; // Make global protected by global mutex
@@ -344,6 +346,7 @@ typedef struct environment_t {
     int _lf_intended_tag_fields_size;
 #endif // FEDERATED
     mode_environment_t* modes;
+    trace_t* trace;
 } environment_t;
 
 #ifdef MODAL_REACTORS

@@ -1,6 +1,8 @@
 #include "environment.h"
 #include "util.h"
 #include "lf_types.h"
+#include <string.h>
+#include "trace.h"
 #ifdef LF_THREADED
 #include "scheduler.h"
 #endif
@@ -123,6 +125,7 @@ static void environment_free_federated(environment_t* env) {
 }
 
 void environment_free(environment_t* env) {
+    free(env->name);
     free(env->timer_triggers);
     free(env->startup_reactions);
     free(env->shutdown_reactions);
@@ -137,11 +140,13 @@ void environment_free(environment_t* env) {
     environment_free_unthreaded(env);
     environment_free_modes(env);
     environment_free_federated(env);
+    trace_free(env->trace);
 }
 
 
 int environment_init(
     environment_t* env,
+    const char * name,
     int id,
     int num_workers,
     int num_timers, 
@@ -152,6 +157,12 @@ int environment_init(
     int num_modes,
     int num_state_resets
 ) {
+    
+    size_t len = strlen(name) + 1;
+    env->name = malloc(len * sizeof(char));
+    lf_assert(env->name, "Out of memory");
+    strcpy(env->name, name);
+
     env->id = id;
     env->stop_tag = FOREVER_TAG;
 
@@ -189,6 +200,9 @@ int environment_init(
             get_event_position, set_event_position, event_matches, print_event);
     env->next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
+
+    // If tracing is enabled. Initialize a tracing struct on the env struct
+    env->trace = trace_new();
 
     // Initialize functionality depending on target properties.
     environment_init_threaded(env, num_workers);
