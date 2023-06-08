@@ -315,21 +315,27 @@ void tracepoint_schedule(environment_t* env, trigger_t* trigger, interval_t extr
  * Trace a user-defined event. Before calling this, you must call
  * register_user_trace_event() with a pointer to the same string
  * or else the event will not be recognized.
+ * @param self Pointer to the self struct of the reactor from which we want
+ * to trace this event. This pointer is used to get the correct environment and 
+ * thus the correct logical tag of the event.
  * @param description Pointer to the description string.
  */
-void tracepoint_user_event(char* description);
+void tracepoint_user_event(void* self, char* description);
 
 /**
  * Trace a user-defined event with a value.
  * Before calling this, you must call
  * register_user_trace_event() with a pointer to the same string
  * or else the event will not be recognized.
+ * @param self Pointer to the self struct of the reactor from which we want
+ * to trace this event. This pointer is used to get the correct environment and 
+ * thus the correct logical tag of the event.
  * @param description Pointer to the description string.
  * @param value The value of the event. This is a long long for
  *  convenience so that time values can be passed unchanged.
  *  But int values work as well.
  */
-void tracepoint_user_value(char* description, long long value);
+void tracepoint_user_value(void* self, char* description, long long value);
 
 /**
  * Trace the start of a worker waiting for something to change on the reaction queue.

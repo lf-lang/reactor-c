@@ -362,10 +362,12 @@ void tracepoint_schedule(environment_t* env, trigger_t* trigger, interval_t extr
  * Trace a user-defined event. Before calling this, you must call
  * register_user_trace_event() with a pointer to the same string
  * or else the event will not be recognized.
+ * @param self Pointer to the self struct of the reactor from which we want
+ * to trace this event. This pointer is used to get the correct environment and 
+ * thus the correct logical tag of the event.
  * @param description Pointer to the description string.
  */
-// FIXME: We cannot get the logical tag of this event without the calling environment
-void tracepoint_user_event(char* description) {
+void tracepoint_user_event(void* self, char* description) {
     // -1s indicate unknown reaction number and worker thread.
     // NOTE: We currently have no way to get the number of the worker that
     // is executing the reaction that calls this, so we can't pass a worker
@@ -373,8 +375,12 @@ void tracepoint_user_event(char* description) {
     // But to be safe, then, we have acquire a mutex before calling this
     // because multiple reactions might be calling the same tracepoint function.
     // There will be a performance hit for this.
+    environment_t *env = NULL;
+    if (self != NULL) {
+        env = ((self_base_t *)self)->base.environment;
+    }
     lf_critical_section_enter(GLOBAL_ENVIRONMENT);
-    tracepoint(user_event, NULL, description, NULL, -1, -1, -1, NULL, NULL, 0, false);
+    tracepoint(user_event, env, description, NULL, -1, -1, -1, NULL, NULL, 0, false);
     lf_critical_section_exit(GLOBAL_ENVIRONMENT);
 }
 
@@ -383,12 +389,15 @@ void tracepoint_user_event(char* description) {
  * Before calling this, you must call
  * register_user_trace_event() with a pointer to the same string
  * or else the event will not be recognized.
+ * @param self Pointer to the self struct of the reactor from which we want
+ * to trace this event. This pointer is used to get the correct environment and 
+ * thus the correct logical tag of the event.
  * @param description Pointer to the description string.
  * @param value The value of the event. This is a long long for
  *  convenience so that time values can be passed unchanged.
  *  But int values work as well.
  */
-void tracepoint_user_value(char* description, long long value) {
+void tracepoint_user_value(void* self, char* description, long long value) {
     // -1s indicate unknown reaction number and worker thread.
     // NOTE: We currently have no way to get the number of the worker that
     // is executing the reaction that calls this, so we can't pass a worker
@@ -396,8 +405,12 @@ void tracepoint_user_value(char* description, long long value) {
     // But to be safe, then, we have acquire a mutex before calling this
     // because multiple reactions might be calling the same tracepoint function.
     // There will be a performance hit for this.
+    environment_t *env = NULL;
+    if (self != NULL) {
+        env = ((self_base_t *)self)->base.environment;
+    }
     lf_critical_section_enter(GLOBAL_ENVIRONMENT);
-    tracepoint(user_value, NULL, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
+    tracepoint(user_value, env, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
     lf_critical_section_exit(GLOBAL_ENVIRONMENT);
 }
 
