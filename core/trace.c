@@ -377,7 +377,7 @@ void tracepoint_user_event(void* self, char* description) {
     // There will be a performance hit for this.
     environment_t *env = NULL;
     if (self != NULL) {
-        env = ((self_base_t *)self)->base.environment;
+        env = ((self_base_t *)self)->environment;
     }
     lf_critical_section_enter(GLOBAL_ENVIRONMENT);
     tracepoint(user_event, env, description, NULL, -1, -1, -1, NULL, NULL, 0, false);
@@ -407,7 +407,7 @@ void tracepoint_user_value(void* self, char* description, long long value) {
     // There will be a performance hit for this.
     environment_t *env = NULL;
     if (self != NULL) {
-        env = ((self_base_t *)self)->base.environment;
+        env = ((self_base_t *)self)->environment;
     }
     lf_critical_section_enter(GLOBAL_ENVIRONMENT);
     tracepoint(user_value, env, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
