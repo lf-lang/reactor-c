@@ -58,12 +58,12 @@ typedef struct enclave_t {
  * corresponding enclaves'state.
  *     // **************** IMPORTANT!!! ********************
  *     // **   If you make any change to this struct,     **
- *     // **  you MUST also change federation_RTI_t in    **
+ *     // **  you MUST also change federation_rti_t in    **
  *     // ** (rti_lib.h)! The change must exactly match.  **
  *     // **************************************************
  */
 
-typedef struct enclave_RTI_t {
+typedef struct enclave_rti_t {
     // The enclaves.
     enclave_t **enclaves;
 
@@ -78,7 +78,7 @@ typedef struct enclave_RTI_t {
 
     // Boolean indicating that tracing is enabled.
     bool tracing_enabled;
-} enclave_RTI_t;
+} enclave_rti_t;
 
 
 /**

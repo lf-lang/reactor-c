@@ -75,17 +75,17 @@ typedef enum clock_sync_stat {
 /**
  * Structure that an RTI instance uses to keep track of its own and its
  * corresponding federates' state.
- * It is a special case of `enclave_RTI_t` (declared in enclave.h). Inheritence
- * is mimicked by having the first attributes to be the same as of enclave_RTI_t,
+ * It is a special case of `enclave_rti_t` (declared in enclave.h). Inheritence
+ * is mimicked by having the first attributes to be the same as of enclave_rti_t,
  * except that enclaves attribute here is of type `federate_t**`, while it
- * is of type `enclave_t**` in `enclave_RTI_t`.
+ * is of type `enclave_t**` in `enclave_rti_t`.
  *     // **************** IMPORTANT!!! ********************
  *     // **   If you make any change to this struct,     **
- *     // **   you MUST also change  enclave_RTI_t in     **
+ *     // **   you MUST also change  enclave_rti_t in     **
  *     // ** (enclave.h)! The change must exactly match.  **
  *     // **************************************************
  */
-typedef struct federation_RTI_t {
+typedef struct federation_rti_t {
     ////////////////// Enclave specific attributes //////////////////
 
     // The federates.
@@ -169,7 +169,7 @@ typedef struct federation_RTI_t {
      * Boolean indicating that authentication is enabled.
      */
     bool authentication_enabled;
-} federation_RTI_t;
+} federation_rti_t;
 
 /**
  * Enter a critical section where logical time and the event queue are guaranteed

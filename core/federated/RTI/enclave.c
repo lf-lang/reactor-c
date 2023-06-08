@@ -1,9 +1,9 @@
 #include "enclave.h"
 
 /**
- * Reference to enclave_RTI_t instance.
+ * Reference to enclave_rti_t instance.
  */
-enclave_RTI_t* _E_RTI;
+enclave_rti_t* _e_rti;
 
 // Global variables defined in tag.c:
 extern instant_t start_time;
@@ -49,10 +49,10 @@ void logical_tag_complete(enclave_t* enclave, tag_t completed) {
 
     // Check downstream enclaves to see whether they should now be granted a TAG.
     for (int i = 0; i < enclave->num_downstream; i++) {
-        enclave_t *downstream = _E_RTI->enclaves[enclave->downstream[i]];
+        enclave_t *downstream = _e_rti->enclaves[enclave->downstream[i]];
         // Notify downstream enclave if appropriate.
         notify_advance_grant_if_safe(downstream);
-        bool *visited = (bool *)calloc(_E_RTI->number_of_enclaves, sizeof(bool)); // Initializes to 0.
+        bool *visited = (bool *)calloc(_e_rti->number_of_enclaves, sizeof(bool)); // Initializes to 0.
         // Notify enclaves downstream of downstream if appropriate.
         notify_downstream_advance_grant_if_safe(downstream, visited);
         free(visited);
@@ -68,7 +68,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
     tag_t min_upstream_completed = FOREVER_TAG;
 
     for (int j = 0; j < e->num_upstream; j++) {
-        enclave_t *upstream = _E_RTI->enclaves[e->upstream[j]];
+        enclave_t *upstream = _e_rti->enclaves[e->upstream[j]];
 
         // Ignore this enclave if it no longer connected.
         if (upstream->state == NOT_CONNECTED) continue;
@@ -99,7 +99,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
 
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream enclave have been visited.
-    bool *visited = (bool *)calloc(_E_RTI->number_of_enclaves, sizeof(bool)); // Initializes to 0.
+    bool *visited = (bool *)calloc(_e_rti->number_of_enclaves, sizeof(bool)); // Initializes to 0.
 
     // Find the tag of the earliest possible incoming message from
     // upstream enclaves.
@@ -109,7 +109,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
                    NEVER_TAG.time - start_time, 0);
 
     for (int j = 0; j < e->num_upstream; j++) {
-        enclave_t *upstream = _E_RTI->enclaves[e->upstream[j]];
+        enclave_t *upstream = _e_rti->enclaves[e->upstream[j]];
 
         // Ignore this enclave if it is no longer connected.
         if (upstream->state == NOT_CONNECTED) continue;
@@ -172,7 +172,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
 void notify_downstream_advance_grant_if_safe(enclave_t* e, bool visited[]) {
     visited[e->id] = true;
     for (int i = 0; i < e->num_downstream; i++) {
-        enclave_t* downstream = _E_RTI->enclaves[e->downstream[i]];
+        enclave_t* downstream = _e_rti->enclaves[e->downstream[i]];
         if (visited[downstream->id]) continue;
         notify_advance_grant_if_safe(downstream);
         notify_downstream_advance_grant_if_safe(downstream, visited);
@@ -198,7 +198,7 @@ void update_enclave_next_event_tag_locked(enclave_t* e, tag_t next_event_tag) {
     // Check downstream enclaves to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream enclaves have been visited.
-    bool *visited = (bool *)calloc(_E_RTI->number_of_enclaves, sizeof(bool)); // Initializes to 0.
+    bool *visited = (bool *)calloc(_e_rti->number_of_enclaves, sizeof(bool)); // Initializes to 0.
     notify_downstream_advance_grant_if_safe(e, visited);
     free(visited);
 }
@@ -274,7 +274,7 @@ tag_t transitive_next_event(enclave_t* e, tag_t candidate, bool visited[]) {
     // an event that would result in an earlier next event.
     for (int i = 0; i < e->num_upstream; i++) {
         tag_t upstream_result = transitive_next_event(
-            _E_RTI->enclaves[e->upstream[i]], result, visited);
+            _e_rti->enclaves[e->upstream[i]], result, visited);
 
         // Add the "after" delay of the connection to the result.
         upstream_result = lf_delay_tag(upstream_result, e->upstream_delay[i]);
