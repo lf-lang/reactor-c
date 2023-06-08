@@ -84,8 +84,7 @@ void trace_free(trace_t *trace) {
 }
 
 
-int _lf_register_trace_event(environment_t* env, void* pointer1, void* pointer2, _lf_trace_object_t type, char* description) {
-    trace_t* trace = env->trace;
+int _lf_register_trace_event(trace_t* trace, void* pointer1, void* pointer2, _lf_trace_object_t type, char* description) {
     lf_critical_section_enter(trace->env);
     if (trace->_lf_trace_object_descriptions_size >= TRACE_OBJECT_TABLE_SIZE) {
         lf_critical_section_exit(trace->env);
@@ -103,8 +102,8 @@ int _lf_register_trace_event(environment_t* env, void* pointer1, void* pointer2,
 
 int register_user_trace_event(void *self, char* description) {
     lf_assert(self, "Need a pointer to a self struct to register a user trace event");
-    environment_t * env = ((self_base_t *) self)->environment;
-    return _lf_register_trace_event(env, description, NULL, trace_user, description);
+    trace_t * trace = ((self_base_t *) self)->environment->trace;
+    return _lf_register_trace_event(trace, description, NULL, trace_user, description);
 }
 
 
@@ -270,8 +269,8 @@ void start_trace(trace_t* trace) {
 }
 
 void tracepoint(
+        trace_t* trace,
         trace_event_t event_type,
-        void* env,
         void* reactor,
         tag_t* tag,
         int worker,
@@ -288,9 +287,7 @@ void tracepoint(
         physical_time = &time;
     }
 
-    lf_assert(env, "We need an env-pointer to trace an event");
-    trace_t* trace = ((environment_t *)env)->trace;
-
+    environment_t *env = trace->env;
     // Worker argument determines which buffer to write to.
     int index = (worker >= 0) ? worker : 0;
 
@@ -331,8 +328,8 @@ void tracepoint(
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
-void tracepoint_reaction_starts(environment_t* env, reaction_t* reaction, int worker) {
-    tracepoint(reaction_starts, env, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, true);
+void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker) {
+    tracepoint(trace, reaction_starts, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, true);
 }
 
 /**
@@ -340,8 +337,8 @@ void tracepoint_reaction_starts(environment_t* env, reaction_t* reaction, int wo
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
-void tracepoint_reaction_ends(environment_t* env, reaction_t* reaction, int worker) {
-    tracepoint(reaction_ends, env, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
+void tracepoint_reaction_ends(trace_t* trace, reaction_t* reaction, int worker) {
+    tracepoint(trace, reaction_ends, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
 }
 
 /**
@@ -349,7 +346,7 @@ void tracepoint_reaction_ends(environment_t* env, reaction_t* reaction, int work
  * @param trigger Pointer to the trigger_t struct for the trigger.
  * @param extra_delay The extra delay passed to schedule().
  */
-void tracepoint_schedule(environment_t* env, trigger_t* trigger, interval_t extra_delay) {
+void tracepoint_schedule(trace_t* trace, trigger_t* trigger, interval_t extra_delay) {
     // schedule() can only trigger reactions within the same reactor as the action
     // or timer. If there is such a reaction, find its reactor's self struct and
     // put that into the tracepoint. We only have to look at the first reaction.
@@ -363,7 +360,7 @@ void tracepoint_schedule(environment_t* env, trigger_t* trigger, interval_t extr
     // This is OK because it is called only while holding the mutex lock.
     // True argument specifies to record physical time as late as possible, when
     // the event is already on the event queue.
-    tracepoint(schedule_called, env, reactor, NULL, -1, 0, 0, NULL, trigger, extra_delay, true);
+    tracepoint(trace, schedule_called, reactor, NULL, -1, 0, 0, NULL, trigger, extra_delay, true);
 }
 
 /**
@@ -385,8 +382,9 @@ void tracepoint_user_event(void* self, char* description) {
     // There will be a performance hit for this.
     lf_assert(self, "A pointer to the self struct is needed to trace an event");
     environment_t *env = ((self_base_t *)self)->environment;
+    trace_t *trace = env->trace;
     lf_critical_section_enter(env);
-    tracepoint(user_event, env, description, NULL, -1, -1, -1, NULL, NULL, 0, false);
+    tracepoint(trace, user_event, description, NULL, -1, -1, -1, NULL, NULL, 0, false);
     lf_critical_section_exit(env);
 }
 
@@ -411,12 +409,10 @@ void tracepoint_user_value(void* self, char* description, long long value) {
     // But to be safe, then, we have acquire a mutex before calling this
     // because multiple reactions might be calling the same tracepoint function.
     // There will be a performance hit for this.
-    environment_t *env = NULL;
-    if (self != NULL) {
-        env = ((self_base_t *)self)->environment;
-    }
+    environment_t *env = ((self_base_t *)self)->environment;
+    trace_t *trace = env->trace;
     lf_critical_section_enter(env);
-    tracepoint(user_value, env, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
+    tracepoint(trace, user_value, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
     lf_critical_section_exit(env);
 }
 
@@ -424,32 +420,32 @@ void tracepoint_user_value(void* self, char* description, long long value) {
  * Trace the start of a worker waiting for something to change on the event or reaction queue.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
-void tracepoint_worker_wait_starts(environment_t* env, int worker) {
-    tracepoint(worker_wait_starts, env, NULL, NULL, worker, worker, -1, NULL, NULL, 0, true);
+void tracepoint_worker_wait_starts(trace_t* trace, int worker) {
+    tracepoint(trace, worker_wait_starts, NULL, NULL, worker, worker, -1, NULL, NULL, 0, true);
 }
 
 /**
  * Trace the end of a worker waiting for something to change on the event or reaction queue.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
-void tracepoint_worker_wait_ends(environment_t* env, int worker) {
-    tracepoint(worker_wait_ends, env, NULL, NULL, worker, worker, -1, NULL, NULL, 0, false);
+void tracepoint_worker_wait_ends(trace_t* trace, int worker) {
+    tracepoint(trace, worker_wait_ends, NULL, NULL, worker, worker, -1, NULL, NULL, 0, false);
 }
 
 /**
  * Trace the start of the scheduler waiting for logical time to advance or an event to
  * appear on the event queue.
  */
-void tracepoint_scheduler_advancing_time_starts(environment_t* env) {
-    tracepoint(scheduler_advancing_time_starts, env, NULL, NULL, -1, -1, -1, NULL, NULL, 0, true);
+void tracepoint_scheduler_advancing_time_starts(trace_t* trace) {
+    tracepoint(trace, scheduler_advancing_time_starts, NULL, NULL, -1, -1, -1, NULL, NULL, 0, true);
 }
 
 /**
  * Trace the end of the scheduler waiting for logical time to advance or an event to
  * appear on the event queue.
  */
-void tracepoint_scheduler_advancing_time_ends(environment_t* env) {
-    tracepoint(scheduler_advancing_time_ends, env, NULL, NULL, -1, -1, -1, NULL, NULL, 0, false);
+void tracepoint_scheduler_advancing_time_ends(trace_t* trace) {
+    tracepoint(trace, scheduler_advancing_time_ends, NULL, NULL, -1, -1, -1, NULL, NULL, 0, false);
 }
 
 /**
@@ -457,8 +453,8 @@ void tracepoint_scheduler_advancing_time_ends(environment_t* env) {
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
-void tracepoint_reaction_deadline_missed(environment_t* env, reaction_t *reaction, int worker) {
-    tracepoint(reaction_deadline_missed, env, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
+void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, int worker) {
+    tracepoint(trace, reaction_deadline_missed, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
 }
 
 void stop_trace(trace_t* trace) {
@@ -499,9 +495,10 @@ void stop_trace(trace_t* trace) {
  * @param fed_id The federate identifier.
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
-void tracepoint_federate_to_RTI(trace_event_t event_type, int fed_id, tag_t* tag) {
-    tracepoint(event_type, 
-        NULL,   // void* environment pointer,
+void tracepoint_federate_to_RTI(trace_t *trace, trace_event_t event_type, int fed_id, tag_t* tag) {
+    tracepoint(
+        trace,
+        event_type, 
         NULL,   // void* pointer,
         tag,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
@@ -521,10 +518,11 @@ void tracepoint_federate_to_RTI(trace_event_t event_type, int fed_id, tag_t* tag
  * @param fed_id The federate identifier.
  * @param tag Pointer to the tag that has been received, or NULL.
  */
-void tracepoint_federate_from_RTI(trace_event_t event_type, int fed_id, tag_t* tag) {
+void tracepoint_federate_from_RTI(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag) {
     // trace_event_t event_type = (type == MSG_TYPE_TAG_ADVANCE_GRANT)? federate_TAG : federate_PTAG;
-    tracepoint(event_type,
-        NULL,   // void* environment pointer,
+    tracepoint(
+        trace,
+        event_type,
         NULL,   // void* pointer,
         tag,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
@@ -545,9 +543,10 @@ void tracepoint_federate_from_RTI(trace_event_t event_type, int fed_id, tag_t* t
  * @param partner_id The partner federate identifier.
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
-void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
-    tracepoint(event_type,
-        NULL,   // void* environment pointer,
+void tracepoint_federate_to_federate(trace_t* trace, trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
+    tracepoint(
+        trace,
+        event_type,
         NULL,   // void* pointer,
         tag,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
@@ -568,9 +567,10 @@ void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int p
  * @param partner_id The partner federate identifier.
  * @param tag Pointer to the tag that has been received, or NULL.
  */
-void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
-    tracepoint(event_type,
-        NULL,   // void* environment pointer,
+void tracepoint_federate_from_federate(trace_t* trace, trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
+    tracepoint(
+        trace,
+        event_type,
         NULL,   // void* pointer,
         tag,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
@@ -596,9 +596,10 @@ void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int
  * @param fed_id The fedaerate ID.
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
-void tracepoint_RTI_to_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
-    tracepoint(event_type,
-        NULL,   // void* environment pointer,
+void tracepoint_RTI_to_federate(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag) {
+    tracepoint(
+        trace,
+        event_type,
         NULL,   // void* pointer,
         tag,    // tag_t* tag,
         fed_id, // int worker (one thread per federate)
@@ -618,9 +619,10 @@ void tracepoint_RTI_to_federate(trace_event_t event_type, int fed_id, tag_t* tag
  * @param fed_id The fedaerate ID.
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
-void tracepoint_RTI_from_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
-    tracepoint(event_type,
-        NULL,   // void* environment pointer,
+void tracepoint_RTI_from_federate(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag) {
+    tracepoint(
+        trace,
+        event_type,
         NULL,   // void* pointer,
         tag,    // tag_t* tag,
         fed_id, // int worker (one thread per federate)

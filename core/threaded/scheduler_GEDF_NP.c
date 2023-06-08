@@ -310,9 +310,9 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
         LF_PRINT_DEBUG("Worker %d is out of ready reactions.", worker_number);
 
         // Ask the scheduler for more work and wait
-        tracepoint_worker_wait_starts(scheduler->env, worker_number);
+        tracepoint_worker_wait_starts(scheduler->env->trace, worker_number);
         _lf_sched_wait_for_work(scheduler, worker_number);
-        tracepoint_worker_wait_ends(scheduler->env, worker_number);
+        tracepoint_worker_wait_ends(scheduler->env->trace, worker_number);
     }
 
     // It's time for the worker thread to stop and exit.
