@@ -108,13 +108,13 @@ int main(int argc, const char* argv[]) {
         lf_print("Tracing the RTI execution in %s file.", rti_trace_file_name);
     }
     lf_print("Starting RTI for a total of %d federates, with %d being transient, in federation ID %s", \
-        _F_RTI->number_of_enclaves, 
-        _F_RTI->number_of_transient_federates, 
-        _F_RTI->federation_id);
+        _f_rti->number_of_enclaves, 
+        _f_rti->number_of_transient_federates, 
+        _f_rti->federation_id);
 
-    lf_print("Starting RTI for %d federates in federation ID %s.",  _F_RTI->number_of_enclaves, _F_RTI->federation_id);
-    assert(_F_RTI->number_of_enclaves < UINT16_MAX);
-    assert(_F_RTI->number_of_transient_federates < UINT16_MAX);
+    lf_print("Starting RTI for %d federates in federation ID %s.",  _f_rti->number_of_enclaves, _f_rti->federation_id);
+    assert(_f_rti->number_of_enclaves < UINT16_MAX);
+    assert(_f_rti->number_of_transient_federates < UINT16_MAX);
     // Allocate memory for the federates
     _f_rti->enclaves = (federate_t**)calloc(_f_rti->number_of_enclaves, sizeof(federate_t*));
     for (uint16_t i = 0; i < _f_rti->number_of_enclaves; i++) {

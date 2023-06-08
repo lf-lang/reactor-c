@@ -429,7 +429,7 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
         );
         return;
     } else { 
-        tag_t fed_start_tag = {.time=_F_RTI->enclaves[federate_id]->fed_start_time, .microstep=0};
+        tag_t fed_start_tag = {.time=_f_rti->enclaves[federate_id]->fed_start_time, .microstep=0};
         if(lf_tag_compare(intended_tag, fed_start_tag) < 0) {
             // Do not forward the message if the federate is connected, but its 
             // start_time is not reached yet
@@ -804,21 +804,21 @@ void handle_timestamp(federate_t *my_fed) {
 
     // Processing the TIMESTAMP depends on whether it is the startup phase (all 
     // persistent federates joined) or not. 
-    if (_F_RTI->num_feds_proposed_start < (_F_RTI->number_of_enclaves - _F_RTI->number_of_transient_federates)) {
-        if (timestamp > _F_RTI->max_start_time) {
-            _F_RTI->max_start_time = timestamp;
+    if (_f_rti->num_feds_proposed_start < (_f_rti->number_of_enclaves - _f_rti->number_of_transient_federates)) {
+        if (timestamp > _f_rti->max_start_time) {
+            _f_rti->max_start_time = timestamp;
         }
         // Check that persistent federates did propose a start_time
         if (!my_fed->is_transient) {
-            _F_RTI->num_feds_proposed_start++;
+            _f_rti->num_feds_proposed_start++;
         }
-        if (_F_RTI->num_feds_proposed_start == (_F_RTI->number_of_enclaves - _F_RTI->number_of_transient_federates)) {
+        if (_f_rti->num_feds_proposed_start == (_f_rti->number_of_enclaves - _f_rti->number_of_transient_federates)) {
             // All federates have proposed a start time.
             lf_cond_broadcast(&received_start_times);
         } else {
             // Some federates have not yet proposed a start time.
             // wait for a notification.
-            while (_F_RTI->num_feds_proposed_start < (_F_RTI->number_of_enclaves - _F_RTI->number_of_transient_federates)) {
+            while (_f_rti->num_feds_proposed_start < (_f_rti->number_of_enclaves - _f_rti->number_of_transient_federates)) {
                 // FIXME: Should have a timeout here?
                 lf_cond_wait(&received_start_times);
             }
@@ -826,7 +826,7 @@ void handle_timestamp(federate_t *my_fed) {
         lf_mutex_unlock(&rti_mutex);
 
         // Add an offset to this start time to get everyone starting together.
-        start_time = _F_RTI->max_start_time + DELAY_START;
+        start_time = _f_rti->max_start_time + DELAY_START;
 
         // Send the start_time
         send_start_tag(my_fed, start_time, (tag_t){.time = start_time, .microstep = 0});
@@ -840,7 +840,7 @@ void handle_timestamp(federate_t *my_fed) {
         // FIXME: Maybe we can use TAGs from a transient that left??? 
         tag_t federate_start_tag = NEVER_TAG;
         for (int j = 0; j < my_fed->enclave.num_upstream; j++) {
-            federate_t* upstream = _F_RTI->enclaves[my_fed->enclave.upstream[j]];
+            federate_t* upstream = _f_rti->enclaves[my_fed->enclave.upstream[j]];
             // Ignore this federate if it has resigned or if it a transient that 
             // is absent
             if (upstream->enclave.state == NOT_CONNECTED) {
@@ -853,7 +853,7 @@ void handle_timestamp(federate_t *my_fed) {
         }
         // Iterate over the downstream federates to query the current event tag.
         for (int j = 0; j < my_fed->enclave.num_downstream; j++) {
-            federate_t* downstream = _F_RTI->enclaves[my_fed->enclave.downstream[j]];
+            federate_t* downstream = _f_rti->enclaves[my_fed->enclave.downstream[j]];
             // Ignore this federate if it has resigned.
             if (downstream->enclave.state == NOT_CONNECTED) {
                 continue;
@@ -893,7 +893,7 @@ void send_start_tag(federate_t* my_fed, instant_t federation_start_time, tag_t f
     encode_int64(swap_bytes_if_big_endian_int64(federate_start_tag.time), &start_time_buffer[9]);
     encode_int32(swap_bytes_if_big_endian_int64(federate_start_tag.microstep), &start_time_buffer[9+8]);
 
-    if (_F_RTI->tracing_enabled) {
+    if (_f_rti->tracing_enabled) {
         tracepoint_RTI_to_federate(send_TIMESTAMP, my_fed->enclave.id, &federate_start_tag);
     }
 
@@ -912,7 +912,7 @@ void send_start_tag(federate_t* my_fed, instant_t federation_start_time, tag_t f
     my_fed->enclave.state = GRANTED;
 
     // If it the startup phase, then broadcast that the start_time was sent
-    if (_F_RTI->num_feds_proposed_start < (_F_RTI->number_of_enclaves - _F_RTI->number_of_transient_federates)) {
+    if (_f_rti->num_feds_proposed_start < (_f_rti->number_of_enclaves - _f_rti->number_of_transient_federates)) {
         lf_cond_broadcast(&sent_start_time);
     }
 
@@ -1194,7 +1194,7 @@ void* federate_thread_TCP(void* fed) {
 
         // Update the number of connected transient federates
         lf_mutex_lock(&rti_mutex);
-        _F_RTI->number_of_connected_transient_federates--;
+        _f_rti->number_of_connected_transient_federates--;
         
         // Reset the status of the leaving federate
         reset_transient_federate(my_fed);
@@ -1224,7 +1224,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
     // FIXME: This should not exit with error but rather should just reject the connection.
     read_from_socket_errexit(socket_id, length, buffer, "RTI failed to read from accepted socket.");
 
-    uint16_t fed_id = _F_RTI->number_of_enclaves; // Initialize to an invalid value.
+    uint16_t fed_id = _f_rti->number_of_enclaves; // Initialize to an invalid value.
     bool is_transient = false;
     // First byte received is the message type.
     if (buffer[0] != MSG_TYPE_FED_IDS) {
@@ -1329,7 +1329,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
     // because it is waiting for the start time to be
     // sent by the RTI before beginning its execution.
     fed->enclave.state = PENDING;
-    _F_RTI->enclaves[fed_id]->is_transient = is_transient;
+    _f_rti->enclaves[fed_id]->is_transient = is_transient;
 
     LF_PRINT_DEBUG("RTI responding with MSG_TYPE_ACK to federate %d.", fed_id);
     // Send an MSG_TYPE_ACK message.
@@ -1542,7 +1542,7 @@ bool authenticate_federate(int socket) {
 void connect_to_federates(int socket_descriptor) {
     // This loop will accept both, persistent and transient federates.
     // For transient, however, i will be decreased
-    for (int i = 0 ; i < _F_RTI->number_of_enclaves - _F_RTI->number_of_transient_federates ; i++) {
+    for (int i = 0 ; i < _f_rti->number_of_enclaves - _f_rti->number_of_transient_federates ; i++) {
         // Wait for an incoming connection request.
         struct sockaddr client_fd;
         uint32_t client_length = sizeof(client_fd);
@@ -1588,9 +1588,9 @@ void connect_to_federates(int socket_descriptor) {
             federate_t *fed = _f_rti->enclaves[fed_id];
             lf_thread_create(&(fed->thread_id), federate_thread_TCP, fed);
             
-            if (_F_RTI->enclaves[fed_id]->is_transient) {                    
-                _F_RTI->number_of_connected_transient_federates++;
-                assert(_F_RTI->number_of_connected_transient_federates <= _F_RTI->number_of_transient_federates);
+            if (_f_rti->enclaves[fed_id]->is_transient) {                    
+                _f_rti->number_of_connected_transient_federates++;
+                assert(_f_rti->number_of_connected_transient_federates <= _f_rti->number_of_transient_federates);
                 i--;
                 lf_print("RTI: Transient federate %d joined.", fed->enclave.id);
             }
@@ -1685,7 +1685,7 @@ void wait_for_federates(int socket_descriptor) {
 
     // All persistent federates have connected.
     lf_print("RTI: All expected (persistent) federates have connected. Starting execution.");
-    if (_F_RTI->number_of_transient_federates > 0) {
+    if (_f_rti->number_of_transient_federates > 0) {
         lf_print("RTI: Transient Federates can join and leave the federation at anytime.");
     }
 
@@ -1698,17 +1698,17 @@ void wait_for_federates(int socket_descriptor) {
     // If the federation does not include transient federates, then respond to 
     // erronous connections. Otherwise, continue to accept transients joining and 
     // respond to duplicate joing requests.
-    if (_F_RTI->number_of_transient_federates == 0) {
+    if (_f_rti->number_of_transient_federates == 0) {
         lf_thread_create(&responder_thread, respond_to_erroneous_connections, NULL);
-    } else if (_F_RTI->number_of_transient_federates > 0) {
+    } else if (_f_rti->number_of_transient_federates > 0) {
         lf_thread_create(&transient_thread, connect_to_transient_federates_thread, NULL);
     }
 
     // Wait for persistent federate threads to exit.
     void* thread_exit_status;
-    for (int i = 0 ; i < _F_RTI->number_of_enclaves ; i++) {
-        if (!_F_RTI->enclaves[i]->is_transient) {
-            federate_t* fed = _F_RTI->enclaves[i];
+    for (int i = 0 ; i < _f_rti->number_of_enclaves ; i++) {
+        if (!_f_rti->enclaves[i]->is_transient) {
+            federate_t* fed = _f_rti->enclaves[i];
             lf_print("RTI: Waiting for thread handling peristent federate %d.", fed->enclave.id);
             lf_thread_join(fed->thread_id, &thread_exit_status);
             free_in_transit_message_q(fed->in_transit_message_tags);
@@ -1723,23 +1723,23 @@ void wait_for_federates(int socket_descriptor) {
     // the transient federates. The reason is that if, for example, federate 0 is 
     // transienet, and it did leave in the middle of a federation execution, then
     // we will no more wait for the thread of a future joining instance to lf_thread_join.  
-    if (_F_RTI->number_of_transient_federates > 0) {
-        for (int i = 0 ; i < _F_RTI->number_of_enclaves ; i++) {
-            if (_F_RTI->enclaves[i]->is_transient) {
-                lf_print("RTI: Waiting for thread handling transient federate %d.", _F_RTI->enclaves[i]->enclave.id);
-                lf_thread_join(_F_RTI->enclaves[i]->thread_id, &thread_exit_status);
-                free_in_transit_message_q(_F_RTI->enclaves[i]->in_transit_message_tags);
-                lf_print("RTI: Federate %d thread exited.", _F_RTI->enclaves[i]->enclave.id);
+    if (_f_rti->number_of_transient_federates > 0) {
+        for (int i = 0 ; i < _f_rti->number_of_enclaves ; i++) {
+            if (_f_rti->enclaves[i]->is_transient) {
+                lf_print("RTI: Waiting for thread handling transient federate %d.", _f_rti->enclaves[i]->enclave.id);
+                lf_thread_join(_f_rti->enclaves[i]->thread_id, &thread_exit_status);
+                free_in_transit_message_q(_f_rti->enclaves[i]->in_transit_message_tags);
+                lf_print("RTI: Federate %d thread exited.", _f_rti->enclaves[i]->enclave.id);
             }
         }
     }
 
-    _F_RTI->all_federates_exited = true;
+    _f_rti->all_federates_exited = true;
     lf_print("All transient threads exited.");
 
-    if (_F_RTI->number_of_transient_federates == 0) {
+    if (_f_rti->number_of_transient_federates == 0) {
         lf_thread_join(&responder_thread, &thread_exit_status);
-    } else if (_F_RTI->number_of_transient_federates > 0) {
+    } else if (_f_rti->number_of_transient_federates > 0) {
         lf_thread_join(&transient_thread, &thread_exit_status);
     }
     
@@ -1916,8 +1916,8 @@ int process_args(int argc, const char* argv[]) {
                 usage(argc, argv);
                 return 0;
             }
-            _F_RTI->number_of_enclaves = (int32_t)num_federates; // FIXME: Loses numbers on 64-bit machines
-            lf_print("RTI: Number of federates: %d\n", _F_RTI->number_of_enclaves);
+            _f_rti->number_of_enclaves = (int32_t)num_federates; // FIXME: Loses numbers on 64-bit machines
+            lf_print("RTI: Number of federates: %d\n", _f_rti->number_of_enclaves);
         } else if (strcmp(argv[i], "-nt") == 0 || strcmp(argv[i], "--number_of_transient_federates") == 0) {
             if (argc < i + 2) {
                 lf_print_error("--number_of_transient_federates needs an integer argument.");
@@ -1931,13 +1931,13 @@ int process_args(int argc, const char* argv[]) {
                 usage(argc, argv);
                 return 0;
             }
-            if (num_transient_federates > _F_RTI->number_of_enclaves) {
+            if (num_transient_federates > _f_rti->number_of_enclaves) {
                 lf_print_error("--number_of_transient_federates cannot be higher than the number of federates.");
                 usage(argc, argv);
                 return 0;
             }
-            _F_RTI->number_of_transient_federates = (int32_t)num_transient_federates; // FIXME: Loses numbers on 64-bit machines
-            lf_print("RTI: Number of transient federates: %d", _F_RTI->number_of_transient_federates);
+            _f_rti->number_of_transient_federates = (int32_t)num_transient_federates; // FIXME: Loses numbers on 64-bit machines
+            lf_print("RTI: Number of transient federates: %d", _f_rti->number_of_transient_federates);
         } else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
             if (argc < i + 2) {
                 lf_print_error(
@@ -2020,18 +2020,18 @@ void initialize_RTI(){
 void* connect_to_transient_federates_thread() {
     // This loop will continue to accept connections of transient federates, as
     // soon as there is room
-    while (!_F_RTI->all_federates_exited) {
-        if (_F_RTI->number_of_connected_transient_federates < _F_RTI->number_of_transient_federates) {
+    while (!_f_rti->all_federates_exited) {
+        if (_f_rti->number_of_connected_transient_federates < _f_rti->number_of_transient_federates) {
             // Continue waiting for an incoming connection requests from transients.
             struct sockaddr client_fd;
             uint32_t client_length = sizeof(client_fd);
             // The following blocks until a federate connects.
             int socket_id = -1;
             while(1) {
-                if (!_F_RTI->all_federates_exited) {
-                    return;
+                if (!_f_rti->all_federates_exited) {
+                    return NULL;
                 }
-                socket_id = accept(_F_RTI->socket_descriptor_TCP, &client_fd, &client_length);
+                socket_id = accept(_f_rti->socket_descriptor_TCP, &client_fd, &client_length);
                 if (socket_id >= 0) {
                     // Got a socket
                     break;
@@ -2046,7 +2046,7 @@ void* connect_to_transient_federates_thread() {
 
             // Send RTI hello when RTI -a option is on.
             #ifdef __RTI_AUTH__
-            if (_F_RTI->authentication_enabled) {
+            if (_f_rti->authentication_enabled) {
                 if (!authenticate_federate(socket_id)) {
                     lf_print_warning("RTI failed to authenticate the incoming federate.");
                     // Ignore the federate that failed authentication.
@@ -2067,9 +2067,9 @@ void* connect_to_transient_federates_thread() {
                 // This has to be done after clock synchronization is finished
                 // or that thread may end up attempting to handle incoming clock
                 // synchronization messages.
-                lf_thread_create(&(_F_RTI->enclaves[fed_id]->thread_id), federate_thread_TCP, &(_F_RTI->enclaves[fed_id]));
-                _F_RTI->enclaves[fed_id]->is_transient = true;
-                _F_RTI->number_of_connected_transient_federates++;
+                lf_thread_create(&(_f_rti->enclaves[fed_id]->thread_id), federate_thread_TCP, &(_f_rti->enclaves[fed_id]));
+                _f_rti->enclaves[fed_id]->is_transient = true;
+                _f_rti->number_of_connected_transient_federates++;
                 lf_print("RTI: Transient federate %d joined.", fed_id);
             }
         }
@@ -2111,7 +2111,7 @@ void handle_current_tag_query_response(federate_t *my_fed) {
     // Get the timestamp and the transient federate id
     instant_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t *)(buffer)));
     uint16_t transient_fed_id = extract_uint16((&buffer[8]));
-    if (_F_RTI->tracing_enabled) {
+    if (_f_rti->tracing_enabled) {
         tag_t tag = {.time = timestamp, .microstep = 0};
         tracepoint_RTI_from_federate(receive_CuTAG_QR_RES, my_fed->enclave.id, &tag);
     }
@@ -2121,7 +2121,7 @@ void handle_current_tag_query_response(federate_t *my_fed) {
     lf_mutex_lock(&rti_mutex);
     // Processing the TIMESTAMP depends on whether it is the startup phase (all 
     // persistent federates joined) or not. 
-    federate_t* transient = _F_RTI->enclaves[transient_fed_id];
+    federate_t* transient = _f_rti->enclaves[transient_fed_id];
     
     // Set the start_time of the transient federate to be the maximum among 
     // current tag of upstreams and the physical time at which it joined .
