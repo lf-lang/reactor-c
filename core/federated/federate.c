@@ -997,6 +997,11 @@ void perform_hmac_authentication(int rti_socket) {
  */
 void connect_to_rti(const char* hostname, int port) {
     LF_PRINT_LOG("Connecting to the RTI.");
+    #ifdef FEDERATED_AUTHENTICATED_SST
+    char config_path[10]; //TODO: FIX THIS!
+    SST_ctx_t *ctx = init_SST(config_path);
+    session_key_list_t *s_key_list = get_session_key(ctx, NULL);
+    #endif
 
     // override passed hostname and port if passed as runtime arguments
     hostname = federation_metadata.rti_host ? federation_metadata.rti_host : hostname;
@@ -1085,7 +1090,14 @@ void connect_to_rti(const char* hostname, int port) {
                 // Sleep was interrupted.
                 continue;
             }
-        } else {
+        }
+        #ifdef FEDERATED_AUTHENTICATED_SST
+        // Update server's ip address and port number finally used.
+        get_server_ip_addr_and_port_num(ctx, server_fd);
+        session_key_list_t *s_key_list = get_session_key(ctx, NULL);
+        // get_session_key();
+        #endif
+        else {
             // Have connected to an RTI, but not sure it's the right RTI.
             // Send a MSG_TYPE_FED_IDS message and wait for a reply.
             // Notify the RTI of the ID of this federate and its federation.
