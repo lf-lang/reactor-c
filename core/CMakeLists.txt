@@ -59,12 +59,27 @@ if (APPLE)
 endif()
 
 # Link with OpenSSL library
-if(DEFINED FEDERATED_AUTHENTICATED)
+if(DEFINED FEDERATED_AUTHENTICATED OR DEFINED FEDERATED_AUTHENTICATED_SST)
     if (APPLE)
         set(OPENSSL_ROOT_DIR /usr/local/opt/openssl)
     endif()
     find_package(OpenSSL REQUIRED)
     target_link_libraries(core PUBLIC OpenSSL::SSL)
+endif()
+
+if(DEFINED FEDERATED_AUTHENTICATED_SST)
+    set(SSTDir federated/sst-c-api)
+    add_library(
+      SST_LIB 
+      ${SSTDir}/c_api.c
+      ${SSTDir}/c_common.c
+      ${SSTDir}/c_crypto.c
+      ${SSTDir}/c_secure_comm.c
+      ${SSTDir}/load_config.c
+    )
+    # Link OpenSSL to SST_LIB
+    target_link_libraries(SST_LIB OpenSSL::SSL)
+    target_link_libraries(core PUBLIC SST_LIB)
 endif()
 
 # Link with thread library
@@ -102,6 +117,7 @@ define(FEDERATED_CENTRALIZED)
 define(FEDERATED_DECENTRALIZED)
 define(FEDERATED)
 define(FEDERATED_AUTHENTICATED)
+define(FEDERATED_AUTHENTICATED_SST)
 define(LF_REACTION_GRAPH_BREADTH)
 define(LF_THREADED)
 define(LF_TRACE)
