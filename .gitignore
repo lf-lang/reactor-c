@@ -1,6 +1,7 @@
 /.idea/
 /docs/_build
 /docs/api
+**/.vscode/
 /build/
 **/.DS_Store
 /core/federated/RTI/build/
