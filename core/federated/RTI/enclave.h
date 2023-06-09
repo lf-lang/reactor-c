@@ -58,12 +58,12 @@ typedef struct enclave_t {
  * corresponding enclaves'state.
  *     // **************** IMPORTANT!!! ********************
  *     // **   If you make any change to this struct,     **
- *     // **  you MUST also change federation_RTI_t in    **
+ *     // **  you MUST also change federation_rti_t in    **
  *     // ** (rti_lib.h)! The change must exactly match.  **
  *     // **************************************************
  */
 
-typedef struct enclave_RTI_t {
+typedef struct enclave_rti_t {
     // The enclaves.
     enclave_t **enclaves;
 
@@ -76,14 +76,19 @@ typedef struct enclave_RTI_t {
     // Number of enclaves handling stop
     int num_enclaves_handling_stop;
 
-    /**
-     * Boolean indicating that tracing is enabled.
-     */
+    // Boolean indicating that tracing is enabled.
     bool tracing_enabled;
-} enclave_RTI_t;
+} enclave_rti_t;
 
 
-// FIXME: Docs
+/**
+ * An enclave calls this function after it completed a tag. 
+ * The function updates the completed tag and check if the downstream enclaves 
+ * are eligible for receiving TAGs.
+ * 
+ * @param enclave The enclave
+ * @param completed The completed tag of the enclave
+ */
 void logical_tag_complete(enclave_t* enclave, tag_t completed);
 
 typedef struct {
@@ -93,6 +98,8 @@ typedef struct {
 
 /** 
  * Initialize the enclave with the specified ID.
+ * 
+ * @param e The enclave
  * @param id The enclave ID.
  */
 void initialize_enclave(enclave_t* e, uint16_t id);
@@ -119,7 +126,7 @@ void notify_downstream_advance_grant_if_safe(enclave_t* e, bool visited[]);
  *
  * This function assumes that the caller holds the mutex lock.
  * 
- * FIXME: This needs two implementations, one for enclaves and one for the RTI.
+ * FIXME: This needs two implementations, one for enclaves and one for federates.
  *
  * @param e The enclave.
  * @param tag The tag to grant.
@@ -179,7 +186,9 @@ void notify_provisional_tag_advance_grant(enclave_t* e, tag_t tag);
  *
  * This function assumes that the caller holds the mutex lock.
  *
- * @return True if the TAG message is sent and false otherwise.
+ * @param e The enclave
+ * @return If granted, return the tag value and whether it is provisional. 
+ *  Otherwise, return the NEVER_TAG.
  */
 tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e);
 
@@ -196,6 +205,8 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e);
  *
  * @param e The enclave.
  * @param next_event_tag The next event tag for e.
+ * @return If granted, return the TAG and whether it is provisional or not. 
+ *  Otherwise, return the NEVER_TAG.
  */
 tag_advance_grant_t next_event_tag(enclave_t* e, tag_t next_event_tag);
 
@@ -226,12 +237,13 @@ void update_enclave_next_event_tag_locked(enclave_t* e, tag_t next_event_tag);
  * which outputs can be triggered by which inputs. For now, we
  * assume any output can be triggered by any input.
  *
- * @param fed The federate.
+ * @param e The enclave.
  * @param candidate A candidate tag (for the first invocation,
  *  this should be fed->next_event).
  * @param visited An array of booleans indicating which federates
  *  have been visited (for the first invocation, this should be
  *  an array of falses of size _RTI.number_of_federates).
+ * @return The earliest next event tag of the enclave e.
  */
 tag_t transitive_next_event(enclave_t *e, tag_t candidate, bool visited[]);
 
