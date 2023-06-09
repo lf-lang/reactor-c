@@ -30,5 +30,6 @@ var lf__token_8h =
     [ "_lf_replace_template_token", "d2/dff/lf__token_8h.html#abeff98dcfb6b5715aac8e1438c5a6e77", null ],
     [ "lf_new_token", "d2/dff/lf__token_8h.html#aa47b51a11727eec252ff7e786794bd88", null ],
     [ "lf_writable_copy", "d2/dff/lf__token_8h.html#aaf8e6f18b021d0b8ece7e1b64280432f", null ],
+    [ "_lf_count_token_allocations", "d2/dff/lf__token_8h.html#af4657205de7da8f0bf7b346985a983fc", null ],
     [ "_lf_tokens_allocated_in_reactions", "d2/dff/lf__token_8h.html#ac77b531bdbb49e0c716ba513a66538cb", null ]
 ];

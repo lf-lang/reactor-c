@@ -186,6 +186,8 @@ Variables</h2></td></tr>
 <tr class="memitem:ac77b531bdbb49e0c716ba513a66538cb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d80/structlf__token__t.html">lf_token_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/dff/lf__token_8h.html#ac77b531bdbb49e0c716ba513a66538cb">_lf_tokens_allocated_in_reactions</a></td></tr>
 <tr class="memdesc:ac77b531bdbb49e0c716ba513a66538cb"><td class="mdescLeft">&#160;</td><td class="mdescRight">List of tokens created within reactions that must be freed. Tokens created by lf_writable_copy, which is automatically invoked when an input is mutable, must have their reference count decremented at the end of a tag (or the beginning of the next tag). Otherwise, their memory could leak. If they are passed on to an output or to a call to lf_schedule during the reaction, then those will also result in incremented reference counts, enabling the token to live on until used. For example, a new token created by lf_writable_copy could become the new template token for an output via a call to lf_set.  <br /></td></tr>
 <tr class="separator:ac77b531bdbb49e0c716ba513a66538cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af4657205de7da8f0bf7b346985a983fc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/dff/lf__token_8h.html#af4657205de7da8f0bf7b346985a983fc">_lf_count_token_allocations</a></td></tr>
+<tr class="separator:af4657205de7da8f0bf7b346985a983fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>)</dd></dl>
@@ -720,6 +722,29 @@ DESCRIPTION</h1>
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
+<a id="af4657205de7da8f0bf7b346985a983fc" name="af4657205de7da8f0bf7b346985a983fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af4657205de7da8f0bf7b346985a983fc">&#9670;&#160;</a></span>_lf_count_token_allocations</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">int _lf_count_token_allocations</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Counter used to issue a warning if memory is allocated for tokens and never freed. Note that every trigger will have one token allocated for it. That token is not counted because it is not expected to be freed. </p>
+
+</div>
+</div>
 <a id="ac77b531bdbb49e0c716ba513a66538cb" name="ac77b531bdbb49e0c716ba513a66538cb"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac77b531bdbb49e0c716ba513a66538cb">&#9670;&#160;</a></span>_lf_tokens_allocated_in_reactions</h2>
 

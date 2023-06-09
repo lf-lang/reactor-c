@@ -15,5 +15,6 @@ var lf__token_8c =
     [ "lf_new_token", "d4/d37/lf__token_8c.html#aa47b51a11727eec252ff7e786794bd88", null ],
     [ "lf_writable_copy", "d4/d37/lf__token_8c.html#aaf8e6f18b021d0b8ece7e1b64280432f", null ],
     [ "_lf_count_payload_allocations", "d4/d37/lf__token_8c.html#a6be7b923487565688714ab43ff747633", null ],
+    [ "_lf_count_token_allocations", "d4/d37/lf__token_8c.html#af4657205de7da8f0bf7b346985a983fc", null ],
     [ "_lf_tokens_allocated_in_reactions", "d4/d37/lf__token_8c.html#ac77b531bdbb49e0c716ba513a66538cb", null ]
 ];
