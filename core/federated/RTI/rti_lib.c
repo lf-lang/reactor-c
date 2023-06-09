@@ -428,9 +428,8 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
                 fed->enclave.last_provisionally_granted.microstep
         );
         return;
-    } else { 
-        tag_t fed_start_tag = {.time=_f_rti->enclaves[federate_id]->fed_start_time, .microstep=0};
-        if(lf_tag_compare(intended_tag, fed_start_tag) < 0) {
+    } else {
+        if(lf_tag_compare(intended_tag, fed->effective_start_tag) < 0) {
             // Do not forward the message if the federate is connected, but its 
             // start_time is not reached yet
             lf_mutex_unlock(&rti_mutex);
@@ -601,15 +600,14 @@ void _lf_rti_broadcast_stop_time_to_federates_already_locked() {
 
 void mark_federate_requesting_stop(federate_t* fed) {
     if (!fed->enclave.requested_stop) {
-        // Assume that the federate
-        // has requested stop
-        // FIXME: Inc only if it is a persistent federate
+        // Assume that the federate has requested stop
+        // Increment the number of federates handling stop only if it is persistent
         if (fed->is_transient == false) {
             _f_rti->num_enclaves_handling_stop++;
         }
         fed->enclave.requested_stop = true;
     }
-    if (_f_rti->num_enclaves_handling_stop == _f_rti->number_of_enclaves) {
+    if (_f_rti->num_enclaves_handling_stop == _f_rti->number_of_enclaves - _f_rti->number_of_transient_federates) {
         // We now have information about the stop time of all
         // federates.
         _lf_rti_broadcast_stop_time_to_federates_already_locked();
@@ -655,7 +653,7 @@ void handle_stop_request_message(federate_t* fed) {
     // for a stop, add it to the tally.
     mark_federate_requesting_stop(fed);
 
-    if (_f_rti->num_enclaves_handling_stop == _f_rti->number_of_enclaves) {
+    if (_f_rti->num_enclaves_handling_stop == _f_rti->number_of_enclaves - _f_rti->number_of_transient_federates) {
         // We now have information about the stop time of all
         // federates. This is extremely unlikely, but it can occur
         // all federates call lf_request_stop() at the same tag.
@@ -800,7 +798,7 @@ void handle_timestamp(federate_t *my_fed) {
     LF_PRINT_LOG("RTI received timestamp message: " PRINTF_TIME ".", timestamp);
 
     lf_mutex_lock(&rti_mutex);
-    my_fed->fed_start_time = timestamp;
+    my_fed->effective_start_tag.time = timestamp;
 
     // Processing the TIMESTAMP depends on whether it is the startup phase (all 
     // persistent federates joined) or not. 
@@ -829,7 +827,8 @@ void handle_timestamp(federate_t *my_fed) {
         start_time = _f_rti->max_start_time + DELAY_START;
 
         // Send the start_time
-        send_start_tag(my_fed, start_time, (tag_t){.time = start_time, .microstep = 0});
+        my_fed->effective_start_tag = (tag_t){.time = start_time, .microstep = 0u};
+        send_start_tag(my_fed, start_time, my_fed->effective_start_tag);
     } else {
         // A transient has joined after the startup phase
         // At this point, we already hold the mutex
@@ -868,8 +867,9 @@ void handle_timestamp(federate_t *my_fed) {
         // then do not wait for the start time
         if (lf_tag_compare(federate_start_tag, NEVER_TAG) == 0) {
             my_fed->start_time_is_set = true;
-            my_fed->fed_start_time += DELAY_START;
-            federate_start_tag = (tag_t){.time = my_fed->fed_start_time, .microstep = 0};
+            my_fed->effective_start_tag.time += DELAY_START;
+            my_fed->effective_start_tag.microstep = 0u;
+            federate_start_tag = my_fed->effective_start_tag;
         }
         lf_mutex_unlock(&rti_mutex);
         
@@ -890,9 +890,8 @@ void send_start_tag(federate_t* my_fed, instant_t federation_start_time, tag_t f
     start_time_buffer[0] = MSG_TYPE_TIMESTAMP_START;
     
     encode_int64(swap_bytes_if_big_endian_int64(federation_start_time), &start_time_buffer[1]);
-    encode_int64(swap_bytes_if_big_endian_int64(federate_start_tag.time), &start_time_buffer[9]);
-    encode_int32(swap_bytes_if_big_endian_int64(federate_start_tag.microstep), &start_time_buffer[9+8]);
-
+    encode_tag(&(start_time_buffer[1 + sizeof(instant_t)]), federate_start_tag);
+    
     if (_f_rti->tracing_enabled) {
         tracepoint_RTI_to_federate(send_TIMESTAMP, my_fed->enclave.id, &federate_start_tag);
     }
@@ -1655,7 +1654,7 @@ void initialize_federate(federate_t* fed, uint16_t id) {
     fed->server_ip_addr.s_addr = 0;
     fed->server_port = -1;
     fed->is_transient = true;
-    fed->fed_start_time = 0LL;
+    fed->effective_start_tag = NEVER_TAG;
     fed->num_of_conn_federates = 0;
     fed->num_of_conn_federates_sent_net = 0;
     fed->start_time_is_set = false;
@@ -1931,11 +1930,6 @@ int process_args(int argc, const char* argv[]) {
                 usage(argc, argv);
                 return 0;
             }
-            if (num_transient_federates > _f_rti->number_of_enclaves) {
-                lf_print_error("--number_of_transient_federates cannot be higher than the number of federates.");
-                usage(argc, argv);
-                return 0;
-            }
             _f_rti->number_of_transient_federates = (int32_t)num_transient_federates; // FIXME: Loses numbers on 64-bit machines
             lf_print("RTI: Number of transient federates: %d", _f_rti->number_of_transient_federates);
         } else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
@@ -1986,6 +1980,11 @@ int process_args(int argc, const char* argv[]) {
     }
     if (_f_rti->number_of_enclaves == 0) {
         lf_print_error("--number_of_federates needs a valid positive integer argument.");
+        usage(argc, argv);
+        return 0;
+    }
+    if (_f_rti->number_of_transient_federates > _f_rti->number_of_enclaves) {
+        lf_print_error("--number_of_transient_federates cannot be higher than the number of federates.");
         usage(argc, argv);
         return 0;
     }
@@ -2092,7 +2091,8 @@ void reset_transient_federate(federate_t* fed) {
     fed->server_port = -1;
     fed->enclave.requested_stop = false;
     fed->is_transient = true;
-    fed->fed_start_time = 0LL;
+    // FIXME: Should it be reset to the NEVER_TAG?
+    fed->effective_start_tag = NEVER_TAG;
     fed->num_of_conn_federates = 0;
     fed->num_of_conn_federates_sent_net = 0;
     fed->start_time_is_set = false;
@@ -2125,8 +2125,8 @@ void handle_current_tag_query_response(federate_t *my_fed) {
     
     // Set the start_time of the transient federate to be the maximum among 
     // current tag of upstreams and the physical time at which it joined .
-    if (timestamp > transient->fed_start_time) { 
-        transient->fed_start_time = timestamp;
+    if (timestamp > transient->effective_start_tag.time) { 
+        transient->effective_start_tag.time = timestamp;
     }
     // Check that upstream and downstream federates of the transient did propose a start_time
     transient->num_of_conn_federates_sent_net++;

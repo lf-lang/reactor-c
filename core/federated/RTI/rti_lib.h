@@ -62,7 +62,7 @@ typedef struct federate_t {
     struct in_addr server_ip_addr; // Information about the IP address of the socket
                                 // server of the federate.
     bool is_transient;      // Indicates whether the federate is transient or persistent.
-    int64_t fed_start_time; // Records the start time of the federate, which is mainly useful for transient federates  
+    tag_t effective_start_tag; // Records the start time of the federate, which is mainly useful for transient federates  
     int num_of_conn_federates; // Records the total number of connected federates among the upstream and 
                             // downstream federates. This is used only in the case of transient federate, for 
                             // computing the start time.

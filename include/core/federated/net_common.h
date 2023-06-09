@@ -390,7 +390,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * transient federates.
  */
 #define MSG_TYPE_TIMESTAMP_START 50
-#define MSG_TYPE_TIMESTAMP_START_LENGTH (1 + sizeof(instant_t) + sizeof(tag_t))
+#define MSG_TYPE_TIMESTAMP_START_LENGTH (1 + sizeof(instant_t) + sizeof(instant_t) + sizeof(microstep_t))
 
 /** Byte identifying a message to forward to another federate.
  *  The next two bytes will be the ID of the destination port.

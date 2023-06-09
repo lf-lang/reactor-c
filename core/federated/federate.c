@@ -1208,8 +1208,7 @@ instant_t get_start_time_from_rti(instant_t my_physical_time) {
 
     // Read the federation start_time first, then the effective start_time after
     instant_t timestamp = extract_int64(&(buffer[1]));
-    effective_start_tag.time = extract_int64(&(buffer[9]));
-    effective_start_tag.microstep = extract_int32(&(buffer[9+8]));
+    effective_start_tag = extract_tag(&(buffer[9]));
     
     // Trace the event when tracing is enabled.
     // Note that we report in the trace the effective_start_tag.
@@ -2721,9 +2720,6 @@ void synchronize_with_other_federates() {
         // A duration has been specified. Recalculate the stop time.
        stop_tag = ((tag_t) {.time = start_time + duration, .microstep = 0});
     }
-
-    lf_print_log("Start time of the federation is " PRINTF_TIME ".", start_time);
-    lf_print_log("Effective start time of federate %d is: " PRINTF_TIME ".", _lf_my_fed_id, effective_start_tag.time);
 
     // Start a thread to listen for incoming TCP messages from the RTI.
     // @note Up until this point, the federate has been listening for messages
