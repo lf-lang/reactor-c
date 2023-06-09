@@ -44,11 +44,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assert.h>
 #include <errno.h>      // Defined perror(), errno
+#include <limits.h>
 #include <signal.h>     // Defines sigaction.
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>     // Defines read(), write(), and close()
 #include <string.h>
+#include <unistd.h>     // Defines read(), write(), and close()
 
 #include "clock-sync.h"
 #include "federate.h"
@@ -1265,15 +1266,15 @@ void mark_all_unknown_ports_as_absent() {
  * Return true if there is an input control reaction blocked waiting for input.
  * This assumes the caller holds the mutex.
  */
-bool is_input_control_reaction_blocked() {
-    for (int i = 0; i < _lf_action_table_size; i++) {
-        lf_action_base_t* input_port_action = _lf_action_for_port(i);
-        if (input_port_action->trigger->is_a_control_reaction_waiting) {
-            return true;
-        }
-    }
-    return false;
-}
+// bool is_input_control_reaction_blocked() {
+//     for (int i = 0; i < _lf_action_table_size; i++) {
+//         lf_action_base_t* input_port_action = _lf_action_for_port(i);
+//         if (input_port_action->trigger->is_a_control_reaction_waiting) {
+//             return true;
+//         }
+//     }
+//     return false;
+// }
 
 /**
  * Update the last known status tag of all network input ports
@@ -1879,7 +1880,7 @@ void handle_message(int socket, int fed_id) {
  */
 void stall_advance_level_federation(size_t curr_reaction_level) {
     lf_mutex_lock(&mutex);
-    while(max_level_allowed_to_advance != -1 && (curr_reaction_level+1) > max_level_allowed_to_advance) {
+    while (curr_reaction_level + 1 > max_level_allowed_to_advance) {
         lf_cond_wait(&port_status_changed);
     }
     lf_mutex_unlock(&mutex);
@@ -2004,7 +2005,7 @@ void handle_tagged_message(int socket, int fed_id) {
     // can be checked in this scenario without this race condition. The message with
     // intended_tag of 9 in this case needs to wait one microstep to be processed.
     if (lf_tag_compare(intended_tag, lf_tag()) <= 0 && // The event is meant for the current or a previous tag.
-            ((action->trigger->is_a_control_reaction_waiting && // Check if a control reaction is waiting and
+            ((//action->trigger->is_a_control_reaction_waiting && // Check if a control reaction is waiting and
              action->trigger->status == unknown) ||             // if the status of the port is still unknown.
              (_lf_execution_started == false))         // Or, execution hasn't even started, so it's safe to handle this event.
     ) {
@@ -2148,23 +2149,13 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
  *
  */
 void update_max_level() {
-
-    bool anyUnknowns = false;
-    int maxPossible = -1;
+    max_level_allowed_to_advance = INT_MAX;
     for (int i = 0; i < _lf_action_table_size; i++) {
         lf_action_base_t* input_port_action = _lf_action_for_port(i);
-        if (input_port_action->trigger->status == unknown){
-            anyUnknowns = true;
-        } else {
-            maxPossible = LF_MAX(maxPossible, LF_LEVEL(input_port_action->trigger->reactions[0]->index));
+        if (input_port_action->trigger->status == unknown) {
+            max_level_allowed_to_advance = LF_MIN(max_level_allowed_to_advance, LF_LEVEL(input_port_action->trigger->reactions[0]->index));
         }
     }
-    if (!anyUnknowns) {
-        max_level_allowed_to_advance = -1;
-    } else{
-        max_level_allowed_to_advance = maxPossible;
-    }
-
 }
 
 /**
