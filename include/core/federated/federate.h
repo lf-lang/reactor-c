@@ -235,6 +235,8 @@ typedef struct federate_instance_t {
      */
     trigger_t* trigger_for_network_output_control_reactions;
 
+    // Trace object
+    trace_t* trace;
 } federate_instance_t;
 
 

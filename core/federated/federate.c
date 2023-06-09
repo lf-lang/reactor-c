@@ -220,7 +220,7 @@ void create_server(int specified_port) {
     buffer[0] = MSG_TYPE_ADDRESS_ADVERTISEMENT;
     encode_int32(_fed.server_port, &(buffer[1]));
     // Trace the event when tracing is enabled
-    tracepoint_federate_to_RTI(send_ADR_AD, _lf_my_fed_id, NULL);
+    tracepoint_federate_to_rti(_fed.trace, send_ADR_AD, _lf_my_fed_id, NULL);
     write_to_socket_errexit(_fed.socket_TCP_RTI, sizeof(int32_t) + 1, (unsigned char*)buffer,
                     "Failed to send address advertisement.");
     LF_PRINT_DEBUG("Sent port %d to the RTI.", _fed.server_port);
@@ -303,9 +303,9 @@ int send_message(int message_type,
     }
     // Trace the event when tracing is enabled
     if (message_type == MSG_TYPE_P2P_MESSAGE) {
-        tracepoint_federate_to_federate(send_P2P_MSG, _lf_my_fed_id, federate, NULL);
+        tracepoint_federate_to_federate(_fed.trace, send_P2P_MSG, _lf_my_fed_id, federate, NULL);
     } else { // message_type == MSG_TYPE_MESSAGE)
-        tracepoint_federate_to_RTI(send_MSG, _lf_my_fed_id, NULL);
+        tracepoint_federate_to_rti(_fed.trace, send_MSG, _lf_my_fed_id, NULL);
     }
     write_to_socket_errexit_with_mutex(socket, header_length, header_buffer, &outbound_socket_mutex,
             "Failed to send message header to to %s.", next_destination_str);
@@ -427,9 +427,9 @@ int send_timed_message(environment_t* env,
     }
     // Trace the event when tracing is enabled
     if (message_type == MSG_TYPE_TAGGED_MESSAGE) {
-        tracepoint_federate_to_RTI(send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
+        tracepoint_federate_to_rti(_fed.trace, send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
     } else { // message_type == MSG_TYPE_P2P_TAGGED_MESSAGE
-        tracepoint_federate_to_federate(send_P2P_TAGGED_MSG, _lf_my_fed_id, federate, &current_message_intended_tag);
+        tracepoint_federate_to_federate(_fed.trace, send_P2P_TAGGED_MSG, _lf_my_fed_id, federate, &current_message_intended_tag);
     }
     write_to_socket_errexit_with_mutex(socket, header_length, header_buffer, &outbound_socket_mutex,
             "Failed to send timed message header to %s.", next_destination_str);
@@ -463,7 +463,7 @@ void _lf_send_time(unsigned char type, instant_t time, bool exit_on_error) {
 
     tag_t tag = {.time = time, .microstep = 0};
     // Trace the event when tracing is enabled
-    tracepoint_federate_to_RTI(send_TIMESTAMP, _lf_my_fed_id, &tag);
+    tracepoint_federate_to_rti(_fed.trace, send_TIMESTAMP, _lf_my_fed_id, &tag);
 
     ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
     if (bytes_written < (ssize_t)bytes_to_write) {
@@ -514,7 +514,7 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
     }
     trace_event_t event_type = (type == MSG_TYPE_NEXT_EVENT_TAG) ? send_NET : send_LTC;
     // Trace the event when tracing is enabled
-    tracepoint_federate_to_RTI(event_type, _lf_my_fed_id, &tag);
+    tracepoint_federate_to_rti(_fed.trace, event_type, _lf_my_fed_id, &tag);
     ssize_t bytes_written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, buffer);
     if (bytes_written < (ssize_t)bytes_to_write) {
         if (!exit_on_error) {
@@ -580,7 +580,7 @@ void* handle_p2p_connections_from_federates(void* env_arg) {
                 response[0] = MSG_TYPE_REJECT;
                 response[1] = WRONG_SERVER;
                 // Trace the event when tracing is enabled
-                tracepoint_federate_to_federate(send_REJECT, _lf_my_fed_id, -3, NULL);
+                tracepoint_federate_to_federate(_fed.trace, send_REJECT, _lf_my_fed_id, -3, NULL);
                 // Ignore errors on this response.
                 write_to_socket(socket_id, 2, response);
             }
@@ -600,7 +600,7 @@ void* handle_p2p_connections_from_federates(void* env_arg) {
                 response[0] = MSG_TYPE_REJECT;
                 response[1] = FEDERATION_ID_DOES_NOT_MATCH;
                 // Trace the event when tracing is enabled
-                tracepoint_federate_to_federate(send_REJECT, _lf_my_fed_id, -3, NULL);
+                tracepoint_federate_to_federate(_fed.trace, send_REJECT, _lf_my_fed_id, -3, NULL);
                 // Ignore errors on this response.
                 write_to_socket(socket_id, 2, response);
             }
@@ -613,7 +613,7 @@ void* handle_p2p_connections_from_federates(void* env_arg) {
         LF_PRINT_DEBUG("Received sending federate ID %d.", remote_fed_id);
 
         // Trace the event when tracing is enabled
-        tracepoint_federate_to_federate(receive_FED_ID, _lf_my_fed_id, remote_fed_id, NULL);
+        tracepoint_federate_to_federate(_fed.trace, receive_FED_ID, _lf_my_fed_id, remote_fed_id, NULL);
 
         // Once we record the socket_id here, all future calls to close() on
         // the socket should be done while holding a mutex, and this array
@@ -625,7 +625,7 @@ void* handle_p2p_connections_from_federates(void* env_arg) {
         // Send an MSG_TYPE_ACK message.
         unsigned char response = MSG_TYPE_ACK;
         // Trace the event when tracing is enabled
-        tracepoint_federate_to_federate(send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
+        tracepoint_federate_to_federate(_fed.trace, send_ACK, _lf_my_fed_id, remote_fed_id, NULL);
         write_to_socket_errexit(socket_id, 1, (unsigned char*)&response,
                 "Failed to write MSG_TYPE_ACK in response to federate %d.",
                 remote_fed_id);
@@ -707,7 +707,7 @@ void* listen_for_upstream_messages_from_downstream_federates(void* fed_id_ptr) {
             // Received a request to close the socket.
             LF_PRINT_DEBUG("Received MSG_TYPE_CLOSE_REQUEST from federate %d.", fed_id);
             // Trace the event when tracing is enabled
-            tracepoint_federate_from_federate(receive_CLOSE_RQ, _lf_my_fed_id, fed_id, NULL);
+            tracepoint_federate_from_federate(_fed.trace, receive_CLOSE_RQ, _lf_my_fed_id, fed_id, NULL);
             _lf_close_outbound_socket(fed_id);
             break;
         }
@@ -758,7 +758,7 @@ void connect_to_federate(uint16_t remote_federate_id) {
 
         LF_PRINT_DEBUG("Sending address query for federate %d.", remote_federate_id);
         // Trace the event when tracing is enabled
-        tracepoint_federate_to_RTI(send_ADR_QR, _lf_my_fed_id, NULL);
+        tracepoint_federate_to_rti(_fed.trace, send_ADR_QR, _lf_my_fed_id, NULL);
         write_to_socket_errexit(_fed.socket_TCP_RTI, sizeof(uint16_t) + 1, buffer,
                 "Failed to send address query for federate %d to RTI.",
                 remote_federate_id);
@@ -866,7 +866,7 @@ void connect_to_federate(uint16_t remote_federate_id) {
             unsigned char federation_id_length = (unsigned char)strnlen(federation_metadata.federation_id, 255);
             buffer[sizeof(uint16_t) + 1] = federation_id_length;
             // Trace the event when tracing is enabled
-            tracepoint_federate_to_federate(send_FED_ID, _lf_my_fed_id, remote_federate_id, NULL);
+            tracepoint_federate_to_federate(_fed.trace, send_FED_ID, _lf_my_fed_id, remote_federate_id, NULL);
             write_to_socket_errexit(socket_id,
                     buffer_length, buffer,
                     "Failed to send fed_id to federate %d.", remote_federate_id);
@@ -888,7 +888,7 @@ void connect_to_federate(uint16_t remote_federate_id) {
             } else {
                 lf_print("Connected to federate %d, port %d.", remote_federate_id, port);
                 // Trace the event when tracing is enabled
-                tracepoint_federate_to_federate(receive_ACK, _lf_my_fed_id, remote_federate_id, NULL);
+                tracepoint_federate_to_federate(_fed.trace, receive_ACK, _lf_my_fed_id, remote_federate_id, NULL);
             }
         }
     }
@@ -1122,7 +1122,7 @@ void connect_to_rti(const char* hostname, int port) {
             buffer[1 + sizeof(uint16_t)] = (unsigned char)(federation_id_length & 0xff);
 
             // Trace the event when tracing is enabled
-            tracepoint_federate_to_RTI(send_FED_ID, _lf_my_fed_id, NULL);
+            tracepoint_federate_to_rti(_fed.trace, send_FED_ID, _lf_my_fed_id, NULL);
 
             write_to_socket_errexit(_fed.socket_TCP_RTI, 2 + sizeof(uint16_t), buffer,
                     "Failed to send federate ID to RTI.");
@@ -1142,7 +1142,7 @@ void connect_to_rti(const char* hostname, int port) {
             read_from_socket_errexit(_fed.socket_TCP_RTI, 1, &response, "Failed to read response from RTI.");
             if (response == MSG_TYPE_REJECT) {
                 // Trace the event when tracing is enabled
-                tracepoint_federate_from_RTI(receive_REJECT, _lf_my_fed_id, NULL);
+                tracepoint_federate_from_rti(_fed.trace, receive_REJECT, _lf_my_fed_id, NULL);
                 // Read one more byte to determine the cause of rejection.
                 unsigned char cause;
                 read_from_socket_errexit(_fed.socket_TCP_RTI, 1, &cause, "Failed to read the cause of rejection by the RTI.");
@@ -1156,7 +1156,7 @@ void connect_to_rti(const char* hostname, int port) {
                         "%d. Error code: %d. Federate quits.\n", response, cause);
             } else if (response == MSG_TYPE_ACK) {
                 // Trace the event when tracing is enabled
-                tracepoint_federate_from_RTI(receive_ACK, _lf_my_fed_id, NULL);
+                tracepoint_federate_from_rti(_fed.trace, receive_ACK, _lf_my_fed_id, NULL);
                 LF_PRINT_LOG("Received acknowledgment from the RTI.");
 
                 // Call a generated (external) function that sends information
@@ -1214,7 +1214,7 @@ instant_t get_start_time_from_rti(instant_t my_physical_time) {
 
     tag_t tag = {.time = timestamp, .microstep = 0};
     // Trace the event when tracing is enabled
-    tracepoint_federate_from_RTI(receive_TIMESTAMP, _lf_my_fed_id, &tag);
+    tracepoint_federate_from_rti(_fed.trace, receive_TIMESTAMP, _lf_my_fed_id, &tag);
     lf_print("Starting timestamp is: " PRINTF_TIME ".", timestamp);
     LF_PRINT_LOG("Current physical time is: " PRINTF_TIME ".", lf_time_physical());
 
@@ -1546,7 +1546,7 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
     // Do not write if the socket is closed.
     if (socket >= 0) {
         // Trace the event when tracing is enabled
-        tracepoint_federate_to_RTI(send_PORT_ABS, fed_ID, &current_message_intended_tag);
+        tracepoint_federate_to_rti(_fed.trace, send_PORT_ABS, fed_ID, &current_message_intended_tag);
         write_to_socket_errexit_with_mutex(socket, message_length, buffer, &outbound_socket_mutex,
                 "Failed to send port absent message for port %hu to federate %hu.",
                 port_ID, fed_ID);
@@ -1741,7 +1741,7 @@ int _lf_request_close_inbound_socket(int fed_id) {
     LF_PRINT_LOG("Sending MSG_TYPE_CLOSE_REQUEST message to upstream federate.");
 
     // Trace the event when tracing is enabled
-    tracepoint_federate_to_federate(send_CLOSE_RQ, _lf_my_fed_id, fed_id, NULL);
+    tracepoint_federate_to_federate(_fed.trace, send_CLOSE_RQ, _lf_my_fed_id, fed_id, NULL);
 
     ssize_t written = write_to_socket(
         _fed.sockets_for_inbound_p2p_connections[fed_id],
@@ -1805,9 +1805,9 @@ static void handle_port_absent_message(environment_t* env, int socket, int fed_i
 
     // Trace the event when tracing is enabled
     if (fed_id == -1) {
-        tracepoint_federate_from_RTI(receive_PORT_ABS, _lf_my_fed_id, &intended_tag);
+        tracepoint_federate_from_rti(_fed.trace, receive_PORT_ABS, _lf_my_fed_id, &intended_tag);
     } else {
-        tracepoint_federate_from_federate(receive_PORT_ABS, _lf_my_fed_id, fed_id, &intended_tag);
+        tracepoint_federate_from_federate(_fed.trace, receive_PORT_ABS, _lf_my_fed_id, fed_id, &intended_tag);
     }
     LF_PRINT_LOG("Handling port absent for tag " PRINTF_TAG " for port %hu of fed %d.",
             intended_tag.time - lf_time_start(),
@@ -1872,7 +1872,7 @@ void handle_message(int socket, int fed_id) {
     read_from_socket_errexit(socket, length, message_contents,
             "Failed to read message body.");
     // Trace the event when tracing is enabled
-    tracepoint_federate_from_federate(receive_P2P_MSG, _lf_my_fed_id, fed_id, NULL);
+    tracepoint_federate_from_federate(_fed.trace, receive_P2P_MSG, _lf_my_fed_id, federate_id, NULL);
     LF_PRINT_LOG("Message received by federate: %s. Length: %zu.", message_contents, length);
 
     LF_PRINT_DEBUG("Calling schedule for message received on a physical connection.");
@@ -1913,9 +1913,9 @@ void handle_tagged_message(environment_t* env, int socket, int fed_id) {
     extract_timed_header(buffer, &port_id, &federate_id, &length, &intended_tag);
     // Trace the event when tracing is enabled
     if (fed_id == -1) {
-        tracepoint_federate_from_RTI(receive_TAGGED_MSG, _lf_my_fed_id, &intended_tag);
+        tracepoint_federate_from_rti(_fed.trace, receive_TAGGED_MSG, _lf_my_fed_id, &intended_tag);
     } else {
-        tracepoint_federate_from_federate(receive_P2P_TAGGED_MSG, _lf_my_fed_id, fed_id, &intended_tag);
+        tracepoint_federate_from_federate(_fed.trace, receive_P2P_TAGGED_MSG, _lf_my_fed_id, fed_id, &intended_tag);
     }
     // Check if the message is intended for this federate
     assert(_lf_my_fed_id == federate_id);
@@ -2084,7 +2084,7 @@ void handle_tag_advance_grant(environment_t *env) {
     tag_t TAG = extract_tag(buffer);
 
     // Trace the event when tracing is enabled
-    tracepoint_federate_from_RTI(receive_TAG, _lf_my_fed_id, &TAG);
+    tracepoint_federate_from_rti(_fed.trace, receive_TAG, _lf_my_fed_id, &TAG);
 
     lf_mutex_lock(&env->mutex);
 
@@ -2164,7 +2164,7 @@ void handle_provisional_tag_advance_grant(environment_t* env) {
     tag_t PTAG = extract_tag(buffer);
 
     // Trace the event when tracing is enabled
-    tracepoint_federate_from_RTI(receive_PTAG, _lf_my_fed_id, &PTAG);
+    tracepoint_federate_from_rti(_fed.trace, receive_PTAG, _lf_my_fed_id, &PTAG);
 
     // Note: it is important that last_known_status_tag of ports does not
     // get updated to a PTAG value because a PTAG does not indicate that
@@ -2284,7 +2284,7 @@ void _lf_fd_send_stop_request_to_rti(environment_t* env) {
         return;
     }
     // Trace the event when tracing is enabled
-    tracepoint_federate_to_RTI(send_STOP_REQ, _lf_my_fed_id, &env->current_tag);
+    tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ, _lf_my_fed_id, &env->current_tag);
     write_to_socket_errexit_with_mutex(_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH,
             buffer, &outbound_socket_mutex,
             "Failed to send stop time " PRINTF_TIME " to the RTI.", env->current_tag.time - start_time);
@@ -2316,7 +2316,7 @@ void handle_stop_granted_message(environment_t* env) {
     tag_t received_stop_tag = extract_tag(buffer);
 
     // Trace the event when tracing is enabled
-    tracepoint_federate_from_RTI(receive_STOP_GRN, _lf_my_fed_id, &received_stop_tag);
+    tracepoint_federate_from_rti(_fed.trace, receive_STOP_GRN, _lf_my_fed_id, &received_stop_tag);
 
     LF_PRINT_LOG("Received from RTI a MSG_TYPE_STOP_GRANTED message with elapsed tag " PRINTF_TAG ".",
             received_stop_tag.time - start_time, received_stop_tag.microstep);
@@ -2369,7 +2369,7 @@ void handle_stop_request_message(environment_t* env) {
     tag_t tag_to_stop = extract_tag(buffer);
 
     // Trace the event when tracing is enabled
-    tracepoint_federate_from_RTI(receive_STOP_REQ, _lf_my_fed_id, &tag_to_stop);
+    tracepoint_federate_from_rti(_fed.trace, receive_STOP_REQ, _lf_my_fed_id, &tag_to_stop);
 
     LF_PRINT_LOG("Received from RTI a MSG_TYPE_STOP_REQUEST message with tag " PRINTF_TAG ".",
              tag_to_stop.time - start_time,
@@ -2394,7 +2394,7 @@ void handle_stop_request_message(environment_t* env) {
         return;
     }
     // Trace the event when tracing is enabled
-    tracepoint_federate_to_RTI(send_STOP_REQ_REP, _lf_my_fed_id, &tag_to_stop);
+    tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ_REP, _lf_my_fed_id, &tag_to_stop);
     // Send the current logical time to the RTI. This message does not have an identifying byte since
     // since the RTI is waiting for a response from this federate.
     write_to_socket_errexit_with_mutex(
@@ -2443,7 +2443,7 @@ void terminate_execution(environment_t* env) {
         tag_t tag = env->current_tag;
         encode_tag(&(buffer[1]), tag);
         // Trace the event when tracing is enabled
-        tracepoint_federate_to_RTI(send_RESIGN, _lf_my_fed_id, &tag);
+        tracepoint_federate_to_rti(_fed.trace, send_RESIGN, _lf_my_fed_id, &tag);
         ssize_t written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, &(buffer[0]));
         if (written == bytes_to_write) {
             LF_PRINT_LOG("Resigned.");
@@ -2549,7 +2549,7 @@ void* listen_to_federates(void* _args) {
             lf_print_error("Received erroneous message type: %d. Closing the socket.", buffer[0]);
             break;
             // Trace the event when tracing is enabled
-            tracepoint_federate_from_federate(receive_UNIDENTIFIED, _lf_my_fed_id, fed_id, NULL);
+            tracepoint_federate_from_federate(_fed.trace, receive_UNIDENTIFIED, _lf_my_fed_id, fed_id, NULL);
         }
     }
     free(args);
@@ -2629,7 +2629,7 @@ void* listen_to_rti_TCP(void* args) {
             default:
                 lf_print_error_and_exit("Received from RTI an unrecognized TCP message type: %hhx.", buffer[0]);
                 // Trace the event when tracing is enabled
-                tracepoint_federate_from_RTI(receive_UNIDENTIFIED, _lf_my_fed_id, NULL);
+                tracepoint_federate_from_rti(_fed.trace, receive_UNIDENTIFIED, _lf_my_fed_id, NULL);
             }
     }
     return NULL;
@@ -2972,5 +2972,9 @@ parse_rti_code_t parse_rti_addr(const char* rti_addr) {
  */
 void set_federation_id(const char* fid) {
     federation_metadata.federation_id = fid;
+}
+
+void set_federation_trace_object(trace_t * trace) {
+    _fed.trace = trace;    
 }
 #endif

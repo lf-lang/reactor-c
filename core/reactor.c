@@ -172,7 +172,7 @@ int _lf_do_step(environment_t* env) {
             // Handle the local deadline first.
             if (reaction->deadline == 0 || physical_time > env->current_tag.time + reaction->deadline) {
                 LF_PRINT_LOG("Deadline violation. Invoking deadline handler.");
-                tracepoint_reaction_deadline_missed(env, reaction, 0);
+                tracepoint_reaction_deadline_missed(env->trace, reaction, 0);
                 // Deadline violation has occurred.
                 violation = true;
                 // Invoke the local handler, if there is one.

@@ -34,6 +34,7 @@ typedef enum parse_rti_code_t {
 } parse_rti_code_t;
 parse_rti_code_t parse_rti_addr(const char* rti_addr);
 void set_federation_id(const char* fid);
+void set_federation_trace_object(trace_t * trace);
 #endif
 
 extern struct allocation_record_t* _lf_reactors_to_free;

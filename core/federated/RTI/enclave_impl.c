@@ -10,8 +10,8 @@ void notify_tag_advance_grant(enclave_t* e, tag_t tag) {
     ) {
         return;
     }
-    if (_e_rti->tracing_enabled) {
-        tracepoint_RTI_to_federate(send_TAG, e->id, &tag);
+    if (_e_rti.tracing_enabled) {
+        tracepoint_rti_to_federate(_e_rti.trace, send_TAG, e->id, &tag);
     }
     e->last_granted = tag;
     lf_cond_signal(&e->next_event_condition);

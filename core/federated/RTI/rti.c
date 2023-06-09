@@ -97,6 +97,7 @@ int main(int argc, const char* argv[]) {
     if (atexit(termination) != 0) {
         lf_print_warning("Failed to register termination function!");
     }
+    
 
     if (!process_args(argc, argv)) {
         // Processing command-line arguments failed.
@@ -104,7 +105,11 @@ int main(int argc, const char* argv[]) {
     }
     if (_f_rti->tracing_enabled) {
         _lf_number_of_workers = _f_rti->number_of_enclaves;
-        start_trace(rti_trace_file_name);
+        _f_rti.trace = trace_new(NULL, rti_trace_file_name);
+        
+        lf_assert(_f_rti.trace, "Out of memory");
+        start_trace(_f_rti.trace);
+
         lf_print("Tracing the RTI execution in %s file.", rti_trace_file_name);
     }
 
@@ -123,6 +128,10 @@ int main(int argc, const char* argv[]) {
 
     int socket_descriptor = start_rti_server(_f_rti->user_specified_port);
     wait_for_federates(socket_descriptor);
-
+    if (_f_rti.tracing_enabled) {
+        stop_trace(_f_rti.trace);
+        trace_free(_f_rti.trace);
+    }
+    printf("RTI is exiting.\n");
     return 0;
 }

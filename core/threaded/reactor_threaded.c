@@ -787,7 +787,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(environment_t *env, int w
         // Check for deadline violation.
         if (reaction->deadline == 0 || physical_time > env->current_tag.time + reaction->deadline) {
             // Deadline violation has occurred.
-            tracepoint_reaction_deadline_missed(env, reaction, worker_number);
+            tracepoint_reaction_deadline_missed(env->trace, reaction, worker_number);
             violation_occurred = true;
             // Invoke the local handler, if there is one.
             reaction_function_t handler = reaction->deadline_violation_handler;
@@ -1096,6 +1096,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     }
 
     // Initialize the global payload and token allocation counts and the trigger table
+    // as well as starting tracing subsystem
     initialize_global();
         
     // Initialize the watchdog-specific mutexes. This is still handled globally and not per-environment
@@ -1119,8 +1120,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         _lf_initialize_modes(env);
     #endif
 
-        // Start tracing, if specified
-        start_trace(env->trace);
 
         // Initialize the scheduler
         // FIXME: Why is this called here and in `_lf_initialize_trigger objects`?
