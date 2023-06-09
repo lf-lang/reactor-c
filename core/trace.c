@@ -272,7 +272,7 @@ void start_trace(const char* filename) {
     // FIXME: location of trace file should be customizable.
 
     // If a file already exists with the same file name, then derive another one. 
-    char filename_[strlen(filename) + 10];
+    char filename_[100];
     strcpy(filename_, filename);
     int i = 0;
     FILE *test_file_exists;
