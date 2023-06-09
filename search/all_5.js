@@ -36,7 +36,7 @@ var searchData=
   ['digits_33',['digits',['../d6/da6/structmixed__radix__int__t.html#a0e7296e98823c245fa1e3d7b6b590e4d',1,'mixed_radix_int_t']]],
   ['do_5fconvert_34',['DO_CONVERT',['../dd/d77/type__converter_8h.html#a9cbcaad341a5b5a807196f116619b9c0',1,'type_converter.h']]],
   ['done_5freactions_35',['done_reactions',['../d7/d73/struct__lf__sched__thread__info__t.html#a0aa63072819d25d22fdbc59bf55f39f6',1,'_lf_sched_thread_info_t']]],
-  ['downstream_36',['downstream',['../d9/d2f/structfederate__t.html#a70e3719658ccc1ed171389b566ec5631',1,'federate_t']]],
+  ['downstream_36',['downstream',['../d5/df6/structenclave__t.html#a0649b4f6d2ed42a41503212031778004',1,'enclave_t']]],
   ['drop_37',['drop',['../d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019',1,'lf_types.h']]],
   ['duration_38',['duration',['../dd/d37/reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration():&#160;reactor_common.c'],['../d7/d0e/reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration():&#160;reactor_common.c']]]
 ];

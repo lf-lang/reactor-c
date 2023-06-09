@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['id_0',['id',['../d9/d2f/structfederate__t.html#add64e98b2e4f2a2c6fa0b4515f285a9b',1,'federate_t']]],
+  ['id_0',['id',['../d5/df6/structenclave__t.html#a458cf106f6170f0cc7a14fd8e016cbec',1,'enclave_t']]],
   ['idx_1',['idx',['../d4/d7d/structlf__multiport__iterator__t.html#a6707e4d4535a1630d74d5fcda16d163d',1,'lf_multiport_iterator_t']]],
   ['in_5ftransit_5fmessage_5ftags_2',['in_transit_message_tags',['../d9/d2f/structfederate__t.html#ab17ba493bc1eef91fd89977c67494029',1,'federate_t']]],
   ['inbound_5fp2p_5fhandling_5fthread_5fid_3',['inbound_p2p_handling_thread_id',['../d6/d7a/structfederate__instance__t.html#ab441abf042a2ff79099bdf2860aeb058',1,'federate_instance_t']]],
@@ -13,7 +13,8 @@ var searchData=
   ['is_5flast_5ftag_5fprovisional_10',['is_last_TAG_provisional',['../d6/d7a/structfederate__instance__t.html#a05a9586ad89b82d0bf5f969a194ef69c',1,'federate_instance_t']]],
   ['is_5fphysical_11',['is_physical',['../d6/d13/structtrigger__t.html#aec6676110ebe0f82293e2f916312e4a0',1,'trigger_t']]],
   ['is_5fpresent_12',['is_present',['../da/de8/structlf__port__base__t.html#aa944290a27aff5cbc8334ad026076290',1,'lf_port_base_t::is_present()'],['../d8/d4b/structlf__action__base__t.html#a2ffef0622ed175d43758f8a50046ed50',1,'lf_action_base_t::is_present()'],['../d3/d8b/structgeneric__action__instance__struct.html#afa0c5f3c8987a6613ab454d56b89604d',1,'generic_action_instance_struct::is_present()'],['../da/d00/structgeneric__action__capsule__struct.html#a1fca95275785ca6a90dcd9d28abf4fa3',1,'generic_action_capsule_struct::is_present()'],['../da/dc0/structgeneric__port__instance__struct.html#a9c01e0f1634b218351eb76cc8ac878b8',1,'generic_port_instance_struct::is_present()'],['../d2/dab/structgeneric__port__capsule__struct.html#ade3934351aa6dc67dbf7e7a5febd4a36',1,'generic_port_capsule_struct::is_present()']]],
-  ['is_5fstp_5fviolated_13',['is_STP_violated',['../d2/d35/structreaction__t.html#a2bc026e89d82a877a3b7224541c25d42',1,'reaction_t']]],
-  ['is_5ftimer_14',['is_timer',['../d6/d13/structtrigger__t.html#a6beec6375e3259c9ed1aa006074bd315',1,'trigger_t']]],
-  ['items_15',['items',['../dd/dab/structhashset__st.html#a00ecfe733efa06a8ca1d7af8956c0e88',1,'hashset_st']]]
+  ['is_5fprovisional_13',['is_provisional',['../d7/d69/structtag__advance__grant__t.html#ad4947e0481e99ff55c03e36acbe75fab',1,'tag_advance_grant_t']]],
+  ['is_5fstp_5fviolated_14',['is_STP_violated',['../d2/d35/structreaction__t.html#a2bc026e89d82a877a3b7224541c25d42',1,'reaction_t']]],
+  ['is_5ftimer_15',['is_timer',['../d6/d13/structtrigger__t.html#a6beec6375e3259c9ed1aa006074bd315',1,'trigger_t']]],
+  ['items_16',['items',['../dd/dab/structhashset__st.html#a00ecfe733efa06a8ca1d7af8956c0e88',1,'hashset_st']]]
 ];

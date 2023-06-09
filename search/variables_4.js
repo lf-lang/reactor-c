@@ -11,6 +11,6 @@ var searchData=
   ['destructor_8',['destructor',['../db/d12/structtoken__type__t.html#a304b9805bf712b9e1745432f8bd9796c',1,'token_type_t::destructor()'],['../da/dc0/structgeneric__port__instance__struct.html#a26752c879bfe4b2fbbf8cd9cd632e216',1,'generic_port_instance_struct::destructor()']]],
   ['digits_9',['digits',['../d6/da6/structmixed__radix__int__t.html#a0e7296e98823c245fa1e3d7b6b590e4d',1,'mixed_radix_int_t']]],
   ['done_5freactions_10',['done_reactions',['../d7/d73/struct__lf__sched__thread__info__t.html#a0aa63072819d25d22fdbc59bf55f39f6',1,'_lf_sched_thread_info_t']]],
-  ['downstream_11',['downstream',['../d9/d2f/structfederate__t.html#a70e3719658ccc1ed171389b566ec5631',1,'federate_t']]],
+  ['downstream_11',['downstream',['../d5/df6/structenclave__t.html#a0649b4f6d2ed42a41503212031778004',1,'enclave_t']]],
   ['duration_12',['duration',['../dd/d37/reactor__common_8c.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration():&#160;reactor_common.c'],['../d7/d0e/reactor__common_8h.html#a8079fdfadf07cba8a660c9c25cb9dc77',1,'duration():&#160;reactor_common.c']]]
 ];

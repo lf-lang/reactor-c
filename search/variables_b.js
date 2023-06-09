@@ -2,8 +2,8 @@ var searchData=
 [
   ['last_0',['last',['../d6/d13/structtrigger__t.html#ab1ea5c50bb1ca98f03d2e0aedd7ea454',1,'trigger_t']]],
   ['last_5fenabling_5freaction_1',['last_enabling_reaction',['../d2/d35/structreaction__t.html#acbf0778e73f7eeedbb89345d1beb09b6',1,'reaction_t']]],
-  ['last_5fgranted_2',['last_granted',['../d9/d2f/structfederate__t.html#a426f1683c5b95daae0ac0b21dab4d648',1,'federate_t']]],
-  ['last_5fprovisionally_5fgranted_3',['last_provisionally_granted',['../d9/d2f/structfederate__t.html#a0d12fb57d188ef7496268b93ea65481a',1,'federate_t']]],
+  ['last_5fgranted_2',['last_granted',['../d5/df6/structenclave__t.html#a28b7792c7b4434383188f6da6e988ecb',1,'enclave_t']]],
+  ['last_5fprovisionally_5fgranted_3',['last_provisionally_granted',['../d5/df6/structenclave__t.html#af514c87ae5df8a6041db5cedc8e0d5b1',1,'enclave_t']]],
   ['last_5fsent_5fltc_4',['last_sent_LTC',['../d6/d7a/structfederate__instance__t.html#ae95f54a01b0367048faa6460ff86e987',1,'federate_instance_t']]],
   ['last_5fsent_5fnet_5',['last_sent_NET',['../d6/d7a/structfederate__instance__t.html#a42618a45ae75b42e1caec4b373471d96',1,'federate_instance_t']]],
   ['last_5ftag_6',['last_TAG',['../d6/d7a/structfederate__instance__t.html#aa66a2f08ea9173743106c7ff18f1846a',1,'federate_instance_t']]],

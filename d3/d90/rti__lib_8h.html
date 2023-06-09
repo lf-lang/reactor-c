@@ -94,28 +94,20 @@ $(document).ready(function(){initNavTree('d3/d90/rti__lib_8h.html','../../'); in
 <a href="#nested-classes">Data Structures</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
-<a href="#func-members">Functions</a> &#124;
-<a href="#var-members">Variables</a>  </div>
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">rti_lib.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 
 <p>Declarations for runtime infrastructure (RTI) for distributed Lingua Franca programs.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &lt;errno.h&gt;</code><br />
-<code>#include &lt;sys/socket.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;sys/socket.h&gt;</code><br />
 <code>#include &lt;sys/types.h&gt;</code><br />
 <code>#include &lt;netinet/in.h&gt;</code><br />
 <code>#include &lt;arpa/inet.h&gt;</code><br />
 <code>#include &lt;unistd.h&gt;</code><br />
 <code>#include &lt;strings.h&gt;</code><br />
-<code>#include &lt;assert.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="../../de/d03/platform_8h_source.html">platform.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d8/d3c/util_8h_source.html">util.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../dd/d97/net__util_8h_source.html">net_util.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d9/da6/net__common_8h_source.html">net_common.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d2/dcd/tag_8h_source.html">tag.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d1/d1b/trace_8h_source.html">trace.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d6/d21/enclave_8h_source.html">enclave.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d6/d1d/lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../df/dd6/message__record_8h_source.html">message_record/message_record.h</a>&quot;</code><br />
 </div>
@@ -125,23 +117,19 @@ $(document).ready(function(){initNavTree('d3/d90/rti__lib_8h.html','../../'); in
 Data Structures</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d99/struct_r_t_i__instance__t.html">RTI_instance_t</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d88/structfederation__rti__t.html">federation_rti_t</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
 <tr class="memitem:a45bb50f52b617bc6a30719cbaafd075d"><td class="memItemLeft" align="right" valign="top">typedef enum <a class="el" href="../../d3/d90/rti__lib_8h.html#a54c375e3893ff5969d20df65b90c8335">socket_type_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a45bb50f52b617bc6a30719cbaafd075d">socket_type_t</a></td></tr>
 <tr class="separator:a45bb50f52b617bc6a30719cbaafd075d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a50856f252373f4c456a34c6f26d385ce"><td class="memItemLeft" align="right" valign="top">typedef enum <a class="el" href="../../d3/d90/rti__lib_8h.html#a83ca4d4187a661b1395c9f860d61c97e">execution_mode_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a50856f252373f4c456a34c6f26d385ce">execution_mode_t</a></td></tr>
-<tr class="separator:a50856f252373f4c456a34c6f26d385ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae0ca2ecc00a6486432e5965cb81c3044"><td class="memItemLeft" align="right" valign="top">typedef enum <a class="el" href="../../d3/d90/rti__lib_8h.html#a7a2e496e8d9be587cc662640a4251b23">fed_state_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#ae0ca2ecc00a6486432e5965cb81c3044">fed_state_t</a></td></tr>
-<tr class="separator:ae0ca2ecc00a6486432e5965cb81c3044"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afa071c0f847bd1cc2a736ab3cd20ee72"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#afa071c0f847bd1cc2a736ab3cd20ee72">federate_t</a></td></tr>
 <tr class="separator:afa071c0f847bd1cc2a736ab3cd20ee72"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a39e986990bfc20d1512b61ab119ce628"><td class="memItemLeft" align="right" valign="top">typedef enum <a class="el" href="../../d3/d90/rti__lib_8h.html#a9705d612b9ce908ee485e92eb3f2769f">clock_sync_stat</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a39e986990bfc20d1512b61ab119ce628">clock_sync_stat</a></td></tr>
 <tr class="separator:a39e986990bfc20d1512b61ab119ce628"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a97b6813c17e8a4fa159935a5c2915d28"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d3/d99/struct_r_t_i__instance__t.html">RTI_instance_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a97b6813c17e8a4fa159935a5c2915d28">RTI_instance_t</a></td></tr>
-<tr class="separator:a97b6813c17e8a4fa159935a5c2915d28"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af77d3a2e4c882521f6f5e01a804bf311"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d9/d88/structfederation__rti__t.html">federation_rti_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#af77d3a2e4c882521f6f5e01a804bf311">federation_rti_t</a></td></tr>
+<tr class="separator:af77d3a2e4c882521f6f5e01a804bf311"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -149,15 +137,6 @@ Enumerations</h2></td></tr>
 , <a class="el" href="../../d3/d90/rti__lib_8h.html#a54c375e3893ff5969d20df65b90c8335adb542475cf9d0636e4225e216cee9ae6">UDP</a>
  }</td></tr>
 <tr class="separator:a54c375e3893ff5969d20df65b90c8335"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a83ca4d4187a661b1395c9f860d61c97e"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a83ca4d4187a661b1395c9f860d61c97e">execution_mode_t</a> { <a class="el" href="../../d3/d90/rti__lib_8h.html#a83ca4d4187a661b1395c9f860d61c97eaf84c11ba888e499a8a282a3e6f5de7de">FAST</a>
-, <a class="el" href="../../d3/d90/rti__lib_8h.html#a83ca4d4187a661b1395c9f860d61c97eadbd89a052eecc45eaa443bcbecc7c5e4">REALTIME</a>
- }</td></tr>
-<tr class="separator:a83ca4d4187a661b1395c9f860d61c97e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7a2e496e8d9be587cc662640a4251b23"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a7a2e496e8d9be587cc662640a4251b23">fed_state_t</a> { <a class="el" href="../../d3/d90/rti__lib_8h.html#a7a2e496e8d9be587cc662640a4251b23a96c582a5af213ca7fb34f970d83875f5">NOT_CONNECTED</a>
-, <a class="el" href="../../d3/d90/rti__lib_8h.html#a7a2e496e8d9be587cc662640a4251b23a440c8b08fdd77c2aa90283c06dbe465a">GRANTED</a>
-, <a class="el" href="../../d3/d90/rti__lib_8h.html#a7a2e496e8d9be587cc662640a4251b23a1869818fd53ff519eb8e429301bdff73">PENDING</a>
- }</td></tr>
-<tr class="separator:a7a2e496e8d9be587cc662640a4251b23"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9705d612b9ce908ee485e92eb3f2769f"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a9705d612b9ce908ee485e92eb3f2769f">clock_sync_stat</a> { <a class="el" href="../../d3/d90/rti__lib_8h.html#a9705d612b9ce908ee485e92eb3f2769fafef85b2461484e7a55ae3f50d3ca996c">clock_sync_off</a>
 , <a class="el" href="../../d3/d90/rti__lib_8h.html#a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558">clock_sync_init</a>
 , <a class="el" href="../../d3/d90/rti__lib_8h.html#a9705d612b9ce908ee485e92eb3f2769fa8423b23ffffdfc03fcb3f68cf4007531">clock_sync_on</a>
@@ -172,17 +151,7 @@ Functions</h2></td></tr>
 <tr class="separator:a15016241de6a4f3c35115f39e0695084"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acde4076cd96817debe76e74fca261c70"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#acde4076cd96817debe76e74fca261c70">create_server</a> (int32_t specified_port, uint16_t port, <a class="el" href="../../d3/d90/rti__lib_8h.html#a54c375e3893ff5969d20df65b90c8335">socket_type_t</a> socket_type)</td></tr>
 <tr class="separator:acde4076cd96817debe76e74fca261c70"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2c94ce50b24ed5cc0bfce3d548d8e59f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a2c94ce50b24ed5cc0bfce3d548d8e59f">send_tag_advance_grant</a> (<a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *fed, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> tag)</td></tr>
-<tr class="separator:a2c94ce50b24ed5cc0bfce3d548d8e59f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa067d8ff2e12b42f8c1f011758231be1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#aa067d8ff2e12b42f8c1f011758231be1">transitive_next_event</a> (<a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *fed, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> candidate, bool visited[])</td></tr>
-<tr class="separator:aa067d8ff2e12b42f8c1f011758231be1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab36a04086b8af885621e5f808efecd23"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#ab36a04086b8af885621e5f808efecd23">send_provisional_tag_advance_grant</a> (<a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *fed, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> tag)</td></tr>
-<tr class="separator:ab36a04086b8af885621e5f808efecd23"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a70e4672b8d5c3b0e42bbb0c17d01cccd"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a70e4672b8d5c3b0e42bbb0c17d01cccd">send_advance_grant_if_safe</a> (<a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *fed)</td></tr>
-<tr class="separator:a70e4672b8d5c3b0e42bbb0c17d01cccd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a05299fb2838277ff1f030448c9cf1ad8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a05299fb2838277ff1f030448c9cf1ad8">send_downstream_advance_grants_if_safe</a> (<a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *fed, bool visited[])</td></tr>
-<tr class="separator:a05299fb2838277ff1f030448c9cf1ad8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7190c8d1000afb0a5e8898011d041917"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a7190c8d1000afb0a5e8898011d041917">update_federate_next_event_tag_locked</a> (uint16_t federate_id, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> next_event_tag)</td></tr>
+<tr class="memitem:a7190c8d1000afb0a5e8898011d041917"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a7190c8d1000afb0a5e8898011d041917">update_federate_next_event_tag_locked</a> (uint16_t federate_id, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> <a class="el" href="../../de/d37/enclave_8c.html#afddec5b6c9133b0e6e9d0ea11e21d161">next_event_tag</a>)</td></tr>
 <tr class="memdesc:a7190c8d1000afb0a5e8898011d041917"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the next event tag of federate <code>federate_id</code>.  <br /></td></tr>
 <tr class="separator:a7190c8d1000afb0a5e8898011d041917"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6696c6969eb341c48269c2da6cec0caf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a6696c6969eb341c48269c2da6cec0caf">handle_port_absent_message</a> (<a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *sending_federate, unsigned char *buffer)</td></tr>
@@ -229,8 +198,8 @@ Functions</h2></td></tr>
 <tr class="separator:acf8907ccab075522f7b84de579d50030"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac6af5f2343ecf9ed87cdbebd98b94271"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#ac6af5f2343ecf9ed87cdbebd98b94271">respond_to_erroneous_connections</a> (void *<a class="el" href="../../d6/df3/hashmap_8h.html#abddc82f328c9384f6c66210d6740e6aa">nothing</a>)</td></tr>
 <tr class="separator:ac6af5f2343ecf9ed87cdbebd98b94271"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9569e1329c5a061249aae331a8e77403"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a9569e1329c5a061249aae331a8e77403">initialize_federate</a> (uint16_t id)</td></tr>
-<tr class="separator:a9569e1329c5a061249aae331a8e77403"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c0fafac5f5c59b40a8471c3311d384d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a4c0fafac5f5c59b40a8471c3311d384d">initialize_federate</a> (<a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *fed, uint16_t id)</td></tr>
+<tr class="separator:a4c0fafac5f5c59b40a8471c3311d384d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6cc1fe69c154d09d88de1f1c06eb4b0d"><td class="memItemLeft" align="right" valign="top">int32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a6cc1fe69c154d09d88de1f1c06eb4b0d">start_rti_server</a> (uint16_t port)</td></tr>
 <tr class="separator:a6cc1fe69c154d09d88de1f1c06eb4b0d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a005cb43e8e6c7795c8f0db27e2424475"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a005cb43e8e6c7795c8f0db27e2424475">wait_for_federates</a> (int socket_descriptor)</td></tr>
@@ -241,15 +210,8 @@ Functions</h2></td></tr>
 <tr class="separator:ad7d4392b21b300612a5239fbb1ffa274"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a80aaf4eeed3e2902f8fe9de80b45777d"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a80aaf4eeed3e2902f8fe9de80b45777d">process_args</a> (int argc, const char *argv[])</td></tr>
 <tr class="separator:a80aaf4eeed3e2902f8fe9de80b45777d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:a900138c50464733b007a7cec4bb050ca"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../de/d03/platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a900138c50464733b007a7cec4bb050ca">rti_mutex</a></td></tr>
-<tr class="separator:a900138c50464733b007a7cec4bb050ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aba3e256a278f326c6101984491262800"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#aba3e256a278f326c6101984491262800">received_start_times</a></td></tr>
-<tr class="separator:aba3e256a278f326c6101984491262800"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a087a6339668b8a501563603be151e6e9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a087a6339668b8a501563603be151e6e9">sent_start_time</a></td></tr>
-<tr class="separator:a087a6339668b8a501563603be151e6e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa2ce1ad86e63f48a696ffff6f8efecd1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#aa2ce1ad86e63f48a696ffff6f8efecd1">initialize_RTI</a> ()</td></tr>
+<tr class="separator:aa2ce1ad86e63f48a696ffff6f8efecd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Declarations for runtime infrastructure (RTI) for distributed Lingua Franca programs. </p>
@@ -273,36 +235,6 @@ Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'
 
 </div>
 </div>
-<a id="a50856f252373f4c456a34c6f26d385ce" name="a50856f252373f4c456a34c6f26d385ce"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a50856f252373f4c456a34c6f26d385ce">&#9670;&#160;</a></span>execution_mode_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">typedef enum <a class="el" href="../../d3/d90/rti__lib_8h.html#a83ca4d4187a661b1395c9f860d61c97e">execution_mode_t</a> <a class="el" href="../../d3/d90/rti__lib_8h.html#a83ca4d4187a661b1395c9f860d61c97e">execution_mode_t</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Mode of execution of a federate. </p>
-
-</div>
-</div>
-<a id="ae0ca2ecc00a6486432e5965cb81c3044" name="ae0ca2ecc00a6486432e5965cb81c3044"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae0ca2ecc00a6486432e5965cb81c3044">&#9670;&#160;</a></span>fed_state_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">typedef enum <a class="el" href="../../d3/d90/rti__lib_8h.html#a7a2e496e8d9be587cc662640a4251b23">fed_state_t</a> <a class="el" href="../../d3/d90/rti__lib_8h.html#a7a2e496e8d9be587cc662640a4251b23">fed_state_t</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>State of a federate during execution. </p>
-
-</div>
-</div>
 <a id="afa071c0f847bd1cc2a736ab3cd20ee72" name="afa071c0f847bd1cc2a736ab3cd20ee72"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afa071c0f847bd1cc2a736ab3cd20ee72">&#9670;&#160;</a></span>federate_t</h2>
 
@@ -318,18 +250,18 @@ Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'
 
 </div>
 </div>
-<a id="a97b6813c17e8a4fa159935a5c2915d28" name="a97b6813c17e8a4fa159935a5c2915d28"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a97b6813c17e8a4fa159935a5c2915d28">&#9670;&#160;</a></span>RTI_instance_t</h2>
+<a id="af77d3a2e4c882521f6f5e01a804bf311" name="af77d3a2e4c882521f6f5e01a804bf311"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af77d3a2e4c882521f6f5e01a804bf311">&#9670;&#160;</a></span>federation_rti_t</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">typedef struct <a class="el" href="../../d3/d99/struct_r_t_i__instance__t.html">RTI_instance_t</a> <a class="el" href="../../d3/d99/struct_r_t_i__instance__t.html">RTI_instance_t</a></td>
+          <td class="memname">typedef struct <a class="el" href="../../d9/d88/structfederation__rti__t.html">federation_rti_t</a> <a class="el" href="../../d9/d88/structfederation__rti__t.html">federation_rti_t</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Structure that an RTI instance uses to keep track of its own and its corresponding federates' state. </p>
+<p>Structure that an RTI instance uses to keep track of its own and its corresponding federates' state. It is a special case of <code><a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a></code> (declared in <a class="el" href="../../d6/d21/enclave_8h.html">enclave.h</a>). Inheritence is mimicked by having the first attributes to be the same as of <a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a>, except that enclaves attribute here is of type <code>federate_t**</code>, while it is of type <code>enclave_t**</code> in <code><a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a></code>. // **************** IMPORTANT!!! ******************** // ** If you make any change to this struct, ** // ** you MUST also change <a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a> in ** // ** (<a class="el" href="../../d6/d21/enclave_8h.html">enclave.h</a>)! The change must exactly match. ** // ************************************************** </p>
 
 </div>
 </div>
@@ -364,45 +296,6 @@ Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'
 <tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a9705d612b9ce908ee485e92eb3f2769fafef85b2461484e7a55ae3f50d3ca996c" name="a9705d612b9ce908ee485e92eb3f2769fafef85b2461484e7a55ae3f50d3ca996c"></a>clock_sync_off&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558" name="a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558"></a>clock_sync_init&#160;</td><td class="fielddoc"></td></tr>
 <tr><td class="fieldname"><a id="a9705d612b9ce908ee485e92eb3f2769fa8423b23ffffdfc03fcb3f68cf4007531" name="a9705d612b9ce908ee485e92eb3f2769fa8423b23ffffdfc03fcb3f68cf4007531"></a>clock_sync_on&#160;</td><td class="fielddoc"></td></tr>
-</table>
-
-</div>
-</div>
-<a id="a83ca4d4187a661b1395c9f860d61c97e" name="a83ca4d4187a661b1395c9f860d61c97e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a83ca4d4187a661b1395c9f860d61c97e">&#9670;&#160;</a></span>execution_mode_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum <a class="el" href="../../d3/d90/rti__lib_8h.html#a83ca4d4187a661b1395c9f860d61c97e">execution_mode_t</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Mode of execution of a federate. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a83ca4d4187a661b1395c9f860d61c97eaf84c11ba888e499a8a282a3e6f5de7de" name="a83ca4d4187a661b1395c9f860d61c97eaf84c11ba888e499a8a282a3e6f5de7de"></a>FAST&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a83ca4d4187a661b1395c9f860d61c97eadbd89a052eecc45eaa443bcbecc7c5e4" name="a83ca4d4187a661b1395c9f860d61c97eadbd89a052eecc45eaa443bcbecc7c5e4"></a>REALTIME&#160;</td><td class="fielddoc"></td></tr>
-</table>
-
-</div>
-</div>
-<a id="a7a2e496e8d9be587cc662640a4251b23" name="a7a2e496e8d9be587cc662640a4251b23"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7a2e496e8d9be587cc662640a4251b23">&#9670;&#160;</a></span>fed_state_t</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">enum <a class="el" href="../../d3/d90/rti__lib_8h.html#a7a2e496e8d9be587cc662640a4251b23">fed_state_t</a></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>State of a federate during execution. </p>
-<table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a7a2e496e8d9be587cc662640a4251b23a96c582a5af213ca7fb34f970d83875f5" name="a7a2e496e8d9be587cc662640a4251b23a96c582a5af213ca7fb34f970d83875f5"></a>NOT_CONNECTED&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a7a2e496e8d9be587cc662640a4251b23a440c8b08fdd77c2aa90283c06dbe465a" name="a7a2e496e8d9be587cc662640a4251b23a440c8b08fdd77c2aa90283c06dbe465a"></a>GRANTED&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a7a2e496e8d9be587cc662640a4251b23a1869818fd53ff519eb8e429301bdff73" name="a7a2e496e8d9be587cc662640a4251b23a1869818fd53ff519eb8e429301bdff73"></a>PENDING&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 </div>
@@ -867,8 +760,8 @@ Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'
 
 </div>
 </div>
-<a id="a9569e1329c5a061249aae331a8e77403" name="a9569e1329c5a061249aae331a8e77403"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9569e1329c5a061249aae331a8e77403">&#9670;&#160;</a></span>initialize_federate()</h2>
+<a id="a4c0fafac5f5c59b40a8471c3311d384d" name="a4c0fafac5f5c59b40a8471c3311d384d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4c0fafac5f5c59b40a8471c3311d384d">&#9670;&#160;</a></span>initialize_federate()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -876,9 +769,19 @@ Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'
         <tr>
           <td class="memname">void initialize_federate </td>
           <td>(</td>
-          <td class="paramtype">uint16_t&#160;</td>
-          <td class="paramname"><em>id</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *&#160;</td>
+          <td class="paramname"><em>fed</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">uint16_t&#160;</td>
+          <td class="paramname"><em>id</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -888,6 +791,24 @@ Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="aa2ce1ad86e63f48a696ffff6f8efecd1" name="aa2ce1ad86e63f48a696ffff6f8efecd1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa2ce1ad86e63f48a696ffff6f8efecd1">&#9670;&#160;</a></span>initialize_RTI()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void initialize_RTI </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Initialize the _RTI instance. </p>
 
 </div>
 </div>
@@ -1146,67 +1067,6 @@ Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'
 
 </div>
 </div>
-<a id="a70e4672b8d5c3b0e42bbb0c17d01cccd" name="a70e4672b8d5c3b0e42bbb0c17d01cccd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a70e4672b8d5c3b0e42bbb0c17d01cccd">&#9670;&#160;</a></span>send_advance_grant_if_safe()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool send_advance_grant_if_safe </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *&#160;</td>
-          <td class="paramname"><em>fed</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Determine whether the specified federate fed is eligible for a tag advance grant, (TAG) and, if so, send it one. This is called upon receiving a LTC, NET or resign from an upstream federate.</p>
-<p>This function calculates the minimum M over all upstream federates of the "after" delay plus the most recently received LTC from that federate. If M is greater than the most recently sent TAG to fed or greater than or equal to the most recently sent PTAG, then send a TAG(M) to fed and return.</p>
-<p>If the above conditions do not result in sending a TAG, then find the minimum M of the earliest possible future message from upstream federates. This is calculated by transitively looking at the most recently received NET message from upstream federates. If M is greater than the NET of the federate fed or the most recently sent PTAG to that federate, then send TAG to the federate with tag equal to the NET of fed or the PTAG. If M is equal to the NET of the federate, then send PTAG(M).</p>
-<p>This should be called whenever an immediately upstream federate sends to the RTI an LTC (Logical Tag Complete), or when a transitive upstream federate sends a NET (Next Event Tag) message. It is also called when an upstream federate resigns from the federation.</p>
-<p>This function assumes that the caller holds the mutex lock.</p>
-<dl class="section return"><dt>Returns</dt><dd>True if the TAG message is sent and false otherwise. </dd></dl>
-
-</div>
-</div>
-<a id="a05299fb2838277ff1f030448c9cf1ad8" name="a05299fb2838277ff1f030448c9cf1ad8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a05299fb2838277ff1f030448c9cf1ad8">&#9670;&#160;</a></span>send_downstream_advance_grants_if_safe()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void send_downstream_advance_grants_if_safe </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *&#160;</td>
-          <td class="paramname"><em>fed</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>visited</em>[]&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>For all federates downstream of the specified federate, determine whether they should be sent a TAG or PTAG and send it if so.</p>
-<p>This assumes the caller holds the mutex.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">fed</td><td>The upstream federate. </td></tr>
-    <tr><td class="paramname">visited</td><td>An array of booleans used to determine whether a federate has been visited (initially all false). </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a id="a6a91427e9fa6a65bc44d5ec599688337" name="a6a91427e9fa6a65bc44d5ec599688337"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6a91427e9fa6a65bc44d5ec599688337">&#9670;&#160;</a></span>send_physical_clock()</h2>
 
@@ -1251,44 +1111,6 @@ Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'
 
 </div>
 </div>
-<a id="ab36a04086b8af885621e5f808efecd23" name="ab36a04086b8af885621e5f808efecd23"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab36a04086b8af885621e5f808efecd23">&#9670;&#160;</a></span>send_provisional_tag_advance_grant()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void send_provisional_tag_advance_grant </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *&#160;</td>
-          <td class="paramname"><em>fed</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
-          <td class="paramname"><em>tag</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Send a provisional tag advance grant (PTAG) message to the specified federate. Do not send it if a previously sent PTAG or TAG was greater or equal.</p>
-<p>This function will keep a record of this PTAG in the federate's last_provisionally_granted field.</p>
-<p>This function assumes that the caller holds the mutex lock.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">fed</td><td>The federate. </td></tr>
-    <tr><td class="paramname">tag</td><td>The tag to grant. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a id="a408613f224083aeba6da2c47f86006b7" name="a408613f224083aeba6da2c47f86006b7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a408613f224083aeba6da2c47f86006b7">&#9670;&#160;</a></span>send_reject()</h2>
 
@@ -1324,44 +1146,6 @@ Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'
 
 </div>
 </div>
-<a id="a2c94ce50b24ed5cc0bfce3d548d8e59f" name="a2c94ce50b24ed5cc0bfce3d548d8e59f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2c94ce50b24ed5cc0bfce3d548d8e59f">&#9670;&#160;</a></span>send_tag_advance_grant()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void send_tag_advance_grant </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *&#160;</td>
-          <td class="paramname"><em>fed</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
-          <td class="paramname"><em>tag</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Send a tag advance grant (TAG) message to the specified federate. Do not send it if a previously sent PTAG was greater or if a previously sent TAG was greater or equal.</p>
-<p>This function will keep a record of this TAG in the federate's last_granted field.</p>
-<p>This function assumes that the caller holds the mutex lock.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">fed</td><td>The federate. </td></tr>
-    <tr><td class="paramname">tag</td><td>The tag to grant. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
 <a id="a6cc1fe69c154d09d88de1f1c06eb4b0d" name="a6cc1fe69c154d09d88de1f1c06eb4b0d"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6cc1fe69c154d09d88de1f1c06eb4b0d">&#9670;&#160;</a></span>start_rti_server()</h2>
 
@@ -1381,50 +1165,6 @@ Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'
   <table class="params">
     <tr><td class="paramname">num_feds</td><td>Number of federates. </td></tr>
     <tr><td class="paramname">port</td><td>The port on which to listen for socket connections, or 0 to use the default port range. </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="aa067d8ff2e12b42f8c1f011758231be1" name="aa067d8ff2e12b42f8c1f011758231be1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa067d8ff2e12b42f8c1f011758231be1">&#9670;&#160;</a></span>transitive_next_event()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a> transitive_next_event </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *&#160;</td>
-          <td class="paramname"><em>fed</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
-          <td class="paramname"><em>candidate</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">bool&#160;</td>
-          <td class="paramname"><em>visited</em>[]&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Find the earliest tag at which the specified federate may experience its next event. This is the least next event tag (NET) of the specified federate and (transitively) upstream federates (with delays of the connections added). For upstream federates, we assume (conservatively) that federate upstream of those may also send an event. The result will never be less than the completion time of the federate (which may be NEVER, if the federate has not yet completed a logical time).</p>
-<p>FIXME: This could be made less conservative by building at code generation time a causality interface table indicating which outputs can be triggered by which inputs. For now, we assume any output can be triggered by any input.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">fed</td><td>The federate. </td></tr>
-    <tr><td class="paramname">candidate</td><td>A candidate tag (for the first invocation, this should be fed-&gt;next_event). </td></tr>
-    <tr><td class="paramname">visited</td><td>An array of booleans indicating which federates have been visited (for the first invocation, this should be an array of falses of size _RTI.number_of_federates). </td></tr>
   </table>
   </dd>
 </dl>
@@ -1522,76 +1262,6 @@ Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<h2 class="groupheader">Variable Documentation</h2>
-<a id="aba3e256a278f326c6101984491262800" name="aba3e256a278f326c6101984491262800"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aba3e256a278f326c6101984491262800">&#9670;&#160;</a></span>received_start_times</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> received_start_times</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>Condition variable used to signal receipt of all proposed start times. </p>
-
-</div>
-</div>
-<a id="a900138c50464733b007a7cec4bb050ca" name="a900138c50464733b007a7cec4bb050ca"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a900138c50464733b007a7cec4bb050ca">&#9670;&#160;</a></span>rti_mutex</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../de/d03/platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a> rti_mutex</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>The main mutex lock for the RTI. </p>
-
-</div>
-</div>
-<a id="a087a6339668b8a501563603be151e6e9" name="a087a6339668b8a501563603be151e6e9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a087a6339668b8a501563603be151e6e9">&#9670;&#160;</a></span>sent_start_time</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> sent_start_time</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-<p>Condition variable used to signal that a start time has been sent to a federate. </p>
 
 </div>
 </div>

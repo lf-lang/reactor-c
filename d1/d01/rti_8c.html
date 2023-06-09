@@ -109,10 +109,18 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a104f9a0ac7ff4aa717e0462b8ac445ea"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d99/struct_r_t_i__instance__t.html">RTI_instance_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d01/rti_8c.html#a104f9a0ac7ff4aa717e0462b8ac445ea">_RTI</a></td></tr>
-<tr class="separator:a104f9a0ac7ff4aa717e0462b8ac445ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0e3f469aead219c47f3ab3747aa43937"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d01/rti_8c.html#a0e3f469aead219c47f3ab3747aa43937">_e_rti</a></td></tr>
+<tr class="separator:a0e3f469aead219c47f3ab3747aa43937"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30ab7a367a583b4651bec6b42f6bda04"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d88/structfederation__rti__t.html">federation_rti_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d01/rti_8c.html#a30ab7a367a583b4651bec6b42f6bda04">_f_rti</a></td></tr>
+<tr class="separator:a30ab7a367a583b4651bec6b42f6bda04"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a01fd0d1404992f7d875791a764a26925"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d01/rti_8c.html#a01fd0d1404992f7d875791a764a26925">_lf_number_of_workers</a> = 0u</td></tr>
 <tr class="separator:a01fd0d1404992f7d875791a764a26925"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a900138c50464733b007a7cec4bb050ca"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../de/d03/platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d01/rti_8c.html#a900138c50464733b007a7cec4bb050ca">rti_mutex</a></td></tr>
+<tr class="separator:a900138c50464733b007a7cec4bb050ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aba3e256a278f326c6101984491262800"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d01/rti_8c.html#aba3e256a278f326c6101984491262800">received_start_times</a></td></tr>
+<tr class="separator:aba3e256a278f326c6101984491262800"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a087a6339668b8a501563603be151e6e9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d01/rti_8c.html#a087a6339668b8a501563603be151e6e9">sent_start_time</a></td></tr>
+<tr class="separator:a087a6339668b8a501563603be151e6e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab51bbf9201f21d31ea14e63cf880c09a"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d01/rti_8c.html#ab51bbf9201f21d31ea14e63cf880c09a">rti_trace_file_name</a> = &quot;rti.lft&quot;</td></tr>
 <tr class="separator:ab51bbf9201f21d31ea14e63cf880c09a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
@@ -185,6 +193,54 @@ DESCRIPTION</h1>
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
+<a id="a0e3f469aead219c47f3ab3747aa43937" name="a0e3f469aead219c47f3ab3747aa43937"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0e3f469aead219c47f3ab3747aa43937">&#9670;&#160;</a></span>_e_rti</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a>* _e_rti</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>References to the federation RTI and the enclave RTI. They both point to the same enclaves stuctures. In the case of federation RTI, however, enclaves are encapsulated in federates. <br  />
+</p>
+<p>Reference to <a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a> instance. </p>
+
+</div>
+</div>
+<a id="a30ab7a367a583b4651bec6b42f6bda04" name="a30ab7a367a583b4651bec6b42f6bda04"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a30ab7a367a583b4651bec6b42f6bda04">&#9670;&#160;</a></span>_f_rti</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d9/d88/structfederation__rti__t.html">federation_rti_t</a>* _f_rti</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Reference to federate_rti_t instance. </p>
+
+</div>
+</div>
 <a id="a01fd0d1404992f7d875791a764a26925" name="a01fd0d1404992f7d875791a764a26925"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a01fd0d1404992f7d875791a764a26925">&#9670;&#160;</a></span>_lf_number_of_workers</h2>
 
@@ -200,8 +256,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a104f9a0ac7ff4aa717e0462b8ac445ea" name="a104f9a0ac7ff4aa717e0462b8ac445ea"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a104f9a0ac7ff4aa717e0462b8ac445ea">&#9670;&#160;</a></span>_RTI</h2>
+<a id="aba3e256a278f326c6101984491262800" name="aba3e256a278f326c6101984491262800"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aba3e256a278f326c6101984491262800">&#9670;&#160;</a></span>received_start_times</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -210,7 +266,7 @@ DESCRIPTION</h1>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d3/d99/struct_r_t_i__instance__t.html">RTI_instance_t</a> _RTI</td>
+          <td class="memname"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> received_start_times</td>
         </tr>
       </table>
   </td>
@@ -219,7 +275,28 @@ DESCRIPTION</h1>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>The state of this RTI instance. </p>
+
+</div>
+</div>
+<a id="a900138c50464733b007a7cec4bb050ca" name="a900138c50464733b007a7cec4bb050ca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a900138c50464733b007a7cec4bb050ca">&#9670;&#160;</a></span>rti_mutex</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../de/d03/platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a> rti_mutex</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -235,6 +312,28 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p>RTI trace file name </p>
+
+</div>
+</div>
+<a id="a087a6339668b8a501563603be151e6e9" name="a087a6339668b8a501563603be151e6e9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a087a6339668b8a501563603be151e6e9">&#9670;&#160;</a></span>sent_start_time</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> sent_start_time</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
 
 </div>
 </div>
