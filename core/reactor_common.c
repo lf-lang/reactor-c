@@ -1692,13 +1692,24 @@ int process_args(int argc, const char* argv[]) {
 }
 
 /**
- * Initialize the priority queues and set logical time to match
- * physical time. This also prints a message reporting the start time.
+ * Initialize global variables and start tracing before calling the
+ * `_lf_initialize_trigger_objects` function
  */
 void initialize_global(void) {
     _lf_count_payload_allocations = 0;
     _lf_count_token_allocations = 0;
     
+    environment_t *envs;
+    int num_envs = _lf_get_environments(&envs);
+    for (int i = 0; i<num_envs; i++) {
+        start_trace(envs[i].trace);
+    }
+
+    // Federation trace object must be set before `initialize_trigger_objects` is called because it
+    //  uses tracing functionality depending on that pointer being set.
+    #ifdef FEDERATED
+    set_federation_trace_object(envs->trace);
+    #endif
     // Call the code-generated function to initialize all actions, timers, and ports
     // This is done for all environments/enclaves at the same time.
     _lf_initialize_trigger_objects() ;
