@@ -125,7 +125,6 @@ static void environment_free_federated(environment_t* env) {
 }
 
 void environment_free(environment_t* env) {
-    free(env->name);
     free(env->timer_triggers);
     free(env->startup_reactions);
     free(env->shutdown_reactions);
