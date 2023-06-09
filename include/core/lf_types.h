@@ -308,7 +308,7 @@ typedef struct mode_environment_t mode_environment_t;
 
 
 typedef struct environment_t {
-    char * name;
+    bool initialized;
     int id;
     tag_t current_tag;
     tag_t stop_tag; // Make global protected by global mutex
@@ -329,6 +329,8 @@ typedef struct environment_t {
     int shutdown_reactions_size;
     reaction_t** reset_reactions;
     int reset_reactions_size;
+    mode_environment_t* modes;
+    trace_t* trace;
 #ifdef LF_UNTHREADED
     pqueue_t *reaction_q;
 #endif 
@@ -345,8 +347,6 @@ typedef struct environment_t {
     tag_t** _lf_intended_tag_fields;
     int _lf_intended_tag_fields_size;
 #endif // FEDERATED
-    mode_environment_t* modes;
-    trace_t* trace;
 } environment_t;
 
 #ifdef MODAL_REACTORS

@@ -205,5 +205,6 @@ int environment_init(
     environment_init_modes(env, num_modes, num_state_resets);
     environment_init_federated(env, num_is_present_fields);
 
+    env->initialized = true;
     return 0;
 }

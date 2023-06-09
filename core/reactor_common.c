@@ -1730,9 +1730,14 @@ void termination(void) {
 
     // In order to free tokens, we perform the same actions we would have for a new time step.
     for (int i = 0; i<num_envs; i++) {
+        lf_print("---- Terminating environment %u", env->id);
+        if (!env->initialized) {
+            lf_print_warning("---- Environment %u was never initialized", env->id);
+            continue;
+        }
         // Stop any tracing, if it is running.
         stop_trace(env->trace);
-        lf_print("---- Terminating environment %u", env->id);
+
         _lf_start_time_step(env);
 
     #ifdef MODAL_REACTORS
