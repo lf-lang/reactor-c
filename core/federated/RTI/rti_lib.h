@@ -160,6 +160,9 @@ typedef struct RTI_instance_t {
      * Boolean indicating that tracing is enabled.
      */
     bool tracing_enabled;
+
+    // Pointer to a tracing object
+    trace_t* trace;
 } RTI_instance_t;
 
 /**

@@ -203,7 +203,7 @@ void notify_tag_advance_grant(enclave_t* e, tag_t tag) {
     encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_to_federate(send_TAG, e->id, &tag);
+        tracepoint_RTI_to_federate(_RTI.trace, send_TAG, e->id, &tag);
     }
     // This function is called in notify_advance_grant_if_safe(), which is a long
     // function. During this call, the socket might close, causing the following write_to_socket
@@ -284,7 +284,7 @@ void notify_provisional_tag_advance_grant(enclave_t* e, tag_t tag) {
     encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));
 
     if (_RTI.tracing_enabled){
-        tracepoint_RTI_to_federate(send_PTAG, e->id, &tag);
+        tracepoint_RTI_to_federate(_RTI.trace, send_PTAG, e->id, &tag);
     }
     // This function is called in notify_advance_grant_if_safe(), which is a long
     // function. During this call, the socket might close, causing the following write_to_socket
@@ -359,7 +359,7 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
     tag_t tag = extract_tag(&(buffer[1 + 2 * sizeof(uint16_t)]));
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_PORT_ABS, federate_id, &tag);
+        tracepoint_RTI_from_federate(_RTI.trace, receive_PORT_ABS, federate_id, &tag);
     }
 
     // Need to acquire the mutex lock to ensure that the thread handling
@@ -403,7 +403,7 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
     // Forward the message.
     int destination_socket = _RTI.federates[federate_id].socket;
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_to_federate(send_PORT_ABS, federate_id, &tag);
+        tracepoint_RTI_to_federate(_RTI.trace, send_PORT_ABS, federate_id, &tag);
     }
     write_to_socket_errexit(destination_socket, message_size + 1, buffer,
             "RTI failed to forward message to federate %d.", federate_id);
@@ -449,7 +449,7 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     // LF_PRINT_DEBUG("Message received by RTI: %s.", buffer + header_size);
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_TAGGED_MSG, sending_federate->enclave.id, &intended_tag);
+        tracepoint_RTI_from_federate(_RTI.trace, receive_TAGGED_MSG, sending_federate->enclave.id, &intended_tag);
     }
 
     // Need to acquire the mutex lock to ensure that the thread handling
@@ -525,7 +525,7 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer) {
     }
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_to_federate(send_TAGGED_MSG, federate_id, &intended_tag);
+        tracepoint_RTI_to_federate(_RTI.trace, send_TAGGED_MSG, federate_id, &intended_tag);
     }
 
     write_to_socket_errexit(destination_socket, bytes_read, buffer,
@@ -586,7 +586,7 @@ void handle_next_event_tag(federate_t* fed) {
 
     tag_t intended_tag = extract_tag(buffer);
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_NET, fed->enclave.id, &intended_tag);
+        tracepoint_RTI_from_federate(_RTI.trace, receive_NET, fed->enclave.id, &intended_tag);
     }
     LF_PRINT_LOG("RTI received from federate %d the Next Event Tag (NET) " PRINTF_TAG,
         fed->enclave.id, intended_tag.time - start_time,
@@ -624,7 +624,7 @@ void _lf_rti_broadcast_stop_time_to_federates_already_locked() {
             _RTI.federates[i].enclave.next_event = _RTI.max_stop_tag;
         }
         if (_RTI.tracing_enabled) {
-            tracepoint_RTI_to_federate(send_STOP_GRN, _RTI.federates[i].enclave.id, &_RTI.max_stop_tag);
+            tracepoint_RTI_to_federate(_RTI.trace, send_STOP_GRN, _RTI.federates[i].enclave.id, &_RTI.max_stop_tag);
         }
         write_to_socket_errexit(_RTI.federates[i].socket, MSG_TYPE_STOP_GRANTED_LENGTH, outgoing_buffer,
                 "RTI failed to send MSG_TYPE_STOP_GRANTED message to federate %d.", _RTI.federates[i].enclave.id);
@@ -674,7 +674,7 @@ void handle_stop_request_message(federate_t* fed) {
     tag_t proposed_stop_tag = extract_tag(buffer);
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_STOP_REQ, fed->enclave.id, &proposed_stop_tag);
+        tracepoint_RTI_from_federate(_RTI.trace, receive_STOP_REQ, fed->enclave.id, &proposed_stop_tag);
     }
 
     // Update the maximum stop tag received from federates
@@ -710,12 +710,12 @@ void handle_stop_request_message(federate_t* fed) {
                 continue;
             }
             if (_RTI.tracing_enabled) {
-                tracepoint_RTI_to_federate(send_STOP_REQ, _RTI.federates[i].enclave.id, &_RTI.max_stop_tag);
+                tracepoint_RTI_to_federate(_RTI.trace, send_STOP_REQ, _RTI.federates[i].enclave.id, &_RTI.max_stop_tag);
             }
             write_to_socket_errexit(_RTI.federates[i].socket, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer,
                     "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.", _RTI.federates[i].enclave.id);
             if (_RTI.tracing_enabled) {
-                tracepoint_RTI_to_federate(send_STOP_REQ, _RTI.federates[i].enclave.id, &_RTI.max_stop_tag);
+                tracepoint_RTI_to_federate(_RTI.trace, send_STOP_REQ, _RTI.federates[i].enclave.id, &_RTI.max_stop_tag);
             }
         }
     }
@@ -734,7 +734,7 @@ void handle_stop_request_reply(federate_t* fed) {
     tag_t federate_stop_tag = extract_tag(buffer_stop_time);
 
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_STOP_REQ_REP, fed->enclave.id, &federate_stop_tag);
+        tracepoint_RTI_from_federate(_RTI.trace, receive_STOP_REQ_REP, fed->enclave.id, &federate_stop_tag);
     }
 
     LF_PRINT_LOG("RTI received from federate %d STOP reply tag (" PRINTF_TIME ", %u).", fed->enclave.id,
@@ -764,7 +764,7 @@ void handle_address_query(uint16_t fed_id) {
     uint16_t remote_fed_id = extract_uint16(buffer);
 
     if (_RTI.tracing_enabled){
-        tracepoint_RTI_from_federate(receive_ADR_QR, fed_id, NULL);
+        tracepoint_RTI_from_federate(_RTI.trace, receive_ADR_QR, fed_id, NULL);
     }
 
     LF_PRINT_DEBUG("RTI received address query from %d for %d.", fed_id, remote_fed_id);
@@ -810,7 +810,7 @@ void handle_address_ad(uint16_t federate_id) {
     lf_mutex_lock(&rti_mutex);
     _RTI.federates[federate_id].server_port = server_port;
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_ADR_AD, federate_id, NULL);
+        tracepoint_RTI_from_federate(_RTI.trace, receive_ADR_AD, federate_id, NULL);
     }
      LF_PRINT_LOG("Received address advertisement from federate %d.", federate_id);
     lf_mutex_unlock(&rti_mutex);
@@ -827,7 +827,7 @@ void handle_timestamp(federate_t *my_fed) {
     int64_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t *)(&buffer)));
     if (_RTI.tracing_enabled) {
         tag_t tag = {.time = timestamp, .microstep = 0};
-        tracepoint_RTI_from_federate(receive_TIMESTAMP, my_fed->enclave.id, &tag);
+        tracepoint_RTI_from_federate(_RTI.trace, receive_TIMESTAMP, my_fed->enclave.id, &tag);
     }
     LF_PRINT_LOG("RTI received timestamp message: " PRINTF_TIME ".", timestamp);
 
@@ -860,7 +860,7 @@ void handle_timestamp(federate_t *my_fed) {
 
     if (_RTI.tracing_enabled) {
         tag_t tag = {.time = start_time, .microstep = 0};
-        tracepoint_RTI_to_federate(send_TIMESTAMP, my_fed->enclave.id, &tag);
+        tracepoint_RTI_to_federate(_RTI.trace, send_TIMESTAMP, my_fed->enclave.id, &tag);
     }
     ssize_t bytes_written = write_to_socket(
         my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH,
@@ -1032,7 +1032,7 @@ void handle_federate_resign(federate_t *my_fed) {
                                  "RTI failed to read the timed message header from remote federate.");
         // Extract the tag sent by the resigning federate
         tag_t tag = extract_tag(&(buffer[1]));
-        tracepoint_RTI_from_federate(receive_RESIGN, my_fed->enclave.id, &tag);
+        tracepoint_RTI_from_federate(_RTI.trace, receive_RESIGN, my_fed->enclave.id, &tag);
     }
 
     my_fed->enclave.state = NOT_CONNECTED;
@@ -1123,7 +1123,7 @@ void* federate_thread_TCP(void* fed) {
             default:
                 lf_print_error("RTI received from federate %d an unrecognized TCP message type: %u.", my_fed->enclave.id, buffer[0]);
                 if (_RTI.tracing_enabled) {
-                    tracepoint_RTI_from_federate(receive_UNIDENTIFIED, my_fed->enclave.id, NULL);
+                    tracepoint_RTI_from_federate(_RTI.trace, receive_UNIDENTIFIED, my_fed->enclave.id, NULL);
                 }
         }
     }
@@ -1171,7 +1171,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
             send_reject(socket_id, UNEXPECTED_MESSAGE);
         }
         if (_RTI.tracing_enabled){
-            tracepoint_RTI_to_federate(send_REJECT, fed_id, NULL);
+            tracepoint_RTI_to_federate(_RTI.trace, send_REJECT, fed_id, NULL);
         }
         lf_print_error("RTI expected a MSG_TYPE_FED_IDS message. Got %u (see net_common.h).", buffer[0]);
         return -1;
@@ -1195,7 +1195,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
         LF_PRINT_DEBUG("RTI received federation ID: %s.", federation_id_received);
 
         if (_RTI.tracing_enabled) {
-            tracepoint_RTI_from_federate(receive_FED_ID, fed_id, NULL);
+            tracepoint_RTI_from_federate(_RTI.trace, receive_FED_ID, fed_id, NULL);
         }
         // Compare the received federation ID to mine.
         if (strncmp(_RTI.federation_id, federation_id_received, federation_id_length) != 0) {
@@ -1204,7 +1204,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
                     federation_id_received,
                     _RTI.federation_id);
             if (_RTI.tracing_enabled) {
-                    tracepoint_RTI_to_federate(send_REJECT, fed_id, NULL);
+                    tracepoint_RTI_to_federate(_RTI.trace, send_REJECT, fed_id, NULL);
             }
             send_reject(socket_id, FEDERATION_ID_DOES_NOT_MATCH);
             return -1;
@@ -1213,7 +1213,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
                 // Federate ID is out of range.
                 lf_print_error("RTI received federate ID %d, which is out of range.", fed_id);
                 if (_RTI.tracing_enabled){
-                    tracepoint_RTI_to_federate(send_REJECT, fed_id, NULL);
+                    tracepoint_RTI_to_federate(_RTI.trace, send_REJECT, fed_id, NULL);
                 }
                 send_reject(socket_id, FEDERATE_ID_OUT_OF_RANGE);
                 return -1;
@@ -1221,7 +1221,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
                 if (_RTI.federates[fed_id].enclave.state != NOT_CONNECTED) {
                     lf_print_error("RTI received duplicate federate ID: %d.", fed_id);
                     if (_RTI.tracing_enabled) {
-                        tracepoint_RTI_to_federate(send_REJECT, fed_id, NULL);
+                        tracepoint_RTI_to_federate(_RTI.trace, send_REJECT, fed_id, NULL);
                     }
                     send_reject(socket_id, FEDERATE_ID_IN_USE);
                     return -1;
@@ -1259,7 +1259,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
     // Send an MSG_TYPE_ACK message.
     unsigned char ack_message = MSG_TYPE_ACK;
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_to_federate(send_ACK, fed_id, NULL);
+        tracepoint_RTI_to_federate(_RTI.trace, send_ACK, fed_id, NULL);
     }
     write_to_socket_errexit(socket_id, 1, &ack_message,
             "RTI failed to write MSG_TYPE_ACK message to federate %d.", fed_id);

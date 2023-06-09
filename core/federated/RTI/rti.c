@@ -62,7 +62,8 @@ int main(int argc, const char* argv[]) {
     lf_cond_init(&received_start_times, &rti_mutex);
     lf_cond_init(&sent_start_time, &rti_mutex);
     
-    trace_t * trace = trace_new(NULL, rti_trace_file_name);
+    _RTI.trace = trace_new(NULL, rti_trace_file_name);
+    lf_assert(_RTI.trace, "Out of memory");
 
     if (!process_args(argc, argv)) {
         // Processing command-line arguments failed.
@@ -70,7 +71,7 @@ int main(int argc, const char* argv[]) {
     }
     if (_RTI.tracing_enabled) {
         _lf_number_of_workers = _RTI.number_of_federates;
-        start_trace(trace);
+        start_trace(_RTI.trace);
         printf("Tracing the RTI execution in %s file.\n", rti_trace_file_name);
     }
     printf("Starting RTI for %d federates in federation ID %s\n", _RTI.number_of_federates, _RTI.federation_id);
@@ -82,8 +83,8 @@ int main(int argc, const char* argv[]) {
     int socket_descriptor = start_rti_server(_RTI.user_specified_port);
     wait_for_federates(socket_descriptor);
     if (_RTI.tracing_enabled) {
-        stop_trace(trace);
-        trace_free(trace);
+        stop_trace(_RTI.trace);
+        trace_free(_RTI.trace);
     }
     printf("RTI is exiting.\n");
     return 0;

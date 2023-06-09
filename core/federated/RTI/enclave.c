@@ -36,7 +36,7 @@ void logical_tag_complete(enclave_t* enclave, tag_t completed) {
 
     enclave->completed = completed;
     if (_RTI.tracing_enabled) {
-        tracepoint_RTI_from_federate(receive_LTC, enclave->id, &(enclave->completed));
+        tracepoint_RTI_from_federate(_RTI.trace, receive_LTC, enclave->id, &(enclave->completed));
     }
 
     LF_PRINT_LOG("RTI received from federate %d the Logical Tag Complete (LTC) (" PRINTF_TIME ", %u).",
