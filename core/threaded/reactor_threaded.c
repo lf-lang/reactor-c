@@ -37,6 +37,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <signal.h>
 #include <string.h>
+#include <time.h>
 
 #include "lf_types.h"
 #include "platform.h"

@@ -53,9 +53,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Forward declare _lf_clock_now which is needed by lf_cond_timedwait
 extern int _lf_clock_now(instant_t* t);
 
-// Forward declate the timespec struct
-struct timespec;
-
 #if defined LF_THREADED
 #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
 /**
