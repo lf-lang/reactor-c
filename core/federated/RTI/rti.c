@@ -78,7 +78,8 @@ const char *rti_trace_file_name = "rti.lft";
  */
 void termination() {
     if (_f_rti->tracing_enabled) {
-        stop_trace();
+        stop_trace(_f_rti->trace);
+        trace_free(_f_rti->trace);
         lf_print("RTI trace file saved.");
     }   
     lf_print("RTI is exiting.");
@@ -105,10 +106,10 @@ int main(int argc, const char* argv[]) {
     }
     if (_f_rti->tracing_enabled) {
         _lf_number_of_workers = _f_rti->number_of_enclaves;
-        _f_rti.trace = trace_new(NULL, rti_trace_file_name);
+        _f_rti->trace = trace_new(NULL, rti_trace_file_name);
         
-        lf_assert(_f_rti.trace, "Out of memory");
-        start_trace(_f_rti.trace);
+        lf_assert(_f_rti->trace, "Out of memory");
+        start_trace(_f_rti->trace);
 
         lf_print("Tracing the RTI execution in %s file.", rti_trace_file_name);
     }
@@ -128,10 +129,6 @@ int main(int argc, const char* argv[]) {
 
     int socket_descriptor = start_rti_server(_f_rti->user_specified_port);
     wait_for_federates(socket_descriptor);
-    if (_f_rti.tracing_enabled) {
-        stop_trace(_f_rti.trace);
-        trace_free(_f_rti.trace);
-    }
-    printf("RTI is exiting.\n");
+    lf_print("RTI is exiting.");
     return 0;
 }

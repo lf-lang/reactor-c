@@ -102,7 +102,9 @@ typedef struct federation_rti_t {
 
     // Boolean indicating that tracing is enabled.
     bool tracing_enabled;
-
+    
+    // Pointer to a tracing object
+    trace_t* trace;
     ////////////// Federation only specific attributes //////////////
 
     // Maximum start time seen so far from the federates.
@@ -170,13 +172,7 @@ typedef struct federation_rti_t {
      */
     bool authentication_enabled;
     
-    /**
-     * Boolean indicating that tracing is enabled.
-     */
-    bool tracing_enabled;
 
-    // Pointer to a tracing object
-    trace_t* trace;
 } federation_rti_t;
 
 /**
