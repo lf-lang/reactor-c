@@ -1054,6 +1054,12 @@ void determine_number_of_workers(void) {
 int lf_reactor_c_main(int argc, const char* argv[]) {
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
+
+    // Parse command line arguments. Sets global variables like duration, fast, number_of_workers.
+    if (!(process_args(default_argc, default_argv)
+            && process_args(argc, argv))) {
+        return -1;
+    }
     
     // Register the termination function
     if (atexit(termination) != 0) {
@@ -1070,11 +1076,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     signal(SIGPIPE, SIG_IGN);
 #endif // SIGPIPE
 
-    // Parse command line arguments. Sets global variables like duration, fast, number_of_workers.
-    if (!(process_args(default_argc, default_argv)
-            && process_args(argc, argv))) {
-        return -1;
-    }
     // Determine global number of workers based on user request and available parallelism
     determine_number_of_workers();
     
