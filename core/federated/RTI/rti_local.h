@@ -9,20 +9,20 @@
  * The first field is the generic reactor_node_info struct
  * 
  */
-typedef struct enclave_info_t {
-    reactor_node_info_t reactor;
+typedef struct {
+    reactor_node_info_t base;
     environment_t * env; // A pointer to the environment of the enclave
     lf_cond_t next_event_condition; // Condition variable used by reactor_nodes to notify an enclave
                                     // that it's call to next_event_tag() should unblock.
-};
+} enclave_info_t;
 
 /**
  * @brief Structure holding information about the local RTI
  * 
  */
-typedef struct rti_local_t {
+typedef struct {
     rti_common_t base;
-};
+} rti_local_t;
 
 /**
  * @brief Dynamically create and initialize the local RTI
@@ -35,7 +35,7 @@ void initialize_local_rti(environment_t ** envs, int num_envs);
  * 
  * @param enclave 
  */
-void initialize_enclave_info(enclave_info_t* enclave, environment_t *env);
+void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t *env);
 
 /**
  * @brief Get the tag to advance to.
@@ -53,7 +53,7 @@ void initialize_enclave_info(enclave_info_t* enclave, environment_t *env);
  * @return If granted, return the TAG and whether it is provisional or not. 
  *  Otherwise, return the NEVER_TAG.
  */
-tag_advance_grant_t rti_next_event_tag(reactor_node_info_t* e, tag_t next_event_tag);
+tag_advance_grant_t rti_next_event_tag(enclave_info_t* e, tag_t next_event_tag);
 
 /**
  * @brief This function informs the local RTI that `enclave` has completed tag

@@ -2,6 +2,7 @@
 #include "rti_common.h"
 #include "util.h"
 #include "platform.h"
+#include "trace.h"
 
 // Static global pointer to the RTI object
 static rti_local_t * rti_local;
@@ -12,24 +13,25 @@ void initialize_local_rti(environment_t **envs, int num_envs) {
 
     initialize_rti_common(&rti_local->base);
     rti_local->base.number_of_reactor_nodes = num_envs;
+    rti_local->base.trace = envs[0]->trace;
+    rti_local->base.tracing_enabled = (envs[0]->trace != NULL);
 
     // Allocate memory for the enclave_info objects
-    rti.base.reactor_nodes = (reactor_node_info_t**)calloc(num_envs, sizeof(reactor_node_info_t*));
+    rti_local->base.reactor_nodes = (reactor_node_info_t**)calloc(num_envs, sizeof(reactor_node_info_t*));
     for (int i = 0; i < num_envs; i++) {
         enclave_info_t *enclave_info = (enclave_info_t *) malloc(sizeof(enclave_info_t));
-        initialize_enclave_info(enclave_info, envs[i]);
-        rti_local.base.reactor_nodes[i] = (reactor_node_info_t *) enclave_info;
+        initialize_enclave_info(enclave_info, i, envs[i]);
+        rti_local->base.reactor_nodes[i] = (reactor_node_info_t *) enclave_info;
     }
-
 }
 
-void initialize_enclave_info(enclave_info_t* enclave, environment_t * env) {
-    initialize_reactor_node(&enclave->reactor);
+void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t * env) {
+    initialize_reactor_node(&enclave->base, idx);
 
     enclave->env = env;
     
     // Initialize the next event condition variable.
-    lf_cond_init(&e->next_event_condition, &rti_local.base.mutex);
+    lf_cond_init(&enclave->next_event_condition, &rti_local->base.mutex);
 }
 
 tag_advance_grant_t rti_next_event_tag(enclave_info_t* e, tag_t next_event_tag) {
@@ -38,7 +40,7 @@ tag_advance_grant_t rti_next_event_tag(enclave_info_t* e, tag_t next_event_tag) 
     tag_advance_grant_t result;
     // Early exit if we only have a single enclave. 
     // FIXME: Should we do some macro implementation of this function in that case?
-    if (rti_local.base.number_of_reactor_nodes == 1) {
+    if (rti_local->base.number_of_reactor_nodes == 1) {
         result.tag = next_event_tag;
         result.is_provisional = false;
         return result;
@@ -46,7 +48,7 @@ tag_advance_grant_t rti_next_event_tag(enclave_info_t* e, tag_t next_event_tag) 
 
     // First, update the enclave data structure to record this next_event_tag,
     // and notify any downstream reactor_nodes, and unblock them if appropriate.
-    lf_mutex_lock(&rti_local.base.mutex);
+    lf_mutex_lock(&rti_local->base.mutex);
 
     // FIXME: If last_granted is already greater than next_event_tag, return next_event_tag.
 
@@ -61,13 +63,13 @@ tag_advance_grant_t rti_next_event_tag(enclave_info_t* e, tag_t next_event_tag) 
         if (lf_tag_compare(previous_tag, e->base.last_granted) < 0) {
             result.tag = e->base.last_granted;
             result.is_provisional = false;
-            lf_mutex_unlock(&rti_local.base.mutex);
+            lf_mutex_unlock(&rti_local->base.mutex);
             return result;
         }
         if (lf_tag_compare(previous_ptag, e->base.last_provisionally_granted) < 0) {
             result.tag = e->base.last_provisionally_granted;
             result.is_provisional = true;
-            lf_mutex_unlock(&rti_local.base.mutex);
+            lf_mutex_unlock(&rti_local->base.mutex);
             return result;
         }
 
@@ -82,13 +84,11 @@ void rti_logical_tag_complete(enclave_info_t* enclave, tag_t completed) {
     
     // Early exit if we only have a single enclave
     // FIXME: Do some macro implementation of the function in that case.
-    if (rti_local.base.number_of_reactor_nodes == 1) {
-        result.tag = next_event_tag;
-        result.is_provisional = false;
-        return result;
+    if (rti_local->base.number_of_reactor_nodes == 1) {
+        return;
     }
 
-    logical_tag_complete(&e->base, completed)
+    logical_tag_complete(&enclave->base, completed);
 }
 
 void rti_request_stop(tag_t stop_tag) {
@@ -114,7 +114,7 @@ void notify_tag_advance_grant(reactor_node_info_t* e, tag_t tag) {
         return;
     }
     if (rti_local->base.tracing_enabled) {
-        tracepoint_RTI_to_federate(send_TAG, e->id, &tag);
+        tracepoint_rti_to_federate(rti_local->base.trace, send_TAG, e->id, &tag);
     }
     e->last_granted = tag;
     // FIXME: Only signal the cond var if the enclave is in fact waiting

@@ -153,13 +153,7 @@ typedef struct rti_remote_t {
      * Boolean indicating that authentication is enabled.
      */
     bool authentication_enabled;
-<<<<<<< HEAD:core/federated/RTI/rti_lib.h
-    
-
-} federation_rti_t;
-=======
 } rti_remote_t;
->>>>>>> rti-refactor2:core/federated/RTI/rti_remote.h
 
 /**
  * Enter a critical section where logical time and the event queue are guaranteed
