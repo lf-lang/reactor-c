@@ -35,6 +35,7 @@
  * allocated for message payloads and never freed.
  */
 int _lf_count_payload_allocations;
+int _lf_count_token_allocations;
 
 #include <stdbool.h>
 #include <assert.h>

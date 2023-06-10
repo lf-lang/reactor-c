@@ -194,7 +194,7 @@ extern lf_token_t* _lf_tokens_allocated_in_reactions;
  * it. That token is not counted because it is not
  * expected to be freed.
  */
-static int _lf_count_token_allocations;
+extern int _lf_count_token_allocations;
 
 //////////////////////////////////////////////////////////
 //// Functions that users may call
