@@ -1390,7 +1390,7 @@ bool authenticate_federate(int socket) {
 
     // Check HMAC of received FED_RESPONSE message.
     unsigned int hmac_length = SHA256_HMAC_LENGTH;
-    size_t federation_id_length = strnlen(rti->federation_id, 255);
+    size_t federation_id_length = strnlen(rti_remote->federation_id, 255);
     size_t fed_id_length = sizeof(uint16_t);
 
     unsigned char received[1 + NONCE_LENGTH + fed_id_length + hmac_length];
@@ -1407,7 +1407,7 @@ bool authenticate_federate(int socket) {
     memcpy(&buf_to_check[1], &received[1 + NONCE_LENGTH], fed_id_length);
     memcpy(&buf_to_check[1 + fed_id_length], rti_nonce, NONCE_LENGTH);
     unsigned char rti_tag[hmac_length];
-    HMAC(EVP_sha256(), rti->federation_id, federation_id_length, buf_to_check, 1 + fed_id_length + NONCE_LENGTH,
+    HMAC(EVP_sha256(), rti_remote->federation_id, federation_id_length, buf_to_check, 1 + fed_id_length + NONCE_LENGTH,
          rti_tag, &hmac_length);
 
     // Compare received tag and created tag.
@@ -1426,7 +1426,7 @@ bool authenticate_federate(int socket) {
         // Buffer for message type and HMAC tag.
         unsigned char sender[1 + hmac_length];
         sender[0] = MSG_TYPE_RTI_RESPONSE;
-        HMAC(EVP_sha256(), rti->federation_id, federation_id_length, mac_buf, 1 + NONCE_LENGTH,
+        HMAC(EVP_sha256(), rti_remote->federation_id, federation_id_length, mac_buf, 1 + NONCE_LENGTH,
              &sender[1], &hmac_length);
         write_to_socket(socket, 1 + hmac_length, sender);
         return true;
@@ -1457,7 +1457,7 @@ void connect_to_federates(int socket_descriptor) {
 
         // Send RTI hello when RTI -a option is on.
         #ifdef __RTI_AUTH__
-        if (rti->authentication_enabled) {
+        if (rti_remote->authentication_enabled) {
             if (!authenticate_federate(socket_id)) {
                 lf_print_warning("RTI failed to authenticate the incoming federate.");
                 // Ignore the federate that failed authentication.
