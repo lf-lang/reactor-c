@@ -39,7 +39,6 @@ static rti_remote_t *rti_remote;
 // and casting it. 
 #define GET_FED_INFO(_idx) (federate_info_t *) rti_remote->base.reactor_nodes[_idx]  
 
-lf_mutex_t rti_mutex;
 lf_cond_t received_start_times;
 lf_cond_t sent_start_time;
 
@@ -52,7 +51,7 @@ lf_cond_t sent_start_time;
  * @return 0 on success, platform-specific error number otherwise.
  */
 extern int lf_critical_section_enter() {
-    return lf_mutex_lock(&rti_mutex);
+    return lf_mutex_lock(&rti_remote->base.mutex);
 }
 
 /**
@@ -60,7 +59,7 @@ extern int lf_critical_section_enter() {
  * @return 0 on success, platform-specific error number otherwise.
  */
 extern int lf_critical_section_exit() {
-    return lf_mutex_unlock(&rti_mutex);
+    return lf_mutex_unlock(&rti_remote->base.mutex);
 }
 
 int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_type) {
@@ -319,13 +318,13 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
     // Need to acquire the mutex lock to ensure that the thread handling
     // messages coming from the socket connected to the destination does not
     // issue a TAG before this message has been forwarded.
-    lf_mutex_lock(&rti_mutex);
+    lf_mutex_lock(&rti_remote->base.mutex);
 
     // If the destination federate is no longer connected, issue a warning
     // and return.
     federate_info_t* fed = GET_FED_INFO(federate_id);
     if (fed->enclave.state == NOT_CONNECTED) {
-        lf_mutex_unlock(&rti_mutex);
+        lf_mutex_unlock(&rti_remote->base.mutex);
         lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
                 federate_id);
         LF_PRINT_LOG("Fed status: next_event (" PRINTF_TIME ", %d), "
@@ -363,7 +362,7 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
     write_to_socket_errexit(destination_socket, message_size + 1, buffer,
             "RTI failed to forward message to federate %d.", federate_id);
 
-    lf_mutex_unlock(&rti_mutex);
+    lf_mutex_unlock(&rti_remote->base.mutex);
 }
 
 void handle_timed_message(federate_info_t* sending_federate, unsigned char* buffer) {
@@ -410,13 +409,13 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
     // Need to acquire the mutex lock to ensure that the thread handling
     // messages coming from the socket connected to the destination does not
     // issue a TAG before this message has been forwarded.
-    lf_mutex_lock(&rti_mutex);
+    lf_mutex_lock(&rti_remote->base.mutex);
 
     // If the destination federate is no longer connected, issue a warning
     // and return.
     federate_info_t *fed = GET_FED_INFO(federate_id);
     if (fed->enclave.state == NOT_CONNECTED) {
-        lf_mutex_unlock(&rti_mutex);
+        lf_mutex_unlock(&rti_remote->base.mutex);
         lf_print_warning("RTI: Destination federate %d is no longer connected. Dropping message.",
                 federate_id);
         LF_PRINT_LOG("Fed status: next_event (" PRINTF_TIME ", %d), "
@@ -502,7 +501,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
 
         // FIXME: a mutex needs to be held for this so that other threads
         // do not write to destination_socket and cause interleaving. However,
-        // holding the rti_mutex might be very expensive. Instead, each outgoing
+        // holding the rti_remote->base.mutex might be very expensive. Instead, each outgoing
         // socket should probably have its own mutex.
         write_to_socket_errexit(destination_socket, bytes_to_read, buffer,
                 "RTI failed to send message chunks.");
@@ -510,7 +509,7 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
 
     update_federate_next_event_tag_locked(federate_id, intended_tag);
 
-    lf_mutex_unlock(&rti_mutex);
+    lf_mutex_unlock(&rti_remote->base.mutex);
 }
 
 void handle_logical_tag_complete(federate_info_t* fed) {
@@ -524,10 +523,10 @@ void handle_logical_tag_complete(federate_info_t* fed) {
     logical_tag_complete(&(fed->enclave), completed);
 
     // FIXME: Should this function be in the enclave version?
-    lf_mutex_lock(&rti_mutex);
+    lf_mutex_lock(&rti_remote->base.mutex);
     // See if we can remove any of the recorded in-transit messages for this.
     clean_in_transit_message_record_up_to_tag(fed->in_transit_message_tags, fed->enclave.completed);
-    lf_mutex_unlock(&rti_mutex);
+    lf_mutex_unlock(&rti_remote->base.mutex);
 }
 
 void handle_next_event_tag(federate_info_t* fed) {
@@ -537,7 +536,7 @@ void handle_next_event_tag(federate_info_t* fed) {
 
     // Acquire a mutex lock to ensure that this state does not change while a
     // message is in transport or being used to determine a TAG.
-    lf_mutex_lock(&rti_mutex); // FIXME: Instead of using a mutex,
+    lf_mutex_lock(&rti_remote->base.mutex); // FIXME: Instead of using a mutex,
                                          // it might be more efficient to use a
                                          // select() mechanism to read and process
                                          // federates' buffers in an orderly fashion.
@@ -554,7 +553,7 @@ void handle_next_event_tag(federate_info_t* fed) {
         fed->enclave.id,
         intended_tag
     );
-    lf_mutex_unlock(&rti_mutex);
+    lf_mutex_unlock(&rti_remote->base.mutex);
 }
 
 /////////////////// STOP functions ////////////////////
@@ -620,13 +619,13 @@ void handle_stop_request_message(federate_info_t* fed) {
 
     // Acquire a mutex lock to ensure that this state does change while a
     // message is in transport or being used to determine a TAG.
-    lf_mutex_lock(&rti_mutex);
+    lf_mutex_lock(&rti_remote->base.mutex);
 
     // Check whether we have already received a stop_tag
     // from this federate
     if (fed->enclave.requested_stop) {
         // Ignore this request
-        lf_mutex_unlock(&rti_mutex);
+        lf_mutex_unlock(&rti_remote->base.mutex);
         return;
     }
 
@@ -653,7 +652,7 @@ void handle_stop_request_message(federate_info_t* fed) {
         // We now have information about the stop time of all
         // federates. This is extremely unlikely, but it can occur
         // all federates call lf_request_stop() at the same tag.
-        lf_mutex_unlock(&rti_mutex);
+        lf_mutex_unlock(&rti_remote->base.mutex);
         return;
     }
     // Forward the stop request to all other federates that have not
@@ -683,7 +682,7 @@ void handle_stop_request_message(federate_info_t* fed) {
     LF_PRINT_LOG("RTI forwarded to federates MSG_TYPE_STOP_REQUEST with tag (" PRINTF_TIME ", %u).",
                 rti_remote->base.max_stop_tag.time - start_time,
                 rti_remote->base.max_stop_tag.microstep);
-    lf_mutex_unlock(&rti_mutex);
+    lf_mutex_unlock(&rti_remote->base.mutex);
 }
 
 void handle_stop_request_reply(federate_info_t* fed) {
@@ -703,13 +702,13 @@ void handle_stop_request_reply(federate_info_t* fed) {
             federate_stop_tag.microstep);
 
     // Acquire the mutex lock so that we can change the state of the RTI
-    lf_mutex_lock(&rti_mutex);
+    lf_mutex_lock(&rti_remote->base.mutex);
     // If the federate has not requested stop before, count the reply
     if (lf_tag_compare(federate_stop_tag, rti_remote->base.max_stop_tag) > 0) {
         rti_remote->base.max_stop_tag = federate_stop_tag;
     }
     mark_federate_requesting_stop(fed);
-    lf_mutex_unlock(&rti_mutex);
+    lf_mutex_unlock(&rti_remote->base.mutex);
 }
 
 //////////////////////////////////////////////////
@@ -771,13 +770,13 @@ void handle_address_ad(uint16_t federate_id) {
 
     assert(server_port < 65536);
 
-    lf_mutex_lock(&rti_mutex);
+    lf_mutex_lock(&rti_remote->base.mutex);
     fed->server_port = server_port;
     if (rti_remote->base.tracing_enabled) {
         tracepoint_RTI_from_federate(receive_ADR_AD, federate_id, NULL);
     }
      LF_PRINT_LOG("Received address advertisement from federate %d.", federate_id);
-    lf_mutex_unlock(&rti_mutex);
+    lf_mutex_unlock(&rti_remote->base.mutex);
 }
 
 void handle_timestamp(federate_info_t *my_fed) {
@@ -796,7 +795,7 @@ void handle_timestamp(federate_info_t *my_fed) {
     LF_PRINT_LOG("RTI received timestamp message: %ld.", timestamp);
     LF_PRINT_LOG("RTI received timestamp message: " PRINTF_TIME ".", timestamp);
 
-    lf_mutex_lock(&rti_mutex);
+    lf_mutex_lock(&rti_remote->base.mutex);
     rti_remote->num_feds_proposed_start++;
     if (timestamp > rti_remote->max_start_time) {
         rti_remote->max_start_time = timestamp;
@@ -813,7 +812,7 @@ void handle_timestamp(federate_info_t *my_fed) {
         }
     }
 
-    lf_mutex_unlock(&rti_mutex);
+    lf_mutex_unlock(&rti_remote->base.mutex);
 
     // Send back to the federate the maximum time plus an offset on a TIMESTAMP
     // message.
@@ -835,14 +834,14 @@ void handle_timestamp(federate_info_t *my_fed) {
         lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
     }
 
-    lf_mutex_lock(&rti_mutex);
+    lf_mutex_lock(&rti_remote->base.mutex);
     // Update state for the federate to indicate that the MSG_TYPE_TIMESTAMP
     // message has been sent. That MSG_TYPE_TIMESTAMP message grants time advance to
     // the federate to the start time.
     my_fed->enclave.state = GRANTED;
     lf_cond_broadcast(&sent_start_time);
     LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
-    lf_mutex_unlock(&rti_mutex);
+    lf_mutex_unlock(&rti_remote->base.mutex);
 }
 
 void send_physical_clock(unsigned char message_type, federate_info_t* fed, socket_type_t socket_type) {
@@ -883,7 +882,7 @@ void send_physical_clock(unsigned char message_type, federate_info_t* fed, socke
 void handle_physical_clock_sync_message(federate_info_t* my_fed, socket_type_t socket_type) {
     // Lock the mutex to prevent interference between sending the two
     // coded probe messages.
-    lf_mutex_lock(&rti_mutex);
+    lf_mutex_lock(&rti_remote->base.mutex);
     // Reply with a T4 type message
     send_physical_clock(MSG_TYPE_CLOCK_SYNC_T4, my_fed, socket_type);
     // Send the corresponding coded probe immediately after,
@@ -891,18 +890,18 @@ void handle_physical_clock_sync_message(federate_info_t* my_fed, socket_type_t s
     if (socket_type == UDP) {
         send_physical_clock(MSG_TYPE_CLOCK_SYNC_CODED_PROBE, my_fed, socket_type);
     }
-    lf_mutex_unlock(&rti_mutex);
+    lf_mutex_unlock(&rti_remote->base.mutex);
 }
 
 void* clock_synchronization_thread(void* noargs) {
 
     // Wait until all federates have been notified of the start time.
     // FIXME: Use lf_ version of this when merged with master.
-    lf_mutex_lock(&rti_mutex);
+    lf_mutex_lock(&rti_remote->base.mutex);
     while (rti_remote->num_feds_proposed_start < rti_remote->base.number_of_reactor_nodes) {
         lf_cond_wait(&received_start_times);
     }
-    lf_mutex_unlock(&rti_mutex);
+    lf_mutex_unlock(&rti_remote->base.mutex);
 
     // Wait until the start time before starting clock synchronization.
     // The above wait ensures that start_time has been set.
@@ -993,7 +992,7 @@ void* clock_synchronization_thread(void* noargs) {
 
 void handle_federate_resign(federate_info_t *my_fed) {
     // Nothing more to do. Close the socket and exit.
-    lf_mutex_lock(&rti_mutex);
+    lf_mutex_lock(&rti_remote->base.mutex);
     if (rti_remote->base.tracing_enabled) {
         // Extract the tag, for tracing purposes
         size_t header_size = 1 + sizeof(tag_t);
@@ -1031,7 +1030,7 @@ void handle_federate_resign(federate_info_t *my_fed) {
     notify_downstream_advance_grant_if_safe(&(my_fed->enclave), visited);
     free(visited);
 
-    lf_mutex_unlock(&rti_mutex);
+    lf_mutex_unlock(&rti_remote->base.mutex);
 }
 
 void* federate_info_thread_TCP(void* fed) {

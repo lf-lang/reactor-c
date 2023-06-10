@@ -193,7 +193,7 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
  * Will try to see if the RTI can grant new TAG or PTAG messages to any
  * downstream federates based on this new next event tag.
  *
- * This function assumes that the caller is holding the _RTI.rti_mutex.
+ * This function assumes that the caller is holding the _RTI.mutex.
  *
  * @param federate_id The id of the federate that needs to be updated.
  * @param next_event_tag The next event tag for `federate_id`.
@@ -243,7 +243,7 @@ void handle_next_event_tag(federate_info_t* fed);
  * This function also checks the most recently received NET from
  * each federate and resets that be no greater than the _RTI.max_stop_tag.
  *
- * This function assumes the caller holds the _RTI.rti_mutex lock.
+ * This function assumes the caller holds the _RTI.mutex lock.
  */
 void _lf_rti_broadcast_stop_time_to_federates_already_locked();
 
@@ -253,7 +253,7 @@ void _lf_rti_broadcast_stop_time_to_federates_already_locked();
  * If the number of federates handling stop reaches the
  * NUM_OF_FEDERATES, broadcast MSG_TYPE_STOP_GRANTED to every federate.
  *
- * This function assumes the _RTI.rti_mutex is already locked.
+ * This function assumes the _RTI.mutex is already locked.
  *
  * @param fed The federate that has requested a stop or has suddenly
  *  stopped (disconnected).

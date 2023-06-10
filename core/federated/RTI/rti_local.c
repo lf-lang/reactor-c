@@ -3,6 +3,7 @@
 #include "util.h"
 #include "platform.h"
 
+// Static global pointer to the RTI object
 static rti_local_t * rti_local;
 
 void initialize_local_rti() {
@@ -16,7 +17,7 @@ void initialize_enclave_info(enclave_info_t* enclave) {
     initialize_reactor_node(&enclave->reactor);
     
     // Initialize the next event condition variable.
-    lf_cond_init(&e->next_event_condition, &rti_mutex);
+    lf_cond_init(&e->next_event_condition, &rti_local.base.mutex);
 }
 
 tag_advance_grant_t rti_next_event_tag(enclave_info_t* e, tag_t next_event_tag) {
@@ -26,7 +27,7 @@ tag_advance_grant_t rti_next_event_tag(enclave_info_t* e, tag_t next_event_tag) 
 
     // First, update the enclave data structure to record this next_event_tag,
     // and notify any downstream reactor_nodes, and unblock them if appropriate.
-    lf_mutex_lock(&rti_mutex);
+    lf_mutex_lock(&rti_local.base.mutex);
 
     // FIXME: If last_granted is already greater than next_event_tag, return next_event_tag.
 
@@ -41,13 +42,13 @@ tag_advance_grant_t rti_next_event_tag(enclave_info_t* e, tag_t next_event_tag) 
         if (lf_tag_compare(previous_tag, e->base.last_granted) < 0) {
             result.tag = e->base.last_granted;
             result.is_provisional = false;
-            lf_mutex_unlock(&rti_mutex);
+            lf_mutex_unlock(&rti_local.base.mutex);
             return result;
         }
         if (lf_tag_compare(previous_ptag, e->base.last_provisionally_granted) < 0) {
             result.tag = e->base.last_provisionally_granted;
             result.is_provisional = true;
-            lf_mutex_unlock(&rti_mutex);
+            lf_mutex_unlock(&rti_local.base.mutex);
             return result;
         }
 

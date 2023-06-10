@@ -56,7 +56,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 unsigned int _lf_number_of_workers = 0u;
 
-extern lf_mutex_t rti_mutex;
 extern lf_cond_t received_start_times;
 extern lf_cond_t sent_start_time;
 
@@ -85,9 +84,8 @@ int main(int argc, const char* argv[]) {
 
     initialize_RTI(&rti);
 
-    lf_mutex_init(&rti_mutex);
-    lf_cond_init(&received_start_times, &rti_mutex);
-    lf_cond_init(&sent_start_time, &rti_mutex);
+    lf_cond_init(&received_start_times, &rti.base.mutex);
+    lf_cond_init(&sent_start_time, &rti.base.mutex);
 
     // Catch the Ctrl-C signal, for a clean exit that does not lose the trace information
     signal(SIGINT, exit);

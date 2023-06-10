@@ -73,6 +73,9 @@ typedef struct rti_common_t {
 
     // Boolean indicating that tracing is enabled.
     bool tracing_enabled;
+
+    // Lock for making thread-safe access to the shared state
+    lf_mutex_t mutex;
 } rti_common_t;
 
 typedef struct {
@@ -200,7 +203,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(reactor_node_info_t* e);
  *
  * This will notify downstream reactor_nodes with a TAG or PTAG if appropriate.
  *
- * This function assumes that the caller is holding the rti_mutex.
+ * This function assumes that the caller is holding the mutex.
  *
  * @param e The enclave.
  * @param next_event_tag The next event tag for e.
