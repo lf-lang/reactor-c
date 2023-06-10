@@ -592,14 +592,14 @@ void reset_transient_federate(federate_t* fed);
  * @param fed_id: The ID of the transient joining federate 
  * @return true, if successfully sent, false otherwise.
  */
-bool send_current_tag_query(federate_t* conn_fed, uint16_t fed_id);
+// bool send_current_tag_query(federate_t* conn_fed, uint16_t fed_id);
 
 /**
  * Handles current tag query response received form my_fed.
  * 
  * @param my_fed: the federate from whom the response is received.
  */
-void handle_current_tag_query_response(federate_t *my_fed);
+// void handle_current_tag_query_response(federate_t *my_fed);
 
 //////////////////////////////////////////////////////////
 #endif // RTI_LIB_H

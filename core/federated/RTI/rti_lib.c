@@ -1141,9 +1141,9 @@ void* federate_thread_TCP(void* fed) {
             case MSG_TYPE_TIMESTAMP:
                 handle_timestamp(my_fed);
                 break;
-            case MSG_TYPE_CURRENT_TAG_QUERY_RESPONSE:
-                handle_current_tag_query_response(my_fed);
-                break;
+            // case MSG_TYPE_CURRENT_TAG_QUERY_RESPONSE:
+            //     handle_current_tag_query_response(my_fed);
+            //     break;
             case MSG_TYPE_ADDRESS_QUERY:
                 handle_address_query(my_fed->enclave.id);
                 break;
@@ -2098,41 +2098,41 @@ void reset_transient_federate(federate_t* fed) {
     fed->start_time_is_set = false;
 }
 
-void handle_current_tag_query_response(federate_t *my_fed) {
-    // Get the logical time instant and the transient fed_id from the socket
-    size_t buffer_size = sizeof(instant_t) + sizeof(uint16_t);
-    unsigned char buffer[buffer_size];
-    // Read bytes from the socket. We need 8 bytes.
-    ssize_t bytes_read = read_from_socket(my_fed->socket, buffer_size, buffer);
-    if (bytes_read < (ssize_t)sizeof(int64_t)) {
-        lf_print_error("ERROR reading next event query response from federate %d.\n", my_fed->enclave.id);
-    }
+// void handle_current_tag_query_response(federate_t *my_fed) {
+//     // Get the logical time instant and the transient fed_id from the socket
+//     size_t buffer_size = sizeof(instant_t) + sizeof(uint16_t);
+//     unsigned char buffer[buffer_size];
+//     // Read bytes from the socket. We need 8 bytes.
+//     ssize_t bytes_read = read_from_socket(my_fed->socket, buffer_size, buffer);
+//     if (bytes_read < (ssize_t)sizeof(int64_t)) {
+//         lf_print_error("ERROR reading next event query response from federate %d.\n", my_fed->enclave.id);
+//     }
 
-    // Get the timestamp and the transient federate id
-    instant_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t *)(buffer)));
-    uint16_t transient_fed_id = extract_uint16((&buffer[8]));
-    if (_f_rti->tracing_enabled) {
-        tag_t tag = {.time = timestamp, .microstep = 0};
-        tracepoint_RTI_from_federate(receive_CuTAG_QR_RES, my_fed->enclave.id, &tag);
-    }
-    LF_PRINT_LOG("RTI received current TAG query response message: " PRINTF_TIME, timestamp);
+//     // Get the timestamp and the transient federate id
+//     instant_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t *)(buffer)));
+//     uint16_t transient_fed_id = extract_uint16((&buffer[8]));
+//     if (_f_rti->tracing_enabled) {
+//         tag_t tag = {.time = timestamp, .microstep = 0};
+//         tracepoint_RTI_from_federate(receive_CuTAG_QR_RES, my_fed->enclave.id, &tag);
+//     }
+//     LF_PRINT_LOG("RTI received current TAG query response message: " PRINTF_TIME, timestamp);
 
-    // FIXME: Should the lock be inside the if statement only?
-    lf_mutex_lock(&rti_mutex);
-    // Processing the TIMESTAMP depends on whether it is the startup phase (all 
-    // persistent federates joined) or not. 
-    federate_t* transient = _f_rti->enclaves[transient_fed_id];
+//     // FIXME: Should the lock be inside the if statement only?
+//     lf_mutex_lock(&rti_mutex);
+//     // Processing the TIMESTAMP depends on whether it is the startup phase (all 
+//     // persistent federates joined) or not. 
+//     federate_t* transient = _f_rti->enclaves[transient_fed_id];
     
-    // Set the start_time of the transient federate to be the maximum among 
-    // current tag of upstreams and the physical time at which it joined .
-    if (timestamp > transient->effective_start_tag.time) { 
-        transient->effective_start_tag.time = timestamp;
-    }
-    // Check that upstream and downstream federates of the transient did propose a start_time
-    transient->num_of_conn_federates_sent_net++;
-    if (transient->num_of_conn_federates_sent_net == transient->num_of_conn_federates) {
-        // All expected connected federates to transient have sent responses with NET to RTI
-        transient->start_time_is_set = true;
-    }
-    lf_mutex_unlock(&rti_mutex);
-}
+//     // Set the start_time of the transient federate to be the maximum among 
+//     // current tag of upstreams and the physical time at which it joined .
+//     if (timestamp > transient->effective_start_tag.time) { 
+//         transient->effective_start_tag.time = timestamp;
+//     }
+//     // Check that upstream and downstream federates of the transient did propose a start_time
+//     transient->num_of_conn_federates_sent_net++;
+//     if (transient->num_of_conn_federates_sent_net == transient->num_of_conn_federates) {
+//         // All expected connected federates to transient have sent responses with NET to RTI
+//         transient->start_time_is_set = true;
+//     }
+//     lf_mutex_unlock(&rti_mutex);
+// }
