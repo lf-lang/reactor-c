@@ -16,10 +16,7 @@ void initialize_rti_common(rti_common_t * _rti_common) {
     rti_common->max_stop_tag = NEVER_TAG;
     rti_common->number_of_reactor_nodes = 0;
     rti_common->num_reactor_nodes_handling_stop = 0;
-
-
 }
-
 
 // FIXME: For log and debug message in this file, what sould be kept: 'enclave', 
 //        'federate', or 'enlcave/federate'? Currently its is 'enclave/federate'.
@@ -47,6 +44,29 @@ void initialize_reactor_node(reactor_node_info_t* e, uint16_t id) {
     lf_cond_init(&e->next_event_condition, &rti_mutex);
 }
 
+void logical_tag_complete(reactor_node_info_t* enclave, tag_t completed) {
+    // FIXME: Consolidate this message with NET to get NMR (Next Message Request).
+    // Careful with handling startup and shutdown.
+    lf_mutex_lock(&rti_mutex);
+
+    enclave->completed = completed;
+
+    LF_PRINT_LOG("RTI received from federate/enclave %d the Logical Tag Complete (LTC) " PRINTF_TAG ".",
+                enclave->id, enclave->completed.time - start_time, enclave->completed.microstep);
+
+    // Check downstream reactor_nodes to see whether they should now be granted a TAG.
+    for (int i = 0; i < enclave->num_downstream; i++) {
+        reactor_node_info_t *downstream = rti_common->reactor_nodes[enclave->downstream[i]];
+        // Notify downstream enclave if appropriate.
+        notify_advance_grant_if_safe(downstream);
+        bool *visited = (bool *)calloc(rti_common->number_of_reactor_nodes, sizeof(bool)); // Initializes to 0.
+        // Notify reactor_nodes downstream of downstream if appropriate.
+        notify_downstream_advance_grant_if_safe(downstream, visited);
+        free(visited);
+    }
+
+    lf_mutex_unlock(&rti_mutex);
+}
 
 tag_advance_grant_t tag_advance_grant_if_safe(reactor_node_info_t* e) {
     tag_advance_grant_t result = {.tag = NEVER_TAG, .is_provisional = false};
@@ -190,6 +210,40 @@ void update_enclave_next_event_tag_locked(reactor_node_info_t* e, tag_t next_eve
     free(visited);
 }
 
+tag_advance_grant_t next_event_tag(reactor_node_info_t* e, tag_t next_event_tag) {
+    tag_advance_grant_t result;
+
+    // First, update the enclave data structure to record this next_event_tag,
+    // and notify any downstream reactor_nodes, and unblock them if appropriate.
+    lf_mutex_lock(&rti_mutex);
+
+    // FIXME: If last_granted is already greater than next_event_tag, return next_event_tag.
+
+    tag_t previous_tag = e->last_granted;
+    tag_t previous_ptag = e->last_provisionally_granted;
+
+    update_enclave_next_event_tag_locked(e, next_event_tag);
+
+    while(true) {
+        // Determine whether the above call notified e of a TAG or PTAG.
+        // If so, return that value.
+        if (lf_tag_compare(previous_tag, e->last_granted) < 0) {
+            result.tag = e->last_granted;
+            result.is_provisional = false;
+            lf_mutex_unlock(&rti_mutex);
+            return result;
+        }
+        if (lf_tag_compare(previous_ptag, e->last_provisionally_granted) < 0) {
+            result.tag = e->last_provisionally_granted;
+            result.is_provisional = true;
+            lf_mutex_unlock(&rti_mutex);
+            return result;
+        }
+
+        // If not, block.
+        lf_cond_wait(&e->next_event_condition);
+    }
+}
 
 void notify_advance_grant_if_safe(reactor_node_info_t* e) {
     tag_advance_grant_t grant = tag_advance_grant_if_safe(e);
@@ -241,63 +295,4 @@ tag_t transitive_next_event(reactor_node_info_t* e, tag_t candidate, bool visite
         result = e->completed;
     }
     return result;
-}
-
-void logical_tag_complete(reactor_node_info_t* enclave, tag_t completed) {
-    // FIXME: Consolidate this message with NET to get NMR (Next Message Request).
-    // Careful with handling startup and shutdown.
-    lf_mutex_lock(&rti_mutex);
-
-    enclave->completed = completed;
-
-    LF_PRINT_LOG("RTI received from federate/enclave %d the Logical Tag Complete (LTC) " PRINTF_TAG ".",
-                enclave->id, enclave->completed.time - start_time, enclave->completed.microstep);
-
-    // Check downstream reactor_nodes to see whether they should now be granted a TAG.
-    for (int i = 0; i < enclave->num_downstream; i++) {
-        reactor_node_info_t *downstream = rti_common->reactor_nodes[enclave->downstream[i]];
-        // Notify downstream enclave if appropriate.
-        notify_advance_grant_if_safe(downstream);
-        bool *visited = (bool *)calloc(rti_common->number_of_reactor_nodes, sizeof(bool)); // Initializes to 0.
-        // Notify reactor_nodes downstream of downstream if appropriate.
-        notify_downstream_advance_grant_if_safe(downstream, visited);
-        free(visited);
-    }
-
-    lf_mutex_unlock(&rti_mutex);
-}
-
-tag_advance_grant_t next_event_tag(reactor_node_info_t* e, tag_t next_event_tag) {
-    tag_advance_grant_t result;
-
-    // First, update the enclave data structure to record this next_event_tag,
-    // and notify any downstream reactor_nodes, and unblock them if appropriate.
-    lf_mutex_lock(&rti_mutex);
-
-    // FIXME: If last_granted is already greater than next_event_tag, return next_event_tag.
-
-    tag_t previous_tag = e->last_granted;
-    tag_t previous_ptag = e->last_provisionally_granted;
-
-    update_enclave_next_event_tag_locked(e, next_event_tag);
-
-    while(true) {
-        // Determine whether the above call notified e of a TAG or PTAG.
-        // If so, return that value.
-        if (lf_tag_compare(previous_tag, e->last_granted) < 0) {
-            result.tag = e->last_granted;
-            result.is_provisional = false;
-            lf_mutex_unlock(&rti_mutex);
-            return result;
-        }
-        if (lf_tag_compare(previous_ptag, e->last_provisionally_granted) < 0) {
-            result.tag = e->last_provisionally_granted;
-            result.is_provisional = true;
-            lf_mutex_unlock(&rti_mutex);
-            return result;
-        }
-
-        // If not, block.
-        lf_cond_wait(&e->next_event_condition);
-    }
 }

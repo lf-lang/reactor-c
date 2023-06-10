@@ -10,7 +10,6 @@
 #include "tag.h"        // Time-related types and functions.
 #include "trace.h"      // Tracing related functions
 
-
 /** Mode of execution of a federate. */
 typedef enum execution_mode_t {
     FAST,
@@ -55,7 +54,6 @@ typedef struct reactor_node_info_t {
                                     // that it's call to next_event_tag() should unblock.
 } reactor_node_info_t;
 
-
 /**
  * Data structure which is common to both the remote standalone RTI and the local RTI used in enclaved execution.
  * rti_remote_t and rti_local_t will "inherit" from this data structure. The first field is an array of pointers 
@@ -79,6 +77,11 @@ typedef struct rti_common_t {
     bool tracing_enabled;
 } rti_common_t;
 
+typedef struct {
+    tag_t tag;           // NEVER if there is no tag advance grant.
+    bool is_provisional; // True for PTAG, false for TAG.
+} tag_advance_grant_t;
+
 /**
  * @brief Initialize the fields of the rti_common struct. It also stores
  * the pointer to the struct and uses it internally.
@@ -87,11 +90,15 @@ typedef struct rti_common_t {
  */
 void initialize_rti_common(rti_common_t * rti_common);
 
-
-typedef struct {
-    tag_t tag;           // NEVER if there is no tag advance grant.
-    bool is_provisional; // True for PTAG, false for TAG.
-} tag_advance_grant_t;
+/**
+ * An enclave calls this function after it completed a tag. 
+ * The function updates the completed tag and check if the downstream reactor_nodes 
+ * are eligible for receiving TAGs.
+ * 
+ * @param enclave The enclave
+ * @param completed The completed tag of the enclave
+ */
+void logical_tag_complete(reactor_node_info_t* enclave, tag_t completed);
 
 /** 
  * Initialize the reactor- with the specified ID.
@@ -206,18 +213,6 @@ tag_advance_grant_t tag_advance_grant_if_safe(reactor_node_info_t* e);
  *  Otherwise, return the NEVER_TAG.
  */
 tag_advance_grant_t next_event_tag(reactor_node_info_t* e, tag_t next_event_tag);
-
-
-/**
- * An enclave calls this function after it completed a tag. 
- * The function updates the completed tag and check if the downstream reactor_nodes 
- * are eligible for receiving TAGs.
- * 
- * @param enclave The enclave
- * @param completed The completed tag of the enclave
- */
-void logical_tag_complete(reactor_node_info_t* enclave, tag_t completed);
-
 
 /**
  * @brief Update the next event tag of an enclave.
