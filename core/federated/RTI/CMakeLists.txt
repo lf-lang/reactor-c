@@ -60,9 +60,9 @@ include_directories(${IncludeDir}/utils)
 # Declare a new executable target and list all its sources
 add_executable(
     RTI
-    enclave.c
-    rti.c
-    rti_lib.c
+    main.c
+    rti_common.c
+    rti_remote.c
     ${CoreLib}/trace.c
     ${LF_PLATFORM_FILE}
     ${CoreLib}/platform/lf_unix_clock_support.c
