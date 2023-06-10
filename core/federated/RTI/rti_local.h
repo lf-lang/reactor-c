@@ -15,6 +15,8 @@
  */
 typedef struct enclave_info_t {
     reactor_node_info_t reactor;
+    lf_cond_t next_event_condition; // Condition variable used by reactor_nodes to notify an enclave
+                                    // that it's call to next_event_tag() should unblock.
 };
 
 /**
@@ -37,8 +39,32 @@ void initialize_local_rti();
  */
 void initialize_enclave_info(enclave_info_t* enclave);
 
+/**
+ * @brief Get the tag to advance to.
+ *
+ * An enclave should call this function when it is ready to advance its tag,
+ * passing as the second argument the tag of the earliest event on its event queue.
+ * The returned tag may be less than or equal to the argument tag and is interpreted
+ * by the enclave as the tag to which it can advance.
+ * 
+ * This will also notify downstream reactor_nodes with a TAG or PTAG if appropriate,
+ * possibly unblocking their own calls to this same function.
+ *
+ * @param e The enclave.
+ * @param next_event_tag The next event tag for e.
+ * @return If granted, return the TAG and whether it is provisional or not. 
+ *  Otherwise, return the NEVER_TAG.
+ */
 tag_advance_grant_t rti_next_event_tag(reactor_node_info_t* e, tag_t next_event_tag);
 
-void rti_logical_tag_complete(reactor_node_info_t* enclave, tag_t completed);
+/**
+ * @brief This function informs the local RTI that `enclave` has completed tag
+ * `completed`. This will update the data structures and can release other
+ * enclaves waiting on a TAG.
+ * 
+ * @param enclave 
+ * @param completed 
+ */
+void rti_logical_tag_complete(enclave_info_t* enclave, tag_t completed);
 
 #endif

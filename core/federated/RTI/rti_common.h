@@ -50,8 +50,6 @@ typedef struct reactor_node_info_t {
     bool requested_stop;    // Indicates that the federate has requested stop or has replied
                             // to a request for stop from the RTI. Used to prevent double-counting
                             // a federate when handling lf_request_stop().
-    lf_cond_t next_event_condition; // Condition variable used by reactor_nodes to notify an enclave
-                                    // that it's call to next_event_tag() should unblock.
 } reactor_node_info_t;
 
 /**
@@ -196,23 +194,6 @@ void notify_provisional_tag_advance_grant(reactor_node_info_t* e, tag_t tag);
  */
 tag_advance_grant_t tag_advance_grant_if_safe(reactor_node_info_t* e);
 
-/**
- * @brief Get the tag to advance to.
- *
- * An enclave should call this function when it is ready to advance its tag,
- * passing as the second argument the tag of the earliest event on its event queue.
- * The returned tag may be less than or equal to the argument tag and is interpreted
- * by the enclave as the tag to which it can advance.
- * 
- * This will also notify downstream reactor_nodes with a TAG or PTAG if appropriate,
- * possibly unblocking their own calls to this same function.
- *
- * @param e The enclave.
- * @param next_event_tag The next event tag for e.
- * @return If granted, return the TAG and whether it is provisional or not. 
- *  Otherwise, return the NEVER_TAG.
- */
-tag_advance_grant_t next_event_tag(reactor_node_info_t* e, tag_t next_event_tag);
 
 /**
  * @brief Update the next event tag of an enclave.
