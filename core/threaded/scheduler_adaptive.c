@@ -127,4 +127,7 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     if (!lf_bool_compare_and_swap(&reaction->status, inactive, queued)) return;
     worker_assignments_put(reaction);
 }
+void lf_sched_enable_downstream_reaction(reaction_t* upstream,  reaction_t *downstream, int worker_number) {
+    lf_sched_trigger_reaction(downstream, worker_number);
+}
 #endif // defined SCHEDULER && SCHEDULER == ADAPTIVE

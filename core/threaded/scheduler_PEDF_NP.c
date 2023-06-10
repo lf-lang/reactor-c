@@ -679,4 +679,7 @@ void lf_sched_trigger_reaction(reaction_t* reaction, int worker_number) {
     }
 }
 
+void lf_sched_enable_downstream_reaction(reaction_t* upstream,  reaction_t *downstream, int worker_number) {
+    lf_sched_trigger_reaction(downstream, worker_number);
+}
 #endif // SCHEDULER == PEDF_NP

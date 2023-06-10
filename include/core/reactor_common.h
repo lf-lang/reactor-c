@@ -58,6 +58,7 @@ void lf_set_stp_offset(interval_t offset);
 extern pqueue_t* event_q;
 
 void _lf_trigger_reaction(reaction_t* reaction, int worker_number);
+void _lf_enable_downstream_reaction(reaction_t* upstream, reaction_t *downstream, int worker_number);
 void _lf_start_time_step();
 bool _lf_is_tag_after_stop_tag(tag_t tag);
 void _lf_pop_events();
@@ -88,4 +89,9 @@ int process_args(int argc, const char* argv[]);
 void initialize(void);
 void termination(void);
 
+// FIXME: Document functions and should they be prepended by underscore?
+void lf_main_loop(int worker_number);
+reaction_t * lf_get_ready_reaction(int worker_number);
+bool lf_handle_violations(int worker_number, reaction_t *reaction);
+void lf_done_with_reaction(int worker_number, reaction_t *reaction);
 #endif
