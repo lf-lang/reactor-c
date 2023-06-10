@@ -208,7 +208,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(reactor_node_info_t* e);
  * @param e The enclave.
  * @param next_event_tag The next event tag for e.
  */
-void update_enclave_next_event_tag_locked(reactor_node_info_t* e, tag_t next_event_tag);
+void update_reactor_node_next_event_tag_locked(reactor_node_info_t* e, tag_t next_event_tag);
 
 /**
  * Find the earliest tag at which the specified federate may

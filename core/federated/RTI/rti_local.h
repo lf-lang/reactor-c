@@ -4,17 +4,13 @@
 #include "rti_common.h"
 
 /**
- * This is the RTI coordination API facing the threaded reactor runtime.
- */
-
-
-/**
  * @brief Structure holding information about each enclave in the program
  * The first field is the generic reactor_node_info struct
  * 
  */
 typedef struct enclave_info_t {
     reactor_node_info_t reactor;
+    environment_t * env; // A pointer to the environment of the enclave
     lf_cond_t next_event_condition; // Condition variable used by reactor_nodes to notify an enclave
                                     // that it's call to next_event_tag() should unblock.
 };
@@ -26,18 +22,19 @@ typedef struct enclave_info_t {
 typedef struct rti_local_t {
     rti_common_t base;
 };
+
 /**
  * @brief Dynamically create and initialize the local RTI
  * 
  */
-void initialize_local_rti();
+void initialize_local_rti(environment_t ** envs, int num_envs);
 
 /**
  * @brief Initialize the enclave object
  * 
  * @param enclave 
  */
-void initialize_enclave_info(enclave_info_t* enclave);
+void initialize_enclave_info(enclave_info_t* enclave, environment_t *env);
 
 /**
  * @brief Get the tag to advance to.
@@ -66,5 +63,14 @@ tag_advance_grant_t rti_next_event_tag(reactor_node_info_t* e, tag_t next_event_
  * @param completed 
  */
 void rti_logical_tag_complete(enclave_info_t* enclave, tag_t completed);
+
+/**
+ * @brief This function is called to request stopping the execution at a certain tag.
+ * 
+ * 
+ * @param stop_tag 
+ */
+void rti_request_stop(tag_t stop_tag);
+
 
 #endif

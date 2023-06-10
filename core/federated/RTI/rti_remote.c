@@ -297,7 +297,7 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
     ) {
         next_event_tag = min_in_transit_tag;
     }
-    update_enclave_next_event_tag_locked(&(fed->enclave), next_event_tag);
+    update_reactor_node_next_event_tag_locked(&(fed->enclave), next_event_tag);
 }
 
 void handle_port_absent_message(federate_info_t* sending_federate, unsigned char* buffer) {

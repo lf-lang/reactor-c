@@ -182,7 +182,7 @@ void notify_downstream_advance_grant_if_safe(reactor_node_info_t* e, bool visite
     }
 }
 
-void update_enclave_next_event_tag_locked(reactor_node_info_t* e, tag_t next_event_tag) {
+void update_reactor_node_next_event_tag_locked(reactor_node_info_t* e, tag_t next_event_tag) {
     e->next_event = next_event_tag;
 
     LF_PRINT_DEBUG(
