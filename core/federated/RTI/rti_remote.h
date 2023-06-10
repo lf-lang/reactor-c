@@ -18,7 +18,7 @@
 #include <unistd.h>     // Defines read(), write(), and close()
 #include <strings.h>    // Defines bzero().
 
-#include "enclave.h"
+#include "rti_common.h"
 
 #ifdef __RTI_AUTH__
 #include <openssl/rand.h> // For secure random number generation.
@@ -44,8 +44,8 @@ typedef enum socket_type_t {
  * denoted with ~>) because those connections do not impose
  * any scheduling constraints.
  */
-typedef struct federate_t {
-    enclave_t enclave;
+typedef struct federate_info_t {
+    reactor_node_info_t enclave;
     lf_thread_t thread_id;    // The ID of the thread handling communication with this federate.
     int socket;             // The TCP socket descriptor for communicating with this federate.
     struct sockaddr_in UDP_addr;           // The UDP address for the federate.
@@ -61,7 +61,9 @@ typedef struct federate_t {
                             // RTI has not been informed of the port number.
     struct in_addr server_ip_addr; // Information about the IP address of the socket
                                 // server of the federate.
-} federate_t;
+} federate_info_t;
+
+
 
 /**
  * The status of clock synchronization.
@@ -75,36 +77,18 @@ typedef enum clock_sync_stat {
 /**
  * Structure that an RTI instance uses to keep track of its own and its
  * corresponding federates' state.
- * It is a special case of `enclave_rti_t` (declared in enclave.h). Inheritence
- * is mimicked by having the first attributes to be the same as of enclave_rti_t,
- * except that enclaves attribute here is of type `federate_t**`, while it
- * is of type `enclave_t**` in `enclave_rti_t`.
+ * It is a special case of `rti_common_t` (declared in enclave.h). Inheritence
+ * is mimicked by having the first attributes to be the same as of rti_common_t,
+ * except that reactor_nodes attribute here is of type `federate_info_t**`, while it
+ * is of type `reactor_node_info_t**` in `rti_common_t`.
  *     // **************** IMPORTANT!!! ********************
  *     // **   If you make any change to this struct,     **
- *     // **   you MUST also change  enclave_rti_t in     **
+ *     // **   you MUST also change  rti_common_t in     **
  *     // ** (enclave.h)! The change must exactly match.  **
  *     // **************************************************
  */
-typedef struct federation_rti_t {
-    ////////////////// Enclave specific attributes //////////////////
-
-    // The federates.
-    federate_t **enclaves;
-
-    // Number of enclaves
-    int32_t number_of_enclaves;
-
-    // RTI's decided stop tag for enclaves
-    tag_t max_stop_tag;
-
-    // Number of enclaves handling stop
-    int num_enclaves_handling_stop;
-
-    // Boolean indicating that tracing is enabled.
-    bool tracing_enabled;
-
-    ////////////// Federation only specific attributes //////////////
-
+typedef struct rti_remote_t {
+    rti_common_t base;
     // Maximum start time seen so far from the federates.
     int64_t max_start_time;
 
@@ -169,7 +153,7 @@ typedef struct federation_rti_t {
      * Boolean indicating that authentication is enabled.
      */
     bool authentication_enabled;
-} federation_rti_t;
+} rti_remote_t;
 
 /**
  * Enter a critical section where logical time and the event queue are guaranteed
@@ -221,7 +205,7 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
  *
  * This function assumes the caller does not hold the mutex.
  */
-void handle_port_absent_message(federate_t* sending_federate, unsigned char* buffer);
+void handle_port_absent_message(federate_info_t* sending_federate, unsigned char* buffer);
 
 /**
  * Handle a timed message being received from a federate by the RTI to relay to another federate.
@@ -231,7 +215,7 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
  * @param sending_federate The sending federate.
  * @param buffer The buffer to read into (the first byte is already there).
  */
-void handle_timed_message(federate_t* sending_federate, unsigned char* buffer);
+void handle_timed_message(federate_info_t* sending_federate, unsigned char* buffer);
 
 /**
  * Handle a logical tag complete (LTC) message. @see
@@ -241,7 +225,7 @@ void handle_timed_message(federate_t* sending_federate, unsigned char* buffer);
  *
  * @param fed The federate that has completed a logical tag.
  */
-void handle_logical_tag_complete(federate_t* fed);
+void handle_logical_tag_complete(federate_info_t* fed);
 
 /**
  * Handle a next event tag (NET) message. @see MSG_TYPE_NEXT_EVENT_TAG in rti.h.
@@ -250,7 +234,7 @@ void handle_logical_tag_complete(federate_t* fed);
  *
  * @param fed The federate sending a NET message.
  */
-void handle_next_event_tag(federate_t* fed);
+void handle_next_event_tag(federate_info_t* fed);
 
 /////////////////// STOP functions ////////////////////
 /**
@@ -274,7 +258,7 @@ void _lf_rti_broadcast_stop_time_to_federates_already_locked();
  * @param fed The federate that has requested a stop or has suddenly
  *  stopped (disconnected).
  */
-void mark_federate_requesting_stop(federate_t* fed);
+void mark_federate_requesting_stop(federate_info_t* fed);
 
 /**
  * Handle a MSG_TYPE_STOP_REQUEST message.
@@ -283,7 +267,7 @@ void mark_federate_requesting_stop(federate_t* fed);
  *
  * @param fed The federate sending a MSG_TYPE_STOP_REQUEST message.
  */
-void handle_stop_request_message(federate_t* fed);
+void handle_stop_request_message(federate_info_t* fed);
 
 /**
  * Handle a MSG_TYPE_STOP_REQUEST_REPLY message.
@@ -292,7 +276,7 @@ void handle_stop_request_message(federate_t* fed);
  *
  * @param fed The federate replying the MSG_TYPE_STOP_REQUEST
  */
-void handle_stop_request_reply(federate_t* fed);
+void handle_stop_request_reply(federate_info_t* fed);
 
 //////////////////////////////////////////////////
 
@@ -330,7 +314,7 @@ void handle_address_ad(uint16_t federate_id);
  * A function to handle timestamp messages.
  * This function assumes the caller does not hold the mutex.
  */
-void handle_timestamp(federate_t *my_fed);
+void handle_timestamp(federate_info_t *my_fed);
 
 /**
  * Take a snapshot of the physical clock time and send
@@ -342,7 +326,7 @@ void handle_timestamp(federate_t *my_fed);
  * @param fed The federate to send the physical time to.
  * @param socket_type The socket type (TCP or UDP).
  */
-void send_physical_clock(unsigned char message_type, federate_t* fed, socket_type_t socket_type);
+void send_physical_clock(unsigned char message_type, federate_info_t* fed, socket_type_t socket_type);
 
 /**
  * Handle clock synchronization T3 messages from federates.
@@ -357,7 +341,7 @@ void send_physical_clock(unsigned char message_type, federate_t* fed, socket_typ
  * @param my_fed The sending federate.
  * @param socket_type The RTI's socket type used for the communication (TCP or UDP)
  */
-void handle_physical_clock_sync_message(federate_t* my_fed, socket_type_t socket_type);
+void handle_physical_clock_sync_message(federate_info_t* my_fed, socket_type_t socket_type);
 
 /**
  * A (quasi-)periodic thread that performs clock synchronization with each
@@ -398,14 +382,14 @@ void* clock_synchronization_thread(void* noargs);
  *
  * @param my_fed The federate sending a MSG_TYPE_RESIGN message.
  **/
-void handle_federate_resign(federate_t *my_fed);
+void handle_federate_resign(federate_info_t *my_fed);
 
 /**
  * Thread handling TCP communication with a federate.
  * @param fed A pointer to the federate's struct that has the
  *  socket descriptor for the federate.
  */
-void* federate_thread_TCP(void* fed);
+void* federate_info_thread_TCP(void* fed);
 
 /**
  * Send a MSG_TYPE_REJECT message to the specified socket and close the socket.
@@ -475,7 +459,7 @@ void* respond_to_erroneous_connections(void* nothing);
  * Initialize the federate with the specified ID.
  * @param id The federate ID.
  */
-void initialize_federate(federate_t* fed, uint16_t id);
+void initialize_federate(federate_info_t* fed, uint16_t id);
 
 /**
  * Start the socket server for the runtime infrastructure (RTI) and
