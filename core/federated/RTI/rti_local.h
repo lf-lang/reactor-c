@@ -1,6 +1,7 @@
 #ifndef RTI_LOCAL_H
 #define RTI_LOCAL_H
 
+#include "lf_types.h"
 #include "rti_common.h"
 
 /**

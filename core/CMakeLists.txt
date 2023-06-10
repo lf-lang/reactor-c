@@ -33,6 +33,11 @@ else()
     list(APPEND INFO_SOURCES ${SINGLE_THREADED_SOURCES})
 endif()
 
+# Add sources for the local RTI
+# FIXME: Only include if we have LF_SCHEDULING_ENCLAVES || FEDERATED
+if(DEFINED LF_THREADED)
+include(federated/RTI/local_rti.cmake)
+endif()
 
 # Include sources from subdirectories
 include(utils/CMakeLists.txt)
@@ -50,6 +55,7 @@ target_include_directories(core PUBLIC ../include/core/platform)
 target_include_directories(core PUBLIC ../include/core/modal_models)
 target_include_directories(core PUBLIC ../include/core/threaded)
 target_include_directories(core PUBLIC ../include/core/utils)
+target_include_directories(core PUBLIC ../include/core/federated/RTI/)
 
 if (APPLE)
     SET(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
