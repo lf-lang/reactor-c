@@ -293,6 +293,7 @@ typedef struct allocation_record_t {
 // Forward declarations so that a pointers can appear in the environment struct.
 typedef struct lf_scheduler_t lf_scheduler_t;
 typedef struct trace_t trace_t;
+typedef struct enclave_info_t enclave_info_t;
 
 #define GLOBAL_ENVIRONMENT NULL
 /**
@@ -331,6 +332,7 @@ typedef struct environment_t {
     int reset_reactions_size;
     mode_environment_t* modes;
     trace_t* trace;
+    int worker_thread_count;
 #ifdef LF_UNTHREADED
     pqueue_t *reaction_q;
 #endif 
@@ -347,6 +349,9 @@ typedef struct environment_t {
     tag_t** _lf_intended_tag_fields;
     int _lf_intended_tag_fields_size;
 #endif // FEDERATED
+#ifdef LF_ENCLAVES
+    enclave_info_t *enclave_info;
+#endif
 } environment_t;
 
 #ifdef MODAL_REACTORS

@@ -8,12 +8,12 @@ static rti_common_t* rti_common = NULL;
 // Global variables defined in tag.c:
 extern instant_t start_time;
 
+
 void initialize_rti_common(rti_common_t * _rti_common) {
     rti_common = _rti_common;
     rti_common->max_stop_tag = NEVER_TAG;
     rti_common->number_of_reactor_nodes = 0;
     rti_common->num_reactor_nodes_handling_stop = 0;
-    lf_mutex_init(&rti_common->mutex);
 }
 
 // FIXME: For log and debug message in this file, what sould be kept: 'enclave', 
@@ -40,10 +40,10 @@ void initialize_reactor_node(reactor_node_info_t* e, uint16_t id) {
 
 }
 
-void logical_tag_complete(reactor_node_info_t* enclave, tag_t completed) {
+void _logical_tag_complete(reactor_node_info_t* enclave, tag_t completed) {
     // FIXME: Consolidate this message with NET to get NMR (Next Message Request).
     // Careful with handling startup and shutdown.
-    lf_mutex_lock(&rti_common->mutex);
+    lf_mutex_lock(rti_common->mutex);
 
     enclave->completed = completed;
 
@@ -61,7 +61,7 @@ void logical_tag_complete(reactor_node_info_t* enclave, tag_t completed) {
         free(visited);
     }
 
-    lf_mutex_unlock(&rti_common->mutex);
+    lf_mutex_unlock(rti_common->mutex);
 }
 
 tag_advance_grant_t tag_advance_grant_if_safe(reactor_node_info_t* e) {

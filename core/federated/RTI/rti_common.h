@@ -77,8 +77,8 @@ typedef struct rti_common_t {
     // Pointer to a tracing object
     trace_t* trace;
 
-    // Lock for making thread-safe access to the shared state
-    lf_mutex_t mutex;
+    // Lock for making thread-safe access to the shared state.
+    lf_mutex_t* mutex;
 } rti_common_t;
 
 typedef struct {
@@ -102,7 +102,8 @@ void initialize_rti_common(rti_common_t * rti_common);
  * @param enclave The enclave
  * @param completed The completed tag of the enclave
  */
-void logical_tag_complete(reactor_node_info_t* enclave, tag_t completed);
+// FIXME: Prepended with underscore due to conflict with code-generated function...
+void _logical_tag_complete(reactor_node_info_t* enclave, tag_t completed);
 
 /** 
  * Initialize the reactor- with the specified ID.

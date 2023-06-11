@@ -47,6 +47,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler.h"
 #include "tag.h"
 #include "environment.h"
+#include "rti_local.h"
 
 // Global variables defined in tag.c and shared across environments
 extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
@@ -473,8 +474,10 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
  * @return The tag to which it is safe to advance.
  */
 tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply) {
-#ifdef FEDERATED_CENTRALIZED
+#if defined(FEDERATED_CENTRALIZED)
     return _lf_send_next_event_tag(env, tag, wait_for_reply);
+#elif defined(LF_ENCLAVES)
+    return rti_next_event_tag(env->enclave_info, tag);
 #else
     return tag;
 #endif
@@ -507,6 +510,11 @@ void _lf_next_locked(environment_t *env) {
 
     // Previous logical time is complete.
     tag_t next_tag = get_next_event_tag(env);
+
+    tag_t grant_tag = rti_next_event_tag(env->enclave_info, next_tag);
+    if (lf_tag_compare(grant_tag, next_tag) < 0) return;
+    next_tag = get_next_event_tag(env);
+    // FIXME: What to do with that event queue checking for stop tag etc?
 
 #ifdef FEDERATED_CENTRALIZED
     // In case this is in a federation with centralized coordination, notify
@@ -713,6 +721,7 @@ void _lf_initialize_start_tag(environment_t *env) {
         _lf_trigger_shutdown_reactions(env);
     }
 
+    rti_next_event_tag(env->enclave_info, env->current_tag);
 #ifdef FEDERATED
     // Call wait_until if federated. This is required because the startup procedure
     // in synchronize_with_other_federates() can decide on a new start_time that is
@@ -955,7 +964,13 @@ void _lf_worker_do_work(environment_t *env, int worker_number) {
 void* worker(void* arg) {
     environment_t *env = (environment_t* ) arg;
     lf_mutex_lock(&env->mutex);
-    int worker_number = worker_thread_count++;
+
+    // First worker initializes start tag
+    if (env->worker_thread_count == 0) {
+        _lf_initialize_start_tag(env);
+    }
+
+    int worker_number = env->worker_thread_count++;
     LF_PRINT_LOG("Worker thread %d started.", worker_number);
     lf_mutex_unlock(&env->mutex);
 
@@ -964,13 +979,19 @@ void* worker(void* arg) {
     lf_mutex_lock(&env->mutex);
 
     // This thread is exiting, so don't count it anymore.
-    worker_thread_count--;
+    env->worker_thread_count--;
 
-    if (worker_thread_count == 0) {
+    if (env->worker_thread_count == 0) {
         // The last worker thread to exit will inform the RTI if needed.
         // Notify the RTI that there will be no more events (if centralized coord).
         // False argument means don't wait for a reply.
-        send_next_event_tag(env, FOREVER_TAG, false);
+        // FIXME: This probably needs to be here for federated. But for enclaves
+        //  I need to send an LTC to unblock everyone
+        // send_next_event_tag(env, FOREVER_TAG, false);
+
+        // FIXME: This seems logical for telling the others that you terminated
+        rti_logical_tag_complete(env->enclave_info, FOREVER_TAG);
+
     }
 
     lf_cond_signal(&env->event_q_changed);
@@ -1110,6 +1131,8 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         // TODO: This must be refined when we introduce multiple enclaves
         keepalive_specified = true;
     }
+    // Initialize the local RTI
+    initialize_local_rti(envs, num_envs);
     
     // Do environment-specific setup
     for (int i = 0; i<num_envs; i++) {
@@ -1122,7 +1145,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         _lf_initialize_modes(env);
     #endif
 
-
         // Initialize the scheduler
         // FIXME: Why is this called here and in `_lf_initialize_trigger objects`?
         lf_sched_init(env, (size_t)env->num_workers, NULL);  
@@ -1132,11 +1154,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         if (lf_mutex_lock(&env->mutex) != 0) {
             lf_print_error_and_exit("Could not lock environment mutex");
         }
-
-        // Call the following function only once, rather than per worker thread (although
-        // it can be probably called in that manner as well).
-        _lf_initialize_start_tag(env);
-
 
         lf_print("Environment %u: ---- Spawning %d workers.",env->id, env->num_workers);
         start_threads(env);

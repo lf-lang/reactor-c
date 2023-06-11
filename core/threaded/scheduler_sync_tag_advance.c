@@ -36,6 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "scheduler_sync_tag_advance.h"
+#include "rti_local.h"
 #include "trace.h"
 #include "util.h"
 
@@ -79,6 +80,11 @@ bool should_stop_locked(lf_scheduler_t * sched) {
 bool _lf_sched_advance_tag_locked(lf_scheduler_t * sched) {
     environment_t* env = sched->env;
     logical_tag_complete(env->current_tag);
+
+    // FIXME: Find better way of conditionally calling this
+    #ifdef LF_ENCLAVES
+    rti_logical_tag_complete(env->enclave_info, env->current_tag);
+    #endif
 
     if (should_stop_locked(sched)) {
         return true;

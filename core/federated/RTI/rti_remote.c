@@ -521,7 +521,7 @@ void handle_logical_tag_complete(federate_info_t* fed) {
     if (rti_remote->base.tracing_enabled) {
         tracepoint_rti_from_federate(rti_remote->base.trace, receive_LTC, fed->enclave.id, &completed);
     }
-    logical_tag_complete(&(fed->enclave), completed);
+    _logical_tag_complete(&(fed->enclave), completed);
 
     // FIXME: Should this function be in the enclave version?
     lf_mutex_lock(&rti_mutex);
@@ -1649,6 +1649,7 @@ void initialize_RTI(rti_remote_t *rti){
     rti_remote = rti;
 
     initialize_rti_common(&rti_remote->base);
+    rti_remote->base.mutex = &rti_mutex;
     // federation_rti related initializations
     rti_remote->max_start_time = 0LL;
     rti_remote->num_feds_proposed_start = 0;
