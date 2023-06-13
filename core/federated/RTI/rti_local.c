@@ -9,37 +9,6 @@ static rti_local_t * rti_local;
 
 lf_mutex_t rti_mutex;
 
-// FIXME: Replace with e.g. NUM_ENCLAVES
-// FIXME: Actually, we probably dont want to use all this static memory for it.
-extern int upstream_matrix[3][3];
-extern int downstream_matrix[3][3];
-extern interval_t connection_delay_matrix[3][3];
-
-// This function takes an adjacency array and dynamically allocates a connection array
-static int create_connection_array(int* adjacency, int num_enclaves, int** result) {
-    int num_connected = 0;
-    for (int i = 0; i<num_enclaves; i++) {
-        if (adjacency[i]) {
-            num_connected += 1;
-        }
-    }
-    *result = calloc(num_connected, sizeof(int));
-    int idx=0;
-    for (int i = 0; i<num_enclaves; i++) {
-        if (adjacency[i]) {
-            (*result)[idx++] = i;
-        }
-    }
-    return num_connected;
-}
-
-static void create_delay_array(interval_t* delays, int* connections, int num_connections, interval_t** result) {
-    *result = calloc(num_connections, sizeof(instant_t));
-    for (int i = 0; i< num_connections; i++) {
-        (*result)[i] = delays[connections[i]];
-    }
-}
-
 void initialize_local_rti(environment_t *envs, int num_envs) {
     rti_local = malloc(sizeof(rti_local_t));
     if (rti_local == NULL) lf_print_error_and_exit("Out of memory");
@@ -59,15 +28,9 @@ void initialize_local_rti(environment_t *envs, int num_envs) {
         rti_local->base.reactor_nodes[i] = (reactor_node_info_t *) enclave_info;
 
         // Encode the connection topology into the enclave_info object        
-        enclave_info->base.num_downstream = create_connection_array(
-            downstream_matrix[i], num_envs, &enclave_info->base.downstream);
-
-        enclave_info->base.num_upstream = create_connection_array(
-            upstream_matrix[i], num_envs, &enclave_info->base.upstream);
-
-        create_delay_array(
-            connection_delay_matrix[i], enclave_info->base.upstream, enclave_info->base.num_upstream, 
-            &enclave_info->base.upstream_delay);
+        enclave_info->base.num_downstream = _lf_downstreams(i, &enclave_info->base.downstream);
+        enclave_info->base.num_upstream = _lf_upstreams(i, &enclave_info->base.upstream);
+        _lf_upstream_delays(i, &enclave_info->base.upstream_delay);
 
         // FIXME: Why is it always granted?
         enclave_info->base.state = GRANTED;

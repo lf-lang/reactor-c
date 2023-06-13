@@ -420,6 +420,11 @@ trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger, interval_t
 void _lf_initialize_watchdog_mutexes(void);
 
 
+int _lf_upstreams(int enclave_id, int** result);
+int _lf_downstreams(int enclave_id, int** result);
+int _lf_upstream_delays(int enclave_id, interval_t** result);
+
+
 /**
  * Function (to be code generated) to terminate execution.
  * This will be invoked after all shutdown actions have completed.
