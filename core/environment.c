@@ -1,3 +1,34 @@
+/**
+ * @file
+ * @author Erling R. Jellum (erling.r.jellum@ntnu.no)
+ *
+ * @section LICENSE
+ * Copyright (c) 2023, The Norwegian University of Science and Technology.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * @section DESCRIPTION Functions intitializing and freeing memory for environments.
+ *  See environment.h for docs.
+ */
+
 #include "environment.h"
 #include "util.h"
 #include "lf_types.h"
@@ -8,7 +39,7 @@
 #endif
 
 /**
- * @brief Initialize the threaded part of the environment struct
+ * @brief Initialize the threaded part of the environment struct.
  */
 static void environment_init_threaded(environment_t* env, int num_workers) {
 #ifdef LF_THREADED
@@ -18,7 +49,7 @@ static void environment_init_threaded(environment_t* env, int num_workers) {
     env->barrier.requestors = 0;
     env->barrier.horizon = FOREVER_TAG;
     
-    // Initialize synchronization objects
+    // Initialize synchronization objects.
     if (lf_mutex_init(&env->mutex) != 0) {
         lf_print_error_and_exit("Could not initialize environment mutex");
     }
@@ -33,7 +64,7 @@ static void environment_init_threaded(environment_t* env, int num_workers) {
 #endif
 }
 /**
- * @brief Initialize the unthreaded-specific parts of the environment struct
+ * @brief Initialize the unthreaded-specific parts of the environment struct.
  */
 static void environment_init_unthreaded(environment_t* env) {
 #ifdef LF_UNTHREADED
@@ -47,7 +78,7 @@ static void environment_init_unthreaded(environment_t* env) {
 }
 
 /**
- * @brief Initialize the modal-specific parts of the environment struct
+ * @brief Initialize the modal-specific parts of the environment struct.
  */
 static void environment_init_modes(environment_t* env, int num_modes, int num_state_resets) {
 #ifdef MODAL_REACTORS
@@ -68,12 +99,11 @@ static void environment_init_modes(environment_t* env, int num_modes, int num_st
     } else {
         env->modes = NULL;
     }
-
 #endif
 }
 
 /**
- * @brief Initialize the federation-specific parts of the environment struct
+ * @brief Initialize the federation-specific parts of the environment struct.
  */
 static void environment_init_federated(environment_t* env, int num_is_present_fields) {
 #ifdef FEDERATED_DECENTRALIZED
@@ -195,7 +225,7 @@ int environment_init(
     env->next_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, in_no_particular_order, get_event_time,
             get_event_position, set_event_position, event_matches, print_event);
 
-    // If tracing is enabled. Initialize a tracing struct on the env struct
+    // If tracing is enabled. Initialize a tracing struct on the env struct.
     env->trace = trace_new(env, trace_file_name);
 
     // Initialize functionality depending on target properties.

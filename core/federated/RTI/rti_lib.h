@@ -171,8 +171,6 @@ typedef struct federation_rti_t {
      * Boolean indicating that authentication is enabled.
      */
     bool authentication_enabled;
-    
-
 } federation_rti_t;
 
 /**
