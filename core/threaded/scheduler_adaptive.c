@@ -712,7 +712,6 @@ void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t*
         return;
     }
     
-    // FIXME: Check for out of mem
     lf_scheduler_t* scheduler = env->scheduler;
     scheduler->custom_data = (custom_scheduler_data_t *) calloc(1, sizeof(custom_scheduler_data_t));
     lf_assert(scheduler->custom_data, "Out of memory");
