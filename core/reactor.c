@@ -350,11 +350,12 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 #ifndef NO_TTY
         signal(SIGINT, exit);
 #endif
-        // Create and initialize environment
+        // Create and initialize the environment
         _lf_create_environments();
         environment_t *env;
         int num_environments = _lf_get_environments(&env);
-        lf_assert(num_environments == 1,"Found %u environments. Only 1 can be used with the unthreaded runtime");
+        lf_assert(num_environments == 1,
+            "Found %d environments. Only 1 can be used with the unthreaded runtime", num_environments);
         
         LF_PRINT_DEBUG("Initializing.");
         initialize_global();
