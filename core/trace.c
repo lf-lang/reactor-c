@@ -286,7 +286,7 @@ void start_trace(trace_t* trace) {
         fclose(test_file_exists);
         // Get the root of the original file name
         memset(filename_, '\0', sizeof(filename_));
-        strncpy(filename_, filename, strlen(filename) - 4);
+        strncpy(filename_, trace->filename, strlen(trace->filename) - 4);
         // Add an index
         char *ind = convert_int_to_string(i++);
         strcat(filename_, ind);

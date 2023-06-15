@@ -702,7 +702,7 @@ void _lf_initialize_start_tag(environment_t *env) {
 
     // Get a start_time from the RTI
     synchronize_with_other_federates(env); // Resets start_time in federated execution according to the RTI.
-    env->current_tag = env->effective_start_tag;
+    env->current_tag = effective_start_tag;
 #endif
 
     _lf_initialize_timers(env);
