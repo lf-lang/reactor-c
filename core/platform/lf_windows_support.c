@@ -60,7 +60,7 @@ double _lf_frequency_to_ns = 1.0;
 
 #define LF_MIN_SLEEP_NS USEC(10)
 
-#if defined LF_THREADED || defined _LF_TRACE
+#if defined LF_THREADED
 
 /**
  * @brief Get the number of cores on the host machine.
@@ -78,7 +78,7 @@ int lf_available_cores() {
 /**
  * Initialize the LF clock.
  */
-void lf_initialize_clock() {
+void _lf_initialize_clock() {
     // Check if the performance counter is available
     LARGE_INTEGER performance_frequency;
     _lf_use_performance_counter = QueryPerformanceFrequency(&performance_frequency);
@@ -100,7 +100,7 @@ void lf_initialize_clock() {
  * @return 0 for success, or -1 for failure. In case of failure, errno will be
  *  set to EINVAL or EFAULT.
  */
-int lf_clock_gettime(instant_t* t) {
+int _lf_clock_now(instant_t* t) {
     // Adapted from gclib/GResUsage.cpp
     // (https://github.com/gpertea/gclib/blob/8aee376774ccb2f3bd3f8e3bf1c9df1528ac7c5b/GResUsage.cpp)
     // License: https://github.com/gpertea/gclib/blob/master/LICENSE.txt
@@ -114,7 +114,7 @@ int lf_clock_gettime(instant_t* t) {
     if (_lf_use_performance_counter) {
         int result = QueryPerformanceCounter(&windows_time);
         if ( result == 0) {
-            lf_print_error("lf_clock_gettime(): Failed to read the value of the physical clock.");
+            lf_print_error("_lf_clock_now(): Failed to read the value of the physical clock.");
             return result;
         }
     } else {
@@ -162,7 +162,7 @@ int lf_sleep(interval_t sleep_duration) {
     return TRUE;
 }
 
-int lf_sleep_until_locked(instant_t wakeup_time) {
+int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
     interval_t sleep_duration = wakeup_time - lf_time_physical();
 
     if (sleep_duration < LF_MIN_SLEEP_NS) {

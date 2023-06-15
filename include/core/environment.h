@@ -1,0 +1,71 @@
+/**
+ * @file
+ * @author Erling R. Jellum (erling.r.jellum@ntnu.no)
+ *
+ * @section LICENSE
+ * Copyright (c) 2023, The Norwegian University of Science and Technology.
+ *
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
+ *
+ * 1. Redistributions of source code must retain the above copyright notice,
+ *    this list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ *    this list of conditions and the following disclaimer in the documentation
+ *    and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
+ * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
+ * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * @section DESCRIPTION API for creating and destroying environments. An environment is the
+ * "context" within which the reactors are executed. The environment contains data structures
+ * which are shared among the reactors such as priority queues, the current logical tag, 
+ * the worker scheduler, and a lot of meta data. Each reactor stores a pointer to its
+ * environment on its self-struct. If a LF program has multiple scheduling enclaves,
+ * then each enclave will have its own environment.
+ * 
+ */
+#ifndef ENVIRONMENT_H
+#define ENVIRONMENT_H
+
+#include "lf_types.h"
+
+/**
+ * @brief Initialize an environment struct with parameters given in the arguments.
+ */
+int environment_init(
+    environment_t* env,
+    int id,
+    int num_workers,
+    int num_timers, 
+    int num_startup_reactions, 
+    int num_shutdown_reactions, 
+    int num_reset_reactions,
+    int num_is_present_fields,
+    int num_modes,
+    int num_state_resets,
+    const char * trace_file_name
+);
+
+/**
+ * @brief Free the dynamically allocated memory on the environment struct.
+ * @param env The environment in which we are executing.
+ */
+void environment_free(environment_t* env);
+
+/**
+ * @brief Initialize the start and stop tags on the environment struct.
+ */
+void environment_init_tags(
+    environment_t *env, instant_t start_time, interval_t duration
+);
+
+#endif

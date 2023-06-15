@@ -56,6 +56,8 @@ PyObject *globalPythonModuleDict = NULL;
 // Import pickle to enable native serialization
 PyObject* global_pickler = NULL;
 
+environment_t* global_environment = NULL;
+
 
 //////////// schedule Function(s) /////////////
 
@@ -149,14 +151,14 @@ int lf_reactor_c_main(int argc, const char *argv[]);
  * Prototype for lf_request_stop().
  * @see reactor.h
  */
-void lf_request_stop();
+void _lf_request_stop(environment_t* env);
 
 ///////////////// Other useful functions /////////////////////
 /**
  * Stop execution at the conclusion of the current logical time.
  */
 PyObject* py_request_stop(PyObject *self, PyObject *args) {
-    lf_request_stop();
+    _lf_request_stop(global_environment);
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -260,6 +262,10 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
             lf_print_error_and_exit("Failed to load the module 'pickle'.");
         }
     }
+
+    // Store a reference to the global environment
+    int num_environments = _lf_get_environments(&global_environment);
+    lf_assert(num_environments == 1, "Python target only supports programs with a single environment/enclave");
 
     LF_PRINT_DEBUG("Initialized the Python interpreter.");
 

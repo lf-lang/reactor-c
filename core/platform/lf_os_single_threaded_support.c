@@ -1,4 +1,4 @@
-#if defined LF_UNTHREADED && !defined _LF_TRACE && !defined(PLATFORM_ARDUINO)
+#if defined LF_UNTHREADED && !defined(PLATFORM_ARDUINO)
 /**
  * @file lf_os_single_threaded_support.c
  * @author Marten Lohstroh (marten@berkeley.edu)
@@ -22,19 +22,16 @@
  * 
  * @return int 
  */
-int lf_critical_section_enter() {
+int lf_disable_interrupts_nested() {
     return 0;
 }
 
-int lf_critical_section_exit() {
+int lf_enable_interrupts_nested() {
     return 0;
 }
 
-int lf_notify_of_event() {
+int _lf_unthreaded_notify_of_event() {
     return 0;
 }
 
-int lf_ack_events() {
-    return 0;
-}
 #endif

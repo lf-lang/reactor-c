@@ -78,6 +78,9 @@ typedef struct enclave_rti_t {
 
     // Boolean indicating that tracing is enabled.
     bool tracing_enabled;
+
+    // Trace object
+    trace_t* trace;
 } enclave_rti_t;
 
 

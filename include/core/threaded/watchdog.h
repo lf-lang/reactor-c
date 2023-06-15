@@ -10,7 +10,7 @@
 #ifndef WATCHDOG_H
 #define WATCHDOG_H 1
 
-#include "platform.h"
+#include "lf_types.h"
 
 #ifdef __cplusplus
 extern "C" {

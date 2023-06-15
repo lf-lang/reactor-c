@@ -67,7 +67,7 @@ void calculate_epoch_offset(void) {
 /**
  * Initialize the LF clock.
  */
-void lf_initialize_clock() {
+void _lf_initialize_clock() {
     calculate_epoch_offset();
 }
 
@@ -79,7 +79,7 @@ void lf_initialize_clock() {
  * @return 0 for success, or -1 for failure. In case of failure, errno will be
  *  set appropriately (see `man 2 clock_gettime`).
  */
-int lf_clock_gettime(instant_t* t) {
+int _lf_clock_now(instant_t* t) {
     struct timespec tp;
     // Adjust the clock by the epoch offset, so epoch time is always reported.
     int return_value = clock_gettime(_LF_CLOCK, (struct timespec*) &tp);

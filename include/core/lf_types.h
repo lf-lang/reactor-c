@@ -45,8 +45,9 @@
 
 #include "modal_models/modes.h" // Modal model support
 #include "utils/pqueue.h"
-#include "tag.h"
 #include "lf_token.h"
+#include "platform.h"
+#include "vector.h"
 
 /**
  * ushort type. Redefine here for portability if sys/types.h is not included.
@@ -72,6 +73,24 @@ typedef unsigned short int ushort;
 #define LET 4
 #define NP 5
 #define PEDF_NP 6
+
+/*
+ * A struct representing a barrier in threaded
+ * Lingua Franca programs that can prevent advancement
+ * of tag if
+ * 1- Number of requestors is larger than 0
+ * 2- Value of horizon is not (FOREVER, 0)
+ */
+typedef struct _lf_tag_advancement_barrier {
+    int requestors; // Used to indicate the number of
+                    // requestors that have asked
+                    // for a barrier to be raised
+                    // on tag.
+    tag_t horizon;  // If semaphore is larger than 0
+                    // then the runtime should not
+                    // advance its tag beyond the
+                    // horizon.
+} _lf_tag_advancement_barrier;
 
 /**
  * Policy for handling scheduled events that violate the specified
@@ -271,6 +290,75 @@ typedef struct allocation_record_t {
     struct allocation_record_t *next;
 } allocation_record_t;
 
+// Forward declarations so that a pointers can appear in the environment struct.
+typedef struct lf_scheduler_t lf_scheduler_t;
+typedef struct trace_t trace_t;
+
+#define GLOBAL_ENVIRONMENT NULL
+/**
+ * @brief Execution environment.
+ * This struct contains information about the execution environment.
+ * An execution environment maintains a notion of a "current tag"
+ * and has its own event queue and scheduler.
+ * Normally, there is only one execution environment, but if you use
+ * scheduling enclaves, then there will be one for each enclave.
+ */
+
+typedef struct mode_environment_t mode_environment_t;
+
+
+typedef struct environment_t {
+    bool initialized;
+    int id;
+    tag_t current_tag;
+    tag_t stop_tag;
+    pqueue_t *event_q;
+    pqueue_t *recycle_q;
+    pqueue_t *next_q;
+    bool** is_present_fields;
+    int is_present_fields_size;
+    bool** is_present_fields_abbreviated;
+    int is_present_fields_abbreviated_size;
+    vector_t sparse_io_record_sizes;
+    trigger_handle_t _lf_handle;
+    trigger_t** timer_triggers;
+    int timer_triggers_size;
+    reaction_t** startup_reactions;
+    int startup_reactions_size;
+    reaction_t** shutdown_reactions;
+    int shutdown_reactions_size;
+    reaction_t** reset_reactions;
+    int reset_reactions_size;
+    mode_environment_t* modes;
+    trace_t* trace;
+#ifdef LF_UNTHREADED
+    pqueue_t *reaction_q;
+#endif 
+#ifdef LF_THREADED
+    int num_workers;
+    lf_thread_t* thread_ids;
+    lf_mutex_t mutex;
+    lf_cond_t event_q_changed;
+    lf_scheduler_t* scheduler;
+    _lf_tag_advancement_barrier barrier;
+    lf_cond_t global_tag_barrier_requestors_reached_zero;
+#endif // LF_THREADED
+#ifdef FEDERATED
+    tag_t** _lf_intended_tag_fields;
+    int _lf_intended_tag_fields_size;
+#endif // FEDERATED
+} environment_t;
+
+#ifdef MODAL_REACTORS
+struct mode_environment_t {
+    uint8_t triggered_reactions_request;
+    reactor_mode_state_t** modal_reactor_states;
+    int modal_reactor_states_size;
+    mode_state_variable_reset_data_t* state_resets;
+    int state_resets_size;
+};
+#endif
+
 /**
  * The first element of every self struct defined in generated code
  * will be a pointer to an allocation record, which is either NULL
@@ -281,8 +369,9 @@ typedef struct allocation_record_t {
  * memory using {@link _lf_allocate(size_t,size_t,self_base_t*)}.
  */
 typedef struct self_base_t {
-    struct allocation_record_t *allocations;
-    struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
+	struct allocation_record_t *allocations;
+	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
+    environment_t * environment;
 #ifdef LF_THREADED
     void* reactor_mutex; // If not null, this is expected to point to an lf_mutex_t.
                           // It is not declared as such to avoid a dependence on platform.h.
