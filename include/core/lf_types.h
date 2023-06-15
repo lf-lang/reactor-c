@@ -312,7 +312,7 @@ typedef struct environment_t {
     bool initialized;
     int id;
     tag_t current_tag;
-    tag_t stop_tag; // Make global protected by global mutex
+    tag_t stop_tag;
     pqueue_t *event_q;
     pqueue_t *recycle_q;
     pqueue_t *next_q;

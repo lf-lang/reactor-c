@@ -52,9 +52,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "trace.h"
 #include "util.h"
 
-/////////////////// Scheduler Variables and Structs /////////////////////////
-// lf_scheduler_t* scheduler;
-
 /////////////////// Scheduler Private API /////////////////////////
 /**
  * @brief Insert 'reaction' into
