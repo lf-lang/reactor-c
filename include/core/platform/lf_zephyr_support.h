@@ -52,9 +52,6 @@ typedef struct {
 } lf_cond_t;
 typedef struct k_thread* lf_thread_t;
 
-extern lf_mutex_t mutex;
-extern lf_cond_t event_q_changed;
-
 /**
  * @brief Add `value` to `*ptr` and return original value of `*ptr` 
  */

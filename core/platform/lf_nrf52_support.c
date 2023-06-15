@@ -102,7 +102,7 @@ void lf_timer_event_handler(nrf_timer_event_t event_type, void *p_context) {
 /**
  * Initialize the LF clock.
  */
-void lf_initialize_clock() {
+void _lf_initialize_clock() {
     ret_code_t error_code;
     _lf_time_us_high = 0;
 
@@ -143,7 +143,7 @@ void lf_initialize_clock() {
  * @return 0 for success, or -1 for failure. In case of failure, errno will be
  *  set appropriately (see `man 2 clock_gettime`).
  */
-int lf_clock_gettime(instant_t* t) {
+int _lf_clock_now(instant_t* t) {
     assert(t);
     
     uint32_t now_us_hi_pre = _lf_time_us_high;
@@ -174,10 +174,10 @@ int lf_clock_gettime(instant_t* t) {
 int lf_sleep(interval_t sleep_duration) {
     instant_t target_time;
     instant_t current_time;
-    lf_clock_gettime(&current_time);
+    _lf_clock_now(&current_time);
     target_time = current_time + sleep_duration;
     while (current_time <= target_time) {
-        lf_clock_gettime(&current_time);
+        _lf_clock_now(&current_time);
     }
     return 0;
 }
@@ -191,7 +191,7 @@ int lf_sleep(interval_t sleep_duration) {
 static void lf_busy_wait_until(instant_t wakeup_time) {
     instant_t now;
     do {
-        lf_clock_gettime(&now);
+        _lf_clock_now(&now);
     } while (now < wakeup_time);
 }
 
@@ -204,9 +204,9 @@ static void lf_busy_wait_until(instant_t wakeup_time) {
  * @param wakeup_time The time instant at which to wake up.
  * @return int 0 if sleep completed, or -1 if it was interrupted.
  */
-int lf_sleep_until_locked(instant_t wakeup_time) {
+int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
     instant_t now;
-    lf_clock_gettime(&now);
+    _lf_clock_now(&now);
     interval_t duration = wakeup_time - now;
     if (duration <= 0) {
         return 0;
@@ -241,13 +241,13 @@ int lf_sleep_until_locked(instant_t wakeup_time) {
         }
 
         // Leave critical section
-        lf_critical_section_exit();
+        lf_enable_interrupts_nested();
         
         // wait for exception
         __WFE();
 
         // Enter critical section again
-        lf_critical_section_enter();
+        lf_disable_interrupts_nested();
 
         // Redo while loop and go back to sleep if:
         //  1) We didnt have async event AND
@@ -270,7 +270,7 @@ int lf_sleep_until_locked(instant_t wakeup_time) {
  * @brief Enter critical section. Let NRF Softdevice handle nesting
  * @return int 
  */
-int lf_critical_section_enter() {
+int lf_enable_interrupts_nested() {
     return sd_nvic_critical_region_enter(&_lf_nested_region);
 }
 
@@ -279,7 +279,7 @@ int lf_critical_section_enter() {
  * 
  * @return int 
  */
-int lf_critical_section_exit() {
+int lf_disable_interrupts_nested() {
     return sd_nvic_critical_region_exit(_lf_nested_region);
 }
 
@@ -288,7 +288,7 @@ int lf_critical_section_exit() {
  * 
  * @return int 
  */
-int lf_notify_of_event() {
+int _lf_unthreaded_notify_of_event() {
     _lf_async_event = true;
     return 0;
 }

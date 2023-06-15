@@ -36,6 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "lf_zephyr_support.h"
 #include "lf_zephyr_board_support.h"
 #include "platform.h"
+#include "reactor_common.h"
 #include "utils/util.h"
 #include "tag.h"
 
@@ -49,7 +50,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Keep track of overflows to keep clocks monotonic
 static int64_t _lf_timer_epoch_duration_nsec;
 static int64_t _lf_timer_epoch_duration_usec;
-static uint32_t _lf_timer_max_tics;
+static uint32_t _lf_timer_max_ticks;
 static volatile int64_t _lf_timer_last_epoch_nsec = 0;
 static uint32_t _lf_timer_freq;
 
@@ -86,7 +87,7 @@ static volatile unsigned _lf_irq_mask = 0;
 /**
  * Initialize the LF clock
  */
-void lf_initialize_clock() {
+void _lf_initialize_clock() {
 
     #if defined(LF_ZEPHYR_CLOCK_HI_RES)
     struct counter_top_cfg counter_top_cfg;
@@ -144,17 +145,15 @@ void lf_initialize_clock() {
     #endif
 }   
 
-
 #if defined(LF_ZEPHYR_CLOCK_HI_RES)
 // Clock and sleep implementation for the HI_RES clock based on 
 // Zephyrs Counter API
 
-/**
  * Return the current time in nanoseconds. It gets the current value
  * of the hi-res counter device and also keeps track of overflows
  * to deliver a monotonically increasing clock.
  */
-int lf_clock_gettime(instant_t* t) {
+int _lf_clock_now(instant_t* t) {
     uint32_t now_cycles;
     int res;
     uint64_t now_nsec;
@@ -168,10 +167,11 @@ int lf_clock_gettime(instant_t* t) {
 /**
  * @brief Sleep until an absolute time.
  *  
+ * @param env The environment in which we would like to sleep
  * @param wakeup int64_t time of wakeup 
  * @return int 0 if successful sleep, -1 if awoken by async event
  */
-int lf_sleep_until_locked(instant_t wakeup) {
+int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     // Reset flags
     _lf_alarm_fired = false;
     _lf_async_event = false;
@@ -181,7 +181,7 @@ int lf_sleep_until_locked(instant_t wakeup) {
     uint32_t now_cycles, sleep_duration_ticks;
     counter_get_value(_lf_counter_dev, &now_cycles);
     instant_t now;
-    lf_clock_gettime(&now);
+    _lf_clock_now(&now);
     interval_t sleep_for_us = (wakeup - now)/1000;
 
     
@@ -201,13 +201,13 @@ int lf_sleep_until_locked(instant_t wakeup) {
             lf_print_error_and_exit("Could not setup alarm for sleeping. Errno %i", err);
         }
         
-        lf_critical_section_exit();
+        lf_critical_section_exit(env);
         k_sem_take(&_lf_sem, K_FOREVER);
-        lf_critical_section_enter();
+        lf_critical_section_enter(env);
 
         // Then calculating remaining sleep, unless we got woken up by an event
         if (!_lf_async_event) {
-            lf_clock_gettime(&now);
+            _lf_clock_now(&now);
             sleep_for_us = (wakeup - now)/1000;
         }
     } 
@@ -231,7 +231,7 @@ int lf_sleep_until_locked(instant_t wakeup) {
 // Clock and sleep implementation for LO_RES clock. Handle wraps
 //  by checking if two consecutive reads are monotonic
 static uint32_t last_read_cycles=0;
-int lf_clock_gettime(instant_t* t) {
+int _lf_clock_now(instant_t* t) {
     uint32_t now_cycles = k_cycle_get_32();
 
     if (now_cycles < last_read_cycles) {
@@ -244,16 +244,16 @@ int lf_clock_gettime(instant_t* t) {
     return 0;
 }
 
-int lf_sleep_until_locked(instant_t wakeup) {
+int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     _lf_async_event=false;    
-    lf_critical_section_exit();
+    lf_critical_section_exit(env);
 
     instant_t now;
     do {
-    lf_clock_gettime(&now);
+    _lf_clock_now(&now);
     } while ( (now<wakeup) && !_lf_async_event);
     
-    lf_critical_section_enter();
+    lf_critical_section_enter(env);
 
     if (_lf_async_event) {
         _lf_async_event=false;
@@ -267,20 +267,11 @@ int lf_sleep_until_locked(instant_t wakeup) {
 /**
  * @brief Pause execution for a given duration.
  * 
- * This implementation performs a busy-wait because it is unclear what will
- * happen if this function is called from within an ISR.
- * 
  * @param sleep_duration 
  * @return 0 for success, or -1 for failure.
  */
 int lf_sleep(interval_t sleep_duration) {
-    instant_t target_time;
-    instant_t current_time;
-    lf_clock_gettime(&current_time);
-    target_time = current_time + sleep_duration;
-    while (current_time <= target_time) {
-        lf_clock_gettime(&current_time);
-    }
+    k_sleep(K_NSEC(sleep_duration));
     return 0;
 }
 
@@ -298,7 +289,6 @@ int lf_nanosleep(interval_t sleep_duration) {
  * for the unthreaded scenario. For threaded, it is implemented in
  * `reactor_threaded.c`
 */
-#ifdef LF_UNTHREADED
 /**
  * @brief Enter critical section by disabling interrupts.
  * Support nested critical sections by only disabling
@@ -306,7 +296,7 @@ int lf_nanosleep(interval_t sleep_duration) {
  * 
  * @return int 
  */
-int lf_critical_section_enter() {
+int lf_disable_interrupts_nested() {
     if (_lf_num_nested_critical_sections++ == 0) {
         _lf_irq_mask = irq_lock();
     }
@@ -318,7 +308,7 @@ int lf_critical_section_enter() {
  * 
  * @return int 
  */
-int lf_critical_section_exit() {
+int lf_enable_interrupts_nested() {
     if (_lf_num_nested_critical_sections <= 0) {
         return 1;
     }
@@ -329,7 +319,8 @@ int lf_critical_section_exit() {
     return 0;
 }
 
-int lf_notify_of_event() {
+
+int _lf_unthreaded_notify_of_event() {
    _lf_async_event = true;
    // If we are using the HI_RES clock. Then we interrupt a sleep through
    // a semaphore. The LO_RES clock does a busy wait and is woken up by
@@ -339,8 +330,6 @@ int lf_notify_of_event() {
    #endif
    return 0;
 }
-
-#endif
 
 
 
@@ -519,7 +508,7 @@ int lf_cond_wait(lf_cond_t* cond) {
  */
 int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
     instant_t now;
-    lf_clock_gettime(&now);
+    _lf_clock_now(&now);
     interval_t sleep_duration_ns = absolute_time_ns - now;
     k_timeout_t timeout = K_NSEC(sleep_duration_ns);
     int res = k_condvar_wait(&cond->condition, cond->mutex, timeout);
@@ -532,26 +521,28 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
 
 // Atomics
 //  Implemented by just entering a critical section and doing the arithmetic.
+//  This is somewhat inefficient considering enclaves. Since we get a critical
+//  section inbetween different enclaves
 
 /**
  * @brief Add `value` to `*ptr` and return original value of `*ptr` 
  * 
  */
 int _zephyr_atomic_fetch_add(int *ptr, int value) {
-    lf_critical_section_enter();
+    lf_disable_interrupts_nested();
     int res = *ptr;
     *ptr += value;
-    lf_critical_section_exit();
+    lf_enable_interrupts_nested();
     return res;
 }
 /**
  * @brief Add `value` to `*ptr` and return new updated value of `*ptr`
  */
 int _zephyr_atomic_add_fetch(int *ptr, int value) {
-    lf_critical_section_enter();
+    lf_disable_interrupts_nested();
     int res = *ptr + value;
     *ptr = res;
-    lf_critical_section_exit();
+    lf_enable_interrupts_nested();
     return res;
 }
 
@@ -561,13 +552,13 @@ int _zephyr_atomic_add_fetch(int *ptr, int value) {
  * with `newval`. If not do nothing. Retruns true on overwrite.
  */
 bool _zephyr_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
-    lf_critical_section_enter();
+    lf_disable_interrupts_nested();
     bool res = false;
     if (*ptr == value) {
         *ptr = newval;
         res = true;
     }
-    lf_critical_section_exit();
+    lf_enable_interrupts_nested();
     return res;
 }
 
@@ -577,12 +568,12 @@ bool _zephyr_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
  * the original value of `*ptr`.
  */
 int  _zephyr_val_compare_and_swap(int *ptr, int value, int newval) {
-    lf_critical_section_enter();
+    lf_disable_interrupts_nested();
     int res = *ptr;
     if (*ptr == value) {
         *ptr = newval;
     }
-    lf_critical_section_exit();
+    lf_enable_interrupts_nested();
     return res;
 }
 

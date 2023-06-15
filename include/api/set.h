@@ -149,7 +149,7 @@ do { \
 #define SET_PRESENT(out) \
 do { \
 	_Pragma ("Warning \"'SET_PRESENT' is deprecated.\""); \
-    _lf_set_present((lf_port_base_t*)out); \
+        _lf_set_present((lf_port_base_t*)out); \
 } while (0)
 
 /**
@@ -211,3 +211,17 @@ do { \
 #endif // MODAL_REACTORS
 
 #endif // CTARGET_SET
+
+// For simplicity and backward compatability, dont require the environment-pointer when calling the timing API.
+// Since this is always done from the context of a reaction `self` is in scope and is a pointer to the self-struct
+// of the current reactor. 
+#define lf_tag() lf_tag(self->base.environment)
+#define get_current_tag() get_current_tag(self->base.environment)
+#define get_microstep() get_microstep(self->base.environment)
+
+#define lf_request_stop() _lf_request_stop(self->base.environment)
+
+#define lf_time_logical() lf_time_logical(self->base.environment)
+#define lf_time_logical_elapsed() lf_time_logical_elapsed(self->base.environment)
+#define get_elapsed_logical_time() get_elapsed_logical_time(self->base.environment)
+#define get_logical_time() get_logical_time(self->base.environment)

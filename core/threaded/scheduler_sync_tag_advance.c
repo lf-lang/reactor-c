@@ -39,10 +39,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "trace.h"
 #include "util.h"
 
-// Global variable defined in tag.c:
-extern tag_t current_tag;
-extern tag_t stop_tag;
-
 /////////////////// External Functions /////////////////////////
 /**
  * Placeholder for function that will advance tag and initially fill the
@@ -50,7 +46,6 @@ extern tag_t stop_tag;
  *
  * This does not acquire the mutex lock. It assumes the lock is already held.
  */
-void _lf_next_locked();
 
 /**
  * @brief Indicator that execution of at least one tag has completed.
@@ -61,12 +56,12 @@ static bool _lf_logical_tag_completed = false;
  * Return true if the worker should stop now; false otherwise.
  * This function assumes the caller holds the mutex lock.
  */
-bool _lf_sched_should_stop_locked() {
+bool should_stop_locked(lf_scheduler_t * sched) {
     // If this is not the very first step, check against the stop tag to see whether this is the last step.
     if (_lf_logical_tag_completed) {
         // If we are at the stop tag, do not call _lf_next_locked()
         // to prevent advancing the logical time.
-        if (lf_tag_compare(current_tag, stop_tag) >= 0) {
+        if (lf_tag_compare(sched->env->current_tag, sched->env->stop_tag) >= 0) {
             return true;
         }
     }
@@ -81,10 +76,11 @@ bool _lf_sched_should_stop_locked() {
  *
  * @return should_exit True if the worker thread should exit. False otherwise.
  */
-bool _lf_sched_advance_tag_locked() {
-    logical_tag_complete(current_tag);
+bool _lf_sched_advance_tag_locked(lf_scheduler_t * sched) {
+    environment_t* env = sched->env;
+    logical_tag_complete(env->current_tag);
 
-    if (_lf_sched_should_stop_locked()) {
+    if (should_stop_locked(sched)) {
         return true;
     }
 
@@ -93,9 +89,9 @@ bool _lf_sched_advance_tag_locked() {
     // Advance time.
     // _lf_next_locked() may block waiting for real time to pass or events to appear.
     // to appear on the event queue. Note that we already
-    tracepoint_scheduler_advancing_time_starts();
-    _lf_next_locked();
-    tracepoint_scheduler_advancing_time_ends();
+    tracepoint_scheduler_advancing_time_starts(env->trace);
+    _lf_next_locked(env);
+    tracepoint_scheduler_advancing_time_ends(env->trace);
 
     LF_PRINT_DEBUG("Scheduler: Done waiting for _lf_next_locked().");
     return false;
