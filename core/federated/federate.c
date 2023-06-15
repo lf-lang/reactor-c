@@ -1880,9 +1880,11 @@ void handle_message(int socket, int fed_id) {
  */
 void stall_advance_level_federation(size_t curr_reaction_level) {
     lf_mutex_lock(&mutex);
-    while (curr_reaction_level + 1 > max_level_allowed_to_advance) {
+    LF_PRINT_DEBUG("Waiting with curr_reaction_level %d and MLAA %d.", curr_reaction_level, max_level_allowed_to_advance);
+    while (((int) curr_reaction_level) >= max_level_allowed_to_advance) {
         lf_cond_wait(&port_status_changed);
-    }
+    };
+    LF_PRINT_DEBUG("MLAA updated to %d with curr_reaction_level %d.", max_level_allowed_to_advance, curr_reaction_level);
     lf_mutex_unlock(&mutex);
 }
 
@@ -2153,9 +2155,10 @@ void update_max_level() {
     for (int i = 0; i < _lf_action_table_size; i++) {
         lf_action_base_t* input_port_action = _lf_action_for_port(i);
         if (input_port_action->trigger->status == unknown) {
-            max_level_allowed_to_advance = LF_MIN(max_level_allowed_to_advance, LF_LEVEL(input_port_action->trigger->reactions[0]->index));
+            max_level_allowed_to_advance = LF_MIN(max_level_allowed_to_advance, ((int) LF_LEVEL(input_port_action->trigger->reactions[0]->index)));
         }
     }
+    LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME ".", max_level_allowed_to_advance, lf_time_logical_elapsed());
 }
 
 /**

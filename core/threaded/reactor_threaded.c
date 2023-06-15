@@ -945,7 +945,7 @@ void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
 void try_advance_level(size_t* curr_reaction_level) {
     #ifdef FEDERATED
     stall_advance_level_federation(*curr_reaction_level);
-    #endif 
+    #endif
     *curr_reaction_level += 1;
 }
 /**

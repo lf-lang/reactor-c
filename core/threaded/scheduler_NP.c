@@ -126,17 +126,18 @@ int _lf_sched_distribute_ready_reactions() {
     // locking a mutex.
     for (; _lf_sched_instance->_lf_sched_next_reaction_level <=
            _lf_sched_instance->max_reaction_level;
-         try_advance_level(&_lf_sched_instance->_lf_sched_next_reaction_level)
+
     ) {
+        LF_PRINT_DEBUG("Waiting with curr_reaction_level %d.", _lf_sched_instance->_lf_sched_next_reaction_level);
+        try_advance_level(&_lf_sched_instance->_lf_sched_next_reaction_level);
 
         _lf_sched_instance->_lf_sched_executing_reactions =
             (void*)((reaction_t***)_lf_sched_instance->_lf_sched_triggered_reactions)[
-                _lf_sched_instance->_lf_sched_next_reaction_level
+                _lf_sched_instance->_lf_sched_next_reaction_level - 1
             ];
 
         if (((reaction_t**)_lf_sched_instance->_lf_sched_executing_reactions)[0] != NULL) {
             // There is at least one reaction to execute
-            _lf_sched_instance->_lf_sched_next_reaction_level++;
             return 1;
         }
     }
