@@ -124,7 +124,6 @@ typedef void* lf_thread_t;
 #define PRINTF_TIME "%" PRIu32
 #define PRINTF_MICROSTEP "%" PRIu32
 #define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
-#define _LF_TIMEOUT 1
 
 #define LLONG_MAX __LONG_LONG_MAX__
 #define LLONG_MIN (-LLONG_MAX - 1LL)

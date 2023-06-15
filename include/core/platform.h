@@ -81,7 +81,7 @@ typedef struct environment_t environment_t;
     typedef void lf_mutex_t;
 #endif
 
-#define LF_TIMEOUT _LF_TIMEOUT
+#define LF_TIMEOUT 1
 
 
 // To support the unthreaded runtime, we need the following functions. They
@@ -112,6 +112,7 @@ typedef struct environment_t environment_t;
 // For platforms with threading support, the following functions
 // abstract the API so that the LF runtime remains portable.
 #if defined LF_THREADED
+
 
 /**
  * @brief Get the number of cores on the host machine.
