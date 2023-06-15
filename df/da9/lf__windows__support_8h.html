@@ -112,8 +112,8 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a40772fc7ae095d3f85d990620952addc"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/da9/lf__windows__support_8h.html#a40772fc7ae095d3f85d990620952addc">lf_clock_gettime</a> (<a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> *t)</td></tr>
-<tr class="separator:a40772fc7ae095d3f85d990620952addc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a92308f138ec5ef8ade823097bedf98b5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/da9/lf__windows__support_8h.html#a92308f138ec5ef8ade823097bedf98b5">_lf_clock_now</a> (<a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> *t)</td></tr>
+<tr class="separator:a92308f138ec5ef8ade823097bedf98b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a648705f106259061531b75d252c66f79" name="a648705f106259061531b75d252c66f79"></a>
@@ -137,21 +137,21 @@ Functions</h2></td></tr>
 <dl class="section author"><dt>Author</dt><dd>{Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd>
 <dd>
 {Erling Jellum &lt;erling.r.jellum@ntnu&gt;}</dd></dl>
-<p>The API is implemented in the header files. This is also the case for Linux and macos. This is to enable having both the unthreaded and the threaded API available in the same program. This is needed for unthreaded programs with tracing. <a class="el" href="../../d8/ddc/trace_8c.html">trace.c</a> can then do #define _LF_TRACE and then include this file</p>
+<p>The API is implemented in the header files. This is also the case for Linux and macos.</p>
 <p>All functions return 0 on success.</p>
 <dl class="section see"><dt>See also</dt><dd><a href="https://gist.github.com/Soroosh129/127d1893fa4c1da6d3e1db33381bb273">https://gist.github.com/Soroosh129/127d1893fa4c1da6d3e1db33381bb273</a> </dd></dl>
 
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a40772fc7ae095d3f85d990620952addc" name="a40772fc7ae095d3f85d990620952addc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a40772fc7ae095d3f85d990620952addc">&#9670;&#160;</a></span>lf_clock_gettime()</h2>
+<a id="a92308f138ec5ef8ade823097bedf98b5" name="a92308f138ec5ef8ade823097bedf98b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a92308f138ec5ef8ade823097bedf98b5">&#9670;&#160;</a></span>_lf_clock_now()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int lf_clock_gettime </td>
+          <td class="memname">int _lf_clock_now </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> *&#160;</td>
           <td class="paramname"><em>t</em></td><td>)</td>

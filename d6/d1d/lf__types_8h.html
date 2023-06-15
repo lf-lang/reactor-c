@@ -101,13 +101,16 @@ $(document).ready(function(){initNavTree('d6/d1d/lf__types_8h.html','../../'); i
 <div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="../../d9/daa/modes_8h_source.html">modal_models/modes.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../dc/d66/pqueue_8h_source.html">utils/pqueue.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d2/dcd/tag_8h_source.html">tag.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d2/dff/lf__token_8h_source.html">lf_token.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../de/d03/platform_8h_source.html">platform.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d6/d68/vector_8h_source.html">vector.h</a>&quot;</code><br />
 </div>
 <p><a href="../../d6/d1d/lf__types_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/dc7/struct__lf__tag__advancement__barrier.html">_lf_tag_advancement_barrier</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d67/structevent__t.html">event_t</a></td></tr>
@@ -115,6 +118,8 @@ Data Structures</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/df0/structallocation__record__t.html">allocation_record_t</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -140,11 +145,15 @@ Macros</h2></td></tr>
 <tr class="separator:ab04c88bedc6b2be8ddfe7aa8d3e93f06"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0f533bf18c0296d0cb0ae34e41c41301"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d1d/lf__types_8h.html#a0f533bf18c0296d0cb0ae34e41c41301">PEDF_NP</a>&#160;&#160;&#160;6</td></tr>
 <tr class="separator:a0f533bf18c0296d0cb0ae34e41c41301"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afaff13b938d14da158c3fa1424358353"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d1d/lf__types_8h.html#afaff13b938d14da158c3fa1424358353">GLOBAL_ENVIRONMENT</a>&#160;&#160;&#160;NULL</td></tr>
+<tr class="separator:afaff13b938d14da158c3fa1424358353"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
 <tr class="memitem:a3fa7784c89589b49764048e9909d0e07"><td class="memItemLeft" align="right" valign="top">typedef unsigned short int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3fa7784c89589b49764048e9909d0e07">ushort</a></td></tr>
 <tr class="separator:a3fa7784c89589b49764048e9909d0e07"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac95b60ce7811b9e1e1b7984bc9f6aeb3"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d7/dc7/struct__lf__tag__advancement__barrier.html">_lf_tag_advancement_barrier</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d1d/lf__types_8h.html#ac95b60ce7811b9e1e1b7984bc9f6aeb3">_lf_tag_advancement_barrier</a></td></tr>
+<tr class="separator:ac95b60ce7811b9e1e1b7984bc9f6aeb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3608c2ed78ba97535f8d82a489846305"><td class="memItemLeft" align="right" valign="top">typedef int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a></td></tr>
 <tr class="separator:a3608c2ed78ba97535f8d82a489846305"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4505c08c065b48840a30eedd9845cce2"><td class="memItemLeft" align="right" valign="top">typedef char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d1d/lf__types_8h.html#a4505c08c065b48840a30eedd9845cce2">string</a></td></tr>
@@ -161,6 +170,15 @@ Typedefs</h2></td></tr>
 <tr class="separator:a59f5f6b9c6023baebf9c49c328b639a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a416845ec4469b3186de047c32402f5e8"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d8/df0/structallocation__record__t.html">allocation_record_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d1d/lf__types_8h.html#a416845ec4469b3186de047c32402f5e8">allocation_record_t</a></td></tr>
 <tr class="separator:a416845ec4469b3186de047c32402f5e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0199f9b027e13cf08095d91fe798c663"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d1d/lf__types_8h.html#a0199f9b027e13cf08095d91fe798c663">lf_scheduler_t</a></td></tr>
+<tr class="separator:a0199f9b027e13cf08095d91fe798c663"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abec033e59d4add4aa6ec61a874d0d52d"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d6/d1d/lf__types_8h.html#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d1d/lf__types_8h.html#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a></td></tr>
+<tr class="separator:abec033e59d4add4aa6ec61a874d0d52d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7941464261ddb811cc9b63a85c11d1ee"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d6/d1d/lf__types_8h.html#a7941464261ddb811cc9b63a85c11d1ee">mode_environment_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d1d/lf__types_8h.html#a7941464261ddb811cc9b63a85c11d1ee">mode_environment_t</a></td></tr>
+<tr class="memdesc:a7941464261ddb811cc9b63a85c11d1ee"><td class="mdescLeft">&#160;</td><td class="mdescRight">Execution environment. This struct contains information about the execution environment. An execution environment maintains a notion of a "current tag" and has its own event queue and scheduler. Normally, there is only one execution environment, but if you use scheduling enclaves, then there will be one for each enclave.  <br /></td></tr>
+<tr class="separator:a7941464261ddb811cc9b63a85c11d1ee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa47b54e9e041dfe1b75fffceb1051466"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d1d/lf__types_8h.html#aa47b54e9e041dfe1b75fffceb1051466">environment_t</a></td></tr>
+<tr class="separator:aa47b54e9e041dfe1b75fffceb1051466"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6202eb05c29c30bfd6a8fc203de6422f"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d6/d8b/structself__base__t.html">self_base_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d1d/lf__types_8h.html#a6202eb05c29c30bfd6a8fc203de6422f">self_base_t</a></td></tr>
 <tr class="separator:a6202eb05c29c30bfd6a8fc203de6422f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -200,7 +218,7 @@ LICENSE</h1>
 </ol>
 <p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 <h1><a class="anchor" id="DESCRIPTION"></a>
-DESCRIPTION</h1>
+Functions intitializing and freeing memory for environments.</h1>
 <p>Type definitions that are widely used across different parts of the runtime.</p>
 <p><b>IMPORTANT:</b> Many of the structs defined here require matching layouts and, if changed, will require changes in the code generator. See <a href="https://github.com/lf-lang/reactor-c/wiki/Structs-in-the-Reactor-C-Runtime">Structs in the Reactor-C Runtime</a>. </p>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
@@ -241,6 +259,20 @@ DESCRIPTION</h1>
       <table class="memname">
         <tr>
           <td class="memname">#define GEDF_NP_CI&#160;&#160;&#160;2</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="afaff13b938d14da158c3fa1424358353" name="afaff13b938d14da158c3fa1424358353"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afaff13b938d14da158c3fa1424358353">&#9670;&#160;</a></span>GLOBAL_ENVIRONMENT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define GLOBAL_ENVIRONMENT&#160;&#160;&#160;NULL</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -290,6 +322,20 @@ DESCRIPTION</h1>
 </div>
 </div>
 <h2 class="groupheader">Typedef Documentation</h2>
+<a id="ac95b60ce7811b9e1e1b7984bc9f6aeb3" name="ac95b60ce7811b9e1e1b7984bc9f6aeb3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac95b60ce7811b9e1e1b7984bc9f6aeb3">&#9670;&#160;</a></span>_lf_tag_advancement_barrier</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="../../d7/dc7/struct__lf__tag__advancement__barrier.html">_lf_tag_advancement_barrier</a> <a class="el" href="../../d7/dc7/struct__lf__tag__advancement__barrier.html">_lf_tag_advancement_barrier</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a416845ec4469b3186de047c32402f5e8" name="a416845ec4469b3186de047c32402f5e8"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a416845ec4469b3186de047c32402f5e8">&#9670;&#160;</a></span>allocation_record_t</h2>
 
@@ -302,6 +348,20 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p>An allocation record that is used by a destructor for a reactor to free memory that has been dynamically allocated for the particular instance of the reactor. This will be an element of linked list. If the indirect field is true, then the allocated pointer points to pointer to allocated memory, rather than directly to the allocated memory. </p>
+
+</div>
+</div>
+<a id="aa47b54e9e041dfe1b75fffceb1051466" name="aa47b54e9e041dfe1b75fffceb1051466"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa47b54e9e041dfe1b75fffceb1051466">&#9670;&#160;</a></span>environment_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> <a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -332,6 +392,36 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p>Topological order index for reactions. </p>
+
+</div>
+</div>
+<a id="a0199f9b027e13cf08095d91fe798c663" name="a0199f9b027e13cf08095d91fe798c663"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0199f9b027e13cf08095d91fe798c663">&#9670;&#160;</a></span>lf_scheduler_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> <a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a7941464261ddb811cc9b63a85c11d1ee" name="a7941464261ddb811cc9b63a85c11d1ee"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7941464261ddb811cc9b63a85c11d1ee">&#9670;&#160;</a></span>mode_environment_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="../../d6/d1d/lf__types_8h.html#a7941464261ddb811cc9b63a85c11d1ee">mode_environment_t</a> <a class="el" href="../../d6/d1d/lf__types_8h.html#a7941464261ddb811cc9b63a85c11d1ee">mode_environment_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Execution environment. This struct contains information about the execution environment. An execution environment maintains a notion of a "current tag" and has its own event queue and scheduler. Normally, there is only one execution environment, but if you use scheduling enclaves, then there will be one for each enclave. </p>
 
 </div>
 </div>
@@ -376,7 +466,7 @@ DESCRIPTION</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>The first element of every self struct defined in generated code will be a pointer to an allocation record, which is either NULL or the head of a NULL-terminated linked list of allocation records. Casting the self struct to this type enables access to this list by the function <code><a class="el" href="../../dd/d37/reactor__common_8c.html#a19fb043a580467f2a8c14bae304db490">_lf_free_reactor(self_base_t*)</a></code>. To allocate memory for the reactor that will be freed by that function, allocate the memory using <code><a class="el" href="../../">_lf_allocate(size_t,size_t,self_base_t*)</a></code>. </p>
+<p>The first element of every self struct defined in generated code will be a pointer to an allocation record, which is either NULL or the head of a NULL-terminated linked list of allocation records. Casting the self struct to this type enables access to this list by the function <code><a class="el" href="../../dd/d37/reactor__common_8c.html#a5ea59ff3ad866fbd13c0b641bf21fa2f">_lf_free_reactor(self_base_t*)</a></code>. To allocate memory for the reactor that will be freed by that function, allocate the memory using <code><a class="el" href="../../">_lf_allocate(size_t,size_t,self_base_t*)</a></code>. </p>
 
 </div>
 </div>
@@ -392,6 +482,20 @@ DESCRIPTION</h1>
       </table>
 </div><div class="memdoc">
 <p>String type so that we don't have to use {= char* =}. Use this for strings that are not dynamically allocated. For dynamically allocated strings that have to be freed after being consumed downstream, use type char*. </p>
+
+</div>
+</div>
+<a id="abec033e59d4add4aa6ec61a874d0d52d" name="abec033e59d4add4aa6ec61a874d0d52d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abec033e59d4add4aa6ec61a874d0d52d">&#9670;&#160;</a></span>trace_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="../../d6/d1d/lf__types_8h.html#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a> <a class="el" href="../../d6/d1d/lf__types_8h.html#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

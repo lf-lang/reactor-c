@@ -138,7 +138,7 @@ LICENSE</h1>
 </ol>
 <p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 <h1><a class="anchor" id="DESCRIPTION"></a>
-DESCRIPTION</h1>
+Functions intitializing and freeing memory for environments.</h1>
 <p>Runtime infrastructure for distributed Lingua Franca programs.</p>
 <p>This implementation creates one thread per federate so as to be able to take advantage of multiple cores. It may be more efficient, however, to use select() instead to read from the multiple socket connections to each federate.</p>
 <p>This implementation sends messages in little endian order because Intel, RISC V, and Arm processors are little endian. This is not what is normally considered "network order", but we control both ends, and hence, for commonly used processors, this will be more efficient since it won't have to swap bytes.</p>

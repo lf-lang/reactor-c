@@ -21,7 +21,7 @@ var lf__token_8h =
     [ "_lf_done_using", "d2/dff/lf__token_8h.html#a88c890be1f8d45461a6985cbfe6faa99", null ],
     [ "_lf_free_all_tokens", "d2/dff/lf__token_8h.html#afd97c46ee623b1ae34a70088ee9b5020", null ],
     [ "_lf_free_token", "d2/dff/lf__token_8h.html#a2798a92c59a1d46b602298cdbd187ab1", null ],
-    [ "_lf_free_token_copies", "d2/dff/lf__token_8h.html#a25677ab083c7ad55454bb901c8832e79", null ],
+    [ "_lf_free_token_copies", "d2/dff/lf__token_8h.html#a2135b542c27f1bf1aa22fdc243098b6b", null ],
     [ "_lf_get_token", "d2/dff/lf__token_8h.html#a8f2f9c98968a10bf4d37077fd363ac48", null ],
     [ "_lf_initialize_template", "d2/dff/lf__token_8h.html#a5d1a2996844350bc1e29de47e3b56644", null ],
     [ "_lf_initialize_token", "d2/dff/lf__token_8h.html#a6e2c7940f2e59f5ff57807df6b41f5fe", null ],

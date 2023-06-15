@@ -104,9 +104,11 @@ Data Fields</h2></td></tr>
 <tr class="separator:a851c71d2d9ce4ca9c1811283bcf5f2f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2282568a7a814225eec8a2148e087f09"><td class="memItemLeft" align="right" valign="top">struct <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d8b/structself__base__t.html#a2282568a7a814225eec8a2148e087f09">executing_reaction</a></td></tr>
 <tr class="separator:a2282568a7a814225eec8a2148e087f09"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a382226593b7045aeb0a30ce90122f64e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d8b/structself__base__t.html#a382226593b7045aeb0a30ce90122f64e">environment</a></td></tr>
+<tr class="separator:a382226593b7045aeb0a30ce90122f64e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>The first element of every self struct defined in generated code will be a pointer to an allocation record, which is either NULL or the head of a NULL-terminated linked list of allocation records. Casting the self struct to this type enables access to this list by the function <code><a class="el" href="../../dd/d37/reactor__common_8c.html#a19fb043a580467f2a8c14bae304db490">_lf_free_reactor(self_base_t*)</a></code>. To allocate memory for the reactor that will be freed by that function, allocate the memory using <code><a class="el" href="../../">_lf_allocate(size_t,size_t,self_base_t*)</a></code>. </p>
+<div class="textblock"><p>The first element of every self struct defined in generated code will be a pointer to an allocation record, which is either NULL or the head of a NULL-terminated linked list of allocation records. Casting the self struct to this type enables access to this list by the function <code><a class="el" href="../../dd/d37/reactor__common_8c.html#a5ea59ff3ad866fbd13c0b641bf21fa2f">_lf_free_reactor(self_base_t*)</a></code>. To allocate memory for the reactor that will be freed by that function, allocate the memory using <code><a class="el" href="../../">_lf_allocate(size_t,size_t,self_base_t*)</a></code>. </p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a id="a851c71d2d9ce4ca9c1811283bcf5f2f9" name="a851c71d2d9ce4ca9c1811283bcf5f2f9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a851c71d2d9ce4ca9c1811283bcf5f2f9">&#9670;&#160;</a></span>allocations</h2>
@@ -116,6 +118,20 @@ Data Fields</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname">struct <a class="el" href="../../d8/df0/structallocation__record__t.html">allocation_record_t</a>* self_base_t::allocations</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a382226593b7045aeb0a30ce90122f64e" name="a382226593b7045aeb0a30ce90122f64e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a382226593b7045aeb0a30ce90122f64e">&#9670;&#160;</a></span>environment</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a>* self_base_t::environment</td>
         </tr>
       </table>
 </div><div class="memdoc">

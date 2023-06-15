@@ -97,6 +97,7 @@ $(document).ready(function(){initNavTree('d1/d1b/trace_8h.html','../../'); initR
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="../../d6/d1d/lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
+<code>#include &lt;stdio.h&gt;</code><br />
 </div>
 <p><a href="../../d1/d1b/trace_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -130,22 +131,26 @@ Macros</h2></td></tr>
 <tr class="separator:ac91dba72663dc0f17ce46d105ff3f511"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa608d6a7b724896211cc9a279bacfbbf"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d1b/trace_8h.html#aa608d6a7b724896211cc9a279bacfbbf">tracepoint_reaction_deadline_missed</a>(...)&#160;&#160;&#160;;</td></tr>
 <tr class="separator:aa608d6a7b724896211cc9a279bacfbbf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3898b24f52dc6449c0fe6848bd5d7420"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d1b/trace_8h.html#a3898b24f52dc6449c0fe6848bd5d7420">tracepoint_federate_to_RTI</a>(...)&#160;&#160;&#160;;</td></tr>
-<tr class="separator:a3898b24f52dc6449c0fe6848bd5d7420"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0af1b0066f718ce8489be4ce8c5883b8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d1b/trace_8h.html#a0af1b0066f718ce8489be4ce8c5883b8">tracepoint_federate_from_RTI</a>(...)&#160;&#160;&#160;;</td></tr>
-<tr class="separator:a0af1b0066f718ce8489be4ce8c5883b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a014d5c8cd243f0904399838282c0ff2b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d1b/trace_8h.html#a014d5c8cd243f0904399838282c0ff2b">tracepoint_federate_to_rti</a>(...)&#160;&#160;&#160;;</td></tr>
+<tr class="separator:a014d5c8cd243f0904399838282c0ff2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a510e2ff5a954e88b67de7440af749639"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d1b/trace_8h.html#a510e2ff5a954e88b67de7440af749639">tracepoint_federate_from_rti</a>(...)&#160;&#160;&#160;;</td></tr>
+<tr class="separator:a510e2ff5a954e88b67de7440af749639"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1465b810c5f6e6c5cdea5d9b29f5ac50"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d1b/trace_8h.html#a1465b810c5f6e6c5cdea5d9b29f5ac50">tracepoint_federate_to_federate</a>(...)&#160;&#160;&#160;;</td></tr>
 <tr class="separator:a1465b810c5f6e6c5cdea5d9b29f5ac50"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af806014e6928610cb32caa7ab79e522b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d1b/trace_8h.html#af806014e6928610cb32caa7ab79e522b">tracepoint_federate_from_federate</a>(...)&#160;&#160;&#160;;</td></tr>
 <tr class="separator:af806014e6928610cb32caa7ab79e522b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aead32360a221d3d3339d1562129ee8cd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d1b/trace_8h.html#aead32360a221d3d3339d1562129ee8cd">tracepoint_RTI_to_federate</a>(...)&#160;&#160;&#160;;</td></tr>
-<tr class="separator:aead32360a221d3d3339d1562129ee8cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2792eb16622ca6e1ffd40b1378d0dc74"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d1b/trace_8h.html#a2792eb16622ca6e1ffd40b1378d0dc74">tracepoint_RTI_from_federate</a>(...)&#160;&#160;&#160;;</td></tr>
-<tr class="separator:a2792eb16622ca6e1ffd40b1378d0dc74"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adaef0f227cc3d01789b10414e10e1b9c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d1b/trace_8h.html#adaef0f227cc3d01789b10414e10e1b9c">tracepoint_rti_to_federate</a>(...)&#160;&#160;&#160;;</td></tr>
+<tr class="separator:adaef0f227cc3d01789b10414e10e1b9c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a611e5359d79e7405cb002b3df5fd1c7f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d1b/trace_8h.html#a611e5359d79e7405cb002b3df5fd1c7f">tracepoint_rti_from_federate</a>(...)&#160;&#160;&#160;;</td></tr>
+<tr class="separator:a611e5359d79e7405cb002b3df5fd1c7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a27e365336dc38cd3fec8741832c0e195"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d1b/trace_8h.html#a27e365336dc38cd3fec8741832c0e195">start_trace</a>(...)</td></tr>
 <tr class="separator:a27e365336dc38cd3fec8741832c0e195"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9c54cf0034978f2dd5b3521fc522d237"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d1b/trace_8h.html#a9c54cf0034978f2dd5b3521fc522d237">stop_trace</a>(...)</td></tr>
 <tr class="separator:a9c54cf0034978f2dd5b3521fc522d237"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a25fefd425c9b8a91265c273dcffa793d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d1b/trace_8h.html#a25fefd425c9b8a91265c273dcffa793d">trace_new</a>(...)&#160;&#160;&#160;NULL</td></tr>
+<tr class="separator:a25fefd425c9b8a91265c273dcffa793d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4b3f193c812fcc1b5b86a1578101d998"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d1b/trace_8h.html#a4b3f193c812fcc1b5b86a1578101d998">trace_free</a>(...)</td></tr>
+<tr class="separator:a4b3f193c812fcc1b5b86a1578101d998"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
@@ -232,7 +237,7 @@ LICENSE</h1>
 </ol>
 <p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 <h1><a class="anchor" id="DESCRIPTION"></a>
-DESCRIPTION</h1>
+Functions intitializing and freeing memory for environments.</h1>
 <p>Definitions of tracepoint events for use with the C code generator and any other code generator that uses the C infrastructure (such as the Python code generator).</p>
 <p>See: <a href="https://www.lf-lang.org/docs/handbook/tracing?target=c">https://www.lf-lang.org/docs/handbook/tracing?target=c</a></p>
 <p>The trace file is named trace.lft and is a binary file with the following format:</p>
@@ -316,6 +321,24 @@ DESCRIPTION</h1>
 
 </div>
 </div>
+<a id="a4b3f193c812fcc1b5b86a1578101d998" name="a4b3f193c812fcc1b5b86a1578101d998"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4b3f193c812fcc1b5b86a1578101d998">&#9670;&#160;</a></span>trace_free</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define trace_free</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="ae594945e35ccf287b44f0de67d6194d1" name="ae594945e35ccf287b44f0de67d6194d1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae594945e35ccf287b44f0de67d6194d1">&#9670;&#160;</a></span>TRACE_H</h2>
 
@@ -324,6 +347,24 @@ DESCRIPTION</h1>
       <table class="memname">
         <tr>
           <td class="memname">#define TRACE_H</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a25fefd425c9b8a91265c273dcffa793d" name="a25fefd425c9b8a91265c273dcffa793d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a25fefd425c9b8a91265c273dcffa793d">&#9670;&#160;</a></span>trace_new</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define trace_new</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em></td><td>)</td>
+          <td>&#160;&#160;&#160;NULL</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -366,14 +407,14 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a0af1b0066f718ce8489be4ce8c5883b8" name="a0af1b0066f718ce8489be4ce8c5883b8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0af1b0066f718ce8489be4ce8c5883b8">&#9670;&#160;</a></span>tracepoint_federate_from_RTI</h2>
+<a id="a510e2ff5a954e88b67de7440af749639" name="a510e2ff5a954e88b67de7440af749639"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a510e2ff5a954e88b67de7440af749639">&#9670;&#160;</a></span>tracepoint_federate_from_rti</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define tracepoint_federate_from_RTI</td>
+          <td class="memname">#define tracepoint_federate_from_rti</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>...</em></td><td>)</td>
@@ -402,14 +443,14 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a3898b24f52dc6449c0fe6848bd5d7420" name="a3898b24f52dc6449c0fe6848bd5d7420"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3898b24f52dc6449c0fe6848bd5d7420">&#9670;&#160;</a></span>tracepoint_federate_to_RTI</h2>
+<a id="a014d5c8cd243f0904399838282c0ff2b" name="a014d5c8cd243f0904399838282c0ff2b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a014d5c8cd243f0904399838282c0ff2b">&#9670;&#160;</a></span>tracepoint_federate_to_rti</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define tracepoint_federate_to_RTI</td>
+          <td class="memname">#define tracepoint_federate_to_rti</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>...</em></td><td>)</td>
@@ -474,14 +515,14 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a2792eb16622ca6e1ffd40b1378d0dc74" name="a2792eb16622ca6e1ffd40b1378d0dc74"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2792eb16622ca6e1ffd40b1378d0dc74">&#9670;&#160;</a></span>tracepoint_RTI_from_federate</h2>
+<a id="a611e5359d79e7405cb002b3df5fd1c7f" name="a611e5359d79e7405cb002b3df5fd1c7f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a611e5359d79e7405cb002b3df5fd1c7f">&#9670;&#160;</a></span>tracepoint_rti_from_federate</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define tracepoint_RTI_from_federate</td>
+          <td class="memname">#define tracepoint_rti_from_federate</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>...</em></td><td>)</td>
@@ -492,14 +533,14 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="aead32360a221d3d3339d1562129ee8cd" name="aead32360a221d3d3339d1562129ee8cd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aead32360a221d3d3339d1562129ee8cd">&#9670;&#160;</a></span>tracepoint_RTI_to_federate</h2>
+<a id="adaef0f227cc3d01789b10414e10e1b9c" name="adaef0f227cc3d01789b10414e10e1b9c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adaef0f227cc3d01789b10414e10e1b9c">&#9670;&#160;</a></span>tracepoint_rti_to_federate</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define tracepoint_RTI_to_federate</td>
+          <td class="memname">#define tracepoint_rti_to_federate</td>
           <td>(</td>
           <td class="paramtype">&#160;</td>
           <td class="paramname"><em>...</em></td><td>)</td>

@@ -100,6 +100,7 @@ $(document).ready(function(){initNavTree('d8/d3c/util_8h.html','../../'); initRe
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &lt;stdarg.h&gt;</code><br />
+<code>#include &lt;stdbool.h&gt;</code><br />
 </div>
 <p><a href="../../d8/d3c/util_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -172,11 +173,13 @@ Functions</h2></td></tr>
 <tr class="separator:abce9ddab1394675a9305be42fae67ebc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a70c26a4acb499ff8710d035eec14680b"><td class="memItemLeft" align="right" valign="top">void void void void void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#a70c26a4acb499ff8710d035eec14680b">lf_print_error_and_exit</a> (const char *format,...) <a class="el" href="../../d8/d3c/util_8h.html#a1e753fbf3551d4a04cd45c04b5a90867">ATTRIBUTE_FORMAT_PRINTF</a>(1</td></tr>
 <tr class="separator:a70c26a4acb499ff8710d035eec14680b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9d6ed78bc22f074a040a0f46ecae9bce"><td class="memItemLeft" align="right" valign="top">void void void void void void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#a9d6ed78bc22f074a040a0f46ecae9bce">lf_vprint_error_and_exit</a> (const char *format, va_list args) <a class="el" href="../../d8/d3c/util_8h.html#a1e753fbf3551d4a04cd45c04b5a90867">ATTRIBUTE_FORMAT_PRINTF</a>(1</td></tr>
-<tr class="separator:a9d6ed78bc22f074a040a0f46ecae9bce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1917df59f183af6181ebafdf50877246"><td class="memItemLeft" align="right" valign="top">void void void void void void typedef void()&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#a1917df59f183af6181ebafdf50877246">print_message_function_t</a> (const char *, va_list)</td></tr>
-<tr class="separator:a1917df59f183af6181ebafdf50877246"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6ad22ca79136cd15dc0d560aec067f76"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#a6ad22ca79136cd15dc0d560aec067f76">lf_register_print_function</a> (<a class="el" href="../../d8/d3c/util_8h.html#a1917df59f183af6181ebafdf50877246">print_message_function_t</a> *function, int log_level)</td></tr>
+<tr class="memitem:a8a9e1dd848bef8b7f887b6ea7799f7b6"><td class="memItemLeft" align="right" valign="top">void void void void void void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#a8a9e1dd848bef8b7f887b6ea7799f7b6">lf_assert</a> (bool condition, const char *format,...) <a class="el" href="../../d8/d3c/util_8h.html#a1e753fbf3551d4a04cd45c04b5a90867">ATTRIBUTE_FORMAT_PRINTF</a>(2</td></tr>
+<tr class="separator:a8a9e1dd848bef8b7f887b6ea7799f7b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adbe3d5d6d825862b7ff35400cb46b308"><td class="memItemLeft" align="right" valign="top">void void void void void void void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#adbe3d5d6d825862b7ff35400cb46b308">lf_vprint_error_and_exit</a> (const char *format, va_list args) <a class="el" href="../../d8/d3c/util_8h.html#a1e753fbf3551d4a04cd45c04b5a90867">ATTRIBUTE_FORMAT_PRINTF</a>(1</td></tr>
+<tr class="separator:adbe3d5d6d825862b7ff35400cb46b308"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae7963f15395e89fe546165829ef97b62"><td class="memItemLeft" align="right" valign="top">void void void void void void void typedef void()&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#ae7963f15395e89fe546165829ef97b62">print_message_function_t</a> (const char *, va_list)</td></tr>
+<tr class="separator:ae7963f15395e89fe546165829ef97b62"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ad22ca79136cd15dc0d560aec067f76"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#a6ad22ca79136cd15dc0d560aec067f76">lf_register_print_function</a> (<a class="el" href="../../d8/d3c/util_8h.html#ae7963f15395e89fe546165829ef97b62">print_message_function_t</a> *function, int log_level)</td></tr>
 <tr class="separator:a6ad22ca79136cd15dc0d560aec067f76"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
@@ -198,7 +201,7 @@ LICENSE</h1>
 </ol>
 <p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 <h1><a class="anchor" id="DESCRIPTION"></a>
-DESCRIPTION</h1>
+Functions intitializing and freeing memory for environments.</h1>
 <p>Header file for utility types and functions for Lingua Franca programs. </p>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a1e753fbf3551d4a04cd45c04b5a90867" name="a1e753fbf3551d4a04cd45c04b5a90867"></a>
@@ -370,8 +373,8 @@ DESCRIPTION</h1>
 <b>Value:</b><div class="fragment"><div class="line">            <span class="keywordflow">do</span> { <span class="keywordflow">if</span>(<a class="code hl_define" href="../../d8/d3c/util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a> &gt;= <a class="code hl_define" href="../../d8/d3c/util_8h.html#a130224df8c6bf22a688e3cb74a45689a">LOG_LEVEL_DEBUG</a>) { \</div>
 <div class="line">                    lf_print_debug(format, ##__VA_ARGS__); \</div>
 <div class="line">                } } <span class="keywordflow">while</span> (0)</div>
-<div class="ttc" id="autil_8h_html_a0b87e0d3bf5853bcbb0b66a7c48fdc05"><div class="ttname"><a href="../../d8/d3c/util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a></div><div class="ttdeci">#define LOG_LEVEL</div><div class="ttdef"><b>Definition:</b> util.h:109</div></div>
-<div class="ttc" id="autil_8h_html_a130224df8c6bf22a688e3cb74a45689a"><div class="ttname"><a href="../../d8/d3c/util_8h.html#a130224df8c6bf22a688e3cb74a45689a">LOG_LEVEL_DEBUG</a></div><div class="ttdeci">#define LOG_LEVEL_DEBUG</div><div class="ttdef"><b>Definition:</b> util.h:104</div></div>
+<div class="ttc" id="autil_8h_html_a0b87e0d3bf5853bcbb0b66a7c48fdc05"><div class="ttname"><a href="../../d8/d3c/util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a></div><div class="ttdeci">#define LOG_LEVEL</div><div class="ttdef"><b>Definition:</b> util.h:110</div></div>
+<div class="ttc" id="autil_8h_html_a130224df8c6bf22a688e3cb74a45689a"><div class="ttname"><a href="../../d8/d3c/util_8h.html#a130224df8c6bf22a688e3cb74a45689a">LOG_LEVEL_DEBUG</a></div><div class="ttdeci">#define LOG_LEVEL_DEBUG</div><div class="ttdef"><b>Definition:</b> util.h:105</div></div>
 </div><!-- fragment --><p>A macro used to print useful debug information. It can be enabled by setting the target property 'logging' to 'DEBUG' or by defining LOG_LEVEL to 2 in the top-level preamble. The input to this macro is exactly like printf: (format, ...). "DEBUG: " is prepended to the beginning of the message and a newline is appended to the end of the message.</p>
 <dl class="section note"><dt>Note</dt><dd>This macro is non-empty even if LOG_LEVEL is not defined in user-code. This is to ensure that the compiler will still parse the predicate inside (...) to prevent LF_PRINT_DEBUG statements to fall out of sync with the rest of the code. This should have a negligible impact on performance if compiler optimization (e.g., -O2 for gcc) is used as long as the arguments passed to it do not themselves incur significant overhead to evaluate. </dd></dl>
 
@@ -405,7 +408,7 @@ DESCRIPTION</h1>
 <b>Value:</b><div class="fragment"><div class="line">            <span class="keywordflow">do</span> { <span class="keywordflow">if</span>(<a class="code hl_define" href="../../d8/d3c/util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a> &gt;= <a class="code hl_define" href="../../d8/d3c/util_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd">LOG_LEVEL_LOG</a>) { \</div>
 <div class="line">                    lf_print_log(format, ##__VA_ARGS__); \</div>
 <div class="line">                } } <span class="keywordflow">while</span> (0)</div>
-<div class="ttc" id="autil_8h_html_a8b58cabecd61bfd1b706be9cb992e0bd"><div class="ttname"><a href="../../d8/d3c/util_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd">LOG_LEVEL_LOG</a></div><div class="ttdeci">#define LOG_LEVEL_LOG</div><div class="ttdef"><b>Definition:</b> util.h:103</div></div>
+<div class="ttc" id="autil_8h_html_a8b58cabecd61bfd1b706be9cb992e0bd"><div class="ttname"><a href="../../d8/d3c/util_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd">LOG_LEVEL_LOG</a></div><div class="ttdeci">#define LOG_LEVEL_LOG</div><div class="ttdef"><b>Definition:</b> util.h:104</div></div>
 </div><!-- fragment --><p>A macro used to print useful logging information. It can be enabled by setting the target property 'logging' to 'LOG' or by defining LOG_LEVEL to LOG_LEVEL_LOG or LOG_LEVEL_DEBUG in the top-level preamble. The input to this macro is exactly like printf: (format, ...). "LOG: " is prepended to the beginning of the message and a newline is appended to the end of the message.</p>
 <dl class="section note"><dt>Note</dt><dd>This macro is non-empty even if LOG_LEVEL is not defined in user-code. This is to ensure that the compiler will still parse the predicate inside (...) to prevent LF_PRINT_LOG statements to fall out of sync with the rest of the code. This should have a negligible impact on performance if compiler optimization (e.g., -O2 for gcc) is used as long as the arguments passed to it do not themselves incur significant overhead to evaluate. </dd></dl>
 
@@ -549,6 +552,41 @@ DESCRIPTION</h1>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a8a9e1dd848bef8b7f887b6ea7799f7b6" name="a8a9e1dd848bef8b7f887b6ea7799f7b6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8a9e1dd848bef8b7f887b6ea7799f7b6">&#9670;&#160;</a></span>lf_assert()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void void void void void void lf_assert </td>
+          <td>(</td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname"><em>condition</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>format</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>A shorthand for checking if a condition is true and if not, print an error and exit. </p>
 
 </div>
 </div>
@@ -754,7 +792,7 @@ DESCRIPTION</h1>
         <tr>
           <td class="memname">void lf_register_print_function </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d8/d3c/util_8h.html#a1917df59f183af6181ebafdf50877246">print_message_function_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d8/d3c/util_8h.html#ae7963f15395e89fe546165829ef97b62">print_message_function_t</a> *&#160;</td>
           <td class="paramname"><em>function</em>, </td>
         </tr>
         <tr>
@@ -868,14 +906,14 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a9d6ed78bc22f074a040a0f46ecae9bce" name="a9d6ed78bc22f074a040a0f46ecae9bce"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9d6ed78bc22f074a040a0f46ecae9bce">&#9670;&#160;</a></span>lf_vprint_error_and_exit()</h2>
+<a id="adbe3d5d6d825862b7ff35400cb46b308" name="adbe3d5d6d825862b7ff35400cb46b308"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adbe3d5d6d825862b7ff35400cb46b308">&#9670;&#160;</a></span>lf_vprint_error_and_exit()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void void void void void void lf_vprint_error_and_exit </td>
+          <td class="memname">void void void void void void void lf_vprint_error_and_exit </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>format</em>, </td>
@@ -955,14 +993,14 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a1917df59f183af6181ebafdf50877246" name="a1917df59f183af6181ebafdf50877246"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1917df59f183af6181ebafdf50877246">&#9670;&#160;</a></span>print_message_function_t()</h2>
+<a id="ae7963f15395e89fe546165829ef97b62" name="ae7963f15395e89fe546165829ef97b62"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae7963f15395e89fe546165829ef97b62">&#9670;&#160;</a></span>print_message_function_t()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void void void void void void typedef void() print_message_function_t </td>
+          <td class="memname">void void void void void void void typedef void() print_message_function_t </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname">, </td>
@@ -1004,7 +1042,7 @@ DESCRIPTION</h1>
   </tr>
 </table>
 </div><div class="memdoc">
-<p>The ID of this federate. For a non-federated execution, this will be -1. For a federated execution, it will be assigned when the generated function <a class="el" href="../../dc/d85/reactor_8h.html#ac329402a9b005b719fc9d95f9b14e53a">_lf_initialize_trigger_objects()</a> is called. </p><dl class="section see"><dt>See also</dt><dd>xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CGenerator.xtend. </dd></dl>
+<p>The ID of this federate. For a non-federated execution, this will be -1. For a federated execution, it will be assigned when the generated function <a class="el" href="../../dc/d85/reactor_8h.html#a52ffa06ff177dc19d33713beb2ff344e">_lf_initialize_trigger_objects()</a> is called. </p><dl class="section see"><dt>See also</dt><dd>xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CGenerator.xtend. </dd></dl>
 
 </div>
 </div>

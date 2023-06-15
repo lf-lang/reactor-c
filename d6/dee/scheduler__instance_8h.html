@@ -93,39 +93,63 @@ $(document).ready(function(){initNavTree('d6/dee/scheduler__instance_8h.html','.
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
-<a href="#func-members">Functions</a> &#124;
-<a href="#var-members">Variables</a>  </div>
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">scheduler_instance.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="../../d6/dc6/semaphore_8h_source.html">semaphore.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d2/dd8/scheduler_8h_source.html">scheduler.h</a>&quot;</code><br />
+<code>#include &lt;stdbool.h&gt;</code><br />
 </div>
 <p><a href="../../d6/dee/scheduler__instance_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/dea/struct__lf__sched__instance__t.html">_lf_sched_instance_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Paramters used in schedulers of the threaded reactor C runtime.  <a href="../../d6/dea/struct__lf__sched__instance__t.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Paramters used in schedulers of the threaded reactor C runtime.  <a href="../../da/d7a/structlf__scheduler__t.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/da2/structsched__params__t.html">sched_params_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Struct representing the most common scheduler parameters.  <a href="../../dc/da2/structsched__params__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:a43fcdba4ed8864d210afd3f031b4e346"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/dee/scheduler__instance_8h.html#a43fcdba4ed8864d210afd3f031b4e346">NUMBER_OF_WORKERS</a>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:a43fcdba4ed8864d210afd3f031b4e346"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c3f7c6b1c85f7572b42fa34fa853973"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/dee/scheduler__instance_8h.html#a7c3f7c6b1c85f7572b42fa34fa853973">DEFAULT_MAX_REACTION_LEVEL</a>&#160;&#160;&#160;100</td></tr>
+<tr class="separator:a7c3f7c6b1c85f7572b42fa34fa853973"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:aa47b54e9e041dfe1b75fffceb1051466"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/dee/scheduler__instance_8h.html#aa47b54e9e041dfe1b75fffceb1051466">environment_t</a></td></tr>
+<tr class="separator:aa47b54e9e041dfe1b75fffceb1051466"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b87d9f4ab1631bfa6dbea7f81bfdd38"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../df/d9e/structcustom__scheduler__data__t.html">custom_scheduler_data_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/dee/scheduler__instance_8h.html#a3b87d9f4ab1631bfa6dbea7f81bfdd38">custom_scheduler_data_t</a></td></tr>
+<tr class="separator:a3b87d9f4ab1631bfa6dbea7f81bfdd38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0199f9b027e13cf08095d91fe798c663"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/dee/scheduler__instance_8h.html#a0199f9b027e13cf08095d91fe798c663">lf_scheduler_t</a></td></tr>
+<tr class="memdesc:a0199f9b027e13cf08095d91fe798c663"><td class="mdescLeft">&#160;</td><td class="mdescRight">Paramters used in schedulers of the threaded reactor C runtime.  <br /></td></tr>
+<tr class="separator:a0199f9b027e13cf08095d91fe798c663"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ae393e1a34a51d36ed78a5c1f4d7fee50"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/dee/scheduler__instance_8h.html#ae393e1a34a51d36ed78a5c1f4d7fee50">init_sched_instance</a> (<a class="el" href="../../d6/dea/struct__lf__sched__instance__t.html">_lf_sched_instance_t</a> **instance, size_t number_of_workers, <a class="el" href="../../dc/da2/structsched__params__t.html">sched_params_t</a> *params)</td></tr>
-<tr class="memdesc:ae393e1a34a51d36ed78a5c1f4d7fee50"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize <code>instance</code> using the provided information.  <br /></td></tr>
-<tr class="separator:ae393e1a34a51d36ed78a5c1f4d7fee50"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:ab491fbef9a883a7cee19e074dba32661"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../de/d03/platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/dee/scheduler__instance_8h.html#ab491fbef9a883a7cee19e074dba32661">mutex</a></td></tr>
-<tr class="separator:ab491fbef9a883a7cee19e074dba32661"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a763b254fdbe81abb51ce307567969306"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/dee/scheduler__instance_8h.html#a763b254fdbe81abb51ce307567969306">init_sched_instance</a> (struct <a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> **instance, size_t number_of_workers, <a class="el" href="../../dc/da2/structsched__params__t.html">sched_params_t</a> *params)</td></tr>
+<tr class="memdesc:a763b254fdbe81abb51ce307567969306"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize <code>instance</code> using the provided information.  <br /></td></tr>
+<tr class="separator:a763b254fdbe81abb51ce307567969306"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="a7c3f7c6b1c85f7572b42fa34fa853973" name="a7c3f7c6b1c85f7572b42fa34fa853973"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7c3f7c6b1c85f7572b42fa34fa853973">&#9670;&#160;</a></span>DEFAULT_MAX_REACTION_LEVEL</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DEFAULT_MAX_REACTION_LEVEL&#160;&#160;&#160;100</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a43fcdba4ed8864d210afd3f031b4e346" name="a43fcdba4ed8864d210afd3f031b4e346"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a43fcdba4ed8864d210afd3f031b4e346">&#9670;&#160;</a></span>NUMBER_OF_WORKERS</h2>
 
@@ -140,9 +164,55 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="a3b87d9f4ab1631bfa6dbea7f81bfdd38" name="a3b87d9f4ab1631bfa6dbea7f81bfdd38"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b87d9f4ab1631bfa6dbea7f81bfdd38">&#9670;&#160;</a></span>custom_scheduler_data_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="../../df/d9e/structcustom__scheduler__data__t.html">custom_scheduler_data_t</a> <a class="el" href="../../df/d9e/structcustom__scheduler__data__t.html">custom_scheduler_data_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="aa47b54e9e041dfe1b75fffceb1051466" name="aa47b54e9e041dfe1b75fffceb1051466"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa47b54e9e041dfe1b75fffceb1051466">&#9670;&#160;</a></span>environment_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> <a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0199f9b027e13cf08095d91fe798c663" name="a0199f9b027e13cf08095d91fe798c663"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0199f9b027e13cf08095d91fe798c663">&#9670;&#160;</a></span>lf_scheduler_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> <a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Paramters used in schedulers of the threaded reactor C runtime. </p>
+<dl class="section note"><dt>Note</dt><dd>Members of this struct are added based on existing schedulers' needs. These should be expanded to accommodate new schedulers. </dd></dl>
+
+</div>
+</div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="ae393e1a34a51d36ed78a5c1f4d7fee50" name="ae393e1a34a51d36ed78a5c1f4d7fee50"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae393e1a34a51d36ed78a5c1f4d7fee50">&#9670;&#160;</a></span>init_sched_instance()</h2>
+<a id="a763b254fdbe81abb51ce307567969306" name="a763b254fdbe81abb51ce307567969306"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a763b254fdbe81abb51ce307567969306">&#9670;&#160;</a></span>init_sched_instance()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -150,7 +220,13 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">bool init_sched_instance </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d6/dea/struct__lf__sched__instance__t.html">_lf_sched_instance_t</a> **&#160;</td>
+          <td class="paramtype">struct <a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> **&#160;</td>
           <td class="paramname"><em>instance</em>, </td>
         </tr>
         <tr>
@@ -177,36 +253,13 @@ Variables</h2></td></tr>
 <p>No-op if <code>instance</code> is already initialized (i.e., not NULL). This function assumes that mutex is allowed to be recursively locked.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">instance</td><td>The <code><a class="el" href="../../d6/dea/struct__lf__sched__instance__t.html" title="Paramters used in schedulers of the threaded reactor C runtime.">_lf_sched_instance_t</a></code> object to initialize. </td></tr>
+    <tr><td class="paramname">instance</td><td>The <code><a class="el" href="../../da/d7a/structlf__scheduler__t.html" title="Paramters used in schedulers of the threaded reactor C runtime.">lf_scheduler_t</a></code> object to initialize. </td></tr>
     <tr><td class="paramname">number_of_workers</td><td>Number of workers in the program. </td></tr>
     <tr><td class="paramname">params</td><td>Reference to scheduler parameters in the form of a <code><a class="el" href="../../dc/da2/structsched__params__t.html" title="Struct representing the most common scheduler parameters.">sched_params_t</a></code>. Can be NULL. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd><code>true</code> if initialization was performed. <code>false</code> if instance is already initialized (checked in a thread-safe way). </dd></dl>
-
-</div>
-</div>
-<h2 class="groupheader">Variable Documentation</h2>
-<a id="ab491fbef9a883a7cee19e074dba32661" name="ab491fbef9a883a7cee19e074dba32661"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab491fbef9a883a7cee19e074dba32661">&#9670;&#160;</a></span>mutex</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../de/d03/platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a> mutex</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
 
 </div>
 </div>

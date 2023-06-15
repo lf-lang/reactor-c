@@ -5,6 +5,7 @@ var dir_3d69f64eaf81436fe2b22361382717e5 =
     [ "platform", "dir_34e5870a65eed40bfc66e19669509957.html", "dir_34e5870a65eed40bfc66e19669509957" ],
     [ "threaded", "dir_47494a40d0a882b8f118ab8beff1b4c5.html", "dir_47494a40d0a882b8f118ab8beff1b4c5" ],
     [ "utils", "dir_9e3c081da26bdde9c5aec25c2fcc2ede.html", "dir_9e3c081da26bdde9c5aec25c2fcc2ede" ],
+    [ "environment.h", "de/d26/environment_8h.html", "de/d26/environment_8h" ],
     [ "lf_token.h", "d2/dff/lf__token_8h.html", "d2/dff/lf__token_8h" ],
     [ "lf_types.h", "d6/d1d/lf__types_8h.html", "d6/d1d/lf__types_8h" ],
     [ "mixed_radix.h", "db/dd1/mixed__radix_8h.html", "db/dd1/mixed__radix_8h" ],

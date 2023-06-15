@@ -177,9 +177,9 @@ Functions</h2></td></tr>
 <tr class="separator:abeff98dcfb6b5715aac8e1438c5a6e77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a88c890be1f8d45461a6985cbfe6faa99"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dff/lf__token_8h.html#abe23a36a87d2f0c076da417eb0114c7e">token_freed</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/dff/lf__token_8h.html#a88c890be1f8d45461a6985cbfe6faa99">_lf_done_using</a> (<a class="el" href="../../d6/d80/structlf__token__t.html">lf_token_t</a> *token)</td></tr>
 <tr class="separator:a88c890be1f8d45461a6985cbfe6faa99"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a25677ab083c7ad55454bb901c8832e79"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/dff/lf__token_8h.html#a25677ab083c7ad55454bb901c8832e79">_lf_free_token_copies</a> ()</td></tr>
-<tr class="memdesc:a25677ab083c7ad55454bb901c8832e79"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free token copies made for mutable inputs. This function should be called at the beginning of each time step to avoid memory leaks.  <br /></td></tr>
-<tr class="separator:a25677ab083c7ad55454bb901c8832e79"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2135b542c27f1bf1aa22fdc243098b6b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/dff/lf__token_8h.html#a2135b542c27f1bf1aa22fdc243098b6b">_lf_free_token_copies</a> (struct <a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="memdesc:a2135b542c27f1bf1aa22fdc243098b6b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free token copies made for mutable inputs. This function should be called at the beginning of each time step to avoid memory leaks.  <br /></td></tr>
+<tr class="separator:a2135b542c27f1bf1aa22fdc243098b6b"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
@@ -201,7 +201,7 @@ LICENSE</h1>
 </ol>
 <p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 <h1><a class="anchor" id="DESCRIPTION"></a>
-DESCRIPTION</h1>
+Functions intitializing and freeing memory for environments.</h1>
 <p>This header file supports token objects, which are reference-counted wrappers around values that are carried by events scheduled on the event queue and held in ports and actions when the type is not a primitive type.</p>
 <p>A token has type <a class="el" href="../../d6/d80/structlf__token__t.html">lf_token_t</a>. It points to a value, a dynamically allocated chunk of memory on the heap. It has a length field, which enables its value to be interpreted as an array of the given length. It has a pointer to type (<a class="el" href="../../db/d12/structtoken__type__t.html" title="Type information for tokens. Specifically, this struct contains the fields needed to support token ty...">token_type_t</a>), which has an element_size field specifying the size of each array element (or the size of the whole value if it is not an array and has length 1). The type also optionally has function pointers to a destructor and copy constructor. These must be specified if the payload (value) is a complex struct that cannot be freed by a simple call to <a class="el" href="../../d6/df3/hashmap_8h.html#a124050fa63c3161a5ae1ea701cf4e599" title="Free all memory used by the given hashmap.">free()</a> or copied by a call to memcpy().</p>
 <p>An instance of a port struct and <a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a> struct (an action or an input port) can be cast to <a class="el" href="../../de/d6b/structtoken__template__t.html" title="Base type for ports (lf_port_base_t) and actions (trigger_t), which can carry tokens....">token_template_t</a>, which has a <a class="el" href="../../db/d12/structtoken__type__t.html" title="Type information for tokens. Specifically, this struct contains the fields needed to support token ty...">token_type_t</a> field called type and a pointer to a token (which may be NULL). The same instance can also be cast to <a class="el" href="../../db/d12/structtoken__type__t.html" title="Type information for tokens. Specifically, this struct contains the fields needed to support token ty...">token_type_t</a>, which has an element_size field and (possibly) function pointers to a destructor and a copy constructor.</p>
@@ -410,8 +410,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a25677ab083c7ad55454bb901c8832e79" name="a25677ab083c7ad55454bb901c8832e79"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a25677ab083c7ad55454bb901c8832e79">&#9670;&#160;</a></span>_lf_free_token_copies()</h2>
+<a id="a2135b542c27f1bf1aa22fdc243098b6b" name="a2135b542c27f1bf1aa22fdc243098b6b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2135b542c27f1bf1aa22fdc243098b6b">&#9670;&#160;</a></span>_lf_free_token_copies()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -419,7 +419,8 @@ DESCRIPTION</h1>
         <tr>
           <td class="memname">void _lf_free_token_copies </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">struct <a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
           <td></td>
         </tr>
       </table>

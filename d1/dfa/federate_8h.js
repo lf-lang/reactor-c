@@ -13,10 +13,10 @@ var federate_8h =
     [ "listen_to_federates", "d1/dfa/federate_8h.html#a9f916a56b87eb98b5ad2f7aab404a550", null ],
     [ "send_message", "d1/dfa/federate_8h.html#a76f0bc068b7a7c4a30983172eea59767", null ],
     [ "send_neighbor_structure_to_RTI", "d1/dfa/federate_8h.html#a290fff2ff01f301f1b7b3b98fc11f492", null ],
-    [ "send_port_absent_to_federate", "d1/dfa/federate_8h.html#ab5d1ca9ebfd977b64690de60b497f644", null ],
-    [ "send_timed_message", "d1/dfa/federate_8h.html#ac4fe0dece46300b6b9b9b59126d5f050", null ],
-    [ "synchronize_with_other_federates", "d1/dfa/federate_8h.html#a1050d75d3d2a6a00effec4e07d7ad031", null ],
-    [ "wait_until_port_status_known", "d1/dfa/federate_8h.html#a64023b2373d1b7d76435afb2dcbf41a5", null ],
+    [ "send_port_absent_to_federate", "d1/dfa/federate_8h.html#a6d0d6dfbd380c75177dc10b08a811ef5", null ],
+    [ "send_timed_message", "d1/dfa/federate_8h.html#acaaf63aada42881a61249d47e734ba15", null ],
+    [ "synchronize_with_other_federates", "d1/dfa/federate_8h.html#a9f2ec13c51b647b2b3a6fe1d085599c4", null ],
+    [ "wait_until_port_status_known", "d1/dfa/federate_8h.html#aa65ffaa03960a9fb25df87993fdd62fe", null ],
     [ "outbound_socket_mutex", "d1/dfa/federate_8h.html#a1de2c61d36e14fae8de7043ff2661a34", null ],
     [ "port_status_changed", "d1/dfa/federate_8h.html#ac31c3ee54cd862c9381fbf980fa7d9ef", null ]
 ];

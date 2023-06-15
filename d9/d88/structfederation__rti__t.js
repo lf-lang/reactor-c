@@ -17,6 +17,7 @@ var structfederation__rti__t =
     [ "number_of_enclaves", "d9/d88/structfederation__rti__t.html#af9f12aaf3a44895c319658215f09230d", null ],
     [ "socket_descriptor_TCP", "d9/d88/structfederation__rti__t.html#a7d04427614b25501c359156acd1e2ecb", null ],
     [ "socket_descriptor_UDP", "d9/d88/structfederation__rti__t.html#a21a22b9b24eaaf9e74a37e649e02182b", null ],
+    [ "trace", "d9/d88/structfederation__rti__t.html#a401f1f00848e5085df6eec903cdee657", null ],
     [ "tracing_enabled", "d9/d88/structfederation__rti__t.html#a11a072fb4d4c56cb115fab123ac85344", null ],
     [ "user_specified_port", "d9/d88/structfederation__rti__t.html#a675085ccc97f95bd3e29a1f0967cca72", null ]
 ];

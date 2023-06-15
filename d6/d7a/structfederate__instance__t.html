@@ -144,6 +144,8 @@ Data Fields</h2></td></tr>
 <tr class="separator:aa5363f015c5ece818a390b8639b4be77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a786701f771e06e14c369be4b0a6519b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d13/structtrigger__t.html">trigger_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d7a/structfederate__instance__t.html#a786701f771e06e14c369be4b0a6519b5">trigger_for_network_output_control_reactions</a></td></tr>
 <tr class="separator:a786701f771e06e14c369be4b0a6519b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50f145e84f46ab83be841358eba8acca"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d7a/structfederate__instance__t.html#a50f145e84f46ab83be841358eba8acca">trace</a></td></tr>
+<tr class="separator:a50f145e84f46ab83be841358eba8acca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Structure that a federate instance uses to keep track of its own state. </p>
@@ -418,6 +420,20 @@ Data Fields</h2></td></tr>
 </div><div class="memdoc">
 <p>An array that holds the socket descriptors for outbound direct connections to each remote federate. The index will be the federate ID of the remote receiving federate. This is initialized at startup to -1 and is set to a socket ID by <a class="el" href="../../d1/dfa/federate_8h.html#a3e3a769ec47609bd5cb9fc44d51e48a4">connect_to_federate()</a> when the socket is opened.</p>
 <dl class="section note"><dt>Note</dt><dd>This federate will not open an outbound socket unless a physical connection or a p2p logical connection (by setting the coordination target property to "distributed") is specified in the Lingua Franca program where this federate acts as the source. Multiple outgoing p2p connections to the same remote federate will use the same socket. </dd></dl>
+
+</div>
+</div>
+<a id="a50f145e84f46ab83be841358eba8acca" name="a50f145e84f46ab83be841358eba8acca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a50f145e84f46ab83be841358eba8acca">&#9670;&#160;</a></span>trace</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/d1d/lf__types_8h.html#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a>* federate_instance_t::trace</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

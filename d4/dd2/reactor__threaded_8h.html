@@ -91,51 +91,42 @@ $(document).ready(function(){initNavTree('d4/dd2/reactor__threaded_8h.html','../
 
 <div class="header">
   <div class="summary">
-<a href="#func-members">Functions</a> &#124;
-<a href="#var-members">Variables</a>  </div>
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">reactor_threaded.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-
+<div class="textblock"><code>#include &quot;<a class="el" href="../../d6/d1d/lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
+</div>
 <p><a href="../../d4/dd2/reactor__threaded_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a85a8a94cd5637607e88ef32abaa2dc5b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a85a8a94cd5637607e88ef32abaa2dc5b">enqueue_network_input_control_reactions</a> ()</td></tr>
-<tr class="separator:a85a8a94cd5637607e88ef32abaa2dc5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a892e175b19f257b58dec838106b898ad"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a892e175b19f257b58dec838106b898ad">enqueue_network_output_control_reactions</a> ()</td></tr>
-<tr class="separator:a892e175b19f257b58dec838106b898ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a88a24607cd2509ab4d625a054306492f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a88a24607cd2509ab4d625a054306492f">_lf_increment_global_tag_barrier_already_locked</a> (<a class="el" href="../../db/df7/structtag__t.html">tag_t</a> future_tag)</td></tr>
-<tr class="separator:a88a24607cd2509ab4d625a054306492f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa67f3015ea5ee2a7885015202b75585e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#aa67f3015ea5ee2a7885015202b75585e">_lf_increment_global_tag_barrier</a> (<a class="el" href="../../db/df7/structtag__t.html">tag_t</a> future_tag)</td></tr>
-<tr class="separator:aa67f3015ea5ee2a7885015202b75585e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9438a9e9c2e8e6f15cc02c28b4828e2f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a9438a9e9c2e8e6f15cc02c28b4828e2f">_lf_decrement_global_tag_barrier_locked</a> ()</td></tr>
-<tr class="separator:a9438a9e9c2e8e6f15cc02c28b4828e2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6392f1a7187ec9d36d35ad51bf06ded0"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a6392f1a7187ec9d36d35ad51bf06ded0">_lf_wait_on_global_tag_barrier</a> (<a class="el" href="../../db/df7/structtag__t.html">tag_t</a> proposed_tag)</td></tr>
-<tr class="separator:a6392f1a7187ec9d36d35ad51bf06ded0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad83fe9661682934029a42954b8fe6e2f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#ad83fe9661682934029a42954b8fe6e2f">synchronize_with_other_federates</a> ()</td></tr>
-<tr class="separator:ad83fe9661682934029a42954b8fe6e2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aae38fdb4e79b2dc10d5f5c3131a423ae"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#aae38fdb4e79b2dc10d5f5c3131a423ae">wait_until</a> (<a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> logical_time_ns, <a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> *condition)</td></tr>
-<tr class="separator:aae38fdb4e79b2dc10d5f5c3131a423ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf5752e7ec0ac5ddd757162c0125dd2e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#abf5752e7ec0ac5ddd757162c0125dd2e">get_next_event_tag</a> ()</td></tr>
-<tr class="separator:abf5752e7ec0ac5ddd757162c0125dd2e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a00a390347d084375a99b1c9151bd3137"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a00a390347d084375a99b1c9151bd3137">send_next_event_tag</a> (<a class="el" href="../../db/df7/structtag__t.html">tag_t</a> tag, bool wait_for_reply)</td></tr>
-<tr class="separator:a00a390347d084375a99b1c9151bd3137"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a30de5114ba04269152b0fa25406b75f4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a30de5114ba04269152b0fa25406b75f4">_lf_next_locked</a> ()</td></tr>
-<tr class="separator:a30de5114ba04269152b0fa25406b75f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:ab491fbef9a883a7cee19e074dba32661"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../de/d03/platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#ab491fbef9a883a7cee19e074dba32661">mutex</a></td></tr>
-<tr class="separator:ab491fbef9a883a7cee19e074dba32661"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ace65260efd42a7c5585e4dcaac5d357f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#ace65260efd42a7c5585e4dcaac5d357f">event_q_changed</a></td></tr>
-<tr class="separator:ace65260efd42a7c5585e4dcaac5d357f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae4ea7f94000cdbe956e448768fc0c91e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#ae4ea7f94000cdbe956e448768fc0c91e">global_tag_barrier_requestors_reached_zero</a></td></tr>
-<tr class="separator:ae4ea7f94000cdbe956e448768fc0c91e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95a50246fd7c991cafbf49add0a54fed"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a95a50246fd7c991cafbf49add0a54fed">enqueue_network_input_control_reactions</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:a95a50246fd7c991cafbf49add0a54fed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad727445d8c0c828624539487b3abb570"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#ad727445d8c0c828624539487b3abb570">enqueue_network_output_control_reactions</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:ad727445d8c0c828624539487b3abb570"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6a8226a67b464737db122f2e1153d8dc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a6a8226a67b464737db122f2e1153d8dc">_lf_increment_global_tag_barrier_already_locked</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> future_tag)</td></tr>
+<tr class="separator:a6a8226a67b464737db122f2e1153d8dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae358349ad4d8562489eb4416c246b2cd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#ae358349ad4d8562489eb4416c246b2cd">_lf_increment_global_tag_barrier</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> future_tag)</td></tr>
+<tr class="separator:ae358349ad4d8562489eb4416c246b2cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b569fb49e1a6a7955b809761df050e5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a9b569fb49e1a6a7955b809761df050e5">_lf_decrement_global_tag_barrier_locked</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:a9b569fb49e1a6a7955b809761df050e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad9e7ef09a7e921152f8d54a931709c87"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#ad9e7ef09a7e921152f8d54a931709c87">_lf_wait_on_global_tag_barrier</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> proposed_tag)</td></tr>
+<tr class="separator:ad9e7ef09a7e921152f8d54a931709c87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9f2ec13c51b647b2b3a6fe1d085599c4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a9f2ec13c51b647b2b3a6fe1d085599c4">synchronize_with_other_federates</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:a9f2ec13c51b647b2b3a6fe1d085599c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a28427d09e6613e4fcfce2fdf184a8e7d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a28427d09e6613e4fcfce2fdf184a8e7d">wait_until</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> logical_time_ns, <a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> *condition)</td></tr>
+<tr class="separator:a28427d09e6613e4fcfce2fdf184a8e7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b50c51a9046dfb8814b2f609020d0a4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a9b50c51a9046dfb8814b2f609020d0a4">get_next_event_tag</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:a9b50c51a9046dfb8814b2f609020d0a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f9a4a14de3aa9e560935a57093eb122"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a6f9a4a14de3aa9e560935a57093eb122">send_next_event_tag</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> tag, bool wait_for_reply)</td></tr>
+<tr class="separator:a6f9a4a14de3aa9e560935a57093eb122"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9e357a21e338cd3719cdec409b9f7a6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#ab9e357a21e338cd3719cdec409b9f7a6">_lf_next_locked</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:ab9e357a21e338cd3719cdec409b9f7a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a9438a9e9c2e8e6f15cc02c28b4828e2f" name="a9438a9e9c2e8e6f15cc02c28b4828e2f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9438a9e9c2e8e6f15cc02c28b4828e2f">&#9670;&#160;</a></span>_lf_decrement_global_tag_barrier_locked()</h2>
+<a id="a9b569fb49e1a6a7955b809761df050e5" name="a9b569fb49e1a6a7955b809761df050e5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9b569fb49e1a6a7955b809761df050e5">&#9670;&#160;</a></span>_lf_decrement_global_tag_barrier_locked()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -143,7 +134,8 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void _lf_decrement_global_tag_barrier_locked </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -151,8 +143,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="aa67f3015ea5ee2a7885015202b75585e" name="aa67f3015ea5ee2a7885015202b75585e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa67f3015ea5ee2a7885015202b75585e">&#9670;&#160;</a></span>_lf_increment_global_tag_barrier()</h2>
+<a id="ae358349ad4d8562489eb4416c246b2cd" name="ae358349ad4d8562489eb4416c246b2cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae358349ad4d8562489eb4416c246b2cd">&#9670;&#160;</a></span>_lf_increment_global_tag_barrier()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -160,17 +152,27 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void _lf_increment_global_tag_barrier </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
-          <td class="paramname"><em>future_tag</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
+          <td class="paramname"><em>future_tag</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a88a24607cd2509ab4d625a054306492f" name="a88a24607cd2509ab4d625a054306492f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a88a24607cd2509ab4d625a054306492f">&#9670;&#160;</a></span>_lf_increment_global_tag_barrier_already_locked()</h2>
+<a id="a6a8226a67b464737db122f2e1153d8dc" name="a6a8226a67b464737db122f2e1153d8dc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6a8226a67b464737db122f2e1153d8dc">&#9670;&#160;</a></span>_lf_increment_global_tag_barrier_already_locked()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -178,17 +180,27 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void _lf_increment_global_tag_barrier_already_locked </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
-          <td class="paramname"><em>future_tag</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
+          <td class="paramname"><em>future_tag</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a30de5114ba04269152b0fa25406b75f4" name="a30de5114ba04269152b0fa25406b75f4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a30de5114ba04269152b0fa25406b75f4">&#9670;&#160;</a></span>_lf_next_locked()</h2>
+<a id="ab9e357a21e338cd3719cdec409b9f7a6" name="ab9e357a21e338cd3719cdec409b9f7a6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab9e357a21e338cd3719cdec409b9f7a6">&#9670;&#160;</a></span>_lf_next_locked()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -196,7 +208,8 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void _lf_next_locked </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -204,8 +217,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a6392f1a7187ec9d36d35ad51bf06ded0" name="a6392f1a7187ec9d36d35ad51bf06ded0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6392f1a7187ec9d36d35ad51bf06ded0">&#9670;&#160;</a></span>_lf_wait_on_global_tag_barrier()</h2>
+<a id="ad9e7ef09a7e921152f8d54a931709c87" name="ad9e7ef09a7e921152f8d54a931709c87"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad9e7ef09a7e921152f8d54a931709c87">&#9670;&#160;</a></span>_lf_wait_on_global_tag_barrier()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -213,17 +226,27 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">int _lf_wait_on_global_tag_barrier </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
-          <td class="paramname"><em>proposed_tag</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
+          <td class="paramname"><em>proposed_tag</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a id="a85a8a94cd5637607e88ef32abaa2dc5b" name="a85a8a94cd5637607e88ef32abaa2dc5b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a85a8a94cd5637607e88ef32abaa2dc5b">&#9670;&#160;</a></span>enqueue_network_input_control_reactions()</h2>
+<a id="a95a50246fd7c991cafbf49add0a54fed" name="a95a50246fd7c991cafbf49add0a54fed"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95a50246fd7c991cafbf49add0a54fed">&#9670;&#160;</a></span>enqueue_network_input_control_reactions()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -231,17 +254,23 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void enqueue_network_input_control_reactions </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Enqueue network input control reactions that determine if the trigger for a given network input port is going to be present at the current logical time or absent. </p>
+<p>Enqueue network input control reactions that determine if the trigger for a given network input port is going to be present at the current logical time or absent. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>The environment in which we are executing </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a id="a892e175b19f257b58dec838106b898ad" name="a892e175b19f257b58dec838106b898ad"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a892e175b19f257b58dec838106b898ad">&#9670;&#160;</a></span>enqueue_network_output_control_reactions()</h2>
+<a id="ad727445d8c0c828624539487b3abb570" name="ad727445d8c0c828624539487b3abb570"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad727445d8c0c828624539487b3abb570">&#9670;&#160;</a></span>enqueue_network_output_control_reactions()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -249,17 +278,23 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void enqueue_network_output_control_reactions </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Enqueue network output control reactions that will send a PORT_ABSENT message to downstream federates if a given network output port is not present. </p>
+<p>Enqueue network output control reactions that will send a PORT_ABSENT message to downstream federates if a given network output port is not present. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>The environment in which we are executing </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a id="abf5752e7ec0ac5ddd757162c0125dd2e" name="abf5752e7ec0ac5ddd757162c0125dd2e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abf5752e7ec0ac5ddd757162c0125dd2e">&#9670;&#160;</a></span>get_next_event_tag()</h2>
+<a id="a9b50c51a9046dfb8814b2f609020d0a4" name="a9b50c51a9046dfb8814b2f609020d0a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9b50c51a9046dfb8814b2f609020d0a4">&#9670;&#160;</a></span>get_next_event_tag()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -267,7 +302,8 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a> get_next_event_tag </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -275,8 +311,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a00a390347d084375a99b1c9151bd3137" name="a00a390347d084375a99b1c9151bd3137"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a00a390347d084375a99b1c9151bd3137">&#9670;&#160;</a></span>send_next_event_tag()</h2>
+<a id="a6f9a4a14de3aa9e560935a57093eb122" name="a6f9a4a14de3aa9e560935a57093eb122"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6f9a4a14de3aa9e560935a57093eb122">&#9670;&#160;</a></span>send_next_event_tag()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -284,6 +320,12 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a> send_next_event_tag </td>
           <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
           <td class="paramname"><em>tag</em>, </td>
         </tr>
@@ -303,8 +345,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="ad83fe9661682934029a42954b8fe6e2f" name="ad83fe9661682934029a42954b8fe6e2f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad83fe9661682934029a42954b8fe6e2f">&#9670;&#160;</a></span>synchronize_with_other_federates()</h2>
+<a id="a9f2ec13c51b647b2b3a6fe1d085599c4" name="a9f2ec13c51b647b2b3a6fe1d085599c4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9f2ec13c51b647b2b3a6fe1d085599c4">&#9670;&#160;</a></span>synchronize_with_other_federates()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -312,7 +354,8 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void synchronize_with_other_federates </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -320,8 +363,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="aae38fdb4e79b2dc10d5f5c3131a423ae" name="aae38fdb4e79b2dc10d5f5c3131a423ae"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aae38fdb4e79b2dc10d5f5c3131a423ae">&#9670;&#160;</a></span>wait_until()</h2>
+<a id="a28427d09e6613e4fcfce2fdf184a8e7d" name="a28427d09e6613e4fcfce2fdf184a8e7d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a28427d09e6613e4fcfce2fdf184a8e7d">&#9670;&#160;</a></span>wait_until()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -329,6 +372,12 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">bool wait_until </td>
           <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td>
           <td class="paramname"><em>logical_time_ns</em>, </td>
         </tr>
@@ -344,73 +393,6 @@ Variables</h2></td></tr>
           <td></td><td></td>
         </tr>
       </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<h2 class="groupheader">Variable Documentation</h2>
-<a id="ace65260efd42a7c5585e4dcaac5d357f" name="ace65260efd42a7c5585e4dcaac5d357f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ace65260efd42a7c5585e4dcaac5d357f">&#9670;&#160;</a></span>event_q_changed</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> event_q_changed</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ae4ea7f94000cdbe956e448768fc0c91e" name="ae4ea7f94000cdbe956e448768fc0c91e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae4ea7f94000cdbe956e448768fc0c91e">&#9670;&#160;</a></span>global_tag_barrier_requestors_reached_zero</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> global_tag_barrier_requestors_reached_zero</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ab491fbef9a883a7cee19e074dba32661" name="ab491fbef9a883a7cee19e074dba32661"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab491fbef9a883a7cee19e074dba32661">&#9670;&#160;</a></span>mutex</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../de/d03/platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a> mutex</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 </div>

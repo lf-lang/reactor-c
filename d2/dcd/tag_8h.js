@@ -34,10 +34,10 @@ var tag_8h =
     [ "lf_delay_tag", "d2/dcd/tag_8h.html#af7feb89416e60e458d6a86cadadbc41d", null ],
     [ "lf_readable_time", "d2/dcd/tag_8h.html#a43509483b3e9886acd002c7d7b6482c8", null ],
     [ "lf_set_physical_clock_offset", "d2/dcd/tag_8h.html#a3a209c8df88a5ef884e0cf51d4727cda", null ],
-    [ "lf_tag", "d2/dcd/tag_8h.html#a578a919fbb78cb28be3e41c9aa769c8a", null ],
+    [ "lf_tag", "d2/dcd/tag_8h.html#acbe5117469b98e0e6df45b5421f58026", null ],
     [ "lf_tag_compare", "d2/dcd/tag_8h.html#a596d8734432616c9c7847283fde63cfa", null ],
-    [ "lf_time_logical", "d2/dcd/tag_8h.html#a57369a6152ded211933cdb91893ed864", null ],
-    [ "lf_time_logical_elapsed", "d2/dcd/tag_8h.html#a4703006e120ec461bd669e53f70a7058", null ],
+    [ "lf_time_logical", "d2/dcd/tag_8h.html#a751c9fce12510f5bb98d862f57077396", null ],
+    [ "lf_time_logical_elapsed", "d2/dcd/tag_8h.html#a6faad0d905f7135352f511bc235425e1", null ],
     [ "lf_time_physical", "d2/dcd/tag_8h.html#a7538766a655ba2e60ddde55f2e020e58", null ],
     [ "lf_time_physical_elapsed", "d2/dcd/tag_8h.html#a98468f1c5132e3aa18d77f85d65bb6ec", null ],
     [ "lf_time_start", "d2/dcd/tag_8h.html#a8da2172c41ab13ff4748994a62ae34b5", null ]

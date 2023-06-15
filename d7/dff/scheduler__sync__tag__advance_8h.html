@@ -97,23 +97,24 @@ $(document).ready(function(){initNavTree('d7/dff/scheduler__sync__tag__advance_8
 <div class="contents">
 <div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="../../d2/dcd/tag_8h_source.html">tag.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d6/dee/scheduler__instance_8h_source.html">scheduler_instance.h</a>&quot;</code><br />
 </div>
 <p><a href="../../d7/dff/scheduler__sync__tag__advance_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a30de5114ba04269152b0fa25406b75f4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/dff/scheduler__sync__tag__advance_8h.html#a30de5114ba04269152b0fa25406b75f4">_lf_next_locked</a> ()</td></tr>
-<tr class="separator:a30de5114ba04269152b0fa25406b75f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae380207e938ff035c16b39335d7d46d2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/dff/scheduler__sync__tag__advance_8h.html#ae380207e938ff035c16b39335d7d46d2">_lf_next_locked</a> (struct <a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:ae380207e938ff035c16b39335d7d46d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad96dd94446ff66184dcf0f8f65cdb4f0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/dff/scheduler__sync__tag__advance_8h.html#ad96dd94446ff66184dcf0f8f65cdb4f0">logical_tag_complete</a> (<a class="el" href="../../db/df7/structtag__t.html">tag_t</a> tag_to_send)</td></tr>
 <tr class="separator:ad96dd94446ff66184dcf0f8f65cdb4f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afbd688201fab6a2da5fb10bd4f374102"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/dff/scheduler__sync__tag__advance_8h.html#afbd688201fab6a2da5fb10bd4f374102">_lf_sched_should_stop_locked</a> ()</td></tr>
-<tr class="separator:afbd688201fab6a2da5fb10bd4f374102"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a20544997f91f5d96d134b33c687d204b"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/dff/scheduler__sync__tag__advance_8h.html#a20544997f91f5d96d134b33c687d204b">_lf_sched_advance_tag_locked</a> ()</td></tr>
-<tr class="separator:a20544997f91f5d96d134b33c687d204b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ee7c21a8b90bb09784f221c1de4d9c9"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/dff/scheduler__sync__tag__advance_8h.html#a5ee7c21a8b90bb09784f221c1de4d9c9">should_stop_locked</a> (<a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *sched)</td></tr>
+<tr class="separator:a5ee7c21a8b90bb09784f221c1de4d9c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2c6b4fac0a87c3cc914c713714e1fca"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/dff/scheduler__sync__tag__advance_8h.html#af2c6b4fac0a87c3cc914c713714e1fca">_lf_sched_advance_tag_locked</a> (<a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *sched)</td></tr>
+<tr class="separator:af2c6b4fac0a87c3cc914c713714e1fca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a30de5114ba04269152b0fa25406b75f4" name="a30de5114ba04269152b0fa25406b75f4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a30de5114ba04269152b0fa25406b75f4">&#9670;&#160;</a></span>_lf_next_locked()</h2>
+<a id="ae380207e938ff035c16b39335d7d46d2" name="ae380207e938ff035c16b39335d7d46d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae380207e938ff035c16b39335d7d46d2">&#9670;&#160;</a></span>_lf_next_locked()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -121,7 +122,8 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">void _lf_next_locked </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">struct <a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -136,8 +138,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a20544997f91f5d96d134b33c687d204b" name="a20544997f91f5d96d134b33c687d204b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a20544997f91f5d96d134b33c687d204b">&#9670;&#160;</a></span>_lf_sched_advance_tag_locked()</h2>
+<a id="af2c6b4fac0a87c3cc914c713714e1fca" name="af2c6b4fac0a87c3cc914c713714e1fca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af2c6b4fac0a87c3cc914c713714e1fca">&#9670;&#160;</a></span>_lf_sched_advance_tag_locked()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -145,24 +147,8 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">bool _lf_sched_advance_tag_locked </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="afbd688201fab6a2da5fb10bd4f374102" name="afbd688201fab6a2da5fb10bd4f374102"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afbd688201fab6a2da5fb10bd4f374102">&#9670;&#160;</a></span>_lf_sched_should_stop_locked()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool _lf_sched_should_stop_locked </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *&#160;</td>
+          <td class="paramname"><em>sched</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -191,6 +177,24 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a5ee7c21a8b90bb09784f221c1de4d9c9" name="a5ee7c21a8b90bb09784f221c1de4d9c9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ee7c21a8b90bb09784f221c1de4d9c9">&#9670;&#160;</a></span>should_stop_locked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool should_stop_locked </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *&#160;</td>
+          <td class="paramname"><em>sched</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

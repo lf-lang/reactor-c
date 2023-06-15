@@ -116,8 +116,8 @@ Functions</h2></td></tr>
 <tr class="separator:aa31dfccd134fe1fd4890c76b361f4a12"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a831ac79bfc7b11dadfa1aa6dd1b68d4f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/df4/pythontarget_8c.html#a831ac79bfc7b11dadfa1aa6dd1b68d4f">lf_reactor_c_main</a> (int argc, const char *argv[])</td></tr>
 <tr class="separator:a831ac79bfc7b11dadfa1aa6dd1b68d4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa217496c12cb5b53dad3d91e203cc323"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/df4/pythontarget_8c.html#aa217496c12cb5b53dad3d91e203cc323">lf_request_stop</a> ()</td></tr>
-<tr class="separator:aa217496c12cb5b53dad3d91e203cc323"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a590a2700f632ac2c8f69139a758bec23"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/df4/pythontarget_8c.html#a590a2700f632ac2c8f69139a758bec23">_lf_request_stop</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:a590a2700f632ac2c8f69139a758bec23"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1a013caac994b0b05697d0006bf8efcf"><td class="memItemLeft" align="right" valign="top">PyObject *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/df4/pythontarget_8c.html#a1a013caac994b0b05697d0006bf8efcf">py_request_stop</a> (PyObject *self, PyObject *args)</td></tr>
 <tr class="separator:a1a013caac994b0b05697d0006bf8efcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e9d48e0ec9b0ebfefbff60a41be1fee"><td class="memItemLeft" align="right" valign="top">const char **&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/df4/pythontarget_8c.html#a3e9d48e0ec9b0ebfefbff60a41be1fee">_lf_py_parse_argv_impl</a> (PyObject *py_argv, size_t *argc)</td></tr>
@@ -143,6 +143,8 @@ Variables</h2></td></tr>
 <tr class="separator:a497da135b6a264b24a24e36d14e78daa"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e1b0c9440f6e68b2d223b8fdb77fdca"><td class="memItemLeft" align="right" valign="top">PyObject *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/df4/pythontarget_8c.html#a9e1b0c9440f6e68b2d223b8fdb77fdca">global_pickler</a> = NULL</td></tr>
 <tr class="separator:a9e1b0c9440f6e68b2d223b8fdb77fdca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d3ea6faf2e7cce5e60ad8c4c19091b9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/df4/pythontarget_8c.html#a3d3ea6faf2e7cce5e60ad8c4c19091b9">global_environment</a> = NULL</td></tr>
+<tr class="separator:a3d3ea6faf2e7cce5e60ad8c4c19091b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
@@ -158,7 +160,7 @@ LICENSE</h1>
 </ol>
 <p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 <h1><a class="anchor" id="DESCRIPTION"></a>
-DESCRIPTION</h1>
+Functions intitializing and freeing memory for environments.</h1>
 <p>Implementation of functions defined in </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="../../db/dc8/pythontarget_8h.html">pythontarget.h</a> </dd></dl>
 </div><h2 class="groupheader">Function Documentation</h2>
 <a id="a3e9d48e0ec9b0ebfefbff60a41be1fee" name="a3e9d48e0ec9b0ebfefbff60a41be1fee"></a>
@@ -196,6 +198,25 @@ DESCRIPTION</h1>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>A list of char*, where each item contains an individual command-line argument. </dd></dl>
+
+</div>
+</div>
+<a id="a590a2700f632ac2c8f69139a758bec23" name="a590a2700f632ac2c8f69139a758bec23"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a590a2700f632ac2c8f69139a758bec23">&#9670;&#160;</a></span>_lf_request_stop()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_request_stop </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Prototype for <a class="el" href="../../d4/d13/set_8h.html#ac462ba75ae2c2e05364c3f11639ecaaf">lf_request_stop()</a>. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="../../dc/d85/reactor_8h.html">reactor.h</a> </dd></dl>
 
 </div>
 </div>
@@ -385,24 +406,6 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="aa217496c12cb5b53dad3d91e203cc323" name="aa217496c12cb5b53dad3d91e203cc323"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa217496c12cb5b53dad3d91e203cc323">&#9670;&#160;</a></span>lf_request_stop()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void lf_request_stop </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Prototype for <a class="el" href="../../db/df4/pythontarget_8c.html#aa217496c12cb5b53dad3d91e203cc323">lf_request_stop()</a>. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="../../dc/d85/reactor_8h.html">reactor.h</a> </dd></dl>
-
-</div>
-</div>
 <a id="af55a5a17a787937a4484f7f6ab6bbc78" name="af55a5a17a787937a4484f7f6ab6bbc78"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af55a5a17a787937a4484f7f6ab6bbc78">&#9670;&#160;</a></span>py_main()</h2>
 
@@ -536,6 +539,20 @@ DESCRIPTION</h1>
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
+<a id="a3d3ea6faf2e7cce5e60ad8c4c19091b9" name="a3d3ea6faf2e7cce5e60ad8c4c19091b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3d3ea6faf2e7cce5e60ad8c4c19091b9">&#9670;&#160;</a></span>global_environment</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a>* global_environment = NULL</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a9e1b0c9440f6e68b2d223b8fdb77fdca" name="a9e1b0c9440f6e68b2d223b8fdb77fdca"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a9e1b0c9440f6e68b2d223b8fdb77fdca">&#9670;&#160;</a></span>global_pickler</h2>
 

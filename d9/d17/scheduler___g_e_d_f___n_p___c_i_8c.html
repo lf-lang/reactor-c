@@ -93,8 +93,8 @@ $(document).ready(function(){initNavTree('d9/d17/scheduler___g_e_d_f___n_p___c_i
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
 <a href="#define-members">Macros</a> &#124;
-<a href="#func-members">Functions</a> &#124;
-<a href="#var-members">Variables</a>  </div>
+<a href="#typedef-members">Typedefs</a> &#124;
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">scheduler_GEDF_NP_CI.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
@@ -113,8 +113,8 @@ $(document).ready(function(){initNavTree('d9/d17/scheduler___g_e_d_f___n_p___c_i
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="nested-classes" name="nested-classes"></a>
 Data Structures</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d73/struct__lf__sched__thread__info__t.html">_lf_sched_thread_info_t</a></td></tr>
-<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Information about one worker thread.  <a href="../../d7/d73/struct__lf__sched__thread__info__t.html#details">More...</a><br /></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d9e/structcustom__scheduler__data__t.html">custom_scheduler_data_t</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Information about one worker thread.  <a href="../../df/d9e/structcustom__scheduler__data__t.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
@@ -124,55 +124,51 @@ Macros</h2></td></tr>
 <tr class="memitem:af3500a0f31948d5fb75fc0ee500a1442"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#af3500a0f31948d5fb75fc0ee500a1442">MAX_REACTION_LEVEL</a>&#160;&#160;&#160;INITIAL_REACT_QUEUE_SIZE</td></tr>
 <tr class="separator:af3500a0f31948d5fb75fc0ee500a1442"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a3b87d9f4ab1631bfa6dbea7f81bfdd38"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../df/d9e/structcustom__scheduler__data__t.html">custom_scheduler_data_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a3b87d9f4ab1631bfa6dbea7f81bfdd38">custom_scheduler_data_t</a></td></tr>
+<tr class="memdesc:a3b87d9f4ab1631bfa6dbea7f81bfdd38"><td class="mdescLeft">&#160;</td><td class="mdescRight">Information about one worker thread.  <br /></td></tr>
+<tr class="separator:a3b87d9f4ab1631bfa6dbea7f81bfdd38"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a92faef7f26ced82ad093c4876d6ab9bf"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a92faef7f26ced82ad093c4876d6ab9bf">_lf_has_precedence_over</a> (<a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *r1, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *r2)</td></tr>
 <tr class="separator:a92faef7f26ced82ad093c4876d6ab9bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a881c16f5335d6e3bcd7e073b07c0b4dc"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a881c16f5335d6e3bcd7e073b07c0b4dc">_lf_is_blocked_by_executing_or_blocked_reaction</a> (<a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *reaction)</td></tr>
-<tr class="separator:a881c16f5335d6e3bcd7e073b07c0b4dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6713fb17b6c5367a773be4f4ec9b4647"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a6713fb17b6c5367a773be4f4ec9b4647">_lf_sched_distribute_ready_reactions_locked</a> ()</td></tr>
-<tr class="memdesc:a6713fb17b6c5367a773be4f4ec9b4647"><td class="mdescLeft">&#160;</td><td class="mdescRight">Distribute any reaction that is ready to execute to idle worker thread(s).  <br /></td></tr>
-<tr class="separator:a6713fb17b6c5367a773be4f4ec9b4647"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac1555e7d3ff8c65d325f7e97762f198d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#ac1555e7d3ff8c65d325f7e97762f198d">_lf_sched_notify_workers</a> ()</td></tr>
-<tr class="memdesc:ac1555e7d3ff8c65d325f7e97762f198d"><td class="mdescLeft">&#160;</td><td class="mdescRight">If there is work to be done, notify workers individually.  <br /></td></tr>
-<tr class="separator:ac1555e7d3ff8c65d325f7e97762f198d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ace0cce6054d5e5ea6fbf4df95f0373e6"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#ace0cce6054d5e5ea6fbf4df95f0373e6">_lf_sched_try_advance_tag_and_distribute</a> ()</td></tr>
-<tr class="memdesc:ace0cce6054d5e5ea6fbf4df95f0373e6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Advance tag or distribute reactions to worker threads.  <br /></td></tr>
-<tr class="separator:ace0cce6054d5e5ea6fbf4df95f0373e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac7834893e1dc1b9360d931fd58ecd3d2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#ac7834893e1dc1b9360d931fd58ecd3d2">_lf_sched_signal_stop</a> ()</td></tr>
-<tr class="memdesc:ac7834893e1dc1b9360d931fd58ecd3d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Signal all worker threads that it is time to stop.  <br /></td></tr>
-<tr class="separator:ac7834893e1dc1b9360d931fd58ecd3d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2ea2f74eba9e9b0e142c1ace3ba75560"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a2ea2f74eba9e9b0e142c1ace3ba75560">_lf_sched_update_triggered_reactions</a> (size_t worker_number)</td></tr>
-<tr class="memdesc:a2ea2f74eba9e9b0e142c1ace3ba75560"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transfer the contents of the 'output_reactions' queue to the '_lf_sched_instance-&gt;_lf_sched_triggered_reactions'.  <br /></td></tr>
-<tr class="separator:a2ea2f74eba9e9b0e142c1ace3ba75560"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3e2b942c2c03959d7fe17925e4f88ad3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a3e2b942c2c03959d7fe17925e4f88ad3">_lf_sched_wait_for_work</a> (size_t worker_number)</td></tr>
-<tr class="memdesc:a3e2b942c2c03959d7fe17925e4f88ad3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait until the scheduler assigns work.  <br /></td></tr>
-<tr class="separator:a3e2b942c2c03959d7fe17925e4f88ad3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8ebe11964e085da920e9d3a298aab156"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a8ebe11964e085da920e9d3a298aab156">lf_sched_init</a> (size_t number_of_workers, <a class="el" href="../../dc/da2/structsched__params__t.html">sched_params_t</a> *params)</td></tr>
-<tr class="memdesc:a8ebe11964e085da920e9d3a298aab156"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the scheduler.  <br /></td></tr>
-<tr class="separator:a8ebe11964e085da920e9d3a298aab156"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab92dab535c2ed9cff1c7808d279bf9a6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#ab92dab535c2ed9cff1c7808d279bf9a6">lf_sched_free</a> ()</td></tr>
-<tr class="memdesc:ab92dab535c2ed9cff1c7808d279bf9a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free the memory used by the scheduler.  <br /></td></tr>
-<tr class="separator:ab92dab535c2ed9cff1c7808d279bf9a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8ea5198024515f440cfb2027689f3993"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a8ea5198024515f440cfb2027689f3993">lf_sched_get_ready_reaction</a> (int worker_number)</td></tr>
-<tr class="memdesc:a8ea5198024515f440cfb2027689f3993"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ask the scheduler for one more reaction.  <br /></td></tr>
-<tr class="separator:a8ea5198024515f440cfb2027689f3993"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85900b092468c5be612a8da640acba8d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a85900b092468c5be612a8da640acba8d">_lf_is_blocked_by_executing_or_blocked_reaction</a> (<a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *<a class="el" href="../../dd/d3d/scheduler___p_e_d_f___n_p_8c.html#a91e5af9b82186af6d622a2cdb42e2cfc">scheduler</a>, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *reaction)</td></tr>
+<tr class="separator:a85900b092468c5be612a8da640acba8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a663cc83fc681e0dc7e67d0e0f97761b9"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a663cc83fc681e0dc7e67d0e0f97761b9">_lf_sched_distribute_ready_reactions_locked</a> (<a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *<a class="el" href="../../dd/d3d/scheduler___p_e_d_f___n_p_8c.html#a91e5af9b82186af6d622a2cdb42e2cfc">scheduler</a>)</td></tr>
+<tr class="memdesc:a663cc83fc681e0dc7e67d0e0f97761b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Distribute any reaction that is ready to execute to idle worker thread(s).  <br /></td></tr>
+<tr class="separator:a663cc83fc681e0dc7e67d0e0f97761b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aeb37a0365f5c1d2653c2bf987c98581f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#aeb37a0365f5c1d2653c2bf987c98581f">_lf_sched_notify_workers</a> (<a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *<a class="el" href="../../dd/d3d/scheduler___p_e_d_f___n_p_8c.html#a91e5af9b82186af6d622a2cdb42e2cfc">scheduler</a>)</td></tr>
+<tr class="memdesc:aeb37a0365f5c1d2653c2bf987c98581f"><td class="mdescLeft">&#160;</td><td class="mdescRight">If there is work to be done, notify workers individually.  <br /></td></tr>
+<tr class="separator:aeb37a0365f5c1d2653c2bf987c98581f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a065f47344b099ba5b1369c3e927c3df5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a065f47344b099ba5b1369c3e927c3df5">_lf_scheduler_try_advance_tag_and_distribute</a> (<a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *<a class="el" href="../../dd/d3d/scheduler___p_e_d_f___n_p_8c.html#a91e5af9b82186af6d622a2cdb42e2cfc">scheduler</a>)</td></tr>
+<tr class="memdesc:a065f47344b099ba5b1369c3e927c3df5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Advance tag or distribute reactions to worker threads.  <br /></td></tr>
+<tr class="separator:a065f47344b099ba5b1369c3e927c3df5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a21b1d62e58f8a7f6546b34a77b72bc7e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a21b1d62e58f8a7f6546b34a77b72bc7e">_lf_sched_signal_stop</a> (<a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *<a class="el" href="../../dd/d3d/scheduler___p_e_d_f___n_p_8c.html#a91e5af9b82186af6d622a2cdb42e2cfc">scheduler</a>)</td></tr>
+<tr class="memdesc:a21b1d62e58f8a7f6546b34a77b72bc7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Signal all worker threads that it is time to stop.  <br /></td></tr>
+<tr class="separator:a21b1d62e58f8a7f6546b34a77b72bc7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a072510a06285c462a33f7e9715ca7375"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a072510a06285c462a33f7e9715ca7375">_lf_sched_update_triggered_reactions</a> (<a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *<a class="el" href="../../dd/d3d/scheduler___p_e_d_f___n_p_8c.html#a91e5af9b82186af6d622a2cdb42e2cfc">scheduler</a>, size_t worker_number)</td></tr>
+<tr class="memdesc:a072510a06285c462a33f7e9715ca7375"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transfer the contents of the 'output_reactions' queue to the 'scheduler-&gt;triggered_reactions'.  <br /></td></tr>
+<tr class="separator:a072510a06285c462a33f7e9715ca7375"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a02f7f8dfd98a8f38c04a65bfe95de2de"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a02f7f8dfd98a8f38c04a65bfe95de2de">_lf_sched_wait_for_work</a> (<a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *<a class="el" href="../../dd/d3d/scheduler___p_e_d_f___n_p_8c.html#a91e5af9b82186af6d622a2cdb42e2cfc">scheduler</a>, size_t worker_number)</td></tr>
+<tr class="memdesc:a02f7f8dfd98a8f38c04a65bfe95de2de"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait until the scheduler assigns work.  <br /></td></tr>
+<tr class="separator:a02f7f8dfd98a8f38c04a65bfe95de2de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a715e89773d24a296cc6f3b246585a65b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a715e89773d24a296cc6f3b246585a65b">lf_sched_init</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, size_t number_of_workers, <a class="el" href="../../dc/da2/structsched__params__t.html">sched_params_t</a> *params)</td></tr>
+<tr class="memdesc:a715e89773d24a296cc6f3b246585a65b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the scheduler.  <br /></td></tr>
+<tr class="separator:a715e89773d24a296cc6f3b246585a65b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2139bc60dc5be91d750d5e877af07843"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a2139bc60dc5be91d750d5e877af07843">lf_sched_free</a> (<a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *<a class="el" href="../../dd/d3d/scheduler___p_e_d_f___n_p_8c.html#a91e5af9b82186af6d622a2cdb42e2cfc">scheduler</a>)</td></tr>
+<tr class="memdesc:a2139bc60dc5be91d750d5e877af07843"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free the memory used by the scheduler.  <br /></td></tr>
+<tr class="separator:a2139bc60dc5be91d750d5e877af07843"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a95107b668caa59d5bca9fff1af21e7fb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a95107b668caa59d5bca9fff1af21e7fb">lf_sched_get_ready_reaction</a> (<a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *<a class="el" href="../../dd/d3d/scheduler___p_e_d_f___n_p_8c.html#a91e5af9b82186af6d622a2cdb42e2cfc">scheduler</a>, int worker_number)</td></tr>
+<tr class="memdesc:a95107b668caa59d5bca9fff1af21e7fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Ask the scheduler for one more reaction.  <br /></td></tr>
+<tr class="separator:a95107b668caa59d5bca9fff1af21e7fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a485e4339d95d23ae5bcbb06c244e7145"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a485e4339d95d23ae5bcbb06c244e7145">lf_sched_done_with_reaction</a> (size_t worker_number, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *done_reaction)</td></tr>
 <tr class="memdesc:a485e4339d95d23ae5bcbb06c244e7145"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inform the scheduler that worker thread 'worker_number' is done executing the 'done_reaction'.  <br /></td></tr>
 <tr class="separator:a485e4339d95d23ae5bcbb06c244e7145"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a454c4a2de7d02718e7d9285858fe57b9"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#a454c4a2de7d02718e7d9285858fe57b9">lf_sched_trigger_reaction</a> (<a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *reaction, int worker_number)</td></tr>
-<tr class="memdesc:a454c4a2de7d02718e7d9285858fe57b9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inform the scheduler that worker thread 'worker_number' would like to trigger 'reaction' at the current tag.  <br /></td></tr>
-<tr class="separator:a454c4a2de7d02718e7d9285858fe57b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:ab491fbef9a883a7cee19e074dba32661"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../de/d03/platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#ab491fbef9a883a7cee19e074dba32661">mutex</a></td></tr>
-<tr class="separator:ab491fbef9a883a7cee19e074dba32661"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae933ce3679436a2923c17a5d6afd6c1e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/dea/struct__lf__sched__instance__t.html">_lf_sched_instance_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#ae933ce3679436a2923c17a5d6afd6c1e">_lf_sched_instance</a></td></tr>
-<tr class="separator:ae933ce3679436a2923c17a5d6afd6c1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abf1db8342ffb5ddcbc31914a6e22c5f1"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d7/d73/struct__lf__sched__thread__info__t.html">_lf_sched_thread_info_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#abf1db8342ffb5ddcbc31914a6e22c5f1">_lf_sched_threads_info</a></td></tr>
-<tr class="memdesc:abf1db8342ffb5ddcbc31914a6e22c5f1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Information about worker threads.  <br /></td></tr>
-<tr class="separator:abf1db8342ffb5ddcbc31914a6e22c5f1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae47f6c04336244e4739c05f5c38e730e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#ae47f6c04336244e4739c05f5c38e730e">lf_scheduler_trigger_reaction</a> (<a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *<a class="el" href="../../dd/d3d/scheduler___p_e_d_f___n_p_8c.html#a91e5af9b82186af6d622a2cdb42e2cfc">scheduler</a>, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *reaction, int worker_number)</td></tr>
+<tr class="memdesc:ae47f6c04336244e4739c05f5c38e730e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Inform the scheduler that worker thread 'worker_number' would like to trigger 'reaction' at the current tag.  <br /></td></tr>
+<tr class="separator:ae47f6c04336244e4739c05f5c38e730e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="af3500a0f31948d5fb75fc0ee500a1442" name="af3500a0f31948d5fb75fc0ee500a1442"></a>
@@ -215,6 +211,23 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a id="a3b87d9f4ab1631bfa6dbea7f81bfdd38" name="a3b87d9f4ab1631bfa6dbea7f81bfdd38"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b87d9f4ab1631bfa6dbea7f81bfdd38">&#9670;&#160;</a></span>custom_scheduler_data_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">typedef struct <a class="el" href="../../df/d9e/structcustom__scheduler__data__t.html">custom_scheduler_data_t</a> <a class="el" href="../../df/d9e/structcustom__scheduler__data__t.html">custom_scheduler_data_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Information about one worker thread. </p>
+
+</div>
+</div>
 <h2 class="groupheader">Function Documentation</h2>
 <a id="a92faef7f26ced82ad093c4876d6ab9bf" name="a92faef7f26ced82ad093c4876d6ab9bf"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a92faef7f26ced82ad093c4876d6ab9bf">&#9670;&#160;</a></span>_lf_has_precedence_over()</h2>
@@ -251,8 +264,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a881c16f5335d6e3bcd7e073b07c0b4dc" name="a881c16f5335d6e3bcd7e073b07c0b4dc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a881c16f5335d6e3bcd7e073b07c0b4dc">&#9670;&#160;</a></span>_lf_is_blocked_by_executing_or_blocked_reaction()</h2>
+<a id="a85900b092468c5be612a8da640acba8d" name="a85900b092468c5be612a8da640acba8d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a85900b092468c5be612a8da640acba8d">&#9670;&#160;</a></span>_lf_is_blocked_by_executing_or_blocked_reaction()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -260,13 +273,23 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">bool _lf_is_blocked_by_executing_or_blocked_reaction </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *&#160;</td>
-          <td class="paramname"><em>reaction</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *&#160;</td>
+          <td class="paramname"><em>scheduler</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype"><a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *&#160;</td>
+          <td class="paramname"><em>reaction</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>If the reaction is blocked by a currently executing reaction, return true. Otherwise, return false. A reaction blocks the specified reaction if it has a level less than that of the specified reaction and it also has an overlapping chain ID, meaning that it is (possibly) upstream of the specified reaction. This function assumes the mutex is held because it accesses the _lf_sched_instance-&gt;_lf_sched_executing_reactions. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>If the reaction is blocked by a currently executing reaction, return true. Otherwise, return false. A reaction blocks the specified reaction if it has a level less than that of the specified reaction and it also has an overlapping chain ID, meaning that it is (possibly) upstream of the specified reaction. This function assumes the mutex is held because it accesses the scheduler-&gt;executing_reactions. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">reaction</td><td>The reaction. </td></tr>
   </table>
@@ -276,8 +299,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a6713fb17b6c5367a773be4f4ec9b4647" name="a6713fb17b6c5367a773be4f4ec9b4647"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6713fb17b6c5367a773be4f4ec9b4647">&#9670;&#160;</a></span>_lf_sched_distribute_ready_reactions_locked()</h2>
+<a id="a663cc83fc681e0dc7e67d0e0f97761b9" name="a663cc83fc681e0dc7e67d0e0f97761b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a663cc83fc681e0dc7e67d0e0f97761b9">&#9670;&#160;</a></span>_lf_sched_distribute_ready_reactions_locked()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -285,7 +308,8 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">int _lf_sched_distribute_ready_reactions_locked </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *&#160;</td>
+          <td class="paramname"><em>scheduler</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -297,8 +321,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="ac1555e7d3ff8c65d325f7e97762f198d" name="ac1555e7d3ff8c65d325f7e97762f198d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac1555e7d3ff8c65d325f7e97762f198d">&#9670;&#160;</a></span>_lf_sched_notify_workers()</h2>
+<a id="aeb37a0365f5c1d2653c2bf987c98581f" name="aeb37a0365f5c1d2653c2bf987c98581f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aeb37a0365f5c1d2653c2bf987c98581f">&#9670;&#160;</a></span>_lf_sched_notify_workers()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -306,7 +330,8 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void _lf_sched_notify_workers </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *&#160;</td>
+          <td class="paramname"><em>scheduler</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -317,8 +342,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="ac7834893e1dc1b9360d931fd58ecd3d2" name="ac7834893e1dc1b9360d931fd58ecd3d2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac7834893e1dc1b9360d931fd58ecd3d2">&#9670;&#160;</a></span>_lf_sched_signal_stop()</h2>
+<a id="a21b1d62e58f8a7f6546b34a77b72bc7e" name="a21b1d62e58f8a7f6546b34a77b72bc7e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a21b1d62e58f8a7f6546b34a77b72bc7e">&#9670;&#160;</a></span>_lf_sched_signal_stop()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -326,7 +351,8 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void _lf_sched_signal_stop </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *&#160;</td>
+          <td class="paramname"><em>scheduler</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -336,30 +362,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="ace0cce6054d5e5ea6fbf4df95f0373e6" name="ace0cce6054d5e5ea6fbf4df95f0373e6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ace0cce6054d5e5ea6fbf4df95f0373e6">&#9670;&#160;</a></span>_lf_sched_try_advance_tag_and_distribute()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool _lf_sched_try_advance_tag_and_distribute </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Advance tag or distribute reactions to worker threads. </p>
-<p>Advance tag if there are no reactions on the reaction queue. If there are such reactions, distribute them to worker threads.</p>
-<p>This function assumes the caller does not hold the 'mutex' lock.</p>
-<dl class="section return"><dt>Returns</dt><dd>should_exit True if the worker thread should exit. False otherwise. </dd></dl>
-
-</div>
-</div>
-<a id="a2ea2f74eba9e9b0e142c1ace3ba75560" name="a2ea2f74eba9e9b0e142c1ace3ba75560"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2ea2f74eba9e9b0e142c1ace3ba75560">&#9670;&#160;</a></span>_lf_sched_update_triggered_reactions()</h2>
+<a id="a072510a06285c462a33f7e9715ca7375" name="a072510a06285c462a33f7e9715ca7375"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a072510a06285c462a33f7e9715ca7375">&#9670;&#160;</a></span>_lf_sched_update_triggered_reactions()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -367,14 +371,24 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void _lf_sched_update_triggered_reactions </td>
           <td>(</td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>worker_number</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *&#160;</td>
+          <td class="paramname"><em>scheduler</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>worker_number</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Transfer the contents of the 'output_reactions' queue to the '_lf_sched_instance-&gt;_lf_sched_triggered_reactions'. </p>
+<p>Transfer the contents of the 'output_reactions' queue to the 'scheduler-&gt;triggered_reactions'. </p>
 <p>This function assumes that the 'mutex' is not locked.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -385,8 +399,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a3e2b942c2c03959d7fe17925e4f88ad3" name="a3e2b942c2c03959d7fe17925e4f88ad3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3e2b942c2c03959d7fe17925e4f88ad3">&#9670;&#160;</a></span>_lf_sched_wait_for_work()</h2>
+<a id="a02f7f8dfd98a8f38c04a65bfe95de2de" name="a02f7f8dfd98a8f38c04a65bfe95de2de"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a02f7f8dfd98a8f38c04a65bfe95de2de">&#9670;&#160;</a></span>_lf_sched_wait_for_work()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -394,21 +408,54 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void _lf_sched_wait_for_work </td>
           <td>(</td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>worker_number</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *&#160;</td>
+          <td class="paramname"><em>scheduler</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>worker_number</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
 <p>Wait until the scheduler assigns work. </p>
-<p>If the calling worker thread is the last to become idle, it will call on the scheduler to distribute work. Otherwise, it will wait on '_lf_sched_instance-&gt;_lf_sched_semaphore'.</p>
+<p>If the calling worker thread is the last to become idle, it will call on the scheduler to distribute work. Otherwise, it will wait on 'scheduler-&gt;semaphore'.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">worker_number</td><td>The worker number of the worker thread asking for work to be assigned to it. </td></tr>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a065f47344b099ba5b1369c3e927c3df5" name="a065f47344b099ba5b1369c3e927c3df5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a065f47344b099ba5b1369c3e927c3df5">&#9670;&#160;</a></span>_lf_scheduler_try_advance_tag_and_distribute()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool _lf_scheduler_try_advance_tag_and_distribute </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *&#160;</td>
+          <td class="paramname"><em>scheduler</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Advance tag or distribute reactions to worker threads. </p>
+<p>Advance tag if there are no reactions on the reaction queue. If there are such reactions, distribute them to worker threads.</p>
+<p>This function assumes the caller does not hold the 'mutex' lock.</p>
+<dl class="section return"><dt>Returns</dt><dd>should_exit True if the worker thread should exit. False otherwise. </dd></dl>
 
 </div>
 </div>
@@ -449,8 +496,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="ab92dab535c2ed9cff1c7808d279bf9a6" name="ab92dab535c2ed9cff1c7808d279bf9a6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab92dab535c2ed9cff1c7808d279bf9a6">&#9670;&#160;</a></span>lf_sched_free()</h2>
+<a id="a2139bc60dc5be91d750d5e877af07843" name="a2139bc60dc5be91d750d5e877af07843"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2139bc60dc5be91d750d5e877af07843">&#9670;&#160;</a></span>lf_sched_free()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -458,7 +505,8 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void lf_sched_free </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *&#160;</td>
+          <td class="paramname"><em>scheduler</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -469,8 +517,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a8ea5198024515f440cfb2027689f3993" name="a8ea5198024515f440cfb2027689f3993"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8ea5198024515f440cfb2027689f3993">&#9670;&#160;</a></span>lf_sched_get_ready_reaction()</h2>
+<a id="a95107b668caa59d5bca9fff1af21e7fb" name="a95107b668caa59d5bca9fff1af21e7fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95107b668caa59d5bca9fff1af21e7fb">&#9670;&#160;</a></span>lf_sched_get_ready_reaction()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -478,9 +526,19 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> * lf_sched_get_ready_reaction </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>worker_number</em></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *&#160;</td>
+          <td class="paramname"><em>scheduler</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>worker_number</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -497,8 +555,8 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a8ebe11964e085da920e9d3a298aab156" name="a8ebe11964e085da920e9d3a298aab156"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8ebe11964e085da920e9d3a298aab156">&#9670;&#160;</a></span>lf_sched_init()</h2>
+<a id="a715e89773d24a296cc6f3b246585a65b" name="a715e89773d24a296cc6f3b246585a65b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a715e89773d24a296cc6f3b246585a65b">&#9670;&#160;</a></span>lf_sched_init()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -506,6 +564,12 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void lf_sched_init </td>
           <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype">size_t&#160;</td>
           <td class="paramname"><em>number_of_workers</em>, </td>
         </tr>
@@ -524,6 +588,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Initialize the scheduler. </p>
+<p>Default value that is assumed to be the maximum reaction level in the program.</p>
 <p>This has to be called before other functions of the scheduler can be used. If the scheduler is already initialized, this will be a no-op.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -535,15 +600,21 @@ Variables</h2></td></tr>
 
 </div>
 </div>
-<a id="a454c4a2de7d02718e7d9285858fe57b9" name="a454c4a2de7d02718e7d9285858fe57b9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a454c4a2de7d02718e7d9285858fe57b9">&#9670;&#160;</a></span>lf_sched_trigger_reaction()</h2>
+<a id="ae47f6c04336244e4739c05f5c38e730e" name="ae47f6c04336244e4739c05f5c38e730e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae47f6c04336244e4739c05f5c38e730e">&#9670;&#160;</a></span>lf_scheduler_trigger_reaction()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void lf_sched_trigger_reaction </td>
+          <td class="memname">void lf_scheduler_trigger_reaction </td>
           <td>(</td>
+          <td class="paramtype"><a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *&#160;</td>
+          <td class="paramname"><em>scheduler</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
           <td class="paramtype"><a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *&#160;</td>
           <td class="paramname"><em>reaction</em>, </td>
         </tr>
@@ -571,60 +642,6 @@ Variables</h2></td></tr>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<h2 class="groupheader">Variable Documentation</h2>
-<a id="ae933ce3679436a2923c17a5d6afd6c1e" name="ae933ce3679436a2923c17a5d6afd6c1e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae933ce3679436a2923c17a5d6afd6c1e">&#9670;&#160;</a></span>_lf_sched_instance</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/dea/struct__lf__sched__instance__t.html">_lf_sched_instance_t</a>* _lf_sched_instance</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="abf1db8342ffb5ddcbc31914a6e22c5f1" name="abf1db8342ffb5ddcbc31914a6e22c5f1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abf1db8342ffb5ddcbc31914a6e22c5f1">&#9670;&#160;</a></span>_lf_sched_threads_info</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d7/d73/struct__lf__sched__thread__info__t.html">_lf_sched_thread_info_t</a>* _lf_sched_threads_info</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Information about worker threads. </p>
-<dl class="section see"><dt>See also</dt><dd><a class="el" href="../../d7/d73/struct__lf__sched__thread__info__t.html" title="Information about one worker thread.">_lf_sched_thread_info_t</a>. </dd></dl>
-
-</div>
-</div>
-<a id="ab491fbef9a883a7cee19e074dba32661" name="ab491fbef9a883a7cee19e074dba32661"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab491fbef9a883a7cee19e074dba32661">&#9670;&#160;</a></span>mutex</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../de/d03/platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a> mutex</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
 
 </div>
 </div>

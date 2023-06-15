@@ -123,8 +123,8 @@ Functions</h2></td></tr>
 <tr class="separator:ab3a04dd0a1581844829b28686b6b3c53"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a596d8734432616c9c7847283fde63cfa"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d65/api_8h.html#a596d8734432616c9c7847283fde63cfa">lf_tag_compare</a> (<a class="el" href="../../db/df7/structtag__t.html">tag_t</a> tag1, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> tag2)</td></tr>
 <tr class="separator:a596d8734432616c9c7847283fde63cfa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a578a919fbb78cb28be3e41c9aa769c8a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d65/api_8h.html#a578a919fbb78cb28be3e41c9aa769c8a">lf_tag</a> ()</td></tr>
-<tr class="separator:a578a919fbb78cb28be3e41c9aa769c8a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acbe5117469b98e0e6df45b5421f58026"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d65/api_8h.html#acbe5117469b98e0e6df45b5421f58026">lf_tag</a> (void *env)</td></tr>
+<tr class="separator:acbe5117469b98e0e6df45b5421f58026"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee </dd>
@@ -140,7 +140,7 @@ LICENSE</h1>
 </ol>
 <p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
 <h1><a class="anchor" id="DESCRIPTION"></a>
-DESCRIPTION</h1>
+Functions intitializing and freeing memory for environments.</h1>
 <p>This file is a translation layer that implements Lingua Franca APIs which interact with the internal _lf_SET and _lf_schedule APIs. </p>
 </div><h2 class="groupheader">Macro Definition Documentation</h2>
 <a id="a4625be3023ef492f25fd5193ef754774" name="a4625be3023ef492f25fd5193ef754774"></a>
@@ -477,8 +477,8 @@ DESCRIPTION</h1>
 
 </div>
 </div>
-<a id="a578a919fbb78cb28be3e41c9aa769c8a" name="a578a919fbb78cb28be3e41c9aa769c8a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a578a919fbb78cb28be3e41c9aa769c8a">&#9670;&#160;</a></span>lf_tag()</h2>
+<a id="acbe5117469b98e0e6df45b5421f58026" name="acbe5117469b98e0e6df45b5421f58026"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acbe5117469b98e0e6df45b5421f58026">&#9670;&#160;</a></span>lf_tag()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -486,12 +486,20 @@ DESCRIPTION</h1>
         <tr>
           <td class="memname"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a> lf_tag </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Return the current tag, a logical time, microstep pair. </p>
+<p>Return the current tag of a reactor. If NULL is passed to this function it will return the "global tag" of the runtime. <br  />
+ </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">self</td><td>A pointer to the environment of which you want the current tag </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>the current tag </dd></dl>
 
 </div>
 </div>
