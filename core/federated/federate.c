@@ -1253,14 +1253,14 @@ void set_network_port_status(int portID, port_status_t status) {
 /**
  * Mark all status fields of unknown network input ports as absent.
  */
-void mark_all_unknown_ports_as_absent() {
-    for (int i = 0; i < _lf_action_table_size; i++) {
-        lf_action_base_t* input_port_action = _lf_action_for_port(i);
-        if (input_port_action->trigger->status == unknown) {
-            set_network_port_status(i, absent);
-        }
-    }
-}
+// void mark_all_unknown_ports_as_absent() {
+//     for (int i = 0; i < _lf_action_table_size; i++) {
+//         lf_action_base_t* input_port_action = _lf_action_for_port(i);
+//         if (input_port_action->trigger->status == unknown) {
+//             set_network_port_status(i, absent);
+//         }
+//     }
+// }
 
 /**
  * Return true if there is an input control reaction blocked waiting for input.
@@ -1379,6 +1379,7 @@ void reset_status_fields_on_input_port_triggers() {
     for (int i = 0; i < _lf_action_table_size; i++) {
         set_network_port_status(i, unknown);
     }
+    LF_PRINT_DEBUG("Resetting port status fields.");
     update_max_level();
 }
 
@@ -1884,7 +1885,7 @@ void stall_advance_level_federation(size_t curr_reaction_level) {
     while (((int) curr_reaction_level) >= max_level_allowed_to_advance) {
         lf_cond_wait(&port_status_changed);
     };
-    LF_PRINT_DEBUG("MLAA updated to %d with curr_reaction_level %d.", max_level_allowed_to_advance, curr_reaction_level);
+    LF_PRINT_DEBUG("Exiting wait with MLAA %d and curr_reaction_level %d.", max_level_allowed_to_advance, curr_reaction_level);
     lf_mutex_unlock(&mutex);
 }
 
@@ -2149,9 +2150,17 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
  * @brief Attempts to update the max level the reaction queue is allowed to advance to
  * for the current logical timestep.
  *
+ * This function assumes that the caller holds the mutex.
  */
 void update_max_level() {
     max_level_allowed_to_advance = INT_MAX;
+    LF_PRINT_DEBUG("last_TAG=" PRINTF_TIME, _fed.last_TAG.time);
+    if ((lf_tag_compare(current_tag, _fed.last_TAG) < 0) || (
+        0// lf_tag_compare(current_tag, _fed.last_TAG) == 0 && !_fed.is_last_TAG_provisional
+    )) {
+        LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME " with last_TAG=" PRINTF_TIME " and current time " PRINTF_TIME ".", max_level_allowed_to_advance, lf_time_logical_elapsed(), _fed.last_TAG.time, current_tag.time);
+        return;  // Safe to complete the current tag
+    }
     for (int i = 0; i < _lf_action_table_size; i++) {
         lf_action_base_t* input_port_action = _lf_action_for_port(i);
         if (input_port_action->trigger->status == unknown) {
