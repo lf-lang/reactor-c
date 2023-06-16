@@ -280,11 +280,11 @@ int main(int argc, const char* argv[]) {
     assert(rti.base.number_of_reactor_nodes < UINT16_MAX);
     
     // Allocate memory for the federates
-    rti.base.reactor_nodes = (reactor_node_info_t**)calloc(rti.base.number_of_reactor_nodes, sizeof(reactor_node_info_t*));
+    rti.base.reactor_nodes = (scheduling_node_t**)calloc(rti.base.number_of_reactor_nodes, sizeof(scheduling_node_t*));
     for (uint16_t i = 0; i < rti.base.number_of_reactor_nodes; i++) {
         federate_info_t *fed_info = (federate_info_t *) malloc(sizeof(federate_info_t));
         initialize_federate(fed_info, i);
-        rti.base.reactor_nodes[i] = (reactor_node_info_t *) fed_info;
+        rti.base.reactor_nodes[i] = (scheduling_node_t *) fed_info;
     }
 
     int socket_descriptor = start_rti_server(rti.user_specified_port);

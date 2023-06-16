@@ -83,7 +83,7 @@ bool _lf_sched_advance_tag_locked(lf_scheduler_t * sched) {
 
     // FIXME: Find better way of conditionally calling this
     #ifdef LF_ENCLAVES
-    rti_logical_tag_complete(env->enclave_info, env->current_tag);
+    rti_logical_tag_complete_locked(env->enclave_info, env->current_tag);
     #endif
 
     if (should_stop_locked(sched)) {

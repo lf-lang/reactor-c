@@ -45,7 +45,7 @@ typedef enum socket_type_t {
  * any scheduling constraints.
  */
 typedef struct federate_info_t {
-    reactor_node_info_t enclave;
+    scheduling_node_t enclave;
     lf_thread_t thread_id;    // The ID of the thread handling communication with this federate.
     int socket;             // The TCP socket descriptor for communicating with this federate.
     struct sockaddr_in UDP_addr;           // The UDP address for the federate.
@@ -80,7 +80,7 @@ typedef enum clock_sync_stat {
  * It is a special case of `rti_common_t` (declared in enclave.h). Inheritence
  * is mimicked by having the first attributes to be the same as of rti_common_t,
  * except that reactor_nodes attribute here is of type `federate_info_t**`, while it
- * is of type `reactor_node_info_t**` in `rti_common_t`.
+ * is of type `scheduling_node_t**` in `rti_common_t`.
  *     // **************** IMPORTANT!!! ********************
  *     // **   If you make any change to this struct,     **
  *     // **   you MUST also change  rti_common_t in     **

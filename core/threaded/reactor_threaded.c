@@ -477,7 +477,7 @@ tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply) {
 #if defined(FEDERATED_CENTRALIZED)
     return _lf_send_next_event_tag(env, tag, wait_for_reply);
 #elif defined(LF_ENCLAVES)
-    return rti_next_event_tag(env->enclave_info, tag);
+    return rti_next_event_tag_locked(env->enclave_info, tag);
 #else
     return tag;
 #endif
@@ -511,7 +511,7 @@ void _lf_next_locked(environment_t *env) {
     // Previous logical time is complete.
     tag_t next_tag = get_next_event_tag(env);
 
-    tag_t grant_tag = rti_next_event_tag(env->enclave_info, next_tag);
+    tag_t grant_tag = rti_next_event_tag_locked(env->enclave_info, next_tag);
     if (lf_tag_compare(grant_tag, next_tag) < 0) return;
     next_tag = get_next_event_tag(env);
     // FIXME: What to do with that event queue checking for stop tag etc?
@@ -721,7 +721,7 @@ void _lf_initialize_start_tag(environment_t *env) {
         _lf_trigger_shutdown_reactions(env);
     }
 
-    rti_next_event_tag(env->enclave_info, env->current_tag);
+    rti_next_event_tag_locked(env->enclave_info, env->current_tag);
 #ifdef FEDERATED
     // Call wait_until if federated. This is required because the startup procedure
     // in synchronize_with_other_federates() can decide on a new start_time that is
@@ -990,7 +990,7 @@ void* worker(void* arg) {
         // send_next_event_tag(env, FOREVER_TAG, false);
 
         // FIXME: This seems logical for telling the others that you terminated
-        rti_logical_tag_complete(env->enclave_info, FOREVER_TAG);
+        rti_logical_tag_complete_locked(env->enclave_info, FOREVER_TAG);
 
     }
 

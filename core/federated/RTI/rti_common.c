@@ -23,7 +23,7 @@ void initialize_rti_common(rti_common_t * _rti_common) {
 //        Currently, all calls to tracepoint_from_federate() and 
 //        tracepoint_to_federate() are in rti_lib.c
 
-void initialize_reactor_node(reactor_node_info_t* e, uint16_t id) {
+void initialize_reactor_node(scheduling_node_t* e, uint16_t id) {
     e->id = id;
     e->completed = NEVER_TAG;
     e->last_granted = NEVER_TAG;
@@ -40,7 +40,7 @@ void initialize_reactor_node(reactor_node_info_t* e, uint16_t id) {
 
 }
 
-void _logical_tag_complete(reactor_node_info_t* enclave, tag_t completed) {
+void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
     // FIXME: Consolidate this message with NET to get NMR (Next Message Request).
     // Careful with handling startup and shutdown.
     lf_mutex_lock(rti_common->mutex);
@@ -52,7 +52,7 @@ void _logical_tag_complete(reactor_node_info_t* enclave, tag_t completed) {
 
     // Check downstream reactor_nodes to see whether they should now be granted a TAG.
     for (int i = 0; i < enclave->num_downstream; i++) {
-        reactor_node_info_t *downstream = rti_common->reactor_nodes[enclave->downstream[i]];
+        scheduling_node_t *downstream = rti_common->reactor_nodes[enclave->downstream[i]];
         // Notify downstream enclave if appropriate.
         notify_advance_grant_if_safe(downstream);
         bool *visited = (bool *)calloc(rti_common->number_of_reactor_nodes, sizeof(bool)); // Initializes to 0.
@@ -64,14 +64,14 @@ void _logical_tag_complete(reactor_node_info_t* enclave, tag_t completed) {
     lf_mutex_unlock(rti_common->mutex);
 }
 
-tag_advance_grant_t tag_advance_grant_if_safe(reactor_node_info_t* e) {
+tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     tag_advance_grant_t result = {.tag = NEVER_TAG, .is_provisional = false};
 
     // Find the earliest LTC of upstream reactor_nodes (M).
     tag_t min_upstream_completed = FOREVER_TAG;
 
     for (int j = 0; j < e->num_upstream; j++) {
-        reactor_node_info_t *upstream = rti_common->reactor_nodes[e->upstream[j]];
+        scheduling_node_t *upstream = rti_common->reactor_nodes[e->upstream[j]];
 
         // Ignore this enclave if it no longer connected.
         if (upstream->state == NOT_CONNECTED) continue;
@@ -112,7 +112,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(reactor_node_info_t* e) {
                    NEVER_TAG.time - start_time, 0);
 
     for (int j = 0; j < e->num_upstream; j++) {
-        reactor_node_info_t *upstream = rti_common->reactor_nodes[e->upstream[j]];
+        scheduling_node_t *upstream = rti_common->reactor_nodes[e->upstream[j]];
 
         // Ignore this enclave if it is no longer connected.
         if (upstream->state == NOT_CONNECTED) continue;
@@ -172,17 +172,17 @@ tag_advance_grant_t tag_advance_grant_if_safe(reactor_node_info_t* e) {
     return result;
 }
 
-void notify_downstream_advance_grant_if_safe(reactor_node_info_t* e, bool visited[]) {
+void notify_downstream_advance_grant_if_safe(scheduling_node_t* e, bool visited[]) {
     visited[e->id] = true;
     for (int i = 0; i < e->num_downstream; i++) {
-        reactor_node_info_t* downstream = rti_common->reactor_nodes[e->downstream[i]];
+        scheduling_node_t* downstream = rti_common->reactor_nodes[e->downstream[i]];
         if (visited[downstream->id]) continue;
         notify_advance_grant_if_safe(downstream);
         notify_downstream_advance_grant_if_safe(downstream, visited);
     }
 }
 
-void update_reactor_node_next_event_tag_locked(reactor_node_info_t* e, tag_t next_event_tag) {
+void update_reactor_node_next_event_tag_locked(scheduling_node_t* e, tag_t next_event_tag) {
     e->next_event = next_event_tag;
 
     LF_PRINT_DEBUG(
@@ -207,7 +207,7 @@ void update_reactor_node_next_event_tag_locked(reactor_node_info_t* e, tag_t nex
 }
 
 
-void notify_advance_grant_if_safe(reactor_node_info_t* e) {
+void notify_advance_grant_if_safe(scheduling_node_t* e) {
     tag_advance_grant_t grant = tag_advance_grant_if_safe(e);
     if (lf_tag_compare(grant.tag, NEVER_TAG) != 0) {
         if (grant.is_provisional) {
@@ -218,7 +218,7 @@ void notify_advance_grant_if_safe(reactor_node_info_t* e) {
     }
 }
 
-tag_t transitive_next_event(reactor_node_info_t* e, tag_t candidate, bool visited[]) {
+tag_t transitive_next_event(scheduling_node_t* e, tag_t candidate, bool visited[]) {
     if (visited[e->id] || e->state == NOT_CONNECTED) {
         // Enclave has stopped executing or we have visited it before.
         // No point in checking upstream reactor_nodes.

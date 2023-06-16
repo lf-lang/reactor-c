@@ -420,9 +420,9 @@ trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger, interval_t
 void _lf_initialize_watchdog_mutexes(void);
 
 
-int _lf_upstreams(int enclave_id, int** result);
-int _lf_downstreams(int enclave_id, int** result);
-int _lf_upstream_delays(int enclave_id, interval_t** result);
+int _lf_get_upstream_of(int enclave_id, int** result);
+int _lf_get_downstream_of(int enclave_id, int** result);
+int _lf_get_upstream_delay_of(int enclave_id, interval_t** result);
 
 
 /**

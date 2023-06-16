@@ -2,10 +2,37 @@
 #include "rti_common.h"
 #include "util.h"
 #include "platform.h"
+#include "environment.h"
 #include "trace.h"
+#include "reactor.h"
+
+
+#define LTC_LOCKED_PROLOGUE(enclave) \
+    do { \
+        lf_mutex_unlock(&enclave->env->mutex); \
+    } while(0)
+
+#define LTC_LOCKED_EPILOGUE(enclave) \
+    do { \
+        lf_mutex_lock(&enclave->env->mutex); \
+    } while(0)
+
+#define NET_LOCKED_PROLOGUE(enclave) \
+    do { \
+        lf_mutex_unlock(&enclave->env->mutex); \
+        lf_mutex_lock(rti_local->base.mutex); \
+    } while(0)
+
+#define NET_LOCKED_EPILOGUE(enclave) \
+    do { \
+        lf_mutex_unlock(rti_local->base.mutex); \
+        lf_mutex_lock(&enclave->env->mutex); \
+    } while(0)
+
 
 // Static global pointer to the RTI object
 static rti_local_t * rti_local;
+
 
 lf_mutex_t rti_mutex;
 
@@ -21,16 +48,16 @@ void initialize_local_rti(environment_t *envs, int num_envs) {
     rti_local->base.tracing_enabled = (envs[0].trace != NULL);
 
     // Allocate memory for the enclave_info objects
-    rti_local->base.reactor_nodes = (reactor_node_info_t**)calloc(num_envs, sizeof(reactor_node_info_t*));
+    rti_local->base.reactor_nodes = (scheduling_node_t**)calloc(num_envs, sizeof(scheduling_node_t*));
     for (int i = 0; i < num_envs; i++) {
         enclave_info_t *enclave_info = (enclave_info_t *) malloc(sizeof(enclave_info_t));
         initialize_enclave_info(enclave_info, i, &envs[i]);
-        rti_local->base.reactor_nodes[i] = (reactor_node_info_t *) enclave_info;
+        rti_local->base.reactor_nodes[i] = (scheduling_node_t *) enclave_info;
 
         // Encode the connection topology into the enclave_info object        
-        enclave_info->base.num_downstream = _lf_downstreams(i, &enclave_info->base.downstream);
-        enclave_info->base.num_upstream = _lf_upstreams(i, &enclave_info->base.upstream);
-        _lf_upstream_delays(i, &enclave_info->base.upstream_delay);
+        enclave_info->base.num_downstream = _lf_get_downstream_of(i, &enclave_info->base.downstream);
+        enclave_info->base.num_upstream = _lf_get_upstream_of(i, &enclave_info->base.upstream);
+        _lf_get_upstream_delay_of(i, &enclave_info->base.upstream_delay);
 
         // FIXME: Why is it always granted?
         enclave_info->base.state = GRANTED;
@@ -47,7 +74,7 @@ void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t * e
     lf_cond_init(&enclave->next_event_condition, &rti_mutex);
 }
 
-tag_t rti_next_event_tag(enclave_info_t* e, tag_t next_event_tag) {
+tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
     // FIXME: What other checks must we do here? See the federated
     LF_PRINT_LOG("RTI: enclave %u sends NET of " PRINTF_TAG " ",
     e->base.id, next_event_tag.time - lf_time_start(), next_event_tag.microstep);
@@ -56,17 +83,14 @@ tag_t rti_next_event_tag(enclave_info_t* e, tag_t next_event_tag) {
         return next_event_tag;
     }
 
-    lf_mutex_unlock(&e->env->mutex);
+    NET_LOCKED_PROLOGUE(e);
 
     // TODO: To support federated scheduling enclaves we must here potentially
-    //  make calls to federate.c in order to send messages to the remote_rti
-    tag_advance_grant_t result;
     // Early exit if we only have a single enclave. 
-    // FIXME: Should we do some macro implementation of this function in that case?
 
     // First, update the enclave data structure to record this next_event_tag,
     // and notify any downstream reactor_nodes, and unblock them if appropriate.
-    lf_mutex_lock(rti_local->base.mutex);
+    tag_advance_grant_t result;
 
     tag_t previous_tag = e->base.last_granted;
     tag_t previous_ptag = e->base.last_provisionally_granted;
@@ -78,8 +102,7 @@ tag_t rti_next_event_tag(enclave_info_t* e, tag_t next_event_tag) {
         LF_PRINT_LOG("RTI: enclave %u has already been granted a TAG to" PRINTF_TAG ". Returning with a TAG to" PRINTF_TAG " ",
         e->base.id, e->base.last_granted.time - lf_time_start(), e->base.last_granted.microstep,
         next_event_tag.time - lf_time_start(), next_event_tag.microstep);
-        lf_mutex_unlock(rti_local->base.mutex);
-        lf_mutex_lock(&e->env->mutex);
+        NET_LOCKED_EPILOGUE(e);
         return next_event_tag;
     }
     
@@ -111,14 +134,14 @@ tag_t rti_next_event_tag(enclave_info_t* e, tag_t next_event_tag) {
         
         lf_cond_wait(&e->next_event_condition);
     }
-    lf_mutex_unlock(&rti_mutex);
-    lf_mutex_lock(&e->env->mutex);
     LF_PRINT_LOG("RTI: enclave %u returns with TAG to" PRINTF_TAG " ",
         e->base.id, e->base.next_event.time - lf_time_start(), e->base.next_event.microstep);
+    
+    NET_LOCKED_EPILOGUE(e);
     return result.tag;
 }
 
-void rti_logical_tag_complete(enclave_info_t* enclave, tag_t completed) {
+void rti_logical_tag_complete_locked(enclave_info_t* enclave, tag_t completed) {
     // TODO: To support federated scheduling enclaves we must here potentially
     //  make calls to federate.c in order to send messages to the remote_rti
     
@@ -127,8 +150,9 @@ void rti_logical_tag_complete(enclave_info_t* enclave, tag_t completed) {
     if (rti_local->base.number_of_reactor_nodes == 1) {
         return;
     }
-
+    LTC_LOCKED_PROLOGUE(enclave);
     _logical_tag_complete(&enclave->base, completed);
+    LTC_LOCKED_EPILOGUE(enclave);
 }
 
 void rti_request_stop(tag_t stop_tag) {
@@ -146,7 +170,7 @@ void rti_request_stop(tag_t stop_tag) {
  * @param e 
  * @param tag 
  */
-void notify_tag_advance_grant(reactor_node_info_t* e, tag_t tag) {
+void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     if (e->state == NOT_CONNECTED
             || lf_tag_compare(tag, e->last_granted) <= 0
             || lf_tag_compare(tag, e->last_provisionally_granted) < 0
@@ -161,7 +185,7 @@ void notify_tag_advance_grant(reactor_node_info_t* e, tag_t tag) {
     lf_cond_signal(&((enclave_info_t *)e)->next_event_condition);
 }
 // FIXME: For now I just ignore the PTAGs, the hyptohesis is that it is redundant without ZDC
-void notify_provisional_tag_advance_grant(reactor_node_info_t* e, tag_t tag) {
+void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     
     LF_PRINT_LOG("RTI: enclave %u callback with PTAG " PRINTF_TAG " ",
         e->id, tag.time - lf_time_start(), tag.microstep);

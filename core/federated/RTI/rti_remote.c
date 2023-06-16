@@ -178,7 +178,7 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
     return socket_descriptor;
 }
 
-void notify_tag_advance_grant(reactor_node_info_t* e, tag_t tag) {
+void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     if (e->state == NOT_CONNECTED
             || lf_tag_compare(tag, e->last_granted) <= 0
             || lf_tag_compare(tag, e->last_provisionally_granted) < 0
@@ -218,7 +218,7 @@ void notify_tag_advance_grant(reactor_node_info_t* e, tag_t tag) {
     }
 }
 
-void notify_provisional_tag_advance_grant(reactor_node_info_t* e, tag_t tag) {
+void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     if (e->state == NOT_CONNECTED
             || lf_tag_compare(tag, e->last_granted) <= 0
             || lf_tag_compare(tag, e->last_provisionally_granted) <= 0

@@ -11,7 +11,7 @@
  * 
  */
 typedef struct enclave_info_t {
-    reactor_node_info_t base;
+    scheduling_node_t base;
     environment_t * env; // A pointer to the environment of the enclave
     lf_cond_t next_event_condition; // Condition variable used by reactor_nodes to notify an enclave
                                     // that it's call to next_event_tag() should unblock.
@@ -54,8 +54,7 @@ void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t *en
  * @return If granted, return the TAG and whether it is provisional or not. 
  *  Otherwise, return the NEVER_TAG.
  */
-// FIXME: If it is always called holding the env-mutex, append locked to it
-tag_t rti_next_event_tag(enclave_info_t* e, tag_t next_event_tag);
+tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag);
 
 /**
  * @brief This function informs the local RTI that `enclave` has completed tag
@@ -65,7 +64,7 @@ tag_t rti_next_event_tag(enclave_info_t* e, tag_t next_event_tag);
  * @param enclave 
  * @param completed 
  */
-void rti_logical_tag_complete(enclave_info_t* enclave, tag_t completed);
+void rti_logical_tag_complete_locked(enclave_info_t* enclave, tag_t completed);
 
 /**
  * @brief This function is called to request stopping the execution at a certain tag.

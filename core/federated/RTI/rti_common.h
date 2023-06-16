@@ -33,7 +33,7 @@ typedef enum reactor_node_state_t {
  * denoted with ~>) because those connections do not impose
  * any scheduling constraints.
  */
-typedef struct reactor_node_info_t {
+typedef struct scheduling_node_t {
     uint16_t id;            // ID of this enclave.
     tag_t completed;        // The largest logical tag completed by the federate (or NEVER if no LTC has been received).
     tag_t last_granted;     // The maximum TAG that has been granted so far (or NEVER if none granted)
@@ -50,7 +50,7 @@ typedef struct reactor_node_info_t {
     bool requested_stop;    // Indicates that the federate has requested stop or has replied
                             // to a request for stop from the RTI. Used to prevent double-counting
                             // a federate when handling lf_request_stop().
-} reactor_node_info_t;
+} scheduling_node_t;
 
 /**
  * Data structure which is common to both the remote standalone RTI and the local RTI used in enclaved execution.
@@ -60,7 +60,7 @@ typedef struct reactor_node_info_t {
  */
 typedef struct rti_common_t {
     // The reactor nodes.
-    reactor_node_info_t **reactor_nodes;
+    scheduling_node_t **reactor_nodes;
 
     // Number of reactor nodes
     int32_t number_of_reactor_nodes;
@@ -103,7 +103,7 @@ void initialize_rti_common(rti_common_t * rti_common);
  * @param completed The completed tag of the enclave
  */
 // FIXME: Prepended with underscore due to conflict with code-generated function...
-void _logical_tag_complete(reactor_node_info_t* enclave, tag_t completed);
+void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed);
 
 /** 
  * Initialize the reactor- with the specified ID.
@@ -111,7 +111,7 @@ void _logical_tag_complete(reactor_node_info_t* enclave, tag_t completed);
  * @param e The enclave
  * @param id The enclave ID.
  */
-void initialize_reactor_node(reactor_node_info_t* e, uint16_t id);
+void initialize_reactor_node(scheduling_node_t* e, uint16_t id);
 
 /**
  * For all reactor_nodes downstream of the specified enclave, determine
@@ -123,7 +123,7 @@ void initialize_reactor_node(reactor_node_info_t* e, uint16_t id);
  * @param visited An array of booleans used to determine whether an enclave has
  *  been visited (initially all false).
  */
-void notify_downstream_advance_grant_if_safe(reactor_node_info_t* e, bool visited[]);
+void notify_downstream_advance_grant_if_safe(scheduling_node_t* e, bool visited[]);
 
 /**
  * Notify a tag advance grant (TAG) message to the specified federate.
@@ -140,7 +140,7 @@ void notify_downstream_advance_grant_if_safe(reactor_node_info_t* e, bool visite
  * @param e The enclave.
  * @param tag The tag to grant.
  */
-void notify_tag_advance_grant(reactor_node_info_t* e, tag_t tag);
+void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag);
 
 /**
  * @brief Either send to a federate or unblock an enclave to give it a tag.
@@ -151,7 +151,7 @@ void notify_tag_advance_grant(reactor_node_info_t* e, tag_t tag);
  * 
  * @param e The enclave.
  */
-void notify_advance_grant_if_safe(reactor_node_info_t* e);
+void notify_advance_grant_if_safe(scheduling_node_t* e);
 
 /**
  * Nontify a provisional tag advance grant (PTAG) message to the specified enclave.
@@ -167,7 +167,7 @@ void notify_advance_grant_if_safe(reactor_node_info_t* e);
  * @param e The enclave.
  * @param tag The tag to grant.
  */
-void notify_provisional_tag_advance_grant(reactor_node_info_t* e, tag_t tag);
+void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag);
 
 /**
  * Determine whether the specified enclave is eligible for a tag advance grant,
@@ -199,7 +199,7 @@ void notify_provisional_tag_advance_grant(reactor_node_info_t* e, tag_t tag);
  * @return If granted, return the tag value and whether it is provisional. 
  *  Otherwise, return the NEVER_TAG.
  */
-tag_advance_grant_t tag_advance_grant_if_safe(reactor_node_info_t* e);
+tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e);
 
 
 /**
@@ -212,7 +212,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(reactor_node_info_t* e);
  * @param e The enclave.
  * @param next_event_tag The next event tag for e.
  */
-void update_reactor_node_next_event_tag_locked(reactor_node_info_t* e, tag_t next_event_tag);
+void update_reactor_node_next_event_tag_locked(scheduling_node_t* e, tag_t next_event_tag);
 
 /**
  * Find the earliest tag at which the specified federate may
@@ -237,6 +237,6 @@ void update_reactor_node_next_event_tag_locked(reactor_node_info_t* e, tag_t nex
  *  an array of falses of size _RTI.number_of_federates).
  * @return The earliest next event tag of the enclave e.
  */
-tag_t transitive_next_event(reactor_node_info_t *e, tag_t candidate, bool visited[]);
+tag_t transitive_next_event(scheduling_node_t *e, tag_t candidate, bool visited[]);
 
 #endif // ENCLAVE_H
