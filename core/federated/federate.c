@@ -1882,7 +1882,7 @@ void handle_message(int socket, int fed_id) {
 void stall_advance_level_federation(size_t curr_reaction_level) {
     lf_mutex_lock(&mutex);
     LF_PRINT_DEBUG("Waiting with curr_reaction_level %d and MLAA %d.", curr_reaction_level, max_level_allowed_to_advance);
-    while (((int) curr_reaction_level) >= max_level_allowed_to_advance) {
+    while (((int) curr_reaction_level) + 1 >= max_level_allowed_to_advance) {
         lf_cond_wait(&port_status_changed);
     };
     LF_PRINT_DEBUG("Exiting wait with MLAA %d and curr_reaction_level %d.", max_level_allowed_to_advance, curr_reaction_level);
@@ -2189,6 +2189,7 @@ void* update_ports_from_staa_offsets(void* args) {
                     lf_action_base_t* input_port_action = staaElem->actions[j];
                     if (input_port_action->trigger->status == unknown) {
                         input_port_action->trigger->status = absent;
+                        update_max_level();
                         lf_cond_broadcast(&port_status_changed);
                     }
                 }

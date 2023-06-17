@@ -961,6 +961,7 @@ void _lf_worker_do_work(int worker_number) {
     // that it depends on).
     // lf_print_snapshot(); // This is quite verbose (but very useful in debugging reaction deadlocks).
     reaction_t* current_reaction_to_execute = NULL;
+    stall_advance_level_federation(-1);
     while ((current_reaction_to_execute =
             lf_sched_get_ready_reaction(worker_number))
             != NULL) {
