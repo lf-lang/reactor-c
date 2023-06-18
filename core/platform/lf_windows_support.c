@@ -172,7 +172,7 @@ int lf_available_cores() {
 
 #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
 
-static int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
+int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     uintptr_t handle = _beginthreadex(NULL, 0, lf_thread, arguments, 0, NULL);
     *thread = (HANDLE)handle;
     if(handle == 0){
@@ -189,7 +189,7 @@ static int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), vo
  *
  * @return 0 on success, EINVAL otherwise.
  */
-static int lf_thread_join(lf_thread_t thread, void** thread_return) {
+int lf_thread_join(lf_thread_t thread, void** thread_return) {
     DWORD retvalue = WaitForSingleObject(thread, INFINITE);
     if(retvalue == WAIT_FAILED){
         return EINVAL;
@@ -197,7 +197,7 @@ static int lf_thread_join(lf_thread_t thread, void** thread_return) {
     return 0;
 }
 
-static int lf_mutex_init(_lf_critical_section_t* critical_section) {
+int lf_mutex_init(_lf_critical_section_t* critical_section) {
     // Set up a recursive mutex
     InitializeCriticalSection((PCRITICAL_SECTION)critical_section);
     if(critical_section != NULL){
@@ -218,39 +218,39 @@ static int lf_mutex_init(_lf_critical_section_t* critical_section) {
  *
  * @return 0
  */
-static int lf_mutex_lock(_lf_critical_section_t* critical_section) {
+int lf_mutex_lock(_lf_critical_section_t* critical_section) {
     // The following Windows API does not return a value. It can
     // raise a EXCEPTION_POSSIBLE_DEADLOCK. See synchapi.h.
     EnterCriticalSection((PCRITICAL_SECTION)critical_section);
     return 0;
 }
 
-static int lf_mutex_unlock(_lf_critical_section_t* critical_section) {
+int lf_mutex_unlock(_lf_critical_section_t* critical_section) {
     // The following Windows API does not return a value.
     LeaveCriticalSection((PCRITICAL_SECTION)critical_section);
     return 0;
 }
 
-static int lf_cond_init(lf_cond_t* cond, _lf_critical_section_t* critical_section) {
+int lf_cond_init(lf_cond_t* cond, _lf_critical_section_t* critical_section) {
     // The following Windows API does not return a value.
     cond->critical_section = critical_section;
     InitializeConditionVariable((PCONDITION_VARIABLE)&cond->condition);
     return 0;
 }
 
-static int lf_cond_broadcast(lf_cond_t* cond) {
+int lf_cond_broadcast(lf_cond_t* cond) {
     // The following Windows API does not return a value.
     WakeAllConditionVariable((PCONDITION_VARIABLE)&cond->condition);
     return 0;
 }
 
-static int lf_cond_signal(lf_cond_t* cond) {
+int lf_cond_signal(lf_cond_t* cond) {
     // The following Windows API does not return a value.
     WakeConditionVariable((PCONDITION_VARIABLE)&cond->condition);
     return 0;
 }
 
-static int lf_cond_wait(lf_cond_t* cond) {
+int lf_cond_wait(lf_cond_t* cond) {
     // According to synchapi.h, the following Windows API returns 0 on failure,
     // and non-zero on success.
     int return_value =
@@ -272,7 +272,7 @@ static int lf_cond_wait(lf_cond_t* cond) {
      }
 }
 
-static int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
+int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
     // Convert the absolute time to a relative time
     instant_t current_time_ns;
     _lf_clock_now(&current_time_ns);
