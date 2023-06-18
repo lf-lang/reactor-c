@@ -326,4 +326,3 @@ DEPRECATED(int lf_nanosleep(interval_t sleep_duration));
 #endif
 
 #endif // PLATFORM_H
-+
