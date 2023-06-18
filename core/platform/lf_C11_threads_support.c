@@ -16,7 +16,7 @@ int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arg
 
 /**
  * Make calling thread wait for termination of the thread.  The
- * exit status of the thread is stored in thread_return, if thread_return
+ * exit status of the thread is stored in thread_return if thread_return
  * is not NULL.
  *
  * @return 0 on success, error number otherwise (see thrd_join()).
