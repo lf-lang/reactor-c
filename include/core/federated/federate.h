@@ -80,7 +80,6 @@ typedef struct federate_instance_t {
      */
     lf_thread_t *inbound_socket_listeners;
 
-
     /**
      * Number of outbound peer-to-peer connections from the federate.
      * This can be either physical connections, or logical connections
@@ -273,7 +272,7 @@ void connect_to_federate(uint16_t);
  * This function assumes the caller holds the mutex lock.
  *
  * @param tag_to_send The tag to send.
-*/
+ */
 void _lf_logical_tag_complete(tag_t);
 
 /**
@@ -356,19 +355,19 @@ void send_port_absent_to_federate(interval_t, unsigned short, unsigned short);
 void enqueue_network_output_control_reactions(void);
 
 /**
- * @brief Prevent the advancement to the next level of the reaction queue until the 
+ * @brief Prevent the advancement to the next level of the reaction queue until the
  *        level we try to advance to is known to be under the max level allowed to advance.
- * 
- * @param curr_reaction_level 
+ *
+ * @param curr_reaction_level
  */
 void stall_advance_level_federation(size_t);
 
 /**
  * @brief Attempts to update the max level the reaction queue is allowed to advance to
  * for the current logical timestep.
- * 
+ *
  */
-void update_max_level(void);
+void update_max_level(tag_t, bool);
 
 /**
  * Send a message to another federate directly or via the RTI.

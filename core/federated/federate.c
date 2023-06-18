@@ -1314,7 +1314,7 @@ void update_last_known_status_on_input_ports(tag_t tag) {
             //}
         }
     }
-    update_max_level();
+    update_max_level(tag, false);
     // Then, check if any control reaction is waiting.
     // If so, notify them.
     // FIXME: We could put a condition variable into the trigger_t
@@ -1360,7 +1360,11 @@ void update_last_known_status_on_input_port(tag_t tag, int port_id) {
         // If any control reaction is waiting, notify them that the status has changed
         //if (waitingToAdvance) {
             // The last known status tag of the port has changed. Notify any waiting threads.
-        update_max_level();
+        // There is no guarantee that there is either a TAG or a PTAG for this time.
+        // The message that triggered this to be called could be from an upstream
+        // federate that is far ahead of other upstream federates in logical time.
+        // Therefore, do not pass `tag` to `update_max_level`.
+        update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
         lf_cond_broadcast(&port_status_changed);
         //}
     } else {
@@ -1380,7 +1384,7 @@ void reset_status_fields_on_input_port_triggers() {
         set_network_port_status(i, unknown);
     }
     LF_PRINT_DEBUG("Resetting port status fields.");
-    update_max_level();
+    update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
 }
 
 /**
@@ -2033,7 +2037,7 @@ void handle_tagged_message(int socket, int fed_id) {
         set_network_port_status(port_id, present);
 
         // Port is now present. Therefore, notify the level advancer to proceed
-        update_max_level();
+        update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
         lf_cond_broadcast(&port_status_changed);
     } else {
         // If no control reaction is waiting for this message, or if the intended
@@ -2150,15 +2154,18 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
  * @brief Attempts to update the max level the reaction queue is allowed to advance to
  * for the current logical timestep.
  *
+ * @param tag The latest TAG received by this federate.
+ * @param is_provisional Whether the latest tag was provisional
+ *
  * This function assumes that the caller holds the mutex.
  */
-void update_max_level() {
+void update_max_level(tag_t tag, bool is_provisional) {
     max_level_allowed_to_advance = INT_MAX;
-    LF_PRINT_DEBUG("last_TAG=" PRINTF_TIME, _fed.last_TAG.time);
-    if ((lf_tag_compare(current_tag, _fed.last_TAG) < 0) || (
-        0// lf_tag_compare(current_tag, _fed.last_TAG) == 0 && !_fed.is_last_TAG_provisional
+    LF_PRINT_DEBUG("last_TAG=" PRINTF_TIME, tag.time);
+    if ((lf_tag_compare(current_tag, tag) < 0) || (
+        lf_tag_compare(current_tag, tag) == 0 && !is_provisional
     )) {
-        LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME " with last_TAG=" PRINTF_TIME " and current time " PRINTF_TIME ".", max_level_allowed_to_advance, lf_time_logical_elapsed(), _fed.last_TAG.time, current_tag.time);
+        LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME " with last_TAG=" PRINTF_TIME " and current time " PRINTF_TIME ".", max_level_allowed_to_advance, lf_time_logical_elapsed(), tag.time, current_tag.time);
         return;  // Safe to complete the current tag
     }
     for (int i = 0; i < _lf_action_table_size; i++) {
@@ -2189,7 +2196,7 @@ void* update_ports_from_staa_offsets(void* args) {
                     lf_action_base_t* input_port_action = staaElem->actions[j];
                     if (input_port_action->trigger->status == unknown) {
                         input_port_action->trigger->status = absent;
-                        update_max_level();
+                        update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
                         lf_cond_broadcast(&port_status_changed);
                     }
                 }
@@ -2277,7 +2284,7 @@ void handle_provisional_tag_advance_grant() {
     lf_cond_broadcast(&event_q_changed);
     // Notify level advance thread which is blocked.
     //if (waiting_to_advance_level) {
-    update_max_level();
+    update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
     lf_cond_broadcast(&port_status_changed);
     //}
 
