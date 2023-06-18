@@ -54,9 +54,6 @@ typedef struct mode_environment_t mode_environment_t;
  * Normally, there is only one execution environment, but if you use
  * scheduling enclaves, then there will be one for each enclave.
  */
-
-
-
 typedef struct environment_t {
     bool initialized;
     int id;
