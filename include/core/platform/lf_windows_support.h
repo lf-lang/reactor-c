@@ -67,6 +67,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     #endif
 #endif
 
+// Use 64-bit times and 32-bit unsigned microsteps
+#include "lf_tag_64_32.h"
+
 // FIXME: Windows does not #define _LF_CLOCK
 
 #endif // LF_WINDOWS_SUPPORT_H

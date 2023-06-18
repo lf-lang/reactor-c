@@ -171,23 +171,6 @@ int lf_available_cores() {
 }
 
 #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__) // (Not C++11 or later) or no threads support
-/**
- * On Windows, one could use both a mutex or
- * a critical section for the same purpose. However,
- * critical sections are lighter and limited to one process
- * and thus fit the requirements of Lingua Franca.
- */
-typedef CRITICAL_SECTION lf_mutex_t;
-/**
- * For compatibility with other platform APIs, we assume
- * that mutex is analogous to critical section.
- */
-typedef lf_mutex_t _lf_critical_section_t;
-typedef struct {
-    _lf_critical_section_t* critical_section;
-    CONDITION_VARIABLE condition;
-} lf_cond_t;
-typedef HANDLE lf_thread_t;
 
 static int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     uintptr_t handle = _beginthreadex(NULL, 0, lf_thread, arguments, 0, NULL);
