@@ -6,7 +6,7 @@
 
 /**
  * Create a new thread, starting with execution of lf_thread
- * getting passed arguments. The new handle is tored in thread.
+ * getting passed arguments. The new handle is stored in the thread argument.
  *
  * @return 0 on success, error number otherwise (see thrd_create()).
  */
