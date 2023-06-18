@@ -54,15 +54,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "lf_unix_clock_support.h"
 
-/**
- * Pause execution for a number of nanoseconds.
- *
- * A Linux-specific clock_nanosleep is used underneath that is supposedly more
- * accurate.
- *
- * @return 0 for success, or -1 for failure. In case of failure, errno will be
- *  set appropriately (see `man 2 clock_nanosleep`).
- */
 int lf_sleep(interval_t sleep_duration) {
     const struct timespec tp = convert_ns_to_timespec(sleep_duration);
     struct timespec remaining;

@@ -60,9 +60,6 @@ int _lf_use_performance_counter = 0;
  */
 double _lf_frequency_to_ns = 1.0;
 
-/**
- * Initialize the LF clock.
- */
 void _lf_initialize_clock() {
     // Check if the performance counter is available
     LARGE_INTEGER performance_frequency;
@@ -167,9 +164,6 @@ int lf_nanosleep(interval_t sleep_duration) {
 
 
 #if defined(LF_THREADED)
-/**
- * @brief Get the number of cores on the host machine.
- */
 int lf_available_cores() {
     SYSTEM_INFO sysinfo;
     GetSystemInfo(&sysinfo);
@@ -195,12 +189,6 @@ typedef struct {
 } lf_cond_t;
 typedef HANDLE lf_thread_t;
 
-/**
- * Create a new thread, starting with execution of lf_thread
- * getting passed arguments. The new handle is stored in thread.
- *
- * @return 0 on success, errno otherwise.
- */
 static int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     uintptr_t handle = _beginthreadex(NULL, 0, lf_thread, arguments, 0, NULL);
     *thread = (HANDLE)handle;
@@ -226,11 +214,6 @@ static int lf_thread_join(lf_thread_t thread, void** thread_return) {
     return 0;
 }
 
-/**
- * Initialize a critical section.
- *
- * @return 0 on success, 1 otherwise.
- */
 static int lf_mutex_init(_lf_critical_section_t* critical_section) {
     // Set up a recursive mutex
     InitializeCriticalSection((PCRITICAL_SECTION)critical_section);
@@ -259,22 +242,12 @@ static int lf_mutex_lock(_lf_critical_section_t* critical_section) {
     return 0;
 }
 
-/**
- * Leave a critical_section.
- *
- * @return 0
- */
 static int lf_mutex_unlock(_lf_critical_section_t* critical_section) {
     // The following Windows API does not return a value.
     LeaveCriticalSection((PCRITICAL_SECTION)critical_section);
     return 0;
 }
 
-/**
- * Initialize a conditional variable.
- *
- * @return 0
- */
 static int lf_cond_init(lf_cond_t* cond, _lf_critical_section_t* critical_section) {
     // The following Windows API does not return a value.
     cond->critical_section = critical_section;
@@ -282,34 +255,18 @@ static int lf_cond_init(lf_cond_t* cond, _lf_critical_section_t* critical_sectio
     return 0;
 }
 
-/**
- * Wake up all threads waiting for condition variable cond.
- *
- * @return 0
- */
 static int lf_cond_broadcast(lf_cond_t* cond) {
     // The following Windows API does not return a value.
     WakeAllConditionVariable((PCONDITION_VARIABLE)&cond->condition);
     return 0;
 }
 
-/**
- * Wake up one thread waiting for condition variable cond.
- *
- * @return 0
- */
 static int lf_cond_signal(lf_cond_t* cond) {
     // The following Windows API does not return a value.
     WakeConditionVariable((PCONDITION_VARIABLE)&cond->condition);
     return 0;
 }
 
-/**
- * Wait for condition variable "cond" to be signaled or broadcast.
- * "mutex" is assumed to be locked before.
- *
- * @return 0 on success, 1 otherwise.
- */
 static int lf_cond_wait(lf_cond_t* cond) {
     // According to synchapi.h, the following Windows API returns 0 on failure,
     // and non-zero on success.
@@ -332,13 +289,6 @@ static int lf_cond_wait(lf_cond_t* cond) {
      }
 }
 
-/**
- * Block current thread on the condition variable until condition variable
- * pointed by "cond" is signaled or time pointed by "absolute_time_ns" in
- * nanoseconds is reached.
- *
- * @return 0 on success and 1 on timeout, -1 otherwise.
- */
 static int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
     // Convert the absolute time to a relative time
     instant_t current_time_ns;
