@@ -2,6 +2,7 @@
 #define REACTOR_COMMON_H
 
 #include "lf_types.h"
+#include "environment.h"
 #include "tag.h"
 #include "pqueue.h"
 #include "vector.h"

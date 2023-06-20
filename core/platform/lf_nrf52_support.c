@@ -99,9 +99,6 @@ void lf_timer_event_handler(nrf_timer_event_t event_type, void *p_context) {
     }
 }
 
-/**
- * Initialize the LF clock.
- */
 void _lf_initialize_clock() {
     ret_code_t error_code;
     _lf_time_us_high = 0;

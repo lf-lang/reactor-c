@@ -36,6 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "tag.h"
 #include "lf_types.h"
+#include "environment.h"
 #include "platform.h"
 
 #ifndef ADVANCE_MESSAGE_INTERVAL

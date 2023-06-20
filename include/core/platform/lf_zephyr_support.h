@@ -41,8 +41,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <zephyr/kernel.h>
 
 #define NO_TTY
-#define _LF_TIMEOUT 1
-
 #ifdef LF_THREADED
 
 typedef struct k_mutex lf_mutex_t;
