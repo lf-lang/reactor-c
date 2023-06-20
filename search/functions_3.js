@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['deprecated_0',['DEPRECATED',['../de/d03/platform_8h.html#aa321c5ff2c1afca6cd771e8602972052',1,'platform.h']]],
+  ['deprecated_0',['DEPRECATED',['../de/d03/platform_8h.html#ac59c4e7dcc349d97fe413dcb5cceafe3',1,'platform.h']]],
   ['deque_5finitialize_1',['deque_initialize',['../da/dcd/deque_8c.html#a0e4768355c448b3b0489d851271515bc',1,'deque_initialize(deque_t *d):&#160;deque.c'],['../dc/d44/deque_8h.html#a0e4768355c448b3b0489d851271515bc',1,'deque_initialize(deque_t *d):&#160;deque.c']]],
   ['deque_5fis_5fempty_2',['deque_is_empty',['../da/dcd/deque_8c.html#ac22527818b92ea67851c2fd4a2790cb7',1,'deque_is_empty(deque_t *d):&#160;deque.c'],['../dc/d44/deque_8h.html#ac22527818b92ea67851c2fd4a2790cb7',1,'deque_is_empty(deque_t *d):&#160;deque.c']]],
   ['deque_5fpeek_5fback_3',['deque_peek_back',['../da/dcd/deque_8c.html#a3530b26ded106a84ef8571fab0e73d9e',1,'deque_peek_back(deque_t *d):&#160;deque.c'],['../dc/d44/deque_8h.html#a3530b26ded106a84ef8571fab0e73d9e',1,'deque_peek_back(deque_t *d):&#160;deque.c']]],

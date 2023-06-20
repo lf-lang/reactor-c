@@ -10,7 +10,7 @@ var searchData=
   ['advance_5fmessage_5finterval_7',['ADVANCE_MESSAGE_INTERVAL',['../d1/dfa/federate_8h.html#a2312893474cb0415e16af40b1de063ca',1,'federate.h']]],
   ['all_5ffederates_5fexited_8',['all_federates_exited',['../d9/d88/structfederation__rti__t.html#a7cedc8c0884198819e588a3a4910a927',1,'federation_rti_t']]],
   ['allocated_9',['allocated',['../d8/df0/structallocation__record__t.html#af527b359cdf811edd20a217fb9279ad2',1,'allocation_record_t']]],
-  ['allocation_5frecord_5ft_10',['allocation_record_t',['../d8/df0/structallocation__record__t.html',1,'allocation_record_t'],['../d6/d1d/lf__types_8h.html#a416845ec4469b3186de047c32402f5e8',1,'allocation_record_t():&#160;lf_types.h']]],
+  ['allocation_5frecord_5ft_10',['allocation_record_t',['../d8/df0/structallocation__record__t.html',1,'allocation_record_t'],['../d6/d1d/lf__types_8h.html#a416845ec4469b3186de047c32402f5e8',1,'allocation_record_t:&#160;lf_types.h']]],
   ['allocations_11',['allocations',['../d6/d8b/structself__base__t.html#a851c71d2d9ce4ca9c1811283bcf5f2f9',1,'self_base_t']]],
   ['api_2eh_12',['api.h',['../dc/d65/api_8h.html',1,'']]],
   ['array_5fof_5fmutexes_13',['array_of_mutexes',['../da/d7a/structlf__scheduler__t.html#a9ab8fa3b3b1554eaa4101b8aaa167add',1,'lf_scheduler_t']]],
