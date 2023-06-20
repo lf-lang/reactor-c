@@ -11,6 +11,7 @@
 #define WATCHDOG_H 1
 
 #include "lf_types.h"
+#include "environment.h"
 
 #ifdef __cplusplus
 extern "C" {
