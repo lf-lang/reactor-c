@@ -1885,7 +1885,7 @@ void handle_message(int socket, int fed_id) {
  */
 void stall_advance_level_federation(size_t curr_reaction_level) {
     lf_mutex_lock(&mutex);
-    LF_PRINT_DEBUG("Waiting with curr_reaction_level %d and MLAA %d.", curr_reaction_level, max_level_allowed_to_advance);
+    LF_PRINT_DEBUG("Waiting on MLAA with curr_reaction_level %d and MLAA %d.", curr_reaction_level, max_level_allowed_to_advance);
     while (((int) curr_reaction_level) + 1 >= max_level_allowed_to_advance) {
         lf_cond_wait(&port_status_changed);
     };
@@ -2170,7 +2170,7 @@ void update_max_level(tag_t tag, bool is_provisional) {
     }
     for (int i = 0; i < _lf_action_table_size; i++) {
         lf_action_base_t* input_port_action = _lf_action_for_port(i);
-        if (input_port_action->trigger->status == unknown) {
+        if (input_port_action->trigger->status == unknown && !input_port_action->trigger->is_physical) {
             max_level_allowed_to_advance = LF_MIN(max_level_allowed_to_advance, ((int) LF_LEVEL(input_port_action->trigger->reactions[0]->index)));
         }
     }
