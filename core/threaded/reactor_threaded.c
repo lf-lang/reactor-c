@@ -651,6 +651,7 @@ void _lf_next_locked() {
     // stick them into the reaction queue.
     _lf_pop_events();
 #ifdef FEDERATED
+    // _lf_pop_events may have set some triggers present.
 extern federate_instance_t _fed;
     update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
 #endif
