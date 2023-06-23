@@ -846,7 +846,8 @@ void handle_timestamp(federate_t *my_fed) {
                 continue;
             }
             if (lf_tag_compare(federate_start_tag, upstream->enclave.last_granted) < 0) {
-                federate_start_tag = upstream->enclave.last_granted;
+                federate_start_tag.time = upstream->enclave.last_granted.time;
+                federate_start_tag.microstep = upstream->enclave.last_granted.microstep;
                 federate_start_tag.microstep++;
             }
         }
@@ -858,7 +859,8 @@ void handle_timestamp(federate_t *my_fed) {
                 continue;
             }
             if (lf_tag_compare(federate_start_tag, downstream->enclave.last_granted) < 0) {
-                federate_start_tag = downstream->enclave.last_granted;
+                federate_start_tag.time = downstream->enclave.last_granted.time;
+                federate_start_tag.microstep = downstream->enclave.last_granted.microstep;
                 federate_start_tag.microstep++;
             }
         }
@@ -869,15 +871,14 @@ void handle_timestamp(federate_t *my_fed) {
             my_fed->start_time_is_set = true;
             my_fed->effective_start_tag.time += DELAY_START;
             my_fed->effective_start_tag.microstep = 0u;
-            federate_start_tag = my_fed->effective_start_tag;
         }
         lf_mutex_unlock(&rti_mutex);
-        
+
         // Once the effective start time set, sent it to the joining transient,
         // together with the start time of the federation.
 
         // Send the start time
-        send_start_tag(my_fed, start_time, federate_start_tag);
+        send_start_tag(my_fed, start_time, my_fed->effective_start_tag);
     }
 }
 
