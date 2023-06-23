@@ -1889,7 +1889,7 @@ void stall_advance_level_federation(size_t curr_reaction_level) {
     while (((int) curr_reaction_level) + 1 >= max_level_allowed_to_advance) {
         lf_cond_wait(&port_status_changed);
     };
-    LF_PRINT_DEBUG("Exiting wait with MLAA %d and curr_reaction_level %d.", max_level_allowed_to_advance, curr_reaction_level);
+    LF_PRINT_DEBUG("Exiting wait with MLAA %d and curr_reaction_level %d at time %lld.", max_level_allowed_to_advance, curr_reaction_level, (long long) (current_tag.time - start_time));
     lf_mutex_unlock(&mutex);
 }
 
