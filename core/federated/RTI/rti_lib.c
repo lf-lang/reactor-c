@@ -2026,7 +2026,7 @@ void* connect_to_transient_federates_thread() {
             // The following blocks until a federate connects.
             int socket_id = -1;
             while(1) {
-                if (!_f_rti->all_federates_exited) {
+                if (_f_rti->all_federates_exited) {
                     return NULL;
                 }
                 socket_id = accept(_f_rti->socket_descriptor_TCP, &client_fd, &client_length);
@@ -2065,8 +2065,9 @@ void* connect_to_transient_federates_thread() {
                 // This has to be done after clock synchronization is finished
                 // or that thread may end up attempting to handle incoming clock
                 // synchronization messages.
-                lf_thread_create(&(_f_rti->enclaves[fed_id]->thread_id), federate_thread_TCP, &(_f_rti->enclaves[fed_id]));
-                _f_rti->enclaves[fed_id]->is_transient = true;
+                federate_t *fed = _f_rti->enclaves[fed_id];
+                lf_thread_create(&(fed->thread_id), federate_thread_TCP, fed);
+                fed->is_transient = true;
                 _f_rti->number_of_connected_transient_federates++;
                 lf_print("RTI: Transient federate %d joined.", fed_id);
             }
