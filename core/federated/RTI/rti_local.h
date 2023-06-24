@@ -74,5 +74,19 @@ void rti_logical_tag_complete_locked(enclave_info_t* enclave, tag_t completed);
  */
 void rti_request_stop(tag_t stop_tag);
 
+/**
+ * @brief This functions is called after scheduling an event onto the event queue
+ * of another enclave. The source enclave must call this function to potentially update
+ * the NET of the target enclave. 
+ * 
+ * FIXME: This replicates the functionality that the remote RTI has to update the NEt
+ * when a timed message flows through it. Consider refactoring the rti_remote into rti_common.
+ * Or have rti_remote use this rti_local API
+ * 
+ * This function is called while holding the environment mutex of the target enclave
+ * @param target The enclave of which we want to update the NET of
+ * @param net The proposed next event tag
+ */
+void rti_update_other_net_locked(enclave_info_t * target, tag_t net);
 
 #endif

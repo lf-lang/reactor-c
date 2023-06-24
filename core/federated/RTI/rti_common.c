@@ -82,7 +82,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
             min_upstream_completed = candidate;
         }
     }
-    LF_PRINT_LOG("Minimum upstream LTC for federate/enclave %d is " PRINTF_TAG 
+    LF_PRINT_LOG("RTI: Minimum upstream LTC for federate/enclave %d is " PRINTF_TAG 
             "(adjusted by after delay).",
             e->id,
             min_upstream_completed.time - start_time, min_upstream_completed.microstep);
@@ -121,7 +121,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
         tag_t upstream_next_event = transitive_next_event(
                 upstream, upstream->next_event, visited);
 
-        LF_PRINT_DEBUG("Earliest next event upstream of fed/encl %d at fed/encl %d has tag " PRINTF_TAG ".",
+        LF_PRINT_DEBUG("RTI: Earliest next event upstream of fed/encl %d at fed/encl %d has tag " PRINTF_TAG ".",
                 e->id,
                 upstream->id,
                 upstream_next_event.time - start_time, upstream_next_event.microstep);
@@ -137,7 +137,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     }
     free(visited);
 
-    LF_PRINT_LOG("Earliest next event upstream has tag " PRINTF_TAG ".",
+    LF_PRINT_LOG("RTI: Earliest next event upstream has tag " PRINTF_TAG ".",
             t_d.time - start_time, t_d.microstep);
 
     if (

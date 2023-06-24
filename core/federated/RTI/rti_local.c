@@ -159,6 +159,17 @@ void rti_request_stop(tag_t stop_tag) {
     lf_assert(false, "Not implemented yet");
 }
 
+void rti_update_other_net_locked(enclave_info_t * target, tag_t net) {
+    lf_mutex_lock(&rti_mutex);
+
+    // If our proposed NET is less than the current NET, update it
+    if (lf_tag_compare(net, target->base.next_event) < 0) {
+        target->base.next_event = net;
+    }
+
+    lf_mutex_unlock(&rti_mutex);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // The local RTIs implementation of the notify functions
 ///////////////////////////////////////////////////////////////////////////////
