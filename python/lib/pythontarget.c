@@ -263,7 +263,7 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
         }
     }
 
-    // Store a reference to the global environment
+    // Store a reference to the top-level environment
     int num_environments = _lf_get_environments(&global_environment);
     lf_assert(num_environments == 1, "Python target only supports programs with a single environment/enclave");
 
