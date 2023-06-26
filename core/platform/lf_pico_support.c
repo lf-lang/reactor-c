@@ -41,6 +41,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef LF_UNTHREADED
 // critical section struct binding
+// TODO: maybe be more precise and use nvic interrupt mask
 static critical_section_t _lf_crit_sec;
 // semaphore used to notify if sleep was interupted by irq 
 static semaphore_t _lf_sem_irq_event;
@@ -50,7 +51,7 @@ static uint32_t _lf_num_nested_critical_sections = 0;
 /**
  * Initialize the LF clock. Must be called before using other clock-related APIs.
  */
-void lf_initialize_clock(void) {
+void _lf_initialize_clock(void) {
     // init stdlib peripherals
     stdio_init_all();
     // init sync structs
@@ -69,7 +70,7 @@ void lf_initialize_clock(void) {
  * TODO: might want to use the RTC
  * @return 0 for success, or -1 for failure
  */
-int lf_clock_gettime(instant_t* t) {
+int _lf_clock_now(instant_t* t) {
     absolute_time_t now;
     uint64_t ns_from_boot;
     now = get_absolute_time();
@@ -97,7 +98,7 @@ int lf_sleep(interval_t sleep_duration) {
  * @param wakeup_time The time instant at which to wake up.
  * @return int 0 if sleep completed, or -1 if it was interrupted.
  */
-int lf_sleep_until_locked(instant_t wakeup_time) {
+int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
     int ret_code = 0;
     if (wakeup_time < 0) {
         ret_code = -1;
@@ -108,12 +109,12 @@ int lf_sleep_until_locked(instant_t wakeup_time) {
     // TODO: leverage the semaphore permit number 
     sem_reset(&_lf_sem_irq_event, 0);
     target = from_us_since_boot((uint64_t) (wakeup_time / 1000));
-    lf_critical_section_exit(&_lf_crit_sec);
+    lf_critical_section_exit(env);
     // sleep till target or return on processor event
     if(sem_acquire_block_until(&_lf_sem_irq_event, target)) {
         ret_code = -1;
     }
-    lf_critical_section_enter(&_lf_crit_sec);
+    lf_critical_section_enter(env);
     return ret_code;
 }
 /*
@@ -131,7 +132,7 @@ int lf_sleep_until_locked(instant_t wakeup_time) {
  * @return 0 on success, platform-specific error number otherwise.
  * TODO: needs to be used sparingly 
  */
-int lf_critical_section_enter() {
+int lf_disable_interrupts_nested() {
     if (!critical_section_is_initialized(&_lf_crit_sec)) {
         return 1;
     } 
@@ -148,7 +149,7 @@ int lf_critical_section_enter() {
  * TODO: needs to be used sparingly, find a better way for event queue
  * mutual exclusion for embedded platforms. better leverage the nvic 
  */
-int lf_critical_section_exit() {
+int lf_enable_interrupts_nested() {
     if (!critical_section_is_initialized(&_lf_crit_sec) ||
         _lf_num_nested_critical_sections <= 0) {
         return 1;
@@ -165,7 +166,7 @@ int lf_critical_section_exit() {
  * The caller should call lf_critical_section_enter() before calling this function.
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_notify_of_event() {
+int _lf_unthreaded_notify_of_event() {
     // un-block threads that acquired this binary semaphore 
     sem_release(&_lf_sem_irq_event);
     return 0;
