@@ -15,6 +15,7 @@
 #include "tag.h"
 #include "util.h"
 #include "platform.h"
+#include "environment.h"
 #include "reactor.h"
 #include "util.h"
 #include "lf_types.h"

@@ -41,6 +41,7 @@ int _lf_count_token_allocations;
 #include <assert.h>
 #include <string.h>  // Defines memcpy
 #include "lf_token.h"
+#include "environment.h"
 #include "lf_types.h"
 #include "hashset/hashset_itr.h"
 #include "util.h"
