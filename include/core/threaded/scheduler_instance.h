@@ -43,10 +43,13 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif  // NUMBER_OF_WORKERS
 
 #include "semaphore.h"
-#include "scheduler.h"
+#include <stdbool.h>
 
-extern lf_mutex_t mutex;
+#define DEFAULT_MAX_REACTION_LEVEL 100
 
+// Forward declarations
+typedef struct environment_t environment_t;
+typedef struct custom_scheduler_data_t custom_scheduler_data_t;
 
 /**
  * @brief Paramters used in schedulers of the threaded reactor C runtime.
@@ -54,7 +57,8 @@ extern lf_mutex_t mutex;
  * @note Members of this struct are added based on existing schedulers' needs.
  *  These should be expanded to accommodate new schedulers.
  */
-typedef struct {
+typedef struct lf_scheduler_t { 
+    struct environment_t * env;
     /**
      * @brief Maximum number of levels for reactions in the program.
      *
@@ -66,26 +70,24 @@ typedef struct {
      * threads that should be executing work at the same time.
      *
      * Initially, the count is set to 0. Maximum value of count should be
-     * `_lf_sched_number_of_workers`.
+     * `number_of_workers`.
      *
      * For example, if the scheduler releases the semaphore with a count of 4,
      * no more than 4 worker threads should wake up to process reactions.
      *
      * FIXME: specific comment
      */
-    semaphore_t* _lf_sched_semaphore;
+    semaphore_t* semaphore;
 
     /**
      * @brief Indicate whether the program should stop
-     *
      */
-    volatile bool _lf_sched_should_stop;
+    volatile bool should_stop;
 
     /**
      * @brief Hold triggered reactions.
-     *
      */
-    void* _lf_sched_triggered_reactions;
+    void* triggered_reactions;
 
     /**
      * @brief An array of mutexes.
@@ -93,7 +95,7 @@ typedef struct {
      * Can be used to avoid race conditions. Schedulers are allowed to
      * initialize as many mutexes as they deem fit.
      */
-    lf_mutex_t* _lf_sched_array_of_mutexes;
+    lf_mutex_t* array_of_mutexes;
 
     /**
      * @brief An array of atomic indexes.
@@ -101,38 +103,59 @@ typedef struct {
      * Can be used to avoid race conditions. Schedulers are allowed to to use as
      * many indexes as they deem fit.
      */
-    volatile int* _lf_sched_indexes;
+    volatile int* indexes;
 
     /**
      * @brief Hold currently executing reactions.
      */
-    void* _lf_sched_executing_reactions;
+    void* executing_reactions;
 
     /**
      * @brief Hold reactions temporarily.
      */
-    void* _lf_sched_transfer_reactions;
+    void* transfer_reactions;
 
     /**
      * @brief Number of workers that this scheduler is managing.
-     *
      */
-    size_t _lf_sched_number_of_workers;
+    size_t number_of_workers;
 
     /**
      * @brief Number of workers that are idle.
-     *
      * Adding to/subtracting from this variable must be done atomically.
-     *
      */
-    volatile size_t _lf_sched_number_of_idle_workers;
+    volatile size_t number_of_idle_workers;
 
     /**
      * @brief The next level of reactions to execute.
-     *
      */
-    volatile size_t _lf_sched_next_reaction_level;
-} _lf_sched_instance_t;
+    volatile size_t next_reaction_level;
+
+    // Pointer to an optional custom data structure that each scheduler can define.
+    // The type is forward declared here and must be declared again in the scheduler source file
+    // Is not touched by `init_sched_instance` and must be initialized by each scheduler that needs it
+    custom_scheduler_data_t * custom_data;
+} lf_scheduler_t;
+
+/**
+ * @brief Struct representing the most common scheduler parameters.
+ *
+ * @param num_reactions_per_level Optional. Default: NULL. An array of
+ *  non-negative integers, where each element represents a reaction level
+ *  (corresponding to the index), and the value of the element represents the
+ *  maximum number of reactions in the program for that level. For example,
+ *  num_reactions_per_level = { 2, 3 } indicates that there will be a maximum of
+ *  2 reactions in the program with a level of 0, and a maximum of 3 reactions
+ *  in the program with a level of 1. Can be NULL.
+ * @param num_reactions_per_level_size Optional. The size of the
+ * `num_reactions_per_level` array if it is not NULL. If set, it should be the
+ * maximum level over all reactions in the program plus 1. If not set,
+ * `DEFAULT_MAX_REACTION_LEVEL` will be used.
+ */
+typedef struct {
+    size_t* num_reactions_per_level;
+    size_t num_reactions_per_level_size;
+} sched_params_t;
 
 /**
  * @brief Initialize `instance` using the provided information.
@@ -140,7 +163,7 @@ typedef struct {
  * No-op if `instance` is already initialized (i.e., not NULL).
  * This function assumes that mutex is allowed to be recursively locked.
  *
- * @param instance The `_lf_sched_instance_t` object to initialize.
+ * @param instance The `lf_scheduler_t` object to initialize.
  * @param number_of_workers  Number of workers in the program.
  * @param params Reference to scheduler parameters in the form of a
  * `sched_params_t`. Can be NULL.
@@ -148,41 +171,9 @@ typedef struct {
  *  initialized (checked in a thread-safe way).
  */
 bool init_sched_instance(
-    _lf_sched_instance_t** instance,
+    struct environment_t* env,
+    lf_scheduler_t** instance,
     size_t number_of_workers,
-    sched_params_t* params) {
-
-    // Check if the instance is already initialized
-    lf_mutex_lock(&mutex); // Safeguard against multiple threads calling this
-                           // function.
-    if (*instance != NULL) {
-        // Already initialized
-        lf_mutex_unlock(&mutex);
-        return false;
-    } else {
-        *instance =
-            (_lf_sched_instance_t*)calloc(1, sizeof(_lf_sched_instance_t));
-    }
-    lf_mutex_unlock(&mutex);
-
-    if (params == NULL || params->num_reactions_per_level_size == 0) {
-        (*instance)->max_reaction_level = DEFAULT_MAX_REACTION_LEVEL;
-    }
-
-    if (params != NULL) {
-        if (params->num_reactions_per_level != NULL) {
-            (*instance)->max_reaction_level =
-                params->num_reactions_per_level_size - 1;
-        }
-    }
-
-    (*instance)->_lf_sched_semaphore = lf_semaphore_new(0);
-    (*instance)->_lf_sched_number_of_workers = number_of_workers;
-    (*instance)->_lf_sched_next_reaction_level = 1;
-
-    (*instance)->_lf_sched_should_stop = false;
-
-    return true;
-}
+    sched_params_t* params);
 
 #endif // LF_SCHEDULER_PARAMS_H
