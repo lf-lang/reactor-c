@@ -45,6 +45,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "semaphore.h"
 #include <stdbool.h>
 
+#if SCHEDULER == FS
+#include "lf_types.h"
+#include "scheduler_instructions.h"
+#endif
+
 #define DEFAULT_MAX_REACTION_LEVEL 100
 
 // Forward declarations
@@ -58,7 +63,12 @@ typedef struct custom_scheduler_data_t custom_scheduler_data_t;
  *  These should be expanded to accommodate new schedulers.
  */
 typedef struct lf_scheduler_t { 
+    /**
+     * @brief Environment which the scheduler has access to.
+     * 
+     */
     struct environment_t * env;
+
     /**
      * @brief Maximum number of levels for reactions in the program.
      *
@@ -135,6 +145,54 @@ typedef struct lf_scheduler_t {
     // The type is forward declared here and must be declared again in the scheduler source file
     // Is not touched by `init_sched_instance` and must be initialized by each scheduler that needs it
     custom_scheduler_data_t * custom_data;
+
+#if SCHEDULER == FS
+
+    /**
+     * @brief Points to an array of program counters for each worker.
+     * 
+     */
+    size_t* pc;
+
+    /**
+     * @brief Points to a read-only array of static schedules.
+     * 
+     */
+    const inst_t** static_schedules;
+
+    /**
+     * @brief Points to an array of pointers to reactor self instances.
+     * 
+     */
+    self_base_t** reactor_self_instances;
+
+    /**
+     * @brief The total number of reactor self instances.
+     * 
+     */
+    size_t num_reactor_self_instances;
+
+    /**
+     * @brief Points to an array of bools indicating whether
+     * a reactor reaches stop.
+     * 
+     */
+    bool* reactor_reached_stop_tag;
+
+    /**
+     * @brief Points to an array of pointers to reaction instances.
+     * 
+     */
+    reaction_t** reaction_instances;
+
+    /**
+     * @brief Points to an array of integer counters.
+     * 
+     */
+    volatile uint32_t* counters;
+
+#endif
+
 } lf_scheduler_t;
 
 /**
@@ -155,6 +213,12 @@ typedef struct lf_scheduler_t {
 typedef struct {
     size_t* num_reactions_per_level;
     size_t num_reactions_per_level_size;
+#if SCHEDULER == FS
+    struct self_base_t** reactor_self_instances;
+    size_t num_reactor_self_instances;
+    bool* reactor_reached_stop_tag;
+    reaction_t** reaction_instances;
+#endif
 } sched_params_t;
 
 /**

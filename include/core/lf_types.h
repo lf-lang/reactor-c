@@ -379,6 +379,10 @@ typedef struct self_base_t {
 #ifdef MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif
+// FIXME: use a LOCAL_TIME macro instead.
+#if SCHEDULER == FS
+    tag_t tag;                               // The current tag of the reactor instance.
+#endif
 } self_base_t;
 
 /**

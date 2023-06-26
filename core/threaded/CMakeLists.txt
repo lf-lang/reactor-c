@@ -2,6 +2,7 @@ set(
     THREADED_SOURCES
     reactor_threaded.c
     scheduler_adaptive.c
+    scheduler_FS.c
     scheduler_GEDF_NP_CI.c
     scheduler_GEDF_NP.c
     scheduler_NP.c
