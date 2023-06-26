@@ -5,8 +5,6 @@
 #include <assert.h>
 #include "platform.h"   // Platform-specific types and functions
 #include "util.h"       // Defines print functions (e.g., lf_print).
-#include "net_util.h"   // Defines network functions.
-#include "net_common.h" // Defines message types, etc. Includes <pthread.h> and "reactor.h".
 #include "tag.h"        // Time-related types and functions.
 #include "trace.h"      // Tracing related functions
 
