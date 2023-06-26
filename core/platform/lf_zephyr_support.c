@@ -84,9 +84,6 @@ static volatile bool _lf_async_event = false;
 // Keep track of IRQ mask when entering critical section so we can enable again after
 static volatile unsigned _lf_irq_mask = 0;
 
-/**
- * Initialize the LF clock
- */
 void _lf_initialize_clock() {
 
     #if defined(LF_ZEPHYR_CLOCK_HI_RES)
@@ -164,13 +161,6 @@ int _lf_clock_now(instant_t* t) {
     return 0;
 }
 
-/**
- * @brief Sleep until an absolute time.
- *  
- * @param env The environment in which we would like to sleep
- * @param wakeup int64_t time of wakeup 
- * @return int 0 if successful sleep, -1 if awoken by async event
- */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     // Reset flags
     _lf_alarm_fired = false;
@@ -264,38 +254,16 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
 }
 #endif
 
-/**
- * @brief Pause execution for a given duration.
- * 
- * @param sleep_duration 
- * @return 0 for success, or -1 for failure.
- */
 int lf_sleep(interval_t sleep_duration) {
     k_sleep(K_NSEC(sleep_duration));
     return 0;
 }
 
-/**
- * Old nanosleep API. It is just forwarded to `lf_sleep`
-*/
 int lf_nanosleep(interval_t sleep_duration) {
     return lf_sleep(sleep_duration);
 }
 
 
-
-/**
- * Only provide implementation of critical sections and notify of event
- * for the unthreaded scenario. For threaded, it is implemented in
- * `reactor_threaded.c`
-*/
-/**
- * @brief Enter critical section by disabling interrupts.
- * Support nested critical sections by only disabling
- * interrupts on the first call 
- * 
- * @return int 
- */
 int lf_disable_interrupts_nested() {
     if (_lf_num_nested_critical_sections++ == 0) {
         _lf_irq_mask = irq_lock();
@@ -303,11 +271,6 @@ int lf_disable_interrupts_nested() {
     return 0;
 }
 
-/**
- * @brief Leave critical section by re-enabling interrupts
- * 
- * @return int 
- */
 int lf_enable_interrupts_nested() {
     if (_lf_num_nested_critical_sections <= 0) {
         return 1;
@@ -369,24 +332,11 @@ static void zephyr_worker_entry(void * func, void * args, void * unused2) {
     _func(args);
 }
 
-/**
- * @brief Get the number of cores on the host machine.
- * FIXME: Use proper Zephyr API
- */
+// FIXME: Use zephr API
 int lf_available_cores() {
     return 1;
 }
 
-/**
- * Create a new thread, starting with execution of lf_thread
- * getting passed arguments. The new handle is stored in thread_id.
- *
- * @return 0 on success, platform-specific error number otherwise.
- * FIXME: As this function is currently part of the user-facing API, 
- *  it should not care about the number of workers specified.
- *  If we want static allocation of workers, as implemented now,
- *  it must be removed from the API.
- */
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     k_mutex_lock(&thread_mutex, K_FOREVER);
 
@@ -418,94 +368,42 @@ int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arg
     return 0;
 }
 
-/**
- * Make calling thread wait for termination of the thread.  The
- * exit status of the thread is stored in thread_return, if thread_return
- * is not NULL.
- * 
- * @return 0 on success, platform-specific error number otherwise.
- */
 int lf_thread_join(lf_thread_t thread, void** thread_return) {
     return k_thread_join(thread, K_FOREVER);
 }
 
-/**
- * Initialize a mutex.
- * 
- * @return 0 on success, platform-specific error number otherwise.
- */
 int lf_mutex_init(lf_mutex_t* mutex) {
     return k_mutex_init(mutex);    
 }
 
-/**
- * Lock a mutex.
- * 
- * @return 0 on success, platform-specific error number otherwise.
- */
 int lf_mutex_lock(lf_mutex_t* mutex) {
     int res = k_mutex_lock(mutex, K_FOREVER);
     return res;
 }
 
-/** 
- * Unlock a mutex.
- * 
- * @return 0 on success, platform-specific error number otherwise.
- */
 int lf_mutex_unlock(lf_mutex_t* mutex) {
     int res = k_mutex_unlock(mutex);
     return res;
 }
 
-
-/** 
- * Initialize a conditional variable.
- * 
- * @return 0 on success, platform-specific error number otherwise.
- */
 int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
     cond->mutex = mutex;
     return k_condvar_init(&cond->condition);
 }
 
-/** 
- * Wake up all threads waiting for condition variable cond.
- * 
- * @return 0 on success, platform-specific error number otherwise.
- */
 int lf_cond_broadcast(lf_cond_t* cond) {
     k_condvar_broadcast(&cond->condition);
     return 0;
 }
 
-/** 
- * Wake up one thread waiting for condition variable cond.
- * 
- * @return 0 on success, platform-specific error number otherwise.
- */
 int lf_cond_signal(lf_cond_t* cond) {
     return k_condvar_signal(&cond->condition);
 }
 
-/** 
- * Wait for condition variable "cond" to be signaled or broadcast.
- * "mutex" is assumed to be locked before.
- * 
- * @return 0 on success, platform-specific error number otherwise.
- */
 int lf_cond_wait(lf_cond_t* cond) {
     return k_condvar_wait(&cond->condition, cond->mutex, K_FOREVER);
 }
 
-/** 
- * Block current thread on the condition variable until condition variable
- * pointed by "cond" is signaled or time pointed by "absolute_time_ns" in
- * nanoseconds is reached.
- * 
- * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
- *  number otherwise.
- */
 int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
     instant_t now;
     _lf_clock_now(&now);

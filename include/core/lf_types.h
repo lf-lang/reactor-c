@@ -46,7 +46,7 @@
 #include "modal_models/modes.h" // Modal model support
 #include "utils/pqueue.h"
 #include "lf_token.h"
-#include "platform.h"
+#include "tag.h"
 #include "vector.h"
 
 /**
@@ -290,80 +290,8 @@ typedef struct allocation_record_t {
     struct allocation_record_t *next;
 } allocation_record_t;
 
-// Forward declarations so that a pointers can appear in the environment struct.
-typedef struct lf_scheduler_t lf_scheduler_t;
-typedef struct trace_t trace_t;
-typedef struct enclave_info_t enclave_info_t;
 
-#define GLOBAL_ENVIRONMENT NULL
-/**
- * @brief Execution environment.
- * This struct contains information about the execution environment.
- * An execution environment maintains a notion of a "current tag"
- * and has its own event queue and scheduler.
- * Normally, there is only one execution environment, but if you use
- * scheduling enclaves, then there will be one for each enclave.
- */
-
-typedef struct mode_environment_t mode_environment_t;
-
-
-typedef struct environment_t {
-    bool initialized;
-    int id;
-    tag_t current_tag;
-    tag_t stop_tag;
-    pqueue_t *event_q;
-    pqueue_t *recycle_q;
-    pqueue_t *next_q;
-    bool** is_present_fields;
-    int is_present_fields_size;
-    bool** is_present_fields_abbreviated;
-    int is_present_fields_abbreviated_size;
-    vector_t sparse_io_record_sizes;
-    trigger_handle_t _lf_handle;
-    trigger_t** timer_triggers;
-    int timer_triggers_size;
-    reaction_t** startup_reactions;
-    int startup_reactions_size;
-    reaction_t** shutdown_reactions;
-    int shutdown_reactions_size;
-    reaction_t** reset_reactions;
-    int reset_reactions_size;
-    mode_environment_t* modes;
-    trace_t* trace;
-    int worker_thread_count;
-#ifdef LF_UNTHREADED
-    pqueue_t *reaction_q;
-#endif 
-#ifdef LF_THREADED
-    int num_workers;
-    lf_thread_t* thread_ids;
-    lf_mutex_t mutex;
-    lf_cond_t event_q_changed;
-    lf_scheduler_t* scheduler;
-    _lf_tag_advancement_barrier barrier;
-    lf_cond_t global_tag_barrier_requestors_reached_zero;
-#endif // LF_THREADED
-#ifdef FEDERATED
-    tag_t** _lf_intended_tag_fields;
-    int _lf_intended_tag_fields_size;
-#endif // FEDERATED
-#ifdef LF_ENCLAVES
-    enclave_info_t *enclave_info;
-#endif
-} environment_t;
-
-#ifdef MODAL_REACTORS
-struct mode_environment_t {
-    uint8_t triggered_reactions_request;
-    reactor_mode_state_t** modal_reactor_states;
-    int modal_reactor_states_size;
-    mode_state_variable_reset_data_t* state_resets;
-    int state_resets_size;
-};
-#endif
-
+typedef struct environment_t environment_t;
 /**
  * The first element of every self struct defined in generated code
  * will be a pointer to an allocation record, which is either NULL

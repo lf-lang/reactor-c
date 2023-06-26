@@ -81,7 +81,7 @@ typedef struct environment_t environment_t;
     typedef void lf_mutex_t;
 #endif
 
-#define LF_TIMEOUT _LF_TIMEOUT
+#define LF_TIMEOUT 1
 
 
 // To support the unthreaded runtime, we need the following functions. They
@@ -113,10 +113,11 @@ typedef struct environment_t environment_t;
 // abstract the API so that the LF runtime remains portable.
 #if defined LF_THREADED
 
+
 /**
  * @brief Get the number of cores on the host machine.
  */
-extern int lf_available_cores();
+int lf_available_cores();
 
 /**
  * Create a new thread, starting with execution of lf_thread
@@ -125,7 +126,7 @@ extern int lf_available_cores();
  * @return 0 on success, platform-specific error number otherwise.
  *
  */
-extern int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments);
+int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments);
 
 /**
  * Make calling thread wait for termination of the thread.  The
@@ -136,49 +137,49 @@ extern int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), vo
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_thread_join(lf_thread_t thread, void** thread_return);
+int lf_thread_join(lf_thread_t thread, void** thread_return);
 
 /**
  * Initialize a mutex.
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_mutex_init(lf_mutex_t* mutex);
+int lf_mutex_init(lf_mutex_t* mutex);
 
 /**
  * Lock a mutex.
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_mutex_lock(lf_mutex_t* mutex);
+int lf_mutex_lock(lf_mutex_t* mutex);
 
 /**
  * Unlock a mutex.
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_mutex_unlock(lf_mutex_t* mutex);
+int lf_mutex_unlock(lf_mutex_t* mutex);
 
 /**
  * Initialize a conditional variable.
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex);
+int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex);
 
 /**
  * Wake up all threads waiting for condition variable cond.
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_cond_broadcast(lf_cond_t* cond);
+int lf_cond_broadcast(lf_cond_t* cond);
 
 /**
  * Wake up one thread waiting for condition variable cond.
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_cond_signal(lf_cond_t* cond);
+int lf_cond_signal(lf_cond_t* cond);
 
 /**
  * Wait for condition variable "cond" to be signaled or broadcast.
@@ -186,7 +187,7 @@ extern int lf_cond_signal(lf_cond_t* cond);
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_cond_wait(lf_cond_t* cond);
+int lf_cond_wait(lf_cond_t* cond);
 
 /**
  * Block current thread on the condition variable until condition variable
@@ -196,7 +197,7 @@ extern int lf_cond_wait(lf_cond_t* cond);
  * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
  *  number otherwise.
  */
-extern int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
+int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
 
 /*
  * Atomically increment the variable that ptr points to by the given value, and return the original value of the variable.
@@ -274,7 +275,7 @@ extern int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
 /**
  * Initialize the LF clock. Must be called before using other clock-related APIs.
  */
-extern void _lf_initialize_clock(void);
+void _lf_initialize_clock(void);
 
 /**
  * Fetch the value of an internal (and platform-specific) physical clock and
@@ -285,14 +286,14 @@ extern void _lf_initialize_clock(void);
  *
  * @return 0 for success, or -1 for failure
  */
-extern int _lf_clock_now(instant_t* t);
+int _lf_clock_now(instant_t* t);
 
 /**
  * Pause execution for a given duration.
  * 
  * @return 0 for success, or -1 for failure.
  */
-extern int lf_sleep(interval_t sleep_duration);
+int lf_sleep(interval_t sleep_duration);
 
 /**
  * @brief Sleep until the given wakeup time. Assumes the lock for the
@@ -302,7 +303,7 @@ extern int lf_sleep(interval_t sleep_duration);
  * @param wakeup_time The time instant at which to wake up.
  * @return int 0 if sleep completed, or -1 if it was interrupted.
  */
-extern int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time);
+int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time);
 
 /**
  * Macros for marking function as deprecated
@@ -318,7 +319,7 @@ extern int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wa
 /**
  * @deprecated version of "lf_sleep"
  */
-DEPRECATED(extern int lf_nanosleep(interval_t sleep_duration));
+DEPRECATED(int lf_nanosleep(interval_t sleep_duration));
 
 #ifdef __cplusplus
 }

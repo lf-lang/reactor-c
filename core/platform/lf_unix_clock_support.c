@@ -16,22 +16,10 @@
  */
 interval_t _lf_time_epoch_offset = 0LL;
 
-/**
- * Convert a _lf_time_spec_t ('tp') to an instant_t representation in
- * nanoseconds.
- *
- * @return nanoseconds (long long).
- */
 instant_t convert_timespec_to_ns(struct timespec tp) {
     return tp.tv_sec * 1000000000 + tp.tv_nsec;
 }
 
-/**
- * Convert an instant_t ('t') representation in nanoseconds to a
- * _lf_time_spec_t.
- *
- * @return _lf_time_spec_t representation of 't'.
- */
 struct timespec convert_ns_to_timespec(instant_t t) {
     struct timespec tp;
     tp.tv_sec = t / 1000000000;
@@ -39,10 +27,6 @@ struct timespec convert_ns_to_timespec(instant_t t) {
     return tp;
 }
 
-/**
- * Calculate the necessary offset to bring _LF_CLOCK in parity with the epoch
- * time reported by CLOCK_REALTIME.
- */
 void calculate_epoch_offset(void) {
     if (_LF_CLOCK == CLOCK_REALTIME) {
         // Set the epoch offset to zero (see tag.h)
@@ -64,9 +48,6 @@ void calculate_epoch_offset(void) {
     }
 }
 
-/**
- * Initialize the LF clock.
- */
 void _lf_initialize_clock() {
     calculate_epoch_offset();
 }
