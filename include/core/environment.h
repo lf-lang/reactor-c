@@ -38,10 +38,10 @@
 
 #include "lf_types.h"
 #include "platform.h"
+#include "trace.h"
 
 // Forward declarations so that a pointers can appear in the environment struct.
 typedef struct lf_scheduler_t lf_scheduler_t;
-typedef struct trace_t trace_t;
 typedef struct mode_environment_t mode_environment_t;
 typedef struct enclave_info_t enclave_info_t;
 
@@ -79,6 +79,7 @@ typedef struct environment_t {
     int reset_reactions_size;
     mode_environment_t* modes;
     trace_t* trace;
+    int worker_thread_count;
 #ifdef LF_UNTHREADED
     pqueue_t *reaction_q;
 #endif 

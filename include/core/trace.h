@@ -507,6 +507,7 @@ void tracepoint_rti_from_federate(trace_t* trace, trace_event_t event_type, int 
 #endif // RTI_TRACE
 
 #else
+typedef struct trace_t trace_t;
 
 // empty definition in case we compile without tracing
 #define _lf_register_trace_event(...)
