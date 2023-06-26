@@ -24,6 +24,7 @@
  */
 
 #include "rti_remote.h"
+#include "net_util.h"
 #include <string.h>
 
 
