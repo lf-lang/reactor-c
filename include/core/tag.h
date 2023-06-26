@@ -115,7 +115,7 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval);
  * On many platforms, this is the number of nanoseconds
  * since January 1, 1970, but it is actually platform dependent.
  *
- * @param env The environment from which we want to curren time
+ * @param env The environment from which we want the current logical time.
  * @return A time instant.
  */
 instant_t lf_time_logical(void* env);
@@ -123,7 +123,7 @@ instant_t lf_time_logical(void* env);
 /**
  * Return the elapsed logical time in nanoseconds
  * since the start of execution.
- * @param env The environment from which we want to elapsed time
+ * @param env The environment from which we want the elapsed logical time.
  * @return A time interval.
  */
 interval_t lf_time_logical_elapsed(void *env);
