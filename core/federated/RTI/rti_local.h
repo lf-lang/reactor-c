@@ -1,3 +1,4 @@
+#ifdef LF_ENCLAVES
 #ifndef RTI_LOCAL_H
 #define RTI_LOCAL_H
 
@@ -89,4 +90,5 @@ void rti_request_stop(tag_t stop_tag);
  */
 void rti_update_other_net_locked(enclave_info_t * target, tag_t net);
 
+#endif
 #endif

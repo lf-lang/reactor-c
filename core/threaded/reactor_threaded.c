@@ -511,10 +511,12 @@ void _lf_next_locked(environment_t *env) {
     // Previous logical time is complete.
     tag_t next_tag = get_next_event_tag(env);
 
+#ifdef LF_ENCLAVES // FIXME: Avoid #ifdefs here
     tag_t grant_tag = rti_next_event_tag_locked(env->enclave_info, next_tag);
     if (lf_tag_compare(grant_tag, next_tag) < 0) return;
     next_tag = get_next_event_tag(env);
     // FIXME: What to do with that event queue checking for stop tag etc?
+#endif
 
 #ifdef FEDERATED_CENTRALIZED
     // In case this is in a federation with centralized coordination, notify
@@ -720,8 +722,9 @@ void _lf_initialize_start_tag(environment_t *env) {
     if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {
         _lf_trigger_shutdown_reactions(env);
     }
-
+#ifdef LF_ENCLAVES // FIXME: Avoid ifdefs 
     rti_next_event_tag_locked(env->enclave_info, env->current_tag);
+#endif
 #ifdef FEDERATED
     // Call wait_until if federated. This is required because the startup procedure
     // in synchronize_with_other_federates() can decide on a new start_time that is
@@ -987,10 +990,12 @@ void* worker(void* arg) {
         // False argument means don't wait for a reply.
         // FIXME: This probably needs to be here for federated. But for enclaves
         //  I need to send an LTC to unblock everyone
-        // send_next_event_tag(env, FOREVER_TAG, false);
-
         // FIXME: This seems logical for telling the others that you terminated
+#ifdef LF_ENCLAVES        
         rti_logical_tag_complete_locked(env->enclave_info, FOREVER_TAG);
+#else
+        send_next_event_tag(env, FOREVER_TAG, false);
+#endif
 
     }
 
@@ -1132,7 +1137,10 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         keepalive_specified = true;
     }
     // Initialize the local RTI
+    // FIXME: void ifdef
+    #ifdef LF_ENCLAVES
     initialize_local_rti(envs, num_envs);
+    #endif
     
     // Do environment-specific setup
     for (int i = 0; i<num_envs; i++) {
