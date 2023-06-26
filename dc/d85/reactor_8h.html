@@ -1054,7 +1054,7 @@ Functions intitializing and freeing memory for environments.</h1>
 </dl>
 <p>Pop all events from event_q with timestamp equal to current_tag.time, extract all the reactions triggered by these events, and stick them into the reaction queue. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are execution </td></tr>
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1138,7 +1138,7 @@ Functions intitializing and freeing memory for environments.</h1>
 <p>The first condition is that a stop has been requested and the trigger offset plus the extra delay is greater than zero. The second condition is that the trigger offset plus the extra delay is greater that the requested stop time (timeout). The third condition is that the trigger argument is null.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are execution </td></tr>
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
     <tr><td class="paramname">trigger</td><td>The trigger to be invoked at a later logical time. </td></tr>
     <tr><td class="paramname">extra_delay</td><td>The logical time delay, which gets added to the trigger's minimum delay, if it has one. If this number is negative, then zero is used instead. </td></tr>
     <tr><td class="paramname">token</td><td>The token wrapping the payload or NULL for no payload. </td></tr>

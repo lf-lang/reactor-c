@@ -428,6 +428,7 @@ Functions</h2></td></tr>
 <p>This has to be called before other functions of the scheduler can be used. If the scheduler is already initialized, this will be a no-op.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
     <tr><td class="paramname">number_of_workers</td><td>Indicate how many workers this scheduler will be managing. </td></tr>
     <tr><td class="paramname">option</td><td>Pointer to a <code><a class="el" href="../../dc/da2/structsched__params__t.html" title="Struct representing the most common scheduler parameters.">sched_params_t</a></code> struct containing additional scheduler parameters. </td></tr>
   </table>

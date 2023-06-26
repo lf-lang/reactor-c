@@ -334,7 +334,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 <p>Create dummy events to be used as spacers in the event queue. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are execution </td></tr>
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
     <tr><td class="paramname">trigger</td><td>The eventual event to be triggered. </td></tr>
     <tr><td class="paramname">time</td><td>The logical time of that event. </td></tr>
     <tr><td class="paramname">next</td><td>The event to place after the dummy events. </td></tr>
@@ -438,7 +438,13 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Initialize the given timer. If this timer has a zero offset, enqueue the reactions it triggers. If this timer is to trigger reactions at a <em>future</em> tag as well, schedule it accordingly. </p>
+<p>Initialize the given timer. If this timer has a zero offset, enqueue the reactions it triggers. If this timer is to trigger reactions at a <em>future</em> tag as well, schedule it accordingly. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
+    <tr><td class="paramname">timer</td><td>The timer to initialize. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -461,7 +467,7 @@ Variables</h2></td></tr>
 <p>Initialize all the timers in the environment. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are execution </td></tr>
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
   </table>
   </dd>
 </dl>
@@ -502,7 +508,7 @@ Variables</h2></td></tr>
 <p>Insert reactions triggered by trigger to the reaction queue...</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are execution </td></tr>
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
     <tr><td class="paramname">trigger</td><td>The trigger </td></tr>
     <tr><td class="paramname">token</td><td>The token wrapping the payload or NULL for no payload. </td></tr>
   </table>
@@ -546,7 +552,7 @@ Variables</h2></td></tr>
 <p>Invoke the given reaction</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are execution </td></tr>
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
     <tr><td class="paramname">reaction</td><td>The reaction that has just executed. </td></tr>
     <tr><td class="paramname">worker</td><td>The thread number of the worker thread or 0 for unthreaded execution (for tracing). </td></tr>
   </table>
@@ -583,7 +589,7 @@ Variables</h2></td></tr>
 <p>A helper function that returns true if the provided tag is after stop tag.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are execution </td></tr>
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
     <tr><td class="paramname">tag</td><td>The tag to check against stop tag </td></tr>
   </table>
   </dd>
@@ -632,7 +638,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 <p>Pop all events from event_q with timestamp equal to current_tag.time, extract all the reactions triggered by these events, and stick them into the reaction queue. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are execution </td></tr>
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
   </table>
   </dd>
 </dl>
@@ -664,7 +670,13 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Recycle the given event. Zero it out and pushed it onto the recycle queue. </p>
+<p>Recycle the given event. Zero it out and pushed it onto the recycle queue. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
+    <tr><td class="paramname">e</td><td>The event to recycle. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -711,7 +723,7 @@ Variables</h2></td></tr>
 <p>The first condition is that a stop has been requested and the trigger offset plus the extra delay is greater than zero. The second condition is that the trigger offset plus the extra delay is greater that the requested stop time (timeout). The third condition is that the trigger argument is null.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are execution </td></tr>
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
     <tr><td class="paramname">trigger</td><td>The trigger to be invoked at a later logical time. </td></tr>
     <tr><td class="paramname">extra_delay</td><td>The logical time delay, which gets added to the trigger's minimum delay, if it has one. If this number is negative, then zero is used instead. </td></tr>
     <tr><td class="paramname">token</td><td>The token wrapping the payload or NULL for no payload. </td></tr>
@@ -765,7 +777,7 @@ Variables</h2></td></tr>
 <p>This function assumes the caller holds the mutex lock.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are execution </td></tr>
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
     <tr><td class="paramname">trigger</td><td>The trigger to be invoked at a later logical time. </td></tr>
     <tr><td class="paramname">tag</td><td>Logical tag of the event </td></tr>
     <tr><td class="paramname">token</td><td>The token wrapping the payload or NULL for no payload.</td></tr>
@@ -1017,7 +1029,7 @@ Variables</h2></td></tr>
 <p>Trigger 'reaction'.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are execution </td></tr>
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
     <tr><td class="paramname">reaction</td><td>The reaction. </td></tr>
     <tr><td class="paramname">worker_number</td><td>The ID of the worker that is making this call. 0 should be used if there is only one worker (e.g., when the program is using the unthreaded C runtime). -1 is used for an anonymous call in a context where a worker number does not make sense (e.g., the caller is not a worker thread). </td></tr>
   </table>
@@ -1045,7 +1057,7 @@ Variables</h2></td></tr>
 <p>Trigger all the shutdown reactions in our environment. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are execution </td></tr>
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1071,7 +1083,7 @@ Variables</h2></td></tr>
 <p>Trigger all the startup reactions in our environment. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are execution </td></tr>
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
   </table>
   </dd>
 </dl>
@@ -1203,7 +1215,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 <p>For the specified reaction, if it has produced outputs, insert the resulting triggered reactions into the reaction queue. This procedure assumes the mutex lock is NOT held and grabs the lock only when it actually inserts something onto the reaction queue. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>Environment in which we are execution </td></tr>
+    <tr><td class="paramname">env</td><td>Environment in which we are executing. </td></tr>
     <tr><td class="paramname">reaction</td><td>The reaction that has just executed. </td></tr>
     <tr><td class="paramname">worker</td><td>The thread number of the worker thread or 0 for unthreaded execution (for tracing). </td></tr>
   </table>

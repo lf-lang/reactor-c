@@ -12,8 +12,8 @@ var pythontarget_8c =
     [ "py_request_stop", "db/df4/pythontarget_8c.html#a1a013caac994b0b05697d0006bf8efcf", null ],
     [ "py_schedule", "db/df4/pythontarget_8c.html#ac7d72669abb0c6c907e9572da4962525", null ],
     [ "py_schedule_copy", "db/df4/pythontarget_8c.html#aa31dfccd134fe1fd4890c76b361f4a12", null ],
-    [ "global_environment", "db/df4/pythontarget_8c.html#a3d3ea6faf2e7cce5e60ad8c4c19091b9", null ],
     [ "global_pickler", "db/df4/pythontarget_8c.html#a9e1b0c9440f6e68b2d223b8fdb77fdca", null ],
     [ "globalPythonModule", "db/df4/pythontarget_8c.html#aad4157279f7160ddf49504923ab04ec8", null ],
-    [ "globalPythonModuleDict", "db/df4/pythontarget_8c.html#a497da135b6a264b24a24e36d14e78daa", null ]
+    [ "globalPythonModuleDict", "db/df4/pythontarget_8c.html#a497da135b6a264b24a24e36d14e78daa", null ],
+    [ "top_level_environment", "db/df4/pythontarget_8c.html#a9de058b2babd69a4ed9046fccc6e4f47", null ]
 ];
