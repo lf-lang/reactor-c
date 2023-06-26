@@ -1291,6 +1291,7 @@ void set_network_port_status(int portID, port_status_t status) {
  *  ports is known.
  */
 void update_last_known_status_on_input_ports(tag_t tag) {
+    LF_PRINT_DEBUG("In update_last_known_status_on_input ports.");
     bool notify = false;
     for (int i = 0; i < _lf_action_table_size; i++) {
         lf_action_base_t* input_port_action = _lf_action_for_port(i);
@@ -1314,13 +1315,13 @@ void update_last_known_status_on_input_ports(tag_t tag) {
             //}
         }
     }
-    update_max_level(tag, false);
     // Then, check if any control reaction is waiting.
     // If so, notify them.
     // FIXME: We could put a condition variable into the trigger_t
     // struct for each network input port, in which case this won't
     // be a broadcast but rather a targetted signal.
     if (notify) {
+        update_max_level(tag, false);
         // Notify network input control reactions
         lf_cond_broadcast(&port_status_changed);
     }
@@ -1469,20 +1470,20 @@ void enqueue_network_output_control_reactions(){
         return;
     }
 #endif
-    LF_PRINT_DEBUG("Executing output control reactions.");
+    LF_PRINT_DEBUG("Executing output control reactions at time %lld.", (long long) (current_tag.time - start_time));
     if (numSenderReactions == 0) {
         // There are no network output control reactions
         LF_PRINT_DEBUG("No output control reactions.");
         return;
     }
-    // for (int i = 0; i < numSenderReactions; i++) {
-    //     reaction_t* reaction = portAbsentReaction[i];
-    //     if (reaction->status == inactive) {
-    //         reaction->is_a_control_reaction = true;
-    //         LF_PRINT_DEBUG("Executing network output control reaction on reaction queue.");
-    //         _lf_trigger_reaction(reaction, -1);
-    //     }
-    // }
+    for (int i = 0; i < numSenderReactions; i++) {
+        reaction_t* reaction = portAbsentReaction[i];
+        if (reaction->status == inactive) {
+            reaction->is_a_control_reaction = true;
+            LF_PRINT_DEBUG("Executing network output control reaction on reaction queue.");
+            _lf_trigger_reaction(reaction, -1);
+        }
+    }
 }
 
 
@@ -2196,6 +2197,7 @@ void* update_ports_from_staa_offsets(void* args) {
                     lf_action_base_t* input_port_action = staaElem->actions[j];
                     if (input_port_action->trigger->status == unknown) {
                         input_port_action->trigger->status = absent;
+                        LF_PRINT_DEBUG("Assuming port absent.");
                         update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
                         lf_cond_broadcast(&port_status_changed);
                     }
