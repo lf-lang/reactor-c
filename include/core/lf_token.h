@@ -360,6 +360,7 @@ token_freed _lf_done_using(lf_token_t* token);
  * @brief Free token copies made for mutable inputs.
  * This function should be called at the beginning of each time step
  * to avoid memory leaks.
+ * @param env Environment in which we are executing.
  */
 void _lf_free_token_copies(struct environment_t* env);
 

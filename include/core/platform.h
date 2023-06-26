@@ -45,6 +45,7 @@ extern "C" {
 #endif
 
 #include "tag.h"
+#include <assert.h>
 
 // Forward declarations
 typedef struct environment_t environment_t;

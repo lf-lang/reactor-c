@@ -1,3 +1,4 @@
+#include <assert.h>
 #include "scheduler_instance.h"
 #include "reactor_common.h"
 #include "lf_types.h"
@@ -8,8 +9,10 @@ bool init_sched_instance(
     environment_t * env,
     lf_scheduler_t** instance,
     size_t number_of_workers,
-    sched_params_t* params) {
+    sched_params_t* params
+) {
     
+    assert(env != GLOBAL_ENVIRONMENT);
     lf_assert(env, "`init_sched_instance` called without env pointer being set");
 
     // Check if the instance is already initialized
