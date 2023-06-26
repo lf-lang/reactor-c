@@ -1216,10 +1216,10 @@ instant_t get_start_time_from_rti(instant_t my_physical_time) {
 
 extern lf_action_base_t* _lf_action_table[];
 extern size_t _lf_action_table_size;
-extern reaction_t* networkInputReactions[];
-extern size_t numNetworkInputReactions;
-extern reaction_t* portAbsentReaction[];
-extern size_t numSenderReactions;
+extern reaction_t* network_input_reactions[];
+extern size_t num_network_input_reactions;
+extern reaction_t* port_absent_reaction[];
+extern size_t num_sender_reactions;
 #ifdef FEDERATED_DECENTRALIZED
 extern staa_t* staa_lst[];
 extern size_t staa_lst_size;
@@ -1471,13 +1471,13 @@ void enqueue_network_output_control_reactions(){
     }
 #endif
     LF_PRINT_DEBUG("Executing output control reactions at time %lld.", (long long) (current_tag.time - start_time));
-    if (numSenderReactions == 0) {
+    if (num_sender_reactions == 0) {
         // There are no network output control reactions
         LF_PRINT_DEBUG("No output control reactions.");
         return;
     }
-    for (int i = 0; i < numSenderReactions; i++) {
-        reaction_t* reaction = portAbsentReaction[i];
+    for (int i = 0; i < num_sender_reactions; i++) {
+        reaction_t* reaction = port_absent_reaction[i];
         if (reaction->status == inactive) {
             reaction->is_a_control_reaction = true;
             LF_PRINT_DEBUG("Executing network output control reaction on reaction queue.");
