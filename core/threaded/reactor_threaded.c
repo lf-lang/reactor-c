@@ -91,10 +91,9 @@ lf_mutex_t global_mutex;
  * is larger. If the existing barrier is earlier
  * than future_tag, this function will not change the barrier. If there are
  * no existing barriers and future_tag is in the past relative to the
- * current tag, this function will raise a barrier to the current tag.
+ * current tag, this function will raise a barrier to the current tag plus one microstep.
  *
- * This function assumes the mutex lock is already held, thus, it will not
- * acquire it itself.
+ * This function assumes the mutex on the specified environment is held by the caller.
  *
  * @note This function is only useful in threaded applications to facilitate
  *  certain non-blocking functionalities such as receiving timed messages
@@ -106,7 +105,7 @@ lf_mutex_t global_mutex;
  * If future_tag is in the past (or equals to current logical time), the runtime
  * will freeze advancement of logical time.
  */
-void _lf_increment_global_tag_barrier_already_locked(environment_t *env, tag_t future_tag) {
+void _lf_increment_global_tag_barrier_locked(environment_t *env, tag_t future_tag) {
     assert(env != GLOBAL_ENVIRONMENT);
 
     // Check if future_tag is after stop tag.
@@ -182,7 +181,7 @@ void _lf_increment_global_tag_barrier_already_locked(environment_t *env, tag_t f
 void _lf_increment_global_tag_barrier(environment_t *env, tag_t future_tag) {
     assert(env != GLOBAL_ENVIRONMENT);
     lf_mutex_lock(&env->mutex);
-    _lf_increment_global_tag_barrier_already_locked(env, future_tag);
+    _lf_increment_global_tag_barrier_locked(env, future_tag);
     lf_mutex_unlock(&env->mutex);
 }
 
@@ -223,7 +222,7 @@ void _lf_decrement_global_tag_barrier_locked(environment_t* env) {
 /**
  * If the proposed_tag is greater than or equal to a barrier tag that has been
  * set by a call to _lf_increment_global_tag_barrier or
- * _lf_increment_global_tag_barrier_already_locked, and if there are requestors
+ * _lf_increment_global_tag_barrier_locked, and if there are requestors
  * still pending on that barrier, then wait until all requestors have been
  * satisfied. This is used in federated execution when an incoming timed
  * message has been partially read so that we know its tag, but the rest of

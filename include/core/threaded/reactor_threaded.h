@@ -15,7 +15,7 @@ void enqueue_network_input_control_reactions(environment_t* env);
  * @param env The environment in which we are executing
  */
 void enqueue_network_output_control_reactions(environment_t* env);
-void _lf_increment_global_tag_barrier_already_locked(environment_t *env, tag_t future_tag);
+void _lf_increment_global_tag_barrier_locked(environment_t *env, tag_t future_tag);
 void _lf_increment_global_tag_barrier(environment_t *env, tag_t future_tag);
 void _lf_decrement_global_tag_barrier_locked(environment_t* env);
 int _lf_wait_on_global_tag_barrier(environment_t* env, tag_t proposed_tag);

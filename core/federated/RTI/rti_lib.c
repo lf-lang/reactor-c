@@ -566,7 +566,7 @@ bool _lf_rti_stop_granted_already_sent_to_federates = false;
  *
  * This function assumes the caller holds the _RTI.rti_mutex lock.
  */
-void _lf_rti_broadcast_stop_time_to_federates_already_locked() {
+void _lf_rti_broadcast_stop_time_to_federates_locked() {
     if (_lf_rti_stop_granted_already_sent_to_federates == true) {
         return;
     }
@@ -607,7 +607,7 @@ void mark_federate_requesting_stop(federate_t* fed) {
     if (_f_rti->num_enclaves_handling_stop == _f_rti->number_of_enclaves) {
         // We now have information about the stop time of all
         // federates.
-        _lf_rti_broadcast_stop_time_to_federates_already_locked();
+        _lf_rti_broadcast_stop_time_to_federates_locked();
     }
 }
 

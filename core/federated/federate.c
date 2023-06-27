@@ -1688,7 +1688,7 @@ void wait_until_port_status_known(environment_t* env, int port_ID, interval_t ST
  *  scalar and 0 for no payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-static trigger_handle_t schedule_message_received_from_network_already_locked(
+static trigger_handle_t schedule_message_received_from_network_locked(
         environment_t* env,
         trigger_t* trigger,
         tag_t tag,
@@ -2068,7 +2068,7 @@ void handle_tagged_message(environment_t* env, int socket, int fed_id) {
         }
 
         LF_PRINT_LOG("Calling schedule with tag " PRINTF_TAG ".", intended_tag.time - start_time, intended_tag.microstep);
-        schedule_message_received_from_network_already_locked(env, action->trigger, intended_tag, message_token);
+        schedule_message_received_from_network_locked(env, action->trigger, intended_tag, message_token);
     }
 
 
@@ -2302,7 +2302,7 @@ void _lf_fd_send_stop_request_to_rti(environment_t* env) {
     }
     LF_PRINT_LOG("Requesting the whole program to stop.");
     // Raise a logical time barrier at the current tag.
-    _lf_increment_global_tag_barrier_already_locked(env, env->current_tag);
+    _lf_increment_global_tag_barrier_locked(env, env->current_tag);
 
     // Send a stop request with the current tag to the RTI
     unsigned char buffer[MSG_TYPE_STOP_REQUEST_LENGTH];
@@ -2440,7 +2440,7 @@ void handle_stop_request_message(environment_t* env) {
 
     // Raise a barrier at current tag
     // because we are sending it to the RTI
-    _lf_increment_global_tag_barrier_already_locked(env, tag_to_stop);
+    _lf_increment_global_tag_barrier_locked(env, tag_to_stop);
 
     // A subsequent call to lf_request_stop will be a no-op.
     _fed.sent_a_stop_request_to_rti = true;
