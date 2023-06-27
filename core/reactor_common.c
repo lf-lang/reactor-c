@@ -486,12 +486,6 @@ void _lf_pop_events() {
         event = (event_t*)pqueue_peek(event_q);
     };
 
-#ifdef FEDERATED
-    // Insert network dependent reactions for network input and output ports into
-    // the reaction queue
-    enqueue_network_output_control_reactions();
-#endif // FEDERATED
-
     LF_PRINT_DEBUG("There are %zu events deferred to the next microstep.", pqueue_size(next_q));
 
     // After populating the reaction queue, see if there are things on the

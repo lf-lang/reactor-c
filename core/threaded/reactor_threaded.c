@@ -651,8 +651,9 @@ void _lf_next_locked() {
     // stick them into the reaction queue.
     _lf_pop_events();
 #ifdef FEDERATED
+    enqueue_network_output_control_reactions();
     // _lf_pop_events may have set some triggers present.
-extern federate_instance_t _fed;
+    extern federate_instance_t _fed;
     update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
 #endif
 }
@@ -774,12 +775,6 @@ void _lf_initialize_start_tag() {
     // Each federate executes the start tag (which is the current
     // tag). Inform the RTI of this if needed.
     send_next_event_tag(current_tag, true);
-
-    // Depending on RTI's answer, if any, enqueue network control reactions,
-    // which will selectively block reactions that depend on network input ports
-    // until they receive further instructions (to unblock) from the RTI or the
-    // upstream federates.
-    enqueue_network_output_control_reactions();
 #endif
 
 #ifdef FEDERATED_DECENTRALIZED
@@ -945,13 +940,13 @@ void _lf_worker_invoke_reaction(int worker_number, reaction_t* reaction) {
  * stall the advance until we know that we can safely execute the next level
  * given knowledge about upstream network port statuses.
  * 
- * @param curr_reaction_level 
+ * @param next_reaction_level
  */
-void try_advance_level(size_t* curr_reaction_level) {
+void try_advance_level(size_t* next_reaction_level) {
     #ifdef FEDERATED
-    stall_advance_level_federation(*curr_reaction_level);
+    stall_advance_level_federation(*next_reaction_level);
     #endif
-    *curr_reaction_level += 1;
+    *next_reaction_level += 1;
 }
 /**
  * The main looping logic of each LF worker thread.
@@ -967,7 +962,7 @@ void _lf_worker_do_work(int worker_number) {
     // lf_print_snapshot(); // This is quite verbose (but very useful in debugging reaction deadlocks).
     reaction_t* current_reaction_to_execute = NULL;
 #ifdef FEDERATED
-    stall_advance_level_federation(-1);
+    stall_advance_level_federation(0);
 #endif
     while ((current_reaction_to_execute =
             lf_sched_get_ready_reaction(worker_number))

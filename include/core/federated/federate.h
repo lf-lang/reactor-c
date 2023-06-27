@@ -358,7 +358,7 @@ void enqueue_network_output_control_reactions(void);
  * @brief Prevent the advancement to the next level of the reaction queue until the
  *        level we try to advance to is known to be under the max level allowed to advance.
  *
- * @param curr_reaction_level
+ * @param next_reaction_level
  */
 void stall_advance_level_federation(size_t);
 

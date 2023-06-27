@@ -1461,7 +1461,7 @@ port_status_t get_current_port_status(int portID) {
  * Enqueue network output control reactions that will send a MSG_TYPE_PORT_ABSENT
  * message to downstream federates if a given network output port is not present.
  */
-void enqueue_network_output_control_reactions(){
+void enqueue_network_output_control_reactions() {
 #ifdef FEDERATED_CENTRALIZED
     if (!_fed.has_downstream) {
         // This federate is not connected to any downstream federates via a
@@ -1470,17 +1470,16 @@ void enqueue_network_output_control_reactions(){
         return;
     }
 #endif
-    LF_PRINT_DEBUG("Executing output control reactions at time %lld.", (long long) (current_tag.time - start_time));
+    LF_PRINT_DEBUG("Enqueueing port absent reactions at time %lld.", (long long) (current_tag.time - start_time));
     if (num_sender_reactions == 0) {
-        // There are no network output control reactions
-        LF_PRINT_DEBUG("No output control reactions.");
+        LF_PRINT_DEBUG("No port absent reactions.");
         return;
     }
     for (int i = 0; i < num_sender_reactions; i++) {
         reaction_t* reaction = port_absent_reaction[i];
-        if (reaction->status == inactive) {
+        if (reaction && reaction->status == inactive) {
             reaction->is_a_control_reaction = true;
-            LF_PRINT_DEBUG("Executing network output control reaction on reaction queue.");
+            LF_PRINT_DEBUG("Enqueueing port absent reaction.");
             _lf_trigger_reaction(reaction, -1);
         }
     }
@@ -1882,15 +1881,15 @@ void handle_message(int socket, int fed_id) {
  * @brief Prevent the advancement to the next level of the reaction queue until the
  *        level we try to advance to is known to be under the max level allowed to advance.
  *
- * @param curr_reaction_level
+ * @param next_reaction_level
  */
-void stall_advance_level_federation(size_t curr_reaction_level) {
+void stall_advance_level_federation(size_t next_reaction_level) {
     lf_mutex_lock(&mutex);
-    LF_PRINT_DEBUG("Waiting on MLAA with curr_reaction_level %d and MLAA %d.", curr_reaction_level, max_level_allowed_to_advance);
-    while (((int) curr_reaction_level) + 1 >= max_level_allowed_to_advance) {
+    LF_PRINT_DEBUG("Waiting on MLAA with next_reaction_level %d and MLAA %d.", next_reaction_level, max_level_allowed_to_advance);
+    while (((int) next_reaction_level) >= max_level_allowed_to_advance) {
         lf_cond_wait(&port_status_changed);
     };
-    LF_PRINT_DEBUG("Exiting wait with MLAA %d and curr_reaction_level %d at time %lld.", max_level_allowed_to_advance, curr_reaction_level, (long long) (current_tag.time - start_time));
+    LF_PRINT_DEBUG("Exiting wait with MLAA %d and next_reaction_level %d at time %lld.", max_level_allowed_to_advance, next_reaction_level, (long long) (current_tag.time - start_time));
     lf_mutex_unlock(&mutex);
 }
 
@@ -2171,7 +2170,8 @@ void update_max_level(tag_t tag, bool is_provisional) {
     }
     for (int i = 0; i < _lf_action_table_size; i++) {
         lf_action_base_t* input_port_action = _lf_action_for_port(i);
-        if (input_port_action->trigger->status == unknown && !input_port_action->trigger->is_physical) {
+        if (lf_tag_compare(tag,
+            input_port_action->trigger->last_known_status_tag) > 0 && !input_port_action->trigger->is_physical) {
             max_level_allowed_to_advance = LF_MIN(max_level_allowed_to_advance, ((int) LF_LEVEL(input_port_action->trigger->reactions[0]->index)));
         }
     }

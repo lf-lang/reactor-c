@@ -126,7 +126,7 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
 #endif
     // Do not enqueue this reaction twice.
     if (reaction->status == inactive) {
-        LF_PRINT_DEBUG("Enqueing downstream reaction %s, which has level %lld.",
+        LF_PRINT_DEBUG("Enqueueing downstream reaction %s, which has level %lld.",
         		reaction->name, reaction->index & 0xffffLL);
         reaction->status = queued;
         if (pqueue_insert(reaction_q, reaction) != 0) {
