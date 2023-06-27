@@ -479,6 +479,11 @@ void tracepoint_federate_to_federate(trace_t* trace, trace_event_t event_type, i
  */
 void tracepoint_federate_from_federate(trace_t* trace, trace_event_t event_type, int fed_id, int partner_id, tag_t *tag);
 
+#else
+#define tracepoint_federate_to_rti(...);
+#define tracepoint_federate_from_rti(...);
+#define tracepoint_federate_to_federate(...) ;
+#define tracepoint_federate_from_federate(...) ;
 #endif // FEDERATED
 
 ////////////////////////////////////////////////////////////
@@ -504,6 +509,9 @@ void tracepoint_rti_to_federate(trace_t* trace, trace_event_t event_type, int fe
  */
 void tracepoint_rti_from_federate(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag);
 
+#else
+#define tracepoint_rti_to_federate(...);
+#define tracepoint_rti_from_federate(...) ;
 #endif // RTI_TRACE
 
 #else

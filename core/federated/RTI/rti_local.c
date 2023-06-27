@@ -158,7 +158,7 @@ void rti_request_stop_locked(enclave_info_t* enclave, tag_t stop_tag) {
     NET_LOCKED_EPILOGUE(enclave);
 }
 
-void rti_update_other_net_locked(enclave_info_t * target, tag_t net) {
+void rti_update_other_net_locked(enclave_info_t* dest, enclave_info_t * target, tag_t net) {
     lf_mutex_lock(&rti_mutex);
 
     // If our proposed NET is less than the current NET, update it
