@@ -258,15 +258,6 @@ void handle_logical_tag_complete(federate_t* fed);
 void handle_next_event_tag(federate_t* fed);
 
 /////////////////// STOP functions ////////////////////
-/**
- * Once the RTI has seen proposed tags from all connected federates,
- * it will broadcast a MSG_TYPE_STOP_GRANTED carrying the _RTI.max_stop_tag.
- * This function also checks the most recently received NET from
- * each federate and resets that be no greater than the _RTI.max_stop_tag.
- *
- * This function assumes the caller holds the _RTI.rti_mutex lock.
- */
-void _lf_rti_broadcast_stop_time_to_federates_already_locked();
 
 /**
  * Mark a federate requesting stop.

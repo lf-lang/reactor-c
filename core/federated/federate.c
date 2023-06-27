@@ -1648,7 +1648,7 @@ void wait_until_port_status_known(environment_t* env, int port_ID, interval_t ST
     // for the current tag could have been received in time
     // but not the the body of the message.
     // Wait on the tag barrier based on the current tag. 
-    _lf_wait_on_global_tag_barrier(env, env->current_tag);
+    _lf_wait_ontag_barrier(env, env->current_tag);
 
     // Done waiting
     // If the status of the port is still unknown, assume it is absent.
@@ -1910,7 +1910,7 @@ void handle_message(int socket, int fed_id) {
  * and calculate an offset to pass to the schedule function.
  * This function assumes the caller does not hold the mutex lock.
  * Instead of holding the mutex lock, this function calls
- * _lf_increment_global_tag_barrier with the tag carried in
+ * _lf_incrementtag_barrier with the tag carried in
  * the message header as an argument. This ensures that the current tag
  * will not advance to the tag of the message if it is in the future, or
  * the tag will not advance at all if the tag of the message is
@@ -1967,7 +1967,7 @@ void handle_tagged_message(environment_t* env, int socket, int fed_id) {
     // by the message. If this tag is in the past, the function will cause
     // the tag to freeze at the current level.
     // If something happens, make sure to release the barrier.
-    _lf_increment_global_tag_barrier(env, intended_tag);
+    _lf_incrementtag_barrier(env, intended_tag);
 #endif
     LF_PRINT_LOG("Received message with tag: " PRINTF_TAG ", Current tag: " PRINTF_TAG ".",
             intended_tag.time - start_time, intended_tag.microstep,
@@ -2075,7 +2075,7 @@ void handle_tagged_message(environment_t* env, int socket, int fed_id) {
 #ifdef FEDERATED_DECENTRALIZED // Only applicable for federated programs with decentralized coordination
     // Finally, decrement the barrier to allow the execution to continue
     // past the raised barrier
-    _lf_decrement_global_tag_barrier_locked(env);
+    _lf_decrementtag_barrier_locked(env);
 #endif
 
     // The mutex is unlocked here after the barrier on
@@ -2302,7 +2302,7 @@ void _lf_fd_send_stop_request_to_rti(environment_t* env) {
     }
     LF_PRINT_LOG("Requesting the whole program to stop.");
     // Raise a logical time barrier at the current tag.
-    _lf_increment_global_tag_barrier_locked(env, env->current_tag);
+    _lf_incrementtag_barrier_locked(env, env->current_tag);
 
     // Send a stop request with the current tag to the RTI
     unsigned char buffer[MSG_TYPE_STOP_REQUEST_LENGTH];
@@ -2369,7 +2369,7 @@ void handle_stop_granted_message(environment_t* env) {
                 env->stop_tag.time - start_time,
                 env->stop_tag.microstep);
 
-    _lf_decrement_global_tag_barrier_locked(env);
+    _lf_decrementtag_barrier_locked(env);
     // We signal instead of broadcast under the assumption that only
     // one worker thread can call wait_until at a given time because
     // the call to wait_until is protected by a mutex lock
@@ -2440,7 +2440,7 @@ void handle_stop_request_message(environment_t* env) {
 
     // Raise a barrier at current tag
     // because we are sending it to the RTI
-    _lf_increment_global_tag_barrier_locked(env, tag_to_stop);
+    _lf_incrementtag_barrier_locked(env, tag_to_stop);
 
     // A subsequent call to lf_request_stop will be a no-op.
     _fed.sent_a_stop_request_to_rti = true;
