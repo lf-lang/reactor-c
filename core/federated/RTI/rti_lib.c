@@ -204,7 +204,6 @@ void notify_tag_advance_grant(enclave_t* e, tag_t tag) {
         if (bytes_written < 0) {
             e->state = NOT_CONNECTED;
             // FIXME: We need better error handling, but don't stop other execution here.
-            // mark_federate_requesting_stop(fed);
         }
     } else {
         e->last_granted = tag;
@@ -245,7 +244,6 @@ void notify_provisional_tag_advance_grant(enclave_t* e, tag_t tag) {
         if (bytes_written < 0) {
             e->state = NOT_CONNECTED;
             // FIXME: We need better error handling, but don't stop other execution here.
-            // mark_federate_requesting_stop(fed);
         }
     } else {
         e->last_provisionally_granted = tag;
@@ -560,6 +558,14 @@ void handle_next_event_tag(federate_t* fed) {
  */
 bool _lf_rti_stop_granted_already_sent_to_federates = false;
 
+/**
+ * Once the RTI has seen proposed tags from all connected federates,
+ * it will broadcast a MSG_TYPE_STOP_GRANTED carrying the _RTI.max_stop_tag.
+ * This function also checks the most recently received NET from
+ * each federate and resets that be no greater than the _RTI.max_stop_tag.
+ *
+ * This function assumes the caller holds the _RTI.rti_mutex lock.
+ */
 void _lf_rti_broadcast_stop_time_to_federates_already_locked() {
     if (_lf_rti_stop_granted_already_sent_to_federates == true) {
         return;
@@ -924,7 +930,6 @@ void* clock_synchronization_thread(void* noargs) {
                 // FIXME: We need better error handling here, but clock sync failure
                 // should not stop execution.
                 lf_print_error("Clock sync failed with federate %d. Not connected.", fed_id);
-                // mark_federate_requesting_stop(&fed);
                 continue;
             } else if (!fed->clock_synchronization_enabled) {
                 continue;
@@ -1002,8 +1007,6 @@ void handle_federate_resign(federate_t *my_fed) {
     }
 
     my_fed->enclave.state = NOT_CONNECTED;
-    // FIXME: The following results in spurious error messages.
-    // mark_federate_requesting_stop(my_fed);
 
     // Indicate that there will no further events from this federate.
     my_fed->enclave.next_event = FOREVER_TAG;
@@ -1046,8 +1049,7 @@ void* federate_thread_TCP(void* fed) {
             lf_print_warning("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
             my_fed->enclave.state = NOT_CONNECTED;
             my_fed->socket = -1;
-            // FIXME: We need better error handling here, but this is probably not the right thing to do.
-            // mark_federate_requesting_stop(my_fed);
+            // FIXME: We need better error handling here, but do not stop execution here.
             break;
         }
         LF_PRINT_DEBUG("RTI: Received message type %u from federate %d.", buffer[0], my_fed->enclave.id);
