@@ -155,6 +155,7 @@ static void environment_free_federated(environment_t* env) {
 }
 
 void environment_free(environment_t* env) {
+    free(env->name);
     free(env->timer_triggers);
     free(env->startup_reactions);
     free(env->shutdown_reactions);
@@ -175,6 +176,7 @@ void environment_free(environment_t* env) {
 
 int environment_init(
     environment_t* env,
+    const char *name, 
     int id,
     int num_workers,
     int num_timers, 
@@ -187,6 +189,10 @@ int environment_init(
     const char * trace_file_name
 ) {
 
+    env->name = malloc(strlen(name) + 1);  // +1 for the null terminator
+    lf_assert(env->name != NULL, "Out of memory");
+    strcpy(env->name, name);
+    
     env->id = id;
     env->stop_tag = FOREVER_TAG;
 

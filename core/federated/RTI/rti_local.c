@@ -85,10 +85,6 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
     }
 
     NET_LOCKED_PROLOGUE(e);
-
-    // TODO: To support federated scheduling enclaves we must here potentially
-    // Early exit if we only have a single enclave. 
-
     // First, update the enclave data structure to record this next_event_tag,
     // and notify any downstream reactor_nodes, and unblock them if appropriate.
     tag_advance_grant_t result;
@@ -122,12 +118,12 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
             result.is_provisional = false;
             break;
         }
-        // FIXME: Lets try not doing any PTAG stuff. I think it is possible in absense of ZDC
-        if (lf_tag_compare(previous_ptag, e->base.last_provisionally_granted) < 0) {
-            result.tag = e->base.last_provisionally_granted;
-            result.is_provisional = true;
-            break;
-        }
+        // FIXME: Is it okay to ignore updates to PTAG here?
+        // if (lf_tag_compare(previous_ptag, e->base.last_provisionally_granted) < 0) {
+        //     result.tag = e->base.last_provisionally_granted;
+        //     result.is_provisional = true;
+        //     break;
+        // }
 
         // If not, block.
     LF_PRINT_LOG("RTI: enclave %u sleeps waiting for TAG to" PRINTF_TAG " ",
@@ -156,8 +152,10 @@ void rti_logical_tag_complete_locked(enclave_info_t* enclave, tag_t completed) {
     LTC_LOCKED_EPILOGUE(enclave);
 }
 
-void rti_request_stop(tag_t stop_tag) {
+void rti_request_stop_locked(enclave_info_t* enclave, tag_t stop_tag) {
+    NET_LOCKED_PROLOGUE(enclave);
     lf_assert(false, "Not implemented yet");
+    NET_LOCKED_EPILOGUE(enclave);
 }
 
 void rti_update_other_net_locked(enclave_info_t * target, tag_t net) {

@@ -73,7 +73,7 @@ void rti_logical_tag_complete_locked(enclave_info_t* enclave, tag_t completed);
  * 
  * @param stop_tag 
  */
-void rti_request_stop(tag_t stop_tag);
+void rti_request_stop_locked(enclave_info_t* enclave, tag_t tag);
 
 /**
  * @brief This functions is called after scheduling an event onto the event queue

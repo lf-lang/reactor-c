@@ -511,14 +511,16 @@ void _lf_next_locked(environment_t *env) {
     // Previous logical time is complete.
     tag_t next_tag = get_next_event_tag(env);
 
-#ifdef LF_ENCLAVES // FIXME: Avoid #ifdefs here
+#if defined LF_ENCLAVES // FIXME: Avoid #ifdefs here
     tag_t grant_tag = rti_next_event_tag_locked(env->enclave_info, next_tag);
     if (lf_tag_compare(grant_tag, next_tag) < 0) return;
-    next_tag = get_next_event_tag(env);
-    // FIXME: What to do with that event queue checking for stop tag etc?
-#endif
 
-#ifdef FEDERATED_CENTRALIZED
+    // Check for starvation
+    if(!keepalive_specified && lf_tag_compare(next_tag, FOREVER_TAG) == 0) {
+        _lf_set_stop_tag(env, (tag_t){.time=env->current_tag.time,.microstep=env->current_tag.microstep+1});
+        next_tag = get_next_event_tag(env);
+    }
+#elif defined FEDERATED_CENTRALIZED
     // In case this is in a federation with centralized coordination, notify
     // the RTI of the next earliest tag at which this federate might produce
     // an event. This function may block until it is safe to advance the current
@@ -649,7 +651,7 @@ void _lf_request_stop(environment_t *env) {
         lf_mutex_unlock(&env->mutex);
         return;
     }
-#ifdef FEDERATED
+#if defined FEDERATED
     _lf_fd_send_stop_request_to_rti(env);
     // Do not set stop_requested
     // since the RTI might grant a
@@ -657,6 +659,8 @@ void _lf_request_stop(environment_t *env) {
     // tag. The _lf_fd_send_request_stop_to_rti()
     // will raise a barrier at the current
     // logical time.
+#elif defined LF_ENCLAVES
+    rti_request_stop_locked(env->enclave_info, (tag_t) {.time = env->current_tag.time, .microstep = env->current_tag.microstep+1});
 #else
     // In a non-federated program, the stop_tag will be the next microstep
     _lf_set_stop_tag(env, (tag_t) {.time = env->current_tag.time, .microstep = env->current_tag.microstep+1});

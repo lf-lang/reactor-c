@@ -57,6 +57,7 @@ typedef struct enclave_info_t enclave_info_t;
  */
 typedef struct environment_t {
     bool initialized;
+    char *name;
     int id;
     tag_t current_tag;
     tag_t stop_tag;
@@ -117,6 +118,7 @@ struct mode_environment_t {
  */
 int environment_init(
     environment_t* env,
+    const char * name,
     int id,
     int num_workers,
     int num_timers, 
