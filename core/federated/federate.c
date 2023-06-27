@@ -1059,7 +1059,7 @@ void connect_to_rti(const char* hostname, int port) {
         // Get address structure matching hostname and hints criteria, and
         // set port to the port number provided in str. There should only 
         // ever be one matching address structure, and we connect to that.
-        int server = getaddrinfo(hostname, &str, &hints, &res);
+        int server = getaddrinfo(hostname, (const char*)&str, &hints, &res);
         if (server != 0) {
             lf_print_error_and_exit("No host for RTI matching given hostname: %s", hostname);
         }
@@ -2309,7 +2309,7 @@ void _lf_fd_send_stop_request_to_rti(tag_t stop_tag) {
     tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ, _lf_my_fed_id, &env->current_tag);
     write_to_socket_errexit_with_mutex(_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH,
             buffer, &outbound_socket_mutex,
-            "Failed to send stop time " PRINTF_TIME " to the RTI.", env->current_tag.time - start_time);
+            "Failed to send stop time " PRINTF_TIME " to the RTI.", stop_tag.time - start_time);
     lf_mutex_unlock(&outbound_socket_mutex);
     _fed.sent_a_stop_request_to_rti = true;
 }
@@ -2356,7 +2356,7 @@ void handle_stop_granted_message() {
                     env[i].stop_tag.time - start_time,
                     env[i].stop_tag.microstep);
 
-        _lf_decrement_tag_barrier_locked(env[i]);
+        _lf_decrement_tag_barrier_locked(&env[i]);
         // We signal instead of broadcast under the assumption that only
         // one worker thread can call wait_until at a given time because
         // the call to wait_until is protected by a mutex lock
