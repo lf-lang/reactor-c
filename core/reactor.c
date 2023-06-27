@@ -360,7 +360,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         signal(SIGINT, exit);
 #endif
         // Create and initialize the environment
-        _lf_create_environments();
+        _lf_create_environments();   // code-generated function
         environment_t *env;
         int num_environments = _lf_get_environments(&env);
         lf_assert(num_environments == 1,
