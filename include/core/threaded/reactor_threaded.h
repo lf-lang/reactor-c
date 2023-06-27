@@ -23,7 +23,7 @@ void enqueue_network_output_control_reactions(environment_t* env);
  * prevent any further advances. This function will increment the
  * total number of pending barrier requests. For each call to this
  * function, there should always be a subsequent call to
- * _lf_decrementtag_barrier_locked()
+ * _lf_decrement_tag_barrier_locked()
  * to release the barrier.
  *
  * If there is already a barrier raised at a tag later than future_tag, this
@@ -45,10 +45,10 @@ void enqueue_network_output_control_reactions(environment_t* env);
  * If future_tag is in the past (or equals to current logical time), the runtime
  * will freeze advancement of logical time.
  */
-void _lf_incrementtag_barrier(environment_t *env, tag_t future_tag);
+void _lf_increment_tag_barrier(environment_t *env, tag_t future_tag);
 
 /**
- * @brief Version of _lf_incrementtag_barrier to call when the caller holds the mutex.
+ * @brief Version of _lf_increment_tag_barrier to call when the caller holds the mutex.
  * This version does not acquire the mutex belonging to env.
  * 
  * @param env Environment within which we are executing.
@@ -57,7 +57,7 @@ void _lf_incrementtag_barrier(environment_t *env, tag_t future_tag);
  * If future_tag is in the past (or equals to current logical time), the runtime
  * will freeze advancement of logical time.
  */
-void _lf_incrementtag_barrier_locked(environment_t *env, tag_t future_tag);
+void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag);
 
 /**
  * Decrement the total number of pending barrier requests for the environment tag barrier.
@@ -73,7 +73,7 @@ void _lf_incrementtag_barrier_locked(environment_t *env, tag_t future_tag);
  *
  * @param env The environment in which we are executing.
  */
-void _lf_decrementtag_barrier_locked(environment_t* env);
+void _lf_decrement_tag_barrier_locked(environment_t* env);
 
 int _lf_wait_ontag_barrier(environment_t* env, tag_t proposed_tag);
 void synchronize_with_other_federates(environment_t* env);

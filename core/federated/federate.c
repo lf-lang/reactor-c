@@ -1910,7 +1910,7 @@ void handle_message(int socket, int fed_id) {
  * and calculate an offset to pass to the schedule function.
  * This function assumes the caller does not hold the mutex lock.
  * Instead of holding the mutex lock, this function calls
- * _lf_incrementtag_barrier with the tag carried in
+ * _lf_increment_tag_barrier with the tag carried in
  * the message header as an argument. This ensures that the current tag
  * will not advance to the tag of the message if it is in the future, or
  * the tag will not advance at all if the tag of the message is
@@ -1967,7 +1967,7 @@ void handle_tagged_message(environment_t* env, int socket, int fed_id) {
     // by the message. If this tag is in the past, the function will cause
     // the tag to freeze at the current level.
     // If something happens, make sure to release the barrier.
-    _lf_incrementtag_barrier(env, intended_tag);
+    _lf_increment_tag_barrier(env, intended_tag);
 #endif
     LF_PRINT_LOG("Received message with tag: " PRINTF_TAG ", Current tag: " PRINTF_TAG ".",
             intended_tag.time - start_time, intended_tag.microstep,
@@ -2075,7 +2075,7 @@ void handle_tagged_message(environment_t* env, int socket, int fed_id) {
 #ifdef FEDERATED_DECENTRALIZED // Only applicable for federated programs with decentralized coordination
     // Finally, decrement the barrier to allow the execution to continue
     // past the raised barrier
-    _lf_decrementtag_barrier_locked(env);
+    _lf_decrement_tag_barrier_locked(env);
 #endif
 
     // The mutex is unlocked here after the barrier on
@@ -2285,29 +2285,19 @@ void handle_provisional_tag_advance_grant(environment_t* env) {
 
 /**
  * Send a MSG_TYPE_STOP_REQUEST message to the RTI with payload equal
- * to the current tag plus one microstep.
- *
- * This function raises a global barrier on
- * logical tag at the current tag.
- *
- * This function assumes the caller holds the mutex lock.
- * @param env The environment of the federate
+ * to the specified tag plus one microstep.
  */
-void _lf_fd_send_stop_request_to_rti(environment_t* env) {
-    assert(env != GLOBAL_ENVIRONMENT);
-
+void _lf_fd_send_stop_request_to_rti(tag_t stop_tag) {
     // Do not send a stop request twice.
     if (_fed.sent_a_stop_request_to_rti == true) {
         return;
     }
     LF_PRINT_LOG("Requesting the whole program to stop.");
-    // Raise a logical time barrier at the current tag.
-    _lf_incrementtag_barrier_locked(env, env->current_tag);
 
-    // Send a stop request with the current tag to the RTI
+    // Send a stop request with the specified tag to the RTI
     unsigned char buffer[MSG_TYPE_STOP_REQUEST_LENGTH];
     // Stop at the next microstep
-    ENCODE_STOP_REQUEST(buffer, env->current_tag.time, env->current_tag.microstep + 1);
+    ENCODE_STOP_REQUEST(buffer, stop_tag.time, stop_tag.microstep + 1);
 
     lf_mutex_lock(&outbound_socket_mutex);
     if (_fed.socket_TCP_RTI < 0) {
@@ -2329,23 +2319,14 @@ void _lf_fd_send_stop_request_to_rti(environment_t* env) {
  *
  * This function removes the global barrier on
  * logical time raised when lf_request_stop() was
- * called.
- *
- * This function assumes the caller does not hold
- * the mutex lock, therefore, it acquires it.
- * @param env The environment of the federate
+ * called in the environment for each enclave.
  */
-void handle_stop_granted_message(environment_t* env) {
-    assert(env != GLOBAL_ENVIRONMENT);
+void handle_stop_granted_message() {
 
     size_t bytes_to_read = MSG_TYPE_STOP_GRANTED_LENGTH - 1;
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
             "Failed to read stop granted from RTI.");
-
-    // Acquire a mutex lock to ensure that this state does change while a
-    // message is transport or being used to determine a TAG.
-    lf_mutex_lock(&env->mutex);
 
     tag_t received_stop_tag = extract_tag(buffer);
 
@@ -2355,26 +2336,33 @@ void handle_stop_granted_message(environment_t* env) {
     LF_PRINT_LOG("Received from RTI a MSG_TYPE_STOP_GRANTED message with elapsed tag " PRINTF_TAG ".",
             received_stop_tag.time - start_time, received_stop_tag.microstep);
 
-    // Sanity check.
-    if (lf_tag_compare(received_stop_tag, env->current_tag) <= 0) {
-        lf_print_error("RTI granted a MSG_TYPE_STOP_GRANTED tag that is equal to or less than this federate's current tag " PRINTF_TAG ". "
-                "Stopping at the next microstep instead.",
-                env->current_tag.time - start_time, env->current_tag.microstep);
-        received_stop_tag = env->current_tag;
-        received_stop_tag.microstep++;
+    environment_t *env;
+    int num_environments = _lf_get_environments(&env);
+
+    for (int i = 0; i < num_environments; i++) {
+        lf_mutex_lock(&env[i].mutex);
+
+        // Sanity check.
+        if (lf_tag_compare(received_stop_tag, env[i].current_tag) <= 0) {
+            lf_print_error("RTI granted a MSG_TYPE_STOP_GRANTED tag that is equal to or less than this federate's current tag " PRINTF_TAG ". "
+                    "Stopping at the next microstep instead.",
+                    env[i].current_tag.time - start_time, env[i].current_tag.microstep);
+            received_stop_tag = env[i].current_tag;
+            received_stop_tag.microstep++;
+        }
+
+        env[i].stop_tag = received_stop_tag;
+        LF_PRINT_DEBUG("Setting the stop tag to " PRINTF_TAG ".",
+                    env[i].stop_tag.time - start_time,
+                    env[i].stop_tag.microstep);
+
+        _lf_decrement_tag_barrier_locked(env[i]);
+        // We signal instead of broadcast under the assumption that only
+        // one worker thread can call wait_until at a given time because
+        // the call to wait_until is protected by a mutex lock
+        lf_cond_signal(&env[i].event_q_changed);
+        lf_mutex_unlock(&env[i].mutex);
     }
-
-    env->stop_tag = received_stop_tag;
-    LF_PRINT_DEBUG("Setting the stop tag to " PRINTF_TAG ".",
-                env->stop_tag.time - start_time,
-                env->stop_tag.microstep);
-
-    _lf_decrementtag_barrier_locked(env);
-    // We signal instead of broadcast under the assumption that only
-    // one worker thread can call wait_until at a given time because
-    // the call to wait_until is protected by a mutex lock
-    lf_cond_signal(&env->event_q_changed);
-    lf_mutex_unlock(&env->mutex);
 }
 
 /**
@@ -2440,7 +2428,7 @@ void handle_stop_request_message(environment_t* env) {
 
     // Raise a barrier at current tag
     // because we are sending it to the RTI
-    _lf_incrementtag_barrier_locked(env, tag_to_stop);
+    _lf_increment_tag_barrier_locked(env, tag_to_stop);
 
     // A subsequent call to lf_request_stop will be a no-op.
     _fed.sent_a_stop_request_to_rti = true;
@@ -2654,7 +2642,7 @@ void* listen_to_rti_TCP(void* args) {
                 handle_stop_request_message(env);
                 break;
             case MSG_TYPE_STOP_GRANTED:
-                handle_stop_granted_message(env);
+                handle_stop_granted_message();
                 break;
             case MSG_TYPE_PORT_ABSENT:
                 handle_port_absent_message(env, _fed.socket_TCP_RTI, -1);

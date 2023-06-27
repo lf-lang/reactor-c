@@ -598,11 +598,11 @@ void _lf_rti_broadcast_stop_time_to_federates_locked() {
 }
 
 void mark_federate_requesting_stop(federate_t* fed) {
-    if (!fed->enclave.requested_stop) {
+    if (!fed->requested_stop) {
         // Assume that the federate
         // has requested stop
         _f_rti->num_enclaves_handling_stop++;
-        fed->enclave.requested_stop = true;
+        fed->requested_stop = true;
     }
     if (_f_rti->num_enclaves_handling_stop == _f_rti->number_of_enclaves) {
         // We now have information about the stop time of all
@@ -625,7 +625,7 @@ void handle_stop_request_message(federate_t* fed) {
 
     // Check whether we have already received a stop_tag
     // from this federate
-    if (fed->enclave.requested_stop) {
+    if (fed->requested_stop) {
         // Ignore this request
         lf_mutex_unlock(&rti_mutex);
         return;
@@ -666,7 +666,7 @@ void handle_stop_request_message(federate_t* fed) {
     // if we do not have a stop_time already for them.
     for (int i = 0; i < _f_rti->number_of_enclaves; i++) {
         federate_t *f = _f_rti->enclaves[i];
-        if (f->enclave.id != fed->enclave.id && f->enclave.requested_stop == false) {
+        if (f->enclave.id != fed->enclave.id && f->requested_stop == false) {
             if (f->enclave.state == NOT_CONNECTED) {
                 mark_federate_requesting_stop(f);
                 continue;
@@ -1530,6 +1530,7 @@ void* respond_to_erroneous_connections(void* nothing) {
 
 void initialize_federate(federate_t* fed, uint16_t id) {
     initialize_enclave(&(fed->enclave), id);
+    fed->requested_stop = false;
     fed->socket = -1;      // No socket.
     fed->clock_synchronization_enabled = true;
     fed->in_transit_message_tags = initialize_in_transit_message_q();

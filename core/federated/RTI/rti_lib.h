@@ -49,6 +49,9 @@ typedef enum socket_type_t {
  */
 typedef struct federate_t {
     enclave_t enclave;
+    bool requested_stop;    // Indicates that the federate has requested stop or has replied
+                            // to a request for stop from the RTI. Used to prevent double-counting
+                            // a federate when handling lf_request_stop().
     lf_thread_t thread_id;    // The ID of the thread handling communication with this federate.
     int socket;             // The TCP socket descriptor for communicating with this federate.
     struct sockaddr_in UDP_addr;           // The UDP address for the federate.

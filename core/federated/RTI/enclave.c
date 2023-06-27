@@ -31,7 +31,6 @@ void initialize_enclave(enclave_t* e, uint16_t id) {
     e->downstream = NULL;
     e->num_downstream = 0;
     e->mode = REALTIME;
-    e->requested_stop = false;
 
     // Initialize the next event condition variable.
     lf_cond_init(&e->next_event_condition, &rti_mutex);
