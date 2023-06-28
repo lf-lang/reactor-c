@@ -360,6 +360,8 @@ int send_timed_message(environment_t* env,
                         const char* next_destination_str,
                         size_t length,
                         unsigned char* message) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     unsigned char header_buffer[1 + sizeof(uint16_t) + sizeof(uint16_t)
              + sizeof(int32_t) + sizeof(instant_t) + sizeof(microstep_t)];
     // First byte identifies this as a timed message.
@@ -1417,6 +1419,7 @@ void mark_control_reaction_waiting(int portID, bool waiting) {
  * @param portID the ID of the port to determine status for
  */
 port_status_t get_current_port_status(environment_t* env, int portID) {
+    assert(env != GLOBAL_ENVIRONMENT);
     // Check whether the status of the port is known at the current tag.
     trigger_t* network_input_port_action = _lf_action_for_port(portID)->trigger;
     if (network_input_port_action->status == present) {
@@ -1448,6 +1451,7 @@ port_status_t get_current_port_status(environment_t* env, int portID) {
  * @param env The environment of the federate
  */
 void enqueue_network_input_control_reactions(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
 #ifdef FEDERATED_CENTRALIZED
     if (!_fed.has_upstream) {
         // This federate is not connected to any upstream federates via a
@@ -1476,6 +1480,7 @@ void enqueue_network_input_control_reactions(environment_t* env) {
  * @param env The environment of the federate
  */
 void enqueue_network_output_control_reactions(environment_t* env){
+    assert(env != GLOBAL_ENVIRONMENT);
 #ifdef FEDERATED_CENTRALIZED
     if (!_fed.has_downstream) {
         // This federate is not connected to any downstream federates via a
@@ -1506,6 +1511,7 @@ void enqueue_network_output_control_reactions(environment_t* env){
  * @param env The environment of the federate
  */
 void enqueue_network_control_reactions(environment_t *env) {
+    assert(env != GLOBAL_ENVIRONMENT);
     enqueue_network_output_control_reactions(env);
 #ifdef FEDERATED_CENTRALIZED
     // If the granted tag is not provisional, there is no
@@ -1534,6 +1540,8 @@ void enqueue_network_control_reactions(environment_t *env) {
 void send_port_absent_to_federate(environment_t* env, interval_t additional_delay,
                                     unsigned short port_ID,
                                   unsigned short fed_ID) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     // Construct the message
     size_t message_length = 1 + sizeof(port_ID) + sizeof(fed_ID) + sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[message_length];
@@ -1565,7 +1573,7 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
     // Do not write if the socket is closed.
     if (socket >= 0) {
         // Trace the event when tracing is enabled
-        tracepoint_federate_to_rti(_fed.trace, send_PORT_ABS, fed_ID, &current_message_intended_tag);
+        tracepoint_federate_to_rti(_fed.trace, send_PORT_ABS, _lf_my_fed_id, &current_message_intended_tag);
         write_to_socket_errexit_with_mutex(socket, message_length, buffer, &outbound_socket_mutex,
                 "Failed to send port absent message for port %hu to federate %hu.",
                 port_ID, fed_ID);
@@ -1586,6 +1594,8 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
  * @param STAA The safe-to-assume-absent threshold for the port
  */
 void wait_until_port_status_known(environment_t* env, int port_ID, interval_t STAA) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     // Need to lock the mutex to prevent
     // a race condition with the network
     // receiver logic.
@@ -1692,6 +1702,8 @@ static trigger_handle_t schedule_message_received_from_network_already_locked(
         trigger_t* trigger,
         tag_t tag,
         lf_token_t* token) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     // Return value of the function
     int return_value = 0;
 
@@ -1811,6 +1823,8 @@ void _lf_close_inbound_socket(int fed_id) {
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  */
 static void handle_port_absent_message(environment_t* env, int socket, int fed_id) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(socket, bytes_to_read, buffer,
@@ -1916,6 +1930,8 @@ void handle_message(int socket, int fed_id) {
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  */
 void handle_tagged_message(environment_t* env, int socket, int fed_id) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     // FIXME: Need better error handling?
     // Read the header which contains the timestamp.
     size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t)
@@ -2096,6 +2112,8 @@ void handle_tagged_message(environment_t* env, int socket, int fed_id) {
  *  it sets last_TAG_was_provisional to false.
  */
 void handle_tag_advance_grant(environment_t *env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
@@ -2176,6 +2194,8 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
  *  last known tag for input ports.
  */
 void handle_provisional_tag_advance_grant(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
@@ -2283,6 +2303,8 @@ void handle_provisional_tag_advance_grant(environment_t* env) {
  * @param env The environment of the federate
  */
 void _lf_fd_send_stop_request_to_rti(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     // Do not send a stop request twice.
     if (_fed.sent_a_stop_request_to_rti == true) {
         return;
@@ -2323,6 +2345,8 @@ void _lf_fd_send_stop_request_to_rti(environment_t* env) {
  * @param env The environment of the federate
  */
 void handle_stop_granted_message(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     size_t bytes_to_read = MSG_TYPE_STOP_GRANTED_LENGTH - 1;
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
@@ -2370,6 +2394,8 @@ void handle_stop_granted_message(environment_t* env) {
  * @param env The environment of the federate
  */
 void handle_stop_request_message(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
@@ -2514,6 +2540,8 @@ void handle_stop_request_message(environment_t* env) {
  * @param env The environment of the federate
  */
 void terminate_execution(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     // Check for all outgoing physical connections in
     // _fed.sockets_for_outbound_p2p_connections and
     // if the socket ID is not -1, the connection is still open.
@@ -2748,6 +2776,7 @@ void* listen_to_rti_TCP(void* args) {
  * FIXME: Possibly should be renamed
  */
 void synchronize_with_other_federates(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
 
     LF_PRINT_DEBUG("Synchronizing with other federates.");
 
@@ -2882,6 +2911,7 @@ bool _lf_bounded_NET(tag_t* tag) {
  * @param wait_for_reply If true, wait for a reply.
  */
 tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply) {
+    assert(env != GLOBAL_ENVIRONMENT);
     while (true) {
         if (!_fed.has_downstream && !_fed.has_upstream) {
             // This federate is not connected (except possibly by physical links)
