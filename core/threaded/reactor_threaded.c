@@ -558,8 +558,22 @@ void _lf_next_locked(environment_t *env) {
     _lf_pop_events(env);
 }
 
+/**
+ * @brief True if stop has been requested so it doesn't get re-requested.
+ */
+bool stop_requested = false;
+
 // See reactor.h for docs.
 void lf_request_stop() {
+    // If a requested stop is pending, return without doing anything.
+    lf_mutex_lock(&global_mutex);
+    if (stop_requested) {
+        lf_mutex_unlock(&global_mutex);
+        return;
+    }
+    stop_requested = true;
+    lf_mutex_unlock(&global_mutex);
+
     // Iterate over scheduling enclaves to find their maximum current tag
     // and set a barrier for tag advancement for each enclave.
     tag_t max_current_tag = NEVER_TAG;
