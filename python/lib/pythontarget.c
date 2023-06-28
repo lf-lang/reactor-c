@@ -151,7 +151,7 @@ int lf_reactor_c_main(int argc, const char *argv[]);
  * Prototype for lf_request_stop().
  * @see reactor.h
  */
-int lf_request_stop(environment_t* env);
+void lf_request_stop(void);
 
 ///////////////// Other useful functions /////////////////////
 /**
