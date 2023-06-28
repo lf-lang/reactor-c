@@ -1101,7 +1101,7 @@ void connect_to_rti(const char* hostname, int port) {
                 lf_print_error_and_exit("Failed to connect to the RTI after %d retries. Giving up.",
                                      CONNECT_NUM_RETRIES);
             }
-            lf_print("Could not connect to RTI at %s. Will try again every %d seconds.",
+            lf_print("Could not connect to RTI at %s. Will try again every %lld seconds.",
                    hostname, CONNECT_RETRY_INTERVAL / BILLION);
             // Wait CONNECT_RETRY_INTERVAL nanoseconds.
             if (lf_sleep(CONNECT_RETRY_INTERVAL) != 0) {
@@ -2306,7 +2306,7 @@ void _lf_fd_send_stop_request_to_rti(tag_t stop_tag) {
         return;
     }
     // Trace the event when tracing is enabled
-    tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ, _lf_my_fed_id, &env->current_tag);
+    tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ, _lf_my_fed_id, &stop_tag);
     write_to_socket_errexit_with_mutex(_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH,
             buffer, &outbound_socket_mutex,
             "Failed to send stop time " PRINTF_TIME " to the RTI.", stop_tag.time - start_time);
