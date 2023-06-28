@@ -8,6 +8,7 @@
  * @brief Implementation of time and tag functions for Lingua Franca programs.
  */
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -111,6 +112,7 @@ instant_t _lf_physical_time() {
 ////////////////  Functions declared in tag.h
 
 tag_t lf_tag(void *env) {
+    assert(env != GLOBAL_ENVIRONMENT);
     return ((environment_t *)env)->current_tag;
 }
 
@@ -149,6 +151,7 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval) {
 }
 
 instant_t lf_time_logical(void *env) {
+    assert(env != GLOBAL_ENVIRONMENT);
     return ((environment_t *) env)->current_tag.time;
 }
 

@@ -212,6 +212,7 @@ void _lf_free_all_reactors(void) {
  *  calling this function.
  */
 void _lf_set_stop_tag(environment_t* env, tag_t tag) {
+    assert(env != GLOBAL_ENVIRONMENT);
     if (lf_tag_compare(tag, env->stop_tag) < 0) {
         env->stop_tag = tag;
     }
@@ -245,7 +246,7 @@ void lf_set_stp_offset(interval_t offset) {
 /**
  * Trigger 'reaction'.
  *
- * @param env Environment in which we are execution
+ * @param env Environment in which we are executing.
  * @param reaction The reaction.
  * @param worker_number The ID of the worker that is making this call. 0 should be
  *  used if there is only one worker (e.g., when the program is using the
@@ -261,6 +262,7 @@ void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_n
  * counts between time steps and at the end of execution.
  */
 void _lf_start_time_step(environment_t *env) {
+    assert(env != GLOBAL_ENVIRONMENT);
     LF_PRINT_LOG("--------- Start time step at tag " PRINTF_TAG ".", env->current_tag.time - start_time, env->current_tag.microstep);
     // Handle dynamically created tokens for mutable inputs.
     _lf_free_token_copies(env);
@@ -305,10 +307,11 @@ void _lf_start_time_step(environment_t *env) {
 /**
  * A helper function that returns true if the provided tag is after stop tag.
  *
- * @param env Environment in which we are execution
+ * @param env Environment in which we are executing.
  * @param tag The tag to check against stop tag
  */
 bool _lf_is_tag_after_stop_tag(environment_t* env, tag_t tag) {
+    assert(env != GLOBAL_ENVIRONMENT);
     return (lf_tag_compare(tag, env->stop_tag) > 0);
 }
 
@@ -316,9 +319,10 @@ bool _lf_is_tag_after_stop_tag(environment_t* env, tag_t tag) {
  * Pop all events from event_q with timestamp equal to current_tag.time, extract all
  * the reactions triggered by these events, and stick them into the reaction
  * queue.
- * @param env Environment in which we are execution
+ * @param env Environment in which we are executing.
  */
 void _lf_pop_events(environment_t *env) {
+    assert(env != GLOBAL_ENVIRONMENT);
 #ifdef MODAL_REACTORS
     _lf_handle_mode_triggered_reactions(env);
 #endif
@@ -444,9 +448,10 @@ void _lf_pop_events(environment_t *env) {
 /**
  * Get a new event. If there is a recycled event available, use that.
  * If not, allocate a new one. In either case, all fields will be zero'ed out.
- * @param env Environment in which we are execution
+ * @param env Environment in which we are executing.
  */
 static event_t* _lf_get_new_event(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
     // Recycle event_t structs, if possible.
     event_t* e = (event_t*)pqueue_pop(env->recycle_q);
     if (e == NULL) {
@@ -464,8 +469,11 @@ static event_t* _lf_get_new_event(environment_t* env) {
  * If this timer has a zero offset, enqueue the reactions it triggers.
  * If this timer is to trigger reactions at a _future_ tag as well,
  * schedule it accordingly.
+ * @param env Environment in which we are executing.
+ * @param timer The timer to initialize.
  */
 void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
+    assert(env != GLOBAL_ENVIRONMENT);
     interval_t delay = 0;
 
 #ifdef MODAL_REACTORS
@@ -509,9 +517,10 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
 
 /**
  * @brief Initialize all the timers in the environment
- * @param env Environment in which we are execution
+ * @param env Environment in which we are executing.
  */
 void _lf_initialize_timers(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
     for (int i = 0; i < env->timer_triggers_size; i++) {
         if (env->timer_triggers[i] != NULL) {
             _lf_initialize_timer(env, env->timer_triggers[i]);
@@ -521,9 +530,10 @@ void _lf_initialize_timers(environment_t* env) {
 
 /**
  * @brief Trigger all the startup reactions in our environment
- * @param env Environment in which we are execution
+ * @param env Environment in which we are executing.
  */
 void _lf_trigger_startup_reactions(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
     for (int i = 0; i < env->startup_reactions_size; i++) {
         if (env->startup_reactions[i] != NULL) {
             if (env->startup_reactions[i]->mode != NULL) {
@@ -547,9 +557,10 @@ void _lf_trigger_startup_reactions(environment_t* env) {
 
 /**
  * @brief Trigger all the shutdown reactions in our environment
- * @param env Environment in which we are execution
+ * @param env Environment in which we are executing.
  */
 void _lf_trigger_shutdown_reactions(environment_t *env) {
+    assert(env != GLOBAL_ENVIRONMENT);
     for (int i = 0; i < env->shutdown_reactions_size; i++) {
         if (env->shutdown_reactions[i] != NULL) {
             if (env->shutdown_reactions[i]->mode != NULL) {
@@ -569,8 +580,11 @@ void _lf_trigger_shutdown_reactions(environment_t *env) {
 /**
  * Recycle the given event.
  * Zero it out and pushed it onto the recycle queue.
+ * @param env Environment in which we are executing.
+ * @param e The event to recycle.
  */
 void _lf_recycle_event(environment_t* env, event_t* e) {
+    assert(env != GLOBAL_ENVIRONMENT);
     e->time = 0LL;
     e->trigger = NULL;
     e->pos = 0;
@@ -585,7 +599,7 @@ void _lf_recycle_event(environment_t* env, event_t* e) {
 
 /**
  * Create dummy events to be used as spacers in the event queue.
- * @param env Environment in which we are execution
+ * @param env Environment in which we are executing.
  * @param trigger The eventual event to be triggered.
  * @param time The logical time of that event.
  * @param next The event to place after the dummy events.
@@ -616,13 +630,12 @@ event_t* _lf_create_dummy_events(environment_t* env, trigger_t* trigger, instant
 /**
  * Replace the token on the specified event with the specified
  * token and free the old token.
- * @param env Environment in which we are execution
  * @param event The event.
  * @param token The token.
  */
 static void _lf_replace_token(event_t* event, lf_token_t* token) {
     if (event->token != token) {
-        // Free the existing token, if any
+        // Free the existing token, if any.
         _lf_done_using(event->token);
     }
     // Replace the token with ours.
@@ -648,7 +661,7 @@ static void _lf_replace_token(event_t* event, lf_token_t* token) {
  *
  * This function assumes the caller holds the mutex lock.
  *
- * @param env Environment in which we are execution
+ * @param env Environment in which we are executing.
  * @param trigger The trigger to be invoked at a later logical time.
  * @param tag Logical tag of the event
  * @param token The token wrapping the payload or NULL for no payload.
@@ -657,6 +670,7 @@ static void _lf_replace_token(event_t* event, lf_token_t* token) {
  *  or -1 for error (the tag is equal to or less than the current tag).
  */
 int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_token_t* token) {
+    assert(env != GLOBAL_ENVIRONMENT);
     tag_t current_logical_tag = env->current_tag;
 
     LF_PRINT_DEBUG("_lf_schedule_at_tag() called with tag " PRINTF_TAG " at tag " PRINTF_TAG ".",
@@ -853,7 +867,7 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
  * is greater that the requested stop time (timeout).
  * The third condition is that the trigger argument is null.
  *
- * @param env Environment in which we are execution
+ * @param env Environment in which we are executing.
  * @param trigger The trigger to be invoked at a later logical time.
  * @param extra_delay The logical time delay, which gets added to the
  *  trigger's minimum delay, if it has one. If this number is negative,
@@ -862,6 +876,7 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
  * @return A handle to the event, or 0 if no new event was scheduled, or -1 for error.
  */
 trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
+    assert(env != GLOBAL_ENVIRONMENT);
     if (_lf_is_tag_after_stop_tag(env, env->current_tag)) {
         // If schedule is called after stop_tag
         // This is a critical condition.
@@ -1106,13 +1121,14 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
 /**
  * Insert reactions triggered by trigger to the reaction queue...
  *
- * @param env Environment in which we are execution
+ * @param env Environment in which we are executing.
  * @param trigger The trigger
  * @param token The token wrapping the payload or NULL for no payload.
  * @return 1 if successful, or 0 if no new reaction was scheduled because the function
  *  was called incorrectly.
  */
 trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t* trigger, lf_token_t* token) {
+    assert(env != GLOBAL_ENVIRONMENT);
     // The trigger argument could be null, meaning that nothing is triggered.
     // Doing this after incrementing the reference count ensures that the
     // payload will be freed, if there is one.
@@ -1261,6 +1277,8 @@ trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_d
 }
 
 void _lf_advance_logical_time(environment_t *env, instant_t next_time) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     // FIXME: The following checks that _lf_advance_logical_time()
     // is being called correctly. Namely, check if logical time
     // is being pushed past the head of the event queue. This should
@@ -1315,11 +1333,12 @@ trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_del
 
  * Invoke the given reaction
  *
- * @param env Environment in which we are execution
+ * @param env Environment in which we are executing.
  * @param reaction The reaction that has just executed.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution (for tracing).
  */
 void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker) {
+    assert(env != GLOBAL_ENVIRONMENT);
 
 #ifdef LF_THREADED
     if (((self_base_t*) reaction->self)->reactor_mutex != NULL) {
@@ -1346,11 +1365,13 @@ void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker) {
  * resulting triggered reactions into the reaction queue.
  * This procedure assumes the mutex lock is NOT held and grabs
  * the lock only when it actually inserts something onto the reaction queue.
- * @param env Environment in which we are execution
+ * @param env Environment in which we are executing.
  * @param reaction The reaction that has just executed.
  * @param worker The thread number of the worker thread or 0 for unthreaded execution (for tracing).
  */
 void schedule_output_reactions(environment_t *env, reaction_t* reaction, int worker) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     if (reaction->is_a_control_reaction) {
         // Control reactions will not produce an output but can have
         // effects in order to have certain precedence requirements.
