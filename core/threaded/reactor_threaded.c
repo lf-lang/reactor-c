@@ -234,20 +234,8 @@ void _lf_set_present(lf_port_base_t* port) {
     }
 }
 
-/**
- * Synchronize the start with other federates via the RTI.
- * This assumes that a connection to the RTI is already made
- * and _fed.socket_TCP_RTI is valid. It then sends the current logical
- * time to the RTI and waits for the RTI to respond with a specified
- * time. It starts a thread to listen for messages from the RTI.
- * It then waits for physical time to match the specified time,
- * sets current logical time to the time returned by the RTI,
- * and then returns. If --fast was specified, then this does
- * not wait for physical time to match the logical start time
- * returned by the RTI.
- * @param env Environment within which we are executing.
- */
-void synchronize_with_other_federates(environment_t* env);
+// Forward declaration. See federate.h
+void synchronize_with_other_federates(void);
 
 /**
  * Wait until physical time matches or exceeds the specified logical time,
@@ -652,13 +640,23 @@ void _lf_initialize_start_tag(environment_t *env) {
     _lf_trigger_startup_reactions(env);
 
 #ifdef FEDERATED
-    // Reset status fields before talking to the RTI to set network port
-    // statuses to unknown
-    reset_status_fields_on_input_port_triggers();
+    // If env is the environment for the top-level enclave, then initialize the federate.
+    environment_t *top_level_env;
+    _lf_get_environments(&top_level_env);
+    if (env == top_level_env) {
+        // Reset status fields before talking to the RTI to set network port
+        // statuses to unknown
+        reset_status_fields_on_input_port_triggers();
 
-    // Get a start_time from the RTI
-    synchronize_with_other_federates(env); // Resets start_time in federated execution according to the RTI.
+        // Get a start_time from the RTI
+        synchronize_with_other_federates(); // Resets start_time in federated execution according to the RTI.
+    }
+    // The start time will likely have changed. Adjust the current tag and stop tag.
     env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
+    if (duration >= 0LL) {
+        // A duration has been specified. Recalculate the stop time.
+       env->stop_tag = ((tag_t) {.time = start_time + duration, .microstep = 0});
+    }
 #endif
 
     _lf_initialize_timers(env);

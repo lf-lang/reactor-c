@@ -436,14 +436,8 @@ int send_timed_message(environment_t*,
  * and _lf_rti_socket_TCP is valid. It then sends the current logical
  * time to the RTI and waits for the RTI to respond with a specified
  * time. It starts a thread to listen for messages from the RTI.
- * It then waits for physical time to match the specified time,
- * sets current logical time to the time returned by the RTI,
- * and then returns. If --fast was specified, then this does
- * not wait for physical time to match the logical start time
- * returned by the RTI.
- * @param env The environment in which we are executing
  */
-void synchronize_with_other_federates(environment_t* env);
+void synchronize_with_other_federates();
 
 /**
  * Wait until the status of network port "port_ID" is known.

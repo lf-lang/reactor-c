@@ -76,7 +76,7 @@ void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag);
 void _lf_decrement_tag_barrier_locked(environment_t* env);
 
 int _lf_wait_ontag_barrier(environment_t* env, tag_t proposed_tag);
-void synchronize_with_other_federates(environment_t* env);
+void synchronize_with_other_federates(void);
 bool wait_until(environment_t* env, instant_t logical_time_ns, lf_cond_t* condition);
 tag_t get_next_event_tag(environment_t* env);
 tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply);
