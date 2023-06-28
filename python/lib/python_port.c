@@ -43,9 +43,9 @@ PyTypeObject py_port_capsule_t;
 
 //////////// destructor Function(s) /////////////
 /**
- * Called when putting token to the recycling bin. This function decreases the 
- * reference count of PyObject and allows python to collect garbage later.
- * @param py_object A PyObject with count 1*
+ * Decrease the reference count of PyObject. When the reference count hits zero,
+ * Python can free its memory.
+ * @param py_object A PyObject with count 1 or greater.
  */
 void python_count_decrement(void* py_object) {
     Py_XDECREF((PyObject*)py_object);
