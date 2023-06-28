@@ -200,6 +200,7 @@ int _lf_wait_ontag_barrier(environment_t* env, tag_t proposed_tag) {
             proposed_tag = env->stop_tag;
         }
     }
+    LF_PRINT_LOG("Finished waiting on barrier for tag " PRINTF_TAG ".", proposed_tag.time - start_time, proposed_tag.microstep);
     return result;
 }
 
@@ -588,12 +589,9 @@ void lf_request_stop() {
 
 #ifdef FEDERATED
     _lf_fd_send_stop_request_to_rti(max_current_tag);
-    // Do not set stop_requested
-    // since the RTI might grant a
-    // later stop tag than the current
-    // tag. The above code has raised
-    // a barrier no greater than the requested
-    // stop tag for each enclave.
+    // Do not set stop_requested because the RTI might grant a
+    // later stop tag than the current tag. The above code has raised
+    // a barrier no greater than the requested stop tag for each enclave.
 #else
     // In a non-federated program, the stop_tag will be the next microstep after max_current_tag.
     // Iterate over environments to set their stop tag and release their barrier.
