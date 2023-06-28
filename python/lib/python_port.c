@@ -98,7 +98,7 @@ PyObject* py_port_set(PyObject* self, PyObject* args) {
     }
 
     if (val) {
-        LF_PRINT_DEBUG("Setting value lol %p.", val);
+        LF_PRINT_DEBUG("Setting value %p.", val);
         Py_XDECREF(port->value);
 
         // 1. Call lf_new_token function to create a new token
