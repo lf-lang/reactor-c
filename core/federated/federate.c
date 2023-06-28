@@ -2288,11 +2288,6 @@ void handle_provisional_tag_advance_grant(environment_t* env) {
  * to the specified tag plus one microstep.
  */
 void _lf_fd_send_stop_request_to_rti(tag_t stop_tag) {
-    // Do not send a stop request twice.
-    if (_fed.sent_a_stop_request_to_rti == true) {
-        return;
-    }
-    LF_PRINT_LOG("Requesting the whole program to stop.");
 
     // Send a stop request with the specified tag to the RTI
     unsigned char buffer[MSG_TYPE_STOP_REQUEST_LENGTH];
@@ -2300,19 +2295,40 @@ void _lf_fd_send_stop_request_to_rti(tag_t stop_tag) {
     ENCODE_STOP_REQUEST(buffer, stop_tag.time, stop_tag.microstep + 1);
 
     lf_mutex_lock(&outbound_socket_mutex);
-    if (_fed.socket_TCP_RTI < 0) {
-        lf_print_warning("Socket is no longer connected. Dropping message.");
+    // Do not send a stop request twice.
+    // Also, if we have received a stop request from the RTI, do not send this one
+    // because we have already blocked tag advance.
+    // The latter occurs if some other federate has requested a stop.
+    if (!_fed.sent_a_stop_request_to_rti) {
+        _fed.sent_a_stop_request_to_rti = true;
+        LF_PRINT_LOG("Sending to RTI a MSG_TYPE_STOP_REQUEST message with tag " PRINTF_TAG ".",
+                stop_tag.time - start_time,
+                stop_tag.microstep);
+
+        if (_fed.socket_TCP_RTI < 0) {
+            lf_print_warning("Socket is no longer connected. Dropping message.");
+            lf_mutex_unlock(&outbound_socket_mutex);
+            return;
+        }
+        // Trace the event when tracing is enabled
+        tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ, _lf_my_fed_id, &stop_tag);
+        write_to_socket_errexit_with_mutex(_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH,
+                buffer, &outbound_socket_mutex,
+                "Failed to send stop time " PRINTF_TIME " to the RTI.", stop_tag.time - start_time);
         lf_mutex_unlock(&outbound_socket_mutex);
-        return;
+    } else {
+        lf_mutex_unlock(&outbound_socket_mutex);
+        // Not sending to the RTI because have previously received a stop request from the RTI.
+        // Decrement the barriers to reverse our previous increment.
+        environment_t* env;
+        int num_environments = _lf_get_environments(&env);
+        for (int i = 0; i < num_environments; i++) {
+            lf_mutex_lock(&env[i].mutex);
+            _lf_decrement_tag_barrier_locked(&env[i]);
+            lf_mutex_unlock(&env[i].mutex);
+        }
     }
-    // Trace the event when tracing is enabled
-    tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ, _lf_my_fed_id, &stop_tag);
-    write_to_socket_errexit_with_mutex(_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH,
-            buffer, &outbound_socket_mutex,
-            "Failed to send stop time " PRINTF_TIME " to the RTI.", stop_tag.time - start_time);
-    lf_mutex_unlock(&outbound_socket_mutex);
-    _fed.sent_a_stop_request_to_rti = true;
-}
+ }
 
 /**
  * Handle a MSG_TYPE_STOP_GRANTED message from the RTI.
@@ -2367,46 +2383,53 @@ void handle_stop_granted_message() {
 
 /**
  * Handle a MSG_TYPE_STOP_REQUEST message from the RTI.
- *
- * This function assumes the caller does not hold
- * the mutex lock, therefore, it acquires it.
- * @param env The environment of the federate
  */
-void handle_stop_request_message(environment_t* env) {
-    assert(env != GLOBAL_ENVIRONMENT);
-
+void handle_stop_request_message() {
     size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
             "Failed to read stop request from RTI.");
-
-    // Acquire a mutex lock to ensure that this state does change while a
-    // message is being used to determine a TAG.
-    lf_mutex_lock(&env->mutex);
-    // Ignore the message if this federate originated a request.
-    // The federate is already blocked is awaiting a MSG_TYPE_STOP_GRANTED message.
-    if (_fed.sent_a_stop_request_to_rti == true) {
-        lf_mutex_unlock(&env->mutex);
-        return;
-    }
-
     tag_t tag_to_stop = extract_tag(buffer);
 
     // Trace the event when tracing is enabled
     tracepoint_federate_from_rti(_fed.trace, receive_STOP_REQ, _lf_my_fed_id, &tag_to_stop);
-
     LF_PRINT_LOG("Received from RTI a MSG_TYPE_STOP_REQUEST message with tag " PRINTF_TAG ".",
              tag_to_stop.time - start_time,
              tag_to_stop.microstep);
 
-    // Encode the current logical time plus one microstep
-    // or the requested tag_to_stop, whichever is bigger.
-    if (lf_tag_compare(tag_to_stop, env->current_tag) <= 0) {
-        // Can't stop at the requested tag. Make a counteroffer.
-        tag_to_stop = env->current_tag;
-        tag_to_stop.microstep++;
+    // If we have previously sent to the RTI a stop request
+    // or we have previously received from the RTI a stop request,
+    // then we have already blocked tag advance in enclaves.
+    // Do not do this twice.
+    // The record of whether this has occurred
+    // is guarded by the outbound socket mutex.
+    lf_mutex_lock(&outbound_socket_mutex);
+    bool already_blocked = false;
+    if (_fed.sent_a_stop_request_to_rti) {
+        already_blocked = true;
     }
+    _fed.sent_a_stop_request_to_rti = true;
+    lf_mutex_unlock(&outbound_socket_mutex);
 
+    // Iterate over the scheduling enclaves to find the maximum current tag
+    // and adjust the tag_to_stop if any of those is greater than tag_to_stop.
+    // If not done previously, block tag advance in the enclave.
+    environment_t *env;
+    int num_environments = _lf_get_environments(&env);
+    for (int i = 0; i < num_environments; i++) {
+        lf_mutex_lock(&env[i].mutex);
+        if (lf_tag_compare(tag_to_stop, env[i].current_tag) <= 0) {
+            // Can't stop at the requested tag. Make a counteroffer.
+            tag_to_stop = env->current_tag;
+            tag_to_stop.microstep++;
+        }
+        if (!already_blocked) {
+            // Set a barrier to prevent the enclave from advancing past the so-far tag to stop.
+            _lf_increment_tag_barrier_locked(&env[i], tag_to_stop);
+        }
+        lf_mutex_unlock(&env[i].mutex);
+    }
+    // Send the reply, which is the least tag at which we can stop.
     unsigned char outgoing_buffer[MSG_TYPE_STOP_REQUEST_REPLY_LENGTH];
     ENCODE_STOP_REQUEST_REPLY(outgoing_buffer, tag_to_stop.time, tag_to_stop.microstep);
 
@@ -2414,26 +2437,16 @@ void handle_stop_request_message(environment_t* env) {
     if (_fed.socket_TCP_RTI < 0) {
         lf_print_warning("Socket is no longer connected. Dropping message.");
         lf_mutex_unlock(&outbound_socket_mutex);
-        lf_mutex_unlock(&env->mutex);
         return;
     }
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ_REP, _lf_my_fed_id, &tag_to_stop);
-    // Send the current logical time to the RTI. This message does not have an identifying byte since
+    // Send the current logical time to the RTI. This message does not have an identifying byte
     // since the RTI is waiting for a response from this federate.
     write_to_socket_errexit_with_mutex(
             _fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH, outgoing_buffer, &outbound_socket_mutex,
             "Failed to send the answer to MSG_TYPE_STOP_REQUEST to RTI.");
     lf_mutex_unlock(&outbound_socket_mutex);
-
-    // Raise a barrier at current tag
-    // because we are sending it to the RTI
-    _lf_increment_tag_barrier_locked(env, tag_to_stop);
-
-    // A subsequent call to lf_request_stop will be a no-op.
-    _fed.sent_a_stop_request_to_rti = true;
-
-    lf_mutex_unlock(&env->mutex);
 }
 
 /**
@@ -2639,7 +2652,7 @@ void* listen_to_rti_TCP(void* args) {
                 handle_provisional_tag_advance_grant(env);
                 break;
             case MSG_TYPE_STOP_REQUEST:
-                handle_stop_request_message(env);
+                handle_stop_request_message();
                 break;
             case MSG_TYPE_STOP_GRANTED:
                 handle_stop_granted_message();
