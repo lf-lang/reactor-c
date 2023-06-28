@@ -142,7 +142,7 @@ void _lf_free_token_value(lf_token_t* token) {
         if (token->type->destructor != NULL) {
             token->type->destructor(token->value);
         }
-        // If Python Target is enabled and destructor is NULL
+        // If Python Target is not enabled and destructor is NULL
         // Token values should be freed
 #ifndef _PYTHON_TARGET_ENABLED
         else {
