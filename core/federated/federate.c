@@ -1564,7 +1564,7 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
     // Do not write if the socket is closed.
     if (socket >= 0) {
         // Trace the event when tracing is enabled
-        tracepoint_federate_to_rti(_fed.trace, send_PORT_ABS, fed_ID, &current_message_intended_tag);
+        tracepoint_federate_to_rti(_fed.trace, send_PORT_ABS, _lf_my_fed_id, &current_message_intended_tag);
         write_to_socket_errexit_with_mutex(socket, message_length, buffer, &outbound_socket_mutex,
                 "Failed to send port absent message for port %hu to federate %hu.",
                 port_ID, fed_ID);
