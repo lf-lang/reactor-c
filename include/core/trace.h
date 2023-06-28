@@ -439,7 +439,7 @@ void stop_trace(trace_t* trace);
 ////////////////////////////////////////////////////////////
 //// For federated execution
 
-#ifdef FEDERATED
+#if defined(FEDERATED) || defined(LF_ENCLAVES)
 
 /**
  * Trace federate sending a message to the RTI.
@@ -482,8 +482,8 @@ void tracepoint_federate_from_federate(trace_t* trace, trace_event_t event_type,
 #else
 #define tracepoint_federate_to_rti(...);
 #define tracepoint_federate_from_rti(...);
-#define tracepoint_federate_to_federate(...) ;
-#define tracepoint_federate_from_federate(...) ;
+#define tracepoint_federate_to_federate(...);
+#define tracepoint_federate_from_federate(...);
 #endif // FEDERATED
 
 ////////////////////////////////////////////////////////////

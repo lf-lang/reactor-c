@@ -88,7 +88,7 @@ void rti_request_stop_locked(enclave_info_t* enclave, tag_t tag);
  * @param target The enclave of which we want to update the NET of
  * @param net The proposed next event tag
  */
-void rti_update_other_net_locked(enclave_info_t* dest, enclave_info_t* target, tag_t net);
+void rti_update_other_net_locked(enclave_info_t* src, enclave_info_t* target, tag_t net);
 
 #endif
 #endif

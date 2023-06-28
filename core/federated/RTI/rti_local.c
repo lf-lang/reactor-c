@@ -45,6 +45,8 @@ void initialize_local_rti(environment_t *envs, int num_envs) {
     lf_mutex_init(&rti_mutex);
     rti_local->base.mutex = &rti_mutex;
     rti_local->base.number_of_reactor_nodes = num_envs;
+    // FIXME: Here we are setting the 'rti_local' tracing file to be the
+    // tracing file of the top-level enclave. It is not exactly what we want
     rti_local->base.trace = envs[0].trace;
     rti_local->base.tracing_enabled = (envs[0].trace != NULL);
 
@@ -85,6 +87,7 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
     }
 
     NET_LOCKED_PROLOGUE(e);
+    tracepoint_federate_to_rti(e->env->trace, send_NET, e->base.id, &next_event_tag);
     // First, update the enclave data structure to record this next_event_tag,
     // and notify any downstream reactor_nodes, and unblock them if appropriate.
     tag_advance_grant_t result;
@@ -99,14 +102,14 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
         LF_PRINT_LOG("RTI: enclave %u has already been granted a TAG to" PRINTF_TAG ". Returning with a TAG to" PRINTF_TAG " ",
         e->base.id, e->base.last_granted.time - lf_time_start(), e->base.last_granted.microstep,
         next_event_tag.time - lf_time_start(), next_event_tag.microstep);
+        tracepoint_federate_from_rti(e->env->trace, receive_TAG, e->base.id, &next_event_tag);
         NET_LOCKED_EPILOGUE(e);
         return next_event_tag;
     }
     
     // FIXME: This check is a little out-of-place here. But it is needed
     if (e->base.num_upstream == 0) {
-        LF_PRINT_LOG("RTI: enclave %u has no upstream granting TAG to" PRINTF_TAG " ",
-        e->base.id, e->base.next_event.time - lf_time_start(), e->base.next_event.microstep);
+        LF_PRINT_LOG("RTI: enclave %u has no upstream", e->base.id);
         e->base.last_granted = e->base.next_event;
     }
 
@@ -133,7 +136,8 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
     }
     LF_PRINT_LOG("RTI: enclave %u returns with TAG to" PRINTF_TAG " ",
         e->base.id, e->base.next_event.time - lf_time_start(), e->base.next_event.microstep);
-    
+    lf_assert(result.is_provisional == false, "Got PTAG, but only expects TAGs");
+    tracepoint_federate_from_rti(e->env->trace, receive_TAG, e->base.id, &result.tag);
     NET_LOCKED_EPILOGUE(e);
     return result.tag;
 }
@@ -148,6 +152,7 @@ void rti_logical_tag_complete_locked(enclave_info_t* enclave, tag_t completed) {
         return;
     }
     LTC_LOCKED_PROLOGUE(enclave);
+    tracepoint_federate_to_rti(enclave->env->trace, send_LTC, enclave->base.id, &completed);
     _logical_tag_complete(&enclave->base, completed);
     LTC_LOCKED_EPILOGUE(enclave);
 }
@@ -158,8 +163,10 @@ void rti_request_stop_locked(enclave_info_t* enclave, tag_t stop_tag) {
     NET_LOCKED_EPILOGUE(enclave);
 }
 
-void rti_update_other_net_locked(enclave_info_t* dest, enclave_info_t * target, tag_t net) {
+void rti_update_other_net_locked(enclave_info_t* src, enclave_info_t * target, tag_t net) {
     lf_mutex_lock(&rti_mutex);
+
+    tracepoint_federate_to_federate(src->env->trace, send_TAGGED_MSG, src->base.id, target->base.id, &net);
 
     // If our proposed NET is less than the current NET, update it
     if (lf_tag_compare(net, target->base.next_event) < 0) {
@@ -188,7 +195,7 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
         return;
     }
     if (rti_local->base.tracing_enabled) {
-        tracepoint_rti_to_federate(rti_local->base.trace, send_TAG, e->id, &tag);
+        tracepoint_rti_to_federate(e->env->trace, send_TAG, e->id, &tag);
     }
     e->last_granted = tag;
     // FIXME: Only signal the cond var if the enclave is in fact waiting

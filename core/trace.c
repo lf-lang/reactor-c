@@ -486,7 +486,7 @@ void stop_trace(trace_t* trace) {
 ////////////////////////////////////////////////////////////
 //// For federated execution
 
-#ifdef FEDERATED
+#if defined FEDERATED || defined LF_ENCLAVES
 
 /**
  * Trace federate sending a message to the RTI.
