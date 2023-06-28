@@ -57,6 +57,7 @@ extern instant_t start_time;
 
 // Global variables defined in schedule.c:
 extern const inst_t* static_schedules[];
+extern const long long int hyperperiod;
 extern volatile uint32_t hyperperiod_iterations[];
 extern volatile uint32_t counters[];
 extern const size_t num_counters;
@@ -127,7 +128,7 @@ void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_number) {
  * a for loop.
  */
 void execute_inst_BIT(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile int* iteration) {
+    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     bool stop = true;
     for (int i = 0; i < scheduler->num_reactor_self_instances; i++) {
         if (!scheduler->reactor_reached_stop_tag[i]) {
@@ -160,7 +161,7 @@ void execute_inst_BIT(lf_scheduler_t* scheduler, size_t worker_number, long long
  * @param exit_loop 
  */
 void execute_inst_EIT(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile int* iteration) {
+    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     reaction_t* reaction = scheduler->reaction_instances[rs1];
     if (reaction->status == queued) {
         *returned_reaction = reaction;
@@ -180,7 +181,7 @@ void execute_inst_EIT(lf_scheduler_t* scheduler, size_t worker_number, long long
  * @param exit_loop 
  */
 void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile int* iteration) {
+    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     reaction_t* reaction = scheduler->reaction_instances[rs1];
     *returned_reaction = reaction;
     *exit_loop = true;
@@ -188,7 +189,7 @@ void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, long long
 }
 
 /**
- * @brief DU: Delay Until a physical timepoint (rs1) plus an offset (rs2) is reached.
+ * @brief DU: Delay Until a physical time offset (rs1) wrt the current hyperperiod is reached.
  * 
  * @param worker_number 
  * @param rs1 
@@ -198,12 +199,12 @@ void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, long long
  * @param exit_loop 
  */
 void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile int* iteration) {
+    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     // FIXME: There seems to be an overflow problem.
     // When wakeup_time overflows but lf_time_physical() doesn't,
     // _lf_interruptable_sleep_until_locked() terminates immediately. 
-    instant_t wakeup_time = start_time + rs1 * (*iteration + 1);
-    //LF_PRINT_DEBUG("start_time: %ld, wakeup_time: %ld, rs1: %lld, iteration+1: %d, current_physical_time: %ld\n", start_time, wakeup_time, rs1, (*iteration + 1), lf_time_physical());
+    instant_t wakeup_time = start_time + hyperperiod * (*iteration) + rs1;
+    LF_PRINT_DEBUG("start_time: %lld, wakeup_time: %lld, rs1: %lld, iteration: %d, current_physical_time: %lld, hyperperiod: %lld\n", start_time, wakeup_time, rs1, (*iteration), lf_time_physical(), hyperperiod);
     //LF_PRINT_DEBUG("*** Worker %zu delaying", worker_number);
     _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
     //LF_PRINT_DEBUG("*** Worker %zu done delaying", worker_number);
@@ -220,7 +221,7 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, long long 
  * @param exit_loop 
  */
 void execute_inst_WU(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile int* iteration) {
+    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     //LF_PRINT_DEBUG("*** Worker %zu waiting", worker_number);
     while(scheduler->counters[rs1] < rs2);
     //LF_PRINT_DEBUG("*** Worker %zu done waiting", worker_number);
@@ -237,7 +238,7 @@ void execute_inst_WU(lf_scheduler_t* scheduler, size_t worker_number, long long 
  * @param exit_loop 
  */
 void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile int* iteration) {
+    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     
     // This mutex is quite expensive.
     lf_mutex_lock(&(scheduler->env->mutex));
@@ -266,7 +267,7 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, long long
  * @param exit_loop 
  */
 void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile int* iteration) {
+    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
 
     self_base_t* reactor =
         scheduler->reactor_self_instances[rs1];
@@ -290,7 +291,7 @@ void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, long lon
  * @param exit_loop 
  */
 void execute_inst_JMP(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile int* iteration) {
+    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     if (rs2 != -1) *iteration += 1;
     *pc = rs1;
 }
@@ -306,7 +307,7 @@ void execute_inst_JMP(lf_scheduler_t* scheduler, size_t worker_number, long long
  * @param exit_loop 
  */
 void execute_inst_SAC(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile int* iteration) {
+    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     tracepoint_worker_wait_starts(worker_number);
     _lf_sched_wait_for_work(scheduler, worker_number);
     tracepoint_worker_wait_ends(worker_number);
@@ -323,7 +324,7 @@ void execute_inst_SAC(lf_scheduler_t* scheduler, size_t worker_number, long long
  * @param exit_loop 
  */
 void execute_inst_INC(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile int* iteration) {
+    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     lf_mutex_lock(&(scheduler->env->mutex));
     scheduler->counters[rs1] += rs2;
     lf_mutex_unlock(&(scheduler->env->mutex));
@@ -341,7 +342,7 @@ void execute_inst_INC(lf_scheduler_t* scheduler, size_t worker_number, long long
  * @param exit_loop 
  */
 void execute_inst_INC2(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile int* iteration) {
+    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     scheduler->counters[rs1] += rs2;
     *pc += 1; // Increment pc.
 }
@@ -351,7 +352,7 @@ void execute_inst_INC2(lf_scheduler_t* scheduler, size_t worker_number, long lon
  * 
  */
 void execute_inst_STP(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile int* iteration) {
+    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     *exit_loop = true;
 }
 
@@ -369,7 +370,7 @@ void execute_inst_STP(lf_scheduler_t* scheduler, size_t worker_number, long long
  *                  the outer while loop should be exited
  */
 void execute_inst(lf_scheduler_t* scheduler, size_t worker_number, opcode_t op, long long int rs1, long long int rs2,
-    size_t* pc, reaction_t** returned_reaction, bool* exit_loop, volatile volatile int* iteration) {
+    size_t* pc, reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     char* op_str = NULL;
     switch (op) {
         case ADV:
