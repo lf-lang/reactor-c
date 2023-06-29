@@ -1884,6 +1884,7 @@ void handle_message(int socket, int fed_id) {
  * @param next_reaction_level
  */
 void stall_advance_level_federation(size_t next_reaction_level) {
+    LF_PRINT_DEBUG("Trying to acquire the global mutex.");
     lf_mutex_lock(&mutex);
     LF_PRINT_DEBUG("Waiting on MLAA with next_reaction_level %d and MLAA %d.", next_reaction_level, max_level_allowed_to_advance);
     while (((int) next_reaction_level) >= max_level_allowed_to_advance) {
@@ -2178,6 +2179,17 @@ void update_max_level(tag_t tag, bool is_provisional) {
     LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME ".", max_level_allowed_to_advance, lf_time_logical_elapsed());
 }
 
+bool a_port_is_unknown(staa_t* staa_elem) {
+    bool do_wait = false;
+    for (int j = 0; j < staa_elem->numActions; ++j) {
+        if (staa_elem->actions[j]->trigger->status == unknown) {
+            do_wait = true;
+            break;
+        }
+    }
+    return do_wait;
+}
+
 /**
  * @brief Given a list of staa offsets and its associated triggers,
  * have a single thread work to set ports to absent at a given logical time
@@ -2187,33 +2199,35 @@ void update_max_level(tag_t tag, bool is_provisional) {
 void* update_ports_from_staa_offsets(void* args) {
     while (1) {
         bool restart = false;
-        tag_t start_tag = lf_tag();
+        tag_t tag_when_started_waiting = lf_tag();
         for (int i = 0; i < staa_lst_size; ++i) {
-            staa_t* staaElem = staa_lst[i];
-            interval_t wait_until_time = current_tag.time + staaElem->STAA + _lf_fed_STA_offset;
+            staa_t* staa_elem = staa_lst[i];
+            interval_t wait_until_time = current_tag.time + staa_elem->STAA + _lf_fed_STA_offset;
             lf_mutex_lock(&mutex);
-            if (lf_tag_compare(lf_tag(), start_tag) == 0 && wait_until(wait_until_time, &logical_time_changed)){
-                for(int j = 0; j < staaElem->numActions; ++j){
-                    lf_action_base_t* input_port_action = staaElem->actions[j];
+            if (a_port_is_unknown(staa_elem) && lf_tag_compare(lf_tag(), tag_when_started_waiting) == 0 && wait_until(wait_until_time, &port_status_changed)) {
+                for (int j = 0; j < staa_elem->numActions; ++j) {
+                    lf_action_base_t* input_port_action = staa_elem->actions[j];
                     if (input_port_action->trigger->status == unknown) {
                         input_port_action->trigger->status = absent;
-                        LF_PRINT_DEBUG("Assuming port absent.");
+                        LF_PRINT_DEBUG("Assuming port absent at time %lld.", (long long) (lf_tag().time - start_time));
                         update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
                         lf_cond_broadcast(&port_status_changed);
                     }
                 }
                 lf_mutex_unlock(&mutex);
-            } else {
-                //We have committed to a new tag before we finish processing the list. Start over.
+            } else if (lf_tag_compare(lf_tag(), tag_when_started_waiting) != 0) {
+                // We have committed to a new tag before we finish processing the list. Start over.
                 restart = true;
                 lf_mutex_unlock(&mutex);
                 break;
+            } else {
+                lf_mutex_unlock(&mutex);
             }
         }
         if (restart) continue;
 
         lf_mutex_lock(&mutex);
-        while (lf_tag_compare(lf_tag(), start_tag) == 0) {
+        while (lf_tag_compare(lf_tag(), tag_when_started_waiting) == 0) {
             lf_cond_wait(&logical_time_changed);
         }
         lf_mutex_unlock(&mutex);
