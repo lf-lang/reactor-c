@@ -2196,6 +2196,13 @@ bool a_port_is_unknown(staa_t* staa_elem) {
 }
 #endif
 
+int id_of_action(lf_action_base_t* input_port_action) {
+    for (int i = 0; 1; i++) {
+        if (_lf_action_for_port(i) == input_port_action) return i;
+    }
+    // There will be no UB buffer overrun because _lf_action_for_port(i) has a check.
+}
+
 /**
  * @brief Given a list of staa offsets and its associated triggers,
  * have a single thread work to set ports to absent at a given logical time
@@ -2210,12 +2217,14 @@ void* update_ports_from_staa_offsets(void* args) {
             staa_t* staa_elem = staa_lst[i];
             interval_t wait_until_time = current_tag.time + staa_elem->STAA + _lf_fed_STA_offset;
             lf_mutex_lock(&mutex);
-            if (a_port_is_unknown(staa_elem) && lf_tag_compare(lf_tag(), tag_when_started_waiting) == 0 && wait_until(wait_until_time, &port_status_changed)) {
+            // Both before and after the wait, check that the tag has not changed
+            if (a_port_is_unknown(staa_elem) && lf_tag_compare(lf_tag(), tag_when_started_waiting) == 0 && wait_until(wait_until_time, &port_status_changed) && lf_tag_compare(lf_tag(), tag_when_started_waiting) == 0) {
                 for (int j = 0; j < staa_elem->numActions; ++j) {
                     lf_action_base_t* input_port_action = staa_elem->actions[j];
                     if (input_port_action->trigger->status == unknown) {
                         input_port_action->trigger->status = absent;
                         LF_PRINT_DEBUG("Assuming port absent at time %lld.", (long long) (lf_tag().time - start_time));
+                        update_last_known_status_on_input_port(lf_tag(), id_of_action(input_port_action));
                         update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
                         lf_cond_broadcast(&port_status_changed);
                     }
