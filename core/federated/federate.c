@@ -1304,8 +1304,10 @@ void update_last_known_status_on_input_ports(tag_t tag) {
         if (lf_tag_compare(tag,
                 input_port_action->trigger->last_known_status_tag) >= 0) {
             LF_PRINT_DEBUG(
-                "Updating the last known status tag of port %d to " PRINTF_TAG ".",
+                "Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".",
                 i,
+                input_port_action->trigger->last_known_status_tag.time - lf_time_start(),
+                input_port_action->trigger->last_known_status_tag.microstep,
                 tag.time - lf_time_start(),
                 tag.microstep
             );
@@ -1352,8 +1354,10 @@ void update_last_known_status_on_input_port(tag_t tag, int port_id) {
                     tag.microstep++;
                 }
         LF_PRINT_DEBUG(
-            "Updating the last known status tag of port %d to " PRINTF_TAG ".",
+            "Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".",
             port_id,
+            input_port_action->last_known_status_tag.time - lf_time_start(),
+            input_port_action->last_known_status_tag.microstep,
             tag.time - lf_time_start(),
             tag.microstep
         );
@@ -2171,12 +2175,12 @@ void update_max_level(tag_t tag, bool is_provisional) {
     }
     for (int i = 0; i < _lf_action_table_size; i++) {
         lf_action_base_t* input_port_action = _lf_action_for_port(i);
-        if (lf_tag_compare(tag,
+        if (lf_tag_compare(current_tag,
             input_port_action->trigger->last_known_status_tag) > 0 && !input_port_action->trigger->is_physical) {
             max_level_allowed_to_advance = LF_MIN(max_level_allowed_to_advance, ((int) LF_LEVEL(input_port_action->trigger->reactions[0]->index)));
         }
     }
-    LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME ".", max_level_allowed_to_advance, lf_time_logical_elapsed());
+    LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME " with %lld items in action table.", max_level_allowed_to_advance, lf_time_logical_elapsed(), (long long) _lf_action_table_size);
 }
 
 bool a_port_is_unknown(staa_t* staa_elem) {
