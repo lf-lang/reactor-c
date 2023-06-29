@@ -1650,8 +1650,14 @@ void wait_for_federates(int socket_descriptor) {
 void initialize_RTI(rti_remote_t *rti){
     rti_remote = rti;
 
+    // Initialize thread synchronization primitives    
+    lf_assert(lf_mutex_init(&rti_mutex) == 0, "Failed to initialize Mutex");
+    lf_assert(lf_cond_init(&received_start_times, &rti_mutex) == 0, "Failed to initialize Condition Variable");
+    lf_assert(lf_cond_init(&sent_start_time, &rti_mutex) == 0, "Failed to initialize Condition Variable");
+
     initialize_rti_common(&rti_remote->base);
     rti_remote->base.mutex = &rti_mutex;
+
     // federation_rti related initializations
     rti_remote->max_start_time = 0LL;
     rti_remote->num_feds_proposed_start = 0;

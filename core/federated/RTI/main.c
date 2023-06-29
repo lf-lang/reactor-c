@@ -58,9 +58,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 unsigned int _lf_number_of_workers = 0u;
 
-extern lf_cond_t received_start_times;
-extern lf_cond_t sent_start_time;
-
 // The global RTI object. It is static, and can only be referenced in this file.
 // A pointer is passed during initialization to rti_remote.c
 static rti_remote_t rti;
@@ -255,15 +252,11 @@ int main(int argc, const char* argv[]) {
 
     initialize_RTI(&rti);
 
-    lf_cond_init(&received_start_times, rti.base.mutex);
-    lf_cond_init(&sent_start_time, rti.base.mutex);
-
     // Catch the Ctrl-C signal, for a clean exit that does not lose the trace information
     signal(SIGINT, exit);
     if (atexit(termination) != 0) {
         lf_print_warning("Failed to register termination function!");
     }
-    
 
     if (!process_args(argc, argv)) {
         // Processing command-line arguments failed.
