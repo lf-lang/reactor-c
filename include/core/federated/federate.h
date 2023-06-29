@@ -173,10 +173,10 @@ typedef struct federate_instance_t {
 
     /**
      * Used to prevent the federate from sending a REQUEST_STOP
-     * message multiple times to the RTI.
+     * message if it has already received a stop request from the RTI.
      * This variable should only be accessed while holding a mutex lock.
      */
-    bool sent_a_stop_request_to_rti;
+    bool received_stop_request_from_rti;
 
     /**
      * A record of the most recently sent LTC (logical tag complete) message.
