@@ -169,7 +169,7 @@ void _lf_decrement_tag_barrier_locked(environment_t* env) {
  * @param proposed_tag The tag that the runtime wants to advance to.
  * @return 0 if no wait was needed and 1 if a wait actually occurred.
  */
-int _lf_wait_ontag_barrier(environment_t* env, tag_t proposed_tag) {
+int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag) {
     assert(env != GLOBAL_ENVIRONMENT);
 
     // Check the most common case first.
@@ -519,9 +519,10 @@ void _lf_next_locked(environment_t *env) {
     // enough to see its tag. To prevent it from becoming tardy, the thread
     // that is reading the message has set a barrier to prevent logical time
     // from exceeding the timestamp of the message. It will remove that barrier
-    // once the complete message has been read. Here, we wait for that barrier
-    // to be removed, if appropriate.
-    if(_lf_wait_ontag_barrier(env, next_tag)) {
+    // once the complete message has been read. Also, if a federate requests 
+    // to stop exeuction barriers will used while reaching a consensus.
+    // Here, we wait for that barrier to be removed, if appropriate.
+    if(_lf_wait_on_tag_barrier(env, next_tag)) {
         // A wait actually occurred, so the next_tag may have changed again.
         next_tag = get_next_event_tag(env);
     }
@@ -561,7 +562,7 @@ void _lf_next_locked(environment_t *env) {
 /**
  * @brief True if stop has been requested so it doesn't get re-requested.
  */
-bool stop_requested = false;
+static bool stop_requested = false;
 
 // See reactor.h for docs.
 void lf_request_stop() {
@@ -724,7 +725,7 @@ void _lf_initialize_start_tag(environment_t *env) {
     // from exceeding the timestamp of the message. It will remove that barrier
     // once the complete message has been read. Here, we wait for that barrier
     // to be removed, if appropriate before proceeding to executing tag (0,0).
-    _lf_wait_ontag_barrier(env, (tag_t){.time=start_time,.microstep=0});
+    _lf_wait_on_tag_barrier(env, (tag_t){.time=start_time,.microstep=0});
 #endif // FEDERATED_DECENTRALIZED
 
     // Set the following boolean so that other thread(s), including federated threads,

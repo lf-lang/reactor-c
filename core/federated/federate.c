@@ -1635,7 +1635,7 @@ void wait_until_port_status_known(environment_t* env, int port_ID, interval_t ST
     // for the current tag could have been received in time
     // but not the the body of the message.
     // Wait on the tag barrier based on the current tag. 
-    _lf_wait_ontag_barrier(env, env->current_tag);
+    _lf_wait_on_tag_barrier(env, env->current_tag);
 
     // Done waiting
     // If the status of the port is still unknown, assume it is absent.
