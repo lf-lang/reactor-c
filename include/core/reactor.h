@@ -524,7 +524,7 @@ trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_d
 trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, void* value, size_t length);
 
 // See reactor.h for doc.
-void _lf_fd_send_stop_request_to_rti(tag_t stop_tag);
+int _lf_fd_send_stop_request_to_rti(tag_t stop_tag);
 
 /**
  * @brief Will update the argument to point to the beginning of the array of environments in this program
