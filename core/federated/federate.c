@@ -2183,6 +2183,7 @@ void update_max_level(tag_t tag, bool is_provisional) {
     LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME " with %lld items in action table.", max_level_allowed_to_advance, lf_time_logical_elapsed(), (long long) _lf_action_table_size);
 }
 
+#ifdef FEDERATED_DECENTRALIZED
 bool a_port_is_unknown(staa_t* staa_elem) {
     bool do_wait = false;
     for (int j = 0; j < staa_elem->numActions; ++j) {
@@ -2193,6 +2194,7 @@ bool a_port_is_unknown(staa_t* staa_elem) {
     }
     return do_wait;
 }
+#endif
 
 /**
  * @brief Given a list of staa offsets and its associated triggers,
