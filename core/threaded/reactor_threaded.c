@@ -1136,10 +1136,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     
     environment_t *envs;
     int num_envs = _lf_get_environments(&envs);
-    if (num_envs > 1) {
-        // TODO: This must be refined when we introduce multiple enclaves
-        keepalive_specified = true;
-    }
     // Initialize the local RTI
     // FIXME: void ifdef
     #ifdef LF_ENCLAVES
