@@ -591,10 +591,18 @@ void lf_request_stop() {
     }
 
 #ifdef FEDERATED
-    _lf_fd_send_stop_request_to_rti(max_current_tag);
-    // Do not set stop_requested because the RTI might grant a
+    // In the federated case, do not set stop_requested because the RTI might grant a
     // later stop tag than the current tag. The above code has raised
     // a barrier no greater than the requested stop tag for each enclave.
+    if (_lf_fd_send_stop_request_to_rti(max_current_tag) != 0) {
+        // Message was not sent to the RTI.
+        // Decrement the barriers to reverse our previous increment.
+        for (int i = 0; i < num_environments; i++) {
+            lf_mutex_lock(&env[i].mutex);
+            _lf_decrement_tag_barrier_locked(&env[i]);
+            lf_mutex_unlock(&env[i].mutex);
+        }
+    }
 #else
     // In a non-federated program, the stop_tag will be the next microstep after max_current_tag.
     // Iterate over environments to set their stop tag and release their barrier.

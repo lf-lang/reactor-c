@@ -2268,9 +2268,12 @@ void handle_provisional_tag_advance_grant() {
 
 /**
  * Send a MSG_TYPE_STOP_REQUEST message to the RTI with payload equal
- * to the specified tag plus one microstep.
+ * to the specified tag plus one microstep. If this federate has previously
+ * received a stop request from the RTI, then do not send the message and
+ * return 1. Return -1 if the socket is disconnected. Otherwise, return 0.
+ * @return 0 if the message is sent.
  */
-void _lf_fd_send_stop_request_to_rti(tag_t stop_tag) {
+int _lf_fd_send_stop_request_to_rti(tag_t stop_tag) {
 
     // Send a stop request with the specified tag to the RTI
     unsigned char buffer[MSG_TYPE_STOP_REQUEST_LENGTH];
@@ -2287,7 +2290,7 @@ void _lf_fd_send_stop_request_to_rti(tag_t stop_tag) {
         if (_fed.socket_TCP_RTI < 0) {
             lf_print_warning("Socket is no longer connected. Dropping message.");
             lf_mutex_unlock(&outbound_socket_mutex);
-            return;
+            return -1;
         }
         // Trace the event when tracing is enabled
         tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ, _lf_my_fed_id, &stop_tag);
@@ -2295,17 +2298,10 @@ void _lf_fd_send_stop_request_to_rti(tag_t stop_tag) {
                 buffer, &outbound_socket_mutex,
                 "Failed to send stop time " PRINTF_TIME " to the RTI.", stop_tag.time - start_time);
         lf_mutex_unlock(&outbound_socket_mutex);
+        return 0;
     } else {
         lf_mutex_unlock(&outbound_socket_mutex);
-        // Not sending to the RTI because have previously received a stop request from the RTI.
-        // Decrement the barriers to reverse our previous increment.
-        environment_t* env;
-        int num_environments = _lf_get_environments(&env);
-        for (int i = 0; i < num_environments; i++) {
-            lf_mutex_lock(&env[i].mutex);
-            _lf_decrement_tag_barrier_locked(&env[i]);
-            lf_mutex_unlock(&env[i].mutex);
-        }
+        return 1;
     }
 }
 
