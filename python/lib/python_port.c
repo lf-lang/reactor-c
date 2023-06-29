@@ -100,10 +100,7 @@ PyObject* py_port_set(PyObject* self, PyObject* args) {
     if (val) {
         LF_PRINT_DEBUG("Setting value %p.", val);
         python_count_decrement(port->value);
-
-        // 1. Call lf_new_token function to create a new token
-        // 2. Set destructor and assign value to the port 
-        // Py_INCREF(val) is unnecessary 
+       
         lf_token_t* token = lf_new_token((void*)port, val, 1);
         lf_set_destructor(port, python_count_decrement);
         lf_set_token(port, token);
