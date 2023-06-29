@@ -49,6 +49,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "rti_remote.h"
 #include <signal.h>     // To trap ctrl-c and invoke a clean stop to save the trace file, if needed.
+#include <string.h>
 
 
 /**
@@ -254,8 +255,8 @@ int main(int argc, const char* argv[]) {
 
     initialize_RTI(&rti);
 
-    lf_cond_init(&received_start_times, &rti.base.mutex);
-    lf_cond_init(&sent_start_time, &rti.base.mutex);
+    lf_cond_init(&received_start_times, rti.base.mutex);
+    lf_cond_init(&sent_start_time, rti.base.mutex);
 
     // Catch the Ctrl-C signal, for a clean exit that does not lose the trace information
     signal(SIGINT, exit);

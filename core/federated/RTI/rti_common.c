@@ -1,4 +1,4 @@
-#if defined STANDLONE_RTI || defined LF_ENCLAVES
+#if defined STANDALONE_RTI || defined LF_ENCLAVES
 #include "rti_common.h"
 
 /**
