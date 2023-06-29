@@ -34,6 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  * @author{Erling Jellum <erlingrj@berkeley.edu>}
  */
+#include <assert.h>
 #include <string.h>
 
 #include "reactor.h"
@@ -115,6 +116,8 @@ void lf_print_snapshot(environment_t* env) {
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
 #ifdef MODAL_REACTORS
     // Check if reaction is disabled by mode inactivity
     if (!_lf_mode_is_active(reaction->mode)) {
@@ -141,6 +144,8 @@ void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_n
  *  should stop.
  */
 int _lf_do_step(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     // Invoke reactions.
     while(pqueue_size(env->reaction_q) > 0) {
         // lf_print_snapshot();
@@ -227,6 +232,8 @@ int _lf_do_step(environment_t* env) {
 // the keepalive command-line option has not been given.
 // Otherwise, return 1.
 int next(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     // Enter the critical section and do not leave until we have
     // determined which tag to commit to and start invoking reactions for.
     if (lf_critical_section_enter(env) != 0) {
@@ -304,6 +311,8 @@ int next(environment_t* env) {
  * @param env Environment in which we are executing
  */
 void _lf_request_stop(environment_t *env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
 	tag_t new_stop_tag;
 	new_stop_tag.time = env->current_tag.time;
 	new_stop_tag.microstep = env->current_tag.microstep + 1;
@@ -390,7 +399,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 
 /**
  * @brief Notify of new event by calling the unthreaded platform API
- * @param env Environment in which we are execution
+ * @param env Environment in which we are executing.
  */
 int lf_notify_of_event(environment_t* env) {
     return _lf_unthreaded_notify_of_event();
@@ -398,7 +407,7 @@ int lf_notify_of_event(environment_t* env) {
 
 /**
  * @brief Enter critical section by disabling interrupts
- * @param env Environment in which we are execution
+ * @param env Environment in which we are executing.
  */
 int lf_critical_section_enter(environment_t* env) {
     return lf_disable_interrupts_nested();
@@ -406,7 +415,7 @@ int lf_critical_section_enter(environment_t* env) {
 
 /**
  * @brief Leave a critical section by enabling interrupts
- * @param env Environment in which we are execution
+ * @param env Environment in which we are executing.
  */
 int lf_critical_section_exit(environment_t* env) {
     return lf_enable_interrupts_nested();

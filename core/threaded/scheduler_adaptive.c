@@ -706,6 +706,8 @@ static void data_collection_end_tag(
 
 ///////////////////// Scheduler Init and Destroy API /////////////////////////
 void lf_sched_init(environment_t* env, size_t number_of_workers, sched_params_t* params) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     // TODO: Instead of making this a no-op, crash the program. If this gets called twice, then that
     // is a bug that should be fixed.
     if(!init_sched_instance(env, &env->scheduler, number_of_workers, params)) {

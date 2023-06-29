@@ -45,8 +45,18 @@ typedef struct lf_scheduler_t lf_scheduler_t;
 typedef struct mode_environment_t mode_environment_t;
 typedef struct enclave_info_t enclave_info_t;
 
-
+/**
+ * @brief The global environment.
+ * Some operations are not specific to a particular scheduling enclave and therefore
+ * have no associated environment. When invoking a function such as lf_critical_section_enter,
+ * which requires an environment argument, it may be possible to pass this GLOBAL_ENVIRONMENT.
+ * For lf_critical_section_enter, for example, this may acquire a global mutex instead of
+ * a mutex specific to a particular scheduling enclave. Most functions that take environment
+ * arguments, however, cannot accept the GLOBAL_ENVIRONMENT argument, and passing it will
+ * result in an assertion violation.
+ */
 #define GLOBAL_ENVIRONMENT NULL
+
 /**
  * @brief Execution environment.
  * This struct contains information about the execution environment.
