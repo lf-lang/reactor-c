@@ -90,5 +90,5 @@ void rti_request_stop_locked(enclave_info_t* enclave, tag_t tag);
  */
 void rti_update_other_net_locked(enclave_info_t* src, enclave_info_t* target, tag_t net);
 
-#endif
-#endif
+#endif // RTI_LOCAL_H
+#endif // LF_ENCLAVES

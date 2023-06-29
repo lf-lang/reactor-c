@@ -1,5 +1,6 @@
-#ifndef ENCLAVE_H
-#define ENCLAVE_H
+#if defined STANDALONE_RTI || defined LF_ENCLAVES
+#ifndef RTI_COMMON_H
+#define RTI_COMMON_H
 
 #include <errno.h>      // Defines perror(), errno
 #include <assert.h>
@@ -237,4 +238,5 @@ void update_reactor_node_next_event_tag_locked(scheduling_node_t* e, tag_t next_
  */
 tag_t transitive_next_event(scheduling_node_t *e, tag_t candidate, bool visited[]);
 
-#endif // ENCLAVE_H
+#endif // RTI_COMMON_H
+#endif // STANDALONE_RTI || LF_ENCLAVES

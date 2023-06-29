@@ -1,3 +1,4 @@
+#if defined STANDALONE_RTI
 /**
  * @file
  * @author Edward A. Lee (eal@berkeley.edu)
@@ -292,3 +293,5 @@ int main(int argc, const char* argv[]) {
     lf_print("RTI is exiting.");
     return 0;
 }
+#endif // STANDALONE_RTI
+

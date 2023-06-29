@@ -1,3 +1,4 @@
+#if defined STANDALONE_RTI
 /**
  * @file
  * @author Edward A. Lee
@@ -1667,3 +1668,4 @@ void initialize_RTI(rti_remote_t *rti){
     rti_remote->authentication_enabled = false;
     rti_remote->base.tracing_enabled = false;
 }
+#endif // STANDALONE_RTI

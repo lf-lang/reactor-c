@@ -1,3 +1,4 @@
+#if defined STANDLONE_RTI || defined LF_ENCLAVES
 #include "rti_common.h"
 
 /**
@@ -258,3 +259,4 @@ tag_t transitive_next_event(scheduling_node_t* e, tag_t candidate, bool visited[
     }
     return result;
 }
+#endif

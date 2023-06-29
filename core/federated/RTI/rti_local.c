@@ -209,4 +209,4 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     // e->last_granted = tag;
     // lf_cond_signal(&((enclave_info_t *)e)->next_event_condition);
 }
-#endif
+#endif //LF_ENCLAVES

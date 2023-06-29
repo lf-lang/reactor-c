@@ -1,3 +1,4 @@
+#if defined STANDALONE_RTI
 /**
  * @file
  * @author Edward A. Lee (eal@berkeley.edu)
@@ -8,8 +9,8 @@
  *
  */
 
-#ifndef RTI_LIB_H
-#define RTI_LIB_H
+#ifndef RTI_REMOTE_H
+#define RTI_REMOTE_H
 
 #include <sys/socket.h>
 #include <sys/types.h>  // Provides select() function to read from multiple sockets.
@@ -505,4 +506,5 @@ int process_args(int argc, const char* argv[]);
  */
 void initialize_RTI();
 
-#endif // RTI_LIB_H
+#endif // RTI_REMOTE_H
+#endif // STANDALONE_RTI
