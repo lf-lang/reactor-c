@@ -745,9 +745,10 @@ void _lf_initialize_start_tag(environment_t *env) {
     // a chance to process incoming messages while utilizing the STA.
     LF_PRINT_LOG("Waiting for start time " PRINTF_TIME " plus STA " PRINTF_TIME ".",
             start_time, _lf_fed_STA_offset);
-    // Ignore interrupts to this wait. We don't want to start executing until
-    // physical time matches or exceeds the logical start time.
-    while (!wait_until(env, start_time, &env->event_q_changed)) {}
+    // Use a blocking sleep until start time. Using `wait_until` will release the environment mutex and
+    // cause thread synchornization issues for the startup.
+    interval_t sleep_duration = start_time - lf_time_physical();
+    lf_sleep(sleep_duration);
     LF_PRINT_DEBUG("Done waiting for start time " PRINTF_TIME ".", start_time);
     LF_PRINT_DEBUG("Physical time is ahead of current time by " PRINTF_TIME ". This should be small.",
             lf_time_physical() - start_time);
@@ -964,21 +965,24 @@ void _lf_worker_do_work(environment_t *env, int worker_number) {
 }
 
 /**
- * Worker thread for the thread pool.
- * This acquires the mutex lock and releases it to wait for time to
- * elapse or for asynchronous events and also releases it to execute reactions.
+ * Worker thread for the thread pool. Its argument is the environment within which is working
+ * We have to be careful so only one worker per environment 
  */
 void* worker(void* arg) {
     environment_t *env = (environment_t* ) arg;
     lf_mutex_lock(&env->mutex);
 
-    // First worker initializes start tag
-    if (env->worker_thread_count == 0) {
-        _lf_initialize_start_tag(env);
-    }
-
     int worker_number = env->worker_thread_count++;
     LF_PRINT_LOG("Worker thread %d started.", worker_number);
+
+    // First worker initializes start tag
+    if (worker_number == 0) {
+        LF_PRINT_LOG("Worker thread %d initializing start tag.", worker_number);
+        // Initialize start tag
+        _lf_initialize_start_tag(env);
+        LF_PRINT_LOG("Worker thread %d has initialized start tag.", worker_number);
+    } 
+
     lf_mutex_unlock(&env->mutex);
 
     _lf_worker_do_work(env, worker_number);
