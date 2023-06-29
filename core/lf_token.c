@@ -137,7 +137,7 @@ void _lf_free_token_value(lf_token_t* token) {
         // Free the value field (the payload).
         LF_PRINT_DEBUG("_lf_free_token_value: Freeing allocated memory for payload (token value): %p",
             token->value);
-        // First check whether the token value field is not NULL
+        // First check the token's destructor field and invoke it if it is not NULL.
         // in which case token's destructor should be invoked.
         if (token->type->destructor != NULL) {
             token->type->destructor(token->value);
