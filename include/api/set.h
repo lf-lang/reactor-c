@@ -215,13 +215,29 @@ do { \
 // For simplicity and backward compatability, dont require the environment-pointer when calling the timing API.
 // Since this is always done from the context of a reaction `self` is in scope and is a pointer to the self-struct
 // of the current reactor. 
+
+// The fully static (FS) runtime, uses time local to each reactor. If this is the case
+// then we defined these macros to acces that timestamp rather than using the standard API
+// FIXME (erj): I am not really stoked about this added complexity
+#if defined REACTOR_LOCAL_TIME
+#define lf_tag() self->base.tag
+#define get_current_tag() self->base.tag
+#define lf_time_logical() self->base.tag.time
+#define lf_time_logical_elapsed() (self->base.tag.time - lf_time_start())
+#define get_logical_elapsed() (self->base.tag.time - lf_time_start())
+#define get_logical_time() self->base.tag
+#define get_microstep() self->base.tag.microstep
+
+#else 
 #define lf_tag() lf_tag(self->base.environment)
 #define get_current_tag() get_current_tag(self->base.environment)
-#define get_microstep() get_microstep(self->base.environment)
-
-#define lf_request_stop() _lf_request_stop(self->base.environment)
-
 #define lf_time_logical() lf_time_logical(self->base.environment)
 #define lf_time_logical_elapsed() lf_time_logical_elapsed(self->base.environment)
 #define get_elapsed_logical_time() get_elapsed_logical_time(self->base.environment)
 #define get_logical_time() get_logical_time(self->base.environment)
+#define get_microstep() get_microstep(self->base.environment)
+#endif
+
+// FIXME: How should this be implemented for the FS scheduler?
+#define lf_request_stop() _lf_request_stop(self->base.environment)
+
