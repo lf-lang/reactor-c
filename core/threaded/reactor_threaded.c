@@ -562,7 +562,7 @@ void _lf_next_locked(environment_t *env) {
 /**
  * @brief True if stop has been requested so it doesn't get re-requested.
  */
-static bool stop_requested = false;
+bool stop_requested = false;
 
 // See reactor.h for docs.
 void lf_request_stop() {
