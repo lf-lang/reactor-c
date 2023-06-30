@@ -151,14 +151,14 @@ int lf_reactor_c_main(int argc, const char *argv[]);
  * Prototype for lf_request_stop().
  * @see reactor.h
  */
-void _lf_request_stop(environment_t* env);
+void lf_request_stop(void);
 
 ///////////////// Other useful functions /////////////////////
 /**
  * Stop execution at the conclusion of the current logical time.
  */
 PyObject* py_request_stop(PyObject *self, PyObject *args) {
-    _lf_request_stop(top_level_environment);
+    lf_request_stop();
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -294,7 +294,7 @@ static PyMethodDef GEN_NAME(MODULE_NAME,_methods)[] = {
   {"schedule_copy", py_schedule_copy, METH_VARARGS, NULL},
   {"tag", py_lf_tag, METH_NOARGS, NULL},
   {"tag_compare", py_tag_compare, METH_VARARGS, NULL},
-  {"request_stop", py_request_stop, METH_NOARGS, NULL},
+  {"request_stop", py_request_stop, METH_NOARGS, "Request stop"},
   {NULL, NULL, 0, NULL}
 };
 
