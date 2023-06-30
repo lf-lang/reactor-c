@@ -10,6 +10,11 @@
 #include "modes.h"
 #include "port.h"
 
+// FIXME (erj): Super hack to disable chain optimzation when we are using the FS runtime.
+#if SCHEDULER == FS
+#else
+#define REACTION_CHAIN_OPTIMIZATION
+#endif
 
 //  ******** Global Variables :( ********  //
 extern unsigned int _lf_number_of_workers;
