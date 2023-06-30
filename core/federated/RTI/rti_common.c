@@ -37,7 +37,6 @@ void initialize_reactor_node(scheduling_node_t* e, uint16_t id) {
     e->downstream = NULL;
     e->num_downstream = 0;
     e->mode = REALTIME;
-    e->requested_stop = false;
 
 }
 

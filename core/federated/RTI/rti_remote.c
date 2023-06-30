@@ -211,7 +211,6 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
         if (bytes_written < 0) {
             e->state = NOT_CONNECTED;
             // FIXME: We need better error handling, but don't stop other execution here.
-            // mark_federate_requesting_stop(fed);
         }
     } else {
         e->last_granted = tag;
@@ -252,7 +251,6 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
         if (bytes_written < 0) {
             e->state = NOT_CONNECTED;
             // FIXME: We need better error handling, but don't stop other execution here.
-            // mark_federate_requesting_stop(fed);
         }
     } else {
         e->last_provisionally_granted = tag;
@@ -567,7 +565,15 @@ void handle_next_event_tag(federate_info_t* fed) {
  */
 bool _lf_rti_stop_granted_already_sent_to_federates = false;
 
-void _lf_rti_broadcast_stop_time_to_federates_already_locked() {
+/**
+ * Once the RTI has seen proposed tags from all connected federates,
+ * it will broadcast a MSG_TYPE_STOP_GRANTED carrying the _RTI.max_stop_tag.
+ * This function also checks the most recently received NET from
+ * each federate and resets that be no greater than the _RTI.max_stop_tag.
+ *
+ * This function assumes the caller holds the _RTI.rti_mutex lock.
+ */
+void _lf_rti_broadcast_stop_time_to_federates_locked() {
     if (_lf_rti_stop_granted_already_sent_to_federates == true) {
         return;
     }
@@ -603,12 +609,12 @@ void mark_federate_requesting_stop(federate_info_t* fed) {
         // Assume that the federate
         // has requested stop
         rti_remote->base.num_reactor_nodes_handling_stop++;
-        fed->enclave.requested_stop = true;
+        fed->requested_stop = true;
     }
     if (rti_remote->base.num_reactor_nodes_handling_stop == rti_remote->base.number_of_reactor_nodes) {
         // We now have information about the stop time of all
         // federates.
-        _lf_rti_broadcast_stop_time_to_federates_already_locked();
+        _lf_rti_broadcast_stop_time_to_federates_locked();
     }
 }
 
@@ -626,7 +632,7 @@ void handle_stop_request_message(federate_info_t* fed) {
 
     // Check whether we have already received a stop_tag
     // from this federate
-    if (fed->enclave.requested_stop) {
+    if (fed->requested_stop) {
         // Ignore this request
         lf_mutex_unlock(&rti_mutex);
         return;
@@ -664,10 +670,15 @@ void handle_stop_request_message(federate_info_t* fed) {
     ENCODE_STOP_REQUEST(stop_request_buffer, rti_remote->base.max_stop_tag.time, rti_remote->base.max_stop_tag.microstep);
 
     // Iterate over federates and send each the MSG_TYPE_STOP_REQUEST message
-    // if we do not have a stop_time already for them.
-    for (int i = 0; i < rti_remote->base.number_of_reactor_nodes; i++) {
+    // if we do not have a stop_time already for them. Do not do this more than once.
+    if (rti_remote->stop_in_progress) {
+        lf_mutex_unlock(&rti_mutex);
+        return;
+    }
+    rti_remote->stop_in_progress = true;
+    for (int i = 0; i < _f_rti->number_of_enclaves; i++) {
         federate_info_t *f = GET_FED_INFO(i);
-        if (f->enclave.id != fed->enclave.id && f->enclave.requested_stop == false) {
+        if (f->enclave.id != fed->enclave.id && f->requested_stop == false) {
             if (f->enclave.state == NOT_CONNECTED) {
                 mark_federate_requesting_stop(f);
                 continue;
@@ -795,8 +806,7 @@ void handle_timestamp(federate_info_t *my_fed) {
         tag_t tag = {.time = timestamp, .microstep = 0};
         tracepoint_rti_from_federate(rti_remote->base.trace, receive_TIMESTAMP, my_fed->enclave.id, &tag);
     }
-    LF_PRINT_LOG("RTI received timestamp message: %ld.", timestamp);
-    LF_PRINT_LOG("RTI received timestamp message: " PRINTF_TIME ".", timestamp);
+    LF_PRINT_DEBUG("RTI received timestamp message with time: " PRINTF_TIME ".", timestamp);
 
     lf_mutex_lock(&rti_mutex);
     rti_remote->num_feds_proposed_start++;
@@ -931,7 +941,6 @@ void* clock_synchronization_thread(void* noargs) {
                 // FIXME: We need better error handling here, but clock sync failure
                 // should not stop execution.
                 lf_print_error("Clock sync failed with federate %d. Not connected.", fed_id);
-                // mark_federate_requesting_stop(&fed);
                 continue;
             } else if (!fed->clock_synchronization_enabled) {
                 continue;
@@ -1009,8 +1018,6 @@ void handle_federate_resign(federate_info_t *my_fed) {
     }
 
     my_fed->enclave.state = NOT_CONNECTED;
-    // FIXME: The following results in spurious error messages.
-    // mark_federate_requesting_stop(my_fed);
 
     // Indicate that there will no further events from this federate.
     my_fed->enclave.next_event = FOREVER_TAG;
@@ -1053,8 +1060,7 @@ void* federate_info_thread_TCP(void* fed) {
             lf_print_warning("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
             my_fed->enclave.state = NOT_CONNECTED;
             my_fed->socket = -1;
-            // FIXME: We need better error handling here, but this is probably not the right thing to do.
-            // mark_federate_requesting_stop(my_fed);
+            // FIXME: We need better error handling here, but do not stop execution here.
             break;
         }
         LF_PRINT_DEBUG("RTI: Received message type %u from federate %d.", buffer[0], my_fed->enclave.id);
@@ -1537,6 +1543,7 @@ void* respond_to_erroneous_connections(void* nothing) {
 
 void initialize_federate(federate_info_t* fed, uint16_t id) {
     initialize_reactor_node(&(fed->enclave), id);
+    fed->requested_stop = false;
     fed->socket = -1;      // No socket.
     fed->clock_synchronization_enabled = true;
     fed->in_transit_message_tags = initialize_in_transit_message_q();
@@ -1595,12 +1602,17 @@ void wait_for_federates(int socket_descriptor) {
     if (shutdown(socket_descriptor, SHUT_RDWR)) {
         LF_PRINT_LOG("On shut down TCP socket, received reply: %s", strerror(errno));
     }
+    // NOTE: In all common TCP/IP stacks, there is a time period,
+    // typically between 30 and 120 seconds, called the TIME_WAIT period,
+    // before the port is released after this close. This is because
+    // the OS is preventing another program from accidentally receiving
+    // duplicated packets intended for this program.
     close(socket_descriptor);
 
-    /************** FIXME: The following is probably not needed.
-    The above shutdown and close should do the job.
+    /* NOTE: Below is a song and dance that is apparently not needed.
+    The above shutdown and close appear to do the job.
 
-    // NOTE: Apparently, closing the socket will not necessarily
+    // Apparently, closing the socket will not necessarily
     // cause the respond_to_erroneous_connections accept() call to return,
     // so instead, we connect here so that it can check the rti->all_federates_exited
     // variable.
@@ -1629,13 +1641,6 @@ void wait_for_federates(int socket_descriptor) {
             close(tmp_socket);
         }
     }
-
-    // NOTE: In all common TCP/IP stacks, there is a time period,
-    // typically between 30 and 120 seconds, called the TIME_WAIT period,
-    // before the port is released after this close. This is because
-    // the OS is preventing another program from accidentally receiving
-    // duplicated packets intended for this program.
-    close(socket_descriptor);
     */
 
     if (rti_remote->socket_descriptor_UDP > 0) {
@@ -1673,5 +1678,6 @@ void initialize_RTI(rti_remote_t *rti){
     rti_remote->clock_sync_exchanges_per_interval = 10;
     rti_remote->authentication_enabled = false;
     rti_remote->base.tracing_enabled = false;
+    rti_remote->stop_in_progress = false;
 }
 #endif // STANDALONE_RTI
