@@ -663,7 +663,12 @@ void handle_stop_request_message(federate_t* fed) {
     ENCODE_STOP_REQUEST(stop_request_buffer, _f_rti->max_stop_tag.time, _f_rti->max_stop_tag.microstep);
 
     // Iterate over federates and send each the MSG_TYPE_STOP_REQUEST message
-    // if we do not have a stop_time already for them.
+    // if we do not have a stop_time already for them. Do not do this more than once.
+    if (_f_rti->stop_in_progress) {
+        lf_mutex_unlock(&rti_mutex);
+        return;
+    }
+    _f_rti->stop_in_progress = true;
     for (int i = 0; i < _f_rti->number_of_enclaves; i++) {
         federate_t *f = _f_rti->enclaves[i];
         if (f->enclave.id != fed->enclave.id && f->requested_stop == false) {
@@ -794,8 +799,7 @@ void handle_timestamp(federate_t *my_fed) {
         tag_t tag = {.time = timestamp, .microstep = 0};
         tracepoint_rti_from_federate(_f_rti->trace, receive_TIMESTAMP, my_fed->enclave.id, &tag);
     }
-    LF_PRINT_LOG("RTI received timestamp message: %ld.", timestamp);
-    LF_PRINT_LOG("RTI received timestamp message: " PRINTF_TIME ".", timestamp);
+    LF_PRINT_DEBUG("RTI received timestamp message with time: " PRINTF_TIME ".", timestamp);
 
     lf_mutex_lock(&rti_mutex);
     _f_rti->num_feds_proposed_start++;
@@ -1589,12 +1593,17 @@ void wait_for_federates(int socket_descriptor) {
     if (shutdown(socket_descriptor, SHUT_RDWR)) {
         LF_PRINT_LOG("On shut down TCP socket, received reply: %s", strerror(errno));
     }
+    // NOTE: In all common TCP/IP stacks, there is a time period,
+    // typically between 30 and 120 seconds, called the TIME_WAIT period,
+    // before the port is released after this close. This is because
+    // the OS is preventing another program from accidentally receiving
+    // duplicated packets intended for this program.
     close(socket_descriptor);
 
-    /************** FIXME: The following is probably not needed.
-    The above shutdown and close should do the job.
+    /* NOTE: Below is a song and dance that is apparently not needed.
+    The above shutdown and close appear to do the job.
 
-    // NOTE: Apparently, closing the socket will not necessarily
+    // Apparently, closing the socket will not necessarily
     // cause the respond_to_erroneous_connections accept() call to return,
     // so instead, we connect here so that it can check the _f_rti->all_federates_exited
     // variable.
@@ -1623,13 +1632,6 @@ void wait_for_federates(int socket_descriptor) {
             close(tmp_socket);
         }
     }
-
-    // NOTE: In all common TCP/IP stacks, there is a time period,
-    // typically between 30 and 120 seconds, called the TIME_WAIT period,
-    // before the port is released after this close. This is because
-    // the OS is preventing another program from accidentally receiving
-    // duplicated packets intended for this program.
-    close(socket_descriptor);
     */
 
     if (_f_rti->socket_descriptor_UDP > 0) {
@@ -1830,4 +1832,5 @@ void initialize_RTI(){
     _f_rti->clock_sync_exchanges_per_interval = 10,
     _f_rti->authentication_enabled = false,
     _f_rti->tracing_enabled = false;
+    _f_rti->stop_in_progress = false;
 }
