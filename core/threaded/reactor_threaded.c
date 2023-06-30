@@ -773,10 +773,10 @@ void _lf_initialize_start_tag(environment_t *env) {
     // a chance to process incoming messages while utilizing the STA.
     LF_PRINT_LOG("Waiting for start time " PRINTF_TIME " plus STA " PRINTF_TIME ".",
             start_time, _lf_fed_STA_offset);
-    // Use a blocking sleep until start time. Using `wait_until` will release the environment mutex and
-    // cause thread synchornization issues for the startup.
-    interval_t sleep_duration = start_time - lf_time_physical();
-    lf_sleep(sleep_duration);
+    // Here we wait until the start time and also release the environment mutex.
+    // this means that the other worker threads will be allowed to start. We need
+    // this to avoid potential deadlock in federated startup.
+    while(!wait_until(env, start_time, &env->event_q_changed)) {};
     LF_PRINT_DEBUG("Done waiting for start time " PRINTF_TIME ".", start_time);
     LF_PRINT_DEBUG("Physical time is ahead of current time by " PRINTF_TIME ". This should be small.",
             lf_time_physical() - start_time);
@@ -1020,19 +1020,11 @@ void* worker(void* arg) {
     environment_t *env = (environment_t* ) arg;
 
     assert(env != GLOBAL_ENVIRONMENT);
-
+ 
     lf_mutex_lock(&env->mutex);
 
     int worker_number = env->worker_thread_count++;
     LF_PRINT_LOG("Worker thread %d started.", worker_number);
-
-    // First worker initializes start tag
-    if (worker_number == 0) {
-        LF_PRINT_LOG("Worker thread %d initializing start tag.", worker_number);
-        // Initialize start tag
-        _lf_initialize_start_tag(env);
-        LF_PRINT_LOG("Worker thread %d has initialized start tag.", worker_number);
-    } 
 
     lf_mutex_unlock(&env->mutex);
 
@@ -1221,6 +1213,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         if (lf_mutex_lock(&env->mutex) != 0) {
             lf_print_error_and_exit("Could not lock environment mutex");
         }
+        // First worker initializes start tag
+        LF_PRINT_LOG("Environment %u initializes its start tag");
+        _lf_initialize_start_tag(env);
 
         lf_print("Environment %u: ---- Spawning %d workers.",env->id, env->num_workers);
         start_threads(env);
