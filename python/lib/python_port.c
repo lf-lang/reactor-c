@@ -51,6 +51,15 @@ void python_count_decrement(void* py_object) {
     Py_XDECREF((PyObject*)py_object);
 }
 
+/**
+ * Decrease the reference count of PyObject for output port.
+ * @param py_object A PyObject with count 1 or greater.
+ */
+void output_port_destructor(void* py_object) {
+    while (Py_REFCNT(py_object) >= 0) {
+        Py_XDECREF((PyObject*)py_object);
+    }
+}
 
 //////////// set Function(s) /////////////
 /**
@@ -99,12 +108,14 @@ PyObject* py_port_set(PyObject* self, PyObject* args) {
 
     if (val) {
         LF_PRINT_DEBUG("Setting value %p.", val);
+        Py_INCREF(val);
         python_count_decrement(port->value);
        
         lf_token_t* token = lf_new_token((void*)port, val, 1);
-        lf_set_destructor(port, python_count_decrement);
+        lf_set_destructor(port, output_port_destructor);
         lf_set_token(port, token);
-
+        Py_INCREF(val);
+       
         // Also set the values for the port capsule.
         p->value = val;
         p->is_present = true;
