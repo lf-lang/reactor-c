@@ -15,7 +15,7 @@ var federate_8h =
     [ "send_neighbor_structure_to_RTI", "d1/dfa/federate_8h.html#a290fff2ff01f301f1b7b3b98fc11f492", null ],
     [ "send_port_absent_to_federate", "d1/dfa/federate_8h.html#a6d0d6dfbd380c75177dc10b08a811ef5", null ],
     [ "send_timed_message", "d1/dfa/federate_8h.html#acaaf63aada42881a61249d47e734ba15", null ],
-    [ "synchronize_with_other_federates", "d1/dfa/federate_8h.html#a9f2ec13c51b647b2b3a6fe1d085599c4", null ],
+    [ "synchronize_with_other_federates", "d1/dfa/federate_8h.html#ad83fe9661682934029a42954b8fe6e2f", null ],
     [ "wait_until_port_status_known", "d1/dfa/federate_8h.html#aa65ffaa03960a9fb25df87993fdd62fe", null ],
     [ "outbound_socket_mutex", "d1/dfa/federate_8h.html#a1de2c61d36e14fae8de7043ff2661a34", null ],
     [ "port_status_changed", "d1/dfa/federate_8h.html#ac31c3ee54cd862c9381fbf980fa7d9ef", null ]

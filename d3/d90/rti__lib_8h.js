@@ -15,7 +15,6 @@ var rti__lib_8h =
       [ "TCP", "d3/d90/rti__lib_8h.html#a54c375e3893ff5969d20df65b90c8335aa040cd7feeb588104634cdadf35abf1c", null ],
       [ "UDP", "d3/d90/rti__lib_8h.html#a54c375e3893ff5969d20df65b90c8335adb542475cf9d0636e4225e216cee9ae6", null ]
     ] ],
-    [ "_lf_rti_broadcast_stop_time_to_federates_already_locked", "d3/d90/rti__lib_8h.html#a4d99ea51641cde8d7d65c06e43581f19", null ],
     [ "clock_synchronization_thread", "d3/d90/rti__lib_8h.html#a272b481a0cc2f86f21c75e8efa19a551", null ],
     [ "connect_to_federates", "d3/d90/rti__lib_8h.html#acf8907ccab075522f7b84de579d50030", null ],
     [ "create_server", "d3/d90/rti__lib_8h.html#acde4076cd96817debe76e74fca261c70", null ],

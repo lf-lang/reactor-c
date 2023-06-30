@@ -98,6 +98,9 @@ $(document).ready(function(){initNavTree('d6/d21/enclave_8h.html','../../'); ini
   <div class="headertitle"><div class="title">enclave.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>Declarations for runtime infrastructure (RTI) for scheduling enclaves and distributed Lingua Franca programs. This file declares RTI features that are used by scheduling enclaves as well as federated LF programs.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;errno.h&gt;</code><br />
 <code>#include &lt;assert.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="../../de/d03/platform_8h_source.html">platform.h</a>&quot;</code><br />
@@ -167,7 +170,17 @@ Functions</h2></td></tr>
 <tr class="memitem:a2cf9114170f187616efe136d56244762"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d21/enclave_8h.html#a2cf9114170f187616efe136d56244762">transitive_next_event</a> (<a class="el" href="../../d5/df6/structenclave__t.html">enclave_t</a> *e, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> candidate, bool visited[])</td></tr>
 <tr class="separator:a2cf9114170f187616efe136d56244762"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Typedef Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Declarations for runtime infrastructure (RTI) for scheduling enclaves and distributed Lingua Franca programs. This file declares RTI features that are used by scheduling enclaves as well as federated LF programs. </p>
+<dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
+<dd>
+Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
+<dd>
+Erling Jellum (<a href="#" onclick="location.href='mai'+'lto:'+'erl'+'in'+'g.r'+'.j'+'ell'+'um'+'@nt'+'nu'+'.no'; return false;">erlin<span class="obfuscator">.nosp@m.</span>g.r.<span class="obfuscator">.nosp@m.</span>jellu<span class="obfuscator">.nosp@m.</span>m@nt<span class="obfuscator">.nosp@m.</span>nu.no</a>) </dd>
+<dd>
+Chadlia Jerad (<a href="#" onclick="location.href='mai'+'lto:'+'cha'+'dl'+'ia.'+'je'+'rad'+'@e'+'nsi'+'-u'+'ma.'+'tn'; return false;">chadl<span class="obfuscator">.nosp@m.</span>ia.j<span class="obfuscator">.nosp@m.</span>erad@<span class="obfuscator">.nosp@m.</span>ensi<span class="obfuscator">.nosp@m.</span>-uma.<span class="obfuscator">.nosp@m.</span>tn</a>) </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2020-2023, The University of California at Berkeley License in <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a> </dd></dl>
+</div><h2 class="groupheader">Typedef Documentation</h2>
 <a id="a6b7f2297f802614735e8e73c077a6c00" name="a6b7f2297f802614735e8e73c077a6c00"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6b7f2297f802614735e8e73c077a6c00">&#9670;&#160;</a></span>enclave_rti_t</h2>
 
@@ -179,7 +192,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Structure that an enclave RTI instance uses to keep track of its own and its corresponding enclaves'state. // **************** IMPORTANT!!! ******************** // ** If you make any change to this struct, ** // ** you MUST also change <a class="el" href="../../d9/d88/structfederation__rti__t.html">federation_rti_t</a> in ** // ** (<a class="el" href="../../d3/d90/rti__lib_8h.html" title="Declarations for runtime infrastructure (RTI) for distributed Lingua Franca programs.">rti_lib.h</a>)! The change must exactly match. ** // ************************************************** </p>
+<p>Structure that an enclave RTI instance uses to keep track of its own and its corresponding enclaves'state. // **************** IMPORTANT!!! ******************** // ** If you make any change to this struct, ** // ** you MUST also change <a class="el" href="../../d9/d88/structfederation__rti__t.html">federation_rti_t</a> in ** // ** (<a class="el" href="../../d3/d90/rti__lib_8h.html" title="Declarations for runtime infrastructure (RTI) for distributed Lingua Franca programs....">rti_lib.h</a>)! The change must exactly match. ** // ************************************************** </p>
 
 </div>
 </div>

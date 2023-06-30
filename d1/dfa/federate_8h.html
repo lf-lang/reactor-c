@@ -148,8 +148,8 @@ Functions</h2></td></tr>
 <tr class="separator:a76f0bc068b7a7c4a30983172eea59767"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acaaf63aada42881a61249d47e734ba15"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#acaaf63aada42881a61249d47e734ba15">send_timed_message</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>, int, unsigned short, unsigned short, const char *, size_t, unsigned char *)</td></tr>
 <tr class="separator:acaaf63aada42881a61249d47e734ba15"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f2ec13c51b647b2b3a6fe1d085599c4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#a9f2ec13c51b647b2b3a6fe1d085599c4">synchronize_with_other_federates</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
-<tr class="separator:a9f2ec13c51b647b2b3a6fe1d085599c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad83fe9661682934029a42954b8fe6e2f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#ad83fe9661682934029a42954b8fe6e2f">synchronize_with_other_federates</a> ()</td></tr>
+<tr class="separator:ad83fe9661682934029a42954b8fe6e2f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa65ffaa03960a9fb25df87993fdd62fe"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#aa65ffaa03960a9fb25df87993fdd62fe">wait_until_port_status_known</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, int portID, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> STAA)</td></tr>
 <tr class="separator:aa65ffaa03960a9fb25df87993fdd62fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -598,8 +598,8 @@ Functions intitializing and freeing memory for environments.</h1>
 
 </div>
 </div>
-<a id="a9f2ec13c51b647b2b3a6fe1d085599c4" name="a9f2ec13c51b647b2b3a6fe1d085599c4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9f2ec13c51b647b2b3a6fe1d085599c4">&#9670;&#160;</a></span>synchronize_with_other_federates()</h2>
+<a id="ad83fe9661682934029a42954b8fe6e2f" name="ad83fe9661682934029a42954b8fe6e2f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad83fe9661682934029a42954b8fe6e2f">&#9670;&#160;</a></span>synchronize_with_other_federates()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -607,18 +607,12 @@ Functions intitializing and freeing memory for environments.</h1>
         <tr>
           <td class="memname">void synchronize_with_other_federates </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
-          <td class="paramname"><em>env</em></td><td>)</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Synchronize the start with other federates via the RTI. This assumes that a connection to the RTI is already made and _lf_rti_socket_TCP is valid. It then sends the current logical time to the RTI and waits for the RTI to respond with a specified time. It starts a thread to listen for messages from the RTI. It then waits for physical time to match the specified time, sets current logical time to the time returned by the RTI, and then returns. If &ndash;fast was specified, then this does not wait for physical time to match the logical start time returned by the RTI. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">env</td><td>The environment in which we are executing </td></tr>
-  </table>
-  </dd>
-</dl>
+<p>Synchronize the start with other federates via the RTI. This assumes that a connection to the RTI is already made and _lf_rti_socket_TCP is valid. It then sends the current logical time to the RTI and waits for the RTI to respond with a specified time. It starts a thread to listen for messages from the RTI. </p>
 
 </div>
 </div>

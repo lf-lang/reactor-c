@@ -619,7 +619,7 @@ LICENSE</h1>
 <li>One byte equal to MSG_TYPE_FED_IDS.</li>
 <li>Two bytes (ushort) giving the federate ID.</li>
 <li>One byte (uchar) giving the length N of the federation ID.</li>
-<li>N bytes containing the federation ID. Each federate needs to have a unique ID between 0 and NUMBER_OF_FEDERATES-1. Each federate, when starting up, should send this message to the RTI. This is its first message to the RTI. The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT. If the federate is a C target LF program, the generated federate code does this by calling <a class="el" href="../../d1/dfa/federate_8h.html#a9f2ec13c51b647b2b3a6fe1d085599c4">synchronize_with_other_federates()</a>, passing to it its federate ID. </li>
+<li>N bytes containing the federation ID. Each federate needs to have a unique ID between 0 and NUMBER_OF_FEDERATES-1. Each federate, when starting up, should send this message to the RTI. This is its first message to the RTI. The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT. If the federate is a C target LF program, the generated federate code does this by calling <a class="el" href="../../d1/dfa/federate_8h.html#ad83fe9661682934029a42954b8fe6e2f">synchronize_with_other_federates()</a>, passing to it its federate ID. </li>
 </ul>
 
 </div>

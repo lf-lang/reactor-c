@@ -140,9 +140,11 @@ Data Fields</h2></td></tr>
 <tr class="separator:abe41c6ad70d7d6fee7d6dee042de48dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a37fdd909149326014da9f2fd61845236"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d88/structfederation__rti__t.html#a37fdd909149326014da9f2fd61845236">authentication_enabled</a></td></tr>
 <tr class="separator:a37fdd909149326014da9f2fd61845236"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a550be055773110646824b7829fa21d27"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d88/structfederation__rti__t.html#a550be055773110646824b7829fa21d27">stop_in_progress</a></td></tr>
+<tr class="separator:a550be055773110646824b7829fa21d27"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Structure that an RTI instance uses to keep track of its own and its corresponding federates' state. It is a special case of <code><a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a></code> (declared in <a class="el" href="../../d6/d21/enclave_8h.html">enclave.h</a>). Inheritence is mimicked by having the first attributes to be the same as of <a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a>, except that enclaves attribute here is of type <code>federate_t**</code>, while it is of type <code>enclave_t**</code> in <code><a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a></code>. // **************** IMPORTANT!!! ******************** // ** If you make any change to this struct, ** // ** you MUST also change <a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a> in ** // ** (<a class="el" href="../../d6/d21/enclave_8h.html">enclave.h</a>)! The change must exactly match. ** // ************************************************** </p>
+<div class="textblock"><p>Structure that an RTI instance uses to keep track of its own and its corresponding federates' state. It is a special case of <code><a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a></code> (declared in <a class="el" href="../../d6/d21/enclave_8h.html" title="Declarations for runtime infrastructure (RTI) for scheduling enclaves and distributed Lingua Franca p...">enclave.h</a>). Inheritence is mimicked by having the first attributes to be the same as of <a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a>, except that enclaves attribute here is of type <code>federate_t**</code>, while it is of type <code>enclave_t**</code> in <code><a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a></code>. // **************** IMPORTANT!!! ******************** // ** If you make any change to this struct, ** // ** you MUST also change <a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a> in ** // ** (<a class="el" href="../../d6/d21/enclave_8h.html" title="Declarations for runtime infrastructure (RTI) for scheduling enclaves and distributed Lingua Franca p...">enclave.h</a>)! The change must exactly match. ** // ************************************************** </p>
 </div><h2 class="groupheader">Field Documentation</h2>
 <a id="a7cedc8c0884198819e588a3a4910a927" name="a7cedc8c0884198819e588a3a4910a927"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7cedc8c0884198819e588a3a4910a927">&#9670;&#160;</a></span>all_federates_exited</h2>
@@ -389,6 +391,21 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>The UDP socket descriptor for the socket server. </p>
+
+</div>
+</div>
+<a id="a550be055773110646824b7829fa21d27" name="a550be055773110646824b7829fa21d27"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a550be055773110646824b7829fa21d27">&#9670;&#160;</a></span>stop_in_progress</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool federation_rti_t::stop_in_progress</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Boolean indicating that a stop request is already in progress. </p>
 
 </div>
 </div>

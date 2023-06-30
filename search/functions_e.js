@@ -19,5 +19,5 @@ var searchData=
   ['swap_5fbytes_5fif_5fbig_5fendian_5fint64_16',['swap_bytes_if_big_endian_int64',['../dd/d97/net__util_8h.html#aa548ffc52c264f564127b80f63170c33',1,'net_util.h']]],
   ['swap_5fbytes_5fif_5fbig_5fendian_5fuint16_17',['swap_bytes_if_big_endian_uint16',['../dd/d97/net__util_8h.html#a48fa075b3a868790da8fb303a397cd60',1,'net_util.h']]],
   ['synchronize_5finitial_5fphysical_5fclock_5fwith_5frti_18',['synchronize_initial_physical_clock_with_rti',['../d9/dd5/clock-sync_8h.html#a8a95b04db741b4fd04fb2ee4941fc8c6',1,'clock-sync.h']]],
-  ['synchronize_5fwith_5fother_5ffederates_19',['synchronize_with_other_federates',['../d1/dfa/federate_8h.html#a9f2ec13c51b647b2b3a6fe1d085599c4',1,'synchronize_with_other_federates(environment_t *env):&#160;federate.h'],['../d4/dd2/reactor__threaded_8h.html#a9f2ec13c51b647b2b3a6fe1d085599c4',1,'synchronize_with_other_federates(environment_t *env):&#160;reactor_threaded.h']]]
+  ['synchronize_5fwith_5fother_5ffederates_19',['synchronize_with_other_federates',['../d1/dfa/federate_8h.html#ad83fe9661682934029a42954b8fe6e2f',1,'synchronize_with_other_federates():&#160;federate.h'],['../d4/dd2/reactor__threaded_8h.html#a1050d75d3d2a6a00effec4e07d7ad031',1,'synchronize_with_other_federates(void):&#160;reactor_threaded.h']]]
 ];

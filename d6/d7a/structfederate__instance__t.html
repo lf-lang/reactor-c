@@ -130,8 +130,8 @@ Data Fields</h2></td></tr>
 <tr class="separator:a603662cf0155920b8a76659e7dacb9ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac130c67ec68fe84d6753a54e6e73d59a"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d7a/structfederate__instance__t.html#ac130c67ec68fe84d6753a54e6e73d59a">has_downstream</a></td></tr>
 <tr class="separator:ac130c67ec68fe84d6753a54e6e73d59a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5bed997749ef910209491c67e3ece6b4"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d7a/structfederate__instance__t.html#a5bed997749ef910209491c67e3ece6b4">sent_a_stop_request_to_rti</a></td></tr>
-<tr class="separator:a5bed997749ef910209491c67e3ece6b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae9ecde30fae3a2487757a7bbb33e918e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d7a/structfederate__instance__t.html#ae9ecde30fae3a2487757a7bbb33e918e">received_stop_request_from_rti</a></td></tr>
+<tr class="separator:ae9ecde30fae3a2487757a7bbb33e918e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae95f54a01b0367048faa6460ff86e987"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d7a/structfederate__instance__t.html#ae95f54a01b0367048faa6460ff86e987">last_sent_LTC</a></td></tr>
 <tr class="separator:ae95f54a01b0367048faa6460ff86e987"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a42618a45ae75b42e1caec4b373471d96"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d7a/structfederate__instance__t.html#a42618a45ae75b42e1caec4b373471d96">last_sent_NET</a></td></tr>
@@ -316,6 +316,21 @@ Data Fields</h2></td></tr>
 
 </div>
 </div>
+<a id="ae9ecde30fae3a2487757a7bbb33e918e" name="ae9ecde30fae3a2487757a7bbb33e918e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae9ecde30fae3a2487757a7bbb33e918e">&#9670;&#160;</a></span>received_stop_request_from_rti</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool federate_instance_t::received_stop_request_from_rti</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Used to prevent the federate from sending a REQUEST_STOP message if it has already received a stop request from the RTI. This variable should only be accessed while holding a mutex lock. </p>
+
+</div>
+</div>
 <a id="a5b6b4b5912a7bb7df1c8987f38e12004" name="a5b6b4b5912a7bb7df1c8987f38e12004"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a5b6b4b5912a7bb7df1c8987f38e12004">&#9670;&#160;</a></span>RTI_socket_listener</h2>
 
@@ -328,21 +343,6 @@ Data Fields</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Thread listening for incoming TCP messages from the RTI. </p>
-
-</div>
-</div>
-<a id="a5bed997749ef910209491c67e3ece6b4" name="a5bed997749ef910209491c67e3ece6b4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5bed997749ef910209491c67e3ece6b4">&#9670;&#160;</a></span>sent_a_stop_request_to_rti</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool federate_instance_t::sent_a_stop_request_to_rti</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Used to prevent the federate from sending a REQUEST_STOP message multiple times to the RTI. This variable should only be accessed while holding the mutex lock. </p>
 
 </div>
 </div>

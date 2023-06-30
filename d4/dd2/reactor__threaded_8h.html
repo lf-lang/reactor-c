@@ -105,16 +105,17 @@ Functions</h2></td></tr>
 <tr class="separator:a95a50246fd7c991cafbf49add0a54fed"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad727445d8c0c828624539487b3abb570"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#ad727445d8c0c828624539487b3abb570">enqueue_network_output_control_reactions</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
 <tr class="separator:ad727445d8c0c828624539487b3abb570"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6a8226a67b464737db122f2e1153d8dc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a6a8226a67b464737db122f2e1153d8dc">_lf_increment_global_tag_barrier_already_locked</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> future_tag)</td></tr>
-<tr class="separator:a6a8226a67b464737db122f2e1153d8dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae358349ad4d8562489eb4416c246b2cd"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#ae358349ad4d8562489eb4416c246b2cd">_lf_increment_global_tag_barrier</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> future_tag)</td></tr>
-<tr class="separator:ae358349ad4d8562489eb4416c246b2cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9b569fb49e1a6a7955b809761df050e5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a9b569fb49e1a6a7955b809761df050e5">_lf_decrement_global_tag_barrier_locked</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
-<tr class="separator:a9b569fb49e1a6a7955b809761df050e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad9e7ef09a7e921152f8d54a931709c87"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#ad9e7ef09a7e921152f8d54a931709c87">_lf_wait_on_global_tag_barrier</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> proposed_tag)</td></tr>
-<tr class="separator:ad9e7ef09a7e921152f8d54a931709c87"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f2ec13c51b647b2b3a6fe1d085599c4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a9f2ec13c51b647b2b3a6fe1d085599c4">synchronize_with_other_federates</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
-<tr class="separator:a9f2ec13c51b647b2b3a6fe1d085599c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa8e97abcbd89bb371d396da44ff4becb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#aa8e97abcbd89bb371d396da44ff4becb">_lf_increment_tag_barrier</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> future_tag)</td></tr>
+<tr class="separator:aa8e97abcbd89bb371d396da44ff4becb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01d3c6cadb7930c096ffe1f794173f5c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a01d3c6cadb7930c096ffe1f794173f5c">_lf_increment_tag_barrier_locked</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> future_tag)</td></tr>
+<tr class="memdesc:a01d3c6cadb7930c096ffe1f794173f5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Version of _lf_increment_tag_barrier to call when the caller holds the mutex. This version does not acquire the mutex belonging to env.  <br /></td></tr>
+<tr class="separator:a01d3c6cadb7930c096ffe1f794173f5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a0540790dfc6d954fb443da3336ce27"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a5a0540790dfc6d954fb443da3336ce27">_lf_decrement_tag_barrier_locked</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:a5a0540790dfc6d954fb443da3336ce27"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d1cd5263a79c14e62a5fb34530a0a93"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a3d1cd5263a79c14e62a5fb34530a0a93">_lf_wait_on_tag_barrier</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> proposed_tag)</td></tr>
+<tr class="separator:a3d1cd5263a79c14e62a5fb34530a0a93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1050d75d3d2a6a00effec4e07d7ad031"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a1050d75d3d2a6a00effec4e07d7ad031">synchronize_with_other_federates</a> (void)</td></tr>
+<tr class="separator:a1050d75d3d2a6a00effec4e07d7ad031"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a28427d09e6613e4fcfce2fdf184a8e7d"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a28427d09e6613e4fcfce2fdf184a8e7d">wait_until</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> logical_time_ns, <a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> *condition)</td></tr>
 <tr class="separator:a28427d09e6613e4fcfce2fdf184a8e7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9b50c51a9046dfb8814b2f609020d0a4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a9b50c51a9046dfb8814b2f609020d0a4">get_next_event_tag</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
@@ -125,14 +126,14 @@ Functions</h2></td></tr>
 <tr class="separator:ab9e357a21e338cd3719cdec409b9f7a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a9b569fb49e1a6a7955b809761df050e5" name="a9b569fb49e1a6a7955b809761df050e5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9b569fb49e1a6a7955b809761df050e5">&#9670;&#160;</a></span>_lf_decrement_global_tag_barrier_locked()</h2>
+<a id="a5a0540790dfc6d954fb443da3336ce27" name="a5a0540790dfc6d954fb443da3336ce27"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a0540790dfc6d954fb443da3336ce27">&#9670;&#160;</a></span>_lf_decrement_tag_barrier_locked()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void _lf_decrement_global_tag_barrier_locked </td>
+          <td class="memname">void _lf_decrement_tag_barrier_locked </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
           <td class="paramname"><em>env</em></td><td>)</td>
@@ -140,17 +141,65 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Decrement the total number of pending barrier requests for the environment tag barrier. If the total number of requests reaches zero, this function resets the tag barrier to FOREVER_TAG and notifies all threads that are waiting on the barrier that the number of requests has reached zero.</p>
+<p>This function assumes that the caller already holds the mutex lock on env.</p>
+<dl class="section note"><dt>Note</dt><dd>This function is only useful in threaded applications to facilitate certain non-blocking functionalities such as receiving timed messages over the network or handling stop in the federated execution.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>The environment in which we are executing. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a id="ae358349ad4d8562489eb4416c246b2cd" name="ae358349ad4d8562489eb4416c246b2cd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae358349ad4d8562489eb4416c246b2cd">&#9670;&#160;</a></span>_lf_increment_global_tag_barrier()</h2>
+<a id="aa8e97abcbd89bb371d396da44ff4becb" name="aa8e97abcbd89bb371d396da44ff4becb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa8e97abcbd89bb371d396da44ff4becb">&#9670;&#160;</a></span>_lf_increment_tag_barrier()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void _lf_increment_global_tag_barrier </td>
+          <td class="memname">void _lf_increment_tag_barrier </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
+          <td class="paramname"><em>future_tag</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Raise a barrier to prevent the current tag for the specified environment from advancing to or beyond the value of the future_tag argument, if possible. If the current tag is already at or beyond future_tag, then prevent any further advances. This function will increment the total number of pending barrier requests. For each call to this function, there should always be a subsequent call to <a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a5a0540790dfc6d954fb443da3336ce27">_lf_decrement_tag_barrier_locked()</a> to release the barrier.</p>
+<p>If there is already a barrier raised at a tag later than future_tag, this function will change the barrier to future_tag or the current tag, whichever is larger. If the existing barrier is earlier than future_tag, this function will not change the barrier. If there are no existing barriers and future_tag is in the past relative to the current tag, this function will raise a barrier to the current tag plus one microstep.</p>
+<p>This function acquires the mutex on the specified environment.</p>
+<dl class="section note"><dt>Note</dt><dd>This function is only useful in threaded applications to facilitate certain non-blocking functionalities such as receiving timed messages over the network or handling stop in a federated execution.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">future_tag</td><td>A desired tag for the barrier. This function will guarantee that current logical time will not go past future_tag if it is in the future. If future_tag is in the past (or equals to current logical time), the runtime will freeze advancement of logical time. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a01d3c6cadb7930c096ffe1f794173f5c" name="a01d3c6cadb7930c096ffe1f794173f5c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a01d3c6cadb7930c096ffe1f794173f5c">&#9670;&#160;</a></span>_lf_increment_tag_barrier_locked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void _lf_increment_tag_barrier_locked </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
           <td class="paramname"><em>env</em>, </td>
@@ -169,33 +218,14 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-</div>
-</div>
-<a id="a6a8226a67b464737db122f2e1153d8dc" name="a6a8226a67b464737db122f2e1153d8dc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6a8226a67b464737db122f2e1153d8dc">&#9670;&#160;</a></span>_lf_increment_global_tag_barrier_already_locked()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void _lf_increment_global_tag_barrier_already_locked </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
-          <td class="paramname"><em>env</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
-          <td class="paramname"><em>future_tag</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
+<p>Version of _lf_increment_tag_barrier to call when the caller holds the mutex. This version does not acquire the mutex belonging to env. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">future_tag</td><td>A desired tag for the barrier. This function will guarantee that current logical time will not go past future_tag if it is in the future. If future_tag is in the past (or equals to current logical time), the runtime will freeze advancement of logical time. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -217,14 +247,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="ad9e7ef09a7e921152f8d54a931709c87" name="ad9e7ef09a7e921152f8d54a931709c87"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad9e7ef09a7e921152f8d54a931709c87">&#9670;&#160;</a></span>_lf_wait_on_global_tag_barrier()</h2>
+<a id="a3d1cd5263a79c14e62a5fb34530a0a93" name="a3d1cd5263a79c14e62a5fb34530a0a93"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3d1cd5263a79c14e62a5fb34530a0a93">&#9670;&#160;</a></span>_lf_wait_on_tag_barrier()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int _lf_wait_on_global_tag_barrier </td>
+          <td class="memname">int _lf_wait_on_tag_barrier </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
           <td class="paramname"><em>env</em>, </td>
@@ -345,8 +375,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a9f2ec13c51b647b2b3a6fe1d085599c4" name="a9f2ec13c51b647b2b3a6fe1d085599c4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9f2ec13c51b647b2b3a6fe1d085599c4">&#9670;&#160;</a></span>synchronize_with_other_federates()</h2>
+<a id="a1050d75d3d2a6a00effec4e07d7ad031" name="a1050d75d3d2a6a00effec4e07d7ad031"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1050d75d3d2a6a00effec4e07d7ad031">&#9670;&#160;</a></span>synchronize_with_other_federates()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -354,8 +384,8 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">void synchronize_with_other_federates </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
-          <td class="paramname"><em>env</em></td><td>)</td>
+          <td class="paramtype">void&#160;</td>
+          <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>

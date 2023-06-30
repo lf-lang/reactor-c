@@ -4,7 +4,6 @@ var set_8h =
     [ "get_elapsed_logical_time", "d4/d13/set_8h.html#abfb3a97b15667d40e26f9300b370cdd7", null ],
     [ "get_logical_time", "d4/d13/set_8h.html#a7e05336e81633c333f4502f55ef5e4c6", null ],
     [ "get_microstep", "d4/d13/set_8h.html#a97b5c42435509472e0589f35c76dffe5", null ],
-    [ "lf_request_stop", "d4/d13/set_8h.html#ac462ba75ae2c2e05364c3f11639ecaaf", null ],
     [ "lf_set", "d4/d13/set_8h.html#aef602f51d34bbd214643161e425d909d", null ],
     [ "lf_set_copy_constructor", "d4/d13/set_8h.html#aa515ab9df816c6ac8a450def4dc02f40", null ],
     [ "lf_set_destructor", "d4/d13/set_8h.html#af4b2874af3da2bb85edfb3f0a57028a1", null ],

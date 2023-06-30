@@ -10,7 +10,6 @@ var structenclave__t =
     [ "next_event_condition", "d5/df6/structenclave__t.html#ab11b85365ea80208fd7d4b60fa3e4c77", null ],
     [ "num_downstream", "d5/df6/structenclave__t.html#add55d24eb3da3484bfbf7e15dc9fc2f1", null ],
     [ "num_upstream", "d5/df6/structenclave__t.html#af710de45a773ce26ceb3eb8b654e0b2a", null ],
-    [ "requested_stop", "d5/df6/structenclave__t.html#a2970229cb2d1b1f93bd506230840d6f4", null ],
     [ "state", "d5/df6/structenclave__t.html#a9494195f9e687503351e733b1072d2c6", null ],
     [ "upstream", "d5/df6/structenclave__t.html#a7e0060fdf410852362689295177f44fb", null ],
     [ "upstream_delay", "d5/df6/structenclave__t.html#add9c43ac433de6a51ae88c21ab75888f", null ]

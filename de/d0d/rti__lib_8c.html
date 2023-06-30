@@ -125,8 +125,8 @@ Functions</h2></td></tr>
 <tr class="separator:a6bba97c8acc2b80259f8b94b01e1697d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a77dee2c405d4fe62278a1cf972272bd2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d0d/rti__lib_8c.html#a77dee2c405d4fe62278a1cf972272bd2">handle_next_event_tag</a> (<a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *fed)</td></tr>
 <tr class="separator:a77dee2c405d4fe62278a1cf972272bd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4d99ea51641cde8d7d65c06e43581f19"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d0d/rti__lib_8c.html#a4d99ea51641cde8d7d65c06e43581f19">_lf_rti_broadcast_stop_time_to_federates_already_locked</a> ()</td></tr>
-<tr class="separator:a4d99ea51641cde8d7d65c06e43581f19"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a28429b03d881eafc11ee2b3e899f9722"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d0d/rti__lib_8c.html#a28429b03d881eafc11ee2b3e899f9722">_lf_rti_broadcast_stop_time_to_federates_locked</a> ()</td></tr>
+<tr class="separator:a28429b03d881eafc11ee2b3e899f9722"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a97ac8c4d61e522fc3587a7469bdc7afb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d0d/rti__lib_8c.html#a97ac8c4d61e522fc3587a7469bdc7afb">mark_federate_requesting_stop</a> (<a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *fed)</td></tr>
 <tr class="separator:a97ac8c4d61e522fc3587a7469bdc7afb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a76bea17520db7f471b8a04d20c7db5f5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d0d/rti__lib_8c.html#a76bea17520db7f471b8a04d20c7db5f5">handle_stop_request_message</a> (<a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *fed)</td></tr>
@@ -201,14 +201,14 @@ Soroush Bateni </dd></dl>
 <p>This implementation sends messages in little endian order because Intel, RISC V, and Arm processors are little endian. This is not what is normally considered "network order", but we control both ends, and hence, for commonly used processors, this will be more efficient since it won't have to swap bytes.</p>
 <p>This implementation of the RTI should be considered a reference implementation. In the future it might be re-implemented in Java or Kotlin. Or we could bootstrap and implement it using Lingua Franca. </p>
 </div><h2 class="groupheader">Function Documentation</h2>
-<a id="a4d99ea51641cde8d7d65c06e43581f19" name="a4d99ea51641cde8d7d65c06e43581f19"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4d99ea51641cde8d7d65c06e43581f19">&#9670;&#160;</a></span>_lf_rti_broadcast_stop_time_to_federates_already_locked()</h2>
+<a id="a28429b03d881eafc11ee2b3e899f9722" name="a28429b03d881eafc11ee2b3e899f9722"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a28429b03d881eafc11ee2b3e899f9722">&#9670;&#160;</a></span>_lf_rti_broadcast_stop_time_to_federates_locked()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void _lf_rti_broadcast_stop_time_to_federates_already_locked </td>
+          <td class="memname">void _lf_rti_broadcast_stop_time_to_federates_locked </td>
           <td>(</td>
           <td class="paramname"></td><td>)</td>
           <td></td>

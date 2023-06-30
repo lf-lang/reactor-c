@@ -99,7 +99,7 @@ $(document).ready(function(){initNavTree('d3/d90/rti__lib_8h.html','../../'); in
 </div><!--header-->
 <div class="contents">
 
-<p>Declarations for runtime infrastructure (RTI) for distributed Lingua Franca programs.  
+<p>Declarations for runtime infrastructure (RTI) for distributed Lingua Franca programs. This file extends <a class="el" href="../../d6/d21/enclave_8h.html" title="Declarations for runtime infrastructure (RTI) for scheduling enclaves and distributed Lingua Franca p...">enclave.h</a> with RTI features that are specific to federations and are not used by scheduling enclaves.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;sys/socket.h&gt;</code><br />
 <code>#include &lt;sys/types.h&gt;</code><br />
@@ -162,8 +162,6 @@ Functions</h2></td></tr>
 <tr class="separator:a6bba97c8acc2b80259f8b94b01e1697d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a77dee2c405d4fe62278a1cf972272bd2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a77dee2c405d4fe62278a1cf972272bd2">handle_next_event_tag</a> (<a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *fed)</td></tr>
 <tr class="separator:a77dee2c405d4fe62278a1cf972272bd2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4d99ea51641cde8d7d65c06e43581f19"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a4d99ea51641cde8d7d65c06e43581f19">_lf_rti_broadcast_stop_time_to_federates_already_locked</a> ()</td></tr>
-<tr class="separator:a4d99ea51641cde8d7d65c06e43581f19"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a97ac8c4d61e522fc3587a7469bdc7afb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a97ac8c4d61e522fc3587a7469bdc7afb">mark_federate_requesting_stop</a> (<a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *fed)</td></tr>
 <tr class="separator:a97ac8c4d61e522fc3587a7469bdc7afb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a76bea17520db7f471b8a04d20c7db5f5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a76bea17520db7f471b8a04d20c7db5f5">handle_stop_request_message</a> (<a class="el" href="../../d9/d2f/structfederate__t.html">federate_t</a> *fed)</td></tr>
@@ -214,11 +212,15 @@ Functions</h2></td></tr>
 <tr class="separator:aa2ce1ad86e63f48a696ffff6f8efecd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Declarations for runtime infrastructure (RTI) for distributed Lingua Franca programs. </p>
+<div class="textblock"><p>Declarations for runtime infrastructure (RTI) for distributed Lingua Franca programs. This file extends <a class="el" href="../../d6/d21/enclave_8h.html" title="Declarations for runtime infrastructure (RTI) for scheduling enclaves and distributed Lingua Franca p...">enclave.h</a> with RTI features that are specific to federations and are not used by scheduling enclaves. </p>
 <dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
 <dd>
-Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd></dl>
-<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2020-2023, The University of California at Berkeley License in <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>  </dd></dl>
+Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
+<dd>
+Erling Jellum (<a href="#" onclick="location.href='mai'+'lto:'+'erl'+'in'+'g.r'+'.j'+'ell'+'um'+'@nt'+'nu'+'.no'; return false;">erlin<span class="obfuscator">.nosp@m.</span>g.r.<span class="obfuscator">.nosp@m.</span>jellu<span class="obfuscator">.nosp@m.</span>m@nt<span class="obfuscator">.nosp@m.</span>nu.no</a>) </dd>
+<dd>
+Chadlia Jerad (<a href="#" onclick="location.href='mai'+'lto:'+'cha'+'dl'+'ia.'+'je'+'rad'+'@e'+'nsi'+'-u'+'ma.'+'tn'; return false;">chadl<span class="obfuscator">.nosp@m.</span>ia.j<span class="obfuscator">.nosp@m.</span>erad@<span class="obfuscator">.nosp@m.</span>ensi<span class="obfuscator">.nosp@m.</span>-uma.<span class="obfuscator">.nosp@m.</span>tn</a>) </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2020-2023, The University of California at Berkeley License in <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a> </dd></dl>
 </div><h2 class="groupheader">Typedef Documentation</h2>
 <a id="a39e986990bfc20d1512b61ab119ce628" name="a39e986990bfc20d1512b61ab119ce628"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a39e986990bfc20d1512b61ab119ce628">&#9670;&#160;</a></span>clock_sync_stat</h2>
@@ -261,7 +263,7 @@ Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Structure that an RTI instance uses to keep track of its own and its corresponding federates' state. It is a special case of <code><a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a></code> (declared in <a class="el" href="../../d6/d21/enclave_8h.html">enclave.h</a>). Inheritence is mimicked by having the first attributes to be the same as of <a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a>, except that enclaves attribute here is of type <code>federate_t**</code>, while it is of type <code>enclave_t**</code> in <code><a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a></code>. // **************** IMPORTANT!!! ******************** // ** If you make any change to this struct, ** // ** you MUST also change <a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a> in ** // ** (<a class="el" href="../../d6/d21/enclave_8h.html">enclave.h</a>)! The change must exactly match. ** // ************************************************** </p>
+<p>Structure that an RTI instance uses to keep track of its own and its corresponding federates' state. It is a special case of <code><a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a></code> (declared in <a class="el" href="../../d6/d21/enclave_8h.html" title="Declarations for runtime infrastructure (RTI) for scheduling enclaves and distributed Lingua Franca p...">enclave.h</a>). Inheritence is mimicked by having the first attributes to be the same as of <a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a>, except that enclaves attribute here is of type <code>federate_t**</code>, while it is of type <code>enclave_t**</code> in <code><a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a></code>. // **************** IMPORTANT!!! ******************** // ** If you make any change to this struct, ** // ** you MUST also change <a class="el" href="../../da/de7/structenclave__rti__t.html">enclave_rti_t</a> in ** // ** (<a class="el" href="../../d6/d21/enclave_8h.html" title="Declarations for runtime infrastructure (RTI) for scheduling enclaves and distributed Lingua Franca p...">enclave.h</a>)! The change must exactly match. ** // ************************************************** </p>
 
 </div>
 </div>
@@ -319,25 +321,6 @@ Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
-<a id="a4d99ea51641cde8d7d65c06e43581f19" name="a4d99ea51641cde8d7d65c06e43581f19"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4d99ea51641cde8d7d65c06e43581f19">&#9670;&#160;</a></span>_lf_rti_broadcast_stop_time_to_federates_already_locked()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void _lf_rti_broadcast_stop_time_to_federates_already_locked </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Once the RTI has seen proposed tags from all connected federates, it will broadcast a MSG_TYPE_STOP_GRANTED carrying the _RTI.max_stop_tag. This function also checks the most recently received NET from each federate and resets that be no greater than the _RTI.max_stop_tag.</p>
-<p>This function assumes the caller holds the _RTI.rti_mutex lock. </p>
-
-</div>
-</div>
 <a id="a272b481a0cc2f86f21c75e8efa19a551" name="a272b481a0cc2f86f21c75e8efa19a551"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a272b481a0cc2f86f21c75e8efa19a551">&#9670;&#160;</a></span>clock_synchronization_thread()</h2>
 
