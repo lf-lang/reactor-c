@@ -562,17 +562,17 @@ void _lf_next_locked(environment_t *env) {
 /**
  * @brief True if stop has been requested so it doesn't get re-requested.
  */
-bool stop_requested = false;
+bool lf_stop_requested = false;
 
 // See reactor.h for docs.
 void lf_request_stop() {
     // If a requested stop is pending, return without doing anything.
     lf_mutex_lock(&global_mutex);
-    if (stop_requested) {
+    if (lf_stop_requested) {
         lf_mutex_unlock(&global_mutex);
         return;
     }
-    stop_requested = true;
+    lf_stop_requested = true;
     lf_mutex_unlock(&global_mutex);
 
     // Iterate over scheduling enclaves to find their maximum current tag
@@ -591,7 +591,7 @@ void lf_request_stop() {
     }
 
 #ifdef FEDERATED
-    // In the federated case, do not set stop_requested because the RTI might grant a
+    // In the federated case, do not set lf_stop_requested because the RTI might grant a
     // later stop tag than the current tag. The above code has raised
     // a barrier no greater than the requested stop tag for each enclave.
     if (_lf_fd_send_stop_request_to_rti(max_current_tag) != 0) {

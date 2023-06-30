@@ -2388,9 +2388,9 @@ void handle_stop_request_message() {
     lf_mutex_unlock(&outbound_socket_mutex);
 
     extern lf_mutex_t global_mutex;
-    extern bool stop_requested;
+    extern bool lf_stop_requested;
     lf_mutex_lock(&global_mutex);
-    if (stop_requested) {
+    if (lf_stop_requested) {
         already_blocked = true;
     }
     lf_mutex_unlock(&global_mutex);
