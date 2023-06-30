@@ -2373,11 +2373,12 @@ void handle_stop_request_message() {
              tag_to_stop.microstep);
 
     // If we have previously received from the RTI a stop request,
+    // or we have previously sent a stop request to the RTI,
     // then we have already blocked tag advance in enclaves.
-    // Do not do this twice. The record of whether this has occurred
+    // Do not do this twice. The record of whether the first has occurred
     // is guarded by the outbound socket mutex.
-    // Note that this should not occur; the RTI should avoid sending
-    // stop requests more than once to federates.
+    // The second is guarded by the global mutex.
+    // Note that the RTI should not send stop requests more than once to federates.
     lf_mutex_lock(&outbound_socket_mutex);
     bool already_blocked = false;
     if (_fed.received_stop_request_from_rti) {
@@ -2385,6 +2386,15 @@ void handle_stop_request_message() {
     }
     _fed.received_stop_request_from_rti = true;
     lf_mutex_unlock(&outbound_socket_mutex);
+
+    extern lf_mutex_t global_mutex;
+    extern bool stop_requested;
+    lf_mutex_lock(&global_mutex);
+    if (stop_requested) {
+        already_blocked = true;
+    }
+    lf_mutex_unlock(&global_mutex);
+
 
     // Iterate over the scheduling enclaves to find the maximum current tag
     // and adjust the tag_to_stop if any of those is greater than tag_to_stop.
