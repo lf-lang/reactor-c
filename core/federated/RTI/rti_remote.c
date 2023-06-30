@@ -605,7 +605,7 @@ void _lf_rti_broadcast_stop_time_to_federates_locked() {
 }
 
 void mark_federate_requesting_stop(federate_info_t* fed) {
-    if (!fed->enclave.requested_stop) {
+    if (!fed->requested_stop) {
         // Assume that the federate
         // has requested stop
         rti_remote->base.num_reactor_nodes_handling_stop++;
@@ -676,7 +676,7 @@ void handle_stop_request_message(federate_info_t* fed) {
         return;
     }
     rti_remote->stop_in_progress = true;
-    for (int i = 0; i < _f_rti->number_of_enclaves; i++) {
+    for (int i = 0; i < rti_remote->base.number_of_reactor_nodes; i++) {
         federate_info_t *f = GET_FED_INFO(i);
         if (f->enclave.id != fed->enclave.id && f->requested_stop == false) {
             if (f->enclave.state == NOT_CONNECTED) {
