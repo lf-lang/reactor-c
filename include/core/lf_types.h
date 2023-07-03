@@ -321,8 +321,11 @@ typedef struct self_base_t {
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif
 // This is used by e.g. the fully static scheduler (FS)
-#if defined REACTOR_LOCAL_TIME
+#if defined REACTOR_LOCAL_TIME // FIXME: The output_ports pointers isnt obviously related to local time
     tag_t tag;                               // The current tag of the reactor instance.
+    lf_port_base_t **output_ports;          // An array of pointers to output ports of this reactor.
+                                            // Used to reset the is_present fields
+    int num_output_ports;
 #endif
 } self_base_t;
 
