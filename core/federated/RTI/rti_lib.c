@@ -1389,14 +1389,14 @@ bool authenticate_federate(int socket) {
             buffer[0]);
     }
     unsigned int hmac_length = SHA256_HMAC_LENGTH;
-    size_t federation_id_length = strnlen(_f_rti.federation_id, 255);
+    size_t federation_id_length = strnlen(_f_rti->federation_id, 255);
     // HMAC tag is created with MSG_TYPE, federate ID, received federate nonce.
     unsigned char mac_buf[1 + fed_id_length + NONCE_LENGTH];
     mac_buf[0] = MSG_TYPE_RTI_RESPONSE;
     memcpy(&mac_buf[1], &buffer[1], fed_id_length);
     memcpy(&mac_buf[1 + fed_id_length], &buffer[1 + fed_id_length], NONCE_LENGTH);
     unsigned char hmac_tag[hmac_length];
-    unsigned char * ret = HMAC(EVP_sha256(), _f_rti.federation_id,
+    unsigned char * ret = HMAC(EVP_sha256(), _f_rti->federation_id,
         federation_id_length, mac_buf, 1 + fed_id_length + NONCE_LENGTH,
         hmac_tag, &hmac_length);
     if (ret == NULL) {
@@ -1426,7 +1426,7 @@ bool authenticate_federate(int socket) {
     mac_buf2[0] = MSG_TYPE_FED_RESPONSE;
     memcpy(&mac_buf2[1], rti_nonce, NONCE_LENGTH);
     unsigned char rti_tag[hmac_length];
-    ret = HMAC(EVP_sha256(), _f_rti.federation_id, federation_id_length,
+    ret = HMAC(EVP_sha256(), _f_rti->federation_id, federation_id_length,
          mac_buf2, 1 + NONCE_LENGTH, rti_tag, &hmac_length);
     if (ret == NULL) {
         lf_print_error_and_exit("HMAC construction failed for MSG_TYPE_FED_RESPONSE.");
