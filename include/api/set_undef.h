@@ -112,4 +112,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #undef SET_MODE
 #endif
 
+#undef lf_time_logical 
+#undef lf_time_logical_elapsed 
+#undef get_logical_time
+#undef get_elapsed_logical_time
+#undef lf_request_stop
+#undef lf_tag
+#undef get_current_tag
+#undef get_microstep
 #endif // CTARGET_SET

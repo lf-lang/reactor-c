@@ -34,12 +34,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  * @author{Erling Jellum <erlingrj@berkeley.edu>}
  */
+#include <assert.h>
 #include <string.h>
 
 #include "reactor.h"
 #include "lf_types.h"
 #include "platform.h"
 #include "reactor_common.h"
+#include "environment.h"
 
 // Embedded platforms with no TTY shouldnt have signals
 #if !defined(NO_TTY)
@@ -47,27 +49,22 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 // Global variable defined in tag.c:
-extern tag_t current_tag;
 extern instant_t start_time;
-
-/**
- * @brief Queue of triggered reactions at the current tag.
- *
- */
-pqueue_t* reaction_q;
 
 /**
  * Mark the given port's is_present field as true. This is_present field
  * will later be cleaned up by _lf_start_time_step.
+ * @param env Environment in which we are executing
  * @param port A pointer to the port struct.
  */
 void _lf_set_present(lf_port_base_t* port) {
+    environment_t *env = port->source_reactor->environment;
 	bool* is_present_field = &port->is_present;
-    if (_lf_is_present_fields_abbreviated_size < _lf_is_present_fields_size) {
-        _lf_is_present_fields_abbreviated[_lf_is_present_fields_abbreviated_size]
+    if (env->is_present_fields_abbreviated_size < env->is_present_fields_size) {
+        env->is_present_fields_abbreviated[env->is_present_fields_abbreviated_size]
             = is_present_field;
     }
-    _lf_is_present_fields_abbreviated_size++;
+    env->is_present_fields_abbreviated_size++;
     *is_present_field = true;
 
     // Support for sparse destination multiports.
@@ -89,20 +86,21 @@ void _lf_set_present(lf_port_base_t* port) {
  * Wait until physical time matches the given logical time or the time of a 
  * concurrently scheduled physical action, which might be earlier than the 
  * requested logical time.
+ * @param env Environment in which we are executing
  * @return 0 if the wait was completed, -1 if it was skipped or interrupted.
  */ 
-int wait_until(instant_t wakeup_time) {
+int wait_until(environment_t* env, instant_t wakeup_time) {
     if (!fast) {
         LF_PRINT_LOG("Waiting for elapsed logical time " PRINTF_TIME ".", wakeup_time - start_time);
-        return lf_sleep_until_locked(wakeup_time);
+        return _lf_interruptable_sleep_until_locked(env, wakeup_time);
     }
     return 0;
 }
 
-void lf_print_snapshot() {
+void lf_print_snapshot(environment_t* env) {
     if(LOG_LEVEL > LOG_LEVEL_LOG) {
         LF_PRINT_DEBUG(">>> START Snapshot");
-        pqueue_dump(reaction_q, reaction_q->prt);
+        pqueue_dump(env->reaction_q, env->reaction_q->prt);
         LF_PRINT_DEBUG(">>> END Snapshot");
     }
 }
@@ -110,13 +108,16 @@ void lf_print_snapshot() {
 /**
  * Trigger 'reaction'.
  *
+ * @param env Environment in which we are executing
  * @param reaction The reaction.
  * @param worker_number The ID of the worker that is making this call. 0 should be
  *  used if there is only one worker (e.g., when the program is using the
  *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
-void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
+void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
 #ifdef MODAL_REACTORS
     // Check if reaction is disabled by mode inactivity
     if (!_lf_mode_is_active(reaction->mode)) {
@@ -129,7 +130,7 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
         LF_PRINT_DEBUG("Enqueing downstream reaction %s, which has level %lld.",
         		reaction->name, reaction->index & 0xffffLL);
         reaction->status = queued;
-        if (pqueue_insert(reaction_q, reaction) != 0) {
+        if (pqueue_insert(env->reaction_q, reaction) != 0) {
             lf_print_error_and_exit("Could not insert reaction into reaction_q");
         }
     }
@@ -137,20 +138,23 @@ void _lf_trigger_reaction(reaction_t* reaction, int worker_number) {
 
 /**
  * Execute all the reactions in the reaction queue at the current tag.
- *
+ * 
+ * @param env Environment in which we are executing
  * @return Returns 1 if the execution should continue and 0 if the execution
  *  should stop.
  */
-int _lf_do_step(void) {
+int _lf_do_step(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     // Invoke reactions.
-    while(pqueue_size(reaction_q) > 0) {
+    while(pqueue_size(env->reaction_q) > 0) {
         // lf_print_snapshot();
-        reaction_t* reaction = (reaction_t*)pqueue_pop(reaction_q);
+        reaction_t* reaction = (reaction_t*)pqueue_pop(env->reaction_q);
         reaction->status = running;
 
         LF_PRINT_LOG("Invoking reaction %s at elapsed logical tag " PRINTF_TAG ".",
         		reaction->name,
-                current_tag.time - start_time, current_tag.microstep);
+                env->current_tag.time - start_time, env->current_tag.microstep);
 
         bool violation = false;
 
@@ -171,9 +175,9 @@ int _lf_do_step(void) {
             // container deadlines are defined in the container.
             // They can have different deadlines, so we have to check both.
             // Handle the local deadline first.
-            if (reaction->deadline == 0 || physical_time > current_tag.time + reaction->deadline) {
+            if (reaction->deadline == 0 || physical_time > env->current_tag.time + reaction->deadline) {
                 LF_PRINT_LOG("Deadline violation. Invoking deadline handler.");
-                tracepoint_reaction_deadline_missed(reaction, 0);
+                tracepoint_reaction_deadline_missed(env->trace, reaction, 0);
                 // Deadline violation has occurred.
                 violation = true;
                 // Invoke the local handler, if there is one.
@@ -182,18 +186,18 @@ int _lf_do_step(void) {
                     (*handler)(reaction->self);
                     // If the reaction produced outputs, put the resulting
                     // triggered reactions into the queue.
-                    schedule_output_reactions(reaction, 0);
+                    schedule_output_reactions(env, reaction, 0);
                 }
             }
         }
 
         if (!violation) {
             // Invoke the reaction function.
-            _lf_invoke_reaction(reaction, 0);   // 0 indicates unthreaded.
+            _lf_invoke_reaction(env, reaction, 0);   // 0 indicates unthreaded.
 
             // If the reaction produced outputs, put the resulting triggered
             // reactions into the queue.
-            schedule_output_reactions(reaction, 0);
+            schedule_output_reactions(env, reaction, 0);
         }
         // There cannot be any subsequent events that trigger this reaction at the
         //  current tag, so it is safe to conclude that it is now inactive.
@@ -202,10 +206,10 @@ int _lf_do_step(void) {
 
 #ifdef MODAL_REACTORS
     // At the end of the step, perform mode transitions
-    _lf_handle_mode_changes();
+    _lf_handle_mode_changes(env);
 #endif
 
-    if (lf_tag_compare(current_tag, stop_tag) >= 0) {
+    if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {
         return 0;
     }
 
@@ -214,7 +218,7 @@ int _lf_do_step(void) {
 
 // Wait until physical time matches or exceeds the time of the least tag
 // on the event queue. If there is no event in the queue, return 0.
-// After this wait, advance current_tag.time to match
+// After this wait, advance current_tag of the environment to match
 // this tag. Then pop the next event(s) from the
 // event queue that all have the same tag, and extract from those events
 // the reactions that are to be invoked at this logical time.
@@ -227,13 +231,15 @@ int _lf_do_step(void) {
 // Also return 0 if there are no more events in the queue and
 // the keepalive command-line option has not been given.
 // Otherwise, return 1.
-int next(void) {
+int next(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     // Enter the critical section and do not leave until we have
     // determined which tag to commit to and start invoking reactions for.
-    if (lf_critical_section_enter() != 0) {
+    if (lf_critical_section_enter(env) != 0) {
         lf_print_error_and_exit("Could not enter critical section");
     }
-    event_t* event = (event_t*)pqueue_peek(event_q);
+    event_t* event = (event_t*)pqueue_peek(env->event_q);
     //pqueue_dump(event_q, event_q->prt);
     // If there is no next event and -keepalive has been specified
     // on the command line, then we will wait the maximum time possible.
@@ -241,28 +247,28 @@ int next(void) {
     if (event == NULL) {
         // No event in the queue.
         if (!keepalive_specified) {
-            _lf_set_stop_tag(
-                (tag_t){.time=current_tag.time, .microstep=current_tag.microstep+1}
+            _lf_set_stop_tag( env,
+                (tag_t){.time=env->current_tag.time, .microstep=env->current_tag.microstep+1}
             );
         }
     } else {
         next_tag.time = event->time;
         // Deduce the microstep
-        if (next_tag.time == current_tag.time) {
-            next_tag.microstep = lf_tag().microstep + 1;
+        if (next_tag.time == env->current_tag.time) {
+            next_tag.microstep = env->current_tag.microstep + 1;
         } else {
             next_tag.microstep = 0;
         }
     }
 
-    if (_lf_is_tag_after_stop_tag(next_tag)) {
+    if (_lf_is_tag_after_stop_tag(env, next_tag)) {
         // Cannot process events after the stop tag.
-        next_tag = stop_tag;
+        next_tag = env->stop_tag;
     }
 
     LF_PRINT_LOG("Next event (elapsed) time is " PRINTF_TIME ".", next_tag.time - start_time);
     // Wait until physical time >= event.time.
-    int finished_sleep = wait_until(next_tag.time);
+    int finished_sleep = wait_until(env, next_tag.time);
     LF_PRINT_LOG("Next event (elapsed) time is " PRINTF_TIME ".", next_tag.time - start_time);
     if (finished_sleep != 0) {
         LF_PRINT_DEBUG("***** wait_until was interrupted.");
@@ -270,7 +276,7 @@ int next(void) {
         // gets scheduled from an interrupt service routine.
         // In this case, check the event queue again to make sure to
         // advance time to the correct tag.
-        if(lf_critical_section_exit() != 0) {
+        if(lf_critical_section_exit(env) != 0) {
             lf_print_error_and_exit("Could not leave critical section");
         }
         return 1;
@@ -278,36 +284,38 @@ int next(void) {
     // Advance current time to match that of the first event on the queue.
     // We can now leave the critical section. Any events that will be added
     // to the queue asynchronously will have a later tag than the current one.
-    _lf_advance_logical_time(next_tag.time);
+    _lf_advance_logical_time(env, next_tag.time);
     
     // Trigger shutdown reactions if appropriate.
-    if (lf_tag_compare(current_tag, stop_tag) >= 0) {        
-        _lf_trigger_shutdown_reactions();
+    if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {        
+        _lf_trigger_shutdown_reactions(env);
     }
 
     // Invoke code that must execute before starting a new logical time round,
     // such as initializing outputs to be absent.
-    _lf_start_time_step();
+    _lf_start_time_step(env);
 
-    // Pop all events from event_q with timestamp equal to current_tag.time,
+    // Pop all events from event_q with timestamp equal to env->current_tag.time,
     // extract all the reactions triggered by these events, and
     // stick them into the reaction queue.
-    _lf_pop_events();
-    if(lf_critical_section_exit() != 0) {
+    _lf_pop_events(env);
+    if(lf_critical_section_exit(env) != 0) {
         lf_print_error_and_exit("Could not leave critical section");
     }
 
-    return _lf_do_step();
+    return _lf_do_step(env);
 }
 
-/**
- * Stop execution at the conclusion of the next microstep.
- */
 void lf_request_stop() {
+    // There is only one enclave, so get its environment.
+    environment_t *env;
+    int num_environments = _lf_get_environments(&env);
+    assert(num_environments == 1);
+
 	tag_t new_stop_tag;
-	new_stop_tag.time = current_tag.time;
-	new_stop_tag.microstep = current_tag.microstep + 1;
-	_lf_set_stop_tag(new_stop_tag);
+	new_stop_tag.time = env->current_tag.time;
+	new_stop_tag.microstep = env->current_tag.microstep + 1;
+	_lf_set_stop_tag(env, new_stop_tag);
 }
 
 /**
@@ -333,6 +341,7 @@ bool _lf_is_blocked_by_executing_reaction(void) {
 int lf_reactor_c_main(int argc, const char* argv[]) {
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
+    _lf_initialize_clock();
 
     LF_PRINT_DEBUG("Processing command line arguments.");
     if (process_args(default_argc, default_argv)
@@ -349,40 +358,65 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 #ifndef NO_TTY
         signal(SIGINT, exit);
 #endif
+        // Create and initialize the environment
+        _lf_create_environments();   // code-generated function
+        environment_t *env;
+        int num_environments = _lf_get_environments(&env);
+        lf_assert(num_environments == 1,
+            "Found %d environments. Only 1 can be used with the unthreaded runtime", num_environments);
         
         LF_PRINT_DEBUG("Initializing.");
-        initialize(); // Sets start_time.
+        initialize_global();
+        // Set start time
+        start_time = lf_time_physical();
+        environment_init_tags(env, start_time, duration);
+        // Start tracing if enalbed
+        start_trace(env->trace);
 #ifdef MODAL_REACTORS
         // Set up modal infrastructure
-        _lf_initialize_modes();
+        _lf_initialize_modes(env);
 #endif
-
-        // Reaction queue ordered first by deadline, then by level.
-        // The index of the reaction holds the deadline in the 48 most significant bits,
-        // the level in the 16 least significant bits.
-        reaction_q = pqueue_init(INITIAL_REACT_QUEUE_SIZE, in_reverse_order, get_reaction_index,
-                get_reaction_position, set_reaction_position, reaction_matches, print_reaction);
-
-        current_tag = (tag_t){.time = start_time, .microstep = 0u};
         _lf_execution_started = true;
-        _lf_trigger_startup_reactions();
-        _lf_initialize_timers();
-
+        _lf_trigger_startup_reactions(env);
+        _lf_initialize_timers(env);
         // If the stop_tag is (0,0), also insert the shutdown
         // reactions. This can only happen if the timeout time
         // was set to 0.
-        if (lf_tag_compare(current_tag, stop_tag) >= 0) {
-            _lf_trigger_shutdown_reactions();
+        if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {
+            _lf_trigger_shutdown_reactions(env);
         }
         LF_PRINT_DEBUG("Running the program's main loop.");
         // Handle reactions triggered at time (T,m).
-        if (_lf_do_step()) {
-            while (next() != 0);
+        if (_lf_do_step(env)) {
+            while (next(env) != 0);
         }
-        // pqueue_free(reaction_q); FIXME: This might be causing weird memory errors
         return 0;
     } else {
         return -1;
     }
+}
+
+/**
+ * @brief Notify of new event by calling the unthreaded platform API
+ * @param env Environment in which we are executing.
+ */
+int lf_notify_of_event(environment_t* env) {
+    return _lf_unthreaded_notify_of_event();
+}
+
+/**
+ * @brief Enter critical section by disabling interrupts
+ * @param env Environment in which we are executing.
+ */
+int lf_critical_section_enter(environment_t* env) {
+    return lf_disable_interrupts_nested();
+}
+
+/**
+ * @brief Leave a critical section by enabling interrupts
+ * @param env Environment in which we are executing.
+ */
+int lf_critical_section_exit(environment_t* env) {
+    return lf_enable_interrupts_nested();
 }
 #endif

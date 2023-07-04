@@ -49,13 +49,23 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "rti_lib.h"
 #include <signal.h>     // To trap ctrl-c and invoke a clean stop to save the trace file, if needed.
 
-extern RTI_instance_t _RTI;
+/**
+ * References to the federation RTI and the enclave RTI.
+ * They both point to the same enclaves stuctures. In the case of federation RTI,
+ * however, enclaves are encapsulated in federates.    
+ */
+extern enclave_rti_t * _e_rti;
+extern federation_rti_t* _f_rti;
 
 /**
  * The tracing mechanism uses the number of workers variable `_lf_number_of_workers`.
  * For RTI tracing, the number of workers is set as the number of federates.
  */
 unsigned int _lf_number_of_workers = 0u;
+
+extern lf_mutex_t rti_mutex;
+extern lf_cond_t received_start_times;
+extern lf_cond_t sent_start_time;
 
 /**
  * RTI trace file name
@@ -67,14 +77,17 @@ const char *rti_trace_file_name = "rti.lft";
  * enabled, before exiting.
  */
 void termination() {
-    if (_RTI.tracing_enabled) {
-        stop_trace();
+    if (_f_rti->tracing_enabled) {
+        stop_trace(_f_rti->trace);
+        trace_free(_f_rti->trace);
         lf_print("RTI trace file saved.");
     }   
     lf_print("RTI is exiting.");
 }
 
 int main(int argc, const char* argv[]) {
+
+    initialize_RTI();
 
     lf_mutex_init(&rti_mutex);
     lf_cond_init(&received_start_times, &rti_mutex);
@@ -85,24 +98,37 @@ int main(int argc, const char* argv[]) {
     if (atexit(termination) != 0) {
         lf_print_warning("Failed to register termination function!");
     }
+    
 
     if (!process_args(argc, argv)) {
         // Processing command-line arguments failed.
         return -1;
     }
-    if (_RTI.tracing_enabled) {
-        _lf_number_of_workers = _RTI.number_of_federates;
-        start_trace(rti_trace_file_name);
+    if (_f_rti->tracing_enabled) {
+        _lf_number_of_workers = _f_rti->number_of_enclaves;
+        _f_rti->trace = trace_new(NULL, rti_trace_file_name);
+        
+        lf_assert(_f_rti->trace, "Out of memory");
+        start_trace(_f_rti->trace);
+
         lf_print("Tracing the RTI execution in %s file.", rti_trace_file_name);
     }
-    lf_print("Starting RTI for %d federates in federation ID %s.", _RTI.number_of_federates, _RTI.federation_id);
-    assert(_RTI.number_of_federates < UINT16_MAX);
-    _RTI.federates = (federate_t*)calloc(_RTI.number_of_federates, sizeof(federate_t));
-    for (uint16_t i = 0; i < _RTI.number_of_federates; i++) {
-        initialize_federate(i);
-    }
-    int socket_descriptor = start_rti_server(_RTI.user_specified_port);
-    wait_for_federates(socket_descriptor);
 
+    lf_print("Starting RTI for %d federates in federation ID %s.",  _f_rti->number_of_enclaves, _f_rti->federation_id);
+    assert(_f_rti->number_of_enclaves < UINT16_MAX);
+    
+    // Allocate memory for the federates
+    _f_rti->enclaves = (federate_t**)calloc(_f_rti->number_of_enclaves, sizeof(federate_t*));
+    for (uint16_t i = 0; i < _f_rti->number_of_enclaves; i++) {
+        _f_rti->enclaves[i] = (federate_t *)malloc(sizeof(federate_t));
+        initialize_federate(_f_rti->enclaves[i], i);
+    }
+
+    // Initialize the RTI enclaves
+    _e_rti = (enclave_rti_t*)_f_rti;
+
+    int socket_descriptor = start_rti_server(_f_rti->user_specified_port);
+    wait_for_federates(socket_descriptor);
+    lf_print("RTI is exiting.");
     return 0;
 }

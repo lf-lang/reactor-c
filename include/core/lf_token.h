@@ -64,6 +64,9 @@
 
 #include <stdlib.h> // Defines size_t
 
+// Forward declarations
+struct environment_t;
+
 //////////////////////////////////////////////////////////
 //// Constants and enums
 
@@ -162,7 +165,7 @@ typedef struct lf_port_base_t {
 	lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
 	int destination_channel;              // -1 if there is no destination.
     int num_destinations;                 // The number of destination reactors this port writes to.
-    struct self_base_t* source_reactor;          // Pointer to the self struct of the reactor that provides data to this port.
+    self_base_t* source_reactor;          // Pointer to the self struct of the reactor that provides data to this port.
                                           // If this is an input, that reactor will normally be the container of the
                                           // output port that sends it data.
 } lf_port_base_t;
@@ -191,7 +194,7 @@ extern lf_token_t* _lf_tokens_allocated_in_reactions;
  * it. That token is not counted because it is not
  * expected to be freed.
  */
-static int _lf_count_token_allocations;
+extern int _lf_count_token_allocations;
 
 //////////////////////////////////////////////////////////
 //// Functions that users may call
@@ -357,8 +360,9 @@ token_freed _lf_done_using(lf_token_t* token);
  * @brief Free token copies made for mutable inputs.
  * This function should be called at the beginning of each time step
  * to avoid memory leaks.
+ * @param env Environment in which we are executing.
  */
-void _lf_free_token_copies();
+void _lf_free_token_copies(struct environment_t* env);
 
 #endif /* LF_TOKEN_H */
 /** @} */
