@@ -306,7 +306,7 @@ void handle_port_absent_message(federate_t* sending_federate, unsigned char* buf
     tag_t tag = extract_tag(&(buffer[1 + 2 * sizeof(uint16_t)]));
 
     if (_f_rti->tracing_enabled) {
-        tracepoint_rti_from_federate(_f_rti->trace, receive_PORT_ABS, federate_id, &tag);
+        tracepoint_rti_from_federate(_f_rti->trace, receive_PORT_ABS, sending_federate, &tag);
     }
 
     // Need to acquire the mutex lock to ensure that the thread handling
