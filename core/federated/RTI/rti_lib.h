@@ -2,10 +2,13 @@
  * @file
  * @author Edward A. Lee (eal@berkeley.edu)
  * @author Soroush Bateni (soroush@utdallas.edu)
+ * @author Erling Jellum (erling.r.jellum@ntnu.no)
+ * @author Chadlia Jerad (chadlia.jerad@ensi-uma.tn)
  * @copyright (c) 2020-2023, The University of California at Berkeley
  * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
  * @brief Declarations for runtime infrastructure (RTI) for distributed Lingua Franca programs.
- *
+ * This file extends enclave.h with RTI features that are specific to federations and are not
+ * used by scheduling enclaves.
  */
 
 #ifndef RTI_LIB_H
@@ -46,6 +49,9 @@ typedef enum socket_type_t {
  */
 typedef struct federate_t {
     enclave_t enclave;
+    bool requested_stop;    // Indicates that the federate has requested stop or has replied
+                            // to a request for stop from the RTI. Used to prevent double-counting
+                            // a federate when handling lf_request_stop().
     lf_thread_t thread_id;    // The ID of the thread handling communication with this federate.
     int socket;             // The TCP socket descriptor for communicating with this federate.
     struct sockaddr_in UDP_addr;           // The UDP address for the federate.
@@ -187,6 +193,11 @@ typedef struct federation_rti_t {
     // Number of connected transient federates in the federation
     int32_t number_of_connected_transient_federates;
 
+
+    /**
+     * Boolean indicating that a stop request is already in progress.
+     */
+    bool stop_in_progress;
 } federation_rti_t;
 
 /**
@@ -271,15 +282,6 @@ void handle_logical_tag_complete(federate_t* fed);
 void handle_next_event_tag(federate_t* fed);
 
 /////////////////// STOP functions ////////////////////
-/**
- * Once the RTI has seen proposed tags from all connected federates,
- * it will broadcast a MSG_TYPE_STOP_GRANTED carrying the _RTI.max_stop_tag.
- * This function also checks the most recently received NET from
- * each federate and resets that be no greater than the _RTI.max_stop_tag.
- *
- * This function assumes the caller holds the _RTI.rti_mutex lock.
- */
-void _lf_rti_broadcast_stop_time_to_federates_already_locked();
 
 /**
  * Mark a federate requesting stop.
