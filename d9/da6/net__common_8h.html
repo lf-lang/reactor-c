@@ -128,12 +128,12 @@ Macros</h2></td></tr>
 <tr class="separator:ae2c2fdb5fbcc47750409348d37b0cd78"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8e49ce0b1c3a58c881849ca4d0bae824"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/da6/net__common_8h.html#a8e49ce0b1c3a58c881849ca4d0bae824">MSG_TYPE_FED_IDS</a>&#160;&#160;&#160;1</td></tr>
 <tr class="separator:a8e49ce0b1c3a58c881849ca4d0bae824"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac9c517067b23c8bf9e4d9cc0d38e0e21"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/da6/net__common_8h.html#ac9c517067b23c8bf9e4d9cc0d38e0e21">MSG_TYPE_RTI_NONCE</a>&#160;&#160;&#160;100</td></tr>
-<tr class="separator:ac9c517067b23c8bf9e4d9cc0d38e0e21"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acd7e1e07253e568044a204a1f82d36a1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/da6/net__common_8h.html#acd7e1e07253e568044a204a1f82d36a1">MSG_TYPE_FED_RESPONSE</a>&#160;&#160;&#160;101</td></tr>
-<tr class="separator:acd7e1e07253e568044a204a1f82d36a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a20f24b4b20547d44523120689afd9b98"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/da6/net__common_8h.html#a20f24b4b20547d44523120689afd9b98">MSG_TYPE_RTI_RESPONSE</a>&#160;&#160;&#160;102</td></tr>
+<tr class="memitem:a191b27bec42ab0370248fbc64cc9b860"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/da6/net__common_8h.html#a191b27bec42ab0370248fbc64cc9b860">MSG_TYPE_FED_NONCE</a>&#160;&#160;&#160;100</td></tr>
+<tr class="separator:a191b27bec42ab0370248fbc64cc9b860"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20f24b4b20547d44523120689afd9b98"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/da6/net__common_8h.html#a20f24b4b20547d44523120689afd9b98">MSG_TYPE_RTI_RESPONSE</a>&#160;&#160;&#160;101</td></tr>
 <tr class="separator:a20f24b4b20547d44523120689afd9b98"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd7e1e07253e568044a204a1f82d36a1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/da6/net__common_8h.html#acd7e1e07253e568044a204a1f82d36a1">MSG_TYPE_FED_RESPONSE</a>&#160;&#160;&#160;102</td></tr>
+<tr class="separator:acd7e1e07253e568044a204a1f82d36a1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6771c37605e49c8faae7898797f254b7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/da6/net__common_8h.html#a6771c37605e49c8faae7898797f254b7">NONCE_LENGTH</a>&#160;&#160;&#160;8</td></tr>
 <tr class="separator:a6771c37605e49c8faae7898797f254b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abd435507a255ff2571133013bdf93bd2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/da6/net__common_8h.html#abd435507a255ff2571133013bdf93bd2">SHA256_HMAC_LENGTH</a>&#160;&#160;&#160;32</td></tr>
@@ -324,7 +324,7 @@ LICENSE</h1>
 <div class="line">    assert(microstep &gt;= 0); \</div>
 <div class="line">    encode_int32((int32_t)microstep, &amp;(buffer[1 + <span class="keyword">sizeof</span>(<a class="code hl_typedef" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>)])); \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="anet__common_8h_html_aad37dd00423e88f213ca7d7d238bce2e"><div class="ttname"><a href="../../d9/da6/net__common_8h.html#aad37dd00423e88f213ca7d7d238bce2e">MSG_TYPE_STOP_GRANTED</a></div><div class="ttdeci">#define MSG_TYPE_STOP_GRANTED</div><div class="ttdef"><b>Definition</b> net_common.h:528</div></div>
+<div class="ttc" id="anet__common_8h_html_aad37dd00423e88f213ca7d7d238bce2e"><div class="ttname"><a href="../../d9/da6/net__common_8h.html#aad37dd00423e88f213ca7d7d238bce2e">MSG_TYPE_STOP_GRANTED</a></div><div class="ttdeci">#define MSG_TYPE_STOP_GRANTED</div><div class="ttdef"><b>Definition</b> net_common.h:530</div></div>
 <div class="ttc" id="atag_8h_html_a827080fd3c574bad5a32db9f7c367587"><div class="ttname"><a href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a></div><div class="ttdeci">int64_t instant_t</div><div class="ttdef"><b>Definition</b> tag.h:55</div></div>
 </div><!-- fragment -->
 </div>
@@ -366,7 +366,7 @@ LICENSE</h1>
 <div class="line">    assert(microstep &gt;= 0); \</div>
 <div class="line">    encode_int32((int32_t)microstep, &amp;(buffer[1 + <span class="keyword">sizeof</span>(<a class="code hl_typedef" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>)])); \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="anet__common_8h_html_a8588a57a3ae81bf33c740dfc57103a23"><div class="ttname"><a href="../../d9/da6/net__common_8h.html#a8588a57a3ae81bf33c740dfc57103a23">MSG_TYPE_STOP_REQUEST</a></div><div class="ttdeci">#define MSG_TYPE_STOP_REQUEST</div><div class="ttdef"><b>Definition</b> net_common.h:495</div></div>
+<div class="ttc" id="anet__common_8h_html_a8588a57a3ae81bf33c740dfc57103a23"><div class="ttname"><a href="../../d9/da6/net__common_8h.html#a8588a57a3ae81bf33c740dfc57103a23">MSG_TYPE_STOP_REQUEST</a></div><div class="ttdeci">#define MSG_TYPE_STOP_REQUEST</div><div class="ttdef"><b>Definition</b> net_common.h:497</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -407,7 +407,7 @@ LICENSE</h1>
 <div class="line">    assert(microstep &gt;= 0); \</div>
 <div class="line">    encode_int32((int32_t)microstep, &amp;(buffer[1 + <span class="keyword">sizeof</span>(<a class="code hl_typedef" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>)])); \</div>
 <div class="line">} <span class="keywordflow">while</span>(0)</div>
-<div class="ttc" id="anet__common_8h_html_adbe10e103635ee7ec4bca3226ccebc56"><div class="ttname"><a href="../../d9/da6/net__common_8h.html#adbe10e103635ee7ec4bca3226ccebc56">MSG_TYPE_STOP_REQUEST_REPLY</a></div><div class="ttdeci">#define MSG_TYPE_STOP_REQUEST_REPLY</div><div class="ttdef"><b>Definition</b> net_common.h:512</div></div>
+<div class="ttc" id="anet__common_8h_html_adbe10e103635ee7ec4bca3226ccebc56"><div class="ttname"><a href="../../d9/da6/net__common_8h.html#adbe10e103635ee7ec4bca3226ccebc56">MSG_TYPE_STOP_REQUEST_REPLY</a></div><div class="ttdeci">#define MSG_TYPE_STOP_REQUEST_REPLY</div><div class="ttdef"><b>Definition</b> net_common.h:514</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -624,6 +624,25 @@ LICENSE</h1>
 
 </div>
 </div>
+<a id="a191b27bec42ab0370248fbc64cc9b860" name="a191b27bec42ab0370248fbc64cc9b860"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a191b27bec42ab0370248fbc64cc9b860">&#9670;&#160;</a></span>MSG_TYPE_FED_NONCE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MSG_TYPE_FED_NONCE&#160;&#160;&#160;100</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Byte identifying a message from a federate to an RTI containing federate's 8-byte random nonce for HMAC-based authentication. The federate sends this message to an incoming RTI when TCP connection is established between the RTI and the federate. The message contains, in this order:</p><ul>
+<li>One byte equal to MSG_TYPE_FED_NONCE.</li>
+<li>Two bytes (ushort) giving the federate ID.</li>
+<li>Eight bytes for federate's nonce. </li>
+</ul>
+
+</div>
+</div>
 <a id="acd7e1e07253e568044a204a1f82d36a1" name="acd7e1e07253e568044a204a1f82d36a1"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acd7e1e07253e568044a204a1f82d36a1">&#9670;&#160;</a></span>MSG_TYPE_FED_RESPONSE</h2>
 
@@ -631,17 +650,14 @@ LICENSE</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define MSG_TYPE_FED_RESPONSE&#160;&#160;&#160;101</td>
+          <td class="memname">#define MSG_TYPE_FED_RESPONSE&#160;&#160;&#160;102</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Byte identifying a message from federate to RTI as a response to the RTI Hello message. The federate sends this message to RTI for HMAC-based authentication. The message contains, in this order:</p><ul>
+<p>Byte identifying a message from federate to RTI as a response to the RTI_RESPONSE message. The federate sends this message to RTI for HMAC-based authentication. The message contains, in this order:</p><ul>
 <li>One byte equal to MSG_TYPE_FED_RESPONSE.</li>
-<li>Eight bytes for federate's nonce.</li>
-<li>Two bytes (ushort) giving the federate ID.</li>
 <li>32 bytes for HMAC tag based on SHA256. The HMAC tag is composed of the following order:</li>
 <li>One byte equal to MSG_TYPE_FED_RESPONSE.</li>
-<li>Two bytes (ushort) giving the federate ID.</li>
 <li>Eight bytes for received RTI's nonce. </li>
 </ul>
 
@@ -834,21 +850,6 @@ LICENSE</h1>
 
 </div>
 </div>
-<a id="ac9c517067b23c8bf9e4d9cc0d38e0e21" name="ac9c517067b23c8bf9e4d9cc0d38e0e21"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac9c517067b23c8bf9e4d9cc0d38e0e21">&#9670;&#160;</a></span>MSG_TYPE_RTI_NONCE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define MSG_TYPE_RTI_NONCE&#160;&#160;&#160;100</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Byte identifying a message from an RTI to a federate containing RTI's 8-byte random nonce for HMAC-based authentication. The RTI sends this message to an incoming federate when TCP connection is established between the RTI and the federate. The next eight bytes are RTI's 8-byte nonce (RTI nonce). </p>
-
-</div>
-</div>
 <a id="a20f24b4b20547d44523120689afd9b98" name="a20f24b4b20547d44523120689afd9b98"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a20f24b4b20547d44523120689afd9b98">&#9670;&#160;</a></span>MSG_TYPE_RTI_RESPONSE</h2>
 
@@ -856,14 +857,16 @@ LICENSE</h1>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define MSG_TYPE_RTI_RESPONSE&#160;&#160;&#160;102</td>
+          <td class="memname">#define MSG_TYPE_RTI_RESPONSE&#160;&#160;&#160;101</td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Byte identifying a message from RTI to a federate as a response to the FED_RESPONSE message. The RTI sends this message to federate for HMAC-based authentication. The message contains, in this order:</p><ul>
+<p>Byte identifying a message from RTI to federate as a response to the FED_NONCE message. The RTI sends this message to federate for HMAC-based authentication. The message contains, in this order:</p><ul>
 <li>One byte equal to MSG_TYPE_RTI_RESPONSE.</li>
+<li>Eight bytes for RTI's nonce.</li>
 <li>32 bytes for HMAC tag based on SHA256. The HMAC tag is composed of the following order:</li>
 <li>One byte equal to MSG_TYPE_RTI_RESPONSE.</li>
+<li>Two bytes (ushort) giving the received federate ID.</li>
 <li>Eight bytes for received federate's nonce. </li>
 </ul>
 
