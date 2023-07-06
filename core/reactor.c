@@ -306,12 +306,11 @@ int next(environment_t* env) {
     return _lf_do_step(env);
 }
 
-/**
- * Stop execution at the conclusion of the next microstep.
- * @param env Environment in which we are executing
- */
-void _lf_request_stop(environment_t *env) {
-    assert(env != GLOBAL_ENVIRONMENT);
+void lf_request_stop() {
+    // There is only one enclave, so get its environment.
+    environment_t *env;
+    int num_environments = _lf_get_environments(&env);
+    assert(num_environments == 1);
 
 	tag_t new_stop_tag;
 	new_stop_tag.time = env->current_tag.time;
@@ -360,7 +359,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         signal(SIGINT, exit);
 #endif
         // Create and initialize the environment
-        _lf_create_environments();
+        _lf_create_environments();   // code-generated function
         environment_t *env;
         int num_environments = _lf_get_environments(&env);
         lf_assert(num_environments == 1,

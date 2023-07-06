@@ -1,3 +1,16 @@
+/**
+ * @file
+ * @author Edward A. Lee (eal@berkeley.edu)
+ * @author Soroush Bateni (soroush@utdallas.edu)
+ * @author Erling Jellum (erling.r.jellum@ntnu.no)
+ * @author Chadlia Jerad (chadlia.jerad@ensi-uma.tn)
+ * @copyright (c) 2020-2023, The University of California at Berkeley
+ * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ * @brief Declarations for runtime infrastructure (RTI) for scheduling enclaves and distributed Lingua Franca programs.
+ * This file declares RTI features that are used by scheduling enclaves as well as federated
+ * LF programs.
+ */
+
 #ifndef ENCLAVE_H
 #define ENCLAVE_H
 
@@ -46,9 +59,6 @@ typedef struct enclave_t {
     int* downstream;        // Array of downstream federate ids.
     int num_downstream;     // Size of the array of downstream federates.
     execution_mode_t mode;  // FAST or REALTIME.
-    bool requested_stop;    // Indicates that the federate has requested stop or has replied
-                            // to a request for stop from the RTI. Used to prevent double-counting
-                            // a federate when handling lf_request_stop().
     lf_cond_t next_event_condition; // Condition variable used by enclaves to notify an enclave
                                     // that it's call to next_event_tag() should unblock.
 } enclave_t;
