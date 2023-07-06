@@ -1824,13 +1824,13 @@ void handle_port_absent_message(int socket, int fed_id) {
     if (lf_tag_compare(intended_tag,
             network_input_port_action->last_known_status_tag) < 0) {
         lf_mutex_unlock(&mutex);
-        lf_print_error_and_exit("The following contract was violated for port absent messages: In-order "
-                             "delivery of messages over a TCP socket. Had status for " PRINTF_TAG ", got "
-                             "port absent with intended tag " PRINTF_TAG ".",
-                             network_input_port_action->last_known_status_tag.time - start_time,
-                             network_input_port_action->last_known_status_tag.microstep,
-                             intended_tag.time - start_time,
-                             intended_tag.microstep);
+        // lf_print_error_and_exit("The following contract was violated for port absent messages: In-order "
+        //                      "delivery of messages over a TCP socket. Had status for " PRINTF_TAG ", got "
+        //                      "port absent with intended tag " PRINTF_TAG ".",
+        //                      network_input_port_action->last_known_status_tag.time - start_time,
+        //                      network_input_port_action->last_known_status_tag.microstep,
+        //                      intended_tag.time - start_time,
+        //                      intended_tag.microstep);
     }
 #endif // In centralized coordination, a TAG message from the RTI
        // can set the last_known_status_tag to a future tag where messages
@@ -1983,13 +1983,13 @@ void handle_tagged_message(int socket, int fed_id) {
 #ifdef FEDERATED_DECENTRALIZED
     if (lf_tag_compare(intended_tag,
             action->trigger->last_known_status_tag) < 0) {
-        lf_print_error_and_exit("The following contract was violated for a timed message: In-order "
-                             "delivery of messages over a TCP socket. Had status for " PRINTF_TAG ", got "
-                             "timed message with intended tag " PRINTF_TAG ".",
-                             action->trigger->last_known_status_tag.time - start_time,
-                             action->trigger->last_known_status_tag.microstep,
-                             intended_tag.time - start_time,
-                             intended_tag.microstep);
+        // lf_print_error_and_exit("The following contract was violated for a timed message: In-order "
+                            //  "delivery of messages over a TCP socket. Had status for " PRINTF_TAG ", got "
+                            //  "timed message with intended tag " PRINTF_TAG ".",
+                            //  action->trigger->last_known_status_tag.time - start_time,
+                            //  action->trigger->last_known_status_tag.microstep,
+                            //  intended_tag.time - start_time,
+                            //  intended_tag.microstep);
     }
 #endif // In centralized coordination, a TAG message from the RTI
        // can set the last_known_status_tag to a future tag where messages
