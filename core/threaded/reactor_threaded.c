@@ -451,7 +451,11 @@ void _lf_next_locked(environment_t *env) {
     tag_t grant_tag = rti_next_event_tag_locked(env->enclave_info, next_tag);
     if (lf_tag_compare(grant_tag, next_tag) < 0) return;
 
-    // Check for starvation
+    // Next event might have changed while waiting for the TAG
+    next_tag = get_next_event_tag(env);
+
+    // Check for starvation. If our next tag is FOREVER_TAG and we were granted there
+    //  then stop execution.
     if(!keepalive_specified && lf_tag_compare(next_tag, FOREVER_TAG) == 0) {
         _lf_set_stop_tag(env, (tag_t){.time=env->current_tag.time,.microstep=env->current_tag.microstep+1});
         next_tag = get_next_event_tag(env);
@@ -973,6 +977,12 @@ void* worker(void* arg) {
 
     int worker_number = env->worker_thread_count++;
     LF_PRINT_LOG("Worker thread %d started.", worker_number);
+        
+    // First worker initializes start tag
+    if (worker_number == 0) {
+        LF_PRINT_LOG("Environment %u initializes its start tag", env->id);
+        _lf_initialize_start_tag(env);
+    }
 
     lf_mutex_unlock(&env->mutex);
 
@@ -1161,9 +1171,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         if (lf_mutex_lock(&env->mutex) != 0) {
             lf_print_error_and_exit("Could not lock environment mutex");
         }
-        // First worker initializes start tag
-        LF_PRINT_LOG("Environment %u initializes its start tag");
-        _lf_initialize_start_tag(env);
 
         lf_print("Environment %u: ---- Spawning %d workers.",env->id, env->num_workers);
         start_threads(env);
