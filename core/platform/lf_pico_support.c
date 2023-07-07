@@ -192,7 +192,7 @@ void _pico_core_loader() {
     // alternatively use free-rtos an launch tasks
     /// TODO: create a dispatcher program that runs on the second core similar to rtic
     /// TODO: maybe assigning an enclave to core1 is the best path forward to avoid
-    // reimplementing a threading library
+    // reimplementing a threading library 
 }
 
 /**
