@@ -12,7 +12,7 @@
  * - INC    rs1,    rs2 : INCrement a counter (rs1) by an amount (rs2).
  * - INC2   rs1,    rs2 : Lock-free version of INC. The compiler needs to guarantee single writer.
  * - JMP    rs1         : JuMP to a location (rs1).
- * - SAC                : (Sync-And-Clear) synchronize all workers until all execute SAC and let the last idle worker reset all counters to 0.
+ * - SAC                : (Sync-Advance-Clear) synchronize all workers until all execute SAC and let the last idle worker reset all counters to 0.
  * - STP                : SToP the execution.
  * - WU     rs1,    rs2 : Wait Until a counting variable (rs1) to reach a desired value (rs2).
  */

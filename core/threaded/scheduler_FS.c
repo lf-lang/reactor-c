@@ -92,25 +92,42 @@ void _lf_sched_notify_workers(lf_scheduler_t* scheduler) {
  * If the calling worker thread is the last to become idle, it will call on the
  * scheduler to distribute work. Otherwise, it will wait on
  * 'scheduler->semaphore'.
+ * This implementation of _lf_sched_wait_for_work also takes on the role of
+ * advancing time for all reactors at the end of the hyperperiod.
  *
  * @param worker_number The worker number of the worker thread asking for work
  * to be assigned to it.
+ * @param next_timestamp The next timestamp all reactors advance to.
  */
-void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_number) {
+void _lf_sched_wait_for_work(
+    lf_scheduler_t* scheduler,
+    size_t worker_number,
+    instant_t next_timestamp
+) {
     // Increment the number of idle workers by 1 and
     // check if this is the last worker thread to become idle.
     if (lf_atomic_add_fetch(&scheduler->number_of_idle_workers,
                             1) ==
         scheduler->number_of_workers) {
+        
         // Last thread to go idle
         //LF_PRINT_DEBUG("Scheduler: Worker %zu is the last idle thread.",
                     //worker_number);
-        // Clear all the counters.
+        
+        // The last worker advances all reactors to the next tag.
+        for (int j = 0; j < scheduler->num_reactor_self_instances; j++) {
+            scheduler->reactor_self_instances[j]->tag.time = next_timestamp;
+            scheduler->reactor_self_instances[j]->tag.microstep = 0;
+        }
+        
+        // The last worker clears all the counters.
         for (int i = 0; i < num_counters; i++) {
             counters[i] = 0;
         }
-        // Call on the scheduler to distribute work or advance tag.
+        
+        // The last worker calls on the scheduler to distribute work or advance tag.
         _lf_sched_notify_workers(scheduler);
+
     } else {
         // Not the last thread to become idle.
         // Wait for work to be released.
@@ -137,13 +154,15 @@ void execute_inst_BIT(lf_scheduler_t* scheduler, size_t worker_number, long long
         }
     }
 
-    //LF_PRINT_DEBUG("Start time is %ld. Current tag is (%ld, %d). Stop tag is (%ld, %d). Stop array: ", start_time, current_tag.time, current_tag.microstep, stop_tag.time, stop_tag.microstep);
+    /*
+    LF_PRINT_DEBUG("Start time is %ld. Current tag is (%ld, %d). Stop tag is (%ld, %d). Stop array: ", start_time, current_tag.time, current_tag.microstep, stop_tag.time, stop_tag.microstep);
     for (int i = 0; i < scheduler->num_reactor_self_instances; i++) {
-        //LF_PRINT_DEBUG("(%ld, %d)",
-            //scheduler->reactor_self_instances[i]->tag.time,
-            //scheduler->reactor_self_instances[i]->tag.microstep);
-        //LF_PRINT_DEBUG("%d", scheduler->reactor_reached_stop_tag[i]);
+        LF_PRINT_DEBUG("(%ld, %d)",
+            scheduler->reactor_self_instances[i]->tag.time,
+            scheduler->reactor_self_instances[i]->tag.microstep);
+        LF_PRINT_DEBUG("%d", scheduler->reactor_reached_stop_tag[i]);
     }
+    */
 
     if (stop) *pc = rs1;    // Jump to a specified location.
     else *pc += 1;          // Increment pc.
@@ -229,7 +248,7 @@ void execute_inst_WU(lf_scheduler_t* scheduler, size_t worker_number, long long 
 }
 
 /**
- * @brief ADV: Advance time for a particular reactor.
+ * @brief ADV: Advance time for a reactor up to a tag (relative to the current hyperperiod).
  * 
  * @param rs1 
  * @param rs2 
@@ -245,7 +264,7 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, long long
 
     self_base_t* reactor =
         scheduler->reactor_self_instances[rs1];
-    reactor->tag.time += rs2;
+    reactor->tag.time = hyperperiod * (*iteration) + rs2;
     reactor->tag.microstep = 0;
 
     // Reset all "is_present" fields of the output ports of the reactor
@@ -266,7 +285,7 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, long long
 }
 
 /**
- * @brief ADV: Advance time for a particular reactor.
+ * @brief ADV: Advance time for a reactor up to a tag (relative to the current hyperperiod).
  * 
  * @param rs1 
  * @param rs2 
@@ -279,7 +298,7 @@ void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, long lon
 
     self_base_t* reactor =
         scheduler->reactor_self_instances[rs1];
-    reactor->tag.time += rs2;
+    reactor->tag.time = hyperperiod * (*iteration) + rs2;
     reactor->tag.microstep = 0;
     
     // Reset all "is_present" fields of the output ports of the reactor
@@ -313,7 +332,7 @@ void execute_inst_JMP(lf_scheduler_t* scheduler, size_t worker_number, long long
 }
 
 /**
- * @brief SAC: (Sync-And-Clear) synchronize all workers until all execute SAC
+ * @brief SAC: (Sync-Advance-Clear) synchronize all workers until all execute SAC
  * and let the last idle worker reset all counters to 0.
  * 
  * @param rs1 
@@ -324,8 +343,12 @@ void execute_inst_JMP(lf_scheduler_t* scheduler, size_t worker_number, long long
  */
 void execute_inst_SAC(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
+    
+    // Compute the next tag for all reactors.
+    instant_t next_timestamp = hyperperiod * (*iteration) + rs1;
+    
     tracepoint_worker_wait_starts(worker_number);
-    _lf_sched_wait_for_work(scheduler, worker_number);
+    _lf_sched_wait_for_work(scheduler, worker_number, next_timestamp);
     tracepoint_worker_wait_ends(worker_number);
     *pc += 1; // Increment pc.
 }
