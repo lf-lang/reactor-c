@@ -73,6 +73,14 @@ typedef unsigned short int ushort;
 #define LET 4
 #define NP 5
 #define PEDF_NP 6
+#define FS 7
+
+// If we use the fully static scheduler, then we want local time at each reactor
+#if SCHEDULER == FS
+    #ifndef REACTOR_LOCAL_TIME
+    #define REACTOR_LOCAL_TIME
+    #endif
+#endif
 
 /*
  * A struct representing a barrier in threaded
@@ -305,16 +313,19 @@ typedef struct self_base_t {
 	struct allocation_record_t *allocations;
 	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
     environment_t * environment;
-#ifdef LF_THREADED
+#if defined LF_THREADED
     void* reactor_mutex; // If not null, this is expected to point to an lf_mutex_t.
                           // It is not declared as such to avoid a dependence on platform.h.
 #endif
-#ifdef MODAL_REACTORS
+#if defined MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif
-// FIXME: use a LOCAL_TIME macro instead.
-#if SCHEDULER == FS
+// This is used by e.g. the fully static scheduler (FS)
+#if defined REACTOR_LOCAL_TIME // FIXME: The output_ports pointers isnt obviously related to local time
     tag_t tag;                               // The current tag of the reactor instance.
+    lf_port_base_t **output_ports;          // An array of pointers to output ports of this reactor.
+                                            // Used to reset the is_present fields
+    int num_output_ports;
 #endif
 } self_base_t;
 

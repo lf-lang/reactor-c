@@ -248,6 +248,14 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, long long
     reactor->tag.time += rs2;
     reactor->tag.microstep = 0;
 
+    // Reset all "is_present" fields of the output ports of the reactor
+    // Doing this here has the major implicatio  that ADV has to execute AFTER 
+    // all downstream reactions have finished. Since it is modifying state that is
+    // visible to thos reactions.
+    for (int i = 0; i<reactor->num_output_ports; i++) {
+        reactor->output_ports[i]->is_present = false;
+    }
+
     if (_lf_is_tag_after_stop_tag(scheduler->env, reactor->tag)) {
         scheduler->reactor_reached_stop_tag[rs1] = true;
     }
@@ -273,6 +281,14 @@ void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, long lon
         scheduler->reactor_self_instances[rs1];
     reactor->tag.time += rs2;
     reactor->tag.microstep = 0;
+    
+    // Reset all "is_present" fields of the output ports of the reactor
+    // Doing this here has the major implicatio  that ADV has to execute AFTER 
+    // all downstream reactions have finished. Since it is modifying state that is
+    // visible to thos reactions.
+    for (int i = 0; i<reactor->num_output_ports; i++) {
+        reactor->output_ports[i]->is_present = false;
+    }
 
     if (_lf_is_tag_after_stop_tag(scheduler->env, reactor->tag)) {
         scheduler->reactor_reached_stop_tag[rs1] = true;
