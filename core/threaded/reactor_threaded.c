@@ -35,6 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
 
+#include <assert.h>
 #include <signal.h>
 #include <string.h>
 #include <time.h>
@@ -75,37 +76,9 @@ extern instant_t start_time;
 lf_mutex_t global_mutex;
 
 
-/**
- * Raise a barrier to prevent the current tag from advancing to or
- * beyond the value of the future_tag argument, if possible.
- * If the current tag is already at or beyond future_tag, then
- * prevent any further advances. This function will increment the
- * total number of pending barrier requests. For each call to this
- * function, there should always be a subsequent call to
- * _lf_decrement_global_tag_barrier_locked()
- * to release the barrier.
- *
- * If there is already a barrier raised at a tag later than future_tag, this
- * function will change the barrier to future_tag or the current tag, whichever
- * is larger. If the existing barrier is earlier
- * than future_tag, this function will not change the barrier. If there are
- * no existing barriers and future_tag is in the past relative to the
- * current tag, this function will raise a barrier to the current tag.
- *
- * This function assumes the mutex lock is already held, thus, it will not
- * acquire it itself.
- *
- * @note This function is only useful in threaded applications to facilitate
- *  certain non-blocking functionalities such as receiving timed messages
- *  over the network or handling stop in a federated execution.
- *
- * @param env Environment within which we are executing.
- * @param future_tag A desired tag for the barrier. This function will guarantee
- * that current logical time will not go past future_tag if it is in the future.
- * If future_tag is in the past (or equals to current logical time), the runtime
- * will freeze advancement of logical time.
- */
-void _lf_increment_global_tag_barrier_already_locked(environment_t *env, tag_t future_tag) {
+void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     // Check if future_tag is after stop tag.
     // This will only occur when a federate receives a timed message with
     // a tag that is after the stop tag
@@ -147,60 +120,22 @@ void _lf_increment_global_tag_barrier_already_locked(environment_t *env, tag_t f
     env->barrier.requestors++;
 }
 
-/**
- * Raise a barrier to prevent the current tag from advancing to or
- * beyond the value of the future_tag argument, if possible.
- * If the current tag is already at or beyond future_tag, then
- * prevent any further advances. This function will increment the
- * total number of pending barrier requests. For each call to this
- * function, there should always be a subsequent call to
- * _lf_decrement_global_tag_barrier_locked()
- * to release the barrier.
- *
- * If there is already a barrier raised at a tag later than future_tag, this
- * function will change the barrier to future_tag or the current tag, whichever
- * is larger. If the existing barrier is earlier
- * than future_tag, this function will not change the barrier. If there are
- * no existing barriers and future_tag is in the past relative to the
- * current tag, this function will raise a barrier to the current tag.
- *
- * This function acquires the mutex lock .
- *
- * @note This function is only useful in threaded applications to facilitate
- *  certain non-blocking functionalities such as receiving timed messages
- *  over the network or handling stop in a federated execution.
- *
- * @param future_tag A desired tag for the barrier. This function will guarantee
- * that current tag will not go past future_tag if it is in the future.
- * If future_tag is in the past (or equals to current tag), the runtime
- * will freeze advancement of tag.
- */
-void _lf_increment_global_tag_barrier(environment_t *env, tag_t future_tag) {
+void _lf_increment_tag_barrier(environment_t *env, tag_t future_tag) {
+    assert(env != GLOBAL_ENVIRONMENT);
     lf_mutex_lock(&env->mutex);
-    _lf_increment_global_tag_barrier_already_locked(env, future_tag);
+    _lf_increment_tag_barrier_locked(env, future_tag);
     lf_mutex_unlock(&env->mutex);
 }
 
-/**
- * Decrement the total number of pending barrier requests for the global tag barrier.
- * If the total number of requests reaches zero, this function resets the
- * tag barrier to FOREVER_TAG and notifies all threads that are waiting
- * on the barrier that the number of requests has reached zero.
- *
- * This function assumes that the caller already holds the mutex lock.
- *
- * @note This function is only useful in threaded applications to facilitate
- *  certain non-blocking functionalities such as receiving timed messages
- *  over the network or handling stop in the federated execution.
- */
-void _lf_decrement_global_tag_barrier_locked(environment_t* env) {
+void _lf_decrement_tag_barrier_locked(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
     // Decrement the number of requestors for the tag barrier.
     env->barrier.requestors--;
     // Check to see if the semaphore is negative, which indicates that
     // a mismatched call was placed for this function.
     if (env->barrier.requestors < 0) {
-        lf_print_error_and_exit("Mismatched use of _lf_increment_global_tag_barrier()"
-                " and  _lf_decrement_global_tag_barrier_locked().");
+        lf_print_error_and_exit("Mismatched use of _lf_increment_tag_barrier()"
+                " and  _lf_decrement_tag_barrier_locked().");
     } else if (env->barrier.requestors == 0) {
         // When the semaphore reaches zero, reset the horizon to forever.
         env->barrier.horizon = FOREVER_TAG;
@@ -214,8 +149,8 @@ void _lf_decrement_global_tag_barrier_locked(environment_t* env) {
 
 /**
  * If the proposed_tag is greater than or equal to a barrier tag that has been
- * set by a call to _lf_increment_global_tag_barrier or
- * _lf_increment_global_tag_barrier_already_locked, and if there are requestors
+ * set by a call to _lf_increment_tag_barrier or
+ * _lf_increment_tag_barrier_locked, and if there are requestors
  * still pending on that barrier, then wait until all requestors have been
  * satisfied. This is used in federated execution when an incoming timed
  * message has been partially read so that we know its tag, but the rest of
@@ -230,10 +165,13 @@ void _lf_decrement_global_tag_barrier_locked(environment_t* env) {
  * Thus, it unlocks the mutex while it's waiting to allow
  * the tag barrier to change.
  *
+ * @param env Environment within which we are executing.
  * @param proposed_tag The tag that the runtime wants to advance to.
  * @return 0 if no wait was needed and 1 if a wait actually occurred.
  */
-int _lf_wait_on_global_tag_barrier(environment_t* env, tag_t proposed_tag) {
+int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     // Check the most common case first.
     if (env->barrier.requestors == 0) return 0;
 
@@ -262,6 +200,7 @@ int _lf_wait_on_global_tag_barrier(environment_t* env, tag_t proposed_tag) {
             proposed_tag = env->stop_tag;
         }
     }
+    LF_PRINT_LOG("Finished waiting on barrier for tag " PRINTF_TAG ".", proposed_tag.time - start_time, proposed_tag.microstep);
     return result;
 }
 
@@ -295,19 +234,8 @@ void _lf_set_present(lf_port_base_t* port) {
     }
 }
 
-/**
- * Synchronize the start with other federates via the RTI.
- * This assumes that a connection to the RTI is already made
- * and _fed.socket_TCP_RTI is valid. It then sends the current logical
- * time to the RTI and waits for the RTI to respond with a specified
- * time. It starts a thread to listen for messages from the RTI.
- * It then waits for physical time to match the specified time,
- * sets current logical time to the time returned by the RTI,
- * and then returns. If --fast was specified, then this does
- * not wait for physical time to match the logical start time
- * returned by the RTI.
- */
-void synchronize_with_other_federates(environment_t* env);
+// Forward declaration. See federate.h
+void synchronize_with_other_federates(void);
 
 /**
  * Wait until physical time matches or exceeds the specified logical time,
@@ -322,6 +250,7 @@ void synchronize_with_other_federates(environment_t* env);
  * was placed on the queue if that event time matches or exceeds
  * the specified time.
  *
+ * @param env Environment within which we are executing.
  * @param logical_time Logical time to wait until physical time matches it.
  * @param return_if_interrupted If this is false, then wait_util will wait
  *  until physical time matches the logical time regardless of whether new
@@ -420,8 +349,11 @@ bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition
  * Return the tag of the next event on the event queue.
  * If the event queue is empty then return either FOREVER_TAG
  * or, is a stop_time (timeout time) has been set, the stop time.
+ * @param env Environment within which we are executing.
  */
 tag_t get_next_event_tag(environment_t *env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     // Peek at the earliest event in the event queue.
     event_t* event = (event_t*)pqueue_peek(env->event_q);
     tag_t next_tag = FOREVER_TAG;
@@ -468,6 +400,7 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
  * In unfederated execution or in federated execution with decentralized
  * control, this function returns the specified tag immediately.
  *
+ * @param env Environment within which we are executing.
  * @param tag The tag to which to advance.
  * @param wait_for_reply If true, wait for the RTI to respond.
  * @return The tag to which it is safe to advance.
@@ -498,8 +431,11 @@ tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply) {
  * equal, shutdown reactions are triggered.
  *
  * This does not acquire the mutex lock. It assumes the lock is already held.
+ * @param env Environment within which we are executing.
  */
 void _lf_next_locked(environment_t *env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
 #ifdef MODAL_REACTORS
     // Perform mode transitions
     _lf_handle_mode_changes(env);
@@ -583,9 +519,10 @@ void _lf_next_locked(environment_t *env) {
     // enough to see its tag. To prevent it from becoming tardy, the thread
     // that is reading the message has set a barrier to prevent logical time
     // from exceeding the timestamp of the message. It will remove that barrier
-    // once the complete message has been read. Here, we wait for that barrier
-    // to be removed, if appropriate.
-    if(_lf_wait_on_global_tag_barrier(env, next_tag)) {
+    // once the complete message has been read. Also, if a federate requests 
+    // to stop exeuction barriers will used while reaching a consensus.
+    // Here, we wait for that barrier to be removed, if appropriate.
+    if(_lf_wait_on_tag_barrier(env, next_tag)) {
         // A wait actually occurred, so the next_tag may have changed again.
         next_tag = get_next_event_tag(env);
     }
@@ -623,44 +560,71 @@ void _lf_next_locked(environment_t *env) {
 }
 
 /**
- * Request a stop to execution as soon as possible.
- * In a non-federated execution, this will occur
- * at the conclusion of the current logical time.
- * In a federated execution, it will likely occur at
- * a later logical time determined by the RTI so that
- * all federates stop at the same logical time.
+ * @brief True if stop has been requested so it doesn't get re-requested.
  */
-void _lf_request_stop(environment_t *env) {
-    lf_mutex_lock(&env->mutex);
-    // Check if already at the previous stop tag.
-    if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {
-        // If so, ignore the stop request since the program
-        // is already stopping at the current tag.
-        lf_mutex_unlock(&env->mutex);
+bool lf_stop_requested = false;
+
+// See reactor.h for docs.
+void lf_request_stop() {
+    // If a requested stop is pending, return without doing anything.
+    lf_mutex_lock(&global_mutex);
+    if (lf_stop_requested) {
+        lf_mutex_unlock(&global_mutex);
         return;
     }
+    lf_stop_requested = true;
+    lf_mutex_unlock(&global_mutex);
+
+    // Iterate over scheduling enclaves to find their maximum current tag
+    // and set a barrier for tag advancement for each enclave.
+    tag_t max_current_tag = NEVER_TAG;
+    environment_t* env;
+    int num_environments = _lf_get_environments(&env);
+    for (int i = 0; i < num_environments; i++) {
+        lf_mutex_lock(&env[i].mutex);
+        if (lf_tag_compare(env[i].current_tag, max_current_tag) > 0) {
+            max_current_tag = env[i].current_tag;
+        }
+        // Set a barrier to prevent the enclave from advancing past the so-far maximum current tag.
+        _lf_increment_tag_barrier_locked(&env[i], max_current_tag);
+        lf_mutex_unlock(&env[i].mutex);
+    }
+
 #ifdef FEDERATED
-    _lf_fd_send_stop_request_to_rti(env);
-    // Do not set stop_requested
-    // since the RTI might grant a
-    // later stop tag than the current
-    // tag. The _lf_fd_send_request_stop_to_rti()
-    // will raise a barrier at the current
-    // logical time.
+    // In the federated case, do not set lf_stop_requested because the RTI might grant a
+    // later stop tag than the current tag. The above code has raised
+    // a barrier no greater than the requested stop tag for each enclave.
+    if (_lf_fd_send_stop_request_to_rti(max_current_tag) != 0) {
+        // Message was not sent to the RTI.
+        // Decrement the barriers to reverse our previous increment.
+        for (int i = 0; i < num_environments; i++) {
+            lf_mutex_lock(&env[i].mutex);
+            _lf_decrement_tag_barrier_locked(&env[i]);
+            lf_mutex_unlock(&env[i].mutex);
+        }
+    }
 #else
-    // In a non-federated program, the stop_tag will be the next microstep
-    _lf_set_stop_tag(env, (tag_t) {.time = env->current_tag.time, .microstep = env->current_tag.microstep+1});
-    // We signal instead of broadcast under the assumption that only
-    // one worker thread can call wait_until at a given time because
-    // the call to wait_until is protected by a mutex lock
-    lf_cond_signal(&env->event_q_changed);
+    // In a non-federated program, the stop_tag will be the next microstep after max_current_tag.
+    // Iterate over environments to set their stop tag and release their barrier.
+    for (int i = 0; i < num_environments; i++) {
+        lf_mutex_lock(&env[i].mutex);
+        _lf_set_stop_tag(&env[i], (tag_t) {.time = max_current_tag.time, .microstep = max_current_tag.microstep+1});
+        // Release the barrier on tag advancement.
+        _lf_decrement_tag_barrier_locked(&env[i]);
+
+        // We signal instead of broadcast under the assumption that only
+        // one worker thread can call wait_until at a given time because
+        // the call to wait_until is protected by a mutex lock
+        lf_cond_signal(&env->event_q_changed);
+        lf_mutex_unlock(&env[i].mutex);
+    }
 #endif
-    lf_mutex_unlock(&env->mutex);
 }
 
 /**
  * Trigger 'reaction'.
  *
+ * @param env Environment within which we are executing.
  * @param reaction The reaction.
  * @param worker_number The ID of the worker that is making this call. 0 should be
  *  used if there is only one worker (e.g., when the program is using the
@@ -668,6 +632,8 @@ void _lf_request_stop(environment_t *env) {
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
 #ifdef MODAL_REACTORS
         // Check if reaction is disabled by mode inactivity
         if (_lf_mode_is_active(reaction->mode)) {
@@ -688,20 +654,32 @@ void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_n
  * and for the federated execution, waiting for a proper coordinated start.
  *
  * This assumes the mutex lock is held by the caller.
+ * @param env Environment within which we are executing.
  */
 void _lf_initialize_start_tag(environment_t *env) {
+    assert(env != GLOBAL_ENVIRONMENT);
 
     // Add reactions invoked at tag (0,0) (including startup reactions) to the reaction queue
     _lf_trigger_startup_reactions(env);
 
 #ifdef FEDERATED
-    // Reset status fields before talking to the RTI to set network port
-    // statuses to unknown
-    reset_status_fields_on_input_port_triggers();
+    // If env is the environment for the top-level enclave, then initialize the federate.
+    environment_t *top_level_env;
+    _lf_get_environments(&top_level_env);
+    if (env == top_level_env) {
+        // Reset status fields before talking to the RTI to set network port
+        // statuses to unknown
+        reset_status_fields_on_input_port_triggers();
 
-    // Get a start_time from the RTI
-    synchronize_with_other_federates(env); // Resets start_time in federated execution according to the RTI.
+        // Get a start_time from the RTI
+        synchronize_with_other_federates(); // Resets start_time in federated execution according to the RTI.
+    }
+    // The start time will likely have changed. Adjust the current tag and stop tag.
     env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
+    if (duration >= 0LL) {
+        // A duration has been specified. Recalculate the stop time.
+       env->stop_tag = ((tag_t) {.time = start_time + duration, .microstep = 0});
+    }
 #endif
 
     _lf_initialize_timers(env);
@@ -755,7 +733,7 @@ void _lf_initialize_start_tag(environment_t *env) {
     // from exceeding the timestamp of the message. It will remove that barrier
     // once the complete message has been read. Here, we wait for that barrier
     // to be removed, if appropriate before proceeding to executing tag (0,0).
-    _lf_wait_on_global_tag_barrier(env, (tag_t){.time=start_time,.microstep=0});
+    _lf_wait_on_tag_barrier(env, (tag_t){.time=start_time,.microstep=0});
 #endif // FEDERATED_DECENTRALIZED
 
     // Set the following boolean so that other thread(s), including federated threads,
@@ -771,10 +749,15 @@ int worker_thread_count = 0;
  * The mutex should NOT be locked when this function is called. It might acquire
  * the mutex when scheduling the reactions that are triggered as a result of
  * executing the deadline violation handler on the 'reaction', if it exists.
+ * @param env Environment within which we are executing.
+ * @param worker_number The ID of the worker.
+ * @param reaction The reaction whose deadline has been violated.
  *
  * @return true if a deadline violation occurred. false otherwise.
  */
 bool _lf_worker_handle_deadline_violation_for_reaction(environment_t *env, int worker_number, reaction_t* reaction) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     bool violation_occurred = false;
     // If the reaction has a deadline, compare to current physical time
     // and invoke the deadline violation reaction instead of the reaction function
@@ -812,6 +795,9 @@ bool _lf_worker_handle_deadline_violation_for_reaction(environment_t *env, int w
  * The mutex should NOT be locked when this function is called. It might acquire
  * the mutex when scheduling the reactions that are triggered as a result of
  * executing the STP violation handler on the 'reaction', if it exists.
+ * @param env Environment within which we are executing.
+ * @param worker_number The ID of the worker.
+ * @param reaction The reaction whose STP offset has been violated.
  *
  * @return true if an STP violation occurred. false otherwise.
  */
@@ -870,6 +856,9 @@ bool _lf_worker_handle_STP_violation_for_reaction(environment_t* env, int worker
  * the mutex when scheduling the reactions that are triggered as a result of
  * executing the deadline or STP violation handler(s) on the 'reaction', if they
  * exist.
+ * @param env Environment within which we are executing.
+ * @param worker_number The ID of the worker.
+ * @param reaction The reaction.
  *
  * @return true if a violation occurred. false otherwise.
  */
@@ -887,6 +876,9 @@ bool _lf_worker_handle_violations(environment_t *env, int worker_number, reactio
  * The mutex should NOT be locked when this function is called. It might acquire
  * the mutex when scheduling the reactions that are triggered as a result of
  * executing 'reaction'.
+ * @param env Environment within which we are executing.
+ * @param worker_number The ID of the worker.
+ * @param reaction The reaction to invoke.
  */
 void _lf_worker_invoke_reaction(environment_t *env, int worker_number, reaction_t* reaction) {
     LF_PRINT_LOG("Worker %d: Invoking reaction %s at elapsed tag " PRINTF_TAG ".",
@@ -907,9 +899,12 @@ void _lf_worker_invoke_reaction(environment_t *env, int worker_number, reaction_
  * The main looping logic of each LF worker thread.
  * This function assumes the caller holds the mutex lock.
  *
+ * @param env Environment within which we are executing.
  * @param worker_number The number assigned to this worker thread
  */
 void _lf_worker_do_work(environment_t *env, int worker_number) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     // Keep track of whether we have decremented the idle thread count.
     // Obtain a reaction from the scheduler that is ready to execute
     // (i.e., it is not blocked by concurrently executing reactions
@@ -951,9 +946,13 @@ void _lf_worker_do_work(environment_t *env, int worker_number) {
  * Worker thread for the thread pool.
  * This acquires the mutex lock and releases it to wait for time to
  * elapse or for asynchronous events and also releases it to execute reactions.
+ * @param arg Environment within which the worker should execute.
  */
 void* worker(void* arg) {
     environment_t *env = (environment_t* ) arg;
+
+    assert(env != GLOBAL_ENVIRONMENT);
+
     lf_mutex_lock(&env->mutex);
     int worker_number = worker_thread_count++;
     LF_PRINT_LOG("Worker thread %d started.", worker_number);
@@ -984,8 +983,11 @@ void* worker(void* arg) {
 /**
  * If DEBUG logging is enabled, prints the status of the event queue,
  * the reaction queue, and the executing queue.
+ * @param env Environment within which we are executing.
  */
 void lf_print_snapshot(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     if(LOG_LEVEL > LOG_LEVEL_LOG) {
         LF_PRINT_DEBUG(">>> START Snapshot");
         LF_PRINT_DEBUG("Pending:");
@@ -1000,6 +1002,8 @@ void lf_print_snapshot(environment_t* env) {
 
 // Start threads in the thread pool.
 void start_threads(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     LF_PRINT_LOG("Starting %u worker threads in environment", env->num_workers);
     for (unsigned int i = 0; i < env->num_workers; i++) {
         if (lf_thread_create(&env->thread_ids[i], worker, env) != 0) {
@@ -1010,7 +1014,6 @@ void start_threads(environment_t* env) {
 
 /**
  * @brief Determine the number of workers.
- *
  */
 void determine_number_of_workers(void) {
     // If _lf_number_of_workers is 0, it means that it was not provided on
@@ -1169,13 +1172,16 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 
 /**
  * @brief Notify of new event by broadcasting on a condition variable. 
+ * @param env Environment within which we are executing.
  */
 int lf_notify_of_event(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
     return lf_cond_broadcast(&env->event_q_changed);
 }
 
 /**
  * @brief Enter critical section by locking the global mutex.
+ * @param env Environment within which we are executing or GLOBAL_ENVIRONMENT.
  */
 int lf_critical_section_enter(environment_t* env) {
     if (env == GLOBAL_ENVIRONMENT) {
@@ -1187,6 +1193,7 @@ int lf_critical_section_enter(environment_t* env) {
 
 /**
  * @brief Leave a critical section by unlocking the global mutex.
+ * @param env Environment within which we are executing or GLOBAL_ENVIRONMENT.
  */
 int lf_critical_section_exit(environment_t* env) {
     if (env == GLOBAL_ENVIRONMENT) {

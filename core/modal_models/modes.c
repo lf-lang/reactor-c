@@ -557,6 +557,7 @@ void _lf_terminate_modal_reactors(environment_t* env) {
     _lf_unsused_suspended_events_head = NULL;
 }
 void _lf_initialize_modes(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
     if (env->modes) {
         _lf_initialize_mode_states(
             env, 
@@ -565,6 +566,7 @@ void _lf_initialize_modes(environment_t* env) {
     }
 }
 void _lf_handle_mode_changes(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
     if (env->modes) {
         _lf_process_mode_changes(
             env, 
@@ -579,6 +581,7 @@ void _lf_handle_mode_changes(environment_t* env) {
 }
 
 void _lf_handle_mode_triggered_reactions(environment_t* env) {
+    assert(env != GLOBAL_ENVIRONMENT);
     if (env->modes) {
         _lf_handle_mode_startup_reset_reactions(
             env, env->startup_reactions, env->startup_reactions_size,

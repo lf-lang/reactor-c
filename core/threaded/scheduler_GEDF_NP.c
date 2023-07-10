@@ -215,6 +215,7 @@ void _lf_sched_wait_for_work(lf_scheduler_t* scheduler, size_t worker_number) {
  * This has to be called before other functions of the scheduler can be used.
  * If the scheduler is already initialized, this will be a no-op.
  *
+ * @param env Environment within which we are executing.
  * @param number_of_workers Indicate how many workers this scheduler will be
  *  managing.
  * @param option Pointer to a `sched_params_t` struct containing additional
@@ -225,6 +226,8 @@ void lf_sched_init(
     size_t number_of_workers,
     sched_params_t* params
 ) {
+    assert(env != GLOBAL_ENVIRONMENT);
+
     LF_PRINT_DEBUG("Scheduler: Initializing with %zu workers", number_of_workers);
     if(!init_sched_instance(env, &env->scheduler, number_of_workers, params)) {
         // Already initialized

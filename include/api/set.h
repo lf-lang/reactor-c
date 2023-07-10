@@ -213,7 +213,7 @@ do { \
 #endif // CTARGET_SET
 
 // For simplicity and backward compatability, dont require the environment-pointer when calling the timing API.
-// Since this is always done from the context of a reaction `self` is in scope and is a pointer to the self-struct
+// As long as this is done from the context of a reaction, `self` is in scope and is a pointer to the self-struct
 // of the current reactor. 
 
 // The fully static (FS) runtime, uses time local to each reactor. If this is the case

@@ -56,7 +56,7 @@ PyObject *globalPythonModuleDict = NULL;
 // Import pickle to enable native serialization
 PyObject* global_pickler = NULL;
 
-environment_t* global_environment = NULL;
+environment_t* top_level_environment = NULL;
 
 
 //////////// schedule Function(s) /////////////
@@ -151,14 +151,14 @@ int lf_reactor_c_main(int argc, const char *argv[]);
  * Prototype for lf_request_stop().
  * @see reactor.h
  */
-void _lf_request_stop(environment_t* env);
+void lf_request_stop(void);
 
 ///////////////// Other useful functions /////////////////////
 /**
  * Stop execution at the conclusion of the current logical time.
  */
 PyObject* py_request_stop(PyObject *self, PyObject *args) {
-    _lf_request_stop(global_environment);
+    lf_request_stop();
 
     Py_INCREF(Py_None);
     return Py_None;
@@ -263,8 +263,8 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
         }
     }
 
-    // Store a reference to the global environment
-    int num_environments = _lf_get_environments(&global_environment);
+    // Store a reference to the top-level environment
+    int num_environments = _lf_get_environments(&top_level_environment);
     lf_assert(num_environments == 1, "Python target only supports programs with a single environment/enclave");
 
     LF_PRINT_DEBUG("Initialized the Python interpreter.");
@@ -294,7 +294,7 @@ static PyMethodDef GEN_NAME(MODULE_NAME,_methods)[] = {
   {"schedule_copy", py_schedule_copy, METH_VARARGS, NULL},
   {"tag", py_lf_tag, METH_NOARGS, NULL},
   {"tag_compare", py_tag_compare, METH_VARARGS, NULL},
-  {"request_stop", py_request_stop, METH_NOARGS, NULL},
+  {"request_stop", py_request_stop, METH_NOARGS, "Request stop"},
   {NULL, NULL, 0, NULL}
 };
 
