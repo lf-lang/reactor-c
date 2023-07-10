@@ -239,5 +239,5 @@ do { \
 #endif
 
 // FIXME: How should this be implemented for the FS scheduler?
-#define lf_request_stop() _lf_request_stop(self->base.environment)
+// #define lf_request_stop() _lf_request_stop(self->base.environment)
 
