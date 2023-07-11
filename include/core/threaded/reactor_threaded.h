@@ -2,7 +2,7 @@
 #define REACTOR_THREADED_H
 #include "lf_types.h"
 
-void try_advance_level(size_t*);
+void try_advance_level(environment_t*, size_t*);
 
 /**
  * Enqueue network input control reactions that determine if the trigger for a

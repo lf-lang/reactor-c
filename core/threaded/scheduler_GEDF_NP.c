@@ -88,7 +88,7 @@ int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
     // a mutex.
     for (; scheduler->next_reaction_level <=
            scheduler->max_reaction_level;
-         try_advance_level(&scheduler->next_reaction_level)) {
+         try_advance_level(&scheduler->env, &scheduler->next_reaction_level)) {
         tmp_queue = ((pqueue_t**)scheduler->triggered_reactions)
                         [scheduler->next_reaction_level];
         size_t reactions_to_execute = pqueue_size(tmp_queue);

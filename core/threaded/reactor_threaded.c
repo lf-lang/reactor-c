@@ -548,7 +548,7 @@ void _lf_next_locked(environment_t *env) {
 
     _lf_start_time_step(env);
 
-    if (lf_tag_compare(env->current_tag, stop_tag) >= 0) {
+    if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {
         // Pop shutdown events
         LF_PRINT_DEBUG("Scheduling shutdown reactions.");
         _lf_trigger_shutdown_reactions(env);
@@ -905,9 +905,9 @@ void _lf_worker_invoke_reaction(environment_t *env, int worker_number, reaction_
  * 
  * @param next_reaction_level
  */
-void try_advance_level(size_t* next_reaction_level) {
+void try_advance_level(environment_t* env, size_t* next_reaction_level) {
     #ifdef FEDERATED
-    stall_advance_level_federation(*next_reaction_level);
+    stall_advance_level_federation(env, *next_reaction_level);
     #endif
     *next_reaction_level += 1;
 }
@@ -928,7 +928,7 @@ void _lf_worker_do_work(environment_t *env, int worker_number) {
     // lf_print_snapshot(); // This is quite verbose (but very useful in debugging reaction deadlocks).
     reaction_t* current_reaction_to_execute = NULL;
 #ifdef FEDERATED
-    stall_advance_level_federation(0);
+    stall_advance_level_federation(env, 0);
 #endif
     while ((current_reaction_to_execute =
             lf_sched_get_ready_reaction(env->scheduler, worker_number))

@@ -356,7 +356,7 @@ void send_port_absent_to_federate(environment_t* env, interval_t, unsigned short
  * Enqueue network output control reactions that will send a PORT_ABSENT
  * message to downstream federates if a given network output port is not present.
  */
-void enqueue_network_output_control_reactions(void);
+void enqueue_network_output_control_reactions(environment_t* env);
 
 /**
  * @brief Prevent the advancement to the next level of the reaction queue until the
@@ -364,7 +364,7 @@ void enqueue_network_output_control_reactions(void);
  *
  * @param next_reaction_level
  */
-void stall_advance_level_federation(size_t);
+void stall_advance_level_federation(environment_t*, size_t);
 
 /**
  * @brief Attempts to update the max level the reaction queue is allowed to advance to

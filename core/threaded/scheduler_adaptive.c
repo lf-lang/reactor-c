@@ -465,7 +465,7 @@ static void advance_level_and_unlock(lf_scheduler_t* scheduler, size_t worker) {
                 return;
             }
         } else {
-            set_level(scheduler, try_advance_level(&current_level));
+            set_level(scheduler, try_advance_level(scheduler->env, &current_level));
         }
         size_t total_num_reactions = get_num_reactions(scheduler);
         if (total_num_reactions) {

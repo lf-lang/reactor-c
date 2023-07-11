@@ -30,7 +30,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The main entry point is synchronize_with_other_federates().
  */
 
-//#ifdef FEDERATED
+#ifdef FEDERATED
 #ifdef PLATFORM_ARDUINO
 #error To be implemented. No support for federation on Arduino yet.
 #else
@@ -1422,7 +1422,7 @@ void enqueue_network_output_control_reactions(environment_t* env){
         return;
     }
 #endif
-    LF_PRINT_DEBUG("Enqueueing port absent reactions at time %lld.", (long long) (current_tag.time - start_time));
+    LF_PRINT_DEBUG("Enqueueing port absent reactions at time %lld.", (long long) (env->current_tag.time - start_time));
     if (num_sender_reactions == 0) {
         LF_PRINT_DEBUG("No port absent reactions.");
         return;
@@ -1728,15 +1728,15 @@ void handle_message(int socket, int fed_id) {
  *
  * @param next_reaction_level
  */
-void stall_advance_level_federation(size_t next_reaction_level) {
+void stall_advance_level_federation(environment_t* env, size_t next_reaction_level) {
     LF_PRINT_DEBUG("Trying to acquire the global mutex.");
-    lf_mutex_lock(&mutex);
+    lf_mutex_lock(&env->mutex);
     LF_PRINT_DEBUG("Waiting on MLAA with next_reaction_level %d and MLAA %d.", next_reaction_level, max_level_allowed_to_advance);
     while (((int) next_reaction_level) >= max_level_allowed_to_advance) {
         lf_cond_wait(&port_status_changed);
     };
-    LF_PRINT_DEBUG("Exiting wait with MLAA %d and next_reaction_level %d at time %lld.", max_level_allowed_to_advance, next_reaction_level, (long long) (current_tag.time - start_time));
-    lf_mutex_unlock(&mutex);
+    LF_PRINT_DEBUG("Exiting wait with MLAA %d and next_reaction_level %d.", max_level_allowed_to_advance, next_reaction_level);
+    lf_mutex_unlock(&env->mutex);
 }
 
 /**
@@ -1861,7 +1861,7 @@ void handle_tagged_message(int socket, int fed_id) {
     // to exit. The port status is on the other hand changed in this thread, and thus,
     // can be checked in this scenario without this race condition. The message with
     // intended_tag of 9 in this case needs to wait one microstep to be processed.
-    if (lf_tag_compare(intended_tag, lf_tag()) <= 0 && // The event is meant for the current or a previous tag.
+    if (lf_tag_compare(intended_tag, lf_tag(env)) <= 0 && // The event is meant for the current or a previous tag.
             (action->trigger->status == unknown ||             // if the status of the port is still unknown.
              _lf_execution_started == false)         // Or, execution hasn't even started, so it's safe to handle this event.
     ) {
@@ -2010,22 +2010,24 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
  * This function assumes that the caller holds the mutex.
  */
 void update_max_level(tag_t tag, bool is_provisional) {
+    environment_t *env;
+    _lf_get_environments(&env);
     max_level_allowed_to_advance = INT_MAX;
     LF_PRINT_DEBUG("last_TAG=" PRINTF_TIME, tag.time);
-    if ((lf_tag_compare(current_tag, tag) < 0) || (
-        lf_tag_compare(current_tag, tag) == 0 && !is_provisional
+    if ((lf_tag_compare(env->current_tag, tag) < 0) || (
+        lf_tag_compare(env->current_tag, tag) == 0 && !is_provisional
     )) {
-        LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME " with last_TAG=" PRINTF_TIME " and current time " PRINTF_TIME ".", max_level_allowed_to_advance, lf_time_logical_elapsed(), tag.time, current_tag.time);
+        LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME " with last_TAG=" PRINTF_TIME " and current time " PRINTF_TIME ".", max_level_allowed_to_advance, lf_time_logical_elapsed(env), tag.time, env->current_tag.time);
         return;  // Safe to complete the current tag
     }
     for (int i = 0; i < _lf_zero_delay_action_table_size; i++) {
         lf_action_base_t* input_port_action = _lf_zero_delay_action_table[i];
-        if (lf_tag_compare(current_tag,
+        if (lf_tag_compare(env->current_tag,
             input_port_action->trigger->last_known_status_tag) > 0 && !input_port_action->trigger->is_physical) {
             max_level_allowed_to_advance = LF_MIN(max_level_allowed_to_advance, ((int) LF_LEVEL(input_port_action->trigger->reactions[0]->index)));
         }
     }
-    LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME " with %lld items in zero-delay action table.", max_level_allowed_to_advance, lf_time_logical_elapsed(), (long long) _lf_zero_delay_action_table_size);
+    LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME " with %lld items in zero-delay action table.", max_level_allowed_to_advance, lf_time_logical_elapsed(env), (long long) _lf_zero_delay_action_table_size);
 }
 
 #ifdef FEDERATED_DECENTRALIZED
