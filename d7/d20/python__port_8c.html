@@ -100,9 +100,13 @@ $(document).ready(function(){initNavTree('d7/d20/python__port_8c.html','../../')
 <code>#include &lt;Python.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="../../d0/d5e/python__port_8h_source.html">python_port.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../dc/d85/reactor_8h_source.html">reactor.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../dc/d65/api_8h_source.html">api/api.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d4/d13/set_8h_source.html">api/set.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:ad6dcab80ca45bdb108bb8a2b634e6175"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d20/python__port_8c.html#ad6dcab80ca45bdb108bb8a2b634e6175">python_count_decrement</a> (void *py_object)</td></tr>
+<tr class="separator:ad6dcab80ca45bdb108bb8a2b634e6175"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2c72e733e1bf862890a103f24df03065"><td class="memItemLeft" align="right" valign="top">PyObject *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d20/python__port_8c.html#a2c72e733e1bf862890a103f24df03065">py_port_set</a> (PyObject *self, PyObject *args)</td></tr>
 <tr class="separator:a2c72e733e1bf862890a103f24df03065"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac5bef98b1bc935e23c1e34626e9a97e5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d20/python__port_8c.html#ac5bef98b1bc935e23c1e34626e9a97e5">py_port_capsule_dealloc</a> (<a class="el" href="../../d2/dab/structgeneric__port__capsule__struct.html">generic_port_capsule_struct</a> *self)</td></tr>
@@ -458,6 +462,30 @@ Functions intitializing and freeing memory for environments.</h1>
 
 </div>
 </div>
+<a id="ad6dcab80ca45bdb108bb8a2b634e6175" name="ad6dcab80ca45bdb108bb8a2b634e6175"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad6dcab80ca45bdb108bb8a2b634e6175">&#9670;&#160;</a></span>python_count_decrement()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void python_count_decrement </td>
+          <td>(</td>
+          <td class="paramtype">void *&#160;</td>
+          <td class="paramname"><em>py_object</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Decrease the reference count of PyObject. When the reference count hits zero, Python can free its memory. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">py_object</td><td>A PyObject with count 1 or greater. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <h2 class="groupheader">Variable Documentation</h2>
 <a id="a62041404a994d82355bc47e05acf1171" name="a62041404a994d82355bc47e05acf1171"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a62041404a994d82355bc47e05acf1171">&#9670;&#160;</a></span>py_port_as_mapping</h2>
@@ -475,9 +503,9 @@ Functions intitializing and freeing memory for environments.</h1>
 <div class="line">    (binaryfunc) <a class="code hl_function" href="../../d7/d20/python__port_8c.html#af8feaddbacc92cf4def1ee1c986b2a7f">py_port_capsule_get_item</a>,</div>
 <div class="line">    (objobjargproc) <a class="code hl_function" href="../../d7/d20/python__port_8c.html#a04a6750dc5e898b0c351ec629653252d">py_port_capsule_assign_get_item</a></div>
 <div class="line">}</div>
-<div class="ttc" id="apython__port_8c_html_a04a6750dc5e898b0c351ec629653252d"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#a04a6750dc5e898b0c351ec629653252d">py_port_capsule_assign_get_item</a></div><div class="ttdeci">int py_port_capsule_assign_get_item(PyObject *self, PyObject *item, PyObject *value)</div><div class="ttdef"><b>Definition</b> python_port.c:286</div></div>
-<div class="ttc" id="apython__port_8c_html_a54ea5376506ae857447855e3a1d7c4c1"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#a54ea5376506ae857447855e3a1d7c4c1">py_port_length</a></div><div class="ttdeci">Py_ssize_t py_port_length(PyObject *self)</div><div class="ttdef"><b>Definition</b> python_port.c:297</div></div>
-<div class="ttc" id="apython__port_8c_html_af8feaddbacc92cf4def1ee1c986b2a7f"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#af8feaddbacc92cf4def1ee1c986b2a7f">py_port_capsule_get_item</a></div><div class="ttdeci">PyObject * py_port_capsule_get_item(PyObject *self, PyObject *key)</div><div class="ttdef"><b>Definition</b> python_port.c:224</div></div>
+<div class="ttc" id="apython__port_8c_html_a04a6750dc5e898b0c351ec629653252d"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#a04a6750dc5e898b0c351ec629653252d">py_port_capsule_assign_get_item</a></div><div class="ttdeci">int py_port_capsule_assign_get_item(PyObject *self, PyObject *item, PyObject *value)</div><div class="ttdef"><b>Definition</b> python_port.c:300</div></div>
+<div class="ttc" id="apython__port_8c_html_a54ea5376506ae857447855e3a1d7c4c1"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#a54ea5376506ae857447855e3a1d7c4c1">py_port_length</a></div><div class="ttdeci">Py_ssize_t py_port_length(PyObject *self)</div><div class="ttdef"><b>Definition</b> python_port.c:311</div></div>
+<div class="ttc" id="apython__port_8c_html_af8feaddbacc92cf4def1ee1c986b2a7f"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#af8feaddbacc92cf4def1ee1c986b2a7f">py_port_capsule_get_item</a></div><div class="ttdeci">PyObject * py_port_capsule_get_item(PyObject *self, PyObject *key)</div><div class="ttdef"><b>Definition</b> python_port.c:238</div></div>
 </div><!-- fragment --><p>Methods that convert a LinguaFranca.port_capsule into a mapping, which allows it to be subscriptble. </p>
 
 </div>
@@ -522,7 +550,7 @@ Functions intitializing and freeing memory for environments.</h1>
 <div class="line">    {<span class="stringliteral">&quot;set&quot;</span>, (PyCFunction)<a class="code hl_function" href="../../d7/d20/python__port_8c.html#a2c72e733e1bf862890a103f24df03065">py_port_set</a>, METH_VARARGS, <span class="stringliteral">&quot;Set value of the port as well as the is_present field&quot;</span>},</div>
 <div class="line">    {NULL}  </div>
 <div class="line">}</div>
-<div class="ttc" id="apython__port_8c_html_a2c72e733e1bf862890a103f24df03065"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#a2c72e733e1bf862890a103f24df03065">py_port_set</a></div><div class="ttdeci">PyObject * py_port_set(PyObject *self, PyObject *args)</div><div class="ttdef"><b>Definition</b> python_port.c:71</div></div>
+<div class="ttc" id="apython__port_8c_html_a2c72e733e1bf862890a103f24df03065"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#a2c72e733e1bf862890a103f24df03065">py_port_set</a></div><div class="ttdeci">PyObject * py_port_set(PyObject *self, PyObject *args)</div><div class="ttdef"><b>Definition</b> python_port.c:83</div></div>
 </div><!-- fragment -->
 </div>
 </div>
@@ -553,14 +581,14 @@ Functions intitializing and freeing memory for environments.</h1>
 <div class="line">    .tp_members = <a class="code hl_variable" href="../../d7/d20/python__port_8c.html#a3bbf9118dbaecd95ae915d88b61eca05">py_port_capsule_members</a>,</div>
 <div class="line">    .tp_methods = <a class="code hl_variable" href="../../d7/d20/python__port_8c.html#afbb1c965b4aeb9cb3f53d01eee145c75">py_port_capsule_methods</a>,</div>
 <div class="line">}</div>
-<div class="ttc" id="apython__port_8c_html_a0df3007d09959d3b711ce3be489229f0"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#a0df3007d09959d3b711ce3be489229f0">py_port_iter</a></div><div class="ttdeci">PyObject * py_port_iter(PyObject *self)</div><div class="ttdef"><b>Definition</b> python_port.c:158</div></div>
-<div class="ttc" id="apython__port_8c_html_a3bbf9118dbaecd95ae915d88b61eca05"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#a3bbf9118dbaecd95ae915d88b61eca05">py_port_capsule_members</a></div><div class="ttdeci">PyMemberDef py_port_capsule_members[]</div><div class="ttdef"><b>Definition</b> python_port.c:364</div></div>
-<div class="ttc" id="apython__port_8c_html_a3f39164e03f96c48470e0b355b313a28"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#a3f39164e03f96c48470e0b355b313a28">py_port_capsule_init</a></div><div class="ttdeci">int py_port_capsule_init(generic_port_capsule_struct *self, PyObject *args, PyObject *kwds)</div><div class="ttdef"><b>Definition</b> python_port.c:329</div></div>
-<div class="ttc" id="apython__port_8c_html_a62041404a994d82355bc47e05acf1171"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#a62041404a994d82355bc47e05acf1171">py_port_as_mapping</a></div><div class="ttdeci">PyMappingMethods py_port_as_mapping</div><div class="ttdef"><b>Definition</b> python_port.c:307</div></div>
-<div class="ttc" id="apython__port_8c_html_a9091de8ac46f8fc859a727d4dbd0b7a5"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#a9091de8ac46f8fc859a727d4dbd0b7a5">py_port_capsule_new</a></div><div class="ttdeci">PyObject * py_port_capsule_new(PyTypeObject *type, PyObject *args, PyObject *kwds)</div><div class="ttdef"><b>Definition</b> python_port.c:135</div></div>
-<div class="ttc" id="apython__port_8c_html_ac5bef98b1bc935e23c1e34626e9a97e5"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#ac5bef98b1bc935e23c1e34626e9a97e5">py_port_capsule_dealloc</a></div><div class="ttdeci">void py_port_capsule_dealloc(generic_port_capsule_struct *self)</div><div class="ttdef"><b>Definition</b> python_port.c:109</div></div>
-<div class="ttc" id="apython__port_8c_html_acd4ac4c21fd4cba48ae8ab18da54b1f4"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#acd4ac4c21fd4cba48ae8ab18da54b1f4">py_port_iter_next</a></div><div class="ttdeci">PyObject * py_port_iter_next(PyObject *self)</div><div class="ttdef"><b>Definition</b> python_port.c:172</div></div>
-<div class="ttc" id="apython__port_8c_html_afbb1c965b4aeb9cb3f53d01eee145c75"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#afbb1c965b4aeb9cb3f53d01eee145c75">py_port_capsule_methods</a></div><div class="ttdeci">PyMethodDef py_port_capsule_methods[]</div><div class="ttdef"><b>Definition</b> python_port.c:378</div></div>
+<div class="ttc" id="apython__port_8c_html_a0df3007d09959d3b711ce3be489229f0"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#a0df3007d09959d3b711ce3be489229f0">py_port_iter</a></div><div class="ttdeci">PyObject * py_port_iter(PyObject *self)</div><div class="ttdef"><b>Definition</b> python_port.c:172</div></div>
+<div class="ttc" id="apython__port_8c_html_a3bbf9118dbaecd95ae915d88b61eca05"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#a3bbf9118dbaecd95ae915d88b61eca05">py_port_capsule_members</a></div><div class="ttdeci">PyMemberDef py_port_capsule_members[]</div><div class="ttdef"><b>Definition</b> python_port.c:378</div></div>
+<div class="ttc" id="apython__port_8c_html_a3f39164e03f96c48470e0b355b313a28"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#a3f39164e03f96c48470e0b355b313a28">py_port_capsule_init</a></div><div class="ttdeci">int py_port_capsule_init(generic_port_capsule_struct *self, PyObject *args, PyObject *kwds)</div><div class="ttdef"><b>Definition</b> python_port.c:343</div></div>
+<div class="ttc" id="apython__port_8c_html_a62041404a994d82355bc47e05acf1171"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#a62041404a994d82355bc47e05acf1171">py_port_as_mapping</a></div><div class="ttdeci">PyMappingMethods py_port_as_mapping</div><div class="ttdef"><b>Definition</b> python_port.c:321</div></div>
+<div class="ttc" id="apython__port_8c_html_a9091de8ac46f8fc859a727d4dbd0b7a5"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#a9091de8ac46f8fc859a727d4dbd0b7a5">py_port_capsule_new</a></div><div class="ttdeci">PyObject * py_port_capsule_new(PyTypeObject *type, PyObject *args, PyObject *kwds)</div><div class="ttdef"><b>Definition</b> python_port.c:149</div></div>
+<div class="ttc" id="apython__port_8c_html_ac5bef98b1bc935e23c1e34626e9a97e5"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#ac5bef98b1bc935e23c1e34626e9a97e5">py_port_capsule_dealloc</a></div><div class="ttdeci">void py_port_capsule_dealloc(generic_port_capsule_struct *self)</div><div class="ttdef"><b>Definition</b> python_port.c:123</div></div>
+<div class="ttc" id="apython__port_8c_html_acd4ac4c21fd4cba48ae8ab18da54b1f4"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#acd4ac4c21fd4cba48ae8ab18da54b1f4">py_port_iter_next</a></div><div class="ttdeci">PyObject * py_port_iter_next(PyObject *self)</div><div class="ttdef"><b>Definition</b> python_port.c:186</div></div>
+<div class="ttc" id="apython__port_8c_html_afbb1c965b4aeb9cb3f53d01eee145c75"><div class="ttname"><a href="../../d7/d20/python__port_8c.html#afbb1c965b4aeb9cb3f53d01eee145c75">py_port_capsule_methods</a></div><div class="ttdeci">PyMethodDef py_port_capsule_methods[]</div><div class="ttdef"><b>Definition</b> python_port.c:392</div></div>
 </div><!-- fragment -->
 </div>
 </div>
