@@ -25,15 +25,16 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /**
- * POSIX API support for the C target of Lingua Franca.
+ * FreeRTOS thread support. 
+ * For multicore devices, the SMP version of freertos is used.
  *
  * @author{Soroush Bateni <soroush@utdallas.edu>}
  *
  * All functions return 0 on success.
  */
 
-#ifndef LF_POSIX_THREADS_SUPPORT_H
-#define LF_POSIX_THREADS_SUPPORT_H
+#ifndef LF_FREERTOS_THREADS_SUPPORT_H
+#define LF_FREERTOS_THREADS_SUPPORT_H
 
 #include <pthread.h>
 
