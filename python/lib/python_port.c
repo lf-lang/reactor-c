@@ -51,15 +51,6 @@ void python_count_decrement(void* py_object) {
     Py_XDECREF((PyObject*)py_object);
 }
 
-/**
- * Decrease the reference count of PyObject for output port.
- * @param py_object A PyObject with count 1 or greater.
- */
-void output_port_destructor(void* py_object) {
-   Py_XDECREF((PyObject*)py_object);
-   Py_XDECREF((PyObject*)py_object);
-}
-
 //////////// set Function(s) /////////////
 /**
  * Set the value and is_present field of self which is of type
@@ -106,12 +97,12 @@ PyObject* py_port_set(PyObject* self, PyObject* args) {
     }
 
     if (val) {
-        LF_PRINT_DEBUG("Setting value %p.", val);
+        LF_PRINT_DEBUG("Setting value %p with reference count %d.", val, (int) Py_REFCNT(val));
         //Py_INCREF(val);
         //python_count_decrement(port->value);
        
         lf_token_t* token = lf_new_token((void*)port, val, 1);
-        lf_set_destructor(port, python_count_decrement); //change python_count_decrement to output_port_destructor would fix memory leak during federated execution. 
+        lf_set_destructor(port, python_count_decrement);
         lf_set_token(port, token);
         Py_INCREF(val);
        
