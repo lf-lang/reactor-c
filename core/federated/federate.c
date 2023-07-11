@@ -1251,32 +1251,6 @@ void set_network_port_status(int portID, port_status_t status) {
 }
 
 /**
- * Mark all status fields of unknown network input ports as absent.
- */
-// void mark_all_unknown_ports_as_absent() {
-//     for (int i = 0; i < _lf_action_table_size; i++) {
-//         lf_action_base_t* input_port_action = _lf_action_for_port(i);
-//         if (input_port_action->trigger->status == unknown) {
-//             set_network_port_status(i, absent);
-//         }
-//     }
-// }
-
-/**
- * Return true if there is an input control reaction blocked waiting for input.
- * This assumes the caller holds the mutex.
- */
-// bool is_input_control_reaction_blocked() {
-//     for (int i = 0; i < _lf_action_table_size; i++) {
-//         lf_action_base_t* input_port_action = _lf_action_for_port(i);
-//         if (input_port_action->trigger->is_a_control_reaction_waiting) {
-//             return true;
-//         }
-//     }
-//     return false;
-// }
-
-/**
  * Update the last known status tag of all network input ports
  * to the value of `tag`, unless that the provided `tag` is less
  * than the last_known_status_tag of the port. This is called when
