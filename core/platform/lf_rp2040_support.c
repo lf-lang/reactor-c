@@ -177,6 +177,15 @@ int _lf_unthreaded_notify_of_event() {
 // abstract the API so that the LF runtime remains portable.
 
 #ifdef LF_THREADED
+#warning "Baremetal threaded support only allows two threads of execution"
+
+// If threaded is enabled set number of workers
+// Compiler warning when NUMBER_OF_WORKERS > 2
+#if !defined(NUMBER_OF_WORKERS) || NUMBER_OF_WORKERS==0
+#undef NUMBER_OF_WORKERS
+#define NUMBER_OF_WORKERS 2
+#endif
+
 /**
  * @brief Get the number of cores on the host machine.
  * pico has two physical cores and runs only two worker threads 
@@ -192,7 +201,8 @@ void _pico_core_loader() {
     // alternatively use free-rtos an launch tasks
     /// TODO: create a dispatcher program that runs on the second core similar to rtic
     /// TODO: maybe assigning an enclave to core1 is the best path forward to avoid
-    // reimplementing a threading library 
+    // reimplementing a threading library
+
 }
 
 /**
@@ -207,6 +217,9 @@ int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arg
     /// run that function on core1 with provided args 
     // multicore_launch_core1(lf_thread);
     // fill thread instance
+    *thread = 
+    lf_thread(args)
+
 }
 
 /**
