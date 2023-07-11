@@ -36,6 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "tag.h"
 #include "lf_types.h"
+#include "environment.h"
 #include "platform.h"
 
 #ifndef ADVANCE_MESSAGE_INTERVAL
@@ -180,10 +181,10 @@ typedef struct federate_instance_t {
 
     /**
      * Used to prevent the federate from sending a REQUEST_STOP
-     * message multiple times to the RTI.
-     * This variable should only be accessed while holding the mutex lock.
+     * message if it has already received a stop request from the RTI.
+     * This variable should only be accessed while holding a mutex lock.
      */
-    bool sent_a_stop_request_to_rti;
+    bool received_stop_request_from_rti;
 
     /**
      * A record of the most recently sent LTC (logical tag complete) message.
@@ -213,6 +214,8 @@ typedef struct federate_instance_t {
      */
     instant_t min_delay_from_physical_action_to_federate_output;
 
+    // Trace object
+    trace_t* trace;
 } federate_instance_t;
 
 #ifdef FEDERATED_DECENTRALIZED
@@ -339,6 +342,7 @@ void* handle_p2p_connections_from_federates(void*);
  * remote federate that the current federate will not produce an event
  * on this network port at the current logical time.
  *
+ * @param env The environment in which we are executing
  * @param additional_delay The offset applied to the timestamp
  *  using after. The additional delay will be greater or equal to zero
  *  if an after is used on the connection. If no after is given in the
@@ -346,7 +350,7 @@ void* handle_p2p_connections_from_federates(void*);
  * @param port_ID The ID of the receiving port.
  * @param fed_ID The fed ID of the receiving federate.
  */
-void send_port_absent_to_federate(interval_t, unsigned short, unsigned short);
+void send_port_absent_to_federate(environment_t* env, interval_t, unsigned short, unsigned short);
 
 /**
  * Enqueue network output control reactions that will send a PORT_ABSENT
@@ -416,6 +420,7 @@ int send_message(int message_type,
  * @note This function is similar to send_message() except that it
  *   sends timed messages and also contains logics related to time.
  *
+ * @param env The environment in which we are executing
  * @param additional_delay The offset applied to the timestamp
  *  using after. The additional delay will be greater or equal to zero
  *  if an after is used on the connection. If no after is given in the
@@ -432,7 +437,8 @@ int send_message(int message_type,
  * @param message The message.
  * @return 1 if the message has been sent, 0 otherwise.
  */
-int send_timed_message(interval_t,
+int send_timed_message(environment_t*,
+                        interval_t,
                         int,
                         unsigned short,
                         unsigned short,
@@ -446,13 +452,8 @@ int send_timed_message(interval_t,
  * and _lf_rti_socket_TCP is valid. It then sends the current logical
  * time to the RTI and waits for the RTI to respond with a specified
  * time. It starts a thread to listen for messages from the RTI.
- * It then waits for physical time to match the specified time,
- * sets current logical time to the time returned by the RTI,
- * and then returns. If --fast was specified, then this does
- * not wait for physical time to match the logical start time
- * returned by the RTI.
  */
-void synchronize_with_other_federates(void);
+void synchronize_with_other_federates();
 
 /**
  * Wait until the status of network port "port_ID" is known.
@@ -462,9 +463,10 @@ void synchronize_with_other_federates(void);
  *
  * This function assumes the holder does not hold a mutex.
  *
+ * @param env The environment in which we are executing
  * @param port_ID The ID of the network port
  * @param STAA The safe-to-assume-absent threshold for the port
  */
-void wait_until_port_status_known(int portID, interval_t STAA);
+void wait_until_port_status_known(environment_t* env, int portID, interval_t STAA);
 
 #endif // FEDERATE_H

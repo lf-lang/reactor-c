@@ -60,6 +60,7 @@ include_directories(${IncludeDir}/utils)
 # Declare a new executable target and list all its sources
 add_executable(
     RTI
+    enclave.c
     rti.c
     rti_lib.c
     ${CoreLib}/trace.c
