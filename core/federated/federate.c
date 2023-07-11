@@ -1216,6 +1216,8 @@ instant_t get_start_time_from_rti(instant_t my_physical_time) {
 
 extern lf_action_base_t* _lf_action_table[];
 extern size_t _lf_action_table_size;
+extern lf_action_base_t* _lf_zero_delay_action_table[];
+extern size_t _lf_zero_delay_action_table_size;
 extern reaction_t* network_input_reactions[];
 extern size_t num_network_input_reactions;
 extern reaction_t* port_absent_reaction[];
@@ -1347,7 +1349,7 @@ void update_last_known_status_on_input_port(tag_t tag, int port_id) {
         lf_cond_broadcast(&port_status_changed);
         //}
     } else {
-        lf_print_warning("Attempt to update the last known status tag "
+        LF_PRINT_DEBUG("Attempt to update the last known status tag "
                "of network input port %d to an earlier tag was ignored.", port_id);
     }
 }
@@ -2147,14 +2149,14 @@ void update_max_level(tag_t tag, bool is_provisional) {
         LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME " with last_TAG=" PRINTF_TIME " and current time " PRINTF_TIME ".", max_level_allowed_to_advance, lf_time_logical_elapsed(), tag.time, current_tag.time);
         return;  // Safe to complete the current tag
     }
-    for (int i = 0; i < _lf_action_table_size; i++) {
-        lf_action_base_t* input_port_action = _lf_action_for_port(i);
+    for (int i = 0; i < _lf_zero_delay_action_table_size; i++) {
+        lf_action_base_t* input_port_action = _lf_zero_delay_action_table[i];
         if (lf_tag_compare(current_tag,
             input_port_action->trigger->last_known_status_tag) > 0 && !input_port_action->trigger->is_physical) {
             max_level_allowed_to_advance = LF_MIN(max_level_allowed_to_advance, ((int) LF_LEVEL(input_port_action->trigger->reactions[0]->index)));
         }
     }
-    LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME " with %lld items in action table.", max_level_allowed_to_advance, lf_time_logical_elapsed(), (long long) _lf_action_table_size);
+    LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME " with %lld items in zero-delay action table.", max_level_allowed_to_advance, lf_time_logical_elapsed(), (long long) _lf_zero_delay_action_table_size);
 }
 
 #ifdef FEDERATED_DECENTRALIZED
