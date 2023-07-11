@@ -1671,7 +1671,7 @@ static void handle_port_absent_message(int socket, int fed_id) {
     trigger_t* network_input_port_action = _lf_action_for_port(port_id)->trigger;
     if (lf_tag_compare(intended_tag,
             network_input_port_action->last_known_status_tag) < 0) {
-        lf_mutex_unlock(&mutex);
+        lf_mutex_unlock(&env->mutex);
     }
 #endif // In centralized coordination, a TAG message from the RTI
        // can set the last_known_status_tag to a future tag where messages
@@ -2057,42 +2057,44 @@ int id_of_action(lf_action_base_t* input_port_action) {
  */
 #ifdef FEDERATED_DECENTRALIZED
 void* update_ports_from_staa_offsets(void* args) {
+    environment_t *env;
+    int num_envs = _lf_get_environments(&env);
     while (1) {
         bool restart = false;
-        tag_t tag_when_started_waiting = lf_tag();
+        tag_t tag_when_started_waiting = lf_tag(env);
         for (int i = 0; i < staa_lst_size; ++i) {
             staa_t* staa_elem = staa_lst[i];
-            interval_t wait_until_time = current_tag.time + staa_elem->STAA + _lf_fed_STA_offset;
-            lf_mutex_lock(&mutex);
+            interval_t wait_until_time = env->current_tag.time + staa_elem->STAA + _lf_fed_STA_offset;
+            lf_mutex_lock(&env->mutex);
             // Both before and after the wait, check that the tag has not changed
-            if (a_port_is_unknown(staa_elem) && lf_tag_compare(lf_tag(), tag_when_started_waiting) == 0 && wait_until(wait_until_time, &port_status_changed) && lf_tag_compare(lf_tag(), tag_when_started_waiting) == 0) {
+            if (a_port_is_unknown(staa_elem) && lf_tag_compare(lf_tag(env), tag_when_started_waiting) == 0 && wait_until(env, wait_until_time, &port_status_changed) && lf_tag_compare(lf_tag(env), tag_when_started_waiting) == 0) {
                 for (int j = 0; j < staa_elem->numActions; ++j) {
                     lf_action_base_t* input_port_action = staa_elem->actions[j];
                     if (input_port_action->trigger->status == unknown) {
                         input_port_action->trigger->status = absent;
-                        LF_PRINT_DEBUG("Assuming port absent at time %lld.", (long long) (lf_tag().time - start_time));
-                        update_last_known_status_on_input_port(lf_tag(), id_of_action(input_port_action));
+                        LF_PRINT_DEBUG("Assuming port absent at time %lld.", (long long) (lf_tag(env).time - start_time));
+                        update_last_known_status_on_input_port(lf_tag(env), id_of_action(input_port_action));
                         update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
                         lf_cond_broadcast(&port_status_changed);
                     }
                 }
-                lf_mutex_unlock(&mutex);
-            } else if (lf_tag_compare(lf_tag(), tag_when_started_waiting) != 0) {
+                lf_mutex_unlock(&env->mutex);
+            } else if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) {
                 // We have committed to a new tag before we finish processing the list. Start over.
                 restart = true;
-                lf_mutex_unlock(&mutex);
+                lf_mutex_unlock(&env->mutex);
                 break;
             } else {
-                lf_mutex_unlock(&mutex);
+                lf_mutex_unlock(&env->mutex);
             }
         }
         if (restart) continue;
 
-        lf_mutex_lock(&mutex);
-        while (lf_tag_compare(lf_tag(), tag_when_started_waiting) == 0) {
+        lf_mutex_lock(&env->mutex);
+        while (lf_tag_compare(lf_tag(env), tag_when_started_waiting) == 0) {
             lf_cond_wait(&logical_time_changed);
         }
-        lf_mutex_unlock(&mutex);
+        lf_mutex_unlock(&env->mutex);
     }
 }
 
@@ -2529,6 +2531,14 @@ void* listen_to_federates(void* _args) {
     return NULL;
 }
 
+void stop_all_traces() {
+    environment_t *env;
+    int num_envs = _lf_get_environments(&env);
+    for (int i = 0; i < num_envs; i++) {
+        stop_trace(env[i].trace);
+    }
+}
+
 /**
  * Thread that listens for TCP inputs from the RTI.
  * When messages arrive, this calls the appropriate handler.
@@ -2572,7 +2582,7 @@ void* listen_to_rti_TCP(void* args) {
             // EOF received.
             lf_print("Connection to the RTI closed with an EOF.");
             _fed.socket_TCP_RTI = -1;
-            stop_trace();
+            stop_all_traces();
             return NULL;
         }
         switch (buffer[0]) {
