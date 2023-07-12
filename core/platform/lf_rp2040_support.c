@@ -1,4 +1,4 @@
-#ifdef PLATFORM_PICO
+#if defined(PLATFORM_RP2040)
 /*************
 Copyright (c) 2022, The University of California at Berkeley.
 
@@ -375,5 +375,5 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
 }
 
 #endif // LF_THREADED
-#endif // PLATFORM_PICO
+#endif // PLATFORM_RP2040
 
