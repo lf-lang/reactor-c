@@ -2,15 +2,7 @@
 #define REACTOR_THREADED_H
 #include "lf_types.h"
 
-void try_advance_level(environment_t*, size_t*);
-
-/**
- * Enqueue network input control reactions that determine if the trigger for a
- * given network input port is going to be present at the current logical time
- * or absent.
- * @param env The environment in which we are executing
- */
-void enqueue_network_input_control_reactions(environment_t* env);
+void try_advance_level(environment_t*, volatile size_t*);
 
 /**
  * Enqueue network output control reactions that will send a PORT_ABSENT

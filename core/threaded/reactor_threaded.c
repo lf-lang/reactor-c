@@ -905,7 +905,7 @@ void _lf_worker_invoke_reaction(environment_t *env, int worker_number, reaction_
  * 
  * @param next_reaction_level
  */
-void try_advance_level(environment_t* env, size_t* next_reaction_level) {
+void try_advance_level(environment_t* env, volatile size_t* next_reaction_level) {
     #ifdef FEDERATED
     stall_advance_level_federation(env, *next_reaction_level);
     #endif
