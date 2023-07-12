@@ -170,8 +170,10 @@ Functions</h2></td></tr>
 <tr class="memitem:a3ab5c60e67d36e2b26eccb884ed9f668"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d0e/reactor__common_8h.html#a3ab5c60e67d36e2b26eccb884ed9f668">lf_notify_of_event</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
 <tr class="separator:a3ab5c60e67d36e2b26eccb884ed9f668"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae0fda178667bc6cd94890a13316c285c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d0e/reactor__common_8h.html#ae0fda178667bc6cd94890a13316c285c">lf_critical_section_enter</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="memdesc:ae0fda178667bc6cd94890a13316c285c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter critical section by disabling interrupts.  <br /></td></tr>
 <tr class="separator:ae0fda178667bc6cd94890a13316c285c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed2c25495b50b46780c6288e4370541e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d7/d0e/reactor__common_8h.html#aed2c25495b50b46780c6288e4370541e">lf_critical_section_exit</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="memdesc:aed2c25495b50b46780c6288e4370541e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leave a critical section by enabling interrupts.  <br /></td></tr>
 <tr class="separator:aed2c25495b50b46780c6288e4370541e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
@@ -941,6 +943,15 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Enter critical section by disabling interrupts. </p>
+<p>Enter a critical section where logical time and the event queue are guaranteed to not change unless they are changed within the critical section. this can be implemented by disabling interrupts. Users of this function must ensure that lf_init_critical_sections() is called first and that <a class="el" href="../../d3/d90/rti__lib_8h.html#aed2c25495b50b46780c6288e4370541e">lf_critical_section_exit()</a> is called later. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Ignored (present for compatibility). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise. </dd></dl>
+
 </div>
 </div>
 <a id="aed2c25495b50b46780c6288e4370541e" name="aed2c25495b50b46780c6288e4370541e"></a>
@@ -958,6 +969,15 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Leave a critical section by enabling interrupts. </p>
+<p>Exit the critical section entered with lf_lock_time(). </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Ignored (present for compatibility). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise. </dd></dl>
 
 </div>
 </div>

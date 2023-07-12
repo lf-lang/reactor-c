@@ -25,5 +25,5 @@ var searchData=
   ['hashset_5fiterator_5fvalue_22',['hashset_iterator_value',['../d9/d16/hashset__itr_8c.html#a08d3680504ca63e10abbf03b115acb1b',1,'hashset_iterator_value(hashset_itr_t itr):&#160;hashset_itr.c'],['../d0/d15/hashset__itr_8h.html#a08d3680504ca63e10abbf03b115acb1b',1,'hashset_iterator_value(hashset_itr_t itr):&#160;hashset_itr.c']]],
   ['hashset_5fnum_5fitems_23',['hashset_num_items',['../d1/d50/hashset_8c.html#a8d4800d73d1a58ad953501d9035de5ec',1,'hashset_num_items(hashset_t set):&#160;hashset.c'],['../d1/dcf/hashset_8h.html#a8d4800d73d1a58ad953501d9035de5ec',1,'hashset_num_items(hashset_t set):&#160;hashset.c']]],
   ['hashset_5fremove_24',['hashset_remove',['../d1/d50/hashset_8c.html#a5b0ad513d6e64cd754213b0103a094e0',1,'hashset_remove(hashset_t set, void *item):&#160;hashset.c'],['../d1/dcf/hashset_8h.html#a5b0ad513d6e64cd754213b0103a094e0',1,'hashset_remove(hashset_t set, void *item):&#160;hashset.c']]],
-  ['host_5fis_5fbig_5fendian_25',['host_is_big_endian',['../dd/d97/net__util_8h.html#ad791461950852eb074b90bc75156b413',1,'net_util.h']]]
+  ['host_5fis_5fbig_5fendian_25',['host_is_big_endian',['../d9/d02/net__util_8c.html#a04dd5e3e7b7ee262b58476c4611d7b23',1,'host_is_big_endian():&#160;net_util.c'],['../dd/d97/net__util_8h.html#ad791461950852eb074b90bc75156b413',1,'host_is_big_endian(void):&#160;net_util.c']]]
 ];

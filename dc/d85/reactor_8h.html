@@ -193,15 +193,6 @@ Functions</h2></td></tr>
 <tr class="memitem:aa9d0b1a9e883ff7194d666a8e7fb8655"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#aa9d0b1a9e883ff7194d666a8e7fb8655">_lf_create_environments</a> ()</td></tr>
 <tr class="memdesc:aa9d0b1a9e883ff7194d666a8e7fb8655"><td class="mdescLeft">&#160;</td><td class="mdescRight">Will create and initialize the required number of environments for the program.  <br /></td></tr>
 <tr class="separator:aa9d0b1a9e883ff7194d666a8e7fb8655"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af5ddc4ae4f8618d38c67e2b04744788b"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#af5ddc4ae4f8618d38c67e2b04744788b">_lf_notify_of_event</a> ()</td></tr>
-<tr class="memdesc:af5ddc4ae4f8618d38c67e2b04744788b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Notify other threads of new events on the event queue.  <br /></td></tr>
-<tr class="separator:af5ddc4ae4f8618d38c67e2b04744788b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1a228e27703a177d8860d82df78d1738"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#a1a228e27703a177d8860d82df78d1738">_lf_critical_section_enter</a> ()</td></tr>
-<tr class="memdesc:a1a228e27703a177d8860d82df78d1738"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter critical section. Must be paired with a <code><a class="el" href="../../dc/d85/reactor_8h.html#ae2cd0624deca6f7863e8785040cfd04a" title="Leave critical section.">_lf_critical_section_exit()</a></code>  <br /></td></tr>
-<tr class="separator:a1a228e27703a177d8860d82df78d1738"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae2cd0624deca6f7863e8785040cfd04a"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#ae2cd0624deca6f7863e8785040cfd04a">_lf_critical_section_exit</a> ()</td></tr>
-<tr class="memdesc:ae2cd0624deca6f7863e8785040cfd04a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leave critical section.  <br /></td></tr>
-<tr class="separator:ae2cd0624deca6f7863e8785040cfd04a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
@@ -747,44 +738,6 @@ Functions intitializing and freeing memory for environments.</h1>
 
 </div>
 </div>
-<a id="a1a228e27703a177d8860d82df78d1738" name="a1a228e27703a177d8860d82df78d1738"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1a228e27703a177d8860d82df78d1738">&#9670;&#160;</a></span>_lf_critical_section_enter()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void _lf_critical_section_enter </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Enter critical section. Must be paired with a <code><a class="el" href="../../dc/d85/reactor_8h.html#ae2cd0624deca6f7863e8785040cfd04a" title="Leave critical section.">_lf_critical_section_exit()</a></code> </p>
-
-</div>
-</div>
-<a id="ae2cd0624deca6f7863e8785040cfd04a" name="ae2cd0624deca6f7863e8785040cfd04a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae2cd0624deca6f7863e8785040cfd04a">&#9670;&#160;</a></span>_lf_critical_section_exit()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void _lf_critical_section_exit </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Leave critical section. </p>
-
-</div>
-</div>
 <a id="a385c12b89137432ee46e77ed335b77ed" name="a385c12b89137432ee46e77ed335b77ed"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a385c12b89137432ee46e77ed335b77ed">&#9670;&#160;</a></span>_lf_executable_preamble()</h2>
 
@@ -1002,26 +955,6 @@ Functions intitializing and freeing memory for environments.</h1>
   </table>
   </dd>
 </dl>
-
-</div>
-</div>
-<a id="af5ddc4ae4f8618d38c67e2b04744788b" name="af5ddc4ae4f8618d38c67e2b04744788b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af5ddc4ae4f8618d38c67e2b04744788b">&#9670;&#160;</a></span>_lf_notify_of_event()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void _lf_notify_of_event </td>
-          <td>(</td>
-          <td class="paramname"></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Notify other threads of new events on the event queue. </p>
-<p>These functions must be implemented by both threaded and unthreaded runtime. Should be routed to appropriate API calls in <a class="el" href="../../de/d03/platform_8h.html">platform.h</a>  </p>
 
 </div>
 </div>

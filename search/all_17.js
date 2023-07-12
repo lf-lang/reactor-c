@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['wait_5ffor_5ffederates_0',['wait_for_federates',['../d3/d90/rti__lib_8h.html#a005cb43e8e6c7795c8f0db27e2424475',1,'wait_for_federates(int socket_descriptor):&#160;rti_lib.c'],['../de/d0d/rti__lib_8c.html#a005cb43e8e6c7795c8f0db27e2424475',1,'wait_for_federates(int socket_descriptor):&#160;rti_lib.c']]],
+  ['wait_5ffor_5ffederates_0',['wait_for_federates',['../de/d0d/rti__lib_8c.html#a005cb43e8e6c7795c8f0db27e2424475',1,'wait_for_federates(int socket_descriptor):&#160;rti_lib.c'],['../d3/d90/rti__lib_8h.html#a005cb43e8e6c7795c8f0db27e2424475',1,'wait_for_federates(int socket_descriptor):&#160;rti_lib.c']]],
   ['wait_5funtil_1',['wait_until',['../d4/dd2/reactor__threaded_8h.html#a28427d09e6613e4fcfce2fdf184a8e7d',1,'reactor_threaded.h']]],
   ['wait_5funtil_5fport_5fstatus_5fknown_2',['wait_until_port_status_known',['../d1/dfa/federate_8h.html#aa65ffaa03960a9fb25df87993fdd62fe',1,'federate.h']]],
   ['waiting_5ffor_5ftag_3',['waiting_for_TAG',['../d6/d7a/structfederate__instance__t.html#a9812f0499dda0efd9f2718981be2e905',1,'federate_instance_t']]],
@@ -11,20 +11,16 @@ var searchData=
   ['watchdog_5ft_8',['watchdog_t',['../d3/dc4/structwatchdog__t.html',1,'watchdog_t'],['../d9/da3/watchdog_8h.html#aee1cd2bc521f76fa428cc659474d9570',1,'watchdog_t:&#160;watchdog.h']]],
   ['wave_5ffile_5freader_2ec_9',['wave_file_reader.c',['../dd/da2/wave__file__reader_8c.html',1,'']]],
   ['wave_5ffile_5freader_2eh_10',['wave_file_reader.h',['../d3/d8a/wave__file__reader_8h.html',1,'']]],
-  ['waveform_11',['waveform',['../d7/dc9/structlf__waveform__t.html#add06d5d0fc6b2337a8aa902736c28558',1,'lf_waveform_t::waveform'],['../da/d62/structnote.html#a03bc4ceb2310ccb5004584a1f619e047',1,'note::waveform']]],
+  ['waveform_11',['waveform',['../da/d62/structnote.html#a03bc4ceb2310ccb5004584a1f619e047',1,'note::waveform'],['../d7/dc9/structlf__waveform__t.html#add06d5d0fc6b2337a8aa902736c28558',1,'lf_waveform_t::waveform']]],
   ['week_12',['WEEK',['../d2/dcd/tag_8h.html#ac38fd1109df8cd9f53ab99761b3efa04',1,'tag.h']]],
   ['weeks_13',['WEEKS',['../d2/dcd/tag_8h.html#a6377f87d75908e0d79a4005db7af3b35',1,'tag.h']]],
   ['welcome_5fmessage_14',['welcome_message',['../d7/d58/sensor__simulator_8c.html#a804ebc691e188c33045120c13bdda8f4',1,'sensor_simulator.c']]],
   ['welcome_5fmessage_5flength_15',['welcome_message_length',['../d7/d58/sensor__simulator_8c.html#aed914099b551105b7294552e79e13b16',1,'sensor_simulator.c']]],
   ['wgetchr_5ftimeout_16',['WGETCHR_TIMEOUT',['../d7/d58/sensor__simulator_8c.html#a67eec5f95f4bdd36888379013c2cf10b',1,'sensor_simulator.c']]],
   ['while_17',['while',['../d6/df3/hashmap_8h.html#a8cd842f29595524580f36ac339471bc0',1,'hashmap.h']]],
-  ['width_18',['width',['../d2/dab/structgeneric__port__capsule__struct.html#a8336292b3d416c8bcd8af788ab71ee9a',1,'generic_port_capsule_struct::width'],['../d4/d7d/structlf__multiport__iterator__t.html#a9a506388d73fdb6c0fd45c182f6a41ac',1,'lf_multiport_iterator_t::width']]],
+  ['width_18',['width',['../d4/d7d/structlf__multiport__iterator__t.html#a9a506388d73fdb6c0fd45c182f6a41ac',1,'lf_multiport_iterator_t::width'],['../d2/dab/structgeneric__port__capsule__struct.html#a8336292b3d416c8bcd8af788ab71ee9a',1,'generic_port_capsule_struct::width']]],
   ['worker_5faffinity_19',['worker_affinity',['../d2/d35/structreaction__t.html#a861cbf9521eb367cedf9e2d0ecee0fca',1,'reaction_t']]],
   ['worker_5fwait_5fends_20',['worker_wait_ends',['../d1/d1b/trace_8h.html#ab02e9e69539d60297cedb38c2193a453afa179671ba1508f1c16b10ffef3a17c6',1,'trace.h']]],
   ['worker_5fwait_5fstarts_21',['worker_wait_starts',['../d1/d1b/trace_8h.html#ab02e9e69539d60297cedb38c2193a453a9c6849445ded286ba9f914d3b1decd2a',1,'trace.h']]],
-  ['write_5fto_5fsocket_22',['write_to_socket',['../dd/d97/net__util_8h.html#a488ccf63c642ede4308d8f7face533f3',1,'net_util.h']]],
-  ['write_5fto_5fsocket2_23',['write_to_socket2',['../dd/d97/net__util_8h.html#a4c100e73807feaae911d1c5cd67c475f',1,'net_util.h']]],
-  ['write_5fto_5fsocket_5ferrexit_24',['write_to_socket_errexit',['../dd/d97/net__util_8h.html#adac7abf648593901711cc145d2ec986c',1,'net_util.h']]],
-  ['write_5fto_5fsocket_5ferrexit_5fwith_5fmutex_25',['write_to_socket_errexit_with_mutex',['../dd/d97/net__util_8h.html#ab5fdba6f80b9b0c6516c8400920da702',1,'net_util.h']]],
-  ['wrong_5fserver_26',['WRONG_SERVER',['../d9/da6/net__common_8h.html#a5a6c87886a0136b58ae5bb1d627c7ae3',1,'net_common.h']]]
+  ['wrong_5fserver_22',['WRONG_SERVER',['../d9/da6/net__common_8h.html#a5a6c87886a0136b58ae5bb1d627c7ae3',1,'net_common.h']]]
 ];

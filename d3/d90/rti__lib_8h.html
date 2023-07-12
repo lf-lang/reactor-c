@@ -145,10 +145,10 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a826d1582ddab93857dddcf900df4212f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a826d1582ddab93857dddcf900df4212f">lf_critical_section_enter</a> ()</td></tr>
-<tr class="separator:a826d1582ddab93857dddcf900df4212f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a15016241de6a4f3c35115f39e0695084"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a15016241de6a4f3c35115f39e0695084">lf_critical_section_exit</a> ()</td></tr>
-<tr class="separator:a15016241de6a4f3c35115f39e0695084"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0fda178667bc6cd94890a13316c285c"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#ae0fda178667bc6cd94890a13316c285c">lf_critical_section_enter</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:ae0fda178667bc6cd94890a13316c285c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed2c25495b50b46780c6288e4370541e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#aed2c25495b50b46780c6288e4370541e">lf_critical_section_exit</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:aed2c25495b50b46780c6288e4370541e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acde4076cd96817debe76e74fca261c70"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#acde4076cd96817debe76e74fca261c70">create_server</a> (int32_t specified_port, uint16_t port, <a class="el" href="../../d3/d90/rti__lib_8h.html#a54c375e3893ff5969d20df65b90c8335">socket_type_t</a> socket_type)</td></tr>
 <tr class="separator:acde4076cd96817debe76e74fca261c70"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7190c8d1000afb0a5e8898011d041917"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#a7190c8d1000afb0a5e8898011d041917">update_federate_next_event_tag_locked</a> (uint16_t federate_id, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> <a class="el" href="../../de/d37/enclave_8c.html#afddec5b6c9133b0e6e9d0ea11e21d161">next_event_tag</a>)</td></tr>
@@ -795,8 +795,8 @@ Chadlia Jerad (<a href="#" onclick="location.href='mai'+'lto:'+'cha'+'dl'+'ia.'+
 
 </div>
 </div>
-<a id="a826d1582ddab93857dddcf900df4212f" name="a826d1582ddab93857dddcf900df4212f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a826d1582ddab93857dddcf900df4212f">&#9670;&#160;</a></span>lf_critical_section_enter()</h2>
+<a id="ae0fda178667bc6cd94890a13316c285c" name="ae0fda178667bc6cd94890a13316c285c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0fda178667bc6cd94890a13316c285c">&#9670;&#160;</a></span>lf_critical_section_enter()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -804,17 +804,24 @@ Chadlia Jerad (<a href="#" onclick="location.href='mai'+'lto:'+'cha'+'dl'+'ia.'+
         <tr>
           <td class="memname">int lf_critical_section_enter </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Enter a critical section where logical time and the event queue are guaranteed to not change unless they are changed within the critical section. this can be implemented by disabling interrupts. Users of this function must ensure that lf_init_critical_sections() is called first and that <a class="el" href="../../d3/d90/rti__lib_8h.html#a15016241de6a4f3c35115f39e0695084">lf_critical_section_exit()</a> is called later. </p><dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise. </dd></dl>
+<p>Enter a critical section where logical time and the event queue are guaranteed to not change unless they are changed within the critical section. this can be implemented by disabling interrupts. Users of this function must ensure that lf_init_critical_sections() is called first and that <a class="el" href="../../d3/d90/rti__lib_8h.html#aed2c25495b50b46780c6288e4370541e">lf_critical_section_exit()</a> is called later. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Ignored (present for compatibility). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise. </dd></dl>
 
 </div>
 </div>
-<a id="a15016241de6a4f3c35115f39e0695084" name="a15016241de6a4f3c35115f39e0695084"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a15016241de6a4f3c35115f39e0695084">&#9670;&#160;</a></span>lf_critical_section_exit()</h2>
+<a id="aed2c25495b50b46780c6288e4370541e" name="aed2c25495b50b46780c6288e4370541e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aed2c25495b50b46780c6288e4370541e">&#9670;&#160;</a></span>lf_critical_section_exit()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -822,12 +829,19 @@ Chadlia Jerad (<a href="#" onclick="location.href='mai'+'lto:'+'cha'+'dl'+'ia.'+
         <tr>
           <td class="memname">int lf_critical_section_exit </td>
           <td>(</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Exit the critical section entered with lf_lock_time(). </p><dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise. </dd></dl>
+<p>Exit the critical section entered with lf_lock_time(). </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Ignored (present for compatibility). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise. </dd></dl>
 
 </div>
 </div>

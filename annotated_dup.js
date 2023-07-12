@@ -43,7 +43,6 @@ var annotated_dup =
     [ "pqueue_t", "d5/d38/structpqueue__t.html", "d5/d38/structpqueue__t" ],
     [ "py_tag_t", "d2/d92/structpy__tag__t.html", "d2/d92/structpy__tag__t" ],
     [ "reaction_t", "d2/d35/structreaction__t.html", "d2/d35/structreaction__t" ],
-    [ "rti_addr_info_t", "d8/df1/structrti__addr__info__t.html", "d8/df1/structrti__addr__info__t" ],
     [ "sched_params_t", "dc/da2/structsched__params__t.html", "dc/da2/structsched__params__t" ],
     [ "self_base_t", "d6/d8b/structself__base__t.html", "d6/d8b/structself__base__t" ],
     [ "semaphore_t", "d2/da6/structsemaphore__t.html", "d2/da6/structsemaphore__t" ],
