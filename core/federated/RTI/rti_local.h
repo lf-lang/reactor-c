@@ -8,7 +8,7 @@
 
 /**
  * @brief Structure holding information about each enclave in the program
- * The first field is the generic reactor_node_info struct
+ * The first field is the generic scheduling_node_info struct
  * 
  */
 typedef struct enclave_info_t {

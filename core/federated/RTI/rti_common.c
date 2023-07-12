@@ -24,7 +24,7 @@ void initialize_rti_common(rti_common_t * _rti_common) {
 //        Currently, all calls to tracepoint_from_federate() and 
 //        tracepoint_to_federate() are in rti_lib.c
 
-void initialize_reactor_node(scheduling_node_t* e, uint16_t id) {
+void initialize_scheduling_node(scheduling_node_t* e, uint16_t id) {
     e->id = id;
     e->completed = NEVER_TAG;
     e->last_granted = NEVER_TAG;
@@ -182,7 +182,7 @@ void notify_downstream_advance_grant_if_safe(scheduling_node_t* e, bool visited[
     }
 }
 
-void update_reactor_node_next_event_tag_locked(scheduling_node_t* e, tag_t next_event_tag) {
+void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t next_event_tag) {
     e->next_event = next_event_tag;
 
     LF_PRINT_DEBUG(

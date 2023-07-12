@@ -68,7 +68,7 @@ void initialize_local_rti(environment_t *envs, int num_envs) {
 }
 
 void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t * env) {
-    initialize_reactor_node(&enclave->base, idx);
+    initialize_scheduling_node(&enclave->base, idx);
 
     env->enclave_info = enclave;
     enclave->env = env;
@@ -95,7 +95,7 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
     tag_t previous_tag = e->base.last_granted;
     tag_t previous_ptag = e->base.last_provisionally_granted;
 
-    update_reactor_node_next_event_tag_locked(&e->base, next_event_tag);
+    update_scheduling_node_next_event_tag_locked(&e->base, next_event_tag);
     
     // Return early if we already have been granted past the NET
     if (lf_tag_compare(e->base.last_granted, next_event_tag) >= 0) {
