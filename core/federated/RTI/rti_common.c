@@ -1,3 +1,12 @@
+/**
+ * @file
+ * @author Edward A. Lee (eal@berkeley.edu)
+ * @author Soroush Bateni (soroush@utdallas.edu)
+ * @author Erling Jellum (erling.r.jellum@ntnu.no)
+ * @author Chadlia Jerad (chadlia.jerad@ensi-uma.tn)
+ * @copyright (c) 2020-2023, The University of California at Berkeley
+ * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ */
 #if defined STANDALONE_RTI || defined LF_ENCLAVES
 #include "rti_common.h"
 

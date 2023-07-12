@@ -3,6 +3,8 @@
  * @file
  * @author Edward A. Lee
  * @author Soroush Bateni
+ * @author Erling Jellum
+ * @author Chadlia Jerad 
  * @copyright (c) 2020-2023, The University of California at Berkeley
  * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
  * @brief Runtime infrastructure (RTI) for distributed Lingua Franca programs.

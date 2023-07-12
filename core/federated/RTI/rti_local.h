@@ -48,7 +48,15 @@ void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t *en
  * by the enclave as the tag to which it can advance.
  * 
  * This will also notify downstream scheduling_nodes with a TAG or PTAG if appropriate,
- * possibly unblocking their own calls to this same function.
+ * possibly unblocking their own calls to this same function./**
+ * @file
+ * @author Edward A. Lee (eal@berkeley.edu)
+ * @author Soroush Bateni (soroush@utdallas.edu)
+ * @author Erling Jellum (erling.r.jellum@ntnu.no)
+ * @author Chadlia Jerad (chadlia.jerad@ensi-uma.tn)
+ * @copyright (c) 2020-2023, The University of California at Berkeley
+ * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ */
  *
  * @param e The enclave.
  * @param next_event_tag The next event tag for e.
