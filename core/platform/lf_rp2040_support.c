@@ -30,7 +30,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Abhi Gundrala <gundralaa@berkeley.edu>}
  */
 
-#include "lf_pico_support.h"
+#include "lf_rp2040_support.h"
 #include "platform.h"
 #include "utils/util.h"
 #include "tag.h"
