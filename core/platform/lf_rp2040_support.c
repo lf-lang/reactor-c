@@ -25,7 +25,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * @brief Raspberry Pi Pico support for the C target of Lingua Franca 
- * Uses the baremetal pico-sdk 
+ * Uses the pico-sdk which targets the lower level peripheral layer. 
  * 
  * @author{Abhi Gundrala <gundralaa@berkeley.edu>}
  */
@@ -186,23 +186,27 @@ int _lf_unthreaded_notify_of_event() {
 #define NUMBER_OF_WORKERS 2
 #endif
 
+static lf_function_t _lf_core0_worker;
+static void *_lf_core0_args;
+
+static lf_function_t _lf_core1_worker;
+static void *_lf_core1_args;
+
+
+void _rp2040_core1_entry() {
+    void *res = _lf_core1_worker(_lf_core1_args);
+    // use fifo and send result
+    // after worker exit fill fifo with result and block
+    while(multicore_fifo_wready())
+        multicore_fifo_push_blocking((uint32_t) res);
+}
+
 /**
  * @brief Get the number of cores on the host machine.
  * pico has two physical cores and runs only two worker threads 
  */
 int lf_available_cores() {
     return 2;
-}
-
-void _pico_core_loader() {
-    // create method that executes provided
-    // functions with specific through a comunicating api call
-    // the api call will be used by thread create and join
-    // alternatively use free-rtos an launch tasks
-    /// TODO: create a dispatcher program that runs on the second core similar to rtic
-    /// TODO: maybe assigning an enclave to core1 is the best path forward to avoid
-    // reimplementing a threading library
-
 }
 
 /**
@@ -213,13 +217,29 @@ void _pico_core_loader() {
  * TODO: learn more about function pointers and resolving this interface
  */
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
-    /// TODO: wrap in secondary function that takes these arguments
-    /// run that function on core1 with provided args 
-    // multicore_launch_core1(lf_thread);
-    // fill thread instance
-    *thread = 
-    lf_thread(args)
-
+    // this method can only be invoked twice.
+    // each case for each core is specially handled
+    static uint32_t call_cnt = 0;
+    if (call_cnt >= 2) { return -1 };
+    switch (call_cnt) {
+        case 0:
+            _lf_core0_worker = (lf_function_t) lf_thread;
+            _lf_core0_args = arguments;
+            *thread = CORE_0;
+            // cant launch first core worker
+            break;
+        case 1:
+            _lf_core1_worker = (lf_function_t) lf_thread;
+            _lf_core1_args = arguments;
+            *thread = CORE_1;
+            // launch second core worker
+            multicore_launch_core1(&_rp2040_core1_entry);
+            break;
+        default:
+            return -1;
+    } 
+    call_cnt++;
+    return 0;
 }
 
 /**
@@ -233,6 +253,23 @@ int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arg
  */
 int lf_thread_join(lf_thread_t thread, void** thread_return) {
     /// TODO: implement
+    /// run the core0 worker method here till completion and fill thread return
+    switch(thread) {
+        case CORE_0:
+            // start core0 worker, block until completion
+            *thread_return = _lf_core0_worker(args);
+            break;
+        case CORE_1:
+            // use multicore fifo
+            // remove any extraneous messages from fifo
+            multicore_fifo_drain();
+            // block until thread return value received from fifo
+            *thread_return = (void *) multicore_fifo_pop_blocking();
+            break;
+        default:
+            return -1;
+    }
+    return 0;
 }
 
 /**
