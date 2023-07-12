@@ -45,19 +45,20 @@ typedef enum scheduling_node_state_t {
  * any scheduling constraints.
  */
 typedef struct scheduling_node_t {
-    uint16_t id;            // ID of this enclave.
-    tag_t completed;        // The largest logical tag completed by the federate (or NEVER if no LTC has been received).
-    tag_t last_granted;     // The maximum TAG that has been granted so far (or NEVER if none granted)
-    tag_t last_provisionally_granted;      // The maximum PTAG that has been provisionally granted (or NEVER if none granted)
-    tag_t next_event;       // Most recent NET received from the federate (or NEVER if none received).
-    scheduling_node_state_t state;      // State of the federate.
-    int* upstream;          // Array of upstream federate ids.
-    interval_t* upstream_delay;    // Minimum delay on connections from upstream federates.
-    							   // Here, NEVER encodes no delay. 0LL is a microstep delay.
-    int num_upstream;              // Size of the array of upstream federates and delays.
-    int* downstream;        // Array of downstream federate ids.
-    int num_downstream;     // Size of the array of downstream federates.
-    execution_mode_t mode;  // FAST or REALTIME.
+    uint16_t id;                        // ID of this enclave.
+    tag_t completed;                    // The largest logical tag completed by the scheduling node 
+                                        // (or NEVER if no LTC has been received).
+    tag_t last_granted;                 // The maximum TAG that has been granted so far (or NEVER if none granted)
+    tag_t last_provisionally_granted;   // The maximum PTAG that has been provisionally granted (or NEVER if none granted)
+    tag_t next_event;                   // Most recent NET received from the scheduling node (or NEVER if none received).
+    scheduling_node_state_t state;      // State of the scheduling node.
+    int* upstream;                      // Array of upstream scheduling node ids.
+    interval_t* upstream_delay;         // Minimum delay on connections from upstream scheduling nodes.
+    			                        // Here, NEVER encodes no delay. 0LL is a microstep delay.
+    int num_upstream;                   // Size of the array of upstream scheduling nodes and delays.
+    int* downstream;                    // Array of downstream scheduling node ids.
+    int num_downstream;                 // Size of the array of downstream scheduling nodes.
+    execution_mode_t mode;              // FAST or REALTIME.
 } scheduling_node_t;
 
 /**
