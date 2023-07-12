@@ -39,7 +39,7 @@ static rti_remote_t *rti_remote;
 
 // A convenient macro for getting the `federate_info_t *` at index `_idx`
 // and casting it. 
-#define GET_FED_INFO(_idx) (federate_info_t *) rti_remote->base.reactor_nodes[_idx]  
+#define GET_FED_INFO(_idx) (federate_info_t *) rti_remote->base.scheduling_nodes[_idx]  
 
 lf_mutex_t rti_mutex;
 lf_cond_t received_start_times;
@@ -1197,7 +1197,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
                 send_reject(socket_id, FEDERATE_ID_OUT_OF_RANGE);
                 return -1;
             } else {
-                if ((rti_remote->base.reactor_nodes[fed_id])->state != NOT_CONNECTED) {
+                if ((rti_remote->base.scheduling_nodes[fed_id])->state != NOT_CONNECTED) {
 
                     lf_print_error("RTI received duplicate federate ID: %d.", fed_id);
                     if (rti_remote->base.tracing_enabled) {

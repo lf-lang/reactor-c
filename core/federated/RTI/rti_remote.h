@@ -86,7 +86,7 @@ typedef enum clock_sync_stat {
  * corresponding federates' state.
  * It is a special case of `rti_common_t` (declared in enclave.h). Inheritence
  * is mimicked by having the first attributes to be the same as of rti_common_t,
- * except that reactor_nodes attribute here is of type `federate_info_t**`, while it
+ * except that scheduling_nodes attribute here is of type `federate_info_t**`, while it
  * is of type `scheduling_node_t**` in `rti_common_t`.
  *     // **************** IMPORTANT!!! ********************
  *     // **   If you make any change to this struct,     **

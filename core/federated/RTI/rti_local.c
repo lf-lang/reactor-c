@@ -51,11 +51,11 @@ void initialize_local_rti(environment_t *envs, int num_envs) {
     rti_local->base.tracing_enabled = (envs[0].trace != NULL);
 
     // Allocate memory for the enclave_info objects
-    rti_local->base.reactor_nodes = (scheduling_node_t**)calloc(num_envs, sizeof(scheduling_node_t*));
+    rti_local->base.scheduling_nodes = (scheduling_node_t**)calloc(num_envs, sizeof(scheduling_node_t*));
     for (int i = 0; i < num_envs; i++) {
         enclave_info_t *enclave_info = (enclave_info_t *) malloc(sizeof(enclave_info_t));
         initialize_enclave_info(enclave_info, i, &envs[i]);
-        rti_local->base.reactor_nodes[i] = (scheduling_node_t *) enclave_info;
+        rti_local->base.scheduling_nodes[i] = (scheduling_node_t *) enclave_info;
 
         // Encode the connection topology into the enclave_info object        
         enclave_info->base.num_downstream = _lf_get_downstream_of(i, &enclave_info->base.downstream);
@@ -89,7 +89,7 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
     NET_LOCKED_PROLOGUE(e);
     tracepoint_federate_to_rti(e->env->trace, send_NET, e->base.id, &next_event_tag);
     // First, update the enclave data structure to record this next_event_tag,
-    // and notify any downstream reactor_nodes, and unblock them if appropriate.
+    // and notify any downstream scheduling_nodes, and unblock them if appropriate.
     tag_advance_grant_t result;
 
     tag_t previous_tag = e->base.last_granted;

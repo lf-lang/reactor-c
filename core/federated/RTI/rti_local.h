@@ -14,7 +14,7 @@
 typedef struct enclave_info_t {
     scheduling_node_t base;
     environment_t * env; // A pointer to the environment of the enclave
-    lf_cond_t next_event_condition; // Condition variable used by reactor_nodes to notify an enclave
+    lf_cond_t next_event_condition; // Condition variable used by scheduling_nodes to notify an enclave
                                     // that it's call to next_event_tag() should unblock.
 } enclave_info_t;
 
@@ -47,7 +47,7 @@ void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t *en
  * The returned tag may be less than or equal to the argument tag and is interpreted
  * by the enclave as the tag to which it can advance.
  * 
- * This will also notify downstream reactor_nodes with a TAG or PTAG if appropriate,
+ * This will also notify downstream scheduling_nodes with a TAG or PTAG if appropriate,
  * possibly unblocking their own calls to this same function.
  *
  * @param e The enclave.

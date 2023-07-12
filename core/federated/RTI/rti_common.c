@@ -19,8 +19,8 @@ void initialize_rti_common(rti_common_t * _rti_common) {
 
 // FIXME: For log and debug message in this file, what sould be kept: 'enclave', 
 //        'federate', or 'enlcave/federate'? Currently its is 'enclave/federate'.
-// FIXME: Should reactor_nodes tracing use the same mechanism as federates? 
-//        It needs to account a federate having itself a number of reactor_nodes.
+// FIXME: Should scheduling_nodes tracing use the same mechanism as federates? 
+//        It needs to account a federate having itself a number of scheduling_nodes.
 //        Currently, all calls to tracepoint_from_federate() and 
 //        tracepoint_to_federate() are in rti_lib.c
 
@@ -50,13 +50,13 @@ void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
     LF_PRINT_LOG("RTI received from federate/enclave %d the Logical Tag Complete (LTC) " PRINTF_TAG ".",
                 enclave->id, enclave->completed.time - start_time, enclave->completed.microstep);
 
-    // Check downstream reactor_nodes to see whether they should now be granted a TAG.
+    // Check downstream scheduling_nodes to see whether they should now be granted a TAG.
     for (int i = 0; i < enclave->num_downstream; i++) {
-        scheduling_node_t *downstream = rti_common->reactor_nodes[enclave->downstream[i]];
+        scheduling_node_t *downstream = rti_common->scheduling_nodes[enclave->downstream[i]];
         // Notify downstream enclave if appropriate.
         notify_advance_grant_if_safe(downstream);
         bool *visited = (bool *)calloc(rti_common->number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
-        // Notify reactor_nodes downstream of downstream if appropriate.
+        // Notify scheduling_nodes downstream of downstream if appropriate.
         notify_downstream_advance_grant_if_safe(downstream, visited);
         free(visited);
     }
@@ -67,11 +67,11 @@ void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
 tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     tag_advance_grant_t result = {.tag = NEVER_TAG, .is_provisional = false};
 
-    // Find the earliest LTC of upstream reactor_nodes (M).
+    // Find the earliest LTC of upstream scheduling_nodes (M).
     tag_t min_upstream_completed = FOREVER_TAG;
 
     for (int j = 0; j < e->num_upstream; j++) {
-        scheduling_node_t *upstream = rti_common->reactor_nodes[e->upstream[j]];
+        scheduling_node_t *upstream = rti_common->scheduling_nodes[e->upstream[j]];
 
         // Ignore this enclave if it no longer connected.
         if (upstream->state == NOT_CONNECTED) continue;
@@ -94,7 +94,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     }
 
     // Can't make progress based only on upstream LTCs.
-    // If all (transitive) upstream reactor_nodes of the enclave
+    // If all (transitive) upstream scheduling_nodes of the enclave
     // have earliest event tags such that the
     // enclave can now advance its tag, then send it a TAG message.
     // Find the earliest event time of each such upstream enclave,
@@ -105,14 +105,14 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     bool *visited = (bool *)calloc(rti_common->number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
 
     // Find the tag of the earliest possible incoming message from
-    // upstream reactor_nodes.
+    // upstream scheduling_nodes.
     tag_t t_d = FOREVER_TAG;
     LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG,
                    FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
                    NEVER_TAG.time - start_time, 0);
 
     for (int j = 0; j < e->num_upstream; j++) {
-        scheduling_node_t *upstream = rti_common->reactor_nodes[e->upstream[j]];
+        scheduling_node_t *upstream = rti_common->scheduling_nodes[e->upstream[j]];
 
         // Ignore this enclave if it is no longer connected.
         if (upstream->state == NOT_CONNECTED) continue;
@@ -147,7 +147,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
                                                                       // PTAGs).
         && lf_tag_compare(t_d, e->last_granted) > 0  // The grant is not redundant.
     ) {
-        // All upstream reactor_nodes have events with a larger tag than fed, so it is safe to send a TAG.
+        // All upstream scheduling_nodes have events with a larger tag than fed, so it is safe to send a TAG.
         LF_PRINT_LOG("Earliest upstream message time for fed/encl %d is " PRINTF_TAG
                 "(adjusted by after delay). Granting tag advance for " PRINTF_TAG,
                 e->id,
@@ -160,7 +160,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
         && lf_tag_compare(t_d, e->last_provisionally_granted) > 0  // The grant is not redundant.
         && lf_tag_compare(t_d, e->last_granted) > 0  // The grant is not redundant.
     ) {
-        // Some upstream reactor_nodes has an event that has the same tag as fed's next event, so we can only provisionally
+        // Some upstream scheduling_nodes has an event that has the same tag as fed's next event, so we can only provisionally
         // grant a TAG (via a PTAG).
         LF_PRINT_LOG("Earliest upstream message time for fed/encl %d is " PRINTF_TAG
             " (adjusted by after delay). Granting provisional tag advance.",
@@ -175,7 +175,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
 void notify_downstream_advance_grant_if_safe(scheduling_node_t* e, bool visited[]) {
     visited[e->id] = true;
     for (int i = 0; i < e->num_downstream; i++) {
-        scheduling_node_t* downstream = rti_common->reactor_nodes[e->downstream[i]];
+        scheduling_node_t* downstream = rti_common->scheduling_nodes[e->downstream[i]];
         if (visited[downstream->id]) continue;
         notify_advance_grant_if_safe(downstream);
         notify_downstream_advance_grant_if_safe(downstream, visited);
@@ -193,14 +193,14 @@ void update_reactor_node_next_event_tag_locked(scheduling_node_t* e, tag_t next_
     );
 
     // Check to see whether we can reply now with a tag advance grant.
-    // If the enclave has no upstream reactor_nodes, then it does not wait for
+    // If the enclave has no upstream scheduling_nodes, then it does not wait for
     // nor expect a reply. It just proceeds to advance time.
     if (e->num_upstream > 0) {
         notify_advance_grant_if_safe(e);
     }
-    // Check downstream reactor_nodes to see whether they should now be granted a TAG.
+    // Check downstream scheduling_nodes to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
-    // track of which upstream reactor_nodes have been visited.
+    // track of which upstream scheduling_nodes have been visited.
     bool *visited = (bool *)calloc(rti_common->number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
     notify_downstream_advance_grant_if_safe(e, visited);
     free(visited);
@@ -221,7 +221,7 @@ void notify_advance_grant_if_safe(scheduling_node_t* e) {
 tag_t transitive_next_event(scheduling_node_t* e, tag_t candidate, bool visited[]) {
     if (visited[e->id] || e->state == NOT_CONNECTED) {
         // Enclave has stopped executing or we have visited it before.
-        // No point in checking upstream reactor_nodes.
+        // No point in checking upstream scheduling_nodes.
         return candidate;
     }
 
@@ -239,11 +239,11 @@ tag_t transitive_next_event(scheduling_node_t* e, tag_t candidate, bool visited[
         result = (tag_t){.time = start_time, .microstep = 0u};
     }
 
-    // Check upstream reactor_nodes to see whether any of them might send
+    // Check upstream scheduling_nodes to see whether any of them might send
     // an event that would result in an earlier next event.
     for (int i = 0; i < e->num_upstream; i++) {
         tag_t upstream_result = transitive_next_event(
-            rti_common->reactor_nodes[e->upstream[i]], result, visited);
+            rti_common->scheduling_nodes[e->upstream[i]], result, visited);
 
         // Add the "after" delay of the connection to the result.
         upstream_result = lf_delay_tag(upstream_result, e->upstream_delay[i]);
