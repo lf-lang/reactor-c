@@ -82,8 +82,9 @@ bool _lf_sched_advance_tag_locked(lf_scheduler_t * sched) {
     environment_t* env = sched->env;
     logical_tag_complete(env->current_tag);
 
-    // FIXME: Find better way of conditionally calling this
-    #ifdef LF_ENCLAVES
+    // If we are using scheduling enclaves. Notify the local RTI of the time 
+    // advancement.
+    #if defined LF_ENCLAVES
     rti_logical_tag_complete_locked(env->enclave_info, env->current_tag);
     #endif
 

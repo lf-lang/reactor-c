@@ -1,6 +1,7 @@
-#ifdef LF_ENCLAVES
 #ifndef RTI_LOCAL_H
 #define RTI_LOCAL_H
+
+#ifdef LF_ENCLAVES
 
 
 #include "lf_types.h"
@@ -57,46 +58,44 @@ void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t *en
  * @copyright (c) 2020-2023, The University of California at Berkeley
  * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
  */
- *
- * @param e The enclave.
- * @param next_event_tag The next event tag for e.
- * @return If granted, return the TAG and whether it is provisional or not. 
- *  Otherwise, return the NEVER_TAG.
+
+/**
+ * @brief This function call may block. A call to this function serves two purposes. 
+ * 1) It is a promise that, unless receiving events from other enclaves, this
+ * enclave will not produce any event until the next_event_tag (NET) argument.
+ * 2) It is a request for permission to advance the logical tag of the enclave
+ * until the NET.
+ * 
+ * This function call will block until the enclave has been granted a TAG.
+ * Which might not be the tag requested.
+ * 
+ * @param enclave The enclave requesting to advance to the NET.
+ * @param next_event_tag The tag of the next event in the enclave
+ * @return tag_t A tag which the enclave can safely advance its time to. It 
+ * might be smaller than the requested tag.
  */
-tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag);
+tag_t rti_next_event_tag_locked(enclave_info_t* enclave, tag_t next_event_tag);
 
 /**
  * @brief This function informs the local RTI that `enclave` has completed tag
  * `completed`. This will update the data structures and can release other
  * enclaves waiting on a TAG.
  * 
- * @param enclave 
- * @param completed 
+ * @param enclave The enclave
+ * @param completed The tag just completed by the enclave.
  */
 void rti_logical_tag_complete_locked(enclave_info_t* enclave, tag_t completed);
-
-/**
- * @brief This function is called to request stopping the execution at a certain tag.
- * 
- * 
- * @param stop_tag 
- */
-void rti_request_stop_locked(enclave_info_t* enclave, tag_t tag);
 
 /**
  * @brief This functions is called after scheduling an event onto the event queue
  * of another enclave. The source enclave must call this function to potentially update
  * the NET of the target enclave. 
- * 
- * FIXME: This replicates the functionality that the remote RTI has to update the NEt
- * when a timed message flows through it. Consider refactoring the rti_remote into rti_common.
- * Or have rti_remote use this rti_local API
- * 
  * This function is called while holding the environment mutex of the target enclave
+ * 
  * @param target The enclave of which we want to update the NET of
  * @param net The proposed next event tag
  */
 void rti_update_other_net_locked(enclave_info_t* src, enclave_info_t* target, tag_t net);
 
-#endif // RTI_LOCAL_H
 #endif // LF_ENCLAVES
+#endif // RTI_LOCAL_H

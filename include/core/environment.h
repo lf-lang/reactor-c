@@ -103,11 +103,11 @@ typedef struct environment_t {
     _lf_tag_advancement_barrier barrier;
     lf_cond_t global_tag_barrier_requestors_reached_zero;
 #endif // LF_THREADED
-#ifdef FEDERATED // FIXME: Consider dropping the #ifdef
+#ifdef FEDERATED // TODO: Consider dropping the #ifdef
     tag_t** _lf_intended_tag_fields;
     int _lf_intended_tag_fields_size;
 #endif // FEDERATED
-#ifdef LF_ENCLAVES // FIXME: Consider allowing this overhead and not use #ifdef
+#ifdef LF_ENCLAVES // TODO: Consider dropping #ifdef
     enclave_info_t *enclave_info;
 #endif
 } environment_t;

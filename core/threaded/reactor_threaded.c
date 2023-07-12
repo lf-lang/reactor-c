@@ -444,11 +444,16 @@ void _lf_next_locked(environment_t *env) {
     _lf_handle_mode_changes(env);
 #endif
 
-    // Previous logical time is complete.
+    // Get the tag of the next event on the event queue.
     tag_t next_tag = get_next_event_tag(env);
 
-#if defined LF_ENCLAVES // FIXME: Avoid #ifdefs here
+#if defined LF_ENCLAVES
+    // Request permission to advance time. This call might block.
     tag_t grant_tag = rti_next_event_tag_locked(env->enclave_info, next_tag);
+
+    // If we received are granted a tag which is less than the requested tag
+    // then we return and re-do the next function. We might have gotten a new
+    // event on the event queue.
     if (lf_tag_compare(grant_tag, next_tag) < 0) return;
 
     // Next event might have changed while waiting for the TAG
@@ -490,7 +495,7 @@ void _lf_next_locked(environment_t *env) {
     // allow keepalive to be either true or false and could get the same
     // behavior with centralized coordination as with unfederated execution.
 
-#else  // not FEDERATED_CENTRALIZED
+#else  // not FEDERATED_CENTRALIZED nor LF_ENCLAVES
     if (pqueue_peek(env->event_q) == NULL && !keepalive_specified) {
         // There is no event on the event queue and keepalive is false.
         // No event in the queue
@@ -708,10 +713,13 @@ void _lf_initialize_start_tag(environment_t *env) {
     if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {
         _lf_trigger_shutdown_reactions(env);
     }
-#ifdef LF_ENCLAVES // FIXME: Avoid ifdefs 
-    rti_next_event_tag_locked(env->enclave_info, env->current_tag);
-#endif
-#ifdef FEDERATED
+
+#if defined LF_ENCLAVES
+    // If we have scheduling enclaves. We must get a TAG to the start tag.
+    tag_t tag_granted = rti_next_event_tag_locked(env->enclave_info, env->current_tag);
+    lf_assert(  lf_tag_compare(tag_granted, env->current_tag) == 0,
+                "We did not receive a TAG to the start tag.");
+#elif defined FEDERATED
     // Call wait_until if federated. This is required because the startup procedure
     // in synchronize_with_other_federates() can decide on a new start_time that is
     // larger than the current physical time.
@@ -972,9 +980,6 @@ void _lf_worker_do_work(environment_t *env, int worker_number) {
  */
 void* worker(void* arg) {
     environment_t *env = (environment_t* ) arg;
-
-    assert(env != GLOBAL_ENVIRONMENT);
- 
     lf_mutex_lock(&env->mutex);
 
     int worker_number = env->worker_thread_count++;
@@ -987,9 +992,7 @@ void* worker(void* arg) {
     }
 
     lf_mutex_unlock(&env->mutex);
-
     _lf_worker_do_work(env, worker_number);
-
     lf_mutex_lock(&env->mutex);
 
     // This thread is exiting, so don't count it anymore.
@@ -997,14 +1000,14 @@ void* worker(void* arg) {
 
     if (env->worker_thread_count == 0) {
         // The last worker thread to exit will inform the RTI if needed.
-        // Notify the RTI that there will be no more events (if centralized coord).
-        // False argument means don't wait for a reply.
-        // FIXME: This probably needs to be here for federated. But for enclaves
-        //  I need to send an LTC to unblock everyone
-        // FIXME: This seems logical for telling the others that you terminated
-#ifdef LF_ENCLAVES        
+#if defined LF_ENCLAVES 
+        // If we have scheduling enclaves. Then we must send a LTC of FOREVER.
+        // to grant other enclaves a TAG to FOREVER.
+        // TODO: Can we unify this? Preferraby also have federates send NETs
         rti_logical_tag_complete_locked(env->enclave_info, FOREVER_TAG);
 #else
+        // In federated execution we send a NET to the RTI. This will result in
+        // giving the other federates a PTAG to FOREVER.
         send_next_event_tag(env, FOREVER_TAG, false);
 #endif
 
@@ -1147,11 +1150,10 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     
     environment_t *envs;
     int num_envs = _lf_get_environments(&envs);
-    // Initialize the local RTI
-    // FIXME: void ifdef
-    #ifdef LF_ENCLAVES
+
+#if defined LF_ENCLAVES
     initialize_local_rti(envs, num_envs);
-    #endif
+#endif
     
     // Do environment-specific setup
     for (int i = 0; i<num_envs; i++) {
