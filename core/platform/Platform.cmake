@@ -11,6 +11,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     set(LF_PLATFORM_FILE lf_zephyr_support.c)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
+    message("Using pico-sdk for RP2040 target");
     set(LF_PLATFORM_FILE lf_rp2040_support.c)
 else()
     message(FATAL_ERROR "Your platform is not supported! The C target supports Linux, MacOS and Windows.")

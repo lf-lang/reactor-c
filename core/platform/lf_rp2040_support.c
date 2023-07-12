@@ -46,7 +46,7 @@ static critical_section_t _lf_crit_sec;
 // semaphore used to notify if sleep was interupted by irq 
 static semaphore_t _lf_sem_irq_event;
 static uint32_t _lf_num_nested_critical_sections = 0;
-#endif
+#endif //LF_UNTHREADED
 
 /**
  * Initialize the LF clock. Must be called before using other clock-related APIs.
@@ -57,7 +57,6 @@ void _lf_initialize_clock(void) {
     // init sync structs
     critical_section_init(&_lf_crit_sec);
     sem_init(&_lf_sem_irq_event, 0, 1);
-    // TODO: use core1
     multicore_reset_core1();
 }
 
@@ -171,7 +170,7 @@ int _lf_unthreaded_notify_of_event() {
     sem_release(&_lf_sem_irq_event);
     return 0;
 }
-#endif
+#endif //LF_UNTHREADED
 
 // For platforms with threading support, the following functions
 // abstract the API so that the LF runtime remains portable.

@@ -58,5 +58,4 @@ bool _rp2040_bool_compare_and_swap(bool *ptr, bool value, bool newval);
 int _rp2040_val_compare_and_swap(int *ptr, int value, int newval);
 
 #endif // LF_THREADED
-
 #endif // LF_PICO_SUPPORT_H
