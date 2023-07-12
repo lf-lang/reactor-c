@@ -13,8 +13,8 @@ extern instant_t start_time;
 void initialize_rti_common(rti_common_t * _rti_common) {
     rti_common = _rti_common;
     rti_common->max_stop_tag = NEVER_TAG;
-    rti_common->number_of_reactor_nodes = 0;
-    rti_common->num_reactor_nodes_handling_stop = 0;
+    rti_common->number_of_scheduling_nodes = 0;
+    rti_common->num_scheduling_nodes_handling_stop = 0;
 }
 
 // FIXME: For log and debug message in this file, what sould be kept: 'enclave', 
@@ -55,7 +55,7 @@ void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
         scheduling_node_t *downstream = rti_common->reactor_nodes[enclave->downstream[i]];
         // Notify downstream enclave if appropriate.
         notify_advance_grant_if_safe(downstream);
-        bool *visited = (bool *)calloc(rti_common->number_of_reactor_nodes, sizeof(bool)); // Initializes to 0.
+        bool *visited = (bool *)calloc(rti_common->number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
         // Notify reactor_nodes downstream of downstream if appropriate.
         notify_downstream_advance_grant_if_safe(downstream, visited);
         free(visited);
@@ -102,7 +102,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
 
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream enclave have been visited.
-    bool *visited = (bool *)calloc(rti_common->number_of_reactor_nodes, sizeof(bool)); // Initializes to 0.
+    bool *visited = (bool *)calloc(rti_common->number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
 
     // Find the tag of the earliest possible incoming message from
     // upstream reactor_nodes.
@@ -201,7 +201,7 @@ void update_reactor_node_next_event_tag_locked(scheduling_node_t* e, tag_t next_
     // Check downstream reactor_nodes to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream reactor_nodes have been visited.
-    bool *visited = (bool *)calloc(rti_common->number_of_reactor_nodes, sizeof(bool)); // Initializes to 0.
+    bool *visited = (bool *)calloc(rti_common->number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
     notify_downstream_advance_grant_if_safe(e, visited);
     free(visited);
 }

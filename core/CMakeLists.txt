@@ -33,9 +33,8 @@ else()
     list(APPEND INFO_SOURCES ${SINGLE_THREADED_SOURCES})
 endif()
 
-# Add sources for the local RTI
-# FIXME: Only include if we have LF_SCHEDULING_ENCLAVES || FEDERATED
-if(DEFINED LF_THREADED)
+# Add sources for the local RTI if we are using scheduling enclaves
+if(DEFINED LF_ENCLAVES)
 include(federated/RTI/local_rti.cmake)
 endif()
 

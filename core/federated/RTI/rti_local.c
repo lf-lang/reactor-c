@@ -44,7 +44,7 @@ void initialize_local_rti(environment_t *envs, int num_envs) {
     initialize_rti_common(&rti_local->base);
     lf_mutex_init(&rti_mutex);
     rti_local->base.mutex = &rti_mutex;
-    rti_local->base.number_of_reactor_nodes = num_envs;
+    rti_local->base.number_of_scheduling_nodes = num_envs;
     // FIXME: Here we are setting the 'rti_local' tracing file to be the
     // tracing file of the top-level enclave. It is not exactly what we want
     rti_local->base.trace = envs[0].trace;
@@ -82,7 +82,7 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
     LF_PRINT_LOG("RTI: enclave %u sends NET of " PRINTF_TAG " ",
     e->base.id, next_event_tag.time - lf_time_start(), next_event_tag.microstep);
     
-    if (rti_local->base.number_of_reactor_nodes == 1) {
+    if (rti_local->base.number_of_scheduling_nodes == 1) {
         return next_event_tag;
     }
 
@@ -148,7 +148,7 @@ void rti_logical_tag_complete_locked(enclave_info_t* enclave, tag_t completed) {
     
     // Early exit if we only have a single enclave
     // FIXME: Do some macro implementation of the function in that case.
-    if (rti_local->base.number_of_reactor_nodes == 1) {
+    if (rti_local->base.number_of_scheduling_nodes == 1) {
         return;
     }
     LTC_LOCKED_PROLOGUE(enclave);

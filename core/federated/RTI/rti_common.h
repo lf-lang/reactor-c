@@ -27,16 +27,16 @@ typedef enum execution_mode_t {
     REALTIME
 } execution_mode_t;
 
-/** State of the reactor node during execution. */
-typedef enum reactor_node_state_t {
-    NOT_CONNECTED,  // The reactor node has not connected.
+/** State of the scheduling node during execution. */
+typedef enum scheduling_node_state_t {
+    NOT_CONNECTED,  // The scheduling node has not connected.
     GRANTED,        // Most recent MSG_TYPE_NEXT_EVENT_TAG has been granted.
-    PENDING         // Waiting for upstream reactor nodes.
-} reactor_node_state_t;
+    PENDING         // Waiting for upstream scheduling nodes.
+} scheduling_node_state_t;
 
 /**
- * Information about the reactor nodes coordinated by the RTI.
- * The abstract reactor node could either be an enclave or a federate.
+ * Information about the scheduling nodes coordinated by the RTI.
+ * The abstract scheduling node could either be an enclave or a federate.
  * The information includs its runtime state,
  * mode of execution, and connectivity with other reactor_nodes.
  * The list of upstream and downstream reactor_nodes does not include
@@ -50,7 +50,7 @@ typedef struct scheduling_node_t {
     tag_t last_granted;     // The maximum TAG that has been granted so far (or NEVER if none granted)
     tag_t last_provisionally_granted;      // The maximum PTAG that has been provisionally granted (or NEVER if none granted)
     tag_t next_event;       // Most recent NET received from the federate (or NEVER if none received).
-    reactor_node_state_t state;      // State of the federate.
+    scheduling_node_state_t state;      // State of the federate.
     int* upstream;          // Array of upstream federate ids.
     interval_t* upstream_delay;    // Minimum delay on connections from upstream federates.
     							   // Here, NEVER encodes no delay. 0LL is a microstep delay.
@@ -67,17 +67,17 @@ typedef struct scheduling_node_t {
  * 
  */
 typedef struct rti_common_t {
-    // The reactor nodes.
+    // The scheduling nodes.
     scheduling_node_t **reactor_nodes;
 
-    // Number of reactor nodes
-    int32_t number_of_reactor_nodes;
+    // Number of scheduling nodes
+    int32_t number_of_scheduling_nodes;
 
-    // RTI's decided stop tag for the reactor nodes
+    // RTI's decided stop tag for the scheduling nodes
     tag_t max_stop_tag;
 
-    // Number of reactor nodes handling stop
-    int num_reactor_nodes_handling_stop;
+    // Number of scheduling nodes handling stop
+    int num_scheduling_nodes_handling_stop;
 
     // Boolean indicating that tracing is enabled.
     bool tracing_enabled;

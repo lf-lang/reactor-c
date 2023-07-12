@@ -270,7 +270,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
             if (upstream->enclave.state == NOT_CONNECTED) continue;
             // To handle cycles, need to create a boolean array to keep
             // track of which upstream federates have been visited.
-            bool* visited = (bool*)calloc(rti_remote->base.number_of_reactor_nodes, sizeof(bool)); // Initializes to 0.
+            bool* visited = (bool*)calloc(rti_remote->base.number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
 
             // Find the (transitive) next event tag upstream.
             tag_t upstream_next_event = transitive_next_event(
@@ -582,7 +582,7 @@ void _lf_rti_broadcast_stop_time_to_federates_locked() {
     ENCODE_STOP_GRANTED(outgoing_buffer, rti_remote->base.max_stop_tag.time, rti_remote->base.max_stop_tag.microstep);
 
     // Iterate over federates and send each the message.
-    for (int i = 0; i < rti_remote->base.number_of_reactor_nodes; i++) {
+    for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
         federate_info_t *fed = GET_FED_INFO(i);
         if (fed->enclave.state == NOT_CONNECTED) {
             continue;
@@ -608,10 +608,10 @@ void mark_federate_requesting_stop(federate_info_t* fed) {
     if (!fed->requested_stop) {
         // Assume that the federate
         // has requested stop
-        rti_remote->base.num_reactor_nodes_handling_stop++;
+        rti_remote->base.num_scheduling_nodes_handling_stop++;
         fed->requested_stop = true;
     }
-    if (rti_remote->base.num_reactor_nodes_handling_stop == rti_remote->base.number_of_reactor_nodes) {
+    if (rti_remote->base.num_scheduling_nodes_handling_stop == rti_remote->base.number_of_scheduling_nodes) {
         // We now have information about the stop time of all
         // federates.
         _lf_rti_broadcast_stop_time_to_federates_locked();
@@ -657,7 +657,7 @@ void handle_stop_request_message(federate_info_t* fed) {
     // for a stop, add it to the tally.
     mark_federate_requesting_stop(fed);
 
-    if (rti_remote->base.num_reactor_nodes_handling_stop == rti_remote->base.number_of_reactor_nodes) {
+    if (rti_remote->base.num_scheduling_nodes_handling_stop == rti_remote->base.number_of_scheduling_nodes) {
         // We now have information about the stop time of all
         // federates. This is extremely unlikely, but it can occur
         // all federates call lf_request_stop() at the same tag.
@@ -676,7 +676,7 @@ void handle_stop_request_message(federate_info_t* fed) {
         return;
     }
     rti_remote->stop_in_progress = true;
-    for (int i = 0; i < rti_remote->base.number_of_reactor_nodes; i++) {
+    for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
         federate_info_t *f = GET_FED_INFO(i);
         if (f->enclave.id != fed->enclave.id && f->requested_stop == false) {
             if (f->enclave.state == NOT_CONNECTED) {
@@ -813,13 +813,13 @@ void handle_timestamp(federate_info_t *my_fed) {
     if (timestamp > rti_remote->max_start_time) {
         rti_remote->max_start_time = timestamp;
     }
-    if (rti_remote->num_feds_proposed_start == rti_remote->base.number_of_reactor_nodes) {
+    if (rti_remote->num_feds_proposed_start == rti_remote->base.number_of_scheduling_nodes) {
         // All federates have proposed a start time.
         lf_cond_broadcast(&received_start_times);
     } else {
         // Some federates have not yet proposed a start time.
         // wait for a notification.
-        while (rti_remote->num_feds_proposed_start < rti_remote->base.number_of_reactor_nodes) {
+        while (rti_remote->num_feds_proposed_start < rti_remote->base.number_of_scheduling_nodes) {
             // FIXME: Should have a timeout here?
             lf_cond_wait(&received_start_times);
         }
@@ -911,7 +911,7 @@ void* clock_synchronization_thread(void* noargs) {
     // Wait until all federates have been notified of the start time.
     // FIXME: Use lf_ version of this when merged with master.
     lf_mutex_lock(&rti_mutex);
-    while (rti_remote->num_feds_proposed_start < rti_remote->base.number_of_reactor_nodes) {
+    while (rti_remote->num_feds_proposed_start < rti_remote->base.number_of_scheduling_nodes) {
         lf_cond_wait(&received_start_times);
     }
     lf_mutex_unlock(&rti_mutex);
@@ -935,7 +935,7 @@ void* clock_synchronization_thread(void* noargs) {
         // Sleep
         lf_sleep(rti_remote->clock_sync_period_ns); // Can be interrupted
         any_federates_connected = false;
-        for (int fed_id = 0; fed_id < rti_remote->base.number_of_reactor_nodes; fed_id++) {
+        for (int fed_id = 0; fed_id < rti_remote->base.number_of_scheduling_nodes; fed_id++) {
             federate_info_t* fed = GET_FED_INFO(fed_id);
             if (fed->enclave.state == NOT_CONNECTED) {
                 // FIXME: We need better error handling here, but clock sync failure
@@ -1036,7 +1036,7 @@ void handle_federate_resign(federate_info_t *my_fed) {
     // Check downstream federates to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream federates have been visited.
-    bool* visited = (bool*)calloc(rti_remote->base.number_of_reactor_nodes, sizeof(bool)); // Initializes to 0.
+    bool* visited = (bool*)calloc(rti_remote->base.number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
     notify_downstream_advance_grant_if_safe(&(my_fed->enclave), visited);
     free(visited);
 
@@ -1133,7 +1133,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
     // FIXME: This should not exit with error but rather should just reject the connection.
     read_from_socket_errexit(socket_id, length, buffer, "RTI failed to read from accepted socket.");
 
-    uint16_t fed_id = rti_remote->base.number_of_reactor_nodes; // Initialize to an invalid value.
+    uint16_t fed_id = rti_remote->base.number_of_scheduling_nodes; // Initialize to an invalid value.
 
     // First byte received is the message type.
     if (buffer[0] != MSG_TYPE_FED_IDS) {
@@ -1188,7 +1188,7 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
             send_reject(socket_id, FEDERATION_ID_DOES_NOT_MATCH);
             return -1;
         } else {
-            if (fed_id >= rti_remote->base.number_of_reactor_nodes) {
+            if (fed_id >= rti_remote->base.number_of_scheduling_nodes) {
                 // Federate ID is out of range.
                 lf_print_error("RTI received federate ID %d, which is out of range.", fed_id);
                 if (rti_remote->base.tracing_enabled){
@@ -1443,7 +1443,7 @@ bool authenticate_federate(int socket) {
 #endif
 
 void connect_to_federates(int socket_descriptor) {
-    for (int i = 0; i < rti_remote->base.number_of_reactor_nodes; i++) {
+    for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
         // Wait for an incoming connection request.
         struct sockaddr client_fd;
         uint32_t client_length = sizeof(client_fd);
@@ -1501,7 +1501,7 @@ void connect_to_federates(int socket_descriptor) {
         // over the UDP channel, but only if the UDP channel is open and at least one
         // federate is performing runtime clock synchronization.
         bool clock_sync_enabled = false;
-        for (int i = 0; i < rti_remote->base.number_of_reactor_nodes; i++) {
+        for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
             federate_info_t* fed_info = GET_FED_INFO(i);
             if (fed_info->clock_synchronization_enabled) {
                 clock_sync_enabled = true;
@@ -1586,7 +1586,7 @@ void wait_for_federates(int socket_descriptor) {
 
     // Wait for federate threads to exit.
     void* thread_exit_status;
-    for (int i = 0; i < rti_remote->base.number_of_reactor_nodes; i++) {
+    for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
         federate_info_t* fed = GET_FED_INFO(i);
         lf_print("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
         lf_thread_join(fed->thread_id, &thread_exit_status);

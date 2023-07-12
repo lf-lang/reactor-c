@@ -1,3 +1,5 @@
+# This adds the local RTI sources required for scheduling enclaves 
+# to the build.
 set(
     LOCAL_RTI_SOURCES
     rti_common.c

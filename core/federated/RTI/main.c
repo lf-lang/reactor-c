@@ -193,8 +193,8 @@ int process_args(int argc, const char* argv[]) {
                 usage(argc, argv);
                 return 0;
             }
-            rti.base.number_of_reactor_nodes = (int32_t)num_federates; // FIXME: Loses numbers on 64-bit machines
-            lf_print("RTI: Number of federates: %d\n", rti.base.number_of_reactor_nodes);
+            rti.base.number_of_scheduling_nodes = (int32_t)num_federates; // FIXME: Loses numbers on 64-bit machines
+            lf_print("RTI: Number of federates: %d\n", rti.base.number_of_scheduling_nodes);
         } else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
             if (argc < i + 2) {
                 lf_print_error(
@@ -241,7 +241,7 @@ int process_args(int argc, const char* argv[]) {
            return 0;
        }
     }
-    if (rti.base.number_of_reactor_nodes == 0) {
+    if (rti.base.number_of_scheduling_nodes == 0) {
         lf_print_error("--number_of_federates needs a valid positive integer argument.");
         usage(argc, argv);
         return 0;
@@ -264,19 +264,19 @@ int main(int argc, const char* argv[]) {
     }
 
     if (rti.base.tracing_enabled) {
-        _lf_number_of_workers = rti.base.number_of_reactor_nodes;
+        _lf_number_of_workers = rti.base.number_of_scheduling_nodes;
         rti.base.trace = trace_new(NULL, rti_trace_file_name);
         lf_assert(rti.base.trace, "Out of memory");
         start_trace(rti.base.trace);
         lf_print("Tracing the RTI execution in %s file.", rti_trace_file_name);
     }
 
-    lf_print("Starting RTI for %d federates in federation ID %s.",  rti.base.number_of_reactor_nodes, rti.federation_id);
-    assert(rti.base.number_of_reactor_nodes < UINT16_MAX);
+    lf_print("Starting RTI for %d federates in federation ID %s.",  rti.base.number_of_scheduling_nodes, rti.federation_id);
+    assert(rti.base.number_of_scheduling_nodes < UINT16_MAX);
     
     // Allocate memory for the federates
-    rti.base.reactor_nodes = (scheduling_node_t**)calloc(rti.base.number_of_reactor_nodes, sizeof(scheduling_node_t*));
-    for (uint16_t i = 0; i < rti.base.number_of_reactor_nodes; i++) {
+    rti.base.reactor_nodes = (scheduling_node_t**)calloc(rti.base.number_of_scheduling_nodes, sizeof(scheduling_node_t*));
+    for (uint16_t i = 0; i < rti.base.number_of_scheduling_nodes; i++) {
         federate_info_t *fed_info = (federate_info_t *) malloc(sizeof(federate_info_t));
         initialize_federate(fed_info, i);
         rti.base.reactor_nodes[i] = (scheduling_node_t *) fed_info;
