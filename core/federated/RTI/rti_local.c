@@ -127,8 +127,8 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
     
     // If this enclave has no upstream, then we give a TAG till forever straight away.
     if (e->base.num_upstream == 0) {
-        LF_PRINT_LOG("RTI: enclave %u has no upstream. Giving it a TAG till FOREVER", e->base.id);
-        e->base.last_granted = FOREVER_TAG;
+        LF_PRINT_LOG("RTI: enclave %u has no upstream. Giving it a to the NET", e->base.id);
+        e->base.last_granted = next_event_tag;
     }
 
     while(true) {
