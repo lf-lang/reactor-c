@@ -41,25 +41,6 @@ void initialize_local_rti(environment_t* envs, int num_envs);
 void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t *env);
 
 /**
- * @brief Get the tag to advance to.
- *
- * An enclave should call this function when it is ready to advance its tag,
- * passing as the second argument the tag of the earliest event on its event queue.
- * The returned tag may be less than or equal to the argument tag and is interpreted
- * by the enclave as the tag to which it can advance.
- * 
- * This will also notify downstream scheduling_nodes with a TAG or PTAG if appropriate,
- * possibly unblocking their own calls to this same function./**
- * @file
- * @author Edward A. Lee (eal@berkeley.edu)
- * @author Soroush Bateni (soroush@utdallas.edu)
- * @author Erling Jellum (erling.r.jellum@ntnu.no)
- * @author Chadlia Jerad (chadlia.jerad@ensi-uma.tn)
- * @copyright (c) 2020-2023, The University of California at Berkeley
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
- */
-
-/**
  * @brief This function call may block. A call to this function serves two purposes. 
  * 1) It is a promise that, unless receiving events from other enclaves, this
  * enclave will not produce any event until the next_event_tag (NET) argument.
