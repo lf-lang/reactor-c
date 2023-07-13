@@ -714,12 +714,7 @@ void _lf_initialize_start_tag(environment_t *env) {
         _lf_trigger_shutdown_reactions(env);
     }
 
-#if defined LF_ENCLAVES
-    // If we have scheduling enclaves. We must get a TAG to the start tag.
-    tag_t tag_granted = rti_next_event_tag_locked(env->enclave_info, env->current_tag);
-    lf_assert(  lf_tag_compare(tag_granted, env->current_tag) == 0,
-                "We did not receive a TAG to the start tag.");
-#elif defined FEDERATED
+#if defined FEDERATED
     // Call wait_until if federated. This is required because the startup procedure
     // in synchronize_with_other_federates() can decide on a new start_time that is
     // larger than the current physical time.
@@ -973,9 +968,10 @@ void _lf_worker_do_work(environment_t *env, int worker_number) {
 
 /**
  * Worker thread for the thread pool. Its argument is the environment within which is working
- * We have to be careful so only one worker per environment initializes the start tag.
- * This acquires the mutex lock and releases it to wait for time to
- * elapse or for asynchronous events and also releases it to execute reactions.
+ * The very first worker per environment/enclave is in charge of synchronizing with 
+ * the other enclaves by getting a TAG to (0,0) this might block until upstream enclaves
+ * have finished tag (0,0). This is unlike federated scheduling where each federate will
+ * get a PTAG to (0,0) and use network control reactions to handle upstream dependencies
  * @param arg Environment within which the worker should execute.
  */
 void* worker(void* arg) {
@@ -983,15 +979,25 @@ void* worker(void* arg) {
     lf_mutex_lock(&env->mutex);
 
     int worker_number = env->worker_thread_count++;
-    LF_PRINT_LOG("Worker thread %d started.", worker_number);
-        
-    // First worker initializes start tag
-    if (worker_number == 0) {
-        LF_PRINT_LOG("Environment %u initializes its start tag", env->id);
-        _lf_initialize_start_tag(env);
-    }
+    LF_PRINT_LOG("Environment %u: Worker thread %d started.",env->id, worker_number);
 
-    lf_mutex_unlock(&env->mutex);
+    // If we have scheduling enclaves. The first worker will block here until
+    // it receives a TAG for tag (0,0) from the local RTI. In federated scheduling
+    // we use PTAGs to get things started on tag (0,0) but those are not used 
+    // with enclaves.
+    #if defined LF_ENCLAVES
+    if (worker_number == 0) {
+        // If we have scheduling enclaves. We must get a TAG to the start tag.
+        LF_PRINT_LOG("Environment %u: Worker thread %d waits for TAG to (0,0).",env->id, worker_number);
+
+        tag_t tag_granted = rti_next_event_tag_locked(env->enclave_info, env->current_tag);
+        lf_assert(  lf_tag_compare(tag_granted, env->current_tag) == 0,
+                    "We did not receive a TAG to the start tag.");
+    }
+    #endif 
+
+    // Release mutex and start working.
+    lf_mutex_unlock(&env->mutex); 
     _lf_worker_do_work(env, worker_number);
     lf_mutex_lock(&env->mutex);
 
@@ -1175,6 +1181,10 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         if (lf_mutex_lock(&env->mutex) != 0) {
             lf_print_error_and_exit("Could not lock environment mutex");
         }
+
+        // Initialize start tag
+        lf_print("Environment %u: ---- Intializing start tag", env->id);
+        _lf_initialize_start_tag(env);
 
         lf_print("Environment %u: ---- Spawning %d workers.",env->id, env->num_workers);
         start_threads(env);
