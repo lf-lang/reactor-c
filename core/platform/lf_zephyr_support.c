@@ -283,7 +283,7 @@ int lf_enable_interrupts_nested() {
 }
 
 
-int _lf_unthreaded_notify_of_event() {
+int _lf_single_threaded_notify_of_event() {
    _lf_async_event = true;
    // If we are using the HI_RES clock. Then we interrupt a sleep through
    // a semaphore. The LO_RES clock does a busy wait and is woken up by

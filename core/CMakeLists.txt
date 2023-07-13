@@ -15,19 +15,19 @@ list(APPEND INFO_SOURCES ${GENERAL_SOURCES})
 # Create the core library
 add_library(core ${GENERAL_SOURCES})
 
-# Add sources for either threaded or unthreaded runtime
+# Add sources for either threaded or single-threaded runtime
 if (DEFINED FEDERATED)
     include(federated/CMakeLists.txt)
 endif()
 
-# Add sources for either threaded or unthreaded runtime
+# Add sources for either threaded or single-threaded runtime
 if(DEFINED LF_THREADED)
     message(STATUS "Including sources for threaded runtime with \
 ${NUMBER_OF_WORKERS} worker(s) with scheduler=${SCHEDULER} and \
 tracing=${LF_TRACE}.")
     include(threaded/CMakeLists.txt)
 else()
-    message(STATUS "Including sources for unthreaded runtime.")
+    message(STATUS "Including sources for single-threaded runtime.")
     list(APPEND SINGLE_THREADED_SOURCES reactor.c)
     target_sources(core PRIVATE ${SINGLE_THREADED_SOURCES})
     list(APPEND INFO_SOURCES ${SINGLE_THREADED_SOURCES})
@@ -105,7 +105,7 @@ define(FEDERATED_AUTHENTICATED)
 define(LF_REACTION_GRAPH_BREADTH)
 define(LF_THREADED)
 define(LF_TRACE)
-define(LF_UNTHREADED)
+define(LF_SINGLE_THREADED)
 define(LOG_LEVEL)
 define(MODAL_REACTORS)
 define(NUMBER_OF_FEDERATES)

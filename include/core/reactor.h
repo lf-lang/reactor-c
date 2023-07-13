@@ -543,7 +543,7 @@ void _lf_create_environments();
 
 
 /**
- * These functions must be implemented by both threaded and unthreaded
+ * These functions must be implemented by both threaded and single-threaded
  * runtime. Should be routed to appropriate API calls in platform.h
 */
 

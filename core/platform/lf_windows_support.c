@@ -158,7 +158,7 @@ int lf_nanosleep(interval_t sleep_duration) {
     return lf_sleep(sleep_duration);
 }
 
-#if defined(LF_UNTHREADED)
+#if defined(LF_SINGLE_THREADED)
 #include "lf_os_single_threaded_support.c"
 #endif
 

@@ -36,8 +36,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-#if defined(LF_THREADED) && defined(LF_UNTHREADED)
-#error LF_UNTHREADED and LF_THREADED runtime requested
+#if defined(LF_THREADED) && defined(LF_SINGLE_THREADED)
+#error LF_SINGLE_THREADED and LF_THREADED runtime requested
 #endif
 
 #ifdef __cplusplus
@@ -85,9 +85,9 @@ typedef struct environment_t environment_t;
 #define LF_TIMEOUT 1
 
 
-// To support the unthreaded runtime, we need the following functions. They
+// To support the single-threaded runtime, we need the following functions. They
 //  are not required by the threaded runtime and is thus hidden behind a #ifdef.
-#if defined (LF_UNTHREADED)
+#if defined (LF_SINGLE_THREADED)
     /**
      * @brief Disable interrupts with support for nested calls
      * 
@@ -102,11 +102,11 @@ typedef struct environment_t environment_t;
     int lf_enable_interrupts_nested();
 
     /**
-     * @brief Notify sleeping unthreaded context of new event
+     * @brief Notify sleeping single-threaded context of new event
      * 
      * @return int 
      */
-    int _lf_unthreaded_notify_of_event();
+    int _lf_single_threaded_notify_of_event();
 #endif
 
 

@@ -88,7 +88,7 @@ typedef struct environment_t {
     int reset_reactions_size;
     mode_environment_t* modes;
     trace_t* trace;
-#ifdef LF_UNTHREADED
+#ifdef LF_SINGLE_THREADED
     pqueue_t *reaction_q;
 #endif 
 #ifdef LF_THREADED

@@ -12,7 +12,7 @@ jobs:
   unit-tests-single:
     uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@main
     with:
-      cmake-args: '-UNUMBER_OF_WORKERS -DLF_UNTHREADED=1'
+      cmake-args: '-UNUMBER_OF_WORKERS -DLF_SINGLE_THREADED=1'
 
   unit-tests-multi:
     uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@main

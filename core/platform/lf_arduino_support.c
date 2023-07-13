@@ -125,7 +125,7 @@ int _lf_clock_now(instant_t* t) {
     return 0;
 }
 
-#if defined(LF_UNTHREADED)
+#if defined(LF_SINGLE_THREADED)
 
 int lf_enable_interrupts_nested() {
     if (_lf_num_nested_critical_sections++ == 0) {
@@ -152,7 +152,7 @@ int lf_disable_interrupts_nested() {
  * Handle notifications from the runtime of changes to the event queue.
  * If a sleep is in progress, it should be interrupted.
 */
-int _lf_unthreaded_notify_of_event() {
+int _lf_single_threaded_notify_of_event() {
    _lf_async_event = true;
    return 0;
 }
