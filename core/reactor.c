@@ -404,18 +404,10 @@ int lf_notify_of_event(environment_t* env) {
     return _lf_single_threaded_notify_of_event();
 }
 
-/**
- * @brief Enter critical section by disabling interrupts
- * @param env Environment in which we are executing.
- */
 int lf_critical_section_enter(environment_t* env) {
     return lf_disable_interrupts_nested();
 }
 
-/**
- * @brief Leave a critical section by enabling interrupts
- * @param env Environment in which we are executing.
- */
 int lf_critical_section_exit(environment_t* env) {
     return lf_enable_interrupts_nested();
 }
