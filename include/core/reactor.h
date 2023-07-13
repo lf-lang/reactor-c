@@ -576,23 +576,5 @@ void _lf_create_environments();
  * runtime. Should be routed to appropriate API calls in platform.h
 */
 
-/**
- * @brief Notify other threads of new events on the event queue.
- * 
- */
-void _lf_notify_of_event();
-
-/**
- * @brief Enter critical section. Must be paired with a
- * `_lf_critical_section_exit()`
- * 
- */
-void _lf_critical_section_enter();
-
-/**
- * @brief Leave critical section
- */
-void _lf_critical_section_exit();
-
 #endif /* REACTOR_H */
 /** @} */

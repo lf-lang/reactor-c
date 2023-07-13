@@ -130,23 +130,24 @@ lf_token_t* lf_writable_copy(lf_port_base_t* port) {
 
 ////////////////////////////////////////////////////////////////////
 //// Internal functions.
-
 void _lf_free_token_value(lf_token_t* token) {
     if (token->value != NULL) {
         // Count frees to issue a warning if this is never freed.
         _lf_count_payload_allocations--;
         // Free the value field (the payload).
-        // First check whether the value field is garbage collected (e.g. in the
-        // Python target), in which case the payload should not be freed.
-#ifndef _LF_GARBAGE_COLLECTED
         LF_PRINT_DEBUG("_lf_free_token_value: Freeing allocated memory for payload (token value): %p",
-                token->value);
-        if (token->type->destructor == NULL) {
-            free(token->value);
-        } else {
+            token->value);
+        // First check the token's destructor field and invoke it if it is not NULL.
+        if (token->type->destructor != NULL) {
             token->type->destructor(token->value);
         }
+        // If Python Target is not enabled and destructor is NULL
+        // Token values should be freed
+        else {
+#ifndef _PYTHON_TARGET_ENABLED
+            free(token->value);
 #endif
+        }
         token->value = NULL;
     }
 }
