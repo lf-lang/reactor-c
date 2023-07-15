@@ -35,6 +35,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <assert.h>
 
+#include "environment.h"
 #include "scheduler_sync_tag_advance.h"
 #include "scheduler.h"
 #include "util.h"
@@ -465,7 +466,7 @@ static void advance_level_and_unlock(lf_scheduler_t* scheduler, size_t worker) {
                 return;
             }
         } else {
-            set_level(scheduler, try_advance_level(scheduler->env, &current_level));
+            set_level(scheduler, try_advance_level(scheduler->env, &worker_assignments->current_level));
         }
         size_t total_num_reactions = get_num_reactions(scheduler);
         if (total_num_reactions) {
