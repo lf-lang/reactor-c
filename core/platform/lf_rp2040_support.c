@@ -39,14 +39,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <pico/multicore.h>
 #include <pico/sync.h>
 
-#ifdef LF_UNTHREADED
 // critical section struct binding
 // TODO: maybe be more precise and use nvic interrupt mask
 static critical_section_t _lf_crit_sec;
 // semaphore used to notify if sleep was interupted by irq 
 static semaphore_t _lf_sem_irq_event;
 static uint32_t _lf_num_nested_critical_sections = 0;
-#endif //LF_UNTHREADED
 
 /**
  * Initialize the LF clock. Must be called before using other clock-related APIs.
@@ -122,6 +120,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
 * physical actions and interupts outside of the runtime.
 */
 #ifdef LF_UNTHREADED
+
 /**
  * Enter a critical section where logical time and the event queue are guaranteed
  * to not change unless they are changed within the critical section.
@@ -196,8 +195,9 @@ void _rp2040_core1_entry() {
     void *res = _lf_core1_worker(_lf_core1_args);
     // use fifo and send result
     // after worker exit fill fifo with result and block
-    while(multicore_fifo_wready())
+    while(multicore_fifo_wready()) {
         multicore_fifo_push_blocking((uint32_t) res);
+    }
 }
 
 /**
@@ -277,7 +277,7 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_mutex_init(lf_mutex_t* mutex) {
-    recursive_mutex_init(mutex);
+    mutex_init(mutex);
     return 0;
 }
 
@@ -288,10 +288,10 @@ int lf_mutex_init(lf_mutex_t* mutex) {
  * TODO: should this block?
  */
 int lf_mutex_lock(lf_mutex_t* mutex) {
-    if (!recursive_mutex_is_initialized(mutex)) {
+    if (!mutex_is_initialized(mutex)) {
         return -1;
     }
-    recursive_mutex_enter_blocking(mutex);
+    mutex_enter_blocking(mutex);
     return 0;
 }
 
@@ -301,25 +301,23 @@ int lf_mutex_lock(lf_mutex_t* mutex) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_mutex_unlock(lf_mutex_t* mutex) {
-    if (!recursive_mutex_is_initialized(mutex)) {
+    if (!mutex_is_initialized(mutex)) {
         return -1;
     }
-    recursive_mutex_exit(mutex);
+    mutex_exit(mutex);
     return 0;
 }
 
 /**
  * Initialize a conditional variable.
  * @return 0 on success, platform-specific error number otherwise.
- * /// TODO: mutex here not used 
  */
 int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
-    lf_mutex_lock(mutex);
-    // init cond var
-    cond->flag = false;
-    cond->num_waiting = 0;
+    if (!mutex_is_initialized(mutex)) {
+        return -1;
+    }
     cond->mut = mutex; 
-    lf_mutex_unlock(mutex);
+    cond_init(&(cond->cv));
     return 0;
 }
 
@@ -329,10 +327,7 @@ int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_broadcast(lf_cond_t* cond) {
-    lf_mutex_lock(cond->mut);
-    cond->flag = true;
-    cond->num_waiting = 0;
-    lf_mutex_unlock(cond->mut);
+    cond_broadcast(&(cond->cv));
     return 0;
 }
 
@@ -342,8 +337,7 @@ int lf_cond_broadcast(lf_cond_t* cond) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_signal(lf_cond_t* cond) {
-    cond->flag = true;
-    cond->num_waiting--;
+    cond_signal(&(cond->cv));
     return 0;
 }
 
@@ -354,7 +348,9 @@ int lf_cond_signal(lf_cond_t* cond) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_wait(lf_cond_t* cond) {
-    sem_acquire_blocking(cond);
+    mutex_enter_blocking(cond->mut);
+    cond_wait(&(cond->cv), cond->mut);
+    mutex_exit(cond->mut);
     return 0;
 }
 
@@ -369,10 +365,183 @@ int lf_cond_wait(lf_cond_t* cond) {
 int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
     absolute_time_t target;
     target = from_us_since_boot((uint64_t) (absolute_time_ns / 1000));
-    if (!sem_acquire_block_until(cond, target)) {
+    mutex_enter_blocking(cond->mut);
+    if (!cond_wait_until(&(cond->cv), cond->mut, target)) {
+        mutex_exit(cond->mut);
         return LF_TIMEOUT; 
     }
+    mutex_exit(cond->mut);
     return 0;
+}
+
+void cond_init(cond_t *cond) {
+    lock_init(&cond->core, next_striped_spin_lock_num());
+    cond->waiter = LOCK_INVALID_OWNER_ID;
+    cond->broadcast_count = 0;
+    cond->signaled = false;
+    __mem_fence_release();
+}
+
+bool __time_critical_func(cond_wait_until)(cond_t *cond, mutex_t *mtx, absolute_time_t until) {
+    bool success = true;
+    lock_owner_id_t caller = lock_get_caller_owner_id();
+    uint32_t save = save_and_disable_interrupts();
+    // Acquire the mutex spin lock
+    spin_lock_unsafe_blocking(mtx->core.spin_lock);
+    assert(lock_is_owner_id_valid(mtx->owner));
+    assert(caller == mtx->owner);
+
+    // Mutex and cond spin locks can be the same as spin locks are attributed
+    // using `next_striped_spin_lock_num()`. To avoid any deadlock, we only
+    // acquire the condition variable spin lock if it is different from the
+    // mutex spin lock
+    bool same_spinlock = mtx->core.spin_lock == cond->core.spin_lock;
+
+    // Acquire the condition variable spin_lock
+    if (!same_spinlock) {
+        spin_lock_unsafe_blocking(cond->core.spin_lock);
+    }
+
+    mtx->owner = LOCK_INVALID_OWNER_ID;
+
+    uint64_t current_broadcast = cond->broadcast_count;
+
+    if (lock_is_owner_id_valid(cond->waiter)) {
+        // Release the mutex but without restoring interrupts and notify.
+        if (!same_spinlock) {
+            spin_unlock_unsafe(mtx->core.spin_lock);
+        }
+
+        // There is a valid owner of the condition variable: we are not the
+        // first waiter.
+        // First iteration: notify
+        lock_internal_spin_unlock_with_notify(&cond->core, save);
+        save = spin_lock_blocking(cond->core.spin_lock);
+        // Further iterations: wait
+        do {
+            if (!lock_is_owner_id_valid(cond->waiter)) {
+                break;
+            }
+            if (cond->broadcast_count != current_broadcast) {
+                break;
+            }
+            if (is_at_the_end_of_time(until)) {
+                lock_internal_spin_unlock_with_wait(&cond->core, save);
+            } else {
+                if (lock_internal_spin_unlock_with_best_effort_wait_or_timeout(&cond->core, save, until)) {
+                    // timed out
+                    success = false;
+                    break;
+                }
+            }
+            save = spin_lock_blocking(cond->core.spin_lock);
+        } while (true);
+    } else {
+        // Release the mutex but without restoring interrupts
+        if (!same_spinlock) {
+            uint32_t disabled_ints = save_and_disable_interrupts();
+            lock_internal_spin_unlock_with_notify(&mtx->core, disabled_ints);
+        }
+    }
+
+    if (success && cond->broadcast_count == current_broadcast) {
+        cond->waiter = caller;
+
+        // Wait for the signal
+        do {
+            if (cond->signaled) {
+                cond->waiter = LOCK_INVALID_OWNER_ID;
+                cond->signaled = false;
+                break;
+            }
+            if (is_at_the_end_of_time(until)) {
+                lock_internal_spin_unlock_with_wait(&cond->core, save);
+            } else {
+                if (lock_internal_spin_unlock_with_best_effort_wait_or_timeout(&cond->core, save, until)) {
+                    // timed out
+                    cond->waiter = LOCK_INVALID_OWNER_ID;
+                    success = false;
+                    break;
+                }
+            }
+            save = spin_lock_blocking(cond->core.spin_lock);
+        } while (true);
+    }
+
+    // We got the signal (or timed out)
+
+    if (lock_is_owner_id_valid(mtx->owner)) {
+        // Acquire the mutex spin lock and release the core spin lock.
+        if (!same_spinlock) {
+            spin_lock_unsafe_blocking(mtx->core.spin_lock);
+            spin_unlock_unsafe(cond->core.spin_lock);
+        }
+
+        // Another core holds the mutex.
+        // First iteration: notify
+        lock_internal_spin_unlock_with_notify(&mtx->core, save);
+        save = spin_lock_blocking(mtx->core.spin_lock);
+        // Further iterations: wait
+        do {
+            if (!lock_is_owner_id_valid(mtx->owner)) {
+                break;
+            }
+            // We always wait for the mutex.
+            lock_internal_spin_unlock_with_wait(&mtx->core, save);
+            save = spin_lock_blocking(mtx->core.spin_lock);
+        } while (true);
+    } else {
+        // Acquire the mutex spin lock and release the core spin lock
+        // with notify but without restoring interrupts
+        if (!same_spinlock) {
+            spin_lock_unsafe_blocking(mtx->core.spin_lock);
+            uint32_t disabled_ints = save_and_disable_interrupts();
+            lock_internal_spin_unlock_with_notify(&cond->core, disabled_ints);
+        }
+    }
+
+    // Eventually hold the mutex.
+    mtx->owner = caller;
+
+    // Restore the interrupts now
+    spin_unlock(mtx->core.spin_lock, save);
+
+    return success;
+}
+
+bool __time_critical_func(cond_wait_timeout_ms)(cond_t *cond, mutex_t *mtx, uint32_t timeout_ms) {
+    return cond_wait_until(cond, mtx, make_timeout_time_ms(timeout_ms));
+}
+
+bool __time_critical_func(cond_wait_timeout_us)(cond_t *cond, mutex_t *mtx, uint32_t timeout_us) {
+    return cond_wait_until(cond, mtx, make_timeout_time_us(timeout_us));
+}
+
+void __time_critical_func(cond_wait)(cond_t *cond, mutex_t *mtx) {
+    cond_wait_until(cond, mtx, at_the_end_of_time);
+}
+
+void __time_critical_func(cond_signal)(cond_t *cond) {
+    uint32_t save = spin_lock_blocking(cond->core.spin_lock);
+    if (lock_is_owner_id_valid(cond->waiter)) {
+        // We have a waiter, we can signal.
+        cond->signaled = true;
+        lock_internal_spin_unlock_with_notify(&cond->core, save);
+    } else {
+        spin_unlock(cond->core.spin_lock, save);
+    }
+}
+
+void __time_critical_func(cond_broadcast)(cond_t *cond) {
+    uint32_t save = spin_lock_blocking(cond->core.spin_lock);
+    if (lock_is_owner_id_valid(cond->waiter)) {
+        // We have a waiter, we can broadcast.
+        cond->signaled = true;
+        cond->broadcast_count++;
+        lock_internal_spin_unlock_with_notify(&cond->core, save);
+    } else {
+        spin_unlock(cond->core.spin_lock, save);
+    }
 }
 
 #endif // LF_THREADED
