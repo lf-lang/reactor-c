@@ -42,6 +42,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // critical section struct binding
 // TODO: maybe be more precise and use nvic interrupt mask
 static critical_section_t _lf_crit_sec;
+static critical_section_t _lf_crit_sec_atomic;
 // semaphore used to notify if sleep was interupted by irq 
 static semaphore_t _lf_sem_irq_event;
 static uint32_t _lf_num_nested_critical_sections = 0;
@@ -54,6 +55,7 @@ void _lf_initialize_clock(void) {
     stdio_init_all();
     // init sync structs
     critical_section_init(&_lf_crit_sec);
+    critical_section_init(&_lf_crit_sec_atomic);
     sem_init(&_lf_sem_irq_event, 0, 1);
     multicore_reset_core1();
 }
@@ -375,6 +377,70 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
     mutex_exit(cond->mut);
     return 0;
 }
+
+
+// Atomics
+
+
+/**
+ * @brief Add `value` to `*ptr` and return original value of `*ptr`
+ *
+ */
+int _rp2040_atomic_fetch_add(int *ptr, int value) {
+    critical_section_enter_blocking(&_lf_crit_sec_atomic);
+    int res = *ptr;
+    *ptr += value;
+    critical_section_exit(&_lf_crit_sec_atomic);
+    return res;
+}
+/**
+ * @brief Add `value` to `*ptr` and return new updated value of `*ptr`
+ */
+int _rp2040_atomic_add_fetch(int *ptr, int value) {
+    //lf_disable_interrupts_nested();
+    critical_section_enter_blocking(&_lf_crit_sec_atomic);
+    int res = *ptr + value;
+    *ptr = res;
+    //lf_enable_interrupts_nested();
+    critical_section_exit(&_lf_crit_sec_atomic);
+    return res;
+}
+
+/**
+ * @brief Compare and swap for boolaen value.
+ * If `*ptr` is equal to `value` then overwrite it
+ * with `newval`. If not do nothing. Retruns true on overwrite.
+ */
+bool _rp2040_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
+    //lf_disable_interrupts_nested();
+    critical_section_enter_blocking(&_lf_crit_sec_atomic);
+    bool res = false;
+    if (*ptr == value) {
+        *ptr = newval;
+        res = true;
+    }
+    //lf_enable_interrupts_nested();
+    critical_section_exit(&_lf_crit_sec_atomic);
+    return res;
+}
+
+/**
+ * @brief Compare and swap for integers. If `*ptr` is equal
+ * to `value`, it is updated to `newval`. The function returns
+ * the original value of `*ptr`.
+ */
+int  _rp2040_val_compare_and_swap(int *ptr, int value, int newval) {
+    //lf_disable_interrupts_nested();
+    critical_section_enter_blocking(&_lf_crit_sec_atomic);
+    int res = *ptr;
+    if (*ptr == value) {
+        *ptr = newval;
+    }
+    //lf_enable_interrupts_nested();
+    critical_section_exit(&_lf_crit_sec_atomic);
+    return res;
+}
+
 
 void cond_init(cond_t *cond) {
     lock_init(&cond->core, next_striped_spin_lock_num());

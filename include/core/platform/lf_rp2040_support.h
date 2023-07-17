@@ -44,7 +44,12 @@ typedef enum {
 } lf_thread_t;
 
 void _rp2040_core1_entry();
-// TODO: add atomics
+
+// TODO: implement optimized versions
+int _rp2040_atomic_fetch_add(int *ptr, int value);
+int _rp2040_atomic_add_fetch(int *ptr, int value);
+bool _rp2040_bool_compare_and_swap(bool *ptr, bool value, bool newval);
+int _rp2040_val_compare_and_swap(int *ptr, int value, int newval);
 
 
 /**
