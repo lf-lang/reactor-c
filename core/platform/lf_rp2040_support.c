@@ -219,7 +219,9 @@ int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arg
     // this method can only be invoked twice.
     // each case for each core is specially handled
     static uint32_t call_cnt = 0;
-    if (call_cnt >= 2) { return -1 };
+    if (call_cnt >= 2) { 
+        return -1;
+    }
     switch (call_cnt) {
         case 0:
             _lf_core0_worker = (lf_function_t) lf_thread;
@@ -256,7 +258,7 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
     switch(thread) {
         case CORE_0:
             // start core0 worker, block until completion
-            *thread_return = _lf_core0_worker(args);
+            *thread_return = _lf_core0_worker(_lf_core0_args);
             break;
         case CORE_1:
             // use multicore fifo
