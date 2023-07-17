@@ -174,8 +174,8 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
 }
 
 void notify_tag_advance_grant(enclave_t* e, tag_t tag) {
-    if (e->state == NOT_CONNECTED
-            || lf_tag_compare(tag, e->last_granted) <= 0
+    if (/*e->state == NOT_CONNECTED
+            || */lf_tag_compare(tag, e->last_granted) <= 0
             || lf_tag_compare(tag, e->last_provisionally_granted) < 0
     ) {
         return;
@@ -199,6 +199,7 @@ void notify_tag_advance_grant(enclave_t* e, tag_t tag) {
     // function. During this call, the socket might close, causing the following write_to_socket
     // to fail. Consider a failure here a soft failure and update the federate's status.
     ssize_t bytes_written = write_to_socket(((federate_t*)e)->socket, message_length, buffer);
+    e->last_granted = tag;
     if (bytes_written < (ssize_t)message_length) {
         lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
         if (bytes_written < 0) {
@@ -206,15 +207,15 @@ void notify_tag_advance_grant(enclave_t* e, tag_t tag) {
             // FIXME: We need better error handling, but don't stop other execution here.
         }
     } else {
-        e->last_granted = tag;
+        // e->last_granted = tag;
         LF_PRINT_LOG("RTI sent to federate %d the tag advance grant (TAG) " PRINTF_TAG ".",
                 e->id, tag.time - start_time, tag.microstep);
     }
 }
 
 void notify_provisional_tag_advance_grant(enclave_t* e, tag_t tag) {
-    if (e->state == NOT_CONNECTED
-            || lf_tag_compare(tag, e->last_granted) <= 0
+    if (/*e->state == NOT_CONNECTED
+            || */lf_tag_compare(tag, e->last_granted) <= 0
             || lf_tag_compare(tag, e->last_provisionally_granted) <= 0
     ) {
         return;
@@ -238,7 +239,7 @@ void notify_provisional_tag_advance_grant(enclave_t* e, tag_t tag) {
     // function. During this call, the socket might close, causing the following write_to_socket
     // to fail. Consider a failure here a soft failure and update the federate's status.
     ssize_t bytes_written = write_to_socket(((federate_t*)e)->socket, message_length, buffer);
-
+    e->last_provisionally_granted = tag;
     if (bytes_written < (ssize_t)message_length) {
         lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
         if (bytes_written < 0) {
@@ -246,7 +247,7 @@ void notify_provisional_tag_advance_grant(enclave_t* e, tag_t tag) {
             // FIXME: We need better error handling, but don't stop other execution here.
         }
     } else {
-        e->last_provisionally_granted = tag;
+        // e->last_provisionally_granted = tag;
         LF_PRINT_LOG("RTI sent to federate %d the Provisional Tag Advance Grant (PTAG) " PRINTF_TAG ".",
                      e->id, tag.time - start_time, tag.microstep);
 
@@ -260,7 +261,7 @@ void notify_provisional_tag_advance_grant(enclave_t* e, tag_t tag) {
             federate_t* upstream = _f_rti->enclaves[e->upstream[j]];
 
             // Ignore this federate if it has resigned.
-            if (upstream->enclave.state == NOT_CONNECTED) continue;
+            // if (upstream->enclave.state == NOT_CONNECTED) continue;
             // To handle cycles, need to create a boolean array to keep
             // track of which upstream federates have been visited.
             bool* visited = (bool*)calloc(_f_rti->number_of_enclaves, sizeof(bool)); // Initializes to 0.
@@ -584,9 +585,9 @@ void _lf_rti_broadcast_stop_time_to_federates_locked() {
     // Iterate over federates and send each the message.
     for (int i = 0; i < _f_rti->number_of_enclaves; i++) {
         federate_t *fed = _f_rti->enclaves[i];
-        if (fed->enclave.state == NOT_CONNECTED) {
-            continue;
-        }
+        // if (fed->enclave.state == NOT_CONNECTED) {
+        //     continue;
+        // }
         if (lf_tag_compare(fed->enclave.next_event, _f_rti->max_stop_tag) >= 0) {
             // Need the next_event to be no greater than the stop tag.
             fed->enclave.next_event = _f_rti->max_stop_tag;
@@ -809,7 +810,8 @@ void handle_timestamp(federate_t *my_fed) {
     LF_PRINT_DEBUG("RTI received timestamp message with time: " PRINTF_TIME ".", timestamp);
 
     lf_mutex_lock(&rti_mutex);
-    my_fed->effective_start_tag.time = timestamp;
+
+    my_fed->effective_start_tag = (tag_t){.time = timestamp, .microstep = 0u};
 
     // Processing the TIMESTAMP depends on whether it is the startup phase (all 
     // persistent federates joined) or not. 
@@ -848,41 +850,88 @@ void handle_timestamp(federate_t *my_fed) {
         // get the max of the TAGs. 
         // FIXME: what about PTAGs?
         // FIXME: Maybe we can use TAGs from a transient that left??? 
+        // for (int j = 0; j < my_fed->enclave.num_upstream; j++) {
+        //     federate_t* upstream = _f_rti->enclaves[my_fed->enclave.upstream[j]];
+        //     // Ignore this federate if it has resigned or if it a transient that 
+        //     // is absent
+        //     if (upstream->enclave.state == NOT_CONNECTED) {
+        //         continue;
+        //     }
+        //     if (lf_tag_compare(federate_start_tag, upstream->enclave.last_granted) < 0) {
+        //         federate_start_tag.time = upstream->enclave.last_granted.time;
+        //         federate_start_tag.microstep = upstream->enclave.last_granted.microstep;
+        //         federate_start_tag.microstep++;
+        //     }
+        // }
+
         tag_t federate_start_tag = NEVER_TAG;
-        for (int j = 0; j < my_fed->enclave.num_upstream; j++) {
-            federate_t* upstream = _f_rti->enclaves[my_fed->enclave.upstream[j]];
-            // Ignore this federate if it has resigned or if it a transient that 
-            // is absent
-            if (upstream->enclave.state == NOT_CONNECTED) {
-                continue;
-            }
-            if (lf_tag_compare(federate_start_tag, upstream->enclave.last_granted) < 0) {
-                federate_start_tag.time = upstream->enclave.last_granted.time;
-                federate_start_tag.microstep = upstream->enclave.last_granted.microstep;
-                federate_start_tag.microstep++;
-            }
-        }
-        // Iterate over the downstream federates to query the current event tag.
+        // Iterate over the downstream federates 
         for (int j = 0; j < my_fed->enclave.num_downstream; j++) {
             federate_t* downstream = _f_rti->enclaves[my_fed->enclave.downstream[j]];
+            
             // Ignore this federate if it has resigned.
-            if (downstream->enclave.state == NOT_CONNECTED) {
-                continue;
-            }
-            if (lf_tag_compare(federate_start_tag, downstream->enclave.last_granted) < 0) {
+            // if (downstream->enclave.state == NOT_CONNECTED) {
+            //     continue;
+            // }
+
+            // Get the max over the TAG of the downstreams
+            if (lf_tag_compare(downstream->enclave.last_granted, federate_start_tag) > 0) {
                 federate_start_tag.time = downstream->enclave.last_granted.time;
                 federate_start_tag.microstep = downstream->enclave.last_granted.microstep;
-                federate_start_tag.microstep++;
             }
+
+            // int compare_tag_ltc = lf_tag_compare(downstream->enclave.last_granted, downstream->enclave.completed);
+            // if (compare_tag_ltc >= 0) {
+            //     federate_start_tag.time = downstream->enclave.last_granted.time;
+            //     federate_start_tag.microstep = downstream->enclave.last_granted.microstep;
+            // } else {
+            //     if (lf_tag_compare(downstream->enclave.completed, downstream->enclave.next_event) >= 0) {
+            //         federate_start_tag.time = downstream->enclave.completed.time;
+            //         federate_start_tag.microstep = downstream->enclave.completed.microstep;
+            //     } else {
+            //         if (lf_tag_compare(downstream->enclave.next_event, NEVER_TAG) == 0) {//||
+            //             // lf_tag_compare(downstream->enclave.next_event, stop_tag) == 0)
+            //             federate_start_tag.time = downstream->enclave.completed.time;
+            //             federate_start_tag.microstep = downstream->enclave.completed.microstep;
+            //         } else {
+            //             federate_start_tag.time = downstream->enclave.next_event.time;
+            //             federate_start_tag.microstep = downstream->enclave.next_event.microstep;
+            //         }
+            //     }
+            // }
+
+            // if (lf_tag_compare(federate_start_tag, downstream_proposed_tag) < 0) {
+            //     federate_start_tag.time = downstream_proposed_tag.time;
+            //     federate_start_tag.microstep = downstream_proposed_tag.microstep;
+            // }
+            // // When the TAG of the downstream have never been set or have been set 
+            // // but the federate could advance, then 
+            // // if (lf_tag_compare(downstream->enclave.last_granted, NEVER_TAG) < 0) {
+            // // if (lf_tag_compare(downstream->enclave.last_granted, downstream->enclave.completed) < 0) {
+
+            // // }
+            // if (lf_tag_compare(federate_start_tag, downstream->enclave.last_granted) < 0) {
+            //     federate_start_tag.time = downstream->enclave.last_granted.time;
+            //     federate_start_tag.microstep = downstream->enclave.last_granted.microstep;
+            //     federate_start_tag.microstep++;
+            // }
         }
 
         // If the transient federate has no connected upstream or downstream federates,
         // then do not wait for the start time
-        if (lf_tag_compare(federate_start_tag, NEVER_TAG) == 0) {
+        if (lf_tag_compare(federate_start_tag, NEVER_TAG) != 0
+            && (lf_tag_compare(federate_start_tag, my_fed->effective_start_tag) > 0))
+        {
+            my_fed->effective_start_tag.time = federate_start_tag.time;
+            my_fed->effective_start_tag.microstep = federate_start_tag.microstep;
+            my_fed->effective_start_tag.microstep++;
+        } else {
             my_fed->start_time_is_set = true;
+            // FIXME: Should add the delay?
             my_fed->effective_start_tag.time += DELAY_START;
             my_fed->effective_start_tag.microstep = 0u;
-        }
+        } 
+
         lf_mutex_unlock(&rti_mutex);
 
         // Once the effective start time set, sent it to the joining transient,
@@ -2107,7 +2156,7 @@ void reset_transient_federate(federate_t* fed) {
     strncpy(fed->server_hostname ,"localhost", INET_ADDRSTRLEN);
     fed->server_ip_addr.s_addr = 0;
     fed->server_port = -1;
-    fed->enclave.requested_stop = false;
+    fed->requested_stop = false;
     fed->is_transient = true;
     // FIXME: Should it be reset to the NEVER_TAG?
     fed->effective_start_tag = NEVER_TAG;
