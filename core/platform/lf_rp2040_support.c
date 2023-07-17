@@ -314,8 +314,12 @@ int lf_mutex_unlock(lf_mutex_t* mutex) {
  * /// TODO: mutex here not used 
  */
 int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
-    // set max permits to number of threads
-    sem_init(cond, 0, NUMBER_OF_WORKERS);
+    lf_mutex_lock(mutex);
+    // init cond var
+    cond->flag = false;
+    cond->num_waiting = 0;
+    cond->mut = mutex; 
+    lf_mutex_unlock(mutex);
     return 0;
 }
 
@@ -325,12 +329,10 @@ int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_broadcast(lf_cond_t* cond) {
-    // release all permits
-    while(sem_release(cond));
-    // check all released
-    if (sem_available(cond) != NUMBER_OF_WORKERS) {
-        return -1;
-    }
+    lf_mutex_lock(cond->mut);
+    cond->flag = true;
+    cond->num_waiting = 0;
+    lf_mutex_unlock(cond->mut);
     return 0;
 }
 
@@ -340,9 +342,8 @@ int lf_cond_broadcast(lf_cond_t* cond) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_signal(lf_cond_t* cond) {
-    if(!sem_release(cond)) {
-        return -1;
-    }
+    cond->flag = true;
+    cond->num_waiting--;
     return 0;
 }
 

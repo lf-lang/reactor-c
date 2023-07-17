@@ -22,8 +22,12 @@
 
 #ifdef LF_THREADED
 typedef void *(*lf_function_t) (void *);
-typedef semaphore_t lf_cond_t;
 typedef recursive_mutex_t lf_mutex_t;
+typedef struct {
+    bool flag;
+    uint32_t num_wait;
+    lf_mutex_t *mut;
+} lf_cond_t;
 typedef enum {
     CORE_0,
     CORE_1,
