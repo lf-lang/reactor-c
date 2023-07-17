@@ -43,6 +43,10 @@ typedef enum {
     CORE_1,
 } lf_thread_t;
 
+void _rp2040_core1_entry();
+// TODO: add atomics
+
+
 /**
  * @brief Method to run on core1 of pico to load
  cond_t;
