@@ -206,15 +206,17 @@ typedef struct federation_rti_t {
  * this can be implemented by disabling interrupts.
  * Users of this function must ensure that lf_init_critical_sections() is
  * called first and that lf_critical_section_exit() is called later.
+ * @param env Ignored (present for compatibility).
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_critical_section_enter();
+extern int lf_critical_section_enter(environment_t* env);
 
 /**
  * Exit the critical section entered with lf_lock_time().
+ * @param env Ignored (present for compatibility).
  * @return 0 on success, platform-specific error number otherwise.
  */
-extern int lf_critical_section_exit();
+extern int lf_critical_section_exit(environment_t* env);
 
 /**
  * Create a server and enable listening for socket connections.

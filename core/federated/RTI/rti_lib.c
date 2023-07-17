@@ -38,23 +38,11 @@ lf_mutex_t rti_mutex;
 lf_cond_t received_start_times;
 lf_cond_t sent_start_time;
 
-/**
- * Enter a critical section where logical time and the event queue are guaranteed
- * to not change unless they are changed within the critical section.
- * this can be implemented by disabling interrupts.
- * Users of this function must ensure that lf_init_critical_sections() is
- * called first and that lf_critical_section_exit() is called later.
- * @return 0 on success, platform-specific error number otherwise.
- */
-extern int lf_critical_section_enter() {
+extern int lf_critical_section_enter(environment_t* env) {
     return lf_mutex_lock(&rti_mutex);
 }
 
-/**
- * Exit the critical section entered with lf_lock_time().
- * @return 0 on success, platform-specific error number otherwise.
- */
-extern int lf_critical_section_exit() {
+extern int lf_critical_section_exit(environment_t* env) {
     return lf_mutex_unlock(&rti_mutex);
 }
 
