@@ -821,7 +821,7 @@ bool _lf_worker_handle_STP_violation_for_reaction(environment_t* env, int worker
     //  physical time (deadline).
     // @note In absence of an STP handler, the is_STP_violated will be passed down the reaction
     //  chain until it is dealt with in a downstream STP handler.
-    if (reaction->is_STP_violated == true) {
+    if (reaction->is_STP_violated == true && !reaction->is_an_input_reaction) {
         reaction_function_t handler = reaction->STP_handler;
         LF_PRINT_LOG("STP violation detected.");
 
@@ -935,11 +935,11 @@ void _lf_worker_do_work(environment_t *env, int worker_number) {
             != NULL) {
         // Got a reaction that is ready to run.
         LF_PRINT_DEBUG("Worker %d: Got from scheduler reaction %s: "
-                "level: %lld, is control reaction: %d, chain ID: %llu, and deadline " PRINTF_TIME ".",
+                "level: %lld, is input reaction: %d, chain ID: %llu, and deadline " PRINTF_TIME ".",
                 worker_number,
                 current_reaction_to_execute->name,
                 LF_LEVEL(current_reaction_to_execute->index),
-                current_reaction_to_execute->is_a_control_reaction,
+                current_reaction_to_execute->is_an_input_reaction,
                 current_reaction_to_execute->chain_id,
                 current_reaction_to_execute->deadline);
 

@@ -1365,15 +1365,6 @@ void reset_status_fields_on_input_port_triggers() {
 }
 
 /**
- * Mark the trigger associated with the specified port to
- * indicate whether a control reaction is waiting.
- */
-// void mark_control_reaction_waiting(int portID, bool waiting) {
-//     trigger_t* network_input_port_action = _lf_action_for_port(portID)->trigger;
-//     network_input_port_action->is_a_control_reaction_waiting = waiting;
-// }
-
-/**
  * Return the status of the port at the current tag.
  *
  * This assumes that the caller holds the mutex.
@@ -1430,7 +1421,6 @@ void enqueue_network_output_control_reactions(environment_t* env){
     for (int i = 0; i < num_sender_reactions; i++) {
         reaction_t* reaction = port_absent_reaction[i];
         if (reaction && reaction->status == inactive) {
-            reaction->is_a_control_reaction = true;
             LF_PRINT_DEBUG("Inserting network output control reaction on reaction queue.");
             lf_scheduler_trigger_reaction(env->scheduler, reaction, -1);
         }

@@ -1371,13 +1371,6 @@ void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker) {
 void schedule_output_reactions(environment_t *env, reaction_t* reaction, int worker) {
     assert(env != GLOBAL_ENVIRONMENT);
 
-    if (reaction->is_a_control_reaction) {
-        // Control reactions will not produce an output but can have
-        // effects in order to have certain precedence requirements.
-        // No need to execute this function if the reaction is a control
-        // reaction.
-        return;
-    }
     // If the reaction produced outputs, put the resulting triggered
     // reactions into the reaction queue. As an optimization, if exactly one
     // downstream reaction is enabled by this reaction, then it may be
