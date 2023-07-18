@@ -842,6 +842,7 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
     return 1;
 }
 
+#if SCHEDULER != FS
 /**
  * Schedule the specified trigger at env->current_tag.time plus the offset of the
  * specified trigger plus the delay. See schedule_token() in reactor.h for details.
@@ -875,7 +876,6 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
  * @param token The token wrapping the payload or NULL for no payload.
  * @return A handle to the event, or 0 if no new event was scheduled, or -1 for error.
  */
-#if SCHEDULER != FS
 trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
     assert(env != GLOBAL_ENVIRONMENT);
     if (_lf_is_tag_after_stop_tag(env, env->current_tag)) {
@@ -1119,9 +1119,34 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     return return_value;
 }
 #else
+/**
+ * @brief Implementation of _lf_schedule for the static scheduler.
+ * FIXME: This implementation cannot handle the scenario when a reaction invocation
+ * is scheduled at time t but the same reaction is invoked at an earlier t' < t.
+ * In this case, the token for t is erased by the earlier invocation at t'.
+ * To solve this issue, we need a multi-slot buffer storing multiple tokens, or
+ * design instructions for declaring trigger variables in the Embedded VM program.
+ * Currently, it is the compiler's responsibility to make the above scenario happen.
+ * 
+ * @param env Environment in which we are executing.
+ * @param trigger The trigger to be invoked at a later logical time.
+ * @param extra_delay The logical time delay, which gets added to the
+ *  trigger's minimum delay, if it has one. If this number is negative,
+ *  then zero is used instead.
+ * @param token The token wrapping the payload or NULL for no payload.
+ * @return A handle to the event. Currently, always return 0.
+ */
 trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
-    // Put the corresponding reactions onto the reaction queue.
+    // Copy the token pointer into the trigger struct so that the
+    // reactions can access it.
+    _lf_replace_template_token((token_template_t*)trigger, token);
+
+    // Decrement the reference count because the event queue no longer needs this token.
+    _lf_done_using(token);
+    
+    // Iterate over all triggered reactions.
     for (int i = 0; i < trigger->number_of_reactions; i++) {
+        // Mark reactions to be triggered by the scheduled action as queued.
         reaction_t *reaction = trigger->reactions[i];
         reaction->status = queued;
     }
