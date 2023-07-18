@@ -875,6 +875,7 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
  * @param token The token wrapping the payload or NULL for no payload.
  * @return A handle to the event, or 0 if no new event was scheduled, or -1 for error.
  */
+#if SCHEDULER != FS
 trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
     assert(env != GLOBAL_ENVIRONMENT);
     if (_lf_is_tag_after_stop_tag(env, env->current_tag)) {
@@ -1117,6 +1118,16 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     }
     return return_value;
 }
+#else
+trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t extra_delay, lf_token_t* token) {
+    // Put the corresponding reactions onto the reaction queue.
+    for (int i = 0; i < trigger->number_of_reactions; i++) {
+        reaction_t *reaction = trigger->reactions[i];
+        reaction->status = queued;
+    }
+    return 0;
+}
+#endif
 
 /**
  * Insert reactions triggered by trigger to the reaction queue...
