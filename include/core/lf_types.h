@@ -73,10 +73,10 @@ typedef unsigned short int ushort;
 #define LET 4
 #define NP 5
 #define PEDF_NP 6
-#define FS 7
+#define STATIC 7
 
 // If we use the fully static scheduler, then we want local time at each reactor
-#if SCHEDULER == FS
+#if SCHEDULER == STATIC
     #ifndef REACTOR_LOCAL_TIME
     #define REACTOR_LOCAL_TIME
     #endif
@@ -320,7 +320,7 @@ typedef struct self_base_t {
 #if defined MODAL_REACTORS
     reactor_mode_state_t _lf__mode_state;    // The current mode (for modal models).
 #endif
-// This is used by e.g. the fully static scheduler (FS)
+// This is used by e.g. the fully static scheduler (STATIC)
 #if defined REACTOR_LOCAL_TIME // FIXME: The output_ports pointers isnt obviously related to local time
     tag_t tag;                               // The current tag of the reactor instance.
     lf_port_base_t **output_ports;          // An array of pointers to output ports of this reactor.

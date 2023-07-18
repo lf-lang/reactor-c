@@ -842,7 +842,7 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
     return 1;
 }
 
-#if SCHEDULER != FS
+#if SCHEDULER != STATIC
 /**
  * Schedule the specified trigger at env->current_tag.time plus the offset of the
  * specified trigger plus the delay. See schedule_token() in reactor.h for details.

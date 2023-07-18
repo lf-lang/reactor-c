@@ -45,7 +45,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "semaphore.h"
 #include <stdbool.h>
 
-#if SCHEDULER == FS
+#if SCHEDULER == STATIC
 #include "lf_types.h"
 #include "scheduler_instructions.h"
 #endif
@@ -146,7 +146,7 @@ typedef struct lf_scheduler_t {
     // Is not touched by `init_sched_instance` and must be initialized by each scheduler that needs it
     custom_scheduler_data_t * custom_data;
 
-#if SCHEDULER == FS
+#if SCHEDULER == STATIC
 
     /**
      * @brief Points to an array of program counters for each worker.
@@ -213,7 +213,7 @@ typedef struct lf_scheduler_t {
 typedef struct {
     size_t* num_reactions_per_level;
     size_t num_reactions_per_level_size;
-#if SCHEDULER == FS
+#if SCHEDULER == STATIC
     struct self_base_t** reactor_self_instances;
     size_t num_reactor_self_instances;
     bool* reactor_reached_stop_tag;

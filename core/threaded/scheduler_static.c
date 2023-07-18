@@ -29,13 +29,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /**
- * A fully static (FS) scheduler for the threaded runtime of the C target of
- * Lingua Franca.
+ * A static scheduler for the threaded runtime of the C target of Lingua Franca.
  *
  * @author{Shaokai Lin <shaokai@berkeley.edu>}
  */
 #include "lf_types.h"
-#if SCHEDULER == FS || (!defined(SCHEDULER) && defined(LF_THREADED))
+#if SCHEDULER == STATIC || (!defined(SCHEDULER) && defined(LF_THREADED))
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
@@ -521,7 +520,7 @@ void lf_sched_init(
         //        to a meaningful value. When the first time lf_sched_init() is
         //        called, start_time has not been set.
 
-        // Initialize the local tags for the FS scheduler.
+        // Initialize the local tags for the STATIC scheduler.
         for (int i = 0; i < env->scheduler->num_reactor_self_instances; i++) {
             env->scheduler->reactor_self_instances[i]->tag.time = start_time;
             env->scheduler->reactor_self_instances[i]->tag.microstep = 0;
