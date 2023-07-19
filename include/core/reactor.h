@@ -315,20 +315,18 @@ void lf_set_stp_offset(interval_t offset);
 /**
  * Print a snapshot of the priority queues used during execution
  * (for debugging).
- * @param env The environment in which we are execution
+ * @param env The environment in which we are executing.
  */
 void lf_print_snapshot(environment_t* env);
 
 /**
  * Request a stop to execution as soon as possible.
- * In a non-federated execution, this will occur
- * at the conclusion of the current logical time.
- * In a federated execution, it will likely occur at
- * a later logical time determined by the RTI so that
- * all federates stop at the same logical time.
- * @param env The environment in which we are execution
+ * In a non-federated execution with only a single enclave, this will occur
+ * one microstep later than the current tag. In a federated execution or when
+ * there is more than one enclave, it will likely occur at a later tag determined
+ * by the RTI so that all federates and enclaves stop at the same tag.
  */
-void _lf_request_stop(environment_t *env);
+void lf_request_stop();
 
 /**
  * Allocate zeroed-out memory and record the allocated memory on
@@ -525,12 +523,8 @@ trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_d
  */
 trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, void* value, size_t length);
 
-/**
- * For a federated execution, send a STOP_REQUEST message
- * to the RTI.
- * @param env The environment in which we are executing
- */
-void _lf_fd_send_stop_request_to_rti(environment_t* env);
+// See reactor.h for doc.
+int _lf_fd_send_stop_request_to_rti(tag_t stop_tag);
 
 /**
  * @brief Will update the argument to point to the beginning of the array of environments in this program
@@ -552,24 +546,6 @@ void _lf_create_environments();
  * These functions must be implemented by both threaded and unthreaded
  * runtime. Should be routed to appropriate API calls in platform.h
 */
-
-/**
- * @brief Notify other threads of new events on the event queue.
- * 
- */
-void _lf_notify_of_event();
-
-/**
- * @brief Enter critical section. Must be paired with a
- * `_lf_critical_section_exit()`
- * 
- */
-void _lf_critical_section_enter();
-
-/**
- * @brief Leave critical section
- */
-void _lf_critical_section_exit();
 
 #endif /* REACTOR_H */
 /** @} */

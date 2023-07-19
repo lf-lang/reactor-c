@@ -78,12 +78,6 @@ char* ERROR_SENDING_MESSAGE = "ERROR sending message to federate via RTI";
 lf_mutex_t outbound_socket_mutex;
 lf_cond_t port_status_changed;
 
-// Struct for passing arguments to listen_to_federates
-typedef struct  {
-    environment_t* env;
-    uint16_t fed_id;
-} listen_to_federates_args_t;
-
 /**
  * The state of this federate instance.
  */
@@ -102,7 +96,7 @@ federate_instance_t _fed = {
         .waiting_for_TAG = false,
         .has_upstream = false,
         .has_downstream = false,
-        .sent_a_stop_request_to_rti = false,
+        .received_stop_request_from_rti = false,
         .last_sent_LTC = (tag_t) {.time = NEVER, .microstep = 0u},
         .last_sent_NET = (tag_t) {.time = NEVER, .microstep = 0u},
         .min_delay_from_physical_action_to_federate_output = NEVER,
@@ -633,19 +627,12 @@ void* handle_p2p_connections_from_federates(void* env_arg) {
                 remote_fed_id);
 
         // Start a thread to listen for incoming messages from other federates.
-        // We cannot pass a pointer to remote_fed_id to the thread we need to create
-        // because that variable is on the stack. Instead, we malloc memory.
-        // The created thread is responsible for calling free().
-        listen_to_federates_args_t* args = (listen_to_federates_args_t*)malloc(sizeof(listen_to_federates_args_t));
-        if (args == NULL) {
-            lf_print_error_and_exit("calloc failed.");
-        }
-        args->env = env;
-        args->fed_id = remote_fed_id;
+        // The fed_id is a uint16_t, which we assume can be safely cast to and from void*.
+        void* fed_id_arg = (void*)(uintptr_t)remote_fed_id;
         int result = lf_thread_create(
                 &_fed.inbound_socket_listeners[received_federates],
                 listen_to_federates,
-                (void *) args);
+                fed_id_arg);
         if (result != 0) {
             // Failed to create a listening thread.
             close(socket_id);
@@ -927,65 +914,40 @@ void connect_to_federate(uint16_t remote_federate_id) {
  * @param rti_socket TCP socket for connection with the RTI.
  */
 void perform_hmac_authentication(int rti_socket) {
-    unsigned char buffer[1 + NONCE_LENGTH];
-    read_from_socket_errexit(rti_socket, 1 + NONCE_LENGTH, buffer,
-                             "Failed to read RTI hello.");
-    if (buffer[0] != MSG_TYPE_RTI_NONCE) {
-        lf_print_error_and_exit(
-            "Received unexpected response %u from the RTI (see net_common.h).",
-            buffer[0]);
-    }
+
+    // Send buffer including message type, federate ID, federate's nonce.
+    size_t fed_id_length = sizeof(uint16_t);
+    size_t message_length = 1 + fed_id_length + NONCE_LENGTH;
+    unsigned char fed_hello_buf[message_length];
+    fed_hello_buf[0] = MSG_TYPE_FED_NONCE;
+    encode_uint16((uint16_t)_lf_my_fed_id, &fed_hello_buf[1]);
+    unsigned char fed_nonce[NONCE_LENGTH];
+    RAND_bytes(fed_nonce, NONCE_LENGTH);
+    memcpy(&fed_hello_buf[1 + fed_id_length], fed_nonce, NONCE_LENGTH);
+    write_to_socket(rti_socket, message_length, fed_hello_buf);
+
+    // Check HMAC of received FED_RESPONSE message.
     unsigned int hmac_length = SHA256_HMAC_LENGTH;
     size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
-    // HMAC tag is created with MSG_TYPE, federate ID, received rti nonce.
-    unsigned char mac_buf[1 + sizeof(uint16_t) + NONCE_LENGTH];
-    mac_buf[0] = MSG_TYPE_FED_RESPONSE;
-    encode_uint16((uint16_t)_lf_my_fed_id, &mac_buf[1]);
-    memcpy(&mac_buf[1 + sizeof(uint16_t)], &buffer[1], NONCE_LENGTH);
-    unsigned char hmac_tag[hmac_length];
-    unsigned char * ret = HMAC(EVP_sha256(), federation_metadata.federation_id,
-        federation_id_length, mac_buf, 1 + sizeof(uint16_t) + NONCE_LENGTH,
-        hmac_tag, &hmac_length);
-    if (ret == NULL) {
-        lf_print_error_and_exit("HMAC failure for MSG_TYPE_FED_RESPONSE.");
-    }
-    
-    // Buffer for message type, federate's nonce, federate ID, and HMAC tag.
-    unsigned char sender[1 + NONCE_LENGTH + sizeof(uint16_t) + hmac_length];
-    sender[0] = MSG_TYPE_FED_RESPONSE;
-    unsigned char federate_nonce[NONCE_LENGTH];
-    RAND_bytes(federate_nonce, NONCE_LENGTH);
-    int num_bytes = 1;
-    memcpy(&sender[num_bytes], federate_nonce, NONCE_LENGTH);
-    num_bytes += NONCE_LENGTH;
-    encode_uint16((uint16_t)_lf_my_fed_id, &sender[num_bytes]);
-    num_bytes += sizeof(uint16_t);
-    memcpy(&sender[num_bytes], hmac_tag, hmac_length);
-    num_bytes += hmac_length;
-    write_to_socket(rti_socket, num_bytes, sender);
 
-    // Received MSG_TYPE_RTI_RESPONSE
-    unsigned char received[1 + hmac_length];
-    read_from_socket_errexit(rti_socket, 1 + hmac_length, received,
-                             "Failed to read RTI response.");
+    unsigned char received[1 + NONCE_LENGTH + hmac_length];
+    read_from_socket_errexit(rti_socket, 1 + NONCE_LENGTH + hmac_length, received, "Failed to read RTI response.");
     if (received[0] != MSG_TYPE_RTI_RESPONSE) {
-        lf_print_error_and_exit(
-            "Received unexpected response %u from the RTI (see net_common.h).",
-            received[0]);
+        lf_print_error("Received unexpected response %u from the RTI (see net_common.h).",
+                received[0]);
     }
-    // HMAC tag is created with MSG_TYPE and federate nonce.
-    unsigned char mac_buf2[1 + NONCE_LENGTH];
-    mac_buf2[0] = MSG_TYPE_RTI_RESPONSE;
-    memcpy(&mac_buf2[1], federate_nonce, NONCE_LENGTH);
+    // Create tag to compare to received tag.
+    unsigned char buf_to_check[1 + fed_id_length + NONCE_LENGTH];
+    buf_to_check[0] = MSG_TYPE_RTI_RESPONSE;
+    encode_uint16((uint16_t)_lf_my_fed_id, &buf_to_check[1]);
+    memcpy(&buf_to_check[1 + fed_id_length], fed_nonce, NONCE_LENGTH);
     unsigned char fed_tag[hmac_length];
-    ret = HMAC(EVP_sha256(), federation_metadata.federation_id, federation_id_length,
-         mac_buf2, 1 + NONCE_LENGTH, fed_tag, &hmac_length);
-    if (ret == NULL) {
-        lf_print_error_and_exit("HMAC failure for MSG_TYPE_RTI_RESPONSE.");
-    }
+    HMAC(EVP_sha256(), federation_metadata.federation_id, federation_id_length, buf_to_check, 1 + fed_id_length + NONCE_LENGTH,
+         fed_tag, &hmac_length);
+
     // Compare received tag and created tag.
-    if (memcmp(&received[1], fed_tag, hmac_length) != 0) {
-        // Federation IDs do not match. Send back a MSG_TYPE_REJECT message.
+    if (memcmp(&received[1 + NONCE_LENGTH], fed_tag, hmac_length) != 0) {
+        // HMAC does not match. Send back a MSG_TYPE_REJECT message.
         lf_print_error("HMAC authentication failed.");
         unsigned char response[2];
         response[0] = MSG_TYPE_REJECT;
@@ -994,8 +956,19 @@ void perform_hmac_authentication(int rti_socket) {
             rti_socket, 2, response,
             "Federate failed to write MSG_TYPE_REJECT message on the socket.");
         close(rti_socket);
-    } else {
+    }
+    else {
         LF_PRINT_LOG("HMAC verified.");
+        // HMAC tag is created with MSG_TYPE_FED_RESPONSE and received federate nonce.
+        unsigned char mac_buf[1 + NONCE_LENGTH];
+        mac_buf[0] = MSG_TYPE_FED_RESPONSE;
+        memcpy(&mac_buf[1], &received[1], NONCE_LENGTH);
+        // Buffer for message type and HMAC tag.
+        unsigned char sender[1 + hmac_length];
+        sender[0] = MSG_TYPE_FED_RESPONSE;
+        HMAC(EVP_sha256(), federation_metadata.federation_id, federation_id_length, mac_buf, 1 + NONCE_LENGTH,
+             &sender[1], &hmac_length);
+        write_to_socket(rti_socket, 1 + hmac_length, sender);
     }
 }
 #endif
@@ -1059,7 +1032,7 @@ void connect_to_rti(const char* hostname, int port) {
         // Get address structure matching hostname and hints criteria, and
         // set port to the port number provided in str. There should only 
         // ever be one matching address structure, and we connect to that.
-        int server = getaddrinfo(hostname, &str, &hints, &res);
+        int server = getaddrinfo(hostname, (const char*)&str, &hints, &res);
         if (server != 0) {
             lf_print_error_and_exit("No host for RTI matching given hostname: %s", hostname);
         }
@@ -1101,7 +1074,7 @@ void connect_to_rti(const char* hostname, int port) {
                 lf_print_error_and_exit("Failed to connect to the RTI after %d retries. Giving up.",
                                      CONNECT_NUM_RETRIES);
             }
-            lf_print("Could not connect to RTI at %s. Will try again every %d seconds.",
+            lf_print("Could not connect to RTI at %s. Will try again every %lld seconds.",
                    hostname, CONNECT_RETRY_INTERVAL / BILLION);
             // Wait CONNECT_RETRY_INTERVAL nanoseconds.
             if (lf_sleep(CONNECT_RETRY_INTERVAL) != 0) {
@@ -1564,7 +1537,7 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
     // Do not write if the socket is closed.
     if (socket >= 0) {
         // Trace the event when tracing is enabled
-        tracepoint_federate_to_rti(_fed.trace, send_PORT_ABS, fed_ID, &current_message_intended_tag);
+        tracepoint_federate_to_rti(_fed.trace, send_PORT_ABS, _lf_my_fed_id, &current_message_intended_tag);
         write_to_socket_errexit_with_mutex(socket, message_length, buffer, &outbound_socket_mutex,
                 "Failed to send port absent message for port %hu to federate %hu.",
                 port_ID, fed_ID);
@@ -1648,7 +1621,7 @@ void wait_until_port_status_known(environment_t* env, int port_ID, interval_t ST
     // for the current tag could have been received in time
     // but not the the body of the message.
     // Wait on the tag barrier based on the current tag. 
-    _lf_wait_on_global_tag_barrier(env, env->current_tag);
+    _lf_wait_on_tag_barrier(env, env->current_tag);
 
     // Done waiting
     // If the status of the port is still unknown, assume it is absent.
@@ -1688,7 +1661,7 @@ void wait_until_port_status_known(environment_t* env, int port_ID, interval_t ST
  *  scalar and 0 for no payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-static trigger_handle_t schedule_message_received_from_network_already_locked(
+static trigger_handle_t schedule_message_received_from_network_locked(
         environment_t* env,
         trigger_t* trigger,
         tag_t tag,
@@ -1806,16 +1779,11 @@ void _lf_close_inbound_socket(int fed_id) {
  * This just sets the last known status tag of the port specified
  * in the message.
  *
- * This assumes the caller does not hold the mutex, which it acquires.
- *
- * @param env The environment of the federate
  * @param socket The socket to read the message from
  * @param buffer The buffer to read
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  */
-static void handle_port_absent_message(environment_t* env, int socket, int fed_id) {
-    assert(env != GLOBAL_ENVIRONMENT);
-
+static void handle_port_absent_message(int socket, int fed_id) {
     size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(socket, bytes_to_read, buffer,
@@ -1839,6 +1807,10 @@ static void handle_port_absent_message(environment_t* env, int socket, int fed_i
             port_id,
             fed_id
     );
+
+    // Environment is always the one corresponding to the top-level scheduling enclave.
+    environment_t *env;
+    _lf_get_environments(&env);
 
     lf_mutex_lock(&env->mutex);
 #ifdef FEDERATED_DECENTRALIZED
@@ -1910,18 +1882,19 @@ void handle_message(int socket, int fed_id) {
  * and calculate an offset to pass to the schedule function.
  * This function assumes the caller does not hold the mutex lock.
  * Instead of holding the mutex lock, this function calls
- * _lf_increment_global_tag_barrier with the tag carried in
+ * _lf_increment_tag_barrier with the tag carried in
  * the message header as an argument. This ensures that the current tag
  * will not advance to the tag of the message if it is in the future, or
  * the tag will not advance at all if the tag of the message is
  * now or in the past.
- * @param env The environment of the federate
  * @param socket The socket to read the message from.
  * @param buffer The buffer to read.
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  */
-void handle_tagged_message(environment_t* env, int socket, int fed_id) {
-    assert(env != GLOBAL_ENVIRONMENT);
+void handle_tagged_message(int socket, int fed_id) {
+    // Environment is always the one corresponding to the top-level scheduling enclave.
+    environment_t *env;
+    _lf_get_environments(&env);
 
     // FIXME: Need better error handling?
     // Read the header which contains the timestamp.
@@ -1967,7 +1940,7 @@ void handle_tagged_message(environment_t* env, int socket, int fed_id) {
     // by the message. If this tag is in the past, the function will cause
     // the tag to freeze at the current level.
     // If something happens, make sure to release the barrier.
-    _lf_increment_global_tag_barrier(env, intended_tag);
+    _lf_increment_tag_barrier(env, intended_tag);
 #endif
     LF_PRINT_LOG("Received message with tag: " PRINTF_TAG ", Current tag: " PRINTF_TAG ".",
             intended_tag.time - start_time, intended_tag.microstep,
@@ -2068,14 +2041,14 @@ void handle_tagged_message(environment_t* env, int socket, int fed_id) {
         }
 
         LF_PRINT_LOG("Calling schedule with tag " PRINTF_TAG ".", intended_tag.time - start_time, intended_tag.microstep);
-        schedule_message_received_from_network_already_locked(env, action->trigger, intended_tag, message_token);
+        schedule_message_received_from_network_locked(env, action->trigger, intended_tag, message_token);
     }
 
 
 #ifdef FEDERATED_DECENTRALIZED // Only applicable for federated programs with decentralized coordination
     // Finally, decrement the barrier to allow the execution to continue
     // past the raised barrier
-    _lf_decrement_global_tag_barrier_locked(env);
+    _lf_decrement_tag_barrier_locked(env);
 #endif
 
     // The mutex is unlocked here after the barrier on
@@ -2095,15 +2068,13 @@ void handle_tagged_message(environment_t* env, int socket, int fed_id) {
  * a notification of this update, which may unblock whichever worker
  * thread is trying to advance time.
  *
- * This function assumes the caller does not hold the mutex lock,
- * which it acquires.
- *
- * @param env The environment of the federate
  * @note This function is very similar to handle_provisinal_tag_advance_grant() except that
  *  it sets last_TAG_was_provisional to false.
  */
-void handle_tag_advance_grant(environment_t *env) {
-    assert(env != GLOBAL_ENVIRONMENT);
+void handle_tag_advance_grant(void) {
+    // Environment is always the one corresponding to the top-level scheduling enclave.
+    environment_t *env;
+    _lf_get_environments(&env);
 
     size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_read];
@@ -2176,16 +2147,14 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
  * tag and, for centralized coordination, inserts blocking reactions
  * and null-message-sending output reactions at that tag.
  *
- * This function assumes the caller does not hold the mutex lock,
- * which it acquires.
- *
- * @param env The environment of the federate
  * @note This function is similar to handle_tag_advance_grant() except that
  *  it sets last_TAG_was_provisional to true and also it does not update the
  *  last known tag for input ports.
  */
-void handle_provisional_tag_advance_grant(environment_t* env) {
-    assert(env != GLOBAL_ENVIRONMENT);
+void handle_provisional_tag_advance_grant() {
+    // Environment is always the one corresponding to the top-level scheduling enclave.
+    environment_t *env;
+    _lf_get_environments(&env);
 
     size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_read];
@@ -2285,43 +2254,41 @@ void handle_provisional_tag_advance_grant(environment_t* env) {
 
 /**
  * Send a MSG_TYPE_STOP_REQUEST message to the RTI with payload equal
- * to the current tag plus one microstep.
- *
- * This function raises a global barrier on
- * logical tag at the current tag.
- *
- * This function assumes the caller holds the mutex lock.
- * @param env The environment of the federate
+ * to the specified tag plus one microstep. If this federate has previously
+ * received a stop request from the RTI, then do not send the message and
+ * return 1. Return -1 if the socket is disconnected. Otherwise, return 0.
+ * @return 0 if the message is sent.
  */
-void _lf_fd_send_stop_request_to_rti(environment_t* env) {
-    assert(env != GLOBAL_ENVIRONMENT);
+int _lf_fd_send_stop_request_to_rti(tag_t stop_tag) {
 
-    // Do not send a stop request twice.
-    if (_fed.sent_a_stop_request_to_rti == true) {
-        return;
-    }
-    LF_PRINT_LOG("Requesting the whole program to stop.");
-    // Raise a logical time barrier at the current tag.
-    _lf_increment_global_tag_barrier_already_locked(env, env->current_tag);
-
-    // Send a stop request with the current tag to the RTI
+    // Send a stop request with the specified tag to the RTI
     unsigned char buffer[MSG_TYPE_STOP_REQUEST_LENGTH];
     // Stop at the next microstep
-    ENCODE_STOP_REQUEST(buffer, env->current_tag.time, env->current_tag.microstep + 1);
+    ENCODE_STOP_REQUEST(buffer, stop_tag.time, stop_tag.microstep + 1);
 
     lf_mutex_lock(&outbound_socket_mutex);
-    if (_fed.socket_TCP_RTI < 0) {
-        lf_print_warning("Socket is no longer connected. Dropping message.");
+    // Do not send a stop request if a stop request has been previously received from the RTI.
+    if (!_fed.received_stop_request_from_rti) {
+        LF_PRINT_LOG("Sending to RTI a MSG_TYPE_STOP_REQUEST message with tag " PRINTF_TAG ".",
+                stop_tag.time - start_time,
+                stop_tag.microstep);
+
+        if (_fed.socket_TCP_RTI < 0) {
+            lf_print_warning("Socket is no longer connected. Dropping message.");
+            lf_mutex_unlock(&outbound_socket_mutex);
+            return -1;
+        }
+        // Trace the event when tracing is enabled
+        tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ, _lf_my_fed_id, &stop_tag);
+        write_to_socket_errexit_with_mutex(_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH,
+                buffer, &outbound_socket_mutex,
+                "Failed to send stop time " PRINTF_TIME " to the RTI.", stop_tag.time - start_time);
         lf_mutex_unlock(&outbound_socket_mutex);
-        return;
+        return 0;
+    } else {
+        lf_mutex_unlock(&outbound_socket_mutex);
+        return 1;
     }
-    // Trace the event when tracing is enabled
-    tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ, _lf_my_fed_id, &env->current_tag);
-    write_to_socket_errexit_with_mutex(_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH,
-            buffer, &outbound_socket_mutex,
-            "Failed to send stop time " PRINTF_TIME " to the RTI.", env->current_tag.time - start_time);
-    lf_mutex_unlock(&outbound_socket_mutex);
-    _fed.sent_a_stop_request_to_rti = true;
 }
 
 /**
@@ -2329,23 +2296,14 @@ void _lf_fd_send_stop_request_to_rti(environment_t* env) {
  *
  * This function removes the global barrier on
  * logical time raised when lf_request_stop() was
- * called.
- *
- * This function assumes the caller does not hold
- * the mutex lock, therefore, it acquires it.
- * @param env The environment of the federate
+ * called in the environment for each enclave.
  */
-void handle_stop_granted_message(environment_t* env) {
-    assert(env != GLOBAL_ENVIRONMENT);
+void handle_stop_granted_message() {
 
     size_t bytes_to_read = MSG_TYPE_STOP_GRANTED_LENGTH - 1;
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
             "Failed to read stop granted from RTI.");
-
-    // Acquire a mutex lock to ensure that this state does change while a
-    // message is transport or being used to determine a TAG.
-    lf_mutex_lock(&env->mutex);
 
     tag_t received_stop_tag = extract_tag(buffer);
 
@@ -2355,70 +2313,94 @@ void handle_stop_granted_message(environment_t* env) {
     LF_PRINT_LOG("Received from RTI a MSG_TYPE_STOP_GRANTED message with elapsed tag " PRINTF_TAG ".",
             received_stop_tag.time - start_time, received_stop_tag.microstep);
 
-    // Sanity check.
-    if (lf_tag_compare(received_stop_tag, env->current_tag) <= 0) {
-        lf_print_error("RTI granted a MSG_TYPE_STOP_GRANTED tag that is equal to or less than this federate's current tag " PRINTF_TAG ". "
-                "Stopping at the next microstep instead.",
-                env->current_tag.time - start_time, env->current_tag.microstep);
-        received_stop_tag = env->current_tag;
-        received_stop_tag.microstep++;
+    environment_t *env;
+    int num_environments = _lf_get_environments(&env);
+
+    for (int i = 0; i < num_environments; i++) {
+        lf_mutex_lock(&env[i].mutex);
+
+        // Sanity check.
+        if (lf_tag_compare(received_stop_tag, env[i].current_tag) <= 0) {
+            lf_print_error("RTI granted a MSG_TYPE_STOP_GRANTED tag that is equal to or less than this federate's current tag " PRINTF_TAG ". "
+                    "Stopping at the next microstep instead.",
+                    env[i].current_tag.time - start_time, env[i].current_tag.microstep);
+            received_stop_tag = env[i].current_tag;
+            received_stop_tag.microstep++;
+        }
+
+        env[i].stop_tag = received_stop_tag;
+        LF_PRINT_DEBUG("Setting the stop tag to " PRINTF_TAG ".",
+                    env[i].stop_tag.time - start_time,
+                    env[i].stop_tag.microstep);
+
+        _lf_decrement_tag_barrier_locked(&env[i]);
+        // We signal instead of broadcast under the assumption that only
+        // one worker thread can call wait_until at a given time because
+        // the call to wait_until is protected by a mutex lock
+        lf_cond_signal(&env[i].event_q_changed);
+        lf_mutex_unlock(&env[i].mutex);
     }
-
-    env->stop_tag = received_stop_tag;
-    LF_PRINT_DEBUG("Setting the stop tag to " PRINTF_TAG ".",
-                env->stop_tag.time - start_time,
-                env->stop_tag.microstep);
-
-    _lf_decrement_global_tag_barrier_locked(env);
-    // We signal instead of broadcast under the assumption that only
-    // one worker thread can call wait_until at a given time because
-    // the call to wait_until is protected by a mutex lock
-    lf_cond_signal(&env->event_q_changed);
-    lf_mutex_unlock(&env->mutex);
 }
 
 /**
  * Handle a MSG_TYPE_STOP_REQUEST message from the RTI.
- *
- * This function assumes the caller does not hold
- * the mutex lock, therefore, it acquires it.
- * @param env The environment of the federate
  */
-void handle_stop_request_message(environment_t* env) {
-    assert(env != GLOBAL_ENVIRONMENT);
-
+void handle_stop_request_message() {
     size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
             "Failed to read stop request from RTI.");
-
-    // Acquire a mutex lock to ensure that this state does change while a
-    // message is being used to determine a TAG.
-    lf_mutex_lock(&env->mutex);
-    // Ignore the message if this federate originated a request.
-    // The federate is already blocked is awaiting a MSG_TYPE_STOP_GRANTED message.
-    if (_fed.sent_a_stop_request_to_rti == true) {
-        lf_mutex_unlock(&env->mutex);
-        return;
-    }
-
     tag_t tag_to_stop = extract_tag(buffer);
 
     // Trace the event when tracing is enabled
     tracepoint_federate_from_rti(_fed.trace, receive_STOP_REQ, _lf_my_fed_id, &tag_to_stop);
-
     LF_PRINT_LOG("Received from RTI a MSG_TYPE_STOP_REQUEST message with tag " PRINTF_TAG ".",
              tag_to_stop.time - start_time,
              tag_to_stop.microstep);
 
-    // Encode the current logical time plus one microstep
-    // or the requested tag_to_stop, whichever is bigger.
-    if (lf_tag_compare(tag_to_stop, env->current_tag) <= 0) {
-        // Can't stop at the requested tag. Make a counteroffer.
-        tag_to_stop = env->current_tag;
-        tag_to_stop.microstep++;
+    // If we have previously received from the RTI a stop request,
+    // or we have previously sent a stop request to the RTI,
+    // then we have already blocked tag advance in enclaves.
+    // Do not do this twice. The record of whether the first has occurred
+    // is guarded by the outbound socket mutex.
+    // The second is guarded by the global mutex.
+    // Note that the RTI should not send stop requests more than once to federates.
+    lf_mutex_lock(&outbound_socket_mutex);
+    bool already_blocked = false;
+    if (_fed.received_stop_request_from_rti) {
+        already_blocked = true;
     }
+    _fed.received_stop_request_from_rti = true;
+    lf_mutex_unlock(&outbound_socket_mutex);
 
+    extern lf_mutex_t global_mutex;
+    extern bool lf_stop_requested;
+    lf_mutex_lock(&global_mutex);
+    if (lf_stop_requested) {
+        already_blocked = true;
+    }
+    lf_mutex_unlock(&global_mutex);
+
+
+    // Iterate over the scheduling enclaves to find the maximum current tag
+    // and adjust the tag_to_stop if any of those is greater than tag_to_stop.
+    // If not done previously, block tag advance in the enclave.
+    environment_t *env;
+    int num_environments = _lf_get_environments(&env);
+    for (int i = 0; i < num_environments; i++) {
+        lf_mutex_lock(&env[i].mutex);
+        if (lf_tag_compare(tag_to_stop, env[i].current_tag) <= 0) {
+            // Can't stop at the requested tag. Make a counteroffer.
+            tag_to_stop = env->current_tag;
+            tag_to_stop.microstep++;
+        }
+        if (!already_blocked) {
+            // Set a barrier to prevent the enclave from advancing past the so-far tag to stop.
+            _lf_increment_tag_barrier_locked(&env[i], tag_to_stop);
+        }
+        lf_mutex_unlock(&env[i].mutex);
+    }
+    // Send the reply, which is the least tag at which we can stop.
     unsigned char outgoing_buffer[MSG_TYPE_STOP_REQUEST_REPLY_LENGTH];
     ENCODE_STOP_REQUEST_REPLY(outgoing_buffer, tag_to_stop.time, tag_to_stop.microstep);
 
@@ -2426,26 +2408,16 @@ void handle_stop_request_message(environment_t* env) {
     if (_fed.socket_TCP_RTI < 0) {
         lf_print_warning("Socket is no longer connected. Dropping message.");
         lf_mutex_unlock(&outbound_socket_mutex);
-        lf_mutex_unlock(&env->mutex);
         return;
     }
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ_REP, _lf_my_fed_id, &tag_to_stop);
-    // Send the current logical time to the RTI. This message does not have an identifying byte since
+    // Send the current logical time to the RTI. This message does not have an identifying byte
     // since the RTI is waiting for a response from this federate.
     write_to_socket_errexit_with_mutex(
             _fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH, outgoing_buffer, &outbound_socket_mutex,
             "Failed to send the answer to MSG_TYPE_STOP_REQUEST to RTI.");
     lf_mutex_unlock(&outbound_socket_mutex);
-
-    // Raise a barrier at current tag
-    // because we are sending it to the RTI
-    _lf_increment_global_tag_barrier_already_locked(env, tag_to_stop);
-
-    // A subsequent call to lf_request_stop will be a no-op.
-    _fed.sent_a_stop_request_to_rti = true;
-
-    lf_mutex_unlock(&env->mutex);
 }
 
 /**
@@ -2528,16 +2500,12 @@ void terminate_execution(environment_t* env) {
  * from the peer, then this procedure sets the corresponding
  * socket in _fed.sockets_for_inbound_p2p_connections
  * to -1 and returns, terminating the thread.
- * @param env The environment of the federate
+ * @param _args The remote federate ID (cast to void*).
  * @param fed_id_ptr A pointer to a uint16_t containing federate ID being listened to.
  *  This procedure frees the memory pointed to before returning.
  */
 void* listen_to_federates(void* _args) {
-
-    listen_to_federates_args_t *args = (listen_to_federates_args_t *) _args;
-    // Decode the two arguments handed over 
-    environment_t * env = args->env;
-    uint16_t fed_id = args->fed_id;
+    uint16_t fed_id = (uint16_t)(uintptr_t)_args;
 
     LF_PRINT_LOG("Listening to federate %d.", fed_id);
 
@@ -2573,11 +2541,11 @@ void* listen_to_federates(void* _args) {
                 break;
             case MSG_TYPE_P2P_TAGGED_MESSAGE:
                 LF_PRINT_LOG("Received timed message from federate %d.", fed_id);
-                handle_tagged_message(env, socket_id, fed_id);
+                handle_tagged_message(socket_id, fed_id);
                 break;
             case MSG_TYPE_PORT_ABSENT:
                 LF_PRINT_LOG("Received port absent message from federate %d.", fed_id);
-                handle_port_absent_message(env, socket_id, fed_id);
+                handle_port_absent_message(socket_id, fed_id);
                 break;
             default:
                 bad_message = true;
@@ -2590,17 +2558,15 @@ void* listen_to_federates(void* _args) {
             tracepoint_federate_from_federate(_fed.trace, receive_UNIDENTIFIED, _lf_my_fed_id, fed_id, NULL);
         }
     }
-    free(args);
     return NULL;
 }
 
 /**
  * Thread that listens for TCP inputs from the RTI.
- *  When a physical message arrives, this calls schedule.
- * @param args The environment of the federate
+ * When messages arrive, this calls the appropriate handler.
+ * @param args Ignored
  */
 void* listen_to_rti_TCP(void* args) {
-    environment_t* env = (environment_t *) args;
     // Buffer for incoming messages.
     // This does not constrain the message size
     // because the message will be put into malloc'd memory.
@@ -2642,22 +2608,22 @@ void* listen_to_rti_TCP(void* args) {
         }
         switch (buffer[0]) {
             case MSG_TYPE_TAGGED_MESSAGE:
-                handle_tagged_message(env, _fed.socket_TCP_RTI, -1);
+                handle_tagged_message(_fed.socket_TCP_RTI, -1);
                 break;
             case MSG_TYPE_TAG_ADVANCE_GRANT:
-                handle_tag_advance_grant(env);
+                handle_tag_advance_grant();
                 break;
             case MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT:
-                handle_provisional_tag_advance_grant(env);
+                handle_provisional_tag_advance_grant();
                 break;
             case MSG_TYPE_STOP_REQUEST:
-                handle_stop_request_message(env);
+                handle_stop_request_message();
                 break;
             case MSG_TYPE_STOP_GRANTED:
-                handle_stop_granted_message(env);
+                handle_stop_granted_message();
                 break;
             case MSG_TYPE_PORT_ABSENT:
-                handle_port_absent_message(env, _fed.socket_TCP_RTI, -1);
+                handle_port_absent_message(_fed.socket_TCP_RTI, -1);
                 break;
             case MSG_TYPE_CLOCK_SYNC_T1:
             case MSG_TYPE_CLOCK_SYNC_T4:
@@ -2673,44 +2639,19 @@ void* listen_to_rti_TCP(void* args) {
     return NULL;
 }
 
-/**
- * Synchronize the start with other federates via the RTI.
- * This assumes that a connection to the RTI is already made
- * and _fed.socket_TCP_RTI is valid. It then sends the current logical
- * time to the RTI and waits for the RTI to respond with a specified
- * time. It starts a thread to listen for messages from the RTI.
- * It then waits for physical time to match the specified time,
- * sets current logical time to the time returned by the RTI,
- * and then returns. If --fast was specified, then this does
- * not wait for physical time to match the logical start time
- * returned by the RTI.
- *
- * @param env The environment of the federate
- * FIXME: Possibly should be renamed
- */
-void synchronize_with_other_federates(environment_t* env) {
-    assert(env != GLOBAL_ENVIRONMENT);
+void synchronize_with_other_federates(void) {
 
     LF_PRINT_DEBUG("Synchronizing with other federates.");
 
     // Reset the start time to the coordinated start time for all federates.
-    // Note that this does not grant execution to this federate. In the centralized
-    // coordination, the tag (0,0) should be explicitly sent to the RTI on a Time
-    // Advance Grant message to request for permission to execute. In the decentralized
-    // coordination, either the after delay on the connection must be sufficiently large
-    // enough or the STP offset must be set globally to an accurate value.
+    // Note that this does not grant execution to this federate.
     start_time = get_start_time_from_rti(lf_time_physical());
-
-    if (duration >= 0LL) {
-        // A duration has been specified. Recalculate the stop time.
-       env->stop_tag = ((tag_t) {.time = start_time + duration, .microstep = 0});
-    }
 
     // Start a thread to listen for incoming TCP messages from the RTI.
     // @note Up until this point, the federate has been listening for messages
     //  from the RTI in a sequential manner in the main thread. From now on, a
     //  separate thread is created to allow for asynchronous communication.
-    lf_thread_create(&_fed.RTI_socket_listener, listen_to_rti_TCP, env);
+    lf_thread_create(&_fed.RTI_socket_listener, listen_to_rti_TCP, NULL);
 
     lf_thread_t thread_id;
     if (create_clock_sync_thread(&thread_id)) {

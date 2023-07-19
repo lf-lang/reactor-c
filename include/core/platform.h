@@ -50,6 +50,24 @@ extern "C" {
 // Forward declarations
 typedef struct environment_t environment_t;
 
+/**
+ * @brief Notify of new event by calling the unthreaded platform API
+ * @param env Environment in which we are executing.
+ */
+int lf_notify_of_event(environment_t* env);
+
+/**
+ * @brief Enter critical section by disabling interrupts
+ * @param env Environment in which we are executing.
+ */
+int lf_critical_section_enter(environment_t* env);
+
+/**
+ * @brief Leave a critical section by enabling interrupts
+ * @param env Environment in which we are executing.
+ */
+int lf_critical_section_exit(environment_t* env);
+
 #if defined(PLATFORM_ARDUINO)
     #include "platform/lf_arduino_support.h"
 #elif defined(PLATFORM_ZEPHYR)
