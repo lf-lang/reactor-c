@@ -76,7 +76,32 @@ typedef enum
     worker_wait_ends,
     scheduler_advancing_time_starts,
     scheduler_advancing_time_ends,
-    federated, // Everything above this is tracing federated interactions.
+    // Static scheduler instructions
+    static_scheduler_ADV_starts,
+    static_scheduler_ADV2_starts,
+    static_scheduler_BIT_starts,
+    static_scheduler_DU_starts,
+    static_scheduler_EIT_starts,
+    static_scheduler_EXE_starts,
+    static_scheduler_INC_starts,
+    static_scheduler_INC2_starts,
+    static_scheduler_JMP_starts,
+    static_scheduler_SAC_starts,
+    static_scheduler_STP_starts,
+    static_scheduler_WU_starts,
+    static_scheduler_ADV_ends,
+    static_scheduler_ADV2_ends,
+    static_scheduler_BIT_ends,
+    static_scheduler_DU_ends,
+    static_scheduler_EIT_ends,
+    static_scheduler_EXE_ends,
+    static_scheduler_INC_ends,
+    static_scheduler_INC2_ends,
+    static_scheduler_JMP_ends,
+    static_scheduler_SAC_ends,
+    static_scheduler_STP_ends,
+    static_scheduler_WU_ends,
+    federated, // Everything below this is tracing federated interactions.
     // Sending messages
     send_ACK,
     send_TIMESTAMP,
@@ -139,6 +164,31 @@ static const char *trace_event_names[] = {
     "Worker wait ends",
     "Scheduler advancing time starts",
     "Scheduler advancing time ends",
+    // Static scheduler instructions
+    "Start ADV: advance logical time",
+    "Start ADV2: advance logical time (lock-free)",
+    "Start BIT: branch if timeout",
+    "Start DU: delay until",
+    "Start EIT: execute if triggered",
+    "Start EXE: execute",
+    "Start INC: increment counter",
+    "Start INC2: increment counter (lock-free)",
+    "Start JMP: jump",
+    "Start SAC: synchronize, advance time, and clear counters",
+    "Start STP: stop",
+    "Start WU: wait until",
+    "End ADV: advance logical time",
+    "End ADV2: advance logical time (lock-free)",
+    "End BIT: branch if timeout",
+    "End DU: delay until",
+    "End EIT: execute if triggered",
+    "End EXE: execute",
+    "End INC: increment counter",
+    "End INC2: increment counter (lock-free)",
+    "End JMP: jump",
+    "End SAC: synchronize, advance time, and clear counters",
+    "End STP: stop",
+    "End WU: wait until",
     "Federated marker",
     // Sending messages
     "Sending ACK",
@@ -430,6 +480,32 @@ void tracepoint_scheduler_advancing_time_ends(trace_t* trace);
  */
 void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, int worker);
 
+void tracepoint_static_scheduler_ADV_starts(trace_t* trace, int worker);
+void tracepoint_static_scheduler_ADV_ends(trace_t* trace, int worker);
+void tracepoint_static_scheduler_ADV2_starts(trace_t* trace, int worker);
+void tracepoint_static_scheduler_ADV2_ends(trace_t* trace, int worker);
+void tracepoint_static_scheduler_BIT_starts(trace_t* trace, int worker);
+void tracepoint_static_scheduler_BIT_ends(trace_t* trace, int worker);
+void tracepoint_static_scheduler_DU_starts(trace_t* trace, int worker);
+void tracepoint_static_scheduler_DU_ends(trace_t* trace, int worker);
+void tracepoint_static_scheduler_EIT_starts(trace_t* trace, int worker);
+void tracepoint_static_scheduler_EIT_ends(trace_t* trace, int worker);
+void tracepoint_static_scheduler_EXE_starts(trace_t* trace, int worker);
+void tracepoint_static_scheduler_EXE_ends(trace_t* trace, int worker);
+void tracepoint_static_scheduler_INC_starts(trace_t* trace, int worker);
+void tracepoint_static_scheduler_INC_ends(trace_t* trace, int worker);
+void tracepoint_static_scheduler_INC2_starts(trace_t* trace, int worker);
+void tracepoint_static_scheduler_INC2_ends(trace_t* trace, int worker);
+void tracepoint_static_scheduler_JMP_starts(trace_t* trace, int worker);
+void tracepoint_static_scheduler_JMP_ends(trace_t* trace, int worker);
+void tracepoint_static_scheduler_SAC_starts(trace_t* trace, int worker);
+void tracepoint_static_scheduler_SAC_ends(trace_t* trace, int worker);
+void tracepoint_static_scheduler_STP_starts(trace_t* trace, int worker);
+void tracepoint_static_scheduler_STP_ends(trace_t* trace, int worker);
+void tracepoint_static_scheduler_WU_starts(trace_t* trace, int worker);
+void tracepoint_static_scheduler_WU_ends(trace_t* trace, int worker);
+
+
 /**
  * Flush any buffered trace records to the trace file and
  * close the files.
@@ -522,6 +598,30 @@ void tracepoint_rti_from_federate(trace_t* trace, trace_event_t event_type, int 
 #define tracepoint_scheduler_advancing_time_starts(...);
 #define tracepoint_scheduler_advancing_time_ends(...);
 #define tracepoint_reaction_deadline_missed(...);
+#define tracepoint_static_scheduler_ADV_starts(...);
+#define tracepoint_static_scheduler_ADV_ends(...);
+#define tracepoint_static_scheduler_ADV2_starts(...);
+#define tracepoint_static_scheduler_ADV2_ends(...);
+#define tracepoint_static_scheduler_BIT_starts(...);
+#define tracepoint_static_scheduler_BIT_ends(...);
+#define tracepoint_static_scheduler_DU_starts(...);
+#define tracepoint_static_scheduler_DU_ends(...);
+#define tracepoint_static_scheduler_EIT_starts(...);
+#define tracepoint_static_scheduler_EIT_ends(...);
+#define tracepoint_static_scheduler_EXE_starts(...);
+#define tracepoint_static_scheduler_EXE_ends(...);
+#define tracepoint_static_scheduler_INC_starts(...);
+#define tracepoint_static_scheduler_INC_ends(...);
+#define tracepoint_static_scheduler_INC2_starts(...);
+#define tracepoint_static_scheduler_INC2_ends(...);
+#define tracepoint_static_scheduler_JMP_starts(...);
+#define tracepoint_static_scheduler_JMP_ends(...);
+#define tracepoint_static_scheduler_SAC_starts(...);
+#define tracepoint_static_scheduler_SAC_ends(...);
+#define tracepoint_static_scheduler_STP_starts(...);
+#define tracepoint_static_scheduler_STP_ends(...);
+#define tracepoint_static_scheduler_WU_starts(...);
+#define tracepoint_static_scheduler_WU_ends(...);
 #define tracepoint_federate_to_rti(...);
 #define tracepoint_federate_from_rti(...);
 #define tracepoint_federate_to_federate(...) ;
