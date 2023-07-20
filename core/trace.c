@@ -285,7 +285,6 @@ void tracepoint(
     if (!is_interval_start && physical_time == NULL) {
         time = lf_time_physical();
         physical_time = &time;
-        printf("*** Time reported by clock: %lld\n", *physical_time);
     }
 
     environment_t *env = trace->env;
