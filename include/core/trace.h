@@ -165,18 +165,18 @@ static const char *trace_event_names[] = {
     "Scheduler advancing time starts",
     "Scheduler advancing time ends",
     // Static scheduler instructions
-    "Start ADV: advance logical time",
-    "Start ADV2: advance logical time (lock-free)",
-    "Start BIT: branch if timeout",
-    "Start DU: delay until",
-    "Start EIT: execute if triggered",
-    "Start EXE: execute",
-    "Start INC: increment counter",
-    "Start INC2: increment counter (lock-free)",
-    "Start JMP: jump",
-    "Start SAC: synchronize, advance time, and clear counters",
-    "Start STP: stop",
-    "Start WU: wait until",
+    "ADV: advance logical time",
+    "ADV2: advance logical time (lock-free)",
+    "BIT: branch if timeout",
+    "DU: delay until",
+    "EIT: execute if triggered",
+    "EXE: execute",
+    "INC: increment counter",
+    "INC2: increment counter (lock-free)",
+    "JMP: jump",
+    "SAC: synchronize, advance time, and clear counters",
+    "STP: stop",
+    "WU: wait until",
     "End ADV: advance logical time",
     "End ADV2: advance logical time (lock-free)",
     "End BIT: branch if timeout",
@@ -480,30 +480,30 @@ void tracepoint_scheduler_advancing_time_ends(trace_t* trace);
  */
 void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, int worker);
 
-void tracepoint_static_scheduler_ADV_starts(trace_t* trace, int worker);
-void tracepoint_static_scheduler_ADV_ends(trace_t* trace, int worker);
-void tracepoint_static_scheduler_ADV2_starts(trace_t* trace, int worker);
-void tracepoint_static_scheduler_ADV2_ends(trace_t* trace, int worker);
-void tracepoint_static_scheduler_BIT_starts(trace_t* trace, int worker);
-void tracepoint_static_scheduler_BIT_ends(trace_t* trace, int worker);
-void tracepoint_static_scheduler_DU_starts(trace_t* trace, int worker);
-void tracepoint_static_scheduler_DU_ends(trace_t* trace, int worker);
-void tracepoint_static_scheduler_EIT_starts(trace_t* trace, int worker);
-void tracepoint_static_scheduler_EIT_ends(trace_t* trace, int worker);
-void tracepoint_static_scheduler_EXE_starts(trace_t* trace, int worker);
-void tracepoint_static_scheduler_EXE_ends(trace_t* trace, int worker);
-void tracepoint_static_scheduler_INC_starts(trace_t* trace, int worker);
-void tracepoint_static_scheduler_INC_ends(trace_t* trace, int worker);
-void tracepoint_static_scheduler_INC2_starts(trace_t* trace, int worker);
-void tracepoint_static_scheduler_INC2_ends(trace_t* trace, int worker);
-void tracepoint_static_scheduler_JMP_starts(trace_t* trace, int worker);
-void tracepoint_static_scheduler_JMP_ends(trace_t* trace, int worker);
-void tracepoint_static_scheduler_SAC_starts(trace_t* trace, int worker);
-void tracepoint_static_scheduler_SAC_ends(trace_t* trace, int worker);
-void tracepoint_static_scheduler_STP_starts(trace_t* trace, int worker);
-void tracepoint_static_scheduler_STP_ends(trace_t* trace, int worker);
-void tracepoint_static_scheduler_WU_starts(trace_t* trace, int worker);
-void tracepoint_static_scheduler_WU_ends(trace_t* trace, int worker);
+void tracepoint_static_scheduler_ADV_starts(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_ADV_ends(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_ADV2_starts(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_ADV2_ends(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_BIT_starts(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_BIT_ends(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_DU_starts(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_DU_ends(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_EIT_starts(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_EIT_ends(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_EXE_starts(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_EXE_ends(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_INC_starts(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_INC_ends(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_INC2_starts(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_INC2_ends(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_JMP_starts(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_JMP_ends(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_SAC_starts(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_SAC_ends(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_STP_starts(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_STP_ends(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_WU_starts(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_WU_ends(trace_t* trace, int worker, int pc);
 
 
 /**

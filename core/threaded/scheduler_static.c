@@ -142,7 +142,7 @@ void _lf_sched_wait_for_work(
  */
 void execute_inst_BIT(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
     bool stop = true;
     for (int i = 0; i < scheduler->num_reactor_self_instances; i++) {
         if (!scheduler->reactor_reached_stop_tag[i]) {
@@ -152,7 +152,7 @@ void execute_inst_BIT(lf_scheduler_t* scheduler, size_t worker_number, long long
     }
     if (stop) *pc = rs1;    // Jump to a specified location.
     else *pc += 1;          // Increment pc.
-    tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -168,7 +168,7 @@ void execute_inst_BIT(lf_scheduler_t* scheduler, size_t worker_number, long long
  */
 void execute_inst_EIT(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_EIT_starts(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_EIT_starts(scheduler->env->trace, worker_number, (int) *pc);
     reaction_t* reaction = scheduler->reaction_instances[rs1];
     if (reaction->status == queued) {
         *returned_reaction = reaction;
@@ -176,7 +176,7 @@ void execute_inst_EIT(lf_scheduler_t* scheduler, size_t worker_number, long long
     } else
         LF_PRINT_DEBUG("*** Worker %zu skip execution", worker_number);
     *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_EIT_ends(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_EIT_ends(scheduler->env->trace, worker_number, (int) *pc);
 
 }
 
@@ -191,12 +191,12 @@ void execute_inst_EIT(lf_scheduler_t* scheduler, size_t worker_number, long long
  */
 void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_EXE_starts(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_EXE_starts(scheduler->env->trace, worker_number, (int) *pc);
     reaction_t* reaction = scheduler->reaction_instances[rs1];
     *returned_reaction = reaction;
     *exit_loop = true;
     *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_EXE_ends(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_EXE_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -211,7 +211,7 @@ void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, long long
  */
 void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_DU_starts(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_DU_starts(scheduler->env->trace, worker_number, (int) *pc);
     // FIXME: There seems to be an overflow problem.
     // When wakeup_time overflows but lf_time_physical() doesn't,
     // _lf_interruptable_sleep_until_locked() terminates immediately. 
@@ -221,7 +221,7 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, long long 
     _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
     LF_PRINT_DEBUG("*** Worker %zu done delaying", worker_number);
     *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_DU_ends(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_DU_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -235,12 +235,12 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, long long 
  */
 void execute_inst_WU(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_WU_starts(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_WU_starts(scheduler->env->trace, worker_number, (int) *pc);
     LF_PRINT_DEBUG("*** Worker %zu waiting", worker_number);
     while(scheduler->counters[rs1] < rs2);
     LF_PRINT_DEBUG("*** Worker %zu done waiting", worker_number);
     *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_WU_ends(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_WU_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -254,7 +254,7 @@ void execute_inst_WU(lf_scheduler_t* scheduler, size_t worker_number, long long 
  */
 void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_ADV_starts(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_ADV_starts(scheduler->env->trace, worker_number, (int) *pc);
 
     // This mutex is quite expensive.
     lf_mutex_lock(&(scheduler->env->mutex));
@@ -280,7 +280,7 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, long long
 
     *pc += 1; // Increment pc.
 
-    tracepoint_static_scheduler_ADV_ends(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_ADV_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -294,7 +294,7 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, long long
  */
 void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_ADV2_starts(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_ADV2_starts(scheduler->env->trace, worker_number, (int) *pc);
 
     self_base_t* reactor =
         scheduler->reactor_self_instances[rs1];
@@ -315,7 +315,7 @@ void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, long lon
    
     *pc += 1; // Increment pc.
 
-    tracepoint_static_scheduler_ADV2_ends(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_ADV2_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -329,10 +329,10 @@ void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, long lon
  */
 void execute_inst_JMP(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_JMP_starts(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_JMP_starts(scheduler->env->trace, worker_number, (int) *pc);
     if (rs2 != -1) *iteration += 1;
     *pc = rs1;
-    tracepoint_static_scheduler_JMP_ends(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_JMP_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -347,7 +347,7 @@ void execute_inst_JMP(lf_scheduler_t* scheduler, size_t worker_number, long long
  */
 void execute_inst_SAC(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_SAC_starts(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_SAC_starts(scheduler->env->trace, worker_number, (int) *pc);
 
     // Compute the next tag for all reactors.
     instant_t next_timestamp = hyperperiod * (*iteration) + rs1;
@@ -357,7 +357,7 @@ void execute_inst_SAC(lf_scheduler_t* scheduler, size_t worker_number, long long
     tracepoint_worker_wait_ends(scheduler->env->trace, worker_number);
     *pc += 1; // Increment pc.
 
-    tracepoint_static_scheduler_SAC_ends(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_SAC_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -371,12 +371,12 @@ void execute_inst_SAC(lf_scheduler_t* scheduler, size_t worker_number, long long
  */
 void execute_inst_INC(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_INC_starts(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_INC_starts(scheduler->env->trace, worker_number, (int) *pc);
     lf_mutex_lock(&(scheduler->env->mutex));
     scheduler->counters[rs1] += rs2;
     lf_mutex_unlock(&(scheduler->env->mutex));
     *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_INC_ends(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_INC_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -391,10 +391,10 @@ void execute_inst_INC(lf_scheduler_t* scheduler, size_t worker_number, long long
  */
 void execute_inst_INC2(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_INC2_starts(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_INC2_starts(scheduler->env->trace, worker_number, (int) *pc);
     scheduler->counters[rs1] += rs2;
     *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_INC2_ends(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_INC2_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -403,9 +403,9 @@ void execute_inst_INC2(lf_scheduler_t* scheduler, size_t worker_number, long lon
  */
 void execute_inst_STP(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_STP_starts(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_STP_starts(scheduler->env->trace, worker_number, (int) *pc);
     *exit_loop = true;
-    tracepoint_static_scheduler_STP_ends(scheduler->env->trace, worker_number);
+    tracepoint_static_scheduler_STP_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
