@@ -67,6 +67,13 @@ if(DEFINED FEDERATED_AUTHENTICATED)
     target_link_libraries(core PUBLIC OpenSSL::SSL)
 endif()
 
+if(DEFINED _LF_CLOCK_SYNC_ON)
+  find_library(MATH_LIBRARY m)
+  if(MATH_LIBRARY)
+    target_link_libraries(core PUBLIC ${MATH_LIBRARY})
+  endif()
+endif()
+
 # Link with thread library
 if(DEFINED LF_THREADED OR DEFINED LF_TRACE)
     find_package(Threads REQUIRED)
