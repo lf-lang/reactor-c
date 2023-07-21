@@ -53,7 +53,7 @@ extern instant_t start_time;
 
 // Global variables defined in schedule.c:
 extern const inst_t* static_schedules[];
-extern const long long int hyperperiod;
+extern const uint64_t hyperperiod;
 extern volatile uint32_t hyperperiod_iterations[];
 extern volatile uint32_t counters[];
 extern const size_t num_counters;
@@ -132,33 +132,9 @@ void _lf_sched_wait_for_work(
 }
 
 /**
- * @brief BIT: Branch If Timeout
- * Check if timeout is reached. If not, don't do anything.
- * If so, jump to a specified location (rs1).
- * 
- * FIXME: Should the timeout value be an operand?
- * FIXME: Use a global variable num_active_reactors instead of iterating over
- * a for loop.
- */
-void execute_inst_BIT(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
-    bool stop = true;
-    for (int i = 0; i < scheduler->num_reactor_self_instances; i++) {
-        if (!scheduler->reactor_reached_stop_tag[i]) {
-            stop = false;
-            break;
-        }
-    }
-    if (stop) *pc = rs1;    // Jump to a specified location.
-    else *pc += 1;          // Increment pc.
-    tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
-}
-
-/**
- * @brief EIT: "Execute-If-Triggered"
- * Check if the reaction status is "queued."
- * If so, return the reaction pointer and advance pc.
+ * @brief ADDI: [Lock-free] Add to an integer variable (rs2) by an amount (rs3),
+ * and store the result in a destination variable (rs1).
+ * The compiler needs to guarantee a single writer.
  * 
  * @param rs1 
  * @param rs2 
@@ -166,81 +142,14 @@ void execute_inst_BIT(lf_scheduler_t* scheduler, size_t worker_number, long long
  * @param returned_reaction 
  * @param exit_loop 
  */
-void execute_inst_EIT(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
+void execute_inst_ADDI(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_EIT_starts(scheduler->env->trace, worker_number, (int) *pc);
-    reaction_t* reaction = scheduler->reaction_instances[rs1];
-    if (reaction->status == queued) {
-        *returned_reaction = reaction;
-        *exit_loop = true;
-    } else
-        LF_PRINT_DEBUG("*** Worker %zu skip execution", worker_number);
+    tracepoint_static_scheduler_ADDI_starts(scheduler->env->trace, worker_number, (int) *pc);
+    uint64_t *dst = (uint64_t *) rs1;
+    uint64_t *src = (uint64_t *) rs2;
+    *dst = *src + rs3;
     *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_EIT_ends(scheduler->env->trace, worker_number, (int) *pc);
-
-}
-
-/**
- * @brief EXE: Execute a reaction
- * 
- * @param rs1 
- * @param rs2 
- * @param pc 
- * @param returned_reaction 
- * @param exit_loop 
- */
-void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_EXE_starts(scheduler->env->trace, worker_number, (int) *pc);
-    reaction_t* reaction = scheduler->reaction_instances[rs1];
-    *returned_reaction = reaction;
-    *exit_loop = true;
-    *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_EXE_ends(scheduler->env->trace, worker_number, (int) *pc);
-}
-
-/**
- * @brief DU: Delay Until a physical time offset (rs1) wrt the current hyperperiod is reached.
- * 
- * @param worker_number 
- * @param rs1 
- * @param rs2 
- * @param pc 
- * @param returned_reaction 
- * @param exit_loop 
- */
-void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_DU_starts(scheduler->env->trace, worker_number, (int) *pc);
-    // FIXME: There seems to be an overflow problem.
-    // When wakeup_time overflows but lf_time_physical() doesn't,
-    // _lf_interruptable_sleep_until_locked() terminates immediately. 
-    instant_t wakeup_time = start_time + hyperperiod * (*iteration) + rs1;
-    LF_PRINT_DEBUG("start_time: %lld, wakeup_time: %lld, rs1: %lld, iteration: %d, current_physical_time: %lld, hyperperiod: %lld\n", start_time, wakeup_time, rs1, (*iteration), lf_time_physical(), hyperperiod);
-    LF_PRINT_DEBUG("*** Worker %zu delaying", worker_number);
-    _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
-    LF_PRINT_DEBUG("*** Worker %zu done delaying", worker_number);
-    *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_DU_ends(scheduler->env->trace, worker_number, (int) *pc);
-}
-
-/**
- * @brief WU: Wait until a counting variable reaches a specified value.
- * 
- * @param rs1 
- * @param rs2 
- * @param pc 
- * @param returned_reaction 
- * @param exit_loop 
- */
-void execute_inst_WU(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_WU_starts(scheduler->env->trace, worker_number, (int) *pc);
-    LF_PRINT_DEBUG("*** Worker %zu waiting", worker_number);
-    while(scheduler->counters[rs1] < rs2);
-    LF_PRINT_DEBUG("*** Worker %zu done waiting", worker_number);
-    *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_WU_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_ADDI_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -252,7 +161,7 @@ void execute_inst_WU(lf_scheduler_t* scheduler, size_t worker_number, long long 
  * @param returned_reaction 
  * @param exit_loop 
  */
-void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
+void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     tracepoint_static_scheduler_ADV_starts(scheduler->env->trace, worker_number, (int) *pc);
 
@@ -292,7 +201,7 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, long long
  * @param returned_reaction 
  * @param exit_loop 
  */
-void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
+void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     tracepoint_static_scheduler_ADV2_starts(scheduler->env->trace, worker_number, (int) *pc);
 
@@ -319,6 +228,119 @@ void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, long lon
 }
 
 /**
+ * @brief BIT: Branch If Timeout
+ * Check if timeout is reached. If not, don't do anything.
+ * If so, jump to a specified location (rs1).
+ * 
+ * FIXME: Should the timeout value be an operand?
+ * FIXME: Use a global variable num_active_reactors instead of iterating over
+ * a for loop.
+ */
+void execute_inst_BIT(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
+    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
+    tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
+    bool stop = true;
+    for (int i = 0; i < scheduler->num_reactor_self_instances; i++) {
+        if (!scheduler->reactor_reached_stop_tag[i]) {
+            stop = false;
+            break;
+        }
+    }
+    if (stop) *pc = rs1;    // Jump to a specified location.
+    else *pc += 1;          // Increment pc.
+    tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
+}
+
+/**
+ * @brief EIT: "Execute-If-Triggered"
+ * Check if the reaction status is "queued."
+ * If so, return the reaction pointer and advance pc.
+ * 
+ * @param rs1 
+ * @param rs2 
+ * @param pc 
+ * @param returned_reaction 
+ * @param exit_loop 
+ */
+void execute_inst_EIT(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
+    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
+    tracepoint_static_scheduler_EIT_starts(scheduler->env->trace, worker_number, (int) *pc);
+    reaction_t* reaction = scheduler->reaction_instances[rs1];
+    if (reaction->status == queued) {
+        *returned_reaction = reaction;
+        *exit_loop = true;
+    } else
+        LF_PRINT_DEBUG("*** Worker %zu skip execution", worker_number);
+    *pc += 1; // Increment pc.
+    tracepoint_static_scheduler_EIT_ends(scheduler->env->trace, worker_number, (int) *pc);
+
+}
+
+/**
+ * @brief EXE: Execute a reaction
+ * 
+ * @param rs1 
+ * @param rs2 
+ * @param pc 
+ * @param returned_reaction 
+ * @param exit_loop 
+ */
+void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
+    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
+    tracepoint_static_scheduler_EXE_starts(scheduler->env->trace, worker_number, (int) *pc);
+    reaction_t* reaction = scheduler->reaction_instances[rs1];
+    *returned_reaction = reaction;
+    *exit_loop = true;
+    *pc += 1; // Increment pc.
+    tracepoint_static_scheduler_EXE_ends(scheduler->env->trace, worker_number, (int) *pc);
+}
+
+/**
+ * @brief DU: Delay Until a physical time offset (rs1) wrt the current hyperperiod is reached.
+ * 
+ * @param worker_number 
+ * @param rs1 
+ * @param rs2 
+ * @param pc 
+ * @param returned_reaction 
+ * @param exit_loop 
+ */
+void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
+    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
+    tracepoint_static_scheduler_DU_starts(scheduler->env->trace, worker_number, (int) *pc);
+    // FIXME: There seems to be an overflow problem.
+    // When wakeup_time overflows but lf_time_physical() doesn't,
+    // _lf_interruptable_sleep_until_locked() terminates immediately.
+    uint64_t *src = (uint64_t *)rs1;
+    instant_t wakeup_time = start_time + *src + rs2;
+    LF_PRINT_DEBUG("start_time: %lld, wakeup_time: %lld, rs1: %lld, iteration: %d, current_physical_time: %lld, hyperperiod: %lld\n", start_time, wakeup_time, rs1, (*iteration), lf_time_physical(), hyperperiod);
+    LF_PRINT_DEBUG("*** Worker %zu delaying", worker_number);
+    _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
+    LF_PRINT_DEBUG("*** Worker %zu done delaying", worker_number);
+    *pc += 1; // Increment pc.
+    tracepoint_static_scheduler_DU_ends(scheduler->env->trace, worker_number, (int) *pc);
+}
+
+/**
+ * @brief WU: Wait until a counting variable reaches a specified value.
+ * 
+ * @param rs1 
+ * @param rs2 
+ * @param pc 
+ * @param returned_reaction 
+ * @param exit_loop 
+ */
+void execute_inst_WU(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
+    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
+    tracepoint_static_scheduler_WU_starts(scheduler->env->trace, worker_number, (int) *pc);
+    LF_PRINT_DEBUG("*** Worker %zu waiting", worker_number);
+    while(scheduler->counters[rs1] < rs2);
+    LF_PRINT_DEBUG("*** Worker %zu done waiting", worker_number);
+    *pc += 1; // Increment pc.
+    tracepoint_static_scheduler_WU_ends(scheduler->env->trace, worker_number, (int) *pc);
+}
+
+/**
  * @brief JMP: Jump to a particular line in the schedule.
  * 
  * @param rs1 
@@ -327,7 +349,7 @@ void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, long lon
  * @param returned_reaction 
  * @param exit_loop 
  */
-void execute_inst_JMP(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
+void execute_inst_JMP(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     tracepoint_static_scheduler_JMP_starts(scheduler->env->trace, worker_number, (int) *pc);
     if (rs2 != -1) *iteration += 1;
@@ -345,12 +367,13 @@ void execute_inst_JMP(lf_scheduler_t* scheduler, size_t worker_number, long long
  * @param returned_reaction 
  * @param exit_loop 
  */
-void execute_inst_SAC(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
+void execute_inst_SAC(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     tracepoint_static_scheduler_SAC_starts(scheduler->env->trace, worker_number, (int) *pc);
 
     // Compute the next tag for all reactors.
-    instant_t next_timestamp = hyperperiod * (*iteration) + rs1;
+    uint64_t *src = (uint64_t *)rs1;
+    instant_t next_timestamp = *src + rs2;
     
     tracepoint_worker_wait_starts(scheduler->env->trace, worker_number);
     _lf_sched_wait_for_work(scheduler, worker_number, next_timestamp);
@@ -361,47 +384,10 @@ void execute_inst_SAC(lf_scheduler_t* scheduler, size_t worker_number, long long
 }
 
 /**
- * @brief INC: INCrement a counter (rs1) by an amount (rs2).
- * 
- * @param rs1 
- * @param rs2 
- * @param pc 
- * @param returned_reaction 
- * @param exit_loop 
- */
-void execute_inst_INC(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_INC_starts(scheduler->env->trace, worker_number, (int) *pc);
-    lf_mutex_lock(&(scheduler->env->mutex));
-    scheduler->counters[rs1] += rs2;
-    lf_mutex_unlock(&(scheduler->env->mutex));
-    *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_INC_ends(scheduler->env->trace, worker_number, (int) *pc);
-}
-
-/**
- * @brief INC2: [Lock-free] INCrement a counter (rs1) by an amount (rs2).
- * The compiler needs to guarantee a single writer.
- * 
- * @param rs1 
- * @param rs2 
- * @param pc 
- * @param returned_reaction 
- * @param exit_loop 
- */
-void execute_inst_INC2(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
-    reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
-    tracepoint_static_scheduler_INC2_starts(scheduler->env->trace, worker_number, (int) *pc);
-    scheduler->counters[rs1] += rs2;
-    *pc += 1; // Increment pc.
-    tracepoint_static_scheduler_INC2_ends(scheduler->env->trace, worker_number, (int) *pc);
-}
-
-/**
  * @brief STP: SToP the execution.
  * 
  */
-void execute_inst_STP(lf_scheduler_t* scheduler, size_t worker_number, long long int rs1, long long int rs2, size_t* pc,
+void execute_inst_STP(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     tracepoint_static_scheduler_STP_starts(scheduler->env->trace, worker_number, (int) *pc);
     *exit_loop = true;
@@ -421,57 +407,53 @@ void execute_inst_STP(lf_scheduler_t* scheduler, size_t worker_number, long long
  * @param exit_loop a pointer to a boolean indicating whether
  *                  the outer while loop should be exited
  */
-void execute_inst(lf_scheduler_t* scheduler, size_t worker_number, opcode_t op, long long int rs1, long long int rs2,
+void execute_inst(lf_scheduler_t* scheduler, size_t worker_number, opcode_t op, uint64_t rs1, uint64_t rs2, uint64_t rs3,
     size_t* pc, reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     char* op_str = NULL;
     switch (op) {
+        case ADDI:
+            op_str = "ADDI";
+            execute_inst_ADDI(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop, iteration);
+            break;
         case ADV:
             op_str = "ADV";
-            execute_inst_ADV(scheduler, worker_number, rs1, rs2, pc, returned_reaction, exit_loop, iteration);
+            execute_inst_ADV(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop, iteration);
             break;
         case ADV2:
             op_str = "ADV2";
-            execute_inst_ADV2(scheduler, worker_number, rs1, rs2, pc, returned_reaction, exit_loop, iteration);
+            execute_inst_ADV2(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop, iteration);
             break;
         case BIT:
             op_str = "BIT";
-            execute_inst_BIT(scheduler, worker_number, rs1, rs2, pc, returned_reaction, exit_loop, iteration);
+            execute_inst_BIT(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop, iteration);
             break;
          case DU:  
             op_str = "DU";
-            execute_inst_DU(scheduler, worker_number, rs1, rs2, pc, returned_reaction, exit_loop, iteration);
+            execute_inst_DU(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop, iteration);
             break;
         case EIT:
             op_str = "EIT";
-            execute_inst_EIT(scheduler, worker_number, rs1, rs2, pc, returned_reaction, exit_loop, iteration);
+            execute_inst_EIT(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop, iteration);
             break;
         case EXE:
             op_str = "EXE";
-            execute_inst_EXE(scheduler, worker_number, rs1, rs2, pc, returned_reaction, exit_loop, iteration);
-            break;
-        case INC:
-            op_str = "INC";
-            execute_inst_INC(scheduler, worker_number, rs1, rs2, pc, returned_reaction, exit_loop, iteration);
-            break;
-        case INC2:
-            op_str = "INC2";
-            execute_inst_INC2(scheduler, worker_number, rs1, rs2, pc, returned_reaction, exit_loop, iteration);
+            execute_inst_EXE(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop, iteration);
             break;
         case JMP:
             op_str = "JMP";
-            execute_inst_JMP(scheduler, worker_number, rs1, rs2, pc, returned_reaction, exit_loop, iteration);
+            execute_inst_JMP(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop, iteration);
             break;
         case SAC:
             op_str = "SAC";
-            execute_inst_SAC(scheduler, worker_number, rs1, rs2, pc, returned_reaction, exit_loop, iteration);
+            execute_inst_SAC(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop, iteration);
             break;
         case STP:
             op_str = "STP";
-            execute_inst_STP(scheduler, worker_number, rs1, rs2, pc, returned_reaction, exit_loop, iteration);
+            execute_inst_STP(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop, iteration);
             break;
         case WU:
             op_str = "WU";
-            execute_inst_WU(scheduler, worker_number, rs1, rs2, pc, returned_reaction, exit_loop, iteration);
+            execute_inst_WU(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop, iteration);
             break;
         default:
             lf_print_error_and_exit("Invalid instruction: %d", op);
@@ -561,17 +543,19 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
     bool            exit_loop           = false;
     size_t*         pc                  = &scheduler->pc[worker_number];
     opcode_t        op;
-    long long int   rs1;
-    long long int   rs2;
+    uint64_t        rs1;
+    uint64_t        rs2;
+    uint64_t        rs3;
     volatile uint32_t* iteration        = &hyperperiod_iterations[worker_number];
 
     while (!exit_loop) {
         op  = current_schedule[*pc].op;
         rs1 = current_schedule[*pc].rs1;
         rs2 = current_schedule[*pc].rs2;
+        rs3 = current_schedule[*pc].rs3;
 
         // Execute the current instruction
-        execute_inst(scheduler, worker_number, op, rs1, rs2, pc,
+        execute_inst(scheduler, worker_number, op, rs1, rs2, rs3, pc,
                     &returned_reaction, &exit_loop, iteration);
 
         LF_PRINT_DEBUG("Worker %d: returned_reaction = %p, exit_loop = %d",
