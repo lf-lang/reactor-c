@@ -175,7 +175,7 @@ int _lf_unthreaded_notify_of_event() {
 
 #ifdef LF_THREADED
 #error "Threading for baremetal RP2040 not supported"
-
 #endif //LF_THREADED
+
 #endif // PLATFORM_RP2040
 
