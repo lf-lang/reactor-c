@@ -168,9 +168,10 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, uint64_t 
     // This mutex is quite expensive.
     lf_mutex_lock(&(scheduler->env->mutex));
 
+    uint64_t *src = (uint64_t *)rs2;
     self_base_t* reactor =
         scheduler->reactor_self_instances[rs1];
-    reactor->tag.time = hyperperiod * (*iteration) + rs2;
+    reactor->tag.time = *src + rs3;
     reactor->tag.microstep = 0;
 
     // Reset all "is_present" fields of the output ports of the reactor
@@ -205,9 +206,10 @@ void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, uint64_t
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
     tracepoint_static_scheduler_ADV2_starts(scheduler->env->trace, worker_number, (int) *pc);
 
+    uint64_t *src = (uint64_t *)rs2;
     self_base_t* reactor =
         scheduler->reactor_self_instances[rs1];
-    reactor->tag.time = hyperperiod * (*iteration) + rs2;
+    reactor->tag.time = *src + rs3;
     reactor->tag.microstep = 0;
     
     // Reset all "is_present" fields of the output ports of the reactor
