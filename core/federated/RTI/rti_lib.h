@@ -76,6 +76,8 @@ typedef struct federate_t {
                             // that sent responded to the next event tag query form the RTI. 
     bool start_time_is_set; // Boolean variable used to signal that all connected federates
                             // have sent a response to next event tag query from the RTI.
+    tag_t pending_grant;    // Tga pending to be granted
+    lf_thread_t pending_grant_thread_id;    // The ID of the thread handling the pending tag grant 
 } federate_t;
 
 /**
@@ -584,28 +586,12 @@ void* connect_to_transient_federates_thread();
 void reset_transient_federate(federate_t* fed);
 
 /**
- * Queries conn_fed for its current Tag (using MSG_TYPE_CURRENT_TAG_QUERY). 
- * If the function fails to send the query, for example in case the federate is 
- * not connected (can be a transient one itself), then return false. In such case, 
- * the RTI will not wait to receive an answer from it.
- * 
- * The fed_id of the transient federate is sent to conn_fed, which should be 
- * returned as is within MSG_TYPE_CURRENT_TAG_QUERY_RESPONSE. The aim is to 
- * identify which of the transient federates has initiated the request. This enables 
- * the support of two diffrent transient federates joining close eanough in time.
- *
- * @param conn_fed: the federate to which to send the NET request
- * @param fed_id: The ID of the transient joining federate 
- * @return true, if successfully sent, false otherwise.
+ * @brief Thread that sleeps for a period of time, and then wakes up to check if
+ * a tag advance grant needs to be sent.
+ * @param fed the fedarate whose tag advance grant needs to be delayed. 
  */
-// bool send_current_tag_query(federate_t* conn_fed, uint16_t fed_id);
+void* pending_grant_thread(void* fed);
 
-/**
- * Handles current tag query response received form my_fed.
- * 
- * @param my_fed: the federate from whom the response is received.
- */
-// void handle_current_tag_query_response(federate_t *my_fed);
 
 //////////////////////////////////////////////////////////
 #endif // RTI_LIB_H

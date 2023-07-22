@@ -73,10 +73,11 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
         enclave_t *upstream = _e_rti->enclaves[e->upstream[j]];
 
         // Do Ignore this enclave if it no longer connected.
-        if (upstream->state != NOT_CONNECTED) {
-            num_connected_upstream++;
-            // continue;
+        if (upstream->state == NOT_CONNECTED) {
+            continue;
         }
+
+        num_connected_upstream++;
         
         tag_t candidate = lf_delay_tag(upstream->completed, e->upstream_delay[j]);
 
@@ -89,37 +90,20 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
             "(adjusted by after delay).",
             e->id,
             min_upstream_completed.time - start_time, min_upstream_completed.microstep);
-    if (
-        num_connected_upstream != 0 
-        && lf_tag_compare(min_upstream_completed, e->last_granted) > 0
+
+    if (num_connected_upstream == 0) {
+        // When none of the upstream federates is connected (case of transients),
+        if (lf_tag_compare(e->next_event, FOREVER_TAG) != 0) {
+            result.tag = e->next_event; 
+            return result;
+        }
+    } else if (
+        lf_tag_compare(min_upstream_completed, e->last_granted) > 0
         && lf_tag_compare(min_upstream_completed, e->next_event) >= 0 // The enclave has to advance its tag
     ) {
         result.tag = min_upstream_completed;
         return result;
-    } else if (num_connected_upstream == 0) {
-        // When none of the upstream federates is connected (case of transients),
-        // check their TAG
-        // Find the earliest TAG of upstream enclaves (M).
-        tag_t min_upstream_granted = FOREVER_TAG;
-
-        for (int j = 0; j < e->num_upstream; j++) {
-            enclave_t *upstream = _e_rti->enclaves[e->upstream[j]];            
-            tag_t candidate = e->last_granted;
-            if (lf_tag_compare(candidate, min_upstream_granted) < 0) {
-                min_upstream_granted = candidate;
-            }
-        }
-
-        if (lf_tag_compare(min_upstream_granted, FOREVER_TAG) != 0) {
-            min_upstream_granted = e->next_event;
-        }
-
-        if (lf_tag_compare(min_upstream_granted, FOREVER_TAG) != 0) {
-            min_upstream_granted = e->next_event;
-            result.tag = min_upstream_granted;
-            return result;
-        }
-    }
+    } 
 
     // Can't make progress based only on upstream LTCs.
     // If all (transitive) upstream enclaves of the enclave
@@ -143,7 +127,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
         enclave_t *upstream = _e_rti->enclaves[e->upstream[j]];
 
         // Ignore this enclave if it is no longer connected.
-        // if (upstream->state == NOT_CONNECTED) continue;
+        if (upstream->state == NOT_CONNECTED) continue;
 
         // Find the (transitive) next event tag upstream.
         tag_t upstream_next_event = transitive_next_event(
@@ -282,7 +266,7 @@ void notify_advance_grant_if_safe(enclave_t* e) {
 }
 
 tag_t transitive_next_event(enclave_t* e, tag_t candidate, bool visited[]) {
-    if (visited[e->id] /*|| e->state == NOT_CONNECTED*/) {
+    if (visited[e->id] || e->state == NOT_CONNECTED) {
         // Enclave has stopped executing or we have visited it before.
         // No point in checking upstream enclaves.
         return candidate;
