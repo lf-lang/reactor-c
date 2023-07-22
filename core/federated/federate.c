@@ -1885,20 +1885,19 @@ void handle_tagged_message(int socket, int fed_id) {
         // Before that, if the current time >= stop time, discard the message.
         // But only if the stop time is not equal to the start time!
         if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {
-            lf_mutex_unlock(&env->mutex);
             lf_print_error("Received message too late. Already at stop tag.\n"
             		"Current tag is " PRINTF_TAG " and intended tag is " PRINTF_TAG ".\n"
             		"Discarding message.",
 					env->current_tag.time - start_time, env->current_tag.microstep,
 					intended_tag.time - start_time, intended_tag.microstep);
-            return;
+            goto release;
         }
 
         LF_PRINT_LOG("Calling schedule with tag " PRINTF_TAG ".", intended_tag.time - start_time, intended_tag.microstep);
         schedule_message_received_from_network_locked(env, action->trigger, intended_tag, message_token);
     }
 
-
+    release:
 #ifdef FEDERATED_DECENTRALIZED // Only applicable for federated programs with decentralized coordination
     // Finally, decrement the barrier to allow the execution to continue
     // past the raised barrier
@@ -2292,7 +2291,7 @@ void handle_stop_granted_message() {
                     env[i].stop_tag.time - start_time,
                     env[i].stop_tag.microstep);
 
-        _lf_decrement_tag_barrier_locked(&env[i]);
+        if (env[i].barrier.requestors) _lf_decrement_tag_barrier_locked(&env[i]);
         // We signal instead of broadcast under the assumption that only
         // one worker thread can call wait_until at a given time because
         // the call to wait_until is protected by a mutex lock
