@@ -2286,7 +2286,7 @@ void handle_stop_granted_message() {
             received_stop_tag.microstep++;
         }
 
-        env[i].stop_tag = received_stop_tag;
+        _lf_set_stop_tag(&env[i], received_stop_tag);
         LF_PRINT_DEBUG("Setting the stop tag to " PRINTF_TAG ".",
                     env[i].stop_tag.time - start_time,
                     env[i].stop_tag.microstep);
