@@ -303,9 +303,9 @@ int send_message(int message_type,
     } else { // message_type == MSG_TYPE_MESSAGE)
         tracepoint_federate_to_rti(_fed.trace, send_MSG, _lf_my_fed_id, NULL);
     }
-    write_to_socket_errexit_with_mutex(socket, header_length, header_buffer, &outbound_socket_mutex,
+    write_to_socket_with_mutex(socket, header_length, header_buffer, &outbound_socket_mutex,
             "Failed to send message header to to %s.", next_destination_str);
-    write_to_socket_errexit_with_mutex(socket, length, message, &outbound_socket_mutex,
+    write_to_socket_with_mutex(socket, length, message, &outbound_socket_mutex,
             "Failed to send message body to to %s.", next_destination_str);
     lf_mutex_unlock(&outbound_socket_mutex);
     return 1;
@@ -429,9 +429,9 @@ int send_timed_message(environment_t* env,
     } else { // message_type == MSG_TYPE_P2P_TAGGED_MESSAGE
         tracepoint_federate_to_federate(_fed.trace, send_P2P_TAGGED_MSG, _lf_my_fed_id, federate, &current_message_intended_tag);
     }
-    write_to_socket_errexit_with_mutex(socket, header_length, header_buffer, &outbound_socket_mutex,
+    write_to_socket_with_mutex(socket, header_length, header_buffer, &outbound_socket_mutex,
             "Failed to send timed message header to %s.", next_destination_str);
-    write_to_socket_errexit_with_mutex(socket, length, message, &outbound_socket_mutex,
+    write_to_socket_with_mutex(socket, length, message, &outbound_socket_mutex,
             "Failed to send timed message body to %s.", next_destination_str);
     lf_mutex_unlock(&outbound_socket_mutex);
     return 1;
@@ -1477,7 +1477,7 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
     if (socket >= 0) {
         // Trace the event when tracing is enabled
         tracepoint_federate_to_rti(_fed.trace, send_PORT_ABS, _lf_my_fed_id, &current_message_intended_tag);
-        write_to_socket_errexit_with_mutex(socket, message_length, buffer, &outbound_socket_mutex,
+        write_to_socket_with_mutex(socket, message_length, buffer, &outbound_socket_mutex,
                 "Failed to send port absent message for port %hu to federate %hu.",
                 port_ID, fed_ID);
     }
@@ -2238,7 +2238,7 @@ int _lf_fd_send_stop_request_to_rti(tag_t stop_tag) {
         }
         // Trace the event when tracing is enabled
         tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ, _lf_my_fed_id, &stop_tag);
-        write_to_socket_errexit_with_mutex(_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH,
+        write_to_socket_with_mutex(_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH,
                 buffer, &outbound_socket_mutex,
                 "Failed to send stop time " PRINTF_TIME " to the RTI.", stop_tag.time - start_time);
         lf_mutex_unlock(&outbound_socket_mutex);
@@ -2372,7 +2372,7 @@ void handle_stop_request_message() {
     tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ_REP, _lf_my_fed_id, &tag_to_stop);
     // Send the current logical time to the RTI. This message does not have an identifying byte
     // since the RTI is waiting for a response from this federate.
-    write_to_socket_errexit_with_mutex(
+    write_to_socket_with_mutex(
             _fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH, outgoing_buffer, &outbound_socket_mutex,
             "Failed to send the answer to MSG_TYPE_STOP_REQUEST to RTI.");
     lf_mutex_unlock(&outbound_socket_mutex);
