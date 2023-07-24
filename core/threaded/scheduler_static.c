@@ -132,15 +132,7 @@ void _lf_sched_wait_for_work(
 }
 
 /**
- * @brief ADDI: [Lock-free] Add to an integer variable (rs2) by an amount (rs3),
- * and store the result in a destination variable (rs1).
- * The compiler needs to guarantee a single writer.
- * 
- * @param rs1 
- * @param rs2 
- * @param pc 
- * @param returned_reaction 
- * @param exit_loop 
+ * @brief The implementation of the ADDI instruction
  */
 void execute_inst_ADDI(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
@@ -153,13 +145,7 @@ void execute_inst_ADDI(lf_scheduler_t* scheduler, size_t worker_number, uint64_t
 }
 
 /**
- * @brief ADV: Advance time for a reactor up to a tag (relative to the current hyperperiod).
- * 
- * @param rs1 
- * @param rs2 
- * @param pc 
- * @param returned_reaction 
- * @param exit_loop 
+ * @brief The implementation of the ADV instruction
  */
 void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
@@ -194,13 +180,7 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, uint64_t 
 }
 
 /**
- * @brief ADV: Advance time for a reactor up to a tag (relative to the current hyperperiod).
- * 
- * @param rs1 
- * @param rs2 
- * @param pc 
- * @param returned_reaction 
- * @param exit_loop 
+ * @brief The implementation of the ADV2 instruction
  */
 void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
@@ -230,9 +210,7 @@ void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, uint64_t
 }
 
 /**
- * @brief BIT: Branch If Timeout
- * Check if timeout is reached. If not, don't do anything.
- * If so, jump to a specified location (rs1).
+ * @brief The implementation of the BIT instruction
  * 
  * FIXME: Should the timeout value be an operand?
  * FIXME: Use a global variable num_active_reactors instead of iterating over
@@ -254,15 +232,7 @@ void execute_inst_BIT(lf_scheduler_t* scheduler, size_t worker_number, uint64_t 
 }
 
 /**
- * @brief EIT: "Execute-If-Triggered"
- * Check if the reaction status is "queued."
- * If so, return the reaction pointer and advance pc.
- * 
- * @param rs1 
- * @param rs2 
- * @param pc 
- * @param returned_reaction 
- * @param exit_loop 
+ * @brief The implementation of the EIT instruction
  */
 void execute_inst_EIT(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
@@ -279,13 +249,7 @@ void execute_inst_EIT(lf_scheduler_t* scheduler, size_t worker_number, uint64_t 
 }
 
 /**
- * @brief EXE: Execute a reaction
- * 
- * @param rs1 
- * @param rs2 
- * @param pc 
- * @param returned_reaction 
- * @param exit_loop 
+ * @brief The implementation of the EXE instruction
  */
 void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
@@ -298,14 +262,7 @@ void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, uint64_t 
 }
 
 /**
- * @brief DU: Delay Until a physical time offset (rs1) wrt the current hyperperiod is reached.
- * 
- * @param worker_number 
- * @param rs1 
- * @param rs2 
- * @param pc 
- * @param returned_reaction 
- * @param exit_loop 
+ * @brief The implementation of the DU instruction
  */
 void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
@@ -324,13 +281,7 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, uint64_t r
 }
 
 /**
- * @brief WU: Wait until a counting variable reaches a specified value.
- * 
- * @param rs1 
- * @param rs2 
- * @param pc 
- * @param returned_reaction 
- * @param exit_loop 
+ * @brief The implementation of the WU instruction
  */
 void execute_inst_WU(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
@@ -343,13 +294,7 @@ void execute_inst_WU(lf_scheduler_t* scheduler, size_t worker_number, uint64_t r
 }
 
 /**
- * @brief JMP: Jump to a particular line in the schedule.
- * 
- * @param rs1 
- * @param rs2 
- * @param pc 
- * @param returned_reaction 
- * @param exit_loop 
+ * @brief The implementation of the JMP instruction
  */
 void execute_inst_JMP(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
@@ -360,14 +305,7 @@ void execute_inst_JMP(lf_scheduler_t* scheduler, size_t worker_number, uint64_t 
 }
 
 /**
- * @brief SAC: (Sync-Advance-Clear) synchronize all workers until all execute SAC
- * and let the last idle worker reset all counters to 0.
- * 
- * @param rs1 
- * @param rs2 
- * @param pc 
- * @param returned_reaction 
- * @param exit_loop 
+ * @brief The implementation of the SAC instruction
  */
 void execute_inst_SAC(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
@@ -386,8 +324,7 @@ void execute_inst_SAC(lf_scheduler_t* scheduler, size_t worker_number, uint64_t 
 }
 
 /**
- * @brief STP: SToP the execution.
- * 
+ * @brief The implementation of the STP instruction
  */
 void execute_inst_STP(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop, volatile uint32_t* iteration) {
