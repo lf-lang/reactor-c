@@ -24,8 +24,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /**
- * @brief Raspberry Pi Pico support for the C target of Lingua Franca 
- * Uses the pico-sdk which targets the lower level peripheral layer. 
+ * @brief RP2040 mcu support for the C target of Lingua Franca. 
+ * This utilizes the pico-sdk which provides C methods for a light runtime
+ * and a hardware abstraction layer.
  * 
  * @author{Abhi Gundrala <gundralaa@berkeley.edu>}
  */
@@ -48,7 +49,7 @@ static critical_section_t _lf_crit_sec;
 
 /*
  * binary semaphore for lf event notification 
- * used by external isr or core threads
+ * used by external isr or second core thread.
  * used to interact with the lf runtime thread
  */
 static semaphore_t _lf_sem_irq_event;
@@ -56,6 +57,10 @@ static semaphore_t _lf_sem_irq_event;
 // nested critical section counter
 static uint32_t _lf_num_nested_crit_sec = 0;
 
+/*
+ * Initialize basic runtime infrastructure and 
+ * synchronization structs for an unthreaded runtime.
+ */
 void _lf_initialize_clock(void) {
     // init stdio lib
     stdio_init_all();
@@ -64,7 +69,18 @@ void _lf_initialize_clock(void) {
     sem_init(&_lf_sem_irq_event, 0, 1);
 }
 
+/*
+ * Write the time since boot in nanoseconds into 
+ * the time variable pointed to by the argument
+ * and return 0.
+ * 
+ * @param  t  pointer to the time variable to write to.
+ * @return error code or 0 on success. 
+ */
 int _lf_clock_now(instant_t* t) {
+    if (!t) {
+        return -1;
+    }
     // time struct
     absolute_time_t now;
     uint64_t ns_from_boot;
@@ -75,6 +91,15 @@ int _lf_clock_now(instant_t* t) {
     return 0; 
 }
 
+/*
+ * Pause execution of the calling core for 
+ * a nanosecond duration specified by the argument.
+ * Floor the specified duration to the nearest microsecond
+ * duration before sleeping and returning 0 on success.
+ *
+ * @param  sleep_duration  time to sleep in nanoseconds
+ * @return error code or 0 on success
+ */ 
 int lf_sleep(interval_t sleep_duration) {
     if (sleep_duration < 0) {
         return -1;
@@ -83,11 +108,22 @@ int lf_sleep(interval_t sleep_duration) {
     return 0;
 }
 
+/*
+ * Sleep until the target time since boot in nanoseconds provided
+ * by the argument or return early if the binary 
+ * _lf_sem_irq_event semaphore is released before timeout.
+ *
+ * The semaphore is released using the _lf_unthreaded_notify_of_event
+ * which is called by lf_schedule in the unthreaded runtime for physical actions.
+ *
+ * @param  env  pointer to environment struct this runs in.
+ * @param  wakeup_time  time in nanoseconds since boot to sleep until.
+ * @return -1 when interrupted or 0 on successful timeout
+ */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time) {
     int ret_code = 0;
-    // return error
+    // return immediately
     if (wakeup_time < 0) {
-        ret_code = -1;
         return ret_code;
     }
     // time struct
@@ -111,11 +147,19 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
 
 #ifdef LF_UNTHREADED
 /*
- * The single thread rp2040 platform support treats second core
+ * The single thread RP2040 platform support treats second core
  * routines similar to external interrupt routine threads.
- *
+ * 
  * Second core activity is disabled at the same times as
  * when interrupts are disabled. 
+ */
+
+/*
+ * Enter a critical section where the second core is disabled
+ * and interrupts are disabled. Enter only if the critical section
+ * hasn't previously been entered.
+ *
+ * @return error code or 0 on success
  */
 int lf_disable_interrupts_nested() {
     if (!critical_section_is_initialized(&_lf_crit_sec)) {
@@ -133,6 +177,13 @@ int lf_disable_interrupts_nested() {
     return 0;
 }
 
+/*
+ * Exit a critical section and allow second core 
+ * execution and interrupts. Exit only if no other critical
+ * sections are left to exit.
+ *
+ * @return error code or 0 on success
+ */
 int lf_enable_interrupts_nested() {
     if (!critical_section_is_initialized(&_lf_crit_sec) ||
         _lf_num_nested_crit_sec <= 0) {
@@ -148,6 +199,12 @@ int lf_enable_interrupts_nested() {
     return 0;
 }
 
+/*
+ * Release the binary event semaphore to notify
+ * the runtime of a physical action being scheduled.
+ *
+ * @return error code or 0 on success
+ */
 int _lf_unthreaded_notify_of_event() {
     // notify main sleep loop of event
     sem_release(&_lf_sem_irq_event);

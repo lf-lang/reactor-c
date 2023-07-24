@@ -76,11 +76,8 @@ endif()
 
 # Link with thread library
 if(DEFINED LF_THREADED OR DEFINED LF_TRACE)
-    # FIXME make this more general for other platforms
-    if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
-        find_package(Threads REQUIRED)
-        target_link_libraries(core PUBLIC Threads::Threads)
-    endif()
+    find_package(Threads REQUIRED)
+    target_link_libraries(core PUBLIC Threads::Threads)
 endif()
 
 # Macro for translating a command-line argument into compile definition for
