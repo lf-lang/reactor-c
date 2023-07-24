@@ -44,6 +44,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler_sync_tag_advance.h"
 #include "scheduler.h"
 #include "semaphore.h"
+#include "tag.h"
 #include "trace.h"
 #include "util.h"
 
@@ -54,9 +55,23 @@ extern instant_t start_time;
 // Global variables defined in schedule.c:
 extern const inst_t* static_schedules[];
 extern volatile uint32_t counters[];
+extern volatile instant_t offsets[];
 extern const size_t num_counters;
 
 /////////////////// Scheduler Private API /////////////////////////
+/**
+ * @brief Check if a given tag reaches the specified stop tag. If so, mark it in
+ * a reactor_reached_stop_tag array in the scheduler struct.
+ */
+void _check_if_tag_reaches_stop_tag(lf_scheduler_t* scheduler, tag_t tag, int reactor_index) {
+    LF_PRINT_DEBUG("Scheduler: Reactor tag: %lld, stop_tag: %lld", tag.time, scheduler->env->stop_tag.time);
+    if (_lf_is_tag_after_stop_tag(scheduler->env, tag)) {
+        scheduler->reactor_reached_stop_tag[reactor_index] = true;
+    } else {
+        LF_PRINT_DEBUG("Scheduler:  NOT updating the array.");
+    }
+}
+
 /**
  * @brief If there is work to be done, notify workers individually.
  *
@@ -109,9 +124,11 @@ void _lf_sched_wait_for_work(
                     worker_number);
         
         // The last worker advances all reactors to the next tag.
+        // Also check if the new tag reaches the stop tag.
         for (int j = 0; j < scheduler->num_reactor_self_instances; j++) {
             scheduler->reactor_self_instances[j]->tag.time = next_timestamp;
             scheduler->reactor_self_instances[j]->tag.microstep = 0;
+            _check_if_tag_reaches_stop_tag(scheduler, scheduler->reactor_self_instances[j]->tag, j);
         }
         
         // The last worker clears all the counters.
@@ -137,6 +154,7 @@ void execute_inst_ADDI(lf_scheduler_t* scheduler, size_t worker_number, uint64_t
     tracepoint_static_scheduler_ADDI_starts(scheduler->env->trace, worker_number, (int) *pc);
     uint64_t *dst = (uint64_t *) rs1;
     uint64_t *src = (uint64_t *) rs2;
+    // FIXME: Will there be problems if instant_t adds uint64_t?
     *dst = *src + rs3;
     *pc += 1; // Increment pc.
     tracepoint_static_scheduler_ADDI_ends(scheduler->env->trace, worker_number, (int) *pc);
@@ -166,9 +184,7 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, uint64_t 
         reactor->output_ports[i]->is_present = false;
     }
 
-    if (_lf_is_tag_after_stop_tag(scheduler->env, reactor->tag)) {
-        scheduler->reactor_reached_stop_tag[rs1] = true;
-    }
+    _check_if_tag_reaches_stop_tag(scheduler, reactor->tag, rs1);
    
     lf_mutex_unlock(&(scheduler->env->mutex));
 
@@ -198,9 +214,7 @@ void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, uint64_t
         reactor->output_ports[i]->is_present = false;
     }
 
-    if (_lf_is_tag_after_stop_tag(scheduler->env, reactor->tag)) {
-        scheduler->reactor_reached_stop_tag[rs1] = true;
-    }
+    _check_if_tag_reaches_stop_tag(scheduler, reactor->tag, rs1);
    
     *pc += 1; // Increment pc.
 
@@ -269,7 +283,7 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, uint64_t r
     // When wakeup_time overflows but lf_time_physical() doesn't,
     // _lf_interruptable_sleep_until_locked() terminates immediately.
     uint64_t *src = (uint64_t *)rs1;
-    instant_t wakeup_time = start_time + *src + rs2;
+    instant_t wakeup_time = *src + rs2;
     LF_PRINT_DEBUG("start_time: %lld, wakeup_time: %lld, rs1: %lld, current_physical_time: %lld\n", start_time, wakeup_time, rs1, lf_time_physical());
     LF_PRINT_DEBUG("*** Worker %zu delaying", worker_number);
     _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
@@ -430,6 +444,7 @@ void lf_sched_init(
 
         // Initialize the local tags for the STATIC scheduler.
         for (int i = 0; i < env->scheduler->num_reactor_self_instances; i++) {
+            offsets[i] = start_time; // Initialize offsets here.
             env->scheduler->reactor_self_instances[i]->tag.time = start_time;
             env->scheduler->reactor_self_instances[i]->tag.microstep = 0;
         }
