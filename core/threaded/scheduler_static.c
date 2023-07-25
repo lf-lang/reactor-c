@@ -55,7 +55,7 @@ extern instant_t start_time;
 // Global variables defined in schedule.c:
 extern const inst_t* static_schedules[];
 extern volatile uint32_t counters[];
-extern volatile instant_t offsets[];
+extern volatile instant_t time_offsets[];
 extern const size_t num_counters;
 
 /////////////////// Scheduler Private API /////////////////////////
@@ -444,9 +444,13 @@ void lf_sched_init(
 
         // Initialize the local tags for the STATIC scheduler.
         for (int i = 0; i < env->scheduler->num_reactor_self_instances; i++) {
-            offsets[i] = start_time; // Initialize offsets here.
             env->scheduler->reactor_self_instances[i]->tag.time = start_time;
             env->scheduler->reactor_self_instances[i]->tag.microstep = 0;
+        }
+
+        // Initialize time_offsets for each worker.
+        for (int i = 0; i < number_of_workers; i++) {
+            time_offsets[i] = start_time;
         }
 
         // Already initialized

@@ -217,7 +217,7 @@ do { \
 // of the current reactor. 
 
 // The fully static (STATIC) runtime, uses time local to each reactor. If this is the case
-// then we defined these macros to acces that timestamp rather than using the standard API
+// then we defined these macros to access that timestamp rather than using the standard API
 // FIXME (erj): I am not really stoked about this added complexity
 #if defined REACTOR_LOCAL_TIME
 #define lf_tag() self->base.tag
