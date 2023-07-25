@@ -1043,12 +1043,6 @@ void determine_number_of_workers(void) {
         _lf_number_of_workers = NUMBER_OF_WORKERS;
         #endif
     }
-
-    #if defined(WORKERS_NEEDED_FOR_FEDERATE)
-    // Add the required number of workers needed for the proper function of
-    // federated execution
-    _lf_number_of_workers += WORKERS_NEEDED_FOR_FEDERATE;
-    #endif
 }
 
 /**
