@@ -456,12 +456,9 @@ void _lf_next_locked(environment_t *env) {
     // federates. If an action triggers during that wait, it will unblock
     // and return with a time (typically) less than the next_time.
     tag_t grant_tag = send_next_event_tag(env, next_tag, true); // true means this blocks.
-    if (lf_tag_compare(grant_tag, next_tag) < 0) {
-        // RTI has granted tag advance to an earlier tag or the wait
-        // for the RTI response was interrupted by a local physical action with
-        // a tag earlier than requested.
-        // Continue executing. The event queue may have changed.
-        return;
+    while (lf_tag_compare(grant_tag, next_tag) < 0) {
+        next_tag = get_next_event_tag(env);
+        grant_tag = send_next_event_tag(env, next_tag, true);
     }
     // Granted tag is greater than or equal to next event tag that we sent to the RTI.
     // Since send_next_event_tag releases the mutex lock internally, we need to check
