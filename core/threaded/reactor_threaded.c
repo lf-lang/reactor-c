@@ -109,7 +109,7 @@ void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag) {
 
             // One possibility is that the incoming message has violated the STP offset.
             // Another possibility is that the message is coming from a zero-delay loop,
-            // and control reactions are waiting.
+            // and port absent reactions are waiting.
 
             // Prevent logical time from advancing further so that the measure of
             // STP violation properly reflects the amount of time (logical or physical)
@@ -556,7 +556,7 @@ void _lf_next_locked(environment_t *env) {
     // stick them into the reaction queue.
     _lf_pop_events(env);
 #ifdef FEDERATED
-    enqueue_network_output_control_reactions(env);
+    enqueue_port_absent_reactions(env);
     // _lf_pop_events may have set some triggers present.
     extern federate_instance_t _fed;
     update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
@@ -838,7 +838,7 @@ bool _lf_worker_handle_STP_violation_for_reaction(environment_t* env, int worker
         } else {
         	// The intended tag cannot be respected and there is no handler.
         	// Print an error message and return true.
-        	// NOTE: STP violations are ignored for control reactions, which need to
+        	// NOTE: STP violations are ignored for port absent reactions, which need to
         	// execute anyway.
         	lf_print_error("STP violation occurred in a trigger to reaction %d, "
         			"and there is no handler.\n**** Invoking reaction at the wrong tag!",

@@ -155,7 +155,7 @@ typedef struct federate_instance_t {
     /**
      * Indicates whether the last TAG received is provisional or an ordinary
      * TAG.
-     * If the last TAG has been provisional, network control reactions must be inserted.
+     * If the last TAG has been provisional, network port absent reactions must be inserted.
      * This variable should only be accessed while holding the mutex lock.
      */
     bool is_last_TAG_provisional;
@@ -353,10 +353,10 @@ void* handle_p2p_connections_from_federates(void*);
 void send_port_absent_to_federate(environment_t* env, interval_t, unsigned short, unsigned short);
 
 /**
- * Enqueue network output control reactions that will send a PORT_ABSENT
+ * Enqueue port absent reactions that will send a PORT_ABSENT
  * message to downstream federates if a given network output port is not present.
  */
-void enqueue_network_output_control_reactions(environment_t* env);
+void enqueue_port_absent_reactions(environment_t* env);
 
 /**
  * @brief Prevent the advancement to the next level of the reaction queue until the

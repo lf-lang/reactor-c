@@ -636,7 +636,7 @@ static void compute_number_of_workers(
         }
         int minimum_workers = 1;
 #ifdef WORKERS_NEEDED_FOR_FEDERATE
-        // TODO: only apply this constraint on levels containing control reactions
+        // TODO: only apply this constraint on levels containing port absent reactions
         assert(WORKERS_NEEDED_FOR_FEDERATE >= 1);
         minimum_workers = WORKERS_NEEDED_FOR_FEDERATE > max_reasonable_num_workers ?
             max_reasonable_num_workers : WORKERS_NEEDED_FOR_FEDERATE;

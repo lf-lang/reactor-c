@@ -1254,8 +1254,8 @@ void set_network_port_status(int portID, port_status_t status) {
  * than the last_known_status_tag of the port. This is called when
  * all inputs to network ports with tags up to and including `tag`
  * have been received by those ports. If any update occurs and if
- * there are control reactions blocked, then this broadcasts a
- * signal to potentially unblock those control reactions.
+ * there are port absent reactions blocked, then this broadcasts a
+ * signal to potentially unblock those port absent reactions.
  *
  * This assumes the caller holds the mutex.
  *
@@ -1289,14 +1289,14 @@ void update_last_known_status_on_input_ports(tag_t tag) {
             //}
         }
     }
-    // Then, check if any control reaction is waiting.
+    // Then, check if any port absent reaction is waiting.
     // If so, notify them.
     // FIXME: We could put a condition variable into the trigger_t
     // struct for each network input port, in which case this won't
     // be a broadcast but rather a targetted signal.
     if (notify) {
         update_max_level(tag, false);
-        // Notify network input control reactions
+        // Notify network input port absent reactions
         lf_cond_broadcast(&port_status_changed);
     }
 }
@@ -1308,7 +1308,7 @@ void update_last_known_status_on_input_ports(tag_t tag) {
  * (present or absent) of the port was known.
  *
  * This function assumes the caller holds the mutex, and, if the tag
- * actually increases, it notifies the waiting control reaction if there is one.
+ * actually increases, it notifies the waiting port absent reaction if there is one.
  *
  * @param tag The tag on which the latest status of network input
  *  ports is known.
@@ -1334,7 +1334,7 @@ void update_last_known_status_on_input_port(tag_t tag, int port_id) {
             tag.microstep
         );
         input_port_action->last_known_status_tag = tag;
-        // If any control reaction is waiting, notify them that the status has changed
+        // If any port absent reaction is waiting, notify them that the status has changed
         //if (waitingToAdvance) {
             // The last known status tag of the port has changed. Notify any waiting threads.
         // There is no guarantee that there is either a TAG or a PTAG for this time.
@@ -1399,16 +1399,16 @@ port_status_t get_current_port_status(environment_t* env, int portID) {
 }
 
 /**
- * Enqueue network output control reactions that will send a MSG_TYPE_PORT_ABSENT
+ * Enqueue port absent reactions that will send a MSG_TYPE_PORT_ABSENT
  * message to downstream federates if a given network output port is not present.
  * @param env The environment of the federate
  */
-void enqueue_network_output_control_reactions(environment_t* env){
+void enqueue_port_absent_reactions(environment_t* env){
     assert(env != GLOBAL_ENVIRONMENT);
 #ifdef FEDERATED_CENTRALIZED
     if (!_fed.has_downstream) {
         // This federate is not connected to any downstream federates via a
-        // logical connection. No need to trigger network output control
+        // logical connection. No need to trigger port absent
         // reactions.
         return;
     }
@@ -1421,7 +1421,7 @@ void enqueue_network_output_control_reactions(environment_t* env){
     for (int i = 0; i < num_sender_reactions; i++) {
         reaction_t* reaction = port_absent_reaction[i];
         if (reaction && reaction->status == inactive) {
-            LF_PRINT_DEBUG("Inserting network output control reaction on reaction queue.");
+            LF_PRINT_DEBUG("Inserting port absent reaction on reaction queue.");
             lf_scheduler_trigger_reaction(env->scheduler, reaction, -1);
         }
     }
@@ -1836,18 +1836,18 @@ void handle_tagged_message(int socket, int fed_id) {
     // Check whether reactions need to be inserted directly into the reaction
     // queue or a call to schedule is needed. This checks if the intended
     // tag of the message is for the current tag or a tag that is already
-    // passed and if any control reaction is waiting on this port (or the
+    // passed and if any port absent reaction is waiting on this port (or the
     // execution hasn't even started).
-    // If the tag is intended for a tag that is passed, the control reactions
+    // If the tag is intended for a tag that is passed, the port absent reactions
     // would need to exit because only one message can be processed per tag,
     // and that message is going to be a tardy message. The actual tardiness
     // handling is done inside _lf_insert_reactions_for_trigger.
     // To prevent multiple processing of messages per tag,
     // we also need to check the port status.
     // For example, there could be a case where current tag is
-    // 10 with a control reaction waiting, and a message has arrived with intended_tag 8.
-    // This message will eventually cause the control reaction to exit, but before that,
-    // a message with intended_tag of 9 could arrive before the control reaction has had a chance
+    // 10 with a port absent reaction waiting, and a message has arrived with intended_tag 8.
+    // This message will eventually cause the port absent reaction to exit, but before that,
+    // a message with intended_tag of 9 could arrive before the port absent reaction has had a chance
     // to exit. The port status is on the other hand changed in this thread, and thus,
     // can be checked in this scenario without this race condition. The message with
     // intended_tag of 9 in this case needs to wait one microstep to be processed.
@@ -1855,7 +1855,7 @@ void handle_tagged_message(int socket, int fed_id) {
             (action->trigger->status == unknown ||             // if the status of the port is still unknown.
              _lf_execution_started == false)         // Or, execution hasn't even started, so it's safe to handle this event.
     ) {
-        // Since the message is intended for the current tag and a control reaction
+        // Since the message is intended for the current tag and a port absent reaction
         // was waiting for the message, trigger the corresponding reactions for this
         // message.
         LF_PRINT_LOG(
@@ -1870,7 +1870,7 @@ void handle_tagged_message(int socket, int fed_id) {
         _lf_insert_reactions_for_trigger(env, action->trigger, message_token);
 
         // Set the status of the port as present here to inform the network input
-        // control reactions know that they no longer need to block. The reason for
+        // port absent reactions know that they no longer need to block. The reason for
         // that is because the network receiver reaction is now in the reaction queue
         // keeping the precedence order intact.
         set_network_port_status(port_id, present);
@@ -1879,7 +1879,7 @@ void handle_tagged_message(int socket, int fed_id) {
         update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
         lf_cond_broadcast(&port_status_changed);
     } else {
-        // If no control reaction is waiting for this message, or if the intended
+        // If no port absent reaction is waiting for this message, or if the intended
         // tag is in the future, use schedule functions to process the message.
 
         // Before that, if the current time >= stop time, discard the message.
@@ -1915,7 +1915,7 @@ void handle_tagged_message(int socket, int fed_id) {
  * Handle a time advance grant (TAG) message from the RTI.
  * This updates the last known status tag for each network input
  * port, and broadcasts a signal, which may cause a blocking
- * control reaction to unblock.
+ * port absent reaction to unblock.
  *
  * In addition, this updates the last known TAG/PTAG and broadcasts
  * a notification of this update, which may unblock whichever worker

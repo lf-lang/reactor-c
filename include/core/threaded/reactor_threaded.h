@@ -5,11 +5,11 @@
 void try_advance_level(environment_t*, volatile size_t*);
 
 /**
- * Enqueue network output control reactions that will send a PORT_ABSENT
+ * Enqueue port absent reactions that will send a PORT_ABSENT
  * message to downstream federates if a given network output port is not present.
  * @param env The environment in which we are executing
  */
-void enqueue_network_output_control_reactions(environment_t* env);
+void enqueue_port_absent_reactions(environment_t* env);
 
 /**
  * Raise a barrier to prevent the current tag for the specified environment from advancing
