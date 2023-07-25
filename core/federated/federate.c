@@ -1365,40 +1365,6 @@ void reset_status_fields_on_input_port_triggers() {
 }
 
 /**
- * Return the status of the port at the current tag.
- *
- * This assumes that the caller holds the mutex.
- *
- * @param env The environment of the federate
- * @param portID the ID of the port to determine status for
- */
-port_status_t get_current_port_status(environment_t* env, int portID) {
-    assert(env != GLOBAL_ENVIRONMENT);
-    // Check whether the status of the port is known at the current tag.
-    trigger_t* network_input_port_action = _lf_action_for_port(portID)->trigger;
-    if (network_input_port_action->status == present) {
-        // The status of the trigger is present.
-        return present;
-    } else if (network_input_port_action->status == absent) {
-        // The status of the trigger is absent.
-        return absent;
-    } else if (network_input_port_action->status == unknown
-            && lf_tag_compare(network_input_port_action->last_known_status_tag, env->current_tag) >= 0) {
-        // We have a known status for this port in a future tag. Therefore, no event is going
-        // to be present for this port at the current tag.
-        set_network_port_status(portID, absent);
-        return absent;
-    } else if (_fed.is_last_TAG_provisional
-            && lf_tag_compare(_fed.last_TAG, env->current_tag) > 0) {
-        // In this case, a PTAG has been received with a larger tag than the current tag,
-        // which means that the input port is known to be absent.
-        set_network_port_status(portID, absent);
-        return absent;
-    }
-    return unknown;
-}
-
-/**
  * Enqueue port absent reactions that will send a MSG_TYPE_PORT_ABSENT
  * message to downstream federates if a given network output port is not present.
  * @param env The environment of the federate
