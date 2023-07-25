@@ -2,6 +2,14 @@
 #define REACTOR_THREADED_H
 #include "lf_types.h"
 
+/**
+ * @brief Attempt to advance the current reaction level to the next level
+ * in the reaction queue. For federated runtimes, this function should
+ * stall the advance until we know that we can safely execute the next level
+ * given knowledge about upstream network port statuses.
+ *
+ * @param next_reaction_level
+ */
 void try_advance_level(environment_t*, volatile size_t*);
 
 /**

@@ -1253,9 +1253,8 @@ void set_network_port_status(int portID, port_status_t status) {
  * to the value of `tag`, unless that the provided `tag` is less
  * than the last_known_status_tag of the port. This is called when
  * all inputs to network ports with tags up to and including `tag`
- * have been received by those ports. If any update occurs and if
- * there are port absent reactions blocked, then this broadcasts a
- * signal to potentially unblock those port absent reactions.
+ * have been received by those ports. If any update occurs,
+ * then this broadcasts on `port_status_changed`.
  *
  * This assumes the caller holds the mutex.
  *
@@ -1284,19 +1283,15 @@ void update_last_known_status_on_input_ports(tag_t tag) {
                 tag.microstep
             );
             input_port_action->trigger->last_known_status_tag = tag;
-            //if (waiting_to_advance_level) {
-                notify = true;
-            //}
+            notify = true;
         }
     }
-    // Then, check if any port absent reaction is waiting.
-    // If so, notify them.
     // FIXME: We could put a condition variable into the trigger_t
     // struct for each network input port, in which case this won't
     // be a broadcast but rather a targetted signal.
     if (notify) {
         update_max_level(tag, false);
-        // Notify network input port absent reactions
+        // Notify network input reactions
         lf_cond_broadcast(&port_status_changed);
     }
 }
@@ -1308,7 +1303,7 @@ void update_last_known_status_on_input_ports(tag_t tag) {
  * (present or absent) of the port was known.
  *
  * This function assumes the caller holds the mutex, and, if the tag
- * actually increases, it notifies the waiting port absent reaction if there is one.
+ * actually increases, it broadcasts on `port_status_changed`.
  *
  * @param tag The tag on which the latest status of network input
  *  ports is known.
@@ -1334,16 +1329,12 @@ void update_last_known_status_on_input_port(tag_t tag, int port_id) {
             tag.microstep
         );
         input_port_action->last_known_status_tag = tag;
-        // If any port absent reaction is waiting, notify them that the status has changed
-        //if (waitingToAdvance) {
-            // The last known status tag of the port has changed. Notify any waiting threads.
         // There is no guarantee that there is either a TAG or a PTAG for this time.
         // The message that triggered this to be called could be from an upstream
         // federate that is far ahead of other upstream federates in logical time.
         // Therefore, do not pass `tag` to `update_max_level`.
         update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
         lf_cond_broadcast(&port_status_changed);
-        //}
     } else {
         LF_PRINT_DEBUG("Attempt to update the last known status tag "
                "of network input port %d to an earlier tag was ignored.", port_id);
@@ -1678,12 +1669,6 @@ void handle_message(int socket, int fed_id) {
     _lf_schedule_value(action, 0, message_contents, length);
 }
 
-/**
- * @brief Prevent the advancement to the next level of the reaction queue until the
- *        level we try to advance to is known to be under the max level allowed to advance.
- *
- * @param next_reaction_level
- */
 void stall_advance_level_federation(environment_t* env, size_t next_reaction_level) {
     LF_PRINT_DEBUG("Trying to acquire the global mutex.");
     lf_mutex_lock(&env->mutex);
@@ -1779,22 +1764,6 @@ void handle_tagged_message(int socket, int fed_id) {
 
     // Create a token for the message
     lf_token_t* message_token = _lf_new_token((token_type_t*)action, message_contents, length);
-
-    // Sanity checks
-#ifdef FEDERATED_DECENTRALIZED
-    if (lf_tag_compare(intended_tag,
-            action->trigger->last_known_status_tag) < 0) {
-        // lf_print_error_and_exit("The following contract was violated for a timed message: In-order "
-                            //  "delivery of messages over a TCP socket. Had status for " PRINTF_TAG ", got "
-                            //  "timed message with intended tag " PRINTF_TAG ".",
-                            //  action->trigger->last_known_status_tag.time - start_time,
-                            //  action->trigger->last_known_status_tag.microstep,
-                            //  intended_tag.time - start_time,
-                            //  intended_tag.microstep);
-    }
-#endif // In centralized coordination, a TAG message from the RTI
-       // can set the last_known_status_tag to a future tag where messages
-       // have not arrived yet.
 
     // FIXME: It might be enough to just check this field and not the status at all
     update_last_known_status_on_input_port(intended_tag, port_id);
@@ -1955,15 +1924,6 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
     _fed.last_sent_LTC = tag_to_send;
 }
 
-/**
- * @brief Attempts to update the max level the reaction queue is allowed to advance to
- * for the current logical timestep.
- *
- * @param tag The latest TAG received by this federate.
- * @param is_provisional Whether the latest tag was provisional
- *
- * This function assumes that the caller holds the mutex.
- */
 void update_max_level(tag_t tag, bool is_provisional) {
     environment_t *env;
     _lf_get_environments(&env);
@@ -1998,7 +1958,10 @@ bool a_port_is_unknown(staa_t* staa_elem) {
 }
 #endif
 
-int id_of_action(lf_action_base_t* input_port_action) {
+/**
+ * @brief Return the port ID of the port associated with the given action.
+ */
+static int id_of_action(lf_action_base_t* input_port_action) {
     for (int i = 0; 1; i++) {
         if (_lf_action_for_port(i) == input_port_action) return i;
     }
@@ -2011,7 +1974,7 @@ int id_of_action(lf_action_base_t* input_port_action) {
  *
  */
 #ifdef FEDERATED_DECENTRALIZED
-void* update_ports_from_staa_offsets(void* args) {
+static void* update_ports_from_staa_offsets(void* args) {
     environment_t *env;
     int num_envs = _lf_get_environments(&env);
     while (1) {
@@ -2119,10 +2082,8 @@ void handle_provisional_tag_advance_grant() {
     // because we do not need to continue to wait for a TAG.
     lf_cond_broadcast(&env->event_q_changed);
     // Notify level advance thread which is blocked.
-    //if (waiting_to_advance_level) {
     update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
     lf_cond_broadcast(&port_status_changed);
-    //}
 
     // Possibly insert a dummy event into the event queue if current time is behind
     // (which it should be). Do not do this if the federate has not fully
@@ -2486,7 +2447,10 @@ void* listen_to_federates(void* _args) {
     return NULL;
 }
 
-void stop_all_traces() {
+/**
+ * @brief Stop the traces associated with all environments in the program.
+ */
+static void stop_all_traces() {
     environment_t *env;
     int num_envs = _lf_get_environments(&env);
     for (int i = 0; i < num_envs; i++) {

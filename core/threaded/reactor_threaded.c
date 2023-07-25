@@ -838,7 +838,7 @@ bool _lf_worker_handle_STP_violation_for_reaction(environment_t* env, int worker
         } else {
         	// The intended tag cannot be respected and there is no handler.
         	// Print an error message and return true.
-        	// NOTE: STP violations are ignored for port absent reactions, which need to
+            // NOTE: STP violations are ignored for network input reactions, which need to
         	// execute anyway.
         	lf_print_error("STP violation occurred in a trigger to reaction %d, "
         			"and there is no handler.\n**** Invoking reaction at the wrong tag!",
@@ -894,14 +894,6 @@ void _lf_worker_invoke_reaction(environment_t *env, int worker_number, reaction_
     reaction->is_STP_violated = false;
 }
 
-/**
- * @brief Attempt to advance the current reaction level to the next level
- * in the reaction queue. For federated runtimes, this function should
- * stall the advance until we know that we can safely execute the next level
- * given knowledge about upstream network port statuses.
- * 
- * @param next_reaction_level
- */
 void try_advance_level(environment_t* env, volatile size_t* next_reaction_level) {
     #ifdef FEDERATED
     stall_advance_level_federation(env, *next_reaction_level);

@@ -360,7 +360,7 @@ void enqueue_port_absent_reactions(environment_t* env);
 
 /**
  * @brief Prevent the advancement to the next level of the reaction queue until the
- *        level we try to advance to is known to be under the max level allowed to advance.
+ * level we try to advance to is known to be under the max level allowed to advance.
  *
  * @param next_reaction_level
  */
@@ -370,6 +370,10 @@ void stall_advance_level_federation(environment_t*, size_t);
  * @brief Attempts to update the max level the reaction queue is allowed to advance to
  * for the current logical timestep.
  *
+ * @param tag The latest TAG received by this federate.
+ * @param is_provisional Whether the latest tag was provisional
+ *
+ * This function assumes that the caller holds the mutex.
  */
 void update_max_level(tag_t, bool);
 
