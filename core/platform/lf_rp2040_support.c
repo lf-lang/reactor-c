@@ -40,14 +40,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <pico/multicore.h>
 #include <pico/sync.h>
 
-/* 
+/** 
  * critical section struct
  * disables external irq and core execution
  * provides mutual exclusion using hardware spin-locks
  */
 static critical_section_t _lf_crit_sec;
 
-/*
+/**
  * binary semaphore for lf event notification 
  * used by external isr or second core thread.
  * used to interact with the lf runtime thread
@@ -57,7 +57,7 @@ static semaphore_t _lf_sem_irq_event;
 // nested critical section counter
 static uint32_t _lf_num_nested_crit_sec = 0;
 
-/*
+/**
  * Initialize basic runtime infrastructure and 
  * synchronization structs for an unthreaded runtime.
  */
@@ -69,7 +69,7 @@ void _lf_initialize_clock(void) {
     sem_init(&_lf_sem_irq_event, 0, 1);
 }
 
-/*
+/**
  * Write the time since boot in nanoseconds into 
  * the time variable pointed to by the argument
  * and return 0.
@@ -91,7 +91,7 @@ int _lf_clock_now(instant_t* t) {
     return 0; 
 }
 
-/*
+/**
  * Pause execution of the calling core for 
  * a nanosecond duration specified by the argument.
  * Floor the specified duration to the nearest microsecond
@@ -108,7 +108,7 @@ int lf_sleep(interval_t sleep_duration) {
     return 0;
 }
 
-/*
+/**
  * Sleep until the target time since boot in nanoseconds provided
  * by the argument or return early if the binary 
  * _lf_sem_irq_event semaphore is released before timeout.
@@ -146,7 +146,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
 }
 
 #ifdef LF_UNTHREADED
-/*
+/**
  * The single thread RP2040 platform support treats second core
  * routines similar to external interrupt routine threads.
  * 
@@ -154,7 +154,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
  * when interrupts are disabled. 
  */
 
-/*
+/**
  * Enter a critical section where the second core is disabled
  * and interrupts are disabled. Enter only if the critical section
  * hasn't previously been entered.
@@ -177,7 +177,7 @@ int lf_disable_interrupts_nested() {
     return 0;
 }
 
-/*
+/**
  * Exit a critical section and allow second core 
  * execution and interrupts. Exit only if no other critical
  * sections are left to exit.
@@ -199,7 +199,7 @@ int lf_enable_interrupts_nested() {
     return 0;
 }
 
-/*
+/**
  * Release the binary event semaphore to notify
  * the runtime of a physical action being scheduled.
  *
