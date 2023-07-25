@@ -95,7 +95,7 @@ int _lf_clock_now(instant_t* t) {
  * Pause execution of the calling core for 
  * a nanosecond duration specified by the argument.
  * Floor the specified duration to the nearest microsecond
- * duration before sleeping and returning 0 on success.
+ * duration before sleeping and return 0.
  *
  * @param  sleep_duration  time to sleep in nanoseconds
  * @return error code or 0 on success
@@ -111,7 +111,7 @@ int lf_sleep(interval_t sleep_duration) {
 /**
  * Sleep until the target time since boot in nanoseconds provided
  * by the argument or return early if the binary 
- * _lf_sem_irq_event semaphore is released before timeout.
+ * _lf_sem_irq_event semaphore is released before the target time.
  *
  * The semaphore is released using the _lf_unthreaded_notify_of_event
  * which is called by lf_schedule in the unthreaded runtime for physical actions.
@@ -166,8 +166,8 @@ int lf_disable_interrupts_nested() {
         return 1;
     }
     // check crit sec count
-    // enter non-rentrant state
-    // prevent second core access and disable interrupts
+    // enter non-rentrant state by disabling interrupts
+    // lock second core execution
     if (_lf_num_nested_crit_sec == 0) {
         // block if associated spin lock in use
         critical_section_enter_blocking(&_lf_crit_sec);
@@ -178,9 +178,9 @@ int lf_disable_interrupts_nested() {
 }
 
 /**
- * Exit a critical section and allow second core 
- * execution and interrupts. Exit only if no other critical
- * sections are left to exit.
+ * Exit a critical section which will resume second core 
+ * execution and enable interrupts. 
+ * Exit only if no other critical sections are left to exit.
  *
  * @return error code or 0 on success
  */
