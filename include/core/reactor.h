@@ -86,9 +86,10 @@ void _lf_set_present(lf_port_base_t* port);
 
 /**
  * @brief Forward declaration for the executable preamble;
+ * @param env Environment in which to execute to preamble
  * 
  */
-void _lf_executable_preamble();
+void _lf_executable_preamble(environment_t* env);
 
 /**
  * Set the specified output (or input of a contained reactor)
@@ -109,7 +110,7 @@ do { \
     /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
     /* even if it is a literal */ \
     out->value = val; \
-    _lf_set_present((lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     if (((token_template_t*)out)->token != NULL) { \
         /* The cast "*((void**) &out->value)" is a hack to make the code */ \
         /* compile with non-token types where value is not a pointer. */ \
@@ -133,14 +134,14 @@ do { \
 #ifndef __cplusplus
 #define lf_set_array(out, val, length) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
     out->value = token->value; \
 } while(0)
 #else
 #define lf_set_array(out, val, length) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
     out->value = static_cast<decltype(out->value)>(token->value); \
 } while(0)
@@ -163,14 +164,14 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW(out) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
     out->value = token->value; \
 } while(0)
 #else
 #define _LF_SET_NEW(out) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
     out->value = static_cast<decltype(out->value)>(token->value); \
 } while(0)
@@ -192,7 +193,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
     out->value = token->value; \
     out->length = len; \
@@ -200,7 +201,7 @@ do { \
 #else
 #define _LF_SET_NEW_ARRAY(out, len) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
     out->value = static_cast<decltype(out->value)>(token->value); \
     out->length = len; \
@@ -217,7 +218,7 @@ do { \
  */
 #define lf_set_present(out) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
 } while(0)
 
 /**
@@ -232,7 +233,7 @@ do { \
 #ifndef __cplusplus
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     _lf_replace_template_token((token_template_t*)out, newtoken); \
     out->value = newtoken->value; \
     out->length = newtoken->length; \
@@ -240,7 +241,7 @@ do { \
 #else
 #define _LF_SET_TOKEN(out, newtoken) \
 do { \
-    _lf_set_present((lf_port_base_t*)out); \
+   _lf_set_present((lf_port_base_t*)out); \
     _lf_replace_template_token((token_template_t*)out, newtoken); \
     out->value = static_cast<decltype(out->value)>(newtoken->value); \
     out->length = newtoken->length; \
@@ -314,18 +315,18 @@ void lf_set_stp_offset(interval_t offset);
 /**
  * Print a snapshot of the priority queues used during execution
  * (for debugging).
+ * @param env The environment in which we are executing.
  */
-void lf_print_snapshot(void);
+void lf_print_snapshot(environment_t* env);
 
 /**
  * Request a stop to execution as soon as possible.
- * In a non-federated execution, this will occur
- * at the conclusion of the current logical time.
- * In a federated execution, it will likely occur at
- * a later logical time determined by the RTI so that
- * all federates stop at the same logical time.
+ * In a non-federated execution with only a single enclave, this will occur
+ * one microstep later than the current tag. In a federated execution or when
+ * there is more than one enclave, it will likely occur at a later tag determined
+ * by the RTI so that all federates and enclaves stop at the same tag.
  */
-void lf_request_stop(void);
+void lf_request_stop();
 
 /**
  * Allocate zeroed-out memory and record the allocated memory on
@@ -369,7 +370,7 @@ void _lf_free_all_reactors(void);
  * Free memory recorded on the allocations list of the specified reactor.
  * @param self The self struct of the reactor.
  */
-void _lf_free_reactor(struct self_base_t *self);
+void _lf_free_reactor(self_base_t *self);
 
 /**
  * Generated function that optionally sets default command-line options.
@@ -379,41 +380,37 @@ void _lf_set_default_command_line_options(void);
 /**
  * Generated function that resets outputs to be absent at the
  * start of a new time step.
+ * @param env The environment in which we are executing
  */
-void _lf_start_time_step(void);
+void _lf_start_time_step(environment_t *env);
 
 /**
  * Generated function that produces a table containing all triggers
  * (i.e., inputs, timers, and actions).
  */
-void _lf_initialize_trigger_objects(void);
+void _lf_initialize_trigger_objects();
 
 /**
  * Pop all events from event_q with timestamp equal to current_time, extract all
  * the reactions triggered by these events, and stick them into the reaction
  * queue.
+ * @param env The environment in which we are executing
  */
-void _lf_pop_events(void);
+void _lf_pop_events(environment_t *env);
+
+
 
 /**
  * Internal version of the lf_schedule() function, used by generated
  * _lf_start_timers() function.
+ * @param env The environment in which we are executing
  * @param trigger The action or timer to be triggered.
  * @param delay Offset of the event release.
  * @param token The token payload.
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
  */
-trigger_handle_t _lf_schedule(trigger_t* trigger, interval_t delay, lf_token_t* token);
+trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger, interval_t delay, lf_token_t* token);
 
-/**
- * Function (to be code generated) to schedule timers.
- */
-void _lf_initialize_timers(void);
-
-/**
- * Function (to be code generated) to trigger startup reactions.
- */
-void _lf_trigger_startup_reactions(void);
 
 /**
  * Function to initialize mutexes for watchdogs
@@ -424,15 +421,12 @@ void _lf_initialize_watchdog_mutexes(void);
 /**
  * Function (to be code generated) to terminate execution.
  * This will be invoked after all shutdown actions have completed.
+ * @param env The environment in which we are executing
  */
-void terminate_execution(void);
+void terminate_execution(environment_t* env);
 
-void termination(void);
+void termination();
 
-/**
- * Function (to be code generated) to trigger shutdown reactions.
- */
-bool _lf_trigger_shutdown_reactions(void);
 
 /**
  * Schedule the specified action with an integer value at a later logical
@@ -529,34 +523,29 @@ trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_d
  */
 trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, void* value, size_t length);
 
+// See reactor.h for doc.
+int _lf_fd_send_stop_request_to_rti(tag_t stop_tag);
+
 /**
- * For a federated execution, send a STOP_REQUEST message
- * to the RTI.
+ * @brief Will update the argument to point to the beginning of the array of environments in this program
+ * @note Is code-generated by the compiler
+ * @param envs A double pointer which will be dereferenced and modified
+ * @return int The number of environments in the array
  */
-void _lf_fd_send_stop_request_to_rti(void);
+int _lf_get_environments(environment_t **envs);
+
+
+/**
+ * @brief Will create and initialize the required number of environments for the program
+ * @note Will be code generated by the compiler
+ */
+void _lf_create_environments();
+
 
 /**
  * These functions must be implemented by both threaded and unthreaded
  * runtime. Should be routed to appropriate API calls in platform.h
 */
-
-/**
- * @brief Notify other threads of new events on the event queue.
- * 
- */
-void _lf_notify_of_event();
-
-/**
- * @brief Enter critical section. Must be paired with a
- * `_lf_critical_section_exit()`
- * 
- */
-void _lf_critical_section_enter();
-
-/**
- * @brief Leave critical section
- */
-void _lf_critical_section_exit();
 
 #endif /* REACTOR_H */
 /** @} */

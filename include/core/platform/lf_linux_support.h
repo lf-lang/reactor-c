@@ -32,20 +32,20 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef LF_LINUX_SUPPORT_H
 #define LF_LINUX_SUPPORT_H
 
-#if defined LF_THREADED || defined _LF_TRACE
-    #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
-// (Not C++11 or later) or no threads support
-#include "lf_POSIX_threads_support.h"
-    #else
-#include "lf_C11_threads_support.h"
-    #endif
-#endif
-
 #include <stdint.h> // For fixed-width integral types
 #include <time.h>   // For CLOCK_MONOTONIC
 
 // Use 64-bit times and 32-bit unsigned microsteps
 #include "lf_tag_64_32.h"
+
+#if defined LF_THREADED
+    #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
+        // (Not C++11 or later) or no threads support
+        #include "lf_POSIX_threads_support.h"
+    #else
+        #include "lf_C11_threads_support.h"
+    #endif
+#endif
 
 // The underlying physical clock for Linux
 #define _LF_CLOCK CLOCK_MONOTONIC

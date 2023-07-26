@@ -1,7 +1,7 @@
 set(CORE_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Get the general common sources for reactor-c
-list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c lf_token.c)
+list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c lf_token.c environment.c)
 
 # Add tracing support if requested
 if (DEFINED LF_TRACE)
@@ -65,6 +65,13 @@ if(DEFINED FEDERATED_AUTHENTICATED)
     endif()
     find_package(OpenSSL REQUIRED)
     target_link_libraries(core PUBLIC OpenSSL::SSL)
+endif()
+
+if(DEFINED _LF_CLOCK_SYNC_ON)
+  find_library(MATH_LIBRARY m)
+  if(MATH_LIBRARY)
+    target_link_libraries(core PUBLIC ${MATH_LIBRARY})
+  endif()
 endif()
 
 # Link with thread library

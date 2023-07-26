@@ -70,7 +70,7 @@ void lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
 
     self_base_t* base = watchdog->base;
 
-    watchdog->expiration = lf_time_logical() + watchdog->min_expiration + additional_timeout;
+    watchdog->expiration = base->environment->current_tag.time + watchdog->min_expiration + additional_timeout;
 
     if (!watchdog->thread_active) {
         lf_thread_create(&(watchdog->thread_id), _lf_run_watchdog, watchdog);

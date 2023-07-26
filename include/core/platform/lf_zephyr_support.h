@@ -43,8 +43,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <zephyr/posix/netdb.h>
 
 #define NO_TTY
-#define _LF_TIMEOUT 1
-
 #ifdef LF_THREADED
 
 typedef struct k_mutex lf_mutex_t;
@@ -53,9 +51,6 @@ typedef struct {
     struct k_condvar condition;
 } lf_cond_t;
 typedef struct k_thread* lf_thread_t;
-
-extern lf_mutex_t mutex;
-extern lf_cond_t event_q_changed;
 
 /**
  * @brief Add `value` to `*ptr` and return original value of `*ptr` 
