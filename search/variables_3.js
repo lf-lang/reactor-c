@@ -12,10 +12,10 @@ var searchData=
   ['clock_5fthread_9',['clock_thread',['../d9/d88/structfederation__rti__t.html#a07e61d51d27d9ae5ba6c1ff8177a105f',1,'federation_rti_t']]],
   ['cmppri_10',['cmppri',['../d5/d38/structpqueue__t.html#af44c1953e47510529147cfbea33489ef',1,'pqueue_t']]],
   ['completed_11',['completed',['../d5/df6/structenclave__t.html#a2edad005c1acbb5e0c2b6c11ad39c459',1,'enclave_t']]],
-  ['cond_12',['cond',['../db/d04/struct__lf__scheduler__thread__info__t.html#a39ecc4340d812356e74b3206ce4e1f01',1,'_lf_scheduler_thread_info_t::cond'],['../d2/da6/structsemaphore__t.html#a3cabe71920a6679f9d7a9b12085347ba',1,'semaphore_t::cond']]],
+  ['cond_12',['cond',['../db/d04/struct__lf__scheduler__thread__info__t.html#a39ecc4340d812356e74b3206ce4e1f01',1,'_lf_scheduler_thread_info_t::cond'],['../de/dc8/structlf__semaphore__t.html#a37a3bc5a68d8a9245dbc59e6b9010f3b',1,'lf_semaphore_t::cond']]],
   ['condition_13',['condition',['../dd/d67/structlf__cond__t.html#a2171e29cd6253e57d9a0cf06cc88301c',1,'lf_cond_t::condition'],['../dd/d67/structlf__cond__t.html#a58ff28bfeabf02915ba23f2ad351b7d6',1,'lf_cond_t::condition']]],
   ['copy_5fconstructor_14',['copy_constructor',['../db/d12/structtoken__type__t.html#a4e5da2b59631b75ace560f9812a11824',1,'token_type_t::copy_constructor'],['../da/dc0/structgeneric__port__instance__struct.html#a91dc1a062dbad3a91c4b692c28308360',1,'generic_port_instance_struct::copy_constructor']]],
-  ['count_15',['count',['../d2/da6/structsemaphore__t.html#af8d3354979a6a3fca513525c3e4c3be7',1,'semaphore_t']]],
+  ['count_15',['count',['../de/dc8/structlf__semaphore__t.html#ac4c25407ad41a8e3e11c270637ef045c',1,'lf_semaphore_t']]],
   ['current_5findex_16',['current_index',['../d2/dab/structgeneric__port__capsule__struct.html#a55922ea3069d765b5cc5c47d0369057a',1,'generic_port_capsule_struct']]],
   ['current_5ftag_17',['current_tag',['../d2/d01/structenvironment__t.html#ac86519935540bf879f60baba5424bc0c',1,'environment_t']]],
   ['custom_5fdata_18',['custom_data',['../da/d7a/structlf__scheduler__t.html#aef6ea4bec6ed373ca0007f6fb5175bd7',1,'lf_scheduler_t']]]

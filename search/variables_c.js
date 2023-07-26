@@ -14,5 +14,5 @@ var searchData=
   ['min_5fexpiration_11',['min_expiration',['../d3/dc4/structwatchdog__t.html#a9e2ad93a70be8954567bed43664b8a35',1,'watchdog_t']]],
   ['mode_12',['mode',['../d5/df6/structenclave__t.html#ac851d659e96747fb81f7f06d8d05b94a',1,'enclave_t::mode'],['../d2/d35/structreaction__t.html#af1f2e2ef6137841735a4815d8ebdc060',1,'reaction_t::mode'],['../d6/d13/structtrigger__t.html#ab6427e404b91c483332fc1a1722e8cc7',1,'trigger_t::mode']]],
   ['modes_13',['modes',['../d2/d01/structenvironment__t.html#a4348d239de993aee36a42e0ae71871da',1,'environment_t']]],
-  ['mutex_14',['mutex',['../db/d04/struct__lf__scheduler__thread__info__t.html#a3af3898071ca81c86fceecd3057d07e1',1,'_lf_scheduler_thread_info_t::mutex'],['../dd/d67/structlf__cond__t.html#af89290c791367e1d88c2278c0a2aaf26',1,'lf_cond_t::mutex'],['../d2/da6/structsemaphore__t.html#a6fd4c1133ffd2f6f08410b3d38e422d4',1,'semaphore_t::mutex']]]
+  ['mutex_14',['mutex',['../db/d04/struct__lf__scheduler__thread__info__t.html#a3af3898071ca81c86fceecd3057d07e1',1,'_lf_scheduler_thread_info_t::mutex'],['../dd/d67/structlf__cond__t.html#af89290c791367e1d88c2278c0a2aaf26',1,'lf_cond_t::mutex'],['../de/dc8/structlf__semaphore__t.html#a6811cbc219c0e9ed43284e8c49d1c724',1,'lf_semaphore_t::mutex']]]
 ];

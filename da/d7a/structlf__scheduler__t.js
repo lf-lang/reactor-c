@@ -9,7 +9,7 @@ var structlf__scheduler__t =
     [ "next_reaction_level", "da/d7a/structlf__scheduler__t.html#a7aef09e1b91d5302dc32b08e859fc88b", null ],
     [ "number_of_idle_workers", "da/d7a/structlf__scheduler__t.html#a1a647a73662fce0f55524dd596542d4b", null ],
     [ "number_of_workers", "da/d7a/structlf__scheduler__t.html#a572c014dd84577ccddc5478b4c1194fd", null ],
-    [ "semaphore", "da/d7a/structlf__scheduler__t.html#a6082d0ee2f951cbf5caf0fec7a33cae2", null ],
+    [ "semaphore", "da/d7a/structlf__scheduler__t.html#af67ca2fff61815583932861700ff43f3", null ],
     [ "should_stop", "da/d7a/structlf__scheduler__t.html#adc8bd8e40ac5b717d6d0a1d0518f5765", null ],
     [ "transfer_reactions", "da/d7a/structlf__scheduler__t.html#af028b40d82dccf4dc969be37dcd31f4a", null ],
     [ "triggered_reactions", "da/d7a/structlf__scheduler__t.html#ad9dd313815a3e560369840ffc718f7d7", null ]

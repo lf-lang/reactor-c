@@ -26,7 +26,7 @@ var searchData=
   ['lf_5fsparse_5fcapacity_5fdivider_23',['LF_SPARSE_CAPACITY_DIVIDER',['../da/d00/port_8h.html#a3e66ec583172bbad678982af8c57001b',1,'port.h']]],
   ['lf_5fsparse_5fwidth_5fthreshold_24',['LF_SPARSE_WIDTH_THRESHOLD',['../da/d00/port_8h.html#aafcc3f0b909a44166db182035ca759c6',1,'port.h']]],
   ['lf_5ftag_25',['lf_tag',['../d4/d13/set_8h.html#a2d81456725407157f9dc521a5e14a679',1,'set.h']]],
-  ['lf_5ftime_5fbuffer_5flength_26',['LF_TIME_BUFFER_LENGTH',['../d2/dcd/tag_8h.html#acc2b8ac5ac3020137e71dfcdbaedf335',1,'tag.h']]],
+  ['lf_5ftime_5fbuffer_5flength_26',['LF_TIME_BUFFER_LENGTH',['../da/d31/lf__rp2040__support_8h.html#acc2b8ac5ac3020137e71dfcdbaedf335',1,'LF_TIME_BUFFER_LENGTH:&#160;lf_rp2040_support.h'],['../d2/dcd/tag_8h.html#acc2b8ac5ac3020137e71dfcdbaedf335',1,'LF_TIME_BUFFER_LENGTH:&#160;tag.h']]],
   ['lf_5ftime_5flogical_27',['lf_time_logical',['../d4/d13/set_8h.html#a4fe4453dda4223671dc90fa1ecbcac85',1,'set.h']]],
   ['lf_5ftime_5flogical_5felapsed_28',['lf_time_logical_elapsed',['../d4/d13/set_8h.html#a7aaaed76bc1ae823bb13d6603807f874',1,'set.h']]],
   ['lf_5ftimeout_29',['LF_TIMEOUT',['../de/d03/platform_8h.html#a2cb0837301dbf928d9e6a4753e0fb52e',1,'platform.h']]],
