@@ -74,6 +74,8 @@ int lf_critical_section_exit(environment_t* env);
     #include "platform/lf_zephyr_support.h"
 #elif defined(PLATFORM_NRF52)
     #include "platform/lf_nrf52_support.h"
+#elif defined(PLATFORM_RP2040)
+    #include "platform/lf_rp2040_support.h"
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
    // Windows platforms
    #include "lf_windows_support.h"
