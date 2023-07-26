@@ -1946,7 +1946,12 @@ void update_max_level(tag_t tag, bool is_provisional) {
 }
 
 #ifdef FEDERATED_DECENTRALIZED
-bool a_port_is_unknown(staa_t* staa_elem) {
+/**
+ * @brief Return whether there exists an input port whose status is unknown.
+ *
+ * @param staa_elem A record of all input port actions.
+ */
+static bool a_port_is_unknown(staa_t* staa_elem) {
     bool do_wait = false;
     for (int j = 0; j < staa_elem->numActions; ++j) {
         if (staa_elem->actions[j]->trigger->status == unknown) {
