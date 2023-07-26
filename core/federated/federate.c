@@ -2402,7 +2402,6 @@ void* listen_to_federates(void* _args) {
     unsigned char buffer[FED_COM_BUFFER_SIZE];
 
     // Listen for messages from the federate.
-    // TODO: Add logic for STAA offset
     while (1) {
         // Read one byte to get the message type.
         LF_PRINT_DEBUG("Waiting for a P2P message on socket %d.", socket_id);
