@@ -161,50 +161,7 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
     return socket_descriptor;
 }
 
-void notify_tag_advance_grant_delayed(enclave_t* e, tag_t tag) {
-    federate_t* fed = (federate_t*)e;
-    
-    // Check wether there is already a pending grant
-    if (lf_tag_compare(fed->pending_grant, NEVER_TAG) == 0) {
-        fed->pending_grant = tag;
-        lf_thread_create(&(fed->pending_grant_thread_id), pending_grant_thread, fed);
-    } else if (lf_tag_compare(fed->pending_grant, tag) >= 0) {
-        // FIXME: do nothing?
-    } else {
-        // FIXME: It should be really weired to receive and earlier tag gant than 
-        // the pending one.
-        // Should this be a fata error?
-    }
-}
 
-void notify_tag_advance_grant_immediate(enclave_t* e, tag_t tag) {
-    // Case where the TAG notification is immediate
-    size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
-    unsigned char buffer[message_length];
-    buffer[0] = MSG_TYPE_TAG_ADVANCE_GRANT;
-    encode_int64(tag.time, &(buffer[1]));
-    encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));
-
-    if (_f_rti->tracing_enabled) {
-        tracepoint_rti_to_federate(_f_rti->trace, send_TAG, e->id, &tag);
-    }
-    // This function is called in notify_advance_grant_if_safe(), which is a long
-    // function. During this call, the socket might close, causing the following write_to_socket
-    // to fail. Consider a failure here a soft failure and update the federate's status.
-    ssize_t bytes_written = write_to_socket(((federate_t*)e)->socket, message_length, buffer);
-    e->last_granted = tag;
-    if (bytes_written < (ssize_t)message_length) {
-        lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
-        if (bytes_written < 0) {
-            e->state = NOT_CONNECTED;
-            // FIXME: We need better error handling, but don't stop other execution here.
-        }
-    } else {
-        // e->last_granted = tag;
-        LF_PRINT_LOG("RTI sent to federate %d the tag advance grant (TAG) " PRINTF_TAG ".",
-                e->id, tag.time - start_time, tag.microstep);
-    }
-}
 
 void notify_tag_advance_grant(enclave_t* e, tag_t tag) {
     if (e->state == NOT_CONNECTED
@@ -252,59 +209,21 @@ void notify_provisional_tag_advance_grant(enclave_t* e, tag_t tag) {
         lf_cond_wait(&sent_start_time);
     }
 
-    size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
-    unsigned char buffer[message_length];
-    buffer[0] = MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT;
-    encode_int64(tag.time, &(buffer[1]));
-    encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));
-
-    if (_f_rti->tracing_enabled){
-        tracepoint_rti_to_federate(_f_rti->trace, send_PTAG, e->id, &tag);
+    // Check if sending the tag advance grant needs to be delayed or not
+    // Delay is needed when a federate has, at least one, absent upstream transient
+    int num_absent_upstram_transients = 0;
+    for (int j = 0; j < e->num_upstream; j++) {
+        federate_t *upstream = (federate_t*)(_f_rti->enclaves[e->upstream[j]]);
+        // Do Ignore this enclave if it no longer connected.
+        if ((upstream->enclave.state == NOT_CONNECTED) && (upstream->is_transient)) {
+            num_absent_upstram_transients++;
+        }
     }
-    // This function is called in notify_advance_grant_if_safe(), which is a long
-    // function. During this call, the socket might close, causing the following write_to_socket
-    // to fail. Consider a failure here a soft failure and update the federate's status.
-    ssize_t bytes_written = write_to_socket(((federate_t*)e)->socket, message_length, buffer);
-    e->last_provisionally_granted = tag;
-    if (bytes_written < (ssize_t)message_length) {
-        lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
-        if (bytes_written < 0) {
-            e->state = NOT_CONNECTED;
-            // FIXME: We need better error handling, but don't stop other execution here.
-        }
+
+    if (num_absent_upstram_transients > 0) {
+        notify_provisional_tag_advance_grant_delayed(e, tag);
     } else {
-        // e->last_provisionally_granted = tag;
-        LF_PRINT_LOG("RTI sent to federate %d the Provisional Tag Advance Grant (PTAG) " PRINTF_TAG ".",
-                     e->id, tag.time - start_time, tag.microstep);
-
-        // Send PTAG to all upstream federates, if they have not had
-        // a later or equal PTAG or TAG sent previously and if their transitive
-        // NET is greater than or equal to the tag.
-        // NOTE: This could later be replaced with a TNET mechanism once
-        // we have an available encoding of causality interfaces.
-        // That might be more efficient.
-        for (int j = 0; j < e->num_upstream; j++) {
-            federate_t* upstream = _f_rti->enclaves[e->upstream[j]];
-
-            // Ignore this federate if it has resigned.
-            // if (upstream->enclave.state == NOT_CONNECTED) continue;
-            // To handle cycles, need to create a boolean array to keep
-            // track of which upstream federates have been visited.
-            bool* visited = (bool*)calloc(_f_rti->number_of_enclaves, sizeof(bool)); // Initializes to 0.
-
-            // Find the (transitive) next event tag upstream.
-            tag_t upstream_next_event = transitive_next_event(
-                    &(upstream->enclave), upstream->enclave.next_event, visited);
-            free(visited);
-            // If these tags are equal, then
-            // a TAG or PTAG should have already been granted,
-            // in which case, another will not be sent. But it
-            // may not have been already granted.
-            if (lf_tag_compare(upstream_next_event, tag) >= 0) {
-                notify_provisional_tag_advance_grant(&(upstream->enclave), tag);
-            }
-
-        }
+        notify_provisional_tag_advance_grant_immediate(e, tag);
     }
 }
 
@@ -898,12 +817,20 @@ void handle_timestamp(federate_t *my_fed) {
                 continue;
             }
 
-            // Check the pending TAG, if any
+            // Check the pending tag grant, if any, and keep it only if it is 
+            // sonner than the effective start tag 
             if (
                 lf_tag_compare(downstream->pending_grant, NEVER_TAG) != 0 
                 && lf_tag_compare(downstream->pending_grant, my_fed->effective_start_tag) > 0
             ) {
                 downstream->pending_grant = NEVER_TAG;
+            }
+            // Same for the possible pending provisional tag grant
+            if (
+                lf_tag_compare(downstream->pending_provisional_grant, NEVER_TAG) != 0 
+                && lf_tag_compare(downstream->pending_provisional_grant, my_fed->effective_start_tag) > 0
+            ) {
+                downstream->pending_provisional_grant = NEVER_TAG;
             }
         }
 
@@ -2144,7 +2071,10 @@ void reset_transient_federate(federate_t* fed) {
 void* pending_grant_thread(void* federate) {
     federate_t* fed = (federate_t*)federate;
 
-    lf_sleep(fed->pending_grant.time - lf_time_physical());
+    interval_t sleep_interval = fed->pending_grant.time - lf_time_physical();
+    if (sleep_interval > 0) {
+        lf_sleep(sleep_interval);
+    }
 
     lf_mutex_lock(&rti_mutex);
 
@@ -2155,4 +2085,139 @@ void* pending_grant_thread(void* federate) {
         fed->pending_grant = NEVER_TAG;
     }
     lf_mutex_unlock(&rti_mutex);
+}
+
+void notify_tag_advance_grant_delayed(enclave_t* e, tag_t tag) {
+    federate_t* fed = (federate_t*)e;
+    
+    // Check wether there is already a pending grant
+    if (lf_tag_compare(fed->pending_grant, NEVER_TAG) == 0) {
+        fed->pending_grant = tag;
+        lf_thread_create(&(fed->pending_grant_thread_id), pending_grant_thread, fed);
+    } else if (lf_tag_compare(fed->pending_grant, tag) >= 0) {
+        // FIXME: do nothing?
+    } else {
+        // FIXME: It should be really weired to receive and earlier tag gant than 
+        // the pending one.
+        // Should this be a fatal error?
+    }
+}
+
+void notify_tag_advance_grant_immediate(enclave_t* e, tag_t tag) {
+    // Case where the TAG notification is immediate
+    size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
+    unsigned char buffer[message_length];
+    buffer[0] = MSG_TYPE_TAG_ADVANCE_GRANT;
+    encode_int64(tag.time, &(buffer[1]));
+    encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));
+
+    if (_f_rti->tracing_enabled) {
+        tracepoint_rti_to_federate(_f_rti->trace, send_TAG, e->id, &tag);
+    }
+    // This function is called in notify_advance_grant_if_safe(), which is a long
+    // function. During this call, the socket might close, causing the following write_to_socket
+    // to fail. Consider a failure here a soft failure and update the federate's status.
+    ssize_t bytes_written = write_to_socket(((federate_t*)e)->socket, message_length, buffer);
+    e->last_granted = tag;
+    if (bytes_written < (ssize_t)message_length) {
+        lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
+        if (bytes_written < 0) {
+            e->state = NOT_CONNECTED;
+            // FIXME: We need better error handling, but don't stop other execution here.
+        }
+    } else {
+        // e->last_granted = tag;
+        LF_PRINT_LOG("RTI sent to federate %d the tag advance grant (TAG) " PRINTF_TAG ".",
+                e->id, tag.time - start_time, tag.microstep);
+    }
+}
+
+void* pending_provisional_grant_thread(void* federate) {
+    federate_t* fed = (federate_t*)federate;
+
+    interval_t sleep_interval = fed->pending_provisional_grant.time - lf_time_physical();
+    if (sleep_interval > 0) {
+        lf_sleep(sleep_interval);
+    }
+
+    lf_mutex_lock(&rti_mutex);
+
+    // If the pending grant becomes NEVER_TAG, then this means that it should 
+    // not be sent
+    if(lf_tag_compare(fed->pending_provisional_grant, NEVER_TAG) != 0) {
+        notify_provisional_tag_advance_grant_immediate(&(fed->enclave), fed->pending_provisional_grant);
+        fed->pending_provisional_grant = NEVER_TAG;
+    }
+    lf_mutex_unlock(&rti_mutex);
+}
+
+void notify_provisional_tag_advance_grant_delayed(enclave_t* e, tag_t tag) {
+    federate_t* fed = (federate_t*)e;
+    
+    // Check wether there is already a pending grant
+    if (lf_tag_compare(fed->pending_provisional_grant, NEVER_TAG) == 0) {
+        fed->pending_provisional_grant = tag;
+        lf_thread_create(&(fed->pending_provisional_grant_thread_id), pending_provisional_grant_thread, fed);
+    } else if (lf_tag_compare(fed->pending_provisional_grant, tag) >= 0) {
+        // FIXME: do nothing?
+    } else {
+        // FIXME: It should be really weired to receive and earlier tag gant than 
+        // the pending one.
+        // Should this be a fatal error?
+    }
+}
+
+void notify_provisional_tag_advance_grant_immediate(enclave_t* e, tag_t tag) {
+    size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
+    unsigned char buffer[message_length];
+    buffer[0] = MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT;
+    encode_int64(tag.time, &(buffer[1]));
+    encode_int32((int32_t)tag.microstep, &(buffer[1 + sizeof(int64_t)]));
+
+    if (_f_rti->tracing_enabled){
+        tracepoint_rti_to_federate(_f_rti->trace, send_PTAG, e->id, &tag);
+    }
+    // This function is called in notify_advance_grant_if_safe(), which is a long
+    // function. During this call, the socket might close, causing the following write_to_socket
+    // to fail. Consider a failure here a soft failure and update the federate's status.
+    ssize_t bytes_written = write_to_socket(((federate_t*)e)->socket, message_length, buffer);
+    if (bytes_written < (ssize_t)message_length) {
+        lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
+        if (bytes_written < 0) {
+            e->state = NOT_CONNECTED;
+            // FIXME: We need better error handling, but don't stop other execution here.
+        }
+    } else {
+        e->last_provisionally_granted = tag;
+        LF_PRINT_LOG("RTI sent to federate %d the Provisional Tag Advance Grant (PTAG) " PRINTF_TAG ".",
+                     e->id, tag.time - start_time, tag.microstep);
+
+        // Send PTAG to all upstream federates, if they have not had
+        // a later or equal PTAG or TAG sent previously and if their transitive
+        // NET is greater than or equal to the tag.
+        // NOTE: This could later be replaced with a TNET mechanism once
+        // we have an available encoding of causality interfaces.
+        // That might be more efficient.
+        for (int j = 0; j < e->num_upstream; j++) {
+            federate_t* upstream = _f_rti->enclaves[e->upstream[j]];
+
+            // Ignore this federate if it has resigned.
+            // if (upstream->enclave.state == NOT_CONNECTED) continue;
+            // To handle cycles, need to create a boolean array to keep
+            // track of which upstream federates have been visited.
+            bool* visited = (bool*)calloc(_f_rti->number_of_enclaves, sizeof(bool)); // Initializes to 0.
+
+            // Find the (transitive) next event tag upstream.
+            tag_t upstream_next_event = transitive_next_event(
+                    &(upstream->enclave), upstream->enclave.next_event, visited);
+            free(visited);
+            // If these tags are equal, then
+            // a TAG or PTAG should have already been granted,
+            // in which case, another will not be sent. But it
+            // may not have been already granted.
+            if (lf_tag_compare(upstream_next_event, tag) >= 0) {
+                notify_provisional_tag_advance_grant(&(upstream->enclave), tag);
+            }
+        }
+    }
 }

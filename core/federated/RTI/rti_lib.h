@@ -76,8 +76,10 @@ typedef struct federate_t {
                             // that sent responded to the next event tag query form the RTI. 
     bool start_time_is_set; // Boolean variable used to signal that all connected federates
                             // have sent a response to next event tag query from the RTI.
-    tag_t pending_grant;    // Tga pending to be granted
+    tag_t pending_grant;    // The pending tag advance grant
+    tag_t pending_provisional_grant;        // The pending provisional tag advance grant
     lf_thread_t pending_grant_thread_id;    // The ID of the thread handling the pending tag grant 
+    lf_thread_t pending_provisional_grant_thread_id;    // The ID of the thread handling the pending provitional tag grant 
 } federate_t;
 
 /**
@@ -588,9 +590,79 @@ void reset_transient_federate(federate_t* fed);
 /**
  * @brief Thread that sleeps for a period of time, and then wakes up to check if
  * a tag advance grant needs to be sent.
- * @param fed the fedarate whose tag advance grant needs to be delayed. 
+ * @param federate the fedarate whose tag advance grant needs to be delayed. 
  */
-void* pending_grant_thread(void* fed);
+void* pending_grant_thread(void* federate);
+
+/**
+ * Notify a tag advance grant (TAG) message to the specified federate after
+ * the physical time reaches the tag. A thread is created to this end. 
+ * Once the delay period passed, if the pending tag have not been reset to 
+ * NEVER_TAG, the tag advance grant will be immediate.
+ * 
+ * This function assumes that the caller holds the mutex lock.
+ * 
+ * @param e The enclave.
+ * @param tag The tag to grant.
+ */
+void notify_tag_advance_grant_delayed(enclave_t* e, tag_t tag);
+
+/**
+ * Notify a tag advance grant (TAG) message to the specified federate after
+ * the physical time reaches the tag. A thread is created to this end. 
+ * Do not notify it if a previously sent PTAG was greater or if a
+ * previously sent TAG was greater or equal.
+ *
+ * This function will keep a record of this TAG in the federate's last_granted
+ * field.
+ *
+ * This function assumes that the caller holds the mutex lock.
+ * 
+ * FIXME: This needs two implementations, one for enclaves and one for federates.
+ *
+ * @param e The enclave.
+ * @param tag The tag to grant.
+ */
+void notify_tag_advance_grant_immediate(enclave_t* e, tag_t tag);
+
+/**
+ * @brief Thread that sleeps for a period of time, and then wakes up to check if
+ * a provisional tag advance grant needs to be sent.
+ * @param federate the federate whose provisional tag advance grant needs to be delayed. 
+ */
+void* pending_provisional_grant_thread(void* federate);
+
+/**
+ * Notify a provisional tag advance grant (TAG) message to the specified federate 
+ * after the physical time reaches the tag. A thread is created to this end. 
+ * Once the delay period passed, if the pending tag have not been reset to 
+ * NEVER_TAG, the tag advance grant will be immediate.
+ * 
+ * This function assumes that the caller holds the mutex lock.
+ * 
+ * @param e The enclave.
+ * @param tag The provisional tag to grant.
+ */
+void notify_provisional_tag_advance_grant_delayed(enclave_t* e, tag_t tag);
+
+/**
+ * Notify a tag advance grant (TAG) message to the specified federate after
+ * the physical time reaches the tag. A thread is created to this end. 
+ * Do not notify it if a previously sent PTAG was greater or if a
+ * previously sent TAG was greater or equal.
+ *
+ * This function will keep a record of this TAG in the federate's last_granted
+ * field.
+ *
+ * This function assumes that the caller holds the mutex lock.
+ * 
+ * FIXME: This needs two implementations, one for enclaves and one for federates.
+ *
+ * @param e The enclave.
+ * @param tag The tag to grant.
+ */
+void notify_provisional_tag_advance_grant_immediate(enclave_t* e, tag_t tag);
+
 
 
 //////////////////////////////////////////////////////////
