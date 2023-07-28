@@ -2085,16 +2085,18 @@ void notify_tag_advance_grant_delayed(enclave_t* e, tag_t tag) {
     federate_t* fed = (federate_t*)e;
     
     // Check wether there is already a pending grant
+    // And check the pending provisional grant as well
+    lf_mutex_lock(&rti_mutex);
     if (lf_tag_compare(fed->pending_grant, NEVER_TAG) == 0) {
+        // If a tag is issued, then stop any possible provisional tag grant
         fed->pending_grant = tag;
+        fed->pending_provisional_grant = NEVER_TAG;
         lf_thread_create(&(fed->pending_grant_thread_id), pending_grant_thread, fed);
-    } else if (lf_tag_compare(fed->pending_grant, tag) >= 0) {
-        // FIXME: do nothing?
     } else {
-        // FIXME: It should be really weired to receive and earlier tag gant than 
-        // the pending one.
-        // Should this be a fatal error?
+        // If there is already a pending tag grant, then let it be sent first
+        // FIXME: Is this correct?
     }
+    lf_mutex_unlock(&rti_mutex);
 }
 
 void notify_tag_advance_grant_immediate(enclave_t* e, tag_t tag) {
@@ -2148,17 +2150,17 @@ void* pending_provisional_grant_thread(void* federate) {
 void notify_provisional_tag_advance_grant_delayed(enclave_t* e, tag_t tag) {
     federate_t* fed = (federate_t*)e;
     
-    // Check wether there is already a pending grant
-    if (lf_tag_compare(fed->pending_provisional_grant, NEVER_TAG) == 0) {
+    // Proceed with the delayed provisional tag grant notification only if 
+    // there is no pending grant and no provisional pending grant
+    lf_mutex_lock(&rti_mutex);
+    if (
+        (lf_tag_compare(fed->pending_grant, NEVER_TAG) == 0) 
+        && (lf_tag_compare(fed->pending_provisional_grant, NEVER_TAG) >= 0)
+    ) {
         fed->pending_provisional_grant = tag;
         lf_thread_create(&(fed->pending_provisional_grant_thread_id), pending_provisional_grant_thread, fed);
-    } else if (lf_tag_compare(fed->pending_provisional_grant, tag) >= 0) {
-        // FIXME: do nothing?
-    } else {
-        // FIXME: It should be really weired to receive and earlier tag gant than 
-        // the pending one.
-        // Should this be a fatal error?
-    }
+    } 
+    lf_mutex_unlock(&rti_mutex);
 }
 
 void notify_provisional_tag_advance_grant_immediate(enclave_t* e, tag_t tag) {

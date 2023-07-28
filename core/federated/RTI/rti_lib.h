@@ -589,7 +589,9 @@ void reset_transient_federate(federate_t* fed);
 
 /**
  * @brief Thread that sleeps for a period of time, and then wakes up to check if
- * a tag advance grant needs to be sent.
+ * a tag advance grant needs to be sent. That is, if the pending tag have not
+ * been reset to NEVER_TAG, the tag advance grant will be immediate.
+ * 
  * @param federate the fedarate whose tag advance grant needs to be delayed. 
  */
 void* pending_grant_thread(void* federate);
@@ -597,28 +599,20 @@ void* pending_grant_thread(void* federate);
 /**
  * Notify a tag advance grant (TAG) message to the specified federate after
  * the physical time reaches the tag. A thread is created to this end. 
- * Once the delay period passed, if the pending tag have not been reset to 
- * NEVER_TAG, the tag advance grant will be immediate.
  * 
- * This function assumes that the caller holds the mutex lock.
- * 
+ * If a provisionl tag advance grant is pending, cancel it. If there is another
+ * pending tag advance grant, do not proceed with the thread creation.
+ *  
  * @param e The enclave.
  * @param tag The tag to grant.
  */
 void notify_tag_advance_grant_delayed(enclave_t* e, tag_t tag);
 
 /**
- * Notify a tag advance grant (TAG) message to the specified federate after
- * the physical time reaches the tag. A thread is created to this end. 
- * Do not notify it if a previously sent PTAG was greater or if a
- * previously sent TAG was greater or equal.
- *
- * This function will keep a record of this TAG in the federate's last_granted
- * field.
- *
- * This function assumes that the caller holds the mutex lock.
+ * Notify a tag advance grant (TAG) message to the specified federate immediately.
  * 
- * FIXME: This needs two implementations, one for enclaves and one for federates.
+ * This function will keep a record of this TAG in the enclave's last_granted
+ * field.
  *
  * @param e The enclave.
  * @param tag The tag to grant.
@@ -626,19 +620,21 @@ void notify_tag_advance_grant_delayed(enclave_t* e, tag_t tag);
 void notify_tag_advance_grant_immediate(enclave_t* e, tag_t tag);
 
 /**
- * @brief Thread that sleeps for a period of time, and then wakes up to check if
- * a provisional tag advance grant needs to be sent.
+ * Thread that sleeps for a period of time, and then wakes up to check if
+ * a provisional tag advance grant needs to be sent. That is, if the pending 
+ * provisional tag have not been reset to NEVER_TAG, the provisional tag advance
+ * grant will be immediate.
+ * 
  * @param federate the federate whose provisional tag advance grant needs to be delayed. 
  */
 void* pending_provisional_grant_thread(void* federate);
 
 /**
- * Notify a provisional tag advance grant (TAG) message to the specified federate 
+ * Notify a provisional tag advance grant (PTAG) message to the specified federate 
  * after the physical time reaches the tag. A thread is created to this end. 
- * Once the delay period passed, if the pending tag have not been reset to 
- * NEVER_TAG, the tag advance grant will be immediate.
  * 
- * This function assumes that the caller holds the mutex lock.
+ * If a tag advance grant or a provisional one is pending, then do not proceed 
+ * with the thread creation.
  * 
  * @param e The enclave.
  * @param tag The provisional tag to grant.
@@ -646,17 +642,11 @@ void* pending_provisional_grant_thread(void* federate);
 void notify_provisional_tag_advance_grant_delayed(enclave_t* e, tag_t tag);
 
 /**
- * Notify a tag advance grant (TAG) message to the specified federate after
- * the physical time reaches the tag. A thread is created to this end. 
- * Do not notify it if a previously sent PTAG was greater or if a
- * previously sent TAG was greater or equal.
- *
- * This function will keep a record of this TAG in the federate's last_granted
- * field.
- *
- * This function assumes that the caller holds the mutex lock.
+ * Notify a provisional tag advance grant (PTAG) message to the specified federate 
+ * immediately.
  * 
- * FIXME: This needs two implementations, one for enclaves and one for federates.
+ * This function will keep a record of this TAG in the enclave's last_provisionally_granted
+ * field.
  *
  * @param e The enclave.
  * @param tag The tag to grant.
