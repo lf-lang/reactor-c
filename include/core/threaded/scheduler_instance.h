@@ -87,7 +87,7 @@ typedef struct lf_scheduler_t {
      *
      * FIXME: specific comment
      */
-    semaphore_t* semaphore;
+    lf_semaphore_t* semaphore;
 
     /**
      * @brief Indicate whether the program should stop
