@@ -188,8 +188,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * Under decentralized coordination, the coordination is governed by STA and
  * STAAs, as further explained in https://doi.org/10.48550/arXiv.2109.07771.
- *
- * FIXME: Expand this. Explain control reactions.
+ * 
+ * FIXME: Expand this. Explain port absent reactions.
  *
  */
 

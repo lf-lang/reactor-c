@@ -124,10 +124,12 @@ tag_t lf_tag(void *env) {
 
 int lf_tag_compare(tag_t tag1, tag_t tag2) {
     if (tag1.time < tag2.time) {
+        LF_PRINT_DEBUG(PRINTF_TIME " < " PRINTF_TIME, tag1.time, tag2.time);
         return -1;
     } else if (tag1.time > tag2.time) {
         return 1;
     } else if (tag1.microstep < tag2.microstep) {
+        LF_PRINT_DEBUG(PRINTF_TIME " and microstep < " PRINTF_TIME, tag1.time, tag2.time);
         return -1;
     } else if (tag1.microstep > tag2.microstep) {
         return 1;

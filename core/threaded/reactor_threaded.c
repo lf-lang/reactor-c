@@ -49,7 +49,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "tag.h"
 #include "environment.h"
 
-// Global variables defined in tag.c and shared across environments
+#ifdef FEDERATED
+#include "federate.h"
+#endif
+
+// Global variables defined in tag.c and shared across environments:
 extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
 extern instant_t start_time;
 extern tag_t effective_start_tag;
@@ -106,7 +110,7 @@ void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag) {
 
             // One possibility is that the incoming message has violated the STP offset.
             // Another possibility is that the message is coming from a zero-delay loop,
-            // and control reactions are waiting.
+            // and port absent reactions are waiting.
 
             // Prevent logical time from advancing further so that the measure of
             // STP violation properly reflects the amount of time (logical or physical)
@@ -453,12 +457,9 @@ void _lf_next_locked(environment_t *env) {
     // federates. If an action triggers during that wait, it will unblock
     // and return with a time (typically) less than the next_time.
     tag_t grant_tag = send_next_event_tag(env, next_tag, true); // true means this blocks.
-    if (lf_tag_compare(grant_tag, next_tag) < 0) {
-        // RTI has granted tag advance to an earlier tag or the wait
-        // for the RTI response was interrupted by a local physical action with
-        // a tag earlier than requested.
-        // Continue executing. The event queue may have changed.
-        return;
+    while (lf_tag_compare(grant_tag, next_tag) < 0) {
+        next_tag = get_next_event_tag(env);
+        grant_tag = send_next_event_tag(env, next_tag, true);
     }
     // Granted tag is greater than or equal to next event tag that we sent to the RTI.
     // Since send_next_event_tag releases the mutex lock internally, we need to check
@@ -540,13 +541,10 @@ void _lf_next_locked(environment_t *env) {
         return;
     }
 
-    // Invoke code that must execute before starting a new logical time round,
-    // such as initializing outputs to be absent.
-    _lf_start_time_step(env);
-
     // At this point, finally, we have an event to process.
-    // Advance current time to match that of the first event on the queue.
     _lf_advance_logical_time(env, next_tag.time);
+
+    _lf_start_time_step(env);
 
     if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {
         // Pop shutdown events
@@ -558,6 +556,12 @@ void _lf_next_locked(environment_t *env) {
     // extract all the reactions triggered by these events, and
     // stick them into the reaction queue.
     _lf_pop_events(env);
+#ifdef FEDERATED
+    enqueue_port_absent_reactions(env);
+    // _lf_pop_events may have set some triggers present.
+    extern federate_instance_t _fed;
+    update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
+#endif
 }
 
 /**
@@ -718,12 +722,6 @@ void _lf_initialize_start_tag(environment_t *env) {
     // Each federate executes the start tag (which is the current
     // tag). Inform the RTI of this if needed.
     send_next_event_tag(env, env->current_tag, true);
-
-    // Depending on RTI's answer, if any, enqueue network control reactions,
-    // which will selectively block reactions that depend on network input ports
-    // until they receive further instructions (to unblock) from the RTI or the
-    // upstream federates.
-    enqueue_network_control_reactions(env);
 #endif
 
 #ifdef FEDERATED_DECENTRALIZED
@@ -735,6 +733,7 @@ void _lf_initialize_start_tag(environment_t *env) {
     // once the complete message has been read. Here, we wait for that barrier
     // to be removed, if appropriate before proceeding to executing tag (0,0).
     _lf_wait_on_tag_barrier(env, (tag_t){.time=start_time,.microstep=0});
+    spawn_staa_thread();
 #endif // FEDERATED_DECENTRALIZED
 
     // Set the following boolean so that other thread(s), including federated threads,
@@ -820,7 +819,7 @@ bool _lf_worker_handle_STP_violation_for_reaction(environment_t* env, int worker
     //  physical time (deadline).
     // @note In absence of an STP handler, the is_STP_violated will be passed down the reaction
     //  chain until it is dealt with in a downstream STP handler.
-    if (reaction->is_STP_violated == true) {
+    if (reaction->is_STP_violated == true && !reaction->is_an_input_reaction) {
         reaction_function_t handler = reaction->STP_handler;
         LF_PRINT_LOG("STP violation detected.");
 
@@ -840,7 +839,7 @@ bool _lf_worker_handle_STP_violation_for_reaction(environment_t* env, int worker
         } else {
         	// The intended tag cannot be respected and there is no handler.
         	// Print an error message and return true.
-        	// NOTE: STP violations are ignored for control reactions, which need to
+            // NOTE: STP violations are ignored for network input reactions, which need to
         	// execute anyway.
         	lf_print_error("STP violation occurred in a trigger to reaction %d, "
         			"and there is no handler.\n**** Invoking reaction at the wrong tag!",
@@ -896,6 +895,12 @@ void _lf_worker_invoke_reaction(environment_t *env, int worker_number, reaction_
     reaction->is_STP_violated = false;
 }
 
+void try_advance_level(environment_t* env, volatile size_t* next_reaction_level) {
+    #ifdef FEDERATED
+    stall_advance_level_federation(env, *next_reaction_level);
+    #endif
+    *next_reaction_level += 1;
+}
 /**
  * The main looping logic of each LF worker thread.
  * This function assumes the caller holds the mutex lock.
@@ -912,16 +917,19 @@ void _lf_worker_do_work(environment_t *env, int worker_number) {
     // that it depends on).
     // lf_print_snapshot(); // This is quite verbose (but very useful in debugging reaction deadlocks).
     reaction_t* current_reaction_to_execute = NULL;
+#ifdef FEDERATED
+    stall_advance_level_federation(env, 0);
+#endif
     while ((current_reaction_to_execute =
             lf_sched_get_ready_reaction(env->scheduler, worker_number))
             != NULL) {
         // Got a reaction that is ready to run.
         LF_PRINT_DEBUG("Worker %d: Got from scheduler reaction %s: "
-                "level: %lld, is control reaction: %d, chain ID: %llu, and deadline " PRINTF_TIME ".",
+                "level: %lld, is input reaction: %d, chain ID: %llu, and deadline " PRINTF_TIME ".",
                 worker_number,
                 current_reaction_to_execute->name,
                 LF_LEVEL(current_reaction_to_execute->index),
-                current_reaction_to_execute->is_a_control_reaction,
+                current_reaction_to_execute->is_an_input_reaction,
                 current_reaction_to_execute->chain_id,
                 current_reaction_to_execute->deadline);
 
@@ -1036,12 +1044,6 @@ void determine_number_of_workers(void) {
         _lf_number_of_workers = NUMBER_OF_WORKERS;
         #endif
     }
-
-    #if defined(WORKERS_NEEDED_FOR_FEDERATE)
-    // Add the required number of workers needed for the proper function of
-    // federated execution
-    _lf_number_of_workers += WORKERS_NEEDED_FOR_FEDERATE;
-    #endif
 }
 
 /**
