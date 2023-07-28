@@ -98,7 +98,7 @@ ssize_t read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
     return read_from_socket_errexit(socket, num_bytes, buffer, NULL);
 }
 
-ssize_t write_to_socket_errexit_with_mutex(
+ssize_t write_to_socket_with_mutex(
 		int socket,
 		size_t num_bytes,
 		unsigned char* buffer,
@@ -121,7 +121,7 @@ ssize_t write_to_socket_errexit_with_mutex(
             		lf_mutex_unlock(mutex);
             	}
                 lf_print_error(format, args);
-                lf_print_error_and_exit("Code %d: %s.", errno, strerror(errno));
+                lf_print_error("Code %d: %s.", errno, strerror(errno));
             }
             return more;
         }
@@ -135,11 +135,11 @@ ssize_t write_to_socket_errexit(
 		size_t num_bytes,
 		unsigned char* buffer,
 		char* format, ...) {
-	return write_to_socket_errexit_with_mutex(socket, num_bytes, buffer, NULL, format);
+	return write_to_socket_with_mutex(socket, num_bytes, buffer, NULL, format);
 }
 
 ssize_t write_to_socket(int socket, size_t num_bytes, unsigned char* buffer) {
-    return write_to_socket_errexit_with_mutex(socket, num_bytes, buffer, NULL, NULL);
+    return write_to_socket_with_mutex(socket, num_bytes, buffer, NULL, NULL);
 }
 
 #endif // FEDERATED
