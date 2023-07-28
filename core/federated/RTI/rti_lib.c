@@ -1706,12 +1706,6 @@ void wait_for_federates(int socket_descriptor) {
 
     _f_rti->all_federates_exited = true;
     lf_print("All transient threads exited.");
-
-    if (_f_rti->number_of_transient_federates == 0) {
-        lf_thread_join(responder_thread, &thread_exit_status);
-    } else if (_f_rti->number_of_transient_federates > 0) {
-        lf_thread_join(transient_thread, &thread_exit_status);
-    }
     
     // Shutdown and close the socket so that the accept() call in
     // respond_to_erroneous_connections returns. That thread should then
