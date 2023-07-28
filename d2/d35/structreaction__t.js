@@ -5,7 +5,7 @@ var structreaction__t =
     [ "deadline_violation_handler", "d2/d35/structreaction__t.html#a487aaa96abda17f7184c07ccd1e870b2", null ],
     [ "function", "d2/d35/structreaction__t.html#afd6087e8a7d3cc46b430d4187128896c", null ],
     [ "index", "d2/d35/structreaction__t.html#a6dbc6da9eb7523555e9f548438069c7e", null ],
-    [ "is_a_control_reaction", "d2/d35/structreaction__t.html#af37bd1c5f5f4e148a21ff48e6c171d1e", null ],
+    [ "is_an_input_reaction", "d2/d35/structreaction__t.html#aa9cc59b3b6029cb8b0e3d1f5fde94fce", null ],
     [ "is_STP_violated", "d2/d35/structreaction__t.html#a2bc026e89d82a877a3b7224541c25d42", null ],
     [ "last_enabling_reaction", "d2/d35/structreaction__t.html#acbf0778e73f7eeedbb89345d1beb09b6", null ],
     [ "mode", "d2/d35/structreaction__t.html#af1f2e2ef6137841735a4815d8ebdc060", null ],

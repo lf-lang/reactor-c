@@ -1149,7 +1149,7 @@ Functions intitializing and freeing memory for environments.</h1>
 <p>The next step depends on the coordination type.</p>
 <p>Under centralized coordination, each federate will send a <code>MSG_TYPE_NEXT_EVENT_TAG</code> to the RTI with the start tag. That is to say that each federate has a valid event at the start tag (start time, 0) and it will inform the RTI of this event. Subsequently, at the conclusion of each tag, each federate will send a <code>MSG_TYPE_LOGICAL_TAG_COMPLETE</code> followed by a <code>MSG_TYPE_NEXT_EVENT_TAG</code> (see the comment for each message for further explanation). Each federate would have to wait for a <code>MSG_TYPE_TAG_ADVANCE_GRANT</code> or a <code>MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT</code> before it can advance to a particular tag.</p>
 <p>Under decentralized coordination, the coordination is governed by STA and STAAs, as further explained in <a href="https://doi.org/10.48550/arXiv.2109.07771">https://doi.org/10.48550/arXiv.2109.07771</a>.</p>
-<p>FIXME: Expand this. Explain control reactions. The timeout time in ns for TCP operations. Default value is 10 secs. </p>
+<p>FIXME: Expand this. Explain port absent reactions. The timeout time in ns for TCP operations. Default value is 10 secs. </p>
 
 </div>
 </div>

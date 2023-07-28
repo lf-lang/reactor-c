@@ -13,6 +13,7 @@ var searchData=
   ['local_5fdelay_10',['local_delay',['../d9/d67/structsocket__stat__t.html#a645afb48648fcee15ce3625456eb5c21',1,'socket_stat_t']]],
   ['local_5fphysical_5fclock_5fsnapshot_5ft2_11',['local_physical_clock_snapshot_T2',['../d9/d67/structsocket__stat__t.html#af084180438ba84b4ec8e8fd873222605',1,'socket_stat_t']]],
   ['log_5ffile_12',['log_file',['../d7/d58/sensor__simulator_8c.html#ab936051f5aaca44c6c3c41dee0d19c36',1,'sensor_simulator.c']]],
-  ['loop_5fthread_5fid_13',['loop_thread_id',['../da/d0e/audio__loop__linux_8c.html#a34f33cc639766b02125ec0fc19eff705',1,'loop_thread_id:&#160;audio_loop_linux.c'],['../d5/daa/audio__loop__mac_8c.html#a34f33cc639766b02125ec0fc19eff705',1,'loop_thread_id:&#160;audio_loop_mac.c']]],
-  ['loop_5fthread_5fstarted_14',['loop_thread_started',['../da/d0e/audio__loop__linux_8c.html#ad31062a1d6536676ea4a0837a23ecb94',1,'loop_thread_started:&#160;audio_loop_linux.c'],['../d5/daa/audio__loop__mac_8c.html#ad31062a1d6536676ea4a0837a23ecb94',1,'loop_thread_started:&#160;audio_loop_mac.c']]]
+  ['logical_5ftime_5fchanged_13',['logical_time_changed',['../d1/dfa/federate_8h.html#ab2b6609cfafb1478e8aee26664253e22',1,'federate.h']]],
+  ['loop_5fthread_5fid_14',['loop_thread_id',['../da/d0e/audio__loop__linux_8c.html#a34f33cc639766b02125ec0fc19eff705',1,'loop_thread_id:&#160;audio_loop_linux.c'],['../d5/daa/audio__loop__mac_8c.html#a34f33cc639766b02125ec0fc19eff705',1,'loop_thread_id:&#160;audio_loop_mac.c']]],
+  ['loop_5fthread_5fstarted_15',['loop_thread_started',['../da/d0e/audio__loop__linux_8c.html#ad31062a1d6536676ea4a0837a23ecb94',1,'loop_thread_started:&#160;audio_loop_linux.c'],['../d5/daa/audio__loop__mac_8c.html#ad31062a1d6536676ea4a0837a23ecb94',1,'loop_thread_started:&#160;audio_loop_mac.c']]]
 ];

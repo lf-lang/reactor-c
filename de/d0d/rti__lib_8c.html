@@ -377,7 +377,7 @@ Soroush Bateni </dd></dl>
 </div><div class="memdoc">
 <p>Handle address query messages. This function reads the body of a MSG_TYPE_ADDRESS_QUERY (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="../../d9/da6/net__common_8h.html">net_common.h</a>) message which is the requested destination federate ID and replies with the stored port value <a class="el" href="../../d6/df3/hashmap_8h.html#a611d52c77a8144080f7bfb45eaec2a66">for</a> the socket server of that federate. The port values are initialized to -1. If no <a class="el" href="../../d9/da6/net__common_8h.html#ae004cb4e5add42afe5483f6706e11d35">MSG_TYPE_ADDRESS_ADVERTISEMENT</a> message has been received from the destination federate, the RTI will simply reply with -1 <a class="el" href="../../d6/df3/hashmap_8h.html#a611d52c77a8144080f7bfb45eaec2a66">for</a> the port. The sending federate is responsible <a class="el" href="../../d6/df3/hashmap_8h.html#a611d52c77a8144080f7bfb45eaec2a66">for</a> checking back with the RTI after a period of time. </dd>
 <dd>
-<a class="el" href="../../d1/dfa/federate_8h.html#a3e3a769ec47609bd5cb9fc44d51e48a4">connect_to_federate()</a> in <a class="el" href="../../d8/def/federate_8c.html">federate.c</a>. * </dd></dl>
+<a class="el" href="../../d1/dfa/federate_8h.html#a3e3a769ec47609bd5cb9fc44d51e48a4" title="Spawns a thread to iterate through STAA structs, setting its associated ports absent at an offset if ...">connect_to_federate()</a> in <a class="el" href="../../d8/def/federate_8c.html">federate.c</a>. * </dd></dl>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">fed_id</td><td>The federate sending a MSG_TYPE_ADDRESS_QUERY message. </td></tr>

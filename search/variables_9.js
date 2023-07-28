@@ -9,7 +9,7 @@ var searchData=
   ['indexes_6',['indexes',['../da/d7a/structlf__scheduler__t.html#ab358c0fd232603ced1f0c3ad6d337d62',1,'lf_scheduler_t']]],
   ['initialized_7',['initialized',['../d2/d01/structenvironment__t.html#a3daf0ba3d9ea05bed6d51f995a53cdf1',1,'environment_t']]],
   ['input_5fthread_5fid_8',['input_thread_id',['../d7/d58/sensor__simulator_8c.html#af120def87132a6244b4019c9c7515a1d',1,'sensor_simulator.c']]],
-  ['is_5fa_5fcontrol_5freaction_9',['is_a_control_reaction',['../d2/d35/structreaction__t.html#af37bd1c5f5f4e148a21ff48e6c171d1e',1,'reaction_t']]],
+  ['is_5fan_5finput_5freaction_9',['is_an_input_reaction',['../d2/d35/structreaction__t.html#aa9cc59b3b6029cb8b0e3d1f5fde94fce',1,'reaction_t']]],
   ['is_5fdummy_10',['is_dummy',['../da/d67/structevent__t.html#a490fa7a60e907ad95003c011a6c1002e',1,'event_t']]],
   ['is_5fidle_11',['is_idle',['../db/d04/struct__lf__scheduler__thread__info__t.html#a8607cd881d6ee9d2eb9b76a5867cf709',1,'_lf_scheduler_thread_info_t']]],
   ['is_5flast_5ftag_5fprovisional_12',['is_last_TAG_provisional',['../d6/d7a/structfederate__instance__t.html#a05a9586ad89b82d0bf5f969a194ef69c',1,'federate_instance_t']]],

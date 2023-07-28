@@ -1,5 +1,6 @@
 var NAVTREEINDEX7 =
 {
+"de/d6b/structtoken__template__t.html":[8,0,50],
 "de/d6b/structtoken__template__t.html#a076f845b64482f5cf083da333bfc60de":[8,0,50,1],
 "de/d6b/structtoken__template__t.html#a19c2f4ac754a3fdf0419052f00d341da":[8,0,50,0],
 "de/d6b/structtoken__template__t.html#a7a7e76104c33f7d019670420033d5d12":[8,0,50,2],

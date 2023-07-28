@@ -131,6 +131,7 @@ Functions</h2></td></tr>
 <tr class="memitem:a290fff2ff01f301f1b7b3b98fc11f492"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#a290fff2ff01f301f1b7b3b98fc11f492">send_neighbor_structure_to_RTI</a> (int)</td></tr>
 <tr class="separator:a290fff2ff01f301f1b7b3b98fc11f492"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3e3a769ec47609bd5cb9fc44d51e48a4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#a3e3a769ec47609bd5cb9fc44d51e48a4">connect_to_federate</a> (uint16_t)</td></tr>
+<tr class="memdesc:a3e3a769ec47609bd5cb9fc44d51e48a4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Spawns a thread to iterate through STAA structs, setting its associated ports absent at an offset if the port is not present with a value by a certain physical time.  <br /></td></tr>
 <tr class="separator:a3e3a769ec47609bd5cb9fc44d51e48a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:addfded0ac14ed1d7a4de9a5f04870c20"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#addfded0ac14ed1d7a4de9a5f04870c20">_lf_logical_tag_complete</a> (<a class="el" href="../../db/df7/structtag__t.html">tag_t</a>)</td></tr>
 <tr class="separator:addfded0ac14ed1d7a4de9a5f04870c20"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -144,6 +145,14 @@ Functions</h2></td></tr>
 <tr class="separator:ad71f6bcab18122c661af9c5d02be4602"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d0d6dfbd380c75177dc10b08a811ef5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#a6d0d6dfbd380c75177dc10b08a811ef5">send_port_absent_to_federate</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>, unsigned short, unsigned short)</td></tr>
 <tr class="separator:a6d0d6dfbd380c75177dc10b08a811ef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a331d123a8ef4725a08504ca1d80099c7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#a331d123a8ef4725a08504ca1d80099c7">enqueue_port_absent_reactions</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:a331d123a8ef4725a08504ca1d80099c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9d0f9ddc772b4214f92f183ecbe83f73"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#a9d0f9ddc772b4214f92f183ecbe83f73">stall_advance_level_federation</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *, size_t)</td></tr>
+<tr class="memdesc:a9d0f9ddc772b4214f92f183ecbe83f73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prevent the advancement to the next level of the reaction queue until the level we try to advance to is known to be under the max level allowed to advance.  <br /></td></tr>
+<tr class="separator:a9d0f9ddc772b4214f92f183ecbe83f73"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2272593c618ee3dfab504e7b7549f4a5"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#a2272593c618ee3dfab504e7b7549f4a5">update_max_level</a> (<a class="el" href="../../db/df7/structtag__t.html">tag_t</a>, bool)</td></tr>
+<tr class="memdesc:a2272593c618ee3dfab504e7b7549f4a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempts to update the max level the reaction queue is allowed to advance to for the current logical timestep.  <br /></td></tr>
+<tr class="separator:a2272593c618ee3dfab504e7b7549f4a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a76f0bc068b7a7c4a30983172eea59767"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#a76f0bc068b7a7c4a30983172eea59767">send_message</a> (int message_type, unsigned short port, unsigned short federate, const char *next_destination_str, size_t length, unsigned char *message)</td></tr>
 <tr class="separator:a76f0bc068b7a7c4a30983172eea59767"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acaaf63aada42881a61249d47e734ba15"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#acaaf63aada42881a61249d47e734ba15">send_timed_message</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>, int, unsigned short, unsigned short, const char *, size_t, unsigned char *)</td></tr>
@@ -159,6 +168,8 @@ Variables</h2></td></tr>
 <tr class="separator:a1de2c61d36e14fae8de7043ff2661a34"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac31c3ee54cd862c9381fbf980fa7d9ef"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#ac31c3ee54cd862c9381fbf980fa7d9ef">port_status_changed</a></td></tr>
 <tr class="separator:ac31c3ee54cd862c9381fbf980fa7d9ef"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab2b6609cfafb1478e8aee26664253e22"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#ab2b6609cfafb1478e8aee26664253e22">logical_time_changed</a></td></tr>
+<tr class="separator:ab2b6609cfafb1478e8aee26664253e22"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><dl class="section author"><dt>Author</dt><dd>Edward A. Lee (<a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>)</dd></dl>
@@ -260,6 +271,8 @@ Functions intitializing and freeing memory for environments.</h1>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Spawns a thread to iterate through STAA structs, setting its associated ports absent at an offset if the port is not present with a value by a certain physical time. </p>
 <p>Connect to the federate with the specified id. This established connection will then be used in functions such as <a class="el" href="../../d1/dfa/federate_8h.html#acaaf63aada42881a61249d47e734ba15">send_timed_message()</a> to send messages directly to the specified federate. This function first sends an MSG_TYPE_ADDRESS_QUERY message to the RTI to obtain the IP address and port number of the specified federate. It then attempts to establish a socket connection to the specified federate. If this fails, the program exits. If it succeeds, it sets element [id] of the _fed.sockets_for_outbound_p2p_connections global array to refer to the socket for communicating directly with the federate. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">remote_federate_id</td><td>The ID of the remote federate. </td></tr>
@@ -328,6 +341,25 @@ Functions intitializing and freeing memory for environments.</h1>
   </table>
   </dd>
 </dl>
+
+</div>
+</div>
+<a id="a331d123a8ef4725a08504ca1d80099c7" name="a331d123a8ef4725a08504ca1d80099c7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a331d123a8ef4725a08504ca1d80099c7">&#9670;&#160;</a></span>enqueue_port_absent_reactions()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void enqueue_port_absent_reactions </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Enqueue port absent reactions that will send a PORT_ABSENT message to downstream federates if a given network output port is not present. </p>
 
 </div>
 </div>
@@ -598,6 +630,42 @@ Functions intitializing and freeing memory for environments.</h1>
 
 </div>
 </div>
+<a id="a9d0f9ddc772b4214f92f183ecbe83f73" name="a9d0f9ddc772b4214f92f183ecbe83f73"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9d0f9ddc772b4214f92f183ecbe83f73">&#9670;&#160;</a></span>stall_advance_level_federation()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void stall_advance_level_federation </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Prevent the advancement to the next level of the reaction queue until the level we try to advance to is known to be under the max level allowed to advance. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">next_reaction_level</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <a id="ad83fe9661682934029a42954b8fe6e2f" name="ad83fe9661682934029a42954b8fe6e2f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad83fe9661682934029a42954b8fe6e2f">&#9670;&#160;</a></span>synchronize_with_other_federates()</h2>
 
@@ -613,6 +681,44 @@ Functions intitializing and freeing memory for environments.</h1>
       </table>
 </div><div class="memdoc">
 <p>Synchronize the start with other federates via the RTI. This assumes that a connection to the RTI is already made and _lf_rti_socket_TCP is valid. It then sends the current logical time to the RTI and waits for the RTI to respond with a specified time. It starts a thread to listen for messages from the RTI. </p>
+
+</div>
+</div>
+<a id="a2272593c618ee3dfab504e7b7549f4a5" name="a2272593c618ee3dfab504e7b7549f4a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2272593c618ee3dfab504e7b7549f4a5">&#9670;&#160;</a></span>update_max_level()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void update_max_level </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Attempts to update the max level the reaction queue is allowed to advance to for the current logical timestep. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">tag</td><td>The latest TAG received by this federate. </td></tr>
+    <tr><td class="paramname">is_provisional</td><td>Whether the latest tag was provisional</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>This function assumes that the caller holds the mutex. </p>
 
 </div>
 </div>
@@ -662,6 +768,28 @@ Functions intitializing and freeing memory for environments.</h1>
 </div>
 </div>
 <h2 class="groupheader">Variable Documentation</h2>
+<a id="ab2b6609cfafb1478e8aee26664253e22" name="ab2b6609cfafb1478e8aee26664253e22"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab2b6609cfafb1478e8aee26664253e22">&#9670;&#160;</a></span>logical_time_changed</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> logical_time_changed</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="a1de2c61d36e14fae8de7043ff2661a34" name="a1de2c61d36e14fae8de7043ff2661a34"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a1de2c61d36e14fae8de7043ff2661a34">&#9670;&#160;</a></span>outbound_socket_mutex</h2>
 

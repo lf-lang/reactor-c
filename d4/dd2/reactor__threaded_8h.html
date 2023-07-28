@@ -101,10 +101,11 @@ $(document).ready(function(){initNavTree('d4/dd2/reactor__threaded_8h.html','../
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a95a50246fd7c991cafbf49add0a54fed"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a95a50246fd7c991cafbf49add0a54fed">enqueue_network_input_control_reactions</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
-<tr class="separator:a95a50246fd7c991cafbf49add0a54fed"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad727445d8c0c828624539487b3abb570"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#ad727445d8c0c828624539487b3abb570">enqueue_network_output_control_reactions</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
-<tr class="separator:ad727445d8c0c828624539487b3abb570"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af359dbed76bff1e52a1a99854f7e5202"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#af359dbed76bff1e52a1a99854f7e5202">try_advance_level</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *, volatile size_t *)</td></tr>
+<tr class="memdesc:af359dbed76bff1e52a1a99854f7e5202"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to advance the current reaction level to the next level in the reaction queue. For federated runtimes, this function should stall the advance until we know that we can safely execute the next level given knowledge about upstream network port statuses.  <br /></td></tr>
+<tr class="separator:af359dbed76bff1e52a1a99854f7e5202"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a331d123a8ef4725a08504ca1d80099c7"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a331d123a8ef4725a08504ca1d80099c7">enqueue_port_absent_reactions</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:a331d123a8ef4725a08504ca1d80099c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa8e97abcbd89bb371d396da44ff4becb"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#aa8e97abcbd89bb371d396da44ff4becb">_lf_increment_tag_barrier</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> future_tag)</td></tr>
 <tr class="separator:aa8e97abcbd89bb371d396da44ff4becb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a01d3c6cadb7930c096ffe1f794173f5c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a01d3c6cadb7930c096ffe1f794173f5c">_lf_increment_tag_barrier_locked</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> future_tag)</td></tr>
@@ -275,14 +276,14 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="a95a50246fd7c991cafbf49add0a54fed" name="a95a50246fd7c991cafbf49add0a54fed"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a95a50246fd7c991cafbf49add0a54fed">&#9670;&#160;</a></span>enqueue_network_input_control_reactions()</h2>
+<a id="a331d123a8ef4725a08504ca1d80099c7" name="a331d123a8ef4725a08504ca1d80099c7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a331d123a8ef4725a08504ca1d80099c7">&#9670;&#160;</a></span>enqueue_port_absent_reactions()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void enqueue_network_input_control_reactions </td>
+          <td class="memname">void enqueue_port_absent_reactions </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
           <td class="paramname"><em>env</em></td><td>)</td>
@@ -290,31 +291,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Enqueue network input control reactions that determine if the trigger for a given network input port is going to be present at the current logical time or absent. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">env</td><td>The environment in which we are executing </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="ad727445d8c0c828624539487b3abb570" name="ad727445d8c0c828624539487b3abb570"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad727445d8c0c828624539487b3abb570">&#9670;&#160;</a></span>enqueue_network_output_control_reactions()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">void enqueue_network_output_control_reactions </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
-          <td class="paramname"><em>env</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Enqueue network output control reactions that will send a PORT_ABSENT message to downstream federates if a given network output port is not present. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Enqueue port absent reactions that will send a PORT_ABSENT message to downstream federates if a given network output port is not present. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>The environment in which we are executing </td></tr>
   </table>
@@ -390,6 +367,42 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="af359dbed76bff1e52a1a99854f7e5202" name="af359dbed76bff1e52a1a99854f7e5202"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af359dbed76bff1e52a1a99854f7e5202">&#9670;&#160;</a></span>try_advance_level()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void try_advance_level </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname">, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">volatile size_t *&#160;</td>
+          <td class="paramname">&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Attempt to advance the current reaction level to the next level in the reaction queue. For federated runtimes, this function should stall the advance until we know that we can safely execute the next level given knowledge about upstream network port statuses. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">next_reaction_level</td><td></td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

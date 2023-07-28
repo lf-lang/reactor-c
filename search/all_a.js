@@ -27,7 +27,7 @@ var searchData=
   ['input_5fthread_5fid_24',['input_thread_id',['../d7/d58/sensor__simulator_8c.html#af120def87132a6244b4019c9c7515a1d',1,'sensor_simulator.c']]],
   ['instant_5ft_25',['instant_t',['../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587',1,'tag.h']]],
   ['interval_5ft_26',['interval_t',['../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b',1,'tag.h']]],
-  ['is_5fa_5fcontrol_5freaction_27',['is_a_control_reaction',['../d2/d35/structreaction__t.html#af37bd1c5f5f4e148a21ff48e6c171d1e',1,'reaction_t']]],
+  ['is_5fan_5finput_5freaction_27',['is_an_input_reaction',['../d2/d35/structreaction__t.html#aa9cc59b3b6029cb8b0e3d1f5fde94fce',1,'reaction_t']]],
   ['is_5fdummy_28',['is_dummy',['../da/d67/structevent__t.html#a490fa7a60e907ad95003c011a6c1002e',1,'event_t']]],
   ['is_5fidle_29',['is_idle',['../db/d04/struct__lf__scheduler__thread__info__t.html#a8607cd881d6ee9d2eb9b76a5867cf709',1,'_lf_scheduler_thread_info_t']]],
   ['is_5flast_5ftag_5fprovisional_30',['is_last_TAG_provisional',['../d6/d7a/structfederate__instance__t.html#a05a9586ad89b82d0bf5f969a194ef69c',1,'federate_instance_t']]],
