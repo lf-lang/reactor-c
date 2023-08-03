@@ -444,7 +444,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
                     " New offset: " PRINTF_TIME "."
                     " Round trip delay to RTI (now): " PRINTF_TIME "."
                     " (AVG): %ld."
-                    " (SD): %ld."
+                    " (SD): %lld."
                     " Local round trip delay: " PRINTF_TIME "."
                     " Test offset: " PRINTF_TIME ".",
                     _lf_time_physical_clock_offset,
