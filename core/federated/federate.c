@@ -2945,4 +2945,18 @@ void set_federation_id(const char* fid) {
 void set_federation_trace_object(trace_t * trace) {
     _fed.trace = trace;
 }
+
+void lf_stop() {
+    environment_t *env;
+    int num_env = _lf_get_environments(&env);
+    
+    for (int i = 0 ; i < num_env ; i++) {
+        tag_t new_stop_tag;
+        new_stop_tag.time = env[i].current_tag.time;
+        new_stop_tag.microstep = env[i].current_tag.microstep + 1;
+        _lf_set_stop_tag(&env[i], new_stop_tag);
+    }
+    // termination();
+}
+
 #endif
