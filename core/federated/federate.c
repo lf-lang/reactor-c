@@ -1217,6 +1217,10 @@ instant_t get_start_time_from_rti(instant_t my_physical_time) {
     return timestamp;
 }
 
+char* lf_get_federates_bin_directory() {
+    return LF_FEDERATES_BIN_DIRECTORY;
+}
+
 ////////////////////////////////Port Status Handling///////////////////////////////////////
 
 extern lf_action_base_t* _lf_action_table[];

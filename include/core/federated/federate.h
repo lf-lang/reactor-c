@@ -489,4 +489,10 @@ void wait_until_port_status_known(environment_t* env, int portID, interval_t STA
  */
 void lf_stop();
 
+/**
+ * @brief Return the directory containing the executables of the individual
+ * federates.
+ */
+char* lf_get_federates_bin_directory();
+
 #endif // FEDERATE_H
