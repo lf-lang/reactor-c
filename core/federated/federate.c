@@ -2875,4 +2875,8 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
     return (prev_max_level_allowed_to_advance != max_level_allowed_to_advance);
 }
 
+char* lf_get_federates_bin_directory() {
+    return LF_FEDERATES_BIN_DIRECTORY;
+}
+
 #endif

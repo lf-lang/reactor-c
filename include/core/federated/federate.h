@@ -560,4 +560,10 @@ void lf_synchronize_with_other_federates();
  */
 bool lf_update_max_level(tag_t tag, bool is_provisional);
 
+/**
+ * @brief Return the directory containing the executables of the individual
+ * federates.
+ */
+char* lf_get_federates_bin_directory();
+
 #endif // FEDERATE_H
