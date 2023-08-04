@@ -545,4 +545,10 @@ bool lf_update_max_level(tag_t tag, bool is_provisional);
 instant_t lf_wait_until_time(tag_t tag);
 #endif // FEDERATED_DECENTRALIZED
 
+/**
+ * @brief Return the directory containing the executables of the individual
+ * federates.
+ */
+char* lf_get_federates_bin_directory();
+
 #endif // FEDERATE_H
