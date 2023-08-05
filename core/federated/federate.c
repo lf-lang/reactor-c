@@ -2963,4 +2963,8 @@ void lf_stop() {
     // termination();
 }
 
+char* lf_get_federation_id() {
+    return federation_metadata.federation_id;
+}
+
 #endif

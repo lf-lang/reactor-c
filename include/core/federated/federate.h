@@ -495,4 +495,9 @@ void lf_stop();
  */
 char* lf_get_federates_bin_directory();
 
+/**
+ * @brief Returns the federation id.
+ */
+char* lf_get_federation_id();
+
 #endif // FEDERATE_H
