@@ -1,7 +1,7 @@
 set(CORE_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Get the general common sources for reactor-c
-list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c lf_token.c)
+list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c lf_token.c environment.c)
 
 # Add tracing support if requested
 if (DEFINED LF_TRACE)
@@ -82,6 +82,13 @@ if(DEFINED FEDERATED_AUTHENTICATED_SST)
     target_link_libraries(core PUBLIC SST_LIB)
 endif()
 
+if(DEFINED _LF_CLOCK_SYNC_ON)
+  find_library(MATH_LIBRARY m)
+  if(MATH_LIBRARY)
+    target_link_libraries(core PUBLIC ${MATH_LIBRARY})
+  endif()
+endif()
+
 # Link with thread library
 if(DEFINED LF_THREADED OR DEFINED LF_TRACE)
     find_package(Threads REQUIRED)
@@ -131,4 +138,3 @@ define(SCHEDULER)
 define(LF_SOURCE_DIRECTORY)
 define(LF_PACKAGE_DIRECTORY)
 define(LF_FILE_SEPARATOR)
-define(WORKERS_NEEDED_FOR_FEDERATE)

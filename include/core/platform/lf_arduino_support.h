@@ -119,15 +119,11 @@ typedef void* lf_mutex_t;
 typedef void* lf_cond_t;
 typedef void* lf_thread_t;
 
-extern lf_mutex_t mutex;
-extern lf_cond_t event_q_changed;
-
 #endif // LF_THREADED
 
 #define PRINTF_TIME "%" PRIu32
 #define PRINTF_MICROSTEP "%" PRIu32
 #define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
-#define _LF_TIMEOUT 1
 
 #define LLONG_MAX __LONG_LONG_MAX__
 #define LLONG_MIN (-LLONG_MAX - 1LL)

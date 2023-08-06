@@ -260,7 +260,13 @@ int lf_play_audio_waveform(lf_waveform_t* waveform, float emphasis, instant_t st
     // occur.
     while (index_offset >= AUDIO_BUFFER_SIZE) {
         pthread_cond_wait(&lf_audio_cond, &lf_audio_mutex);
-        time_offset = lf_time_logical() - next_buffer_start_time;
+        // next_buffer_start_time has been incremented by BUFFER_DURATION_NS.
+        time_offset = start_time - next_buffer_start_time;
+        // time_offset should be >= 0, but just in case:
+        if (time_offset < 0) {
+            time_offset = 0;
+            result = 1;
+        }
         index_offset = (time_offset * SAMPLE_RATE) / BILLION;
     }
     

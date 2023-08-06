@@ -45,8 +45,9 @@
 
 #include "modal_models/modes.h" // Modal model support
 #include "utils/pqueue.h"
-#include "tag.h"
 #include "lf_token.h"
+#include "tag.h"
+#include "vector.h"
 
 /**
  * ushort type. Redefine here for portability if sys/types.h is not included.
@@ -72,6 +73,24 @@ typedef unsigned short int ushort;
 #define LET 4
 #define NP 5
 #define PEDF_NP 6
+
+/*
+ * A struct representing a barrier in threaded
+ * Lingua Franca programs that can prevent advancement
+ * of tag if
+ * 1- Number of requestors is larger than 0
+ * 2- Value of horizon is not (FOREVER, 0)
+ */
+typedef struct _lf_tag_advancement_barrier {
+    int requestors; // Used to indicate the number of
+                    // requestors that have asked
+                    // for a barrier to be raised
+                    // on tag.
+    tag_t horizon;  // If semaphore is larger than 0
+                    // then the runtime should not
+                    // advance its tag beyond the
+                    // horizon.
+} _lf_tag_advancement_barrier;
 
 /**
  * Policy for handling scheduled events that violate the specified
@@ -186,9 +205,7 @@ struct reaction_t {
                                        // intended. Currently, this is only possible if logical
                                        // connections are used in a decentralized federated
                                        // execution. COMMON.
-    bool is_a_control_reaction; // Indicates whether this reaction is a control reaction. Control
-                                // reactions will not set ports or actions and don't require scheduling
-                                // any output reactions. Default is false.
+    bool is_an_input_reaction; // Indicates whether this reaction is a network input reaction of a federate. Default is false.
     size_t worker_affinity;     // The worker number of the thread that scheduled this reaction. Used
                                 // as a suggestion to the scheduler.
     const char* name;                 // If logging is set to LOG or higher, then this will
@@ -248,8 +265,6 @@ struct trigger_t {
 #ifdef FEDERATED
     tag_t last_known_status_tag;        // Last known status of the port, either via a timed message, a port absent, or a
                                         // TAG from the RTI.
-    bool is_a_control_reaction_waiting; // Indicates whether at least one control reaction is waiting for this trigger
-                                        // if it belongs to a network input port. Must be false by default.
     tag_t intended_tag;                 // The amount of discrepency in logical time between the original intended
                                         // trigger time of this trigger and the actual trigger time. This currently
                                         // can only happen when logical connections are used using a decentralized coordination
@@ -271,6 +286,8 @@ typedef struct allocation_record_t {
     struct allocation_record_t *next;
 } allocation_record_t;
 
+
+typedef struct environment_t environment_t;
 /**
  * The first element of every self struct defined in generated code
  * will be a pointer to an allocation record, which is either NULL
@@ -281,8 +298,9 @@ typedef struct allocation_record_t {
  * memory using {@link _lf_allocate(size_t,size_t,self_base_t*)}.
  */
 typedef struct self_base_t {
-    struct allocation_record_t *allocations;
-    struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
+	struct allocation_record_t *allocations;
+	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
+    environment_t * environment;
 #ifdef LF_THREADED
     void* reactor_mutex; // If not null, this is expected to point to an lf_mutex_t.
                           // It is not declared as such to avoid a dependence on platform.h.
