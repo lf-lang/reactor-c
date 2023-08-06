@@ -26,6 +26,22 @@
 #include "rti_lib.h"
 #include <string.h>
 
+#define WRITE_TO_SOCKET(socket, num_bytes, buffer) \
+    ssize_t bytes_written = write_to_socket(socket, num_bytes, buffer);
+
+#ifdef __RTI_SST__
+#define WRITE_TO_FED_SOCKET(return_bytes, fed, num_bytes, buffer) \
+{ \
+    char result[512]; \
+    ssize_t return_bytes = encrypt_buffer(buffer, fed->session_ctx, &result); \
+} \
+    WRITE_TO_SOCKET(fed->socket, bytes, result)
+#else
+#define WRITE_TO_FED_SOCKET(fed, num_bytes, buffer) \
+    WRITE_TO_SOCKET(fed->socket, num_bytes, buffer)
+#endif
+
+
 // Global variables defined in tag.c:
 extern instant_t start_time;
 
@@ -297,7 +313,7 @@ void send_provisional_tag_advance_grant(federate_t* fed, tag_t tag) {
     // This function is called in send_advance_grant_if_safe(), which is a long
     // function. During this call, the socket might close, causing the following write_to_socket
     // to fail. Consider a failure here a soft failure and update the federate's status.
-    ssize_t bytes_written = write_to_socket(fed->socket, message_length, buffer);
+    WRITE_TO_SOCKET(fed->socket, message_length, buffer)
 
     if (bytes_written < (ssize_t)message_length) {
         lf_print_error("RTI failed to send tag advance grant to federate %d.", fed->id);
@@ -918,11 +934,11 @@ void handle_stop_request_reply(federate_t* fed) {
 
 //////////////////////////////////////////////////
 
-void handle_address_query(uint16_t fed_id) {
+void handle_address_query(federate_t* fed) {
     // Use buffer both for reading and constructing the reply.
     // The length is what is needed for the reply.
     unsigned char buffer[sizeof(int32_t)];
-    ssize_t bytes_read = read_from_socket(_RTI.federates[fed_id].socket, sizeof(uint16_t), (unsigned char*)buffer);
+    ssize_t bytes_read = read_from_socket(fed->socket, sizeof(uint16_t), (unsigned char*)buffer);
     if (bytes_read == 0) {
         lf_print_error_and_exit("Failed to read address query.");
     }
@@ -941,11 +957,11 @@ void handle_address_query(uint16_t fed_id) {
     // Encode the port number.
     encode_int32(_RTI.federates[remote_fed_id].server_port, (unsigned char*)buffer);
     // Send the port number (which could be -1).
-    write_to_socket_errexit(_RTI.federates[fed_id].socket, sizeof(int32_t), (unsigned char*)buffer,
+    write_to_socket_errexit(fed->socket, sizeof(int32_t), (unsigned char*)buffer,
                         "Failed to write port number to socket of federate %d.", fed_id);
 
     // Send the server IP address to federate.
-    write_to_socket_errexit(_RTI.federates[fed_id].socket, sizeof(_RTI.federates[remote_fed_id].server_ip_addr),
+    write_to_socket_errexit(fed->socket, sizeof(_RTI.federates[remote_fed_id].server_ip_addr),
                         (unsigned char *)&_RTI.federates[remote_fed_id].server_ip_addr,
                         "Failed to write ip address to socket of federate %d.", fed_id);
 
@@ -973,7 +989,7 @@ void handle_address_ad(uint16_t federate_id) {
     assert(server_port < 65536);
 
     lf_mutex_lock(&rti_mutex);
-    _RTI.federates[federate_id].server_port = server_port;
+    fed->server_port = server_port;
     if (_RTI.tracing_enabled) {
         tracepoint_RTI_from_federate(receive_ADR_AD, federate_id, NULL);
     }
@@ -1030,10 +1046,13 @@ void handle_timestamp(federate_t *my_fed) {
     #ifdef __RTI_SST__
     my_fed->socket = my_fed->saved_socket; 
     #endif
-    ssize_t bytes_written = write_to_socket(
-        my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH,
-        start_time_buffer
-    );
+    WRITE_TO_FED_SOCKET(bytes_written, my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH, start_time_buffer)
+    // ssize_t bytes_written = write_to_socket(
+    //     my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH,
+    //     start_time_buffer
+    // );
+
+
     if (bytes_written < MSG_TYPE_TIMESTAMP_LENGTH) {
         lf_print_error("Failed to send the starting time to federate %d.", my_fed->id);
     }
@@ -1273,8 +1292,9 @@ void* federate_thread_TCP(void* fed) {
             case MSG_TYPE_TIMESTAMP:
                 handle_timestamp(my_fed);
                 break;
+            // 여기서는 다른 소켓 사용한다.
             case MSG_TYPE_ADDRESS_QUERY:
-                handle_address_query(my_fed->id);
+                handle_address_query(&_RTI.federates[my_fed->id]);
                 break;
             case MSG_TYPE_ADDRESS_ADVERTISEMENT:
                 handle_address_ad(my_fed->id);
