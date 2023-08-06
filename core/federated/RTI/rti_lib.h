@@ -71,9 +71,6 @@ typedef struct federate_t {
                             // RTI has not been informed of the port number.
     struct in_addr server_ip_addr; // Information about the IP address of the socket
                                 // server of the federate.
-    bool requested_stop;    // Indicates that the federate has requested stop or has replied
-                            // to a request for stop from the RTI. Used to prevent double-counting
-                            // a federate when handling lf_request_stop().
     #ifdef __RTI_SST__
     SST_session_ctx_t *session_ctx; // Indicates the information of the secure session.
     int fd;                 // Indicates the decrypted buffer.
