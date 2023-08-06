@@ -1,20 +1,23 @@
 #ifndef REACTOR_THREADED_H
 #define REACTOR_THREADED_H
 #include "lf_types.h"
-/**
- * Enqueue network input control reactions that determine if the trigger for a
- * given network input port is going to be present at the current logical time
- * or absent.
- * @param env The environment in which we are executing
- */
-void enqueue_network_input_control_reactions(environment_t* env);
 
 /**
- * Enqueue network output control reactions that will send a PORT_ABSENT
+ * @brief Attempt to advance the current reaction level to the next level
+ * in the reaction queue. For federated runtimes, this function should
+ * stall the advance until we know that we can safely execute the next level
+ * given knowledge about upstream network port statuses.
+ *
+ * @param next_reaction_level
+ */
+void try_advance_level(environment_t*, volatile size_t*);
+
+/**
+ * Enqueue port absent reactions that will send a PORT_ABSENT
  * message to downstream federates if a given network output port is not present.
  * @param env The environment in which we are executing
  */
-void enqueue_network_output_control_reactions(environment_t* env);
+void enqueue_port_absent_reactions(environment_t* env);
 
 /**
  * Raise a barrier to prevent the current tag for the specified environment from advancing
@@ -50,7 +53,7 @@ void _lf_increment_tag_barrier(environment_t *env, tag_t future_tag);
 /**
  * @brief Version of _lf_increment_tag_barrier to call when the caller holds the mutex.
  * This version does not acquire the mutex belonging to env.
- * 
+ *
  * @param env Environment within which we are executing.
  * @param future_tag A desired tag for the barrier. This function will guarantee
  * that current logical time will not go past future_tag if it is in the future.

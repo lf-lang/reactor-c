@@ -661,7 +661,7 @@ void lf_scheduler_trigger_reaction(reaction_t* reaction, int worker_number) {
     if (reaction == NULL || !lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
         return;
     }
-    LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld.",
+    LF_PRINT_DEBUG("Scheduler: Enqueueing reaction %s, which has level %lld.",
             reaction->name, LF_LEVEL(reaction->index));
     if (worker_number == -1) {
         lf_mutex_lock(&mutex);

@@ -29,7 +29,6 @@ extern const char** default_argv;
 
 #ifdef FEDERATED
 void reset_status_fields_on_input_port_triggers();
-void enqueue_network_control_reactions(environment_t* env);
 port_status_t determine_port_status_if_possible(int portID);
 typedef enum parse_rti_code_t {
     SUCCESS,
