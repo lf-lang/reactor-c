@@ -30,6 +30,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * @author{Shaokai Lin <shaokai@berkeley.edu>}
  */
+#include <inttypes.h>
 #include "lf_types.h"
 #if SCHEDULER == STATIC || (!defined(SCHEDULER) && defined(LF_THREADED))
 #ifndef NUMBER_OF_WORKERS
@@ -59,18 +60,6 @@ extern volatile instant_t time_offsets[];
 extern const size_t num_counters;
 
 /////////////////// Scheduler Private API /////////////////////////
-/**
- * @brief Check if a given tag reaches the specified stop tag. If so, mark it in
- * a reactor_reached_stop_tag array in the scheduler struct.
- */
-void _check_if_tag_reaches_stop_tag(lf_scheduler_t* scheduler, tag_t tag, int reactor_index) {
-    LF_PRINT_DEBUG("Scheduler: Reactor tag: %lld, stop_tag: %lld", tag.time, scheduler->env->stop_tag.time);
-    if (_lf_is_tag_after_stop_tag(scheduler->env, tag)) {
-        scheduler->reactor_reached_stop_tag[reactor_index] = true;
-    } else {
-        LF_PRINT_DEBUG("Scheduler:  NOT updating the array.");
-    }
-}
 
 /**
  * @brief If there is work to be done, notify workers individually.
@@ -128,7 +117,6 @@ void _lf_sched_wait_for_work(
         for (int j = 0; j < scheduler->num_reactor_self_instances; j++) {
             scheduler->reactor_self_instances[j]->tag.time = next_timestamp;
             scheduler->reactor_self_instances[j]->tag.microstep = 0;
-            _check_if_tag_reaches_stop_tag(scheduler, scheduler->reactor_self_instances[j]->tag, j);
         }
         
         // The last worker clears all the counters.
@@ -183,8 +171,6 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, uint64_t 
     for (int i = 0; i<reactor->num_output_ports; i++) {
         reactor->output_ports[i]->is_present = false;
     }
-
-    _check_if_tag_reaches_stop_tag(scheduler, reactor->tag, rs1);
    
     lf_mutex_unlock(&(scheduler->env->mutex));
 
@@ -213,8 +199,6 @@ void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, uint64_t
     for (int i = 0; i<reactor->num_output_ports; i++) {
         reactor->output_ports[i]->is_present = false;
     }
-
-    _check_if_tag_reaches_stop_tag(scheduler, reactor->tag, rs1);
    
     *pc += 1; // Increment pc.
 
@@ -226,14 +210,15 @@ void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, uint64_t
  * 
  * FIXME: Should the timeout value be an operand?
  * FIXME: Use a global variable num_active_reactors instead of iterating over
- * a for loop.
+ * a for loop. The current implementation is very inefficient.
  */
 void execute_inst_BIT(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
     tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
     bool stop = true;
     for (int i = 0; i < scheduler->num_reactor_self_instances; i++) {
-        if (!scheduler->reactor_reached_stop_tag[i]) {
+        if (!_lf_is_tag_after_stop_tag(scheduler->env, scheduler->reactor_self_instances[i]->tag)) {
+            LF_PRINT_DEBUG("*** Worker %zu: reactor %d has not reached stop tag: (%lld, %u)", worker_number, i, scheduler->reactor_self_instances[i]->tag.time, scheduler->reactor_self_instances[i]->tag.microstep);
             stop = false;
             break;
         }
@@ -363,46 +348,57 @@ void execute_inst(lf_scheduler_t* scheduler, size_t worker_number, opcode_t op, 
     switch (op) {
         case ADDI:
             op_str = "ADDI";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
             execute_inst_ADDI(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
         case ADV:
             op_str = "ADV";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
             execute_inst_ADV(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
         case ADV2:
             op_str = "ADV2";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
             execute_inst_ADV2(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
         case BIT:
             op_str = "BIT";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
             execute_inst_BIT(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
          case DU:  
             op_str = "DU";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
             execute_inst_DU(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
         case EIT:
             op_str = "EIT";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
             execute_inst_EIT(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
         case EXE:
             op_str = "EXE";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
             execute_inst_EXE(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
         case JMP:
             op_str = "JMP";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
             execute_inst_JMP(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
         case SAC:
             op_str = "SAC";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
             execute_inst_SAC(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
         case STP:
             op_str = "STP";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
             execute_inst_STP(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
         case WU:
             op_str = "WU";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
             execute_inst_WU(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
         default:
@@ -462,7 +458,6 @@ void lf_sched_init(
     env->scheduler->reaction_instances = params->reaction_instances;
     env->scheduler->reactor_self_instances = params->reactor_self_instances;
     env->scheduler->num_reactor_self_instances = params->num_reactor_self_instances;
-    env->scheduler->reactor_reached_stop_tag = params->reactor_reached_stop_tag;
     env->scheduler->counters = counters;
 }
 

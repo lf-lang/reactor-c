@@ -173,13 +173,6 @@ typedef struct lf_scheduler_t {
     size_t num_reactor_self_instances;
 
     /**
-     * @brief Points to an array of bools indicating whether
-     * a reactor reaches stop.
-     * 
-     */
-    bool* reactor_reached_stop_tag;
-
-    /**
      * @brief Points to an array of pointers to reaction instances.
      * 
      */
@@ -216,7 +209,6 @@ typedef struct {
 #if SCHEDULER == STATIC
     struct self_base_t** reactor_self_instances;
     size_t num_reactor_self_instances;
-    bool* reactor_reached_stop_tag;
     reaction_t** reaction_instances;
 #endif
 } sched_params_t;
