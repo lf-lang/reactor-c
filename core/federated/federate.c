@@ -1204,7 +1204,7 @@ instant_t get_start_time_from_rti(instant_t my_physical_time) {
                     buffer[0]);
     }
 
-    // Read the federation start_time first, then the effective start_time after
+    // Read the federation start_time first, then the effective_start_tag after
     instant_t timestamp = extract_int64(&(buffer[1]));
     effective_start_tag = extract_tag(&(buffer[9]));
     
@@ -2966,11 +2966,11 @@ char* lf_get_federation_id() {
     return federation_metadata.federation_id;
 }
 
-time_t lf_get_effective_start_time() {
+instant_t lf_get_effective_start_time() {
     return effective_start_tag.time;
 }
 
-time_t lf_get_start_time() {
+instant_t lf_get_start_time() {
     return start_time;
 }
 
