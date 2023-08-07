@@ -26,20 +26,20 @@
 #include "rti_lib.h"
 #include <string.h>
 
-#define WRITE_TO_SOCKET(socket, num_bytes, buffer) \
-    ssize_t bytes_written = write_to_socket(socket, num_bytes, buffer);
+// #define WRITE_TO_SOCKET(socket, num_bytes, buffer) \
+//     ssize_t bytes_written = write_to_socket(socket, num_bytes, buffer);
 
-#ifdef __RTI_SST__
-#define WRITE_TO_FED_SOCKET(return_bytes, fed, num_bytes, buffer) \
-{ \
-    char result[512]; \
-    ssize_t return_bytes = encrypt_buffer(buffer, fed->session_ctx, &result); \
-} \
-    WRITE_TO_SOCKET(fed->socket, bytes, result)
-#else
-#define WRITE_TO_FED_SOCKET(fed, num_bytes, buffer) \
-    WRITE_TO_SOCKET(fed->socket, num_bytes, buffer)
-#endif
+// #ifdef __RTI_SST__
+// #define WRITE_TO_FED_SOCKET(return_bytes, fed, num_bytes, buffer) \
+// { \
+//     char result[512]; \
+//     ssize_t return_bytes = encrypt_buffer(buffer, fed->session_ctx, &result); \
+// } \
+//     WRITE_TO_SOCKET(fed->socket, bytes, result)
+// #else
+// #define WRITE_TO_FED_SOCKET(fed, num_bytes, buffer) \
+//     WRITE_TO_SOCKET(fed->socket, num_bytes, buffer)
+// #endif
 
 
 // Global variables defined in tag.c:
@@ -839,11 +839,11 @@ void handle_timestamp(federate_t *my_fed) {
     #ifdef __RTI_SST__
     my_fed->socket = my_fed->saved_socket; 
     #endif
-    WRITE_TO_FED_SOCKET(bytes_written, my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH, start_time_buffer)
-    // ssize_t bytes_written = write_to_socket(
-    //     my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH,
-    //     start_time_buffer
-    // );
+    // WRITE_TO_FED_SOCKET(bytes_written, my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH, start_time_buffer)
+    ssize_t bytes_written = write_to_socket(
+        my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH,
+        start_time_buffer
+    );
 
 
     if (bytes_written < MSG_TYPE_TIMESTAMP_LENGTH) {
@@ -1057,7 +1057,7 @@ void* federate_thread_TCP(void* fed) {
     unsigned char buffer[FED_COM_BUFFER_SIZE];
 
     // Listen for messages from the federate.
-    while (my_fed->state != NOT_CONNECTED) {
+    while (my_fed->enclave.state != NOT_CONNECTED) {
         #ifdef __RTI_SST__
         ssize_t sst_bytes_read = read_from_socket(my_fed->socket, sizeof(sst_buffer), sst_buffer); //TODO: input buffer size?
         unsigned char *decrypted_buf = return_decrypted_buf(sst_buffer, sst_bytes_read, my_fed->session_ctx);
@@ -1071,6 +1071,7 @@ void* federate_thread_TCP(void* fed) {
         my_fed->socket = temp; //TODO: Need dup()?
         //TODO: Error handling is not applied. Need to change.
         #endif
+    }
 
     while (my_fed->enclave.state != NOT_CONNECTED) {
         // Read no more than one byte to get the message type.
@@ -1475,7 +1476,7 @@ bool authenticate_federate(int socket) {
 void connect_to_federates(int socket_descriptor) {
     #ifdef __RTI_SST__
     // Initialize SST setting read form sst_config.
-    SST_ctx_t *ctx = init_SST(_RTI.sst_config_path);
+    SST_ctx_t *ctx = init_SST(_f_rti->sst_config_path);
     // Initialize an empty session key list.
     INIT_SESSION_KEY_LIST(s_key_list);
     #endif
@@ -1521,7 +1522,7 @@ void connect_to_federates(int socket_descriptor) {
             // The RTI will get requests for communication from the federates by session key id.
             // Then RTI will request the corresponding session key to the Auth.
             SST_session_ctx_t *session_ctx = server_secure_comm_setup(ctx, socket_id, &s_key_list);
-            _RTI.federates[fed_id].session_ctx = session_ctx;
+            _f_rti->enclaves[fed_id]->session_ctx = session_ctx;
             #endif
             // Create a thread to communicate with the federate.
             // This has to be done after clock synchronization is finished
@@ -1841,7 +1842,7 @@ int process_args(int argc, const char* argv[]) {
             usage(argc, argv);
             return 0;
             #endif
-            _f_rti.authentication_enabled = true;
+            _f_rti->authentication_enabled = true;
         } else if (strcmp(argv[i], "-sst") == 0) {
             #ifndef __RTI_SST__
             fprintf(stderr, "Error: --sst requires the RTI to be built with the -DSST=ON option.\n");
@@ -1854,7 +1855,7 @@ int process_args(int argc, const char* argv[]) {
                return 0;
            }
             i++;
-            _f_rti.sst_config_path = argv[i];
+            _f_rti->sst_config_path = argv[i];
         } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tracing") == 0) {
             _f_rti->tracing_enabled = true;
         } else if (strcmp(argv[i], " ") == 0) {
