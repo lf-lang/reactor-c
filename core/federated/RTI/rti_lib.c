@@ -1679,7 +1679,7 @@ void wait_for_federates(int socket_descriptor) {
     for (int i = 0 ; i < _f_rti->number_of_enclaves ; i++) {
         if (!_f_rti->enclaves[i]->is_transient) {
             federate_t* fed = _f_rti->enclaves[i];
-            lf_print("RTI: Waiting for thread handling peristent federate %d.", fed->enclave.id);
+            lf_print("RTI: Waiting for thread handling persistent federate %d.", fed->enclave.id);
             lf_thread_join(fed->thread_id, &thread_exit_status);
             free_in_transit_message_q(fed->in_transit_message_tags);
             lf_print("RTI: Federate %d thread exited.", fed->enclave.id);
