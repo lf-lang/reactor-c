@@ -1997,8 +1997,6 @@ void* connect_to_transient_federates_thread() {
                 if (socket_id >= 0) {
                     // Got a socket
                     break;
-                } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
-                    lf_print_error_and_exit("RTI failed to accept the socket. %s.", strerror(errno));
                 } else {
                     // Try again
                     lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
