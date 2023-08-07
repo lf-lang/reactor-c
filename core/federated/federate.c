@@ -1309,7 +1309,6 @@ void update_last_known_status_on_input_ports(tag_t tag) {
     }
 }
 
-
 /**
  * Update the last known status tag of a network input port
  * to the value of "tag". This is the largest tag at which the status
@@ -2965,6 +2964,14 @@ void lf_stop() {
 
 char* lf_get_federation_id() {
     return federation_metadata.federation_id;
+}
+
+time_t lf_get_effective_start_time() {
+    return effective_start_tag.time;
+}
+
+time_t lf_get_start_time() {
+    return start_time;
 }
 
 #endif

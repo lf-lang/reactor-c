@@ -502,4 +502,14 @@ char* lf_get_federates_bin_directory();
  */
 char* lf_get_federation_id();
 
+/**
+ * @brief Returns the effective start time of the federate. The start_time of persistent
+ * federates is equal to their effective_start_time. Transient federates, however, 
+ * have their effective_start_time higher or equal to their start_time.
+ */
+time_t lf_get_effective_start_time();
+
+/** @brief Returns the start time of the federate. */
+time_t lf_get_start_time();
+
 #endif // FEDERATE_H
