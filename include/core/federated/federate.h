@@ -497,6 +497,8 @@ char* lf_get_federates_bin_directory();
 
 /**
  * @brief Returns the federation id.
+ * 
+ * This function is useful for creating federates on runtime.
  */
 char* lf_get_federation_id();
 
