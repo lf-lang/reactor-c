@@ -2639,8 +2639,6 @@ void synchronize_with_other_federates(void) {
     // Note that this does not grant execution to this federate.
     start_time = get_start_time_from_rti(lf_time_physical());
 
-    lf_print(">>>> Start_time is: "PRINTF_TIME" and effective is: "PRINTF_TIME, lf_get_start_time(), lf_get_effective_start_time());
-
     // Start a thread to listen for incoming TCP messages from the RTI.
     // @note Up until this point, the federate has been listening for messages
     //  from the RTI in a sequential manner in the main thread. From now on, a
