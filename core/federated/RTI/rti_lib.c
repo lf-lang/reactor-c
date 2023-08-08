@@ -787,6 +787,11 @@ void handle_timestamp(federate_t *my_fed) {
         lf_print("RTI: >>>> Sending to federate %d the start_time: "PRINTF_TIME" and effective: "PRINTF_TIME, my_fed->enclave.id, start_time, my_fed->effective_start_tag.time);
         send_start_tag(my_fed, start_time, my_fed->effective_start_tag);
     } else {
+        // This is rather a possible extreme corner case, where a transient sends its timestamp, and only
+        // enters the if section after all persistents have joined.
+        if (timestamp < start_time) {
+            timestamp = start_time;
+        }
         my_fed->effective_start_tag = (tag_t){.time = timestamp, .microstep = 0u};
         // A transient has joined after the startup phase
         // At this point, we already hold the mutex
