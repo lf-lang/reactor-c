@@ -488,7 +488,24 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
         return;
     }
 #endif
-    if (timer->offset == 0) {
+
+    // Use temporary offset value
+    interval_t offset = timer->offset;
+
+#ifdef FEDERATED
+    // If the federate is a transient who joined after the startup phase, adjust 
+    // the offset to account for the events that have to be missed
+    if (lf_get_start_time() != lf_get_effective_start_time()) {
+        interval_t remaing_of_period =  (lf_get_effective_start_time() - lf_get_start_time() - offset) % timer->period;
+        if (remaing_of_period == 0) {
+            offset = 0;
+        } else {
+            offset = timer->period - remaing_of_period;
+        }
+    }
+#endif // FEDERATED
+
+    if (offset == 0) {
         for (int i = 0; i < timer->number_of_reactions; i++) {
             _lf_trigger_reaction(env, timer->reactions[i], -1);
             tracepoint_schedule(env->trace, timer, 0LL); // Trace even though schedule is not called.
@@ -501,7 +518,7 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
         }
     } else {
         // Schedule at t + offset.
-        delay = timer->offset;
+        delay = offset;
     }
 
     // Get an event_t struct to put on the event queue.
