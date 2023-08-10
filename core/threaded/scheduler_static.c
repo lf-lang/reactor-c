@@ -206,6 +206,36 @@ void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, uint64_t
 }
 
 /**
+ * @brief The implementation of the BEQ instruction
+ */
+void execute_inst_BEQ(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
+    reaction_t** returned_reaction, bool* exit_loop) {
+    // tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
+    uint64_t *_rs1 = (uint64_t *) rs1;
+    uint64_t *_rs2 = (uint64_t *) rs2;
+    if (*_rs1 == *_rs2) *pc = rs3;
+    else *pc += 1;
+    // tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
+}
+
+/**
+ * @brief The implementation of the BGE instruction
+ * 
+ * FIXME: This is incorrect right now. BGE should always be checking between
+ * two registers. Timeout value should be stored in a separate register.
+ */
+void execute_inst_BGE(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
+    reaction_t** returned_reaction, bool* exit_loop) {
+    // tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
+    uint64_t *_rs1 = (uint64_t *) rs1;
+    uint64_t *_rs2 = (uint64_t *) rs2;
+    printf("*** rs1: %lld, rs2: %lld, rs3: %lld\n", *_rs1, *_rs2, rs3);
+    if (*_rs1 >= *_rs2) *pc = rs3;
+    else *pc += 1;
+    // tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
+}
+
+/**
  * @brief The implementation of the BIT instruction
  * 
  * FIXME: Should the timeout value be an operand?
@@ -226,6 +256,32 @@ void execute_inst_BIT(lf_scheduler_t* scheduler, size_t worker_number, uint64_t 
     if (stop) *pc = rs1;    // Jump to a specified location.
     else *pc += 1;          // Increment pc.
     tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
+}
+
+/**
+ * @brief The implementation of the BLT instruction
+ */
+void execute_inst_BLT(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
+    reaction_t** returned_reaction, bool* exit_loop) {
+    // tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
+    uint64_t *_rs1 = (uint64_t *) rs1;
+    uint64_t *_rs2 = (uint64_t *) rs2;
+    if (*_rs1 < *_rs2) *pc = rs3;
+    else *pc += 1;
+    // tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
+}
+
+/**
+ * @brief The implementation of the BNE instruction
+ */
+void execute_inst_BNE(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
+    reaction_t** returned_reaction, bool* exit_loop) {
+    // tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
+    uint64_t *_rs1 = (uint64_t *) rs1;
+    uint64_t *_rs2 = (uint64_t *) rs2;
+    if (*_rs1 != *_rs2) *pc = rs3;
+    else *pc += 1;
+    // tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -361,12 +417,32 @@ void execute_inst(lf_scheduler_t* scheduler, size_t worker_number, opcode_t op, 
             LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
             execute_inst_ADV2(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
+        case BEQ:
+            op_str = "BEQ";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
+            execute_inst_BEQ(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
+            break;
+        case BGE:
+            op_str = "BGE";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
+            execute_inst_BGE(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
+            break;
         case BIT:
             op_str = "BIT";
             LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
             execute_inst_BIT(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
-         case DU:  
+        case BLT:
+            op_str = "BLT";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
+            execute_inst_BLT(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
+            break;
+        case BNE:
+            op_str = "BNE";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
+            execute_inst_BNE(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
+            break;
+        case DU:  
             op_str = "DU";
             LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
             execute_inst_DU(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
@@ -442,11 +518,6 @@ void lf_sched_init(
         for (int i = 0; i < env->scheduler->num_reactor_self_instances; i++) {
             env->scheduler->reactor_self_instances[i]->tag.time = start_time;
             env->scheduler->reactor_self_instances[i]->tag.microstep = 0;
-        }
-
-        // Initialize time_offsets for each worker.
-        for (int i = 0; i < number_of_workers; i++) {
-            time_offsets[i] = start_time;
         }
 
         // Already initialized
