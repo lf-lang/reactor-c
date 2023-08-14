@@ -229,7 +229,6 @@ void execute_inst_BGE(lf_scheduler_t* scheduler, size_t worker_number, uint64_t 
     // tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
     uint64_t *_rs1 = (uint64_t *) rs1;
     uint64_t *_rs2 = (uint64_t *) rs2;
-    printf("*** rs1: %lld, rs2: %lld, rs3: %lld\n", *_rs1, *_rs2, rs3);
     if (*_rs1 >= *_rs2) *pc = rs3;
     else *pc += 1;
     // tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
