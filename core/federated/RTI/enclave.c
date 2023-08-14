@@ -103,6 +103,12 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
     // Find the tag of the earliest possible incoming message from
     // upstream enclaves.
     tag_t t_d = FOREVER_TAG;
+    // The tag of the earliest possible incoming message from a zero-delay connection.
+    // Delayed connections are not guarded from STP violations by the MLAA; this property is
+    // acceptable because delayed connections impose no deadlock risk and in some cases (startup)
+    // this property is necessary to avoid deadlocks. However, it requires some special care here
+    // when potentially sending a PTAG.
+    tag_t t_d_zero_delay = FOREVER_TAG;
     LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG,
                    FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
                    NEVER_TAG.time - start_time, 0);
@@ -130,6 +136,9 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
         if (lf_tag_compare(candidate, t_d) < 0) {
             t_d = candidate;
         }
+        if (lf_tag_compare(candidate, t_d_zero_delay) < 0 && e->upstream_delay[j] == NEVER) {
+            t_d_zero_delay = candidate;
+        }
     }
     free(visited);
 
@@ -152,17 +161,17 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
                 e->next_event.microstep);
         result.tag = e->next_event;
     } else if (
-        lf_tag_compare(t_d, e->next_event) == 0      // The enclave has something to do.
-        && lf_tag_compare(t_d, e->last_provisionally_granted) > 0  // The grant is not redundant.
-        && lf_tag_compare(t_d, e->last_granted) > 0  // The grant is not redundant.
+        lf_tag_compare(t_d_zero_delay, e->next_event) == 0      // The enclave has something to do.
+        && lf_tag_compare(t_d_zero_delay, e->last_provisionally_granted) > 0  // The grant is not redundant.
+        && lf_tag_compare(t_d_zero_delay, e->last_granted) > 0  // The grant is not redundant.
     ) {
         // Some upstream enclaves has an event that has the same tag as fed's next event, so we can only provisionally
         // grant a TAG (via a PTAG).
         LF_PRINT_LOG("Earliest upstream message time for fed/encl %d is " PRINTF_TAG
             " (adjusted by after delay). Granting provisional tag advance.",
             e->id,
-            t_d.time - start_time, t_d.microstep);
-        result.tag = t_d;
+            t_d_zero_delay.time - start_time, t_d_zero_delay.microstep);
+        result.tag = t_d_zero_delay;
         result.is_provisional = true;
     }
     return result;
