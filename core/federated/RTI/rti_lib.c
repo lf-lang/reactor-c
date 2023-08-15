@@ -758,7 +758,7 @@ void handle_timestamp(federate_t *my_fed) {
 
     // Processing the TIMESTAMP depends on whether it is the startup phase (all 
     // persistent federates joined) or not. 
-    if (_f_rti->num_feds_proposed_start < (_f_rti->number_of_enclaves - _f_rti->number_of_transient_federates)) {
+    if (_f_rti->phase == startup_phase) { // This is equivalent to: _f_rti->num_feds_proposed_start < (_f_rti->number_of_enclaves - _f_rti->number_of_transient_federates)
         if (timestamp > _f_rti->max_start_time) {
             _f_rti->max_start_time = timestamp;
         }
@@ -769,6 +769,7 @@ void handle_timestamp(federate_t *my_fed) {
         if (_f_rti->num_feds_proposed_start == (_f_rti->number_of_enclaves - _f_rti->number_of_transient_federates)) {
             // All federates have proposed a start time.
             lf_cond_broadcast(&received_start_times);
+            _f_rti->phase = execution_phase;
         } else {
             // Some federates have not yet proposed a start time.
             // wait for a notification.
@@ -777,6 +778,7 @@ void handle_timestamp(federate_t *my_fed) {
                 lf_cond_wait(&received_start_times);
             }
         }
+
         lf_mutex_unlock(&rti_mutex);
 
         // Add an offset to this start time to get everyone starting together.
@@ -785,7 +787,7 @@ void handle_timestamp(federate_t *my_fed) {
         // Send the start_time
         my_fed->effective_start_tag = (tag_t){.time = start_time, .microstep = 0u};
         send_start_tag(my_fed, start_time, my_fed->effective_start_tag);
-    } else {
+    } else if (_f_rti == execution_phase) {
         // This is rather a possible extreme corner case, where a transient sends its timestamp, and only
         // enters the if section after all persistents have joined.
         if (timestamp < start_time) {
@@ -1963,6 +1965,7 @@ void initialize_RTI(){
     _f_rti->num_feds_proposed_start = 0,
     _f_rti->all_federates_exited = false,
     _f_rti->federation_id = "Unidentified Federation",
+    _f_rti->phase = startup_phase,
     _f_rti->user_specified_port = 0,
     _f_rti->final_port_TCP = 0,
     _f_rti->socket_descriptor_TCP = -1,

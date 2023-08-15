@@ -85,6 +85,15 @@ typedef enum clock_sync_stat {
 } clock_sync_stat;
 
 /**
+ * The RTI life cycle phase. 
+ */
+typedef enum rti_phase {
+    startup_phase,
+    execution_phase,
+    shutdown_phase
+} rti_phase;
+
+/**
  * Structure that an RTI instance uses to keep track of its own and its
  * corresponding federates' state.
  * It is a special case of `enclave_rti_t` (declared in enclave.h). Inheritence
@@ -141,6 +150,9 @@ typedef struct federation_rti_t {
      * that each federate only joins its assigned federation.
      */
     const char* federation_id;
+
+    // RTI current phase 
+    rti_phase phase;
 
     /************* TCP server information *************/
     /** The desired port specified by the user on the command line. */
