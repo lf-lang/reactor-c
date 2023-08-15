@@ -36,11 +36,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * To compile this program, simply do this in this source directory:
  * ```
- *    make install
+ *    sudo make install
  * ```
- * This will place an executable program `trace_to_influxdb` in the directory `lingua-franca/bin`.
- * I find it convenient to have this directory in my `PATH` (this is also where the
- * `lfc` command-line Lingua Franca compiler is located).
+ * This will place an executable program `trace_to_influxdb` in the directory `usr/local/bin`.
  *
  * ## Setting up InfluxDB
  *
