@@ -1672,11 +1672,11 @@ void handle_message(int socket, int fed_id) {
 void stall_advance_level_federation(environment_t* env, size_t next_reaction_level) {
     LF_PRINT_DEBUG("Trying to acquire the global mutex.");
     lf_mutex_lock(&env->mutex);
-    LF_PRINT_DEBUG("Waiting on MLAA with next_reaction_level %d and MLAA %d.", next_reaction_level, max_level_allowed_to_advance);
+    LF_PRINT_DEBUG("Waiting on MLAA with next_reaction_level %zu and MLAA %d.", next_reaction_level, max_level_allowed_to_advance);
     while (((int) next_reaction_level) >= max_level_allowed_to_advance) {
         lf_cond_wait(&port_status_changed);
     };
-    LF_PRINT_DEBUG("Exiting wait with MLAA %d and next_reaction_level %d.", max_level_allowed_to_advance, next_reaction_level);
+    LF_PRINT_DEBUG("Exiting wait with MLAA %d and next_reaction_level %zu.", max_level_allowed_to_advance, next_reaction_level);
     lf_mutex_unlock(&env->mutex);
 }
 
