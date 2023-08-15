@@ -121,10 +121,8 @@ typedef enum
     receive_ADR_QR,
     receive_UNIDENTIFIED,
     // Transient
-    send_CuTAG_QR,
-    send_CuTAG_QR_RES,
-    receive_CuTAG_QR,
-    receive_CuTAG_QR_RES,
+    send_STOP,
+    receive_STOP,
     NUM_EVENT_TYPES
 } trace_event_t;
 
@@ -189,10 +187,8 @@ static const char *trace_event_names[] = {
     "Receiving ADR_QR",
     "Receiving UNIDENTIFIED",
     // Transient
-    "Sending CuTAG_QR",
-    "Sending CuTAG_QR_RES",
-    "Receiving CuTAG_QR",
-    "Receiving CuTAG_QR_RES"
+    "Sending STOP",
+    "Receiving STOP"
 };
 
 // FIXME: Target property should specify the capacity of the trace buffer.

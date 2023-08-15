@@ -696,47 +696,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_NEIGHBOR_STRUCTURE 24
 #define MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE 9
 
-/////////// Messages used by joining transient federates ///////////////
-//// Overview of the algorithm:
-////  When a transient federate joins the deferation after the startup phase (all
-////  persistent federates have joined and received, or all least are receiveing
-////  their start_time), its start_time is decided based on the current Tags
-////  of its upstream federates and its own physical join time. Current Tags are
-////  queried by the RTI, by sending MSG_TYPE_CURRENT_TAG_QUERY. Federates will 
-////  answer with MSG_TYPE_CURRENT_TAG_QUERY_RESPONSE.
-////  The start_time of the transient will be the the maximun of all received 
-////  MSG_TYPE_CURRENT_TAG_QUERY_RESPONSE and its physical join time. 
-////  This choice avoids deadline violations and enables hot join (without any 
-////  federate to halt its execution).
-
-/**
- * Byte identifying a query of a federate about its current Tag. This is useful
- * when deciding about the start_time of a joining transient federate.
- */
-#define MSG_TYPE_CURRENT_TAG_QUERY 30
-
-/**
- * Byte identifying a response to a MSG_TYPE_CURRENT_TAG_QUERY. This is useful
- * when deciding about the start_time of a joining transient federate.
- */
-#define MSG_TYPE_CURRENT_TAG_QUERY_RESPONSE 31
-
-/**
- * Byte identifying a request sent by the RTI to upstream and downstream federates
- * of a joining transient. It asks them to halt reactions at the given tag. This
- * is useful for the synchronous logical start a joining transient federate.
- */
-#define MSG_TYPE_HALT 32
-
-/**
- * Byte identifying a request sent by the RTI to upstream and downstream federates
- * of a joining transient to resume reactions at the tag sent within MSG_TYPE_HALT.
- * This is useful for the synchronous logical start a joining transient federate.
- */
-#define MSG_TYPE_RESUME 33
-
-/////////// End of messages used by joining transient federates ///////////////
-
 /////////////////////////////////////////////
 //// Rejection codes
 

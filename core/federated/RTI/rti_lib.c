@@ -530,9 +530,9 @@ void _lf_rti_broadcast_stop_time_to_federates_locked() {
     // Iterate over federates and send each the message.
     for (int i = 0; i < _f_rti->number_of_enclaves; i++) {
         federate_t *fed = _f_rti->enclaves[i];
-        // if (fed->enclave.state == NOT_CONNECTED) {
-        //     continue;
-        // }
+        if (fed->enclave.state == NOT_CONNECTED) {
+            continue;
+        }
         if (lf_tag_compare(fed->enclave.next_event, _f_rti->max_stop_tag) >= 0) {
             // Need the next_event to be no greater than the stop tag.
             fed->enclave.next_event = _f_rti->max_stop_tag;
@@ -1106,9 +1106,6 @@ void* federate_thread_TCP(void* fed) {
             case MSG_TYPE_TIMESTAMP:
                 handle_timestamp(my_fed);
                 break;
-            // case MSG_TYPE_CURRENT_TAG_QUERY_RESPONSE:
-            //     handle_current_tag_query_response(my_fed);
-            //     break;
             case MSG_TYPE_ADDRESS_QUERY:
                 handle_address_query(my_fed->enclave.id);
                 break;
@@ -1151,7 +1148,6 @@ void* federate_thread_TCP(void* fed) {
     close(my_fed->socket); //  from unistd.h
 
     // Manual clean, in case of a transient federate 
-    // FIXME: Should free_in_transit_message_q be called in case of persistent federates as well?
     if (my_fed->is_transient) {
         free_in_transit_message_q(my_fed->in_transit_message_tags);
         lf_print("RTI: Transient Federate %d thread exited.", my_fed->enclave.id);
@@ -1631,9 +1627,6 @@ void initialize_federate(federate_t* fed, uint16_t id) {
     fed->server_port = -1;
     fed->is_transient = true;
     fed->effective_start_tag = NEVER_TAG;
-    fed->num_of_conn_federates = 0;
-    fed->num_of_conn_federates_sent_net = 0;
-    fed->start_time_is_set = false;
     fed->pending_grant = NEVER_TAG;
 }
 
@@ -2060,9 +2053,6 @@ void reset_transient_federate(federate_t* fed) {
     fed->requested_stop = false;
     fed->is_transient = true;
     fed->effective_start_tag = NEVER_TAG;
-    fed->num_of_conn_federates = 0;
-    fed->num_of_conn_federates_sent_net = 0;
-    fed->start_time_is_set = false;
     fed->pending_grant = NEVER_TAG;
 }
 

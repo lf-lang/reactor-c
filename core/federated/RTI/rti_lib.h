@@ -69,13 +69,6 @@ typedef struct federate_t {
                                 // server of the federate.
     bool is_transient;      // Indicates whether the federate is transient or persistent.
     tag_t effective_start_tag; // Records the start time of the federate, which is mainly useful for transient federates  
-    int num_of_conn_federates; // Records the total number of connected federates among the upstream and 
-                            // downstream federates. This is used only in the case of transient federate, for 
-                            // computing the start time.
-    int num_of_conn_federates_sent_net; // Records the total number of connected federates
-                            // that sent responded to the next event tag query form the RTI. 
-    bool start_time_is_set; // Boolean variable used to signal that all connected federates
-                            // have sent a response to next event tag query from the RTI.
     tag_t pending_grant;    // The pending tag advance grant
     tag_t pending_provisional_grant;        // The pending provisional tag advance grant
     lf_thread_t pending_grant_thread_id;    // The ID of the thread handling the pending tag grant 
