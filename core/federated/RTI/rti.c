@@ -58,6 +58,11 @@ extern enclave_rti_t * _e_rti;
 extern federation_rti_t* _f_rti;
 
 /**
+ * Federate instance to support hot swap
+ */
+extern federate_t * hot_swap_federate;
+
+/**
  * The tracing mechanism uses the number of workers variable `_lf_number_of_workers`.
  * For RTI tracing, the number of workers is set as the number of federates.
  */
@@ -120,6 +125,7 @@ int main(int argc, const char* argv[]) {
 
     assert(_f_rti->number_of_enclaves < UINT16_MAX);
     assert(_f_rti->number_of_transient_federates < UINT16_MAX);
+
     // Allocate memory for the federates
     _f_rti->enclaves = (federate_t**)calloc(_f_rti->number_of_enclaves, sizeof(federate_t*));
     for (uint16_t i = 0; i < _f_rti->number_of_enclaves; i++) {
@@ -129,6 +135,12 @@ int main(int argc, const char* argv[]) {
 
     // Initialize the RTI enclaves
     _e_rti = (enclave_rti_t*)_f_rti;
+
+    // Allocate memory for hot_swap_federate, if there are transient federates
+    if (_f_rti->number_of_transient_federates > 0) {
+        hot_swap_federate = (federate_t *)malloc(sizeof(federate_t));
+        initialize_federate(hot_swap_federate, -1);
+    }
 
     int socket_descriptor = start_rti_server(_f_rti->user_specified_port);
     wait_for_federates(socket_descriptor);

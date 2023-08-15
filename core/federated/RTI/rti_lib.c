@@ -34,6 +34,11 @@ extern instant_t start_time;
  */
 federation_rti_t *_f_rti;
 
+/**
+ * Referance to the ederate instance to support hot swap
+ */
+federate_t * hot_swap_federate;
+
 lf_mutex_t rti_mutex;
 lf_cond_t received_start_times;
 lf_cond_t sent_start_time;
