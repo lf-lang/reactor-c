@@ -792,17 +792,29 @@ void handle_timestamp(federate_t *my_fed) {
         // Send the start_time
         my_fed->effective_start_tag = (tag_t){.time = start_time, .microstep = 0u};
         send_start_tag(my_fed, start_time, my_fed->effective_start_tag);
-    } else if (_f_rti == execution_phase) {
+    } else if (_f_rti->phase == execution_phase) {
+        // A transient has joined after the startup phase
+        // At this point, we already hold the mutex
+
         // This is rather a possible extreme corner case, where a transient sends its timestamp, and only
         // enters the if section after all persistents have joined.
         if (timestamp < start_time) {
             timestamp = start_time;
         }
 
+        //// Algorithm for computing the effective_start_time of a joining transient
+        // The effective_start_time will be the max among all the following tags:
+        //  - At tag: (joining time, 0 microstep)
+        //  - The latest completed logical tag + 1 microstep
+        //  - The latest granted tag + 1 microstep, of every downstream federate
+        //  - The latest provisionnaly granted tag + 1 microstep, of every downstream federate
+
         my_fed->effective_start_tag = (tag_t){.time = timestamp, .microstep = 0u};
 
-        // A transient has joined after the startup phase
-        // At this point, we already hold the mutex
+        if (lf_tag_compare(my_fed->enclave.completed, my_fed->effective_start_tag) > 0) {
+            my_fed->effective_start_tag = my_fed->enclave.completed;
+            my_fed->effective_start_tag.microstep++;
+        }
 
         // Iterate over the downstream federates 
         for (int j = 0; j < my_fed->enclave.num_downstream; j++) {
@@ -816,6 +828,12 @@ void handle_timestamp(federate_t *my_fed) {
             // Get the max over the TAG of the downstreams
             if (lf_tag_compare(downstream->enclave.last_granted, my_fed->effective_start_tag) > 0) {
                 my_fed->effective_start_tag =  downstream->enclave.last_granted;
+                my_fed->effective_start_tag.microstep++;
+            }
+
+            // Get the max over the PTAG of the downstreams
+            if (lf_tag_compare(downstream->enclave.last_provisionally_granted, my_fed->effective_start_tag) > 0) {
+                my_fed->effective_start_tag =  downstream->enclave.last_provisionally_granted;
                 my_fed->effective_start_tag.microstep++;
             }
         }
