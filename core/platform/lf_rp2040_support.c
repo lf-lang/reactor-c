@@ -214,6 +214,94 @@ int _lf_unthreaded_notify_of_event() {
 
 #ifdef LF_THREADED
 #error "Threading for baremetal RP2040 not supported"
+
+/**
+ * @brief Get the number of cores on the host machine.
+ */
+int lf_available_cores() {
+    return 2;
+}
+
+/**
+ * Create a new thread, starting with execution of lf_thread
+ * getting passed arguments. The new handle is stored in thread_id.
+ *
+ * @return 0 on success, platform-specific error number otherwise.
+ *
+ */
+int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments);
+
+/**
+ * Make calling thread wait for termination of the thread.  The
+ * exit status of the thread is stored in thread_return if thread_return
+ * is not NULL.
+ * @param thread The thread.
+ * @param thread_return A pointer to where to store the exit status of the thread.
+ *
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_thread_join(lf_thread_t thread, void** thread_return);
+
+/**
+ * Initialize a mutex.
+ *
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_mutex_init(lf_mutex_t* mutex);
+  
+/**
+ * Lock a mutex.
+ *
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_mutex_lock(lf_mutex_t* mutex);
+
+/**
+ * Unlock a mutex.
+ *
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_mutex_unlock(lf_mutex_t* mutex);
+
+/**
+ * Initialize a conditional variable.
+ *
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex);
+
+/**
+ * Wake up all threads waiting for condition variable cond.
+ *
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_cond_broadcast(lf_cond_t* cond);
+
+/**
+ * Wake up one thread waiting for condition variable cond.
+ *
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_cond_signal(lf_cond_t* cond);
+
+/**
+ * Wait for condition variable "cond" to be signaled or broadcast.
+ * "mutex" is assumed to be locked before.
+ *
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_cond_wait(lf_cond_t* cond);
+
+/**
+ * Block current thread on the condition variable until condition variable
+ * pointed by "cond" is signaled or time pointed by "absolute_time_ns" in
+ * nanoseconds is reached.
+ *
+ * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
+ *  number otherwise.
+ */
+int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
+
 #endif //LF_THREADED
 
 #endif // PLATFORM_RP2040
