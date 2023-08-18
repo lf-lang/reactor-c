@@ -587,10 +587,17 @@ void initialize_RTI();
 void* connect_to_transient_federates_thread();
 
 /** 
- * Reset the federate with the specified ID. The federate has to be transient.
+ * Reset the federate. The federate has to be transient.
  * @param fed A pointer to the federate
  */
 void reset_transient_federate(federate_t* fed);
+
+/**
+ * @brief a request for immediate stop to the federate
+ * 
+ * @param fed: the deferate to stop
+ */
+void send_stop(federate_t * fed);
 
 /**
  * @brief Thread that sleeps for a period of time, and then wakes up to check if
