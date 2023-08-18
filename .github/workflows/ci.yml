@@ -22,6 +22,9 @@ jobs:
   build-rti:
     uses: lf-lang/reactor-c/.github/workflows/build-rti.yml@main
 
+  build-trace-tools:
+    uses: lf-lang/reactor-c/.github/workflows/build-trace-tools.yml@move-tracing-utils
+
   fetch-lf:
     uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@master
     with:
