@@ -26,6 +26,7 @@ css_style = ' <style> \
     .TAG { stroke: #08a578; fill: #08a578} \
     .TIMESTAMP { stroke: grey; fill: grey } \
     .FED_ID {stroke: #80DD99; fill: #80DD99 } \
+    .STOP {stroke: #d0b7eb; fill: #d0b7eb} \
     .ADV {stroke-linecap="round" ; stroke: "red" ; fill: "red"} \
     text { \
         font-size: smaller; \
@@ -53,7 +54,7 @@ parser.add_argument('-f','--federates', nargs='+', action='append',
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
 # Set of tagged events (messages)
-non_tagged_messages = {'FED_ID', 'ACK', 'REJECT', 'ADR_RQ', 'ADR_AD', 'MSG', 'P2P_MSG'}
+non_tagged_messages = {'FED_ID', 'ACK', 'REJECT', 'ADR_RQ', 'ADR_AD', 'MSG', 'P2P_MSG', 'STOP'}
 
 def load_and_process_csv_file(csv_file) :
     '''
@@ -124,11 +125,16 @@ if __name__ == '__main__':
             if (not fed_df.empty):
                 # Get the federate id number
                 fed_id = fed_df.iloc[-1]['self_id']
-                # Add to the list of sequence diagram actors and add the name
-                actors.append(fed_id)
-                actors_names[fed_id] = Path(fed_trace).stem
-                # Derive the x coordinate of the actor
-                x_coor[fed_id] = (padding * 2) + (spacing * (len(actors) - 1))
+                ### Check that the federate id have not been entrered yet.
+                ### This is particlurly useful for transient actors, when
+                ### they leave and join several times
+                if (actors.count(fed_id) == 0): 
+                    # Add to the list of sequence diagram actors and add the name
+                    actors.append(fed_id)
+                    actors_names[fed_id] = Path(fed_trace).stem
+                    # Derive the x coordinate of the actor
+                    x_coor[fed_id] = (padding * 2) + (spacing * (len(actors)-1))
+                    
                 fed_df['x1'] = x_coor[fed_id]
                 trace_df = pd.concat([trace_df, fed_df])
                 fed_df = fed_df[0:0]
@@ -292,7 +298,7 @@ if __name__ == '__main__':
             # FIXME: Using microseconds is hardwired here.
             physical_time = f'{int(row["physical_time"]/1000):,}'
 
-            if (row['event'] in {'FED_ID', 'ACK', 'REJECT', 'ADR_RQ', 'ADR_AD', 'MSG', 'P2P_MSG'}):
+            if (row['event'] in {'FED_ID', 'ACK', 'REJECT', 'ADR_RQ', 'ADR_AD', 'MSG', 'P2P_MSG', 'STOP'}): 
                 label = row['event']
             else:
                 label = row['event'] + '(' + f'{int(row["logical_time"]):,}' + ', ' + str(row['microstep']) + ')'
