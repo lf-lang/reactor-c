@@ -11,11 +11,9 @@ jobs:
     runs-on: ${{ matrix.platform }}
 
     steps:
+      - name: Check out reactor-c repository
         uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-          submodules: recursive
-      - name: Run make
+      - name: Building tracing utils
         working-directory: ./util/tracing
         run: make
         shell: bash
