@@ -1,7 +1,8 @@
 # Makefile for utilities that convert Lingua Franca trace files
 # into other formats.
 # @author: Edward A. Lee
-REACTOR_C=../../
+REACTOR_C=../..
+CURRENT_PATH=$(shell pwd)
 CC=gcc
 CFLAGS=	-I$(REACTOR_C)/include/core/ \
 		-I$(REACTOR_C)/include/core/modal_models \
@@ -30,7 +31,7 @@ install: trace_to_csv trace_to_chrome trace_to_influxdb
 	mv trace_to_csv $(INSTALL_PREFIX)
 	mv trace_to_chrome $(INSTALL_PREFIX)
 	mv trace_to_influxdb $(INSTALL_PREFIX)
-	ln -f -s launch-fedsd.sh $(INSTALL_PREFIX)/fedsd
+	ln -f -s $(CURRENT_PATH)/launch-fedsd.sh $(INSTALL_PREFIX)/fedsd
 	chmod +x launch-fedsd.sh
 	
 clean:
