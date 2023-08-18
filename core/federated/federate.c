@@ -2245,6 +2245,21 @@ void handle_stop_granted_message() {
 }
 
 /**
+ * Handle a MSG_TYPE_STOP message from the RTI.
+ *
+ * This function simply calls lf_stop().
+ */
+void handle_stop() {
+    // Trace the event when tracing is enabled
+    tracepoint_federate_from_rti(_fed.trace, receive_STOP, _lf_my_fed_id, NULL);
+
+    lf_print("Received from RTI a MSG_TYPE_STOP at physical time " PRINTF_TIME ".",
+            lf_time_physical());
+
+    lf_stop();
+}
+
+/**
  * Handle a MSG_TYPE_STOP_REQUEST message from the RTI.
  */
 void handle_stop_request_message() {
@@ -2358,7 +2373,7 @@ void terminate_execution(environment_t* env) {
         tracepoint_federate_to_rti(_fed.trace, send_RESIGN, _lf_my_fed_id, &tag);
         ssize_t written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, &(buffer[0]));
         if (written == bytes_to_write) {
-            LF_PRINT_LOG("Resigned.");
+            lf_print("Resigned %d", _lf_my_fed_id);
         }
     }
     lf_mutex_unlock(&outbound_socket_mutex);
@@ -2535,6 +2550,9 @@ void* listen_to_rti_TCP(void* args) {
                 break;
             case MSG_TYPE_STOP_GRANTED:
                 handle_stop_granted_message();
+                break;
+            case MSG_TYPE_STOP:
+                handle_stop();
                 break;
             case MSG_TYPE_PORT_ABSENT:
                 handle_port_absent_message(_fed.socket_TCP_RTI, -1);
@@ -2881,7 +2899,8 @@ void lf_stop() {
         new_stop_tag.microstep = env[i].current_tag.microstep + 1;
         _lf_set_stop_tag(&env[i], new_stop_tag);
     }
-    // termination();
+
+    LF_PRINT_LOG("Federate is stopping.");
 }
 
 char* lf_get_federation_id() {

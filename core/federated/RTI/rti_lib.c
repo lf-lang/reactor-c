@@ -2004,6 +2004,21 @@ void initialize_RTI(){
 
 //////////////////////////////////////////////////////////
 
+void send_stop(federate_t * fed) {
+    // Reply with a stop granted to all federates
+    unsigned char outgoing_buffer[MSG_TYPE_STOP_LENGTH];
+    outgoing_buffer[0] = MSG_TYPE_STOP;
+    lf_print("RTI sent MSG_TYPE_STOP to federate %d.", fed->enclave.id);
+
+    if (_f_rti->tracing_enabled) {
+        tracepoint_rti_to_federate(_f_rti->trace, send_STOP, fed->enclave.id, NULL);
+    }
+    write_to_socket_errexit(fed->socket, MSG_TYPE_STOP_LENGTH, outgoing_buffer,
+        "RTI failed to send MSG_TYPE_STOP message to federate %d.", fed->enclave.id);
+
+    LF_PRINT_LOG("RTI sent MSG_TYPE_STOP to federate %d.", fed->enclave.id);
+}
+
 void* connect_to_transient_federates_thread() {
     // This loop will continue to accept connections of transient federates, as
     // soon as there is room

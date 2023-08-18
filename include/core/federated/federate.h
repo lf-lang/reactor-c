@@ -512,4 +512,11 @@ instant_t lf_get_effective_start_time();
 /** @brief Returns the start time of the federate. */
 instant_t lf_get_start_time();
 
+/**
+ * Handle a MSG_TYPE_STOP message from the RTI.
+ *
+ * This function simply calls lf_stop()
+ */
+void handle_stop();
+
 #endif // FEDERATE_H

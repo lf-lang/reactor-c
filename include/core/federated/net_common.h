@@ -696,6 +696,16 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_NEIGHBOR_STRUCTURE 24
 #define MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE 9
 
+/**
+ * Byte sent by the RTI ordering the federate to stop. Upon receiving the meaasage,
+ * the federate will call lf_stop(), which will make him resign at its current_tag
+ * plus 1 microstep. 
+ * The next 8 bytes will be the time at which the federates will stop. *
+ * The next 4 bytes will be the microstep at which the federates will stop..
+ */
+#define MSG_TYPE_STOP 30
+#define MSG_TYPE_STOP_LENGTH 1
+
 /////////////////////////////////////////////
 //// Rejection codes
 
