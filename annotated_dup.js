@@ -1,5 +1,7 @@
 var annotated_dup =
 [
+    [ "_influx_client_t", "da/d5e/struct__influx__client__t.html", "da/d5e/struct__influx__client__t" ],
+    [ "_influx_v2_client_t", "da/d55/struct__influx__v2__client__t.html", "da/d55/struct__influx__v2__client__t" ],
     [ "_lf_scheduler_thread_info_t", "db/d04/struct__lf__scheduler__thread__info__t.html", "db/d04/struct__lf__scheduler__thread__info__t" ],
     [ "_lf_sensor_message_t", "d7/dd0/struct__lf__sensor__message__t.html", "d7/dd0/struct__lf__sensor__message__t" ],
     [ "_lf_tag_advancement_barrier", "d7/dc7/struct__lf__tag__advancement__barrier.html", "d7/dc7/struct__lf__tag__advancement__barrier" ],
@@ -41,12 +43,15 @@ var annotated_dup =
     [ "lf_waveform_t", "d7/dc9/structlf__waveform__t.html", "d7/dc9/structlf__waveform__t" ],
     [ "mixed_radix_int_t", "d6/da6/structmixed__radix__int__t.html", "d6/da6/structmixed__radix__int__t" ],
     [ "note", "da/d62/structnote.html", "da/d62/structnote" ],
+    [ "open_file_t", "db/de2/structopen__file__t.html", "db/de2/structopen__file__t" ],
     [ "pqueue_t", "d5/d38/structpqueue__t.html", "d5/d38/structpqueue__t" ],
     [ "py_tag_t", "d2/d92/structpy__tag__t.html", "d2/d92/structpy__tag__t" ],
+    [ "reaction_stats_t", "df/da2/structreaction__stats__t.html", "df/da2/structreaction__stats__t" ],
     [ "reaction_t", "d2/d35/structreaction__t.html", "d2/d35/structreaction__t" ],
     [ "sched_params_t", "dc/da2/structsched__params__t.html", "dc/da2/structsched__params__t" ],
     [ "self_base_t", "d6/d8b/structself__base__t.html", "d6/d8b/structself__base__t" ],
     [ "socket_stat_t", "d9/d67/structsocket__stat__t.html", "d9/d67/structsocket__stat__t" ],
+    [ "summary_stats_t", "dc/dcc/structsummary__stats__t.html", "dc/dcc/structsummary__stats__t" ],
     [ "tag_advance_grant_t", "d7/d69/structtag__advance__grant__t.html", "d7/d69/structtag__advance__grant__t" ],
     [ "tag_t", "db/df7/structtag__t.html", "db/df7/structtag__t" ],
     [ "timespec", "da/d1c/structtimespec.html", "da/d1c/structtimespec" ],

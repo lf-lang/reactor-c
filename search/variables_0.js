@@ -27,5 +27,6 @@ var searchData=
   ['_5flf_5ftime_5ftest_5fphysical_5fclock_5foffset_24',['_lf_time_test_physical_clock_offset',['../d4/db3/tag_8c.html#af4f4076229307c5b0a64a250b4fac0bd',1,'tag.c']]],
   ['_5flf_5ftokens_5fallocated_5fin_5freactions_25',['_lf_tokens_allocated_in_reactions',['../d4/d37/lf__token_8c.html#ac77b531bdbb49e0c716ba513a66538cb',1,'_lf_tokens_allocated_in_reactions:&#160;lf_token.c'],['../d2/dff/lf__token_8h.html#ac77b531bdbb49e0c716ba513a66538cb',1,'_lf_tokens_allocated_in_reactions:&#160;lf_token.c']]],
   ['_5flf_5fwatchdog_5fcount_26',['_lf_watchdog_count',['../d6/d88/watchdog_8c.html#a880e557a82e4187d4db968b54ab5c1f6',1,'watchdog.c']]],
-  ['_5flf_5fwatchdogs_27',['_lf_watchdogs',['../d6/d88/watchdog_8c.html#aeaa7413bd0991c342f07dd55163d6c3d',1,'watchdog.c']]]
+  ['_5flf_5fwatchdogs_27',['_lf_watchdogs',['../d6/d88/watchdog_8c.html#aeaa7413bd0991c342f07dd55163d6c3d',1,'watchdog.c']]],
+  ['_5fopen_5ffiles_28',['_open_files',['../d5/df4/trace__util_8c.html#ae013e47b5c905db9ba2cf198efbf69e7',1,'trace_util.c']]]
 ];

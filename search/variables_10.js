@@ -1,7 +1,7 @@
 var searchData=
 [
   ['radixes_0',['radixes',['../d6/da6/structmixed__radix__int__t.html#a867a3d65a976b2d4faab1b0c4129592b',1,'mixed_radix_int_t']]],
-  ['reactions_1',['reactions',['../d6/d13/structtrigger__t.html#a3674777164e73e63388cdfe6c5d876a3',1,'trigger_t']]],
+  ['reactions_1',['reactions',['../d6/d13/structtrigger__t.html#a3674777164e73e63388cdfe6c5d876a3',1,'trigger_t::reactions'],['../dc/dcc/structsummary__stats__t.html#a581df2e22c985e5c72fcb2e5e37cced7',1,'summary_stats_t::reactions']]],
   ['ready_5freactions_2',['ready_reactions',['../db/d04/struct__lf__scheduler__thread__info__t.html#a9086a82f4081fc66707c078fbbda03d0',1,'_lf_scheduler_thread_info_t']]],
   ['received_5fstart_5ftimes_3',['received_start_times',['../d1/d01/rti_8c.html#aba3e256a278f326c6101984491262800',1,'received_start_times:&#160;rti_lib.c'],['../de/d0d/rti__lib_8c.html#aba3e256a278f326c6101984491262800',1,'received_start_times:&#160;rti_lib.c']]],
   ['received_5fstop_5frequest_5ffrom_5frti_4',['received_stop_request_from_rti',['../d6/d7a/structfederate__instance__t.html#ae9ecde30fae3a2487757a7bbb33e918e',1,'federate_instance_t']]],
@@ -15,10 +15,11 @@ var searchData=
   ['reset_5freactions_5fsize_12',['reset_reactions_size',['../d2/d01/structenvironment__t.html#a4e29a0f3ce76dc8c51f5d0cac1de2651',1,'environment_t']]],
   ['ret_13',['ret',['../d6/df3/hashmap_8h.html#a339672ff94e6199019102f50d317c3d7',1,'hashmap.h']]],
   ['riff_14',['riff',['../d9/dad/structlf__wav__t.html#a4dfe6fe77717d001176da92f396b85d9',1,'lf_wav_t']]],
-  ['rti_5fhost_15',['rti_host',['../d5/d4f/structfederation__metadata__t.html#a8e66865ef3fa328713e63c4a1666c69a',1,'federation_metadata_t']]],
-  ['rti_5fmutex_16',['rti_mutex',['../de/d37/enclave_8c.html#a900138c50464733b007a7cec4bb050ca',1,'rti_mutex:&#160;rti_lib.c'],['../d1/d01/rti_8c.html#a900138c50464733b007a7cec4bb050ca',1,'rti_mutex:&#160;rti_lib.c'],['../de/d0d/rti__lib_8c.html#a900138c50464733b007a7cec4bb050ca',1,'rti_mutex:&#160;rti_lib.c']]],
-  ['rti_5fport_17',['rti_port',['../d5/d4f/structfederation__metadata__t.html#af75d81e35fab4ed398df21bd48a50b52',1,'federation_metadata_t']]],
-  ['rti_5fsocket_5flistener_18',['RTI_socket_listener',['../d6/d7a/structfederate__instance__t.html#a5b6b4b5912a7bb7df1c8987f38e12004',1,'federate_instance_t']]],
-  ['rti_5ftrace_5ffile_5fname_19',['rti_trace_file_name',['../d1/d01/rti_8c.html#ab51bbf9201f21d31ea14e63cf880c09a',1,'rti.c']]],
-  ['rti_5fuser_20',['rti_user',['../d5/d4f/structfederation__metadata__t.html#acb5d86838516db68d87a30babcce36dd',1,'federation_metadata_t']]]
+  ['rti_5fdf_15',['rti_df',['../d6/d1e/namespacefedsd.html#a73a641b9adb7295aa8fa04ed27297e99',1,'fedsd']]],
+  ['rti_5fhost_16',['rti_host',['../d5/d4f/structfederation__metadata__t.html#a8e66865ef3fa328713e63c4a1666c69a',1,'federation_metadata_t']]],
+  ['rti_5fmutex_17',['rti_mutex',['../de/d37/enclave_8c.html#a900138c50464733b007a7cec4bb050ca',1,'rti_mutex:&#160;rti_lib.c'],['../d1/d01/rti_8c.html#a900138c50464733b007a7cec4bb050ca',1,'rti_mutex:&#160;rti_lib.c'],['../de/d0d/rti__lib_8c.html#a900138c50464733b007a7cec4bb050ca',1,'rti_mutex:&#160;rti_lib.c']]],
+  ['rti_5fport_18',['rti_port',['../d5/d4f/structfederation__metadata__t.html#af75d81e35fab4ed398df21bd48a50b52',1,'federation_metadata_t']]],
+  ['rti_5fsocket_5flistener_19',['RTI_socket_listener',['../d6/d7a/structfederate__instance__t.html#a5b6b4b5912a7bb7df1c8987f38e12004',1,'federate_instance_t']]],
+  ['rti_5ftrace_5ffile_5fname_20',['rti_trace_file_name',['../d1/d01/rti_8c.html#ab51bbf9201f21d31ea14e63cf880c09a',1,'rti.c']]],
+  ['rti_5fuser_21',['rti_user',['../d5/d4f/structfederation__metadata__t.html#acb5d86838516db68d87a30babcce36dd',1,'federation_metadata_t']]]
 ];

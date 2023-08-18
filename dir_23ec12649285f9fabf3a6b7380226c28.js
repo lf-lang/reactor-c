@@ -1,5 +1,6 @@
 var dir_23ec12649285f9fabf3a6b7380226c28 =
 [
+    [ "tracing", "dir_8a13d95c10a051823e0fccf80a54af26.html", "dir_8a13d95c10a051823e0fccf80a54af26" ],
     [ "audio_loop.h", "d1/dcb/audio__loop_8h.html", "d1/dcb/audio__loop_8h" ],
     [ "audio_loop_linux.c", "da/d0e/audio__loop__linux_8c.html", "da/d0e/audio__loop__linux_8c" ],
     [ "audio_loop_mac.c", "d5/daa/audio__loop__mac_8c.html", "d5/daa/audio__loop__mac_8c" ],

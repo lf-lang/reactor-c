@@ -45,7 +45,22 @@ var NAVTREE =
       ] ]
     ] ],
     [ "/lib/C/util/", "dc/d6e/md_util_2_r_e_a_d_m_e.html", null ],
+    [ "util/tracing", "d2/da5/md_util_2tracing_2_r_e_a_d_m_e.html", [
+      [ "Installing", "d2/da5/md_util_2tracing_2_r_e_a_d_m_e.html#autotoc_md34", null ]
+    ] ],
+    [ "Trace sequence diagram visualizer", "dd/d9b/md_util_2tracing_2visualization_2_r_e_a_d_m_e.html", [
+      [ "Installing", "dd/d9b/md_util_2tracing_2visualization_2_r_e_a_d_m_e.html#autotoc_md39", null ],
+      [ "Running", "dd/d9b/md_util_2tracing_2visualization_2_r_e_a_d_m_e.html#autotoc_md40", null ]
+    ] ],
     [ "Deprecated List", "da/d58/deprecated.html", null ],
+    [ "Namespaces", "namespaces.html", [
+      [ "Namespace List", "namespaces.html", "namespaces_dup" ],
+      [ "Namespace Members", "namespacemembers.html", [
+        [ "All", "namespacemembers.html", null ],
+        [ "Functions", "namespacemembers_func.html", null ],
+        [ "Variables", "namespacemembers_vars.html", null ]
+      ] ]
+    ] ],
     [ "Data Structures", "annotated.html", [
       [ "Data Structures", "annotated.html", "annotated_dup" ],
       [ "Data Structure Index", "classes.html", null ],
@@ -72,13 +87,14 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"d2/dcd/tag_8h.html#a2874e6caf9a4e0452441e9edeca046dc",
-"d4/db3/tag_8c.html#a2d07c34cb48cd21da0a0c307126d7fb5a3bec17b3914ed04bcaed9a1b52fcda5e",
-"d6/df3/hashmap_8h.html#a1bce06ff7731b972a99ac26963078731",
-"d9/d16/hashset__itr_8c.html#a5350d2cd6a1be22846c5541816fb857f",
-"da/db5/pqueue_8c.html#a5e022cf1bf56de20b3cad2969cebec8e",
-"dc/d85/reactor_8h.html#afa9a756e5a6685531141bb4bfdc1f327",
-"de/d6b/structtoken__template__t.html"
+"d2/dcd/tag_8h.html#a183109e082a793ae85cec00d72e70d4b",
+"d4/db3/tag_8c.html#a2d07c34cb48cd21da0a0c307126d7fb5",
+"d6/d7a/structfederate__instance__t.html#a05a9586ad89b82d0bf5f969a194ef69c",
+"d8/d3c/util_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd",
+"d9/dc7/trace__util_8h.html#ac8588a40ed5942245242363f13a698f5",
+"db/dc8/pythontarget_8h.html#a9de058b2babd69a4ed9046fccc6e4f47",
+"dd/d37/reactor__common_8c.html#a61d27ca2e7a856120bff72150fdec9a4",
+"de/dcd/influxdb_8h.html#a49f65e2120cd077ee205fefbcd5bdc50"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
