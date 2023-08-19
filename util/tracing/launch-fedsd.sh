@@ -53,6 +53,27 @@ else
     fatal_error "Unable to determine absolute path to $0."
 fi
 
+# Check if the INSTALL_PREFIX argument is provided
+if [ -n "$1" ] && [[ "$1" == INSTALL_PREFIX=* ]]; then
+    INSTALL_PREFIX="${1#INSTALL_PREFIX=}"
+    shift
+fi
+
+# Echo INSTALL_PREFIX if provided
+if [ -z "$INSTALL_PREFIX" ]; then
+    INSTALL_PREFIX="/usr/local/bin/"
+fi
+
+trace_to_csv=$INSTALL_PREFIX'trace_to_csv'
+
+# Check if the provided path exists and trace_to_csv can be called
+if [ -f "$trace_to_csv" ]; then
+    echo "$trace_to_csv found."
+else
+    echo "Error: $trace_to_csv not found. Abort!"
+    exit 1
+fi
+
 # Get the lft files
 lft_files_list=$@
 
@@ -75,7 +96,7 @@ rti_csv_file=''
 for each_lft_file in $lft_files_list
     do
         # Tranform to csv
-        trace_to_csv $each_lft_file
+        $trace_to_csv $each_lft_file
         # Get the file name
         csv=${each_lft_file%.*}
         if [ $csv == 'rti' ]
