@@ -30,6 +30,10 @@ Once the federation stopped executing, run `fedsd` on all generated `.lft` files
 ```
 $ fedsd *.lft
 ```
+In case `trace_to_csv` executable is in a different location, other than `/usr/local/bin/`, then use the `INSTALL_PREFIX` flag, as follows:
+```
+fedsd INSTALL_PREFIX=~/.local/bin/ *.lft 
+```
 
 The output is an html file named `trace_svg.html` (in the current directory) that contains the sequence of interactions
 between the federates and the RTI.
