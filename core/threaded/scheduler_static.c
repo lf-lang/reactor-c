@@ -55,9 +55,14 @@ extern instant_t start_time;
 
 // Global variables defined in schedule.c:
 extern const inst_t* static_schedules[];
-extern volatile uint32_t counters[];
-extern volatile instant_t time_offsets[];
+extern volatile uint64_t timeout;
 extern const size_t num_counters;
+extern volatile uint64_t time_offset;
+extern volatile uint64_t offset_inc;
+extern const uint64_t zero;
+extern volatile uint32_t counters[];
+extern volatile uint64_t return_addr[];
+extern volatile uint64_t binary_sema[];
 
 /////////////////// Scheduler Private API /////////////////////////
 
@@ -135,6 +140,20 @@ void _lf_sched_wait_for_work(
 }
 
 /**
+ * @brief The implementation of the ADD instruction
+ */
+void execute_inst_ADD(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
+    reaction_t** returned_reaction, bool* exit_loop) {
+    // tracepoint_static_scheduler_ADDI_starts(scheduler->env->trace, worker_number, (int) *pc);
+    uint64_t *dst = (uint64_t *) rs1;
+    uint64_t *src = (uint64_t *) rs2;
+    uint64_t *src2 = (uint64_t *) rs3;
+    *dst = *src + *src2;
+    *pc += 1; // Increment pc.
+    // tracepoint_static_scheduler_ADDI_ends(scheduler->env->trace, worker_number, (int) *pc);
+}
+
+/**
  * @brief The implementation of the ADDI instruction
  */
 void execute_inst_ADDI(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
@@ -155,24 +174,20 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, uint64_t 
     reaction_t** returned_reaction, bool* exit_loop) {
     tracepoint_static_scheduler_ADV_starts(scheduler->env->trace, worker_number, (int) *pc);
 
-    // This mutex is quite expensive.
-    lf_mutex_lock(&(scheduler->env->mutex));
-
-    uint64_t *src = (uint64_t *)rs2;
+    uint64_t *base = (uint64_t *)rs2;
+    uint64_t *inc  = (uint64_t *)rs3;
     self_base_t* reactor =
         scheduler->reactor_self_instances[rs1];
-    reactor->tag.time = *src + rs3;
+    reactor->tag.time = *base + *inc;
     reactor->tag.microstep = 0;
 
     // Reset all "is_present" fields of the output ports of the reactor
-    // Doing this here has the major implicatio  that ADV has to execute AFTER 
-    // all downstream reactions have finished. Since it is modifying state that is
-    // visible to thos reactions.
-    for (int i = 0; i<reactor->num_output_ports; i++) {
+    // Doing this here has the major implication that ADV has to execute AFTER 
+    // all downstream reactions have finished, since it is modifying state that is
+    // visible to those reactions.
+    for (int i = 0; i < reactor->num_output_ports; i++) {
         reactor->output_ports[i]->is_present = false;
     }
-   
-    lf_mutex_unlock(&(scheduler->env->mutex));
 
     *pc += 1; // Increment pc.
 
@@ -180,29 +195,29 @@ void execute_inst_ADV(lf_scheduler_t* scheduler, size_t worker_number, uint64_t 
 }
 
 /**
- * @brief The implementation of the ADV2 instruction
+ * @brief The implementation of the ADVI instruction
  */
-void execute_inst_ADV2(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
+void execute_inst_ADVI(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_ADV2_starts(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_ADVI_starts(scheduler->env->trace, worker_number, (int) *pc);
 
-    uint64_t *src = (uint64_t *)rs2;
+    uint64_t *base = (uint64_t *)rs2;
     self_base_t* reactor =
         scheduler->reactor_self_instances[rs1];
-    reactor->tag.time = *src + rs3;
+    reactor->tag.time = *base + rs3;
     reactor->tag.microstep = 0;
     
     // Reset all "is_present" fields of the output ports of the reactor
-    // Doing this here has the major implicatio  that ADV has to execute AFTER 
-    // all downstream reactions have finished. Since it is modifying state that is
-    // visible to thos reactions.
-    for (int i = 0; i<reactor->num_output_ports; i++) {
+    // Doing this here has the major implication that ADV has to execute AFTER 
+    // all downstream reactions have finished, since it is modifying state that is
+    // visible to those reactions.
+    for (int i = 0; i < reactor->num_output_ports; i++) {
         reactor->output_ports[i]->is_present = false;
     }
    
     *pc += 1; // Increment pc.
 
-    tracepoint_static_scheduler_ADV2_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_ADVI_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -229,6 +244,7 @@ void execute_inst_BGE(lf_scheduler_t* scheduler, size_t worker_number, uint64_t 
     // tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
     uint64_t *_rs1 = (uint64_t *) rs1;
     uint64_t *_rs2 = (uint64_t *) rs2;
+    LF_PRINT_DEBUG("Worker %zu: BGE : operand 1 = %lld, operand 2 = %lld", worker_number, *_rs1, *_rs2);
     if (*_rs1 >= *_rs2) *pc = rs3;
     else *pc += 1;
     // tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
@@ -324,12 +340,26 @@ void execute_inst_DU(lf_scheduler_t* scheduler, size_t worker_number, uint64_t r
     // _lf_interruptable_sleep_until_locked() terminates immediately.
     uint64_t *src = (uint64_t *)rs1;
     instant_t wakeup_time = *src + rs2;
-    LF_PRINT_DEBUG("start_time: %lld, wakeup_time: %lld, rs1: %lld, current_physical_time: %lld\n", start_time, wakeup_time, rs1, lf_time_physical());
+    LF_PRINT_DEBUG("start_time: %lld, wakeup_time: %lld, rs1: %lld, rs2: %lld, current_physical_time: %lld\n", start_time, wakeup_time, *src, rs2, lf_time_physical());
     LF_PRINT_DEBUG("*** Worker %zu delaying", worker_number);
     _lf_interruptable_sleep_until_locked(scheduler->env, wakeup_time);
     LF_PRINT_DEBUG("*** Worker %zu done delaying", worker_number);
     *pc += 1; // Increment pc.
     tracepoint_static_scheduler_DU_ends(scheduler->env->trace, worker_number, (int) *pc);
+}
+
+/**
+ * @brief The implementation of the WLT instruction
+ */
+void execute_inst_WLT(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
+    reaction_t** returned_reaction, bool* exit_loop) {
+    // tracepoint_static_scheduler_WU_starts(scheduler->env->trace, worker_number, (int) *pc);
+    LF_PRINT_DEBUG("*** Worker %zu waiting", worker_number);
+    volatile uint64_t *var = (volatile uint64_t *)rs1;
+    while(*var >= rs2);
+    LF_PRINT_DEBUG("*** Worker %zu done waiting", worker_number);
+    *pc += 1; // Increment pc.
+    // tracepoint_static_scheduler_WU_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -339,20 +369,41 @@ void execute_inst_WU(lf_scheduler_t* scheduler, size_t worker_number, uint64_t r
     reaction_t** returned_reaction, bool* exit_loop) {
     tracepoint_static_scheduler_WU_starts(scheduler->env->trace, worker_number, (int) *pc);
     LF_PRINT_DEBUG("*** Worker %zu waiting", worker_number);
-    while(scheduler->counters[rs1] < rs2);
+    volatile uint64_t *var = (volatile uint64_t *)rs1;
+    while(*var < rs2);
     LF_PRINT_DEBUG("*** Worker %zu done waiting", worker_number);
     *pc += 1; // Increment pc.
     tracepoint_static_scheduler_WU_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
- * @brief The implementation of the JMP instruction
+ * @brief The implementation of the JAL instruction
  */
-void execute_inst_JMP(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
+void execute_inst_JAL(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    tracepoint_static_scheduler_JMP_starts(scheduler->env->trace, worker_number, (int) *pc);
-    *pc = rs1;
-    tracepoint_static_scheduler_JMP_ends(scheduler->env->trace, worker_number, (int) *pc);
+    // tracepoint_static_scheduler_JAL_starts(scheduler->env->trace, worker_number, (int) *pc);
+    // Use the destination register as the return address and, if the
+    // destination register is not the zero register, store pc+1 in it.
+    uint64_t *destReg = (uint64_t *)rs1;
+    if (destReg != &zero) *destReg = *pc + 1;
+    *pc = rs2;
+    // tracepoint_static_scheduler_JAL_ends(scheduler->env->trace, worker_number, (int) *pc);
+}
+
+/**
+ * @brief The implementation of the JALR instruction
+ */
+void execute_inst_JALR(lf_scheduler_t* scheduler, size_t worker_number, uint64_t rs1, uint64_t rs2, uint64_t rs3, size_t* pc,
+    reaction_t** returned_reaction, bool* exit_loop) {
+    // tracepoint_static_scheduler_JALR_starts(scheduler->env->trace, worker_number, (int) *pc);
+    // Use the destination register as the return address and, if the
+    // destination register is not the zero register, store pc+1 in it.
+    uint64_t *destReg = (uint64_t *)rs1;
+    if (destReg != &zero) *destReg = *pc + 1;
+    // Set pc to base addr + immediate.
+    uint64_t *baseAddr = (uint64_t *)rs2;
+    *pc = *baseAddr + rs3;
+    // tracepoint_static_scheduler_JALR_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -401,6 +452,11 @@ void execute_inst(lf_scheduler_t* scheduler, size_t worker_number, opcode_t op, 
     size_t* pc, reaction_t** returned_reaction, bool* exit_loop) {
     char* op_str = NULL;
     switch (op) {
+        case ADD:
+            op_str = "ADD";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
+            execute_inst_ADD(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
+            break;
         case ADDI:
             op_str = "ADDI";
             LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
@@ -411,10 +467,10 @@ void execute_inst(lf_scheduler_t* scheduler, size_t worker_number, opcode_t op, 
             LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
             execute_inst_ADV(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
-        case ADV2:
-            op_str = "ADV2";
+        case ADVI:
+            op_str = "ADVI";
             LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
-            execute_inst_ADV2(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
+            execute_inst_ADVI(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
         case BEQ:
             op_str = "BEQ";
@@ -456,10 +512,15 @@ void execute_inst(lf_scheduler_t* scheduler, size_t worker_number, opcode_t op, 
             LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
             execute_inst_EXE(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
-        case JMP:
-            op_str = "JMP";
+        case JAL:
+            op_str = "JAL";
             LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
-            execute_inst_JMP(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
+            execute_inst_JAL(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
+            break;
+        case JALR:
+            op_str = "JALR";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
+            execute_inst_JALR(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
         case SAC:
             op_str = "SAC";
@@ -470,6 +531,11 @@ void execute_inst(lf_scheduler_t* scheduler, size_t worker_number, opcode_t op, 
             op_str = "STP";
             LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
             execute_inst_STP(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
+            break;
+        case WLT:
+            op_str = "WLT";
+            LF_PRINT_DEBUG("*** Worker %zu executing instruction: [Line %zu] %s %" PRIu64 " %" PRIu64 " %" PRIu64, worker_number, *pc, op_str, rs1, rs2, rs3);
+            execute_inst_WLT(scheduler, worker_number, rs1, rs2, rs3, pc, returned_reaction, exit_loop);
             break;
         case WU:
             op_str = "WU";

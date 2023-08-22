@@ -79,23 +79,23 @@ typedef enum
     // Static scheduler instructions
     static_scheduler_ADDI_starts,
     static_scheduler_ADV_starts,
-    static_scheduler_ADV2_starts,
+    static_scheduler_ADVI_starts,
     static_scheduler_BIT_starts,
     static_scheduler_DU_starts,
     static_scheduler_EIT_starts,
     static_scheduler_EXE_starts,
-    static_scheduler_JMP_starts,
+    static_scheduler_JAL_starts,
     static_scheduler_SAC_starts,
     static_scheduler_STP_starts,
     static_scheduler_WU_starts,
     static_scheduler_ADDI_ends,
     static_scheduler_ADV_ends,
-    static_scheduler_ADV2_ends,
+    static_scheduler_ADVI_ends,
     static_scheduler_BIT_ends,
     static_scheduler_DU_ends,
     static_scheduler_EIT_ends,
     static_scheduler_EXE_ends,
-    static_scheduler_JMP_ends,
+    static_scheduler_JAL_ends,
     static_scheduler_SAC_ends,
     static_scheduler_STP_ends,
     static_scheduler_WU_ends,
@@ -165,23 +165,23 @@ static const char *trace_event_names[] = {
     // Static scheduler instructions
     "ADDI: add immediate",
     "ADV: advance logical time",
-    "ADV2: advance logical time (lock-free)",
+    "ADVI: advance logical time (lock-free)",
     "BIT: branch if timeout",
     "DU: delay until",
     "EIT: execute if triggered",
     "EXE: execute",
-    "JMP: jump",
+    "JAL: jump",
     "SAC: synchronize, advance time, and clear counters",
     "STP: stop",
     "WU: wait until",
     "End ADDI: add immediate",
     "End ADV: advance logical time",
-    "End ADV2: advance logical time (lock-free)",
+    "End ADVI: advance logical time (lock-free)",
     "End BIT: branch if timeout",
     "End DU: delay until",
     "End EIT: execute if triggered",
     "End EXE: execute",
-    "End JMP: jump",
+    "End JAL: jump",
     "End SAC: synchronize, advance time, and clear counters",
     "End STP: stop",
     "End WU: wait until",
@@ -478,23 +478,23 @@ void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, i
 
 void tracepoint_static_scheduler_ADDI_starts(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_ADV_starts(trace_t* trace, int worker, int pc);
-void tracepoint_static_scheduler_ADV2_starts(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_ADVI_starts(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_BIT_starts(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_DU_starts(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_EIT_starts(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_EXE_starts(trace_t* trace, int worker, int pc);
-void tracepoint_static_scheduler_JMP_starts(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_JAL_starts(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_SAC_starts(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_STP_starts(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_WU_starts(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_ADDI_ends(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_ADV_ends(trace_t* trace, int worker, int pc);
-void tracepoint_static_scheduler_ADV2_ends(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_ADVI_ends(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_BIT_ends(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_DU_ends(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_EIT_ends(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_EXE_ends(trace_t* trace, int worker, int pc);
-void tracepoint_static_scheduler_JMP_ends(trace_t* trace, int worker, int pc);
+void tracepoint_static_scheduler_JAL_ends(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_SAC_ends(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_STP_ends(trace_t* trace, int worker, int pc);
 void tracepoint_static_scheduler_WU_ends(trace_t* trace, int worker, int pc);
@@ -593,23 +593,23 @@ void tracepoint_rti_from_federate(trace_t* trace, trace_event_t event_type, int 
 #define tracepoint_reaction_deadline_missed(...);
 #define tracepoint_static_scheduler_ADDI_starts(...);
 #define tracepoint_static_scheduler_ADV_starts(...);
-#define tracepoint_static_scheduler_ADV2_starts(...);
+#define tracepoint_static_scheduler_ADVI_starts(...);
 #define tracepoint_static_scheduler_BIT_starts(...);
 #define tracepoint_static_scheduler_DU_starts(...);
 #define tracepoint_static_scheduler_EIT_starts(...);
 #define tracepoint_static_scheduler_EXE_starts(...);
-#define tracepoint_static_scheduler_JMP_starts(...);
+#define tracepoint_static_scheduler_JAL_starts(...);
 #define tracepoint_static_scheduler_SAC_starts(...);
 #define tracepoint_static_scheduler_STP_starts(...);
 #define tracepoint_static_scheduler_WU_starts(...);
 #define tracepoint_static_scheduler_ADDI_ends(...);
 #define tracepoint_static_scheduler_ADV_ends(...);
-#define tracepoint_static_scheduler_ADV2_ends(...);
+#define tracepoint_static_scheduler_ADVI_ends(...);
 #define tracepoint_static_scheduler_BIT_ends(...);
 #define tracepoint_static_scheduler_DU_ends(...);
 #define tracepoint_static_scheduler_EIT_ends(...);
 #define tracepoint_static_scheduler_EXE_ends(...);
-#define tracepoint_static_scheduler_JMP_ends(...);
+#define tracepoint_static_scheduler_JAL_ends(...);
 #define tracepoint_static_scheduler_SAC_ends(...);
 #define tracepoint_static_scheduler_STP_ends(...);
 #define tracepoint_static_scheduler_WU_ends(...);

@@ -467,9 +467,9 @@ void tracepoint_static_scheduler_ADV_starts(trace_t* trace, int worker, int pc) 
     tracepoint(trace, static_scheduler_ADV_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
 }
 
-/** Trace the start of the ADV2 instruction */
-void tracepoint_static_scheduler_ADV2_starts(trace_t* trace, int worker, int pc) {
-    tracepoint(trace, static_scheduler_ADV2_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+/** Trace the start of the ADVI instruction */
+void tracepoint_static_scheduler_ADVI_starts(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_ADVI_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
 }
 
 /** Trace the start of the BIT instruction */
@@ -492,9 +492,9 @@ void tracepoint_static_scheduler_EXE_starts(trace_t* trace, int worker, int pc) 
     tracepoint(trace, static_scheduler_EXE_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
 }
 
-/** Trace the start of the JMP instruction */
-void tracepoint_static_scheduler_JMP_starts(trace_t* trace, int worker, int pc) {
-    tracepoint(trace, static_scheduler_JMP_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+/** Trace the start of the JAL instruction */
+void tracepoint_static_scheduler_JAL_starts(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_JAL_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
 }
 
 /** Trace the start of the SAC instruction */
@@ -522,9 +522,9 @@ void tracepoint_static_scheduler_ADV_ends(trace_t* trace, int worker, int pc) {
     tracepoint(trace, static_scheduler_ADV_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
 }
 
-/** Trace the end of the ADV2 instruction */
-void tracepoint_static_scheduler_ADV2_ends(trace_t* trace, int worker, int pc) {
-    tracepoint(trace, static_scheduler_ADV2_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+/** Trace the end of the ADVI instruction */
+void tracepoint_static_scheduler_ADVI_ends(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_ADVI_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
 }
 
 /** Trace the end of the BIT instruction */
@@ -547,9 +547,9 @@ void tracepoint_static_scheduler_EXE_ends(trace_t* trace, int worker, int pc) {
     tracepoint(trace, static_scheduler_EXE_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
 }
 
-/** Trace the end of the JMP instruction */
-void tracepoint_static_scheduler_JMP_ends(trace_t* trace, int worker, int pc) {
-    tracepoint(trace, static_scheduler_JMP_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+/** Trace the end of the JAL instruction */
+void tracepoint_static_scheduler_JAL_ends(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_JAL_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
 }
 
 /** Trace the end of the SAC instruction */
