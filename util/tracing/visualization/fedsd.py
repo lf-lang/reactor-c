@@ -150,7 +150,6 @@ def get_and_convert_lft_files(rti_lft_file, federates_lft_files):
      * Array: Array of files of converted federates trace csv files
     '''
 
-    # # print("===> "+rti_lft_file+" adn "+federates_lft_files)
     if (not rti_lft_file and not federates_lft_files):
         federates_lft_files = []
         
