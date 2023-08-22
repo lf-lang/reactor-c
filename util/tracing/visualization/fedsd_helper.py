@@ -169,7 +169,6 @@ def svg_string_draw_arrow(x1, y1, x2, y2, label, type=''):
     str_line3 = svg_string_draw_label(x1, y1, x2, y2, label)
     return str_line1 + str_line2 + str_line3
 
-
 def svg_string_draw_side_label(x, y, label, anchor="start") :
     '''
     Put a label to the right of the x, y point,
