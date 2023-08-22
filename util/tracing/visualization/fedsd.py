@@ -37,14 +37,61 @@ css_style = ' <style> \
 </style> \
 '
 
-#!/usr/bin/env python3
+# Disctionary for pruning event names. Usefule for tracepoint matching and
+# communication rendering
+prune_event_name = {
+    "Sending ACK": "ACK",
+    "Sending TIMESTAMP": "TIMESTAMP",
+    "Sending NET": "NET",
+    "Sending LTC": "LTC",
+    "Sending STOP_REQ": "STOP_REQ",
+    "Sending STOP_REQ_REP": "STOP_REQ_REP",
+    "Sending STOP_GRN": "STOP_GRN",
+    "Sending FED_ID": "FED_ID",
+    "Sending PTAG": "PTAG",
+    "Sending TAG": "TAG",
+    "Sending REJECT": "REJECT",
+    "Sending RESIGN": "RESIGN",
+    "Sending PORT_ABS": "ABS",
+    "Sending CLOSE_RQ": "CLOSE_RQ",
+    "Sending TAGGED_MSG": "T_MSG",
+    "Sending P2P_TAGGED_MSG": "P2P_T_MSG",
+    "Sending MSG": "MSG",
+    "Sending P2P_MSG": "P2P_MSG",
+    "Sending ADR_AD": "ADR_AD",
+    "Sending ADR_QR": "ADR_QR",
+    "Receiving ACK": "ACK",
+    "Receiving TIMESTAMP": "TIMESTAMP",
+    "Receiving NET": "NET",
+    "Receiving LTC": "LTC",
+    "Receiving STOP_REQ": "STOP_REQ",
+    "Receiving STOP_REQ_REP": "STOP_REQ_REP",
+    "Receiving STOP_GRN": "STOP_GRN",
+    "Receiving FED_ID": "FED_ID",
+    "Receiving PTAG": "PTAG",
+    "Receiving TAG": "TAG",
+    "Receiving REJECT": "REJECT",
+    "Receiving RESIGN": "RESIGN",
+    "Receiving PORT_ABS": "ABS",
+    "Receiving CLOSE_RQ": "CLOSE_RQ",
+    "Receiving TAGGED_MSG": "T_MSG",
+    "Receiving P2P_TAGGED_MSG": "P2P_T_MSG",
+    "Receiving MSG": "MSG",
+    "Receiving P2P_MSG": "P2P_MSG",
+    "Receiving ADR_AD": "ADR_AD",
+    "Receiving ADR_QR": "ADR_QR",
+    "Receiving UNIDENTIFIED": "UNIDENTIFIED",
+    "Scheduler advancing time ends": "AdvLT"
+}
+
+prune_event_name.setdefault(" ", "UNIDENTIFIED")
+
 import argparse         # For arguments parsing
 import pandas as pd     # For csv manipulation
 import os
 import sys
 from pathlib import Path
 import math
-import fedsd_helper as fhlp
 import subprocess
 
 # Define the arguments to pass in the command line
@@ -59,6 +106,214 @@ parser.add_argument('-f','--federates', nargs='+', action='append',
 # Set of tagged events (messages)
 non_tagged_messages = {'FED_ID', 'ACK', 'REJECT', 'ADR_RQ', 'ADR_AD', 'MSG', 'P2P_MSG'}
 
+
+################################################################################
+### Routines to get svg descriptions
+################################################################################
+
+def svg_string_draw_line(x1, y1, x2, y2, type=''):
+    '''
+    Constructs the svg html string to draw a line from (x1, y1) to (x2, y2).
+
+    Args:
+     * x1: Int X coordinate of the source point
+     * y1: Int Y coordinate of the source point
+     * x2: Int X coordinate of the sink point
+     * y2: Int Y coordinate of the sink point
+     * type: The type of the message (for styling)
+    Returns:
+     * String: the svg string of the line©
+    '''
+    str_line = '\t<line x1="'+str(x1)+'" y1="'+str(y1)+'" x2="'+str(x2)+'" y2="'+str(y2)+'"'
+    if (type):
+            str_line = str_line + ' class="' + type + '"'
+ 
+    str_line = str_line +  '/>\n'
+    return str_line
+
+
+def svg_string_draw_arrow_head(x1, y1, x2, y2, type='') :
+    '''
+    Constructs the svg html string to draw the arrow end
+
+    Args:
+     * x1: Int X coordinate of the source point
+     * y1: Int Y coordinate of the source point
+     * x2: Int X coordinate of the sink point
+     * y2: Int Y coordinate of the sink point
+     * type: The type (for styling)
+    Returns:
+     * String: the svg string of the triangle
+    '''
+
+    if (y2 != y1):
+        rotation = - math.ceil(math.atan((x2-x1)/(y2-y1)) * 180 / 3.14) - 90
+    else:
+        if (x1 > x2):
+            rotation = 0
+        else:
+            rotation = - 180
+        
+    style = ''
+    if (type):
+        style = ' class="'+type+'"'
+    
+    str_line = ''
+    if (x1 > x2) :
+        str_line = '\t<path d="M'+str(x2)+' '+str(y2)+' L'+str(x2+10)+' '+str(y2+5)+' L'+str(x2+10)+' '+str(y2-5)+' Z"' \
+             + ' transform="rotate('+str(rotation)+')" transform-origin="'+str(x2)+' '+str(y2)+'"' \
+             + style \
+             + '/>\n'
+    else :
+        str_line = '\t<path d="M'+str(x2)+' '+str(y2)+' L'+str(x2-10)+' '+str(y2+5)+' L'+str(x2-10)+' '+str(y2-5)+' Z"' \
+             + ' transform="rotate('+str( 180 + rotation)+')" transform-origin="'+str(x2)+' '+str(y2)+'"' \
+             + style \
+             + '/>\n'
+
+    return str_line
+
+
+def svg_string_draw_label(x1, y1, x2, y2, label) :
+    '''
+    Computes the rotation angle of the text and then constructs the svg string. 
+
+    Args:
+     * x1: Int X coordinate of the source point
+     * y1: Int Y coordinate of the source point
+     * x2: Int X coordinate of the sink point
+     * y2: Int Y coordinate of the sink point
+     * label: The label to draw
+    Returns:
+     * String: the svg string of the text
+    '''
+    # FIXME: Need further improvement, based of the position of the arrows
+    # FIXME: Rotation value is not that accurate. 
+    if (x2 < x1) :
+        # Left-going arrow.
+        if (y2 != y1):
+            rotation = - math.ceil(math.atan((x2-x1)/(y2-y1)) * 180 / 3.14) - 90
+        else:
+            rotation = 0
+
+        str_line = '\t<text text-anchor="end" transform="translate('+str(x1-10)+', '+str(y1-5)+') rotate('+str(rotation)+')">'+label+'</text>\n'
+    else :
+        # Right-going arrow.
+        if (y2 != y1):
+            rotation = - math.ceil(math.atan((x1-x2)/(y1-y2)) * 180 / 3.14) + 90
+        else:
+            rotation = 0
+        str_line = '\t<text transform="translate('+str(x1+10)+', '+str(y1-5)+') rotate('+str(rotation)+')" text-anchor="start">'+label+'</text>\n'
+    #print('rot = '+str(rotation)+' x1='+str(x1)+' y1='+str(y1)+' x2='+str(x2)+' y2='+str(y2))
+    return str_line
+
+
+def svg_string_draw_arrow(x1, y1, x2, y2, label, type=''):
+    '''
+    Constructs the svg html string to draw the arrow from (x1, y1) to (x2, y2). 
+    The arrow end is constructed, together with the label
+
+    Args:
+     * x1: Int X coordinate of the source point
+     * y1: Int Y coordinate of the source point
+     * x2: Int X coordinate of the sink point
+     * y2: Int Y coordinate of the sink point
+     * label: String Label to draw on top of the arrow
+     * type: The type of the message
+    Returns:
+     * String: the svg string of the arrow
+    '''
+    str_line1 = svg_string_draw_line(x1, y1, x2, y2, type)
+    str_line2 = svg_string_draw_arrow_head(x1, y1, x2, y2, type)
+    str_line3 = svg_string_draw_label(x1, y1, x2, y2, label)
+    return str_line1 + str_line2 + str_line3
+
+def svg_string_draw_side_label(x, y, label, anchor="start") :
+    '''
+    Put a label to the right of the x, y point,
+    unless x is small, in which case put it to the left.
+
+    Args:
+     * x: Int X coordinate of the source point
+     * y: Int Y coordinate of the source point
+     * label: Label to put by the point.
+     * anchor: One of "start", "middle", or "end" to specify the text-anchor.
+    Returns:
+     * String: the svg string of the text
+    '''
+    offset = 5
+    if (anchor == 'end'):
+        offset = -5
+    elif (anchor == 'middle'):
+        offset = 0
+    str_line = '\t<text text-anchor="'+anchor+'"' \
+    +' class="time"' \
+    +' transform="translate('+str(x+offset)+', '+str(y+5)+')">'+label+'</text>\n'
+    return str_line
+
+def svg_string_comment(comment):
+    '''
+    Constructs the svg html string to write a comment into an svg file.
+
+    Args:
+     * comment: String Comment to add
+    Returns:
+     * String: the svg string of the comment
+    '''
+    str_line = '\n\t<!-- ' + comment + ' -->\n'
+    return str_line
+
+def svg_string_draw_dot(x, y, label) :
+    '''
+    Constructs the svg html string to draw at a dot.
+
+    Args:
+     * x: Int X coordinate of the dot
+     * y: Int Y coordinate of the dot
+     * label: String to draw 
+    Returns:
+     * String: the svg string of the triangle
+    '''
+    str_line = ''
+    str_line = '\t<circle cx="'+str(x)+'" cy="'+str(y)+'" r="3" stroke="black" stroke-width="1" fill="black"/>\n'
+    str_line = str_line + '\t<text x="'+str(x+5)+'", y="'+str(y+5)+'" fill="blue">'+label+'</text>\n'
+    return str_line
+
+def svg_string_draw_dot_with_time(x, y, time, label) :
+    '''
+    Constructs the svg html string to draw at a dot with a prefixed physical time.
+
+    Args:
+     * x: Int X coordinate of the dot
+     * y: Int Y coordinate of the dot
+     * time: The time
+     * label: String to draw 
+    Returns:
+     * String: the svg string of the triangle
+    '''
+    str_line = ''
+    str_line = '\t<circle cx="'+str(x)+'" cy="'+str(y)+'" r="3" stroke="black" stroke-width="1" fill="black"/>\n'
+    str_line = str_line + '\t<text x="'+str(x+5)+'", y="'+str(y+5)+'"> <tspan class="time">'+time+':</tspan> <tspan fill="blue">'+label+'</tspan></text>\n'
+    return str_line
+
+def svg_string_draw_adv(x, y, label) :
+    '''
+    Constructs the svg html string to draw at a dash, meaning that logical time is advancing there.
+
+    Args:
+     * x: Int X coordinate of the dash
+     * y: Int Y coordinate of the dash
+     * label: String to draw 
+    Returns:
+     * String: the svg string of the triangle
+    '''
+    str_line1 = svg_string_draw_line(x-5, y, x+5, y, "ADV")
+    str_line2 = svg_string_draw_side_label(x, y, label)
+    return str_line1 + str_line2
+
+
+################################################################################
+### Routines to process lft and csv files
+################################################################################
 
 def load_and_process_csv_file(csv_file) :
     '''
@@ -89,9 +344,8 @@ def load_and_process_csv_file(csv_file) :
     df['inout'] = df['event'].apply(lambda e: 'in' if 'Receiving' in e else 'out')
 
     # Prune event names
-    df['event'] = df['event'].apply(lambda e: fhlp.prune_event_name[e])
+    df['event'] = df['event'].apply(lambda e: prune_event_name[e])
     return df
-
 
 def command_is_in_path(command):
     '''
@@ -113,9 +367,7 @@ def command_is_in_path(command):
         if os.path.isdir(directory):
             if command in os.listdir(directory):
                 return True
-
     return False
-
 
 def convert_lft_file_to_csv(lft_file):
     '''
@@ -135,7 +387,6 @@ def convert_lft_file_to_csv(lft_file):
     else:
         return '', str(convert_process.stderr)
 
-
 def get_and_convert_lft_files(rti_lft_file, federates_lft_files):
     '''
     Check if the passed arguments are valid, in the sense that the files do exist.
@@ -149,7 +400,6 @@ def get_and_convert_lft_files(rti_lft_file, federates_lft_files):
      * File: the converted RTI trace csv file, or empty, if no RTI trace lft file is found
      * Array: Array of files of converted federates trace csv files
     '''
-
     if (not rti_lft_file and not federates_lft_files):
         federates_lft_files = []
         
@@ -192,6 +442,9 @@ def get_and_convert_lft_files(rti_lft_file, federates_lft_files):
         
     return rti_csv_file, federates_csv_files
 
+################################################################################
+### Main program to run
+################################################################################
 
 if __name__ == '__main__':
     args = parser.parse_args()
@@ -382,17 +635,17 @@ if __name__ == '__main__':
         for key in x_coor:
             title = actors_names[key]
             if (key == -1):
-                f.write(fhlp.svg_string_comment('RTI Actor and line'))
+                f.write(svg_string_comment('RTI Actor and line'))
                 center = 15
             else:
-                f.write(fhlp.svg_string_comment('Federate '+str(key)+': ' + title + ' Actor and line'))
+                f.write(svg_string_comment('Federate '+str(key)+': ' + title + ' Actor and line'))
                 center = 5
-            f.write(fhlp.svg_string_draw_line(x_coor[key], math.ceil(padding/2), x_coor[key], svg_height, False))
+            f.write(svg_string_draw_line(x_coor[key], math.ceil(padding/2), x_coor[key], svg_height, False))
             f.write('\t<circle cx="'+str(x_coor[key])+'" cy="'+str(math.ceil(padding/2))+'" r="20" stroke="black" stroke-width="2" fill="white"/>\n')
             f.write('\t<text x="'+str(x_coor[key]-center)+'" y="'+str(math.ceil(padding/2)+5)+'" fill="black">'+title+'</text>\n')
 
         # Now, we need to iterate over the traces to draw the lines
-        f.write(fhlp.svg_string_comment('Draw interactions'))
+        f.write(svg_string_comment('Draw interactions'))
         for index, row in trace_df.iterrows():
             # For time labels, display them on the left for the RTI, right for everthing else.
             anchor = 'start'
@@ -409,11 +662,11 @@ if __name__ == '__main__':
                 label = row['event'] + '(' + f'{int(row["logical_time"]):,}' + ', ' + str(row['microstep']) + ')'
             
             if (row['arrow'] == 'arrow'): 
-                f.write(fhlp.svg_string_draw_arrow(row['x1'], row['y1'], row['x2'], row['y2'], label, row['event']))
+                f.write(svg_string_draw_arrow(row['x1'], row['y1'], row['x2'], row['y2'], label, row['event']))
                 if (row['inout'] in 'in'):
-                    f.write(fhlp.svg_string_draw_side_label(row['x2'], row['y2'], physical_time, anchor))
+                    f.write(svg_string_draw_side_label(row['x2'], row['y2'], physical_time, anchor))
                 else:
-                    f.write(fhlp.svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
+                    f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
             elif (row['arrow'] == 'dot'):
                 if (row['inout'] == 'in'):
                     label = "(in) from " + str(row['partner_id']) + ' ' + label
@@ -421,16 +674,16 @@ if __name__ == '__main__':
                     label = "(out) to " + str(row['partner_id']) + ' ' + label
                 
                 if (anchor == 'end'):
-                    f.write(fhlp.svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
-                    f.write(fhlp.svg_string_draw_dot(row['x1'], row['y1'], label))
+                    f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
+                    f.write(svg_string_draw_dot(row['x1'], row['y1'], label))
                 else:
-                    f.write(fhlp.svg_string_draw_dot_with_time(row['x1'], row['y1'], physical_time, label))
+                    f.write(svg_string_draw_dot_with_time(row['x1'], row['y1'], physical_time, label))
 
             elif (row['arrow'] == 'marked'):
-                f.write(fhlp.svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
+                f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
 
             elif (row['arrow'] == 'adv'):
-                f.write(fhlp.svg_string_draw_adv(row['x1'], row['y1'], label))
+                f.write(svg_string_draw_adv(row['x1'], row['y1'], label))
 
         f.write('\n</svg>\n\n')
 
@@ -441,4 +694,3 @@ if __name__ == '__main__':
     # Write to a csv file, just to double check
     trace_df.to_csv('all.csv', index=True)
     print('Fedsd: Successfully generated the sequence diagram in trace_svg.html.')
-    

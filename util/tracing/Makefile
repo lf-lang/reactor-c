@@ -32,7 +32,6 @@ install: trace_to_csv trace_to_chrome trace_to_influxdb
 	mv trace_to_chrome $(INSTALL_PREFIX)
 	mv trace_to_influxdb $(INSTALL_PREFIX)
 	cp ./visualization/fedsd.py $(INSTALL_PREFIX)
-	cp ./visualization/fedsd_helper.py $(INSTALL_PREFIX)
 	ln -f -s $(INSTALL_PREFIX)/fedsd.py $(INSTALL_PREFIX)/fedsd
 	chmod +x $(INSTALL_PREFIX)/fedsd
 	
