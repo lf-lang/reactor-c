@@ -40,6 +40,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <pico/multicore.h>
 #include <pico/sync.h>
 
+#ifdef LF_UNTHREADED
 /** 
  * critical section struct
  * disables external irq and core execution
@@ -56,6 +57,20 @@ static semaphore_t _lf_sem_irq_event;
 
 // nested critical section counter
 static uint32_t _lf_num_nested_crit_sec = 0;
+#endif //LF_UNTHREADED
+ 
+#ifdef LF_THREADED
+/**
+ * binary semaphore used to synchronize 
+ * used by thread join
+ */
+static semaphore_t _lf_sem_core_sync;
+/**
+ * track number of threads created 
+ * error on value greater than 2
+ */
+static uint8_t _lf_thread_cnt = 0;
+#endif
 
 /**
  * Initialize basic runtime infrastructure and 
@@ -63,10 +78,17 @@ static uint32_t _lf_num_nested_crit_sec = 0;
  */
 void _lf_initialize_clock(void) {
     // init stdio lib
+    // for debug printf
     stdio_init_all();
-    // init sync structs
+
+#ifdef LF_UNTHREADED
     critical_section_init(&_lf_crit_sec);
     sem_init(&_lf_sem_irq_event, 0, 1);
+#endif //LF_UNTHREADED
+
+#ifdef LF_THREADED
+    sem_init(&_lf_sem_core_sync, 0, 1);
+#endif //LF_THREADED
 }
 
 /**
@@ -213,7 +235,20 @@ int _lf_unthreaded_notify_of_event() {
 #endif //LF_UNTHREADED
 
 #ifdef LF_THREADED
-#error "Threading for baremetal RP2040 not supported"
+// FIXME: add validator check that invalidates threaded rp2040 
+// lf programs with more than 2 workers set
+#undef NUMBER_OF_WORKERS
+#define NUMBER_OF_WORKERS 2
+
+static lf_function_t _lf_core0_worker, _lf_core1_worker;
+static void *_lf_core0_args, *_lf_core1_args;
+
+
+void _rp2040_core1_entry() {
+    void *res = _lf_core1_worker(_lf_core1_args);
+    // notify of completion
+    sem_release(&_lf_sem_core_sync);
+}
 
 /**
  * @brief Get the number of cores on the host machine.
@@ -229,7 +264,24 @@ int lf_available_cores() {
  * @return 0 on success, platform-specific error number otherwise.
  *
  */
-int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments);
+int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
+    if (_lf_thread_cnt == 0) {
+        *thread = RP2040_CORE_0;
+        _lf_core0_worker = (lf_function_t) lf_thread;
+        _lf_core0_args = arguments;
+    } else if (_lf_thread_cnt == 1) {
+        *thread = RP2040_CORE_1;
+        _lf_core1_worker = (lf_function_t) lf_thread;
+        _lf_core1_args = arguments;
+        multicore_launch_core1(_rp2040_core1_entry);
+    } else {
+      // invalid thread
+      LF_PRINT_DEBUG("RP2040 threaded: tried to create invalid core thread");
+      return -1;
+    }
+    _lf_thread_cnt++;
+    return 0;
+}
 
 /**
  * Make calling thread wait for termination of the thread.  The
@@ -240,49 +292,89 @@ int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arg
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_thread_join(lf_thread_t thread, void** thread_return);
+int lf_thread_join(lf_thread_t thread, void** thread_return) {
+  switch(thread) {
+    case RP2040_CORE_0:
+      // run core0 worker
+      // block until completion
+      *thread_return = _lf_core0_worker(_lf_core0_args);
+      break;
+    case RP2040_CORE_1:
+      // block until core sync semaphore released
+      sem_acquire_blocking(&_lf_sem_core_sync);
+      break;
+    default:
+      LF_PRINT_DEBUG("RP2040 threaded: tried to join invalid core thread");
+      return -1;
+  }
+  return 0;
+}
 
 /**
  * Initialize a mutex.
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_mutex_init(lf_mutex_t* mutex);
+int lf_mutex_init(lf_mutex_t* mutex) {
+    recursive_mutex_init(mutex);
+    return 0;
+}
   
 /**
  * Lock a mutex.
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_mutex_lock(lf_mutex_t* mutex);
+int lf_mutex_lock(lf_mutex_t* mutex) {
+    recursive_mutex_enter_blocking(mutex);
+    return 0;
+}
 
 /**
  * Unlock a mutex.
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_mutex_unlock(lf_mutex_t* mutex);
+int lf_mutex_unlock(lf_mutex_t* mutex) {
+    recursive_mutex_exit(mutex);
+    return 0;
+}
+
+
+// FIXME: bugged since cond variables
+// have different behavior compared to a sempahore
 
 /**
  * Initialize a conditional variable.
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex);
+int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
+    // set max permits to number of cores
+
+    sem_init(cond, 0, 2);
+}
 
 /**
  * Wake up all threads waiting for condition variable cond.
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_cond_broadcast(lf_cond_t* cond);
+int lf_cond_broadcast(lf_cond_t* cond) {
+    // release all permits
+    while(sem_release(cond));
+    return 0;
+}
 
 /**
  * Wake up one thread waiting for condition variable cond.
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_cond_signal(lf_cond_t* cond);
+int lf_cond_signal(lf_cond_t* cond) {
+    if(sem_release(cond)) { return 0; }
+    return -1;
+}
 
 /**
  * Wait for condition variable "cond" to be signaled or broadcast.
@@ -290,7 +382,10 @@ int lf_cond_signal(lf_cond_t* cond);
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
-int lf_cond_wait(lf_cond_t* cond);
+int lf_cond_wait(lf_cond_t* cond) {
+    sem_acquire_blocking(cond);
+    return 0;
+}
 
 /**
  * Block current thread on the condition variable until condition variable
@@ -300,9 +395,15 @@ int lf_cond_wait(lf_cond_t* cond);
  * @return 0 on success, LF_TIMEOUT on timeout, and platform-specific error
  *  number otherwise.
  */
-int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
+int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
+    absolute_time_t target;
+    target = from_us_since_boot((uint64_t) (absolute_time_ns / 1000));
+    if (!sem_acquire_block_until(cond, target)) {
+        return LF_TIMEOUT; 
+    }
+    return 0;
+}
 
 #endif //LF_THREADED
-
 #endif // PLATFORM_RP2040
 
