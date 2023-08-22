@@ -193,7 +193,6 @@ def svg_string_draw_side_label(x, y, label, anchor="start") :
 
     return str_line
 
-
 def svg_string_comment(comment):
     '''
     Constructs the svg html string to write a comment into an svg file.
