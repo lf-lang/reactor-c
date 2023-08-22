@@ -1,11 +1,13 @@
-'''
-Define arrows:
-    (x1, y1) ==> (x2, y2), when unique result (this arrow will be tilted)
-    (x1, y1) --> (x2, y2), when a possible result (could be not tilted)?
-If not arrow, then triangle with text 
+#!/usr/bin/python3
 
+# Utility that reports the interactions (exchanged messages) between federates and the RTI in a 
+# sequence-diagram-like format, or between enclaves in an enclaved execution.
+# 
+# The utility operates on lft trace files and outputs an html file embedding an svg image.
+
+'''
 In the dataframe, each row will be marked with one op these values:
-    - 'arrow': draw a non-dashed arrow
+    - 'arrow': draw a solid arrow
     - 'dot': draw a dot only
     - 'marked': marked, not to be drawn
     - 'pending': pending
@@ -38,22 +40,25 @@ css_style = ' <style> \
 #!/usr/bin/env python3
 import argparse         # For arguments parsing
 import pandas as pd     # For csv manipulation
-from os.path import exists
+import os
+import sys
 from pathlib import Path
 import math
 import fedsd_helper as fhlp
+import subprocess
 
 # Define the arguments to pass in the command line
-parser = argparse.ArgumentParser(description='Set of the csv trace files to render.')
-parser.add_argument('-r','--rti', type=str, default="rti.csv",
-                    help='RTI csv trace file.')
+parser = argparse.ArgumentParser(description='Set of the lft trace files to render.')
+parser.add_argument('-r','--rti', type=str, 
+                    help='RTI\'s lft trace file.')
 parser.add_argument('-f','--federates', nargs='+', action='append',
-                    help='List of the federates csv trace files.')
+                    help='List of the federates\' lft trace files.')
 
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
 # Set of tagged events (messages)
 non_tagged_messages = {'FED_ID', 'ACK', 'REJECT', 'ADR_RQ', 'ADR_AD', 'MSG', 'P2P_MSG'}
+
 
 def load_and_process_csv_file(csv_file) :
     '''
@@ -88,9 +93,119 @@ def load_and_process_csv_file(csv_file) :
     return df
 
 
+def command_is_in_path(command):
+    '''
+    Checks if a command is in the PATH.
+
+    Args:
+     * command: The command to check.
+    Returns:
+     * True if the command is in the PATH, False otherwise.
+    '''
+    # Get the PATH environment variable.
+    path = os.environ["PATH"]
+
+    # Split the PATH into a list of directories.
+    directories = path.split(os.pathsep)
+
+    # Check if the command is in the list of directories.
+    for directory in directories:
+        if os.path.isdir(directory):
+            if command in os.listdir(directory):
+                return True
+
+    return False
+
+
+def convert_lft_file_to_csv(lft_file):
+    '''
+    Call trace_to_csv command to convert the given binary lft trace file to csv format.
+
+    Args:
+     * lft_file: the lft trace file
+    Return:
+     * File: the converted csv file, if the conversion succeeds, and empty string otherwise.
+     * String: the error message, in case the conversion did not succeed, and empty string otherwise.
+    '''
+    convert_process = subprocess.run(['trace_to_csv', lft_file], stdout=subprocess.DEVNULL)
+
+    if (convert_process.returncode == 0):
+        csv_file = os.path.splitext(lft_file)[0] + '.csv'
+        return csv_file, ''
+    else:
+        return '', str(convert_process.stderr)
+
+
+def get_and_convert_lft_files(rti_lft_file, federates_lft_files):
+    '''
+    Check if the passed arguments are valid, in the sense that the files do exist.
+    If not arguments were passed, then look up the local lft files.
+    Then, convert to csv.
+
+    Args:
+     * File: the argument passed at the command line as the rti lft trace file.
+     * Array: the argument passed at the command line as array of federates lft trace files.
+    Return:
+     * File: the converted RTI trace csv file, or empty, if no RTI trace lft file is found
+     * Array: Array of files of converted federates trace csv files
+    '''
+
+    # # print("===> "+rti_lft_file+" adn "+federates_lft_files)
+    if (not rti_lft_file and not federates_lft_files):
+        federates_lft_files = []
+        
+        for file in os.listdir():
+            if (file == 'rti.lft'):
+                rti_lft_file = 'rti.lft'
+            elif (file.endswith('.lft')):
+                federates_lft_files.append(file)
+    else:
+        # If files were given, then check they exist
+        if (rti_lft_file):
+            if (not os.path.exists(rti_lft_file)):
+                print('Warning: Trace file ' + rti_lft_file + ' does not exist! Will resume though')
+        else: 
+            for file in federates_lft_files:
+                if (not os.path.exists(file)):
+                    print('Warning: Trace file ' + file + ' does not exist! Will resume though')
+
+    # Sanity check that there is at least one lft file!
+    if (not rti_lft_file and not federates_lft_files):
+        print('Fedsd: Error: No lft files found. Abort!')
+        sys.exit(1)
+
+    # Now, convert lft files to csv
+    if (rti_lft_file):
+        rti_csv_file, error = convert_lft_file_to_csv(rti_lft_file)
+        if (not rti_csv_file):
+            print('Fedsf: Error converting the RTI\'s lft file: ' + error)
+        else:
+            print('Fedsd: Successfully converted trace file ' + rti_lft_file + ' to ' + rti_csv_file + '.')
+    
+    federates_csv_files = []
+    for file in federates_lft_files:
+        fed_csv_file, error = convert_lft_file_to_csv(file)
+        if (not fed_csv_file):
+            print('Fedsf: Error converting the federate lft file ' + file + ': ' + error)
+        else: 
+            print('Fedsd: Successfully converted trace file ' + file + ' to ' + fed_csv_file + '.')
+            federates_csv_files.append(fed_csv_file)
+        
+    return rti_csv_file, federates_csv_files
+
+
 if __name__ == '__main__':
     args = parser.parse_args()
 
+    # Check that trace_to_csv is in PATH
+    if (not command_is_in_path('trace_to_csv')):
+        print('Fedsd: Error: trace_to_csv utility is not in PATH. Abort!')
+        sys.exit(1)
+
+    # Look up the lft files and transform them to csv files
+
+    rti_csv_file, federates_csv_files = get_and_convert_lft_files(args.rti, args.federates)
+    
     # The RTI and each of the federates have a fixed x coordinate. They will be
     # saved in a dict
     x_coor = {}
@@ -110,11 +225,8 @@ if __name__ == '__main__':
     #### Federates trace processing
     ############################################################################
     # Loop over the given list of federates trace files 
-    if (args.federates) :
-        for fed_trace in args.federates[0]:
-            if (not exists(fed_trace)):
-                print('Warning: Trace file ' + fed_trace + ' does not exist! Will resume though')
-                continue
+    if (federates_csv_files) :
+        for fed_trace in federates_csv_files:
             try:
                 fed_df = load_and_process_csv_file(fed_trace)
             except Exception as e:
@@ -137,8 +249,8 @@ if __name__ == '__main__':
     ############################################################################
     #### RTI trace processing, if any
     ############################################################################
-    if (exists(args.rti)):
-        rti_df = load_and_process_csv_file(args.rti)
+    if (rti_csv_file):
+        rti_df = load_and_process_csv_file(rti_csv_file)
         rti_df['x1'] = x_coor[-1]
     else:
         # If there is no RTI, derive one.
@@ -329,3 +441,5 @@ if __name__ == '__main__':
 
     # Write to a csv file, just to double check
     trace_df.to_csv('all.csv', index=True)
+    print('Fedsd: Successfully generated the sequence diagram in trace_svg.html.')
+    

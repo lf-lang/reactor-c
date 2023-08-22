@@ -169,6 +169,7 @@ def svg_string_draw_arrow(x1, y1, x2, y2, label, type=''):
     str_line3 = svg_string_draw_label(x1, y1, x2, y2, label)
     return str_line1 + str_line2 + str_line3
 
+
 def svg_string_draw_side_label(x, y, label, anchor="start") :
     '''
     Put a label to the right of the x, y point,
@@ -192,6 +193,7 @@ def svg_string_draw_side_label(x, y, label, anchor="start") :
     +' transform="translate('+str(x+offset)+', '+str(y+5)+')">'+label+'</text>\n'
 
     return str_line
+
 
 def svg_string_comment(comment):
     '''
@@ -222,6 +224,7 @@ def svg_string_draw_dot(x, y, label) :
     str_line = str_line + '\t<text x="'+str(x+5)+'", y="'+str(y+5)+'" fill="blue">'+label+'</text>\n'
     return str_line
 
+
 def svg_string_draw_dot_with_time(x, y, time, label) :
     '''
     Constructs the svg html string to draw at a dot with a prefixed physical time.
@@ -238,6 +241,7 @@ def svg_string_draw_dot_with_time(x, y, time, label) :
     str_line = '\t<circle cx="'+str(x)+'" cy="'+str(y)+'" r="3" stroke="black" stroke-width="1" fill="black"/>\n'
     str_line = str_line + '\t<text x="'+str(x+5)+'", y="'+str(y+5)+'"> <tspan class="time">'+time+':</tspan> <tspan fill="blue">'+label+'</tspan></text>\n'
     return str_line
+
 
 def svg_string_draw_adv(x, y, label) :
     '''
