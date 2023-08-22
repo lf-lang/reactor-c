@@ -239,7 +239,6 @@ def svg_string_draw_dot_with_time(x, y, time, label) :
     str_line = str_line + '\t<text x="'+str(x+5)+'", y="'+str(y+5)+'"> <tspan class="time">'+time+':</tspan> <tspan fill="blue">'+label+'</tspan></text>\n'
     return str_line
 
-
 def svg_string_draw_adv(x, y, label) :
     '''
     Constructs the svg html string to draw at a dash, meaning that logical time is advancing there.
