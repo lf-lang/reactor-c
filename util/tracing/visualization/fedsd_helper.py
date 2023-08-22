@@ -222,7 +222,6 @@ def svg_string_draw_dot(x, y, label) :
     str_line = str_line + '\t<text x="'+str(x+5)+'", y="'+str(y+5)+'" fill="blue">'+label+'</text>\n'
     return str_line
 
-
 def svg_string_draw_dot_with_time(x, y, time, label) :
     '''
     Constructs the svg html string to draw at a dot with a prefixed physical time.
