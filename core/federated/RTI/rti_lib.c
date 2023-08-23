@@ -1099,10 +1099,10 @@ void handle_federate_resign(federate_t *my_fed) {
     lf_print("Federate %d has resigned.", my_fed->enclave.id);
 
 
-    // Signal the hot swap mechanism, if needed
-    if (hot_swap_in_progress && hot_swap_federate->enclave.id == my_fed->enclave.id) {
-        hot_swap_old_resigned = true;
-    }
+    // // Signal the hot swap mechanism, if needed
+    // if (hot_swap_in_progress && hot_swap_federate->enclave.id == my_fed->enclave.id) {
+    //     hot_swap_old_resigned = true;
+    // }
 
     // Check downstream federates to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
@@ -1193,6 +1193,11 @@ void* federate_thread_TCP(void* fed) {
         reset_transient_federate(my_fed);
 
         lf_mutex_unlock(&rti_mutex);
+    }
+
+    // Signal the hot swap mechanism, if needed
+    if (hot_swap_in_progress && hot_swap_federate->enclave.id == my_fed->enclave.id) {
+        hot_swap_old_resigned = true;
     }
 
     return NULL;
