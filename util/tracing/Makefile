@@ -13,7 +13,8 @@ CFLAGS=	-I$(REACTOR_C)/include/core/ \
 DEPS=
 LIBS=-lcurl
 
-INSTALL_PREFIX ?= /usr/local/bin
+INSTALL_PREFIX ?= /usr/local
+BIN_INSTALL_PATH = $(INSTALL_PREFIX)/bin
 
 %.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
@@ -28,12 +29,12 @@ trace_to_influxdb: trace_to_influxdb.o trace_util.o
 	$(CC) -o trace_to_influxdb trace_to_influxdb.o trace_util.o $(LIBS)
 
 install: trace_to_csv trace_to_chrome trace_to_influxdb
-	mv trace_to_csv $(INSTALL_PREFIX)
-	mv trace_to_chrome $(INSTALL_PREFIX)
-	mv trace_to_influxdb $(INSTALL_PREFIX)
-	cp ./visualization/fedsd.py $(INSTALL_PREFIX)
-	ln -f -s $(INSTALL_PREFIX)/fedsd.py $(INSTALL_PREFIX)/fedsd
-	chmod +x $(INSTALL_PREFIX)/fedsd
+	mv trace_to_csv $(BIN_INSTALL_PATH)
+	mv trace_to_chrome $(BIN_INSTALL_PATH)
+	mv trace_to_influxdb $(BIN_INSTALL_PATH)
+	cp ./visualization/fedsd.py $(BIN_INSTALL_PATH)
+	ln -f -s $(BIN_INSTALL_PATH)/fedsd.py $(BIN_INSTALL_PATH)/fedsd
+	chmod +x $(BIN_INSTALL_PATH)/fedsd
 	
 clean:
 	rm -f *.o
