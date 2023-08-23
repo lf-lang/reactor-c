@@ -82,7 +82,9 @@ prune_event_name = {
     "Receiving ADR_AD": "ADR_AD",
     "Receiving ADR_QR": "ADR_QR",
     "Receiving UNIDENTIFIED": "UNIDENTIFIED",
-    "Scheduler advancing time ends": "AdvLT"
+    "Scheduler advancing time ends": "AdvLT",
+    "Sending STOP": "STOP",
+    "Receiving STOP": "STOP"
 }
 
 prune_event_name.setdefault(" ", "UNIDENTIFIED")
@@ -204,7 +206,6 @@ def svg_string_draw_label(x1, y1, x2, y2, label) :
         else:
             rotation = 0
         str_line = '\t<text transform="translate('+str(x1+10)+', '+str(y1-5)+') rotate('+str(rotation)+')" text-anchor="start">'+label+'</text>\n'
-    #print('rot = '+str(rotation)+' x1='+str(x1)+' y1='+str(y1)+' x2='+str(x2)+' y2='+str(y2))
     return str_line
 
 
