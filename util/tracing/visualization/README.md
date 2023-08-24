@@ -35,7 +35,7 @@ fedsd
 It is also possible to operate on specific files. In such a case, run `fedsd` with `-r` flag to provide the RTI trace file, and `-f` flag to privide the list of federates
 trace files. Bith argumenets are optional.
 ```bash
-fedsd -r <rti.lft> -f <federate__f1.lft> <federate--f2.lft>
+fedsd -r <rti.lft> -f <federate__f1.lft> <federate__f2.lft>
 ```
 
 The output is an html file named `trace_svg.html` (in the current directory) that contains the sequence of interactions between the federates and the RTI.
