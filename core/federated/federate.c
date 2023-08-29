@@ -98,7 +98,6 @@ federate_instance_t _fed = {
         .server_port = -1,
         .last_TAG = {.time = NEVER, .microstep = 0u},
         .is_last_TAG_provisional = false,
-        .waiting_for_TAG = false,
         .has_upstream = false,
         .has_downstream = false,
         .received_stop_request_from_rti = false,
@@ -1897,8 +1896,6 @@ void handle_tag_advance_grant(void) {
                 TAG.time - start_time, TAG.microstep,
                 _fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
     }
-
-    _fed.waiting_for_TAG = false;
     // Notify everything that is blocked.
     lf_cond_broadcast(&env->event_q_changed);
 
@@ -2077,7 +2074,6 @@ void handle_provisional_tag_advance_grant() {
     }
 
     _fed.last_TAG = PTAG;
-    _fed.waiting_for_TAG = false;
     _fed.is_last_TAG_provisional = true;
     LF_PRINT_LOG("At tag " PRINTF_TAG ", received Provisional Tag Advance Grant (PTAG): " PRINTF_TAG ".",
             env->current_tag.time - start_time, env->current_tag.microstep,
@@ -2736,30 +2732,25 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
                         tag.time - start_time, tag.microstep);
                 return tag;
             }
-            // Fed has upstream federates. Have to wait for a TAG or PTAG.
-            _fed.waiting_for_TAG = true;
 
             // Wait until a TAG is received from the RTI.
             while (true) {
                 // Wait until either something changes on the event queue or
                 // the RTI has responded with a TAG.
-                LF_PRINT_DEBUG("Waiting for a TAG from the RTI.");
+                LF_PRINT_DEBUG("Waiting for a TAG from the RTI with _fed.last_TAG.time=%lld, %lld and net=%lld, %lld", (long long) _fed.last_TAG.time - start_time, (long long) _fed.last_TAG.microstep, (long long) tag.time - start_time, (long long) tag.microstep);
                 if (lf_cond_wait(&env->event_q_changed) != 0) {
                     lf_print_error("Wait error.");
-                }
-                // Either a TAG or PTAG arrived or something appeared on the event queue.
-                if (!_fed.waiting_for_TAG) {
-                    // _fed.last_TAG will have been set by the thread receiving the TAG message that
-                    // set _fed.waiting_for_TAG to false.
-                    return _fed.last_TAG;
                 }
                 // Check whether the new event on the event queue requires sending a new NET.
                 tag_t next_tag = get_next_event_tag(env);
                 if (lf_tag_compare(next_tag, tag) != 0) {
                     _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag, wait_for_reply);
                     _fed.last_sent_NET = next_tag;
-                    LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.",
+                    LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI from loop.",
                         next_tag.time - lf_time_start(), next_tag.microstep);
+                }
+                if (lf_tag_compare(_fed.last_TAG, next_tag) >= 0) {
+                    return _fed.last_TAG;
                 }
             }
         }
