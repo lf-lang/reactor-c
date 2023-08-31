@@ -696,14 +696,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * upstream federates, this federate also can skip sending NET messages that are 
  * greater than or equal to this tag. 
  */
-#define MSG_TYPE_NEXT_DOWNSTREAM_EVENT_TAG 25
-#define MSG_TYPE_NEXT_DOWNSTREAM_EVENT_TAG_LENGTH (1 + sizeof(instant_t) + sizeof(microstep_t))
-#define ENCODE_NEXT_DOWNSTREAM_EVENT_TAG(buffer, time, microstep) do { \
-    buffer[0] = MSG_TYPE_STOP_REQUEST; \
-    encode_int64(time, &(buffer[1])); \
-    assert(microstep >= 0); \
-    encode_int32((int32_t)microstep, &(buffer[1 + sizeof(instant_t)])); \
-} while(0)
+#define MSG_TYPE_NEXT_DOWNSTREAM_TAG 25
 
 /////////////////////////////////////////////
 //// Rejection codes

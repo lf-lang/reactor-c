@@ -282,19 +282,22 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
     update_enclave_next_event_tag_locked(&(fed->enclave), next_event_tag);
 }
 
-void send_upstream_next_downstream_event_tag(federate_t* fed, tag_t next_event_tag) {
+void send_upstream_next_downstream_tag(federate_t* fed, tag_t next_event_tag) {
     // TODO: Fill this function.
     // The RTI receives next_event_tag from the federated fed. 
     // It has to send NDET messages to the upstream federates of fed
     // if the LTC message from an upstream federate is ealrier than the next_event_tag.
-    unsigned char next_downstream_event_tag_buffer[MSG_TYPE_NEXT_DOWNSTREAM_EVENT_TAG_LENGTH];
-    ENCODE_NEXT_DOWNSTREAM_EVENT_TAG(next_downstream_event_tag_buffer, next_event_tag.time, next_event_tag.microstep);
+    size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
+    unsigned char buffer[message_length];
+    buffer[0] = MSG_TYPE_NEXT_DOWNSTREAM_TAG;
+    encode_int64(next_event_tag.time, &(buffer[1]));
+    encode_int32((int32_t)next_event_tag.microstep, &(buffer[1 + sizeof(int64_t)]));
 
-    for (int i = 0; i < fed->num_upstream; i++) {
-        if (lf_tag_compare(_RTI.federates[i].completed, next_event_tag) < 0) {
-            // send next downstream event tag to the _RTI.federates[i]
-            write_to_socket_errexit(_RTI.federates[i].socket, MSG_TYPE_NEXT_DOWNSTREAM_EVENT_TAG_LENGTH, next_downstream_event_tag_buffer,
-                    "RTI failed to send MSG_TYPE_NEXT_DOWNSTREAM_EVENT_TAG message to federate %d.", _RTI.federates[i].id);            
+    for (int i = 0; i < fed->enclave.num_upstream; i++) {
+        if (lf_tag_compare(_f_rti->enclaves[i]->enclave.completed, next_event_tag) < 0) {
+            // send next downstream tag to upstream federates that do not complete the next_event_tag
+            write_to_socket_errexit(_f_rti->enclaves[i]->socket, message_length, buffer,
+                    "RTI failed to send MSG_TYPE_NEXT_DOWNSTREAM_TAG message to federate %d.", _f_rti->enclaves[i]->socket);
         }
     }
 }
@@ -553,7 +556,7 @@ void handle_next_event_tag(federate_t* fed) {
         intended_tag
     );
     // FIXME: uncomment below function after implementing it.
-    //send_upstream_next_downstream_event_tag(fed, intended_tag);
+    //send_upstream_next_downstream_tag(fed, intended_tag);
     lf_mutex_unlock(&rti_mutex);
 }
 

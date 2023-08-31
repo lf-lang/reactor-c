@@ -233,12 +233,12 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
 
 
 /**
- * @brief Send the next downstream event tag.
+ * @brief Send the next downstream tag.
  * 
  * @param fed The downstream federate.
  * @param next_event_tag The next event tag from the downstream federate.
 */
-void send_upstream_next_downstream_event_tag(federate_t* fed, tag_t next_event_tag)
+void send_upstream_next_downstream_tag(federate_t* fed, tag_t next_event_tag);
 
 /**
  * Handle a port absent message being received rom a federate via the RIT.

@@ -2536,7 +2536,7 @@ void* listen_to_rti_TCP(void* args) {
             case MSG_TYPE_PORT_ABSENT:
                 handle_port_absent_message(_fed.socket_TCP_RTI, -1);
                 break;
-            case MSG_TYPE_NEXT_DOWNSTREAM_EVENT_TAG:
+            case MSG_TYPE_NEXT_DOWNSTREAM_TAG:
                 handle_next_downstream_event_tag();
                 break;
             case MSG_TYPE_CLOCK_SYNC_T1:
