@@ -183,8 +183,11 @@ bool lf_check_deadline(void* self, bool invoke_deadline_handler);
 int lf_tag_compare(tag_t tag1, tag_t tag2);
 
 /**
- * Return the current tag, a logical time, microstep pair.
+ * Return the current tag of a reactor. If NULL is passed to this function it
+ * will return the "global tag" of the runtime.  
+ * @param self A pointer to the environment of which you want the current tag
+ * @return the current tag 
  */
-tag_t lf_tag();
+tag_t lf_tag(void* env);
 
 #endif // API_H

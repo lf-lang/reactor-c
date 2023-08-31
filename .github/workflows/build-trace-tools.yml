@@ -1,0 +1,19 @@
+name: Build the tracing tools
+
+on:
+  workflow_call:
+
+jobs:
+  run:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: Check out reactor-c repository
+        uses: actions/checkout@v3
+      - name: Building tracing utils
+        working-directory: ./util/tracing
+        run: make
+        shell: bash

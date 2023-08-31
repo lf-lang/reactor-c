@@ -36,8 +36,20 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "python_port.h"
 #include "reactor.h"
+#include "api/api.h"
+#include "api/set.h"
 
 PyTypeObject py_port_capsule_t;
+
+//////////// destructor Function(s) /////////////
+/**
+ * Decrease the reference count of PyObject. When the reference count hits zero,
+ * Python can free its memory.
+ * @param py_object A PyObject with count 1 or greater.
+ */
+void python_count_decrement(void* py_object) {
+    Py_XDECREF((PyObject*)py_object);
+}
 
 //////////// set Function(s) /////////////
 /**
@@ -68,7 +80,7 @@ PyTypeObject py_port_capsule_t;
  * @param args contains:
  *      - val: The value to insert into the port struct.
  */
-PyObject* py_port_set(PyObject *self, PyObject *args) {
+PyObject* py_port_set(PyObject* self, PyObject* args) {
     generic_port_capsule_struct* p = (generic_port_capsule_struct*)self;
     PyObject* val = NULL;
 
@@ -85,13 +97,15 @@ PyObject* py_port_set(PyObject *self, PyObject *args) {
     }
 
     if (val) {
-        LF_PRINT_DEBUG("Setting value %p.", val);
-        Py_XDECREF(port->value);
+        LF_PRINT_DEBUG("Setting value %p with reference count %d.", val, (int) Py_REFCNT(val));
+        //Py_INCREF(val);
+        //python_count_decrement(port->value);
+       
+        lf_token_t* token = lf_new_token((void*)port, val, 1);
+        lf_set_destructor(port, python_count_decrement);
+        lf_set_token(port, token);
         Py_INCREF(val);
-        // Call the core lib API to set the port
-        _LF_SET(port, val);
-
-        Py_INCREF(val);
+       
         // Also set the values for the port capsule.
         p->value = val;
         p->is_present = true;

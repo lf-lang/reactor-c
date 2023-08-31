@@ -31,6 +31,11 @@
  * @section DESCRIPTION
  *
  * Type definitions that are widely used across different parts of the runtime.
+ * 
+ * <b>IMPORTANT:</b> Many of the structs defined here require matching layouts
+ * and, if changed, will require changes in the code generator.
+ * See <a href="https://github.com/lf-lang/reactor-c/wiki/Structs-in-the-Reactor-C-Runtime">
+ * Structs in the Reactor-C Runtime</a>.
  */
 
 #ifndef TYPES_H
@@ -40,8 +45,9 @@
 
 #include "modal_models/modes.h" // Modal model support
 #include "utils/pqueue.h"
-#include "tag.h"
 #include "lf_token.h"
+#include "tag.h"
+#include "vector.h"
 
 /**
  * ushort type. Redefine here for portability if sys/types.h is not included.
@@ -67,6 +73,24 @@ typedef unsigned short int ushort;
 #define LET 4
 #define NP 5
 #define PEDF_NP 6
+
+/*
+ * A struct representing a barrier in threaded
+ * Lingua Franca programs that can prevent advancement
+ * of tag if
+ * 1- Number of requestors is larger than 0
+ * 2- Value of horizon is not (FOREVER, 0)
+ */
+typedef struct _lf_tag_advancement_barrier {
+    int requestors; // Used to indicate the number of
+                    // requestors that have asked
+                    // for a barrier to be raised
+                    // on tag.
+    tag_t horizon;  // If semaphore is larger than 0
+                    // then the runtime should not
+                    // advance its tag beyond the
+                    // horizon.
+} _lf_tag_advancement_barrier;
 
 /**
  * Policy for handling scheduled events that violate the specified
@@ -181,9 +205,7 @@ struct reaction_t {
                                        // intended. Currently, this is only possible if logical
                                        // connections are used in a decentralized federated
                                        // execution. COMMON.
-    bool is_a_control_reaction; // Indicates whether this reaction is a control reaction. Control
-                                // reactions will not set ports or actions and don't require scheduling
-                                // any output reactions. Default is false.
+    bool is_an_input_reaction; // Indicates whether this reaction is a network input reaction of a federate. Default is false.
     size_t worker_affinity;     // The worker number of the thread that scheduled this reaction. Used
                                 // as a suggestion to the scheduler.
     const char* name;                 // If logging is set to LOG or higher, then this will
@@ -243,8 +265,6 @@ struct trigger_t {
 #ifdef FEDERATED
     tag_t last_known_status_tag;        // Last known status of the port, either via a timed message, a port absent, or a
                                         // TAG from the RTI.
-    bool is_a_control_reaction_waiting; // Indicates whether at least one control reaction is waiting for this trigger
-                                        // if it belongs to a network input port. Must be false by default.
     tag_t intended_tag;                 // The amount of discrepency in logical time between the original intended
                                         // trigger time of this trigger and the actual trigger time. This currently
                                         // can only happen when logical connections are used using a decentralized coordination
@@ -262,10 +282,12 @@ struct trigger_t {
  * pointer to allocated memory, rather than directly to the allocated memory.
  */
 typedef struct allocation_record_t {
-	void* allocated;
-	struct allocation_record_t *next;
+    void* allocated;
+    struct allocation_record_t *next;
 } allocation_record_t;
 
+
+typedef struct environment_t environment_t;
 /**
  * The first element of every self struct defined in generated code
  * will be a pointer to an allocation record, which is either NULL
@@ -278,6 +300,7 @@ typedef struct allocation_record_t {
 typedef struct self_base_t {
 	struct allocation_record_t *allocations;
 	struct reaction_t *executing_reaction;   // The currently executing reaction of the reactor.
+    environment_t * environment;
 #ifdef LF_THREADED
     void* reactor_mutex; // If not null, this is expected to point to an lf_mutex_t.
                           // It is not declared as such to avoid a dependence on platform.h.
@@ -292,14 +315,33 @@ typedef struct self_base_t {
  * specific.  This struct represents their common features. Given any
  * pointer to an action struct, it can be cast to lf_action_base_t,
  * to token_template_t, or to token_type_t to access these common fields.
- * IMPORTANT: If this is changed, it must also be changed in
- * CActionGenerator.java generateAuxiliaryStruct().
  */
-typedef struct lf_action_base_t {
-	token_template_t tmplt;    // Type and token information (template is a C++ keyword).
-	bool is_present;
-	bool has_value;
-	trigger_t* trigger;
+typedef struct {
+    token_template_t tmplt;    // Type and token information (template is a C++ keyword).
+    bool is_present;
+    trigger_t* trigger;        // THIS HAS TO MATCH lf_action_internal_t
+    self_base_t* parent;
+    bool has_value;
 } lf_action_base_t;
+
+/**
+ * Internal part of the action structs.
+ */
+typedef struct {
+    trigger_t* trigger;
+} lf_action_internal_t;
+
+/**
+  * @brief Internal part of the port structs.
+  * HAS TO MATCH lf_port_base_t after tmplt and is_present.
+  */
+typedef struct {
+    lf_sparse_io_record_t* sparse_record; // NULL if there is no sparse record.
+    int destination_channel;              // -1 if there is no destination.
+    int num_destinations;                 // The number of destination reactors this port writes to.
+    self_base_t* source_reactor;          // Pointer to the self struct of the reactor that provides data to this port.
+                                          // If this is an input, that reactor will normally be the container of the
+                                          // output port that sends it data.
+} lf_port_internal_t;
 
 #endif

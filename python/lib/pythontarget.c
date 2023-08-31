@@ -56,6 +56,8 @@ PyObject *globalPythonModuleDict = NULL;
 // Import pickle to enable native serialization
 PyObject* global_pickler = NULL;
 
+environment_t* top_level_environment = NULL;
+
 
 //////////// schedule Function(s) /////////////
 
@@ -149,7 +151,7 @@ int lf_reactor_c_main(int argc, const char *argv[]);
  * Prototype for lf_request_stop().
  * @see reactor.h
  */
-void lf_request_stop();
+void lf_request_stop(void);
 
 ///////////////// Other useful functions /////////////////////
 /**
@@ -261,6 +263,10 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
         }
     }
 
+    // Store a reference to the top-level environment
+    int num_environments = _lf_get_environments(&top_level_environment);
+    lf_assert(num_environments == 1, "Python target only supports programs with a single environment/enclave");
+
     LF_PRINT_DEBUG("Initialized the Python interpreter.");
 
     Py_BEGIN_ALLOW_THREADS
@@ -288,7 +294,7 @@ static PyMethodDef GEN_NAME(MODULE_NAME,_methods)[] = {
   {"schedule_copy", py_schedule_copy, METH_VARARGS, NULL},
   {"tag", py_lf_tag, METH_NOARGS, NULL},
   {"tag_compare", py_tag_compare, METH_VARARGS, NULL},
-  {"request_stop", py_request_stop, METH_NOARGS, NULL},
+  {"request_stop", py_request_stop, METH_NOARGS, "Request stop"},
   {NULL, NULL, 0, NULL}
 };
 
@@ -412,11 +418,6 @@ void destroy_action_capsule(PyObject* capsule) {
  * Individual ports can then later be accessed in Python code as port[idx].
  */
 PyObject* convert_C_port_to_py(void* port, int width) {
-    generic_port_instance_struct* cport;
-    if (width == -2) {
-        // Not a multiport
-        cport = (generic_port_instance_struct *)port;
-    }
     // Create the port struct in Python
     PyObject* cap =
         (PyObject*)PyObject_GC_New(generic_port_capsule_struct, &py_port_capsule_t);
@@ -433,12 +434,13 @@ PyObject* convert_C_port_to_py(void* port, int width) {
     // Fill in the Python port struct
     ((generic_port_capsule_struct*)cap)->port = capsule;
     ((generic_port_capsule_struct*)cap)->width = width;
-    FEDERATED_ASSIGN_FIELDS(((generic_port_capsule_struct*)cap), cport);
 
     if (width == -2) {
+        generic_port_instance_struct* cport = (generic_port_instance_struct *) port;
+        FEDERATED_ASSIGN_FIELDS(((generic_port_capsule_struct*)cap), cport);
+
         ((generic_port_capsule_struct*)cap)->is_present =
             cport->is_present;
-
 
         if (cport->value == NULL) {
             // Value is absent

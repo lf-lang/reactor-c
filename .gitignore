@@ -1,8 +1,11 @@
 /.idea/
 /docs/_build
 /docs/api
-/.vscode/
+**/.vscode/
 /build/
 **/.DS_Store
 /core/federated/RTI/build/
 /cmake-build-debug/
+
+# Generated trace files
+*.lft

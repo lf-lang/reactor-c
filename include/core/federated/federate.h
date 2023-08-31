@@ -36,6 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "tag.h"
 #include "lf_types.h"
+#include "environment.h"
 #include "platform.h"
 
 #ifndef ADVANCE_MESSAGE_INTERVAL
@@ -57,6 +58,14 @@ typedef struct federate_instance_t {
      * Thread listening for incoming TCP messages from the RTI.
      */
     lf_thread_t RTI_socket_listener;
+
+    /**
+     * Thread responsible for setting ports to absent by an STAA offset if they
+     * aren't already known.
+     */
+    #ifdef FEDERATED_DECENTRALIZED
+    lf_thread_t staaSetter;
+    #endif
 
     /**
      * Number of inbound physical connections to the federate.
@@ -146,7 +155,7 @@ typedef struct federate_instance_t {
     /**
      * Indicates whether the last TAG received is provisional or an ordinary
      * TAG.
-     * If the last TAG has been provisional, network control reactions must be inserted.
+     * If the last TAG has been provisional, network port absent reactions must be inserted.
      * This variable should only be accessed while holding the mutex lock.
      */
     bool is_last_TAG_provisional;
@@ -172,10 +181,10 @@ typedef struct federate_instance_t {
 
     /**
      * Used to prevent the federate from sending a REQUEST_STOP
-     * message multiple times to the RTI.
-     * This variable should only be accessed while holding the mutex lock.
+     * message if it has already received a stop request from the RTI.
+     * This variable should only be accessed while holding a mutex lock.
      */
-    bool sent_a_stop_request_to_rti;
+    bool received_stop_request_from_rti;
 
     /**
      * A record of the most recently sent LTC (logical tag complete) message.
@@ -205,38 +214,17 @@ typedef struct federate_instance_t {
      */
     instant_t min_delay_from_physical_action_to_federate_output;
 
-    /**
-     * This list is also used to determine the status of a given network
-     * input port at a given logical time. The status of the port (trigger->status) can be:
-     * present, absent, or unknown. To determine the status of that port, for a given trigger
-     * 't' in this list, a (number of) network input control reactions are inserted into the
-     * reaction queue, which is are special kind of reaction that wait long enough until the
-     * status of the port becomes known. In the centralized coordination, this wait is until
-     * the RTI informs the reaction of the status of the port. In the decentralized coordination,
-     * this wait is until the STP offset expires (or the status is somehow becomes known sooner).
-     */
-
-    /**
-     * List of triggers for network input control reactions, used
-     * to trigger these reaction at the beginning of every tag.
-     */
-    trigger_t** triggers_for_network_input_control_reactions;
-    size_t triggers_for_network_input_control_reactions_size;
-
-
-    /**
-     * The triggers for all network output control reactions.
-     *
-     * This is used to trigger network output
-     * control reactions that will potentially send an ABSENT
-     * message to any downstream federate that might be blocking
-     * on the network port. The ABSENT message will only be sent if
-     * the output is not present.
-     */
-    trigger_t* trigger_for_network_output_control_reactions;
-
+    // Trace object
+    trace_t* trace;
 } federate_instance_t;
 
+#ifdef FEDERATED_DECENTRALIZED
+typedef struct staa {
+    lf_action_base_t** actions;
+    size_t STAA;
+    size_t numActions;
+} staa_t;
+#endif
 
 typedef struct federation_metadata_t {
     const char* federation_id;
@@ -247,6 +235,7 @@ typedef struct federation_metadata_t {
 
 extern lf_mutex_t outbound_socket_mutex;
 extern lf_cond_t port_status_changed;
+extern lf_cond_t logical_time_changed;
 
 /**
 * Generated function that sends information about connections between this federate and
@@ -256,6 +245,15 @@ extern lf_cond_t port_status_changed;
 * @see MSG_TYPE_NEIGHBOR_STRUCTURE in net_common.h
 */
 void send_neighbor_structure_to_RTI(int);
+
+/**
+ * @brief Spawns a thread to iterate through STAA structs, setting its associated ports absent
+ * at an offset if the port is not present with a value by a certain physical time.
+ * 
+ */
+#ifdef FEDERATED_DECENTRALIZED
+void spawn_staa_thread(void);
+#endif
 
 /**
  * Connect to the federate with the specified id. This established
@@ -277,7 +275,7 @@ void connect_to_federate(uint16_t);
  * This function assumes the caller holds the mutex lock.
  *
  * @param tag_to_send The tag to send.
-*/
+ */
 void _lf_logical_tag_complete(tag_t);
 
 /**
@@ -344,6 +342,7 @@ void* handle_p2p_connections_from_federates(void*);
  * remote federate that the current federate will not produce an event
  * on this network port at the current logical time.
  *
+ * @param env The environment in which we are executing
  * @param additional_delay The offset applied to the timestamp
  *  using after. The additional delay will be greater or equal to zero
  *  if an after is used on the connection. If no after is given in the
@@ -351,7 +350,32 @@ void* handle_p2p_connections_from_federates(void*);
  * @param port_ID The ID of the receiving port.
  * @param fed_ID The fed ID of the receiving federate.
  */
-void send_port_absent_to_federate(interval_t, unsigned short, unsigned short);
+void send_port_absent_to_federate(environment_t* env, interval_t, unsigned short, unsigned short);
+
+/**
+ * Enqueue port absent reactions that will send a PORT_ABSENT
+ * message to downstream federates if a given network output port is not present.
+ */
+void enqueue_port_absent_reactions(environment_t* env);
+
+/**
+ * @brief Prevent the advancement to the next level of the reaction queue until the
+ * level we try to advance to is known to be under the max level allowed to advance.
+ *
+ * @param next_reaction_level
+ */
+void stall_advance_level_federation(environment_t*, size_t);
+
+/**
+ * @brief Attempts to update the max level the reaction queue is allowed to advance to
+ * for the current logical timestep.
+ *
+ * @param tag The latest TAG received by this federate.
+ * @param is_provisional Whether the latest tag was provisional
+ *
+ * This function assumes that the caller holds the mutex.
+ */
+void update_max_level(tag_t, bool);
 
 /**
  * Send a message to another federate directly or via the RTI.
@@ -400,6 +424,7 @@ int send_message(int message_type,
  * @note This function is similar to send_message() except that it
  *   sends timed messages and also contains logics related to time.
  *
+ * @param env The environment in which we are executing
  * @param additional_delay The offset applied to the timestamp
  *  using after. The additional delay will be greater or equal to zero
  *  if an after is used on the connection. If no after is given in the
@@ -416,7 +441,8 @@ int send_message(int message_type,
  * @param message The message.
  * @return 1 if the message has been sent, 0 otherwise.
  */
-int send_timed_message(interval_t,
+int send_timed_message(environment_t*,
+                        interval_t,
                         int,
                         unsigned short,
                         unsigned short,
@@ -430,13 +456,8 @@ int send_timed_message(interval_t,
  * and _lf_rti_socket_TCP is valid. It then sends the current logical
  * time to the RTI and waits for the RTI to respond with a specified
  * time. It starts a thread to listen for messages from the RTI.
- * It then waits for physical time to match the specified time,
- * sets current logical time to the time returned by the RTI,
- * and then returns. If --fast was specified, then this does
- * not wait for physical time to match the logical start time
- * returned by the RTI.
  */
-void synchronize_with_other_federates(void);
+void synchronize_with_other_federates();
 
 /**
  * Wait until the status of network port "port_ID" is known.
@@ -446,9 +467,10 @@ void synchronize_with_other_federates(void);
  *
  * This function assumes the holder does not hold a mutex.
  *
+ * @param env The environment in which we are executing
  * @param port_ID The ID of the network port
  * @param STAA The safe-to-assume-absent threshold for the port
  */
-void wait_until_port_status_known(int portID, interval_t STAA);
+void wait_until_port_status_known(environment_t* env, int portID, interval_t STAA);
 
 #endif // FEDERATE_H

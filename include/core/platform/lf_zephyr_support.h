@@ -31,6 +31,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef LF_ZEPHYR_SUPPORT_H
 #define LF_ZEPHYR_SUPPORT_H
 
+#include "lf_tag_64_32.h"
+
 #include <stdint.h> // For fixed-width integral types
 #include <time.h>   // For CLOCK_MONOTONIC
 #include <stdbool.h>
@@ -39,12 +41,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <zephyr/kernel.h>
 
 #define NO_TTY
-
-#define PRINTF_TIME "%" PRIu64
-#define PRINTF_MICROSTEP "%" PRIu32
-#define PRINTF_TAG "(" PRINTF_TIME ", " PRINTF_MICROSTEP ")"
-#define _LF_TIMEOUT 1
-
 #ifdef LF_THREADED
 
 typedef struct k_mutex lf_mutex_t;
@@ -52,10 +48,7 @@ typedef struct {
     lf_mutex_t* mutex;
     struct k_condvar condition;
 } lf_cond_t;
-typedef k_tid_t lf_thread_t;
-
-extern lf_mutex_t mutex;
-extern lf_cond_t event_q_changed;
+typedef struct k_thread* lf_thread_t;
 
 /**
  * @brief Add `value` to `*ptr` and return original value of `*ptr` 
