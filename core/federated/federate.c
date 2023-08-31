@@ -2743,14 +2743,17 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
                 }
                 // Check whether the new event on the event queue requires sending a new NET.
                 tag_t next_tag = get_next_event_tag(env);
+                if (
+                    lf_tag_compare(_fed.last_TAG, next_tag) >= 0
+                    || lf_tag_compare(_fed.last_TAG, tag) >= 0
+                ) {
+                    return _fed.last_TAG;
+                }
                 if (lf_tag_compare(next_tag, tag) != 0) {
                     _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag, wait_for_reply);
                     _fed.last_sent_NET = next_tag;
                     LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI from loop.",
                         next_tag.time - lf_time_start(), next_tag.microstep);
-                }
-                if (lf_tag_compare(_fed.last_TAG, next_tag) >= 0) {
-                    return _fed.last_TAG;
                 }
             }
         }
