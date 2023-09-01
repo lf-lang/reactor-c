@@ -29,9 +29,9 @@ trace_to_influxdb: trace_to_influxdb.o trace_util.o
 	$(CC) -o trace_to_influxdb trace_to_influxdb.o trace_util.o $(LIBS)
 
 install: trace_to_csv trace_to_chrome trace_to_influxdb
-	mv trace_to_csv $(BIN_INSTALL_PATH)
-	mv trace_to_chrome $(BIN_INSTALL_PATH)
-	mv trace_to_influxdb $(BIN_INSTALL_PATH)
+	cp trace_to_csv $(BIN_INSTALL_PATH)
+	cp trace_to_chrome $(BIN_INSTALL_PATH)
+	cp trace_to_influxdb $(BIN_INSTALL_PATH)
 	cp ./visualization/fedsd.py $(BIN_INSTALL_PATH)
 	ln -f -s $(BIN_INSTALL_PATH)/fedsd.py $(BIN_INSTALL_PATH)/fedsd
 	chmod +x $(BIN_INSTALL_PATH)/fedsd
