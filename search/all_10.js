@@ -81,7 +81,7 @@ var searchData=
   ['process_5fargs_78',['process_args',['../de/d0d/rti__lib_8c.html#a80aaf4eeed3e2902f8fe9de80b45777d',1,'process_args(int argc, const char *argv[]):&#160;rti_lib.c'],['../d3/d90/rti__lib_8h.html#a80aaf4eeed3e2902f8fe9de80b45777d',1,'process_args(int argc, const char *argv[]):&#160;rti_lib.c'],['../dd/d37/reactor__common_8c.html#a80aaf4eeed3e2902f8fe9de80b45777d',1,'process_args(int argc, const char *argv[]):&#160;reactor_common.c'],['../d7/d0e/reactor__common_8h.html#a80aaf4eeed3e2902f8fe9de80b45777d',1,'process_args(int argc, const char *argv[]):&#160;rti_lib.c']]],
   ['process_5fclock_5fsync_5fargs_79',['process_clock_sync_args',['../de/d0d/rti__lib_8c.html#ad7d4392b21b300612a5239fbb1ffa274',1,'process_clock_sync_args(int argc, const char *argv[]):&#160;rti_lib.c'],['../d3/d90/rti__lib_8h.html#ad7d4392b21b300612a5239fbb1ffa274',1,'process_clock_sync_args(int argc, const char *argv[]):&#160;rti_lib.c']]],
   ['prt_80',['prt',['../d5/d38/structpqueue__t.html#aeb48e61916a065bb67c7dc3cc963ffeb',1,'pqueue_t']]],
-  ['prune_5fevent_5fname_81',['prune_event_name',['../de/d18/namespacefedsd__helper.html#a5c8df799bb44589850dd6c924bc09ac3',1,'fedsd_helper']]],
+  ['prune_5fevent_5fname_81',['prune_event_name',['../d6/d1e/namespacefedsd.html#aef4d7fb4468ae45246f83a4db01ec4e2',1,'fedsd']]],
   ['put_82',['put',['../d6/df3/hashmap_8h.html#afe449c9d265cb18817e77ae3d1393671',1,'hashmap.h']]],
   ['pwd_83',['pwd',['../da/d55/struct__influx__v2__client__t.html#ae4f9da92495deca2b4aca0a1443dc9dc',1,'_influx_v2_client_t::pwd'],['../da/d5e/struct__influx__client__t.html#a1fa12897f63ef92780c126416ffe4c42',1,'_influx_client_t::pwd']]],
   ['py_84',['py',['../d6/d1e/namespacefedsd.html#a9284c32ebefcb7cabecf7f94515b0000',1,'fedsd']]],

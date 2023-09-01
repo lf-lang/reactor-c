@@ -15,11 +15,12 @@ var searchData=
   ['reset_5freactions_5fsize_12',['reset_reactions_size',['../d2/d01/structenvironment__t.html#a4e29a0f3ce76dc8c51f5d0cac1de2651',1,'environment_t']]],
   ['ret_13',['ret',['../d6/df3/hashmap_8h.html#a339672ff94e6199019102f50d317c3d7',1,'hashmap.h']]],
   ['riff_14',['riff',['../d9/dad/structlf__wav__t.html#a4dfe6fe77717d001176da92f396b85d9',1,'lf_wav_t']]],
-  ['rti_5fdf_15',['rti_df',['../d6/d1e/namespacefedsd.html#a73a641b9adb7295aa8fa04ed27297e99',1,'fedsd']]],
-  ['rti_5fhost_16',['rti_host',['../d5/d4f/structfederation__metadata__t.html#a8e66865ef3fa328713e63c4a1666c69a',1,'federation_metadata_t']]],
-  ['rti_5fmutex_17',['rti_mutex',['../de/d37/enclave_8c.html#a900138c50464733b007a7cec4bb050ca',1,'rti_mutex:&#160;rti_lib.c'],['../d1/d01/rti_8c.html#a900138c50464733b007a7cec4bb050ca',1,'rti_mutex:&#160;rti_lib.c'],['../de/d0d/rti__lib_8c.html#a900138c50464733b007a7cec4bb050ca',1,'rti_mutex:&#160;rti_lib.c']]],
-  ['rti_5fport_18',['rti_port',['../d5/d4f/structfederation__metadata__t.html#af75d81e35fab4ed398df21bd48a50b52',1,'federation_metadata_t']]],
-  ['rti_5fsocket_5flistener_19',['RTI_socket_listener',['../d6/d7a/structfederate__instance__t.html#a5b6b4b5912a7bb7df1c8987f38e12004',1,'federate_instance_t']]],
-  ['rti_5ftrace_5ffile_5fname_20',['rti_trace_file_name',['../d1/d01/rti_8c.html#ab51bbf9201f21d31ea14e63cf880c09a',1,'rti.c']]],
-  ['rti_5fuser_21',['rti_user',['../d5/d4f/structfederation__metadata__t.html#acb5d86838516db68d87a30babcce36dd',1,'federation_metadata_t']]]
+  ['rti_5fcsv_5ffile_15',['rti_csv_file',['../d6/d1e/namespacefedsd.html#a8251861b8e0af78aad6b1ebfa08ceb87',1,'fedsd']]],
+  ['rti_5fdf_16',['rti_df',['../d6/d1e/namespacefedsd.html#a73a641b9adb7295aa8fa04ed27297e99',1,'fedsd']]],
+  ['rti_5fhost_17',['rti_host',['../d5/d4f/structfederation__metadata__t.html#a8e66865ef3fa328713e63c4a1666c69a',1,'federation_metadata_t']]],
+  ['rti_5fmutex_18',['rti_mutex',['../de/d37/enclave_8c.html#a900138c50464733b007a7cec4bb050ca',1,'rti_mutex:&#160;rti_lib.c'],['../d1/d01/rti_8c.html#a900138c50464733b007a7cec4bb050ca',1,'rti_mutex:&#160;rti_lib.c'],['../de/d0d/rti__lib_8c.html#a900138c50464733b007a7cec4bb050ca',1,'rti_mutex:&#160;rti_lib.c']]],
+  ['rti_5fport_19',['rti_port',['../d5/d4f/structfederation__metadata__t.html#af75d81e35fab4ed398df21bd48a50b52',1,'federation_metadata_t']]],
+  ['rti_5fsocket_5flistener_20',['RTI_socket_listener',['../d6/d7a/structfederate__instance__t.html#a5b6b4b5912a7bb7df1c8987f38e12004',1,'federate_instance_t']]],
+  ['rti_5ftrace_5ffile_5fname_21',['rti_trace_file_name',['../d1/d01/rti_8c.html#ab51bbf9201f21d31ea14e63cf880c09a',1,'rti.c']]],
+  ['rti_5fuser_22',['rti_user',['../d5/d4f/structfederation__metadata__t.html#acb5d86838516db68d87a30babcce36dd',1,'federation_metadata_t']]]
 ];

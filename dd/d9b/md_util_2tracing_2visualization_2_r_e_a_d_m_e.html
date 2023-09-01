@@ -93,18 +93,19 @@ $(document).ready(function(){initNavTree('dd/d9b/md_util_2tracing_2visualization
   <div class="headertitle"><div class="title">Trace sequence diagram visualizer</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p><a class="anchor" id="autotoc_md38"></a> <code>fedsd</code> is a utility that reports the interactions (exchanged messages) between federates and the RTI in a sequence-diagram-like format.</p>
+<div class="textblock"><p><a class="anchor" id="autotoc_md38"></a> <code>fedsd</code> is a utility that reports the interactions (exchanged messages) between federates and the RTI in a sequence-diagram-like format. It also reports the interactions between different encalves in an enclaved execution, where no RTI trace file is provided.</p>
 <p>To use <code>fedsd</code>, you need to first obtain an execution trace. To do this, enable the tracing mechanism in your Lingua Franca program by setting the <code>tracing</code> target property to <code>true</code> and then compile and run the program.</p>
 <p>This utility starts by transforming each <code>.lft</code> file into a <code>.csv</code> file, by internally running <code>trace_to_csv</code>. It then aggregates the data from all <code>.csv</code> files to do the matching and draw the sequence diagram.</p>
 <h1><a class="anchor" id="autotoc_md39"></a>
 Installing</h1>
-<p><code>fedsd</code> is installed together with the rest of the tracing tools. For instructions refer to <code>~/util/tracing/README.md</code>.</p>
+<p><code>fedsd</code> is installed together with the rest of the tracing tools. For instructions refer to <code><a class="el" href="../../d6/df2/util_2tracing_2_r_e_a_d_m_e_8md.html">util/tracing/README.md</a></code>.</p>
 <h1><a class="anchor" id="autotoc_md40"></a>
 Running</h1>
 <p>In case the federation is launched using the <code>bash</code> script under <code>bin</code>, an <code>.lft</code> trace file will be generated for each of the federates, in addition to <code>rti.lft</code>. The latter contains the RTI trace.</p>
-<p>If, however, the federation is launched manually, then running the <code>RTI</code> command should be passed the <code>-t</code> flag in order to make sure that it, too, has tracing enabled: </p><div class="fragment"><div class="line">$ RTI -n &lt;number_of_federates&gt; -t</div>
+<p>If, however, the federation is launched manually, then running the <code>RTI</code> command should be passed the <code>-t</code> flag in order to make sure that it, too, has tracing enabled: </p><div class="fragment"><div class="line">RTI -n &lt;number_of_federates&gt; -t</div>
 </div><!-- fragment --><p>It is most convenient to launch the RTI and all federates from the same working directory so that they will all write their trace file to that directory.</p>
-<p>Once the federation stopped executing, run <code>fedsd</code> on all generated <code>.lft</code> files: </p><div class="fragment"><div class="line">$ fedsd *.lft</div>
+<p>Once the federation stopped executing, running <code>fedsd</code> will operate on all the <code>.lft</code> files in the current directory: </p><div class="fragment"><div class="line">fedsd</div>
+</div><!-- fragment --><p> It is also possible to operate on specific files. In such a case, run <code>fedsd</code> with <code>-r</code> flag to provide the RTI trace file, and <code>-f</code> flag to privide the list of federates trace files. Bith argumenets are optional. </p><div class="fragment"><div class="line">fedsd -r &lt;rti.lft&gt; -f &lt;federate__f1.lft&gt; &lt;federate__f2.lft&gt;</div>
 </div><!-- fragment --><p>The output is an html file named <code>trace_svg.html</code> (in the current directory) that contains the sequence of interactions between the federates and the RTI. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
