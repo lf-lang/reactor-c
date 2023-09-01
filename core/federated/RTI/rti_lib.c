@@ -293,6 +293,7 @@ void send_upstream_next_downstream_tag(federate_t* fed, tag_t next_event_tag) {
     encode_int64(next_event_tag.time, &(buffer[1]));
     encode_int32((int32_t)next_event_tag.microstep, &(buffer[1 + sizeof(int64_t)]));
 
+    // FIXME: Send NDT to transitive upstreams either
     for (int i = 0; i < fed->enclave.num_upstream; i++) {
         if (lf_tag_compare(_f_rti->enclaves[i]->enclave.completed, next_event_tag) < 0) {
             // send next downstream tag to upstream federates that do not complete the next_event_tag
@@ -555,8 +556,10 @@ void handle_next_event_tag(federate_t* fed) {
         fed->enclave.id,
         intended_tag
     );
-    // FIXME: uncomment below function after implementing it.
-    //send_upstream_next_downstream_tag(fed, intended_tag);
+    // If fed cannot get the grant of the intended tag, send NDTs to its upstream federates.
+    if (lf_tag_compare(fed->enclave.last_granted, intended_tag) < 0) {
+        send_upstream_next_downstream_tag(fed, intended_tag);
+    }
     lf_mutex_unlock(&rti_mutex);
 }
 
