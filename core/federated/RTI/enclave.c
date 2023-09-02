@@ -72,7 +72,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
         // Ignore this enclave if it no longer connected.
         if (upstream->state == NOT_CONNECTED) continue;
 
-        tag_t candidate = lf_delay_tag(upstream->completed, e->upstream_delay[j]);
+        tag_t candidate = lf_delay_antitag(upstream->completed, e->upstream_delay[j]);
 
         if (lf_tag_compare(candidate, min_upstream_completed) < 0) {
             min_upstream_completed = candidate;
@@ -132,7 +132,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(enclave_t* e) {
         // Adjust by the "after" delay.
         // Note that "no delay" is encoded as NEVER,
         // whereas one microstep delay is encoded as 0LL.
-        tag_t candidate = lf_delay_tag(upstream_next_event, e->upstream_delay[j]);
+        tag_t candidate = lf_delay_antitag(upstream_next_event, e->upstream_delay[j]);
 
         if (e->upstream_delay[j] == NEVER) {
             if (lf_tag_compare(candidate, t_d_zero_delay) < 0) {

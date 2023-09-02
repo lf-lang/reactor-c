@@ -152,6 +152,16 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval) {
     return result;
 }
 
+tag_t lf_delay_antitag(tag_t antitag, interval_t interval) {
+    tag_t result = lf_delay_tag(antitag, interval);
+    if (interval != 0 && interval != NEVER && interval != FOREVER && result.time != NEVER && result.time != FOREVER) {
+        LF_PRINT_DEBUG("interval=%lld, result time=%lld", (long long) interval, (long long) result.time);
+        result.time -= 1;
+        result.microstep = UINT_MAX;
+    }
+    return result;
+}
+
 instant_t lf_time_logical(void *env) {
     assert(env != GLOBAL_ENVIRONMENT);
     return ((environment_t *) env)->current_tag.time;

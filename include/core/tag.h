@@ -111,6 +111,15 @@ int lf_tag_compare(tag_t tag1, tag_t tag2);
 tag_t lf_delay_tag(tag_t tag, interval_t interval);
 
 /**
+ * Return the latest tag that cannot have an event provided that
+ * - `antitag` does not have an event, and
+ * - if an event occurs at time `x`, then there exists a tag `antitag` such that
+ *   `x = antitag + interval`, where `+` is the usual `+` that we use for tags
+ *   which is neither commutative nor a group operation.
+ */
+tag_t lf_delay_antitag(tag_t antitag, interval_t interval);
+
+/**
  * Return the current logical time in nanoseconds.
  * On many platforms, this is the number of nanoseconds
  * since January 1, 1970, but it is actually platform dependent.
