@@ -295,9 +295,12 @@ void send_upstream_next_downstream_tag(federate_t* fed, tag_t next_event_tag) {
 
     // FIXME: Send NDT to transitive upstreams either
     for (int i = 0; i < fed->enclave.num_upstream; i++) {
-        if (lf_tag_compare(_f_rti->enclaves[i]->enclave.completed, next_event_tag) < 0) {
+        int upstream_id = fed->enclave.upstream[i];
+        if (lf_tag_compare(_f_rti->enclaves[upstream_id]->enclave.completed, next_event_tag) < 0) {
             // send next downstream tag to upstream federates that do not complete the next_event_tag
-            write_to_socket_errexit(_f_rti->enclaves[i]->socket, message_length, buffer,
+            LF_PRINT_LOG("RTI sending next downstream event message to federate %u.",
+                upstream_id);
+            write_to_socket_errexit(_f_rti->enclaves[upstream_id]->socket, message_length, buffer,
                     "RTI failed to send MSG_TYPE_NEXT_DOWNSTREAM_TAG message to federate %d.", _f_rti->enclaves[i]->socket);
         }
     }

@@ -2315,8 +2315,16 @@ void handle_stop_request_message() {
  * 
  * 
 */
-void handle_next_downstream_event_tag() {
+void handle_next_downstream_tag() {
     // FIXME: Fill this function.
+    size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
+    unsigned char buffer[bytes_to_read];
+    read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,
+            "Failed to read next downstream tag from RTI.");
+    tag_t NDT = extract_tag(buffer);
+
+    LF_PRINT_LOG("Received from RTI a MSG_TYPE_NEXT_DOWNSTREAM_TAG message with elapsed tag " PRINTF_TAG ".",
+            NDT.time - start_time, NDT.microstep);
 }
 
 /**
@@ -2537,7 +2545,7 @@ void* listen_to_rti_TCP(void* args) {
                 handle_port_absent_message(_fed.socket_TCP_RTI, -1);
                 break;
             case MSG_TYPE_NEXT_DOWNSTREAM_TAG:
-                handle_next_downstream_event_tag();
+                handle_next_downstream_tag();
                 break;
             case MSG_TYPE_CLOCK_SYNC_T1:
             case MSG_TYPE_CLOCK_SYNC_T4:
