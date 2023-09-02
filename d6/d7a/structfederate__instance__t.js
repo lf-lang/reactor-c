@@ -18,6 +18,5 @@ var structfederate__instance__t =
     [ "socket_TCP_RTI", "d6/d7a/structfederate__instance__t.html#aacdc19a638ccdc9fae494ce641f4cb04", null ],
     [ "sockets_for_inbound_p2p_connections", "d6/d7a/structfederate__instance__t.html#a244a65a4b9ca9e27230c87ce9021b7e1", null ],
     [ "sockets_for_outbound_p2p_connections", "d6/d7a/structfederate__instance__t.html#a9e1cde7330bec95f787bb7a85d509c9a", null ],
-    [ "trace", "d6/d7a/structfederate__instance__t.html#a50f145e84f46ab83be841358eba8acca", null ],
-    [ "waiting_for_TAG", "d6/d7a/structfederate__instance__t.html#a9812f0499dda0efd9f2718981be2e905", null ]
+    [ "trace", "d6/d7a/structfederate__instance__t.html#a50f145e84f46ab83be841358eba8acca", null ]
 ];
