@@ -1820,6 +1820,9 @@ int process_args(int argc, const char* argv[]) {
             _f_rti->authentication_enabled = true;
         } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tracing") == 0) {
             _f_rti->tracing_enabled = true;
+        } else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0) {
+            lf_print("%s", version_info);
+            return;
         } else if (strcmp(argv[i], " ") == 0) {
             // Tolerate spaces
             continue;

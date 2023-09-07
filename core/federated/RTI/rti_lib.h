@@ -34,6 +34,8 @@
 /////////////////////////////////////////////
 //// Data structures
 
+static char version_info[] = "0.5.0"; // Simply use Lingua Franca version name now.
+
 typedef enum socket_type_t {
     TCP,
     UDP
