@@ -38,6 +38,7 @@
 
 #include "lf_types.h"
 #include "platform.h"
+#include "pqueue.h"
 
 // Forward declarations so that a pointers can appear in the environment struct.
 typedef struct lf_scheduler_t lf_scheduler_t;
@@ -104,6 +105,9 @@ typedef struct environment_t {
     tag_t** _lf_intended_tag_fields;
     int _lf_intended_tag_fields_size;
 #endif // FEDERATED
+#ifdef FEDERATED_CENTRALIZED
+    pqueue_t* ndt_queue;
+#endif // FEDERATED_CENTRALIZED
 } environment_t;
 
 #ifdef MODAL_REACTORS

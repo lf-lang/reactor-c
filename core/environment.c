@@ -106,6 +106,10 @@ static void environment_init_modes(environment_t* env, int num_modes, int num_st
  * @brief Initialize the federation-specific parts of the environment struct.
  */
 static void environment_init_federated(environment_t* env, int num_is_present_fields) {
+#ifdef FEDERATED_CENTRALIZED
+    // TODO: init ndt_queue with proper functions.
+    // env->ndt_queue = pqueue_init(10, tag_in_reverse_order, )
+#endif
 #ifdef FEDERATED_DECENTRALIZED
     env->_lf_intended_tag_fields = (tag_t**) calloc(num_is_present_fields, sizeof(tag_t*));
     lf_assert(env->_lf_intended_tag_fields != NULL, "Out of memory");

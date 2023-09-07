@@ -301,7 +301,7 @@ void send_upstream_next_downstream_tag(federate_t* fed, tag_t next_event_tag) {
             LF_PRINT_LOG("RTI sending next downstream event message to federate %u.",
                 upstream_id);
             write_to_socket_errexit(_f_rti->enclaves[upstream_id]->socket, message_length, buffer,
-                    "RTI failed to send MSG_TYPE_NEXT_DOWNSTREAM_TAG message to federate %d.", _f_rti->enclaves[i]->socket);
+                    "RTI failed to send MSG_TYPE_NEXT_DOWNSTREAM_TAG message to federate %d.", upstream_id);
         }
     }
 }
