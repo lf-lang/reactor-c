@@ -106,7 +106,7 @@ typedef struct environment_t {
     int _lf_intended_tag_fields_size;
 #endif // FEDERATED
 #ifdef FEDERATED_CENTRALIZED
-    pqueue_t* ndt_queue;
+    pqueue_t* ndt_q;
 #endif // FEDERATED_CENTRALIZED
 } environment_t;
 

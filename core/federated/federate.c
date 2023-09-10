@@ -2321,6 +2321,16 @@ void handle_next_downstream_tag() {
 
     LF_PRINT_LOG("Received from RTI a MSG_TYPE_NEXT_DOWNSTREAM_TAG message with elapsed tag " PRINTF_TAG ".",
             NDT.time - start_time, NDT.microstep);
+    environment_t* env;
+    _lf_get_environments(&env);
+
+    if (lf_tag_compare(env->current_tag, NDT) < 0) {
+        // The current tag is less than NDT. Push NDT to ndt_q.
+        event_t* dummy = _lf_create_dummy_events(env, NULL, NDT.time, NULL, NDT.microstep);
+        pqueue_insert(env->ndt_q, dummy);
+    } else {
+        // The current tag is greater than or equal to NDT. Send LTC, NET, and ABS messages.
+    }
 }
 
 /**
