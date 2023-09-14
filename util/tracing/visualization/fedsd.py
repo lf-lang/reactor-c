@@ -334,9 +334,14 @@ def load_and_process_csv_file(csv_file) :
     # which boils up to having 'RTI' in the 'event' column
     df = df[df['event'].str.contains('Sending|Receiving|Scheduler advancing time ends') == True]
 
+    id = -1
     # Fix the parameters of the event 'Scheduler advancing time ends'
-    # We rely on the fact that the first row of the csv file cannot be the end of advancing time
-    id = df.iloc[-1]['self_id']
+    # where 'self_id' should not be -1, but rather the value from a sending or 
+    # receiving event
+    for index, row in df.iterrows():
+        if ('Sending' in row['event'] or 'Receiving' in row['event']) :
+            id = row['self_id']
+            break
     df['self_id'] = id
     df = df.astype({'self_id': 'int', 'partner_id': 'int'})
 
