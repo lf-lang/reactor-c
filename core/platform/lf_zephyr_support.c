@@ -146,7 +146,7 @@ void _lf_initialize_clock() {
 // Clock and sleep implementation for the HI_RES clock based on 
 // Zephyrs Counter API
 
- * Return the current time in nanoseconds. It gets the current value
+/* Return the current time in nanoseconds. It gets the current value
  * of the hi-res counter device and also keeps track of overflows
  * to deliver a monotonically increasing clock.
  */
