@@ -10,6 +10,7 @@ var tag_8c =
     ] ],
     [ "_lf_physical_time", "d4/db3/tag_8c.html#ab3508bec310297ee386a5bde718c840d", null ],
     [ "lf_comma_separated_time", "d4/db3/tag_8c.html#ae956f1688a3893b44cf4bced3c13ef9a", null ],
+    [ "lf_delay_strict", "d4/db3/tag_8c.html#af61e1a6183ff7d40b1b998c08447130e", null ],
     [ "lf_delay_tag", "d4/db3/tag_8c.html#af7feb89416e60e458d6a86cadadbc41d", null ],
     [ "lf_readable_time", "d4/db3/tag_8c.html#a43509483b3e9886acd002c7d7b6482c8", null ],
     [ "lf_set_physical_clock_offset", "d4/db3/tag_8c.html#a3a209c8df88a5ef884e0cf51d4727cda", null ],

@@ -1,8 +1,8 @@
 var searchData=
 [
   ['max_5famplitude_0',['MAX_AMPLITUDE',['../d1/dcb/audio__loop_8h.html#a141b139da77580918b0f9821ab3dbb99',1,'audio_loop.h']]],
-  ['max_5fnum_5freactions_1',['MAX_NUM_REACTIONS',['../d8/d60/trace__to__csv_8c.html#a606d3e607a2e2e51a4d6413d88590317',1,'MAX_NUM_REACTIONS:&#160;trace_to_csv.c'],['../dd/d03/trace__to__influxdb_8c.html#a606d3e607a2e2e51a4d6413d88590317',1,'MAX_NUM_REACTIONS:&#160;trace_to_influxdb.c']]],
-  ['max_5fnum_5fworkers_2',['MAX_NUM_WORKERS',['../d8/d60/trace__to__csv_8c.html#ae349f8fec14a7cc3d663cf7eecf5a527',1,'MAX_NUM_WORKERS:&#160;trace_to_csv.c'],['../dd/d03/trace__to__influxdb_8c.html#ae349f8fec14a7cc3d663cf7eecf5a527',1,'MAX_NUM_WORKERS:&#160;trace_to_influxdb.c']]],
+  ['max_5fnum_5freactions_1',['max_num_reactions',['../d8/d60/trace__to__csv_8c.html#a606d3e607a2e2e51a4d6413d88590317',1,'MAX_NUM_REACTIONS:&#160;trace_to_csv.c'],['../dd/d03/trace__to__influxdb_8c.html#a606d3e607a2e2e51a4d6413d88590317',1,'MAX_NUM_REACTIONS:&#160;trace_to_influxdb.c']]],
+  ['max_5fnum_5fworkers_2',['max_num_workers',['../d8/d60/trace__to__csv_8c.html#ae349f8fec14a7cc3d663cf7eecf5a527',1,'MAX_NUM_WORKERS:&#160;trace_to_csv.c'],['../dd/d03/trace__to__influxdb_8c.html#ae349f8fec14a7cc3d663cf7eecf5a527',1,'MAX_NUM_WORKERS:&#160;trace_to_influxdb.c']]],
   ['max_5fpushall_3',['MAX_PUSHALL',['../d1/d88/vector__test_8c.html#a869c404c889e67fe95252fdca577f638',1,'vector_test.c']]],
   ['max_5freaction_5flevel_4',['MAX_REACTION_LEVEL',['../d9/d17/scheduler___g_e_d_f___n_p___c_i_8c.html#af3500a0f31948d5fb75fc0ee500a1442',1,'scheduler_GEDF_NP_CI.c']]],
   ['mbed_5',['MBED',['../d3/d79/lf__arduino__support_8h.html#a9721035a1d02f77a61d472905e269f03',1,'lf_arduino_support.h']]],

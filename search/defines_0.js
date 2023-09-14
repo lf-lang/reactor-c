@@ -6,7 +6,7 @@ var searchData=
   ['_5fappend_3',['_APPEND',['../de/dcd/influxdb_8h.html#a15470ee8d1c5841eaf78f58f73246792',1,'influxdb.h']]],
   ['_5fget_5fnext_5fchar_4',['_GET_NEXT_CHAR',['../de/dcd/influxdb_8h.html#a49f65e2120cd077ee205fefbcd5bdc50',1,'influxdb.h']]],
   ['_5fget_5fnumber_5',['_GET_NUMBER',['../de/dcd/influxdb_8h.html#aab5c9cefe9b019d4aaa5712203c74e0e',1,'influxdb.h']]],
-  ['_5flf_5fclock_6',['_LF_CLOCK',['../da/d46/lf__linux__support_8h.html#a98d0737d9461f08293ba054a2f754fc4',1,'_LF_CLOCK:&#160;lf_linux_support.h'],['../d3/dd9/lf__macos__support_8h.html#a98d0737d9461f08293ba054a2f754fc4',1,'_LF_CLOCK:&#160;lf_macos_support.h'],['../d7/dc7/lf__nrf52__support_8h.html#a98d0737d9461f08293ba054a2f754fc4',1,'_LF_CLOCK:&#160;lf_nrf52_support.h']]],
+  ['_5flf_5fclock_6',['_lf_clock',['../da/d46/lf__linux__support_8h.html#a98d0737d9461f08293ba054a2f754fc4',1,'_LF_CLOCK:&#160;lf_linux_support.h'],['../d3/dd9/lf__macos__support_8h.html#a98d0737d9461f08293ba054a2f754fc4',1,'_LF_CLOCK:&#160;lf_macos_support.h'],['../d7/dc7/lf__nrf52__support_8h.html#a98d0737d9461f08293ba054a2f754fc4',1,'_LF_CLOCK:&#160;lf_nrf52_support.h']]],
   ['_5flf_5fclock_5fsync_5fattenuation_7',['_LF_CLOCK_SYNC_ATTENUATION',['../d9/dd5/clock-sync_8h.html#a532da6f271eb75c9ac745571b995c404',1,'clock-sync.h']]],
   ['_5flf_5fclock_5fsync_5fexchanges_5fper_5finterval_8',['_LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL',['../d9/dd5/clock-sync_8h.html#ab0eeaea19d6e5c9217a4eed928c32141',1,'clock-sync.h']]],
   ['_5flf_5fregister_5ftrace_5fevent_9',['_lf_register_trace_event',['../d1/d1b/trace_8h.html#a706e8785112271e15dc95022b31c7a88',1,'trace.h']]],

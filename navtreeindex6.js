@@ -1,5 +1,7 @@
 var NAVTREEINDEX6 =
 {
+"db/dc8/pythontarget_8h.html#a4edcc011de4a45d924a03a3125d4cf91":[12,0,3,0,6,8],
+"db/dc8/pythontarget_8h.html#a543f7a99c5c0d688350df1dd90ea81bd":[12,0,3,0,6,7],
 "db/dc8/pythontarget_8h.html#a9063e80f8777300c93afde6e6f4c9cea":[12,0,3,0,6,4],
 "db/dc8/pythontarget_8h.html#a9de058b2babd69a4ed9046fccc6e4f47":[12,0,3,0,6,16],
 "db/dc8/pythontarget_8h.html#a9e1b0c9440f6e68b2d223b8fdb77fdca":[12,0,3,0,6,13],
@@ -247,7 +249,5 @@ var NAVTREEINDEX6 =
 "dd/d03/trace__to__influxdb_8c.html#a3fc7a0b0ac649ffc4c4d3d36df52f5b0":[12,0,5,0,4,9],
 "dd/d03/trace__to__influxdb_8c.html#a483f94a4768cdd43e9608a235e7532e0":[12,0,5,0,4,7],
 "dd/d03/trace__to__influxdb_8c.html#a606d3e607a2e2e51a4d6413d88590317":[12,0,5,0,4,1],
-"dd/d03/trace__to__influxdb_8c.html#aaa877530c12ba87acbbcedbef6c8999e":[12,0,5,0,4,6],
-"dd/d03/trace__to__influxdb_8c.html#add1cfd1a929c929e78db80dacaa9c2ab":[12,0,5,0,4,8],
-"dd/d03/trace__to__influxdb_8c.html#ae349f8fec14a7cc3d663cf7eecf5a527":[12,0,5,0,4,2]
+"dd/d03/trace__to__influxdb_8c.html#aaa877530c12ba87acbbcedbef6c8999e":[12,0,5,0,4,6]
 };
