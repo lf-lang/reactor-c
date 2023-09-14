@@ -153,15 +153,10 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval) {
 }
 
 tag_t lf_delay_strict(tag_t tag, interval_t interval) {
-    if (tag.time == NEVER || interval < 0LL) return tag;
-    tag_t result = tag;
-    if (interval > 0LL) {
-        // Note that overflow in C is undefined for signed variables.
-        if (FOREVER - interval < result.time) {
-            result.time = FOREVER;
-        } else {
-            result.time += interval - 1;
-        }
+    tag_t result = lf_delay_tag(tag, interval);
+    if (interval != 0 && interval != NEVER && interval != FOREVER && result.time != NEVER && result.time != FOREVER) {
+        LF_PRINT_DEBUG("interval=%lld, result time=%lld", (long long) interval, (long long) result.time);
+        result.time -= 1;
         result.microstep = UINT_MAX;
     }
     return result;
