@@ -1406,8 +1406,11 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
     unsigned char buffer[message_length];
 
     // Apply the additional delay to the current tag and use that as the intended
-    // tag of the outgoing message
-    tag_t current_message_intended_tag = lf_delay_tag(env->current_tag,
+    // tag of the outgoing message. Note that if there is delay on the connection,
+    // then we cannot promise no message with tag = current_tag + delay because a
+    // subsequent reaction might produce such a message. But we can promise no
+    // message with a tag strictly less than current_tag + delay.
+    tag_t current_message_intended_tag = lf_delay_strict(env->current_tag,
                                                     additional_delay);
 
     LF_PRINT_LOG("Sending port "
