@@ -334,10 +334,8 @@ def load_and_process_csv_file(csv_file) :
     # which boils up to having 'RTI' in the 'event' column
     df = df[df['event'].str.contains('Sending|Receiving|Scheduler advancing time ends') == True]
 
+    # Determine the "self id" in the trace file based on the first 'Receiving' or 'Sending' message (or use -1, the id of the RTI, if there is none).
     id = -1
-    # Fix the parameters of the event 'Scheduler advancing time ends'
-    # where 'self_id' should not be -1, but rather the value from a sending or 
-    # receiving event
     for index, row in df.iterrows():
         if ('Sending' in row['event'] or 'Receiving' in row['event']) :
             id = row['self_id']
