@@ -26,20 +26,30 @@
 #include "rti_lib.h"
 #include <string.h>
 
-// #define WRITE_TO_SOCKET(socket, num_bytes, buffer) \
-//     ssize_t bytes_written = write_to_socket(socket, num_bytes, buffer);
+# ifdef __RTI_SST__
+# define WRITE_TO_SOCKET(socket, num_bytes, buffer) \
+            do { \
+                unsigned char encrypted_buffer[1024]; \
+                unsigned int encrypted_buffer_length; \
+                get_encrypted_sender_buf(buffer, num_bytes, \
+                my_fed->session_ctx, encrypted_buffer, &encrypted_buffer_length); \
+                ssize_t bytes_written = write_to_socket(socket, encrypted_buffer_length, encrypted_buffer); \
+                } while (0)
 
-// #ifdef __RTI_SST__
-// #define WRITE_TO_FED_SOCKET(return_bytes, fed, num_bytes, buffer) \
-// { \
-//     char result[512]; \
-//     ssize_t return_bytes = encrypt_buffer(buffer, fed->session_ctx, &result); \
-// } \
-//     WRITE_TO_SOCKET(fed->socket, bytes, result)
-// #else
-// #define WRITE_TO_FED_SOCKET(fed, num_bytes, buffer) \
-//     WRITE_TO_SOCKET(fed->socket, num_bytes, buffer)
-// #endif
+#define WRITE_TO_SOCKET_ERREXIT(socket, num_bytes, buffer, format, ...) \
+            do { \
+                write_to_socket_errexit(socket, num_bytes, buffer, format, ##__VA_ARGS__); \
+                } while (0)
+# else
+# define WRITE_TO_SOCKET(socket, message_length, buffer) \
+            do { \
+                ssize_t bytes_written = write_to_socket(socket, message_length, buffer); \
+                } while (0)
+#define WRITE_TO_SOCKET_ERREXIT(socket, num_bytes, buffer, format, ...) \
+            do { \
+                write_to_socket_errexit(socket, num_bytes, buffer, format, ##__VA_ARGS__); \
+                } while (0)
+# endif
 
 
 // Global variables defined in tag.c:
@@ -839,11 +849,11 @@ void handle_timestamp(federate_t *my_fed) {
     #ifdef __RTI_SST__
     my_fed->socket = my_fed->saved_socket; 
     #endif
-    // WRITE_TO_FED_SOCKET(bytes_written, my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH, start_time_buffer)
-    ssize_t bytes_written = write_to_socket(
-        my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH,
-        start_time_buffer
-    );
+    WRITE_TO_SOCKET(my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH, start_time_buffer);
+    // ssize_t bytes_written = write_to_socket(
+    //     my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH,
+    //     start_time_buffer
+    // );
 
 
     if (bytes_written < MSG_TYPE_TIMESTAMP_LENGTH) {
@@ -1089,7 +1099,6 @@ void* federate_thread_TCP(void* fed) {
             case MSG_TYPE_TIMESTAMP:
                 handle_timestamp(my_fed);
                 break;
-            // 여기서는 다른 소켓 사용한다.
             case MSG_TYPE_ADDRESS_QUERY:
                 handle_address_query(my_fed->enclave.id);
                 break;
