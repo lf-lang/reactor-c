@@ -24,6 +24,7 @@
  */
 
 #include "rti_lib.h"
+#include <netinet/tcp.h>
 #include <string.h>
 
 // Global variables defined in tag.c:
@@ -53,6 +54,20 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
     int socket_descriptor = -1;
     if (socket_type == TCP) {
         socket_descriptor = socket(AF_INET, SOCK_STREAM, 0);
+
+        // Disable Nagle algorithm which bundles together small TCP messages to
+        //  reduce network traffic
+        int flag = 1;
+        int result = setsockopt(socket_descriptor,            /* socket affected */
+                                IPPROTO_TCP,     /* set option at TCP level */
+                                TCP_NODELAY,     /* name of option */
+                                (char *) &flag,  /* the cast is historical
+                                                        cruft */
+                                sizeof(int));    /* length of option value */
+        
+        if (result < 0) {
+            lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+        }
     } else if (socket_type == UDP) {
         socket_descriptor = socket(AF_INET, SOCK_DGRAM, 0);
         // Set the appropriate timeout time
