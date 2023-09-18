@@ -98,7 +98,6 @@ federate_instance_t _fed = {
         .server_port = -1,
         .last_TAG = {.time = NEVER, .microstep = 0u},
         .is_last_TAG_provisional = false,
-        .waiting_for_TAG = false,
         .has_upstream = false,
         .has_downstream = false,
         .received_stop_request_from_rti = false,
@@ -1418,8 +1417,11 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
     unsigned char buffer[message_length];
 
     // Apply the additional delay to the current tag and use that as the intended
-    // tag of the outgoing message
-    tag_t current_message_intended_tag = lf_delay_tag(env->current_tag,
+    // tag of the outgoing message. Note that if there is delay on the connection,
+    // then we cannot promise no message with tag = current_tag + delay because a
+    // subsequent reaction might produce such a message. But we can promise no
+    // message with a tag strictly less than current_tag + delay.
+    tag_t current_message_intended_tag = lf_delay_strict(env->current_tag,
                                                     additional_delay);
 
     LF_PRINT_LOG("Sending port "
@@ -1683,11 +1685,11 @@ void handle_message(int socket, int fed_id) {
 void stall_advance_level_federation(environment_t* env, size_t next_reaction_level) {
     LF_PRINT_DEBUG("Trying to acquire the global mutex.");
     lf_mutex_lock(&env->mutex);
-    LF_PRINT_DEBUG("Waiting on MLAA with next_reaction_level %d and MLAA %d.", next_reaction_level, max_level_allowed_to_advance);
+    LF_PRINT_DEBUG("Waiting on MLAA with next_reaction_level %zu and MLAA %d.", next_reaction_level, max_level_allowed_to_advance);
     while (((int) next_reaction_level) >= max_level_allowed_to_advance) {
         lf_cond_wait(&port_status_changed);
     };
-    LF_PRINT_DEBUG("Exiting wait with MLAA %d and next_reaction_level %d.", max_level_allowed_to_advance, next_reaction_level);
+    LF_PRINT_DEBUG("Exiting wait with MLAA %d and next_reaction_level %zu.", max_level_allowed_to_advance, next_reaction_level);
     lf_mutex_unlock(&env->mutex);
 }
 
@@ -1908,8 +1910,6 @@ void handle_tag_advance_grant(void) {
                 TAG.time - start_time, TAG.microstep,
                 _fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
     }
-
-    _fed.waiting_for_TAG = false;
     // Notify everything that is blocked.
     lf_cond_broadcast(&env->event_q_changed);
 
@@ -2088,7 +2088,6 @@ void handle_provisional_tag_advance_grant() {
     }
 
     _fed.last_TAG = PTAG;
-    _fed.waiting_for_TAG = false;
     _fed.is_last_TAG_provisional = true;
     LF_PRINT_LOG("At tag " PRINTF_TAG ", received Provisional Tag Advance Grant (PTAG): " PRINTF_TAG ".",
             env->current_tag.time - start_time, env->current_tag.microstep,
@@ -2747,29 +2746,27 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
                         tag.time - start_time, tag.microstep);
                 return tag;
             }
-            // Fed has upstream federates. Have to wait for a TAG or PTAG.
-            _fed.waiting_for_TAG = true;
 
             // Wait until a TAG is received from the RTI.
             while (true) {
                 // Wait until either something changes on the event queue or
                 // the RTI has responded with a TAG.
-                LF_PRINT_DEBUG("Waiting for a TAG from the RTI.");
+                LF_PRINT_DEBUG("Waiting for a TAG from the RTI with _fed.last_TAG.time=%lld, %lld and net=%lld, %lld", (long long) _fed.last_TAG.time - start_time, (long long) _fed.last_TAG.microstep, (long long) tag.time - start_time, (long long) tag.microstep);
                 if (lf_cond_wait(&env->event_q_changed) != 0) {
                     lf_print_error("Wait error.");
                 }
-                // Either a TAG or PTAG arrived or something appeared on the event queue.
-                if (!_fed.waiting_for_TAG) {
-                    // _fed.last_TAG will have been set by the thread receiving the TAG message that
-                    // set _fed.waiting_for_TAG to false.
-                    return _fed.last_TAG;
-                }
                 // Check whether the new event on the event queue requires sending a new NET.
                 tag_t next_tag = get_next_event_tag(env);
+                if (
+                    lf_tag_compare(_fed.last_TAG, next_tag) >= 0
+                    || lf_tag_compare(_fed.last_TAG, tag) >= 0
+                ) {
+                    return _fed.last_TAG;
+                }
                 if (lf_tag_compare(next_tag, tag) != 0) {
                     _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, next_tag, wait_for_reply);
                     _fed.last_sent_NET = next_tag;
-                    LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.",
+                    LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI from loop.",
                         next_tag.time - lf_time_start(), next_tag.microstep);
                 }
             }

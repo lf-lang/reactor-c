@@ -120,7 +120,7 @@ int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
     // reactions. Therefore, the reaction vectors can be accessed without
     // locking a mutex.
     while (scheduler->next_reaction_level <= scheduler->max_reaction_level) {
-        LF_PRINT_DEBUG("Waiting with curr_reaction_level %d.", scheduler->next_reaction_level);
+        LF_PRINT_DEBUG("Waiting with curr_reaction_level %zu.", scheduler->next_reaction_level);
         try_advance_level(scheduler->env, &scheduler->next_reaction_level);
 
         scheduler->executing_reactions =
@@ -128,7 +128,7 @@ int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
                 scheduler->next_reaction_level - 1
             ];
 
-        LF_PRINT_DEBUG("DEBUG: start of rxn queue at %d is %lld", scheduler->next_reaction_level - 1, (long long) ((reaction_t**)scheduler->executing_reactions)[0]);
+        LF_PRINT_DEBUG("DEBUG: start of rxn queue at %lu is %p", scheduler->next_reaction_level - 1, ((reaction_t**)scheduler->executing_reactions)[0]);
         if (((reaction_t**)scheduler->executing_reactions)[0] != NULL) {
             // There is at least one reaction to execute
             return 1;
