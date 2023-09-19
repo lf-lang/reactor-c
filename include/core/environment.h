@@ -105,9 +105,9 @@ typedef struct environment_t {
     tag_t** _lf_intended_tag_fields;
     int _lf_intended_tag_fields_size;
 #endif // FEDERATED
-#ifdef FEDERATED_CENTRALIZED
-    pqueue_t* ndt_q;
-#endif // FEDERATED_CENTRALIZED
+// #ifdef FEDERATED_CENTRALIZED
+//     pqueue_t* ndt_q;
+// #endif // FEDERATED_CENTRALIZED
 } environment_t;
 
 #ifdef MODAL_REACTORS
