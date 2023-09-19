@@ -94,21 +94,40 @@ int lf_tag_compare(tag_t tag1, tag_t tag2);
 
 /**
  * Delay a tag by the specified time interval to realize the "after" keyword.
- * If either the time interval or the time field of the tag is NEVER,
- * return the unmodified tag.
- * If the time interval is 0LL, add one to the microstep, leave
- * the time field alone, and return the result.
+ * Any interval less than 0 (including NEVER) is interpreted as "no delay",
+ * whereas an interval equal to 0 is interpreted as one microstep delay.
+ * If the time field of the tag is NEVER or the interval is negative,
+ * return the unmodified tag. If the time interval is 0LL, add one to
+ * the microstep, leave the time field alone, and return the result.
  * Otherwise, add the interval to the time field of the tag and reset
- * the microstep to 0.
- * If the sum overflows, saturate the time value at FOREVER.
- *
- * Note that normally it makes no sense to call this with a negative
- * interval (except NEVER), but this is not checked.
+ * the microstep to 0. If the sum overflows, saturate the time value at
+ * FOREVER. For example:
+ * - if tag = (t, 0) and interval = 10, return (t + 10, 0)
+ * - if tag = (t, 0) and interval = 0, return (t, 1)
+ * - if tag = (t, 0) and interval = NEVER, return (t, 0)
+ * - if tag = (FOREVER, 0) and interval = 10, return (FOREVER, 0)
  *
  * @param tag The tag to increment.
  * @param interval The time interval.
  */
 tag_t lf_delay_tag(tag_t tag, interval_t interval);
+
+/**
+ * Return the latest tag strictly less than the specified tag plus the
+ * interval, unless tag is NEVER or interval is negative (including NEVER),
+ * in which case return the tag unmodified.  Any interval less than 0
+ * (including NEVER) is interpreted as "no delay", whereas an interval
+ * equal to 0 is interpreted as one microstep delay. If the time sum
+ * overflows, saturate the time value at FOREVER.  For example:
+ * - if tag = (t, 0) and interval = 10, return (t + 10 - 1, UINT_MAX)
+ * - if tag = (t, 0) and interval = 0, return (t, 0)
+ * - if tag = (t, 0) and interval = NEVER, return (t, 0)
+ * - if tag = (FOREVER, 0) and interval = 10, return (FOREVER, 0)
+ *
+ * @param tag The tag to increment.
+ * @param interval The time interval.
+ */
+tag_t lf_delay_strict(tag_t tag, interval_t interval);
 
 /**
  * Return the current logical time in nanoseconds.
