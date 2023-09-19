@@ -44,6 +44,7 @@
 #include <stddef.h>
 
 /** priority data type */
+// FIXME: Priority queue for data type larger than long long is needed.
 typedef unsigned long long pqueue_pri_t;
 
 /** callback functions to get/set/compare the priority of an element */
