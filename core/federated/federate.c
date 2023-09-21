@@ -822,7 +822,7 @@ void connect_to_federate(uint16_t remote_federate_id) {
         // Disable Nagle algorithm which bundles together small TCP messages to
         //  reduce network traffic
         int flag = 1;
-        int result = setsockopt(socket_id,            /* socket affected */
+        result = setsockopt(socket_id,            /* socket affected */
                                 IPPROTO_TCP,     /* set option at TCP level */
                                 TCP_NODELAY,     /* name of option */
                                 (char *) &flag,  /* the cast is historical
