@@ -211,12 +211,14 @@ int _lf_wait_on_tag_barrier(environment_t* env, tag_t proposed_tag) {
 
 /**
  * Mark the given port's is_present field as true. This is_present field
- * will later be cleaned up by _lf_start_time_step.
+ * will later be cleaned up by _lf_start_time_step. If the port is unconnected,
+ * do nothing.
  * This assumes that the mutex is not held.
  * @param port A pointer to the port struct.
  */
 void _lf_set_present(lf_port_base_t* port) {
-    environment_t *env = port->source_reactor->environment;
+  if (!port->source_reactor) return;
+  environment_t *env = port->source_reactor->environment;
 	bool* is_present_field = &port->is_present;
     int ipfas = lf_atomic_fetch_add(&env->is_present_fields_abbreviated_size, 1);
     if (ipfas < env->is_present_fields_size) {
