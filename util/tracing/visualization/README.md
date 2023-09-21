@@ -32,8 +32,8 @@ Once the federation stopped executing, running `fedsd` will operate on all the `
 ```bash
 fedsd
 ```
-It is also possible to operate on specific files. In such a case, run `fedsd` with `-r` flag to provide the RTI trace file, and `-f` flag to privide the list of federates
-trace files. Bith argumenets are optional.
+It is also possible to operate on specific files. In such a case, run `fedsd` with `-r` flag to provide the RTI trace file, and `-f` flag to provide the list of federate.
+
 ```bash
 fedsd -r <rti.lft> -f <federate__f1.lft> <federate__f2.lft>
 ```
