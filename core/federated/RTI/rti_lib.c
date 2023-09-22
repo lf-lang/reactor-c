@@ -24,7 +24,6 @@
  */
 
 #include "rti_lib.h"
-#include <netinet/tcp.h>
 #include <string.h>
 
 // Global variables defined in tag.c:
