@@ -69,7 +69,7 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
             lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
         }
     } else if (socket_type == UDP) {
-        socket_descriptor = socket(AF_INET, SOCK_DGRAM, 0);
+        socket_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         // Set the appropriate timeout time
         timeout_time = (struct timeval){.tv_sec = UDP_TIMEOUT_TIME / BILLION, .tv_usec = (UDP_TIMEOUT_TIME % BILLION) / 1000};
     }
