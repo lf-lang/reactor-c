@@ -159,23 +159,7 @@ void create_server(int specified_port) {
     }
     LF_PRINT_DEBUG("Creating a socket server on port %d.", port);
     // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
-    int socket_descriptor = socket(AF_INET, SOCK_STREAM, 0);
-    if (socket_descriptor < 0) {
-        lf_print_error_and_exit("Failed to obtain a socket server.");
-    }
-    // Disable Nagle algorithm which bundles together small TCP messages to
-    //  reduce network traffic
-    int flag = 1;
-    int result = setsockopt(socket_descriptor,            /* socket affected */
-                            IPPROTO_TCP,     /* set option at TCP level */
-                            TCP_NODELAY,     /* name of option */
-                            (char *) &flag,  /* the cast is historical
-                                                    cruft */
-                            sizeof(int));    /* length of option value */
-    
-    if (result < 0) {
-        lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
-    }
+    int socket_descriptor = create_real_time_tcp_socket_errexit();
 
     // Server file descriptor.
     struct sockaddr_in server_fd;
@@ -187,7 +171,7 @@ void create_server(int specified_port) {
     // Convert the port number from host byte order to network byte order.
     server_fd.sin_port = htons(port);
 
-    result = bind(
+    int result = bind(
             socket_descriptor,
             (struct sockaddr *) &server_fd,
             sizeof(server_fd));
@@ -815,24 +799,7 @@ void connect_to_federate(uint16_t remote_federate_id) {
     int socket_id = -1;
     while (result < 0) {
         // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
-        socket_id = socket(AF_INET, SOCK_STREAM, 0);
-        if (socket_id < 0) {
-            lf_print_error_and_exit("Failed to create socket to federate %d.", remote_federate_id);
-        }
-        // Disable Nagle algorithm which bundles together small TCP messages to
-        //  reduce network traffic
-        int flag = 1;
-        result = setsockopt(socket_id,            /* socket affected */
-                                IPPROTO_TCP,     /* set option at TCP level */
-                                TCP_NODELAY,     /* name of option */
-                                (char *) &flag,  /* the cast is historical
-                                                        cruft */
-                                sizeof(int));    /* length of option value */
-        
-        if (result < 0) {
-            lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
-        }
-
+        socket_id = create_real_time_tcp_socket_errexit();
 
         // Server file descriptor.
         struct sockaddr_in server_fd;
@@ -1067,25 +1034,8 @@ void connect_to_rti(const char* hostname, int port) {
             lf_print_error_and_exit("No host for RTI matching given hostname: %s", hostname);
         }
 
-        // Create a socket matching hints criteria
-        _fed.socket_TCP_RTI = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-        if (_fed.socket_TCP_RTI < 0) {
-            lf_print_error_and_exit("Failed to create socket to RTI.");
-        }
-        
-        // Disable Nagle algorithm which bundles together small TCP messages to
-        //  reduce network traffic
-        int flag = 1;
-        result = setsockopt(_fed.socket_TCP_RTI,            /* socket affected */
-                                IPPROTO_TCP,     /* set option at TCP level */
-                                TCP_NODELAY,     /* name of option */
-                                (char *) &flag,  /* the cast is historical
-                                                        cruft */
-                                sizeof(int));    /* length of option value */
-        
-        if (result < 0) {
-            lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
-        }
+        // Create a socket 
+        _fed.socket_TCP_RTI = create_real_time_tcp_socket_errexit();
 
         result = connect(_fed.socket_TCP_RTI, res->ai_addr, res->ai_addrlen);
         if (result == 0) {
