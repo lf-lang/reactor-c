@@ -1,7 +1,5 @@
 var NAVTREEINDEX8 =
 {
-"de/dcd/influxdb_8h.html#a34cbf7e811c7fc4a0f8061b4e8995604":[12,0,5,0,1,14],
-"de/dcd/influxdb_8h.html#a38f08188614a07aa8c0cbe4f99c020b7":[12,0,5,0,1,16],
 "de/dcd/influxdb_8h.html#a3ad762f5dcd5acda26a5750e91b6f965":[12,0,5,0,1,21],
 "de/dcd/influxdb_8h.html#a437443d0f707af6a79b24573c3ec58a6":[12,0,5,0,1,23],
 "de/dcd/influxdb_8h.html#a442325f8443dadd92b1a1a82526de4c5":[12,0,5,0,1,8],
@@ -125,8 +123,8 @@ var NAVTREEINDEX8 =
 "dir_f0ec87b0636a298194ea3a9974e6da10.html":[12,0,0,2,0],
 "dir_fdacdff5c3e9d6e52f439c05e95a860d.html":[12,0,1,1,0],
 "files.html":[12,0],
-"functions.html":[11,2,0,0],
 "functions.html":[11,2,0],
+"functions.html":[11,2,0,0],
 "functions_a.html":[11,2,0,1],
 "functions_b.html":[11,2,0,2],
 "functions_c.html":[11,2,0,3],

@@ -104,9 +104,10 @@ $(document).ready(function(){initNavTree('d2/da5/md_util_2tracing_2_r_e_a_d_m_e.
 <h1><a class="anchor" id="autotoc_md34"></a>
 Installing</h1>
 <div class="fragment"><div class="line">sudo make install</div>
-</div><!-- fragment --><p> Will install the tracing executables to <code>/usr/local/bin</code> to install them to a different location, use the <code>INSTALL_PREFIX</code> flag, e.g.</p>
-<div class="fragment"><div class="line">make install INSTALL_PREFIX=~/.local/bin</div>
-</div><!-- fragment --> </div></div><!-- contents -->
+</div><!-- fragment --><p> Will install the tracing executables to the <code>bin</code> directory under <code>/usr/local/</code>. To install them to a different location, use the <code>INSTALL_PREFIX</code> flag, e.g.</p>
+<div class="fragment"><div class="line">make install INSTALL_PREFIX=~/.local/</div>
+</div><!-- fragment --><p> which will install the executables under <code>~/.local/bin/</code>. </p>
+</div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
 <!-- start footer part -->

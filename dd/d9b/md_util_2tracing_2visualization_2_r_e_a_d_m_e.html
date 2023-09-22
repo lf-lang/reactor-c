@@ -105,7 +105,8 @@ Running</h1>
 <p>If, however, the federation is launched manually, then running the <code>RTI</code> command should be passed the <code>-t</code> flag in order to make sure that it, too, has tracing enabled: </p><div class="fragment"><div class="line">RTI -n &lt;number_of_federates&gt; -t</div>
 </div><!-- fragment --><p>It is most convenient to launch the RTI and all federates from the same working directory so that they will all write their trace file to that directory.</p>
 <p>Once the federation stopped executing, running <code>fedsd</code> will operate on all the <code>.lft</code> files in the current directory: </p><div class="fragment"><div class="line">fedsd</div>
-</div><!-- fragment --><p> It is also possible to operate on specific files. In such a case, run <code>fedsd</code> with <code>-r</code> flag to provide the RTI trace file, and <code>-f</code> flag to privide the list of federates trace files. Bith argumenets are optional. </p><div class="fragment"><div class="line">fedsd -r &lt;rti.lft&gt; -f &lt;federate__f1.lft&gt; &lt;federate__f2.lft&gt;</div>
+</div><!-- fragment --><p> It is also possible to operate on specific files. In such a case, run <code>fedsd</code> with <code>-r</code> flag to provide the RTI trace file, and <code>-f</code> flag to provide the list of federate.</p>
+<div class="fragment"><div class="line">fedsd -r &lt;rti.lft&gt; -f &lt;federate__f1.lft&gt; &lt;federate__f2.lft&gt;</div>
 </div><!-- fragment --><p>The output is an html file named <code>trace_svg.html</code> (in the current directory) that contains the sequence of interactions between the federates and the RTI. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->

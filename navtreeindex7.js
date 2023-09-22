@@ -1,7 +1,5 @@
 var NAVTREEINDEX7 =
 {
-"dd/d03/trace__to__influxdb_8c.html#add1cfd1a929c929e78db80dacaa9c2ab":[12,0,5,0,4,8],
-"dd/d03/trace__to__influxdb_8c.html#ae349f8fec14a7cc3d663cf7eecf5a527":[12,0,5,0,4,2],
 "dd/d37/lf__rp2040__support_8c.html":[12,0,0,2,8],
 "dd/d37/reactor__common_8c.html":[12,0,0,10],
 "dd/d37/reactor__common_8c.html#a01b4bb56c6e243d25b369211a4925b93":[12,0,0,10,26],
@@ -249,5 +247,7 @@ var NAVTREEINDEX7 =
 "de/dcd/influxdb_8h.html#a133af84dbff3d84a97044d8a89cf295d":[12,0,5,0,1,30],
 "de/dcd/influxdb_8h.html#a15470ee8d1c5841eaf78f58f73246792":[12,0,5,0,1,3],
 "de/dcd/influxdb_8h.html#a196ecabce30a4db7ca6f3c5ae4799adf":[12,0,5,0,1,19],
-"de/dcd/influxdb_8h.html#a2fafb6dfb7a12398ed4e8b7f63a89491":[12,0,5,0,1,29]
+"de/dcd/influxdb_8h.html#a2fafb6dfb7a12398ed4e8b7f63a89491":[12,0,5,0,1,29],
+"de/dcd/influxdb_8h.html#a34cbf7e811c7fc4a0f8061b4e8995604":[12,0,5,0,1,14],
+"de/dcd/influxdb_8h.html#a38f08188614a07aa8c0cbe4f99c020b7":[12,0,5,0,1,16]
 };

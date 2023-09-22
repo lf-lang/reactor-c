@@ -13,7 +13,6 @@ var fedsd_8py =
     [ "svg_string_draw_label", "dc/d69/fedsd_8py.html#afbeb6e2d356f9a2bc070fa88a997d810", null ],
     [ "svg_string_draw_line", "dc/d69/fedsd_8py.html#a5a5662a3c29eedf456c05946e69f3c17", null ],
     [ "svg_string_draw_side_label", "dc/d69/fedsd_8py.html#affda2c35fc9368eff72898e392410a0e", null ],
-    [ "action", "dc/d69/fedsd_8py.html#ada9000bc953d3e55ac378816d4b4f23e", null ],
     [ "actors", "dc/d69/fedsd_8py.html#a10f9ea3e1343406c8f4c47f5f2206bae", null ],
     [ "actors_names", "dc/d69/fedsd_8py.html#ab371213c8780bc5058f824e060709a25", null ],
     [ "anchor", "dc/d69/fedsd_8py.html#acc91e5d14fca7b185cdbb94cc6578d61", null ],
