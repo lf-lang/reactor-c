@@ -116,7 +116,7 @@ ssize_t read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
  * @return The number of bytes written, or 0 if an EOF was received, or a negative
  *  number if an error occurred.
  */
-ssize_t write_to_socket_errexit_with_mutex(
+ssize_t write_to_socket_with_mutex(
 		int socket,
 		size_t num_bytes,
 		unsigned char* buffer,

@@ -10,17 +10,20 @@ on:
 
 jobs:
   unit-tests-single:
-    uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@main
+    uses: ./.github/workflows/unit-tests.yml
     with:
       cmake-args: '-UNUMBER_OF_WORKERS -DLF_UNTHREADED=1'
 
   unit-tests-multi:
-    uses: lf-lang/reactor-c/.github/workflows/unit-tests.yml@main
+    uses: ./.github/workflows/unit-tests.yml
     with:
       cmake-args: '-DNUMBER_OF_WORKERS=4 -DLF_THREADED=1'
 
   build-rti:
-    uses: lf-lang/reactor-c/.github/workflows/build-rti.yml@main
+    uses: ./.github/workflows/build-rti.yml
+
+  build-trace-tools:
+    uses: ./.github/workflows/build-trace-tools.yml
 
   fetch-lf:
     uses: lf-lang/lingua-franca/.github/workflows/extract-ref.yml@master

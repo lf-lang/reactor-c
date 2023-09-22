@@ -205,9 +205,7 @@ struct reaction_t {
                                        // intended. Currently, this is only possible if logical
                                        // connections are used in a decentralized federated
                                        // execution. COMMON.
-    bool is_a_control_reaction; // Indicates whether this reaction is a control reaction. Control
-                                // reactions will not set ports or actions and don't require scheduling
-                                // any output reactions. Default is false.
+    bool is_an_input_reaction; // Indicates whether this reaction is a network input reaction of a federate. Default is false.
     size_t worker_affinity;     // The worker number of the thread that scheduled this reaction. Used
                                 // as a suggestion to the scheduler.
     const char* name;                 // If logging is set to LOG or higher, then this will
@@ -267,8 +265,6 @@ struct trigger_t {
 #ifdef FEDERATED
     tag_t last_known_status_tag;        // Last known status of the port, either via a timed message, a port absent, or a
                                         // TAG from the RTI.
-    bool is_a_control_reaction_waiting; // Indicates whether at least one control reaction is waiting for this trigger
-                                        // if it belongs to a network input port. Must be false by default.
     tag_t intended_tag;                 // The amount of discrepency in logical time between the original intended
                                         // trigger time of this trigger and the actual trigger time. This currently
                                         // can only happen when logical connections are used using a decentralized coordination

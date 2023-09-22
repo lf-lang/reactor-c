@@ -53,12 +53,14 @@ extern instant_t start_time;
 
 /**
  * Mark the given port's is_present field as true. This is_present field
- * will later be cleaned up by _lf_start_time_step.
+ * will later be cleaned up by _lf_start_time_step. If the port is unconnected,
+ * do nothing.
  * @param env Environment in which we are executing
  * @param port A pointer to the port struct.
  */
 void _lf_set_present(lf_port_base_t* port) {
-    environment_t *env = port->source_reactor->environment;
+  if (!port->source_reactor) return;
+  environment_t *env = port->source_reactor->environment;
 	bool* is_present_field = &port->is_present;
     if (env->is_present_fields_abbreviated_size < env->is_present_fields_size) {
         env->is_present_fields_abbreviated[env->is_present_fields_abbreviated_size]
@@ -127,7 +129,7 @@ void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_n
 #endif
     // Do not enqueue this reaction twice.
     if (reaction->status == inactive) {
-        LF_PRINT_DEBUG("Enqueing downstream reaction %s, which has level %lld.",
+        LF_PRINT_DEBUG("Enqueueing downstream reaction %s, which has level %lld.",
         		reaction->name, reaction->index & 0xffffLL);
         reaction->status = queued;
         if (pqueue_insert(env->reaction_q, reaction) != 0) {

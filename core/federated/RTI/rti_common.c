@@ -85,7 +85,10 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
         // Ignore this enclave if it no longer connected.
         if (upstream->state == NOT_CONNECTED) continue;
 
-        tag_t candidate = lf_delay_tag(upstream->completed, e->upstream_delay[j]);
+        // Adjust by the "after" delay.
+        // Note that "no delay" is encoded as NEVER,
+        // whereas one microstep delay is encoded as 0LL.
+        tag_t candidate = lf_delay_strict(upstream->completed, e->upstream_delay[j]);
 
         if (lf_tag_compare(candidate, min_upstream_completed) < 0) {
             min_upstream_completed = candidate;
@@ -114,8 +117,15 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     bool *visited = (bool *)calloc(rti_common->number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
 
     // Find the tag of the earliest possible incoming message from
-    // upstream scheduling_nodes.
-    tag_t t_d = FOREVER_TAG;
+    // upstream enclaves.
+    tag_t t_d_nonzero_delay = FOREVER_TAG;
+    // The tag of the earliest possible incoming message from a zero-delay connection.
+    // Delayed connections are not guarded from STP violations by the MLAA; this property is
+    // acceptable because delayed connections impose no deadlock risk and in some cases (startup)
+    // this property is necessary to avoid deadlocks. However, it requires some special care here
+    // when potentially sending a PTAG because we must not send a PTAG for a tag at which data may
+    // still be received over nonzero-delay connections.
+    tag_t t_d_zero_delay = FOREVER_TAG;
     LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG,
                    FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
                    NEVER_TAG.time - start_time, 0);
@@ -138,13 +148,20 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
         // Adjust by the "after" delay.
         // Note that "no delay" is encoded as NEVER,
         // whereas one microstep delay is encoded as 0LL.
-        tag_t candidate = lf_delay_tag(upstream_next_event, e->upstream_delay[j]);
+        tag_t candidate = lf_delay_strict(upstream_next_event, e->upstream_delay[j]);
 
-        if (lf_tag_compare(candidate, t_d) < 0) {
-            t_d = candidate;
+        if (e->upstream_delay[j] == NEVER) {
+            if (lf_tag_compare(candidate, t_d_zero_delay) < 0) {
+                t_d_zero_delay = candidate;
+            }
+        } else {
+            if (lf_tag_compare(candidate, t_d_nonzero_delay) < 0) {
+                t_d_nonzero_delay = candidate;
+            }
         }
     }
     free(visited);
+    tag_t t_d = (lf_tag_compare(t_d_zero_delay, t_d_nonzero_delay) < 0) ? t_d_zero_delay : t_d_nonzero_delay;
 
     LF_PRINT_LOG("RTI: Earliest next event upstream has tag " PRINTF_TAG ".",
             t_d.time - start_time, t_d.microstep);
@@ -165,17 +182,18 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
                 e->next_event.microstep);
         result.tag = e->next_event;
     } else if (
-        lf_tag_compare(t_d, e->next_event) == 0      // The enclave has something to do.
-        && lf_tag_compare(t_d, e->last_provisionally_granted) > 0  // The grant is not redundant.
-        && lf_tag_compare(t_d, e->last_granted) > 0  // The grant is not redundant.
+        lf_tag_compare(t_d_zero_delay, e->next_event) == 0      // The enclave has something to do.
+        && lf_tag_compare(t_d_zero_delay, t_d_nonzero_delay) < 0  // The statuses of nonzero-delay connections are known at tag t_d_zero_delay
+        && lf_tag_compare(t_d_zero_delay, e->last_provisionally_granted) > 0  // The grant is not redundant.
+        && lf_tag_compare(t_d_zero_delay, e->last_granted) > 0  // The grant is not redundant.
     ) {
         // Some upstream scheduling_nodes has an event that has the same tag as fed's next event, so we can only provisionally
         // grant a TAG (via a PTAG).
         LF_PRINT_LOG("Earliest upstream message time for fed/encl %d is " PRINTF_TAG
             " (adjusted by after delay). Granting provisional tag advance.",
             e->id,
-            t_d.time - start_time, t_d.microstep);
-        result.tag = t_d;
+            t_d_zero_delay.time - start_time, t_d_zero_delay.microstep);
+        result.tag = t_d_zero_delay;
         result.is_provisional = true;
     }
     return result;
