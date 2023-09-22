@@ -72,12 +72,14 @@ int create_real_time_tcp_socket_errexit() {
         lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
     }
     
-    // Disable delayed ACKs. 
-    result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
-    
-    if (result < 0) {
-        lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
-    }
+    // Disable delayed ACKs. Only possible on Linux
+    #if defined(PLATFORM_Linux)
+        result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
+        
+        if (result < 0) {
+            lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+        }
+    #endif
     
     return sock;
 }
