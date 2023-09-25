@@ -161,13 +161,6 @@ typedef struct federate_instance_t {
     bool is_last_TAG_provisional;
 
     /**
-     * Indicator of whether a NET has been sent to the RTI and no TAG
-     * yet received in reply.
-     * This variable should only be accessed while holding the mutex lock.
-     */
-    bool waiting_for_TAG;
-
-    /**
      * Indicator of whether this federate has upstream federates.
      * The default value of false may be overridden in _lf_initialize_trigger_objects.
      */
