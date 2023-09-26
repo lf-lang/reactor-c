@@ -40,7 +40,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <pico/multicore.h>
 #include <pico/sync.h>
 
-#ifdef LF_UNTHREADED
 /** 
  * critical section struct
  * disables external irq and core execution
@@ -57,9 +56,7 @@ static semaphore_t _lf_sem_irq_event;
 
 // nested critical section counter
 static uint32_t _lf_num_nested_crit_sec = 0;
-#endif //LF_UNTHREADED
  
-#ifdef LF_THREADED
 /**
  * binary semaphore used to synchronize 
  * used by thread join
@@ -70,7 +67,6 @@ static semaphore_t _lf_sem_core_sync;
  * error on value greater than 2
  */
 static uint8_t _lf_thread_cnt = 0;
-#endif
 
 /**
  * Initialize basic runtime infrastructure and 
@@ -351,7 +347,6 @@ int lf_mutex_unlock(lf_mutex_t* mutex) {
  */
 int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
     // set max permits to number of cores
-
     sem_init(cond, 0, 2);
 }
 
