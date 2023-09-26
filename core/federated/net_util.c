@@ -61,7 +61,7 @@ int create_real_time_tcp_socket_errexit() {
     if (sock < 0) {
         lf_print_error_and_exit("Could not open TCP socket. Err=%d", sock);
     }
-    // Disable Nagle algorithm which bundles together small TCP messages to
+    // Disable Nagle's algorithm which bundles together small TCP messages to
     //  reduce network traffic
     // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
     //  is enough.
