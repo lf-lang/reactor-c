@@ -3,14 +3,14 @@
 #include "lf_types.h"
 
 /**
- * @brief Attempt to advance the current reaction level to the next level
- * in the reaction queue. For federated runtimes, this function should
+ * @brief Advance to the next level.
+ * For federated runtimes, this function should
  * stall the advance until we know that we can safely execute the next level
  * given knowledge about upstream network port statuses.
- *
- * @param next_reaction_level
+ * @param env The environment.
+ * @param next_reaction_level The place to store the next reaction level.
  */
-void try_advance_level(environment_t*, volatile size_t*);
+void try_advance_level(environment_t* env, volatile size_t* next_reaction_level);
 
 /**
  * Enqueue port absent reactions that will send a PORT_ABSENT
