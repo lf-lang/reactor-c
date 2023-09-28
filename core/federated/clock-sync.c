@@ -155,7 +155,7 @@ uint16_t setup_clock_synchronization_with_rti() {
     uint16_t port_to_return = UINT16_MAX;
 #ifdef _LF_CLOCK_SYNC_ON
     // Initialize the UDP socket
-    _lf_rti_socket_UDP = socket(AF_INET, SOCK_DGRAM, 0);
+    _lf_rti_socket_UDP = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
     // Initialize the necessary information for the UDP address
     struct sockaddr_in federate_UDP_addr;
     federate_UDP_addr.sin_family = AF_INET;
