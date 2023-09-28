@@ -40,6 +40,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <pico/multicore.h>
 #include <pico/sync.h>
 
+// unthreaded statics
 /** 
  * critical section struct
  * disables external irq and core execution
@@ -56,7 +57,8 @@ static semaphore_t _lf_sem_irq_event;
 
 // nested critical section counter
 static uint32_t _lf_num_nested_crit_sec = 0;
- 
+
+// threaded statics
 /**
  * binary semaphore used to synchronize 
  * used by thread join
@@ -77,11 +79,9 @@ void _lf_initialize_clock(void) {
     // for debug printf
     stdio_init_all();
 
-#ifdef LF_UNTHREADED
     critical_section_init(&_lf_crit_sec);
     sem_init(&_lf_sem_irq_event, 0, 1);
-#endif //LF_UNTHREADED
-
+    // only init sync semaphore in multicore
 #ifdef LF_THREADED
     sem_init(&_lf_sem_core_sync, 0, 1);
 #endif //LF_THREADED
@@ -163,7 +163,6 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
     return ret_code;
 }
 
-#ifdef LF_UNTHREADED
 /**
  * The single thread RP2040 platform support treats second core
  * routines similar to external interrupt routine threads.
@@ -228,7 +227,6 @@ int _lf_unthreaded_notify_of_event() {
     sem_release(&_lf_sem_irq_event);
     return 0;
 }
-#endif //LF_UNTHREADED
 
 #ifdef LF_THREADED
 // FIXME: add validator check that invalidates threaded rp2040 
@@ -347,7 +345,8 @@ int lf_mutex_unlock(lf_mutex_t* mutex) {
  */
 int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
     // set max permits to number of cores
-    sem_init(cond, 0, 2);
+    sem_init(cond, 2, 2);
+    return 0;
 }
 
 /**
@@ -397,6 +396,63 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
         return LF_TIMEOUT; 
     }
     return 0;
+}
+
+/**
+ * Atomics for the rp2040 platform.
+ * note: uses the same implementation as the zephyr platform 
+ * TODO: explore more efficent options
+ */
+/**
+ * @brief Add `value` to `*ptr` and return original value of `*ptr` 
+ */
+int _rp2040_atomic_fetch_add(int *ptr, int value) {
+    lf_disable_interrupts_nested();
+    int res = *ptr;
+    *ptr += value;
+    lf_enable_interrupts_nested();
+    return res;
+}
+/**
+ * @brief Add `value` to `*ptr` and return new updated value of `*ptr`
+ */
+int _rp2040_atomic_add_fetch(int *ptr, int value) {
+    lf_disable_interrupts_nested();
+    int res = *ptr + value;
+    *ptr = res;
+    lf_enable_interrupts_nested();
+    return res;
+}
+
+/**
+ * @brief Compare and swap for boolaen value.
+ * If `*ptr` is equal to `value` then overwrite it 
+ * with `newval`. If not do nothing. Retruns true on overwrite.
+ */
+bool _rp2040_bool_compare_and_swap(bool *ptr, bool value, bool newval) {
+    lf_disable_interrupts_nested();
+    bool res = false;
+    if (*ptr == value) {
+        *ptr = newval;
+        res = true;
+    }
+    lf_enable_interrupts_nested();
+    return res;
+}
+
+/**
+ * @brief Compare and swap for integers. If `*ptr` is equal
+ * to `value`, it is updated to `newval`. The function returns
+ * the original value of `*ptr`.
+ */
+int  _rp2040_val_compare_and_swap(int *ptr, int value, int newval) {
+    lf_disable_interrupts_nested();
+    int res = *ptr;
+    if (*ptr == value) {
+        *ptr = newval;
+    }
+    lf_enable_interrupts_nested();
+    return res;
 }
 
 #endif //LF_THREADED

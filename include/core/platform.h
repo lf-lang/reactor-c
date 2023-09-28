@@ -228,6 +228,8 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
  */
 #if defined(PLATFORM_ZEPHYR)
 #define lf_atomic_fetch_add(ptr, value) _zephyr_atomic_fetch_add((int*) ptr, value)
+#elif defined(PLATFORM_RP2040)
+#define lf_atomic_fetch_add(ptr, value) _rp2040_atomic_fetch_add((int*) ptr, value)
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that an integer is 32 bits.
 #define lf_atomic_fetch_add(ptr, value) InterlockedExchangeAdd(ptr, value)
@@ -245,6 +247,8 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
  */
 #if defined(PLATFORM_ZEPHYR)
 #define lf_atomic_add_fetch(ptr, value) _zephyr_atomic_add_fetch((int*) ptr, value)
+#elif defined(PLATFORM_RP2040)
+#define lf_atomic_add_fetch(ptr, value) _rp2040_atomic_add_fetch((int*) ptr, value)
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that an integer is 32 bits.
 #define lf_atomic_add_fetch(ptr, value) InterlockedAdd(ptr, value)
@@ -264,6 +268,8 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
  */
 #if defined(PLATFORM_ZEPHYR)
 #define lf_bool_compare_and_swap(ptr, value, newval) _zephyr_bool_compare_and_swap((bool*) ptr, value, newval)
+#elif defined(PLATFORM_RP2040)
+#define lf_bool_compare_and_swap(ptr, value, newval) _rp2040_bool_compare_and_swap((bool*) ptr, value, newval)
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that a boolean is represented with a 32-bit integer.
 #define lf_bool_compare_and_swap(ptr, oldval, newval) (InterlockedCompareExchange(ptr, newval, oldval) == oldval)
@@ -283,6 +289,8 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
  */
 #if defined(PLATFORM_ZEPHYR)
 #define lf_val_compare_and_swap(ptr, value, newval) _zephyr_val_compare_and_swap((int*) ptr, value, newval)
+#elif defined(PLATFORM_RP2040)
+#define lf_val_compare_and_swap(ptr, value, newval) _rp2040_val_compare_and_swap((int*) ptr, value, newval)
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 #define lf_val_compare_and_swap(ptr, oldval, newval) InterlockedCompareExchange(ptr, newval, oldval)
 #elif defined(__GNUC__) || defined(__clang__)
