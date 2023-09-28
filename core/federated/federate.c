@@ -1932,8 +1932,15 @@ bool update_max_level(tag_t tag, bool is_provisional) {
         // Safe to complete the current tag
         return (prev_max_level_allowed_to_advance != max_level_allowed_to_advance);
     }
-    for (int i = 0; i < _lf_zero_delay_action_table_size; i++) {
-        lf_action_base_t* input_port_action = _lf_zero_delay_action_table[i];
+#ifdef FEDERATED_DECENTRALIZED
+    size_t action_table_size = _lf_action_table_size;
+    lf_action_base_t** action_table = _lf_action_table;
+#else
+    size_t action_table_size = _lf_zero_delay_action_table_size;
+    lf_action_base_t** action_table = _lf_zero_delay_action_table;
+#endif // FEDERATED_DECENTRALIZED
+    for (int i = 0; i < action_table_size; i++) {
+        lf_action_base_t* input_port_action = action_table[i];
         if (lf_tag_compare(env->current_tag,
                 input_port_action->trigger->last_known_status_tag) > 0
                 && !input_port_action->trigger->is_physical) {
