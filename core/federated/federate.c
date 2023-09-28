@@ -2010,7 +2010,7 @@ static void* update_ports_from_staa_offsets(void* args) {
                         input_port_action->trigger->status = absent;
                         LF_PRINT_DEBUG("Assuming port absent at time %lld.", (long long) (lf_tag(env).time - start_time));
                         update_last_known_status_on_input_port(lf_tag(env), id_of_action(input_port_action));
-                        (_fed.last_TAG, _fed.is_last_TAG_provisional);
+                        update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
                         lf_cond_broadcast(&port_status_changed);
                     }
                 }
