@@ -101,7 +101,7 @@ int _lf_clock_now(instant_t* t) {
     }
     // time struct
     absolute_time_t now;
-    uint64_t ns_from_boot;
+    int64_t ns_from_boot;
 
     now = get_absolute_time();
     ns_from_boot = to_us_since_boot(now) * 1000;
@@ -391,6 +391,9 @@ int lf_cond_wait(lf_cond_t* cond) {
  */
 int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
     absolute_time_t target;
+    if (absolute_time_ns < 0) {
+        return LF_TIMEOUT;
+    }
     target = from_us_since_boot((uint64_t) (absolute_time_ns / 1000));
     if (!sem_acquire_block_until(cond, target)) {
         return LF_TIMEOUT; 
