@@ -1033,7 +1033,7 @@ void connect_to_rti(const char* hostname, int port) {
             lf_print_error_and_exit("No host for RTI matching given hostname: %s", hostname);
         }
 
-        // Create a socket 
+        // Create a socket
         _fed.socket_TCP_RTI = create_real_time_tcp_socket_errexit();
 
         result = connect(_fed.socket_TCP_RTI, res->ai_addr, res->ai_addrlen);
@@ -1199,9 +1199,10 @@ instant_t get_start_time_from_rti(instant_t my_physical_time) {
     return timestamp;
 }
 
-////////////////////////////////Port Status Handling///////////////////////////////////////
+//////////////////////////////// Port Status Handling ///////////////////////////////////////
 
 extern lf_action_base_t* _lf_action_table[];
+extern interval_t _lf_action_delay_table[];
 extern size_t _lf_action_table_size;
 extern lf_action_base_t* _lf_zero_delay_action_table[];
 extern size_t _lf_zero_delay_action_table_size;
@@ -1941,6 +1942,17 @@ bool update_max_level(tag_t tag, bool is_provisional) {
 #endif // FEDERATED_DECENTRALIZED
     for (int i = 0; i < action_table_size; i++) {
         lf_action_base_t* input_port_action = action_table[i];
+#ifdef FEDERATED_DECENTRALIZED
+        if (
+            (_lf_action_delay_table[i] == 0 && env->current_tag.time == start_time && env->current_tag.microstep == 0)
+            || (_lf_action_delay_table[i] > 0 && lf_tag_compare(
+                env->current_tag,
+                lf_delay_strict((tag_t) {.time=start_time, .microstep=0}, _lf_action_delay_table[i])
+            ) <= 0)
+        ) {
+            continue;
+        }
+#endif
         if (lf_tag_compare(env->current_tag,
                 input_port_action->trigger->last_known_status_tag) > 0
                 && !input_port_action->trigger->is_physical) {
