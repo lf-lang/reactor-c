@@ -101,9 +101,9 @@ $(document).ready(function(){initNavTree('d4/dd2/reactor__threaded_8h.html','../
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:af359dbed76bff1e52a1a99854f7e5202" id="r_af359dbed76bff1e52a1a99854f7e5202"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#af359dbed76bff1e52a1a99854f7e5202">try_advance_level</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">volatile</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> *)</td></tr>
-<tr class="memdesc:af359dbed76bff1e52a1a99854f7e5202"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempt to advance the current reaction level to the next level in the reaction queue. For federated runtimes, this function should stall the advance until we know that we can safely execute the next level given knowledge about upstream network port statuses.  <br /></td></tr>
-<tr class="separator:af359dbed76bff1e52a1a99854f7e5202"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5fdda22cb08d864a229c84f1ba995b21" id="r_a5fdda22cb08d864a229c84f1ba995b21"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a5fdda22cb08d864a229c84f1ba995b21">try_advance_level</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">volatile</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> *next_reaction_level)</td></tr>
+<tr class="memdesc:a5fdda22cb08d864a229c84f1ba995b21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Advance to the next level. For federated runtimes, this function should stall the advance until we know that we can safely execute the next level given knowledge about upstream network port statuses.  <br /></td></tr>
+<tr class="separator:a5fdda22cb08d864a229c84f1ba995b21"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a331d123a8ef4725a08504ca1d80099c7" id="r_a331d123a8ef4725a08504ca1d80099c7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a331d123a8ef4725a08504ca1d80099c7">enqueue_port_absent_reactions</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
 <tr class="separator:a331d123a8ef4725a08504ca1d80099c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa8e97abcbd89bb371d396da44ff4becb" id="r_aa8e97abcbd89bb371d396da44ff4becb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/dd2/reactor__threaded_8h.html#aa8e97abcbd89bb371d396da44ff4becb">_lf_increment_tag_barrier</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">future_tag</a>)</td></tr>
@@ -370,8 +370,8 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="af359dbed76bff1e52a1a99854f7e5202" name="af359dbed76bff1e52a1a99854f7e5202"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af359dbed76bff1e52a1a99854f7e5202">&#9670;&#160;</a></span>try_advance_level()</h2>
+<a id="a5fdda22cb08d864a229c84f1ba995b21" name="a5fdda22cb08d864a229c84f1ba995b21"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5fdda22cb08d864a229c84f1ba995b21">&#9670;&#160;</a></span>try_advance_level()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -380,13 +380,13 @@ Functions</h2></td></tr>
           <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> try_advance_level </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
-          <td class="paramname">, </td>
+          <td class="paramname"><em>env</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">volatile</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> *&#160;</td>
-          <td class="paramname">&#160;</td>
+          <td class="paramname"><em>next_reaction_level</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -396,10 +396,11 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p>Attempt to advance the current reaction level to the next level in the reaction queue. For federated runtimes, this function should stall the advance until we know that we can safely execute the next level given knowledge about upstream network port statuses. </p>
+<p>Advance to the next level. For federated runtimes, this function should stall the advance until we know that we can safely execute the next level given knowledge about upstream network port statuses. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">next_reaction_level</td><td></td></tr>
+    <tr><td class="paramname">env</td><td>The environment. </td></tr>
+    <tr><td class="paramname">next_reaction_level</td><td>The place to store the next reaction level. </td></tr>
   </table>
   </dd>
 </dl>

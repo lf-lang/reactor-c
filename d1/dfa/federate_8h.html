@@ -147,12 +147,12 @@ Functions</h2></td></tr>
 <tr class="separator:a6d0d6dfbd380c75177dc10b08a811ef5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a331d123a8ef4725a08504ca1d80099c7" id="r_a331d123a8ef4725a08504ca1d80099c7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#a331d123a8ef4725a08504ca1d80099c7">enqueue_port_absent_reactions</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
 <tr class="separator:a331d123a8ef4725a08504ca1d80099c7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9d0f9ddc772b4214f92f183ecbe83f73" id="r_a9d0f9ddc772b4214f92f183ecbe83f73"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#a9d0f9ddc772b4214f92f183ecbe83f73">stall_advance_level_federation</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a>)</td></tr>
-<tr class="memdesc:a9d0f9ddc772b4214f92f183ecbe83f73"><td class="mdescLeft">&#160;</td><td class="mdescRight">Prevent the advancement to the next level of the reaction queue until the level we try to advance to is known to be under the max level allowed to advance.  <br /></td></tr>
-<tr class="separator:a9d0f9ddc772b4214f92f183ecbe83f73"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2272593c618ee3dfab504e7b7549f4a5" id="r_a2272593c618ee3dfab504e7b7549f4a5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#a2272593c618ee3dfab504e7b7549f4a5">update_max_level</a> (<a class="el" href="../../db/df7/structtag__t.html">tag_t</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>)</td></tr>
-<tr class="memdesc:a2272593c618ee3dfab504e7b7549f4a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Attempts to update the max level the reaction queue is allowed to advance to for the current logical timestep.  <br /></td></tr>
-<tr class="separator:a2272593c618ee3dfab504e7b7549f4a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a51545833496ae7aa4695dc7a7097fc8f" id="r_a51545833496ae7aa4695dc7a7097fc8f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#a51545833496ae7aa4695dc7a7097fc8f">stall_advance_level_federation</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">level</a>)</td></tr>
+<tr class="memdesc:a51545833496ae7aa4695dc7a7097fc8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait until inputs statuses are known up to and including the specified level. Specifically, wait until the specified level is less that the max level allowed to advance (MLAA).  <br /></td></tr>
+<tr class="separator:a51545833496ae7aa4695dc7a7097fc8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af91c1bf60d3d3619a687fe40fe8b8074" id="r_af91c1bf60d3d3619a687fe40fe8b8074"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#af91c1bf60d3d3619a687fe40fe8b8074">update_max_level</a> (<a class="el" href="../../db/df7/structtag__t.html">tag_t</a> tag, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> is_provisional)</td></tr>
+<tr class="memdesc:af91c1bf60d3d3619a687fe40fe8b8074"><td class="mdescLeft">&#160;</td><td class="mdescRight">Update the max level allowed to advance (MLAA). If the specified tag is greater than the current_tag of the top-level environment (or equal an is_provisional is false), then set the MLAA to MAX_INT and return. This removes any barriers on execution at the current tag due to network inputs. Otherwise, set the MLAA to the minimum level over all (non-physical) network input ports where the status of the input port is not known at that current_tag.  <br /></td></tr>
+<tr class="separator:af91c1bf60d3d3619a687fe40fe8b8074"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a76f0bc068b7a7c4a30983172eea59767" id="r_a76f0bc068b7a7c4a30983172eea59767"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#a76f0bc068b7a7c4a30983172eea59767">send_message</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">message_type</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">unsigned</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">short</a> port, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">unsigned</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">short</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">federate</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">next_destination_str</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> length, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">unsigned</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *message)</td></tr>
 <tr class="separator:a76f0bc068b7a7c4a30983172eea59767"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acaaf63aada42881a61249d47e734ba15" id="r_acaaf63aada42881a61249d47e734ba15"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dfa/federate_8h.html#acaaf63aada42881a61249d47e734ba15">send_timed_message</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">unsigned</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">short</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">unsigned</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">short</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">unsigned</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *)</td></tr>
@@ -630,8 +630,8 @@ Functions intitializing and freeing memory for environments.</h1>
 
 </div>
 </div>
-<a id="a9d0f9ddc772b4214f92f183ecbe83f73" name="a9d0f9ddc772b4214f92f183ecbe83f73"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9d0f9ddc772b4214f92f183ecbe83f73">&#9670;&#160;</a></span>stall_advance_level_federation()</h2>
+<a id="a51545833496ae7aa4695dc7a7097fc8f" name="a51545833496ae7aa4695dc7a7097fc8f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a51545833496ae7aa4695dc7a7097fc8f">&#9670;&#160;</a></span>stall_advance_level_federation()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -640,13 +640,13 @@ Functions intitializing and freeing memory for environments.</h1>
           <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> stall_advance_level_federation </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
-          <td class="paramname">, </td>
+          <td class="paramname"><em>env</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a>&#160;</td>
-          <td class="paramname">&#160;</td>
+          <td class="paramname"><em>level</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -656,10 +656,11 @@ Functions intitializing and freeing memory for environments.</h1>
       </table>
 </div><div class="memdoc">
 
-<p>Prevent the advancement to the next level of the reaction queue until the level we try to advance to is known to be under the max level allowed to advance. </p>
+<p>Wait until inputs statuses are known up to and including the specified level. Specifically, wait until the specified level is less that the max level allowed to advance (MLAA). </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">next_reaction_level</td><td></td></tr>
+    <tr><td class="paramname">env</td><td>The environment (which should always be the top-level environment). </td></tr>
+    <tr><td class="paramname">level</td><td>The level to which we would like to advance. </td></tr>
   </table>
   </dd>
 </dl>
@@ -684,23 +685,23 @@ Functions intitializing and freeing memory for environments.</h1>
 
 </div>
 </div>
-<a id="a2272593c618ee3dfab504e7b7549f4a5" name="a2272593c618ee3dfab504e7b7549f4a5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2272593c618ee3dfab504e7b7549f4a5">&#9670;&#160;</a></span>update_max_level()</h2>
+<a id="af91c1bf60d3d3619a687fe40fe8b8074" name="af91c1bf60d3d3619a687fe40fe8b8074"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af91c1bf60d3d3619a687fe40fe8b8074">&#9670;&#160;</a></span>update_max_level()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> update_max_level </td>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> update_max_level </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
-          <td class="paramname">, </td>
+          <td class="paramname"><em>tag</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td>
-          <td class="paramname">&#160;</td>
+          <td class="paramname"><em>is_provisional</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -710,15 +711,16 @@ Functions intitializing and freeing memory for environments.</h1>
       </table>
 </div><div class="memdoc">
 
-<p>Attempts to update the max level the reaction queue is allowed to advance to for the current logical timestep. </p>
+<p>Update the max level allowed to advance (MLAA). If the specified tag is greater than the current_tag of the top-level environment (or equal an is_provisional is false), then set the MLAA to MAX_INT and return. This removes any barriers on execution at the current tag due to network inputs. Otherwise, set the MLAA to the minimum level over all (non-physical) network input ports where the status of the input port is not known at that current_tag. </p>
+<p>This function assumes that the caller holds the mutex.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">tag</td><td>The latest TAG received by this federate. </td></tr>
-    <tr><td class="paramname">is_provisional</td><td>Whether the latest tag was provisional</td></tr>
+    <tr><td class="paramname">tag</td><td>The latest TAG or PTAG received by this federate. </td></tr>
+    <tr><td class="paramname">is_provisional</td><td>Whether the tag was provisional. </td></tr>
   </table>
   </dd>
 </dl>
-<p>This function assumes that the caller holds the mutex. </p>
+<dl class="section return"><dt>Returns</dt><dd>True if the MLAA changed. </dd></dl>
 
 </div>
 </div>
