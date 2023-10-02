@@ -37,6 +37,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <arpa/inet.h>  // inet_ntop & inet_pton
 #include <netdb.h>      // Defines getaddrinfo(), freeaddrinfo() and struct addrinfo.
 #include <netinet/in.h> // Defines struct sockaddr_in
+
 #include <regex.h>
 #include <strings.h>    // Defines bzero().
 #include <sys/socket.h>
@@ -159,10 +160,7 @@ void create_server(int specified_port) {
     }
     LF_PRINT_DEBUG("Creating a socket server on port %d.", port);
     // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
-    int socket_descriptor = socket(AF_INET, SOCK_STREAM, 0);
-    if (socket_descriptor < 0) {
-        lf_print_error_and_exit("Failed to obtain a socket server.");
-    }
+    int socket_descriptor = create_real_time_tcp_socket_errexit();
 
     // Server file descriptor.
     struct sockaddr_in server_fd;
@@ -803,10 +801,7 @@ void connect_to_federate(uint16_t remote_federate_id) {
     int socket_id = -1;
     while (result < 0) {
         // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
-        socket_id = socket(AF_INET, SOCK_STREAM, 0);
-        if (socket_id < 0) {
-            lf_print_error_and_exit("Failed to create socket to federate %d.", remote_federate_id);
-        }
+        socket_id = create_real_time_tcp_socket_errexit();
 
         // Server file descriptor.
         struct sockaddr_in server_fd;
@@ -1042,11 +1037,8 @@ void connect_to_rti(const char* hostname, int port) {
             lf_print_error_and_exit("No host for RTI matching given hostname: %s", hostname);
         }
 
-        // Create a socket matching hints criteria
-        _fed.socket_TCP_RTI = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-        if (_fed.socket_TCP_RTI < 0) {
-            lf_print_error_and_exit("Failed to create socket to RTI.");
-        }
+        // Create a socket 
+        _fed.socket_TCP_RTI = create_real_time_tcp_socket_errexit();
 
         result = connect(_fed.socket_TCP_RTI, res->ai_addr, res->ai_addrlen);
         if (result == 0) {
