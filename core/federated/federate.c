@@ -1262,7 +1262,7 @@ void set_network_port_status(int portID, port_status_t status) {
  *
  * This assumes the caller holds the mutex.
  *
- * @param tag The tag on which the latest status of network input
+ * @param tag The tag on which the latest status of all network input
  *  ports is known.
  */
 void update_last_known_status_on_input_ports(tag_t tag) {
@@ -1293,8 +1293,7 @@ void update_last_known_status_on_input_ports(tag_t tag) {
     // FIXME: We could put a condition variable into the trigger_t
     // struct for each network input port, in which case this won't
     // be a broadcast but rather a targetted signal.
-    if (notify) {
-        update_max_level(tag, false);
+    if (notify && update_max_level(tag, false)) {
         // Notify network input reactions
         lf_cond_broadcast(&port_status_changed);
     }
@@ -1303,7 +1302,7 @@ void update_last_known_status_on_input_ports(tag_t tag) {
 /**
  * Update the last known status tag of a network input port
  * to the value of "tag". This is the largest tag at which the status
- * (present or absent) of the port was known.
+ * (present or absent) of the port is known.
  *
  * This function assumes the caller holds the mutex, and, if the tag
  * actually increases, it broadcasts on `port_status_changed`.
@@ -1675,14 +1674,14 @@ void handle_message(int socket, int fed_id) {
     _lf_schedule_value(action, 0, message_contents, length);
 }
 
-void stall_advance_level_federation(environment_t* env, size_t next_reaction_level) {
-    LF_PRINT_DEBUG("Trying to acquire the global mutex.");
+void stall_advance_level_federation(environment_t* env, size_t level) {
+    LF_PRINT_DEBUG("Acquiring the environment mutex.");
     lf_mutex_lock(&env->mutex);
-    LF_PRINT_DEBUG("Waiting on MLAA with next_reaction_level %zu and MLAA %d.", next_reaction_level, max_level_allowed_to_advance);
-    while (((int) next_reaction_level) >= max_level_allowed_to_advance) {
+    LF_PRINT_DEBUG("Waiting on MLAA with next_reaction_level %zu and MLAA %d.", level, max_level_allowed_to_advance);
+    while (((int) level) >= max_level_allowed_to_advance) {
         lf_cond_wait(&port_status_changed);
     };
-    LF_PRINT_DEBUG("Exiting wait with MLAA %d and next_reaction_level %zu.", max_level_allowed_to_advance, next_reaction_level);
+    LF_PRINT_DEBUG("Exiting wait with MLAA %d and next_reaction_level %zu.", max_level_allowed_to_advance, level);
     lf_mutex_unlock(&env->mutex);
 }
 
@@ -1735,7 +1734,7 @@ void handle_tagged_message(int socket, int fed_id) {
     lf_action_base_t* action = _lf_action_for_port(port_id);
 
     // Record the physical time of arrival of the message
-    action->trigger->physical_time_of_arrival = lf_time_physical();
+    instant_t time_of_arrival = lf_time_physical();
 
     if (action->trigger->is_physical) {
         // Messages sent on physical connections should be handled via handle_message().
@@ -1753,8 +1752,8 @@ void handle_tagged_message(int socket, int fed_id) {
     // If something happens, make sure to release the barrier.
     _lf_increment_tag_barrier(env, intended_tag);
 #endif
-    LF_PRINT_LOG("Received message with tag: " PRINTF_TAG ", Current tag: " PRINTF_TAG ".",
-            intended_tag.time - start_time, intended_tag.microstep,
+    LF_PRINT_LOG("Received message on port %d with tag: " PRINTF_TAG ", Current tag: " PRINTF_TAG ".",
+            port_id, intended_tag.time - start_time, intended_tag.microstep,
             lf_time_logical_elapsed(env), env->current_tag.microstep);
 
     // Read the payload.
@@ -1767,6 +1766,8 @@ void handle_tagged_message(int socket, int fed_id) {
     // LF_PRINT_DEBUG("Message received: %s.", message_contents);
 
     lf_mutex_lock(&env->mutex);
+
+    action->trigger->physical_time_of_arrival = time_of_arrival;
 
     // Create a token for the message
     lf_token_t* message_token = _lf_new_token((token_type_t*)action, message_contents, length);
@@ -1928,25 +1929,38 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
     _fed.last_sent_LTC = tag_to_send;
 }
 
-void update_max_level(tag_t tag, bool is_provisional) {
+bool update_max_level(tag_t tag, bool is_provisional) {
+    // This always needs the top-level environment, which will be env[0].
     environment_t *env;
     _lf_get_environments(&env);
+    int prev_max_level_allowed_to_advance = max_level_allowed_to_advance;
     max_level_allowed_to_advance = INT_MAX;
-    LF_PRINT_DEBUG("last_TAG=" PRINTF_TIME, tag.time);
     if ((lf_tag_compare(env->current_tag, tag) < 0) || (
         lf_tag_compare(env->current_tag, tag) == 0 && !is_provisional
     )) {
-        LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME " with last_TAG=" PRINTF_TIME " and current time " PRINTF_TIME ".", max_level_allowed_to_advance, lf_time_logical_elapsed(env), tag.time, env->current_tag.time);
-        return;  // Safe to complete the current tag
+        LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME ".",
+              max_level_allowed_to_advance,
+              lf_time_logical_elapsed(env)
+        );
+        // Safe to complete the current tag
+        return (prev_max_level_allowed_to_advance != max_level_allowed_to_advance);
     }
     for (int i = 0; i < _lf_zero_delay_action_table_size; i++) {
         lf_action_base_t* input_port_action = _lf_zero_delay_action_table[i];
         if (lf_tag_compare(env->current_tag,
-            input_port_action->trigger->last_known_status_tag) > 0 && !input_port_action->trigger->is_physical) {
-            max_level_allowed_to_advance = LF_MIN(max_level_allowed_to_advance, ((int) LF_LEVEL(input_port_action->trigger->reactions[0]->index)));
+                input_port_action->trigger->last_known_status_tag) > 0
+                && !input_port_action->trigger->is_physical) {
+            max_level_allowed_to_advance = LF_MIN(
+                max_level_allowed_to_advance,
+                ((int) LF_LEVEL(input_port_action->trigger->reactions[0]->index))
+            );
         }
     }
-    LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME " with %lld items in zero-delay action table.", max_level_allowed_to_advance, lf_time_logical_elapsed(env), (long long) _lf_zero_delay_action_table_size);
+    LF_PRINT_DEBUG("Updated MLAA to %d at time " PRINTF_TIME ".",
+        max_level_allowed_to_advance,
+        lf_time_logical_elapsed(env)
+    );
+    return (prev_max_level_allowed_to_advance != max_level_allowed_to_advance);
 }
 
 #ifdef FEDERATED_DECENTRALIZED
@@ -2107,7 +2121,7 @@ void handle_provisional_tag_advance_grant() {
         // it is already treating the current tag as PTAG cycle (e.g. at the
         // start time) or it will be completing the current cycle and sending
         // a LTC message shortly. In either case, there is nothing more to do.
-           lf_mutex_unlock(&env->mutex);
+        lf_mutex_unlock(&env->mutex);
         return;
     } else if (lf_tag_compare(env->current_tag, PTAG) > 0) {
         // Current tag is greater than the PTAG.
@@ -2121,7 +2135,7 @@ void handle_provisional_tag_advance_grant() {
         // Send an LTC to indicate absent outputs.
         _lf_logical_tag_complete(PTAG);
         // Nothing more to do.
-           lf_mutex_unlock(&env->mutex);
+        lf_mutex_unlock(&env->mutex);
         return;
     } else if (PTAG.time == env->current_tag.time) {
         // We now know env->current_tag < PTAG, but the times are equal.
