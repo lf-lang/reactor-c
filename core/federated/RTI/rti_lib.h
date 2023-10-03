@@ -181,6 +181,11 @@ typedef struct federation_rti_t {
     bool authentication_enabled;
 
     /**
+     * Boolean indicating that NDT message is enabled
+    */
+    bool ndt_enabled;
+
+    /**
      * Boolean indicating that a stop request is already in progress.
      */
     bool stop_in_progress;

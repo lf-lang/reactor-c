@@ -560,8 +560,10 @@ void handle_next_event_tag(federate_t* fed) {
         intended_tag
     );
     // If fed cannot get the grant of the intended tag, send NDTs to its upstream federates.
-    if (lf_tag_compare(fed->enclave.last_granted, intended_tag) < 0) {
-        send_upstream_next_downstream_tag(fed, intended_tag);
+    if (_f_rti->ndt_enabled) {
+        if (lf_tag_compare(fed->enclave.last_granted, intended_tag) < 0) {
+            send_upstream_next_downstream_tag(fed, intended_tag);
+        }
     }
     lf_mutex_unlock(&rti_mutex);
 }
@@ -1789,6 +1791,8 @@ int process_args(int argc, const char* argv[]) {
         } else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0) {
             lf_print("%s", version_info);
             return 0;
+        } else if (strcmp(argv[i], "--ndt" == 0)) {
+            _f_rti->ndt_enabled = true;
         } else if (strcmp(argv[i], " ") == 0) {
             // Tolerate spaces
             continue;
@@ -1827,5 +1831,6 @@ void initialize_RTI(){
     _f_rti->clock_sync_exchanges_per_interval = 10,
     _f_rti->authentication_enabled = false,
     _f_rti->tracing_enabled = false;
+    _f_rti->ndt_enabled = true; // FIXME: Initialize this with true to test the feature
     _f_rti->stop_in_progress = false;
 }
