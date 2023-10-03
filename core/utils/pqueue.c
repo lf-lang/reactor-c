@@ -39,10 +39,6 @@
 
 #include "platform.h"
 #include "pqueue.h"
-#include "ndt_pqueue_support.h"
-#ifdef FEDERATED_CENTRALIZED
-#include "ndt_pqueue_support.h"
-#endif
 #include "util.h"
 #include "lf_types.h"
 
@@ -480,7 +476,6 @@ void print_event(void *event) {
 
 
 // ********** NDT Priority Queue Support Start
-#ifdef FEDERATED_CENTRALIZED
 /**
  * Return whether the tags contained by the first and second argument 
  * are given in reverse order.
@@ -500,7 +495,7 @@ static int tag_matches(void* next, void* curr) {
  * Report a priority equal to the pointer to an ndt_node.
  * Used for sorting pointers to ndt_node in the NDT queue.
  */
-static pqueue_pri_t get_ndt_node(void *a) {
+static pqueue_pri_t get_ndt_priority(void *a) {
     // Note that NDT queue stores pointers to ndt_nodes and it is its 
     // pqueue_pri_t as well. Return itself.
     return (pqueue_pri_t) a;
@@ -521,6 +516,14 @@ static void set_ndtq_position(void *a, size_t pos) {
 }
 
 /**
+ * 
+*/
+static int ndt_node_matches(void* next, void* curr) {
+    return ((((ndt_node*) next)->pos == ((ndt_node*) curr)->pos) &&
+    ((lf_tag_compare(((ndt_node*) next)->tag, ((ndt_node*) curr)->tag)) == 0));
+}
+
+/**
  * Print some information about the given ndt_node.
  * 
  * DEBUG function only.
@@ -530,4 +533,3 @@ static void print_tag(void *node) {
     LF_PRINT_DEBUG("Elapsed logical time:" PRINTF_TIME ", microstep: %d, position: %ld", 
     tag.time, tag.microstep, ((ndt_node*) node)->pos);
 }
-#endif

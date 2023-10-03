@@ -71,6 +71,11 @@ static size_t get_ndtq_position(void *a);
 static void set_ndtq_position(void *a, size_t pos);
 
 /**
+ * 
+*/
+static int ndt_node_matches(void* next, void* curr);
+
+/**
  * Print some information about the given ndt_node.
  * 
  * DEBUG function only.

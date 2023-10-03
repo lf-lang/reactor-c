@@ -42,6 +42,10 @@
 #define PQUEUE_H
 
 #include <stddef.h>
+#include <pqueue_support.h>
+// #ifdef FEDERATED_CENTRALIZED
+#include "ndt_pqueue_support.h"
+// #endif
 
 /** priority data type */
 typedef unsigned long long pqueue_pri_t;
@@ -213,18 +217,18 @@ pqueue_dump(pqueue_t *q,
 int pqueue_is_valid(pqueue_t *q);
 
 // ********** Priority Queue Support Start
-int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that);
-int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that);
-int event_matches(void* next, void* curr);
-int reaction_matches(void* next, void* curr);
-pqueue_pri_t get_event_time(void *a);
-pqueue_pri_t get_reaction_index(void *a);
-size_t get_event_position(void *a);
-size_t get_reaction_position(void *a);
-void set_event_position(void *a, size_t pos);
-void set_reaction_position(void *a, size_t pos);
-void print_reaction(void *reaction);
-void print_event(void *event);
+// int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that);
+// int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that);
+// int event_matches(void* next, void* curr);
+// int reaction_matches(void* next, void* curr);
+// pqueue_pri_t get_event_time(void *a);
+// pqueue_pri_t get_reaction_index(void *a);
+// size_t get_event_position(void *a);
+// size_t get_reaction_position(void *a);
+// void set_event_position(void *a, size_t pos);
+// void set_reaction_position(void *a, size_t pos);
+// void print_reaction(void *reaction);
+// void print_event(void *event);
 
 #endif /* PQUEUE_H */
 /** @} */

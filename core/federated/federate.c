@@ -67,6 +67,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <openssl/rand.h> // For secure random number generation.
 #include <openssl/hmac.h> // For HMAC-based authentication of federates.
 #endif
+#include <pqueue.h>
 
 // Global variables defined in tag.c:
 extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
@@ -2321,8 +2322,9 @@ void handle_next_downstream_tag() {
 
     if (lf_tag_compare(env->current_tag, NDT) < 0) {
         // The current tag is less than NDT. Push NDT to ndt_q.
-        event_t* dummy = _lf_create_dummy_events(env, NULL, NDT.time, NULL, NDT.microstep);
-        pqueue_insert(env->ndt_q, dummy);
+        ndt_node* node = (ndt_node*) malloc(sizeof(ndt_node));
+        node->tag = env->current_tag;
+        pqueue_insert(env->ndt_q, node);
     } else {
         // The current tag is greater than or equal to NDT. Send LTC, NET, and ABS messages.
     }

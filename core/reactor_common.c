@@ -292,12 +292,12 @@ void _lf_start_time_step(environment_t *env) {
         }
     }
 
-#ifdef FEDERATED_CENTRALIZED
-    while (lf_tag_compare(((event_t*) pqueue_peek(env->ndt_q))->time, env->current_tag.time) < 0) {
+// #ifdef FEDERATED_CENTRALIZED
+    while (lf_tag_compare(((ndt_node*) pqueue_peek(env->ndt_q))->tag, env->current_tag) < 0) {
         // Remove elements of ndt_q with tag less than the current tag.
         pqueue_remove(env->ndt_q, pqueue_peek(env->ndt_q));
     }
-#endif
+// #endif
 #ifdef FEDERATED_DECENTRALIZED
     for (int i = 0; i < env->is_present_fields_size; i++) {
         // FIXME: For now, an intended tag of (NEVER, 0)
