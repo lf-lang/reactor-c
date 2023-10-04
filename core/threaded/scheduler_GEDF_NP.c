@@ -89,7 +89,7 @@ int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
     // a mutex.
     for (; scheduler->next_reaction_level <=
            scheduler->max_reaction_level;
-         try_advance_level(scheduler->env, &scheduler->next_reaction_level)) {
+        try_advance_level(scheduler->env, &scheduler->next_reaction_level)) {
         tmp_queue = ((pqueue_t**)scheduler->triggered_reactions)
                         [scheduler->next_reaction_level];
         size_t reactions_to_execute = pqueue_size(tmp_queue);
@@ -147,13 +147,13 @@ void _lf_sched_signal_stop(lf_scheduler_t* scheduler) {
  */
 void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* scheduler) {
     environment_t* env = scheduler->env;
+
     // Executing queue must be empty when this is called.
     assert(pqueue_size((pqueue_t*)scheduler->executing_reactions) == 0);
 
     // Loop until it's time to stop or work has been distributed
     while (true) {
-        if (scheduler->next_reaction_level ==
-            (scheduler->max_reaction_level + 1)) {
+        if (scheduler->next_reaction_level == (scheduler->max_reaction_level + 1)) {
             scheduler->next_reaction_level = 0;
             lf_mutex_lock(&env->mutex);
             // Nothing more happening at this tag.

@@ -23,8 +23,9 @@ directory.
 ```
     sudo make install
 ```
-Will install the tracing executables to `/usr/local/bin` to install them to a different location, use the `INSTALL_PREFIX` flag, e.g.
+Will install the tracing executables to the `bin` directory under `/usr/local/`. To install them to a different location, use the `INSTALL_PREFIX` flag, e.g.
 
 ```
-  make install INSTALL_PREFIX=~/.local/bin
+  make install INSTALL_PREFIX=~/.local/
 ```
+which will install the executables under `~/.local/bin/`.
