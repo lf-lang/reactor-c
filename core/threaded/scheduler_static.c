@@ -643,9 +643,6 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
         // Execute the current instruction
         execute_inst(scheduler, worker_number, opcode, op1, op2, op3, pc,
                     &returned_reaction, &exit_loop);
-
-        LF_PRINT_DEBUG("Worker %d: returned_reaction = %p, exit_loop = %d",
-                        worker_number, returned_reaction, exit_loop);
     }
 
     LF_PRINT_DEBUG("Worker %d leaves lf_sched_get_ready_reaction", worker_number);
