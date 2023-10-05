@@ -33,12 +33,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assert.h>
 #include <ctype.h>
 #include <errno.h>
-#include <math.h>       // For sqrtl() and powl
-#include <stdarg.h>     // Defines va_list
+#include <math.h>           // For sqrtl() and powl
+#include <stdarg.h>         // Defines va_list
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>     // Defines memcpy()
-#include <time.h>       // Defines nanosleep()
+#include <string.h>         // Defines memcpy()
+#include <time.h>           // Defines nanosleep()
+#include <netinet/in.h>     // IPPROTO_TCP, IPPROTO_UDP 
+#include <netinet/tcp.h>    // TCP_NODELAY 
 
 #include "net_util.h"
 #include "util.h"
@@ -53,6 +55,34 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /** Number of nanoseconds to sleep before retrying a socket read. */
 #define SOCKET_READ_RETRY_INTERVAL 1000000
+
+int create_real_time_tcp_socket_errexit() {
+    int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (sock < 0) {
+        lf_print_error_and_exit("Could not open TCP socket. Err=%d", sock);
+    }
+    // Disable Nagle's algorithm which bundles together small TCP messages to
+    //  reduce network traffic
+    // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
+    //  is enough.
+    int flag = 1;
+    int result = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
+    
+    if (result < 0) {
+        lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+    }
+    
+    // Disable delayed ACKs. Only possible on Linux
+    #if defined(PLATFORM_Linux)
+        result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
+        
+        if (result < 0) {
+            lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+        }
+    #endif
+    
+    return sock;
+}
 
 ssize_t read_from_socket_errexit(
 		int socket,
