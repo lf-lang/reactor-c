@@ -9,7 +9,7 @@ CFLAGS=	-I$(REACTOR_C)/include/core/ \
 		-I$(REACTOR_C)/include/core/platform \
 		-I$(REACTOR_C)/include/core/utils \
 		-DLF_UNTHREADED=1 \
-		-Wall
+		-Wall -g -g3
 DEPS=
 LIBS=-lcurl
 
@@ -35,6 +35,8 @@ install: trace_to_csv trace_to_chrome trace_to_influxdb
 	cp ./visualization/fedsd.py $(BIN_INSTALL_PATH)
 	ln -f -s $(BIN_INSTALL_PATH)/fedsd.py $(BIN_INSTALL_PATH)/fedsd
 	chmod +x $(BIN_INSTALL_PATH)/fedsd
+
+all: trace_to_csv trace_to_chrome trace_to_influxdb
 	
 clean:
 	rm -f *.o

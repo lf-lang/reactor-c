@@ -106,6 +106,11 @@ int register_user_trace_event(void *self, char* description) {
     return _lf_register_trace_event(trace, description, NULL, trace_user, description);
 }
 
+int register_user_stats_event(void *self, char *description) {
+    lf_assert(self, "Need a pointer to a self struct to register a user trace event");
+    trace_t * trace = ((self_base_t *) self)->environment->trace;
+    return _lf_register_trace_event(trace, description, NULL, stats_user, description);
+}
 
 /**
  * Write the trace header information.
@@ -413,6 +418,15 @@ void tracepoint_user_value(void* self, char* description, long long value) {
     trace_t *trace = env->trace;
     lf_critical_section_enter(env);
     tracepoint(trace, user_value, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
+    lf_critical_section_exit(env);
+}
+
+
+void tracepoint_user_stats(void *self, char *description, long long value) {
+    environment_t *env = ((self_base_t *)self)->environment;
+    trace_t *trace = env->trace;
+    lf_critical_section_enter(env);
+    tracepoint(trace, user_stats, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
     lf_critical_section_exit(env);
 }
 

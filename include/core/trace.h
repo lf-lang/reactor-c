@@ -72,6 +72,7 @@ typedef enum
     schedule_called,
     user_event,
     user_value,
+    user_stats,
     worker_wait_starts,
     worker_wait_ends,
     scheduler_advancing_time_starts,
@@ -135,6 +136,7 @@ static const char *trace_event_names[] = {
     "Schedule called",
     "User-defined event",
     "User-defined valued event",
+    "User Stats",
     "Worker wait starts",
     "Worker wait ends",
     "Scheduler advancing time starts",
@@ -212,7 +214,8 @@ typedef struct trace_record_t {
 typedef enum {
     trace_reactor,   // Self struct.
     trace_trigger,   // Timer or action (argument to schedule()).
-    trace_user       // User-defined trace object.
+    trace_user,       // User-defined trace object.
+    stats_user
 } _lf_trace_object_t;
 
 /**
@@ -300,6 +303,8 @@ int _lf_register_trace_event(trace_t* trace, void* pointer1, void* pointer2, _lf
  * @return 1 if successful, 0 if the trace object table is full.
  */
 int register_user_trace_event(void* self, char* description);
+
+int register_user_stats_event(void *self, char *description);
 
 /**
  * Open a trace file and start tracing.
@@ -393,6 +398,8 @@ void tracepoint_user_event(void* self, char* description);
  *  But int values work as well.
  */
 void tracepoint_user_value(void* self, char* description, long long value);
+
+void tracepoint_user_stats(void *self, char *description, long long value);
 
 /**
  * Trace the start of a worker waiting for something to change on the reaction queue.
@@ -517,6 +524,7 @@ void tracepoint_rti_from_federate(trace_t* trace, trace_event_t event_type, int 
 #define tracepoint_schedule(...)
 #define tracepoint_user_event(...)
 #define tracepoint_user_value(...)
+#define tracepoint_user_stats(...)
 #define tracepoint_worker_wait_starts(...)
 #define tracepoint_worker_wait_ends(...)
 #define tracepoint_scheduler_advancing_time_starts(...);
