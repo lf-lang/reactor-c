@@ -8,6 +8,7 @@ var pythontarget_8c =
     [ "get_python_function", "db/df4/pythontarget_8c.html#a4edcc011de4a45d924a03a3125d4cf91", null ],
     [ "lf_reactor_c_main", "db/df4/pythontarget_8c.html#a831ac79bfc7b11dadfa1aa6dd1b68d4f", null ],
     [ "lf_request_stop", "db/df4/pythontarget_8c.html#ab49affc958f705d9e33c5e3463848bda", null ],
+    [ "py_initialize_interpreter", "db/df4/pythontarget_8c.html#a04c634f3fee09457b62236afb85ce090", null ],
     [ "py_main", "db/df4/pythontarget_8c.html#af55a5a17a787937a4484f7f6ab6bbc78", null ],
     [ "py_request_stop", "db/df4/pythontarget_8c.html#a1a013caac994b0b05697d0006bf8efcf", null ],
     [ "py_schedule", "db/df4/pythontarget_8c.html#ac7d72669abb0c6c907e9572da4962525", null ],
