@@ -98,7 +98,7 @@ import subprocess
 parser = argparse.ArgumentParser(description='Set of the lft trace files to render.')
 parser.add_argument('-r','--rti', type=str, 
                     help='RTI\'s lft trace file.')
-parser.add_argument('-f','--federates', nargs='+', action='append',
+parser.add_argument('-f','--federates', nargs='+',
                     help='List of the federates\' lft trace files.')
 
 # Events matching at the sender and receiver ends depend on whether they are tagged
