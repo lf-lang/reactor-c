@@ -59,6 +59,7 @@ FILE* filtered_file = NULL;
 /** Size of the stats table is object_table_size plus twice MAX_NUM_WORKERS. */
 int table_size;
 
+/** Structure for passed command line options */
 typedef struct {
     char *r_name; // resource name
     char *out_file; // Output Directory
@@ -73,6 +74,7 @@ program_options_t opts = {
         .recursive = false
 };
 
+/** All Events of specified Types */
 enum filter_options_t {
     reaction_events = NUM_EVENT_TYPES + 1,
     user_events,
@@ -82,6 +84,10 @@ enum filter_options_t {
     receive_events
 };
 
+/** Trace Processor Fptr */
+typedef void (*processor_f) (const char *fname);
+
+/** Available Filter Options */
 struct filter {
     int value;
     const char *str;
@@ -158,6 +164,11 @@ summary_stats_t** summary_stats;
 /** Largest timestamp seen. */
 instant_t latest_time = 0LL;
 
+/**
+ * Checks if specified event ev is Filtered for this run
+ * @param ev Current Tracing Event
+ * @returns True if this event needs to be filtered or false otherwise
+ * */
 bool is_filtered_event(trace_event_t ev) {
     if (ev == opts.filter) {
         // Definitive Event
@@ -529,6 +540,7 @@ void write_summary_file() {
     }
 }
 
+/** Filter Options Table */
 trace_event_t get_filtered_option(const char *opt) {
     for (int i = 0; i < sizeof (filters) / sizeof (struct filter); ++i) {
         if (filters[i].str != NULL && strcmp(opt, filters[i].str) == 0) {
@@ -538,6 +550,7 @@ trace_event_t get_filtered_option(const char *opt) {
     return -1;
 }
 
+/** Parse and set Program Options */
 void scan_program_options(int argc, char **argv) {
     if (argc > 2) {
         // scan for program options
@@ -633,9 +646,14 @@ void trace_processor(const char *fname) {
     }
 }
 
-typedef void (*processor_f) (const char *fname);
-
-int for_each_trace(char *searching, char *tmp_buffer, bool recursive, processor_f process) {
+/**
+ * Invokes processor for each trace-file on current path
+ * @param trace_ext Extension of Trace File
+ * @param tmp_buffer temporary buffer space
+ * @param recursive Specifies if we need to examine sub-directories as well
+ * @param process Function Pointer to trace processor
+ * */
+int for_each_trace(char *trace_ext, char *tmp_buffer, bool recursive, processor_f process) {
     DIR *d;
     struct dirent *dir;
     d = opendir(".");
@@ -649,10 +667,10 @@ int for_each_trace(char *searching, char *tmp_buffer, bool recursive, processor_
         }
         if (dir->d_type == DT_DIR && recursive) {
             chdir(dir->d_name);
-            for_each_trace(searching, tmp_buffer, recursive, process);
+            for_each_trace(trace_ext, tmp_buffer, recursive, process);
             chdir("..");
         } else {
-            if (strstr(dir->d_name, searching) != NULL) {
+            if (strstr(dir->d_name, trace_ext) != NULL) {
                 size_t len;
                 getcwd(tmp_buffer, MAXPATHLEN);
                 len = strnlen(tmp_buffer, MAXPATHLEN);
