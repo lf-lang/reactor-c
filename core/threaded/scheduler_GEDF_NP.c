@@ -87,15 +87,17 @@ int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
     // Note: All the threads are idle, which means that they are done inserting
     // reactions. Therefore, the reaction queues can be accessed without locking
     // a mutex.
-    for (; scheduler->next_reaction_level <=
-           scheduler->max_reaction_level;
-        try_advance_level(scheduler->env, &scheduler->next_reaction_level)) {
+
+    while (scheduler->next_reaction_level <= scheduler->max_reaction_level) {
+        LF_PRINT_DEBUG("Waiting with curr_reaction_level %zu.", scheduler->next_reaction_level);
+        try_advance_level(scheduler->env, &scheduler->next_reaction_level);
+
         tmp_queue = ((pqueue_t**)scheduler->triggered_reactions)
-                        [scheduler->next_reaction_level];
+                        [scheduler->next_reaction_level-1];
         size_t reactions_to_execute = pqueue_size(tmp_queue);
+
         if (reactions_to_execute) {
             scheduler->executing_reactions = tmp_queue;
-            scheduler->next_reaction_level++;
             return reactions_to_execute;
         }
     }
