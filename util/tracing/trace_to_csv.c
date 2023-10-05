@@ -684,8 +684,6 @@ int for_each_trace(char *trace_ext, char *tmp_buffer, bool recursive, processor_
     return *tmp_buffer == 0;
 }
 
-// /Users/khubaibumer/cdn_run/Configuration_4/include/main.lft
-// -r -d /Users/khubaibumer/cdn_run -f user_stats -o run_stats
 int main(int argc, char* argv[]) {
     if (argc < 2) {
         usage();
