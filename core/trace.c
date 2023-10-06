@@ -334,7 +334,9 @@ void tracepoint(
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker) {
-    tracepoint(trace, reaction_starts, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, true);
+    if (LF_ALLOW_SYSTEM_TRACES) {
+        tracepoint(trace, reaction_starts, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, true);
+    }
 }
 
 /**
@@ -343,7 +345,9 @@ void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_reaction_ends(trace_t* trace, reaction_t* reaction, int worker) {
-    tracepoint(trace, reaction_ends, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
+    if (LF_ALLOW_SYSTEM_TRACES) {
+        tracepoint(trace, reaction_ends, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
+    }
 }
 
 /**
@@ -356,6 +360,9 @@ void tracepoint_schedule(trace_t* trace, trigger_t* trigger, interval_t extra_de
     // or timer. If there is such a reaction, find its reactor's self struct and
     // put that into the tracepoint. We only have to look at the first reaction.
     // If there is no reaction, insert NULL for the reactor.
+    if (!LF_ALLOW_SYSTEM_TRACES) {
+        return;
+    }
     void* reactor = NULL;
     if (trigger->number_of_reactions > 0
             && trigger->reactions[0] != NULL) {
@@ -435,7 +442,9 @@ void tracepoint_user_stats(void *self, char *description, long long value) {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_worker_wait_starts(trace_t* trace, int worker) {
-    tracepoint(trace, worker_wait_starts, NULL, NULL, worker, worker, -1, NULL, NULL, 0, true);
+    if (LF_ALLOW_SYSTEM_TRACES) {
+        tracepoint(trace, worker_wait_starts, NULL, NULL, worker, worker, -1, NULL, NULL, 0, true);
+    }
 }
 
 /**
@@ -443,7 +452,9 @@ void tracepoint_worker_wait_starts(trace_t* trace, int worker) {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_worker_wait_ends(trace_t* trace, int worker) {
-    tracepoint(trace, worker_wait_ends, NULL, NULL, worker, worker, -1, NULL, NULL, 0, false);
+    if (LF_ALLOW_SYSTEM_TRACES) {
+        tracepoint(trace, worker_wait_ends, NULL, NULL, worker, worker, -1, NULL, NULL, 0, false);
+    }
 }
 
 /**
@@ -451,7 +462,9 @@ void tracepoint_worker_wait_ends(trace_t* trace, int worker) {
  * appear on the event queue.
  */
 void tracepoint_scheduler_advancing_time_starts(trace_t* trace) {
-    tracepoint(trace, scheduler_advancing_time_starts, NULL, NULL, -1, -1, -1, NULL, NULL, 0, true);
+    if (LF_ALLOW_SYSTEM_TRACES) {
+        tracepoint(trace, scheduler_advancing_time_starts, NULL, NULL, -1, -1, -1, NULL, NULL, 0, true);
+    }
 }
 
 /**
@@ -459,7 +472,9 @@ void tracepoint_scheduler_advancing_time_starts(trace_t* trace) {
  * appear on the event queue.
  */
 void tracepoint_scheduler_advancing_time_ends(trace_t* trace) {
-    tracepoint(trace, scheduler_advancing_time_ends, NULL, NULL, -1, -1, -1, NULL, NULL, 0, false);
+    if (LF_ALLOW_SYSTEM_TRACES) {
+        tracepoint(trace, scheduler_advancing_time_ends, NULL, NULL, -1, -1, -1, NULL, NULL, 0, false);
+    }
 }
 
 /**
@@ -468,7 +483,10 @@ void tracepoint_scheduler_advancing_time_ends(trace_t* trace) {
  * @param worker The thread number of the worker thread or 0 for unthreaded execution.
  */
 void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, int worker) {
-    tracepoint(trace, reaction_deadline_missed, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
+    if (LF_ALLOW_SYSTEM_TRACES) {
+        tracepoint(trace, reaction_deadline_missed, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL,
+                   0, false);
+    }
 }
 
 void stop_trace(trace_t* trace) {

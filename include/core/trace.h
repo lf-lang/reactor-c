@@ -59,6 +59,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "net_common.h"
 #endif // FEDERATED
 
+#ifdef LF_TRACE_SYSTEM
+#define LF_ALLOW_SYSTEM_TRACES true
+#else
+#define LF_ALLOW_SYSTEM_TRACES false
+#endif
+
 /**
  * Trace event types. If you update this, be sure to update the
  * string representation below. Also, create a tracepoint function
@@ -518,6 +524,7 @@ void tracepoint_rti_from_federate(trace_t* trace, trace_event_t event_type, int 
 // empty definition in case we compile without tracing
 #define _lf_register_trace_event(...)
 #define register_user_trace_event(...)
+#define register_user_stats_event(...)
 #define tracepoint(...)
 #define tracepoint_reaction_starts(...)
 #define tracepoint_reaction_ends(...)
