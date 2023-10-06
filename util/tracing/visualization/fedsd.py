@@ -98,7 +98,7 @@ import subprocess
 parser = argparse.ArgumentParser(description='Set of the lft trace files to render.')
 parser.add_argument('-r','--rti', type=str, 
                     help='RTI\'s lft trace file.')
-parser.add_argument('-f','--federates', nargs='+', action='append',
+parser.add_argument('-f','--federates', nargs='+',
                     help='List of the federates\' lft trace files.')
 
 # Events matching at the sender and receiver ends depend on whether they are tagged
@@ -334,9 +334,12 @@ def load_and_process_csv_file(csv_file) :
     # which boils up to having 'RTI' in the 'event' column
     df = df[df['event'].str.contains('Sending|Receiving|Scheduler advancing time ends') == True]
 
-    # Fix the parameters of the event 'Scheduler advancing time ends'
-    # We rely on the fact that the first row of the csv file cannot be the end of advancing time
-    id = df.iloc[-1]['self_id']
+    # Determine the "self id" in the trace file based on the first 'Receiving' or 'Sending' message (or use -1, the id of the RTI, if there is none).
+    id = -1
+    for index, row in df.iterrows():
+        if ('Sending' in row['event'] or 'Receiving' in row['event']) :
+            id = row['self_id']
+            break
     df['self_id'] = id
     df = df.astype({'self_id': 'int', 'partner_id': 'int'})
 

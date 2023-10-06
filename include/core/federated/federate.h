@@ -161,13 +161,6 @@ typedef struct federate_instance_t {
     bool is_last_TAG_provisional;
 
     /**
-     * Indicator of whether a NET has been sent to the RTI and no TAG
-     * yet received in reply.
-     * This variable should only be accessed while holding the mutex lock.
-     */
-    bool waiting_for_TAG;
-
-    /**
      * Indicator of whether this federate has upstream federates.
      * The default value of false may be overridden in _lf_initialize_trigger_objects.
      */
@@ -359,23 +352,29 @@ void send_port_absent_to_federate(environment_t* env, interval_t, unsigned short
 void enqueue_port_absent_reactions(environment_t* env);
 
 /**
- * @brief Prevent the advancement to the next level of the reaction queue until the
- * level we try to advance to is known to be under the max level allowed to advance.
- *
- * @param next_reaction_level
+ * @brief Wait until inputs statuses are known up to and including the specified level.
+ * Specifically, wait until the specified level is less that the max level allowed to
+ * advance (MLAA).
+ * @param env The environment (which should always be the top-level environment).
+ * @param level The level to which we would like to advance.
  */
-void stall_advance_level_federation(environment_t*, size_t);
+void stall_advance_level_federation(environment_t* env, size_t level);
 
 /**
- * @brief Attempts to update the max level the reaction queue is allowed to advance to
- * for the current logical timestep.
- *
- * @param tag The latest TAG received by this federate.
- * @param is_provisional Whether the latest tag was provisional
+ * @brief Update the max level allowed to advance (MLAA).
+ * If the specified tag is greater than the current_tag of the top-level environment
+ * (or equal an is_provisional is false), then set the MLAA to MAX_INT and return.
+ * This removes any barriers on execution at the current tag due to network inputs.
+ * Otherwise, set the MLAA to the minimum level over all (non-physical) network input ports
+ * where the status of the input port is not known at that current_tag.
  *
  * This function assumes that the caller holds the mutex.
+ *
+ * @param tag The latest TAG or PTAG received by this federate.
+ * @param is_provisional Whether the tag was provisional.
+ * @return True if the MLAA changed.
  */
-void update_max_level(tag_t, bool);
+bool update_max_level(tag_t tag, bool is_provisional);
 
 /**
  * Send a message to another federate directly or via the RTI.

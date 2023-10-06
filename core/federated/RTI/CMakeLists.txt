@@ -75,6 +75,7 @@ add_executable(
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
     # Set the LOG_LEVEL to 4 to get DEBUG messages
+    message("-- Building RTI with DEBUG messages enabled")
     target_compile_definitions(RTI PUBLIC LOG_LEVEL=4)
 ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 
