@@ -2,11 +2,9 @@ var annotated_dup =
 [
     [ "_influx_client_t", "da/d5e/struct__influx__client__t.html", "da/d5e/struct__influx__client__t" ],
     [ "_influx_v2_client_t", "da/d55/struct__influx__v2__client__t.html", "da/d55/struct__influx__v2__client__t" ],
-    [ "_lf_scheduler_thread_info_t", "db/d04/struct__lf__scheduler__thread__info__t.html", "db/d04/struct__lf__scheduler__thread__info__t" ],
     [ "_lf_sensor_message_t", "d7/dd0/struct__lf__sensor__message__t.html", "d7/dd0/struct__lf__sensor__message__t" ],
     [ "_lf_tag_advancement_barrier", "d7/dc7/struct__lf__tag__advancement__barrier.html", "d7/dc7/struct__lf__tag__advancement__barrier" ],
     [ "allocation_record_t", "d8/df0/structallocation__record__t.html", "d8/df0/structallocation__record__t" ],
-    [ "custom_scheduler_data_t", "df/d9e/structcustom__scheduler__data__t.html", "df/d9e/structcustom__scheduler__data__t" ],
     [ "deque_node_t", "db/dab/structdeque__node__t.html", "db/dab/structdeque__node__t" ],
     [ "deque_t", "da/df2/structdeque__t.html", "da/df2/structdeque__t" ],
     [ "enclave_rti_t", "da/de7/structenclave__rti__t.html", "da/de7/structenclave__rti__t" ],

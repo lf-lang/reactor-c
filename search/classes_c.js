@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['open_5ffile_5ft_0',['open_file_t',['../db/de2/structopen__file__t.html',1,'']]]
+  ['pqueue_5ft_0',['pqueue_t',['../d5/d38/structpqueue__t.html',1,'']]],
+  ['py_5ftag_5ft_1',['py_tag_t',['../d2/d92/structpy__tag__t.html',1,'']]]
 ];
