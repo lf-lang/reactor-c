@@ -272,6 +272,17 @@ bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition
     LF_PRINT_DEBUG("-------- Waiting until physical time matches logical time " PRINTF_TIME, logical_time);
     bool return_value = true;
     interval_t wait_until_time_ns = logical_time;
+#ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized
+    // Apply the STA to the logical time
+    // Prevent an overflow
+    if (start_time != logical_time && wait_until_time_ns < FOREVER - _lf_fed_STA_offset) {
+        // If wait_time is not forever
+        LF_PRINT_DEBUG("Adding STA " PRINTF_TIME " to wait until time " PRINTF_TIME ".",
+                _lf_fed_STA_offset,
+                wait_until_time_ns - start_time);
+        wait_until_time_ns += _lf_fed_STA_offset;
+    }
+#endif
     if (!fast) {
         // Get physical time as adjusted by clock synchronization offset.
         instant_t current_physical_time = lf_time_physical();
