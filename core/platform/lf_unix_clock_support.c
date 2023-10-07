@@ -17,13 +17,13 @@
 interval_t _lf_time_epoch_offset = 0LL;
 
 instant_t convert_timespec_to_ns(struct timespec tp) {
-    return tp.tv_sec * 1000000000 + tp.tv_nsec;
+    return ((instant_t) tp.tv_sec) * BILLION + tp.tv_nsec;
 }
 
 struct timespec convert_ns_to_timespec(instant_t t) {
     struct timespec tp;
-    tp.tv_sec = t / 1000000000;
-    tp.tv_nsec = (t % 1000000000);
+    tp.tv_sec = t / BILLION;
+    tp.tv_nsec = (t % BILLION);
     return tp;
 }
 
