@@ -3,6 +3,7 @@
 #include <errno.h>
 
 #include "platform.h"
+#include "util.h"
 #include "lf_unix_clock_support.h"
 
 /**
