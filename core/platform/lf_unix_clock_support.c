@@ -53,7 +53,6 @@ void _lf_initialize_clock() {
     calculate_epoch_offset();
 
     struct timespec res;
-    // Adjust the clock by the epoch offset, so epoch time is always reported.
     int return_value = clock_getres(_LF_CLOCK, (struct timespec*) &res);
     if (return_value < 0) {
         lf_print_error_and_exit("Could not obtain resolution for _LF_CLOCK");
