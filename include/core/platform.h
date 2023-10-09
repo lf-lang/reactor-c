@@ -136,6 +136,13 @@ int lf_critical_section_exit(environment_t* env);
 
 
 /**
+ * Initializes the underlying thread scheduler.
+ * 
+ * @return int 0 on success, platform-specific error number otherwise.
+ */
+int lf_thread_scheduler_init();
+
+/**
  * @brief Get the number of cores on the host machine.
  */
 int lf_available_cores();
@@ -159,6 +166,41 @@ int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arg
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_thread_join(lf_thread_t thread, void** thread_return);
+
+/**
+ * This pins a lf_thread to a specific CPU
+ * 
+ * @param thread The thread 
+ * @param cpu_number the CPU ID
+ * @return 0 on success, platform-specific error number otherwise.
+ */
+int lf_thread_set_cpu(lf_thread_t thread, int cpu_number);
+
+/**
+ * Sets the priority of a thread. Priority ranges from 0 to 99 where a higher
+ * number indicates higher priority.
+ *
+ * @param thread The thread.
+ * @param priority The priority.
+ * @return int 0 on success, platform-specific error otherwise
+ */
+int lf_thread_set_priority(lf_thread_t thread, int priority)
+
+/**
+ * Gets the priority of a thread. Priority ranges from 0 to 99 where a higher
+ * number indicates higher priority.
+ *
+ * @param thread The thread.
+ * @return The priority or platform-specific negative number otherwise
+ */
+int lf_thread_get_priority(lf_thread_t thread)
+
+/**
+ * Returns the thread ID of the calling thread
+ * 
+ */
+lf_thread_t lf_thread_self();
+
 
 /**
  * Initialize a mutex.
@@ -219,6 +261,7 @@ int lf_cond_wait(lf_cond_t* cond);
  *  number otherwise.
  */
 int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
+
 
 /*
  * Atomically increment the variable that ptr points to by the given value, and return the original value of the variable.

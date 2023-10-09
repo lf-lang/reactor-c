@@ -3,8 +3,33 @@
 #include "lf_POSIX_threads_support.h"
 
 #include <pthread.h>
+#include <sched.h>
 #include <errno.h>
 #include <stdint.h> // For fixed-width integral types
+
+int lf_thread_scheduler_init() {
+    struct sched_param schedparam;
+    pthread_attr_t attr;
+
+    // Set the current (main) threads scheduling policy to FIFO
+    schedparam.sched_priority = 3;
+    if (pthread_setschedparam(pthread_self(), SCHED_FIFO, &schedparam) != 0) {
+        return -1;
+    }
+
+    // Make any thread spawned from this thread inherit this policy
+    if (pthread_attr_init(&attr) != 0) {
+        return -2;
+    }
+    if (pthread_attr_setinheritsched(&attr, PTHREAD_INHERIT_SCHED) != 0) {
+        return -3;
+    }
+
+    // Clean up the attribute when you're done using it
+    pthread_attr_destroy(&attr);
+
+    return 0;
+}
 
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
     return pthread_create((pthread_t*)thread, NULL, lf_thread, arguments);
@@ -31,6 +56,33 @@ int lf_mutex_init(lf_mutex_t* mutex) {
     // pthreads. Maybe it has been fixed?
     pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE);
     return pthread_mutex_init((pthread_mutex_t*)mutex, &attr);
+}
+
+int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) {
+    // First verify that we have num_cores>cpu_number
+    if (lf_available_cores() <= cpu_number) {
+        return -1;
+    }
+
+    // Create a CPU-set consisting of only the desired CPU
+    cpu_set_t cpu_set;
+    CPU_ZERO(&cpu_set);
+    CPU_SET(cpu_number);
+
+    return pthread_setaffinity_np(thread, sizeof(cpu_set), &cpu_set);
+}
+
+
+int lf_thread_set_priority(lf_thread_t thread, int priority) [
+    return pthread_setschedprio(thread, priority);
+]
+
+int lf_thread_get_priority(lf_thread_t thread) {
+    return pthread_getschedprio(thread, priority);
+}
+
+lf_thread_t lf_thread_self() {
+    return pthread_self();
 }
 
 int lf_mutex_lock(lf_mutex_t* mutex) {
