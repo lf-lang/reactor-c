@@ -50,6 +50,8 @@ void calculate_epoch_offset(void) {
 
 void _lf_initialize_clock() {
     calculate_epoch_offset();
+
+    lf_thread_scheduler_init();
 }
 
 /**

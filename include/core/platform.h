@@ -184,16 +184,7 @@ int lf_thread_set_cpu(lf_thread_t thread, int cpu_number);
  * @param priority The priority.
  * @return int 0 on success, platform-specific error otherwise
  */
-int lf_thread_set_priority(lf_thread_t thread, int priority)
-
-/**
- * Gets the priority of a thread. Priority ranges from 0 to 99 where a higher
- * number indicates higher priority.
- *
- * @param thread The thread.
- * @return The priority or platform-specific negative number otherwise
- */
-int lf_thread_get_priority(lf_thread_t thread)
+int lf_thread_set_priority(lf_thread_t thread, int priority);
 
 /**
  * Returns the thread ID of the calling thread

@@ -124,3 +124,5 @@ define(SCHEDULER)
 define(LF_SOURCE_DIRECTORY)
 define(LF_PACKAGE_DIRECTORY)
 define(LF_FILE_SEPARATOR)
+
+target_compile_definitions(core PUBLIC _GNU_SOURCE=1)

@@ -32,7 +32,13 @@ int lf_thread_scheduler_init() {
 }
 
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
-    return pthread_create((pthread_t*)thread, NULL, lf_thread, arguments);
+    static int core_id=0;
+    pthread_create((pthread_t*)thread, NULL, lf_thread, arguments);
+    if (lf_thread_set_cpu(*thread, core_id) != 0) {
+        lf_print_error_and_exit("Could not set CPU");
+    }
+    core_id++;
+    return 0;
 }
 
 int lf_thread_join(lf_thread_t thread, void** thread_return) {
@@ -67,18 +73,14 @@ int lf_thread_set_cpu(lf_thread_t thread, int cpu_number) {
     // Create a CPU-set consisting of only the desired CPU
     cpu_set_t cpu_set;
     CPU_ZERO(&cpu_set);
-    CPU_SET(cpu_number);
+    CPU_SET(cpu_number, &cpu_set);
 
     return pthread_setaffinity_np(thread, sizeof(cpu_set), &cpu_set);
 }
 
 
-int lf_thread_set_priority(lf_thread_t thread, int priority) [
+int lf_thread_set_priority(lf_thread_t thread, int priority) {
     return pthread_setschedprio(thread, priority);
-]
-
-int lf_thread_get_priority(lf_thread_t thread) {
-    return pthread_getschedprio(thread, priority);
 }
 
 lf_thread_t lf_thread_self() {
