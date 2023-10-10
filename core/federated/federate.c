@@ -1208,6 +1208,10 @@ instant_t get_start_time_from_rti(instant_t my_physical_time) {
     return timestamp;
 }
 
+/**
+ * @brief Return the directory containing the executables of the individual
+ * federates.
+ */
 char* lf_get_federates_bin_directory() {
     return LF_FEDERATES_BIN_DIRECTORY;
 }
@@ -2892,6 +2896,14 @@ void set_federation_trace_object(trace_t * trace) {
     _fed.trace = trace;
 }
 
+/**
+ * @brief Stop the execution of a federate.
+ * Every enclave within the federate will stop at one microstep later than its
+ * current tag. Unlike lf_request_stop(), this process does not require any 
+ * involvement from the RTI, nor does it necessitate any consensus.
+ * 
+ * This function is particularly useful for testing transient federates.
+ */
 void lf_stop() {
     environment_t *env;
     int num_env = _lf_get_environments(&env);
@@ -2906,14 +2918,25 @@ void lf_stop() {
     LF_PRINT_LOG("Federate is stopping.");
 }
 
+/**
+ * @brief Returns the federation id.
+ * 
+ * This function is useful for creating federates on runtime.
+ */
 char* lf_get_federation_id() {
     return federation_metadata.federation_id;
 }
 
+/**
+ * @brief Returns the effective start time of the federate. The start_time of persistent
+ * federates is equal to their effective_start_time. Transient federates, however, 
+ * have their effective_start_time higher or equal to their start_time.
+ */
 instant_t lf_get_effective_start_time() {
     return effective_start_tag.time;
 }
 
+/** @brief Returns the start time of the federate. */
 instant_t lf_get_start_time() {
     return start_time;
 }
