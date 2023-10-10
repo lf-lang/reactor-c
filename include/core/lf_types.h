@@ -62,17 +62,14 @@ typedef unsigned short int ushort;
 /**
  * Define scheduler types as integers. This way we can conditionally
  * include/exclude code with the preprocessor with
- * #if SCHEDULER == ADAPTIVE etc
+ * #if SCHEDULER == SCHED_ADAPTIVE etc
  * This means that `lf_types.h` MUST be included before doing any preprocessing
  * on SCHEDULER compile def.
  */
 
-#define ADAPTIVE 1
-#define GEDF_NP_CI 2
-#define GEDF_NP 3
-#define LET 4
-#define NP 5
-#define PEDF_NP 6
+#define SCHED_ADAPTIVE 1
+#define SCHED_GEDF_NP 2
+#define SCHED_NP 3
 
 /*
  * A struct representing a barrier in threaded

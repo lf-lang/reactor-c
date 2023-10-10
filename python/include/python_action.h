@@ -34,12 +34,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef PYTHON_ACTION_H
 #define PYTHON_ACTION_H
 
-#include <Python.h>
+#include "pythontarget.h"
 #include <structmember.h>
 #include <stdbool.h>
 #include "python_capsule_extension.h"
 #include "lf_types.h"
-#include "pythontarget.h"
 
 extern PyTypeObject py_action_capsule_t;
 
