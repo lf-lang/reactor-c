@@ -58,7 +58,7 @@ static int tag_matches(void* next, void* curr);
  * Report a priority equal to the pointer to an ndt_node.
  * Used for sorting pointers to ndt_node in the NDT queue.
  */
-static pqueue_pri_t get_ndt_priority(void *a);
+static pqueue_pri_t get_ndtq_priority(void *a);
 
 /**
  * Return the given ndt_node's position in the ndt_queue.

@@ -42,7 +42,7 @@
 #define PQUEUE_H
 
 #include <stddef.h>
-#include "../tag.h"
+#include "tag.h"
 
 /** priority data type */
 typedef unsigned long long pqueue_pri_t;
@@ -74,6 +74,11 @@ typedef struct pqueue_t
     pqueue_print_entry_f prt;   /**< callback to print elements */
     void **d;                   /**< The actual queue in binary heap form */
 } pqueue_t;
+typedef struct ndt_node 
+{
+    tag_t tag;
+    size_t pos;
+} ndt_node;
 
 /**
  * initialize the queue
@@ -228,17 +233,14 @@ void print_reaction(void *reaction);
 void print_event(void *event);
 
 // ********** NDT Priority Queue Support Start
-typedef struct {
-    tag_t tag;
-    size_t pos;
-} ndt_node;
-static int tag_in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that);
-static int tag_matches(void* next, void* curr);
-static pqueue_pri_t get_ndt_priority(void *a);
-static size_t get_ndtq_position(void *a);
-static void set_ndtq_position(void *a, size_t pos);
-static int ndt_node_matches(void* next, void* curr);
-static void print_tag(void *reaction);
+
+int tag_in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that);
+int tag_matches(void* next, void* curr);
+pqueue_pri_t get_ndtq_priority(void *a);
+size_t get_ndtq_position(void *a);
+void set_ndtq_position(void *a, size_t pos);
+int ndt_node_matches(void* next, void* curr);
+void print_tag(void *reaction);
 
 #endif /* PQUEUE_H */
 /** @} */

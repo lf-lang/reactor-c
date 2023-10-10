@@ -2308,7 +2308,8 @@ void handle_stop_request_message() {
  * 
 */
 void handle_next_downstream_tag() {
-    // FIXME: Fill this function.
+    // FIXME: maybe the mutex lock is needed. Is it possible to remove an element 
+    // simultaneously with this function?
     size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_read];
     read_from_socket_errexit(_fed.socket_TCP_RTI, bytes_to_read, buffer,

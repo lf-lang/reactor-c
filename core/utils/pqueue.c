@@ -487,7 +487,7 @@ int tag_in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that) {
 /**
  * Return whether or not the tags contained by given pointers are identical.
  */
-static int tag_matches(void* next, void* curr) {
+int tag_matches(void* next, void* curr) {
     return lf_tag_compare(((ndt_node*) next)->tag, ((ndt_node*) curr)->tag);
 }
 
@@ -495,7 +495,7 @@ static int tag_matches(void* next, void* curr) {
  * Report a priority equal to the pointer to an ndt_node.
  * Used for sorting pointers to ndt_node in the NDT queue.
  */
-static pqueue_pri_t get_ndt_priority(void *a) {
+pqueue_pri_t get_ndtq_priority(void *a) {
     // Note that NDT queue stores pointers to ndt_nodes and it is its 
     // pqueue_pri_t as well. Return itself.
     return (pqueue_pri_t) a;
@@ -504,21 +504,21 @@ static pqueue_pri_t get_ndt_priority(void *a) {
 /**
  * Return the given ndt_node's position in the ndt_queue.
  */
-static size_t get_ndtq_position(void *a) {
+size_t get_ndtq_position(void *a) {
     return ((ndt_node*) a)->pos;
 }
 
 /**
  * Set the given ndt_node's position in the ndt_queue.
  */
-static void set_ndtq_position(void *a, size_t pos) {
+void set_ndtq_position(void *a, size_t pos) {
     ((ndt_node*) a)->pos = pos;
 }
 
 /**
  * 
 */
-static int ndt_node_matches(void* next, void* curr) {
+int ndt_node_matches(void* next, void* curr) {
     return ((((ndt_node*) next)->pos == ((ndt_node*) curr)->pos) &&
     ((lf_tag_compare(((ndt_node*) next)->tag, ((ndt_node*) curr)->tag)) == 0));
 }
@@ -528,7 +528,7 @@ static int ndt_node_matches(void* next, void* curr) {
  * 
  * DEBUG function only.
  */
-static void print_tag(void *node) {
+void print_tag(void *node) {
     tag_t tag = ((ndt_node*) node)->tag;
     LF_PRINT_DEBUG("Elapsed logical time:" PRINTF_TIME ", microstep: %d, position: %ld", 
     tag.time, tag.microstep, ((ndt_node*) node)->pos);
