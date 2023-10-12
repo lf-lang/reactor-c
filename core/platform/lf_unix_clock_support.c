@@ -50,8 +50,10 @@ void calculate_epoch_offset(void) {
 
 void _lf_initialize_clock() {
     calculate_epoch_offset();
-
-    lf_thread_scheduler_init();
+    int res = lf_thread_scheduler_init();
+    if (res != 0) {
+        lf_print_error_and_exit("Could not init scheduler res=%i", res);
+    }
 }
 
 /**
