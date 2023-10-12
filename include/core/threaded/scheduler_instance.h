@@ -232,4 +232,12 @@ bool init_sched_instance(
     size_t number_of_workers,
     sched_params_t* params);
 
+#if SCHEDULER == STATIC
+/**
+ * @brief Initialize the static schedule by filling in placeholders which are
+ * not considered "compile-time constants" by the compiler.
+ */
+void initialize_static_schedule();
+#endif
+
 #endif // LF_SCHEDULER_PARAMS_H

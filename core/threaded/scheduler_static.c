@@ -596,6 +596,8 @@ void lf_sched_init(
     env->scheduler->reactor_self_instances = params->reactor_self_instances;
     env->scheduler->num_reactor_self_instances = params->num_reactor_self_instances;
     env->scheduler->counters = counters;
+
+    initialize_static_schedule();
 }
 
 /**
