@@ -631,15 +631,18 @@ void trace_processor(const char *fname) {
     trace_file = open_file(fname, "r");
     if (trace_file == NULL) exit(1);
 
-    if (read_header() >= 0) {
+    if (read_header() > 0) {
         // Allocate an array for summary statistics.
         table_size = NUM_EVENT_TYPES + object_table_size + (MAX_NUM_WORKERS * 2);
         summary_stats = (summary_stats_t**)calloc(table_size, sizeof(summary_stats_t*));
 
         // Write a header line into the CSV file.
         fprintf(output_file, "Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay\n");
-        if (opts.filter != -1)
-            fprintf(filtered_file, "Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay\n");
+        if (opts.filter != -1) {
+            fprintf(filtered_file, "Trace File Path,%s\n\n", fname);
+            fprintf(filtered_file,
+                    "Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay\n");
+        }
         while (read_and_write_trace() != 0) {};
 
         write_summary_file();
