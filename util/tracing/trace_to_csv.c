@@ -248,7 +248,7 @@ size_t read_and_write_trace() {
             trigger_name = "NO TRIGGER";
         }
         if (opts.filter != -1 && is_filtered_event(trace[i].event_type)) {
-            fprintf(filtered_file, "%s, %s, %d, %d, %lld, %d, %lld, %s, %lld\n",
+            fprintf(filtered_file, "%s, %s, %d, %d, %lld, %d, %lld, %s, %lld, %Lf\n",
                     trace_event_names[trace[i].event_type],
                     reactor_name,
                     trace[i].src_id,
@@ -257,10 +257,11 @@ size_t read_and_write_trace() {
                     trace[i].microstep,
                     trace[i].physical_time - start_time,
                     trigger_name,
-                    trace[i].extra_delay
+                    trace[i].extra_delay,
+                    trace[i].extra_value
             );
         }
-        fprintf(output_file, "%s, %s, %d, %d, %lld, %d, %lld, %s, %lld\n",
+        fprintf(output_file, "%s, %s, %d, %d, %lld, %d, %lld, %s, %lld, %Lf\n",
                 trace_event_names[trace[i].event_type],
                 reactor_name,
                 trace[i].src_id,
@@ -269,7 +270,8 @@ size_t read_and_write_trace() {
                 trace[i].microstep,
                 trace[i].physical_time - start_time,
                 trigger_name,
-                trace[i].extra_delay
+                trace[i].extra_delay,
+                trace[i].extra_value
         );
 
         // Update summary statistics.
@@ -631,15 +633,18 @@ void trace_processor(const char *fname) {
     trace_file = open_file(fname, "r");
     if (trace_file == NULL) exit(1);
 
-    if (read_header() >= 0) {
+    if (read_header() > 0) {
         // Allocate an array for summary statistics.
         table_size = NUM_EVENT_TYPES + object_table_size + (MAX_NUM_WORKERS * 2);
         summary_stats = (summary_stats_t**)calloc(table_size, sizeof(summary_stats_t*));
 
         // Write a header line into the CSV file.
-        fprintf(output_file, "Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay\n");
-        if (opts.filter != -1)
-            fprintf(filtered_file, "Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay\n");
+        fprintf(output_file, "Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay, Extra Value\n");
+        if (opts.filter != -1) {
+            fprintf(filtered_file, "Trace File Path,%s\n\n", fname);
+            fprintf(filtered_file,
+                    "Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay, Extra Value\n");
+        }
         while (read_and_write_trace() != 0) {};
 
         write_summary_file();

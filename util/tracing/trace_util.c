@@ -187,6 +187,8 @@ void print_table() {
             type = "trigger";
         } else if (object_table[i].type == trace_user) {
             type = "user-defined";
+        } else if (object_table[i].type == stats_user) {
+            type = "user-stats";
         } else {
             type = "unknown type";
         }

@@ -273,19 +273,9 @@ void start_trace(trace_t* trace) {
     LF_PRINT_DEBUG("Started tracing.");
 }
 
-void tracepoint(
-        trace_t* trace,
-        trace_event_t event_type,
-        void* reactor,
-        tag_t* tag,
-        int worker,
-        int src_id,
-        int dst_id,
-        instant_t* physical_time,
-        trigger_t* trigger,
-        interval_t extra_delay,
-        bool is_interval_start
-) {
+void tracepoint(trace_t *trace, trace_event_t event_type, void *reactor, tag_t *tag, int worker, int src_id, int dst_id,
+                instant_t *physical_time, trigger_t *trigger, interval_t extra_delay, bool is_interval_start,
+                long double extra_value) {
     instant_t time;
     if (!is_interval_start && physical_time == NULL) {
         time = lf_time_physical();
@@ -320,6 +310,7 @@ void tracepoint(
     
     trace->_lf_trace_buffer[index][i].trigger = trigger;
     trace->_lf_trace_buffer[index][i].extra_delay = extra_delay;
+    trace->_lf_trace_buffer[index][i].extra_value = extra_value;
     if (is_interval_start && physical_time == NULL) {
         time = lf_time_physical();
         physical_time = &time;
@@ -335,7 +326,18 @@ void tracepoint(
  */
 void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker) {
     if (LF_ALLOW_SYSTEM_TRACES) {
-        tracepoint(trace, reaction_starts, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, true);
+        tracepoint(trace,
+                   reaction_starts,
+                   reaction->self,
+                   NULL,
+                   worker,
+                   worker,
+                   reaction->number,
+                   NULL,
+                   NULL,
+                   0,
+                   true,
+                   0);
     }
 }
 
@@ -346,7 +348,18 @@ void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker
  */
 void tracepoint_reaction_ends(trace_t* trace, reaction_t* reaction, int worker) {
     if (LF_ALLOW_SYSTEM_TRACES) {
-        tracepoint(trace, reaction_ends, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
+        tracepoint(trace,
+                   reaction_ends,
+                   reaction->self,
+                   NULL,
+                   worker,
+                   worker,
+                   reaction->number,
+                   NULL,
+                   NULL,
+                   0,
+                   false,
+                   0);
     }
 }
 
@@ -360,19 +373,29 @@ void tracepoint_schedule(trace_t* trace, trigger_t* trigger, interval_t extra_de
     // or timer. If there is such a reaction, find its reactor's self struct and
     // put that into the tracepoint. We only have to look at the first reaction.
     // If there is no reaction, insert NULL for the reactor.
-    if (!LF_ALLOW_SYSTEM_TRACES) {
-        return;
-    }
-    void* reactor = NULL;
-    if (trigger->number_of_reactions > 0
+    if (LF_ALLOW_SYSTEM_TRACES) {
+        void *reactor = NULL;
+        if (trigger->number_of_reactions > 0
             && trigger->reactions[0] != NULL) {
-        reactor = trigger->reactions[0]->self;
+            reactor = trigger->reactions[0]->self;
+        }
+        // NOTE: The -1 argument indicates no worker.
+        // This is OK because it is called only while holding the mutex lock.
+        // True argument specifies to record physical time as late as possible, when
+        // the event is already on the event queue.
+        tracepoint(trace,
+                   schedule_called,
+                   reactor,
+                   NULL,
+                   -1,
+                   0,
+                   0,
+                   NULL,
+                   trigger,
+                   extra_delay,
+                   true,
+                   0);
     }
-    // NOTE: The -1 argument indicates no worker.
-    // This is OK because it is called only while holding the mutex lock.
-    // True argument specifies to record physical time as late as possible, when
-    // the event is already on the event queue.
-    tracepoint(trace, schedule_called, reactor, NULL, -1, 0, 0, NULL, trigger, extra_delay, true);
 }
 
 /**
@@ -396,7 +419,18 @@ void tracepoint_user_event(void* self, char* description) {
     environment_t *env = ((self_base_t *)self)->environment;
     trace_t *trace = env->trace;
     lf_critical_section_enter(env);
-    tracepoint(trace, user_event, description, NULL, -1, -1, -1, NULL, NULL, 0, false);
+    tracepoint(trace,
+               user_event,
+               description,
+               NULL,
+               -1,
+               -1,
+               -1,
+               NULL,
+               NULL,
+               0,
+               false,
+               0);
     lf_critical_section_exit(env);
 }
 
@@ -413,7 +447,7 @@ void tracepoint_user_event(void* self, char* description) {
  *  convenience so that time values can be passed unchanged.
  *  But int values work as well.
  */
-void tracepoint_user_value(void* self, char* description, long long value) {
+void tracepoint_user_value(void* self, char* description, long long id, long double value) {
     // -1s indicate unknown reaction number and worker thread.
     // NOTE: We currently have no way to get the number of the worker that
     // is executing the reaction that calls this, so we can't pass a worker
@@ -424,16 +458,38 @@ void tracepoint_user_value(void* self, char* description, long long value) {
     environment_t *env = ((self_base_t *)self)->environment;
     trace_t *trace = env->trace;
     lf_critical_section_enter(env);
-    tracepoint(trace, user_value, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
+    tracepoint(trace,
+               user_value,
+               description,
+               NULL,
+               -1,
+               -1,
+               -1,
+               NULL,
+               NULL,
+               id,
+               false,
+               value);
     lf_critical_section_exit(env);
 }
 
 
-void tracepoint_user_stats(void *self, char *description, long long value) {
+void tracepoint_user_stats(void *self, char *description, long long id, long double value) {
     environment_t *env = ((self_base_t *)self)->environment;
     trace_t *trace = env->trace;
     lf_critical_section_enter(env);
-    tracepoint(trace, user_stats, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
+    tracepoint(trace,
+               user_stats,
+               description,
+               NULL,
+               -1,
+               -1,
+               -1,
+               NULL,
+               NULL,
+               id,
+               false,
+               value);
     lf_critical_section_exit(env);
 }
 
@@ -443,7 +499,18 @@ void tracepoint_user_stats(void *self, char *description, long long value) {
  */
 void tracepoint_worker_wait_starts(trace_t* trace, int worker) {
     if (LF_ALLOW_SYSTEM_TRACES) {
-        tracepoint(trace, worker_wait_starts, NULL, NULL, worker, worker, -1, NULL, NULL, 0, true);
+        tracepoint(trace,
+                   worker_wait_starts,
+                   NULL,
+                   NULL,
+                   worker,
+                   worker,
+                   -1,
+                   NULL,
+                   NULL,
+                   0,
+                   true,
+                   0);
     }
 }
 
@@ -453,7 +520,17 @@ void tracepoint_worker_wait_starts(trace_t* trace, int worker) {
  */
 void tracepoint_worker_wait_ends(trace_t* trace, int worker) {
     if (LF_ALLOW_SYSTEM_TRACES) {
-        tracepoint(trace, worker_wait_ends, NULL, NULL, worker, worker, -1, NULL, NULL, 0, false);
+        tracepoint(trace,
+                   worker_wait_ends,
+                   NULL,
+                   NULL, worker,
+                   worker,
+                   -1,
+                   NULL,
+                   NULL,
+                   0,
+                   false,
+                   0);
     }
 }
 
@@ -463,7 +540,18 @@ void tracepoint_worker_wait_ends(trace_t* trace, int worker) {
  */
 void tracepoint_scheduler_advancing_time_starts(trace_t* trace) {
     if (LF_ALLOW_SYSTEM_TRACES) {
-        tracepoint(trace, scheduler_advancing_time_starts, NULL, NULL, -1, -1, -1, NULL, NULL, 0, true);
+        tracepoint(trace,
+                   scheduler_advancing_time_starts,
+                   NULL,
+                   NULL,
+                   -1,
+                   -1,
+                   -1,
+                   NULL,
+                   NULL,
+                   0,
+                   true,
+                   0);
     }
 }
 
@@ -473,7 +561,18 @@ void tracepoint_scheduler_advancing_time_starts(trace_t* trace) {
  */
 void tracepoint_scheduler_advancing_time_ends(trace_t* trace) {
     if (LF_ALLOW_SYSTEM_TRACES) {
-        tracepoint(trace, scheduler_advancing_time_ends, NULL, NULL, -1, -1, -1, NULL, NULL, 0, false);
+        tracepoint(trace,
+                   scheduler_advancing_time_ends,
+                   NULL,
+                   NULL,
+                   -1,
+                   -1,
+                   -1,
+                   NULL,
+                   NULL,
+                   0,
+                   false,
+                   0);
     }
 }
 
@@ -484,8 +583,18 @@ void tracepoint_scheduler_advancing_time_ends(trace_t* trace) {
  */
 void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, int worker) {
     if (LF_ALLOW_SYSTEM_TRACES) {
-        tracepoint(trace, reaction_deadline_missed, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL,
-                   0, false);
+        tracepoint(trace,
+                   reaction_deadline_missed,
+                   reaction->self,
+                   NULL,
+                   worker,
+                   worker,
+                   reaction->number,
+                   NULL,
+                   NULL,
+                   0,
+                   false,
+                   0);
     }
 }
 
@@ -539,7 +648,8 @@ void tracepoint_federate_to_rti(trace_t *trace, trace_event_t event_type, int fe
         NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
         0,      // interval_t extra_delay
-        true    // is_interval_start
+        true,    // is_interval_start
+        0
     );
 }
 
@@ -563,7 +673,8 @@ void tracepoint_federate_from_rti(trace_t* trace, trace_event_t event_type, int 
         NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
         0,      // interval_t extra_delay
-        false   // is_interval_start
+        false,   // is_interval_start
+        0
     );
 }
 
@@ -587,7 +698,8 @@ void tracepoint_federate_to_federate(trace_t* trace, trace_event_t event_type, i
         NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
         0,      // interval_t extra_delay
-        true    // is_interval_start
+        true,    // is_interval_start
+        0
     );
 }
 
@@ -611,7 +723,8 @@ void tracepoint_federate_from_federate(trace_t* trace, trace_event_t event_type,
         NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
         0,      // interval_t extra_delay
-        false   // is_interval_start
+        false,   // is_interval_start
+        0
     );
 }
 #endif // FEDERATED
@@ -640,7 +753,8 @@ void tracepoint_rti_to_federate(trace_t* trace, trace_event_t event_type, int fe
         NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
         0,      // interval_t extra_delay
-        true    // is_interval_start
+        true,    // is_interval_start
+        0
     );
 }
 
@@ -663,7 +777,8 @@ void tracepoint_rti_from_federate(trace_t* trace, trace_event_t event_type, int 
         NULL,   // instant_t* physical_time (will be generated)
         NULL,   // trigger_t* trigger,
         0,      // interval_t extra_delay
-        false   // is_interval_start
+        false,   // is_interval_start
+        0
     );
 }
 

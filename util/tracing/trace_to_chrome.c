@@ -442,7 +442,7 @@ int main(int argc, char* argv[]) {
     strcat(json_filename, ".json");
     output_file = open_file(json_filename, "w");
 
-    if (read_header(trace_file) >= 0) {
+    if (read_header(trace_file) > 0) {
         // Write the opening bracket into the json file.
         fprintf(output_file, "{ \"traceEvents\": [\n");
         while (read_and_write_trace(trace_file, output_file) != 0) {};

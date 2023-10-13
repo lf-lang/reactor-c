@@ -39,7 +39,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         fprintf(stderr, "ERROR: Access to trace file failed.\n"); \
         fclose(trace_file); \
         trace_file = NULL; \
-        exit(1); \
+        return 0; \
     } while(0)
 
 /** Buffer for reading object descriptions. Size limit is BUFFER_SIZE bytes. */

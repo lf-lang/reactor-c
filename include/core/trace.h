@@ -212,6 +212,7 @@ typedef struct trace_record_t {
     instant_t physical_time;
     trigger_t* trigger;
     interval_t extra_delay;
+    long double extra_value;
 } trace_record_t;
 
 /**
@@ -341,19 +342,9 @@ void start_trace(trace_t* trace);
  *  as possible.  False to indicate that it is at the end of an interval, such as the end
  *  of a reaction invocation, so that physical time is captured as early as possible.
  */
-void tracepoint(
-        trace_t* trace,
-        trace_event_t event_type,
-        void* reactor,
-        tag_t* tag,
-        int worker,
-        int src_id,
-        int dst_id,
-        instant_t* physical_time,
-        trigger_t* trigger,
-        interval_t extra_delay,
-        bool is_interval_start
-);
+void tracepoint(trace_t *trace, trace_event_t event_type, void *reactor, tag_t *tag, int worker, int src_id, int dst_id,
+                instant_t *physical_time, trigger_t *trigger, interval_t extra_delay, bool is_interval_start,
+                long double extra_value);
 
 /**
  * Trace the start of a reaction execution.
@@ -403,9 +394,9 @@ void tracepoint_user_event(void* self, char* description);
  *  convenience so that time values can be passed unchanged.
  *  But int values work as well.
  */
-void tracepoint_user_value(void* self, char* description, long long value);
+void tracepoint_user_value(void* self, char* description, long long id, long double value);
 
-void tracepoint_user_stats(void *self, char *description, long long value);
+void tracepoint_user_stats(void *self, char *description, long long id, long double value);
 
 /**
  * Trace the start of a worker waiting for something to change on the reaction queue.

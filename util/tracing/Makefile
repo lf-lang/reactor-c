@@ -9,7 +9,7 @@ CFLAGS=	-I$(REACTOR_C)/include/core/ \
 		-I$(REACTOR_C)/include/core/platform \
 		-I$(REACTOR_C)/include/core/utils \
 		-DLF_UNTHREADED=1 \
-		-Wall
+		-Wall -g -g3 -ggdb3
 DEPS=
 LIBS=-lcurl
 

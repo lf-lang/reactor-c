@@ -268,7 +268,7 @@ int main(int argc, char* argv[]) {
     // Open the trace file.
     trace_file = open_file(filename, "r");
 
-    if (read_header() >= 0) {
+    if (read_header() > 0) {
         size_t num_records = 0, result;
         while ((result = read_and_write_trace()) != 0) {
             num_records = result;
