@@ -1392,10 +1392,6 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
                                   unsigned short fed_ID) {
     assert(env != GLOBAL_ENVIRONMENT);
 
-    // Construct the message
-    size_t message_length = 1 + sizeof(port_ID) + sizeof(fed_ID) + sizeof(instant_t) + sizeof(microstep_t);
-    unsigned char buffer[message_length];
-
     // Apply the additional delay to the current tag and use that as the intended
     // tag of the outgoing message. Note that if there is delay on the connection,
     // then we cannot promise no message with tag = current_tag + delay because a
@@ -1403,6 +1399,18 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
     // message with a tag strictly less than current_tag + delay.
     tag_t current_message_intended_tag = lf_delay_strict(env->current_tag,
                                                     additional_delay);
+    
+    if (pqueue_peek(env->ndt_q) != NULL) {
+        tag_t ndt_q_barrier = ((ndt_node*) pqueue_peek(env->ndt_q))->tag;
+        if (lf_tag_compare(current_message_intended_tag, ndt_q_barrier) < 0) {
+            // No events exist in any downstream federates
+            return;
+        }
+    }
+
+    // Construct the message
+    size_t message_length = 1 + sizeof(port_ID) + sizeof(fed_ID) + sizeof(instant_t) + sizeof(microstep_t);
+    unsigned char buffer[message_length];
 
     LF_PRINT_LOG("Sending port "
             "absent for tag " PRINTF_TAG " for port %d to federate %d.",
@@ -2341,6 +2349,7 @@ void handle_next_downstream_tag() {
         pqueue_insert(env->ndt_q, node);
     } else {
         // The current tag is greater than or equal to NDT. Send LTC, NET, and ABS messages.
+        // FIXME: How do we know which federate invoke this NDT? This info is needed for sending ABS messages.
     }
 }
 
