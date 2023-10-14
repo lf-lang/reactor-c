@@ -2337,7 +2337,7 @@ void handle_next_downstream_tag() {
     if (lf_tag_compare(env->current_tag, NDT) < 0) {
         // The current tag is less than NDT. Push NDT to ndt_q.
         ndt_node* node = (ndt_node*) malloc(sizeof(ndt_node));
-        node->tag = env->current_tag;
+        node->tag = NDT;
         pqueue_insert(env->ndt_q, node);
     } else {
         // The current tag is greater than or equal to NDT. Send LTC, NET, and ABS messages.

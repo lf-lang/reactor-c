@@ -293,8 +293,13 @@ void _lf_start_time_step(environment_t *env) {
     }
 
 // #ifdef FEDERATED_CENTRALIZED
-    while (pqueue_peek(env->ndt_q) != NULL && lf_tag_compare(((ndt_node*) pqueue_peek(env->ndt_q))->tag, env->current_tag) < 0) {
+    while (pqueue_peek(env->ndt_q) != NULL 
+    && lf_tag_compare(((ndt_node*) pqueue_peek(env->ndt_q))->tag, env->current_tag) <= 0) {
         // Remove elements of ndt_q with tag less than the current tag.
+        tag_t tag_to_remove = ((ndt_node*) pqueue_peek(env->ndt_q))->tag;
+        LF_PRINT_DEBUG("Remove the tag " PRINTF_TAG " from the ndt_q is before the current tag " PRINTF_TAG ". Remove it.",
+        tag_to_remove.time - start_time, tag_to_remove.microstep,
+        env->current_tag.time - start_time, env->current_tag.microstep);
         pqueue_remove(env->ndt_q, pqueue_peek(env->ndt_q));
     }
 // #endif

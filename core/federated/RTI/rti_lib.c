@@ -298,8 +298,8 @@ void send_upstream_next_downstream_tag(federate_t* fed, tag_t next_event_tag) {
         int upstream_id = fed->enclave.upstream[i];
         if (lf_tag_compare(_f_rti->enclaves[upstream_id]->enclave.completed, next_event_tag) < 0) {
             // send next downstream tag to upstream federates that do not complete the next_event_tag
-            LF_PRINT_LOG("RTI sending next downstream event message to federate %u.",
-                upstream_id);
+            LF_PRINT_LOG("RTI sending the next downstream event message (NDT) " PRINTF_TAG "to federate %u.",
+                next_event_tag.time - start_time, next_event_tag.microstep, upstream_id);
             write_to_socket_errexit(_f_rti->enclaves[upstream_id]->socket, message_length, buffer,
                     "RTI failed to send MSG_TYPE_NEXT_DOWNSTREAM_TAG message to federate %d.", upstream_id);
         }
@@ -1656,6 +1656,8 @@ void usage(int argc, const char* argv[]) {
     lf_print("          clock sync attempt (default is 10). Applies to 'init' and 'on'.");
     lf_print("  -a, --auth Turn on HMAC authentication options.");
     lf_print("  -t, --tracing Turn on tracing.");
+    lf_print("  -v, --version The minimum required version of Lingua Franca.");
+    lf_print("  --ndt Turn on the ndt_downstream_tag message option.");
 
     lf_print("Command given:");
     for (int i = 0; i < argc; i++) {
@@ -1791,10 +1793,12 @@ int process_args(int argc, const char* argv[]) {
         } else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0) {
             lf_print("%s", version_info);
             return 0;
-        } else if (strcmp(argv[i], "--ndt" == 0)) {
+        } else if (strcmp(argv[i], "--ndt") == 0) {
+            lf_print("ndt is enabled");
             _f_rti->ndt_enabled = true;
         } else if (strcmp(argv[i], " ") == 0) {
             // Tolerate spaces
+            lf_print("space");
             continue;
         }  else {
            lf_print_error("Unrecognized command-line argument: %s", argv[i]);
