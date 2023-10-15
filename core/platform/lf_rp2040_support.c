@@ -38,6 +38,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <pico/stdlib.h>
 #include <pico/multicore.h>
+#include <pico/util/queue.h>
 #include <pico/sync.h>
 
 // unthreaded statics
@@ -63,7 +64,7 @@ static uint32_t _lf_num_nested_crit_sec = 0;
  * binary semaphore used to synchronize 
  * used by thread join
  */
-static semaphore_t _lf_sem_core_sync;
+static mutex_t _lf_core_sync;
 /**
  * track number of threads created 
  * error on value greater than 2
@@ -81,9 +82,9 @@ void _lf_initialize_clock(void) {
 
     critical_section_init(&_lf_crit_sec);
     sem_init(&_lf_sem_irq_event, 0, 1);
-    // only init sync semaphore in multicore
+    // only init sync mutex in multicore
 #ifdef LF_THREADED
-    sem_init(&_lf_sem_core_sync, 0, 1);
+    mutex_init(&_lf_core_sync);
 #endif //LF_THREADED
 }
 
@@ -239,9 +240,11 @@ static void *_lf_core0_args, *_lf_core1_args;
 
 
 void _rp2040_core1_entry() {
+    // lock sync lock
+    mutex_enter_blocking(&_lf_core_sync);
     void *res = _lf_core1_worker(_lf_core1_args);
-    // notify of completion
-    sem_release(&_lf_sem_core_sync);
+    // unlock sync lock
+    mutex_exit(&_lf_core_sync);
 }
 
 /**
@@ -270,7 +273,7 @@ int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arg
         multicore_launch_core1(_rp2040_core1_entry);
     } else {
       // invalid thread
-      LF_PRINT_DEBUG("RP2040 threaded: tried to create invalid core thread");
+      LF_PRINT_DEBUG("rp2040: invalid thread create id");
       return -1;
     }
     _lf_thread_cnt++;
@@ -295,10 +298,11 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
       break;
     case RP2040_CORE_1:
       // block until core sync semaphore released
-      sem_acquire_blocking(&_lf_sem_core_sync);
+      // lock sync lock
+      mutex_enter_blocking(&_lf_core_sync);
       break;
     default:
-      LF_PRINT_DEBUG("RP2040 threaded: tried to join invalid core thread");
+      LF_PRINT_DEBUG("rp2040: invalid thread join id");
       return -1;
   }
   return 0;
@@ -344,8 +348,10 @@ int lf_mutex_unlock(lf_mutex_t* mutex) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
-    // set max permits to number of cores
-    sem_init(cond, 2, 2);
+    // reference to mutex
+    cond->mutex = mutex;
+    // init queue, use core num as debug info
+    queue_init(&cond->signal, sizeof(uint32_t), 2);
     return 0;
 }
 
@@ -355,9 +361,13 @@ int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_broadcast(lf_cond_t* cond) {
-    // release all permits
-    while(sem_release(cond));
-    return 0;
+    // release all permit
+    // add to queue, non blocking
+    uint32_t core = get_core_num();
+    if (!queue_try_add(&cond->signal, &core)) {
+        return -1; 
+    }
+    return queue_try_add(&cond->signal, &core) ? 0 : -1;
 }
 
 /**
@@ -366,8 +376,10 @@ int lf_cond_broadcast(lf_cond_t* cond) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_signal(lf_cond_t* cond) {
-    if(sem_release(cond)) { return 0; }
-    return -1;
+    // release permit
+    // add to queue, non blocking
+    uint32_t core = get_core_num();
+    return queue_try_add(&cond->signal, &core) ? 0 : -1;
 }
 
 /**
@@ -377,7 +389,18 @@ int lf_cond_signal(lf_cond_t* cond) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_wait(lf_cond_t* cond) {
-    sem_acquire_blocking(cond);
+    uint32_t cur_core, queue_core;
+    cur_core = get_core_num();
+    // unlock mutex
+    // todo: atomically unlock
+    lf_mutex_unlock(cond->mutex);
+    // queue remove blocking
+    queue_remove_blocking(&cond->signal, &queue_core);
+    // debug: check calling core
+    if (cur_core == queue_core) {
+        LF_PRINT_DEBUG("rp2040: self core cond release");
+    }
+    lf_mutex_lock(cond->mutex);
     return 0;
 }
 
@@ -390,14 +413,30 @@ int lf_cond_wait(lf_cond_t* cond) {
  *  number otherwise.
  */
 int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns) {
-    absolute_time_t target;
+    uint32_t cur_core, queue_core;
+    cur_core = get_core_num();
+    // unlock mutex
+    lf_mutex_unlock(cond->mutex);
+    absolute_time_t target, now;
+    // check timeout
     if (absolute_time_ns < 0) {
         return LF_TIMEOUT;
     }
+    // target and cur time
     target = from_us_since_boot((uint64_t) (absolute_time_ns / 1000));
-    if (!sem_acquire_block_until(cond, target)) {
-        return LF_TIMEOUT; 
+    now = get_absolute_time();
+    while (!queue_try_remove(&cond->signal, &queue_core)) {
+        // todo: cases where this might overflow
+        if (absolute_time_diff_us(now, target) < 0) {
+            lf_mutex_lock(cond->mutex);
+            return LF_TIMEOUT; 
+        }
+        now = get_absolute_time();
     }
+    if (cur_core == queue_core) {
+        LF_PRINT_DEBUG("rp2040: self core cond release");
+    }
+    lf_mutex_lock(cond->mutex);
     return 0;
 }
 

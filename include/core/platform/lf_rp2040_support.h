@@ -9,6 +9,7 @@
 
 #include <pico/stdlib.h>
 #include <pico/sync.h>
+#include <pico/util/queue.h>
 
 #define NO_TTY
 
@@ -32,8 +33,10 @@ typedef void *(*lf_function_t) (void *);
 typedef recursive_mutex_t lf_mutex_t;
 
 // condition var primitive
-// FIXME: repetitive implementation of semaphore
-typedef semaphore_t lf_cond_t;
+typedef struct {
+    lf_mutex_t* mutex;
+    queue_t signal;
+} lf_cond_t;
 
 // thread id type
 // use enum due to limited number of workers
