@@ -2363,18 +2363,20 @@ void handle_next_downstream_tag() {
             NDT.time - start_time, NDT.microstep);
     // Trace the event when tracing is enabled
     tracepoint_federate_from_rti(_fed.trace, receive_NDT, _lf_my_fed_id, &NDT);
-    
+
     environment_t* env;
     _lf_get_environments(&env);
 
-    if (lf_tag_compare(env->current_tag, NDT) < 0) {
-        // The current tag is less than NDT. Push NDT to ndt_q.
+    if (lf_tag_compare(env->current_tag, NDT) <= 0) {
+        // The current tag is less than or equal to the NDT. Push NDT to ndt_q.
         ndt_node* node = (ndt_node*) malloc(sizeof(ndt_node));
         node->tag = NDT;
         pqueue_insert(env->ndt_q, node);
-    } else {
-        // The current tag is greater than or equal to NDT. Send LTC, NET, and ABS messages.
-        // FIXME: How do we know which federate invoke this NDT? This info is needed for sending ABS messages.
+    }
+    if (lf_tag_compare(env->current_tag, NDT) >= 0) {
+        // The current tag is greater than or equal to NDT. Send the appropriate NET message.
+        tag_t next_event_tag = get_next_event_tag(env);
+        send_next_event_tag(env, next_event_tag, false);
     }
 }
 
