@@ -1922,11 +1922,28 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
     if (compare_with_last_tag >= 0) {
         return;
     }
-    LF_PRINT_LOG("Sending Logical Time Complete (LTC) " PRINTF_TAG " to the RTI.",
+
+    environment_t *env;
+    _lf_get_environments(&env);
+    bool need_to_send_LTC = true;
+    if (pqueue_peek(env->ndt_q) != NULL) {
+        tag_t ndt_q_barrier = ((ndt_node*) pqueue_peek(env->ndt_q))->tag;
+        if (lf_tag_compare(tag_to_send, ndt_q_barrier) < 0) {
+            // No events exist in any downstream federates
+            LF_PRINT_DEBUG("The intended tag " PRINTF_TAG " is smaller than the tag barrier " PRINTF_TAG "."
+            "Don't have to send the logical tag complete.",
+            tag_to_send.time - start_time, tag_to_send.microstep,
+            ndt_q_barrier.time - start_time, ndt_q_barrier.microstep);
+            need_to_send_LTC = false;
+        }
+    }
+    if (need_to_send_LTC) {
+        LF_PRINT_LOG("Sending Logical Tag Complete (LTC) " PRINTF_TAG " to the RTI.",
             tag_to_send.time - start_time,
             tag_to_send.microstep);
-    _lf_send_tag(MSG_TYPE_LOGICAL_TAG_COMPLETE, tag_to_send, true);
-    _fed.last_sent_LTC = tag_to_send;
+        _lf_send_tag(MSG_TYPE_LOGICAL_TAG_COMPLETE, tag_to_send, true);
+        _fed.last_sent_LTC = tag_to_send;
+    }
 }
 
 bool update_max_level(tag_t tag, bool is_provisional) {
@@ -2133,6 +2150,7 @@ void handle_provisional_tag_advance_grant() {
         // TAG. In either case, we know that at the PTAG tag, all outputs
         // have either been sent or are absent, so we can send an LTC.
         // Send an LTC to indicate absent outputs.
+        LF_PRINT_DEBUG("Inside handle_provisional_tag_advance_grant");
         _lf_logical_tag_complete(PTAG);
         // Nothing more to do.
         lf_mutex_unlock(&env->mutex);
