@@ -26,6 +26,7 @@ css_style = ' <style> \
     .NET { stroke: #118ab2; fill: #118ab2} \
     .PTAG { stroke: #06d6a0; fill: #06d6a0} \
     .TAG { stroke: #08a578; fill: #08a578} \
+    .NDT { stroke: purple; fill: purple} \
     .TIMESTAMP { stroke: grey; fill: grey } \
     .FED_ID {stroke: #80DD99; fill: #80DD99 } \
     .ADV {stroke-linecap="round" ; stroke: "red" ; fill: "red"} \
@@ -60,6 +61,7 @@ prune_event_name = {
     "Sending P2P_MSG": "P2P_MSG",
     "Sending ADR_AD": "ADR_AD",
     "Sending ADR_QR": "ADR_QR",
+    "Sending NDT": "NDT",
     "Receiving ACK": "ACK",
     "Receiving TIMESTAMP": "TIMESTAMP",
     "Receiving NET": "NET",
@@ -80,6 +82,7 @@ prune_event_name = {
     "Receiving P2P_MSG": "P2P_MSG",
     "Receiving ADR_AD": "ADR_AD",
     "Receiving ADR_QR": "ADR_QR",
+    "Receiving NDT": "NDT",
     "Receiving UNIDENTIFIED": "UNIDENTIFIED",
     "Scheduler advancing time ends": "AdvLT"
 }

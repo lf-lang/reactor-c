@@ -300,6 +300,9 @@ void send_upstream_next_downstream_tag(federate_t* fed, tag_t next_event_tag) {
             // send next downstream tag to upstream federates that do not complete the next_event_tag
             LF_PRINT_LOG("RTI sending the next downstream event message (NDT) " PRINTF_TAG "to federate %u.",
                 next_event_tag.time - start_time, next_event_tag.microstep, upstream_id);
+            if (_f_rti->tracing_enabled) {
+                tracepoint_rti_to_federate(_f_rti->trace, send_NDT, upstream_id, &next_event_tag);
+            }
             write_to_socket_errexit(_f_rti->enclaves[upstream_id]->socket, message_length, buffer,
                     "RTI failed to send MSG_TYPE_NEXT_DOWNSTREAM_TAG message to federate %d.", upstream_id);
         }

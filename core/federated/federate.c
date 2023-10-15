@@ -2361,6 +2361,9 @@ void handle_next_downstream_tag() {
 
     LF_PRINT_LOG("Received from RTI a MSG_TYPE_NEXT_DOWNSTREAM_TAG message with elapsed tag " PRINTF_TAG ".",
             NDT.time - start_time, NDT.microstep);
+    // Trace the event when tracing is enabled
+    tracepoint_federate_from_rti(_fed.trace, receive_NDT, _lf_my_fed_id, &NDT);
+    
     environment_t* env;
     _lf_get_environments(&env);
 
