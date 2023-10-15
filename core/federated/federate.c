@@ -1404,6 +1404,10 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
         tag_t ndt_q_barrier = ((ndt_node*) pqueue_peek(env->ndt_q))->tag;
         if (lf_tag_compare(current_message_intended_tag, ndt_q_barrier) < 0) {
             // No events exist in any downstream federates
+            LF_PRINT_DEBUG("The intended tag " PRINTF_TAG " is smaller than the tag barrier " PRINTF_TAG "."
+            "Don't have to send the port absent message.",
+            current_message_intended_tag.time - start_time, current_message_intended_tag.microstep,
+            ndt_q_barrier.time - start_time, ndt_q_barrier.microstep);
             return;
         }
     }
@@ -2761,10 +2765,27 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
             // This if statement does not fall through but rather returns.
             // NET is not bounded by physical time or has no downstream federates.
             // Normal case.
-            _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag, wait_for_reply);
-            _fed.last_sent_NET = tag;
-            LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.",
-                    tag.time - start_time, tag.microstep);
+
+            // If there is no downstream events that require the NET of the current tag,
+            // do not send the NET.
+            bool need_to_send_NET = true;
+            if (pqueue_peek(env->ndt_q) != NULL) {
+                tag_t ndt_q_barrier = ((ndt_node*) pqueue_peek(env->ndt_q))->tag;
+                if (lf_tag_compare(tag, ndt_q_barrier) < 0) {
+                    // No events exist in any downstream federates
+                    LF_PRINT_DEBUG("The intended tag " PRINTF_TAG " is smaller than the tag barrier " PRINTF_TAG "."
+                    "Don't have to send the next event tag.",
+                    tag.time - start_time, tag.microstep,
+                    ndt_q_barrier.time - start_time, ndt_q_barrier.microstep);
+                    need_to_send_NET = false;
+                }
+            }
+            if (need_to_send_NET) {
+                _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag, wait_for_reply);
+                _fed.last_sent_NET = tag;
+                LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.",
+                        tag.time - start_time, tag.microstep);
+            }
 
             if (!wait_for_reply) {
                 LF_PRINT_LOG("Not waiting for reply to NET.");
