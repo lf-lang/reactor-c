@@ -104,6 +104,14 @@ typedef struct environment_t {
     tag_t** _lf_intended_tag_fields;
     int _lf_intended_tag_fields_size;
 #endif // FEDERATED
+#if SCHEDULER == STATIC
+    tag_t** reactor_tags;
+    int reactor_tags_size;
+    bool** reaction_trigger_present_array;
+    int reaction_trigger_present_array_size;
+    reaction_t** reaction_array;
+    int reaction_array_size;
+#endif
 } environment_t;
 
 #ifdef MODAL_REACTORS
