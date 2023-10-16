@@ -7,6 +7,10 @@ list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c lf_token
 if (DEFINED LF_TRACE)
     message(STATUS "Including sources specific to tracing.")
     list(APPEND GENERAL_SOURCES trace.c)
+    if (DEFINED LF_TRACE_SYSTEM)
+        message(STATUS "System Tracing is ENABLED")
+        add_compile_definitions(LF_TRACE_SYSTEM=1)
+    endif ()
 endif()
 
 # Store all sources used to build the reactor-c lib in INFO_SOURCES
@@ -114,6 +118,7 @@ define(FEDERATED_AUTHENTICATED)
 define(LF_REACTION_GRAPH_BREADTH)
 define(LF_THREADED)
 define(LF_TRACE)
+define(LF_TRACE_SYSTEM)
 define(LF_UNTHREADED)
 define(LOG_LEVEL)
 define(MODAL_REACTORS)

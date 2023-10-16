@@ -32,6 +32,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define LF_TRACE
 #include <stdio.h>
 #include <string.h>
+#include <getopt.h>
+#include <dirent.h>
+#include <sys/param.h>
+#include <unistd.h>
+
 #include "reactor.h"
 #include "trace.h"
 #include "trace_util.h"
@@ -48,14 +53,77 @@ FILE* output_file = NULL;
 /** File for writing summary statistics. */
 FILE* summary_file = NULL;
 
+/** File for User Statistics */
+FILE* filtered_file = NULL;
+
 /** Size of the stats table is object_table_size plus twice MAX_NUM_WORKERS. */
 int table_size;
+
+/** Structure for passed command line options */
+typedef struct {
+    char *r_name; // resource name
+    char *out_file; // Output Directory
+    trace_event_t filter; // Filter
+    bool is_dir; // Resource is Directory?
+    bool recursive; // Recursive?
+} program_options_t;
+
+program_options_t opts = {
+        .filter = -1,
+        .is_dir = false,
+        .recursive = false
+};
+
+/** All Events of specified Types */
+enum filter_options_t {
+    reaction_events = NUM_EVENT_TYPES + 1,
+    user_events,
+    worker_wait_events,
+    scheduler_advancing_time_events,
+    send_events,
+    receive_events
+};
+
+/** Trace Processor Fptr */
+typedef void (*processor_f) (const char *fname);
+
+/** Available Filter Options */
+struct filter {
+    int value;
+    const char *str;
+} filters[] = {
+        [user_event] = {.str = "user_event", .value = user_event },
+        [user_value] = {.str = "user_value", .value = user_value },
+        [user_stats] = {.str = "user_stats", .value = user_stats },
+        [schedule_called] = {.str = "schedule_called", .value = schedule_called },
+        [federated] = {.str = "federated", .value = federated },
+        [NUM_EVENT_TYPES] = {.str = "none", .value = -1 },
+        [reaction_events] = {.str = "reaction_events", .value = reaction_events },
+        [user_events] = {.str = "user_events", .value = user_events},
+        [worker_wait_events] = {.str = "worker_wait_events", .value = worker_wait_events},
+        [scheduler_advancing_time_events] = {.str = "scheduler_advancing_time_events", .value = scheduler_advancing_time_events},
+        [send_events] = {.str = "send_events", .value = send_events},
+        [receive_events] = {.str = "receive_events", .value = receive_events}
+};
 
 /**
  * Print a usage message.
  */
 void usage() {
-    printf("\nUsage: trace_to_csv [options] trace_file_root (without .lft extension)\n\n");
+    printf("\nBasic Usage (Single File Mode)\nUsage: trace_to_csv [options] trace_file_root (without .lft extension)\n\n");
+    printf("Advanced Usage (Directory Mode)\nUsage: trace_to_csv [options] [args] path_to_root_directory\n\n");
+    printf("Options:\n-r:\t Recursively find *.lft files on provided path\n");
+    printf("-d:\t Root Directory Path\n");
+    printf("-f:\t Filter events\n");
+    printf("-o:\t Outfile Prefix\n");
+    printf("\nFilters:\n[");
+    for (int i = 0; i < sizeof (filters) / sizeof (struct filter); ++i) {
+        if (filters[i].str != NULL && filters[i].value != -1) {
+            printf(" %s |", filters[i].str);
+        }
+    }
+    printf(" none ]\n");
+
     /* No options yet:
     printf("\nOptions: \n\n");
     printf("  -f, --fast [true | false]\n");
@@ -97,6 +165,69 @@ summary_stats_t** summary_stats;
 instant_t latest_time = 0LL;
 
 /**
+ * Checks if specified event ev is Filtered for this run
+ * @param ev Current Tracing Event
+ * @returns True if this event needs to be filtered or false otherwise
+ * */
+bool is_filtered_event(trace_event_t ev) {
+    if (ev == opts.filter) {
+        // Definitive Event
+        return true;
+    } else {
+        if (opts.filter == reaction_events) {
+            switch (ev) {
+                case reaction_starts:
+                case reaction_ends:
+                case reaction_deadline_missed:
+                    return true;
+                default:
+                    return false;
+            }
+        } else if (opts.filter == user_events) {
+            switch (ev) {
+                case user_value:
+                case user_event:
+                case user_stats:
+                    return true;
+                default:
+                    return false;
+            }
+        } else if (opts.filter == worker_wait_events) {
+            switch (ev) {
+                case worker_wait_starts:
+                case worker_wait_ends:
+                    return true;
+                default:
+                    return false;
+            }
+        } else if (opts.filter == scheduler_advancing_time_events) {
+            switch (ev) {
+                case scheduler_advancing_time_starts:
+                case scheduler_advancing_time_ends:
+                    return true;
+                default:
+                    return false;
+            }
+        } else if (opts.filter == send_events) {
+            switch (ev) {
+                case send_ACK ... send_ADR_QR:
+                    return true;
+                default:
+                    return false;
+            }
+        } else if (opts.filter == receive_events) {
+            switch (ev) {
+                case receive_ACK ... receive_UNIDENTIFIED:
+                    return true;
+                default:
+                    return false;
+            }
+        }
+    }
+    return false;
+}
+
+/**
  * Read a trace in the specified file and write it to the specified CSV file.
  * @return The number of records read or 0 upon seeing an EOF.
  */
@@ -116,6 +247,19 @@ size_t read_and_write_trace() {
         if (trigger_name == NULL) {
             trigger_name = "NO TRIGGER";
         }
+        if (opts.filter != -1 && is_filtered_event(trace[i].event_type)) {
+            fprintf(filtered_file, "%s, %s, %d, %d, %lld, %d, %lld, %s, %lld\n",
+                    trace_event_names[trace[i].event_type],
+                    reactor_name,
+                    trace[i].src_id,
+                    trace[i].dst_id,
+                    trace[i].logical_time - start_time,
+                    trace[i].microstep,
+                    trace[i].physical_time - start_time,
+                    trigger_name,
+                    trace[i].extra_delay
+            );
+        }
         fprintf(output_file, "%s, %s, %d, %d, %lld, %d, %lld, %s, %lld\n",
                 trace_event_names[trace[i].event_type],
                 reactor_name,
@@ -127,6 +271,7 @@ size_t read_and_write_trace() {
                 trigger_name,
                 trace[i].extra_delay
         );
+
         // Update summary statistics.
         if (trace[i].physical_time > latest_time) {
             latest_time = trace[i].physical_time;
@@ -195,6 +340,7 @@ size_t read_and_write_trace() {
                 stats = summary_stats[NUM_EVENT_TYPES + object_instance];
                 stats->description = reactor_name;
                 break;
+            case user_stats:
             case user_value:
                 // Although these are not exec times and not reactions,
                 // commandeer the first entry in the reactions array to track values.
@@ -394,17 +540,61 @@ void write_summary_file() {
     }
 }
 
-int main(int argc, char* argv[]) {
-    if (argc != 2) {
-        usage();
-        exit(0);
+/** Filter Options Table */
+trace_event_t get_filtered_option(const char *opt) {
+    for (int i = 0; i < sizeof (filters) / sizeof (struct filter); ++i) {
+        if (filters[i].str != NULL && strcmp(opt, filters[i].str) == 0) {
+            return filters[i].value;
+        }
     }
-    // Open the trace file.
-    trace_file = open_file(argv[1], "r");
-    if (trace_file == NULL) exit(1);
+    return -1;
+}
 
+/** Parse and set Program Options */
+void scan_program_options(int argc, char **argv) {
+    if (argc > 2) {
+        // scan for program options
+        int arg;
+        char cwd[MAXPATHLEN] = {0};
+        getcwd(cwd, MAXPATHLEN);
+        while((arg = getopt(argc, argv, "rd:f:o:")) != -1) {
+            switch (arg) {
+                case 'r':
+                    opts.recursive = true;
+                    break;
+                case 'd':
+                    opts.is_dir = true;
+                    opts.r_name = optarg;
+                    break;
+                case 'f':
+                    opts.filter = get_filtered_option(optarg);
+                    break;
+                case 'o':
+                    opts.out_file = optarg;
+                    break;
+                default:
+                    break;
+            }
+        }
+        printf("------- options specified:\n\tDirectory Mode=%s\n"
+               "\tRecursive=%s\n"
+               "\tResource=%s\n"
+               "\tFilter=%s\n"
+               "\tOutfilePrefix=%s\n-------\n",
+               opts.is_dir ? "true" : "false",
+               opts.recursive ? "true" : "false",
+               opts.r_name,
+               filters[opts.filter].str,
+               opts.out_file);
+    } else {
+        opts.r_name = argv[1];
+        opts.out_file = argv[1];
+    }
+}
+
+void open_output_files(const char *fname) {
     // Construct the name of the csv output file and open it.
-    char* root = root_name(argv[1]);
+    char* root = root_name(fname);
     char csv_filename[strlen(root) + 5];
     strcpy(csv_filename, root);
     strcat(csv_filename, ".csv");
@@ -417,8 +607,29 @@ int main(int argc, char* argv[]) {
     strcat(summary_filename, "_summary.csv");
     summary_file = open_file(summary_filename, "w");
     if (summary_file == NULL) exit(1);
+    if (opts.filter != -1) {
+        char filtered_filename[strlen(root) + 13];
+        strcpy(filtered_filename, root);
+        strcat(filtered_filename, "_");
+        strcat(filtered_filename, filters[opts.filter].str);
+        strcat(filtered_filename, ".csv");
+        filtered_file = open_file(filtered_filename, "w");
+        if (filtered_file == NULL) exit(1);
+    }
 
     free(root);
+}
+
+void close_output_files() {
+    fclose(output_file);
+    fclose(filtered_file);
+    fclose(summary_file);
+}
+
+void trace_processor(const char *fname) {
+    // Open the trace file.
+    trace_file = open_file(fname, "r");
+    if (trace_file == NULL) exit(1);
 
     if (read_header() >= 0) {
         // Allocate an array for summary statistics.
@@ -427,10 +638,68 @@ int main(int argc, char* argv[]) {
 
         // Write a header line into the CSV file.
         fprintf(output_file, "Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay\n");
+        if (opts.filter != -1)
+            fprintf(filtered_file, "Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay\n");
         while (read_and_write_trace() != 0) {};
 
         write_summary_file();
-
-        // File closing is handled by termination function.
     }
+}
+
+/**
+ * Invokes processor for each trace-file on current path
+ * @param trace_ext Extension of Trace File
+ * @param tmp_buffer temporary buffer space
+ * @param recursive Specifies if we need to examine sub-directories as well
+ * @param process Function Pointer to trace processor
+ * */
+int for_each_trace(char *trace_ext, char *tmp_buffer, bool recursive, processor_f process) {
+    DIR *d;
+    struct dirent *dir;
+    d = opendir(".");
+    if (d == NULL) {
+        return 1;
+    }
+    while ((dir = readdir(d))) {
+        if (strcmp(dir->d_name, ".") == 0 ||
+            strcmp(dir->d_name, "..") == 0) {
+            continue;
+        }
+        if (dir->d_type == DT_DIR && recursive) {
+            chdir(dir->d_name);
+            for_each_trace(trace_ext, tmp_buffer, recursive, process);
+            chdir("..");
+        } else {
+            if (strstr(dir->d_name, trace_ext) != NULL) {
+                size_t len;
+                getcwd(tmp_buffer, MAXPATHLEN);
+                len = strnlen(tmp_buffer, MAXPATHLEN);
+                snprintf(tmp_buffer + len, MAXPATHLEN - len, "/%s", dir->d_name);
+                printf("Found Trace file at: %s\n", tmp_buffer);
+                process(tmp_buffer);
+            }
+        }
+    }
+    closedir(d);
+    return *tmp_buffer == 0;
+}
+
+int main(int argc, char* argv[]) {
+    if (argc < 2) {
+        usage();
+        exit(0);
+    }
+    scan_program_options(argc, argv);
+    open_output_files(opts.out_file);
+    if (!opts.is_dir) {
+        trace_processor(opts.r_name);
+    } else {
+        char cwd[MAXPATHLEN] = {0};
+        char tmp_buffer[MAXPATHLEN] = {0};
+        getcwd(cwd, MAXPATHLEN);
+        chdir(opts.r_name);
+        for_each_trace(".lft", tmp_buffer, opts.recursive, trace_processor);
+        chdir(cwd);
+    }
+    close_output_files();
 }
