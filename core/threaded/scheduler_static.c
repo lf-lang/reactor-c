@@ -201,9 +201,8 @@ void execute_inst_ADVI(lf_scheduler_t* scheduler, size_t worker_number, operand_
     reaction_t** returned_reaction, bool* exit_loop) {
     tracepoint_static_scheduler_ADVI_starts(scheduler->env->trace, worker_number, (int) *pc);
 
+    self_base_t *reactor = (self_base_t*) op1.reg;
     reg_t *base = op2.reg;
-    self_base_t* reactor =
-        scheduler->reactor_self_instances[op1.imm];
     reactor->tag.time = *base + op3.imm;
     reactor->tag.microstep = 0;
     
@@ -228,6 +227,7 @@ void execute_inst_BEQ(lf_scheduler_t* scheduler, size_t worker_number, operand_t
     // tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
     reg_t *_rs1 = op1.reg;
     reg_t *_rs2 = op2.reg;
+    LF_PRINT_DEBUG("Worker %zu: BEQ : operand 1 = %lld, operand 2 = %lld", worker_number, *_rs1, *_rs2);
     if (*_rs1 == *_rs2) *pc = op3.imm;
     else *pc += 1;
     // tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
@@ -341,7 +341,7 @@ void execute_inst_EIT(lf_scheduler_t* scheduler, size_t worker_number, operand_t
 void execute_inst_EXE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
     tracepoint_static_scheduler_EXE_starts(scheduler->env->trace, worker_number, (int) *pc);
-    reaction_t* reaction = scheduler->reaction_instances[op1.imm];
+    reaction_t *reaction = (reaction_t*) op1.reg;
     *returned_reaction = reaction;
     *exit_loop = true;
     *pc += 1; // Increment pc.
