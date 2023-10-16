@@ -297,8 +297,7 @@ int lf_thread_join(lf_thread_t thread, void** thread_return) {
       *thread_return = _lf_core0_worker(_lf_core0_args);
       break;
     case RP2040_CORE_1:
-      // block until core sync semaphore released
-      // lock sync lock
+      // block until core sync released
       mutex_enter_blocking(&_lf_core_sync);
       break;
     default:
@@ -351,6 +350,7 @@ int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
     // reference to mutex
     cond->mutex = mutex;
     // init queue, use core num as debug info
+    // max number of entries in the queue is equal to number of cores
     queue_init(&cond->signal, sizeof(uint32_t), 2);
     return 0;
 }
@@ -361,12 +361,11 @@ int lf_cond_init(lf_cond_t* cond, lf_mutex_t* mutex) {
  * @return 0 on success, platform-specific error number otherwise.
  */
 int lf_cond_broadcast(lf_cond_t* cond) {
-    // release all permit
+    // notify both cores
     // add to queue, non blocking
+    // this method could be called from an isr
     uint32_t core = get_core_num();
-    if (!queue_try_add(&cond->signal, &core)) {
-        return -1; 
-    }
+    queue_try_add(&cond->signal, &core);
     return queue_try_add(&cond->signal, &core) ? 0 : -1;
 }
 
@@ -392,7 +391,6 @@ int lf_cond_wait(lf_cond_t* cond) {
     uint32_t cur_core, queue_core;
     cur_core = get_core_num();
     // unlock mutex
-    // todo: atomically unlock
     lf_mutex_unlock(cond->mutex);
     // queue remove blocking
     queue_remove_blocking(&cond->signal, &queue_core);
