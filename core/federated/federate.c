@@ -421,6 +421,12 @@ int send_timed_message(environment_t* env,
         lf_mutex_unlock(&outbound_socket_mutex);
         return 0;
     }
+
+    // Insert the ndt_node at the tag to send LTC to the RTI.
+    ndt_node* node = (ndt_node*) malloc(sizeof(ndt_node));
+    node->tag = current_message_intended_tag;
+    pqueue_insert(env->ndt_q, node);
+
     // Trace the event when tracing is enabled
     if (message_type == MSG_TYPE_TAGGED_MESSAGE) {
         tracepoint_federate_to_rti(_fed.trace, send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
