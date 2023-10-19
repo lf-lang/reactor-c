@@ -209,6 +209,22 @@ void lf_vprint_debug(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1
 #define LF_PRINT_DEBUG(format, ...) \
             do { if(LOG_LEVEL >= LOG_LEVEL_DEBUG) { \
                     lf_print_debug(format, ##__VA_ARGS__); \
+    static char* logtrace; \
+    static char location_id[120]; \
+    if (!logtrace) { \
+        logtrace = getenv("LF_LOGTRACE"); \
+        if (!logtrace) { \
+            logtrace = (char*) malloc(sizeof(char)); \
+            logtrace[0] = '\0'; \
+            location_id[0] = '\0'; \
+        } else { \
+            size_t len = strlen(__FILE__); \
+            snprintf(location_id, 120, "<<< %s %d %d >>>\n", &__FILE__[len > 30 ? len - 15 : 0], __LINE__, _lf_my_fed_id); \
+        } \
+    } \
+    if (*logtrace) { \
+      printf("%s", location_id); \
+    } \
                 } } while (0)
 
 /**
