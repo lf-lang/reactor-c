@@ -481,7 +481,7 @@ void print_event(void *event) {
  * are given in reverse order.
 */
 int tag_in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that) {
-    return lf_tag_compare(((ndt_node*) thiz)->tag, ((ndt_node*) that)->tag);
+    return lf_tag_compare(((ndt_node*) thiz)->tag, ((ndt_node*) that)->tag) == 1;
 }
 
 /**
