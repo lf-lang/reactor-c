@@ -190,6 +190,30 @@ void lf_print_debug(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
  */
 void lf_vprint_debug(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
+#include <string.h>
+#include <stdint.h>
+
+typedef int64_t interval_t;
+
+/**
+ * @brief Parse the delay vector.
+ *
+ * @param delay_vector_evar Nonnull input that is a comma-separated list of integers.
+ * @param delay_vector_len Output that is the length of the delay vector.
+ * @param delay_vector A list of delays.
+ */
+static void _lf_parse_delay_vector(char* delay_vector_evar, size_t* delay_vector_len, interval_t** delay_vector) {
+    *delay_vector_len = atoi(delay_vector_evar);
+    *delay_vector = (interval_t*) malloc(sizeof(interval_t) * *delay_vector_len);
+    int idx = 0;
+    while (delay_vector_evar = strchr(delay_vector_evar, ',')) {
+        delay_vector_evar++;
+        (*delay_vector)[idx++] = atoi(delay_vector_evar);
+    }
+}
+
+int lf_sleep(interval_t sleep_duration);
+
 /**
  * A macro used to print useful debug information. It can be enabled
  * by setting the target property 'logging' to 'DEBUG' or
@@ -211,9 +235,9 @@ void lf_vprint_debug(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1
                     lf_print_debug(format, ##__VA_ARGS__); \
     static char* logtrace; \
     static char location_id[120]; \
-    if (!logtrace) { \
+    if (!logtrace) { /* slow path */ \
         logtrace = getenv("LF_LOGTRACE"); \
-        if (!logtrace) { \
+        if (!logtrace) { /* ensure that fast path will be taken */ \
             logtrace = (char*) malloc(sizeof(char)); \
             logtrace[0] = '\0'; \
             location_id[0] = '\0'; \
@@ -223,9 +247,28 @@ void lf_vprint_debug(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1
         } \
     } \
     if (*logtrace) { \
-      printf("%s", location_id); \
+        printf("%s", location_id); \
     } \
-                } } while (0)
+    static char* delay_vector_evar; \
+    static size_t delay_vector_len; \
+    static interval_t* delay_vector; \
+    static int delay_vector_index = 0; \
+    if (!delay_vector_evar) { \
+        delay_vector_evar = getenv(location_id); \
+        if (!delay_vector_evar) { \
+            delay_vector_evar = (char*) malloc(sizeof(char)); \
+            delay_vector_evar[0] = '\0'; \
+            delay_vector_len = 0; \
+            delay_vector = NULL; \
+        } else { \
+            _lf_parse_delay_vector(delay_vector_evar, &delay_vector_len, &delay_vector); \
+        } \
+    } \
+    if (*delay_vector_evar) { \
+        printf("DEBUG DEBUG: DELAYING BY %lld\n", (long long) (delay_vector_index < delay_vector_len ? delay_vector[delay_vector_index] : 0)); \
+        lf_sleep(delay_vector_index < delay_vector_len ? delay_vector[delay_vector_index++] : 0); \
+    } \
+} } while (0)
 
 /**
  * Print the error defined by the errno variable with the
