@@ -31,12 +31,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifdef FEDERATED
+#ifdef PLATFORM_ZEPHYR
+#else
+#include <sys/socket.h>
+#include <netinet/in.h>
+#endif
 #include <errno.h>
 #include <math.h>
 #include <string.h>
 #include <stdlib.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 
 #include "platform.h"
 #include "clock-sync.h"

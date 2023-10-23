@@ -300,7 +300,7 @@ int _lf_unthreaded_notify_of_event() {
 #warning "Threaded support on Zephyr is still experimental."
 
 // FIXME: What is an appropriate stack size?
-#define _LF_STACK_SIZE 1024
+#define _LF_STACK_SIZE 4096
 // FIXME: What is an appropriate thread prio?
 #define _LF_THREAD_PRIORITY 5
 
@@ -315,7 +315,38 @@ int _lf_unthreaded_notify_of_event() {
 #define USER_THREADS 0
 #endif
 
+#if defined(FEDERATED) && defined(FEDERATED_DECENTRALIZED)
+#define RTI_SOCKET_LISTENER_THREAD 1
+#define FEDERATE_SOCKET_LISTENER_THREADS NUMBER_OF_FEDERATES
+#define P2P_HANDLER_THREAD 1
+
+#elif defined(FEDERATED) && defined(FEDERATED_CENTRALIZED)
+#define RTI_SOCKET_LISTENER_THREAD 1
+#define FEDERATE_SOCKET_LISTENER_THREADS 0
+#define P2P_HANDLER_THREAD 0
+
+#else 
+#define RTI_SOCKET_LISTENER_THREAD 0
+#define FEDERATE_SOCKET_LISTENER_THREADS 0
+#define P2P_HANDLER_THREAD 0
+#endif
+
+#if defined(FEDERATED) && defined(_LF_CLOCK_SYNC_ON)
+#define CLOCK_SYNC_THREAD 1
+#else
+#define CLOCK_SYNC_THREAD 0
+#endif
+
+#ifndef WORKERS_NEEDED_FOR_FEDERATE
+#define WORKERS_NEEDED_FOR_FEDERATE 0
+#endif
+
 #define NUMBER_OF_THREADS (NUMBER_OF_WORKERS \
+                           + WORKERS_NEEDED_FOR_FEDERATE \
+                           + RTI_SOCKET_LISTENER_THREAD \
+                           + FEDERATE_SOCKET_LISTENER_THREADS \
+                           + P2P_HANDLER_THREAD \
+                           + CLOCK_SYNC_THREAD \
                            + USER_THREADS)
 
 K_MUTEX_DEFINE(thread_mutex);
