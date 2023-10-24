@@ -1406,17 +1406,19 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
     tag_t current_message_intended_tag = lf_delay_strict(env->current_tag,
                                                     additional_delay);
     
-    if (pqueue_peek(env->ndt_q) != NULL) {
-        tag_t ndt_q_barrier = ((ndt_node*) pqueue_peek(env->ndt_q))->tag;
-        if (lf_tag_compare(current_message_intended_tag, ndt_q_barrier) < 0) {
-            // No events exist in any downstream federates
-            LF_PRINT_DEBUG("The intended tag " PRINTF_TAG " is smaller than the tag barrier " PRINTF_TAG "."
-            "Don't have to send the port absent message.",
-            current_message_intended_tag.time - start_time, current_message_intended_tag.microstep,
-            ndt_q_barrier.time - start_time, ndt_q_barrier.microstep);
-            return;
-        }
-    }
+    // FIXME: Currently, a federate cannot send skipped port absent messages
+    // when it receives NDT lately. So every port absent messages are sent tentatively.
+    // if (pqueue_peek(env->ndt_q) != NULL) {
+    //     tag_t ndt_q_barrier = ((ndt_node*) pqueue_peek(env->ndt_q))->tag;
+    //     if (lf_tag_compare(current_message_intended_tag, ndt_q_barrier) < 0) {
+    //         // No events exist in any downstream federates
+    //         LF_PRINT_DEBUG("The intended tag " PRINTF_TAG " is smaller than the tag barrier " PRINTF_TAG "."
+    //         "Don't have to send the port absent message.",
+    //         current_message_intended_tag.time - start_time, current_message_intended_tag.microstep,
+    //         ndt_q_barrier.time - start_time, ndt_q_barrier.microstep);
+    //         return;
+    //     }
+    // }
 
     // Construct the message
     size_t message_length = 1 + sizeof(port_ID) + sizeof(fed_ID) + sizeof(instant_t) + sizeof(microstep_t);
