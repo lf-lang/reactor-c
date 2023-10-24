@@ -54,21 +54,29 @@ static struct counter_alarm_cfg alarm_cfg;
 const struct device *const counter_dev = DEVICE_DT_GET(LF_TIMER);   
 static volatile bool alarm_fired;
 
-// This callback is invoked when the Counter device tracking the progress of time
-// overflows
-static void  overflow_callback(const struct device *dev, void *user_data) {
-        last_epoch_nsec += epoch_duration_nsec;
+/**
+ * This callback is invoked when the underlying Timer peripheral overflows.
+ * Handled by incrementing the epoch variable.
+ */
+static void overflow_callback(const struct device *dev, void *user_data) {
+    last_epoch_nsec += epoch_duration_nsec;
 }
 
-// This callback is invoked when the alarm expires.
+/**
+ * This callback is invoked when the alarm configured for sleeping expires.
+ * The sleeping thread is released by giving it the semaphore.
+ */
 static void alarm_callback(const struct device *counter_dev,
 				      uint8_t chan_id, uint32_t ticks,
-				      void *user_data)
-{
+				      void *user_data) {
     alarm_fired=true;
     k_sem_give(&semaphore);
 }
 
+/**
+ * Initialize the Counter device. Check its frequency and compute epoch
+ * durations.
+ */
 void _lf_initialize_clock() {
     struct counter_top_cfg counter_top_cfg;
     uint32_t counter_max_ticks=0;
@@ -114,17 +122,35 @@ void _lf_initialize_clock() {
     counter_start(counter_dev);
 }
 
+/**
+ * The Counter device tracks current physical time. Overflows are handled in an
+ * ISR.
+ */
 int _lf_clock_now(instant_t* t) {
+    static uint64_t last_nsec = 0;
     uint32_t now_cycles;
     int res;
     uint64_t now_nsec;
     
     res = counter_get_value(counter_dev, &now_cycles);
-    now_nsec = counter_ticks_to_us(counter_dev, now_cycles)*1000ULL;
-    *t = now_nsec + last_epoch_nsec;
+    now_nsec = counter_ticks_to_us(counter_dev, now_cycles)*1000ULL + last_epoch_nsec;
+
+    // Make sure that the clock is monotonic. We might have had a wrap but the
+    // epoch has not been updated because interrupts are disabled.
+    if (now_nsec < last_nsec) {
+        now_nsec = last_nsec + 1;
+    }
+
+    *t = now_nsec;
+    last_nsec = now_nsec;
     return 0;
 }
 
+/**
+ * Handle interruptable sleep by configuring a future alarm callback and waiting
+ * on a semaphore. Make sure we can handle sleeps that exceed an entire epoch
+ * of the Counter.
+ */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     // Reset flags
     alarm_fired = false;
@@ -181,6 +207,9 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     }
 }
 
+/**
+ * We notify of async events by setting the flag and giving the semaphore.
+ */
 int _lf_unthreaded_notify_of_event() {
    async_event = true;
     k_sem_give(&semaphore);

@@ -42,7 +42,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "util.h"
 
 static int64_t epoch_duration_nsec;
-static int64_t epoch_duration_usec;
 static volatile int64_t last_epoch_nsec = 0;
 static uint32_t timer_freq;
 static volatile bool async_event = false;
@@ -51,37 +50,36 @@ void _lf_initialize_clock() {
     timer_freq = CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC;
     LF_PRINT_LOG("--- Using LF Zephyr Kernel Clock with a frequency of %u Hz\n", timer_freq);
     last_epoch_nsec = 0;
-    // Compute the duration of an epoch. Compute both
-    //  nsec and usec now at boot to avoid these computations later
     epoch_duration_nsec = ((1LL << 32) * SECONDS(1))/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC;
-    epoch_duration_usec = epoch_duration_nsec/1000;
 }
 
-// Clock and sleep implementation for LO_RES clock. Handle wraps
-//  by checking if two consecutive reads are monotonic
+/**
+ * Detect wraps by storing the previous clock readout. When a clock readout is
+ * less than the previous we have had a wrap. This only works of `_lf_clock_now`
+ * is invoked at least once per epoch. 
+ */
 int _lf_clock_now(instant_t* t) {
     static uint32_t last_read_cycles=0;
     uint32_t now_cycles = k_cycle_get_32();
-
     if (now_cycles < last_read_cycles) {
         last_epoch_nsec += epoch_duration_nsec;
     }
-
     *t = (SECOND(1)/CONFIG_SYS_CLOCK_HW_CYCLES_PER_SEC)*now_cycles + last_epoch_nsec;
-
     last_read_cycles = now_cycles;
     return 0;
 }
 
+/**
+ * Interruptable sleep is implemented using busy-waiting.
+ */
 int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     async_event=false;    
-    lf_critical_section_exit(env);
 
+    lf_critical_section_exit(env);
     instant_t now;
     do {
     _lf_clock_now(&now);
     } while ( (now<wakeup) && !async_event);
-    
     lf_critical_section_enter(env);
 
     if (async_event) {
@@ -92,6 +90,10 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
     }
 }
 
+/**
+ * Asynchronous events are notified by setting a flag which breaks the sleeping
+ * thread out of the busy-wait.
+ */
 int _lf_unthreaded_notify_of_event() {
    async_event = true;
    return 0;
