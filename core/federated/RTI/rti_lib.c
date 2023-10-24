@@ -283,9 +283,8 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
 }
 
 void send_upstream_next_downstream_tag(federate_t* fed, tag_t next_event_tag) {
-    // TODO: Fill this function.
     // The RTI receives next_event_tag from the federated fed. 
-    // It has to send NDET messages to the upstream federates of fed
+    // It has to send NDT messages to the upstream federates of fed
     // if the LTC message from an upstream federate is ealrier than the next_event_tag.
     size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
     unsigned char buffer[message_length];
@@ -296,8 +295,21 @@ void send_upstream_next_downstream_tag(federate_t* fed, tag_t next_event_tag) {
     // FIXME: Send NDT to transitive upstreams either
     for (int i = 0; i < fed->enclave.num_upstream; i++) {
         int upstream_id = fed->enclave.upstream[i];
-        if (lf_tag_compare(_f_rti->enclaves[upstream_id]->enclave.completed, next_event_tag) < 0) {
-            // send next downstream tag to upstream federates that do not complete the next_event_tag
+        federate_t* upstream_federate = _f_rti->enclaves[upstream_id];
+        bool has_cycle = false;
+        for (int j = 0; j < upstream_federate->enclave.num_upstream; j++) {
+            if (upstream_federate->enclave.upstream[j] == fed->enclave.id) {
+                has_cycle = true;
+            }
+        }
+        if (has_cycle) {
+            // fed and upstream_fed consist a cycle. Do not use NDT.
+            continue;
+        }
+
+        if (lf_tag_compare(upstream_federate->enclave.completed, next_event_tag) < 0 &&
+        lf_tag_compare(upstream_federate->enclave.next_event, next_event_tag) <= 0) {
+            // send next downstream tag to upstream federates that do not complete at next_event_tag
             LF_PRINT_LOG("RTI sending the next downstream event message (NDT) " PRINTF_TAG "to federate %u.",
                 next_event_tag.time - start_time, next_event_tag.microstep, upstream_id);
             if (_f_rti->tracing_enabled) {
@@ -1796,9 +1808,6 @@ int process_args(int argc, const char* argv[]) {
         } else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0) {
             lf_print("%s", version_info);
             return 0;
-        } else if (strcmp(argv[i], "--ndt") == 0) {
-            lf_print("ndt is enabled");
-            _f_rti->ndt_enabled = true;
         } else if (strcmp(argv[i], " ") == 0) {
             // Tolerate spaces
             lf_print("space");
