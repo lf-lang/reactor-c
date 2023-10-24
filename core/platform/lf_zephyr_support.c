@@ -1,4 +1,4 @@
-#ifdef PLATFORM_ZEPHYR
+#if defined(PLATFORM_ZEPHYR)
 /*************
 Copyright (c) 2023, Norwegian University of Science and Technology.
 
@@ -47,7 +47,6 @@ static uint32_t num_nested_critical_sections=0;
 // Keep track of IRQ mask when entering critical section so we can enable again after
 static volatile unsigned irq_mask = 0;
 
-
 int lf_sleep(interval_t sleep_duration) {
     k_sleep(K_NSEC(sleep_duration));
     return 0;
@@ -56,7 +55,6 @@ int lf_sleep(interval_t sleep_duration) {
 int lf_nanosleep(interval_t sleep_duration) {
     return lf_sleep(sleep_duration);
 }
-
 
 int lf_disable_interrupts_nested() {
     if (num_nested_critical_sections++ == 0) {
@@ -76,14 +74,13 @@ int lf_enable_interrupts_nested() {
     return 0;
 }
 
-#ifdef LF_THREADED
-#warning "Threaded support on Zephyr is still experimental."
+#if defined(LF_THREADED)
 
-if !defined(LF_ZEPHYR_STACK_SIZE)
+#if !defined(LF_ZEPHYR_STACK_SIZE)
     #define LF_ZEPHYR_STACK_SIZE LF_ZEPHYR_STACK_SIZE_DEFAULT
 #endif
 
-if !defined(LF_ZEPHYR_THREAD_PRIORITY)
+#if !defined(LF_ZEPHYR_THREAD_PRIORITY)
     #define LF_ZEPHYR_THREAD_PRIORITY LF_ZEPHYR_THREAD_PRIORITY_DEFAULT
 #endif
 
