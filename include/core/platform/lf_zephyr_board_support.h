@@ -31,6 +31,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef LF_ZEPHYR_BOARD_SUPPORT_H
 #define LF_ZEPHYR_BOARD_SUPPORT_H
 
+// Default options
+#define LF_ZEPHYR_THREAD_PRIORITY_DEFAULT 5
+#define LF_ZEPHYR_STACK_SIZE_DEFAULT 1024
+
 // Unless the user explicitly asks for the kernel clock, then we use a counter
 //  clock because it is more precise.
 #if !defined(LF_ZEPHYR_CLOCK_KERNEL)

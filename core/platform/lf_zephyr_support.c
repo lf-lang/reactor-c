@@ -43,9 +43,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <zephyr/kernel.h>
 
 // Keep track of nested critical sections
-static uint32_t _lf_num_nested_critical_sections=0;
+static uint32_t num_nested_critical_sections=0;
 // Keep track of IRQ mask when entering critical section so we can enable again after
-static volatile unsigned _lf_irq_mask = 0;
+static volatile unsigned irq_mask = 0;
 
 
 int lf_sleep(interval_t sleep_duration) {
@@ -59,19 +59,19 @@ int lf_nanosleep(interval_t sleep_duration) {
 
 
 int lf_disable_interrupts_nested() {
-    if (_lf_num_nested_critical_sections++ == 0) {
-        _lf_irq_mask = irq_lock();
+    if (num_nested_critical_sections++ == 0) {
+        irq_mask = irq_lock();
     }
     return 0;
 }
 
 int lf_enable_interrupts_nested() {
-    if (_lf_num_nested_critical_sections <= 0) {
+    if (num_nested_critical_sections <= 0) {
         return 1;
     }
     
-    if (--_lf_num_nested_critical_sections == 0) {
-        irq_unlock(_lf_irq_mask);
+    if (--num_nested_critical_sections == 0) {
+        irq_unlock(irq_mask);
     }
     return 0;
 }
@@ -79,10 +79,13 @@ int lf_enable_interrupts_nested() {
 #ifdef LF_THREADED
 #warning "Threaded support on Zephyr is still experimental."
 
-// FIXME: What is an appropriate stack size?
-#define _LF_STACK_SIZE 1024
-// FIXME: What is an appropriate thread prio?
-#define _LF_THREAD_PRIORITY 5
+if !defined(LF_ZEPHYR_STACK_SIZE)
+    #define LF_ZEPHYR_STACK_SIZE LF_ZEPHYR_STACK_SIZE_DEFAULT
+#endif
+
+if !defined(LF_ZEPHYR_THREAD_PRIORITY)
+    #define LF_ZEPHYR_THREAD_PRIORITY LF_ZEPHYR_THREAD_PRIORITY_DEFAULT
+#endif
 
 // If NUMBER_OF_WORKERS is not specified, or set to 0, then we default to 1.
 #if !defined(NUMBER_OF_WORKERS) || NUMBER_OF_WORKERS==0
@@ -95,12 +98,11 @@ int lf_enable_interrupts_nested() {
 #define USER_THREADS 0
 #endif
 
-#define NUMBER_OF_THREADS (NUMBER_OF_WORKERS \
-                           + USER_THREADS)
+#define NUMBER_OF_THREADS (NUMBER_OF_WORKERS + USER_THREADS)
 
 K_MUTEX_DEFINE(thread_mutex);
 
-static K_THREAD_STACK_ARRAY_DEFINE(stacks, NUMBER_OF_THREADS, _LF_STACK_SIZE);
+static K_THREAD_STACK_ARRAY_DEFINE(stacks, NUMBER_OF_THREADS, LF_ZEPHYR_STACK_SIZE);
 static struct k_thread threads[NUMBER_OF_THREADS];
 
 // Typedef that represents the function pointers passed by LF runtime into lf_thread_create
@@ -112,9 +114,12 @@ static void zephyr_worker_entry(void * func, void * args, void * unused2) {
     _func(args);
 }
 
-// FIXME: Use zephr API
 int lf_available_cores() {
-    return 1;
+    #if defined(CONFIG_MP_NUM_CPUS)
+        return CONFIG_MP_NUM_CPUS;
+    #else
+        return 1;
+    #endif
 }
 
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments) {
@@ -129,9 +134,9 @@ int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arg
     }
 
     k_tid_t my_tid = k_thread_create(&threads[tid], &stacks[tid][0],
-                                    _LF_STACK_SIZE, zephyr_worker_entry,
+                                    LF_ZEPHYR_STACK_SIZE, zephyr_worker_entry,
                                  (void *) lf_thread, arguments, NULL,
-                                 _LF_THREAD_PRIORITY, 0, K_NO_WAIT);
+                                 LF_ZEPHYR_THREAD_PRIORITY, 0, K_NO_WAIT);
 
 
     // Pass the pointer to the k_thread struct out. This is needed
