@@ -25,7 +25,9 @@ var searchData=
   ['lf_5fwindows_5fsupport_2ec_22',['lf_windows_support.c',['../de/d59/lf__windows__support_8c.html',1,'']]],
   ['lf_5fwindows_5fsupport_2eh_23',['lf_windows_support.h',['../df/da9/lf__windows__support_8h.html',1,'']]],
   ['lf_5fzephyr_5fboard_5fsupport_2eh_24',['lf_zephyr_board_support.h',['../d2/df0/lf__zephyr__board__support_8h.html',1,'']]],
-  ['lf_5fzephyr_5fsupport_2ec_25',['lf_zephyr_support.c',['../df/d70/lf__zephyr__support_8c.html',1,'']]],
-  ['lf_5fzephyr_5fsupport_2eh_26',['lf_zephyr_support.h',['../d4/d3d/lf__zephyr__support_8h.html',1,'']]],
-  ['license_2emd_27',['LICENSE.md',['../dd/d79/_l_i_c_e_n_s_e_8md.html',1,'']]]
+  ['lf_5fzephyr_5fclock_5fcounter_2ec_25',['lf_zephyr_clock_counter.c',['../d9/daf/lf__zephyr__clock__counter_8c.html',1,'']]],
+  ['lf_5fzephyr_5fclock_5fkernel_2ec_26',['lf_zephyr_clock_kernel.c',['../df/d0e/lf__zephyr__clock__kernel_8c.html',1,'']]],
+  ['lf_5fzephyr_5fsupport_2ec_27',['lf_zephyr_support.c',['../df/d70/lf__zephyr__support_8c.html',1,'']]],
+  ['lf_5fzephyr_5fsupport_2eh_28',['lf_zephyr_support.h',['../d4/d3d/lf__zephyr__support_8h.html',1,'']]],
+  ['license_2emd_29',['LICENSE.md',['../dd/d79/_l_i_c_e_n_s_e_8md.html',1,'']]]
 ];

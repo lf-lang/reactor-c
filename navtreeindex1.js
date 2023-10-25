@@ -51,8 +51,9 @@ var NAVTREEINDEX1 =
 "d2/de9/md_include_2core_2utils_2hashset_2_r_e_a_d_m_e.html":[3],
 "d2/de9/md_include_2core_2utils_2hashset_2_r_e_a_d_m_e.html#autotoc_md28":[3,0],
 "d2/df0/lf__zephyr__board__support_8h.html":[12,0,1,1,2,11],
-"d2/df0/lf__zephyr__board__support_8h.html#adff1de9b25d3029a09b97db8e557c7d9":[12,0,1,1,2,11,0],
-"d2/df0/lf__zephyr__board__support_8h.html#aed0e3b388fbf6327a9d375a01068e66c":[12,0,1,1,2,11,1],
+"d2/df0/lf__zephyr__board__support_8h.html#a09c4582094588d8d87e55391d687a7b7":[12,0,1,1,2,11,0],
+"d2/df0/lf__zephyr__board__support_8h.html#a0fe71f81d1f20cd806c88ed7a6ecf708":[12,0,1,1,2,11,1],
+"d2/df0/lf__zephyr__board__support_8h.html#a3e4bd150e3fdb6102e09a8909fe4b1b0":[12,0,1,1,2,11,2],
 "d2/df0/lf__zephyr__board__support_8h_source.html":[12,0,1,1,2,11],
 "d2/df5/scheduler__sync__tag__advance_8c.html":[12,0,0,3,5],
 "d2/dff/lf__token_8h.html":[12,0,1,1,6],
@@ -248,6 +249,5 @@ var NAVTREEINDEX1 =
 "d4/dac/lf__unix__clock__support_8h.html#a3c5a1dbd80de5d5bf2a93c195df784c3":[12,0,1,1,2,9,0],
 "d4/dac/lf__unix__clock__support_8h.html#ab5a60065ba9bd0644386acf7f8c5e1d2":[12,0,1,1,2,9,2],
 "d4/dac/lf__unix__clock__support_8h.html#af509cb4725e09a3e9af8d84bc98e4331":[12,0,1,1,2,9,1],
-"d4/dac/lf__unix__clock__support_8h_source.html":[12,0,1,1,2,9],
-"d4/db3/tag_8c.html":[12,0,0,11]
+"d4/dac/lf__unix__clock__support_8h_source.html":[12,0,1,1,2,9]
 };

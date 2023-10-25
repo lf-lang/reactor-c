@@ -1,5 +1,6 @@
 var lf__zephyr__board__support_8h =
 [
-    [ "FREQ_16MHZ", "d2/df0/lf__zephyr__board__support_8h.html#adff1de9b25d3029a09b97db8e557c7d9", null ],
-    [ "LF_ZEPHYR_CLOCK_LO_RES", "d2/df0/lf__zephyr__board__support_8h.html#aed0e3b388fbf6327a9d375a01068e66c", null ]
+    [ "LF_ZEPHYR_CLOCK_KERNEL", "d2/df0/lf__zephyr__board__support_8h.html#a09c4582094588d8d87e55391d687a7b7", null ],
+    [ "LF_ZEPHYR_STACK_SIZE_DEFAULT", "d2/df0/lf__zephyr__board__support_8h.html#a0fe71f81d1f20cd806c88ed7a6ecf708", null ],
+    [ "LF_ZEPHYR_THREAD_PRIORITY_DEFAULT", "d2/df0/lf__zephyr__board__support_8h.html#a3e4bd150e3fdb6102e09a8909fe4b1b0", null ]
 ];

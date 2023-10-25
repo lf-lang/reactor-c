@@ -12,5 +12,7 @@ var dir_e013a6b3093d526b264ef8c8204162a6 =
     [ "lf_unix_clock_support.c", "dc/d11/lf__unix__clock__support_8c.html", null ],
     [ "lf_unix_syscall_support.c", "df/df4/lf__unix__syscall__support_8c.html", null ],
     [ "lf_windows_support.c", "de/d59/lf__windows__support_8c.html", null ],
+    [ "lf_zephyr_clock_counter.c", "d9/daf/lf__zephyr__clock__counter_8c.html", null ],
+    [ "lf_zephyr_clock_kernel.c", "df/d0e/lf__zephyr__clock__kernel_8c.html", null ],
     [ "lf_zephyr_support.c", "df/d70/lf__zephyr__support_8c.html", null ]
 ];

@@ -1,10 +1,13 @@
 var NAVTREEINDEX8 =
 {
+"de/df1/util_8c.html#adc75c3cdf772ba08e6e36f99fece3ab8":[12,0,0,4,4,3],
+"de/df1/util_8c.html#adf0f2afd766e2f2b77c36c890fd56192":[12,0,0,4,4,16],
 "de/df1/util_8c.html#af58c457e08491f7cfd5a0a46940e11ad":[12,0,0,4,4,0],
 "de/df1/util_8c.html#afd476ae0b7bb832afaaf8de746327e57":[12,0,0,4,4,10],
 "de/df1/util_8c.html#aff394c701fbffdf32f7329c14157a419":[12,0,0,4,4,7],
+"df/d0e/lf__zephyr__clock__kernel_8c.html":[12,0,0,2,13],
 "df/d3f/semaphore_8c.html":[12,0,0,4,3],
-"df/d70/lf__zephyr__support_8c.html":[12,0,0,2,12],
+"df/d70/lf__zephyr__support_8c.html":[12,0,0,2,14],
 "df/da2/structreaction__stats__t.html":[11,0,44],
 "df/da2/structreaction__stats__t.html#a65587e662841924eae079ffb6bfe8e6e":[11,0,44,3],
 "df/da2/structreaction__stats__t.html#aa6e0a2a9383805df64835de80fec5f11":[11,0,44,1],
