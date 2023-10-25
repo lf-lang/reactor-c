@@ -18,6 +18,7 @@ add_library(core ${GENERAL_SOURCES})
 # Add sources for either threaded or unthreaded runtime
 if (DEFINED FEDERATED)
     include(federated/CMakeLists.txt)
+    include(federated/network/CMakeLists.txt)
 endif()
 
 # Add sources for either threaded or unthreaded runtime
@@ -38,6 +39,7 @@ endif()
 include(utils/CMakeLists.txt)
 include(modal_models/CMakeLists.txt)
 include(platform/CMakeLists.txt)
+
 
 # Print sources used for compilation
 list(JOIN INFO_SOURCES ", " PRINTABLE_SOURCE_LIST)
