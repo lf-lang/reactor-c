@@ -497,6 +497,11 @@ void tracepoint_static_scheduler_JAL_starts(trace_t* trace, int worker, int pc) 
     tracepoint(trace, static_scheduler_JAL_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
 }
 
+/** Trace the start of the JALR instruction */
+void tracepoint_static_scheduler_JALR_starts(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_JALR_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
 /** Trace the start of the SAC instruction */
 void tracepoint_static_scheduler_SAC_starts(trace_t* trace, int worker, int pc) {
     tracepoint(trace, static_scheduler_SAC_starts, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
@@ -550,6 +555,11 @@ void tracepoint_static_scheduler_EXE_ends(trace_t* trace, int worker, int pc) {
 /** Trace the end of the JAL instruction */
 void tracepoint_static_scheduler_JAL_ends(trace_t* trace, int worker, int pc) {
     tracepoint(trace, static_scheduler_JAL_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
+}
+
+/** Trace the end of the JALR instruction */
+void tracepoint_static_scheduler_JALR_ends(trace_t* trace, int worker, int pc) {
+    tracepoint(trace, static_scheduler_JALR_ends, NULL, NULL, worker, worker, pc, NULL, NULL, 0, false);
 }
 
 /** Trace the end of the SAC instruction */

@@ -382,13 +382,13 @@ void execute_inst_WU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
  */
 void execute_inst_JAL(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    // tracepoint_static_scheduler_JAL_starts(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_JAL_starts(scheduler->env->trace, worker_number, (int) *pc);
     // Use the destination register as the return address and, if the
     // destination register is not the zero register, store pc+1 in it.
     reg_t *destReg = op1.reg;
     if (destReg != &zero) *destReg = *pc + 1;
     *pc = op2.imm;
-    // tracepoint_static_scheduler_JAL_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_JAL_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -396,7 +396,7 @@ void execute_inst_JAL(lf_scheduler_t* scheduler, size_t worker_number, operand_t
  */
 void execute_inst_JALR(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    // tracepoint_static_scheduler_JALR_starts(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_JALR_starts(scheduler->env->trace, worker_number, (int) *pc);
     // Use the destination register as the return address and, if the
     // destination register is not the zero register, store pc+1 in it.
     reg_t *destReg = op1.reg;
@@ -404,7 +404,7 @@ void execute_inst_JALR(lf_scheduler_t* scheduler, size_t worker_number, operand_
     // Set pc to base addr + immediate.
     reg_t *baseAddr = op2.reg;
     *pc = *baseAddr + op3.imm;
-    // tracepoint_static_scheduler_JALR_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_JALR_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
