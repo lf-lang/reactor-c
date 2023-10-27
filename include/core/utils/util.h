@@ -35,6 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdarg.h>   // Defines va_list
 #include <stdbool.h>
+#include <stdlib.h>
 
 // To silence warnings about a function being a candidate for format checking
 // with gcc, add an attribute.
