@@ -153,8 +153,12 @@ void create_server(int specified_port) {
     }
     uint16_t port = (uint16_t)specified_port;
     if (specified_port == 0) {
-        // Use the default starting port.
-        port = STARTING_PORT;
+        char* env_port = getenv("LF_FED_PORT");
+        if (env_port != NULL) {
+            port = (uint16_t)atoi(env_port);
+        } else {
+            port = STARTING_PORT;
+        }
     }
     LF_PRINT_DEBUG("Creating a socket server on port %d.", port);
     // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
@@ -174,20 +178,7 @@ void create_server(int specified_port) {
             socket_descriptor,
             (struct sockaddr *) &server_fd,
             sizeof(server_fd));
-    // If the binding fails with this port and no particular port was specified
-    // in the LF program, then try the next few ports in sequence.
-    while (result != 0
-            && specified_port == 0
-            && port >= STARTING_PORT
-            && port <= STARTING_PORT + PORT_RANGE_LIMIT) {
-        LF_PRINT_DEBUG("Failed to get port %d. Trying %d.", port, port + 1);
-        port++;
-        server_fd.sin_port = htons(port);
-        result = bind(
-                socket_descriptor,
-                (struct sockaddr *) &server_fd,
-                sizeof(server_fd));
-    }
+
     if (result != 0) {
         if (specified_port == 0) {
             lf_print_error_and_exit("Failed to bind socket. Cannot find a usable port. \

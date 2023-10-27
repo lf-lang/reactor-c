@@ -29,6 +29,7 @@
 #include "rti_remote.h"
 #include "net_util.h"
 #include <string.h>
+#include <stdlib.h>
 
 
 // Global variables defined in tag.c:
@@ -127,20 +128,6 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
             (struct sockaddr *) &server_fd,
             sizeof(server_fd));
 
-    // If the binding fails with this port and no particular port was specified
-    // in the LF program, then try the next few ports in sequence.
-    while (result != 0
-            && specified_port == 0
-            && port >= STARTING_PORT
-            && port <= STARTING_PORT + PORT_RANGE_LIMIT) {
-        lf_print("RTI failed to get port %d. Trying %d.", port, port + 1);
-        port++;
-        server_fd.sin_port = htons(port);
-        result = bind(
-                socket_descriptor,
-                (struct sockaddr *) &server_fd,
-                sizeof(server_fd));
-    }
     if (result != 0) {
         if (specified_port == 0) {
             lf_print_error_and_exit("Failed to bind the RTI socket. Cannot find a usable port. "
@@ -1554,9 +1541,13 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
 
 int32_t start_rti_server(uint16_t port) {
     int32_t specified_port = port;
-    if (port == 0) {
-        // Use the default starting port.
-        port = STARTING_PORT;
+    if (specified_port == 0) {
+        char* env_port = getenv("LF_FED_PORT");
+        if (env_port != NULL) {
+            port = (uint16_t)atoi(env_port);
+        } else {
+            port = STARTING_PORT;
+        }
     }
     _lf_initialize_clock();
     // Create the TCP socket server
