@@ -10,6 +10,8 @@
 #if defined STANDALONE_RTI || defined LF_ENCLAVES
 #include "rti_common.h"
 
+extern lf_mutex_t rti_mutex;
+
 /**
  * Local reference to rti_common_t instance.
  */
@@ -52,7 +54,7 @@ void initialize_scheduling_node(scheduling_node_t* e, uint16_t id) {
 void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
     // FIXME: Consolidate this message with NET to get NMR (Next Message Request).
     // Careful with handling startup and shutdown.
-    lf_mutex_lock(rti_common->mutex);
+    lf_mutex_lock(&rti_mutex);
 
     enclave->completed = completed;
 
@@ -70,7 +72,7 @@ void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
         free(visited);
     }
 
-    lf_mutex_unlock(rti_common->mutex);
+    lf_mutex_unlock(&rti_mutex);
 }
 
 tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
