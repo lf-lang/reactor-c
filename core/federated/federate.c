@@ -184,10 +184,10 @@ void create_server(int specified_port) {
 
     // If the binding fails with this port and no particular port was specified
     // in the LF program, then try the next few ports in sequence.
+    int original_port = port;
     while (result != 0
             && specified_port == 0
-            && port >= STARTING_PORT
-            && port <= STARTING_PORT + PORT_RANGE_LIMIT) {
+            && port <= original_port + PORT_RANGE_LIMIT) {
         LF_PRINT_DEBUG("Failed to get port %d. Trying %d.", port, port + 1);
         port++;
         server_fd.sin_port = htons(port);
