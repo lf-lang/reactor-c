@@ -156,8 +156,9 @@ void create_server(int specified_port) {
     if (specified_port == 0) {
         char* env_port = getenv("LF_FED_PORT");
         if (env_port != NULL) {
-            lf_print_debug("Using port %s specified by LF_FED_PORT environment variable.", env_port);
-            port = (uint16_t)atoi(env_port);
+            lf_print_debug("Using 1 + the port %s specified by LF_FED_PORT environment variable.", env_port);
+            // the +1 is to avoid the port that is being used to connect to the RTI
+            port = (uint16_t)atoi(env_port) + 1;
         } else {
             port = STARTING_PORT;
         }
@@ -180,6 +181,21 @@ void create_server(int specified_port) {
             socket_descriptor,
             (struct sockaddr *) &server_fd,
             sizeof(server_fd));
+
+    // If the binding fails with this port and no particular port was specified
+    // in the LF program, then try the next few ports in sequence.
+    while (result != 0
+            && specified_port == 0
+            && port >= STARTING_PORT
+            && port <= STARTING_PORT + PORT_RANGE_LIMIT) {
+        LF_PRINT_DEBUG("Failed to get port %d. Trying %d.", port, port + 1);
+        port++;
+        server_fd.sin_port = htons(port);
+        result = bind(
+                socket_descriptor,
+                (struct sockaddr *) &server_fd,
+                sizeof(server_fd));
+    }
 
     if (result != 0) {
         if (specified_port == 0) {

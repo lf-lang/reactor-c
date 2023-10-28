@@ -58,7 +58,7 @@ void _lf_initialize_clock() {
         lf_print_error_and_exit("Could not obtain resolution for _LF_CLOCK");
     }
 
-    lf_print("---- System clock resolution: %ld nsec", res.tv_nsec);
+    lf_print("---- System clock resolution: %lld nsec", (long long) res.tv_nsec);
 }
 
 /**
