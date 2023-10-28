@@ -152,9 +152,11 @@ void create_server(int specified_port) {
         specified_port = 0;
     }
     uint16_t port = (uint16_t)specified_port;
+    lf_print_debug("Specified port is %d.", port);
     if (specified_port == 0) {
         char* env_port = getenv("LF_FED_PORT");
         if (env_port != NULL) {
+            lf_print_debug("Using port %s specified by LF_FED_PORT environment variable.", env_port);
             port = (uint16_t)atoi(env_port);
         } else {
             port = STARTING_PORT;

@@ -1544,8 +1544,10 @@ int32_t start_rti_server(uint16_t port) {
     if (specified_port == 0) {
         char* env_port = getenv("LF_FED_PORT");
         if (env_port != NULL) {
-            port = (uint16_t)atoi(env_port);
+            lf_print_debug("RTI: No port specified. Using port set by environment variable: %s.", env_port);
+            port = (uint16_t) atoi(env_port);
         } else {
+            lf_print_debug("RTI: No port specified. Using default port %d.", STARTING_PORT);
             port = STARTING_PORT;
         }
     }
