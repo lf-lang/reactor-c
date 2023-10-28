@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
 #include "lf_types.h"
-#if SCHEDULER == NP || (!defined(SCHEDULER) && defined(LF_THREADED))
+#if SCHEDULER == SCHED_NP || (!defined(SCHEDULER) && defined(LF_THREADED))
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS

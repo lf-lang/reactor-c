@@ -36,7 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
 #include "lf_types.h"
-#if SCHEDULER == GEDF_NP
+#if SCHEDULER == SCHED_GEDF_NP
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
@@ -87,15 +87,17 @@ int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
     // Note: All the threads are idle, which means that they are done inserting
     // reactions. Therefore, the reaction queues can be accessed without locking
     // a mutex.
-    for (; scheduler->next_reaction_level <=
-           scheduler->max_reaction_level;
-         try_advance_level(scheduler->env, &scheduler->next_reaction_level)) {
+
+    while (scheduler->next_reaction_level <= scheduler->max_reaction_level) {
+        LF_PRINT_DEBUG("Waiting with curr_reaction_level %zu.", scheduler->next_reaction_level);
+        try_advance_level(scheduler->env, &scheduler->next_reaction_level);
+
         tmp_queue = ((pqueue_t**)scheduler->triggered_reactions)
-                        [scheduler->next_reaction_level];
+                        [scheduler->next_reaction_level-1];
         size_t reactions_to_execute = pqueue_size(tmp_queue);
+
         if (reactions_to_execute) {
             scheduler->executing_reactions = tmp_queue;
-            scheduler->next_reaction_level++;
             return reactions_to_execute;
         }
     }
@@ -147,13 +149,13 @@ void _lf_sched_signal_stop(lf_scheduler_t* scheduler) {
  */
 void _lf_scheduler_try_advance_tag_and_distribute(lf_scheduler_t* scheduler) {
     environment_t* env = scheduler->env;
+
     // Executing queue must be empty when this is called.
     assert(pqueue_size((pqueue_t*)scheduler->executing_reactions) == 0);
 
     // Loop until it's time to stop or work has been distributed
     while (true) {
-        if (scheduler->next_reaction_level ==
-            (scheduler->max_reaction_level + 1)) {
+        if (scheduler->next_reaction_level == (scheduler->max_reaction_level + 1)) {
             scheduler->next_reaction_level = 0;
             lf_mutex_lock(&env->mutex);
             // Nothing more happening at this tag.

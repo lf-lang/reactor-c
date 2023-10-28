@@ -199,10 +199,6 @@ void print_table() {
     printf("-------\n");
 }
 
-/**
- * Read header information.
- * @return The number of objects in the object table or -1 for failure.
- */
 size_t read_header() {
     // Read the start time.
     int items_read = fread(&start_time, sizeof(instant_t), 1, trace_file);
@@ -266,11 +262,6 @@ size_t read_header() {
     return object_table_size;
 }
 
-/**
- * Read the trace from the specified file and put it in the trace global
- * variable. Return the length of the trace.
- * @return The number of trace record read or 0 upon seeing an EOF.
- */
 int read_trace() {
     // Read first the int giving the length of the trace.
     int trace_length;

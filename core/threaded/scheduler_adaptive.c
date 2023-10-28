@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Peter Donovan <peterdonovan@berkeley.edu>}
  */
 #include "lf_types.h"
-#if defined SCHEDULER && SCHEDULER == ADAPTIVE
+#if defined SCHEDULER && SCHEDULER == SCHED_ADAPTIVE
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
@@ -766,4 +766,4 @@ void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reacti
     if (!lf_bool_compare_and_swap(&reaction->status, inactive, queued)) return;
     worker_assignments_put(scheduler, reaction);
 }
-#endif // defined SCHEDULER && SCHEDULER == ADAPTIVE
+#endif // defined SCHEDULER && SCHEDULER == SCHED_ADAPTIVE
