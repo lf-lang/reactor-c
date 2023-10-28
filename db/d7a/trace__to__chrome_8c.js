@@ -6,7 +6,7 @@ var trace__to__chrome_8c =
     [ "PID_FOR_WORKER_ADVANCING_TIME", "db/d7a/trace__to__chrome_8c.html#ab04adf9d48bee166b0822ef94ac2624f", null ],
     [ "PID_FOR_WORKER_WAIT", "db/d7a/trace__to__chrome_8c.html#aa13cffb52be447e12e4723e5c96b53da", null ],
     [ "main", "db/d7a/trace__to__chrome_8c.html#a0ddf1224851353fc92bfbff6f499fa97", null ],
-    [ "read_and_write_trace", "db/d7a/trace__to__chrome_8c.html#aa0ca17a042cf8ae0ffd244c1588c11cc", null ],
+    [ "read_and_write_trace", "db/d7a/trace__to__chrome_8c.html#a3279b5c9bdcf548ef488645ea01fc370", null ],
     [ "usage", "db/d7a/trace__to__chrome_8c.html#a2ef30c42cbc289d899a8be5d2d8f77d0", null ],
     [ "write_metadata_events", "db/d7a/trace__to__chrome_8c.html#a72292d77e02deea25d7f0d524452baf7", null ],
     [ "max_reaction_number", "db/d7a/trace__to__chrome_8c.html#acaa937c2b43c08004a748629ed1a1ca2", null ],
