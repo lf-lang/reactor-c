@@ -47,6 +47,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "reactor_common.h"
 #include "util.h"
 
+#ifndef RTI_TRACE
+int _lf_get_environments(environment_t **envs);
+#endif // RTI_TRACE
+
 /** Macro to use when access to trace file fails. */
 #define _LF_TRACE_FAILURE(trace) \
     do { \
@@ -256,7 +260,14 @@ void start_trace(trace_t* trace) {
     // Allocate an array of arrays of trace records, one per worker thread plus one
     // for the 0 thread (the main thread, or in an single-threaded program, the only
     // thread).
-    trace->_lf_number_of_trace_buffers = _lf_number_of_workers + 1;
+
+#ifndef RTI_TRACE
+    environment_t *envs;
+    int num_envs = _lf_get_environments(&envs);
+#else
+    int num_envs = 1;
+#endif // RTI_TRACE
+    trace->_lf_number_of_trace_buffers = num_envs * _lf_number_of_workers + 1;
     trace->_lf_trace_buffer = (trace_record_t**)malloc(sizeof(trace_record_t*) * trace->_lf_number_of_trace_buffers);
     for (int i = 0; i < trace->_lf_number_of_trace_buffers; i++) {
         trace->_lf_trace_buffer[i] = (trace_record_t*)malloc(sizeof(trace_record_t) * TRACE_BUFFER_CAPACITY);
