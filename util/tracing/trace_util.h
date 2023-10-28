@@ -127,7 +127,7 @@ void print_table();
 size_t read_header();
 
 /**
- * Read the trace from the specified file and put it in the trace global
+ * Read the trace from the trace_file and put it in the trace global
  * variable. Return the length of the trace.
  * @return The number of trace record read or 0 upon seeing an EOF.
  */
