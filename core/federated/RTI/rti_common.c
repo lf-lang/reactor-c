@@ -115,6 +115,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     // To handle cycles, need to create a boolean array to keep
     // track of which upstream enclave have been visited.
     bool *visited = (bool *)calloc(rti_common->number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
+    visited[e->id] = true;
 
     // Find the tag of the earliest possible incoming message from
     // upstream enclaves.

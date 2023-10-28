@@ -261,6 +261,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
             // To handle cycles, need to create a boolean array to keep
             // track of which upstream federates have been visited.
             bool* visited = (bool*)calloc(rti_remote->base.number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
+            visited[upstream->enclave.id] = true;
 
             // Find the (transitive) next event tag upstream.
             tag_t upstream_next_event = transitive_next_event(
