@@ -36,6 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdarg.h>   // Defines va_list
 #include <stdbool.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 // To silence warnings about a function being a candidate for format checking
 // with gcc, add an attribute.
@@ -266,7 +267,6 @@ int lf_sleep(interval_t sleep_duration);
         } \
     } \
     if (*delay_vector_evar) { \
-        printf("DEBUG DEBUG: DELAYING BY %lld\n", (long long) (delay_vector_index < delay_vector_len ? delay_vector[delay_vector_index] : 0)); \
         lf_sleep(delay_vector_index < delay_vector_len ? delay_vector[delay_vector_index++] : 0); \
     } \
 } } while (0)

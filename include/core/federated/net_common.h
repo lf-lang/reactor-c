@@ -225,10 +225,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Bound on the number of retries to connect to the RTI.
  * A federate will retry every CONNECT_RETRY_INTERVAL seconds
- * this many times before giving up. E.g., 500 retries every
- * 2 seconds results in retrying for about 16 minutes.
+ * this many times before giving up. E.g., 15 retries every
+ * 2 seconds results in retrying for about 30 seconds.
  */
-#define CONNECT_NUM_RETRIES 500
+#define CONNECT_NUM_RETRIES 30
 
 /**
  * Number of nanoseconds that a federate waits before asking

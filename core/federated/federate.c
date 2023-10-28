@@ -995,9 +995,17 @@ void connect_to_rti(const char* hostname, int port) {
     // If the specified port is 0, set it instead to the start of the
     // port range.
     bool specific_port_given = true;
+    LF_PRINT_DEBUG("Initial specified port is %d.", uport);
     if (uport == 0) {
-        uport = STARTING_PORT;
-        specific_port_given = false;
+        char* env_port = getenv("LF_FED_PORT");
+        if (env_port != NULL) {
+            LF_PRINT_DEBUG("Using port %s specified by LF_FED_PORT environment variable.", env_port);
+            uport = (uint16_t)atoi(env_port);
+        } else {
+            LF_PRINT_DEBUG("Defaulting to port %d for RTI connection.", STARTING_PORT);
+            uport = STARTING_PORT;
+            specific_port_given = false;
+        }
     }
     int result = -1;
     int count_retries = 0;
