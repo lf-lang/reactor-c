@@ -99,6 +99,7 @@ void usage(int argc, const char* argv[]) {
     lf_print("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n");
     lf_print("  -a, --auth Turn on HMAC authentication options.\n");
     lf_print("  -t, --tracing Turn on tracing.\n");
+    lf_print("  -v, --version Print the version.");
 
     lf_print("Command given:");
     for (int i = 0; i < argc; i++) {
@@ -232,6 +233,9 @@ int process_args(int argc, const char* argv[]) {
             rti.authentication_enabled = true;
         } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tracing") == 0) {
             rti.base.tracing_enabled = true;
+        } else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0) {
+            lf_print("RTI version: %s", LF_RTI_VERSION);
+            exit(0);
         } else if (strcmp(argv[i], " ") == 0) {
             // Tolerate spaces
             continue;

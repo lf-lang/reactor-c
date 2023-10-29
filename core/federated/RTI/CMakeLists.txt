@@ -25,7 +25,7 @@
 
 # To enable simple HMAC-based authentication of federates,
 # add `-DAUTH=ON` option to the cmake command as shown below:
-# 
+#
 # $> mkdir build && cd build
 # $> cmake -DAUTH=ON ../
 # $> make
@@ -56,27 +56,26 @@ include_directories(${IncludeDir}/modal_models)
 include_directories(${IncludeDir}/platform)
 include_directories(${IncludeDir}/utils)
 
-
 # Declare a new executable target and list all its sources
 add_executable(
-    RTI
-    main.c
-    rti_common.c
-    rti_remote.c
-    ${CoreLib}/trace.c
-    ${LF_PLATFORM_FILE}
-    ${CoreLib}/platform/lf_unix_clock_support.c
-    ${CoreLib}/utils/util.c
-    ${CoreLib}/tag.c
-    ${CoreLib}/federated/net_util.c
-    ${CoreLib}/utils/pqueue.c
-    message_record/message_record.c
+  RTI
+  main.c
+  rti_common.c
+  rti_remote.c
+  ${CoreLib}/trace.c
+  ${LF_PLATFORM_FILE}
+  ${CoreLib}/platform/lf_unix_clock_support.c
+  ${CoreLib}/utils/util.c
+  ${CoreLib}/tag.c
+  ${CoreLib}/federated/net_util.c
+  ${CoreLib}/utils/pqueue.c
+  message_record/message_record.c
 )
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
-    # Set the LOG_LEVEL to 4 to get DEBUG messages
-    message("-- Building RTI with DEBUG messages enabled")
-    target_compile_definitions(RTI PUBLIC LOG_LEVEL=4)
+  # Set the LOG_LEVEL to 4 to get DEBUG messages
+  message("-- Building RTI with DEBUG messages enabled")
+  target_compile_definitions(RTI PUBLIC LOG_LEVEL=4)
 ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 
 # Set the STANDALONE_RTI flag to include the rti_remote and rti_common.
@@ -96,14 +95,25 @@ target_link_libraries(RTI Threads::Threads)
 
 # Option for enabling federate authentication by RTI.
 option(AUTH "Federate authentication by RTI enabled." OFF)
+
 IF(AUTH MATCHES ON)
   add_compile_definitions(__RTI_AUTH__)
+
   # Find OpenSSL and link to it
   find_package(OpenSSL REQUIRED)
   target_link_libraries(RTI OpenSSL::SSL)
 ENDIF(AUTH MATCHES ON)
 
+find_package(Git)
+execute_process(COMMAND
+  "${GIT_EXECUTABLE}" describe --match=NeVeRmAtCh --always --abbrev=40 --dirty
+  WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+  OUTPUT_VARIABLE GIT_SHA1
+  ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+target_compile_definitions(RTI PUBLIC LF_RTI_VERSION="${GIT_SHA1}")
+
 install(
-    TARGETS RTI
-    DESTINATION bin
+  TARGETS RTI
+  DESTINATION bin
 )
