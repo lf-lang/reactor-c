@@ -28,13 +28,13 @@ typedef struct {
 } rti_local_t;
 
 /**
- * @brief Dynamically create and initialize the local RTI
+ * @brief Dynamically create and initialize the local RTI.
  * 
  */
 void initialize_local_rti(environment_t* envs, int num_envs);
 
 /**
- * @brief Initialize the enclave object
+ * @brief Initialize the enclave object.
  * 
  * @param enclave 
  */
@@ -47,8 +47,8 @@ void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t *en
  * 2) It is a request for permission to advance the logical tag of the enclave
  * until the NET.
  * 
- * This function call will block until the enclave has been granted a TAG.
- * Which might not be the tag requested.
+ * This function call will block until the enclave has been granted a TAG,
+ * which might not be the tag requested.
  * 
  * @param enclave The enclave requesting to advance to the NET.
  * @param next_event_tag The tag of the next event in the enclave
@@ -68,10 +68,10 @@ tag_t rti_next_event_tag_locked(enclave_info_t* enclave, tag_t next_event_tag);
 void rti_logical_tag_complete_locked(enclave_info_t* enclave, tag_t completed);
 
 /**
- * @brief This functions is called after scheduling an event onto the event queue
+ * @brief This function is called after scheduling an event onto the event queue
  * of another enclave. The source enclave must call this function to potentially update
  * the NET of the target enclave. 
- * This function is called while holding the environment mutex of the target enclave
+ * This function is called while holding the environment mutex of the target enclave.
  * 
  * @param target The enclave of which we want to update the NET of
  * @param net The proposed next event tag
