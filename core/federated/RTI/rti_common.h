@@ -163,15 +163,13 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag);
 void notify_advance_grant_if_safe(scheduling_node_t* e);
 
 /**
- * Nontify a provisional tag advance grant (PTAG) message to the specified enclave.
+ * Notify a provisional tag advance grant (PTAG) message to the specified enclave.
  * Do not notify it if a previously sent PTAG or TAG was greater or equal.
  *
  * This function will keep a record of this PTAG in the federate's last_provisionally_granted
  * field.
  *
  * This function assumes that the caller holds the mutex lock.
- *
- * FIXME: This needs two implementations, one for enclaves and one for federates.
  *
  * @param e The enclave.
  * @param tag The tag to grant.
@@ -224,29 +222,37 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e);
 void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t next_event_tag);
 
 /**
- * Find the earliest tag at which the specified federate may
- * experience its next event. This is the least next event tag (NET)
- * of the specified federate and (transitively) upstream federates
- * (with delays of the connections added). For upstream federates,
- * we assume (conservatively) that federate upstream of those
- * may also send an event. The result will never be less than
- * the completion time of the federate (which may be NEVER,
- * if the federate has not yet completed a logical time).
- *
- * FIXME: This could be made less conservative by building
- * at code generation time a causality interface table indicating
- * which outputs can be triggered by which inputs. For now, we
- * assume any output can be triggered by any input.
- *
- * @param e The enclave.
- * @param candidate A candidate tag (for the first invocation,
- *  this should be fed->next_event).
- * @param visited An array of booleans indicating which federates
- *  have been visited (for the first invocation, this should be
- *  an array of falses of size _RTI.number_of_federates).
- * @return The earliest next event tag of the enclave e.
+ * Given a node (enclave or federate), find the tag of the earliest possible incoming
+ * message from upstream enclaves or federates, which will be the smallest upstream NET
+ * plus the least delay. This could be NEVER_TAG if the RTI has not seen a NET from some
+ * upstream node.
+ * @param e The target node.
+ * @return The earliest possible incoming message tag.
  */
-tag_t transitive_next_event(scheduling_node_t *e, tag_t candidate, bool visited[]);
+tag_t earliest_future_incoming_message_tag(scheduling_node_t* e);
+
+/**
+ * Given a node (enclave or federate), find the shortest path (least total delay)
+ * from each upstream node to the node given by `end`.  The result is written into
+ * the `path_delay` array, with one value for each node (federate or enclave) in the system.
+ * An entry of FOREVER_TAG means that the node is not upstream of `end`.
+ * An entry of (0,0) means that the node is upstream and that there are no after delays
+ * on the path to `end`.  Otherwise, the entry is the sum of the after delays on the
+ * shortest path, where the sum is calculated using lf_delay_tag().
+ * 
+ * This function calls itself recursively. On the first call,`path_delay` should be an
+ * array whose size matches the number of nodes in the system.  Each entry in the array
+ * should be FOREVER_TAG. On that first call, `intermediate` should be NULL.
+ * 
+ * If the resulting entry for `end` remains FOREVER_TAG, then there is no cycle
+ * back from the outputs of `end` to itself. Otherwise, the value of the entry will
+ * be the minimum delay among all paths back to itself.
+ *
+ * @param end The target node.
+ * @param intermediate Current intermediate node (NULL initially).
+ * @param path_delays An array in which to put the results.
+ */
+void shortest_path_upstream(scheduling_node_t* end, scheduling_node_t* intermediate, tag_t path_delays[]);
 
 #endif // RTI_COMMON_H
 #endif // STANDALONE_RTI || LF_ENCLAVES

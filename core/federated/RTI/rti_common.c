@@ -75,6 +75,40 @@ void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
     lf_mutex_unlock(&rti_mutex);
 }
 
+tag_t earliest_future_incoming_message_tag(scheduling_node_t* e) {
+    // First, we need to find the shortest path (minimum delay) path to each upstream node
+    // and then find the minimum of the node's recorded NET plus the minimum path delay.
+    // The following array will have the minimum path delay.
+    // It needs to be initialized to FOREVER_TAG, except for the element corresponding to
+    // this fed/enclave, which is initialized to (0,0).
+    tag_t *path_delays = (tag_t *)malloc(rti_common->number_of_scheduling_nodes * sizeof(tag_t));
+    for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
+        path_delays[i] = FOREVER_TAG;
+    }
+    shortest_path_upstream(e, NULL, path_delays);
+
+    // Next, find the tag of the earliest possible incoming message from upstream enclaves or
+    // federates, which will be the smallest upstream NET plus the least delay.
+    // This could be NEVER_TAG if the RTI has not seen a NET from some upstream node.
+    tag_t t_d = FOREVER_TAG;
+    for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
+        if (path_delays[i].time < FOREVER) {
+            // Node i is upstream of e. Note that it could be that i == e.
+            scheduling_node_t* upstream = rti_common->scheduling_nodes[i];
+            tag_t earliest_tag_from_upstream = lf_tag_add(upstream->next_event, path_delays[i]);
+            LF_PRINT_DEBUG("RTI: Earliest next event upstream of fed/encl %d at fed/encl %d has tag " PRINTF_TAG ".",
+                    e->id,
+                    upstream->id,
+                    earliest_tag_from_upstream.time - start_time, earliest_tag_from_upstream.microstep);
+            if (lf_tag_compare(earliest_tag_from_upstream, t_d) < 0) {
+                t_d = earliest_tag_from_upstream;
+            }
+        }
+    }
+    free(path_delays);
+    return t_d;
+}
+
 tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     tag_advance_grant_t result = {.tag = NEVER_TAG, .is_provisional = false};
 
@@ -84,7 +118,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     for (int j = 0; j < e->num_upstream; j++) {
         scheduling_node_t *upstream = rti_common->scheduling_nodes[e->upstream[j]];
 
-        // Ignore this enclave if it no longer connected.
+        // Ignore this enclave/federate if it is not connected.
         if (upstream->state == NOT_CONNECTED) continue;
 
         // Adjust by the "after" delay.
@@ -111,63 +145,16 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     // If all (transitive) upstream scheduling_nodes of the enclave
     // have earliest event tags such that the
     // enclave can now advance its tag, then send it a TAG message.
-    // Find the earliest event time of each such upstream enclave,
-    // adjusted by delays on the connections.
+    // Find the tag of the earliest event that may be later received from an upstream enclave
+    // or federate (which includes any after delays on the connections).
+    tag_t t_d = earliest_future_incoming_message_tag(e);
 
-    // To handle cycles, need to create a boolean array to keep
-    // track of which upstream enclave have been visited.
-    bool *visited = (bool *)calloc(rti_common->number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
-    visited[e->id] = true;
-
-    // Find the tag of the earliest possible incoming message from
-    // upstream enclaves.
-    tag_t t_d_nonzero_delay = FOREVER_TAG;
-    // The tag of the earliest possible incoming message from a zero-delay connection.
-    // Delayed connections are not guarded from STP violations by the MLAA; this property is
-    // acceptable because delayed connections impose no deadlock risk and in some cases (startup)
-    // this property is necessary to avoid deadlocks. However, it requires some special care here
-    // when potentially sending a PTAG because we must not send a PTAG for a tag at which data may
-    // still be received over nonzero-delay connections.
-    tag_t t_d_zero_delay = FOREVER_TAG;
     LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG,
                    FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
                    NEVER_TAG.time - start_time, 0);
 
-    for (int j = 0; j < e->num_upstream; j++) {
-        scheduling_node_t *upstream = rti_common->scheduling_nodes[e->upstream[j]];
-
-        // Ignore this enclave if it is no longer connected.
-        if (upstream->state == NOT_CONNECTED) continue;
-
-        // Find the (transitive) next event tag upstream.
-        tag_t upstream_next_event = transitive_next_event(
-                upstream, upstream->next_event, visited);
-
-        LF_PRINT_DEBUG("RTI: Earliest next event upstream of fed/encl %d at fed/encl %d has tag " PRINTF_TAG ".",
-                e->id,
-                upstream->id,
-                upstream_next_event.time - start_time, upstream_next_event.microstep);
-
-        // Adjust by the "after" delay.
-        // Note that "no delay" is encoded as NEVER,
-        // whereas one microstep delay is encoded as 0LL.
-        tag_t candidate = lf_delay_strict(upstream_next_event, e->upstream_delay[j]);
-
-        if (e->upstream_delay[j] == NEVER) {
-            if (lf_tag_compare(candidate, t_d_zero_delay) < 0) {
-                t_d_zero_delay = candidate;
-            }
-        } else {
-            if (lf_tag_compare(candidate, t_d_nonzero_delay) < 0) {
-                t_d_nonzero_delay = candidate;
-            }
-        }
-    }
-    free(visited);
-    tag_t t_d = (lf_tag_compare(t_d_zero_delay, t_d_nonzero_delay) < 0) ? t_d_zero_delay : t_d_nonzero_delay;
-
-    LF_PRINT_LOG("RTI: Earliest next event upstream has tag " PRINTF_TAG ".",
-            t_d.time - start_time, t_d.microstep);
+    LF_PRINT_LOG("RTI: Earliest next event upstream of node %d has tag " PRINTF_TAG ".",
+            e->id, t_d.time - start_time, t_d.microstep);
 
     if (
         lf_tag_compare(t_d, e->next_event) > 0       // The enclave has something to do.
@@ -176,27 +163,27 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
                                                                       // PTAGs).
         && lf_tag_compare(t_d, e->last_granted) > 0  // The grant is not redundant.
     ) {
-        // All upstream scheduling_nodes have events with a larger tag than fed, so it is safe to send a TAG.
-        LF_PRINT_LOG("Earliest upstream message time for fed/encl %d is " PRINTF_TAG
-                "(adjusted by after delay). Granting tag advance for " PRINTF_TAG,
+        // No upstream node can send events that will be received with a tag less than or equal to
+        // e->next_event, so it is safe to send a TAG.
+        LF_PRINT_LOG("RTI: Earliest upstream message time for fed/encl %d is " PRINTF_TAG
+                "(adjusted by after delay). Granting tag advance (TAG) for " PRINTF_TAG,
                 e->id,
                 t_d.time - lf_time_start(), t_d.microstep,
                 e->next_event.time - lf_time_start(),
                 e->next_event.microstep);
         result.tag = e->next_event;
     } else if (
-        lf_tag_compare(t_d_zero_delay, e->next_event) == 0      // The enclave has something to do.
-        && lf_tag_compare(t_d_zero_delay, t_d_nonzero_delay) < 0  // The statuses of nonzero-delay connections are known at tag t_d_zero_delay
-        && lf_tag_compare(t_d_zero_delay, e->last_provisionally_granted) > 0  // The grant is not redundant.
-        && lf_tag_compare(t_d_zero_delay, e->last_granted) > 0  // The grant is not redundant.
+        lf_tag_compare(t_d, e->next_event) == 0      // The enclave has something to do/
+        && lf_tag_compare(t_d, e->last_provisionally_granted) > 0  // The grant is not redundant.
+        && lf_tag_compare(t_d, e->last_granted) > 0  // The grant is not redundant.
     ) {
-        // Some upstream scheduling_nodes has an event that has the same tag as fed's next event, so we can only provisionally
-        // grant a TAG (via a PTAG).
-        LF_PRINT_LOG("Earliest upstream message time for fed/encl %d is " PRINTF_TAG
-            " (adjusted by after delay). Granting provisional tag advance.",
+        // Some upstream node may send an event that has the same tag as this node's next event,
+        // so we can only grant a PTAG.
+        LF_PRINT_LOG("RTI: Earliest upstream message time for fed/encl %d is " PRINTF_TAG
+            " (adjusted by after delay). Granting provisional tag advance (PTAG).",
             e->id,
-            t_d_zero_delay.time - start_time, t_d_zero_delay.microstep);
-        result.tag = t_d_zero_delay;
+            t_d.time - start_time, t_d.microstep);
+        result.tag = t_d;
         result.is_provisional = true;
     }
     return result;
@@ -230,7 +217,7 @@ void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t ne
     }
     // Check downstream scheduling_nodes to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
-    // track of which upstream scheduling_nodes have been visited.
+    // track of which downstream scheduling_nodes have been visited.
     bool *visited = (bool *)calloc(rti_common->number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
     notify_downstream_advance_grant_if_safe(e, visited);
     free(visited);
@@ -248,44 +235,34 @@ void notify_advance_grant_if_safe(scheduling_node_t* e) {
     }
 }
 
-tag_t transitive_next_event(scheduling_node_t* e, tag_t candidate, bool visited[]) {
-    if (visited[e->id] || e->state == NOT_CONNECTED) {
-        // Enclave has stopped executing or we have visited it before.
+void shortest_path_upstream(scheduling_node_t* end, scheduling_node_t* intermediate, tag_t path_delays[]) {
+    // On first call, intermediate will be NULL, so the path delay is initialized to zero.
+    tag_t delay_from_intermediate_so_far = ZERO_TAG;
+    if (intermediate == NULL) {
+        intermediate = end;
+    } else {
+        // Not the first call, so intermediate is upstream of end.
+        delay_from_intermediate_so_far = path_delays[intermediate->id];
+    }
+    if (intermediate->state == NOT_CONNECTED) {
+        // Enclave or federate is not connected.
         // No point in checking upstream scheduling_nodes.
-        return candidate;
+        return;
     }
-
-    visited[e->id] = true;
-    tag_t result = e->next_event;
-
-    // If the candidate is less than this enclave's next_event, use the candidate.
-    if (lf_tag_compare(candidate, result) < 0) {
-        result = candidate;
-    }
-
-    // The result cannot be earlier than the start time.
-    if (result.time < start_time) {
-        // Earliest next event cannot be before the start time.
-        result = (tag_t){.time = start_time, .microstep = 0u};
-    }
-
-    // Check upstream scheduling_nodes to see whether any of them might send
-    // an event that would result in an earlier next event.
-    for (int i = 0; i < e->num_upstream; i++) {
-        tag_t upstream_result = transitive_next_event(
-            rti_common->scheduling_nodes[e->upstream[i]], result, visited);
-
-        // Add the "after" delay of the connection to the result.
-        upstream_result = lf_delay_tag(upstream_result, e->upstream_delay[i]);
-
-        // If the adjusted event time is less than the result so far, update the result.
-        if (lf_tag_compare(upstream_result, result) < 0) {
-            result = upstream_result;
+    // Check nodes upstream of intermediate (or end on first call).
+    for (int i = 0; i < intermediate->num_upstream; i++) {
+        // Add connection delay to path delay so far.
+        tag_t path_delay = lf_delay_tag(delay_from_intermediate_so_far, intermediate->upstream_delay[i]);
+        // If the path delay is less than the so-far recorded path delay from upstream, update upstream.
+        if (lf_tag_compare(path_delay, path_delays[intermediate->upstream[i]]) < 0) {
+            path_delays[intermediate->upstream[i]] = path_delay;
+            // Since the path delay to upstream has changed, recursively update those upstream of it.
+            // Do not do this, however, if the upstream node is the end node because this means we have
+            // completed a cycle.
+            if (end->id != intermediate->upstream[i]) {
+                shortest_path_upstream(end, rti_common->scheduling_nodes[intermediate->upstream[i]], path_delays);
+            }
         }
     }
-    if (lf_tag_compare(result, e->completed) < 0) {
-        result = e->completed;
-    }
-    return result;
 }
 #endif

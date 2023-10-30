@@ -116,14 +116,22 @@ tag_t lf_tag(void *env) {
     return ((environment_t *)env)->current_tag;
 }
 
+tag_t lf_tag_add(tag_t a, tag_t b) {
+    if (a.time == NEVER || b.time == NEVER) return NEVER_TAG;
+    if (a.time == FOREVER || b.time == FOREVER) return FOREVER_TAG;
+    tag_t result = {.time = a.time + b.time, .microstep = a.microstep + b.microstep};
+    if (result.microstep < a.microstep) return FOREVER_TAG;
+    if (result.time < a.time && b.time > 0) return FOREVER_TAG;
+    if (result.time > a.time && b.time < 0) return NEVER_TAG;
+    return result;
+}
+
 int lf_tag_compare(tag_t tag1, tag_t tag2) {
     if (tag1.time < tag2.time) {
-        LF_PRINT_DEBUG(PRINTF_TIME " < " PRINTF_TIME, tag1.time, tag2.time);
         return -1;
     } else if (tag1.time > tag2.time) {
         return 1;
     } else if (tag1.microstep < tag2.microstep) {
-        LF_PRINT_DEBUG(PRINTF_TIME " and microstep < " PRINTF_TIME, tag1.time, tag2.time);
         return -1;
     } else if (tag1.microstep > tag2.microstep) {
         return 1;
