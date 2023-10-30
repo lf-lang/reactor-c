@@ -33,7 +33,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 // Default options
 #define LF_ZEPHYR_THREAD_PRIORITY_DEFAULT 5
-#define LF_ZEPHYR_STACK_SIZE_DEFAULT 4196
+#define LF_ZEPHYR_STACK_SIZE_DEFAULT 2048
 
 // Unless the user explicitly asks for the kernel clock, then we use a counter
 //  clock because it is more precise.
