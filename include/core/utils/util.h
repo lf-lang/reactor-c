@@ -205,13 +205,18 @@ typedef int64_t interval_t;
  * @param delay_vector A list of delays.
  */
 static void _lf_parse_delay_vector(char* delay_vector_evar, size_t* delay_vector_len, interval_t** delay_vector) {
+    FILE* fp = fopen(delay_vector_evar, "r");
+    if (!fp) exit(1);  // This is bad error handling, but that's fine.
+    char* line;
+    getline(&line, delay_vector_len, fp);
     *delay_vector_len = atoi(delay_vector_evar);
     *delay_vector = (interval_t*) malloc(sizeof(interval_t) * *delay_vector_len);
     int idx = 0;
-    while (delay_vector_evar = strchr(delay_vector_evar, ',')) {
-        delay_vector_evar++;
-        (*delay_vector)[idx++] = atoi(delay_vector_evar);
+    while (getline(&line, delay_vector_len, fp)) {
+        (*delay_vector)[idx++] = atoi(line);
     }
+    fclose(fp);
+    if (line) free(line);
 }
 
 int lf_sleep(interval_t sleep_duration);
