@@ -145,7 +145,7 @@ void usage() {
 instant_t latest_time = 0LL;
 
 /**
- * Read a trace in the specified file and write it to the specified CSV file.
+ * Read a trace in the trace_file and write it to InfluxDB.
  * @return The number of records read or 0 upon seeing an EOF.
  */
 size_t read_and_write_trace() {
