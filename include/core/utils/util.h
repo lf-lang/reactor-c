@@ -124,12 +124,9 @@ extern int _lf_my_fed_id;
 int lf_fed_id(void);
 
 /**
- * Report an informational message on stdout with
- * a newline appended at the end.
- * If this execution is federated, then
- * the message will be prefaced by "Federate n: ",
- * where n is the federate ID.
- * The arguments are just like printf().
+ * Report an informational message on stdout with a newline appended at the end.
+ * If this execution is federated, then the message will be prefaced by identifying
+ * information for the federate. The arguments are just like printf().
  */
 void lf_print(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
@@ -139,12 +136,9 @@ void lf_print(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 void lf_vprint(const char* format, va_list args)  ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
 /**
- * Report an log message on stdout with the prefix
- * "LOG: " and a newline appended
- * at the end. If this execution is federated, then
- * the message will be prefaced by "Federate n: ",
- * where n is the federate ID.
- * The arguments are just like printf().
+ * Report an log message on stdout with the prefix "LOG: " and a newline appended
+ * at the end. If this execution is federated, then the message will be prefaced by
+ * identifying information for the federate. The arguments are just like printf().
  */
 void lf_print_log(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
@@ -176,12 +170,9 @@ void lf_vprint_log(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1, 
                 } } while (0)
 
 /**
- * Report an debug message on stdout with the prefix
- * "DEBUG: " and a newline appended
- * at the end. If this execution is federated, then
- * the message will be prefaced by "Federate n: ",
- * where n is the federate ID.
- * The arguments are just like printf().
+ * Report an debug message on stdout with the prefix "DEBUG: " and a newline appended
+ * at the end. If this execution is federated, then the message will be prefaced by
+ * identifying information for the federate. The arguments are just like printf().
  */
 void lf_print_debug(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 

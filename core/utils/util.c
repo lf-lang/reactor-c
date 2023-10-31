@@ -48,12 +48,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** Number of nanoseconds to sleep before retrying a socket read. */
 #define SOCKET_READ_RETRY_INTERVAL 1000000
 
-/**
- * The ID of this federate. For a non-federated execution, this will
- * be -1.  For a federated execution, it will be assigned when the generated function
- * _lf_initialize_trigger_objects() is called.
- * @see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CGenerator.xtend.
- */
 int _lf_my_fed_id = -1;
 
 /**
@@ -65,9 +59,6 @@ print_message_function_t* print_message_function = NULL;
 /** The level of messages to redirect to print_message_function. */
 int print_message_level = -1;
 
-/**
- * Return the federate ID or -1 if this program is not part of a federation.
- */
 int lf_fed_id() {
 	return _lf_my_fed_id;
 }
@@ -129,14 +120,6 @@ void _lf_message_print(
 	}
 }
 
-/**
- * Report an informational message on stdout with
- * a newline appended at the end.
- * If this execution is federated, then
- * the message will be prefaced by "Federate n: ",
- * where n is the federate ID.
- * The arguments are just like printf().
- */
 void lf_print(const char* format, ...) {
 	va_list args;
     va_start (args, format);
@@ -144,21 +127,10 @@ void lf_print(const char* format, ...) {
 	va_end (args);
 }
 
-/**
- * varargs alternative of "lf_print"
- */
 void lf_vprint(const char* format, va_list args) {
     _lf_message_print(0, "", format, args, LOG_LEVEL_INFO);
 }
 
-/**
- * Report an log message on stdout with the prefix
- * "LOG: " and a newline appended
- * at the end. If this execution is federated, then
- * the message will be prefaced by "Federate n: ",
- * where n is the federate ID.
- * The arguments are just like printf().
- */
 void lf_print_log(const char* format, ...) {
 	va_list args;
     va_start (args, format);
@@ -166,22 +138,10 @@ void lf_print_log(const char* format, ...) {
 	va_end (args);
 }
 
-/**
- * varargs alternative of "lf_print_log"
- */
 void lf_vprint_log(const char* format, va_list args) {
     _lf_message_print(0, "LOG: ", format, args, LOG_LEVEL_LOG);
 }
 
-
-/**
- * Report an debug message on stdout with the prefix
- * "DEBUG: " and a newline appended
- * at the end. If this execution is federated, then
- * the message will be prefaced by "Federate n: ",
- * where n is the federate ID.
- * The arguments are just like printf().
- */
 void lf_print_debug(const char* format, ...) {
     va_list args;
     va_start (args, format);
@@ -189,17 +149,10 @@ void lf_print_debug(const char* format, ...) {
     va_end (args);
 }
 
-/**
- * varargs alternative of "lf_print_debug"
- */
 void lf_vprint_debug(const char* format, va_list args) {
     _lf_message_print(0, "DEBUG: ", format, args, LOG_LEVEL_DEBUG);
 }
 
-/**
- * Report an error with the prefix "ERROR: " and a newline appended
- * at the end.  The arguments are just like printf().
- */
 void lf_print_error(const char* format, ...) {
     va_list args;
     va_start (args, format);
@@ -207,17 +160,10 @@ void lf_print_error(const char* format, ...) {
     va_end (args);
 }
 
-/**
- * varargs alternative of "lf_print_error"
- */
 void lf_vprint_error(const char* format, va_list args) {
     _lf_message_print(1, "ERROR: ", format, args, LOG_LEVEL_ERROR);
 }
 
-/**
- * Report a warning with the prefix "WARNING: " and a newline appended
- * at the end.  The arguments are just like printf().
- */
 void lf_print_warning(const char* format, ...) {
     va_list args;
     va_start (args, format);
@@ -225,18 +171,10 @@ void lf_print_warning(const char* format, ...) {
     va_end (args);
 }
 
-/**
- * varargs alternative of "lf_print_warning"
- */
 void lf_vprint_warning(const char* format, va_list args) {
     _lf_message_print(1, "WARNING: ", format, args, LOG_LEVEL_WARNING);
 }
 
-/**
- * Report an error with the prefix "ERROR: " and a newline appended
- * at the end, then exit with the failure code EXIT_FAILURE.
- * The arguments are just like printf().
- */
 void lf_print_error_and_exit(const char* format, ...) {
     va_list args;
     va_start (args, format);
@@ -245,11 +183,6 @@ void lf_print_error_and_exit(const char* format, ...) {
     exit(EXIT_FAILURE);
 }
 
-/**
- * Report an error with the prefix "ERROR: " and a newline appended
- * at the end, then exit with the failure code EXIT_FAILURE.
- * The arguments are just like printf().
- */
 void lf_assert(bool condition, const char* format, ...) {
 	if (!condition) {
     	va_list args;
@@ -260,25 +193,10 @@ void lf_assert(bool condition, const char* format, ...) {
 	}
 }
 
-/**
- * varargs alternative of "lf_print_error_and_exit"
- */
 void lf_vprint_error_and_exit(const char* format, va_list args) {
     _lf_message_print(1, "FATAL ERROR: ", format, args, LOG_LEVEL_ERROR);
 }
 
-/**
- * Register a function to display messages. After calling this,
- * all messages passed to the above print functions will be
- * printed using the specified function rather than printf
- * if their log level is greater than the specified level.
- * The level should be one of LOG_LEVEL_ERROR, LOG_LEVEL_WARNING,
- * LOG_LEVEL_INFO, LOG_LEVEL_LOG, or LOG_LEVEL_DEBUG.
- *
- * @param function The print message function or NULL to revert
- *  to using printf.
- * @param log_level The level of messages to redirect.
- */
 void lf_register_print_function(print_message_function_t* function, int log_level) {
     print_message_function = function;
     print_message_level = log_level;
