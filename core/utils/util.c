@@ -32,6 +32,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "util.h"
+#include "environment.h"
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -98,14 +99,25 @@ void _lf_message_print(
 		// If we make multiple calls to printf(), then the results could be
 		// interleaved between threads.
 		// vprintf() is a version that takes an arg list rather than multiple args.
-		size_t length = strlen(prefix) + strlen(format) + 32;
-		char* message = (char*) malloc(length + 1);
+		char* message;
 		if (_lf_my_fed_id < 0) {
+			size_t length = strlen(prefix) + strlen(format) + 32;
+			message = (char*) malloc(length + 1);
 			snprintf(message, length, "%s%s\n",
 					prefix, format);
 		} else {
-			snprintf(message, length, "Federate %d: %s%s\n",
-					_lf_my_fed_id, prefix, format);
+			// Get the federate name from the top-level environment, which by convention is the first.
+			environment_t *envs;
+			_lf_get_environments(&envs);
+
+			size_t length = strlen(prefix) + strlen(format) + +strlen(envs->name) + 32;
+			message = (char*) malloc(length + 1);
+			char* name = envs->name;
+			// If the name has prefix "federate__", strip that out.
+			if (strncmp(name, "federate__", 10) == 0) name += 10;
+
+			snprintf(message, length, "Fed %d (%s): %s%s\n",
+					_lf_my_fed_id, name, prefix, format);
 		}
 		if (print_message_function == NULL) {
 			if (is_error) {
