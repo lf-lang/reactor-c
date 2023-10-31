@@ -242,6 +242,9 @@ void shortest_path_upstream(scheduling_node_t* end, scheduling_node_t* intermedi
         // Not the first call, so intermediate is upstream of end.
         delay_from_intermediate_so_far = path_delays[intermediate->id];
     }
+    // NOTE: Except for this one check, the information calculated here is completely static
+    // and could be precomputed at compile time.  But doing so would then cause transient
+    // federates in feedback loops to potentially cause deadlocks by being absent.
     if (intermediate->state == NOT_CONNECTED) {
         // Enclave or federate is not connected.
         // No point in checking upstream scheduling_nodes.
