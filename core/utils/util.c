@@ -32,7 +32,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "util.h"
+
+#ifndef STANDALONE_RTI
 #include "environment.h"
+#endif
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -106,18 +110,24 @@ void _lf_message_print(
 			snprintf(message, length, "%s%s\n",
 					prefix, format);
 		} else {
+#if defined STANDALONE_RTI
+			size_t length = strlen(prefix) + strlen(format) + 37;
+			message = (char*) malloc(length + 1);
+			snprintf(message, length, "RTI: %s%s\n",
+					prefix, format);
+#else
 			// Get the federate name from the top-level environment, which by convention is the first.
 			environment_t *envs;
 			_lf_get_environments(&envs);
-
-			size_t length = strlen(prefix) + strlen(format) + +strlen(envs->name) + 32;
-			message = (char*) malloc(length + 1);
 			char* name = envs->name;
+			size_t length = strlen(prefix) + strlen(format) + +strlen(name) + 32;
+			message = (char*) malloc(length + 1);
 			// If the name has prefix "federate__", strip that out.
 			if (strncmp(name, "federate__", 10) == 0) name += 10;
 
 			snprintf(message, length, "Fed %d (%s): %s%s\n",
 					_lf_my_fed_id, name, prefix, format);
+#endif // STANDALONE_RTI
 		}
 		if (print_message_function == NULL) {
 			if (is_error) {
