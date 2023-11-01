@@ -2382,9 +2382,12 @@ void handle_next_downstream_tag() {
         pqueue_insert(env->ndt_q, node);
     }
     if (lf_tag_compare(env->current_tag, NDT) > 0) {
-        // The current tag is greater than the NDT. Send the appropriate NET message.
-        tag_t next_event_tag = get_next_event_tag(env);
-        send_next_event_tag(env, next_event_tag, false);
+        // The current tag is greater than the NDT. Send the LTC with the NDT and
+        // push the current tag to ndt_q so that this federate notify the appropriate NET message.
+        _lf_send_tag(MSG_TYPE_LOGICAL_TAG_COMPLETE, NDT, true);
+        ndt_node* node = (ndt_node*) malloc(sizeof(ndt_node));
+        node->tag = env->current_tag;
+        pqueue_insert(env->ndt_q, node);
     }
 }
 
