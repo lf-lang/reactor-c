@@ -78,6 +78,31 @@ void termination() {
     printf("Done!\n");
 }
 
+void cleanup_after_each_run (FILE *_trace_file) {
+    // Free memory in object description table.
+    for (int i = 0; i < object_table_size; i++) {
+        free(object_table[i].description);
+    }
+    free(object_table);
+    object_table = NULL;
+
+    open_file_t *itr = _open_files;
+    open_file_t *prev = NULL;
+    while (itr != NULL) {
+        if (itr->file == _trace_file) {
+            fclose(itr->file);
+            open_file_t* tmp = itr->next;
+            free(itr);
+            itr = tmp;
+            break;
+        }
+        prev = itr;
+        itr = itr->next;
+    }
+    _open_files = (prev == NULL) ? itr : _open_files;
+    printf("Done!\n");
+}
+
 const char PATH_SEPARATOR =
 #ifdef _WIN32
                             '\\';

@@ -36,6 +36,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <dirent.h>
 #include <sys/param.h>
 #include <unistd.h>
+#include <assert.h>
+#include <errno.h>
 
 #include "reactor.h"
 #include "trace.h"
@@ -231,7 +233,7 @@ bool is_filtered_event(trace_event_t ev) {
  * Read a trace in the specified file and write it to the specified CSV file.
  * @return The number of records read or 0 upon seeing an EOF.
  */
-size_t read_and_write_trace() {
+size_t read_and_write_trace(const char *fname) {
     int trace_length = read_trace();
     if (trace_length == 0) return 0;
     // Write each line.
@@ -248,7 +250,19 @@ size_t read_and_write_trace() {
             trigger_name = "NO TRIGGER";
         }
         if (opts.filter != -1 && is_filtered_event(trace[i].event_type)) {
-            fprintf(filtered_file, "%s, %s, %d, %d, %lld, %d, %lld, %s, %lld, %Lf\n",
+            size_t find_key_len = strlen ("Configuration_");
+            char *start_index = strstr (fname, "Configuration_");
+            assert (start_index);
+            start_index += find_key_len;
+            char *end_index = strstr(start_index, "/");
+            assert (end_index);
+            char *index_str = calloc (end_index - start_index + 1, sizeof (char));
+            memcpy (index_str, start_index, end_index - start_index);
+            int index = atoi (index_str);
+            free (index_str);
+            fprintf(filtered_file, "%s, %d, %s, %s, %d, %d, %lld, %d, %lld, %s, %lld, %Lf\n",
+                    fname,
+                    index,
                     trace_event_names[trace[i].event_type],
                     reactor_name,
                     trace[i].src_id,
@@ -638,16 +652,18 @@ void trace_processor(const char *fname) {
         table_size = NUM_EVENT_TYPES + object_table_size + (MAX_NUM_WORKERS * 2);
         summary_stats = (summary_stats_t**)calloc(table_size, sizeof(summary_stats_t*));
 
-        // Write a header line into the CSV file.
-        fprintf(output_file, "Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay, Extra Value\n");
-        if (opts.filter != -1) {
-            fprintf(filtered_file, "Trace File Path,%s\n\n", fname);
-            fprintf(filtered_file,
-                    "Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay, Extra Value\n");
-        }
-        while (read_and_write_trace() != 0) {};
+        while (read_and_write_trace(fname) != 0) {};
 
         write_summary_file();
+
+        for (int i = 0; i < table_size; ++i) {
+            if (summary_stats[i] != NULL) {
+                free (summary_stats[i]);
+            }
+        }
+        free (summary_stats);
+        summary_stats = NULL;
+        cleanup_after_each_run (trace_file);
     }
 }
 
@@ -658,13 +674,14 @@ void trace_processor(const char *fname) {
  * @param recursive Specifies if we need to examine sub-directories as well
  * @param process Function Pointer to trace processor
  * */
-int for_each_trace(char *trace_ext, char *tmp_buffer, bool recursive, processor_f process) {
+int for_each_trace(char *trace_ext, bool recursive, processor_f process) {
     DIR *d;
     struct dirent *dir;
     d = opendir(".");
     if (d == NULL) {
         return 1;
     }
+
     while ((dir = readdir(d))) {
         if (strcmp(dir->d_name, ".") == 0 ||
             strcmp(dir->d_name, "..") == 0) {
@@ -672,21 +689,30 @@ int for_each_trace(char *trace_ext, char *tmp_buffer, bool recursive, processor_
         }
         if (dir->d_type == DT_DIR && recursive) {
             chdir(dir->d_name);
-            for_each_trace(trace_ext, tmp_buffer, recursive, process);
+            for_each_trace(trace_ext, recursive, process);
             chdir("..");
         } else {
             if (strstr(dir->d_name, trace_ext) != NULL) {
                 size_t len;
-                getcwd(tmp_buffer, MAXPATHLEN);
+                char final_buffer[MAXPATHLEN] = {0};
+                char *tmp_buffer;
+                tmp_buffer = getcwd(NULL, 0);
+                if (tmp_buffer == NULL) {
+                    tmp_buffer = getcwd(NULL, 0);
+                    printf("getcwd FAILURE, returned tmp_buffer:%p ERRNO:%s\n", tmp_buffer, strerror(errno));
+                    exit (1);
+                }
                 len = strnlen(tmp_buffer, MAXPATHLEN);
-                snprintf(tmp_buffer + len, MAXPATHLEN - len, "/%s", dir->d_name);
-                printf("Found Trace file at: %s\n", tmp_buffer);
-                process(tmp_buffer);
+                memcpy (final_buffer, tmp_buffer, len);
+                free (tmp_buffer);
+                snprintf(final_buffer + len, MAXPATHLEN - len, "/%s", dir->d_name);
+                printf("Found File file_name:%s complete_file_name:%s len:%zu\n", dir->d_name, final_buffer, len);
+                process(final_buffer);
             }
         }
     }
     closedir(d);
-    return *tmp_buffer == 0;
+    return 0;
 }
 
 int main(int argc, char* argv[]) {
@@ -696,14 +722,20 @@ int main(int argc, char* argv[]) {
     }
     scan_program_options(argc, argv);
     open_output_files(opts.out_file);
+
+    // Write a header line into the CSV file.
+    fprintf(output_file, "Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay, Extra Value\n");
+    if (opts.filter != -1) {
+        fprintf(filtered_file,
+                "Trace File, Trace Index, Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay, Extra Value\n");
+    }
     if (!opts.is_dir) {
         trace_processor(opts.r_name);
     } else {
         char cwd[MAXPATHLEN] = {0};
-        char tmp_buffer[MAXPATHLEN] = {0};
         getcwd(cwd, MAXPATHLEN);
         chdir(opts.r_name);
-        for_each_trace(".lft", tmp_buffer, opts.recursive, trace_processor);
+        for_each_trace(".lft", opts.recursive, trace_processor);
         chdir(cwd);
     }
     close_output_files();

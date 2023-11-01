@@ -132,3 +132,5 @@ size_t read_header();
  * @return The number of trace record read or 0 upon seeing an EOF.
  */
 int read_trace();
+
+void cleanup_after_each_run (FILE *_trace_file);
