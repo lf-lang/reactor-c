@@ -2381,8 +2381,8 @@ void handle_next_downstream_tag() {
         node->tag = NDT;
         pqueue_insert(env->ndt_q, node);
     }
-    if (lf_tag_compare(env->current_tag, NDT) >= 0) {
-        // The current tag is greater than or equal to NDT. Send the appropriate NET message.
+    if (lf_tag_compare(env->current_tag, NDT) > 0) {
+        // The current tag is greater than the NDT. Send the appropriate NET message.
         tag_t next_event_tag = get_next_event_tag(env);
         send_next_event_tag(env, next_event_tag, false);
     }
