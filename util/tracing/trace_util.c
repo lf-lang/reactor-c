@@ -86,20 +86,27 @@ void cleanup_after_each_run (FILE *_trace_file) {
     free(object_table);
     object_table = NULL;
 
-    open_file_t *itr = _open_files;
-    open_file_t *prev = NULL;
-    while (itr != NULL) {
-        if (itr->file == _trace_file) {
-            fclose(itr->file);
-            open_file_t* tmp = itr->next;
-            free(itr);
-            itr = tmp;
-            break;
+    if (_open_files == NULL) {
+        return;
+    } else if (_open_files->file == _trace_file) {
+        fclose(_open_files->file);
+        open_file_t* tmp = _open_files;
+        _open_files = _open_files->next;
+        free(tmp);
+    } else {
+        open_file_t *prev = _open_files;
+        open_file_t *itr = _open_files->next;
+        while (itr != NULL) {
+            if (itr->file == _trace_file) {
+                fclose(itr->file);
+                prev->next = itr->next;
+                free(itr);
+                break;
+            }
+            prev = itr;
+            itr = itr->next;
         }
-        prev = itr;
-        itr = itr->next;
     }
-    _open_files = (prev == NULL) ? itr : _open_files;
     printf("Done!\n");
 }
 
