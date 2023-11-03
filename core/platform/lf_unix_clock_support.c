@@ -3,6 +3,7 @@
 #include <errno.h>
 
 #include "platform.h"
+#include "util.h"
 #include "lf_unix_clock_support.h"
 
 /**
@@ -17,13 +18,13 @@
 interval_t _lf_time_epoch_offset = 0LL;
 
 instant_t convert_timespec_to_ns(struct timespec tp) {
-    return tp.tv_sec * 1000000000 + tp.tv_nsec;
+    return ((instant_t) tp.tv_sec) * BILLION + tp.tv_nsec;
 }
 
 struct timespec convert_ns_to_timespec(instant_t t) {
     struct timespec tp;
-    tp.tv_sec = t / 1000000000;
-    tp.tv_nsec = (t % 1000000000);
+    tp.tv_sec = t / BILLION;
+    tp.tv_nsec = (t % BILLION);
     return tp;
 }
 
@@ -50,6 +51,14 @@ void calculate_epoch_offset(void) {
 
 void _lf_initialize_clock() {
     calculate_epoch_offset();
+
+    struct timespec res;
+    int return_value = clock_getres(_LF_CLOCK, (struct timespec*) &res);
+    if (return_value < 0) {
+        lf_print_error_and_exit("Could not obtain resolution for _LF_CLOCK");
+    }
+
+    lf_print("---- System clock resolution: %ld nsec", res.tv_nsec);
 }
 
 /**
