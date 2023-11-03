@@ -1943,6 +1943,10 @@ bool update_max_level(tag_t tag, bool is_provisional) {
     for (int i = 0; i < action_table_size; i++) {
         lf_action_base_t* input_port_action = action_table[i];
 #ifdef FEDERATED_DECENTRALIZED
+        // In decentralized execution, if the current_tag is close enough to the
+        // start tag and there is a large enough delay on an incoming
+        // connection, then there is no need to block progress waiting for this
+        // port status.
         if (
             (_lf_action_delay_table[i] == 0 && env->current_tag.time == start_time && env->current_tag.microstep == 0)
             || (_lf_action_delay_table[i] > 0 && lf_tag_compare(
