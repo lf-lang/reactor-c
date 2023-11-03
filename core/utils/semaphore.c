@@ -38,10 +38,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @brief Create a new semaphore.
  *
  * @param count The count to start with.
- * @return semaphore_t* Can be NULL on error.
+ * @return lf_semaphore_t* Can be NULL on error.
  */
-semaphore_t* lf_semaphore_new(int count) {
-    semaphore_t* semaphore = (semaphore_t*)malloc(sizeof(semaphore_t));
+lf_semaphore_t* lf_semaphore_new(int count) {
+    lf_semaphore_t* semaphore = (lf_semaphore_t*)malloc(sizeof(lf_semaphore_t));
     lf_mutex_init(&semaphore->mutex);
     lf_cond_init(&semaphore->cond, &semaphore->mutex);
     semaphore->count = count;
@@ -54,7 +54,7 @@ semaphore_t* lf_semaphore_new(int count) {
  * @param semaphore Instance of a semaphore
  * @param i The count to add.
  */
-void lf_semaphore_release(semaphore_t* semaphore, int i) {
+void lf_semaphore_release(lf_semaphore_t* semaphore, int i) {
     assert(semaphore != NULL);
     lf_mutex_lock(&semaphore->mutex);
     semaphore->count += i;
@@ -67,7 +67,7 @@ void lf_semaphore_release(semaphore_t* semaphore, int i) {
  *
  * @param semaphore Instance of a semaphore.
  */
-void lf_semaphore_acquire(semaphore_t* semaphore) {
+void lf_semaphore_acquire(lf_semaphore_t* semaphore) {
     assert(semaphore != NULL);
     lf_mutex_lock(&semaphore->mutex);
     while (semaphore->count == 0) {
@@ -82,7 +82,7 @@ void lf_semaphore_acquire(semaphore_t* semaphore) {
  *
  * @param semaphore Instance of a semaphore.
  */
-void lf_semaphore_wait(semaphore_t* semaphore) {
+void lf_semaphore_wait(lf_semaphore_t* semaphore) {
     assert(semaphore != NULL);
     lf_mutex_lock(&semaphore->mutex);
     while (semaphore->count == 0) {
@@ -96,7 +96,7 @@ void lf_semaphore_wait(semaphore_t* semaphore) {
  *
  * @param semaphore Instance of a semaphore.
  */
-void lf_semaphore_destroy(semaphore_t* semaphore) {
+void lf_semaphore_destroy(lf_semaphore_t* semaphore) {
     assert(semaphore != NULL);
     free(semaphore);
 }

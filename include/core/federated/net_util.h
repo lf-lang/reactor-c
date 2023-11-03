@@ -62,6 +62,16 @@ int host_is_big_endian(void);
 
 #ifdef FEDERATED
 
+
+/**
+ * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
+ * (TCP_NODELAY) and Delayed ACKs disabled (TCP_QUICKACK). Exits application
+ * on any error.
+ *
+ * @return int 
+ */
+int create_real_time_tcp_socket_errexit();
+
 /**
  * Read the specified number of bytes from the specified socket into the
  * specified buffer. If a disconnect or an EOF occurs during this
@@ -116,7 +126,7 @@ ssize_t read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
  * @return The number of bytes written, or 0 if an EOF was received, or a negative
  *  number if an error occurred.
  */
-ssize_t write_to_socket_errexit_with_mutex(
+ssize_t write_to_socket_with_mutex(
 		int socket,
 		size_t num_bytes,
 		unsigned char* buffer,

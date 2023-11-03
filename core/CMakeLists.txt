@@ -67,10 +67,19 @@ if(DEFINED FEDERATED_AUTHENTICATED)
     target_link_libraries(core PUBLIC OpenSSL::SSL)
 endif()
 
-# Link with thread library
+if(DEFINED _LF_CLOCK_SYNC_ON)
+  find_library(MATH_LIBRARY m)
+  if(MATH_LIBRARY)
+    target_link_libraries(core PUBLIC ${MATH_LIBRARY})
+  endif()
+endif()
+
+# Link with thread library, unless if we are targeting the Zephyr RTOS
 if(DEFINED LF_THREADED OR DEFINED LF_TRACE)
-    find_package(Threads REQUIRED)
-    target_link_libraries(core PUBLIC Threads::Threads)
+    if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
+        find_package(Threads REQUIRED)
+        target_link_libraries(core PUBLIC Threads::Threads)
+    endif()
 endif()
 
 # Macro for translating a command-line argument into compile definition for
@@ -115,4 +124,3 @@ define(SCHEDULER)
 define(LF_SOURCE_DIRECTORY)
 define(LF_PACKAGE_DIRECTORY)
 define(LF_FILE_SEPARATOR)
-define(WORKERS_NEEDED_FOR_FEDERATE)

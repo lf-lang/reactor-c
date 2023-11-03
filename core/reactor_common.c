@@ -46,6 +46,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifdef MODAL_REACTORS
 #include "modes.h"
 #endif
+#ifdef FEDERATED
+#include "federate.h"
+#endif
 #include "port.h"
 #include "pqueue.h"
 #include "reactor.h"
@@ -300,6 +303,8 @@ void _lf_start_time_step(environment_t *env) {
     // Reset absent fields on network ports because
     // their status is unknown
     reset_status_fields_on_input_port_triggers();
+    // Signal the helper thread to reset its progress since the logical time has changed.
+    lf_cond_signal(&logical_time_changed);
 #endif
     env->is_present_fields_abbreviated_size = 0;
 }
@@ -429,12 +434,6 @@ void _lf_pop_events(environment_t *env) {
         // Peek at the next event in the event queue.
         event = (event_t*)pqueue_peek(env->event_q);
     };
-
-#ifdef FEDERATED
-    // Insert network dependent reactions for network input and output ports into
-    // the reaction queue
-    enqueue_network_control_reactions(env);
-#endif // FEDERATED
 
     LF_PRINT_DEBUG("There are %zu events deferred to the next microstep.", pqueue_size(env->next_q));
 
@@ -1372,13 +1371,6 @@ void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker) {
 void schedule_output_reactions(environment_t *env, reaction_t* reaction, int worker) {
     assert(env != GLOBAL_ENVIRONMENT);
 
-    if (reaction->is_a_control_reaction) {
-        // Control reactions will not produce an output but can have
-        // effects in order to have certain precedence requirements.
-        // No need to execute this function if the reaction is a control
-        // reaction.
-        return;
-    }
     // If the reaction produced outputs, put the resulting triggered
     // reactions into the reaction queue. As an optimization, if exactly one
     // downstream reaction is enabled by this reaction, then it may be

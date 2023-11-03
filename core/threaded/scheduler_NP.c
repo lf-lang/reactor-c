@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
 #include "lf_types.h"
-#if SCHEDULER == NP || (!defined(SCHEDULER) && defined(LF_THREADED))
+#if SCHEDULER == SCHED_NP || (!defined(SCHEDULER) && defined(LF_THREADED))
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
@@ -52,6 +52,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "semaphore.h"
 #include "trace.h"
 #include "util.h"
+#include "reactor_threaded.h"
 
 /////////////////// Scheduler Private API /////////////////////////
 /**
@@ -118,19 +119,18 @@ int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
     // Note: All the threads are idle, which means that they are done inserting
     // reactions. Therefore, the reaction vectors can be accessed without
     // locking a mutex.
-    for (; scheduler->next_reaction_level <=
-           scheduler->max_reaction_level;
-         scheduler->next_reaction_level++
-    ) {
+    while (scheduler->next_reaction_level <= scheduler->max_reaction_level) {
+        LF_PRINT_DEBUG("Waiting with curr_reaction_level %zu.", scheduler->next_reaction_level);
+        try_advance_level(scheduler->env, &scheduler->next_reaction_level);
 
         scheduler->executing_reactions =
             (void*)((reaction_t***)scheduler->triggered_reactions)[
-                scheduler->next_reaction_level
+                scheduler->next_reaction_level - 1
             ];
 
+        LF_PRINT_DEBUG("DEBUG: start of rxn queue at %lu is %p", scheduler->next_reaction_level - 1, ((reaction_t**)scheduler->executing_reactions)[0]);
         if (((reaction_t**)scheduler->executing_reactions)[0] != NULL) {
             // There is at least one reaction to execute
-            scheduler->next_reaction_level++;
             return 1;
         }
     }
@@ -440,7 +440,7 @@ void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reacti
     if (reaction == NULL || !lf_bool_compare_and_swap(&reaction->status, inactive, queued)) {
         return;
     }
-    LF_PRINT_DEBUG("Scheduler: Enqueing reaction %s, which has level %lld.",
+    LF_PRINT_DEBUG("Scheduler: Enqueueing reaction %s, which has level %lld.",
             reaction->name, LF_LEVEL(reaction->index));
     _lf_sched_insert_reaction(scheduler, reaction);
 }

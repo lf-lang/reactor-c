@@ -9,6 +9,9 @@ lf_macos_support.c
 lf_windows_support.c
 lf_nrf52_support.c
 lf_zephyr_support.c
+lf_zephyr_clock_counter.c
+lf_zephyr_clock_kernel.c
+lf_rp2040_support.c
 )
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -18,6 +21,8 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
     target_compile_definitions(core PUBLIC PLATFORM_NRF52)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     target_compile_definitions(core PUBLIC PLATFORM_ZEPHYR)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
+    target_compile_definitions(core PUBLIC PLATFORM_RP2040)
 endif()
 
 # Add sources to the list for debug info

@@ -28,13 +28,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Peter Donovan <peterdonovan@berkeley.edu>}
  */
 #include "lf_types.h"
-#if defined SCHEDULER && SCHEDULER == ADAPTIVE
+#if defined SCHEDULER && SCHEDULER == SCHED_ADAPTIVE
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
 
 #include <assert.h>
 
+#include "environment.h"
 #include "scheduler_sync_tag_advance.h"
 #include "scheduler.h"
 #include "util.h"
@@ -465,7 +466,7 @@ static void advance_level_and_unlock(lf_scheduler_t* scheduler, size_t worker) {
                 return;
             }
         } else {
-            set_level(scheduler, worker_assignments->current_level + 1);
+            set_level(scheduler, try_advance_level(scheduler->env, &worker_assignments->current_level));
         }
         size_t total_num_reactions = get_num_reactions(scheduler);
         if (total_num_reactions) {
@@ -634,12 +635,6 @@ static void compute_number_of_workers(
             );
         }
         int minimum_workers = 1;
-#ifdef WORKERS_NEEDED_FOR_FEDERATE
-        // TODO: only apply this constraint on levels containing control reactions
-        assert(WORKERS_NEEDED_FOR_FEDERATE >= 1);
-        minimum_workers = WORKERS_NEEDED_FOR_FEDERATE > max_reasonable_num_workers ?
-            max_reasonable_num_workers : WORKERS_NEEDED_FOR_FEDERATE;
-#endif
         num_workers_by_level[level] = restrict_to_range(
             minimum_workers, max_reasonable_num_workers, ideal_number_of_workers
         );
@@ -770,4 +765,4 @@ void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reacti
     if (!lf_bool_compare_and_swap(&reaction->status, inactive, queued)) return;
     worker_assignments_put(scheduler, reaction);
 }
-#endif // defined SCHEDULER && SCHEDULER == ADAPTIVE
+#endif // defined SCHEDULER && SCHEDULER == SCHED_ADAPTIVE

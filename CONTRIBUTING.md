@@ -120,7 +120,7 @@ with an `@` sign. Example:
 
 ```c
 /**
- * @brief Enqueue network output control reactions that will send a PORT_ABSENT
+ * @brief Enqueue port absent reactions that will send a PORT_ABSENT
  * message to downstream federates if a given network output port is not present.
  */
 ```
