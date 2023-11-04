@@ -238,8 +238,7 @@ int lf_sleep(interval_t sleep_duration);
  * it do not themselves incur significant overhead to evaluate.
  */
 #define LF_PRINT_DEBUG(format, ...) \
-            do { if(LOG_LEVEL >= LOG_LEVEL_DEBUG) { \
-                    lf_print_debug(format, ##__VA_ARGS__); \
+            do { \
     static char* logtrace; \
     static char location_id[120]; \
     if (!logtrace) { /* slow path */ \
@@ -271,9 +270,11 @@ int lf_sleep(interval_t sleep_duration);
             _lf_parse_delay_vector(delay_vector_evar, &delay_vector_len, &delay_vector); \
         } \
     } \
-    if (*delay_vector_evar) { \
+    if (*delay_vector_evar && delay_vector[delay_vector_index] > 0) { \
         lf_sleep(delay_vector_index < delay_vector_len ? delay_vector[delay_vector_index++] : 0); \
     } \
+    if(LOG_LEVEL >= LOG_LEVEL_DEBUG && !(*delay_vector_evar)) { \
+                    lf_print_debug(format, ##__VA_ARGS__); \
 } } while (0)
 
 /**
