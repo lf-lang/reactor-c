@@ -306,3 +306,22 @@ tag_t transitive_next_event(enclave_t* e, tag_t candidate, bool visited[]) {
     }
     return result;
 }
+
+bool has_cycle(enclave_t *e, int target_id, bool visited[]) {
+    if (visited[e->id] || e->state == NOT_CONNECTED) {
+        if (e->id == target_id) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    visited[e->id] = true;
+
+    for (int i = 0; i < e->num_upstream; i++) {
+        if (has_cycle(_e_rti->enclaves[e->upstream[i]], target_id, visited)) {
+            return true;
+        }
+    }
+    return false;
+}

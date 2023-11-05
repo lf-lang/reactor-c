@@ -293,18 +293,19 @@ void send_upstream_next_downstream_tag(federate_t* fed, tag_t next_event_tag) {
     encode_int32((int32_t)next_event_tag.microstep, &(buffer[1 + sizeof(int64_t)]));
 
     // FIXME: Send NDT to transitive upstreams either. 
+    bool *visited = (bool *)calloc(_f_rti->number_of_enclaves, sizeof(bool)); // Initializes to 0.
+    if (has_cycle(&fed->enclave, fed->enclave.id, visited)) {
+        // This fed is a part of a cycle. Don't apply the NDT optimization.
+        LF_PRINT_DEBUG("There is a cycle including this federate.");
+        return;
+    }
+    LF_PRINT_DEBUG("There is no cycle including this federate.");
+
     // Also, the RTI has to check the sparsity of a federate and determine whether
     // it sends NDT to it or not.
     for (int i = 0; i < fed->enclave.num_upstream; i++) {
         int upstream_id = fed->enclave.upstream[i];
         federate_t* upstream_federate = _f_rti->enclaves[upstream_id];
-        bool has_cycle = false;
-        // FIXME: Add a util function in enclave.c to detect whether a federate is
-        // in a cycle. It needs to be a recursive algorithm.
-        if (has_cycle) {
-            // fed and upstream_fed consist a cycle. Do not use NDT.
-            continue;
-        }
 
         if (lf_tag_compare(upstream_federate->enclave.completed, next_event_tag) < 0 &&
         lf_tag_compare(upstream_federate->enclave.next_event, next_event_tag) <= 0) {

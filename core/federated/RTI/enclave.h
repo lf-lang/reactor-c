@@ -260,4 +260,6 @@ void update_enclave_next_event_tag_locked(enclave_t* e, tag_t next_event_tag);
  */
 tag_t transitive_next_event(enclave_t *e, tag_t candidate, bool visited[]);
 
+bool has_cycle(enclave_t *e, int target_id, bool visited[]);
+
 #endif // ENCLAVE_H
