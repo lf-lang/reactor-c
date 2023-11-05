@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 # Utility that reports the interactions (exchanged messages) between federates and the RTI in a 
 # sequence-diagram-like format, or between enclaves in an enclaved execution.
