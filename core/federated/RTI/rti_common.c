@@ -83,6 +83,7 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e) {
     for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
         path_delays[i] = FOREVER_TAG;
     }
+    path_delays[e->id] = ZERO_TAG;
     shortest_path_upstream(e, NULL, path_delays);
 
     // Next, find the tag of the earliest possible incoming message from upstream enclaves or
@@ -90,7 +91,7 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e) {
     // This could be NEVER_TAG if the RTI has not seen a NET from some upstream node.
     tag_t t_d = FOREVER_TAG;
     for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
-        if (path_delays[i].time < FOREVER) {
+        if (e->id != i && path_delays[i].time < FOREVER) {
             // Node i is upstream of e. Note that it could be that i == e.
             scheduling_node_t* upstream = rti_common->scheduling_nodes[i];
             tag_t earliest_tag_from_upstream = lf_tag_add(upstream->next_event, path_delays[i]);
@@ -171,6 +172,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
                 e->next_event.microstep);
         result.tag = e->next_event;
     } else if (
+        // FIXME: if e->is_in_zero_delay_cycle
         lf_tag_compare(t_d, e->next_event) == 0      // The enclave has something to do/
         && lf_tag_compare(t_d, e->last_provisionally_granted) > 0  // The grant is not redundant.
         && lf_tag_compare(t_d, e->last_granted) > 0  // The grant is not redundant.

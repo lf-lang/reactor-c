@@ -242,7 +242,8 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e);
  * 
  * This function calls itself recursively. On the first call,`path_delay` should be an
  * array whose size matches the number of nodes in the system.  Each entry in the array
- * should be FOREVER_TAG. On that first call, `intermediate` should be NULL.
+ * should be FOREVER_TAG except the node for which we finding the shortest path, which
+ * should have an entry (0,0). On that first call, `intermediate` should be NULL.
  * 
  * If the resulting entry for `end` remains FOREVER_TAG, then there is no cycle
  * back from the outputs of `end` to itself. Otherwise, the value of the entry will
