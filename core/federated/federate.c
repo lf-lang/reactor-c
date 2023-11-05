@@ -423,9 +423,12 @@ int send_timed_message(environment_t* env,
     }
 
     // Insert the ndt_node at the tag to send LTC to the RTI.
-    ndt_node* node = (ndt_node*) malloc(sizeof(ndt_node));
-    node->tag = current_message_intended_tag;
-    pqueue_insert(env->ndt_q, node);
+    if (pqueue_size(env->ndt_q) != 0) {
+        LF_PRINT_DEBUG("Insert NDT at the intended to send LTC and NET quickly.");
+        ndt_node* node = (ndt_node*) malloc(sizeof(ndt_node));
+        node->tag = current_message_intended_tag;
+        pqueue_insert(env->ndt_q, node);
+    }
 
     // Trace the event when tracing is enabled
     if (message_type == MSG_TYPE_TAGGED_MESSAGE) {
@@ -1408,7 +1411,7 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
     
     // FIXME: Currently, a federate cannot send skipped port absent messages
     // when it receives NDT lately. So every port absent messages are sent tentatively.
-    // if (pqueue_peek(env->ndt_q) != NULL) {
+    // if (pqueue_size(env->ndt_q) != 0 ) {
     //     tag_t ndt_q_barrier = ((ndt_node*) pqueue_peek(env->ndt_q))->tag;
     //     if (lf_tag_compare(current_message_intended_tag, ndt_q_barrier) < 0) {
     //         // No events exist in any downstream federates
@@ -1934,7 +1937,7 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
     environment_t *env;
     _lf_get_environments(&env);
     bool need_to_send_LTC = true;
-    if (pqueue_peek(env->ndt_q) != NULL) {
+    if (pqueue_size(env->ndt_q) != 0 ) {
         tag_t ndt_q_barrier = ((ndt_node*) pqueue_peek(env->ndt_q))->tag;
         if (lf_tag_compare(tag_to_send, ndt_q_barrier) < 0) {
             // No events exist in any downstream federates
@@ -2803,7 +2806,7 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
             // If there is no downstream events that require the NET of the current tag,
             // do not send the NET.
             bool need_to_send_NET = true;
-            if (pqueue_peek(env->ndt_q) != NULL) {
+            if (pqueue_size(env->ndt_q) != 0 ) {
                 tag_t ndt_q_barrier = ((ndt_node*) pqueue_peek(env->ndt_q))->tag;
                 if (lf_tag_compare(tag, ndt_q_barrier) < 0) {
                     // No events exist in any downstream federates
