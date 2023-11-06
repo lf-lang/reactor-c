@@ -47,7 +47,7 @@ extern "C" {
 typedef struct environment_t environment_t;
 
 /**
- * @brief Notify of new event by calling the unthreaded platform API
+ * @brief Notify of new event.
  * @param env Environment in which we are executing.
  */
 int lf_notify_of_event(environment_t* env);

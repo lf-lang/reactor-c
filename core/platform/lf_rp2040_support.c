@@ -63,7 +63,7 @@ static uint32_t _lf_num_nested_crit_sec = 0;
 
 /**
  * Initialize basic runtime infrastructure and 
- * synchronization structs for an unthreaded runtime.
+ * synchronization structs for an single-threaded runtime.
  */
 void _lf_initialize_clock(void) {
     // init stdio lib
@@ -117,8 +117,8 @@ int lf_sleep(interval_t sleep_duration) {
  * by the argument or return early if the binary 
  * _lf_sem_irq_event semaphore is released before the target time.
  *
- * The semaphore is released using the _lf_unthreaded_notify_of_event
- * which is called by lf_schedule in the unthreaded runtime for physical actions.
+ * The semaphore is released using the _lf_single_threaded_notify_of_event
+ * which is called by lf_schedule in the single_threaded runtime for physical actions.
  *
  * @param  env  pointer to environment struct this runs in.
  * @param  wakeup_time  time in nanoseconds since boot to sleep until.
@@ -209,7 +209,7 @@ int lf_enable_interrupts_nested() {
  *
  * @return error code or 0 on success
  */
-int _lf_unthreaded_notify_of_event() {
+int _lf_single_threaded_notify_of_event() {
     // notify main sleep loop of event
     sem_release(&_lf_sem_irq_event);
     return 0;
