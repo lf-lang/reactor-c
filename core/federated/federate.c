@@ -1412,19 +1412,19 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
     tag_t current_message_intended_tag = lf_delay_strict(env->current_tag,
                                                     additional_delay);
     
-    // FIXME: Currently, a federate cannot send skipped port absent messages
-    // when it receives NDT lately. So every port absent messages are sent tentatively.
-    // if (pqueue_size(env->ndt_q) != 0 ) {
-    //     tag_t ndt_q_barrier = ((ndt_node*) pqueue_peek(env->ndt_q))->tag;
-    //     if (lf_tag_compare(current_message_intended_tag, ndt_q_barrier) < 0) {
-    //         // No events exist in any downstream federates
-    //         LF_PRINT_DEBUG("The intended tag " PRINTF_TAG " is smaller than the tag barrier " PRINTF_TAG "."
-    //         "Don't have to send the port absent message.",
-    //         current_message_intended_tag.time - start_time, current_message_intended_tag.microstep,
-    //         ndt_q_barrier.time - start_time, ndt_q_barrier.microstep);
-    //         return;
-    //     }
-    // }
+    if (pqueue_size(env->ndt_q) != 0 ) {
+        // FIXME: If the RTI changes the use of NDTs dynamically, merely checking the size
+        // is not enough.
+        tag_t ndt_q_barrier = ((ndt_node*) pqueue_peek(env->ndt_q))->tag;
+        if (lf_tag_compare(current_message_intended_tag, ndt_q_barrier) < 0) {
+            // No events exist in any downstream federates
+            LF_PRINT_DEBUG("The intended tag " PRINTF_TAG " is less than the earliest NDT " PRINTF_TAG "."
+            "Skip sending the port absent message.",
+            current_message_intended_tag.time - start_time, current_message_intended_tag.microstep,
+            ndt_q_barrier.time - start_time, ndt_q_barrier.microstep);
+            return;
+        }
+    }
 
     // Construct the message
     size_t message_length = 1 + sizeof(port_ID) + sizeof(fed_ID) + sizeof(instant_t) + sizeof(microstep_t);
@@ -1944,8 +1944,8 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
         tag_t ndt_q_barrier = ((ndt_node*) pqueue_peek(env->ndt_q))->tag;
         if (lf_tag_compare(tag_to_send, ndt_q_barrier) < 0) {
             // No events exist in any downstream federates
-            LF_PRINT_DEBUG("The intended tag " PRINTF_TAG " is smaller than the tag barrier " PRINTF_TAG "."
-            "Don't have to send the logical tag complete.",
+            LF_PRINT_DEBUG("The intended tag " PRINTF_TAG " is less than the earliest NDT " PRINTF_TAG "."
+            "Skip sending the logical tag complete.",
             tag_to_send.time - start_time, tag_to_send.microstep,
             ndt_q_barrier.time - start_time, ndt_q_barrier.microstep);
             need_to_send_LTC = false;
@@ -2832,11 +2832,13 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
             // do not send the NET.
             bool need_to_send_NET = true;
             if (pqueue_size(env->ndt_q) != 0 ) {
+                // FIXME: If the RTI changes the use of NDTs dynamically, merely checking the size
+                // is not enough.
                 tag_t ndt_q_barrier = ((ndt_node*) pqueue_peek(env->ndt_q))->tag;
                 if (lf_tag_compare(tag, ndt_q_barrier) < 0) {
                     // No events exist in any downstream federates
-                    LF_PRINT_DEBUG("The intended tag " PRINTF_TAG " is smaller than the tag barrier " PRINTF_TAG "."
-                    "Don't have to send the next event tag.",
+                    LF_PRINT_DEBUG("The intended tag " PRINTF_TAG " is less than the earliest NDT " PRINTF_TAG "."
+                    "Skip sending the next event tag.",
                     tag.time - start_time, tag.microstep,
                     ndt_q_barrier.time - start_time, ndt_q_barrier.microstep);
                     need_to_send_NET = false;
