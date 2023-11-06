@@ -282,6 +282,23 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
     update_enclave_next_event_tag_locked(&(fed->enclave), next_event_tag);
 }
 
+/**
+ * Update the cycle information of every federate.
+*/
+void update_cycle_information() {
+    bool *visited = (bool *)calloc(_f_rti->number_of_enclaves, sizeof(bool));
+    for (int i = 0; i < _f_rti->number_of_enclaves; i++) {
+        enclave_t* target_enclave = &_f_rti->enclaves[i]->enclave;
+        if (check_cycle(target_enclave, i, visited)) {
+            target_enclave->is_in_cycle = true;
+            LF_PRINT_DEBUG("There is a cycle including federate %d.", i);
+        } else {
+            target_enclave->is_in_cycle = false;
+            LF_PRINT_DEBUG("There is no cycle including federate %d.", i);
+        }
+    }
+}
+
 void send_upstream_next_downstream_tag(federate_t* fed, tag_t next_event_tag) {
     // The RTI receives next_event_tag from the federated fed. 
     // It has to send NDT messages to the upstream federates of fed
@@ -293,13 +310,6 @@ void send_upstream_next_downstream_tag(federate_t* fed, tag_t next_event_tag) {
     encode_int32((int32_t)next_event_tag.microstep, &(buffer[1 + sizeof(int64_t)]));
 
     // FIXME: Send NDT to transitive upstreams either. 
-    bool *visited = (bool *)calloc(_f_rti->number_of_enclaves, sizeof(bool)); // Initializes to 0.
-    if (has_cycle(&fed->enclave, fed->enclave.id, visited)) {
-        // This fed is a part of a cycle. Don't apply the NDT optimization.
-        LF_PRINT_DEBUG("There is a cycle including this federate.");
-        return;
-    }
-    LF_PRINT_DEBUG("There is no cycle including this federate.");
 
     // Also, the RTI has to check the sparsity of a federate and determine whether
     // it sends NDT to it or not.
@@ -307,9 +317,14 @@ void send_upstream_next_downstream_tag(federate_t* fed, tag_t next_event_tag) {
         int upstream_id = fed->enclave.upstream[i];
         federate_t* upstream_federate = _f_rti->enclaves[upstream_id];
 
+        if (upstream_federate->enclave.is_in_cycle) {
+            LF_PRINT_DEBUG("There is a cycle including federate %d. Do not send the NDT", i);
+            continue;
+        }
+
         if (lf_tag_compare(upstream_federate->enclave.completed, next_event_tag) < 0 &&
         lf_tag_compare(upstream_federate->enclave.next_event, next_event_tag) <= 0) {
-            // send next downstream tag to upstream federates that do not complete at next_event_tag
+            // Send next downstream tag to upstream federates that do not complete at next_event_tag
             LF_PRINT_LOG("RTI sending the next downstream event message (NDT) " PRINTF_TAG "to federate %u.",
                 next_event_tag.time - start_time, next_event_tag.microstep, upstream_id);
             if (_f_rti->tracing_enabled) {
@@ -1528,8 +1543,10 @@ void connect_to_federates(int socket_descriptor) {
             i--;
         }
     }
+    update_cycle_information();
     // All federates have connected.
     LF_PRINT_DEBUG("All federates have connected to RTI.");
+
 
     if (_f_rti->clock_sync_global_status >= clock_sync_on) {
         // Create the thread that performs periodic PTP clock synchronization sessions

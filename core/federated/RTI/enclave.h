@@ -61,6 +61,7 @@ typedef struct enclave_t {
     execution_mode_t mode;  // FAST or REALTIME.
     lf_cond_t next_event_condition; // Condition variable used by enclaves to notify an enclave
                                     // that it's call to next_event_tag() should unblock.
+    bool is_in_cycle;
 } enclave_t;
 
 /**
@@ -260,6 +261,19 @@ void update_enclave_next_event_tag_locked(enclave_t* e, tag_t next_event_tag);
  */
 tag_t transitive_next_event(enclave_t *e, tag_t candidate, bool visited[]);
 
-bool has_cycle(enclave_t *e, int target_id, bool visited[]);
+/**
+ * Check whether the target enclave is a part of a cycle or not.
+ * This function follows the edge of reaction graph in the depth
+ * first manner. It can conclude that the enclave is in a cylce
+ * if it meets the target enclave again.
+ *
+ * @param e The current enclave.
+ * @param target_id The id of the target enclave.
+ * @param visited An array of booleans indicating which federates
+ *  have been visited (for the first invocation, this should be
+ *  an array of falses of size _RTI.number_of_federates).
+ * @return Whether the target enclave is in a cycle.
+*/
+bool check_cycle(enclave_t *e, int target_id, bool visited[]);
 
 #endif // ENCLAVE_H

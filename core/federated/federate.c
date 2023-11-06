@@ -424,6 +424,8 @@ int send_timed_message(environment_t* env,
 
     // Insert the ndt_node at the tag to send LTC to the RTI.
     if (pqueue_size(env->ndt_q) != 0) {
+        // FIXME: If the RTI changes the use of NDTs dynamically, merely checking the size
+        // is not enough.
         LF_PRINT_DEBUG("Insert NDT at the intended to send LTC and NET quickly.");
         ndt_node* node = (ndt_node*) malloc(sizeof(ndt_node));
         node->tag = current_message_intended_tag;

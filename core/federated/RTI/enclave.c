@@ -31,6 +31,7 @@ void initialize_enclave(enclave_t* e, uint16_t id) {
     e->downstream = NULL;
     e->num_downstream = 0;
     e->mode = REALTIME;
+    e->is_in_cycle = false;
 
     // Initialize the next event condition variable.
     lf_cond_init(&e->next_event_condition, &rti_mutex);
@@ -307,7 +308,7 @@ tag_t transitive_next_event(enclave_t* e, tag_t candidate, bool visited[]) {
     return result;
 }
 
-bool has_cycle(enclave_t *e, int target_id, bool visited[]) {
+bool check_cycle(enclave_t *e, int target_id, bool visited[]) {
     if (visited[e->id] || e->state == NOT_CONNECTED) {
         if (e->id == target_id) {
             return true;
@@ -319,7 +320,7 @@ bool has_cycle(enclave_t *e, int target_id, bool visited[]) {
     visited[e->id] = true;
 
     for (int i = 0; i < e->num_upstream; i++) {
-        if (has_cycle(_e_rti->enclaves[e->upstream[i]], target_id, visited)) {
+        if (check_cycle(_e_rti->enclaves[e->upstream[i]], target_id, visited)) {
             return true;
         }
     }

@@ -238,6 +238,10 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
  */
 void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_event_tag);
 
+/**
+ * Update the cycle information of every federate.
+*/
+void update_cycle_information();
 
 /**
  * @brief Send the next downstream tag.
