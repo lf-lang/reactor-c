@@ -296,7 +296,11 @@ void update_cycle_information() {
             target_enclave->is_in_cycle = false;
             LF_PRINT_DEBUG("There is no cycle including federate %d.", i);
         }
+        for (int j = 0; j < _f_rti->number_of_enclaves; j++) {
+            visited[j] = false;
+        }
     }
+    free(visited);
 }
 
 void send_upstream_next_downstream_tag(federate_t* fed, tag_t next_event_tag) {
