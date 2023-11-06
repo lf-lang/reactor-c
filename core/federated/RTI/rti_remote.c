@@ -1260,14 +1260,22 @@ int receive_connection_information(int socket_id, uint16_t fed_id) {
             fed_id);
 
         // Allocate memory for the upstream and downstream pointers
-        fed->enclave.upstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_upstream);
-        fed->enclave.downstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_downstream);
-
-        // Allocate memory for the upstream delay pointers
-        fed->enclave.upstream_delay =
-            (interval_t*)malloc(
-                sizeof(interval_t) * fed->enclave.num_upstream
-            );
+        if (fed->enclave.num_upstream > 0) {
+            fed->enclave.upstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_upstream);
+            // Allocate memory for the upstream delay pointers
+            fed->enclave.upstream_delay =
+                (interval_t*)malloc(
+                    sizeof(interval_t) * fed->enclave.num_upstream
+                );
+        } else {
+            fed->enclave.upstream = (int*)NULL;
+            fed->enclave.upstream_delay = (interval_t*)NULL;
+        }
+        if (fed->enclave.num_downstream > 0) {
+            fed->enclave.downstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_downstream);
+        } else {
+            fed->enclave.downstream = (int*)
+        }
 
         size_t connections_info_body_size = ((sizeof(uint16_t) + sizeof(int64_t)) *
             fed->enclave.num_upstream) + (sizeof(uint16_t) * fed->enclave.num_downstream);
