@@ -275,7 +275,7 @@ bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition
 #ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized
     // Apply the STA to the logical time
     // Prevent an overflow
-    if (wait_until_time_ns < FOREVER - _lf_fed_STA_offset) {
+    if (start_time != logical_time && wait_until_time_ns < FOREVER - _lf_fed_STA_offset) {
         // If wait_time is not forever
         LF_PRINT_DEBUG("Adding STA " PRINTF_TIME " to wait until time " PRINTF_TIME ".",
                 _lf_fed_STA_offset,
