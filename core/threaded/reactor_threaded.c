@@ -30,7 +30,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Marten Lohstroh <marten@berkeley.edu>}
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
  */
-#if defined LF_THREADED
+#if !defined LF_SINGLE_THREADED
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS

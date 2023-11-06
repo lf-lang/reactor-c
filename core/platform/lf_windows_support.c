@@ -163,7 +163,7 @@ int lf_nanosleep(interval_t sleep_duration) {
 #endif
 
 
-#if defined(LF_THREADED)
+#if !defined(LF_SINGLE_THREADED)
 int lf_available_cores() {
     SYSTEM_INFO sysinfo;
     GetSystemInfo(&sysinfo);

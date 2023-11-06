@@ -31,6 +31,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Abhi Gundrala <gundralaa@berkeley.edu>}
  */
 
+#if !defined(LF_SINGLE_THREADED)
+#error "Only the single-threaded runtime has support for RP2040"
+#endif
+
 #include "lf_rp2040_support.h"
 #include "platform.h"
 #include "utils/util.h"
@@ -145,7 +149,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_ti
     return ret_code;
 }
 
-#ifdef LF_UNTHREADED
+#if defined(LF_SINGLE_THREADED)
 /**
  * The single thread RP2040 platform support treats second core
  * routines similar to external interrupt routine threads.
@@ -212,9 +216,6 @@ int _lf_unthreaded_notify_of_event() {
 }
 #endif //LF_UNTHREADED
 
-#ifdef LF_THREADED
-#error "Threading for baremetal RP2040 not supported"
-#endif //LF_THREADED
 
 #endif // PLATFORM_RP2040
 

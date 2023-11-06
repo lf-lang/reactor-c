@@ -61,7 +61,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "hashset/hashset_itr.h"
 #include "environment.h"
 
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
 #include "watchdog.h"
 
 // Code generated global variables.
@@ -1339,7 +1339,7 @@ trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_del
 void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker) {
     assert(env != GLOBAL_ENVIRONMENT);
 
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
     if (((self_base_t*) reaction->self)->reactor_mutex != NULL) {
         lf_mutex_lock((lf_mutex_t*)((self_base_t*)reaction->self)->reactor_mutex);
     }
@@ -1352,7 +1352,7 @@ void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker) {
     tracepoint_reaction_ends(env->trace, reaction, worker);
 
 
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
     if (((self_base_t*) reaction->self)->reactor_mutex != NULL) {
         lf_mutex_unlock((lf_mutex_t*)((self_base_t*)reaction->self)->reactor_mutex);
     }
@@ -1796,7 +1796,7 @@ void termination(void) {
         lf_print_warning("Memory allocated for tokens has not been freed!");
         lf_print_warning("Number of unfreed tokens: %d.", _lf_count_token_allocations);
     }
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
     for (int i = 0; i < _lf_watchdog_count; i++) {
         if (_lf_watchdogs[i].base->reactor_mutex != NULL) {
             free(_lf_watchdogs[i].base->reactor_mutex);

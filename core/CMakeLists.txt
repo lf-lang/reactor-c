@@ -21,16 +21,16 @@ if (DEFINED FEDERATED)
 endif()
 
 # Add sources for either threaded or single-threaded runtime
-if(DEFINED LF_THREADED)
-    message(STATUS "Including sources for threaded runtime with \
-${NUMBER_OF_WORKERS} worker(s) with scheduler=${SCHEDULER} and \
-tracing=${LF_TRACE}.")
-    include(threaded/CMakeLists.txt)
-else()
+if(DEFINED LF_SINGLE_THREADED)
     message(STATUS "Including sources for single-threaded runtime.")
     list(APPEND SINGLE_THREADED_SOURCES reactor.c)
     target_sources(core PRIVATE ${SINGLE_THREADED_SOURCES})
     list(APPEND INFO_SOURCES ${SINGLE_THREADED_SOURCES})
+else()
+    message(STATUS "Including sources for threaded runtime with \
+${NUMBER_OF_WORKERS} worker(s) with scheduler=${SCHEDULER} and \
+tracing=${LF_TRACE}.")
+    include(threaded/CMakeLists.txt)
 endif()
 
 
@@ -75,7 +75,7 @@ if(DEFINED _LF_CLOCK_SYNC_ON)
 endif()
 
 # Link with thread library, unless if we are targeting the Zephyr RTOS
-if(DEFINED LF_THREADED OR DEFINED LF_TRACE)
+if(NOT DEFINED LF_SINGLE_THREADED OR DEFINED LF_TRACE)
     if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
         find_package(Threads REQUIRED)
         target_link_libraries(core PUBLIC Threads::Threads)
@@ -112,7 +112,6 @@ define(FEDERATED_DECENTRALIZED)
 define(FEDERATED)
 define(FEDERATED_AUTHENTICATED)
 define(LF_REACTION_GRAPH_BREADTH)
-define(LF_THREADED)
 define(LF_TRACE)
 define(LF_SINGLE_THREADED)
 define(LOG_LEVEL)

@@ -18,9 +18,7 @@ endif()
 # Whether or not we are using THREADED or SINGLE-THREADED runtime is a global
 # flag. If it is passed to cmake. Then add it as a global compile def which
 # is inherited by all child nodes (add_subdirectory)
-if(DEFINED LF_THREADED)
-    add_compile_definitions(LF_THREADED=1)
-else()
+if(DEFINED LF_SINGLE_THREADED)
     add_compile_definitions(LF_SINGLE_THREADED=1)
 endif()
 

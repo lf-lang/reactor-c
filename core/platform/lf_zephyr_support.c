@@ -74,7 +74,7 @@ int lf_enable_interrupts_nested() {
     return 0;
 }
 
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
 #if !defined(LF_ZEPHYR_STACK_SIZE)
     #define LF_ZEPHYR_STACK_SIZE LF_ZEPHYR_STACK_SIZE_DEFAULT
 #endif

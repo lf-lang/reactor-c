@@ -34,7 +34,7 @@
 #include "lf_types.h"
 #include <string.h>
 #include "trace.h"
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
 #include "scheduler.h"
 #endif
 
@@ -42,7 +42,7 @@
  * @brief Initialize the threaded part of the environment struct.
  */
 static void environment_init_threaded(environment_t* env, int num_workers) {
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
     env->num_workers = num_workers;
     env->thread_ids = (lf_thread_t*)calloc(num_workers, sizeof(lf_thread_t));
     lf_assert(env->thread_ids != NULL, "Out of memory");
@@ -126,7 +126,7 @@ void environment_init_tags( environment_t *env, instant_t start_time, interval_t
 }
 
 static void environment_free_threaded(environment_t* env) {
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
     free(env->thread_ids);
     lf_sched_free(env->scheduler);   
 #endif
