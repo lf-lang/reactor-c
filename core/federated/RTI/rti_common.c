@@ -268,4 +268,5 @@ void shortest_path_upstream(scheduling_node_t* end, scheduling_node_t* intermedi
         }
     }
 }
+
 #endif

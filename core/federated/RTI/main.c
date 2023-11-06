@@ -284,6 +284,7 @@ int main(int argc, const char* argv[]) {
 
     int socket_descriptor = start_rti_server(rti.user_specified_port);
     wait_for_federates(socket_descriptor);
+    free_scheduling_nodes(rti.base.scheduling_nodes, rti.base.number_of_scheduling_nodes);
     lf_print("RTI is exiting.");
     return 0;
 }

@@ -255,5 +255,10 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e);
  */
 void shortest_path_upstream(scheduling_node_t* end, scheduling_node_t* intermediate, tag_t path_delays[]);
 
+/**
+ * Free dynamically allocated memory on the scheduling nodes and the scheduling node array itself.
+ */
+void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes);
+
 #endif // RTI_COMMON_H
 #endif // STANDALONE_RTI || LF_ENCLAVES

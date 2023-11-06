@@ -29,9 +29,13 @@ typedef struct {
 
 /**
  * @brief Dynamically create and initialize the local RTI.
- * 
  */
 void initialize_local_rti(environment_t* envs, int num_envs);
+
+/**
+ * @brief Free memory associated with the local the RTI and the local RTI iself.
+ */
+void free_local_rti();
 
 /**
  * @brief Initialize the enclave object.

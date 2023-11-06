@@ -1216,6 +1216,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
             LF_PRINT_LOG("---- All worker threads exited successfully.");
         }
     }
+#if defined LF_ENCLAVES
+    free_local_rti();
+#endif
     return 0;
 }   
 

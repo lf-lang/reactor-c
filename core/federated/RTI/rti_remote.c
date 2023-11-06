@@ -1274,7 +1274,7 @@ int receive_connection_information(int socket_id, uint16_t fed_id) {
         if (fed->enclave.num_downstream > 0) {
             fed->enclave.downstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_downstream);
         } else {
-            fed->enclave.downstream = (int*)
+            fed->enclave.downstream = (int*)NULL;
         }
 
         size_t connections_info_body_size = ((sizeof(uint16_t) + sizeof(int64_t)) *
@@ -1649,4 +1649,15 @@ void initialize_RTI(rti_remote_t *rti){
     rti_remote->base.tracing_enabled = false;
     rti_remote->stop_in_progress = false;
 }
+
+void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
+    for (uint16_t i = 0; i < number_of_scheduling_nodes; i++) {
+        // FIXME: Gives error freeing memory not allocated!!!!
+        scheduling_node_t* node = scheduling_nodes[i];
+        if (node->upstream != NULL) free(node->upstream);
+        if (node->downstream != NULL) free(node->downstream);
+    }
+    free(scheduling_nodes);
+}
+
 #endif // STANDALONE_RTI
