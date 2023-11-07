@@ -12,6 +12,7 @@ lf_zephyr_support.c
 lf_zephyr_clock_counter.c
 lf_zephyr_clock_kernel.c
 lf_rp2040_support.c
+lf_STM32f4_support.c
 )
 
 if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -21,6 +22,8 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
     target_compile_definitions(core PUBLIC PLATFORM_NRF52)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     target_compile_definitions(core PUBLIC PLATFORM_ZEPHYR)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "STM32f4")
+    target_compile_definitions(core PUBLIC PLATFORM_STM32F4)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
     target_compile_definitions(core PUBLIC PLATFORM_RP2040)
 endif()
