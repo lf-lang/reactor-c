@@ -52,6 +52,13 @@ jobs:
       runtime-ref: ${{ github.ref }}
       compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
 
+  lf-python:
+    needs: fetch-lf
+    uses: lf-lang/lingua-franca/.github/workflows/py-tests.yml@master
+    with:
+      reactor-c-ref: ${{ github.ref }}
+      compiler-ref: ${{ needs.fetch-lf.outputs.ref }}
+
   lf-gedf-np:
     needs: fetch-lf
     uses: lf-lang/lingua-franca/.github/workflows/c-tests.yml@master
