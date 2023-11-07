@@ -214,7 +214,7 @@ int _lf_single_threaded_notify_of_event() {
     sem_release(&_lf_sem_irq_event);
     return 0;
 }
-#endif //LF_UNTHREADED
+#endif // LF_SINGLE_THREADED
 
 
 #endif // PLATFORM_RP2040
