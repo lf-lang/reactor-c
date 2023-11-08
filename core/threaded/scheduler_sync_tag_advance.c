@@ -1,4 +1,4 @@
-#if defined(LF_THREADED)
+#if !defined(LF_SINGLE_THREADED)
 /*************
 Copyright (c) 2022, The University of Texas at Dallas.
 Copyright (c) 2022, The University of California at Berkeley.
