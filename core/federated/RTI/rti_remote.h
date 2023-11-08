@@ -506,7 +506,7 @@ int process_args(int argc, const char* argv[]);
 /**
  * Initialize the _RTI instance.
  */
-void initialize_RTI();
+void initialize_RTI(rti_remote_t *rti);
 
 #endif // RTI_REMOTE_H
 #endif // STANDALONE_RTI
