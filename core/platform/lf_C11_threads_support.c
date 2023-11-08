@@ -1,4 +1,4 @@
-#if defined(LF_THREADED) && !defined(PLATFORM_ARDUINO)
+#if !defined(LF_SINGLE_THREADED) && !defined(PLATFORM_ARDUINO)
 #include "platform.h"
 #include "lf_C11_threads_support.h"
 

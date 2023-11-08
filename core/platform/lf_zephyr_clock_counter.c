@@ -210,7 +210,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
 /**
  * We notify of async events by setting the flag and giving the semaphore.
  */
-int _lf_unthreaded_notify_of_event() {
+int _lf_single_threaded_notify_of_event() {
    async_event = true;
     k_sem_give(&semaphore);
    return 0;

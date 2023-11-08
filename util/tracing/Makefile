@@ -8,7 +8,7 @@ CFLAGS=	-I$(REACTOR_C)/include/core/ \
 		-I$(REACTOR_C)/include/core/modal_models \
 		-I$(REACTOR_C)/include/core/platform \
 		-I$(REACTOR_C)/include/core/utils \
-		-DLF_UNTHREADED=1 \
+		-DLF_SINGLE_THREADED=1 \
 		-Wall
 DEPS=
 LIBS=-lcurl

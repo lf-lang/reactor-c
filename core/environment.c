@@ -34,7 +34,7 @@
 #include "lf_types.h"
 #include <string.h>
 #include "trace.h"
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
 #include "scheduler.h"
 #endif
 
@@ -42,7 +42,7 @@
  * @brief Initialize the threaded part of the environment struct.
  */
 static void environment_init_threaded(environment_t* env, int num_workers) {
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
     env->num_workers = num_workers;
     env->thread_ids = (lf_thread_t*)calloc(num_workers, sizeof(lf_thread_t));
     lf_assert(env->thread_ids != NULL, "Out of memory");
@@ -64,10 +64,10 @@ static void environment_init_threaded(environment_t* env, int num_workers) {
 #endif
 }
 /**
- * @brief Initialize the unthreaded-specific parts of the environment struct.
+ * @brief Initialize the single-threaded-specific parts of the environment struct.
  */
-static void environment_init_unthreaded(environment_t* env) {
-#ifdef LF_UNTHREADED
+static void environment_init_single_threaded(environment_t* env) {
+#ifdef LF_SINGLE_THREADED
     // Reaction queue ordered first by deadline, then by level.
     // The index of the reaction holds the deadline in the 48 most significant bits,
     // the level in the 16 least significant bits.
@@ -126,14 +126,14 @@ void environment_init_tags( environment_t *env, instant_t start_time, interval_t
 }
 
 static void environment_free_threaded(environment_t* env) {
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
     free(env->thread_ids);
     lf_sched_free(env->scheduler);   
 #endif
 }
 
-static void environment_free_unthreaded(environment_t* env) {
-#ifdef LF_UNTHREADED
+static void environment_free_single_threaded(environment_t* env) {
+#ifdef LF_SINGLE_THREADED
     pqueue_free(env->reaction_q);
 #endif
 }
@@ -166,7 +166,7 @@ void environment_free(environment_t* env) {
     pqueue_free(env->next_q);
 
     environment_free_threaded(env);
-    environment_free_unthreaded(env);
+    environment_free_single_threaded(env);
     environment_free_modes(env);
     environment_free_federated(env);
     trace_free(env->trace);
@@ -230,7 +230,7 @@ int environment_init(
 
     // Initialize functionality depending on target properties.
     environment_init_threaded(env, num_workers);
-    environment_init_unthreaded(env);
+    environment_init_single_threaded(env);
     environment_init_modes(env, num_modes, num_state_resets);
     environment_init_federated(env, num_is_present_fields);
 
