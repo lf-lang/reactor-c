@@ -146,8 +146,10 @@ Enumerations</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:ae0fda178667bc6cd94890a13316c285c" id="r_ae0fda178667bc6cd94890a13316c285c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#ae0fda178667bc6cd94890a13316c285c">lf_critical_section_enter</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="memdesc:ae0fda178667bc6cd94890a13316c285c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter critical section by locking the global mutex.  <br /></td></tr>
 <tr class="separator:ae0fda178667bc6cd94890a13316c285c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed2c25495b50b46780c6288e4370541e" id="r_aed2c25495b50b46780c6288e4370541e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#aed2c25495b50b46780c6288e4370541e">lf_critical_section_exit</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="memdesc:aed2c25495b50b46780c6288e4370541e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leave a critical section by unlocking the global mutex.  <br /></td></tr>
 <tr class="separator:aed2c25495b50b46780c6288e4370541e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acde4076cd96817debe76e74fca261c70" id="r_acde4076cd96817debe76e74fca261c70"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d3/d90/rti__lib_8h.html#acde4076cd96817debe76e74fca261c70">create_server</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int32_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">specified_port</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">uint16_t</a> port, <a class="el" href="../../d3/d90/rti__lib_8h.html#a54c375e3893ff5969d20df65b90c8335">socket_type_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">socket_type</a>)</td></tr>
 <tr class="separator:acde4076cd96817debe76e74fca261c70"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -818,13 +820,21 @@ Chadlia Jerad (<a href="#" onclick="location.href='mai'+'lto:'+'cha'+'dl'+'ia.'+
   </tr>
 </table>
 </div><div class="memdoc">
-<p>Enter a critical section where logical time and the event queue are guaranteed to not change unless they are changed within the critical section. this can be implemented by disabling interrupts. Users of this function must ensure that <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">lf_init_critical_sections()</a> is called first and that <a class="el" href="../../d3/d90/rti__lib_8h.html#aed2c25495b50b46780c6288e4370541e">lf_critical_section_exit()</a> is called later. </p><dl class="params"><dt>Parameters</dt><dd>
+
+<p>Enter critical section by locking the global mutex. </p>
+<p>Enter a critical section where logical time and the event queue are guaranteed to not change unless they are changed within the critical section. this can be implemented by disabling interrupts. Users of this function must ensure that <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">lf_init_critical_sections()</a> is called first and that <a class="el" href="../../d5/dbc/reactor__threaded_8c.html#aed2c25495b50b46780c6288e4370541e" title="Leave a critical section by unlocking the global mutex.">lf_critical_section_exit()</a> is called later. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Ignored (present for compatibility). </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing or GLOBAL_ENVIRONMENT. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -851,13 +861,21 @@ Chadlia Jerad (<a href="#" onclick="location.href='mai'+'lto:'+'cha'+'dl'+'ia.'+
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Leave a critical section by unlocking the global mutex. </p>
 <p>Exit the critical section entered with <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">lf_lock_time()</a>. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Ignored (present for compatibility). </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing or GLOBAL_ENVIRONMENT. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

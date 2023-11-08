@@ -184,7 +184,7 @@ Variables</h2></td></tr>
 <tr class="separator:a20b56e8fb05c017508f1c4fa2e311a87"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a30ab7a367a583b4651bec6b42f6bda04" id="r_a30ab7a367a583b4651bec6b42f6bda04"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d9/d88/structfederation__rti__t.html">federation_rti_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d0d/rti__lib_8c.html#a30ab7a367a583b4651bec6b42f6bda04">_f_rti</a></td></tr>
 <tr class="separator:a30ab7a367a583b4651bec6b42f6bda04"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a900138c50464733b007a7cec4bb050ca" id="r_a900138c50464733b007a7cec4bb050ca"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../de/d03/platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d0d/rti__lib_8c.html#a900138c50464733b007a7cec4bb050ca">rti_mutex</a></td></tr>
+<tr class="memitem:a900138c50464733b007a7cec4bb050ca" id="r_a900138c50464733b007a7cec4bb050ca"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f">lf_mutex_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d0d/rti__lib_8c.html#a900138c50464733b007a7cec4bb050ca">rti_mutex</a></td></tr>
 <tr class="separator:a900138c50464733b007a7cec4bb050ca"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aba3e256a278f326c6101984491262800" id="r_aba3e256a278f326c6101984491262800"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/d0d/rti__lib_8c.html#aba3e256a278f326c6101984491262800">received_start_times</a></td></tr>
 <tr class="separator:aba3e256a278f326c6101984491262800"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -721,7 +721,7 @@ Soroush Bateni </dd></dl>
 </div><div class="memdoc">
 
 <p>Enter critical section by disabling interrupts. </p>
-<p>Enter a critical section where logical time and the event queue are guaranteed to not change unless they are changed within the critical section. this can be implemented by disabling interrupts. Users of this function must ensure that <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">lf_init_critical_sections()</a> is called first and that <a class="el" href="../../d3/d90/rti__lib_8h.html#aed2c25495b50b46780c6288e4370541e">lf_critical_section_exit()</a> is called later. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Enter a critical section where logical time and the event queue are guaranteed to not change unless they are changed within the critical section. this can be implemented by disabling interrupts. Users of this function must ensure that <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">lf_init_critical_sections()</a> is called first and that <a class="el" href="../../d3/d90/rti__lib_8h.html#aed2c25495b50b46780c6288e4370541e" title="Leave a critical section by unlocking the global mutex.">lf_critical_section_exit()</a> is called later. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">env</td><td>Ignored (present for compatibility). </td></tr>
   </table>
@@ -1311,7 +1311,7 @@ Soroush Bateni </dd></dl>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../de/d03/platform_8h.html#ad7c2ee72327071ecc11ecb5787fc4a37">lf_mutex_t</a> rti_mutex</td>
+          <td class="memname"><a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f">lf_mutex_t</a> rti_mutex</td>
         </tr>
       </table>
 </div><div class="memdoc">

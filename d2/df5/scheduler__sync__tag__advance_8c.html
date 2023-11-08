@@ -90,9 +90,84 @@ $(document).ready(function(){initNavTree('d2/df5/scheduler__sync__tag__advance_8
 </div>
 
 <div class="header">
+  <div class="summary">
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">scheduler_sync_tag_advance.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>API used to advance tag globally.  
+<a href="#details">More...</a></p>
+<div class="textblock"><code>#include &quot;<a class="el" href="../../d7/dff/scheduler__sync__tag__advance_8h_source.html">scheduler_sync_tag_advance.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../de/d26/environment_8h_source.html">environment.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d1/d1b/trace_8h_source.html">trace.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d8/d3c/util_8h_source.html">util.h</a>&quot;</code><br />
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a5ee7c21a8b90bb09784f221c1de4d9c9" id="r_a5ee7c21a8b90bb09784f221c1de4d9c9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/df5/scheduler__sync__tag__advance_8c.html#a5ee7c21a8b90bb09784f221c1de4d9c9">should_stop_locked</a> (<a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">sched</a>)</td></tr>
+<tr class="separator:a5ee7c21a8b90bb09784f221c1de4d9c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af2c6b4fac0a87c3cc914c713714e1fca" id="r_af2c6b4fac0a87c3cc914c713714e1fca"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/df5/scheduler__sync__tag__advance_8c.html#af2c6b4fac0a87c3cc914c713714e1fca">_lf_sched_advance_tag_locked</a> (<a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">sched</a>)</td></tr>
+<tr class="separator:af2c6b4fac0a87c3cc914c713714e1fca"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>API used to advance tag globally. </p>
+<p>Copyright (c) 2022, The University of Texas at Dallas. Copyright (c) 2022, The University of California at Berkeley.</p>
+<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
+<ol type="1">
+<li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
+</ol>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.</p>
+<dl class="section author"><dt>Author</dt><dd>Soroush Bateni (<a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>) </dd>
+<dd>
+Edward A. Lee <a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a> </dd>
+<dd>
+Marten Lohstroh <a href="#" onclick="location.href='mai'+'lto:'+'mar'+'te'+'n@b'+'er'+'kel'+'ey'+'.ed'+'u'; return false;">marte<span class="obfuscator">.nosp@m.</span>n@be<span class="obfuscator">.nosp@m.</span>rkele<span class="obfuscator">.nosp@m.</span>y.ed<span class="obfuscator">.nosp@m.</span>u</a> </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2022, The University of Texas at Dallas. </dd>
+<dd>
+Copyright (c) 2022, The University of California at Berkeley. </dd></dl>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="af2c6b4fac0a87c3cc914c713714e1fca" name="af2c6b4fac0a87c3cc914c713714e1fca"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af2c6b4fac0a87c3cc914c713714e1fca">&#9670;&#160;</a></span>_lf_sched_advance_tag_locked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> _lf_sched_advance_tag_locked </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *&#160;</td>
+          <td class="paramname"><em>sched</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Advance tag. This will also pop events for the newly acquired tag and put the triggered reactions on the '_lf_sched_vector_of_reaction_qs'.</p>
+<p>This function assumes the caller holds the 'mutex' lock.</p>
+<dl class="section return"><dt>Returns</dt><dd>should_exit True if the worker thread should exit. False otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a5ee7c21a8b90bb09784f221c1de4d9c9" name="a5ee7c21a8b90bb09784f221c1de4d9c9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ee7c21a8b90bb09784f221c1de4d9c9">&#9670;&#160;</a></span>should_stop_locked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> should_stop_locked </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../da/d7a/structlf__scheduler__t.html">lf_scheduler_t</a> *&#160;</td>
+          <td class="paramname"><em>sched</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Return true if the worker should stop now; false otherwise. This function assumes the caller holds the mutex lock. </p>
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

@@ -15,5 +15,8 @@ var lf__arduino__support_8h =
     [ "PRINTF_TIME", "d3/d79/lf__arduino__support_8h.html#a291f54d612d8e6c53b96bf176e579b9a", null ],
     [ "SAM", "d3/d79/lf__arduino__support_8h.html#a0184d5fd98854f0e40eef3a27de91fed", null ],
     [ "SAMD", "d3/d79/lf__arduino__support_8h.html#a5eed5c828e076621e5274450cdc6c32b", null ],
-    [ "ULLONG_MAX", "d3/d79/lf__arduino__support_8h.html#aa1dd7166a75b73ad62b111ae6fc17c59", null ]
+    [ "ULLONG_MAX", "d3/d79/lf__arduino__support_8h.html#aa1dd7166a75b73ad62b111ae6fc17c59", null ],
+    [ "lf_cond_t", "d3/d79/lf__arduino__support_8h.html#a6c35632edb1da74ecb0b28378d3c3a5c", null ],
+    [ "lf_mutex_t", "d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f", null ],
+    [ "lf_thread_t", "d3/d79/lf__arduino__support_8h.html#a7439fbd7bc7c609b5662aa94dc389e70", null ]
 ];

@@ -11,8 +11,9 @@ var searchData=
   ['eqelem_8',['eqelem',['../d5/d38/structpqueue__t.html#a27ad9197156c9be3cbc2845478223f32',1,'pqueue_t']]],
   ['event_9',['event',['../d6/d1e/namespacefedsd.html#a7a0e345901ddc16ed6e98e1c75d9a8c6',1,'fedsd']]],
   ['event_5fq_10',['event_q',['../d2/d01/structenvironment__t.html#aed648612adb3c7940a90535f8c324bfc',1,'environment_t']]],
-  ['event_5ftype_11',['event_type',['../dc/dcc/structsummary__stats__t.html#a41e8d8ec536eecb1f08224420fbc5d4a',1,'summary_stats_t']]],
-  ['executing_5freaction_12',['executing_reaction',['../d6/d8b/structself__base__t.html#a2282568a7a814225eec8a2148e087f09',1,'self_base_t']]],
-  ['executing_5freactions_13',['executing_reactions',['../da/d7a/structlf__scheduler__t.html#a6576ff25838ab8c4b530cf5a3c9f7e0d',1,'lf_scheduler_t']]],
-  ['expiration_14',['expiration',['../d3/dc4/structwatchdog__t.html#a7cbcda4103cfddef8a9a99aa1f2d4f3e',1,'watchdog_t']]]
+  ['event_5fq_5fchanged_11',['event_q_changed',['../d2/d01/structenvironment__t.html#a2e3007a4c73bbe1242f5b4d901c729e8',1,'environment_t']]],
+  ['event_5ftype_12',['event_type',['../dc/dcc/structsummary__stats__t.html#a41e8d8ec536eecb1f08224420fbc5d4a',1,'summary_stats_t']]],
+  ['executing_5freaction_13',['executing_reaction',['../d6/d8b/structself__base__t.html#a2282568a7a814225eec8a2148e087f09',1,'self_base_t']]],
+  ['executing_5freactions_14',['executing_reactions',['../da/d7a/structlf__scheduler__t.html#a6576ff25838ab8c4b530cf5a3c9f7e0d',1,'lf_scheduler_t']]],
+  ['expiration_15',['expiration',['../d3/dc4/structwatchdog__t.html#a7cbcda4103cfddef8a9a99aa1f2d4f3e',1,'watchdog_t']]]
 ];

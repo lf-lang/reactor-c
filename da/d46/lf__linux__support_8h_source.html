@@ -111,7 +111,7 @@ $(document).ready(function(){initNavTree('da/d46/lf__linux__support_8h_source.ht
 <div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span><span class="comment">// Use 64-bit times and 32-bit unsigned microsteps</span></div>
 <div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span><span class="preprocessor">#include &quot;<a class="code" href="../../d5/da7/lf__tag__64__32_8h.html">lf_tag_64_32.h</a>&quot;</span></div>
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span> </div>
-<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">#if defined LF_THREADED</span></div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span><span class="preprocessor">#if !defined LF_SINGLE_THREADED</span></div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span><span class="preprocessor">    #if __STDC_VERSION__ &lt; 201112L || defined (__STDC_NO_THREADS__)</span></div>
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span>        <span class="comment">// (Not C++11 or later) or no threads support</span></div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="preprocessor">        #include &quot;<a class="code" href="../../d6/d57/lf___p_o_s_i_x__threads__support_8h.html">lf_POSIX_threads_support.h</a>&quot;</span></div>

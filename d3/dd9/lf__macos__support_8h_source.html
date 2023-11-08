@@ -113,7 +113,7 @@ $(document).ready(function(){initNavTree('d3/dd9/lf__macos__support_8h_source.ht
 <div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span><span class="comment">// The underlying physical clock for MacOS</span></div>
 <div class="line"><a id="l00042" name="l00042"></a><span class="lineno"><a class="line" href="../../d3/dd9/lf__macos__support_8h.html#a98d0737d9461f08293ba054a2f754fc4">   42</a></span><span class="preprocessor">#define _LF_CLOCK CLOCK_MONOTONIC</span></div>
 <div class="line"><a id="l00043" name="l00043"></a><span class="lineno">   43</span> </div>
-<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="preprocessor">#if defined LF_THREADED</span></div>
+<div class="line"><a id="l00044" name="l00044"></a><span class="lineno">   44</span><span class="preprocessor">#if !defined LF_SINGLE_THREADED</span></div>
 <div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span><span class="preprocessor">    #if __STDC_VERSION__ &lt; 201112L || defined (__STDC_NO_THREADS__)</span></div>
 <div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>        <span class="comment">// (Not C++11 or later) or no threads support</span></div>
 <div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="preprocessor">        #include &quot;<a class="code" href="../../d6/d57/lf___p_o_s_i_x__threads__support_8h.html">lf_POSIX_threads_support.h</a>&quot;</span></div>

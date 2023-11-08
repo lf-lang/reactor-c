@@ -30,11 +30,12 @@ var searchData=
   ['num_5freactions_5fper_5flevel_5fsize_27',['num_reactions_per_level_size',['../dc/da2/structsched__params__t.html#a15d5c083329a86fde98d5990c21e43a4',1,'sched_params_t']]],
   ['num_5freactions_5fseen_28',['num_reactions_seen',['../dc/dcc/structsummary__stats__t.html#a1634ff91d800952e04b0440a1e7d7388',1,'summary_stats_t']]],
   ['num_5fupstream_29',['num_upstream',['../d5/df6/structenclave__t.html#af710de45a773ce26ceb3eb8b654e0b2a',1,'enclave_t']]],
-  ['number_30',['number',['../d2/d35/structreaction__t.html#aab519d27f6f52545358a4f5da15f3a18',1,'reaction_t']]],
-  ['number_5fof_5fenclaves_31',['number_of_enclaves',['../da/de7/structenclave__rti__t.html#a3ba9b114b7bbb16039cae059b8920b82',1,'enclave_rti_t::number_of_enclaves'],['../d9/d88/structfederation__rti__t.html#af9f12aaf3a44895c319658215f09230d',1,'federation_rti_t::number_of_enclaves']]],
-  ['number_5fof_5fidle_5fworkers_32',['number_of_idle_workers',['../da/d7a/structlf__scheduler__t.html#a1a647a73662fce0f55524dd596542d4b',1,'lf_scheduler_t']]],
-  ['number_5fof_5finbound_5fp2p_5fconnections_33',['number_of_inbound_p2p_connections',['../d6/d7a/structfederate__instance__t.html#a6b728a970ccb1ef778dbb9779582d2f2',1,'federate_instance_t']]],
-  ['number_5fof_5foutbound_5fp2p_5fconnections_34',['number_of_outbound_p2p_connections',['../d6/d7a/structfederate__instance__t.html#a2edee0c930dc6f10437a5a58306a097c',1,'federate_instance_t']]],
-  ['number_5fof_5freactions_35',['number_of_reactions',['../d6/d13/structtrigger__t.html#a53bebeaf8708d9dbe859df99972fb667',1,'trigger_t']]],
-  ['number_5fof_5fworkers_36',['number_of_workers',['../da/d7a/structlf__scheduler__t.html#a572c014dd84577ccddc5478b4c1194fd',1,'lf_scheduler_t']]]
+  ['num_5fworkers_30',['num_workers',['../d2/d01/structenvironment__t.html#a3f4ab6b55dcc31b6c5cd9e082d65547d',1,'environment_t']]],
+  ['number_31',['number',['../d2/d35/structreaction__t.html#aab519d27f6f52545358a4f5da15f3a18',1,'reaction_t']]],
+  ['number_5fof_5fenclaves_32',['number_of_enclaves',['../da/de7/structenclave__rti__t.html#a3ba9b114b7bbb16039cae059b8920b82',1,'enclave_rti_t::number_of_enclaves'],['../d9/d88/structfederation__rti__t.html#af9f12aaf3a44895c319658215f09230d',1,'federation_rti_t::number_of_enclaves']]],
+  ['number_5fof_5fidle_5fworkers_33',['number_of_idle_workers',['../da/d7a/structlf__scheduler__t.html#a1a647a73662fce0f55524dd596542d4b',1,'lf_scheduler_t']]],
+  ['number_5fof_5finbound_5fp2p_5fconnections_34',['number_of_inbound_p2p_connections',['../d6/d7a/structfederate__instance__t.html#a6b728a970ccb1ef778dbb9779582d2f2',1,'federate_instance_t']]],
+  ['number_5fof_5foutbound_5fp2p_5fconnections_35',['number_of_outbound_p2p_connections',['../d6/d7a/structfederate__instance__t.html#a2edee0c930dc6f10437a5a58306a097c',1,'federate_instance_t']]],
+  ['number_5fof_5freactions_36',['number_of_reactions',['../d6/d13/structtrigger__t.html#a53bebeaf8708d9dbe859df99972fb667',1,'trigger_t']]],
+  ['number_5fof_5fworkers_37',['number_of_workers',['../da/d7a/structlf__scheduler__t.html#a572c014dd84577ccddc5478b4c1194fd',1,'lf_scheduler_t']]]
 ];

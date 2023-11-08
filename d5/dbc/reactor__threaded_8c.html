@@ -90,9 +90,1117 @@ $(document).ready(function(){initNavTree('d5/dbc/reactor__threaded_8c.html','../
 </div>
 
 <div class="header">
+  <div class="summary">
+<a href="#define-members">Macros</a> &#124;
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle"><div class="title">reactor_threaded.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><code>#include &lt;assert.h&gt;</code><br />
+<code>#include &lt;signal.h&gt;</code><br />
+<code>#include &lt;string.h&gt;</code><br />
+<code>#include &lt;time.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="../../d6/d1d/lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../de/d03/platform_8h_source.html">platform.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d7/d0e/reactor__common_8h_source.html">reactor_common.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d4/dd2/reactor__threaded_8h_source.html">reactor_threaded.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../dc/d85/reactor_8h_source.html">reactor.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d2/dd8/scheduler_8h_source.html">scheduler.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d2/dcd/tag_8h_source.html">tag.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../de/d26/environment_8h_source.html">environment.h</a>&quot;</code><br />
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:a43fcdba4ed8864d210afd3f031b4e346" id="r_a43fcdba4ed8864d210afd3f031b4e346"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a43fcdba4ed8864d210afd3f031b4e346">NUMBER_OF_WORKERS</a>&#160;&#160;&#160;1</td></tr>
+<tr class="separator:a43fcdba4ed8864d210afd3f031b4e346"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2759df05e92b68f74325190e9a6aca13" id="r_a2759df05e92b68f74325190e9a6aca13"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a2759df05e92b68f74325190e9a6aca13">MAX_STALL_INTERVAL</a>&#160;&#160;&#160;<a class="el" href="../../d2/dcd/tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8">MSEC</a>(1)</td></tr>
+<tr class="separator:a2759df05e92b68f74325190e9a6aca13"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b755b6f58cb9ea64ae2f1ba9a382c86" id="r_a3b755b6f58cb9ea64ae2f1ba9a382c86"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a3b755b6f58cb9ea64ae2f1ba9a382c86">MIN_SLEEP_DURATION</a>&#160;&#160;&#160;<a class="el" href="../../d2/dcd/tag_8h.html#aa2aeaab0c2033d1db412c8021bff93fc">USEC</a>(10)</td></tr>
+<tr class="separator:a3b755b6f58cb9ea64ae2f1ba9a382c86"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a01d3c6cadb7930c096ffe1f794173f5c" id="r_a01d3c6cadb7930c096ffe1f794173f5c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a01d3c6cadb7930c096ffe1f794173f5c">_lf_increment_tag_barrier_locked</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">future_tag</a>)</td></tr>
+<tr class="memdesc:a01d3c6cadb7930c096ffe1f794173f5c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Version of _lf_increment_tag_barrier to call when the caller holds the mutex. This version does not acquire the mutex belonging to env.  <br /></td></tr>
+<tr class="separator:a01d3c6cadb7930c096ffe1f794173f5c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa8e97abcbd89bb371d396da44ff4becb" id="r_aa8e97abcbd89bb371d396da44ff4becb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#aa8e97abcbd89bb371d396da44ff4becb">_lf_increment_tag_barrier</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">future_tag</a>)</td></tr>
+<tr class="separator:aa8e97abcbd89bb371d396da44ff4becb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5a0540790dfc6d954fb443da3336ce27" id="r_a5a0540790dfc6d954fb443da3336ce27"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a5a0540790dfc6d954fb443da3336ce27">_lf_decrement_tag_barrier_locked</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:a5a0540790dfc6d954fb443da3336ce27"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3d1cd5263a79c14e62a5fb34530a0a93" id="r_a3d1cd5263a79c14e62a5fb34530a0a93"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a3d1cd5263a79c14e62a5fb34530a0a93">_lf_wait_on_tag_barrier</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">proposed_tag</a>)</td></tr>
+<tr class="separator:a3d1cd5263a79c14e62a5fb34530a0a93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69cf8a450070f4a9bd475145a6701340" id="r_a69cf8a450070f4a9bd475145a6701340"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a69cf8a450070f4a9bd475145a6701340">_lf_set_present</a> (<a class="el" href="../../da/de8/structlf__port__base__t.html">lf_port_base_t</a> *port)</td></tr>
+<tr class="separator:a69cf8a450070f4a9bd475145a6701340"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1050d75d3d2a6a00effec4e07d7ad031" id="r_a1050d75d3d2a6a00effec4e07d7ad031"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a1050d75d3d2a6a00effec4e07d7ad031">synchronize_with_other_federates</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>)</td></tr>
+<tr class="separator:a1050d75d3d2a6a00effec4e07d7ad031"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab769495d64de2c45344fad51a14d3db2" id="r_ab769495d64de2c45344fad51a14d3db2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#ab769495d64de2c45344fad51a14d3db2">wait_until</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> logical_time, <a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> *condition)</td></tr>
+<tr class="separator:ab769495d64de2c45344fad51a14d3db2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b50c51a9046dfb8814b2f609020d0a4" id="r_a9b50c51a9046dfb8814b2f609020d0a4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a9b50c51a9046dfb8814b2f609020d0a4">get_next_event_tag</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:a9b50c51a9046dfb8814b2f609020d0a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6f9a4a14de3aa9e560935a57093eb122" id="r_a6f9a4a14de3aa9e560935a57093eb122"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a6f9a4a14de3aa9e560935a57093eb122">send_next_event_tag</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../db/df7/structtag__t.html">tag_t</a> tag, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">wait_for_reply</a>)</td></tr>
+<tr class="separator:a6f9a4a14de3aa9e560935a57093eb122"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab9e357a21e338cd3719cdec409b9f7a6" id="r_ab9e357a21e338cd3719cdec409b9f7a6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#ab9e357a21e338cd3719cdec409b9f7a6">_lf_next_locked</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:ab9e357a21e338cd3719cdec409b9f7a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa217496c12cb5b53dad3d91e203cc323" id="r_aa217496c12cb5b53dad3d91e203cc323"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#aa217496c12cb5b53dad3d91e203cc323">lf_request_stop</a> ()</td></tr>
+<tr class="separator:aa217496c12cb5b53dad3d91e203cc323"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af31f8aca1b004a6e5e0e695063de1b47" id="r_af31f8aca1b004a6e5e0e695063de1b47"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#af31f8aca1b004a6e5e0e695063de1b47">_lf_trigger_reaction</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">reaction</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">worker_number</a>)</td></tr>
+<tr class="separator:af31f8aca1b004a6e5e0e695063de1b47"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab2e993d75ef5508ea9ab302f7aa3efdf" id="r_ab2e993d75ef5508ea9ab302f7aa3efdf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#ab2e993d75ef5508ea9ab302f7aa3efdf">_lf_initialize_start_tag</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:ab2e993d75ef5508ea9ab302f7aa3efdf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7afeacd5ca6e5287e256c26ce4249afa" id="r_a7afeacd5ca6e5287e256c26ce4249afa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a7afeacd5ca6e5287e256c26ce4249afa">_lf_worker_handle_deadline_violation_for_reaction</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">worker_number</a>, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">reaction</a>)</td></tr>
+<tr class="separator:a7afeacd5ca6e5287e256c26ce4249afa"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab0712a5ae2165ebf50aff2bc1de7b91e" id="r_ab0712a5ae2165ebf50aff2bc1de7b91e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#ab0712a5ae2165ebf50aff2bc1de7b91e">_lf_worker_handle_STP_violation_for_reaction</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">worker_number</a>, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">reaction</a>)</td></tr>
+<tr class="separator:ab0712a5ae2165ebf50aff2bc1de7b91e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2c11b17740bdc30694ea62c0960d1ca9" id="r_a2c11b17740bdc30694ea62c0960d1ca9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a2c11b17740bdc30694ea62c0960d1ca9">_lf_worker_handle_violations</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">worker_number</a>, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">reaction</a>)</td></tr>
+<tr class="separator:a2c11b17740bdc30694ea62c0960d1ca9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3b3be80932590a67d7e07f1a62b13c29" id="r_a3b3be80932590a67d7e07f1a62b13c29"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a3b3be80932590a67d7e07f1a62b13c29">_lf_worker_invoke_reaction</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">worker_number</a>, <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">reaction</a>)</td></tr>
+<tr class="separator:a3b3be80932590a67d7e07f1a62b13c29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5fdda22cb08d864a229c84f1ba995b21" id="r_a5fdda22cb08d864a229c84f1ba995b21"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a5fdda22cb08d864a229c84f1ba995b21">try_advance_level</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">volatile</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> *next_reaction_level)</td></tr>
+<tr class="memdesc:a5fdda22cb08d864a229c84f1ba995b21"><td class="mdescLeft">&#160;</td><td class="mdescRight">Advance to the next level. For federated runtimes, this function should stall the advance until we know that we can safely execute the next level given knowledge about upstream network port statuses.  <br /></td></tr>
+<tr class="separator:a5fdda22cb08d864a229c84f1ba995b21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aea898ec61472010683510639516c731a" id="r_aea898ec61472010683510639516c731a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#aea898ec61472010683510639516c731a">_lf_worker_do_work</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">worker_number</a>)</td></tr>
+<tr class="separator:aea898ec61472010683510639516c731a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15b16453216ed29570af03009e7c7c63" id="r_a15b16453216ed29570af03009e7c7c63"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63">worker</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">arg</a>)</td></tr>
+<tr class="separator:a15b16453216ed29570af03009e7c7c63"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aae4a4a9ce970c18bff7785cf7863777c" id="r_aae4a4a9ce970c18bff7785cf7863777c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#aae4a4a9ce970c18bff7785cf7863777c">lf_print_snapshot</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:aae4a4a9ce970c18bff7785cf7863777c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aebbe83b2cb8e4ff5180c33eb8c8f9739" id="r_aebbe83b2cb8e4ff5180c33eb8c8f9739"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#aebbe83b2cb8e4ff5180c33eb8c8f9739">start_threads</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="separator:aebbe83b2cb8e4ff5180c33eb8c8f9739"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aff80c9b69d76f5dc1fb6c7c671de9708" id="r_aff80c9b69d76f5dc1fb6c7c671de9708"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#aff80c9b69d76f5dc1fb6c7c671de9708">determine_number_of_workers</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>)</td></tr>
+<tr class="memdesc:aff80c9b69d76f5dc1fb6c7c671de9708"><td class="mdescLeft">&#160;</td><td class="mdescRight">Determine the number of workers.  <br /></td></tr>
+<tr class="separator:aff80c9b69d76f5dc1fb6c7c671de9708"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a831ac79bfc7b11dadfa1aa6dd1b68d4f" id="r_a831ac79bfc7b11dadfa1aa6dd1b68d4f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a831ac79bfc7b11dadfa1aa6dd1b68d4f">lf_reactor_c_main</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">argc</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">argv</a>[])</td></tr>
+<tr class="separator:a831ac79bfc7b11dadfa1aa6dd1b68d4f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ab5c60e67d36e2b26eccb884ed9f668" id="r_a3ab5c60e67d36e2b26eccb884ed9f668"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a3ab5c60e67d36e2b26eccb884ed9f668">lf_notify_of_event</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="memdesc:a3ab5c60e67d36e2b26eccb884ed9f668"><td class="mdescLeft">&#160;</td><td class="mdescRight">Notify of new event by broadcasting on a condition variable.  <br /></td></tr>
+<tr class="separator:a3ab5c60e67d36e2b26eccb884ed9f668"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae0fda178667bc6cd94890a13316c285c" id="r_ae0fda178667bc6cd94890a13316c285c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#ae0fda178667bc6cd94890a13316c285c">lf_critical_section_enter</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="memdesc:ae0fda178667bc6cd94890a13316c285c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enter critical section by locking the global mutex.  <br /></td></tr>
+<tr class="separator:ae0fda178667bc6cd94890a13316c285c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aed2c25495b50b46780c6288e4370541e" id="r_aed2c25495b50b46780c6288e4370541e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#aed2c25495b50b46780c6288e4370541e">lf_critical_section_exit</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
+<tr class="memdesc:aed2c25495b50b46780c6288e4370541e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Leave a critical section by unlocking the global mutex.  <br /></td></tr>
+<tr class="separator:aed2c25495b50b46780c6288e4370541e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:aa69d28e60eef684c98f95a802681c4b9" id="r_aa69d28e60eef684c98f95a802681c4b9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#aa69d28e60eef684c98f95a802681c4b9">_lf_last_reported_unadjusted_physical_time_ns</a></td></tr>
+<tr class="separator:aa69d28e60eef684c98f95a802681c4b9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a20b56e8fb05c017508f1c4fa2e311a87" id="r_a20b56e8fb05c017508f1c4fa2e311a87"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a20b56e8fb05c017508f1c4fa2e311a87">start_time</a></td></tr>
+<tr class="separator:a20b56e8fb05c017508f1c4fa2e311a87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af9dc6502b81ff3ed7cc8148fbcdb6749" id="r_af9dc6502b81ff3ed7cc8148fbcdb6749"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f">lf_mutex_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#af9dc6502b81ff3ed7cc8148fbcdb6749">global_mutex</a></td></tr>
+<tr class="separator:af9dc6502b81ff3ed7cc8148fbcdb6749"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a196831f541ccda2c58b0b8c5a134c795" id="r_a196831f541ccda2c58b0b8c5a134c795"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a196831f541ccda2c58b0b8c5a134c795">lf_stop_requested</a> = <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">false</a></td></tr>
+<tr class="memdesc:a196831f541ccda2c58b0b8c5a134c795"><td class="mdescLeft">&#160;</td><td class="mdescRight">True if stop has been requested so it doesn't get re-requested.  <br /></td></tr>
+<tr class="separator:a196831f541ccda2c58b0b8c5a134c795"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a76d8bd3f166632ed8f2990a1f29852cd" id="r_a76d8bd3f166632ed8f2990a1f29852cd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/dbc/reactor__threaded_8c.html#a76d8bd3f166632ed8f2990a1f29852cd">worker_thread_count</a> = 0</td></tr>
+<tr class="separator:a76d8bd3f166632ed8f2990a1f29852cd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Macro Definition Documentation</h2>
+<a id="a2759df05e92b68f74325190e9a6aca13" name="a2759df05e92b68f74325190e9a6aca13"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2759df05e92b68f74325190e9a6aca13">&#9670;&#160;</a></span>MAX_STALL_INTERVAL</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> MAX_STALL_INTERVAL&#160;&#160;&#160;<a class="el" href="../../d2/dcd/tag_8h.html#a673a8ebab8ec621a1cf731871dd170c8">MSEC</a>(1)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>The maximum amount of time a worker thread should stall before checking the reaction queue again. This is not currently used. </p>
+
+</div>
+</div>
+<a id="a3b755b6f58cb9ea64ae2f1ba9a382c86" name="a3b755b6f58cb9ea64ae2f1ba9a382c86"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b755b6f58cb9ea64ae2f1ba9a382c86">&#9670;&#160;</a></span>MIN_SLEEP_DURATION</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> MIN_SLEEP_DURATION&#160;&#160;&#160;<a class="el" href="../../d2/dcd/tag_8h.html#aa2aeaab0c2033d1db412c8021bff93fc">USEC</a>(10)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Unless the "fast" option is given, an LF program will wait until physical time matches logical time before handling an event with a given logical time. The amount of time is less than this given threshold, then no wait will occur. The purpose of this is to prevent unnecessary delays caused by simply setting up and performing the wait. </p>
+
+</div>
+</div>
+<a id="a43fcdba4ed8864d210afd3f031b4e346" name="a43fcdba4ed8864d210afd3f031b4e346"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a43fcdba4ed8864d210afd3f031b4e346">&#9670;&#160;</a></span>NUMBER_OF_WORKERS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> NUMBER_OF_WORKERS&#160;&#160;&#160;1</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Copyright (c) 2019, The University of California at Berkeley.</p>
+<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
+<ol type="1">
+<li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
+</ol>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. Runtime infrastructure for the threaded version of the C target of Lingua Franca.</p>
+<dl class="section author"><dt>Author</dt><dd>{Edward A. Lee <a href="#" onclick="location.href='mai'+'lto:'+'eal'+'@b'+'erk'+'el'+'ey.'+'ed'+'u'; return false;">eal@b<span class="obfuscator">.nosp@m.</span>erke<span class="obfuscator">.nosp@m.</span>ley.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd>
+<dd>
+{Marten Lohstroh <a href="#" onclick="location.href='mai'+'lto:'+'mar'+'te'+'n@b'+'er'+'kel'+'ey'+'.ed'+'u'; return false;">marte<span class="obfuscator">.nosp@m.</span>n@be<span class="obfuscator">.nosp@m.</span>rkele<span class="obfuscator">.nosp@m.</span>y.ed<span class="obfuscator">.nosp@m.</span>u</a>} </dd>
+<dd>
+{Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd></dl>
+
+</div>
+</div>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="a5a0540790dfc6d954fb443da3336ce27" name="a5a0540790dfc6d954fb443da3336ce27"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5a0540790dfc6d954fb443da3336ce27">&#9670;&#160;</a></span>_lf_decrement_tag_barrier_locked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> _lf_decrement_tag_barrier_locked </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Decrement the total number of pending barrier requests for the environment tag barrier. If the total number of requests reaches zero, this function resets the tag barrier to FOREVER_TAG and notifies all threads that are waiting on the barrier that the number of requests has reached zero.</p>
+<p>This function assumes that the caller already holds the mutex lock on env.</p>
+<dl class="section note"><dt>Note</dt><dd>This function is only useful in threaded applications to facilitate certain non-blocking functionalities such as receiving timed messages over the network or handling stop in the federated execution.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>The environment in which we are executing. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aa8e97abcbd89bb371d396da44ff4becb" name="aa8e97abcbd89bb371d396da44ff4becb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa8e97abcbd89bb371d396da44ff4becb">&#9670;&#160;</a></span>_lf_increment_tag_barrier()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> _lf_increment_tag_barrier </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
+          <td class="paramname"><em>future_tag</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Raise a barrier to prevent the current tag for the specified environment from advancing to or beyond the value of the future_tag argument, if possible. If the current tag is already at or beyond future_tag, then prevent any further advances. This function will increment the total number of pending barrier requests. For each call to this function, there should always be a subsequent call to <a class="el" href="../../d4/dd2/reactor__threaded_8h.html#a5a0540790dfc6d954fb443da3336ce27">_lf_decrement_tag_barrier_locked()</a> to release the barrier.</p>
+<p>If there is already a barrier raised at a tag later than future_tag, this function will change the barrier to future_tag or the current tag, whichever is larger. If the existing barrier is earlier than future_tag, this function will not change the barrier. If there are no existing barriers and future_tag is in the past relative to the current tag, this function will raise a barrier to the current tag plus one microstep.</p>
+<p>This function acquires the mutex on the specified environment.</p>
+<dl class="section note"><dt>Note</dt><dd>This function is only useful in threaded applications to facilitate certain non-blocking functionalities such as receiving timed messages over the network or handling stop in a federated execution.</dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">future_tag</td><td>A desired tag for the barrier. This function will guarantee that current logical time will not go past future_tag if it is in the future. If future_tag is in the past (or equals to current logical time), the runtime will freeze advancement of logical time. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a01d3c6cadb7930c096ffe1f794173f5c" name="a01d3c6cadb7930c096ffe1f794173f5c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a01d3c6cadb7930c096ffe1f794173f5c">&#9670;&#160;</a></span>_lf_increment_tag_barrier_locked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> _lf_increment_tag_barrier_locked </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
+          <td class="paramname"><em>future_tag</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Version of _lf_increment_tag_barrier to call when the caller holds the mutex. This version does not acquire the mutex belonging to env. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">future_tag</td><td>A desired tag for the barrier. This function will guarantee that current logical time will not go past future_tag if it is in the future. If future_tag is in the past (or equals to current logical time), the runtime will freeze advancement of logical time. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ab2e993d75ef5508ea9ab302f7aa3efdf" name="ab2e993d75ef5508ea9ab302f7aa3efdf"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab2e993d75ef5508ea9ab302f7aa3efdf">&#9670;&#160;</a></span>_lf_initialize_start_tag()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> _lf_initialize_start_tag </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Perform the necessary operations before tag (0,0) can be processed.</p>
+<p>This includes injecting any reactions triggered at (0,0), initializing timers, and for the federated execution, waiting for a proper coordinated start.</p>
+<p>This assumes the mutex lock is held by the caller. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ab9e357a21e338cd3719cdec409b9f7a6" name="ab9e357a21e338cd3719cdec409b9f7a6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab9e357a21e338cd3719cdec409b9f7a6">&#9670;&#160;</a></span>_lf_next_locked()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> _lf_next_locked </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>If there is at least one event in the event queue, then wait until physical time matches or exceeds the time of the least tag on the event queue; pop the next event(s) from the event queue that all have the same tag; extract from those events the reactions that are to be invoked at this logical time and insert them into the reaction queue. The event queue is sorted by time tag.</p>
+<p>If there is no event in the queue and the keepalive command-line option was not given, and this is not a federated execution with centralized coordination, set the stop tag to the current tag. If keepalive was given, then wait for either <a class="el" href="../../d5/dbc/reactor__threaded_8c.html#aa217496c12cb5b53dad3d91e203cc323">lf_request_stop()</a> to be called or an event appears in the event queue and then return.</p>
+<p>Every time tag is advanced, it is checked against stop tag and if they are equal, shutdown reactions are triggered.</p>
+<p>This does not acquire the mutex lock. It assumes the lock is already held. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a69cf8a450070f4a9bd475145a6701340" name="a69cf8a450070f4a9bd475145a6701340"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a69cf8a450070f4a9bd475145a6701340">&#9670;&#160;</a></span>_lf_set_present()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> _lf_set_present </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../da/de8/structlf__port__base__t.html">lf_port_base_t</a> *&#160;</td>
+          <td class="paramname"><em>port</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Mark the given port's is_present field as true. This is_present field will later be cleaned up by _lf_start_time_step. If the port is unconnected, do nothing. This assumes that the mutex is not held. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">port</td><td>A pointer to the port struct. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="af31f8aca1b004a6e5e0e695063de1b47" name="af31f8aca1b004a6e5e0e695063de1b47"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af31f8aca1b004a6e5e0e695063de1b47">&#9670;&#160;</a></span>_lf_trigger_reaction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> _lf_trigger_reaction </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *&#160;</td>
+          <td class="paramname"><em>reaction</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td>
+          <td class="paramname"><em>worker_number</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Trigger 'reaction'.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">reaction</td><td>The reaction. </td></tr>
+    <tr><td class="paramname">worker_number</td><td>The ID of the worker that is making this call. 0 should be used if there is only one worker (e.g., when the program is using the single-threaded C runtime). -1 is used for an anonymous call in a context where a worker number does not make sense (e.g., the caller is not a worker thread). </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a3d1cd5263a79c14e62a5fb34530a0a93" name="a3d1cd5263a79c14e62a5fb34530a0a93"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3d1cd5263a79c14e62a5fb34530a0a93">&#9670;&#160;</a></span>_lf_wait_on_tag_barrier()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> _lf_wait_on_tag_barrier </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
+          <td class="paramname"><em>proposed_tag</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>If the proposed_tag is greater than or equal to a barrier tag that has been set by a call to _lf_increment_tag_barrier or _lf_increment_tag_barrier_locked, and if there are requestors still pending on that barrier, then wait until all requestors have been satisfied. This is used in federated execution when an incoming timed message has been partially read so that we know its tag, but the rest of message has not yet been read and hence the event has not yet appeared on the event queue. To prevent tardiness, this function blocks the advancement of time until to the proposed tag until the message has been put onto the event queue.</p>
+<p>If the proposed_tag is greater than the stop tag, then use the stop tag instead.</p>
+<p>This function assumes the mutex is already locked. Thus, it unlocks the mutex while it's waiting to allow the tag barrier to change.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">proposed_tag</td><td>The tag that the runtime wants to advance to. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 if no wait was needed and 1 if a wait actually occurred. </dd></dl>
+
+</div>
+</div>
+<a id="aea898ec61472010683510639516c731a" name="aea898ec61472010683510639516c731a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aea898ec61472010683510639516c731a">&#9670;&#160;</a></span>_lf_worker_do_work()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> _lf_worker_do_work </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td>
+          <td class="paramname"><em>worker_number</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>The main looping logic of each LF worker thread. This function assumes the caller holds the mutex lock.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">worker_number</td><td>The number assigned to this worker thread </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a7afeacd5ca6e5287e256c26ce4249afa" name="a7afeacd5ca6e5287e256c26ce4249afa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7afeacd5ca6e5287e256c26ce4249afa">&#9670;&#160;</a></span>_lf_worker_handle_deadline_violation_for_reaction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> _lf_worker_handle_deadline_violation_for_reaction </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td>
+          <td class="paramname"><em>worker_number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *&#160;</td>
+          <td class="paramname"><em>reaction</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Handle deadline violation for 'reaction'. The mutex should NOT be locked when this function is called. It might acquire the mutex when scheduling the reactions that are triggered as a result of executing the deadline violation handler on the 'reaction', if it exists. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">worker_number</td><td>The ID of the worker. </td></tr>
+    <tr><td class="paramname">reaction</td><td>The reaction whose deadline has been violated.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if a deadline violation occurred. false otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="ab0712a5ae2165ebf50aff2bc1de7b91e" name="ab0712a5ae2165ebf50aff2bc1de7b91e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab0712a5ae2165ebf50aff2bc1de7b91e">&#9670;&#160;</a></span>_lf_worker_handle_STP_violation_for_reaction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> _lf_worker_handle_STP_violation_for_reaction </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td>
+          <td class="paramname"><em>worker_number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *&#160;</td>
+          <td class="paramname"><em>reaction</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Handle STP violation for 'reaction'. The mutex should NOT be locked when this function is called. It might acquire the mutex when scheduling the reactions that are triggered as a result of executing the STP violation handler on the 'reaction', if it exists. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">worker_number</td><td>The ID of the worker. </td></tr>
+    <tr><td class="paramname">reaction</td><td>The reaction whose STP offset has been violated.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if an STP violation occurred. false otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a2c11b17740bdc30694ea62c0960d1ca9" name="a2c11b17740bdc30694ea62c0960d1ca9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2c11b17740bdc30694ea62c0960d1ca9">&#9670;&#160;</a></span>_lf_worker_handle_violations()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> _lf_worker_handle_violations </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td>
+          <td class="paramname"><em>worker_number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *&#160;</td>
+          <td class="paramname"><em>reaction</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Handle violations for 'reaction'. Currently limited to deadline violations and STP violations. The mutex should NOT be locked when this function is called. It might acquire the mutex when scheduling the reactions that are triggered as a result of executing the deadline or STP violation <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">handler(s)</a> on the 'reaction', if they exist. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">worker_number</td><td>The ID of the worker. </td></tr>
+    <tr><td class="paramname">reaction</td><td>The reaction.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if a violation occurred. false otherwise. </dd></dl>
+
+</div>
+</div>
+<a id="a3b3be80932590a67d7e07f1a62b13c29" name="a3b3be80932590a67d7e07f1a62b13c29"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b3be80932590a67d7e07f1a62b13c29">&#9670;&#160;</a></span>_lf_worker_invoke_reaction()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> _lf_worker_invoke_reaction </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td>
+          <td class="paramname"><em>worker_number</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> *&#160;</td>
+          <td class="paramname"><em>reaction</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Invoke 'reaction' and schedule any resulting triggered <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">reaction(s)</a> on the reaction queue. The mutex should NOT be locked when this function is called. It might acquire the mutex when scheduling the reactions that are triggered as a result of executing 'reaction'. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">worker_number</td><td>The ID of the worker. </td></tr>
+    <tr><td class="paramname">reaction</td><td>The reaction to invoke. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aff80c9b69d76f5dc1fb6c7c671de9708" name="aff80c9b69d76f5dc1fb6c7c671de9708"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aff80c9b69d76f5dc1fb6c7c671de9708">&#9670;&#160;</a></span>determine_number_of_workers()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> determine_number_of_workers </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Determine the number of workers. </p>
+
+</div>
+</div>
+<a id="a9b50c51a9046dfb8814b2f609020d0a4" name="a9b50c51a9046dfb8814b2f609020d0a4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9b50c51a9046dfb8814b2f609020d0a4">&#9670;&#160;</a></span>get_next_event_tag()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a> get_next_event_tag </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Return the tag of the next event on the event queue. If the event queue is empty then return either FOREVER_TAG or, is a stop_time (timeout time) has been set, the stop time. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ae0fda178667bc6cd94890a13316c285c" name="ae0fda178667bc6cd94890a13316c285c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae0fda178667bc6cd94890a13316c285c">&#9670;&#160;</a></span>lf_critical_section_enter()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> lf_critical_section_enter </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Enter critical section by locking the global mutex. </p>
+<p>Enter critical section by disabling interrupts.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing or GLOBAL_ENVIRONMENT. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aed2c25495b50b46780c6288e4370541e" name="aed2c25495b50b46780c6288e4370541e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aed2c25495b50b46780c6288e4370541e">&#9670;&#160;</a></span>lf_critical_section_exit()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> lf_critical_section_exit </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Leave a critical section by unlocking the global mutex. </p>
+<p>Leave a critical section by enabling interrupts.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing or GLOBAL_ENVIRONMENT. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a3ab5c60e67d36e2b26eccb884ed9f668" name="a3ab5c60e67d36e2b26eccb884ed9f668"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ab5c60e67d36e2b26eccb884ed9f668">&#9670;&#160;</a></span>lf_notify_of_event()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> lf_notify_of_event </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Notify of new event by broadcasting on a condition variable. </p>
+<p>Notify of new event.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="aae4a4a9ce970c18bff7785cf7863777c" name="aae4a4a9ce970c18bff7785cf7863777c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aae4a4a9ce970c18bff7785cf7863777c">&#9670;&#160;</a></span>lf_print_snapshot()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_print_snapshot </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>If DEBUG logging is enabled, prints the status of the event queue, the reaction queue, and the executing queue. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a831ac79bfc7b11dadfa1aa6dd1b68d4f" name="a831ac79bfc7b11dadfa1aa6dd1b68d4f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a831ac79bfc7b11dadfa1aa6dd1b68d4f">&#9670;&#160;</a></span>lf_reactor_c_main()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> lf_reactor_c_main </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td>
+          <td class="paramname"><em>argc</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *&#160;</td>
+          <td class="paramname"><em>argv</em>[]&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>The main loop of the LF program.</p>
+<p>An unambiguous function name that can be called by external libraries.</p>
+<p>Note: In target languages that use the C core library, there should be an unambiguous way to execute the LF program's main function that will not conflict with other main functions that might get resolved and linked at compile time. </p>
+
+</div>
+</div>
+<a id="aa217496c12cb5b53dad3d91e203cc323" name="aa217496c12cb5b53dad3d91e203cc323"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa217496c12cb5b53dad3d91e203cc323">&#9670;&#160;</a></span>lf_request_stop()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_request_stop </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Request a stop to execution as soon as possible. In a non-federated execution with only a single enclave, this will occur one microstep later than the current tag. In a federated execution or when there is more than one enclave, it will likely occur at a later tag determined by the RTI so that all federates and enclaves stop at the same tag. </p>
+
+</div>
+</div>
+<a id="a6f9a4a14de3aa9e560935a57093eb122" name="a6f9a4a14de3aa9e560935a57093eb122"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6f9a4a14de3aa9e560935a57093eb122">&#9670;&#160;</a></span>send_next_event_tag()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a> send_next_event_tag </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../db/df7/structtag__t.html">tag_t</a>&#160;</td>
+          <td class="paramname"><em>tag</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td>
+          <td class="paramname"><em>wait_for_reply</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>In a federated execution with centralized coordination, this function returns a tag that is less than or equal to the specified tag when, as far as the federation is concerned, it is safe to commit to advancing to the returned tag. That is, all incoming network messages with tags less than the returned tag have been received. In unfederated execution or in federated execution with decentralized control, this function returns the specified tag immediately.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">tag</td><td>The tag to which to advance. </td></tr>
+    <tr><td class="paramname">wait_for_reply</td><td>If true, wait for the RTI to respond. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The tag to which it is safe to advance. </dd></dl>
+
+</div>
+</div>
+<a id="aebbe83b2cb8e4ff5180c33eb8c8f9739" name="aebbe83b2cb8e4ff5180c33eb8c8f9739"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aebbe83b2cb8e4ff5180c33eb8c8f9739">&#9670;&#160;</a></span>start_threads()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> start_threads </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a1050d75d3d2a6a00effec4e07d7ad031" name="a1050d75d3d2a6a00effec4e07d7ad031"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1050d75d3d2a6a00effec4e07d7ad031">&#9670;&#160;</a></span>synchronize_with_other_federates()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> synchronize_with_other_federates </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a5fdda22cb08d864a229c84f1ba995b21" name="a5fdda22cb08d864a229c84f1ba995b21"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5fdda22cb08d864a229c84f1ba995b21">&#9670;&#160;</a></span>try_advance_level()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> try_advance_level </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">volatile</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> *&#160;</td>
+          <td class="paramname"><em>next_reaction_level</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Advance to the next level. For federated runtimes, this function should stall the advance until we know that we can safely execute the next level given knowledge about upstream network port statuses. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>The environment. </td></tr>
+    <tr><td class="paramname">next_reaction_level</td><td>The place to store the next reaction level. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ab769495d64de2c45344fad51a14d3db2" name="ab769495d64de2c45344fad51a14d3db2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab769495d64de2c45344fad51a14d3db2">&#9670;&#160;</a></span>wait_until()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> wait_until </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *&#160;</td>
+          <td class="paramname"><em>env</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td>
+          <td class="paramname"><em>logical_time</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../dd/d67/structlf__cond__t.html">lf_cond_t</a> *&#160;</td>
+          <td class="paramname"><em>condition</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Wait until physical time matches or exceeds the specified logical time, unless -fast is given.</p>
+<p>If an event is put on the event queue during the wait, then the wait is interrupted and this function returns false. It also returns false if the timeout time is reached before the wait has completed.</p>
+<p>The mutex lock is assumed to be held by the calling thread. Note this this could return true even if the a new event was placed on the queue if that event time matches or exceeds the specified time.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">logical_time</td><td>Logical time to wait until physical time matches it. </td></tr>
+    <tr><td class="paramname">return_if_interrupted</td><td>If this is false, then wait_util will wait until physical time matches the logical time regardless of whether new events get put on the event queue. This is useful, for example, for synchronizing the start of the program.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Return false if the wait is interrupted either because of an event queue signal or if the wait time was interrupted early by reaching the stop time, if one was specified. Return true if the full wait time was reached. </dd></dl>
+
+</div>
+</div>
+<a id="a15b16453216ed29570af03009e7c7c63" name="a15b16453216ed29570af03009e7c7c63"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a15b16453216ed29570af03009e7c7c63">&#9670;&#160;</a></span>worker()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> * worker </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
+          <td class="paramname"><em>arg</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Worker thread for the thread pool. This acquires the mutex lock and releases it to wait for time to elapse or for asynchronous events and also releases it to execute reactions. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">arg</td><td>Environment within which the worker should execute. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a id="aa69d28e60eef684c98f95a802681c4b9" name="aa69d28e60eef684c98f95a802681c4b9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa69d28e60eef684c98f95a802681c4b9">&#9670;&#160;</a></span>_lf_last_reported_unadjusted_physical_time_ns</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> _lf_last_reported_unadjusted_physical_time_ns</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Records the most recent time reported by the physical clock when accessed by <a class="el" href="../../d4/db3/tag_8c.html#a7538766a655ba2e60ddde55f2e020e58">lf_time_physical()</a>. This will be an epoch time (number of nanoseconds since Jan. 1, 1970), as reported when you call _lf_clock_now(CLOCK_REALTIME, ...). This differs from _lf_last_reported_physical_time_ns by _lf_time_physical_clock_offset plus any calculated drift adjustement, which are adjustments made by clock synchronization. </p>
+
+</div>
+</div>
+<a id="af9dc6502b81ff3ed7cc8148fbcdb6749" name="af9dc6502b81ff3ed7cc8148fbcdb6749"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af9dc6502b81ff3ed7cc8148fbcdb6749">&#9670;&#160;</a></span>global_mutex</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f">lf_mutex_t</a> global_mutex</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Global mutex, used for synchronizing across environments. Mainly used for token-management and tracing </p>
+
+</div>
+</div>
+<a id="a196831f541ccda2c58b0b8c5a134c795" name="a196831f541ccda2c58b0b8c5a134c795"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a196831f541ccda2c58b0b8c5a134c795">&#9670;&#160;</a></span>lf_stop_requested</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> lf_stop_requested = <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">false</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>True if stop has been requested so it doesn't get re-requested. </p>
+
+</div>
+</div>
+<a id="a20b56e8fb05c017508f1c4fa2e311a87" name="a20b56e8fb05c017508f1c4fa2e311a87"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a20b56e8fb05c017508f1c4fa2e311a87">&#9670;&#160;</a></span>start_time</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a> start_time</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>The start time read from the trace file. </p>
+
+</div>
+</div>
+<a id="a76d8bd3f166632ed8f2990a1f29852cd" name="a76d8bd3f166632ed8f2990a1f29852cd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a76d8bd3f166632ed8f2990a1f29852cd">&#9670;&#160;</a></span>worker_thread_count</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> worker_thread_count = 0</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>For logging and debugging, each worker thread is numbered. </p>
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

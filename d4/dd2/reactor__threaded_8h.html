@@ -245,6 +245,15 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>If there is at least one event in the event queue, then wait until physical time matches or exceeds the time of the least tag on the event queue; pop the next event(s) from the event queue that all have the same tag; extract from those events the reactions that are to be invoked at this logical time and insert them into the reaction queue. The event queue is sorted by time tag.</p>
+<p>If there is no event in the queue and the keepalive command-line option was not given, and this is not a federated execution with centralized coordination, set the stop tag to the current tag. If keepalive was given, then wait for either <a class="el" href="../../d5/dbc/reactor__threaded_8c.html#aa217496c12cb5b53dad3d91e203cc323">lf_request_stop()</a> to be called or an event appears in the event queue and then return.</p>
+<p>Every time tag is advanced, it is checked against stop tag and if they are equal, shutdown reactions are triggered.</p>
+<p>This does not acquire the mutex lock. It assumes the lock is already held. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -273,6 +282,17 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>If the proposed_tag is greater than or equal to a barrier tag that has been set by a call to _lf_increment_tag_barrier or _lf_increment_tag_barrier_locked, and if there are requestors still pending on that barrier, then wait until all requestors have been satisfied. This is used in federated execution when an incoming timed message has been partially read so that we know its tag, but the rest of message has not yet been read and hence the event has not yet appeared on the event queue. To prevent tardiness, this function blocks the advancement of time until to the proposed tag until the message has been put onto the event queue.</p>
+<p>If the proposed_tag is greater than the stop tag, then use the stop tag instead.</p>
+<p>This function assumes the mutex is already locked. Thus, it unlocks the mutex while it's waiting to allow the tag barrier to change.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">proposed_tag</td><td>The tag that the runtime wants to advance to. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>0 if no wait was needed and 1 if a wait actually occurred. </dd></dl>
 
 </div>
 </div>
@@ -315,6 +335,12 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Return the tag of the next event on the event queue. If the event queue is empty then return either FOREVER_TAG or, is a stop_time (timeout time) has been set, the stop time. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -349,6 +375,16 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>In a federated execution with centralized coordination, this function returns a tag that is less than or equal to the specified tag when, as far as the federation is concerned, it is safe to commit to advancing to the returned tag. That is, all incoming network messages with tags less than the returned tag have been received. In unfederated execution or in federated execution with decentralized control, this function returns the specified tag immediately.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">tag</td><td>The tag to which to advance. </td></tr>
+    <tr><td class="paramname">wait_for_reply</td><td>If true, wait for the RTI to respond. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The tag to which it is safe to advance. </dd></dl>
 
 </div>
 </div>
@@ -423,7 +459,7 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#a827080fd3c574bad5a32db9f7c367587">instant_t</a>&#160;</td>
-          <td class="paramname"><em>logical_time_ns</em>, </td>
+          <td class="paramname"><em>logical_time</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -438,6 +474,18 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Wait until physical time matches or exceeds the specified logical time, unless -fast is given.</p>
+<p>If an event is put on the event queue during the wait, then the wait is interrupted and this function returns false. It also returns false if the timeout time is reached before the wait has completed.</p>
+<p>The mutex lock is assumed to be held by the calling thread. Note this this could return true even if the a new event was placed on the queue if that event time matches or exceeds the specified time.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
+    <tr><td class="paramname">logical_time</td><td>Logical time to wait until physical time matches it. </td></tr>
+    <tr><td class="paramname">return_if_interrupted</td><td>If this is false, then wait_util will wait until physical time matches the logical time regardless of whether new events get put on the event queue. This is useful, for example, for synchronizing the start of the program.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Return false if the wait is interrupted either because of an event queue signal or if the wait time was interrupted early by reaching the stop time, if one was specified. Return true if the full wait time was reached. </dd></dl>
 
 </div>
 </div>

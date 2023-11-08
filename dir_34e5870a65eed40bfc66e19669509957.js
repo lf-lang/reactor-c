@@ -10,7 +10,7 @@ var dir_34e5870a65eed40bfc66e19669509957 =
     [ "lf_rp2040_support.h", "da/d31/lf__rp2040__support_8h.html", "da/d31/lf__rp2040__support_8h" ],
     [ "lf_tag_64_32.h", "d5/da7/lf__tag__64__32_8h.html", "d5/da7/lf__tag__64__32_8h" ],
     [ "lf_unix_clock_support.h", "d4/dac/lf__unix__clock__support_8h.html", "d4/dac/lf__unix__clock__support_8h" ],
-    [ "lf_windows_support.h", "df/da9/lf__windows__support_8h.html", null ],
+    [ "lf_windows_support.h", "df/da9/lf__windows__support_8h.html", "df/da9/lf__windows__support_8h" ],
     [ "lf_zephyr_board_support.h", "d2/df0/lf__zephyr__board__support_8h.html", "d2/df0/lf__zephyr__board__support_8h" ],
     [ "lf_zephyr_support.h", "d4/d3d/lf__zephyr__support_8h.html", "d4/d3d/lf__zephyr__support_8h" ]
 ];

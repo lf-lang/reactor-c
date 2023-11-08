@@ -1290,6 +1290,12 @@ Functions intitializing and freeing memory for environments.</h1>
 </div><div class="memdoc">
 <p>Mark the given port's is_present field as true. This is_present field will later be cleaned up by _lf_start_time_step. This assumes that the mutex is not held. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
+    <tr><td class="paramname">port</td><td>A pointer to the port struct.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Mark the given port's is_present field as true. This is_present field will later be cleaned up by _lf_start_time_step. If the port is unconnected, do nothing. This assumes that the mutex is not held. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
     <tr><td class="paramname">port</td><td>A pointer to the port struct. </td></tr>
   </table>
   </dd>
@@ -1358,7 +1364,13 @@ Functions intitializing and freeing memory for environments.</h1>
 </div><div class="memdoc">
 <p>Print a snapshot of the priority queues used during execution (for debugging). </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">env</td><td>The environment in which we are executing. </td></tr>
+    <tr><td class="paramname">env</td><td>The environment in which we are executing.</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>If DEBUG logging is enabled, prints the status of the event queue, the reaction queue, and the executing queue. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">env</td><td>Environment within which we are executing. </td></tr>
   </table>
   </dd>
 </dl>

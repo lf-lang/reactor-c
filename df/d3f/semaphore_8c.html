@@ -90,9 +90,183 @@ $(document).ready(function(){initNavTree('df/d3f/semaphore_8c.html','../../'); i
 </div>
 
 <div class="header">
+  <div class="summary">
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">semaphore.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><code>#include &quot;<a class="el" href="../../d6/dc6/semaphore_8h_source.html">semaphore.h</a>&quot;</code><br />
+<code>#include &lt;assert.h&gt;</code><br />
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:ab994b2ab12ced2224287919649a0b152" id="r_ab994b2ab12ced2224287919649a0b152"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../de/dc8/structlf__semaphore__t.html">lf_semaphore_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d3f/semaphore_8c.html#ab994b2ab12ced2224287919649a0b152">lf_semaphore_new</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> count)</td></tr>
+<tr class="memdesc:ab994b2ab12ced2224287919649a0b152"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new semaphore.  <br /></td></tr>
+<tr class="separator:ab994b2ab12ced2224287919649a0b152"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3ba18f97c6cab1800e13d6860962224e" id="r_a3ba18f97c6cab1800e13d6860962224e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d3f/semaphore_8c.html#a3ba18f97c6cab1800e13d6860962224e">lf_semaphore_release</a> (<a class="el" href="../../de/dc8/structlf__semaphore__t.html">lf_semaphore_t</a> *semaphore, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">i</a>)</td></tr>
+<tr class="memdesc:a3ba18f97c6cab1800e13d6860962224e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Release the 'semaphore' and add 'i' to its count.  <br /></td></tr>
+<tr class="separator:a3ba18f97c6cab1800e13d6860962224e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7bafb933f1e301b37b5d5164229f386d" id="r_a7bafb933f1e301b37b5d5164229f386d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d3f/semaphore_8c.html#a7bafb933f1e301b37b5d5164229f386d">lf_semaphore_acquire</a> (<a class="el" href="../../de/dc8/structlf__semaphore__t.html">lf_semaphore_t</a> *semaphore)</td></tr>
+<tr class="memdesc:a7bafb933f1e301b37b5d5164229f386d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Acquire the 'semaphore'. Will block if count is 0.  <br /></td></tr>
+<tr class="separator:a7bafb933f1e301b37b5d5164229f386d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2e816883471b300567e207c16471502e" id="r_a2e816883471b300567e207c16471502e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d3f/semaphore_8c.html#a2e816883471b300567e207c16471502e">lf_semaphore_wait</a> (<a class="el" href="../../de/dc8/structlf__semaphore__t.html">lf_semaphore_t</a> *semaphore)</td></tr>
+<tr class="memdesc:a2e816883471b300567e207c16471502e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Wait on the 'semaphore' if count is 0.  <br /></td></tr>
+<tr class="separator:a2e816883471b300567e207c16471502e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1207a7db6221cb49ccf260c31e57a5ac" id="r_a1207a7db6221cb49ccf260c31e57a5ac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/d3f/semaphore_8c.html#a1207a7db6221cb49ccf260c31e57a5ac">lf_semaphore_destroy</a> (<a class="el" href="../../de/dc8/structlf__semaphore__t.html">lf_semaphore_t</a> *semaphore)</td></tr>
+<tr class="memdesc:a1207a7db6221cb49ccf260c31e57a5ac"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy the 'semaphore'.  <br /></td></tr>
+<tr class="separator:a1207a7db6221cb49ccf260c31e57a5ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="a7bafb933f1e301b37b5d5164229f386d" name="a7bafb933f1e301b37b5d5164229f386d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7bafb933f1e301b37b5d5164229f386d">&#9670;&#160;</a></span>lf_semaphore_acquire()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_semaphore_acquire </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../de/dc8/structlf__semaphore__t.html">lf_semaphore_t</a> *&#160;</td>
+          <td class="paramname"><em>semaphore</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Acquire the 'semaphore'. Will block if count is 0. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">semaphore</td><td>Instance of a semaphore. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a1207a7db6221cb49ccf260c31e57a5ac" name="a1207a7db6221cb49ccf260c31e57a5ac"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1207a7db6221cb49ccf260c31e57a5ac">&#9670;&#160;</a></span>lf_semaphore_destroy()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_semaphore_destroy </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../de/dc8/structlf__semaphore__t.html">lf_semaphore_t</a> *&#160;</td>
+          <td class="paramname"><em>semaphore</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Destroy the 'semaphore'. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">semaphore</td><td>Instance of a semaphore. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="ab994b2ab12ced2224287919649a0b152" name="ab994b2ab12ced2224287919649a0b152"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab994b2ab12ced2224287919649a0b152">&#9670;&#160;</a></span>lf_semaphore_new()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../de/dc8/structlf__semaphore__t.html">lf_semaphore_t</a> * lf_semaphore_new </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td>
+          <td class="paramname"><em>count</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create a new semaphore. </p>
+<p>Copyright (c) 2021, The University of Texas at Dallas.</p>
+<p>Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:</p>
+<ol type="1">
+<li>Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.</li>
+<li>Redistributions in binary form must reproduce the above copyright notice, this list of conditions and the following disclaimer in the documentation and/or other materials provided with the distribution.</li>
+</ol>
+<p>THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. Semaphore utility for reactor C.</p>
+<dl class="section author"><dt>Author</dt><dd>{Soroush Bateni <a href="#" onclick="location.href='mai'+'lto:'+'sor'+'ou'+'sh@'+'ut'+'dal'+'la'+'s.e'+'du'; return false;">sorou<span class="obfuscator">.nosp@m.</span>sh@u<span class="obfuscator">.nosp@m.</span>tdall<span class="obfuscator">.nosp@m.</span>as.e<span class="obfuscator">.nosp@m.</span>du</a>} </dd></dl>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">count</td><td>The count to start with. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>lf_semaphore_t* Can be NULL on error. </dd></dl>
+
+</div>
+</div>
+<a id="a3ba18f97c6cab1800e13d6860962224e" name="a3ba18f97c6cab1800e13d6860962224e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3ba18f97c6cab1800e13d6860962224e">&#9670;&#160;</a></span>lf_semaphore_release()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_semaphore_release </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../de/dc8/structlf__semaphore__t.html">lf_semaphore_t</a> *&#160;</td>
+          <td class="paramname"><em>semaphore</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td>
+          <td class="paramname"><em>i</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Release the 'semaphore' and add 'i' to its count. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">semaphore</td><td>Instance of a semaphore </td></tr>
+    <tr><td class="paramname">i</td><td>The count to add. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
+<a id="a2e816883471b300567e207c16471502e" name="a2e816883471b300567e207c16471502e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e816883471b300567e207c16471502e">&#9670;&#160;</a></span>lf_semaphore_wait()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_semaphore_wait </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../de/dc8/structlf__semaphore__t.html">lf_semaphore_t</a> *&#160;</td>
+          <td class="paramname"><em>semaphore</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Wait on the 'semaphore' if count is 0. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">semaphore</td><td>Instance of a semaphore. </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

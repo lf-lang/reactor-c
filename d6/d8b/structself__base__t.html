@@ -106,6 +106,8 @@ Data Fields</h2></td></tr>
 <tr class="separator:a2282568a7a814225eec8a2148e087f09"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a382226593b7045aeb0a30ce90122f64e" id="r_a382226593b7045aeb0a30ce90122f64e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#aa47b54e9e041dfe1b75fffceb1051466">environment_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d8b/structself__base__t.html#a382226593b7045aeb0a30ce90122f64e">environment</a></td></tr>
 <tr class="separator:a382226593b7045aeb0a30ce90122f64e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad19c2e3ac3920c1244d81076ecbad2c9" id="r_ad19c2e3ac3920c1244d81076ecbad2c9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d6/d8b/structself__base__t.html#ad19c2e3ac3920c1244d81076ecbad2c9">reactor_mutex</a></td></tr>
+<tr class="separator:ad19c2e3ac3920c1244d81076ecbad2c9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>The first element of every self struct defined in generated code will be a pointer to an allocation record, which is either NULL or the head of a NULL-terminated linked list of allocation records. Casting the self struct to this type enables access to this list by the function <code><a class="el" href="../../dd/d37/reactor__common_8c.html#a5ea59ff3ad866fbd13c0b641bf21fa2f">_lf_free_reactor(self_base_t*)</a></code>. To allocate memory for the reactor that will be freed by that function, allocate the memory using <code><a class="el" href="../../">_lf_allocate(size_t,size_t,self_base_t*)</a></code>. </p>
@@ -146,6 +148,20 @@ Data Fields</h2></td></tr>
       <table class="memname">
         <tr>
           <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">struct</a> <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a>* self_base_t::executing_reaction</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ad19c2e3ac3920c1244d81076ecbad2c9" name="ad19c2e3ac3920c1244d81076ecbad2c9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad19c2e3ac3920c1244d81076ecbad2c9">&#9670;&#160;</a></span>reactor_mutex</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>* self_base_t::reactor_mutex</td>
         </tr>
       </table>
 </div><div class="memdoc">

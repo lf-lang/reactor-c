@@ -90,9 +90,148 @@ $(document).ready(function(){initNavTree('d1/dce/_condition_wrapper_8cpp.html','
 </div>
 
 <div class="header">
+  <div class="summary">
+<a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">ConditionWrapper.cpp File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+<div class="textblock"><code>#include &quot;mbed.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../dd/d89/_mutex_wrapper_8h_source.html">MutexWrapper.h</a>&quot;</code><br />
+</div><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:a3e51e29ebb3ae09a8d4a19c5ada21277" id="r_a3e51e29ebb3ae09a8d4a19c5ada21277"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dce/_condition_wrapper_8cpp.html#a3e51e29ebb3ae09a8d4a19c5ada21277">condition_new</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *mutex)</td></tr>
+<tr class="separator:a3e51e29ebb3ae09a8d4a19c5ada21277"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4583a6f88889925a2c077189a353cc31" id="r_a4583a6f88889925a2c077189a353cc31"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dce/_condition_wrapper_8cpp.html#a4583a6f88889925a2c077189a353cc31">condition_delete</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *condition)</td></tr>
+<tr class="separator:a4583a6f88889925a2c077189a353cc31"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae1f375ca719f6c93970be632a89a0801" id="r_ae1f375ca719f6c93970be632a89a0801"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dce/_condition_wrapper_8cpp.html#ae1f375ca719f6c93970be632a89a0801">condition_wait_for</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *condition, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int64_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">absolute_time_ns</a>)</td></tr>
+<tr class="separator:ae1f375ca719f6c93970be632a89a0801"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abb1878b0da1723d102f682df62bfbc84" id="r_abb1878b0da1723d102f682df62bfbc84"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dce/_condition_wrapper_8cpp.html#abb1878b0da1723d102f682df62bfbc84">condition_wait</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *condition)</td></tr>
+<tr class="separator:abb1878b0da1723d102f682df62bfbc84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0240882072d162919de15ccc8199895d" id="r_a0240882072d162919de15ccc8199895d"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dce/_condition_wrapper_8cpp.html#a0240882072d162919de15ccc8199895d">condition_notify_one</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *condition)</td></tr>
+<tr class="separator:a0240882072d162919de15ccc8199895d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a009d96abb2624b9eb9568c5a6cdcfa21" id="r_a009d96abb2624b9eb9568c5a6cdcfa21"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/dce/_condition_wrapper_8cpp.html#a009d96abb2624b9eb9568c5a6cdcfa21">condition_notify_all</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *condition)</td></tr>
+<tr class="separator:a009d96abb2624b9eb9568c5a6cdcfa21"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table>
+<h2 class="groupheader">Function Documentation</h2>
+<a id="a4583a6f88889925a2c077189a353cc31" name="a4583a6f88889925a2c077189a353cc31"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4583a6f88889925a2c077189a353cc31">&#9670;&#160;</a></span>condition_delete()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> condition_delete </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
+          <td class="paramname"><em>condition</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a3e51e29ebb3ae09a8d4a19c5ada21277" name="a3e51e29ebb3ae09a8d4a19c5ada21277"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3e51e29ebb3ae09a8d4a19c5ada21277">&#9670;&#160;</a></span>condition_new()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> * condition_new </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
+          <td class="paramname"><em>mutex</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a009d96abb2624b9eb9568c5a6cdcfa21" name="a009d96abb2624b9eb9568c5a6cdcfa21"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a009d96abb2624b9eb9568c5a6cdcfa21">&#9670;&#160;</a></span>condition_notify_all()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> condition_notify_all </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
+          <td class="paramname"><em>condition</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a0240882072d162919de15ccc8199895d" name="a0240882072d162919de15ccc8199895d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0240882072d162919de15ccc8199895d">&#9670;&#160;</a></span>condition_notify_one()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> condition_notify_one </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
+          <td class="paramname"><em>condition</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="abb1878b0da1723d102f682df62bfbc84" name="abb1878b0da1723d102f682df62bfbc84"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abb1878b0da1723d102f682df62bfbc84">&#9670;&#160;</a></span>condition_wait()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> condition_wait </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
+          <td class="paramname"><em>condition</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="ae1f375ca719f6c93970be632a89a0801" name="ae1f375ca719f6c93970be632a89a0801"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae1f375ca719f6c93970be632a89a0801">&#9670;&#160;</a></span>condition_wait_for()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">bool</a> condition_wait_for </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
+          <td class="paramname"><em>condition</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int64_t</a>&#160;</td>
+          <td class="paramname"><em>absolute_time_ns</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->

@@ -10,5 +10,6 @@ var searchData=
   ['deque_5fpush_5fback_7',['deque_push_back',['../da/dcd/deque_8c.html#ac1ffd77da7496612086ea430f7d29563',1,'deque_push_back(deque_t *d, void *value):&#160;deque.c'],['../dc/d44/deque_8h.html#ac1ffd77da7496612086ea430f7d29563',1,'deque_push_back(deque_t *d, void *value):&#160;deque.c']]],
   ['deque_5fpush_5ffront_8',['deque_push_front',['../da/dcd/deque_8c.html#a19a0d218efcb14cc2c3d7b009a5d0f16',1,'deque_push_front(deque_t *d, void *value):&#160;deque.c'],['../dc/d44/deque_8h.html#a19a0d218efcb14cc2c3d7b009a5d0f16',1,'deque_push_front(deque_t *d, void *value):&#160;deque.c']]],
   ['deque_5fsize_9',['deque_size',['../da/dcd/deque_8c.html#ad7e6969a2e1a7e7529575558103d512d',1,'deque_size(deque_t *d):&#160;deque.c'],['../dc/d44/deque_8h.html#ad7e6969a2e1a7e7529575558103d512d',1,'deque_size(deque_t *d):&#160;deque.c']]],
-  ['destroy_5faction_5fcapsule_10',['destroy_action_capsule',['../db/df4/pythontarget_8c.html#ad52c5f970c1f6a4dde6f3457c92402ae',1,'pythontarget.c']]]
+  ['destroy_5faction_5fcapsule_10',['destroy_action_capsule',['../db/df4/pythontarget_8c.html#ad52c5f970c1f6a4dde6f3457c92402ae',1,'pythontarget.c']]],
+  ['determine_5fnumber_5fof_5fworkers_11',['determine_number_of_workers',['../d5/dbc/reactor__threaded_8c.html#aff80c9b69d76f5dc1fb6c7c671de9708',1,'reactor_threaded.c']]]
 ];

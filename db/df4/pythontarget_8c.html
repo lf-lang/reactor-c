@@ -386,7 +386,10 @@ Functions intitializing and freeing memory for environments.</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Prototype for the main function. </p>
+<p>Prototype for the main function.</p>
+<p>The main loop of the LF program.</p>
+<p>An unambiguous function name that can be called by external libraries.</p>
+<p>Note: In target languages that use the C core library, there should be an unambiguous way to execute the LF program's main function that will not conflict with other main functions that might get resolved and linked at compile time. </p>
 
 </div>
 </div>
@@ -405,7 +408,8 @@ Functions intitializing and freeing memory for environments.</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Prototype for <a class="el" href="../../db/df4/pythontarget_8c.html#ab49affc958f705d9e33c5e3463848bda">lf_request_stop()</a>. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="../../dc/d85/reactor_8h.html">reactor.h</a> </dd></dl>
+<p>Prototype for <a class="el" href="../../dc/d85/reactor_8h.html#aa217496c12cb5b53dad3d91e203cc323">lf_request_stop()</a>. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="../../dc/d85/reactor_8h.html">reactor.h</a></dd></dl>
+<p>Request a stop to execution as soon as possible. In a non-federated execution with only a single enclave, this will occur one microstep later than the current tag. In a federated execution or when there is more than one enclave, it will likely occur at a later tag determined by the RTI so that all federates and enclaves stop at the same tag. </p>
 
 </div>
 </div>
