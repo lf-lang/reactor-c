@@ -41,7 +41,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <zephyr/kernel.h>
 
 #define NO_TTY
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
 
 typedef struct k_mutex lf_mutex_t;
 typedef struct {
@@ -73,7 +73,7 @@ bool _zephyr_bool_compare_and_swap(bool *ptr, bool value, bool newval);
  */
 int  _zephyr_val_compare_and_swap(int *ptr, int value, int newval);
 
-#endif // LF_THREADED
+#endif // !LF_SINGLE_THREADED
 
 
 

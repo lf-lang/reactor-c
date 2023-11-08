@@ -1,4 +1,4 @@
-#if defined(LF_THREADED)
+#if !defined(LF_SINGLE_THREADED)
 /* Non-preemptive scheduler for the threaded runtime of the C target of Lingua
 Franca. */
 
@@ -37,7 +37,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
 #include "lf_types.h"
-#if SCHEDULER == SCHED_NP || (!defined(SCHEDULER) && defined(LF_THREADED))
+#if SCHEDULER == SCHED_NP || !defined(SCHEDULER)
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
@@ -434,7 +434,7 @@ void lf_sched_done_with_reaction(size_t worker_number,
  * @param reaction The reaction to trigger at the current tag.
  * @param worker_number The ID of the worker that is making this call. 0 should
  *  be used if there is only one worker (e.g., when the program is using the
- *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
+ *  single-threaded C runtime). -1 is used for an anonymous call in a context where a
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  *
  */

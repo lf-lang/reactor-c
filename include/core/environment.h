@@ -91,10 +91,9 @@ typedef struct environment_t {
     mode_environment_t* modes;
     trace_t* trace;
     int worker_thread_count;
-#ifdef LF_UNTHREADED
+#if defined(LF_SINGLE_THREADED)
     pqueue_t *reaction_q;
-#endif 
-#ifdef LF_THREADED
+#else
     int num_workers;
     lf_thread_t* thread_ids;
     lf_mutex_t mutex;
@@ -102,8 +101,8 @@ typedef struct environment_t {
     lf_scheduler_t* scheduler;
     _lf_tag_advancement_barrier barrier;
     lf_cond_t global_tag_barrier_requestors_reached_zero;
-#endif // LF_THREADED
-#ifdef FEDERATED // TODO: Consider dropping the #ifdef
+#endif // LF_SINGLE_THREADED
+#if defined(FEDERATED)
     tag_t** _lf_intended_tag_fields;
     int _lf_intended_tag_fields_size;
 #endif // FEDERATED
@@ -112,8 +111,7 @@ typedef struct environment_t {
 #endif
 } environment_t;
 
-
-#ifdef MODAL_REACTORS
+#if defined(MODAL_REACTORS)
 struct mode_environment_t {
     uint8_t triggered_reactions_request;
     reactor_mode_state_t** modal_reactor_states;
