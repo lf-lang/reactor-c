@@ -117,7 +117,7 @@ PyObject* convert_C_mode_to_py(
 ) {
     // Create the mode struct in Python
 	mode_capsule_struct_t* cap =
-        (mode_capsule_struct_t*)PyObject_GC_New(mode_capsule_struct_t, &mode_capsule_t);
+        (mode_capsule_struct_t*)PyObject_New(mode_capsule_struct_t, &mode_capsule_t);
     if (cap == NULL) {
         lf_print_error_and_exit("Failed to convert mode.");
     }
