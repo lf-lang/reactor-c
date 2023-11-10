@@ -1577,6 +1577,9 @@ void wait_for_federates(int socket_descriptor) {
     // Wait for connections from federates and create a thread for each.
     connect_to_federates(socket_descriptor);
 
+    // Do cycle detection
+    find_cycles(rti_remote->base.scheduling_nodes, rti_remote->base.number_of_scheduling_nodes);
+
     // All federates have connected.
     lf_print("RTI: All expected federates have connected. Starting execution.");
 

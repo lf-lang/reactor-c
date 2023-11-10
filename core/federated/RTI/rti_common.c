@@ -155,12 +155,20 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     LF_PRINT_LOG("RTI: Earliest next event upstream of node %d has tag " PRINTF_TAG ".",
             e->id, t_d.time - start_time, t_d.microstep);
 
-    if (
-        lf_tag_compare(t_d, e->next_event) > 0       // The enclave has something to do.
+    // Given an EIMT there are three possible scenarios.
+    //  1) The EIMT is greater than the NET we want to advance to.
+    //  2) The EIMT is greater, however, the federate is part of a zero-delay cycle (ZDC)
+    //  3) The EIMT is equal to the NET.
+    //  4) The EIMT is less than the NET
+    // In (1) we can give a TAG to NET. In (2) and (3) we can give a PTAG.
+
+    if ( // Scenario (1) above
+        lf_tag_compare(t_d, e->next_event) > 0                      // EIMT greater than NET
         && lf_tag_compare(t_d, e->last_provisionally_granted) >= 0  // The grant is not redundant
                                                                       // (equal is important to override any previous
                                                                       // PTAGs).
-        && lf_tag_compare(t_d, e->last_granted) > 0  // The grant is not redundant.
+        && lf_tag_compare(t_d, e->last_granted) > 0                   // The grant is not redundant.
+        && !e->is_in_zero_delay_cycle                               // The node is not part of a ZDC
     ) {
         // No upstream node can send events that will be received with a tag less than or equal to
         // e->next_event, so it is safe to send a TAG.
@@ -171,19 +179,20 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
                 e->next_event.time - lf_time_start(),
                 e->next_event.microstep);
         result.tag = e->next_event;
-    } else if (
-        // FIXME: if e->is_in_zero_delay_cycle
-        lf_tag_compare(t_d, e->next_event) == 0      // The enclave has something to do/
-        && lf_tag_compare(t_d, e->last_provisionally_granted) > 0  // The grant is not redundant.
-        && lf_tag_compare(t_d, e->last_granted) > 0  // The grant is not redundant.
-    ) {
+    } else if( // Scenario (2) or (3) above
+        lf_tag_compare(t_d, e->next_event) >= 0                      // EIMT greater than or equal to NET
+        && lf_tag_compare(t_d, e->last_provisionally_granted) >= 0  // The grant is not redundant
+        && lf_tag_compare(t_d, e->last_granted) > 0                 // The grant is not redundant.
+    ) { 
         // Some upstream node may send an event that has the same tag as this node's next event,
         // so we can only grant a PTAG.
         LF_PRINT_LOG("RTI: Earliest upstream message time for fed/encl %d is " PRINTF_TAG
-            " (adjusted by after delay). Granting provisional tag advance (PTAG).",
+            " (adjusted by after delay). Granting provisional tag advance (PTAG) for " PRINTF_TAG,
             e->id,
-            t_d.time - start_time, t_d.microstep);
-        result.tag = t_d;
+            t_d.time - start_time, t_d.microstep,
+            e->next_event.time - lf_time_start(),
+            e->next_event.microstep);
+        result.tag = e->next_event;
         result.is_provisional = true;
     }
     return result;
