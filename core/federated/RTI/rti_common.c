@@ -46,7 +46,7 @@ void initialize_scheduling_node(scheduling_node_t* e, uint16_t id) {
     e->downstream = NULL;
     e->num_downstream = 0;
     e->mode = REALTIME;
-
+    e->is_in_zero_delay_cycle = false;
 }
 
 void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
@@ -267,6 +267,55 @@ void shortest_path_upstream(scheduling_node_t* end, scheduling_node_t* intermedi
             }
         }
     }
+}
+
+// Cycle-detection algorithm adapted from: https://rohithv63.medium.com/graph-algorithm-cycle-detection-in-directed-graph-using-dfs-939512865fd6
+static bool _find_cycles(int v, bool visited[], bool recStack[], scheduling_node_t** nodes, int num_nodes) {
+    if (recStack[v]) {
+        return true;
+    }
+    if (visited[v]) {
+        return false;
+    }
+    
+    visited[v] = true;
+    recStack[v] = true;
+
+    scheduling_node_t *temp = nodes[v];
+    for (int i = 0; i<temp->num_upstream; i++) {
+        if (temp->upstream_delay[i] != NEVER) { // NEVER means zero-delay
+            continue;
+        }
+    
+        if (_find_cycles(i, visited, recStack, nodes, num_nodes)) {
+            return true;
+        }
+    }
+    recStack[v] = false; // Remove the node from the current path
+    return false;
+}
+
+void find_cycles(scheduling_node_t** nodes, int num_nodes) {
+    bool* visited = (bool*)malloc(num_nodes * sizeof(bool));
+    bool* recStack = (bool*)malloc(num_nodes * sizeof(bool));
+
+    for (int i = 0; i < num_nodes; i++) {
+        visited[i] = 0;
+        recStack[i] = 0;
+    }
+
+    for (int i = 0; i < num_nodes; i++) {
+        if (!visited[i]) {
+            if (_find_cycles(i, visited, recStack, nodes, num_nodes)) {
+                LF_PRINT_LOG("Node %i part of zero-delay cycle", i);
+                nodes[i]->is_in_zero_delay_cycle = true;
+            } else {
+            }
+        }
+    }
+
+    free(visited);
+    free(recStack);
 }
 
 #endif

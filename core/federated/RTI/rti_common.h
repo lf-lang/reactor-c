@@ -59,6 +59,7 @@ typedef struct scheduling_node_t {
     int* downstream;                    // Array of downstream scheduling node ids.
     int num_downstream;                 // Size of the array of downstream scheduling nodes.
     execution_mode_t mode;              // FAST or REALTIME.
+    bool is_in_zero_delay_cycle;         // This scheduling node is part of a zero-delay cycle
 } scheduling_node_t;
 
 /**
@@ -256,6 +257,9 @@ void shortest_path_upstream(scheduling_node_t* end, scheduling_node_t* intermedi
  * Free dynamically allocated memory on the scheduling nodes and the scheduling node array itself.
  */
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes);
+
+
+void find_cycles(scheduling_node_t** nodes, int num_nodes);
 
 #endif // RTI_COMMON_H
 #endif // STANDALONE_RTI || LF_ENCLAVES
