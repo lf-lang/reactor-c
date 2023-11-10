@@ -194,7 +194,7 @@ int process_args(int argc, const char* argv[]) {
                 return 0;
             }
             rti.base.number_of_scheduling_nodes = (int32_t)num_federates; // FIXME: Loses numbers on 64-bit machines
-            lf_print("RTI: Number of federates: %d\n", rti.base.number_of_scheduling_nodes);
+            lf_print("RTI: Number of federates: %d", rti.base.number_of_scheduling_nodes);
         } else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
             if (argc < i + 2) {
                 lf_print_error(
