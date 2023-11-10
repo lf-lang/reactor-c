@@ -597,7 +597,16 @@ get_python_function(string module, string class, int instance_id, string func) {
 
         mbstowcs(wcwd, cwd, PATH_MAX);
 
-        Py_SetPath(wcwd);
+        // Deprecated: Py_SetPath(wcwd)
+        // Set Python's sys.path
+        PyObject* sys_path, * path;
+        sys_path = PySys_GetObject("path");
+        // New reference
+        path = PyUnicode_FromWideChar(wcwd, wcslen(wcwd));
+        if (sys_path != NULL && path != NULL) {
+            PyList_Insert(sys_path, 0, path);
+        }
+        Py_XDECREF(path);
 
         LF_PRINT_DEBUG("Loading module %s in %s.", module, cwd);
 
