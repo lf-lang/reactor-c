@@ -45,7 +45,8 @@ void free_local_rti();
 void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t *env);
 
 /**
- * @brief This function call may block. A call to this function serves two purposes. 
+ * @brief Notify the local RTI of a next event tag (NET).
+ * This function call may block. A call to this function serves two purposes. 
  * 1) It is a promise that, unless receiving events from other enclaves, this
  * enclave will not produce any event until the next_event_tag (NET) argument.
  * 2) It is a request for permission to advance the logical tag of the enclave
@@ -53,6 +54,8 @@ void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t *en
  * 
  * This function call will block until the enclave has been granted a TAG,
  * which might not be the tag requested.
+ * 
+ * This function assumes the mutex lock of enclave's environment is held.
  * 
  * @param enclave The enclave requesting to advance to the NET.
  * @param next_event_tag The tag of the next event in the enclave
