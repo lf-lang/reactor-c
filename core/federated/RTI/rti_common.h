@@ -37,15 +37,15 @@ typedef enum scheduling_node_state_t {
 /**
  * Information about the scheduling nodes coordinated by the RTI.
  * The abstract scheduling node could either be an enclave or a federate.
- * The information includs its runtime state,
- * mode of execution, and connectivity with other scheduling_nodes.
- * The list of upstream and downstream scheduling_nodes does not include
+ * The information includes its runtime state,
+ * mode of execution, and connectivity with other scheduling nodes.
+ * The list of upstream and downstream scheduling nodes does not include
  * those that are connected via a "physical" connection (one
  * denoted with ~>) because those connections do not impose
  * any scheduling constraints.
  */
 typedef struct scheduling_node_t {
-    uint16_t id;                        // ID of this enclave.
+    uint16_t id;                        // ID of this scheduling node.
     tag_t completed;                    // The largest logical tag completed by the scheduling node 
                                         // (or NEVER if no LTC has been received).
     tag_t last_granted;                 // The maximum TAG that has been granted so far (or NEVER if none granted)
@@ -64,8 +64,7 @@ typedef struct scheduling_node_t {
 /**
  * Data structure which is common to both the remote standalone RTI and the local RTI used in enclaved execution.
  * rti_remote_t and rti_local_t will "inherit" from this data structure. The first field is an array of pointers 
- * to scheduling_nodes. These will be scheduling_nodes for the local RTI and federates for the remote RTI 
- * 
+ * to scheduling nodes. These will be scheduling nodes for the local RTI and federates for the remote RTI 
  */
 typedef struct rti_common_t {
     // The scheduling nodes.
@@ -99,54 +98,52 @@ typedef struct {
  * @brief Initialize the fields of the rti_common struct. It also stores
  * the pointer to the struct and uses it internally.
  * 
- * @param rti_common 
+ * @param The rti_common_t struct to initialize. 
  */
 void initialize_rti_common(rti_common_t * rti_common);
 
 /**
- * An enclave calls this function after it completed a tag. 
- * The function updates the completed tag and check if the downstream scheduling_nodes 
+ * An scheduling node calls this function after it completed a tag. 
+ * The function updates the completed tag and check if the downstream scheduling nodes 
  * are eligible for receiving TAGs.
  * 
- * @param enclave The enclave
- * @param completed The completed tag of the enclave
+ * @param e The scheduling node.
+ * @param completed The completed tag of the scheduling node.
  */
 // FIXME: Prepended with underscore due to conflict with code-generated function...
-void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed);
+void _logical_tag_complete(scheduling_node_t* e, tag_t completed);
 
 /** 
- * Initialize the reactor- with the specified ID.
+ * Initialize the scheduling node with the specified ID.
  * 
- * @param e The enclave
- * @param id The enclave ID.
+ * @param e The scheduling node.
+ * @param id The scheduling node ID.
  */
 void initialize_scheduling_node(scheduling_node_t* e, uint16_t id);
 
 /**
- * For all scheduling_nodes downstream of the specified enclave, determine
+ * For all scheduling nodes downstream of the specified node, determine
  * whether they should be notified of a TAG or PTAG and notify them if so.
  *
  * This assumes the caller holds the mutex.
  *
- * @param e The upstream enclave.
- * @param visited An array of booleans used to determine whether an enclave has
+ * @param e The upstream node.
+ * @param visited An array of booleans used to determine whether a node has
  *  been visited (initially all false).
  */
 void notify_downstream_advance_grant_if_safe(scheduling_node_t* e, bool visited[]);
 
 /**
- * Notify a tag advance grant (TAG) message to the specified federate.
+ * Notify a tag advance grant (TAG) message to the specified scheduling node.
  * Do not notify it if a previously sent PTAG was greater or if a
  * previously sent TAG was greater or equal.
  *
- * This function will keep a record of this TAG in the federate's last_granted
+ * This function will keep a record of this TAG in the node's last_granted
  * field.
  *
  * This function assumes that the caller holds the mutex lock.
  * 
- * FIXME: This needs two implementations, one for enclaves and one for federates.
- *
- * @param e The enclave.
+ * @param e The scheduling node.
  * @param tag The tag to grant.
  */
 void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag);
@@ -158,41 +155,39 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag);
  * 
  * This assumes the caller holds the mutex.
  * 
- * @param e The enclave.
+ * @param e The scheduling node.
  */
 void notify_advance_grant_if_safe(scheduling_node_t* e);
 
 /**
- * Nontify a provisional tag advance grant (PTAG) message to the specified enclave.
+ * Nontify a provisional tag advance grant (PTAG) message to the specified scheduling node.
  * Do not notify it if a previously sent PTAG or TAG was greater or equal.
  *
- * This function will keep a record of this PTAG in the federate's last_provisionally_granted
+ * This function will keep a record of this PTAG in the node's last_provisionally_granted
  * field.
  *
  * This function assumes that the caller holds the mutex lock.
  *
- * FIXME: This needs two implementations, one for enclaves and one for federates.
- *
- * @param e The enclave.
+ * @param e The scheduling node.
  * @param tag The tag to grant.
  */
 void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag);
 
 /**
- * Determine whether the specified enclave is eligible for a tag advance grant,
+ * Determine whether the specified scheduling node is eligible for a tag advance grant,
  * (TAG) and, if so, return the details. This is called upon receiving a LTC, NET
- * or resign from an upstream enclave.
+ * or resign from an upstream node.
  *
  * This function calculates the minimum M over
- * all upstream scheduling_nodes of the "after" delay plus the most recently
- * received LTC from that enclave. If M is greater than the
+ * all upstream scheduling nodes of the "after" delay plus the most recently
+ * received LTC from that node. If M is greater than the
  * most recent TAG to e or greater than or equal to the most
  * recent PTAG, then return TAG(M).
  *
  * If the above conditions do not result in returning a TAG, then find the
  * minimum M of the earliest possible future message from upstream federates.
  * This is calculated by transitively looking at the most recently received
- * NET calls from upstream scheduling_nodes.
+ * NET calls from upstream scheduling nodes.
  * If M is greater than the NET of e or the most recent PTAG to e, then
  * return a TAG with tag equal to the NET of e or the PTAG.
  * If M is equal to the NET of the federate, then return PTAG(M).
@@ -204,7 +199,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag);
  *
  * This function assumes that the caller holds the mutex lock.
  *
- * @param e The enclave
+ * @param e The scheduling node.
  * @return If granted, return the tag value and whether it is provisional. 
  *  Otherwise, return the NEVER_TAG.
  */
@@ -212,13 +207,13 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e);
 
 
 /**
- * @brief Update the next event tag of an enclave.
+ * @brief Update the next event tag of an scheduling node.
  *
- * This will notify downstream scheduling_nodes with a TAG or PTAG if appropriate.
+ * This will notify downstream scheduling nodes with a TAG or PTAG if appropriate.
  *
  * This function assumes that the caller is holding the mutex.
  *
- * @param e The enclave.
+ * @param e The scheduling node.
  * @param next_event_tag The next event tag for e.
  */
 void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t next_event_tag);
@@ -238,13 +233,13 @@ void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t ne
  * which outputs can be triggered by which inputs. For now, we
  * assume any output can be triggered by any input.
  *
- * @param e The enclave.
+ * @param e The scheduling node.
  * @param candidate A candidate tag (for the first invocation,
  *  this should be fed->next_event).
  * @param visited An array of booleans indicating which federates
  *  have been visited (for the first invocation, this should be
  *  an array of falses of size _RTI.number_of_federates).
- * @return The earliest next event tag of the enclave e.
+ * @return The earliest next event tag of the scheduling node e.
  */
 tag_t transitive_next_event(scheduling_node_t *e, tag_t candidate, bool visited[]);
 
