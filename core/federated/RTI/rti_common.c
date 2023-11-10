@@ -278,8 +278,12 @@ void shortest_path_upstream(scheduling_node_t* end, scheduling_node_t* intermedi
     }
 }
 
-// Cycle-detection algorithm adapted from: https://rohithv63.medium.com/graph-algorithm-cycle-detection-in-directed-graph-using-dfs-939512865fd6
-static bool _find_cycles(int v, bool visited[], bool recStack[], scheduling_node_t** nodes, int num_nodes) {
+/**
+ * Cycle-detection algorithm based on Depth-first search. adapted from: 
+ * https://rohithv63.medium.com/graph-algorithm-cycle-detection-in-directed-graph-using-dfs-939512865fd6
+ * 
+ */
+static bool _find_zero_delay_cycles(int v, bool visited[], bool recStack[], scheduling_node_t** nodes, int num_nodes) {
     if (recStack[v]) {
         return true;
     }
@@ -296,7 +300,7 @@ static bool _find_cycles(int v, bool visited[], bool recStack[], scheduling_node
             continue;
         }
     
-        if (_find_cycles(i, visited, recStack, nodes, num_nodes)) {
+        if (_find_zero_delay_cycles(i, visited, recStack, nodes, num_nodes)) {
             return true;
         }
     }
@@ -304,7 +308,7 @@ static bool _find_cycles(int v, bool visited[], bool recStack[], scheduling_node
     return false;
 }
 
-void find_cycles(scheduling_node_t** nodes, int num_nodes) {
+void find_zero_delay_cycles(scheduling_node_t** nodes, int num_nodes) {
     bool* visited = (bool*)malloc(num_nodes * sizeof(bool));
     bool* recStack = (bool*)malloc(num_nodes * sizeof(bool));
 
@@ -312,10 +316,10 @@ void find_cycles(scheduling_node_t** nodes, int num_nodes) {
         visited[i] = 0;
         recStack[i] = 0;
     }
-    bool first=true;
+    bool first=true; // For printing the ZDC on a single line
     for (int i = 0; i < num_nodes; i++) {
         if (!visited[i]) {
-            if (_find_cycles(i, visited, recStack, nodes, num_nodes)) {
+            if (_find_zero_delay_cycles(i, visited, recStack, nodes, num_nodes)) {
                 if (first) {
                     printf("RTI: Nodes part of a zero-delay-cycle:");
                     first = false;

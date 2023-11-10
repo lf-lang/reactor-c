@@ -258,8 +258,15 @@ void shortest_path_upstream(scheduling_node_t* end, scheduling_node_t* intermedi
  */
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes);
 
-
-void find_cycles(scheduling_node_t** nodes, int num_nodes);
+/**
+ * @brief Search the directed graph of nodes and find all nodes that are part of
+ * a zero-delay cycle (ZDC). These nodes are marked by setting the `is_part_of_zero_delay_cycle`
+ * field of the scheduling_node_t struct.
+ * 
+ * @param nodes An array of scheduling node pointers
+ * @param num_nodes The length of the array
+ */
+void find_zero_delay_cycles(scheduling_node_t** nodes, int num_nodes);
 
 #endif // RTI_COMMON_H
 #endif // STANDALONE_RTI || LF_ENCLAVES
