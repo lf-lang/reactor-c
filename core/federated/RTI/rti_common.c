@@ -312,15 +312,21 @@ void find_cycles(scheduling_node_t** nodes, int num_nodes) {
         visited[i] = 0;
         recStack[i] = 0;
     }
-
+    bool first=true;
     for (int i = 0; i < num_nodes; i++) {
         if (!visited[i]) {
             if (_find_cycles(i, visited, recStack, nodes, num_nodes)) {
-                LF_PRINT_LOG("Node %i part of zero-delay cycle", i);
+                if (first) {
+                    printf("RTI: Nodes part of a zero-delay-cycle:");
+                    first = false;
+                }
+                printf(" %i,", i);
                 nodes[i]->is_in_zero_delay_cycle = true;
-            } else {
             }
         }
+    }
+    if (!first) {
+        printf("\n");
     }
 
     free(visited);
