@@ -37,10 +37,8 @@
 #include <assert.h>
 #include <stdbool.h>
 
-#include "platform.h"
-#include "pqueue.h"
+#include "pqueue_base.h"
 #include "util.h"
-#include "lf_types.h"
 
 #define LF_LEFT(i)   ((i) << 1)
 #define LF_RIGHT(i)  (((i) << 1) + 1)
@@ -374,102 +372,4 @@ static int subtree_is_valid(pqueue_t *q, int pos) {
 
 int pqueue_is_valid(pqueue_t *q) {
     return subtree_is_valid(q, 1);
-}
-
-// ********** Priority Queue Support Start
-
-/**
- * Return whether the first and second argument are given in reverse order.
- */
-int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that) {
-    return (thiz > that);
-}
-
-/**
- * Return false (0) regardless of reaction order.
- */
-int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that) {
-    return false;
-}
-
-/**
- * Return whether or not the given events have matching triggers.
- */
-int event_matches(void* next, void* curr) {
-    return (((event_t*)next)->trigger == ((event_t*)curr)->trigger);
-}
-
-/**
- * Return whether or not the given reaction_t pointers
- * point to the same struct.
- */
-int reaction_matches(void* next, void* curr) {
-    return (next == curr);
-}
-
-/**
- * Report a priority equal to the time of the given event.
- * Used for sorting pointers to event_t structs in the event queue.
- */
-pqueue_pri_t get_event_time(void *a) {
-    return (pqueue_pri_t)(((event_t*) a)->time);
-}
-
-/**
- * Report a priority equal to the index of the given reaction.
- * Used for sorting pointers to reaction_t structs in the
- * blocked and executing queues.
- */
-pqueue_pri_t get_reaction_index(void *a) {
-    return ((reaction_t*) a)->index;
-}
-
-/**
- * Return the given event's position in the queue.
- */
-size_t get_event_position(void *a) {
-    return ((event_t*) a)->pos;
-}
-
-/**
- * Return the given reaction's position in the queue.
- */
-size_t get_reaction_position(void *a) {
-    return ((reaction_t*) a)->pos;
-}
-
-/**
- * Set the given event's position in the queue.
- */
-void set_event_position(void *a, size_t pos) {
-    ((event_t*) a)->pos = pos;
-}
-
-/**
- * Return the given reaction's position in the queue.
- */
-void set_reaction_position(void *a, size_t pos) {
-    ((reaction_t*) a)->pos = pos;
-}
-
-/**
- * Print some information about the given reaction.
- *
- * DEBUG function only.
- */
-void print_reaction(void *reaction) {
-    reaction_t *r = (reaction_t*)reaction;
-    LF_PRINT_DEBUG("%s: chain_id:%llu, index: %llx, reaction: %p",
-            r->name, r->chain_id, r->index, r);
-}
-
-/**
- * Print some information about the given event.
- *
- * DEBUG function only.
- */
-void print_event(void *event) {
-    event_t *e = (event_t*)event;
-    LF_PRINT_DEBUG("time: " PRINTF_TIME ", trigger: %p, token: %p",
-            e->time, e->trigger, e->token);
 }
