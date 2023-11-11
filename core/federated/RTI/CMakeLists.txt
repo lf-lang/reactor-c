@@ -70,6 +70,7 @@ add_executable(
     ${CoreLib}/tag.c
     ${CoreLib}/federated/net_util.c
     ${CoreLib}/utils/pqueue_base.c
+    ${CoreLib}/utils/pqueue_tag.c
     ${CoreLib}/utils/pqueue.c
     message_record/message_record.c
 )

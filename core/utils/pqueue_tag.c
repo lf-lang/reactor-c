@@ -1,0 +1,92 @@
+/**
+ * @file pqueue_tag.c
+ * @author Byeonggil Jun
+ * @author Edward A. Lee
+ * @copyright (c) 2023, The University of California at Berkeley
+ * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ * 
+ * @brief Priority queue that uses tags for sorting.
+ */
+
+#include "pqueue_tag.h"
+#include "util.h"     // For lf_print
+#include "platform.h" // For PRINTF_TAG
+
+//////////////////
+// Local functions, not intended for use outside this file.
+
+/**
+ * @brief Callback function to get the priority of an element.
+ * Return the pointer argument cast to pqueue_pri_t because the
+ * element is also the priority. This function is of type pqueue_get_pri_f.
+ * @param element A pointer to a pqueue_tag_element_t, cast to void*.
+ */
+static pqueue_pri_t pqueue_tag_get_priority(void *element) {
+    return (pqueue_pri_t) element;
+}
+
+/**
+ * @brief Callback comparison function for the tag-based priority queue.
+ * Return -1 if the first argument is less than second, 0 if they are equal,
+ * and +1 otherwise. This function is of type pqueue_cmp_pri_f.
+ * @param priority1 A pointer to a pqueue_tag_element_t, cast to pqueue_pri_t.
+ * @param priority2 A pointer to a pqueue_tag_element_t, cast to pqueue_pri_t.
+*/
+static int pqueue_tag_compare(pqueue_pri_t priority1, pqueue_pri_t priority2) {
+    return lf_tag_compare(((pqueue_tag_element_t*) priority1)->tag, ((pqueue_tag_element_t*) priority2)->tag);
+}
+
+/**
+ * @brief Callback function to determine whether two elements are equivalent.
+ * Return 1 if the tags contained by given elements are identical, 0 otherwise.
+ * This function is of type pqueue_eq_elem_f.
+ * @param element1 A pointer to a pqueue_tag_element_t, cast to void*.
+ * @param element2 A pointer to a pqueue_tag_element_t, cast to void*.
+ */
+static int pqueue_tag_matches(void* element1, void* element2) {
+    return lf_tag_compare(((pqueue_tag_element_t*) element1)->tag, ((pqueue_tag_element_t*) element2)->tag) == 0;
+}
+
+/**
+ * @brief Callback function to return the position of an element.
+ * This function is of type pqueue_get_pos_f.
+ * @param element A pointer to a pqueue_tag_element_t, cast to void*.
+ */
+static size_t pqueue_tag_get_position(void *element) {
+    return ((pqueue_tag_element_t*)element)->pos;
+}
+
+/**
+ * @brief Callback function to set the position of an element.
+ * This function is of type pqueue_set_pos_f.
+ * @param element A pointer to a pqueue_tag_element_t, cast to void*.
+ * @param pos The position.
+ */
+static void pqueue_tag_set_position(void *element, size_t pos) {
+    ((pqueue_tag_element_t*)element)->pos = pos;
+}
+
+/**
+ * @brief Callback function to print information about an element.
+ * This is a function of type pqueue_print_entry_f.
+ * @param element A pointer to a pqueue_tag_element_t, cast to void*.
+ */
+static void pqueue_tag_print(void *element) {
+    tag_t tag = ((pqueue_tag_element_t*) element)->tag;
+    lf_print("Element with tag " PRINTF_TAG " and payload %p.\n",
+           tag.time, tag.microstep, ((pqueue_tag_element_t*) element)->payload);
+}
+
+//////////////////
+// Functions defined in pqueue_tag.h.
+
+pqueue_tag_t* pqueue_tag_init(size_t initial_size) {
+    return (pqueue_tag_t*) pqueue_init(
+            initial_size,
+            pqueue_tag_compare,
+            pqueue_tag_get_priority,
+            pqueue_tag_get_position,
+            pqueue_tag_set_position,
+            pqueue_tag_matches,
+            pqueue_tag_print);
+}

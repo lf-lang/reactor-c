@@ -41,23 +41,28 @@
 
 #include <stddef.h>
 
-/** priority data type */
+/** Priority data type. */
 typedef unsigned long long pqueue_pri_t;
 
-/** callback functions to get/set/compare the priority of an element */
+/** Callback to get the priority of an element. */
 typedef pqueue_pri_t (*pqueue_get_pri_f)(void *a);
-typedef void (*pqueue_set_pri_f)(void *a, pqueue_pri_t pri);
+
+/** Callback to compare two priorities. */
 typedef int (*pqueue_cmp_pri_f)(pqueue_pri_t next, pqueue_pri_t curr);
+
+/** Callback to determine whether two elements are equivalent. */
 typedef int (*pqueue_eq_elem_f)(void* next, void* curr);
 
-/** callback functions to get/set the position of an element */
+/** Callback functions to get the position of an element. */
 typedef size_t (*pqueue_get_pos_f)(void *a);
+
+/** Callback functions to set the position of an element. */
 typedef void (*pqueue_set_pos_f)(void *a, size_t pos);
 
-/** debug callback function to print a entry */
+/** Debug callback function to print a entry. */
 typedef void (*pqueue_print_entry_f)(void *a);
 
-/** the priority queue handle */
+/** The priority queue handle. */
 typedef struct pqueue_t
 {
     size_t size;                /**< number of elements in this queue plus 1 */
@@ -73,7 +78,7 @@ typedef struct pqueue_t
 } pqueue_t;
 
 /**
- * initialize the queue
+ * @brief Allocate and initialize a priority queue.
  *
  * @param n the initial estimate of the number of queue items for which memory
  *     should be preallocated
@@ -84,7 +89,7 @@ typedef struct pqueue_t
  * @param getpos the callback function to get the current element's position
  * @param setpos the callback function to set the current element's position
  *
- * @return the handle or NULL for insufficent memory
+ * @return The handle or NULL for insufficent memory.
  */
 pqueue_t *
 pqueue_init(size_t n,
@@ -101,7 +106,6 @@ pqueue_init(size_t n,
  * @param q the queue
  */
 void pqueue_free(pqueue_t *q);
-
 
 /**
  * return the size of the queue.
@@ -127,7 +131,6 @@ void
 pqueue_change_priority(pqueue_t *q,
                        pqueue_pri_t new_pri,
                        void *d);
-
 
 /**
  * Pop the highest-ranking item from the queue.
