@@ -1001,7 +1001,7 @@ void* worker(void* arg) {
         LF_PRINT_LOG("Environment %u: Worker thread %d waits for TAG to (0,0).",env->id, worker_number);
 
         tag_t tag_granted = rti_next_event_tag_locked(env->enclave_info, env->current_tag);
-        lf_assert(  lf_tag_compare(tag_granted, env->current_tag) == 0,
+        LF_ASSERT(  lf_tag_compare(tag_granted, env->current_tag) == 0,
                     "We did not receive a TAG to the start tag.");
     }
     #endif 

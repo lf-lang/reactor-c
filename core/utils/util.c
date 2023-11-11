@@ -246,21 +246,6 @@ void lf_print_error_and_exit(const char* format, ...) {
 }
 
 /**
- * Report an error with the prefix "ERROR: " and a newline appended
- * at the end, then exit with the failure code EXIT_FAILURE.
- * The arguments are just like printf().
- */
-void lf_assert(bool condition, const char* format, ...) {
-	if (!condition) {
-    	va_list args;
-    	va_start (args, format);
-    	lf_vprint_error_and_exit(format, args);
-    	va_end (args);
-    	exit(EXIT_FAILURE);
-	}
-}
-
-/**
  * varargs alternative of "lf_print_error_and_exit"
  */
 void lf_vprint_error_and_exit(const char* format, va_list args) {
