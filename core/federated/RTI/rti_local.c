@@ -6,6 +6,17 @@
  * @author Soroush Bateni (soroush@utdallas.edu)
  * @copyright (c) 2020-2023, The University of California at Berkeley
  * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ * 
+ * This files implements the enclave coordination logic.
+ * Here we are dealing with multiple mutexes. To avoid deadlocking we follow the
+ * following rules:
+ * 1) Mutexes are always locked in the following order:
+ *  Enclave mutexes -> RTI mutex.
+ *  This means that we never lock an enclave mutex while holding the RTI mutex.
+ * 2) Mutexes are always unlocked in the following order:
+ *  RTI mutex -> Enclave mutex.
+ * 3) If the coordination logic might block. We unlock the enclave mutex
+ * 
 */
 
 #ifdef LF_ENCLAVES
@@ -67,7 +78,8 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
     if (rti_local->base.number_of_scheduling_nodes == 1) {
         return next_event_tag;
     }
-
+    // This is called from a critical section within the source enclave. Leave
+    // this critical section and acquire the RTI mutex.
     LF_ASSERT(lf_mutex_unlock(&e->env->mutex) == 0, "Could not unlock mutex");
     LF_ASSERT(lf_mutex_lock(rti_local->base.mutex) == 0, "Could not lock mutex");
     tracepoint_federate_to_rti(e->env->trace, send_NET, e->base.id, &next_event_tag);
@@ -86,6 +98,7 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
         e->base.id, e->base.last_granted.time - lf_time_start(), e->base.last_granted.microstep,
         next_event_tag.time - lf_time_start(), next_event_tag.microstep);
         tracepoint_federate_from_rti(e->env->trace, receive_TAG, e->base.id, &next_event_tag);
+        // Release RTI mutex and re-enter the critical section of the source enclave before returning.
         LF_ASSERT(lf_mutex_unlock(rti_local->base.mutex) == 0, "Could not unlock mutex");
         LF_ASSERT(lf_mutex_lock(&e->env->mutex) == 0, "Could not lock mutex");
         return next_event_tag;
@@ -116,6 +129,7 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
     LF_PRINT_LOG("RTI: enclave %u returns with TAG to" PRINTF_TAG " ",
         e->base.id, e->base.next_event.time - lf_time_start(), e->base.next_event.microstep);
     tracepoint_federate_from_rti(e->env->trace, receive_TAG, e->base.id, &result.tag);
+    // Release RTI mutex and re-enter the critical section of the source enclave.
     LF_ASSERT(lf_mutex_unlock(rti_local->base.mutex) == 0, "Could not unlock mutex");
     LF_ASSERT(lf_mutex_lock(&e->env->mutex) == 0, "Could not lock mutex");
     return result.tag;
@@ -134,6 +148,8 @@ void rti_logical_tag_complete_locked(enclave_info_t* enclave, tag_t completed) {
 }
 
 void rti_update_other_net_locked(enclave_info_t* src, enclave_info_t * target, tag_t net) {
+    // Here we do NOT leave the critical section of the target enclave before we
+    // acquire the RTI mutex. This means that we cannot block within this function.
     LF_ASSERT(lf_mutex_lock(rti_local->base.mutex) == 0, "Could not lock mutex");
     tracepoint_federate_to_federate(src->env->trace, send_TAGGED_MSG, src->base.id, target->base.id, &net);
 
