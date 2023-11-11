@@ -17,11 +17,9 @@ To build the doc files locally in your clone of the reactor-c repo, we use sphin
 
 - Install `python3`, `pip3` and `doxygen`
 - Install the required Python modules:
-  - `pip3 install sphinx`
-  - `pip3 install sphinx_sitemap`
-  - `pip3 install sphinx-rtd-theme`
-  - `pip3 install breathe`
-  - `pip3 install exhale`
+```
+  pip3 install sphinx sphinx_sitemap sphinx-rtd-theme breathe exhale
+```
 
 ### Build Documentation Files
 

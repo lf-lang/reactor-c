@@ -15,11 +15,15 @@
 
 /**
  * Return 1 if the first argument is greater than the second and zero otherwise.
+ * @param thiz First argument.
+ * @param that Second argument.
  */
 int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that);
 
 /**
  * Return 0 regardless of argument order.
+ * @param thiz First argument.
+ * @param that Second argument.
  */
 int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that);
 
@@ -32,6 +36,8 @@ int event_matches(void* event1, void* event2);
 
 /**
  * Return 1 if the two arguments are identical pointers.
+ * @param a First argument.
+ * @param b Second argument.
  */
 int reaction_matches(void* a, void* b);
 
@@ -79,12 +85,14 @@ void set_reaction_position(void *reaction, size_t pos);
 /**
  * Print some information about the given reaction.
  * This only prints something if logging is set to DEBUG.
+ * @param reaction A pointer to a reaction_t.
  */
 void print_reaction(void *reaction);
 
 /**
  * Print some information about the given event.
  * This only prints something if logging is set to DEBUG.
+ * @param event A pointer to an event_t.
  */
 void print_event(void *event);
 

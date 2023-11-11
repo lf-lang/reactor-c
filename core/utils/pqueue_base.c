@@ -44,10 +44,6 @@
 #define LF_RIGHT(i)  (((i) << 1) + 1)
 #define LF_PARENT(i) ((i) >> 1)
 
-/**
- * Find an element in the queue that matches the given element up to
- * and including the given maximum priority.
- */
 void* find_equal(pqueue_t *q, void *e, int pos, pqueue_pri_t max) {
     if (pos < 0) {
         lf_print_error_and_exit("find_equal() called with a negative pos index.");
@@ -80,11 +76,6 @@ void* find_equal(pqueue_t *q, void *e, int pos, pqueue_pri_t max) {
     return NULL;
 }
 
-/**
- * Find an element in the queue that matches the given element up to
- * but not including the given maximum priority. The matching element
- * has to _also_ have the same priority.
- */
 void* find_equal_same_priority(pqueue_t *q, void *e, int pos) {
     if (pos < 0) {
         lf_print_error_and_exit("find_equal_same_priority() called with a negative pos index.");
@@ -268,14 +259,6 @@ void* pqueue_pop(pqueue_t *q) {
     return head;
 }
 
-/**
- * @brief Empty 'src' into 'dest'.
- *
- * As an optimization, this function might swap 'src' and 'dest'.
- *
- * @param dest The queue to fill up
- * @param src  The queue to empty
- */
 void pqueue_empty_into(pqueue_t** dest, pqueue_t** src) {
     assert(src);
     assert(dest);
@@ -336,7 +319,6 @@ void pqueue_print(pqueue_t *q, pqueue_print_entry_f print) {
 
     pqueue_free(dup);
 }
-
 
 static int subtree_is_valid(pqueue_t *q, int pos) {
     if (pos < 0) {
