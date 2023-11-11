@@ -1,4 +1,4 @@
-#ifdef defined(PLATFORM_STM32F4)
+#if defined(PLATFORM_STM32F4)
 /*************
  I hope this software works LOL
  ***************/
