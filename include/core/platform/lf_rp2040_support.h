@@ -20,8 +20,4 @@
 #define LF_TIME_BUFFER_LENGTH 80
 #define _LF_TIMEOUT 1
 
-#ifdef LF_THREADED
-#error "Threading for baremetal RP2040 not supported" 
-#endif // LF_THREADED
-
 #endif // LF_PICO_SUPPORT_H

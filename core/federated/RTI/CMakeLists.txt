@@ -79,8 +79,8 @@ IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
     target_compile_definitions(RTI PUBLIC LOG_LEVEL=4)
 ENDIF(CMAKE_BUILD_TYPE MATCHES DEBUG)
 
-# Set LF_THREADING to get the threaded support and FEDERATED to get federated compilation support
-target_compile_definitions(RTI PUBLIC LF_THREADED=1 FEDERATED=1)
+# Set FEDERATED to get federated compilation support
+target_compile_definitions(RTI PUBLIC FEDERATED=1)
 target_compile_definitions(RTI PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 
 # Set RTI Tracing
