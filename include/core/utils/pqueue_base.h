@@ -21,6 +21,7 @@
  * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * 
  * Modified by Marten Lohstroh (May, 2019).
  * Changes:
  * - Require implementation of a pqueue_eq_elem_f function to determine
@@ -28,18 +29,15 @@
  * - The provided pqueue_eq_elem_f implementation is used to test and
  *   search for equal elements present in the queue; and
  * - Removed capability to reassign priorities.
- */
-
-/**
- * @file  pqueue.h
- * @brief Priority Queue function declarations
+ *
+ * @brief Priority Queue function declarations used as a base for Lingua Franca priority queues.
  *
  * @{
  */
 
 
-#ifndef PQUEUE_H
-#define PQUEUE_H
+#ifndef PQUEUE_BASE_H
+#define PQUEUE_BASE_H
 
 #include <stddef.h>
 
@@ -212,19 +210,5 @@ pqueue_dump(pqueue_t *q,
  */
 int pqueue_is_valid(pqueue_t *q);
 
-// ********** Priority Queue Support Start
-int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that);
-int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that);
-int event_matches(void* next, void* curr);
-int reaction_matches(void* next, void* curr);
-pqueue_pri_t get_event_time(void *a);
-pqueue_pri_t get_reaction_index(void *a);
-size_t get_event_position(void *a);
-size_t get_reaction_position(void *a);
-void set_event_position(void *a, size_t pos);
-void set_reaction_position(void *a, size_t pos);
-void print_reaction(void *reaction);
-void print_event(void *event);
-
-#endif /* PQUEUE_H */
+#endif /* PQUEUE_BASE_H */
 /** @} */
