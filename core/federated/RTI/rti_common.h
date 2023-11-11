@@ -85,7 +85,7 @@ typedef struct rti_common_t {
     // Pointer to a tracing object
     trace_t* trace;
 
-    // Lock for making thread-safe access to the shared state.
+    // The RTI mutex for making thread-safe access to the shared state.
     lf_mutex_t* mutex;
 } rti_common_t;
 
@@ -125,7 +125,7 @@ void initialize_scheduling_node(scheduling_node_t* e, uint16_t id);
  * For all scheduling nodes downstream of the specified node, determine
  * whether they should be notified of a TAG or PTAG and notify them if so.
  *
- * This assumes the caller holds the mutex.
+ * This assumes the caller holds the RTI mutex.
  *
  * @param e The upstream node.
  * @param visited An array of booleans used to determine whether a node has
@@ -141,7 +141,7 @@ void notify_downstream_advance_grant_if_safe(scheduling_node_t* e, bool visited[
  * This function will keep a record of this TAG in the node's last_granted
  * field.
  *
- * This function assumes that the caller holds the mutex lock.
+ * This function assumes that the caller holds the RTI mutex.
  * 
  * @param e The scheduling node.
  * @param tag The tag to grant.
@@ -153,7 +153,7 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag);
  * This function requires two different implementations, one for enclaves
  * and one for federates.
  * 
- * This assumes the caller holds the mutex.
+ * This assumes the caller holds the RTI mutex.
  * 
  * @param e The scheduling node.
  */
@@ -166,7 +166,7 @@ void notify_advance_grant_if_safe(scheduling_node_t* e);
  * This function will keep a record of this PTAG in the node's last_provisionally_granted
  * field.
  *
- * This function assumes that the caller holds the mutex lock.
+ * This function assumes that the caller holds the RTI mutex.
  *
  * @param e The scheduling node.
  * @param tag The tag to grant.
@@ -197,7 +197,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag);
  * federate sends a NET (Next Event Tag) message.
  * It is also called when an upstream federate resigns from the federation.
  *
- * This function assumes that the caller holds the mutex lock.
+ * This function assumes that the caller holds the RTI mutex.
  *
  * @param e The scheduling node.
  * @return If granted, return the tag value and whether it is provisional. 
@@ -211,7 +211,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e);
  *
  * This will notify downstream scheduling nodes with a TAG or PTAG if appropriate.
  *
- * This function assumes that the caller is holding the mutex.
+ * This function assumes that the caller is holding the RTI mutex.
  *
  * @param e The scheduling node.
  * @param next_event_tag The next event tag for e.
