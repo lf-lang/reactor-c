@@ -144,13 +144,13 @@ void _lf_sched_wait_for_work(
  */
 void execute_inst_ADD(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    // tracepoint_static_scheduler_ADDI_starts(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_ADDI_starts(scheduler->env->trace, worker_number, (int) *pc);
     reg_t *dst = op1.reg;
     reg_t *src = op2.reg;
     reg_t *src2 = op3.reg;
     *dst = *src + *src2;
     *pc += 1; // Increment pc.
-    // tracepoint_static_scheduler_ADDI_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_ADDI_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -241,13 +241,13 @@ void execute_inst_BEQ(lf_scheduler_t* scheduler, size_t worker_number, operand_t
  */
 void execute_inst_BGE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    // tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
     reg_t *_rs1 = op1.reg;
     reg_t *_rs2 = op2.reg;
     LF_PRINT_DEBUG("Worker %zu: BGE : operand 1 = %lld, operand 2 = %lld", worker_number, *_rs1, *_rs2);
     if (*_rs1 >= *_rs2) *pc = op3.imm;
     else *pc += 1;
-    // tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
