@@ -314,9 +314,13 @@ void pqueue_print(pqueue_t *q, pqueue_print_entry_f print) {
 
     memcpy(dup->d, q->d, (q->size * sizeof(void *)));
 
-    while ((e = pqueue_pop(dup)))
-        print(e);
-
+    while ((e = pqueue_pop(dup))) {
+        if (print == NULL) {
+            q->prt(e);
+        } else {
+            print(e);
+        }
+    }
     pqueue_free(dup);
 }
 
