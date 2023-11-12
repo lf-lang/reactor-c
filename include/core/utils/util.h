@@ -291,21 +291,15 @@ static hook_delay_array_t* find_hook_delay_array(char* hook_id) {
     int high = _lf_global_delay_array.hooks_len - 1;
     while (low <= high) {
         int mid = (low + high) / 2;
-        printf("DEBUG: doing strcmp\n");
-        printf("DEBUG: doing strcmp involving %s\n", _lf_global_delay_array.hooks[mid].hook_id);
-        printf("DEBUG: doing strcmp involving %s and %s\n", _lf_global_delay_array.hooks[mid].hook_id, hook_id);
         int cmp = strcmp(_lf_global_delay_array.hooks[mid].hook_id, hook_id);
-        printf("DEBUG: strcmp succeeded\n");
         if (cmp < 0) {
             low = mid + 1;
         } else if (cmp > 0) {
             high = mid - 1;
         } else {
-            printf("DEBUG: found match for hook %s\n", hook_id);
             return &_lf_global_delay_array.hooks[mid];
         }
     }
-    printf("DEBUG: did not find a match\n");
     return NULL;
 }
 
@@ -337,20 +331,15 @@ static hook_delay_array_t* find_hook_delay_array(char* hook_id) {
             location_id[0] = '\0'; \
         } \
         size_t len = strlen(__FILE__); \
-        printf("DEBUG: getting location id"); \
         snprintf(location_id, 120, "%s %d %d", &__FILE__[len > 30 ? len - 15 : 0], __LINE__, _lf_my_fed_id); \
     } \
     if (*logtrace) { \
         printf("<<< %s >>>\n", location_id); \
     } \
-    printf("DEBUG: Hello hello hello????\n"); \
     static hook_delay_array_t* hook_delay_array; \
     static int sequence_number = 0; \
     static int delay_vector_index = 0; \
-    printf("DEBUG: Hello?\n"); \
     if (!hook_delay_array) { \
-        printf("DEBUG: finding hook delay array...\n"); \
-        printf("DEBUG: finding hook delay array for %s\n", location_id); \
         hook_delay_array = find_hook_delay_array(location_id); \
         if (!hook_delay_array) { \
             delay_vector_index = -1; \
@@ -362,12 +351,9 @@ static hook_delay_array_t* find_hook_delay_array(char* hook_id) {
             }; \
         } \
     } else if (delay_vector_index >= 0) { \
-        printf("DEBUG: delay_vector_index=%d\n", delay_vector_index); \
         if (delay_vector_index >= hook_delay_array->delay_vector_len) { \
-            printf("DEBUG: out of bounds for hook %s\n", location_id); \
             delay_vector_index = -1; \
         } else if (hook_delay_array->delay_vector[delay_vector_index].sequence_number == sequence_number) { \
-            printf("DEBUG: sleeping for time %lld with sequence number %d\n", (long long) hook_delay_array->delay_vector[delay_vector_index].delay * 1000000, sequence_number); \
             lf_sleep(hook_delay_array->delay_vector[delay_vector_index].delay * 1000000); \
             delay_vector_index++; \
         } \
