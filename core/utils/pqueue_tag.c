@@ -8,6 +8,8 @@
  * @brief Priority queue that uses tags for sorting.
  */
 
+#include <stdlib.h>
+
 #include "pqueue_tag.h"
 #include "util.h"     // For lf_print
 #include "platform.h" // For PRINTF_TAG
@@ -27,13 +29,13 @@ static pqueue_pri_t pqueue_tag_get_priority(void *element) {
 
 /**
  * @brief Callback comparison function for the tag-based priority queue.
- * Return -1 if the first argument is less than second, 0 if they are equal,
- * and +1 otherwise. This function is of type pqueue_cmp_pri_f.
+ * Return 0 if the first argument is less than second and 1 otherwise.
+ * This function is of type pqueue_cmp_pri_f.
  * @param priority1 A pointer to a pqueue_tag_element_t, cast to pqueue_pri_t.
  * @param priority2 A pointer to a pqueue_tag_element_t, cast to pqueue_pri_t.
 */
 static int pqueue_tag_compare(pqueue_pri_t priority1, pqueue_pri_t priority2) {
-    return lf_tag_compare(((pqueue_tag_element_t*) priority1)->tag, ((pqueue_tag_element_t*) priority2)->tag);
+    return (lf_tag_compare(((pqueue_tag_element_t*) priority1)->tag, ((pqueue_tag_element_t*) priority2)->tag) >= 0);
 }
 
 /**
@@ -71,10 +73,9 @@ static void pqueue_tag_set_position(void *element, size_t pos) {
  * This is a function of type pqueue_print_entry_f.
  * @param element A pointer to a pqueue_tag_element_t, cast to void*.
  */
-static void pqueue_tag_print(void *element) {
+static void pqueue_tag_print_element(void *element) {
     tag_t tag = ((pqueue_tag_element_t*) element)->tag;
-    lf_print("Element with tag " PRINTF_TAG " and payload %p.\n",
-           tag.time, tag.microstep, ((pqueue_tag_element_t*) element)->payload);
+    lf_print("Element with tag " PRINTF_TAG ".", tag.time, tag.microstep);
 }
 
 //////////////////
@@ -88,5 +89,47 @@ pqueue_tag_t* pqueue_tag_init(size_t initial_size) {
             pqueue_tag_get_position,
             pqueue_tag_set_position,
             pqueue_tag_matches,
-            pqueue_tag_print);
+            pqueue_tag_print_element);
+}
+
+void pqueue_tag_free(pqueue_tag_t *q) {
+    for (int i = 1; i < q->size ;i++) {
+        if (((pqueue_tag_element_t*)q->d[i])->is_dynamic) {
+            free(q->d[i]);
+        }
+    }
+    pqueue_free((pqueue_t*)q);
+}
+
+size_t pqueue_tag_size(pqueue_tag_t *q) {
+    return pqueue_size((pqueue_t*)q);
+}
+
+int pqueue_tag_insert(pqueue_tag_t* q, pqueue_tag_element_t* d) {
+    return pqueue_insert((pqueue_t*)q, (void*)d);
+}
+
+int pqueue_tag_insert_tag(pqueue_tag_t* q, tag_t t) {
+    pqueue_tag_element_t* d = (pqueue_tag_element_t*) malloc(sizeof(pqueue_tag_element_t));
+    d->is_dynamic = 1;
+    d->tag = t;
+    return pqueue_tag_insert(q, d);
+}
+
+pqueue_tag_element_t* pqueue_tag_pop(pqueue_tag_t* q) {
+    return (pqueue_tag_element_t*)pqueue_pop((pqueue_t*)q);
+}
+
+tag_t pqueue_tag_pop_tag(pqueue_tag_t* q) {
+    pqueue_tag_element_t* element = (pqueue_tag_element_t*)pqueue_tag_pop(q);
+    if (element == NULL) return FOREVER_TAG;
+    else return element->tag;
+}
+
+int pqueue_tag_remove(pqueue_tag_t* q, pqueue_tag_element_t* e) {
+    return pqueue_remove((pqueue_t*) q, (void*) e);
+}
+
+pqueue_tag_element_t* pqueue_tag_peek(pqueue_tag_t* q) {
+    return (pqueue_tag_element_t*) pqueue_peek((pqueue_t*)q);
 }

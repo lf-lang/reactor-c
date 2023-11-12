@@ -88,6 +88,8 @@ typedef struct pqueue_t
  * @param getpri the callback function to run to set a score to an element
  * @param getpos the callback function to get the current element's position
  * @param setpos the callback function to set the current element's position
+ * @param eqelem the callback function to check equivalence of entries
+ * @param prt the callback function to print an element
  *
  * @return The handle or NULL for insufficent memory.
  */
@@ -99,7 +101,6 @@ pqueue_init(size_t n,
             pqueue_set_pos_f setpos,
             pqueue_eq_elem_f eqelem,
             pqueue_print_entry_f prt);
-
 
 /**
  * free all memory used by the queue
@@ -183,16 +184,13 @@ int pqueue_remove(pqueue_t *q, void *e);
  */
 void *pqueue_peek(pqueue_t *q);
 
+
 /**
- * Print the queue.
- * @internal
- * DEBUG function only
- * @param q the queue
- * @param the callback function to print the entry
+ * Print the contents of the queue.
+ * @param q The queue.
+ * @param print The callback function to print the entry or NULL to use the default.
  */
-void
-pqueue_print(pqueue_t *q,
-             pqueue_print_entry_f print);
+void pqueue_print(pqueue_t *q, pqueue_print_entry_f print);
 
 /**
  * Dump the queue and it's internal structure.
