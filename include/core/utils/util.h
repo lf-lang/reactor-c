@@ -246,13 +246,16 @@ extern global_delay_array_t _lf_global_delay_array;
  */
 static void parse_global_delay_array(global_delay_array_t* gda) {
     char* gda_evar = getenv("LF_FED_DELAYS");
-    if (!gda_evar) {
+    if (!gda_evar || !(*gda_evar)) {
         gda->hooks = NULL;
         gda->hooks_len = 0;
         return;
     }
     FILE* fp = fopen(gda_evar, "r");
-    if (!fp) exit(1);  // This is bad error handling, but that's fine.
+    if (!fp) {
+        fprintf(stderr, "Failed to open file %s\n", gda_evar);
+        exit(1);  // This is bad error handling, but that's fine.
+    }
     char* line;
     char* saveptr;
     size_t len = 0;
