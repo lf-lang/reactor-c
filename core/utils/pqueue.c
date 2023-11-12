@@ -488,7 +488,7 @@ int tag_in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that) {
  * Return whether or not the tags contained by given pointers are identical.
  */
 int tag_matches(void* next, void* curr) {
-    return lf_tag_compare(((ndt_node*) next)->tag, ((ndt_node*) curr)->tag);
+    return lf_tag_compare(((ndt_node*) next)->tag, ((ndt_node*) curr)->tag) == 0;
 }
 
 /**
