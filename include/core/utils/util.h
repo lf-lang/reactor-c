@@ -232,9 +232,16 @@ typedef struct hook_delay_array_t {
     size_t delay_vector_len;
 } hook_delay_array_t;
 
+#ifdef LF_THREADED
+#include "platform.h"
+#endif
+
 typedef struct global_delay_array_t {
     hook_delay_array_t* hooks;
     size_t hooks_len;
+#ifdef LF_THREADED
+    lf_mutex_t mutex;
+#endif
 } global_delay_array_t;
 
 extern global_delay_array_t _lf_global_delay_array;
@@ -245,6 +252,9 @@ extern global_delay_array_t _lf_global_delay_array;
  * This must be invoked on startup.
  */
 static void parse_global_delay_array(global_delay_array_t* gda) {
+#ifdef LF_THREADED
+    lf_mutex_init(&gda->mutex);
+#endif
     char* gda_evar = getenv("LF_FED_DELAYS");
     if (!gda_evar || !(*gda_evar)) {
         gda->hooks = NULL;
@@ -307,6 +317,24 @@ static hook_delay_array_t* find_hook_delay_array(char* hook_id) {
 }
 
 /**
+ * @brief Locks the delay array if the program is threaded.
+ */
+static void lock_delay_array_if_threaded() {
+#ifdef LF_THREADED
+    lf_mutex_lock(&_lf_global_delay_array.mutex);
+#endif
+}
+
+/**
+ * @brief Unlocks the delay array if the program is threaded.
+ */
+static void unlock_delay_array_if_threaded() {
+#ifdef LF_THREADED
+    lf_mutex_unlock(&_lf_global_delay_array.mutex);
+#endif
+}
+
+/**
  * A macro used to print useful debug information. It can be enabled
  * by setting the target property 'logging' to 'DEBUG' or
  * by defining LOG_LEVEL to 2 in the top-level preamble.
@@ -324,6 +352,7 @@ static hook_delay_array_t* find_hook_delay_array(char* hook_id) {
  */
 #define LF_PRINT_DEBUG(format, ...) \
             do { \
+    lock_delay_array_if_threaded(); \
     static char* logtrace; \
     static char location_id[120]; \
     if (!logtrace) { /* slow path */ \
@@ -331,7 +360,6 @@ static hook_delay_array_t* find_hook_delay_array(char* hook_id) {
         if (!logtrace) { /* ensure that fast path will be taken */ \
             logtrace = (char*) malloc(sizeof(char)); \
             logtrace[0] = '\0'; \
-            location_id[0] = '\0'; \
         } \
         size_t len = strlen(__FILE__); \
         snprintf(location_id, 120, "%s %d %d", &__FILE__[len > 30 ? len - 15 : 0], __LINE__, _lf_my_fed_id); \
@@ -362,6 +390,7 @@ static hook_delay_array_t* find_hook_delay_array(char* hook_id) {
         } \
         sequence_number++; \
     } \
+    unlock_delay_array_if_threaded(); \
     if(LOG_LEVEL >= LOG_LEVEL_DEBUG && !(hook_delay_array->delay_vector_len)) { \
                     lf_print_debug(format, ##__VA_ARGS__); \
 } } while (0)
