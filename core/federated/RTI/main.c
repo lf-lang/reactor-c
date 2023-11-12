@@ -252,7 +252,11 @@ int process_args(int argc, const char* argv[]) {
     }
     return 1;
 }
+
+global_delay_array_t _lf_global_delay_array;
+
 int main(int argc, const char* argv[]) {
+    parse_global_delay_array(&_lf_global_delay_array);
 
     initialize_RTI(&rti);
 

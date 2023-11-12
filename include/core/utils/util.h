@@ -197,29 +197,117 @@ void lf_vprint_debug(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1
 
 typedef int64_t interval_t;
 
+// /**
+//  * @brief Parse the delay vector.
+//  *
+//  * @param delay_vector_evar Nonnull input that is a comma-separated list of integers.
+//  * @param delay_vector_len Output that is the length of the delay vector.
+//  * @param delay_vector A list of delays.
+//  */
+// static void _lf_parse_delay_vector(char* delay_vector_evar, size_t* delay_vector_len, interval_t** delay_vector) {
+//     FILE* fp = fopen(delay_vector_evar, "r");
+//     if (!fp) exit(1);  // This is bad error handling, but that's fine.
+//     char* line;
+//     getline(&line, delay_vector_len, fp);
+//     *delay_vector_len = atoi(delay_vector_evar);
+//     *delay_vector = (interval_t*) malloc(sizeof(interval_t) * *delay_vector_len);
+//     int idx = 0;
+//     while (getline(&line, delay_vector_len, fp)) {
+//         (*delay_vector)[idx++] = atoi(line);
+//     }
+//     fclose(fp);
+//     if (line) free(line);
+// }
+
+int lf_sleep(interval_t sleep_duration);
+
+typedef struct delay_pair_t {
+    size_t sequence_number;
+    interval_t delay;
+} delay_pair_t;
+
+typedef struct hook_delay_array_t {
+    char* hook_id;
+    delay_pair_t* delay_vector;
+    size_t delay_vector_len;
+} hook_delay_array_t;
+
+typedef struct global_delay_array_t {
+    hook_delay_array_t* hooks;
+    size_t hooks_len;
+} global_delay_array_t;
+
+extern global_delay_array_t _lf_global_delay_array;
+
 /**
- * @brief Parse the delay vector.
+ * @brief Parse the global delay array from the environment variable.
  *
- * @param delay_vector_evar Nonnull input that is a comma-separated list of integers.
- * @param delay_vector_len Output that is the length of the delay vector.
- * @param delay_vector A list of delays.
+ * This must be invoked on startup.
  */
-static void _lf_parse_delay_vector(char* delay_vector_evar, size_t* delay_vector_len, interval_t** delay_vector) {
-    FILE* fp = fopen(delay_vector_evar, "r");
+static void parse_global_delay_array(global_delay_array_t* gda) {
+    char* gda_evar = getenv("LF_FED_DELAYS");
+    if (!gda_evar) {
+        gda->hooks = NULL;
+        gda->hooks_len = 0;
+        return;
+    }
+    FILE* fp = fopen(gda_evar, "r");
     if (!fp) exit(1);  // This is bad error handling, but that's fine.
     char* line;
-    getline(&line, delay_vector_len, fp);
-    *delay_vector_len = atoi(delay_vector_evar);
-    *delay_vector = (interval_t*) malloc(sizeof(interval_t) * *delay_vector_len);
+    char* saveptr;
+    size_t len = 0;
+    size_t read;
+    getline(&line, &len, fp);
+    gda->hooks_len = atoi(line);
+    gda->hooks = (hook_delay_array_t*) malloc(sizeof(hook_delay_array_t) * gda->hooks_len);
     int idx = 0;
-    while (getline(&line, delay_vector_len, fp)) {
-        (*delay_vector)[idx++] = atoi(line);
+    while ((read = getline(&line, &len, fp)) != -1) {
+        char* hook_id = strtok_r(line, "\n", &saveptr);
+        gda->hooks[idx].hook_id = (char*) malloc(sizeof(char) * (strlen(hook_id) + 1));
+        strcpy(gda->hooks[idx].hook_id, hook_id);
+        getline(&line, &len, fp);
+        gda->hooks[idx].delay_vector_len = atoi(line);
+        gda->hooks[idx].delay_vector = (delay_pair_t*) malloc(sizeof(delay_pair_t) * gda->hooks[idx].delay_vector_len);
+        for (int idx2 = 0; idx2 < gda->hooks[idx].delay_vector_len; idx2++) {
+            getline(&line, &len, fp);
+            char* sequence_number = strtok_r(line, " ", &saveptr);
+            char* delay = strtok_r(line, "\n", &saveptr);
+            gda->hooks[idx].delay_vector[idx2].sequence_number = atoi(sequence_number);
+            gda->hooks[idx].delay_vector[idx2].delay = atoi(delay);
+        }
+        idx++;
     }
     fclose(fp);
     if (line) free(line);
 }
 
-int lf_sleep(interval_t sleep_duration);
+/**
+ * @brief Finds the hook delay array for the given hook id.
+ *
+ * Assumes the delay array is sorted. Returns NULL if the hook ID is not found.
+ */
+static hook_delay_array_t* find_hook_delay_array(char* hook_id) {
+    int low = 0;
+    int high = _lf_global_delay_array.hooks_len - 1;
+    while (low <= high) {
+        int mid = (low + high) / 2;
+        printf("DEBUG: doing strcmp\n");
+        printf("DEBUG: doing strcmp involving %s\n", _lf_global_delay_array.hooks[mid].hook_id);
+        printf("DEBUG: doing strcmp involving %s and %s\n", _lf_global_delay_array.hooks[mid].hook_id, hook_id);
+        int cmp = strcmp(_lf_global_delay_array.hooks[mid].hook_id, hook_id);
+        printf("DEBUG: strcmp succeeded\n");
+        if (cmp < 0) {
+            low = mid + 1;
+        } else if (cmp > 0) {
+            high = mid - 1;
+        } else {
+            printf("DEBUG: found match for hook %s\n", hook_id);
+            return &_lf_global_delay_array.hooks[mid];
+        }
+    }
+    printf("DEBUG: did not find a match\n");
+    return NULL;
+}
 
 /**
  * A macro used to print useful debug information. It can be enabled
@@ -247,33 +335,45 @@ int lf_sleep(interval_t sleep_duration);
             logtrace = (char*) malloc(sizeof(char)); \
             logtrace[0] = '\0'; \
             location_id[0] = '\0'; \
-        } else { \
-            size_t len = strlen(__FILE__); \
-            snprintf(location_id, 120, "<<< %s %d %d >>>\n", &__FILE__[len > 30 ? len - 15 : 0], __LINE__, _lf_my_fed_id); \
         } \
+        size_t len = strlen(__FILE__); \
+        printf("DEBUG: getting location id"); \
+        snprintf(location_id, 120, "%s %d %d", &__FILE__[len > 30 ? len - 15 : 0], __LINE__, _lf_my_fed_id); \
     } \
     if (*logtrace) { \
-        printf("%s", location_id); \
+        printf("<<< %s >>>\n", location_id); \
     } \
-    static char* delay_vector_evar; \
-    static size_t delay_vector_len; \
-    static interval_t* delay_vector; \
+    printf("DEBUG: Hello hello hello????\n"); \
+    static hook_delay_array_t* hook_delay_array; \
+    static int sequence_number = 0; \
     static int delay_vector_index = 0; \
-    if (!delay_vector_evar) { \
-        delay_vector_evar = getenv(location_id); \
-        if (!delay_vector_evar) { \
-            delay_vector_evar = (char*) malloc(sizeof(char)); \
-            delay_vector_evar[0] = '\0'; \
-            delay_vector_len = 0; \
-            delay_vector = NULL; \
-        } else { \
-            _lf_parse_delay_vector(delay_vector_evar, &delay_vector_len, &delay_vector); \
+    printf("DEBUG: Hello?\n"); \
+    if (!hook_delay_array) { \
+        printf("DEBUG: finding hook delay array...\n"); \
+        printf("DEBUG: finding hook delay array for %s\n", location_id); \
+        hook_delay_array = find_hook_delay_array(location_id); \
+        if (!hook_delay_array) { \
+            delay_vector_index = -1; \
+            hook_delay_array = malloc(sizeof(hook_delay_array_t)); \
+            *hook_delay_array = (hook_delay_array_t) { \
+                .hook_id=NULL, \
+                .delay_vector=NULL, \
+                .delay_vector_len=0 \
+            }; \
         } \
+    } else if (delay_vector_index >= 0) { \
+        printf("DEBUG: delay_vector_index=%d\n", delay_vector_index); \
+        if (delay_vector_index >= hook_delay_array->delay_vector_len) { \
+            printf("DEBUG: out of bounds for hook %s\n", location_id); \
+            delay_vector_index = -1; \
+        } else if (hook_delay_array->delay_vector[delay_vector_index].sequence_number == sequence_number) { \
+            printf("DEBUG: sleeping for time %lld with sequence number %d\n", (long long) hook_delay_array->delay_vector[delay_vector_index].delay * 1000000, sequence_number); \
+            lf_sleep(hook_delay_array->delay_vector[delay_vector_index].delay * 1000000); \
+            delay_vector_index++; \
+        } \
+        sequence_number++; \
     } \
-    if (*delay_vector_evar && delay_vector[delay_vector_index] > 0) { \
-        lf_sleep(delay_vector_index < delay_vector_len ? delay_vector[delay_vector_index++] : 0); \
-    } \
-    if(LOG_LEVEL >= LOG_LEVEL_DEBUG && !(*delay_vector_evar)) { \
+    if(LOG_LEVEL >= LOG_LEVEL_DEBUG && !(hook_delay_array->delay_vector_len)) { \
                     lf_print_debug(format, ##__VA_ARGS__); \
 } } while (0)
 
