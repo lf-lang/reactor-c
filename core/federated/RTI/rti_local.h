@@ -55,7 +55,7 @@ void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t *en
  * This function call will block until the enclave has been granted a TAG,
  * which might not be the tag requested.
  * 
- * This function assumes the mutex lock of enclave's environment is held.
+ * This assumes the caller is holding the environment mutex of the source enclave.
  * 
  * @param enclave The enclave requesting to advance to the NET.
  * @param next_event_tag The tag of the next event in the enclave
@@ -69,6 +69,8 @@ tag_t rti_next_event_tag_locked(enclave_info_t* enclave, tag_t next_event_tag);
  * `completed`. This will update the data structures and can release other
  * enclaves waiting on a TAG.
  * 
+ * This assumes the caller is holding the environment mutex of the source enclave.
+ * 
  * @param enclave The enclave
  * @param completed The tag just completed by the enclave.
  */
@@ -78,7 +80,8 @@ void rti_logical_tag_complete_locked(enclave_info_t* enclave, tag_t completed);
  * @brief This function is called after scheduling an event onto the event queue
  * of another enclave. The source enclave must call this function to potentially update
  * the NET of the target enclave. 
- * This function is called while holding the environment mutex of the target enclave.
+ * 
+ * This assumes the caller is holding the environment mutex of the target enclave.
  * 
  * @param target The enclave of which we want to update the NET of
  * @param net The proposed next event tag

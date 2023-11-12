@@ -266,7 +266,7 @@ int main(int argc, const char* argv[]) {
     if (rti.base.tracing_enabled) {
         _lf_number_of_workers = rti.base.number_of_scheduling_nodes;
         rti.base.trace = trace_new(NULL, rti_trace_file_name);
-        lf_assert(rti.base.trace, "Out of memory");
+        LF_ASSERT(rti.base.trace, "Out of memory");
         start_trace(rti.base.trace);
         lf_print("Tracing the RTI execution in %s file.", rti_trace_file_name);
     }

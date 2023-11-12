@@ -205,16 +205,6 @@ void lf_print_error_and_exit(const char* format, ...) {
     exit(EXIT_FAILURE);
 }
 
-void lf_assert(bool condition, const char* format, ...) {
-	if (!condition) {
-    	va_list args;
-    	va_start (args, format);
-    	lf_vprint_error_and_exit(format, args);
-    	va_end (args);
-    	exit(EXIT_FAILURE);
-	}
-}
-
 void lf_vprint_error_and_exit(const char* format, va_list args) {
     _lf_message_print(1, "FATAL ERROR: ", format, args, LOG_LEVEL_ERROR);
 }

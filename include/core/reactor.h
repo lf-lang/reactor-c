@@ -419,32 +419,35 @@ void _lf_initialize_watchdog_mutexes(void);
 
 
 /**
- * @brief Retrives the enclave ids of the direct upstream enclaves.
- * The implementation is code-generated.
+ * @brief Get the array of ids of enclaves directly upstream of the specified enclave.
+ * This updates the specified result pointer to point to a statically allocated array of IDs
+ * and returns the length of the array. The implementation is code-generated.
  * 
- * @param enclave_id The enclave for which to search for direct upstream
- * @param result This pointer is dereferenced and pointed to the resulting array.
- * @return int The number of direct upstreams.
+ * @param enclave_id The enclave for which to report upstream IDs.
+ * @param result The pointer to dereference and update to point to the resulting array.
+ * @return The number of direct upstream enclaves.
  */
 int _lf_get_upstream_of(int enclave_id, int** result);
 
 /**
- * @brief Retrives the enclave ids of the direct downstream enclaves.
- * The implementation is code-generated.
+ * @brief Get the array of ids of enclaves directly downstream of the specified enclave.
+ * This updates the specified result pointer to point to a statically allocated array of IDs
+ * and returns the length of the array. The implementation is code-generated.
  * 
- * @param enclave_id The enclave for which to search for direct downstream.
- * @param result This pointer is dereferenced and pointed to the resulting array.
- * @return int The number of direct downstream.
+ * @param enclave_id The enclave for which to report downstream IDs.
+ * @param result The pointer to dereference and update to point to the resulting array.
+ * @return The number of direct downstream enclaves.
  */
 int _lf_get_downstream_of(int enclave_id, int** result);
 
 /**
- * @brief Retrives the delays on the connections to the direct upstream enclaves.
+ * @brief Retrive the delays on the connections to direct upstream enclaves.
+ * This updates the result pointer to point to a statically allocated array of delays.
  * The implementation is code-generated.
  * 
  * @param enclave_id The enclave for which to search for upstream delays.
- * @param result This pointer is dereferenced and pointed to the resulting array.
- * @return int The number of direct upstreams.
+ * @param result The pointer to dereference and update to point to the resulting array.
+ * @return int The number of direct upstream enclaves.
  */
 int _lf_get_upstream_delay_of(int enclave_id, interval_t** result);
 
