@@ -94,7 +94,7 @@ pqueue_tag_t* pqueue_tag_init(size_t initial_size) {
 
 void pqueue_tag_free(pqueue_tag_t *q) {
     for (int i = 1; i < q->size ;i++) {
-        if (((pqueue_tag_element_t*)q->d[i])->is_dynamic) {
+        if (q->d[i] != NULL && ((pqueue_tag_element_t*)q->d[i])->is_dynamic) {
             free(q->d[i]);
         }
     }
@@ -123,7 +123,11 @@ pqueue_tag_element_t* pqueue_tag_pop(pqueue_tag_t* q) {
 tag_t pqueue_tag_pop_tag(pqueue_tag_t* q) {
     pqueue_tag_element_t* element = (pqueue_tag_element_t*)pqueue_tag_pop(q);
     if (element == NULL) return FOREVER_TAG;
-    else return element->tag;
+    else {
+        tag_t result = element->tag;
+        if (element->is_dynamic) free(element);
+        return result;
+    }
 }
 
 int pqueue_tag_remove(pqueue_tag_t* q, pqueue_tag_element_t* e) {
