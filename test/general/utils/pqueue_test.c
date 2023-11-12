@@ -47,13 +47,11 @@ static void pop_empty(pqueue_tag_t* q) {
     assert(pqueue_tag_pop(q) == NULL);
 }
 
-static void remove_from_queue(pqueue_tag_t* q) {
-    pqueue_tag_element_t e1 = {.tag = {.time = USEC(3), .microstep = 0}, .pos = 0, .is_dynamic = 0};
-    pqueue_tag_element_t e2 = {.tag = {.time = USEC(2), .microstep = 0}, .pos = 0, .is_dynamic = 0};
-    assert(pqueue_tag_insert(q, &e1) == 0);
-    assert(pqueue_tag_insert(q, &e2) == 0);
-    assert(pqueue_tag_remove(q, &e1) == 0);
-    assert(pqueue_tag_peek(q) == &e2);
+static void remove_from_queue(pqueue_tag_t* q, pqueue_tag_element_t* e1, pqueue_tag_element_t* e2) {
+    assert(pqueue_tag_insert(q, e1) == 0);
+    assert(pqueue_tag_insert(q, e2) == 0);
+    assert(pqueue_tag_remove(q, e1) == 0);
+    assert(pqueue_tag_peek(q) == e2);
     assert(pqueue_tag_size(q) == 1);
 }
 
@@ -65,7 +63,11 @@ int main(int argc, char *argv[]) {
     insert_on_queue(q);
     pop_from_queue(q);
     pop_empty(q);
-    remove_from_queue(q);
+
+    pqueue_tag_element_t e1 = {.tag = {.time = USEC(3), .microstep = 0}, .pos = 0, .is_dynamic = 0};
+    pqueue_tag_element_t e2 = {.tag = {.time = USEC(2), .microstep = 0}, .pos = 0, .is_dynamic = 0};
+
+    remove_from_queue(q, &e1, &e2);
 
     pqueue_tag_free(q);
 }
