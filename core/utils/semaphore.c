@@ -1,4 +1,4 @@
-#if defined(LF_THREADED)
+#if !defined(LF_SINGLE_THREADED)
 /* Semaphore utility for reactor C. */
 
 /*************

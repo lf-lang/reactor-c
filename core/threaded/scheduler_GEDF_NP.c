@@ -355,7 +355,7 @@ void lf_sched_done_with_reaction(size_t worker_number,
  * @param reaction The reaction to trigger at the current tag.
  * @param worker_number The ID of the worker that is making this call. 0 should
  * be used if there is only one worker (e.g., when the program is using the
- *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
+ *  single-threaded C runtime). -1 is used for an anonymous call in a context where a
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {

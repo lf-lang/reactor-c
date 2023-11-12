@@ -94,7 +94,7 @@ int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup) {
  * Asynchronous events are notified by setting a flag which breaks the sleeping
  * thread out of the busy-wait.
  */
-int _lf_unthreaded_notify_of_event() {
+int _lf_single_threaded_notify_of_event() {
    async_event = true;
    return 0;
 }

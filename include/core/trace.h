@@ -352,7 +352,7 @@ void tracepoint(
  * Trace the start of a reaction execution.
  * @param env The environment in which we are executing
  * @param reaction Pointer to the reaction_t struct for the reaction.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker);
 
@@ -360,7 +360,7 @@ void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker
  * Trace the end of a reaction execution.
  * @param env The environment in which we are executing
  * @param reaction Pointer to the reaction_t struct for the reaction.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_reaction_ends(trace_t* trace, reaction_t* reaction, int worker);
 
@@ -401,14 +401,14 @@ void tracepoint_user_value(void* self, char* description, long long value);
 /**
  * Trace the start of a worker waiting for something to change on the reaction queue.
  * @param env The environment in which we are executing
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_worker_wait_starts(trace_t* trace, int worker);
 
 /**
  * Trace the end of a worker waiting for something to change on reaction queue.
  * @param env The environment in which we are executing
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_worker_wait_ends(trace_t* trace, int worker);
 
@@ -430,7 +430,7 @@ void tracepoint_scheduler_advancing_time_ends(trace_t* trace);
  * Trace the occurence of a deadline miss.
  * @param env The environment in which we are executing
  * @param reaction Pointer to the reaction_t struct for the reaction.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, int worker);
 
