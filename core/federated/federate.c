@@ -1216,14 +1216,6 @@ char* lf_get_federates_bin_directory() {
     return LF_FEDERATES_BIN_DIRECTORY;
 }
 
-/**
- * @brief Return the directory containing the executables of the individual
- * federates.
- */
-char* lf_get_federates_bin_directory() {
-    return LF_FEDERATES_BIN_DIRECTORY;
-}
-
 //////////////////////////////// Port Status Handling ///////////////////////////////////////
 
 extern lf_action_base_t* _lf_action_table[];
