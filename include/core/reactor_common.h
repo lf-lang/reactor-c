@@ -35,11 +35,6 @@ typedef enum parse_rti_code_t {
 parse_rti_code_t parse_rti_addr(const char* rti_addr);
 void set_federation_id(const char* fid);
 void set_federation_trace_object(trace_t * trace);
-void lf_stop();
-char* lf_get_federates_bin_directory();
-char* lf_get_federation_id();
-instant_t lf_get_effective_start_time();
-instant_t lf_get_start_time();
 #endif
 
 extern struct allocation_record_t* _lf_reactors_to_free;
