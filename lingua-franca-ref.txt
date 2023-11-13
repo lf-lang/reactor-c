@@ -1,1 +1,5 @@
+<<<<<<< HEAD
 c-enclaves
+=======
+master
+>>>>>>> 349cd589 (Update lingua-franca-ref.txt)
