@@ -14,6 +14,7 @@ var structenvironment__t =
     [ "is_present_fields_size", "d2/d01/structenvironment__t.html#a2635fdfad1b72c79e00c28c21b9c2eaf", null ],
     [ "modes", "d2/d01/structenvironment__t.html#a4348d239de993aee36a42e0ae71871da", null ],
     [ "mutex", "d2/d01/structenvironment__t.html#a18c1176afef786aed0a01a92561d4b40", null ],
+    [ "name", "d2/d01/structenvironment__t.html#a58106ba029a6892ca82028c163cf2e96", null ],
     [ "next_q", "d2/d01/structenvironment__t.html#a14f00e4dd290188d7ba045535c7399d1", null ],
     [ "num_workers", "d2/d01/structenvironment__t.html#a3f4ab6b55dcc31b6c5cd9e082d65547d", null ],
     [ "recycle_q", "d2/d01/structenvironment__t.html#a7cccc28f94f789d0cfaaaca90bba0b8c", null ],
@@ -29,5 +30,6 @@ var structenvironment__t =
     [ "thread_ids", "d2/d01/structenvironment__t.html#adf02bc4c7926af749b64b24a1d3be7a3", null ],
     [ "timer_triggers", "d2/d01/structenvironment__t.html#a5ec0f96f80f71a929bf3a150d70b5a67", null ],
     [ "timer_triggers_size", "d2/d01/structenvironment__t.html#a2e134fb4e7bafe271bed676dc4444d3e", null ],
-    [ "trace", "d2/d01/structenvironment__t.html#a4670353a561a50460a1dbd7817ad44cb", null ]
+    [ "trace", "d2/d01/structenvironment__t.html#a4670353a561a50460a1dbd7817ad44cb", null ],
+    [ "worker_thread_count", "d2/d01/structenvironment__t.html#a64c98375fa4b34629073863a9bcd6845", null ]
 ];

@@ -6,5 +6,5 @@ var searchData=
   ['welcome_5fmessage_5flength_3',['welcome_message_length',['../d7/d58/sensor__simulator_8c.html#aed914099b551105b7294552e79e13b16',1,'sensor_simulator.c']]],
   ['width_4',['width',['../d2/dab/structgeneric__port__capsule__struct.html#a8336292b3d416c8bcd8af788ab71ee9a',1,'generic_port_capsule_struct::width'],['../d4/d7d/structlf__multiport__iterator__t.html#a9a506388d73fdb6c0fd45c182f6a41ac',1,'lf_multiport_iterator_t::width']]],
   ['worker_5faffinity_5',['worker_affinity',['../d2/d35/structreaction__t.html#a861cbf9521eb367cedf9e2d0ecee0fca',1,'reaction_t']]],
-  ['worker_5fthread_5fcount_6',['worker_thread_count',['../d5/dbc/reactor__threaded_8c.html#a76d8bd3f166632ed8f2990a1f29852cd',1,'reactor_threaded.c']]]
+  ['worker_5fthread_5fcount_6',['worker_thread_count',['../d2/d01/structenvironment__t.html#a64c98375fa4b34629073863a9bcd6845',1,'environment_t::worker_thread_count'],['../d5/dbc/reactor__threaded_8c.html#a76d8bd3f166632ed8f2990a1f29852cd',1,'worker_thread_count:&#160;reactor_threaded.c']]]
 ];

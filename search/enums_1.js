@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['clock_5fsync_5fstat_0',['clock_sync_stat',['../d3/d90/rti__lib_8h.html#a9705d612b9ce908ee485e92eb3f2769f',1,'rti_lib.h']]]
+  ['lf_5fspacing_5fpolicy_5ft_0',['lf_spacing_policy_t',['../d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822',1,'lf_types.h']]]
 ];

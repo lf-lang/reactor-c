@@ -477,13 +477,6 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<p>Enter a critical section where logical time and the event queue are guaranteed to not change unless they are changed within the critical section. this can be implemented by disabling interrupts. Users of this function must ensure that <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">lf_init_critical_sections()</a> is called first and that <a class="el" href="../../de/d03/platform_8h.html#aed2c25495b50b46780c6288e4370541e" title="Leave a critical section by enabling interrupts.">lf_critical_section_exit()</a> is called later. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">env</td><td>Ignored (present for compatibility). </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise.</dd></dl>
 <p>Enter critical section by disabling interrupts.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
@@ -517,13 +510,6 @@ Functions</h2></td></tr>
   </table>
   </dd>
 </dl>
-<p>Exit the critical section entered with <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">lf_lock_time()</a>. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">env</td><td>Ignored (present for compatibility). </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success, platform-specific error number otherwise.</dd></dl>
 <p>Leave a critical section by enabling interrupts.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">

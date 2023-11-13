@@ -1,10 +1,11 @@
 var dir_b52e7938672f1d30fc92120ae2e8e089 =
 [
     [ "message_record", "dir_8fc021ee98434d6b7e1d4669a646457a.html", "dir_8fc021ee98434d6b7e1d4669a646457a" ],
-    [ "enclave.c", "de/d37/enclave_8c.html", "de/d37/enclave_8c" ],
-    [ "enclave.h", "d6/d21/enclave_8h.html", "d6/d21/enclave_8h" ],
-    [ "enclave_impl.c", "da/df5/enclave__impl_8c.html", "da/df5/enclave__impl_8c" ],
-    [ "rti.c", "d1/d01/rti_8c.html", "d1/d01/rti_8c" ],
-    [ "rti_lib.c", "de/d0d/rti__lib_8c.html", "de/d0d/rti__lib_8c" ],
-    [ "rti_lib.h", "d3/d90/rti__lib_8h.html", "d3/d90/rti__lib_8h" ]
+    [ "main.c", "d0/d29/main_8c.html", null ],
+    [ "rti_common.c", "de/d70/rti__common_8c.html", null ],
+    [ "rti_common.h", "dc/da9/rti__common_8h.html", null ],
+    [ "rti_local.c", "d9/dfd/rti__local_8c.html", null ],
+    [ "rti_local.h", "d3/d71/rti__local_8h.html", null ],
+    [ "rti_remote.c", "d0/d7b/rti__remote_8c.html", null ],
+    [ "rti_remote.h", "d1/d1c/rti__remote_8h.html", null ]
 ];

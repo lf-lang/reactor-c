@@ -109,6 +109,7 @@ $(document).ready(function(){initNavTree('d5/dbc/reactor__threaded_8c.html','../
 <code>#include &quot;<a class="el" href="../../d2/dd8/scheduler_8h_source.html">scheduler.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d2/dcd/tag_8h_source.html">tag.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../de/d26/environment_8h_source.html">environment.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d3/d71/rti__local_8h_source.html">rti_local.h</a>&quot;</code><br />
 </div><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
@@ -1099,7 +1100,7 @@ Variables</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Worker thread for the thread pool. This acquires the mutex lock and releases it to wait for time to elapse or for asynchronous events and also releases it to execute reactions. </p><dl class="params"><dt>Parameters</dt><dd>
+<p>Worker thread for the thread pool. Its argument is the environment within which is working The very first worker per environment/enclave is in charge of synchronizing with the other enclaves by getting a TAG to (0,0) this might block until upstream enclaves have finished tag (0,0). This is unlike federated scheduling where each federate will get a PTAG to (0,0) and use network control reactions to handle upstream dependencies </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramname">arg</td><td>Environment within which the worker should execute. </td></tr>
   </table>

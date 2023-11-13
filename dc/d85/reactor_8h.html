@@ -170,10 +170,18 @@ Functions</h2></td></tr>
 <tr class="memitem:ac0d8f6ec1ee33ba9c0d23f54b76b0962" id="r_ac0d8f6ec1ee33ba9c0d23f54b76b0962"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#ac0d8f6ec1ee33ba9c0d23f54b76b0962">_lf_initialize_watchdog_mutexes</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>)</td></tr>
 <tr class="memdesc:ac0d8f6ec1ee33ba9c0d23f54b76b0962"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize watchdog mutexes. For any reactor with one or more watchdogs, the self struct should have a non-NULL <code>reactor_mutex</code> field which points to an instance of <code>lf_mutex_t</code>. This function initializes those mutexes.  <br /></td></tr>
 <tr class="separator:ac0d8f6ec1ee33ba9c0d23f54b76b0962"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a110fa4bc5c433e28e33f3ff3697d52a5" id="r_a110fa4bc5c433e28e33f3ff3697d52a5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#a110fa4bc5c433e28e33f3ff3697d52a5">_lf_get_upstream_of</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">enclave_id</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> **<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">result</a>)</td></tr>
+<tr class="memdesc:a110fa4bc5c433e28e33f3ff3697d52a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the array of ids of enclaves directly upstream of the specified enclave. This updates the specified result pointer to point to a statically allocated array of IDs and returns the length of the array. The implementation is code-generated.  <br /></td></tr>
+<tr class="separator:a110fa4bc5c433e28e33f3ff3697d52a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a40863c1b4a6356214ea5326b3614ec11" id="r_a40863c1b4a6356214ea5326b3614ec11"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#a40863c1b4a6356214ea5326b3614ec11">_lf_get_downstream_of</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">enclave_id</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> **<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">result</a>)</td></tr>
+<tr class="memdesc:a40863c1b4a6356214ea5326b3614ec11"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get the array of ids of enclaves directly downstream of the specified enclave. This updates the specified result pointer to point to a statically allocated array of IDs and returns the length of the array. The implementation is code-generated.  <br /></td></tr>
+<tr class="separator:a40863c1b4a6356214ea5326b3614ec11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63f10adfcf0c3dbfbfd778ebd56928fe" id="r_a63f10adfcf0c3dbfbfd778ebd56928fe"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#a63f10adfcf0c3dbfbfd778ebd56928fe">_lf_get_upstream_delay_of</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">enclave_id</a>, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> **<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">result</a>)</td></tr>
+<tr class="memdesc:a63f10adfcf0c3dbfbfd778ebd56928fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Retrive the delays on the connections to direct upstream enclaves. This updates the result pointer to point to a statically allocated array of delays. The implementation is code-generated.  <br /></td></tr>
+<tr class="separator:a63f10adfcf0c3dbfbfd778ebd56928fe"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af98729a7ed73fdaf020ede8e15266d97" id="r_af98729a7ed73fdaf020ede8e15266d97"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#af98729a7ed73fdaf020ede8e15266d97">terminate_execution</a> (<a class="el" href="../../d2/d01/structenvironment__t.html">environment_t</a> *env)</td></tr>
 <tr class="separator:af98729a7ed73fdaf020ede8e15266d97"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a06d2cf592cdae0fc5924998df16fa6b5" id="r_a06d2cf592cdae0fc5924998df16fa6b5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#a06d2cf592cdae0fc5924998df16fa6b5">termination</a> ()</td></tr>
-<tr class="memdesc:a06d2cf592cdae0fc5924998df16fa6b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">A clean termination of the RTI will write the trace file, if tracing is enabled, before exiting.  <br /></td></tr>
 <tr class="separator:a06d2cf592cdae0fc5924998df16fa6b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaf263557d88761d75b98bc6cc5226cb2" id="r_aaf263557d88761d75b98bc6cc5226cb2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d1d/lf__types_8h.html#a3608c2ed78ba97535f8d82a489846305">trigger_handle_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dc/d85/reactor_8h.html#aaf263557d88761d75b98bc6cc5226cb2">_lf_schedule_int</a> (<a class="el" href="../../d8/d4b/structlf__action__base__t.html">lf_action_base_t</a> *action, <a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">extra_delay</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> value)</td></tr>
 <tr class="separator:aaf263557d88761d75b98bc6cc5226cb2"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -862,6 +870,44 @@ Functions intitializing and freeing memory for environments.</h1>
 
 </div>
 </div>
+<a id="a40863c1b4a6356214ea5326b3614ec11" name="a40863c1b4a6356214ea5326b3614ec11"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a40863c1b4a6356214ea5326b3614ec11">&#9670;&#160;</a></span>_lf_get_downstream_of()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> _lf_get_downstream_of </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td>
+          <td class="paramname"><em>enclave_id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> **&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the array of ids of enclaves directly downstream of the specified enclave. This updates the specified result pointer to point to a statically allocated array of IDs and returns the length of the array. The implementation is code-generated. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">enclave_id</td><td>The enclave for which to report downstream IDs. </td></tr>
+    <tr><td class="paramname">result</td><td>The pointer to dereference and update to point to the resulting array. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The number of direct downstream enclaves. </dd></dl>
+
+</div>
+</div>
 <a id="ac109cd752121228507a95495a1eb6d8f" name="ac109cd752121228507a95495a1eb6d8f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ac109cd752121228507a95495a1eb6d8f">&#9670;&#160;</a></span>_lf_get_environments()</h2>
 
@@ -887,6 +933,82 @@ Functions intitializing and freeing memory for environments.</h1>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>int The number of environments in the array </dd></dl>
+
+</div>
+</div>
+<a id="a63f10adfcf0c3dbfbfd778ebd56928fe" name="a63f10adfcf0c3dbfbfd778ebd56928fe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a63f10adfcf0c3dbfbfd778ebd56928fe">&#9670;&#160;</a></span>_lf_get_upstream_delay_of()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> _lf_get_upstream_delay_of </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td>
+          <td class="paramname"><em>enclave_id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a> **&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Retrive the delays on the connections to direct upstream enclaves. This updates the result pointer to point to a statically allocated array of delays. The implementation is code-generated. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">enclave_id</td><td>The enclave for which to search for upstream delays. </td></tr>
+    <tr><td class="paramname">result</td><td>The pointer to dereference and update to point to the resulting array. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>int The number of direct upstream enclaves. </dd></dl>
+
+</div>
+</div>
+<a id="a110fa4bc5c433e28e33f3ff3697d52a5" name="a110fa4bc5c433e28e33f3ff3697d52a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a110fa4bc5c433e28e33f3ff3697d52a5">&#9670;&#160;</a></span>_lf_get_upstream_of()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> _lf_get_upstream_of </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td>
+          <td class="paramname"><em>enclave_id</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> **&#160;</td>
+          <td class="paramname"><em>result</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the array of ids of enclaves directly upstream of the specified enclave. This updates the specified result pointer to point to a statically allocated array of IDs and returns the length of the array. The implementation is code-generated. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">enclave_id</td><td>The enclave for which to report upstream IDs. </td></tr>
+    <tr><td class="paramname">result</td><td>The pointer to dereference and update to point to the resulting array. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The number of direct upstream enclaves. </dd></dl>
 
 </div>
 </div>
@@ -1459,8 +1581,6 @@ Functions intitializing and freeing memory for environments.</h1>
         </tr>
       </table>
 </div><div class="memdoc">
-
-<p>A clean termination of the RTI will write the trace file, if tracing is enabled, before exiting. </p>
 <p>Report elapsed logical and physical times and report if any memory allocated by set_new, set_new_array, or lf_writable_copy has not been freed.</p>
 <p>Function to be invoked upon exiting. </p>
 

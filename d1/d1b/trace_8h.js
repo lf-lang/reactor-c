@@ -24,6 +24,7 @@ var trace_8h =
     [ "tracepoint_user_value", "d1/d1b/trace_8h.html#adc24126d062442704b43b2ea2f95042c", null ],
     [ "tracepoint_worker_wait_ends", "d1/d1b/trace_8h.html#a9dc20d411fb600c803f04572bde501ff", null ],
     [ "tracepoint_worker_wait_starts", "d1/d1b/trace_8h.html#a00635edd06259391fe45fa81f2dd9cab", null ],
+    [ "trace_t", "d1/d1b/trace_8h.html#abec033e59d4add4aa6ec61a874d0d52d", null ],
     [ "trace_event_t", "d1/d1b/trace_8h.html#ab02e9e69539d60297cedb38c2193a453", [
       [ "reaction_starts", "d1/d1b/trace_8h.html#ab02e9e69539d60297cedb38c2193a453a7ca2fc1a301d8e66944fab471646728a", null ],
       [ "reaction_ends", "d1/d1b/trace_8h.html#ab02e9e69539d60297cedb38c2193a453a79889b5c51ccdf63962a8ec230ff3f6b", null ],

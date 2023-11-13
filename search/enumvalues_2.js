@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['clock_5fsync_5finit_0',['clock_sync_init',['../d3/d90/rti__lib_8h.html#a9705d612b9ce908ee485e92eb3f2769faf21c0b4c30338f2717ebc9f53fa34558',1,'rti_lib.h']]],
-  ['clock_5fsync_5foff_1',['clock_sync_off',['../d3/d90/rti__lib_8h.html#a9705d612b9ce908ee485e92eb3f2769fafef85b2461484e7a55ae3f50d3ca996c',1,'rti_lib.h']]],
-  ['clock_5fsync_5fon_2',['clock_sync_on',['../d3/d90/rti__lib_8h.html#a9705d612b9ce908ee485e92eb3f2769fa8423b23ffffdfc03fcb3f68cf4007531',1,'rti_lib.h']]]
+  ['defer_0',['defer',['../d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a893b1cf0de04eaf44a009fecabd16b90',1,'lf_types.h']]],
+  ['drop_1',['drop',['../d6/d1d/lf__types_8h.html#a0183c0b43037a172a1cd9aa6ed6b3822a1e34755950041e469ca91ff2b7d1c019',1,'lf_types.h']]]
 ];
