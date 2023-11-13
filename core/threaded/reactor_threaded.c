@@ -30,7 +30,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Marten Lohstroh <marten@berkeley.edu>}
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
  */
-#if defined LF_THREADED
+#if !defined LF_SINGLE_THREADED
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
@@ -276,7 +276,7 @@ bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition
 #ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized
     // Apply the STA to the logical time
     // Prevent an overflow
-    if (wait_until_time_ns < FOREVER - _lf_fed_STA_offset) {
+    if (start_time != logical_time && wait_until_time_ns < FOREVER - _lf_fed_STA_offset) {
         // If wait_time is not forever
         LF_PRINT_DEBUG("Adding STA " PRINTF_TIME " to wait until time " PRINTF_TIME ".",
                 _lf_fed_STA_offset,
@@ -635,7 +635,7 @@ void lf_request_stop() {
  * @param reaction The reaction.
  * @param worker_number The ID of the worker that is making this call. 0 should be
  *  used if there is only one worker (e.g., when the program is using the
- *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
+ *  single-threaded C runtime). -1 is used for an anonymous call in a context where a
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number) {

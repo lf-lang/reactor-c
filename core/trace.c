@@ -305,7 +305,7 @@ void start_trace(trace_t* trace) {
     trace->_lf_trace_header_written = false;
 
     // Allocate an array of arrays of trace records, one per worker thread plus one
-    // for the 0 thread (the main thread, or in an unthreaded program, the only
+    // for the 0 thread (the main thread, or in an single-threaded program, the only
     // thread).
     trace->_lf_number_of_trace_buffers = _lf_number_of_workers + 1;
     trace->_lf_trace_buffer = (trace_record_t**)malloc(sizeof(trace_record_t*) * trace->_lf_number_of_trace_buffers);
@@ -377,7 +377,7 @@ void tracepoint(
 /**
  * Trace the start of a reaction execution.
  * @param reaction Pointer to the reaction_t struct for the reaction.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker) {
     tracepoint(trace, reaction_starts, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, true);
@@ -386,7 +386,7 @@ void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker
 /**
  * Trace the end of a reaction execution.
  * @param reaction Pointer to the reaction_t struct for the reaction.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_reaction_ends(trace_t* trace, reaction_t* reaction, int worker) {
     tracepoint(trace, reaction_ends, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
@@ -469,7 +469,7 @@ void tracepoint_user_value(void* self, char* description, long long value) {
 
 /**
  * Trace the start of a worker waiting for something to change on the event or reaction queue.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_worker_wait_starts(trace_t* trace, int worker) {
     tracepoint(trace, worker_wait_starts, NULL, NULL, worker, worker, -1, NULL, NULL, 0, true);
@@ -477,7 +477,7 @@ void tracepoint_worker_wait_starts(trace_t* trace, int worker) {
 
 /**
  * Trace the end of a worker waiting for something to change on the event or reaction queue.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_worker_wait_ends(trace_t* trace, int worker) {
     tracepoint(trace, worker_wait_ends, NULL, NULL, worker, worker, -1, NULL, NULL, 0, false);
@@ -502,7 +502,7 @@ void tracepoint_scheduler_advancing_time_ends(trace_t* trace) {
 /**
  * Trace the occurrence of a deadline miss.
  * @param reaction Pointer to the reaction_t struct for the reaction.
- * @param worker The thread number of the worker thread or 0 for unthreaded execution.
+ * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, int worker) {
     tracepoint(trace, reaction_deadline_missed, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);

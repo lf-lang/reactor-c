@@ -34,11 +34,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdint.h> // For fixed-width integral types
 #include <time.h>   // For CLOCK_MONOTONIC
+#include <unistd.h> // _POSIX_TIMERS _POSIX_CLOCK_MONOTONIC
 
 // Use 64-bit times and 32-bit unsigned microsteps
 #include "lf_tag_64_32.h"
 
-#if defined LF_THREADED
+#if !defined LF_SINGLE_THREADED
     #if __STDC_VERSION__ < 201112L || defined (__STDC_NO_THREADS__)
         // (Not C++11 or later) or no threads support
         #include "lf_POSIX_threads_support.h"
@@ -47,7 +48,15 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     #endif
 #endif
 
+#if !defined(_POSIX_TIMERS) || _POSIX_TIMERS <= 0
+    #error Linux platform misses clock support
+#endif
+
 // The underlying physical clock for Linux
-#define _LF_CLOCK CLOCK_MONOTONIC
+#if defined(_POSIX_CLOCK_MONOTONIC)
+    #define _LF_CLOCK CLOCK_MONOTONIC
+#else
+    #define _LF_CLOCK CLOCK_REALTIME
+#endif
 
 #endif // LF_LINUX_SUPPORT_H

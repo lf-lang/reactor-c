@@ -1037,7 +1037,7 @@ void connect_to_rti(const char* hostname, int port) {
             lf_print_error_and_exit("No host for RTI matching given hostname: %s", hostname);
         }
 
-        // Create a socket 
+        // Create a socket
         _fed.socket_TCP_RTI = create_real_time_tcp_socket_errexit();
 
         result = connect(_fed.socket_TCP_RTI, res->ai_addr, res->ai_addrlen);
@@ -1216,9 +1216,18 @@ char* lf_get_federates_bin_directory() {
     return LF_FEDERATES_BIN_DIRECTORY;
 }
 
-////////////////////////////////Port Status Handling///////////////////////////////////////
+/**
+ * @brief Return the directory containing the executables of the individual
+ * federates.
+ */
+char* lf_get_federates_bin_directory() {
+    return LF_FEDERATES_BIN_DIRECTORY;
+}
+
+//////////////////////////////// Port Status Handling ///////////////////////////////////////
 
 extern lf_action_base_t* _lf_action_table[];
+extern interval_t _lf_action_delay_table[];
 extern size_t _lf_action_table_size;
 extern lf_action_base_t* _lf_zero_delay_action_table[];
 extern size_t _lf_zero_delay_action_table_size;
@@ -1949,8 +1958,30 @@ bool update_max_level(tag_t tag, bool is_provisional) {
         // Safe to complete the current tag
         return (prev_max_level_allowed_to_advance != max_level_allowed_to_advance);
     }
-    for (int i = 0; i < _lf_zero_delay_action_table_size; i++) {
-        lf_action_base_t* input_port_action = _lf_zero_delay_action_table[i];
+#ifdef FEDERATED_DECENTRALIZED
+    size_t action_table_size = _lf_action_table_size;
+    lf_action_base_t** action_table = _lf_action_table;
+#else
+    size_t action_table_size = _lf_zero_delay_action_table_size;
+    lf_action_base_t** action_table = _lf_zero_delay_action_table;
+#endif // FEDERATED_DECENTRALIZED
+    for (int i = 0; i < action_table_size; i++) {
+        lf_action_base_t* input_port_action = action_table[i];
+#ifdef FEDERATED_DECENTRALIZED
+        // In decentralized execution, if the current_tag is close enough to the
+        // start tag and there is a large enough delay on an incoming
+        // connection, then there is no need to block progress waiting for this
+        // port status.
+        if (
+            (_lf_action_delay_table[i] == 0 && env->current_tag.time == start_time && env->current_tag.microstep == 0)
+            || (_lf_action_delay_table[i] > 0 && lf_tag_compare(
+                env->current_tag,
+                lf_delay_strict((tag_t) {.time=start_time, .microstep=0}, _lf_action_delay_table[i])
+            ) <= 0)
+        ) {
+            continue;
+        }
+#endif // FEDERATED_DECENTRALIZED
         if (lf_tag_compare(env->current_tag,
                 input_port_action->trigger->last_known_status_tag) > 0
                 && !input_port_action->trigger->is_physical) {
@@ -2009,7 +2040,7 @@ static void* update_ports_from_staa_offsets(void* args) {
         tag_t tag_when_started_waiting = lf_tag(env);
         for (int i = 0; i < staa_lst_size; ++i) {
             staa_t* staa_elem = staa_lst[i];
-            interval_t wait_until_time = env->current_tag.time + staa_elem->STAA + _lf_fed_STA_offset;
+            interval_t wait_until_time = env->current_tag.time + staa_elem->STAA + _lf_fed_STA_offset - _lf_action_delay_table[i];
             lf_mutex_lock(&env->mutex);
             // Both before and after the wait, check that the tag has not changed
             if (a_port_is_unknown(staa_elem) && lf_tag_compare(lf_tag(env), tag_when_started_waiting) == 0 && wait_until(env, wait_until_time, &port_status_changed) && lf_tag_compare(lf_tag(env), tag_when_started_waiting) == 0) {
