@@ -248,11 +248,6 @@ void lf_vprint_warning(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF
 void lf_print_error_and_exit(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 /**
- * A shorthand for checking if a condition is true and if not, print an error and exit.
- */
-void lf_assert(bool condition, const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(2, 3);
-
-/**
  * varargs alternative of "lf_print_error_and_exit"
  */
 void lf_vprint_error_and_exit(const char* format, va_list args)
@@ -280,4 +275,20 @@ typedef void(print_message_function_t)(const char*, va_list);
  */
 void lf_register_print_function(print_message_function_t* function, int log_level);
 
+/**
+ * Assertion handling. LF_ASSERT can be used as a short hand for verifying
+ * a condition and calling `lf_print_error_and_exit` if it is not true.
+ * By definng `LF_NOASSERT` this check is not performed.
+ */
+#if defined(LF_NOASSERT)
+#define LF_ASSERT(condition, format, ...) \
+	while(0) { }
+#else
+#define LF_ASSERT(condition, format, ...) \
+	do { \
+		if (!(condition)) { \
+				lf_print_error_and_exit(format, ##__VA_ARGS__); \
+		} \
+	} while(0)
+#endif // LF_NOASSERT
 #endif /* UTIL_H */

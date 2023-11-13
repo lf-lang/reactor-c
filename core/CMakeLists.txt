@@ -33,6 +33,10 @@ tracing=${LF_TRACE}.")
     include(threaded/CMakeLists.txt)
 endif()
 
+# Add sources for the local RTI if we are using scheduling enclaves
+if(DEFINED LF_ENCLAVES)
+include(federated/RTI/local_rti.cmake)
+endif()
 
 # Include sources from subdirectories
 include(utils/CMakeLists.txt)
@@ -50,6 +54,7 @@ target_include_directories(core PUBLIC ../include/core/platform)
 target_include_directories(core PUBLIC ../include/core/modal_models)
 target_include_directories(core PUBLIC ../include/core/threaded)
 target_include_directories(core PUBLIC ../include/core/utils)
+target_include_directories(core PUBLIC federated/RTI/)
 
 if (APPLE)
     SET(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
@@ -123,3 +128,6 @@ define(SCHEDULER)
 define(LF_SOURCE_DIRECTORY)
 define(LF_PACKAGE_DIRECTORY)
 define(LF_FILE_SEPARATOR)
+define(WORKERS_NEEDED_FOR_FEDERATE)
+define(LF_ENCLAVES)
+define(LF_NOASSERT)
