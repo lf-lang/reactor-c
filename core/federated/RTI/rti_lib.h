@@ -244,6 +244,11 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
 void update_cycle_information();
 
 /**
+ * Determine whether or not to use the NDT messages.
+*/
+void determine_the_ndt_condition();
+
+/**
  * @brief Send the next downstream tag.
  * 
  * @param fed The downstream federate.

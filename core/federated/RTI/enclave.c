@@ -32,6 +32,8 @@ void initialize_enclave(enclave_t* e, uint16_t id) {
     e->num_downstream = 0;
     e->mode = REALTIME;
     e->is_in_cycle = false;
+    e->has_physical_action = false;
+    e->enable_ndt = false;
 
     // Initialize the next event condition variable.
     lf_cond_init(&e->next_event_condition, &rti_mutex);
@@ -325,4 +327,23 @@ bool check_cycle(enclave_t *e, int target_id, bool visited[]) {
         }
     }
     return false;
+}
+
+bool check_physical_action_of_transitive_downstreams(enclave_t *e, bool visited[]) {
+    if (visited[e->id] || e->state == NOT_CONNECTED) {
+        return false;
+    }
+
+    visited[e->id] = true;
+
+    for (int i = 0; i < e->num_downstream; i++) {
+        if (check_physical_action_of_transitive_downstreams(_e_rti->enclaves[e->downstream[i]], visited)) {
+            return true;
+        }
+    }
+    if (e->has_physical_action) {
+        return true;
+    } else {
+        return false;
+    }
 }

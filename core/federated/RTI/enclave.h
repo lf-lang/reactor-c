@@ -62,6 +62,8 @@ typedef struct enclave_t {
     lf_cond_t next_event_condition; // Condition variable used by enclaves to notify an enclave
                                     // that it's call to next_event_tag() should unblock.
     bool is_in_cycle;
+    bool has_physical_action;
+    bool enable_ndt;
 } enclave_t;
 
 /**
@@ -275,5 +277,7 @@ tag_t transitive_next_event(enclave_t *e, tag_t candidate, bool visited[]);
  * @return Whether the target enclave is in a cycle.
 */
 bool check_cycle(enclave_t *e, int target_id, bool visited[]);
+
+bool check_physical_action_of_transitive_downstreams(enclave_t *e, bool visited[]);
 
 #endif // ENCLAVE_H

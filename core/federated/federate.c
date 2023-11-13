@@ -1412,6 +1412,8 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
     tag_t current_message_intended_tag = lf_delay_strict(env->current_tag,
                                                     additional_delay);
     
+    // FIXME: If port absent messages are not used when there is no zero-delay cycle,
+    // This part is not needed as we don't apply the NDT optimization for cycles.
     if (pqueue_size(env->ndt_q) != 0 ) {
         // FIXME: If the RTI changes the use of NDTs dynamically, merely checking the size
         // is not enough.

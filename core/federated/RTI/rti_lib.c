@@ -303,6 +303,28 @@ void update_cycle_information() {
     free(visited);
 }
 
+/**
+ * Determine whether or not to use the NDT messages.
+*/
+void determine_the_ndt_condition() {
+    bool *visited = (bool *)calloc(_f_rti->number_of_enclaves, sizeof(bool));
+    for (int i = 0; i < _f_rti->number_of_enclaves; i++) {
+        enclave_t* target_enclave = &_f_rti->enclaves[i]->enclave;
+        if (target_enclave->is_in_cycle || check_physical_action_of_transitive_downstreams(target_enclave, visited)) {
+            target_enclave->enable_ndt = false;
+            LF_PRINT_DEBUG("There is a cycle including federate %d or a transitive downstream federate of"
+            " the federate %d has a physical action.", i, i);
+        } else {
+            target_enclave->enable_ndt = true;
+            LF_PRINT_DEBUG("Enable NDT messages for federate %d.", i);
+        }
+        for (int j = 0; j < _f_rti->number_of_enclaves; j++) {
+            visited[j] = false;
+        }
+    }
+    free(visited);
+}
+
 void send_upstream_next_downstream_tag(federate_t* fed, tag_t next_event_tag) {
     // The RTI receives next_event_tag from the federated fed. 
     // It has to send NDT messages to the upstream federates of fed
@@ -1548,6 +1570,7 @@ void connect_to_federates(int socket_descriptor) {
         }
     }
     update_cycle_information();
+    determine_the_ndt_condition();
     // All federates have connected.
     LF_PRINT_DEBUG("All federates have connected to RTI.");
 
