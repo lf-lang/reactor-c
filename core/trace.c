@@ -60,7 +60,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 trace_t* trace_new(environment_t* env, const char * filename) {
     trace_t * trace = (trace_t *) calloc(1, sizeof(trace_t));
-    lf_assert(trace, "Out of memory");
+    LF_ASSERT(trace, "Out of memory");
 
     trace->_lf_trace_stop=1;
     trace->env = env;
@@ -70,7 +70,7 @@ trace_t* trace_new(environment_t* env, const char * filename) {
 
     // Allocate memory for the filename on the trace struct
     trace->filename = (char*) malloc(len * sizeof(char));
-    lf_assert(trace->filename, "Out of memory");
+    LF_ASSERT(trace->filename, "Out of memory");
 
     // Copy it to the struct
     strncpy(trace->filename, filename, len);
@@ -101,7 +101,7 @@ int _lf_register_trace_event(trace_t* trace, void* pointer1, void* pointer2, _lf
 }
 
 int register_user_trace_event(void *self, char* description) {
-    lf_assert(self, "Need a pointer to a self struct to register a user trace event");
+    LF_ASSERT(self, "Need a pointer to a self struct to register a user trace event");
     trace_t * trace = ((self_base_t *) self)->environment->trace;
     return _lf_register_trace_event(trace, description, NULL, trace_user, description);
 }
@@ -380,7 +380,7 @@ void tracepoint_user_event(void* self, char* description) {
     // But to be safe, then, we have acquire a mutex before calling this
     // because multiple reactions might be calling the same tracepoint function.
     // There will be a performance hit for this.
-    lf_assert(self, "A pointer to the self struct is needed to trace an event");
+    LF_ASSERT(self, "A pointer to the self struct is needed to trace an event");
     environment_t *env = ((self_base_t *)self)->environment;
     trace_t *trace = env->trace;
     lf_critical_section_enter(env);
@@ -486,7 +486,7 @@ void stop_trace(trace_t* trace) {
 ////////////////////////////////////////////////////////////
 //// For federated execution
 
-#ifdef FEDERATED
+#if defined FEDERATED || defined LF_ENCLAVES
 
 /**
  * Trace federate sending a message to the RTI.

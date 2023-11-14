@@ -134,6 +134,7 @@ int lf_tag_compare(tag_t tag1, tag_t tag2) {
 
 tag_t lf_delay_tag(tag_t tag, interval_t interval) {
     if (tag.time == NEVER || interval < 0LL) return tag;
+    if (tag.time >= FOREVER - interval) return tag;
     tag_t result = tag;
     if (interval == 0LL) {
         // Note that unsigned variables will wrap on overflow.

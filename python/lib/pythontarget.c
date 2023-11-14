@@ -280,7 +280,7 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
 
     // Store a reference to the top-level environment
     int num_environments = _lf_get_environments(&top_level_environment);
-    lf_assert(num_environments == 1, "Python target only supports programs with a single environment/enclave");
+    LF_ASSERT(num_environments == 1, "Python target only supports programs with a single environment/enclave");
 
     Py_BEGIN_ALLOW_THREADS
     lf_reactor_c_main(argc, argv);

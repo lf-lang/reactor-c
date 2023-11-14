@@ -31,13 +31,15 @@
 #define WEEKS(t) (t * 604800000000000LL)
 
 #define NEVER LLONG_MIN
+#define NEVER_MICROSTEP 0u
 #define FOREVER LLONG_MAX
-#define NEVER_TAG (tag_t) { .time = LLONG_MIN, .microstep = 0u }
+#define FOREVER_MICROSTEP UINT_MAX
+#define NEVER_TAG (tag_t) { .time = NEVER, .microstep = NEVER_MICROSTEP }
 // Need a separate initializer expression to comply with some C compilers
-#define NEVER_TAG_INITIALIZER { LLONG_MIN,  0u }
-#define FOREVER_TAG (tag_t) { .time = LLONG_MAX, .microstep = UINT_MAX }
+#define NEVER_TAG_INITIALIZER { NEVER,  NEVER_MICROSTEP }
+#define FOREVER_TAG (tag_t) { .time = FOREVER, .microstep = FOREVER_MICROSTEP }
 // Need a separate initializer expression to comply with some C compilers
-#define FOREVER_TAG_INITIALIZER { LLONG_MAX,  UINT_MAX }
+#define FOREVER_TAG_INITIALIZER { FOREVER,  FOREVER_MICROSTEP }
 
 // Convenience for converting times
 #define BILLION 1000000000LL

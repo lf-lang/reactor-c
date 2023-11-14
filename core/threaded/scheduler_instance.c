@@ -13,7 +13,7 @@ bool init_sched_instance(
 ) {
     
     assert(env != GLOBAL_ENVIRONMENT);
-    lf_assert(env, "`init_sched_instance` called without env pointer being set");
+    LF_ASSERT(env, "`init_sched_instance` called without env pointer being set");
 
     // Check if the instance is already initialized
     lf_critical_section_enter(env);

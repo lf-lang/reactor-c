@@ -279,9 +279,8 @@ void lf_sched_init(
     if (init_sched_instance(env, &env->scheduler, number_of_workers, params)) {
         // Scheduler has not been initialized before.
         if (params == NULL || params->num_reactions_per_level == NULL) {
-            lf_print_error_and_exit(
-                "Scheduler: Internal error. The NP scheduler "
-                "requires params.num_reactions_per_level to be set.");
+            lf_print_warning("Scheduler initialized with no reactions");
+            return;
         }
     } else {
         // Already initialized
@@ -332,10 +331,13 @@ void lf_sched_init(
  * This must be called when the scheduler is no longer needed.
  */
 void lf_sched_free(lf_scheduler_t* scheduler) {
-    for (size_t j = 0; j <= scheduler->max_reaction_level; j++) {
-        free(((reaction_t***)scheduler->triggered_reactions)[j]);
-    }
+    if (scheduler->triggered_reactions) {
+        for (size_t j = 0; j <= scheduler->max_reaction_level; j++) {
+            free(((reaction_t***)scheduler->triggered_reactions)[j]);
+        }        
     free(scheduler->triggered_reactions);
+    }
+
     lf_semaphore_destroy(scheduler->semaphore);
 }
 
