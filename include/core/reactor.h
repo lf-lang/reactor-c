@@ -419,6 +419,39 @@ void _lf_initialize_watchdog_mutexes(void);
 
 
 /**
+ * @brief Get the array of ids of enclaves directly upstream of the specified enclave.
+ * This updates the specified result pointer to point to a statically allocated array of IDs
+ * and returns the length of the array. The implementation is code-generated.
+ * 
+ * @param enclave_id The enclave for which to report upstream IDs.
+ * @param result The pointer to dereference and update to point to the resulting array.
+ * @return The number of direct upstream enclaves.
+ */
+int _lf_get_upstream_of(int enclave_id, int** result);
+
+/**
+ * @brief Get the array of ids of enclaves directly downstream of the specified enclave.
+ * This updates the specified result pointer to point to a statically allocated array of IDs
+ * and returns the length of the array. The implementation is code-generated.
+ * 
+ * @param enclave_id The enclave for which to report downstream IDs.
+ * @param result The pointer to dereference and update to point to the resulting array.
+ * @return The number of direct downstream enclaves.
+ */
+int _lf_get_downstream_of(int enclave_id, int** result);
+
+/**
+ * @brief Retrive the delays on the connections to direct upstream enclaves.
+ * This updates the result pointer to point to a statically allocated array of delays.
+ * The implementation is code-generated.
+ * 
+ * @param enclave_id The enclave for which to search for upstream delays.
+ * @param result The pointer to dereference and update to point to the resulting array.
+ * @return int The number of direct upstream enclaves.
+ */
+int _lf_get_upstream_delay_of(int enclave_id, interval_t** result);
+
+/**
  * Function (to be code generated) to terminate execution.
  * This will be invoked after all shutdown actions have completed.
  * @param env The environment in which we are executing
@@ -426,7 +459,6 @@ void _lf_initialize_watchdog_mutexes(void);
 void terminate_execution(environment_t* env);
 
 void termination();
-
 
 /**
  * Schedule the specified action with an integer value at a later logical

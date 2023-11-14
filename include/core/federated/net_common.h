@@ -698,6 +698,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_NEXT_DOWNSTREAM_TAG 25
 
+#define MSG_TYPE_PHYSICAL_ACTION
+
 /////////////////////////////////////////////
 //// Rejection codes
 

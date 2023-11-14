@@ -39,11 +39,12 @@
 #include "lf_types.h"
 #include "platform.h"
 #include "pqueue.h"
+#include "trace.h"
 
 // Forward declarations so that a pointers can appear in the environment struct.
 typedef struct lf_scheduler_t lf_scheduler_t;
-typedef struct trace_t trace_t;
 typedef struct mode_environment_t mode_environment_t;
+typedef struct enclave_info_t enclave_info_t;
 
 /**
  * @brief The global environment.
@@ -67,6 +68,7 @@ typedef struct mode_environment_t mode_environment_t;
  */
 typedef struct environment_t {
     bool initialized;
+    char *name;
     int id;
     tag_t current_tag;
     tag_t stop_tag;
@@ -89,6 +91,7 @@ typedef struct environment_t {
     int reset_reactions_size;
     mode_environment_t* modes;
     trace_t* trace;
+    int worker_thread_count;
 #if defined(LF_SINGLE_THREADED)
     pqueue_t *reaction_q;
 #else
@@ -107,6 +110,9 @@ typedef struct environment_t {
 // #ifdef FEDERATED_CENTRALIZED
     pqueue_t* ndt_q;
 // #endif // FEDERATED_CENTRALIZED
+#ifdef LF_ENCLAVES // TODO: Consider dropping #ifdef
+    enclave_info_t *enclave_info;
+#endif
 } environment_t;
 
 #if defined(MODAL_REACTORS)
@@ -124,6 +130,7 @@ struct mode_environment_t {
  */
 int environment_init(
     environment_t* env,
+    const char * name,
     int id,
     int num_workers,
     int num_timers, 
