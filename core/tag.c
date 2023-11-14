@@ -142,7 +142,8 @@ int lf_tag_compare(tag_t tag1, tag_t tag2) {
 
 tag_t lf_delay_tag(tag_t tag, interval_t interval) {
     if (tag.time == NEVER || interval < 0LL) return tag;
-    if (tag.time >= FOREVER - interval) return tag;
+    // Note that overflow in C is undefined for signed variables.
+    if (tag.time >= FOREVER - interval) return FOREVER_TAG; // Overflow.
     tag_t result = tag;
     if (interval == 0LL) {
         // Note that unsigned variables will wrap on overflow.
@@ -150,12 +151,7 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval) {
         // microsteps.
         result.microstep++;
     } else {
-        // Note that overflow in C is undefined for signed variables.
-        if (FOREVER - interval < result.time) {
-            result.time = FOREVER;
-        } else {
-            result.time += interval;
-        }
+        result.time += interval;
         result.microstep = 0;
     }
     return result;
