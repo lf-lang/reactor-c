@@ -298,7 +298,7 @@ void _lf_start_time_step(environment_t *env) {
     && lf_tag_compare(pqueue_tag_peek(env->ndt_q)->tag, env->current_tag) < 0) {
         // Remove elements of ndt_q with tag less than the current tag.
         tag_t tag_to_remove = pqueue_tag_pop_tag(env->ndt_q);
-        LF_PRINT_DEBUG("Remove the tag " PRINTF_TAG " from the ndt_q is before the current tag " PRINTF_TAG ". Remove it.",
+        LF_PRINT_DEBUG("Remove the tag " PRINTF_TAG " from the ndt_q is less than the current tag " PRINTF_TAG ". Remove it.",
         tag_to_remove.time - start_time, tag_to_remove.microstep,
         env->current_tag.time - start_time, env->current_tag.microstep);
     }

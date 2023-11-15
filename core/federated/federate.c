@@ -425,7 +425,7 @@ int send_timed_message(environment_t* env,
     // Insert the intended tag into the ndt_q to send LTC to the RTI quickly.
     if (pqueue_tag_size(env->ndt_q) != 0) {
         // FIXME: If the RTI changes the use of NDTs dynamically, merely checking the size
-        // is not enough.
+        // is not enough to know whether this federate using the NDT optimization or not.
         LF_PRINT_DEBUG("Insert NDT at the intended to send LTC and NET quickly.");
         pqueue_tag_insert_tag(env->ndt_q, current_message_intended_tag);
     }
@@ -1414,7 +1414,7 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
     // This part is not needed as we don't apply the NDT optimization for cycles.
     if (pqueue_tag_size(env->ndt_q) != 0 ) {
         // FIXME: If the RTI changes the use of NDTs dynamically, merely checking the size
-        // is not enough.
+        // is not enough to know whether this federate using the NDT optimization or not.
         tag_t earliest_ndt = pqueue_tag_peek(env->ndt_q)->tag;
         if (lf_tag_compare(current_message_intended_tag, earliest_ndt) < 0) {
             // No events exist in any downstream federates
@@ -1941,6 +1941,8 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
     _lf_get_environments(&env);
     bool need_to_send_LTC = true;
     if (pqueue_tag_size(env->ndt_q) != 0 ) {
+        // FIXME: If the RTI changes the use of NDTs dynamically, merely checking the size
+        // is not enough to know whether this federate using the NDT optimization or not.
         tag_t earliest_ndt = pqueue_tag_peek(env->ndt_q)->tag;
         if (lf_tag_compare(tag_to_send, earliest_ndt) < 0) {
             // No events exist in any downstream federates
@@ -2403,15 +2405,19 @@ void handle_next_downstream_tag() {
     environment_t* env;
     _lf_get_environments(&env);
 
-    if (lf_tag_compare(env->current_tag, NDT) <= 0) {
-        // The current tag is less than or equal to the NDT. Push NDT to ndt_q.
+    if (lf_tag_compare(env->current_tag, NDT) <= 0
+    && pqueue_tag_find_equal_same_tag(env->ndt_q, NDT) == NULL) {
+        // The current tag is less than or equal to the NDT and the tag doesn't exists
+        // in the ndt_q. Insert NDT to ndt_q.
         pqueue_tag_insert_tag(env->ndt_q, NDT);
     }
     if (lf_tag_compare(env->current_tag, NDT) > 0) {
         // The current tag is greater than the NDT. Send the LTC with the NDT and
         // push the current tag to ndt_q so that this federate notify the appropriate NET message.
         _lf_send_tag(MSG_TYPE_LOGICAL_TAG_COMPLETE, NDT, true);
-        pqueue_tag_insert_tag(env->ndt_q, env->current_tag);
+        if (pqueue_tag_find_equal_same_tag(env->ndt_q, NDT) == NULL) {
+            pqueue_tag_insert_tag(env->ndt_q, env->current_tag);
+        }
     }
 }
 
@@ -2829,7 +2835,7 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
             bool need_to_send_NET = true;
             if (pqueue_tag_size(env->ndt_q) != 0 ) {
                 // FIXME: If the RTI changes the use of NDTs dynamically, merely checking the size
-                // is not enough.
+                // is not enough to know whether this federate using the NDT optimization or not.
                 tag_t earliest_ndt = pqueue_tag_peek(env->ndt_q)->tag;
                 if (lf_tag_compare(tag, earliest_ndt) < 0) {
                     // No events exist in any downstream federates
