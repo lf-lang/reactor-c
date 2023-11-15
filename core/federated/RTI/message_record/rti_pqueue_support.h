@@ -1,3 +1,4 @@
+#if defined STANDALONE_RTI
 /**
  * @file rti_pqueue_support.h
  * @author Soroush Bateni (soroush@berkeley.edu)
@@ -96,3 +97,5 @@ static void print_message_record(void *message) {
 
 // ********** Priority Queue Support End
 #endif
+
+#endif // STANDALONE_RTI

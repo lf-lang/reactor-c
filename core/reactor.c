@@ -1,4 +1,4 @@
-#if defined(LF_UNTHREADED)
+#if defined(LF_SINGLE_THREADED)
 /* Runtime infrastructure for the non-threaded version of the C target of Lingua Franca. */
 
 /*************
@@ -114,7 +114,7 @@ void lf_print_snapshot(environment_t* env) {
  * @param reaction The reaction.
  * @param worker_number The ID of the worker that is making this call. 0 should be
  *  used if there is only one worker (e.g., when the program is using the
- *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
+ *  single-threaded C runtime). -1 is used for an anonymous call in a context where a
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number) {
@@ -195,7 +195,7 @@ int _lf_do_step(environment_t* env) {
 
         if (!violation) {
             // Invoke the reaction function.
-            _lf_invoke_reaction(env, reaction, 0);   // 0 indicates unthreaded.
+            _lf_invoke_reaction(env, reaction, 0);   // 0 indicates single-threaded.
 
             // If the reaction produced outputs, put the resulting triggered
             // reactions into the queue.
@@ -364,8 +364,8 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         _lf_create_environments();   // code-generated function
         environment_t *env;
         int num_environments = _lf_get_environments(&env);
-        lf_assert(num_environments == 1,
-            "Found %d environments. Only 1 can be used with the unthreaded runtime", num_environments);
+        LF_ASSERT(num_environments == 1,
+            "Found %d environments. Only 1 can be used with the single-threaded runtime", num_environments);
         
         LF_PRINT_DEBUG("Initializing.");
         initialize_global();
@@ -398,8 +398,12 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     }
 }
 
+/**
+ * @brief Notify of new event by calling the single-threaded platform API
+ * @param env Environment in which we are executing.
+ */
 int lf_notify_of_event(environment_t* env) {
-    return _lf_unthreaded_notify_of_event();
+    return _lf_single_threaded_notify_of_event();
 }
 
 int lf_critical_section_enter(environment_t* env) {

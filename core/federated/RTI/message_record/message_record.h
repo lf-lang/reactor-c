@@ -1,3 +1,4 @@
+#if defined STANDALONE_RTI
 /**
  * @file message_record.h
  * @author Soroush Bateni (soroush@berkeley.edu)
@@ -82,3 +83,4 @@ void clean_in_transit_message_record_up_to_tag(in_transit_message_record_q_t* qu
 tag_t get_minimum_in_transit_message_tag(in_transit_message_record_q_t* queue);
 
 #endif // RTI_MESSAGE_RECORD_H
+#endif // STANDALONE_RTI

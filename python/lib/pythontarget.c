@@ -31,13 +31,13 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Implementation of functions defined in @see pythontarget.h
  */
 
+#include "pythontarget.h"
 #include "modal_models/definitions.h"
 #include "platform.h"  // defines MAX_PATH on Windows
 #include "python_action.h"
 #include "python_port.h"
 #include "python_tag.h"
 #include "python_time.h"
-#include "pythontarget.h"
 #include "reactor_common.h"
 #include "reactor.h"
 #include "tag.h"
@@ -234,6 +234,22 @@ const char** _lf_py_parse_argv_impl(PyObject* py_argv, size_t* argc) {
     return argv;
 }
 
+static bool py_initialized = false;
+
+/**
+ * @brief Initialize the Python interpreter if it hasn't already been.
+ */
+void py_initialize_interpreter(void) {
+    if (!py_initialized) {
+        py_initialized = true;
+
+        // Initialize the Python interpreter
+        Py_Initialize();
+
+        LF_PRINT_DEBUG("Initialized the Python interpreter.");
+    }
+}
+
 //////////////////////////////////////////////////////////////
 ///////////// Main function callable from Python code
 /**
@@ -249,8 +265,7 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
     size_t argc;
     const char** argv = _lf_py_parse_argv_impl(py_args, &argc);
 
-    // Initialize the Python interpreter
-    Py_Initialize();
+    py_initialize_interpreter();
 
     // Load the pickle module
     if (global_pickler == NULL) {
@@ -265,9 +280,7 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
 
     // Store a reference to the top-level environment
     int num_environments = _lf_get_environments(&top_level_environment);
-    lf_assert(num_environments == 1, "Python target only supports programs with a single environment/enclave");
-
-    LF_PRINT_DEBUG("Initialized the Python interpreter.");
+    LF_ASSERT(num_environments == 1, "Python target only supports programs with a single environment/enclave");
 
     Py_BEGIN_ALLOW_THREADS
     lf_reactor_c_main(argc, argv);
@@ -313,6 +326,7 @@ static PyModuleDef MODULE_NAME = {
 
 //////////////////////////////////////////////////////////////
 /////////////  Module Initialization
+
 /*
  * The Python runtime will call this function to initialize the module.
  * The name of this function is dynamically generated to follow
@@ -324,7 +338,12 @@ static PyModuleDef MODULE_NAME = {
  */
 PyMODINIT_FUNC
 GEN_NAME(PyInit_,MODULE_NAME)(void) {
+
     PyObject *m;
+
+    // As of Python 11, this function may be called before py_main, so we need to
+    // initialize the interpreter.
+    py_initialize_interpreter();
 
     // Initialize the port_capsule type
     if (PyType_Ready(&py_port_capsule_t) < 0) {
@@ -362,7 +381,6 @@ GEN_NAME(PyInit_,MODULE_NAME)(void) {
         return NULL;
     }
 
-
     // Add the action_capsule type to the module's dictionary
     Py_INCREF(&py_action_capsule_t);
     if (PyModule_AddObject(m, "action_capsule_t", (PyObject *) &py_action_capsule_t) < 0) {
@@ -386,7 +404,6 @@ GEN_NAME(PyInit_,MODULE_NAME)(void) {
         Py_DECREF(m);
         return NULL;
     }
-
     return m;
 }
 
