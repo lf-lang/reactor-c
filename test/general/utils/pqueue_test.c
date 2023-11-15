@@ -35,38 +35,12 @@ static void find_from_queue(pqueue_tag_t* q) {
     tag_t t4 = {.time = USEC(1), .microstep = 2};
     tag_t t5 = {.time = USEC(0), .microstep = 0};
     tag_t t6 = {.time = USEC(3), .microstep = 2};
-    pqueue_tag_element_t* d_t1 = (pqueue_tag_element_t*) malloc(sizeof(pqueue_tag_element_t));
-    d_t1->is_dynamic = 1;
-    d_t1->tag = t1;
-    pqueue_tag_element_t* d_t2 = (pqueue_tag_element_t*) malloc(sizeof(pqueue_tag_element_t));
-    d_t2->is_dynamic = 1;
-    d_t2->tag = t2;
-    pqueue_tag_element_t* d_t3 = (pqueue_tag_element_t*) malloc(sizeof(pqueue_tag_element_t));
-    d_t3->is_dynamic = 1;
-    d_t3->tag = t3;
-    pqueue_tag_element_t* d_t4 = (pqueue_tag_element_t*) malloc(sizeof(pqueue_tag_element_t));
-    d_t4->is_dynamic = 1;
-    d_t4->tag = t4;
-    pqueue_tag_element_t* d_t5 = (pqueue_tag_element_t*) malloc(sizeof(pqueue_tag_element_t));
-    d_t5->is_dynamic = 1;
-    d_t5->tag = t5;
-    pqueue_tag_element_t* d_t6 = (pqueue_tag_element_t*) malloc(sizeof(pqueue_tag_element_t));
-    d_t6->is_dynamic = 1;
-    d_t6->tag = t6;
-    assert(pqueue_tag_find_same_tag(q, d_t1, 1) != NULL);
-    assert(pqueue_tag_find_same_tag(q, d_t2, 1) != NULL);
-    assert(pqueue_tag_find_same_tag(q, d_t3, 1) != NULL);
-    assert(pqueue_tag_find_same_tag(q, d_t4, 1) != NULL);
-    assert(pqueue_tag_find_same_tag(q, d_t5, 1) == NULL);
-    assert(pqueue_tag_find_same_tag(q, d_t6, 1) == NULL);
-    
-    free(d_t1);
-    free(d_t2);
-    free(d_t3);
-    free(d_t4);
-    free(d_t5);
-    free(d_t6);
-
+    assert(pqueue_tag_find_equal_same_tag(q, t1) != NULL);
+    assert(pqueue_tag_find_equal_same_tag(q, t2) != NULL);
+    assert(pqueue_tag_find_equal_same_tag(q, t3) != NULL);
+    assert(pqueue_tag_find_equal_same_tag(q, t4) != NULL);
+    assert(pqueue_tag_find_equal_same_tag(q, t5) == NULL);
+    assert(pqueue_tag_find_equal_same_tag(q, t6) == NULL);
 }
 
 static void pop_from_queue(pqueue_tag_t* q) {
