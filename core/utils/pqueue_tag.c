@@ -82,40 +82,6 @@ static void pqueue_tag_print_element(void *element) {
     lf_print("Element with tag " PRINTF_TAG ".", tag.time, tag.microstep);
 }
 
-void* pqueue_tag_find_equal_same_priority(pqueue_t *q, void *e, int pos) {
-    if (pos < 0) {
-        lf_print_error_and_exit("find_equal_same_priority() called with a negative pos index.");
-    }
-
-    // Stop the recursion when we've reached the end of the
-    // queue. This has to be done before accessing the queue
-    // to avoid segmentation fault.
-    if (!q || (size_t)pos >= q->size) {
-        return NULL;
-    }
-
-    void* rval;
-    void* curr = q->d[pos];
-
-    // Stop the recursion once we've surpassed the priority of the element
-    // we're looking for.
-    if (!curr || q->cmppri(q->getpri(curr), q->getpri(e))) {
-        return NULL;
-    }
-
-    if (pqueue_tag_matches(q->getpri(curr), q->getpri(e)) && q->eqelem(curr, e)) {
-        return curr;
-    } else {
-        rval = pqueue_tag_find_equal_same_priority(q, e, LF_LEFT(pos));
-        if (rval) {
-            return rval;
-        } else {
-            return pqueue_tag_find_equal_same_priority(q, e, LF_RIGHT(pos));
-        }
-    }
-    return NULL;
-}
-
 //////////////////
 // Functions defined in pqueue_tag.h.
 
@@ -151,11 +117,6 @@ int pqueue_tag_insert_tag(pqueue_tag_t* q, tag_t t) {
     pqueue_tag_element_t* d = (pqueue_tag_element_t*) malloc(sizeof(pqueue_tag_element_t));
     d->is_dynamic = 1;
     d->tag = t;
-    if (pqueue_tag_find_equal_same_priority(q, d, 1) != NULL) {
-        LF_PRINT_LOG("The tag d " PRINTF_TAG " is already in the queue. Aborting.\n",
-        t.time, t.microstep);
-        return 1;
-    }
     return pqueue_tag_insert(q, d);
 }
 
@@ -171,6 +132,40 @@ tag_t pqueue_tag_pop_tag(pqueue_tag_t* q) {
         if (element->is_dynamic) free(element);
         return result;
     }
+}
+
+pqueue_tag_element_t* pqueue_tag_find_same_tag(pqueue_tag_t *q, void *e, int pos) {
+    if (pos < 0) {
+        lf_print_error_and_exit("find_equal_same_priority() called with a negative pos index.");
+    }
+
+    // Stop the recursion when we've reached the end of the
+    // queue. This has to be done before accessing the queue
+    // to avoid segmentation fault.
+    if (!q || (size_t)pos >= q->size) {
+        return NULL;
+    }
+
+    void* rval;
+    void* curr = q->d[pos];
+
+    // Stop the recursion once we've surpassed the priority of the element
+    // we're looking for.
+    if (!curr || q->cmppri(q->getpri(curr), q->getpri(e))) {
+        return NULL;
+    }
+
+    if (q->eqelem(curr, e)) {
+        return curr;
+    } else {
+        rval = pqueue_tag_find_same_tag(q, e, LF_LEFT(pos));
+        if (rval) {
+            return rval;
+        } else {
+            return pqueue_tag_find_same_tag(q, e, LF_RIGHT(pos));
+        }
+    }
+    return NULL;
 }
 
 int pqueue_tag_remove(pqueue_tag_t* q, pqueue_tag_element_t* e) {
