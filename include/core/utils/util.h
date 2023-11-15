@@ -276,8 +276,8 @@ static void parse_global_delay_array(global_delay_array_t* gda) {
     int idx = 0;
     while ((read = getline(&line, &len, fp)) != -1) {
         char* hook_id = strtok_r(line, "\n", &saveptr);
-        gda->hooks[idx].hook_id = (char*) malloc(sizeof(char) * (strlen(hook_id) + 1));
-        strcpy(gda->hooks[idx].hook_id, hook_id);
+        gda->hooks[idx].hook_id = (char*) calloc(sizeof(char), ((((size_t) hook_id) && strlen(hook_id)) + 1));
+        if (hook_id) strcpy(gda->hooks[idx].hook_id, hook_id);
         getline(&line, &len, fp);
         gda->hooks[idx].delay_vector_len = atoi(line);
         gda->hooks[idx].delay_vector = (delay_pair_t*) malloc(sizeof(delay_pair_t) * gda->hooks[idx].delay_vector_len);
@@ -366,6 +366,7 @@ static void unlock_delay_array_if_threaded() {
     } \
     if (*logtrace) { \
         printf("<<< %s >>>\n", location_id); \
+        fflush(stdout); \
     } \
     static hook_delay_array_t* hook_delay_array; \
     static int sequence_number = 0; \
