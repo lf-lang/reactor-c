@@ -2842,7 +2842,7 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
                     LF_PRINT_DEBUG("The intended tag " PRINTF_TAG " is less than the earliest NDT " PRINTF_TAG "."
                     "Skip sending the next event tag.",
                     tag.time - start_time, tag.microstep,
-                    ndt_q_barrier.time - start_time, earliest_ndt.microstep);
+                    earliest_ndt.time - start_time, earliest_ndt.microstep);
                     need_to_send_NET = false;
                 }
             }
