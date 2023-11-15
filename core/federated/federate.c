@@ -67,7 +67,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <openssl/rand.h> // For secure random number generation.
 #include <openssl/hmac.h> // For HMAC-based authentication of federates.
 #endif
-#include <pqueue.h>
+#include "pqueue_tag.h"
 
 // Global variables defined in tag.c:
 extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
@@ -422,14 +422,12 @@ int send_timed_message(environment_t* env,
         return 0;
     }
 
-    // Insert the ndt_node at the tag to send LTC to the RTI.
-    if (pqueue_size(env->ndt_q) != 0) {
+    // Insert the intended tag into the ndt_q to send LTC to the RTI quickly.
+    if (pqueue_tag_size(env->ndt_q) != 0) {
         // FIXME: If the RTI changes the use of NDTs dynamically, merely checking the size
         // is not enough.
         LF_PRINT_DEBUG("Insert NDT at the intended to send LTC and NET quickly.");
-        ndt_node* node = (ndt_node*) malloc(sizeof(ndt_node));
-        node->tag = current_message_intended_tag;
-        pqueue_insert(env->ndt_q, node);
+        pqueue_tag_insert_tag(env->ndt_q, current_message_intended_tag);
     }
 
     // Trace the event when tracing is enabled
@@ -1414,16 +1412,16 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
     
     // FIXME: If port absent messages are not used when there is no zero-delay cycle,
     // This part is not needed as we don't apply the NDT optimization for cycles.
-    if (pqueue_size(env->ndt_q) != 0 ) {
+    if (pqueue_tag_size(env->ndt_q) != 0 ) {
         // FIXME: If the RTI changes the use of NDTs dynamically, merely checking the size
         // is not enough.
-        tag_t ndt_q_barrier = ((ndt_node*) pqueue_peek(env->ndt_q))->tag;
-        if (lf_tag_compare(current_message_intended_tag, ndt_q_barrier) < 0) {
+        tag_t earliest_ndt = pqueue_tag_peek(env->ndt_q)->tag;
+        if (lf_tag_compare(current_message_intended_tag, earliest_ndt) < 0) {
             // No events exist in any downstream federates
             LF_PRINT_DEBUG("The intended tag " PRINTF_TAG " is less than the earliest NDT " PRINTF_TAG "."
             "Skip sending the port absent message.",
             current_message_intended_tag.time - start_time, current_message_intended_tag.microstep,
-            ndt_q_barrier.time - start_time, ndt_q_barrier.microstep);
+            earliest_ndt.time - start_time, earliest_ndt.microstep);
             return;
         }
     }
@@ -1942,14 +1940,14 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
     environment_t *env;
     _lf_get_environments(&env);
     bool need_to_send_LTC = true;
-    if (pqueue_size(env->ndt_q) != 0 ) {
-        tag_t ndt_q_barrier = ((ndt_node*) pqueue_peek(env->ndt_q))->tag;
-        if (lf_tag_compare(tag_to_send, ndt_q_barrier) < 0) {
+    if (pqueue_tag_size(env->ndt_q) != 0 ) {
+        tag_t earliest_ndt = pqueue_tag_peek(env->ndt_q)->tag;
+        if (lf_tag_compare(tag_to_send, earliest_ndt) < 0) {
             // No events exist in any downstream federates
             LF_PRINT_DEBUG("The intended tag " PRINTF_TAG " is less than the earliest NDT " PRINTF_TAG "."
             "Skip sending the logical tag complete.",
             tag_to_send.time - start_time, tag_to_send.microstep,
-            ndt_q_barrier.time - start_time, ndt_q_barrier.microstep);
+            earliest_ndt.time - start_time, earliest_ndt.microstep);
             need_to_send_LTC = false;
         }
     }
@@ -2407,17 +2405,13 @@ void handle_next_downstream_tag() {
 
     if (lf_tag_compare(env->current_tag, NDT) <= 0) {
         // The current tag is less than or equal to the NDT. Push NDT to ndt_q.
-        ndt_node* node = (ndt_node*) malloc(sizeof(ndt_node));
-        node->tag = NDT;
-        pqueue_insert(env->ndt_q, node);
+        pqueue_tag_insert_tag(env->ndt_q, NDT);
     }
     if (lf_tag_compare(env->current_tag, NDT) > 0) {
         // The current tag is greater than the NDT. Send the LTC with the NDT and
         // push the current tag to ndt_q so that this federate notify the appropriate NET message.
         _lf_send_tag(MSG_TYPE_LOGICAL_TAG_COMPLETE, NDT, true);
-        ndt_node* node = (ndt_node*) malloc(sizeof(ndt_node));
-        node->tag = env->current_tag;
-        pqueue_insert(env->ndt_q, node);
+        pqueue_tag_insert_tag(env->ndt_q, env->current_tag);
     }
 }
 
@@ -2833,16 +2827,16 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
             // If there is no downstream events that require the NET of the current tag,
             // do not send the NET.
             bool need_to_send_NET = true;
-            if (pqueue_size(env->ndt_q) != 0 ) {
+            if (pqueue_tag_size(env->ndt_q) != 0 ) {
                 // FIXME: If the RTI changes the use of NDTs dynamically, merely checking the size
                 // is not enough.
-                tag_t ndt_q_barrier = ((ndt_node*) pqueue_peek(env->ndt_q))->tag;
-                if (lf_tag_compare(tag, ndt_q_barrier) < 0) {
+                tag_t earliest_ndt = pqueue_tag_peek(env->ndt_q)->tag;
+                if (lf_tag_compare(tag, earliest_ndt) < 0) {
                     // No events exist in any downstream federates
                     LF_PRINT_DEBUG("The intended tag " PRINTF_TAG " is less than the earliest NDT " PRINTF_TAG "."
                     "Skip sending the next event tag.",
                     tag.time - start_time, tag.microstep,
-                    ndt_q_barrier.time - start_time, ndt_q_barrier.microstep);
+                    ndt_q_barrier.time - start_time, earliest_ndt.microstep);
                     need_to_send_NET = false;
                 }
             }

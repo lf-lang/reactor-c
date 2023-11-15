@@ -109,8 +109,7 @@ static void environment_init_federated(environment_t* env, int num_is_present_fi
 // #ifdef FEDERATED_CENTRALIZED
     // FIXME: Create a queue saving tags instead of events. For now, ndt_q stores 
     // dummy events.
-    env->ndt_q = pqueue_init(INITIAL_EVENT_QUEUE_SIZE, tag_in_reverse_order, get_ndtq_priority,
-        get_ndtq_position, set_ndtq_position, ndt_node_matches, print_event);
+    env->ndt_q = pqueue_tag_init(10);
 // #endif
 #ifdef FEDERATED_DECENTRALIZED
     env->_lf_intended_tag_fields = (tag_t**) calloc(num_is_present_fields, sizeof(tag_t*));

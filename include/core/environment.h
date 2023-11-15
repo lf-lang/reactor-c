@@ -38,7 +38,7 @@
 
 #include "lf_types.h"
 #include "platform.h"
-#include "pqueue.h"
+#include "pqueue_tag.h"
 #include "trace.h"
 
 // Forward declarations so that a pointers can appear in the environment struct.
@@ -108,7 +108,7 @@ typedef struct environment_t {
     int _lf_intended_tag_fields_size;
 #endif // FEDERATED
 // #ifdef FEDERATED_CENTRALIZED
-    pqueue_t* ndt_q;
+    pqueue_tag_t* ndt_q;
 // #endif // FEDERATED_CENTRALIZED
 #ifdef LF_ENCLAVES // TODO: Consider dropping #ifdef
     enclave_info_t *enclave_info;
