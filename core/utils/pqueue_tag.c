@@ -72,6 +72,42 @@ static void pqueue_tag_set_position(void *element, size_t pos) {
     ((pqueue_tag_element_t*)element)->pos = pos;
 }
 
+pqueue_tag_element_t* find_equal_same_tag(pqueue_tag_t *q, void *e, int pos) {
+    if (pos < 0) {
+        lf_print_error_and_exit("find_equal_same_priority() called with a negative pos index.");
+    }
+
+    // Stop the recursion when we've reached the end of the
+    // queue. This has to be done before accessing the queue
+    // to avoid segmentation fault.
+    if (!q || (size_t)pos >= q->size) {
+        return NULL;
+    }
+
+    void* rval;
+    void* curr = q->d[pos];
+
+    // Stop the recursion once we've surpassed the priority of the element
+    // we're looking for.
+    if (!curr || pqueue_tag_compare(pqueue_tag_get_priority(curr), pqueue_tag_get_priority(e))) {
+        return NULL;
+    }
+
+    // Note that we cannot use the function find_equal_same_priority in pqueue_base.c because
+    // we cannot compare priorities using the "==" operator.
+    if (pqueue_tag_matches((void*)pqueue_tag_get_priority(curr), (void*)pqueue_tag_get_priority(e)) && q->eqelem(curr, e)) {
+        return curr;
+    } else {
+        rval = find_equal_same_tag(q, e, LF_LEFT(pos));
+        if (rval) {
+            return rval;
+        } else {
+            return find_equal_same_tag(q, e, LF_RIGHT(pos));
+        }
+    }
+    return NULL;
+}
+
 /**
  * @brief Callback function to print information about an element.
  * This is a function of type pqueue_print_entry_f.
@@ -134,38 +170,12 @@ tag_t pqueue_tag_pop_tag(pqueue_tag_t* q) {
     }
 }
 
-pqueue_tag_element_t* pqueue_tag_find_same_tag(pqueue_tag_t *q, void *e, int pos) {
-    if (pos < 0) {
-        lf_print_error_and_exit("find_equal_same_priority() called with a negative pos index.");
-    }
-
-    // Stop the recursion when we've reached the end of the
-    // queue. This has to be done before accessing the queue
-    // to avoid segmentation fault.
-    if (!q || (size_t)pos >= q->size) {
-        return NULL;
-    }
-
-    void* rval;
-    void* curr = q->d[pos];
-
-    // Stop the recursion once we've surpassed the priority of the element
-    // we're looking for.
-    if (!curr || q->cmppri(q->getpri(curr), q->getpri(e))) {
-        return NULL;
-    }
-
-    if (q->eqelem(curr, e)) {
-        return curr;
-    } else {
-        rval = pqueue_tag_find_same_tag(q, e, LF_LEFT(pos));
-        if (rval) {
-            return rval;
-        } else {
-            return pqueue_tag_find_same_tag(q, e, LF_RIGHT(pos));
-        }
-    }
-    return NULL;
+pqueue_tag_element_t* pqueue_tag_find_equal_same_tag(pqueue_tag_t *q, tag_t t) {
+    pqueue_tag_element_t* target_element = (pqueue_tag_element_t*) malloc(sizeof(pqueue_tag_element_t));
+    target_element->tag = t;
+    pqueue_tag_element_t* result = find_equal_same_tag(q, target_element, 1);
+    free(target_element);
+    return result;
 }
 
 int pqueue_tag_remove(pqueue_tag_t* q, pqueue_tag_element_t* e) {
