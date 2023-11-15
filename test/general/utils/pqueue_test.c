@@ -59,6 +59,14 @@ static void find_from_queue(pqueue_tag_t* q) {
     assert(pqueue_tag_find_same_tag(q, d_t4, 1) != NULL);
     assert(pqueue_tag_find_same_tag(q, d_t5, 1) == NULL);
     assert(pqueue_tag_find_same_tag(q, d_t6, 1) == NULL);
+    
+    free(d_t1);
+    free(d_t2);
+    free(d_t3);
+    free(d_t4);
+    free(d_t5);
+    free(d_t6);
+
 }
 
 static void pop_from_queue(pqueue_tag_t* q) {
