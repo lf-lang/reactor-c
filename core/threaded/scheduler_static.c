@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <inttypes.h>
 #include "lf_types.h"
-#if SCHEDULER == STATIC || (!defined(SCHEDULER) && defined(LF_THREADED))
+#if SCHEDULER == SCHED_STATIC || (!defined(SCHEDULER) && defined(LF_THREADED))
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
@@ -580,7 +580,7 @@ void lf_sched_init(
         //        to a meaningful value. When the first time lf_sched_init() is
         //        called, start_time has not been set.
 
-        // Initialize the local tags for the STATIC scheduler.
+        // Initialize the local tags for the SCHED_STATIC scheduler.
         for (int i = 0; i < env->scheduler->num_reactor_self_instances; i++) {
             env->scheduler->reactor_self_instances[i]->tag.time = start_time;
             env->scheduler->reactor_self_instances[i]->tag.microstep = 0;

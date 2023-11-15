@@ -10,8 +10,8 @@
 #include "modes.h"
 #include "port.h"
 
-// FIXME (erj): Super hack to disable chain optimzation when we are using the STATIC runtime.
-#if SCHEDULER == STATIC
+// FIXME (erj): Super hack to disable chain optimzation when we are using the SCHED_STATIC runtime.
+#if SCHEDULER == SCHED_STATIC
 #else
 #define REACTION_CHAIN_OPTIMIZATION
 #endif
