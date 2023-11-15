@@ -88,6 +88,17 @@ size_t pqueue_tag_size(pqueue_tag_t *q);
 int pqueue_tag_insert_tag(pqueue_tag_t* q, tag_t t);
 
 /**
+ * @brief Insert a tag into the queue if the tag is not in the queue.
+ * This automatically allocates memory for the element in the queue
+ * and ensures that if the element is still on the queue when pqueue_tag_free
+ * is called, that memory will be freed.
+ * @param q The queue.
+ * @param t The tag to insert.
+ * @return 0 on success
+ */
+int pqueue_tag_insert_tag_if_not_present(pqueue_tag_t* q, tag_t t);
+
+/**
  * @brief Pop the least-tag element from the queue and return its tag.
  * If the queue is empty, return FOREVER_TAG.
  * @param q The queue.
@@ -118,7 +129,7 @@ pqueue_tag_element_t* pqueue_tag_pop(pqueue_tag_t* q);
  * @param t the tag to compare against
  * @return NULL if no matching tag has been found, otherwise the entry
  */
-pqueue_tag_element_t* pqueue_tag_find_equal_same_tag(pqueue_tag_t *q, tag_t t);
+pqueue_tag_element_t* pqueue_tag_find_same_tag(pqueue_tag_t *q, tag_t t);
 
 /**
  * Remove an item from the queue.

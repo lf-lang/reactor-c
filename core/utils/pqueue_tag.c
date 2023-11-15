@@ -72,9 +72,9 @@ static void pqueue_tag_set_position(void *element, size_t pos) {
     ((pqueue_tag_element_t*)element)->pos = pos;
 }
 
-pqueue_tag_element_t* find_equal_same_tag(pqueue_tag_t *q, void *e, int pos) {
+pqueue_tag_element_t* find_same_tag(pqueue_tag_t *q, tag_t t, int pos) {
     if (pos < 0) {
-        lf_print_error_and_exit("find_equal_same_priority() called with a negative pos index.");
+        lf_print_error_and_exit("find_equal_same_tag() called with a negative pos index.");
     }
 
     // Stop the recursion when we've reached the end of the
@@ -85,24 +85,24 @@ pqueue_tag_element_t* find_equal_same_tag(pqueue_tag_t *q, void *e, int pos) {
     }
 
     void* rval;
-    void* curr = q->d[pos];
+    pqueue_tag_element_t* curr = (pqueue_tag_element_t*) q->d[pos];
 
     // Stop the recursion once we've surpassed the priority of the element
     // we're looking for.
-    if (!curr || pqueue_tag_compare(pqueue_tag_get_priority(curr), pqueue_tag_get_priority(e))) {
+    if (!curr || lf_tag_compare(curr->tag, t) == 1) {
         return NULL;
     }
 
     // Note that we cannot use the function find_equal_same_priority in pqueue_base.c because
     // we cannot compare priorities using the "==" operator.
-    if (pqueue_tag_matches((void*)pqueue_tag_get_priority(curr), (void*)pqueue_tag_get_priority(e)) && q->eqelem(curr, e)) {
+    if (lf_tag_compare(curr->tag, t) == 0) {
         return curr;
     } else {
-        rval = find_equal_same_tag(q, e, LF_LEFT(pos));
+        rval = find_same_tag(q, t, LF_LEFT(pos));
         if (rval) {
             return rval;
         } else {
-            return find_equal_same_tag(q, e, LF_RIGHT(pos));
+            return find_same_tag(q, t, LF_RIGHT(pos));
         }
     }
     return NULL;
@@ -156,6 +156,14 @@ int pqueue_tag_insert_tag(pqueue_tag_t* q, tag_t t) {
     return pqueue_tag_insert(q, d);
 }
 
+int pqueue_tag_insert_tag_if_not_present(pqueue_tag_t* q, tag_t t) {
+    if (find_same_tag(q, t, 1) == NULL) {
+        return pqueue_tag_insert_tag(q, t);
+    } else {
+        return 1;
+    }
+}
+
 pqueue_tag_element_t* pqueue_tag_pop(pqueue_tag_t* q) {
     return (pqueue_tag_element_t*)pqueue_pop((pqueue_t*)q);
 }
@@ -170,12 +178,8 @@ tag_t pqueue_tag_pop_tag(pqueue_tag_t* q) {
     }
 }
 
-pqueue_tag_element_t* pqueue_tag_find_equal_same_tag(pqueue_tag_t *q, tag_t t) {
-    pqueue_tag_element_t* target_element = (pqueue_tag_element_t*) malloc(sizeof(pqueue_tag_element_t));
-    target_element->tag = t;
-    pqueue_tag_element_t* result = find_equal_same_tag(q, target_element, 1);
-    free(target_element);
-    return result;
+pqueue_tag_element_t* pqueue_tag_find_same_tag(pqueue_tag_t *q, tag_t t) {
+    return find_same_tag(q, t, 1);
 }
 
 int pqueue_tag_remove(pqueue_tag_t* q, pqueue_tag_element_t* e) {
