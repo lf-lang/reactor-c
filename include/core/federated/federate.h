@@ -456,7 +456,7 @@ int send_timed_message(environment_t*,
  * time to the RTI and waits for the RTI to respond with a specified
  * time. It starts a thread to listen for messages from the RTI.
  */
-void synchronize_with_other_federates();
+void synchronize_with_other_federates(environment_t* env);
 
 /**
  * Wait until the status of network port "port_ID" is known.

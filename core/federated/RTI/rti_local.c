@@ -70,6 +70,7 @@ void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t * e
     LF_ASSERT(lf_cond_init(&enclave->next_event_condition, &rti_mutex) == 0, "Could not create cond var");
 }
 
+// FIXME: This function is a mess. We need a clear implementation and control flow...
 tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
     LF_PRINT_LOG("RTI: enclave %u sends NET of " PRINTF_TAG " ",
     e->base.id, next_event_tag.time - lf_time_start(), next_event_tag.microstep);
@@ -115,7 +116,11 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
         // If so, return that value. Note that we dont care about PTAGs as we
         // have disallowed zero-delay enclave loops.
         if (lf_tag_compare(previous_tag, e->base.last_granted) < 0) {
-            result.tag = e->base.last_granted;
+            if (lf_tag_compare(e->base.last_granted, next_event_tag)) {
+                result.tag = next_event_tag;
+            } else {
+                result.tag = e->base.last_granted;
+            }
             result.is_provisional = false;
             break;
         }

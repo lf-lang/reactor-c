@@ -242,7 +242,7 @@ void _lf_set_present(lf_port_base_t* port) {
 }
 
 // Forward declaration. See federate.h
-void synchronize_with_other_federates(void);
+void synchronize_with_other_federates(environment_t* env);
 
 /**
  * Wait until physical time matches or exceeds the specified logical time,
@@ -695,19 +695,23 @@ void _lf_initialize_start_tag(environment_t *env) {
     // If env is the environment for the top-level enclave, then initialize the federate.
     environment_t *top_level_env;
     _lf_get_environments(&top_level_env);
+    // FIXME: How should this work in the context of enclaves? 
     if (env == top_level_env) {
         // Reset status fields before talking to the RTI to set network port
         // statuses to unknown
         reset_status_fields_on_input_port_triggers();
 
         // Get a start_time from the RTI
-        synchronize_with_other_federates(); // Resets start_time in federated execution according to the RTI.
-    }
-    // The start time will likely have changed. Adjust the current tag and stop tag.
-    env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
-    if (duration >= 0LL) {
-        // A duration has been specified. Recalculate the stop time.
-       env->stop_tag = ((tag_t) {.time = start_time + duration, .microstep = 0});
+        synchronize_with_other_federates(env); // Resets start_time in federated execution according to the RTI.
+        // The start time will likely have changed. Adjust the current tag and stop tag.
+        // FIXME: Should we move away from start_time as a global variable?
+        env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
+        if (duration >= 0LL) {
+            // A duration has been specified. Recalculate the stop time.
+            env->stop_tag = ((tag_t) {.time = start_time + duration, .microstep = 0});
+        }
+    } else {
+        lf_print_error_and_exit("Enclaves and federates dont mix");
     }
 #endif
 
@@ -998,13 +1002,15 @@ void* worker(void* arg) {
     #if defined LF_ENCLAVES
     if (worker_number == 0) {
         // If we have scheduling enclaves. We must get a TAG to the start tag.
+        // FIXME: Can we do this at the same place as federates wait for start tag?
         LF_PRINT_LOG("Environment %u: Worker thread %d waits for TAG to (0,0).",env->id, worker_number);
 
-        tag_t tag_granted = rti_next_event_tag_locked(env->enclave_info, env->current_tag);
-        LF_ASSERT(  lf_tag_compare(tag_granted, env->current_tag) == 0,
-                    "We did not receive a TAG to the start tag.");
+        tag_t tag_granted = rti_next_event_tag_locked(env->enclave_info, env->start_tag);
+        LF_ASSERT(  lf_tag_compare(tag_granted, env->start_tag) == 0,
+                    "We did not receive a TAG to the start tag. Got tag " PRINTF_TAG, tag_granted);
     }
-    #endif 
+    #endif
+    env->current_tag = env->start_tag;
 
     // Release mutex and start working.
     lf_mutex_unlock(&env->mutex); 
@@ -1170,6 +1176,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         environment_t *env = &envs[i];
 
         // Initialize the start and stop tags of the environment
+        // FIXME: Here start_tag and stop_tag are set for all enclaves.
         environment_init_tags(env, start_time, duration);
     #ifdef MODAL_REACTORS
         // Set up modal infrastructure
@@ -1188,6 +1195,8 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
 
         // Initialize start tag
         lf_print("Environment %u: ---- Intializing start tag", env->id);
+        // FIXME: Here start_tag and stop_tag is updated if we are in federated mode
+        //  This should also change the start and stop tag of all enclaves in the federation...
         _lf_initialize_start_tag(env);
 
         lf_print("Environment %u: ---- Spawning %d workers.",env->id, env->num_workers);

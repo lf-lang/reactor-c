@@ -508,7 +508,7 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     // Recycle event_t structs, if possible.
     event_t* e = _lf_get_new_event(env);
     e->trigger = timer;
-    e->time = lf_time_logical(env) + delay;
+    e->time = env->start_tag.time + delay;
     // NOTE: No lock is being held. Assuming this only happens at startup.
     pqueue_insert(env->event_q, e);
     tracepoint_schedule(env->trace, timer, delay); // Trace even though schedule is not called.
