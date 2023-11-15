@@ -22,7 +22,10 @@ static void insert_on_queue(pqueue_tag_t* q) {
     assert(!pqueue_tag_insert_tag(q, t1));
     assert(!pqueue_tag_insert_tag(q, t2));
     assert(!pqueue_tag_insert_tag(q, t3));
-    assert(!pqueue_tag_insert_tag(q, t4));
+
+    assert(!pqueue_tag_insert_tag_if_not_present(q, t4));
+    assert(pqueue_tag_insert_tag_if_not_present(q, t1));
+    assert(pqueue_tag_insert_tag_if_not_present(q, t4));
     printf("======== Contents of the queue:\n");
     pqueue_print((pqueue_t*)q, NULL);
     assert(pqueue_tag_size(q) == 4);
@@ -35,12 +38,12 @@ static void find_from_queue(pqueue_tag_t* q) {
     tag_t t4 = {.time = USEC(1), .microstep = 2};
     tag_t t5 = {.time = USEC(0), .microstep = 0};
     tag_t t6 = {.time = USEC(3), .microstep = 2};
-    assert(pqueue_tag_find_equal_same_tag(q, t1) != NULL);
-    assert(pqueue_tag_find_equal_same_tag(q, t2) != NULL);
-    assert(pqueue_tag_find_equal_same_tag(q, t3) != NULL);
-    assert(pqueue_tag_find_equal_same_tag(q, t4) != NULL);
-    assert(pqueue_tag_find_equal_same_tag(q, t5) == NULL);
-    assert(pqueue_tag_find_equal_same_tag(q, t6) == NULL);
+    assert(pqueue_tag_find_same_tag(q, t1) != NULL);
+    assert(pqueue_tag_find_same_tag(q, t2) != NULL);
+    assert(pqueue_tag_find_same_tag(q, t3) != NULL);
+    assert(pqueue_tag_find_same_tag(q, t4) != NULL);
+    assert(pqueue_tag_find_same_tag(q, t5) == NULL);
+    assert(pqueue_tag_find_same_tag(q, t6) == NULL);
 }
 
 static void pop_from_queue(pqueue_tag_t* q) {
