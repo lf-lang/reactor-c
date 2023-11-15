@@ -115,10 +115,10 @@ pqueue_tag_element_t* pqueue_tag_pop(pqueue_tag_t* q);
 /**
  * Find the highest-ranking item with the same tag.
  * @param q the queue
- * @param e the entry to compare against
- * @return NULL if no matching event has been found, otherwise the entry
+ * @param t the tag to compare against
+ * @return NULL if no matching tag has been found, otherwise the entry
  */
-pqueue_tag_element_t* pqueue_tag_find_same_tag(pqueue_tag_t *q, void *e, int pos);
+pqueue_tag_element_t* pqueue_tag_find_equal_same_tag(pqueue_tag_t *q, tag_t t);
 
 /**
  * Remove an item from the queue.
