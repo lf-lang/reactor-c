@@ -232,14 +232,14 @@ typedef struct hook_delay_array_t {
     size_t delay_vector_len;
 } hook_delay_array_t;
 
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
 #include "platform.h"
 #endif
 
 typedef struct global_delay_array_t {
     hook_delay_array_t* hooks;
     size_t hooks_len;
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
     lf_mutex_t mutex;
 #endif
 } global_delay_array_t;
@@ -252,7 +252,7 @@ extern global_delay_array_t _lf_global_delay_array;
  * This must be invoked on startup.
  */
 static void parse_global_delay_array(global_delay_array_t* gda) {
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
     lf_mutex_init(&gda->mutex);
 #endif
     char* gda_evar = getenv("LF_FED_DELAYS");
@@ -320,7 +320,7 @@ static hook_delay_array_t* find_hook_delay_array(char* hook_id) {
  * @brief Locks the delay array if the program is threaded.
  */
 static void lock_delay_array_if_threaded() {
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
     lf_mutex_lock(&_lf_global_delay_array.mutex);
 #endif
 }
@@ -329,7 +329,7 @@ static void lock_delay_array_if_threaded() {
  * @brief Unlocks the delay array if the program is threaded.
  */
 static void unlock_delay_array_if_threaded() {
-#ifdef LF_THREADED
+#if !defined(LF_SINGLE_THREADED)
     lf_mutex_unlock(&_lf_global_delay_array.mutex);
 #endif
 }
