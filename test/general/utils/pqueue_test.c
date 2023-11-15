@@ -22,6 +22,9 @@ static void insert_on_queue(pqueue_tag_t* q) {
     assert(!pqueue_tag_insert_tag(q, t2));
     assert(!pqueue_tag_insert_tag(q, t3));
     assert(!pqueue_tag_insert_tag(q, t4));
+
+    assert(pqueue_tag_insert_tag(q, t4));
+    assert(pqueue_tag_insert_tag(q, t1));
     printf("======== Contents of the queue:\n");
     pqueue_print((pqueue_t*)q, NULL);
     assert(pqueue_tag_size(q) == 4);
