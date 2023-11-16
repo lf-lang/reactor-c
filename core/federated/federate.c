@@ -1052,28 +1052,20 @@ void connect_to_rti(const char* hostname, int port) {
 
         // Create a socket
         _fed.socket_TCP_RTI = create_real_time_tcp_socket_errexit();
-
-        result = connect(_fed.socket_TCP_RTI, res->ai_addr, res->ai_addrlen);
-        if (result == 0) {
-            lf_print("Successfully connected to RTI.");
+        if (count_retries == 0) {
+            for (int i = 0; i < 3; i++) {
+                result = connect(_fed.socket_TCP_RTI, res->ai_addr, res->ai_addrlen);
+                if (result == 0) {
+                    lf_print("Successfully connected to RTI.");
+                    break;
+                }
+                interval_t interval = PORT_KNOCKING_RETRY_INTERVAL;
+                for (int j = 0; j < i; j++) interval *= 2;
+                lf_sleep(PORT_KNOCKING_RETRY_INTERVAL);
+            }
         }
 
         freeaddrinfo(res);           /* No longer needed */
-
-        // If this failed, try more ports, unless a specific port was given.
-        if (result != 0
-                && !specific_port_given
-                && uport >= STARTING_PORT
-                && uport <= STARTING_PORT + PORT_RANGE_LIMIT
-        ) {
-            lf_print("Failed to connect to RTI on port %d. Trying %d.", uport, uport + 1);
-            uport++;
-            // Wait PORT_KNOCKING_RETRY_INTERVAL seconds.
-            if (lf_sleep(PORT_KNOCKING_RETRY_INTERVAL) != 0) {
-                // Sleep was interrupted.
-                continue;
-            }
-        }
         // If this still failed, try again with the original port after some time.
         if (result < 0) {
             if (!specific_port_given && uport == STARTING_PORT + PORT_RANGE_LIMIT + 1) {

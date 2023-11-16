@@ -244,7 +244,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * the OS and the socket with too many calls.
  * FIXME: Is this too small?
  */
-#define PORT_KNOCKING_RETRY_INTERVAL 10000LL
+#define PORT_KNOCKING_RETRY_INTERVAL 1000000LL
 
 /**
  * Default starting port number for the RTI and federates' socket server.
