@@ -140,7 +140,7 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
     if (socket_type == UDP) {
         type = "UDP";
     }
-    lf_print("RTI using %s port %d for federation %s.", type, port, rti_remote->federation_id);
+    fprintf(stderr, "RTI using %s port %d for federation %s.", type, port, rti_remote->federation_id);
 
     if (socket_type == TCP) {
         rti_remote->final_port_TCP = port;

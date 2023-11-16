@@ -206,7 +206,7 @@ void create_server(int specified_port) {
                                  Consider leaving the port unspecified");
         }
     }
-    LF_PRINT_LOG("Server for communicating with other federates started using port %d.", port);
+    fprintf(stderr, "Server for communicating with other federates started using port %d.", port);
 
     // Enable listening for socket connections.
     // The second argument is the maximum number of queued socket requests,
@@ -1036,7 +1036,7 @@ void connect_to_rti(const char* hostname, int port) {
     hints.ai_addr = NULL;
     hints.ai_next = NULL;
     hints.ai_flags = AI_NUMERICSERV;    /* Allow only numeric port numbers */
-
+    int initial_uport = uport;
     while (result < 0) {
         // Convert port number to string
         char str[6];
@@ -1052,22 +1052,23 @@ void connect_to_rti(const char* hostname, int port) {
 
         // Create a socket
         _fed.socket_TCP_RTI = create_real_time_tcp_socket_errexit();
-        // for (int i = 0; i < PORT_KNOCKING_INITIAL_ATTEMPTS; i++) {
-        //     result = connect(_fed.socket_TCP_RTI, res->ai_addr, res->ai_addrlen);
-        //     if (result == 0) {
-        //         lf_print("Successfully connected to RTI.");
-        //         break;
-        //     }
-        //     interval_t interval = PORT_KNOCKING_RETRY_INTERVAL;
-        //     for (int j = 0; j < i; j++) interval *= 2;
-        //     lf_sleep(PORT_KNOCKING_RETRY_INTERVAL);
-        // }
+        for (int i = 0; i < PORT_KNOCKING_INITIAL_ATTEMPTS; i++) {
+            result = connect(_fed.socket_TCP_RTI, res->ai_addr, res->ai_addrlen);
+            if (result == 0) {
+                fprintf(stderr, "Successfully connected to RTI.\n");
+                break;
+            }
+            fprintf(stderr, "failed to connect to RTI; trying again.\n");
+            interval_t interval = PORT_KNOCKING_RETRY_INTERVAL;
+            for (int j = 0; j < i; j++) interval *= 2;
+            lf_sleep(interval);
+        }
 
         freeaddrinfo(res);           /* No longer needed */
         // If this still failed, try again with the original port after some time.
         if (result < 0) {
-            if (!specific_port_given && uport == STARTING_PORT + PORT_RANGE_LIMIT + 1) {
-                uport = STARTING_PORT;
+            if (!specific_port_given && uport == initial_uport + PORT_RANGE_LIMIT + 1) {
+                uport = initial_uport;
             }
             count_retries++;
             if (count_retries > CONNECT_NUM_RETRIES) {
