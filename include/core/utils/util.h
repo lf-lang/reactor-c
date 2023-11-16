@@ -284,7 +284,7 @@ static void parse_global_delay_array(global_delay_array_t* gda) {
         for (int idx2 = 0; idx2 < gda->hooks[idx].delay_vector_len; idx2++) {
             getline(&line, &len, fp);
             char* sequence_number = strtok_r(line, " ", &saveptr);
-            char* delay = strtok_r(line, "\n", &saveptr);
+            char* delay = strtok_r(NULL, "\n", &saveptr);
             gda->hooks[idx].delay_vector[idx2].sequence_number = atoi(sequence_number);
             gda->hooks[idx].delay_vector[idx2].delay = atoi(delay);
         }
@@ -386,6 +386,7 @@ static void unlock_delay_array_if_threaded() {
         if (delay_vector_index >= hook_delay_array->delay_vector_len) { \
             delay_vector_index = -1; \
         } else if (hook_delay_array->delay_vector[delay_vector_index].sequence_number == sequence_number) { \
+            printf("DEBUG: sleeping for time %lld milliseconds\n", (long long) hook_delay_array->delay_vector[delay_vector_index].delay); \
             lf_sleep(hook_delay_array->delay_vector[delay_vector_index].delay * 1000000); \
             delay_vector_index++; \
         } \
