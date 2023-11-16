@@ -114,16 +114,18 @@ static void environment_init_federated(environment_t* env, int num_is_present_fi
 }
 
 void environment_init_tags( environment_t *env, instant_t start_time, interval_t duration) {
-    env->current_tag = (tag_t) NEVER_TAG_INITIALIZER;
+    // Current tag and start tag of the environment is initialized.
+    env->current_tag = (tag_t) {.time = start_time, .microstep = 0};
+    env->start_tag = (tag_t) {.time = start_time, .microstep = 0};
+    env->duration = duration;
 
     if (duration >= 0LL) {
         // A duration has been specified. Calculate the stop time.
-        env->stop_tag.time = start_time + duration;
+        env->stop_tag.time = env->start_tag.time + env->duration;
         env->stop_tag.microstep = 0;
     } else {
         env->stop_tag = (tag_t) FOREVER_TAG_INITIALIZER;
     }
-    env->start_tag = (tag_t) {.time = start_time, .microstep=0};
 }
 
 static void environment_free_threaded(environment_t* env) {

@@ -701,15 +701,8 @@ void _lf_initialize_start_tag(environment_t *env) {
         // statuses to unknown
         reset_status_fields_on_input_port_triggers();
 
-        // Get a start_time from the RTI
-        synchronize_with_other_federates(env); // Resets start_time in federated execution according to the RTI.
-        // The start time will likely have changed. Adjust the current tag and stop tag.
-        // FIXME: Should we move away from start_time as a global variable?
-        env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
-        if (duration >= 0LL) {
-            // A duration has been specified. Recalculate the stop time.
-            env->stop_tag = ((tag_t) {.time = start_time + duration, .microstep = 0});
-        }
+        // Update start_tag, current_tag and stop_tag after synchronizing with other federates.
+        synchronize_with_other_federates(env);
     } else {
         lf_print_error_and_exit("Enclaves and federates dont mix");
     }
@@ -1008,9 +1001,9 @@ void* worker(void* arg) {
         tag_t tag_granted = rti_next_event_tag_locked(env->enclave_info, env->start_tag);
         LF_ASSERT(  lf_tag_compare(tag_granted, env->start_tag) == 0,
                     "We did not receive a TAG to the start tag. Got tag " PRINTF_TAG, tag_granted);
+        env->current_tag = env->start_tag;
     }
     #endif
-    env->current_tag = env->start_tag;
 
     // Release mutex and start working.
     lf_mutex_unlock(&env->mutex); 
