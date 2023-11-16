@@ -274,7 +274,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * limits the number of RTIs and federates that can be simultaneously
  * running on any given machine without assigning specific port numbers.
  */
-#define PORT_RANGE_LIMIT 1024
+#define PORT_RANGE_LIMIT 24
 
 /**
  * Delay the start of all federates by this amount.

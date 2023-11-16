@@ -1052,18 +1052,16 @@ void connect_to_rti(const char* hostname, int port) {
 
         // Create a socket
         _fed.socket_TCP_RTI = create_real_time_tcp_socket_errexit();
-        if (count_retries == 0) {
-            for (int i = 0; i < PORT_KNOCKING_INITIAL_ATTEMPTS; i++) {
-                result = connect(_fed.socket_TCP_RTI, res->ai_addr, res->ai_addrlen);
-                if (result == 0) {
-                    lf_print("Successfully connected to RTI.");
-                    break;
-                }
-                interval_t interval = PORT_KNOCKING_RETRY_INTERVAL;
-                for (int j = 0; j < i; j++) interval *= 2;
-                lf_sleep(PORT_KNOCKING_RETRY_INTERVAL);
-            }
-        }
+        // for (int i = 0; i < PORT_KNOCKING_INITIAL_ATTEMPTS; i++) {
+        //     result = connect(_fed.socket_TCP_RTI, res->ai_addr, res->ai_addrlen);
+        //     if (result == 0) {
+        //         lf_print("Successfully connected to RTI.");
+        //         break;
+        //     }
+        //     interval_t interval = PORT_KNOCKING_RETRY_INTERVAL;
+        //     for (int j = 0; j < i; j++) interval *= 2;
+        //     lf_sleep(PORT_KNOCKING_RETRY_INTERVAL);
+        // }
 
         freeaddrinfo(res);           /* No longer needed */
         // If this still failed, try again with the original port after some time.
