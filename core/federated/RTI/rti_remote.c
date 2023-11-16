@@ -87,8 +87,7 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
 
     /*
      * The following used to permit reuse of a port that an RTI has previously
-     * used that has not been released. We no longer do this, but instead
-     * increment the port number until an available port is found.
+     * used that has not been released.
 
     // SO_REUSEPORT (since Linux 3.9)
     //       Permits multiple AF_INET or AF_INET6 sockets to be bound to an
@@ -99,6 +98,7 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
     //       effective UID.  This option can be employed with both TCP and
     //       UDP sockets.
 
+    */
     int reuse = 1;
     if (setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEADDR,
             (const char*)&reuse, sizeof(reuse)) < 0) {
@@ -111,7 +111,6 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
         perror("setsockopt(SO_REUSEPORT) failed");
     }
     #endif
-    */
 
     // Server file descriptor.
     struct sockaddr_in server_fd;
