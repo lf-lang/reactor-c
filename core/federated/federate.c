@@ -2577,7 +2577,9 @@ void synchronize_with_other_federates(environment_t *env) {
     start_time = get_start_time_from_rti(lf_time_physical());
     env->start_tag = (tag_t){.time=start_time, .microstep=0};
     env->current_tag = env->start_tag;
-    env->stop_tag = (tag_t) {.time = env->start_tag.time + env->duration, .microstep=0};
+    if (env->duration > 0) {
+        env->stop_tag = (tag_t) {.time = env->start_tag.time + env->duration, .microstep=0};
+    }
 
     // Start a thread to listen for incoming TCP messages from the RTI.
     // @note Up until this point, the federate has been listening for messages
