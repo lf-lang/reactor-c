@@ -247,6 +247,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PORT_KNOCKING_RETRY_INTERVAL 1000000LL
 
 /**
+ * Number of times that a federate will try to connect to the RTI
+ * on the first port that it tries before trying any other ports.
+ */
+#define PORT_KNOCKING_INITIAL_ATTEMPTS 10
+
+/**
  * Default starting port number for the RTI and federates' socket server.
  * Unless a specific port has been specified by the LF program in the "at"
  * for the RTI, when the federates start up, they will attempt

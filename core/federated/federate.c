@@ -1053,7 +1053,7 @@ void connect_to_rti(const char* hostname, int port) {
         // Create a socket
         _fed.socket_TCP_RTI = create_real_time_tcp_socket_errexit();
         if (count_retries == 0) {
-            for (int i = 0; i < 3; i++) {
+            for (int i = 0; i < PORT_KNOCKING_INITIAL_ATTEMPTS; i++) {
                 result = connect(_fed.socket_TCP_RTI, res->ai_addr, res->ai_addrlen);
                 if (result == 0) {
                     lf_print("Successfully connected to RTI.");
