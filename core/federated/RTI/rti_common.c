@@ -33,6 +33,16 @@ void initialize_rti_common(rti_common_t * _rti_common) {
 //        Currently, all calls to tracepoint_from_federate() and 
 //        tracepoint_to_federate() are in rti_lib.c
 
+#define IS_IN_ZERO_DELAY_CYCLE 1
+#define IS_IN_CYCLE 2
+
+void invalidate_min_delays_upstream(scheduling_node_t* node) {
+    if(node->min_delays != NULL) free(node->min_delays);
+    node->min_delays = NULL;
+    node->num_min_delays = 0;
+    node->flags = IS_IN_ZERO_DELAY_CYCLE | IS_IN_CYCLE; // Pessimistic, in case it is accessed without updating.
+}
+
 void initialize_scheduling_node(scheduling_node_t* e, uint16_t id) {
     e->id = id;
     e->completed = NEVER_TAG;
@@ -46,7 +56,7 @@ void initialize_scheduling_node(scheduling_node_t* e, uint16_t id) {
     e->downstream = NULL;
     e->num_downstream = 0;
     e->mode = REALTIME;
-    e->is_in_zero_delay_cycle = false;
+    invalidate_min_delays_upstream(e);
 }
 
 void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
@@ -76,35 +86,25 @@ void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
 tag_t earliest_future_incoming_message_tag(scheduling_node_t* e) {
     // First, we need to find the shortest path (minimum delay) path to each upstream node
     // and then find the minimum of the node's recorded NET plus the minimum path delay.
-    // The following array will have the minimum path delay.
-    // It needs to be initialized to FOREVER_TAG, except for the element corresponding to
-    // this fed/enclave, which is initialized to (0,0).
-    tag_t *path_delays = (tag_t *)malloc(rti_common->number_of_scheduling_nodes * sizeof(tag_t));
-    for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
-        path_delays[i] = FOREVER_TAG;
-    }
-    path_delays[e->id] = ZERO_TAG;
-    shortest_path_upstream(e, NULL, path_delays);
+    // Update the shortest paths, if necessary.
+    update_min_delays_upstream(e);
 
     // Next, find the tag of the earliest possible incoming message from upstream enclaves or
     // federates, which will be the smallest upstream NET plus the least delay.
     // This could be NEVER_TAG if the RTI has not seen a NET from some upstream node.
     tag_t t_d = FOREVER_TAG;
-    for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
-        if (e->id != i && path_delays[i].time < FOREVER) {
-            // Node i is upstream of e. Note that it could be that i == e.
-            scheduling_node_t* upstream = rti_common->scheduling_nodes[i];
-            tag_t earliest_tag_from_upstream = lf_tag_add(upstream->next_event, path_delays[i]);
-            LF_PRINT_DEBUG("RTI: Earliest next event upstream of fed/encl %d at fed/encl %d has tag " PRINTF_TAG ".",
-                    e->id,
-                    upstream->id,
-                    earliest_tag_from_upstream.time - start_time, earliest_tag_from_upstream.microstep);
-            if (lf_tag_compare(earliest_tag_from_upstream, t_d) < 0) {
-                t_d = earliest_tag_from_upstream;
-            }
+    for (int i = 0; i < e->num_min_delays; i++) {
+        // Node e->min_delays[i].id is upstream of e with min delay e->min_delays[i].min_delay.
+        scheduling_node_t* upstream = rti_common->scheduling_nodes[e->min_delays[i].id];
+        tag_t earliest_tag_from_upstream = lf_tag_add(upstream->next_event, e->min_delays[i].min_delay);
+        LF_PRINT_DEBUG("RTI: Earliest next event upstream of fed/encl %d at fed/encl %d has tag " PRINTF_TAG ".",
+                e->id,
+                upstream->id,
+                earliest_tag_from_upstream.time - start_time, earliest_tag_from_upstream.microstep);
+        if (lf_tag_compare(earliest_tag_from_upstream, t_d) < 0) {
+            t_d = earliest_tag_from_upstream;
         }
     }
-    free(path_delays);
     return t_d;
 }
 
@@ -168,7 +168,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
                                                                       // (equal is important to override any previous
                                                                       // PTAGs).
         && lf_tag_compare(t_d, e->last_granted) > 0                   // The grant is not redundant.
-        && !e->is_in_zero_delay_cycle                               // The node is not part of a ZDC
+        && !is_in_zero_delay_cycle(e)                               // The node is not part of a ZDC
     ) {
         // No upstream node can send events that will be received with a tag less than or equal to
         // e->next_event, so it is safe to send a TAG.
@@ -244,7 +244,9 @@ void notify_advance_grant_if_safe(scheduling_node_t* e) {
     }
 }
 
-void shortest_path_upstream(scheduling_node_t* end, scheduling_node_t* intermediate, tag_t path_delays[]) {
+// Local function used recursively to find minimum delays upstream.
+// Return in count the number of non-FOREVER_TAG entries in path_delays[].
+static void _update_min_delays_upstream(scheduling_node_t* end, scheduling_node_t* intermediate, tag_t path_delays[], size_t* count) {
     // On first call, intermediate will be NULL, so the path delay is initialized to zero.
     tag_t delay_from_intermediate_so_far = ZERO_TAG;
     if (intermediate == NULL) {
@@ -253,88 +255,88 @@ void shortest_path_upstream(scheduling_node_t* end, scheduling_node_t* intermedi
         // Not the first call, so intermediate is upstream of end.
         delay_from_intermediate_so_far = path_delays[intermediate->id];
     }
-    // NOTE: Except for this one check, the information calculated here is completely static
-    // and could be precomputed at compile time.  But doing so would then cause transient
-    // federates in feedback loops to potentially cause deadlocks by being absent.
     if (intermediate->state == NOT_CONNECTED) {
         // Enclave or federate is not connected.
         // No point in checking upstream scheduling_nodes.
         return;
     }
     // Check nodes upstream of intermediate (or end on first call).
+    // NOTE: It would be better to iterate through these sorted by minimum delay,
+    // but for most programs, the gain might be negligible since there are relatively few
+    // upstream nodes.
     for (int i = 0; i < intermediate->num_upstream; i++) {
         // Add connection delay to path delay so far.
         tag_t path_delay = lf_delay_tag(delay_from_intermediate_so_far, intermediate->upstream_delay[i]);
         // If the path delay is less than the so-far recorded path delay from upstream, update upstream.
         if (lf_tag_compare(path_delay, path_delays[intermediate->upstream[i]]) < 0) {
+            if (path_delays[intermediate->upstream[i]].time == FOREVER) {
+                // Found a finite path.
+                *count = *count + 1;
+            }
             path_delays[intermediate->upstream[i]] = path_delay;
             // Since the path delay to upstream has changed, recursively update those upstream of it.
             // Do not do this, however, if the upstream node is the end node because this means we have
             // completed a cycle.
             if (end->id != intermediate->upstream[i]) {
-                shortest_path_upstream(end, rti_common->scheduling_nodes[intermediate->upstream[i]], path_delays);
-            }
-        }
-    }
-}
-
-/**
- * Cycle-detection algorithm based on Depth-first search. adapted from: 
- * https://rohithv63.medium.com/graph-algorithm-cycle-detection-in-directed-graph-using-dfs-939512865fd6
- * 
- */
-static bool _find_zero_delay_cycles(int v, bool visited[], bool recStack[], scheduling_node_t** nodes, int num_nodes) {
-    if (recStack[v]) {
-        return true;
-    }
-    if (visited[v]) {
-        return false;
-    }
-    
-    visited[v] = true;
-    recStack[v] = true;
-
-    scheduling_node_t *temp = nodes[v];
-    for (int i = 0; i<temp->num_upstream; i++) {
-        if (temp->upstream_delay[i] != NEVER) { // NEVER means zero-delay
-            continue;
-        }
-    
-        if (_find_zero_delay_cycles(i, visited, recStack, nodes, num_nodes)) {
-            return true;
-        }
-    }
-    recStack[v] = false; // Remove the node from the current path
-    return false;
-}
-
-void find_zero_delay_cycles(scheduling_node_t** nodes, int num_nodes) {
-    bool* visited = (bool*)malloc(num_nodes * sizeof(bool));
-    bool* recStack = (bool*)malloc(num_nodes * sizeof(bool));
-
-    for (int i = 0; i < num_nodes; i++) {
-        visited[i] = 0;
-        recStack[i] = 0;
-    }
-    bool first=true; // For printing the ZDC on a single line
-    for (int i = 0; i < num_nodes; i++) {
-        if (!visited[i]) {
-            if (_find_zero_delay_cycles(i, visited, recStack, nodes, num_nodes)) {
-                if (first) {
-                    printf("RTI: Nodes part of a zero-delay-cycle:");
-                    first = false;
+                _update_min_delays_upstream(end, rti_common->scheduling_nodes[intermediate->upstream[i]], path_delays, count);
+            } else {
+                // Found a cycle.
+                end->flags = end->flags | IS_IN_CYCLE;
+                // Is it a zero-delay cycle?
+                if (lf_tag_compare(path_delay, ZERO_TAG) == 0 && intermediate->upstream_delay[i] < 0) {
+                    end->flags = end->flags | IS_IN_ZERO_DELAY_CYCLE;
                 }
-                printf(" %i,", i);
-                nodes[i]->is_in_zero_delay_cycle = true;
             }
         }
     }
-    if (!first) {
-        printf("\n");
-    }
+}
 
-    free(visited);
-    free(recStack);
+void update_min_delays_upstream(scheduling_node_t* node) {
+    // Check whether cached result is valid.
+    if (node->min_delays == NULL) {
+
+        // This is not Dijkstra's algorithm, but rather one optimized for sparse upstream nodes.
+        // There must be a name for this algorithm.
+
+        // Array of results on the stack:
+        tag_t path_delays[rti_common->number_of_scheduling_nodes];
+        // This will be the number of non-FOREVER entries put into path_delays.
+        size_t count = 1;
+
+        for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
+            if (i == node->id) {
+                path_delays[i] = ZERO_TAG;
+            } else {
+                path_delays[i] = FOREVER_TAG;
+            }
+        }
+        _update_min_delays_upstream(node, NULL, path_delays, &count);
+
+        // Put the results onto the node's struct.
+        node->num_min_delays = count;
+        node->min_delays = (minimum_delay_t*)malloc(count * sizeof(minimum_delay_t));
+        int k = 0;
+        for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
+            if (lf_tag_compare(path_delays[i], FOREVER_TAG) < 0) {
+                // Node i is upstream.
+                if (k >= count) {
+                    lf_print_error_and_exit("Internal error! Count of upstream nodes %zu for node %d is wrong!", count, i);
+                }
+                minimum_delay_t min_delay = {.id = i, .min_delay = path_delays[i]};
+                node->min_delays[k++] = min_delay;
+            }
+        }
+    }
+}
+
+bool is_in_zero_delay_cycle(scheduling_node_t* node) {
+    update_min_delays_upstream(node);
+    return node->flags & IS_IN_ZERO_DELAY_CYCLE;
+}
+
+bool is_in_cycle(scheduling_node_t* node) {
+    update_min_delays_upstream(node);
+    return node->flags & IS_IN_CYCLE;
 }
 
 #endif

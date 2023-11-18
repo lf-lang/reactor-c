@@ -34,6 +34,12 @@ typedef enum scheduling_node_state_t {
     PENDING         // Waiting for upstream scheduling nodes.
 } scheduling_node_state_t;
 
+/** Struct for minimum delays from upstream nodes. */
+typedef struct minimum_delay_t {
+    int id;          // ID of the upstream node.
+    tag_t min_delay; // Minimum delay from upstream.
+} minimum_delay_t;
+
 /**
  * Information about the scheduling nodes coordinated by the RTI.
  * The abstract scheduling node could either be an enclave or a federate.
@@ -59,7 +65,9 @@ typedef struct scheduling_node_t {
     int* downstream;                    // Array of downstream scheduling node ids.
     int num_downstream;                 // Size of the array of downstream scheduling nodes.
     execution_mode_t mode;              // FAST or REALTIME.
-    bool is_in_zero_delay_cycle;         // This scheduling node is part of a zero-delay cycle
+    minimum_delay_t* min_delays;        // Array of minimum delays from upstream nodes, not including this node.
+    size_t num_min_delays;              // Size of min_delays array.
+    int flags;                          // Or of IS_IN_ZERO_DELAY_CYCLE, IS_IN_CYCLE
 } scheduling_node_t;
 
 /**
@@ -208,7 +216,6 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag);
  */
 tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e);
 
-
 /**
  * @brief Update the next event tag of an scheduling node.
  *
@@ -232,43 +239,39 @@ void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t ne
 tag_t earliest_future_incoming_message_tag(scheduling_node_t* e);
 
 /**
- * Given a node (enclave or federate), find the shortest path (least total delay)
- * from each upstream node to the node given by `end`.  The result is written into
- * the `path_delay` array, with one value for each node (federate or enclave) in the system.
- * An entry of FOREVER_TAG means that the node is not upstream of `end`.
- * An entry of (0,0) means that the node is upstream and that there are no after delays
- * on the path to `end`.  Otherwise, the entry is the sum of the after delays on the
- * shortest path, where the sum is calculated using lf_delay_tag().
- * 
- * This function calls itself recursively. On the first call,`path_delay` should be an
- * array whose size matches the number of nodes in the system.  Each entry in the array
- * should be FOREVER_TAG except the node for which we finding the shortest path, which
- * should have an entry (0,0). On that first call, `intermediate` should be NULL.
- * 
- * If the resulting entry for `end` remains FOREVER_TAG, then there is no cycle
- * back from the outputs of `end` to itself. Otherwise, the value of the entry will
- * be the minimum delay among all paths back to itself.
- *
- * @param end The target node.
- * @param intermediate Current intermediate node (NULL initially).
- * @param path_delays An array in which to put the results.
+ * Return true if the node is in a zero-delay cycle.
+ * @param node The node.
  */
-void shortest_path_upstream(scheduling_node_t* end, scheduling_node_t* intermediate, tag_t path_delays[]);
+bool is_in_zero_delay_cycle(scheduling_node_t* node);
+
+/**
+ * Return true if the node is in a cycle (possibly a zero-delay cycle).
+ * @param node The node.
+ */
+bool is_in_cycle(scheduling_node_t* node);
+
+/**
+ * For the given scheduling node (enclave or federate), if necessary, update the `min_delays`,
+ * `num_min_delays`, and the fields that indicate cycles.  These fields will be
+ * updated only if they have not been previously updated or if invalidate_min_delays_upstream
+ * has been called since they were last updated.
+ * @param node The node.
+ */
+void update_min_delays_upstream(scheduling_node_t* node);
+
+/**
+ * For the given scheduling node (enclave or federate), invalidate the `min_delays`,
+ * `num_min_delays`, and the fields that indicate cycles.
+ * This should be called whenever the structure of the connections upstream of the
+ * given node have changed.
+ * @param node The node.
+ */
+void invalidate_min_delays_upstream(scheduling_node_t* node);
 
 /**
  * Free dynamically allocated memory on the scheduling nodes and the scheduling node array itself.
  */
 void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes);
-
-/**
- * @brief Search the directed graph of nodes and find all nodes that are part of
- * a zero-delay cycle (ZDC). These nodes are marked by setting the `is_part_of_zero_delay_cycle`
- * field of the scheduling_node_t struct.
- * 
- * @param nodes An array of scheduling node pointers
- * @param num_nodes The length of the array
- */
-void find_zero_delay_cycles(scheduling_node_t** nodes, int num_nodes);
 
 #endif // RTI_COMMON_H
 #endif // STANDALONE_RTI || LF_ENCLAVES
