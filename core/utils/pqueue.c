@@ -8,13 +8,6 @@
  * @brief Priority queue definitions for the event queue and reaction queue.
  */
 
-// FIXME: Trim
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
-#include <stdbool.h>
-
 #include "platform.h"
 #include "pqueue.h"
 #include "util.h"
