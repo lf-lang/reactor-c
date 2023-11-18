@@ -28,13 +28,17 @@
  * 
  * If your struct is dynamically allocated using malloc or calloc, and you
  * would like the memory freed when the queue is freed, then set the is_dynamic
- * field to a non-zero value.
+ * field of the element to a non-zero value.
  * 
- * To customize the element you put onto the queue, you can create your
- * own element struct type by simply declaring the first field to be
- * a pqueue_tag_element_t.  For example, if you want an element of the
- * queue to include a pointer to your own payload, you can declare the
- * following struct type:
+ * For a priority queue that contains only tags with no payload, you can
+ * avoid creating the element struct by using the functions
+ * pqueue_tag_insert_tag, pqueue_tag_insert_if_no_match, and pqueue_tag_pop_tag.
+ * 
+ * To customize the element you put onto the queue, for example to carry
+ * a pyaload, you can create your own element struct type by simply declaring
+ * the first field to be a pqueue_tag_element_t.  For example, if you want an
+ * element of the queue to include a pointer to your own payload, you can 
+ * declare the following struct type:
  * <pre>
  *     typedef struct {
  *         pqueue_tag_element_t base;
@@ -77,10 +81,18 @@ void pqueue_tag_free(pqueue_tag_t *q);
 size_t pqueue_tag_size(pqueue_tag_t *q);
 
 /**
+ * Insert an element into the queue.
+ * @param q The queue.
+ * @param e The element to insert.
+ * @return 0 on success
+ */
+int pqueue_tag_insert(pqueue_tag_t* q, pqueue_tag_element_t* d);
+
+/**
  * @brief Insert a tag into the queue.
- * This automatically allocates memory for the element in the queue
+ * This automatically creates a dynamically allocated element in the queue
  * and ensures that if the element is still on the queue when pqueue_tag_free
- * is called, that memory will be freed.
+ * is called, then that memory will be freed.
  * @param q The queue.
  * @param t The tag to insert.
  * @return 0 on success
@@ -88,31 +100,24 @@ size_t pqueue_tag_size(pqueue_tag_t *q);
 int pqueue_tag_insert_tag(pqueue_tag_t* q, tag_t t);
 
 /**
- * @brief Insert a tag into the queue if the tag is not in the queue.
- * This automatically allocates memory for the element in the queue
+ * @brief Insert a tag into the queue if the tag is not already in the queue.
+ * This automatically creates a dynamically allocated element in the queue
  * and ensures that if the element is still on the queue when pqueue_tag_free
- * is called, that memory will be freed.
+ * is called, then that memory will be freed.
  * @param q The queue.
  * @param t The tag to insert.
- * @return 0 on success
+ * @return 0 on success, 1 otherwise.
  */
-int pqueue_tag_insert_tag_if_not_present(pqueue_tag_t* q, tag_t t);
+int pqueue_tag_insert_if_no_match(pqueue_tag_t* q, tag_t t);
 
 /**
  * @brief Pop the least-tag element from the queue and return its tag.
- * If the queue is empty, return FOREVER_TAG.
+ * If the queue is empty, return FOREVER_TAG. This function handles freeing 
+ * the element struct if it was dynamically allocated.
  * @param q The queue.
  * @return NULL on error, otherwise the entry
  */
 tag_t pqueue_tag_pop_tag(pqueue_tag_t* q);
-
-/**
- * Insert an element into the queue.
- * @param q The queue.
- * @param e The element to insert.
- * @return 0 on success
- */
-int pqueue_tag_insert(pqueue_tag_t* q, pqueue_tag_element_t* d);
 
 /**
  * @brief Pop the least-tag element from the queue.
@@ -124,12 +129,12 @@ int pqueue_tag_insert(pqueue_tag_t* q, pqueue_tag_element_t* d);
 pqueue_tag_element_t* pqueue_tag_pop(pqueue_tag_t* q);
 
 /**
- * Find the highest-ranking item with the same tag.
- * @param q the queue
- * @param t the tag to compare against
- * @return NULL if no matching tag has been found, otherwise the entry
+ * Return the first item with the specified tag or NULL if there is none.
+ * @param q The queue.
+ * @param t The tag.
+ * @return An entry with the specified tag or NULL if there isn't one.
  */
-pqueue_tag_element_t* pqueue_tag_find_same_tag(pqueue_tag_t *q, tag_t t);
+pqueue_tag_element_t* pqueue_tag_find_with_tag(pqueue_tag_t *q, tag_t t);
 
 /**
  * Remove an item from the queue.
