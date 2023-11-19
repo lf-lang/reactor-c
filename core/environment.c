@@ -118,7 +118,7 @@ static void environment_init_federated(environment_t* env, int num_is_present_fi
 #endif
 }
 
-void environment_init_tags( environment_t *env, instant_t start_time, interval_t duration) {
+void environment_init_tags(environment_t *env, instant_t start_time, interval_t duration) {
     env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
     
     tag_t stop_tag = FOREVER_TAG_INITIALIZER;
@@ -170,6 +170,7 @@ void environment_free(environment_t* env) {
     pqueue_free(env->event_q);
     pqueue_free(env->recycle_q);
     pqueue_free(env->next_q);
+    pqueue_tag_free(env->ndt_q);
 
     environment_free_threaded(env);
     environment_free_single_threaded(env);
