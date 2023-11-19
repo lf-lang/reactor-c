@@ -14,10 +14,6 @@
 #include "util.h"     // For lf_print
 #include "platform.h" // For PRINTF_TAG
 
-#define LF_LEFT(i)   ((i) << 1)
-#define LF_RIGHT(i)  (((i) << 1) + 1)
-#define LF_PARENT(i) ((i) >> 1)
-
 //////////////////
 // Local functions, not intended for use outside this file.
 
@@ -72,42 +68,6 @@ static void pqueue_tag_set_position(void *element, size_t pos) {
     ((pqueue_tag_element_t*)element)->pos = pos;
 }
 
-pqueue_tag_element_t* find_equal_same_tag(pqueue_tag_t *q, void *e, int pos) {
-    if (pos < 0) {
-        lf_print_error_and_exit("find_equal_same_priority() called with a negative pos index.");
-    }
-
-    // Stop the recursion when we've reached the end of the
-    // queue. This has to be done before accessing the queue
-    // to avoid segmentation fault.
-    if (!q || (size_t)pos >= q->size) {
-        return NULL;
-    }
-
-    void* rval;
-    void* curr = q->d[pos];
-
-    // Stop the recursion once we've surpassed the priority of the element
-    // we're looking for.
-    if (!curr || pqueue_tag_compare(pqueue_tag_get_priority(curr), pqueue_tag_get_priority(e))) {
-        return NULL;
-    }
-
-    // Note that we cannot use the function find_equal_same_priority in pqueue_base.c because
-    // we cannot compare priorities using the "==" operator.
-    if (pqueue_tag_matches((void*)pqueue_tag_get_priority(curr), (void*)pqueue_tag_get_priority(e)) && q->eqelem(curr, e)) {
-        return curr;
-    } else {
-        rval = find_equal_same_tag(q, e, LF_LEFT(pos));
-        if (rval) {
-            return rval;
-        } else {
-            return find_equal_same_tag(q, e, LF_RIGHT(pos));
-        }
-    }
-    return NULL;
-}
-
 /**
  * @brief Callback function to print information about an element.
  * This is a function of type pqueue_print_entry_f.
@@ -156,6 +116,22 @@ int pqueue_tag_insert_tag(pqueue_tag_t* q, tag_t t) {
     return pqueue_tag_insert(q, d);
 }
 
+pqueue_tag_element_t* pqueue_tag_find_with_tag(pqueue_tag_t *q, tag_t t) {
+    // Create elements on the stack. These elements are only needed during
+    // the duration of this function call, so putting them on the stack is OK.
+    pqueue_tag_element_t element = {.tag = t, .pos = 0, .is_dynamic = false};
+    pqueue_tag_element_t forever = {.tag = FOREVER_TAG, .pos = 0, .is_dynamic = false};
+    return pqueue_find_equal((pqueue_t*)q, (void*)&element, (pqueue_pri_t)&forever);
+}
+
+int pqueue_tag_insert_if_no_match(pqueue_tag_t* q, tag_t t) {
+    if (pqueue_tag_find_with_tag(q, t) == NULL) {
+        return pqueue_tag_insert_tag(q, t);
+    } else {
+        return 1;
+    }
+}
+
 pqueue_tag_element_t* pqueue_tag_pop(pqueue_tag_t* q) {
     return (pqueue_tag_element_t*)pqueue_pop((pqueue_t*)q);
 }
@@ -168,14 +144,6 @@ tag_t pqueue_tag_pop_tag(pqueue_tag_t* q) {
         if (element->is_dynamic) free(element);
         return result;
     }
-}
-
-pqueue_tag_element_t* pqueue_tag_find_equal_same_tag(pqueue_tag_t *q, tag_t t) {
-    pqueue_tag_element_t* target_element = (pqueue_tag_element_t*) malloc(sizeof(pqueue_tag_element_t));
-    target_element->tag = t;
-    pqueue_tag_element_t* result = find_equal_same_tag(q, target_element, 1);
-    free(target_element);
-    return result;
 }
 
 int pqueue_tag_remove(pqueue_tag_t* q, pqueue_tag_element_t* e) {
