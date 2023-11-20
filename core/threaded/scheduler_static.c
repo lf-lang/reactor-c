@@ -1,4 +1,4 @@
-#if defined(LF_THREADED)
+#if !defined(LF_SINGLE_THREADED)
 /*************
 Copyright (c) 2022, The University of Texas at Dallas. Copyright (c) 2022, The
 University of California at Berkeley.
@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <inttypes.h>
 #include "lf_types.h"
-#if SCHEDULER == SCHED_STATIC || (!defined(SCHEDULER) && defined(LF_THREADED))
+#if defined SCHEDULER && SCHEDULER == SCHED_STATIC
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
