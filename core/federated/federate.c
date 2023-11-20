@@ -1153,6 +1153,14 @@ void connect_to_rti(const char* hostname, int port) {
                 // @see MSG_TYPE_NEIGHBOR_STRUCTURE in net_common.h
                 send_neighbor_structure_to_RTI(_fed.socket_TCP_RTI);
 
+                // Send whether this federate has a physical action to the RTI.
+                uint16_t has_physical_action = _fed.min_delay_from_physical_action_to_federate_output != NEVER;
+                unsigned char physical_action_message_buffer[1 + sizeof(uint16_t)];
+                physical_action_message_buffer[0] = MSG_TYPE_PHYSICAL_ACTION;
+                encode_uint16(has_physical_action, &(physical_action_message_buffer[1]));
+                write_to_socket_errexit(_fed.socket_TCP_RTI, 1 + sizeof(uint16_t), physical_action_message_buffer,
+                    "Failed to send physical action info to RTI.");
+
                 uint16_t udp_port = setup_clock_synchronization_with_rti();
 
                 // Write the returned port number to the RTI

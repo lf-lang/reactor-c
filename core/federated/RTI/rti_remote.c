@@ -1391,6 +1391,28 @@ int receive_connection_information(int socket_id, uint16_t fed_id) {
     }
 }
 
+int receive_physical_action_information(int socket_id, uint16_t fed_id) {
+    LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_PHYSICAL_ACTION from federate %d.", fed_id);
+    unsigned char response[1 + sizeof(uint16_t)];
+    read_from_socket_errexit(socket_id, 1 + sizeof(uint16_t) , response,
+            "RTI failed to read MSG_TYPE_PHYSICAL_ACTION message from federate %d.", fed_id);
+    if (response[0] != MSG_TYPE_PHYSICAL_ACTION) {
+        lf_print_error("RTI was expecting a MSG_TYPE_PHYSICAL_ACTION message from federate %d. Got %u instead. "
+                "Rejecting federate.", fed_id, response[0]);
+        send_reject(socket_id, UNEXPECTED_MESSAGE);
+        return 0;
+    } else {
+        federate_info_t *fed = GET_FED_INFO(fed_id);
+        uint16_t federate_has_physical_action = extract_uint16(&(response[1]));
+
+        LF_PRINT_DEBUG("RTI got MSG_TYPE_PHYSICAL_ACTION %u from federate %d.", federate_has_physical_action, fed_id);
+
+        fed->enclave.has_physical_action = (bool) federate_has_physical_action;
+    }
+
+    return 1;
+}
+
 int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id) {
     // Read the MSG_TYPE_UDP_PORT message from the federate regardless of the status of
     // clock synchronization. This message will tell the RTI whether the federate
@@ -1564,6 +1586,7 @@ void connect_to_federates(int socket_descriptor) {
         int32_t fed_id = receive_and_check_fed_id_message(socket_id, (struct sockaddr_in*)&client_fd);
         if (fed_id >= 0
                 && receive_connection_information(socket_id, (uint16_t)fed_id)
+                && receive_physical_action_information(socket_id, (uint16_t)fed_id)
                 && receive_udp_message_and_set_up_clock_sync(socket_id, (uint16_t)fed_id)) {
 
             // Create a thread to communicate with the federate.

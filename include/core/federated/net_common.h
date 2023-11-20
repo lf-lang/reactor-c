@@ -698,7 +698,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_NEXT_DOWNSTREAM_TAG 25
 
-#define MSG_TYPE_PHYSICAL_ACTION
+/**
+ * A message that informs the RTI about its presence of a physical action. The
+ * information is used for deciding whether the RTI sends NDT messages to the source
+ * federate's upstreams.
+ * The next four byte will be 1 if the source federate has a physical action
+ * and 0 otherwise.
+*/
+#define MSG_TYPE_PHYSICAL_ACTION 26
 
 /////////////////////////////////////////////
 //// Rejection codes
