@@ -132,6 +132,22 @@ int lf_tag_compare(tag_t tag1, tag_t tag2) {
     }
 }
 
+tag_t lf_tag_max(tag_t tag1, tag_t tag2) {
+    if (lf_tag_compare(tag1, tag2) < 0) {
+        return tag2;
+    } else {
+        return tag1;
+    }
+}
+
+tag_t lf_tag_min(tag_t tag1, tag_t tag2) {
+    if (lf_tag_compare(tag1, tag2) < 0) {
+        return tag1;
+    } else {
+        return tag2;
+    }
+}
+
 tag_t lf_delay_tag(tag_t tag, interval_t interval) {
     if (tag.time == NEVER || interval < 0LL) return tag;
     if (tag.time >= FOREVER - interval) return tag;

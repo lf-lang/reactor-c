@@ -95,6 +95,23 @@ tag_t lf_tag(void* env);
 int lf_tag_compare(tag_t tag1, tag_t tag2);
 
 /**
+ * @brief Return the lesser out of two tags
+ * 
+ * @param tag1 
+ * @param tag2 
+ * @return tag_t 
+ */
+tag_t lf_tag_min(tag_t tag1, tag_t tag2);
+
+/**
+ * @brief Return the greater out of two tags
+ * 
+ * @param tag1 
+ * @param tag2 
+ * @return tag_t 
+ */
+tag_t lf_tag_max(tag_t tag1, tag_t tag2);
+/**
  * Delay a tag by the specified time interval to realize the "after" keyword.
  * Any interval less than 0 (including NEVER) is interpreted as "no delay",
  * whereas an interval equal to 0 is interpreted as one microstep delay.
