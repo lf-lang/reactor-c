@@ -128,7 +128,7 @@ typedef enum
 /**
  * String description of event types.
  */
-static const char *trace_event_names[] = {
+static inline const char *trace_event_names[] = {
     "Reaction starts",
     "Reaction ends",
     "Reaction deadline missed",
@@ -188,6 +188,8 @@ static const char *trace_event_names[] = {
 // FIXME: Target property should specify the capacity of the trace buffer.
 #define TRACE_BUFFER_CAPACITY 2048
 
+#define LF_TOTAL_NUMBER_OF_FILES_MAXIMUM 100  // greater than $(find . -name "*.c" | wc -l)
+
 /** Size of the table of trace objects. */
 #define TRACE_OBJECT_TABLE_SIZE 1024
 
@@ -204,6 +206,9 @@ typedef struct trace_record_t {
     instant_t physical_time;
     trigger_t* trigger;
     interval_t extra_delay;
+    int file_idx;
+    int line;
+    int sequence_number_for_file_and_line;
 } trace_record_t;
 
 /**
@@ -240,6 +245,9 @@ typedef struct trace_t {
     trace_record_t** _lf_trace_buffer;
     int* _lf_trace_buffer_size;
 
+    char*** _lf_file_names;
+    int* _lf_file_names_size;
+
     /** The number of trace buffers allocated when tracing starts. */
     int _lf_number_of_trace_buffers;
 
@@ -262,6 +270,8 @@ typedef struct trace_t {
     /** Pointer back to the environment which we are tracing within*/
     environment_t* env;
 } trace_t;
+
+#include "hooks.h"
 
 
 /**
@@ -341,7 +351,10 @@ void tracepoint(
         instant_t* physical_time,
         trigger_t* trigger,
         interval_t extra_delay,
-        bool is_interval_start
+        bool is_interval_start,
+        int file_idx,
+        int line,
+        int sequence_number_for_file_and_line
 );
 
 /**
@@ -350,7 +363,8 @@ void tracepoint(
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
-void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker);
+// void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker);
+#define tracepoint_reaction_starts(...)
 
 /**
  * Trace the end of a reaction execution.
@@ -358,7 +372,8 @@ void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
-void tracepoint_reaction_ends(trace_t* trace, reaction_t* reaction, int worker);
+// void tracepoint_reaction_ends(trace_t* trace, reaction_t* reaction, int worker);
+#define tracepoint_reaction_ends(...)
 
 /**
  * Trace a call to schedule.
@@ -366,7 +381,8 @@ void tracepoint_reaction_ends(trace_t* trace, reaction_t* reaction, int worker);
  * @param trigger Pointer to the trigger_t struct for the trigger.
  * @param extra_delay The extra delay passed to schedule().
  */
-void tracepoint_schedule(trace_t* trace, trigger_t* trigger, interval_t extra_delay);
+// void tracepoint_schedule(trace_t* trace, trigger_t* trigger, interval_t extra_delay);
+#define tracepoint_schedule(...)
 
 /**
  * Trace a user-defined event. Before calling this, you must call
@@ -377,7 +393,8 @@ void tracepoint_schedule(trace_t* trace, trigger_t* trigger, interval_t extra_de
  * thus the correct logical tag of the event.
  * @param description Pointer to the description string.
  */
-void tracepoint_user_event(void* self, char* description);
+// void tracepoint_user_event(void* self, char* description);
+#define tracepoint_user_event(...)
 
 /**
  * Trace a user-defined event with a value.
@@ -392,35 +409,40 @@ void tracepoint_user_event(void* self, char* description);
  *  convenience so that time values can be passed unchanged.
  *  But int values work as well.
  */
-void tracepoint_user_value(void* self, char* description, long long value);
+// void tracepoint_user_value(void* self, char* description, long long value);
+#define tracepoint_user_value(...)
 
 /**
  * Trace the start of a worker waiting for something to change on the reaction queue.
  * @param env The environment in which we are executing
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
-void tracepoint_worker_wait_starts(trace_t* trace, int worker);
+// void tracepoint_worker_wait_starts(trace_t* trace, int worker);
+#define tracepoint_worker_wait_starts(...)
 
 /**
  * Trace the end of a worker waiting for something to change on reaction queue.
  * @param env The environment in which we are executing
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
-void tracepoint_worker_wait_ends(trace_t* trace, int worker);
+// void tracepoint_worker_wait_ends(trace_t* trace, int worker);
+#define tracepoint_worker_wait_ends(...)
 
 /**
  * Trace the start of the scheduler waiting for logical time to advance or an event to
  * appear on the event queue.
  * @param env The environment in which we are executing
  */
-void tracepoint_scheduler_advancing_time_starts(trace_t* trace);
+// void tracepoint_scheduler_advancing_time_starts(trace_t* trace);
+#define tracepoint_scheduler_advancing_time_starts(...)
 
 /**
  * Trace the end of the scheduler waiting for logical time to advance or an event to
  * appear on the event queue.
  * @param env The environment in which we are executing
  */
-void tracepoint_scheduler_advancing_time_ends(trace_t* trace);
+// void tracepoint_scheduler_advancing_time_ends(trace_t* trace);
+#define tracepoint_scheduler_advancing_time_ends(...)
 
 /**
  * Trace the occurence of a deadline miss.
@@ -428,7 +450,8 @@ void tracepoint_scheduler_advancing_time_ends(trace_t* trace);
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
-void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, int worker);
+// void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, int worker);
+#define tracepoint_reaction_deadline_missed(...)
 
 /**
  * Flush any buffered trace records to the trace file and
@@ -448,7 +471,11 @@ void stop_trace(trace_t* trace);
  * @param fed_id The federate identifier.
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
-void tracepoint_federate_to_rti(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag);
+void tracepoint_federate_to_rti_internal(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag, int file_idx, int line, int sequence_number_for_file_and_line);
+#define tracepoint_federate_to_rti(trace, event_type, fed_id, tag) \
+    LF_DO_HOOK_START(trace) \
+    tracepoint_federate_to_rti_internal(trace, event_type, fed_id, tag, lf_hook_file_idx, lf_hook_line, lf_hook_sequence_number); \
+    LF_DO_HOOK_END
 
 /**
  * Trace federate receiving a message from the RTI.
@@ -457,7 +484,11 @@ void tracepoint_federate_to_rti(trace_t* trace, trace_event_t event_type, int fe
  * @param fed_id The federate identifier.
  * @param tag Pointer to the tag that has been received, or NULL.
  */
-void tracepoint_federate_from_rti(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag);
+void tracepoint_federate_from_rti_internal(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag, int file_idx, int line, int sequence_number_for_file_and_line);
+#define tracepoint_federate_from_rti(trace, event_type, fed_id, tag) \
+    LF_DO_HOOK_START(trace) \
+    tracepoint_federate_from_rti_internal(trace, event_type, fed_id, tag, lf_hook_file_idx, lf_hook_line, lf_hook_sequence_number); \
+    LF_DO_HOOK_END
 
 /**
  * Trace federate sending a message to another federate.
@@ -467,7 +498,11 @@ void tracepoint_federate_from_rti(trace_t* trace, trace_event_t event_type, int 
  * @param partner_id The partner federate identifier.
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
-void tracepoint_federate_to_federate(trace_t* trace, trace_event_t event_type, int fed_id, int partner_id, tag_t *tag);
+void tracepoint_federate_to_federate_internal(trace_t* trace, trace_event_t event_type, int fed_id, int partner_id, tag_t *tag, int file_idx, int line, int sequence_number_for_file_and_line);
+#define tracepoint_federate_to_federate(trace, event_type, fed_id, partner_id, tag) \
+    LF_DO_HOOK_START(trace) \
+    tracepoint_federate_to_federate_internal(trace, event_type, fed_id, partner_id, tag, lf_hook_file_idx, lf_hook_line, lf_hook_sequence_number); \
+    LF_DO_HOOK_END
 
 /**
  * Trace federate receiving a message from another federate.
@@ -477,7 +512,11 @@ void tracepoint_federate_to_federate(trace_t* trace, trace_event_t event_type, i
  * @param partner_id The partner federate identifier.
  * @param tag Pointer to the tag that has been received, or NULL.
  */
-void tracepoint_federate_from_federate(trace_t* trace, trace_event_t event_type, int fed_id, int partner_id, tag_t *tag);
+void tracepoint_federate_from_federate_internal(trace_t* trace, trace_event_t event_type, int fed_id, int partner_id, tag_t *tag, int file_idx, int line, int sequence_number_for_file_and_line);
+#define tracepoint_federate_from_federate(trace, event_type, fed_id, partner_id, tag) \
+    LF_DO_HOOK_START(trace) \
+    tracepoint_federate_from_federate_internal(trace, event_type, fed_id, partner_id, tag, lf_hook_file_idx, lf_hook_line, lf_hook_sequence_number); \
+    LF_DO_HOOK_END
 
 #else
 #define tracepoint_federate_to_rti(...);
@@ -498,7 +537,11 @@ void tracepoint_federate_from_federate(trace_t* trace, trace_event_t event_type,
  * @param fed_id The fedaerate ID.
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
-void tracepoint_rti_to_federate(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag);
+void tracepoint_rti_to_federate_internal(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag, int file_idx, int line, int sequence_number_for_file_and_line);
+#define tracepoint_rti_to_federate(trace, event_type, fed_id, tag) \
+    LF_DO_HOOK_START(trace) \
+    tracepoint_rti_to_federate_internal(trace, event_type, fed_id, tag, lf_hook_file_idx, lf_hook_line, lf_hook_sequence_number); \
+    LF_DO_HOOK_END
 
 /**
  * Trace RTI receiving a message from a federate.
@@ -507,7 +550,11 @@ void tracepoint_rti_to_federate(trace_t* trace, trace_event_t event_type, int fe
  * @param fed_id The fedaerate ID.
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
-void tracepoint_rti_from_federate(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag);
+void tracepoint_rti_from_federate_internal(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag, int file_idx, int line, int sequence_number_for_file_and_line);
+#define tracepoint_rti_from_federate(trace, event_type, fed_id, tag) \
+    LF_DO_HOOK_START(trace) \
+    tracepoint_rti_from_federate_internal(trace, event_type, fed_id, tag, lf_hook_file_idx, lf_hook_line, lf_hook_sequence_number); \
+    LF_DO_HOOK_END
 
 #else
 #define tracepoint_rti_to_federate(...);

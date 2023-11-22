@@ -37,6 +37,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "trace.h"
 #include "trace_util.h"
 
+int asprintf(char **restrict strp, const char *restrict fmt, ...);
+
 #define PID_FOR_USER_EVENT 1000000 // Assumes no more than a million reactors.
 #define PID_FOR_WORKER_WAIT 0  // Use 1000001 to show in separate trace.
 #define PID_FOR_WORKER_ADVANCING_TIME 0 // Use 1000002 to show in separate trace.
@@ -50,6 +52,9 @@ FILE* trace_file = NULL;
 
 /** File for writing the output data. */
 FILE* output_file = NULL;
+
+/** This is just here to suppress a linker error. */
+extern global_delay_array_t _lf_global_delay_array;
 
 /**
  * Print a usage message.
@@ -116,11 +121,11 @@ size_t read_and_write_trace() {
         interval_t elapsed_logical_time = (trace[i].logical_time - start_time)/1000;
 
         if (elapsed_physical_time < 0) {
-            fprintf(stderr, "WARNING: Negative elapsed physical time %lld. Skipping trace entry.\n", elapsed_physical_time);
+            fprintf(stderr, "WARNING: Negative elapsed physical time %lld. Skipping trace entry.\n", (long long) elapsed_physical_time);
             continue;
         }
         if (elapsed_logical_time < 0) {
-            fprintf(stderr, "WARNING: Negative elapsed logical time %lld. Skipping trace entry.\n", elapsed_logical_time);
+            fprintf(stderr, "WARNING: Negative elapsed logical time %lld. Skipping trace entry.\n", (long long) elapsed_logical_time);
             continue;
         }
 
@@ -213,7 +218,7 @@ size_t read_and_write_trace() {
                 phase,
                 thread_id,
                 pid,
-                timestamp,
+                (long long) timestamp,
                 args
         );
         free(args);
@@ -254,9 +259,9 @@ size_t read_and_write_trace() {
                 phase,
                 thread_id,
                 pid,
-                elapsed_logical_time,
+                (long long) elapsed_logical_time,
                 trace[i].microstep,
-                elapsed_physical_time
+                (long long) elapsed_physical_time
             );
         }
     }

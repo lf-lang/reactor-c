@@ -51,6 +51,9 @@ FILE* summary_file = NULL;
 /** Size of the stats table is object_table_size plus twice MAX_NUM_WORKERS. */
 int table_size;
 
+/** This is just here to suppress a linker error. */
+extern global_delay_array_t _lf_global_delay_array;
+
 /**
  * Print a usage message.
  */
@@ -116,16 +119,19 @@ size_t read_and_write_trace() {
         if (trigger_name == NULL) {
             trigger_name = "NO TRIGGER";
         }
-        fprintf(output_file, "%s, %s, %d, %d, %lld, %d, %lld, %s, %lld\n",
+        fprintf(output_file, "%s, %s, %d, %d, %lld, %d, %lld, %s, %lld, %d, %d, %d\n",
                 trace_event_names[trace[i].event_type],
                 reactor_name,
                 trace[i].src_id,
                 trace[i].dst_id,
-                trace[i].logical_time - start_time,
+                (long long) (trace[i].logical_time - start_time),
                 trace[i].microstep,
-                trace[i].physical_time - start_time,
+                (long long) (trace[i].physical_time - start_time),
                 trigger_name,
-                trace[i].extra_delay
+                (long long) (trace[i].extra_delay),
+                trace[i].file_idx,
+                trace[i].line,
+                trace[i].sequence_number_for_file_and_line
         );
         // Update summary statistics.
         if (trace[i].physical_time > latest_time) {
@@ -276,9 +282,9 @@ size_t read_and_write_trace() {
  */
 void write_summary_file() {
     // Overall stats.
-    fprintf(summary_file, "Start time:, %lld\n", start_time);
-    fprintf(summary_file, "End time:, %lld\n", latest_time);
-    fprintf(summary_file, "Total time:, %lld\n", latest_time - start_time);
+    fprintf(summary_file, "Start time:, %lld\n", (long long) start_time);
+    fprintf(summary_file, "End time:, %lld\n", (long long) latest_time);
+    fprintf(summary_file, "Total time:, %lld\n", (long long) (latest_time - start_time));
 
     fprintf(summary_file, "\nTotal Event Occurrences\n");
     for (int i = 0; i < NUM_EVENT_TYPES; i++) {
@@ -305,11 +311,11 @@ void write_summary_file() {
                             stats->description,
                             j, // Reaction number.
                             rstats->occurrences,
-                            rstats->total_exec_time,
-                            rstats->total_exec_time * 100.0 / (latest_time - start_time),
-                            rstats->total_exec_time / rstats->occurrences,
-                            rstats->max_exec_time,
-                            rstats->min_exec_time
+                            (long long) rstats->total_exec_time,
+                            (double) (rstats->total_exec_time * 100.0 / (latest_time - start_time)),
+                            (long long) (rstats->total_exec_time / rstats->occurrences),
+                            (long long) rstats->max_exec_time,
+                            (long long) rstats->min_exec_time
                     );
                 }
             }
@@ -346,10 +352,10 @@ void write_summary_file() {
             if (stats->event_type == user_value && stats->reactions[0].occurrences > 0) {
                 // This assumes that the first "reactions" entry has been comandeered for this data.
                 fprintf(summary_file, ", %lld, %lld, %lld, %lld\n",
-                        stats->reactions[0].total_exec_time,
-                        stats->reactions[0].total_exec_time / stats->reactions[0].occurrences,
-                        stats->reactions[0].max_exec_time,
-                        stats->reactions[0].min_exec_time
+                        (long long) stats->reactions[0].total_exec_time,
+                        (long long) (stats->reactions[0].total_exec_time / stats->reactions[0].occurrences),
+                        (long long) stats->reactions[0].max_exec_time,
+                        (long long) stats->reactions[0].min_exec_time
                 );
             } else {
                 fprintf(summary_file, "\n");
@@ -382,11 +388,11 @@ void write_summary_file() {
                             j / 2,
                             waitee,
                             rstats->occurrences,
-                            rstats->total_exec_time,
+                            (long long) rstats->total_exec_time,
                             rstats->total_exec_time * 100.0 / (latest_time - start_time),
-                            rstats->total_exec_time / rstats->occurrences,
-                            rstats->max_exec_time,
-                            rstats->min_exec_time
+                            (long long) rstats->total_exec_time / rstats->occurrences,
+                            (long long) rstats->max_exec_time,
+                            (long long) rstats->min_exec_time
                     );
                 }
             }
@@ -426,7 +432,7 @@ int main(int argc, char* argv[]) {
         summary_stats = (summary_stats_t**)calloc(table_size, sizeof(summary_stats_t*));
 
         // Write a header line into the CSV file.
-        fprintf(output_file, "Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay\n");
+        fprintf(output_file, "Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay, File Index, Line Number, Sequence Number for File and Line\n");
         while (read_and_write_trace() != 0) {};
 
         write_summary_file();
