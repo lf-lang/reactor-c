@@ -1,4 +1,4 @@
-#if defined(LF_THREADED)
+#if !defined(LF_SINGLE_THREADED)
 /*************
 Copyright (c) 2022, The University of Texas at Dallas.
 Copyright (c) 2022, The University of California at Berkeley.
@@ -36,6 +36,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "scheduler_sync_tag_advance.h"
+#include "rti_local.h"
 #include "environment.h"
 #include "trace.h"
 #include "util.h"
@@ -80,6 +81,12 @@ bool should_stop_locked(lf_scheduler_t * sched) {
 bool _lf_sched_advance_tag_locked(lf_scheduler_t * sched) {
     environment_t* env = sched->env;
     logical_tag_complete(env->current_tag);
+
+    // If we are using scheduling enclaves. Notify the local RTI of the time 
+    // advancement.
+    #if defined LF_ENCLAVES
+    rti_logical_tag_complete_locked(env->enclave_info, env->current_tag);
+    #endif
 
     if (should_stop_locked(sched)) {
         return true;

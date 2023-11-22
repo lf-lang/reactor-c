@@ -1,3 +1,4 @@
+#if defined STANDALONE_RTI
 /**
  * @file message_record.c
  * @author Soroush Bateni (soroush@berkeley.edu)
@@ -171,3 +172,5 @@ tag_t get_minimum_in_transit_message_tag(in_transit_message_record_q_t* queue) {
 
     return minimum_tag;
 }
+
+#endif // STANDALONE_RTI

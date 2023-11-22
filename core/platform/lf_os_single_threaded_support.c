@@ -1,4 +1,4 @@
-#if defined LF_UNTHREADED && !defined(PLATFORM_ARDUINO)
+#if defined LF_SINGLE_THREADED && !defined(PLATFORM_ARDUINO)
 /**
  * @file lf_os_single_threaded_support.c
  * @author Marten Lohstroh (marten@berkeley.edu)
@@ -16,7 +16,7 @@
 #endif
 
 /**
- * @brief Unthreaded support under a OS is a special case in which we assume
+ * @brief Single-threaded support under a OS is a special case in which we assume
  * only a single execution context. Other threads scheduling physical actions
  * are not a use-case. ISRs scheduling physical actions are also not a use-case.
  * 
@@ -30,7 +30,7 @@ int lf_enable_interrupts_nested() {
     return 0;
 }
 
-int _lf_unthreaded_notify_of_event() {
+int _lf_single_threaded_notify_of_event() {
     return 0;
 }
 

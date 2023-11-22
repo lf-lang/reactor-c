@@ -280,7 +280,7 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
 
     // Store a reference to the top-level environment
     int num_environments = _lf_get_environments(&top_level_environment);
-    lf_assert(num_environments == 1, "Python target only supports programs with a single environment/enclave");
+    LF_ASSERT(num_environments == 1, "Python target only supports programs with a single environment/enclave");
 
     Py_BEGIN_ALLOW_THREADS
     lf_reactor_c_main(argc, argv);
@@ -437,7 +437,7 @@ void destroy_action_capsule(PyObject* capsule) {
 PyObject* convert_C_port_to_py(void* port, int width) {
     // Create the port struct in Python
     PyObject* cap =
-        (PyObject*)PyObject_New(generic_port_capsule_struct, &py_port_capsule_t);
+        (PyObject*)PyObject_GC_New(generic_port_capsule_struct, &py_port_capsule_t);
     if (cap == NULL) {
         lf_print_error_and_exit("Failed to convert port.");
     }
@@ -506,7 +506,7 @@ PyObject* convert_C_action_to_py(void* action) {
     trigger_t* trigger = ((lf_action_base_t*)action)->trigger;
 
     // Create the action struct in Python
-    PyObject* cap = (PyObject*)PyObject_New(generic_action_capsule_struct, &py_action_capsule_t);
+    PyObject* cap = (PyObject*)PyObject_GC_New(generic_action_capsule_struct, &py_action_capsule_t);
     if (cap == NULL) {
         lf_print_error_and_exit("Failed to convert action.");
     }

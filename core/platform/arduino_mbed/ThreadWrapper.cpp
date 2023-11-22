@@ -27,7 +27,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Anirudh Rengarajan <arengarajan@berkeley.edu>}
  */
 
-#if defined(LF_THREADED)
+#if !defined(LF_SINGLE_THREADED)
 #include "mbed.h"
 #include "rtos.h"
 
