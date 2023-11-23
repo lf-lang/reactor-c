@@ -4,4 +4,6 @@ Language: Cpp
 IndentWidth: 2
 BreakConstructorInitializersBeforeComma: 'true'
 PointerAlignment: Left
+IncludeBlocks: Preserve
+SortIncludes: false
 ColumnLimit: 80
