@@ -15,27 +15,31 @@ are permitted provided that the following conditions are met:
    this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  * @section DESCRIPTION
  * Undefining the macros in the api/set.h
  * Refer to api/set.h for details of the macros
  *
- * Note for target language developers. This is one way of developing a target language where
- * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca
- * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a
+ * Note for target language developers. This is one way of developing a target
+language where
+ * the C core runtime is adopted. This file is a translation layer that
+implements Lingua Franca
+ * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This
+file can act as a
  * template for future runtime developement for target languages.
- * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
+ * For source generation, see
+xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
  */
-
 
 #ifdef CTARGET_SET
 #undef CTARGET_SET
@@ -79,8 +83,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #undef SET_PRESENT
 
 /**
- * Version of lf_set() for output types given as 'type*' or 'type[]' where you want
- * to forward an input or action without copying it.
+ * Version of lf_set() for output types given as 'type*' or 'type[]' where you
+ * want to forward an input or action without copying it.
  */
 #undef lf_set_token
 #undef SET_TOKEN
@@ -91,7 +95,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * reactions no longer need the value.
  */
 #undef lf_set_destructor
-
 
 /**
  * Set the destructor used to copy construct "token->value" received
@@ -112,8 +115,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #undef SET_MODE
 #endif
 
-#undef lf_time_logical 
-#undef lf_time_logical_elapsed 
+#undef lf_time_logical
+#undef lf_time_logical_elapsed
 #undef get_logical_time
 #undef get_elapsed_logical_time
 #undef lf_request_stop

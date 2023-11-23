@@ -16,15 +16,16 @@ are permitted provided that the following conditions are met:
    this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  * @section DESCRIPTION
  * Header file for utility types and functions for Lingua Franca programs.
@@ -33,7 +34,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef UTIL_H
 #define UTIL_H
 
-#include <stdarg.h>   // Defines va_list
+#include <stdarg.h> // Defines va_list
 #include <stdbool.h>
 
 // To silence warnings about a function being a candidate for format checking
@@ -41,7 +42,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // The arguments are the position of the format string (starting with 1)
 // and the start of the remaining arguments, or 0 for vprintf style functions.
 #if defined(__GNUC__)
-#define ATTRIBUTE_FORMAT_PRINTF(f, s) __attribute__((format (printf, f, s)))
+#define ATTRIBUTE_FORMAT_PRINTF(f, s) __attribute__((format(printf, f, s)))
 #else
 #define ATTRIBUTE_FORMAT_PRINTF(f, s)
 #endif
@@ -50,10 +51,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Holds generic statistical data
  */
 typedef struct lf_stat_ll {
-    long long average;
-    long long standard_deviation;
-    long long variance;
-    long long max;
+  long long average;
+  long long standard_deviation;
+  long long variance;
+  long long max;
 } lf_stat_ll;
 
 /**
@@ -63,7 +64,8 @@ typedef struct lf_stat_ll {
  * "ERROR: " to the beginning of the message and a
  * new line format \n at the end.
  */
-#define CONCATENATE_THREE_STRINGS(__string1, __string2, __string3) __string1 __string2 __string3
+#define CONCATENATE_THREE_STRINGS(__string1, __string2, __string3)             \
+  __string1 __string2 __string3
 
 /**
  * Macro for extracting the level from the index of a reaction.
@@ -112,8 +114,8 @@ typedef struct lf_stat_ll {
 
 /**
  * The ID of this federate. For a non-federated execution, this will
- * be -1.  For a federated execution, it will be assigned when the generated function
- * _lf_initialize_trigger_objects() is called.
+ * be -1.  For a federated execution, it will be assigned when the generated
+ * function _lf_initialize_trigger_objects() is called.
  * @see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CGenerator.xtend.
  */
 extern int _lf_my_fed_id;
@@ -136,7 +138,7 @@ void lf_print(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 /**
  * varargs alternative of "lf_print"
  */
-void lf_vprint(const char* format, va_list args)  ATTRIBUTE_FORMAT_PRINTF(1, 0);
+void lf_vprint(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
 /**
  * Report an log message on stdout with the prefix
@@ -151,7 +153,8 @@ void lf_print_log(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 /**
  * varargs alternative of "lf_print_log"
  */
-void lf_vprint_log(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1, 0);
+void lf_vprint_log(const char* format, va_list args)
+    ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
 /**
  * A macro used to print useful logging information. It can be enabled
@@ -170,10 +173,12 @@ void lf_vprint_log(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1, 
  * (e.g., -O2 for gcc) is used as long as the arguments passed to
  * it do not themselves incur significant overhead to evaluate.
  */
-#define LF_PRINT_LOG(format, ...) \
-            do { if(LOG_LEVEL >= LOG_LEVEL_LOG) { \
-                    lf_print_log(format, ##__VA_ARGS__); \
-                } } while (0)
+#define LF_PRINT_LOG(format, ...)                                              \
+  do {                                                                         \
+    if (LOG_LEVEL >= LOG_LEVEL_LOG) {                                          \
+      lf_print_log(format, ##__VA_ARGS__);                                     \
+    }                                                                          \
+  } while (0)
 
 /**
  * Report an debug message on stdout with the prefix
@@ -188,7 +193,8 @@ void lf_print_debug(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 /**
  * varargs alternative of "lf_print_debug"
  */
-void lf_vprint_debug(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1, 0);
+void lf_vprint_debug(const char* format, va_list args)
+    ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
 /**
  * A macro used to print useful debug information. It can be enabled
@@ -206,17 +212,19 @@ void lf_vprint_debug(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1
  * (e.g., -O2 for gcc) is used as long as the arguments passed to
  * it do not themselves incur significant overhead to evaluate.
  */
-#define LF_PRINT_DEBUG(format, ...) \
-            do { if(LOG_LEVEL >= LOG_LEVEL_DEBUG) { \
-                    lf_print_debug(format, ##__VA_ARGS__); \
-                } } while (0)
+#define LF_PRINT_DEBUG(format, ...)                                            \
+  do {                                                                         \
+    if (LOG_LEVEL >= LOG_LEVEL_DEBUG) {                                        \
+      lf_print_debug(format, ##__VA_ARGS__);                                   \
+    }                                                                          \
+  } while (0)
 
 /**
  * Print the error defined by the errno variable with the
  * specified message as a prefix, then exit with error code 1.
  * @param msg The prefix to the message.
  */
-void error(const char *msg);
+void error(const char* msg);
 
 /**
  * Report an error with the prefix "ERROR: " and a newline appended
@@ -227,7 +235,8 @@ void lf_print_error(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 /**
  * varargs alternative of "lf_print_error"
  */
-void lf_vprint_error(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1, 0);
+void lf_vprint_error(const char* format, va_list args)
+    ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
 /**
  * Report a warning with the prefix "WARNING: " and a newline appended
@@ -238,20 +247,22 @@ void lf_print_warning(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 /**
  * varargs alternative of "lf_print_warning"
  */
-void lf_vprint_warning(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF(1, 0);
+void lf_vprint_warning(const char* format, va_list args)
+    ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
 /**
  * Report an error with the prefix "ERROR: " and a newline appended
  * at the end, then exit with the failure code EXIT_FAILURE.
  * The arguments are just like printf().
  */
-void lf_print_error_and_exit(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
+void lf_print_error_and_exit(const char* format, ...)
+    ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 /**
  * varargs alternative of "lf_print_error_and_exit"
  */
 void lf_vprint_error_and_exit(const char* format, va_list args)
-		ATTRIBUTE_FORMAT_PRINTF(1, 0);
+    ATTRIBUTE_FORMAT_PRINTF(1, 0);
 
 /**
  * Message print function type. The arguments passed to one of
@@ -273,7 +284,8 @@ typedef void(print_message_function_t)(const char*, va_list);
  *  to using printf.
  * @param log_level The level of messages to redirect.
  */
-void lf_register_print_function(print_message_function_t* function, int log_level);
+void lf_register_print_function(print_message_function_t* function,
+                                int log_level);
 
 /**
  * Assertion handling. LF_ASSERT can be used as a short hand for verifying
@@ -281,14 +293,15 @@ void lf_register_print_function(print_message_function_t* function, int log_leve
  * By definng `LF_NOASSERT` this check is not performed.
  */
 #if defined(LF_NOASSERT)
-#define LF_ASSERT(condition, format, ...) \
-	while(0) { }
+#define LF_ASSERT(condition, format, ...)                                      \
+  while (0) {                                                                  \
+  }
 #else
-#define LF_ASSERT(condition, format, ...) \
-	do { \
-		if (!(condition)) { \
-				lf_print_error_and_exit(format, ##__VA_ARGS__); \
-		} \
-	} while(0)
+#define LF_ASSERT(condition, format, ...)                                      \
+  do {                                                                         \
+    if (!(condition)) {                                                        \
+      lf_print_error_and_exit(format, ##__VA_ARGS__);                          \
+    }                                                                          \
+  } while (0)
 #endif // LF_NOASSERT
 #endif /* UTIL_H */

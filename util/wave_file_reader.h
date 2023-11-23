@@ -2,17 +2,18 @@
  * @file
  * @author Edward A. Lee
  * @copyright (c) 2020-2023, The University of California at Berkeley
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ * License in [BSD
+2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
  * @brief Utility function for reading WAV audio files.
- * 
+ *
  * This defines functions and data types for importing audio files with the
  * wave audio format. The main function is read_wave_file(), which, given
  * a path to a .wav file, reads the file and, if the format of the file is
  * supported, returns an lf_waveform_t struct, which contains the raw
  * audio data in 16-bit linear PCM form.
- * 
+ *
  * This code has few dependencies, so it should run on just about any platform.
- * 
+ *
  * To use this, include the following flags in your target properties:
  * <pre>
 target C {
@@ -25,7 +26,7 @@ target C {
     ]
 }
  * </pre>
- * 
+ *
  * In addition, you need this in your Lingua Franca file or reactor:
  * <pre>
  * preamble {=
@@ -45,9 +46,9 @@ target C {
  * of samples, a multiple of the number of channels.
  */
 typedef struct lf_waveform_t {
-    uint32_t length;
-    uint16_t num_channels;
-    int16_t* waveform;
+  uint32_t length;
+  uint16_t num_channels;
+  int16_t* waveform;
 } lf_waveform_t;
 
 /**
@@ -59,7 +60,7 @@ typedef struct lf_waveform_t {
  * This implementation supports only 16-bit linear PCM files.
  * On a Mac, you can convert audio files into this format
  * using the afconvert utility.
- * 
+ *
  * @param path The path to the file.
  * @return An array of sample data or NULL if the file can't be opened
  *  or has an usupported format.

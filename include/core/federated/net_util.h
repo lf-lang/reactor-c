@@ -16,15 +16,16 @@ are permitted provided that the following conditions are met:
    this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  * @section DESCRIPTION
  * Header file for network utility functions for Lingua Franca programs.
@@ -54,7 +55,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define HOST_LITTLE_ENDIAN 1
 #define HOST_BIG_ENDIAN 2
 
-/** 
+/**
  * Return true (1) if the host is big endian. Otherwise,
  * return false.
  */
@@ -62,13 +63,12 @@ int host_is_big_endian(void);
 
 #ifdef FEDERATED
 
-
 /**
  * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
  * (TCP_NODELAY) and Delayed ACKs disabled (TCP_QUICKACK). Exits application
  * on any error.
  *
- * @return int 
+ * @return int
  */
 int create_real_time_tcp_socket_errexit();
 
@@ -88,11 +88,8 @@ int create_real_time_tcp_socket_errexit();
  * @return The number of bytes read, or 0 if an EOF is received, or
  *  a negative number for an error.
  */
-ssize_t read_from_socket_errexit(
-		int socket,
-		size_t num_bytes,
-		unsigned char* buffer,
-		char* format, ...);
+ssize_t read_from_socket_errexit(int socket, size_t num_bytes,
+                                 unsigned char* buffer, char* format, ...);
 
 ssize_t write_to_socket(int socket, size_t num_bytes, unsigned char* buffer);
 
@@ -105,7 +102,8 @@ ssize_t write_to_socket(int socket, size_t num_bytes, unsigned char* buffer);
  * @param socket The socket ID.
  * @param num_bytes The number of bytes to read.
  * @param buffer The buffer into which to put the bytes.
- * @return The number of bytes read or 0 when EOF is received or negative for an error.
+ * @return The number of bytes read or 0 when EOF is received or negative for an
+ * error.
  */
 ssize_t read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
 
@@ -123,15 +121,12 @@ ssize_t read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
  * @param format A format string for error messages, followed by any number of
  *  fields that will be used to fill the format string as in printf, or NULL
  *  to prevent exit on error.
- * @return The number of bytes written, or 0 if an EOF was received, or a negative
- *  number if an error occurred.
+ * @return The number of bytes written, or 0 if an EOF was received, or a
+ * negative number if an error occurred.
  */
-ssize_t write_to_socket_with_mutex(
-		int socket,
-		size_t num_bytes,
-		unsigned char* buffer,
-		lf_mutex_t* mutex,
-		char* format, ...);
+ssize_t write_to_socket_with_mutex(int socket, size_t num_bytes,
+                                   unsigned char* buffer, lf_mutex_t* mutex,
+                                   char* format, ...);
 
 /**
  * Write the specified number of bytes to the specified socket from the
@@ -147,14 +142,11 @@ ssize_t write_to_socket_with_mutex(
  * @param format A format string for error messages, followed by any number of
  *  fields that will be used to fill the format string as in printf, or NULL
  *  to prevent exit on error.
- * @return The number of bytes written, or 0 if an EOF was received, or a negative
- *  number if an error occurred.
+ * @return The number of bytes written, or 0 if an EOF was received, or a
+ * negative number if an error occurred.
  */
-ssize_t write_to_socket_errexit(
-		int socket,
-		size_t num_bytes,
-		unsigned char* buffer,
-		char* format, ...);
+ssize_t write_to_socket_errexit(int socket, size_t num_bytes,
+                                unsigned char* buffer, char* format, ...);
 
 /**
  * Write the specified number of bytes to the specified socket from the
@@ -165,8 +157,8 @@ ssize_t write_to_socket_errexit(
  * @param socket The socket ID.
  * @param num_bytes The number of bytes to write.
  * @param buffer The buffer from which to get the bytes.
- * @return The number of bytes written, or 0 if an EOF was received, or a negative
- *  number if an error occurred.
+ * @return The number of bytes written, or 0 if an EOF was received, or a
+ * negative number if an error occurred.
  */
 int write_to_socket2(int socket, int num_bytes, unsigned char* buffer);
 
@@ -181,7 +173,7 @@ int write_to_socket2(int socket, int num_bytes, unsigned char* buffer);
  */
 void encode_int64(int64_t data, unsigned char* buffer);
 
-/** 
+/**
  * Write the specified data as a sequence of bytes starting
  * at the specified address. This encodes the data in little-endian
  * order (lowest order byte first). This works for int32_t.
@@ -199,7 +191,7 @@ void encode_int32(int32_t data, unsigned char* buffer);
  */
 void encode_uint32(uint32_t data, unsigned char* buffer);
 
-/** 
+/**
  * Write the specified data as a sequence of bytes starting
  * at the specified address. This encodes the data in little-endian
  * order (lowest order byte first).
@@ -208,7 +200,7 @@ void encode_uint32(uint32_t data, unsigned char* buffer);
  */
 void encode_uint16(uint16_t data, unsigned char* buffer);
 
-/** 
+/**
  * If this host is little endian, then reverse the order of
  * the bytes of the argument. Otherwise, return the argument
  * unchanged. This can be used to convert the argument to
@@ -221,7 +213,7 @@ void encode_uint16(uint16_t data, unsigned char* buffer);
  */
 int32_t swap_bytes_if_big_endian_int32(int32_t src);
 
-/** 
+/**
  * If this host is little endian, then reverse the order of
  * the bytes of the argument. Otherwise, return the argument
  * unchanged. This can be used to convert the argument to
@@ -234,7 +226,7 @@ int32_t swap_bytes_if_big_endian_int32(int32_t src);
  */
 int64_t swap_bytes_if_big_endian_int64(int64_t src);
 
-/** 
+/**
  * If this host is little endian, then reverse the order of
  * the bytes of the argument. Otherwise, return the argument
  * unchanged. This can be used to convert the argument to
@@ -259,7 +251,7 @@ int32_t extract_int32(unsigned char* bytes);
  */
 int64_t extract_int64(unsigned char* bytes);
 
-/** 
+/**
  * Extract an uint16_t from the specified byte sequence.
  * This will swap the order of the bytes if this machine is big endian.
  * @param bytes The address of the start of the sequence of bytes.
@@ -278,12 +270,8 @@ uint16_t extract_uint16(unsigned char* bytes);
  * @param federate_id The place to put the federate ID.
  * @param length The place to put the length.
  */
-void extract_header(
-        unsigned char* buffer,
-        uint16_t* port_id,
-        uint16_t* federate_id,
-        size_t* length
-);
+void extract_header(unsigned char* buffer, uint16_t* port_id,
+                    uint16_t* federate_id, size_t* length);
 
 /**
  * Extract the timed header information for timed messages between
@@ -297,13 +285,8 @@ void extract_header(
  * @param length The place to put the length.
  * @param tag The place to put the tag.
  */
-void extract_timed_header(
-        unsigned char* buffer,
-        uint16_t* port_id,
-        uint16_t* federate_id,
-        size_t* length,
-		tag_t* tag
-);
+void extract_timed_header(unsigned char* buffer, uint16_t* port_id,
+                          uint16_t* federate_id, size_t* length, tag_t* tag);
 
 /**
  * Extract tag information from buffer.
@@ -314,9 +297,7 @@ void extract_timed_header(
  * @param buffer The buffer to read from.
  * @return The extracted tag.
  */
-tag_t extract_tag(
-	unsigned char* buffer
-);
+tag_t extract_tag(unsigned char* buffer);
 
 /**
  * Encode tag information into buffer.
@@ -326,21 +307,19 @@ tag_t extract_tag(
  * @param buffer The buffer to encode into.
  * @param tag The tag to encode into 'buffer'.
  */
-void encode_tag(
-    unsigned char* buffer,
-	tag_t tag
-);
+void encode_tag(unsigned char* buffer, tag_t tag);
 
 /**
- * A helper struct for passing rti_addr information between parse_rti_addr and extract_rti_addr_info
+ * A helper struct for passing rti_addr information between parse_rti_addr and
+ * extract_rti_addr_info
  */
 typedef struct rti_addr_info_t {
-    char rti_host_str[256];
-    char rti_port_str[6];
-    char rti_user_str[256];
-    bool has_host;
-    bool has_port;
-    bool has_user;
+  char rti_host_str[256];
+  char rti_port_str[6];
+  char rti_user_str[256];
+  bool has_host;
+  bool has_port;
+  bool has_user;
 } rti_addr_info_t;
 
 /**
@@ -372,18 +351,22 @@ bool validate_user(const char* user);
  * @return true if SUCCESS, else false.
  */
 bool extract_match_group(const char* rti_addr, char* dest, regmatch_t group,
-		int max_len, int min_len, const char* err_msg);
+                         int max_len, int min_len, const char* err_msg);
 
 /**
  * Extract match groups from the rti_addr regex.
  * @return true if success, else false.
  */
-bool extract_match_groups(const char* rti_addr, char** rti_addr_strs, bool** rti_addr_flags, regmatch_t* group_array, int* gids, int* max_lens, int* min_lens, const char** err_msgs);
+bool extract_match_groups(const char* rti_addr, char** rti_addr_strs,
+                          bool** rti_addr_flags, regmatch_t* group_array,
+                          int* gids, int* max_lens, int* min_lens,
+                          const char** err_msgs);
 
 /**
  * Extract the host, port and user from rti_addr.
  */
-void extract_rti_addr_info(const char* rti_addr, rti_addr_info_t* rti_addr_info);
+void extract_rti_addr_info(const char* rti_addr,
+                           rti_addr_info_t* rti_addr_info);
 
 #endif // FEDERATED
 

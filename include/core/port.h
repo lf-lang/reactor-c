@@ -5,8 +5,8 @@
  * @section LICENSE
  * Copyright (c) 2022, The University of California at Berkeley.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
@@ -15,15 +15,17 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
- * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  *
  * @section DESCRIPTION
  *
@@ -43,8 +45,8 @@
  *         struct lf_multiport_iterator_t i = lf_multiport_iterator(in);
  *         int channel = lf_multiport_next(&i);
  *         while(channel >= 0) {
- *             printf("Received %d on channel %d.\n", in[channel]->value, channel);
- *             channel = lf_multiport_next(&i);
+ *             printf("Received %d on channel %d.\n", in[channel]->value,
+ * channel); channel = lf_multiport_next(&i);
  *         }
  *     =}
  * ```
@@ -67,7 +69,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
-#include "lf_token.h"     // Defines token types and lf_port_base_t, lf_sparse_io_record
+#include "lf_token.h" // Defines token types and lf_port_base_t, lf_sparse_io_record
 
 /** Threshold for width of multiport s.t. sparse reading is supported. */
 #define LF_SPARSE_WIDTH_THRESHOLD 10
@@ -86,10 +88,11 @@
  * number of a present input (or -1 if there is no next present input).
  */
 typedef struct lf_multiport_iterator_t {
-	int next;
-	int idx; // Index in the record of next or -1 if lf_multiport_next has not been called.
-	lf_port_base_t** port;
-	int width;
+  int next;
+  int idx; // Index in the record of next or -1 if lf_multiport_next has not
+           // been called.
+  lf_port_base_t** port;
+  int width;
 } lf_multiport_iterator_t;
 
 /**
@@ -99,7 +102,8 @@ typedef struct lf_multiport_iterator_t {
  * @param width The width of the multiport (or a negative number if not
  *  a multiport).
  */
-lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t** port, int width);
+lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t** port,
+                                                    int width);
 
 /**
  * Macro for creating an iterator over an input multiport.
@@ -107,9 +111,9 @@ lf_multiport_iterator_t _lf_multiport_iterator_impl(lf_port_base_t** port, int w
  * lf_multiport_iterator_t on the stack, a pointer to which should be
  * passed to lf_multiport_iterator_next() to advance.
  */
-#define lf_multiport_iterator(in) (_lf_multiport_iterator_impl( \
-               (lf_port_base_t**)self->_lf_ ## in, \
-               self->_lf_ ## in ## _width))
+#define lf_multiport_iterator(in)                                              \
+  (_lf_multiport_iterator_impl((lf_port_base_t**)self->_lf_##in,               \
+                               self->_lf_##in##_width))
 
 /**
  * Return the channel number of the next present input on the multiport

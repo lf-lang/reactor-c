@@ -27,7 +27,7 @@
  * See hashmap.h for documentation on how to declare other hashmap types.
  */
 
-#define HASHMAP(token) hashmap_object2int ## _ ## token
+#define HASHMAP(token) hashmap_object2int##_##token
 #define K void*
 #define V int
 #define HASH_OF(key) (size_t) key

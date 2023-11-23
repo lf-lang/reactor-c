@@ -13,15 +13,16 @@ are permitted provided that the following conditions are met:
    this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /**
@@ -65,65 +66,64 @@ int lf_critical_section_enter(environment_t* env);
 int lf_critical_section_exit(environment_t* env);
 
 #if defined(PLATFORM_ARDUINO)
-    #include "platform/lf_arduino_support.h"
+#include "platform/lf_arduino_support.h"
 #elif defined(PLATFORM_ZEPHYR)
-    #include "platform/lf_zephyr_support.h"
+#include "platform/lf_zephyr_support.h"
 #elif defined(PLATFORM_NRF52)
-    #include "platform/lf_nrf52_support.h"
+#include "platform/lf_nrf52_support.h"
 #elif defined(PLATFORM_RP2040)
-    #include "platform/lf_rp2040_support.h"
+#include "platform/lf_rp2040_support.h"
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-   // Windows platforms
-   #include "lf_windows_support.h"
+// Windows platforms
+#include "lf_windows_support.h"
 #elif __APPLE__
-    // Apple platforms
-    #include "lf_macos_support.h"
+// Apple platforms
+#include "lf_macos_support.h"
 #elif __linux__
-    // Linux
-    #include "lf_linux_support.h"
+// Linux
+#include "lf_linux_support.h"
 #elif __unix__ // all unices not caught above
-    // Unix
-    #include "lf_POSIX_threads_support.h"
+// Unix
+#include "lf_POSIX_threads_support.h"
 #elif defined(_POSIX_VERSION)
-    // POSIX
-    #include "lf_POSIX_threads_support.h"
+// POSIX
+#include "lf_POSIX_threads_support.h"
 #elif defined(__riscv) || defined(__riscv__)
-    // RISC-V (see https://github.com/riscv/riscv-toolchain-conventions)
-    #error "RISC-V not supported"
+// RISC-V (see https://github.com/riscv/riscv-toolchain-conventions)
+#error "RISC-V not supported"
 #else
 #error "Platform not supported"
 #endif
 
 #define LF_TIMEOUT 1
 
-
 // To support the single-threaded runtime, we need the following functions. They
 //  are not required by the threaded runtime and is thus hidden behind a #ifdef.
-#if defined (LF_SINGLE_THREADED)
-    typedef void lf_mutex_t;
-    /**
-     * @brief Disable interrupts with support for nested calls
-     * 
-     * @return int 
-     */
-    int lf_disable_interrupts_nested();
-    /**
-     * @brief  Enable interrupts after potentially multiple callse to `lf_disable_interrupts_nested`
-     * 
-     * @return int 
-     */
-    int lf_enable_interrupts_nested();
+#if defined(LF_SINGLE_THREADED)
+typedef void lf_mutex_t;
+/**
+ * @brief Disable interrupts with support for nested calls
+ *
+ * @return int
+ */
+int lf_disable_interrupts_nested();
+/**
+ * @brief  Enable interrupts after potentially multiple callse to
+ * `lf_disable_interrupts_nested`
+ *
+ * @return int
+ */
+int lf_enable_interrupts_nested();
 
-    /**
-     * @brief Notify sleeping single-threaded context of new event
-     * 
-     * @return int 
-     */
-    int _lf_single_threaded_notify_of_event();
-#else 
+/**
+ * @brief Notify sleeping single-threaded context of new event
+ *
+ * @return int
+ */
+int _lf_single_threaded_notify_of_event();
+#else
 // For platforms with threading support, the following functions
 // abstract the API so that the LF runtime remains portable.
-
 
 /**
  * @brief Get the number of cores on the host machine.
@@ -137,14 +137,16 @@ int lf_available_cores();
  * @return 0 on success, platform-specific error number otherwise.
  *
  */
-int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments);
+int lf_thread_create(lf_thread_t* thread, void* (*lf_thread)(void*),
+                     void* arguments);
 
 /**
  * Make calling thread wait for termination of the thread.  The
  * exit status of the thread is stored in thread_return if thread_return
  * is not NULL.
  * @param thread The thread.
- * @param thread_return A pointer to where to store the exit status of the thread.
+ * @param thread_return A pointer to where to store the exit status of the
+ * thread.
  *
  * @return 0 on success, platform-specific error number otherwise.
  */
@@ -211,13 +213,18 @@ int lf_cond_wait(lf_cond_t* cond);
 int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
 
 /*
- * Atomically increment the variable that ptr points to by the given value, and return the original value of the variable.
- * @param ptr A pointer to a variable. The value of this variable will be replaced with the result of the operation.
- * @param value The value to be added to the variable pointed to by the ptr parameter.
- * @return The original value of the variable that ptr points to (i.e., from before the application of this operation).
+ * Atomically increment the variable that ptr points to by the given value, and
+ * return the original value of the variable.
+ * @param ptr A pointer to a variable. The value of this variable will be
+ * replaced with the result of the operation.
+ * @param value The value to be added to the variable pointed to by the ptr
+ * parameter.
+ * @return The original value of the variable that ptr points to (i.e., from
+ * before the application of this operation).
  */
 #if defined(PLATFORM_ZEPHYR)
-#define lf_atomic_fetch_add(ptr, value) _zephyr_atomic_fetch_add((int*) ptr, value)
+#define lf_atomic_fetch_add(ptr, value)                                        \
+  _zephyr_atomic_fetch_add((int*)ptr, value)
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that an integer is 32 bits.
 #define lf_atomic_fetch_add(ptr, value) InterlockedExchangeAdd(ptr, value)
@@ -228,13 +235,18 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
 #endif
 
 /*
- * Atomically increment the variable that ptr points to by the given value, and return the new value of the variable.
- * @param ptr A pointer to a variable. The value of this variable will be replaced with the result of the operation.
- * @param value The value to be added to the variable pointed to by the ptr parameter.
- * @return The new value of the variable that ptr points to (i.e., from before the application of this operation).
+ * Atomically increment the variable that ptr points to by the given value, and
+ * return the new value of the variable.
+ * @param ptr A pointer to a variable. The value of this variable will be
+ * replaced with the result of the operation.
+ * @param value The value to be added to the variable pointed to by the ptr
+ * parameter.
+ * @return The new value of the variable that ptr points to (i.e., from before
+ * the application of this operation).
  */
 #if defined(PLATFORM_ZEPHYR)
-#define lf_atomic_add_fetch(ptr, value) _zephyr_atomic_add_fetch((int*) ptr, value)
+#define lf_atomic_add_fetch(ptr, value)                                        \
+  _zephyr_atomic_add_fetch((int*)ptr, value)
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that an integer is 32 bits.
 #define lf_atomic_add_fetch(ptr, value) InterlockedAdd(ptr, value)
@@ -253,12 +265,15 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
  * @return True if comparison was successful. False otherwise.
  */
 #if defined(PLATFORM_ZEPHYR)
-#define lf_bool_compare_and_swap(ptr, value, newval) _zephyr_bool_compare_and_swap((bool*) ptr, value, newval)
+#define lf_bool_compare_and_swap(ptr, value, newval)                           \
+  _zephyr_bool_compare_and_swap((bool*)ptr, value, newval)
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
 // Assume that a boolean is represented with a 32-bit integer.
-#define lf_bool_compare_and_swap(ptr, oldval, newval) (InterlockedCompareExchange(ptr, newval, oldval) == oldval)
+#define lf_bool_compare_and_swap(ptr, oldval, newval)                          \
+  (InterlockedCompareExchange(ptr, newval, oldval) == oldval)
 #elif defined(__GNUC__) || defined(__clang__)
-#define lf_bool_compare_and_swap(ptr, oldval, newval) __sync_bool_compare_and_swap(ptr, oldval, newval)
+#define lf_bool_compare_and_swap(ptr, oldval, newval)                          \
+  __sync_bool_compare_and_swap(ptr, oldval, newval)
 #else
 #error "Compiler not supported"
 #endif
@@ -272,11 +287,14 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
  * @return The initial value of *ptr.
  */
 #if defined(PLATFORM_ZEPHYR)
-#define lf_val_compare_and_swap(ptr, value, newval) _zephyr_val_compare_and_swap((int*) ptr, value, newval)
+#define lf_val_compare_and_swap(ptr, value, newval)                            \
+  _zephyr_val_compare_and_swap((int*)ptr, value, newval)
 #elif defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
-#define lf_val_compare_and_swap(ptr, oldval, newval) InterlockedCompareExchange(ptr, newval, oldval)
+#define lf_val_compare_and_swap(ptr, oldval, newval)                           \
+  InterlockedCompareExchange(ptr, newval, oldval)
 #elif defined(__GNUC__) || defined(__clang__)
-#define lf_val_compare_and_swap(ptr, oldval, newval) __sync_val_compare_and_swap(ptr, oldval, newval)
+#define lf_val_compare_and_swap(ptr, oldval, newval)                           \
+  __sync_val_compare_and_swap(ptr, oldval, newval)
 #else
 #error "Compiler not supported"
 #endif
@@ -284,7 +302,8 @@ int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
 #endif
 
 /**
- * Initialize the LF clock. Must be called before using other clock-related APIs.
+ * Initialize the LF clock. Must be called before using other clock-related
+ * APIs.
  */
 void _lf_initialize_clock(void);
 
@@ -301,7 +320,7 @@ int _lf_clock_now(instant_t* t);
 
 /**
  * Pause execution for a given duration.
- * 
+ *
  * @return 0 for success, or -1 for failure.
  */
 int lf_sleep(interval_t sleep_duration);
@@ -309,22 +328,23 @@ int lf_sleep(interval_t sleep_duration);
 /**
  * @brief Sleep until the given wakeup time. Assumes the lock for the
  * given environment is held
- * 
+ *
  * @param env The environment within which to sleep.
  * @param wakeup_time The time instant at which to wake up.
  * @return int 0 if sleep completed, or -1 if it was interrupted.
  */
-int _lf_interruptable_sleep_until_locked(environment_t* env, instant_t wakeup_time);
+int _lf_interruptable_sleep_until_locked(environment_t* env,
+                                         instant_t wakeup_time);
 
 /**
  * Macros for marking function as deprecated
  */
 #ifdef __GNUC__
-    #define DEPRECATED(X) X __attribute__((deprecated))
+#define DEPRECATED(X) X __attribute__((deprecated))
 #elif defined(_MSC_VER)
-    #define DEPRECATED(X) __declspec(deprecated) X
+#define DEPRECATED(X) __declspec(deprecated) X
 #else
-    #define DEPRECATED(X) X
+#define DEPRECATED(X) X
 #endif
 
 /**

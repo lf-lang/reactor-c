@@ -19,15 +19,13 @@ static void vector_resize(vector_t* v, size_t new_capacity);
  * @param initial_capacity The desired initial capacity to allocate.
  */
 vector_t vector_new(size_t initial_capacity) {
-    void** start = (void**) malloc(initial_capacity * sizeof(void*));
-    assert(start);
-    return (vector_t) {
-        .start = start,
-        .next = start,
-        .end = start + initial_capacity,
-        .votes_required = REQUIRED_VOTES_TO_SHRINK,
-        .votes = 0
-    };
+  void** start = (void**)malloc(initial_capacity * sizeof(void*));
+  assert(start);
+  return (vector_t){.start = start,
+                    .next = start,
+                    .end = start + initial_capacity,
+                    .votes_required = REQUIRED_VOTES_TO_SHRINK,
+                    .votes = 0};
 }
 
 /**
@@ -35,8 +33,8 @@ vector_t vector_new(size_t initial_capacity) {
  * @param v Any vector.
  */
 void vector_free(vector_t* v) {
-    assert(v);
-    free(v->start);
+  assert(v);
+  free(v->start);
 }
 
 /**
@@ -45,11 +43,11 @@ void vector_free(vector_t* v) {
  * @param element An element that the vector should contain.
  */
 void vector_push(vector_t* v, void* element) {
-    if (v->next == v->end) {
-        v->votes_required++;
-        vector_resize(v, (v->end - v->start) * SCALE_FACTOR);
-    }
-    *(v->next++) = element;
+  if (v->next == v->end) {
+    v->votes_required++;
+    vector_resize(v, (v->end - v->start) * SCALE_FACTOR);
+  }
+  *(v->next++) = element;
 }
 
 /**
@@ -60,15 +58,15 @@ void vector_push(vector_t* v, void* element) {
  * @param size The size of the given array.
  */
 void vector_pushall(vector_t* v, void** array, size_t size) {
-    void** required_end = v->next + size;
-    if (required_end > v->end) {
-        vector_resize(v, (required_end - v->start) * SCALE_FACTOR);
-    }
-    for (size_t i = 0; i < size; i++) {
-        assert(array[i]);
-        v->next[i] = array[i];
-    }
-    v->next += size;
+  void** required_end = v->next + size;
+  if (required_end > v->end) {
+    vector_resize(v, (required_end - v->start) * SCALE_FACTOR);
+  }
+  for (size_t i = 0; i < size; i++) {
+    assert(array[i]);
+    v->next[i] = array[i];
+  }
+  v->next += size;
 }
 
 /**
@@ -77,16 +75,16 @@ void vector_pushall(vector_t* v, void** array, size_t size) {
  * @param v Any vector.
  */
 void* vector_pop(vector_t* v) {
-    if (v->next == v->start) {
-        if (v->votes >= v->votes_required) {
-            size_t new_capacity = (v->end - v->start) / SCALE_FACTOR;
-            if (new_capacity > 0) {
-                vector_resize(v, new_capacity);
-            }
-        }
-        return NULL;
+  if (v->next == v->start) {
+    if (v->votes >= v->votes_required) {
+      size_t new_capacity = (v->end - v->start) / SCALE_FACTOR;
+      if (new_capacity > 0) {
+        vector_resize(v, new_capacity);
+      }
     }
-    return *(--v->next);
+    return NULL;
+  }
+  return *(--v->next);
 }
 
 /**
@@ -96,40 +94,38 @@ void* vector_pop(vector_t* v) {
  * is automatically expanded and filled with NULL pointers as needed.
  * If no element at `idx` has been previously set, then the value
  * pointed to by the returned pointer will be NULL.
- * 
+ *
  * @param v The vector.
  * @param idx The index into the vector.
- * 
+ *
  * @return A pointer to the element at 'idx', which is itself a pointer.
  */
 void** vector_at(vector_t* v, size_t idx) {
-    void** vector_position = v->start + idx;
-    if ((vector_position + 1) > v->next) {
-        v->next = vector_position + 1;
+  void** vector_position = v->start + idx;
+  if ((vector_position + 1) > v->next) {
+    v->next = vector_position + 1;
+  }
+  if (v->next >= v->end) {
+    v->votes_required++;
+    size_t new_size = (v->end - v->start) * SCALE_FACTOR;
+    // Find a size that includes idx
+    while (new_size <= idx) {
+      new_size *= SCALE_FACTOR;
     }
-    if (v->next >= v->end) {
-        v->votes_required++;
-        size_t new_size = (v->end - v->start) * SCALE_FACTOR;
-        // Find a size that includes idx
-        while (new_size <= idx) {
-            new_size *= SCALE_FACTOR;
-        }
-        vector_resize(v, new_size);
-    }
-    // Note: Can't re-use vector_position because v->start can move after
-    // resizing.
-    return v->start + idx;
+    vector_resize(v, new_size);
+  }
+  // Note: Can't re-use vector_position because v->start can move after
+  // resizing.
+  return v->start + idx;
 }
 
 /**
  * @brief Return the size of the vector.
- * 
+ *
  * @param v Any vector
  * @return size_t  The size of the vector.
  */
-size_t vector_size(vector_t* v) {
-    return (v->next - v->start);
-}
+size_t vector_size(vector_t* v) { return (v->next - v->start); }
 
 /**
  * Vote on whether this vector should be given less memory.
@@ -140,9 +136,10 @@ size_t vector_size(vector_t* v) {
  * @param v Any vector.
  */
 void vector_vote(vector_t* v) {
-    size_t size = v->next - v->start;
-    int vote = size * CAPACITY_TO_SIZE_RATIO_FOR_SHRINK_VOTE <= (size_t) (v->end - v->start);
-    v->votes = vote * v->votes + vote;
+  size_t size = v->next - v->start;
+  int vote = size * CAPACITY_TO_SIZE_RATIO_FOR_SHRINK_VOTE <=
+             (size_t)(v->end - v->start);
+  v->votes = vote * v->votes + vote;
 }
 
 /**
@@ -151,16 +148,16 @@ void vector_vote(vector_t* v) {
  * @param v A vector that should have a different capacity.
  */
 static void vector_resize(vector_t* v, size_t new_capacity) {
-    if (new_capacity == 0) {
-        // Don't shrink the queue further
-        return;
-    }
-    size_t size = v->next - v->start;
-    assert(size <= new_capacity);
-    void** start = (void**) realloc(v->start, new_capacity * sizeof(void*));
-    assert(start);
-    v->votes = 0;
-    v->start = start;
-    v->next = start + size;
-    v->end = start + new_capacity;
+  if (new_capacity == 0) {
+    // Don't shrink the queue further
+    return;
+  }
+  size_t size = v->next - v->start;
+  assert(size <= new_capacity);
+  void** start = (void**)realloc(v->start, new_capacity * sizeof(void*));
+  assert(start);
+  v->votes = 0;
+  v->start = start;
+  v->next = start + size;
+  v->end = start + new_capacity;
 }

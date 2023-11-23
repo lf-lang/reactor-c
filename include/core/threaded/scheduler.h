@@ -12,15 +12,16 @@ are permitted provided that the following conditions are met:
    this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ***************/
 
 /**
@@ -48,7 +49,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * `lf_sched_init`.
  */
 
-
 /**
  * @brief Initialize the scheduler.
  *
@@ -61,11 +61,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param option Pointer to a `sched_params_t` struct containing additional
  *  scheduler parameters. Can be NULL.
  */
-void lf_sched_init(
-    environment_t* env,
-    size_t number_of_workers,
-    sched_params_t* parameters
-);
+void lf_sched_init(environment_t* env, size_t number_of_workers,
+                   sched_params_t* parameters);
 
 /**
  * @brief Free the memory used by the scheduler.
@@ -87,7 +84,8 @@ void lf_sched_free(lf_scheduler_t* scheduler);
  * @return reaction_t* A reaction for the worker to execute. NULL if the calling
  * worker thread should exit.
  */
-reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_number);
+reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler,
+                                        int worker_number);
 
 /**
  * @brief Inform the scheduler that worker thread 'worker_number' is done
@@ -98,8 +96,8 @@ reaction_t* lf_sched_get_ready_reaction(lf_scheduler_t* scheduler, int worker_nu
  * finished executing 'done_reaction'.
  * @param done_reaction The reaction that is done.
  */
-void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction);
-
+void lf_sched_done_with_reaction(size_t worker_number,
+                                 reaction_t* done_reaction);
 
 /**
  * @brief Inform the scheduler that worker thread 'worker_number' would like to
@@ -113,12 +111,14 @@ void lf_sched_done_with_reaction(size_t worker_number, reaction_t* done_reaction
  *
  * @param scheduler The scheduler
  * @param reaction The reaction to trigger at the current tag.
- * @param worker_number The ID of the worker that is making this call. 0 should be
- *  used if there is only one worker (e.g., when the program is using the
- *  single-threaded C runtime). -1 is used for an anonymous call in a context where a
- *  worker number does not make sense (e.g., the caller is not a worker thread).
+ * @param worker_number The ID of the worker that is making this call. 0 should
+ * be used if there is only one worker (e.g., when the program is using the
+ *  single-threaded C runtime). -1 is used for an anonymous call in a context
+ * where a worker number does not make sense (e.g., the caller is not a worker
+ * thread).
  *
  */
-void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number);
+void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler,
+                                   reaction_t* reaction, int worker_number);
 
 #endif // LF_SCHEDULER_H

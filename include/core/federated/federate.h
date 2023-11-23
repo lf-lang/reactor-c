@@ -15,15 +15,16 @@ are permitted provided that the following conditions are met:
    this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  * @section DESCRIPTION
  * Data structures and functions used and defined in federate.c.
@@ -47,183 +48,186 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Structure that a federate instance uses to keep track of its own state.
  */
 typedef struct federate_instance_t {
-    /**
-     * The TCP socket descriptor for this federate to communicate with the RTI.
-     * This is set by connect_to_rti(), which must be called before other
-     * functions that communicate with the rti are called.
-     */
-    int socket_TCP_RTI;
+  /**
+   * The TCP socket descriptor for this federate to communicate with the RTI.
+   * This is set by connect_to_rti(), which must be called before other
+   * functions that communicate with the rti are called.
+   */
+  int socket_TCP_RTI;
 
-    /**
-     * Thread listening for incoming TCP messages from the RTI.
-     */
-    lf_thread_t RTI_socket_listener;
+  /**
+   * Thread listening for incoming TCP messages from the RTI.
+   */
+  lf_thread_t RTI_socket_listener;
 
-    /**
-     * Thread responsible for setting ports to absent by an STAA offset if they
-     * aren't already known.
-     */
-    #ifdef FEDERATED_DECENTRALIZED
-    lf_thread_t staaSetter;
-    #endif
+/**
+ * Thread responsible for setting ports to absent by an STAA offset if they
+ * aren't already known.
+ */
+#ifdef FEDERATED_DECENTRALIZED
+  lf_thread_t staaSetter;
+#endif
 
-    /**
-     * Number of inbound physical connections to the federate.
-     * This can be either physical connections, or logical connections
-     * in the decentralized coordination, or both.
-     */
-    size_t number_of_inbound_p2p_connections;
+  /**
+   * Number of inbound physical connections to the federate.
+   * This can be either physical connections, or logical connections
+   * in the decentralized coordination, or both.
+   */
+  size_t number_of_inbound_p2p_connections;
 
-    /**
-     * Array of thread IDs for threads that listen for incoming messages.
-     * This is NULL if there are none and otherwise has size given by
-     * number_of_inbound_p2p_connections.
-     */
-    lf_thread_t *inbound_socket_listeners;
+  /**
+   * Array of thread IDs for threads that listen for incoming messages.
+   * This is NULL if there are none and otherwise has size given by
+   * number_of_inbound_p2p_connections.
+   */
+  lf_thread_t* inbound_socket_listeners;
 
-    /**
-     * Number of outbound peer-to-peer connections from the federate.
-     * This can be either physical connections, or logical connections
-     * in the decentralized coordination, or both.
-     */
-    size_t number_of_outbound_p2p_connections;
+  /**
+   * Number of outbound peer-to-peer connections from the federate.
+   * This can be either physical connections, or logical connections
+   * in the decentralized coordination, or both.
+   */
+  size_t number_of_outbound_p2p_connections;
 
-    /**
-     * An array that holds the socket descriptors for inbound
-     * connections from each federate. The index will be the federate
-     * ID of the remote sending federate. This is initialized at startup
-     * to -1 and is set to a socket ID by handle_p2p_connections_from_federates()
-     * when the socket is opened.
-     *
-     * @note There will not be an inbound socket unless a physical connection
-     * or a p2p logical connection (by setting the coordination target property
-     * to "distributed") is specified in the Lingua Franca program where this
-     * federate is the destination. Multiple incoming p2p connections from the
-     * same remote federate will use the same socket.
-     */
-    int sockets_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
+  /**
+   * An array that holds the socket descriptors for inbound
+   * connections from each federate. The index will be the federate
+   * ID of the remote sending federate. This is initialized at startup
+   * to -1 and is set to a socket ID by handle_p2p_connections_from_federates()
+   * when the socket is opened.
+   *
+   * @note There will not be an inbound socket unless a physical connection
+   * or a p2p logical connection (by setting the coordination target property
+   * to "distributed") is specified in the Lingua Franca program where this
+   * federate is the destination. Multiple incoming p2p connections from the
+   * same remote federate will use the same socket.
+   */
+  int sockets_for_inbound_p2p_connections[NUMBER_OF_FEDERATES];
 
-    /**
-     * An array that holds the socket descriptors for outbound direct
-     * connections to each remote federate. The index will be the federate
-     * ID of the remote receiving federate. This is initialized at startup
-     * to -1 and is set to a socket ID by connect_to_federate()
-     * when the socket is opened.
-     *
-     * @note This federate will not open an outbound socket unless a physical
-     * connection or a p2p logical connection (by setting the coordination target
-     * property to "distributed") is specified in the Lingua Franca
-     * program where this federate acts as the source. Multiple outgoing p2p
-     * connections to the same remote federate will use the same socket.
-     */
-    int sockets_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
+  /**
+   * An array that holds the socket descriptors for outbound direct
+   * connections to each remote federate. The index will be the federate
+   * ID of the remote receiving federate. This is initialized at startup
+   * to -1 and is set to a socket ID by connect_to_federate()
+   * when the socket is opened.
+   *
+   * @note This federate will not open an outbound socket unless a physical
+   * connection or a p2p logical connection (by setting the coordination target
+   * property to "distributed") is specified in the Lingua Franca
+   * program where this federate acts as the source. Multiple outgoing p2p
+   * connections to the same remote federate will use the same socket.
+   */
+  int sockets_for_outbound_p2p_connections[NUMBER_OF_FEDERATES];
 
-    /**
-     * Thread ID for a thread that accepts sockets and then supervises
-     * listening to those sockets for incoming P2P (physical) connections.
-     */
-    lf_thread_t inbound_p2p_handling_thread_id;
+  /**
+   * Thread ID for a thread that accepts sockets and then supervises
+   * listening to those sockets for incoming P2P (physical) connections.
+   */
+  lf_thread_t inbound_p2p_handling_thread_id;
 
-    /**
-     * A socket descriptor for the socket server of the federate.
-     * This is assigned in create_server().
-     * This socket is used to listen to incoming physical connections from
-     * remote federates. Once an incoming connection is accepted, the
-     * opened socket will be stored in
-     * federate_sockets_for_inbound_p2p_connections.
-     */
-    int server_socket;
+  /**
+   * A socket descriptor for the socket server of the federate.
+   * This is assigned in create_server().
+   * This socket is used to listen to incoming physical connections from
+   * remote federates. Once an incoming connection is accepted, the
+   * opened socket will be stored in
+   * federate_sockets_for_inbound_p2p_connections.
+   */
+  int server_socket;
 
-    /**
-     * The port used for the server socket
-     * to listen for messages from other federates.
-     * The federate informs the RTI of this port once
-     * it has created its socket server by sending
-     * an ADDRESS_AD message (@see rti.h).
-     */
-    int server_port;
+  /**
+   * The port used for the server socket
+   * to listen for messages from other federates.
+   * The federate informs the RTI of this port once
+   * it has created its socket server by sending
+   * an ADDRESS_AD message (@see rti.h).
+   */
+  int server_port;
 
-    /**
-     * Most recent TIME_ADVANCE_GRANT received from the RTI, or NEVER if none
-     * has been received.
-     * This is used to communicate between the listen_to_rti_TCP thread and the
-     * main federate thread.
-     * This variable should only be accessed while holding the mutex lock.
-     */
-    tag_t last_TAG;
+  /**
+   * Most recent TIME_ADVANCE_GRANT received from the RTI, or NEVER if none
+   * has been received.
+   * This is used to communicate between the listen_to_rti_TCP thread and the
+   * main federate thread.
+   * This variable should only be accessed while holding the mutex lock.
+   */
+  tag_t last_TAG;
 
-    /**
-     * Indicates whether the last TAG received is provisional or an ordinary
-     * TAG.
-     * If the last TAG has been provisional, network port absent reactions must be inserted.
-     * This variable should only be accessed while holding the mutex lock.
-     */
-    bool is_last_TAG_provisional;
+  /**
+   * Indicates whether the last TAG received is provisional or an ordinary
+   * TAG.
+   * If the last TAG has been provisional, network port absent reactions must be
+   * inserted. This variable should only be accessed while holding the mutex
+   * lock.
+   */
+  bool is_last_TAG_provisional;
 
-    /**
-     * Indicator of whether this federate has upstream federates.
-     * The default value of false may be overridden in _lf_initialize_trigger_objects.
-     */
-    bool has_upstream;
+  /**
+   * Indicator of whether this federate has upstream federates.
+   * The default value of false may be overridden in
+   * _lf_initialize_trigger_objects.
+   */
+  bool has_upstream;
 
-    /**
-     * Indicator of whether this federate has downstream federates.
-     * The default value of false may be overridden in _lf_initialize_trigger_objects.
-     */
-    bool has_downstream;
+  /**
+   * Indicator of whether this federate has downstream federates.
+   * The default value of false may be overridden in
+   * _lf_initialize_trigger_objects.
+   */
+  bool has_downstream;
 
-    /**
-     * Used to prevent the federate from sending a REQUEST_STOP
-     * message if it has already received a stop request from the RTI.
-     * This variable should only be accessed while holding a mutex lock.
-     */
-    bool received_stop_request_from_rti;
+  /**
+   * Used to prevent the federate from sending a REQUEST_STOP
+   * message if it has already received a stop request from the RTI.
+   * This variable should only be accessed while holding a mutex lock.
+   */
+  bool received_stop_request_from_rti;
 
-    /**
-     * A record of the most recently sent LTC (logical tag complete) message.
-     * In some situations, federates can send logical_tag_complete for
-     * the same tag twice or more in-a-row to the RTI. For example, when
-     * _lf_next() returns without advancing tag. To prevent overwhelming
-     * the RTI with extra messages, record the last sent logical tag
-     * complete message and check against it in
-     * _lf_logical_tag_complete().
-     *
-     * @note Here, the underlying assumption is that the TCP stack will
-     *  deliver the Logical TAG Complete message to the RTI eventually
-     *  if it is deliverable
-     */
-    tag_t last_sent_LTC;
+  /**
+   * A record of the most recently sent LTC (logical tag complete) message.
+   * In some situations, federates can send logical_tag_complete for
+   * the same tag twice or more in-a-row to the RTI. For example, when
+   * _lf_next() returns without advancing tag. To prevent overwhelming
+   * the RTI with extra messages, record the last sent logical tag
+   * complete message and check against it in
+   * _lf_logical_tag_complete().
+   *
+   * @note Here, the underlying assumption is that the TCP stack will
+   *  deliver the Logical TAG Complete message to the RTI eventually
+   *  if it is deliverable
+   */
+  tag_t last_sent_LTC;
 
-    /**
-     * A record of the most recently sent NET (next event tag) message.
-     */
-    tag_t last_sent_NET;
+  /**
+   * A record of the most recently sent NET (next event tag) message.
+   */
+  tag_t last_sent_NET;
 
-    /**
-     * For use in federates with centralized coordination, the minimum
-     * time delay between a physical action within this federate and an
-     * output from this federate.  This is NEVER if there is causal
-     * path from a physical action to any output.
-     */
-    instant_t min_delay_from_physical_action_to_federate_output;
+  /**
+   * For use in federates with centralized coordination, the minimum
+   * time delay between a physical action within this federate and an
+   * output from this federate.  This is NEVER if there is causal
+   * path from a physical action to any output.
+   */
+  instant_t min_delay_from_physical_action_to_federate_output;
 
-    // Trace object
-    trace_t* trace;
+  // Trace object
+  trace_t* trace;
 } federate_instance_t;
 
 #ifdef FEDERATED_DECENTRALIZED
 typedef struct staa {
-    lf_action_base_t** actions;
-    size_t STAA;
-    size_t numActions;
+  lf_action_base_t** actions;
+  size_t STAA;
+  size_t numActions;
 } staa_t;
 #endif
 
 typedef struct federation_metadata_t {
-    const char* federation_id;
-    char* rti_host;
-    int rti_port;
-    char* rti_user;
+  const char* federation_id;
+  char* rti_host;
+  int rti_port;
+  char* rti_user;
 } federation_metadata_t;
 
 extern lf_mutex_t outbound_socket_mutex;
@@ -231,18 +235,20 @@ extern lf_cond_t port_status_changed;
 extern lf_cond_t logical_time_changed;
 
 /**
-* Generated function that sends information about connections between this federate and
-* other federates where messages are routed through the RTI. Currently, this
-* only includes logical connections when the coordination is centralized. This
-* information is needed for the RTI to perform the centralized coordination.
-* @see MSG_TYPE_NEIGHBOR_STRUCTURE in net_common.h
-*/
+ * Generated function that sends information about connections between this
+ * federate and other federates where messages are routed through the RTI.
+ * Currently, this only includes logical connections when the coordination is
+ * centralized. This information is needed for the RTI to perform the
+ * centralized coordination.
+ * @see MSG_TYPE_NEIGHBOR_STRUCTURE in net_common.h
+ */
 void send_neighbor_structure_to_RTI(int);
 
 /**
- * @brief Spawns a thread to iterate through STAA structs, setting its associated ports absent
- * at an offset if the port is not present with a value by a certain physical time.
- * 
+ * @brief Spawns a thread to iterate through STAA structs, setting its
+ * associated ports absent at an offset if the port is not present with a value
+ * by a certain physical time.
+ *
  */
 #ifdef FEDERATED_DECENTRALIZED
 void spawn_staa_thread(void);
@@ -252,12 +258,12 @@ void spawn_staa_thread(void);
  * Connect to the federate with the specified id. This established
  * connection will then be used in functions such as send_timed_message()
  * to send messages directly to the specified federate.
- * This function first sends an MSG_TYPE_ADDRESS_QUERY message to the RTI to obtain
- * the IP address and port number of the specified federate. It then attempts
- * to establish a socket connection to the specified federate.
- * If this fails, the program exits. If it succeeds, it sets element [id] of
- * the _fed.sockets_for_outbound_p2p_connections global array to
- * refer to the socket for communicating directly with the federate.
+ * This function first sends an MSG_TYPE_ADDRESS_QUERY message to the RTI to
+ * obtain the IP address and port number of the specified federate. It then
+ * attempts to establish a socket connection to the specified federate. If this
+ * fails, the program exits. If it succeeds, it sets element [id] of the
+ * _fed.sockets_for_outbound_p2p_connections global array to refer to the socket
+ * for communicating directly with the federate.
  * @param remote_federate_id The ID of the remote federate.
  */
 void connect_to_federate(uint16_t);
@@ -284,14 +290,14 @@ void connect_to_rti(const char*, int);
 /**
  * Thread that listens for inputs from other federates.
  * This thread listens for messages of type MSG_TYPE_P2P_MESSAGE,
- * MSG_TYPE_P2P_TAGGED_MESSAGE, or MSG_TYPE_PORT_ABSENT (@see net_common.h) from the specified
- * peer federate and calls the appropriate handling function for
+ * MSG_TYPE_P2P_TAGGED_MESSAGE, or MSG_TYPE_PORT_ABSENT (@see net_common.h) from
+ * the specified peer federate and calls the appropriate handling function for
  * each message type. If an error occurs or an EOF is received
  * from the peer, then this procedure sets the corresponding
  * socket in _fed.sockets_for_inbound_p2p_connections
  * to -1 and returns, terminating the thread.
- * @param fed_id_ptr A pointer to a uint16_t containing federate ID being listened to.
- *  This procedure frees the memory pointed to before returning.
+ * @param fed_id_ptr A pointer to a uint16_t containing federate ID being
+ * listened to. This procedure frees the memory pointed to before returning.
  */
 void* listen_to_federates(void*);
 
@@ -314,8 +320,8 @@ void* listen_to_federates(void*);
  * @note This function is similar to create_server(...) in rti.c.
  * However, it contains specific log messages for the peer to
  * peer connections between federates. It also additionally
- * sends an address advertisement (MSG_TYPE_ADDRESS_ADVERTISEMENT) message to the
- * RTI informing it of the port.
+ * sends an address advertisement (MSG_TYPE_ADDRESS_ADVERTISEMENT) message to
+ * the RTI informing it of the port.
  *
  * @param specified_port The specified port by the user.
  */
@@ -343,30 +349,34 @@ void* handle_p2p_connections_from_federates(void*);
  * @param port_ID The ID of the receiving port.
  * @param fed_ID The fed ID of the receiving federate.
  */
-void send_port_absent_to_federate(environment_t* env, interval_t, unsigned short, unsigned short);
+void send_port_absent_to_federate(environment_t* env, interval_t,
+                                  unsigned short, unsigned short);
 
 /**
  * Enqueue port absent reactions that will send a PORT_ABSENT
- * message to downstream federates if a given network output port is not present.
+ * message to downstream federates if a given network output port is not
+ * present.
  */
 void enqueue_port_absent_reactions(environment_t* env);
 
 /**
- * @brief Wait until inputs statuses are known up to and including the specified level.
- * Specifically, wait until the specified level is less that the max level allowed to
- * advance (MLAA).
- * @param env The environment (which should always be the top-level environment).
+ * @brief Wait until inputs statuses are known up to and including the specified
+ * level. Specifically, wait until the specified level is less that the max
+ * level allowed to advance (MLAA).
+ * @param env The environment (which should always be the top-level
+ * environment).
  * @param level The level to which we would like to advance.
  */
 void stall_advance_level_federation(environment_t* env, size_t level);
 
 /**
  * @brief Update the max level allowed to advance (MLAA).
- * If the specified tag is greater than the current_tag of the top-level environment
- * (or equal an is_provisional is false), then set the MLAA to MAX_INT and return.
- * This removes any barriers on execution at the current tag due to network inputs.
- * Otherwise, set the MLAA to the minimum level over all (non-physical) network input ports
- * where the status of the input port is not known at that current_tag.
+ * If the specified tag is greater than the current_tag of the top-level
+ * environment (or equal an is_provisional is false), then set the MLAA to
+ * MAX_INT and return. This removes any barriers on execution at the current tag
+ * due to network inputs. Otherwise, set the MLAA to the minimum level over all
+ * (non-physical) network input ports where the status of the input port is not
+ * known at that current_tag.
  *
  * This function assumes that the caller holds the mutex.
  *
@@ -378,8 +388,8 @@ bool update_max_level(tag_t tag, bool is_provisional);
 
 /**
  * Send a message to another federate directly or via the RTI.
- * This method assumes that the caller does not hold the outbound_socket_mutex lock,
- * which it acquires to perform the send.
+ * This method assumes that the caller does not hold the outbound_socket_mutex
+ * lock, which it acquires to perform the send.
  *
  * If the socket connection to the remote federate or the RTI has been broken,
  * then this returns 0 without sending. Otherwise, it returns 1.
@@ -398,12 +408,9 @@ bool update_max_level(tag_t tag, bool is_provisional);
  * @param message The message.
  * @return 1 if the message has been sent, 0 otherwise.
  */
-int send_message(int message_type,
-                  unsigned short port,
-                  unsigned short federate,
-                  const char* next_destination_str,
-                  size_t length,
-                  unsigned char* message);
+int send_message(int message_type, unsigned short port, unsigned short federate,
+                 const char* next_destination_str, size_t length,
+                 unsigned char* message);
 
 /**
  * Send the specified timestamped message to the specified port in the
@@ -417,8 +424,8 @@ int send_message(int message_type,
  * If the socket connection to the remote federate or the RTI has been broken,
  * then this returns 0 without sending. Otherwise, it returns 1.
  *
- * This method assumes that the caller does not hold the outbound_socket_mutex lock,
- * which it acquires to perform the send.
+ * This method assumes that the caller does not hold the outbound_socket_mutex
+ * lock, which it acquires to perform the send.
  *
  * @note This function is similar to send_message() except that it
  *   sends timed messages and also contains logics related to time.
@@ -434,20 +441,14 @@ int send_message(int message_type,
  *  federates.
  * @param port The ID of the destination port.
  * @param federate The ID of the destination federate.
- * @param next_destination_str The next destination in string format (RTI or federate)
- *  (used for reporting errors).
+ * @param next_destination_str The next destination in string format (RTI or
+ * federate) (used for reporting errors).
  * @param length The message length.
  * @param message The message.
  * @return 1 if the message has been sent, 0 otherwise.
  */
-int send_timed_message(environment_t*,
-                        interval_t,
-                        int,
-                        unsigned short,
-                        unsigned short,
-                        const char*,
-                        size_t,
-                        unsigned char*);
+int send_timed_message(environment_t*, interval_t, int, unsigned short,
+                       unsigned short, const char*, size_t, unsigned char*);
 
 /**
  * Synchronize the start with other federates via the RTI.
@@ -470,6 +471,7 @@ void synchronize_with_other_federates();
  * @param port_ID The ID of the network port
  * @param STAA The safe-to-assume-absent threshold for the port
  */
-void wait_until_port_status_known(environment_t* env, int portID, interval_t STAA);
+void wait_until_port_status_known(environment_t* env, int portID,
+                                  interval_t STAA);
 
 #endif // FEDERATE_H

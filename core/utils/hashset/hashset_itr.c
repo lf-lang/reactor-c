@@ -15,8 +15,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  *
- * In Nov. 2022, Edward A. Lee fixed bug where next could advance to a removed item.
- * Also, changed the logic of the API a bit as inidicated in the .h file.
+ * In Nov. 2022, Edward A. Lee fixed bug where next could advance to a removed
+ * item. Also, changed the logic of the API a bit as inidicated in the .h file.
  */
 
 #include <assert.h>
@@ -43,9 +43,9 @@ int hashset_iterator_has_next(hashset_itr_t itr) {
     return 0;
   }
   /* peek to find another entry */
-  while(index < itr->set->capacity) {
+  while (index < itr->set->capacity) {
     void* value = itr->set->items[index++];
-    if(value != 0 && value != (void*)1)
+    if (value != 0 && value != (void*)1)
       return 1;
   }
 
@@ -78,8 +78,8 @@ int hashset_iterator_next(hashset_itr_t itr) {
 void* hashset_iterator_value(hashset_itr_t itr) {
 
   // Check that hashset_iterator_next() has been called.
-  assert(itr->index >= 0 && itr->set->items[itr->index] != 0 && itr->set->items[itr->index] != (void*)1);
+  assert(itr->index >= 0 && itr->set->items[itr->index] != 0 &&
+         itr->set->items[itr->index] != (void*)1);
 
   return itr->set->items[itr->index];
 }
-

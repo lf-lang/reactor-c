@@ -31,7 +31,7 @@ struct hashset_itr_st {
   int index;
 };
 
-typedef struct hashset_itr_st *hashset_itr_t;
+typedef struct hashset_itr_st* hashset_itr_t;
 
 /**
  * @brief Create a hashset iterator.
@@ -44,7 +44,7 @@ typedef struct hashset_itr_st *hashset_itr_t;
  *   }
  *   free(iterator);
  * ```
- * The caller must call free() on this iterator after using it. 
+ * The caller must call free() on this iterator after using it.
  */
 hashset_itr_t hashset_iterator(hashset_t set);
 
@@ -61,8 +61,8 @@ int hashset_iterator_has_next(hashset_itr_t itr);
 
 /**
  * @brief Advance to the next value in the hashset.
- * This returns a non-negative number (the current index) if there is a next item
- * and -1 otherwise.
+ * This returns a non-negative number (the current index) if there is a next
+ * item and -1 otherwise.
  */
 int hashset_iterator_next(hashset_itr_t itr);
 

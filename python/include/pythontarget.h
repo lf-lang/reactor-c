@@ -18,31 +18,35 @@ are permitted provided that the following conditions are met:
    this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  * @section DESCRIPTION
  * Target-specific runtime functions for the Python target language.
  * This API layer can be used in conjunction with:
  *     target Python;
  *
- * Note for target language developers. This is one way of developing a target language where
- * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca
- * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a
+ * Note for target language developers. This is one way of developing a target
+language where
+ * the C core runtime is adopted. This file is a translation layer that
+implements Lingua Franca
+ * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This
+file can act as a
  * template for future runtime developement for target languages.
- * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/PythonGenerator.xtend.
+ * For source generation, see
+xtext/org.icyphy.linguafranca/src/org/icyphy/generator/PythonGenerator.xtend.
  */
 
 #ifndef PYTHON_TARGET_H
 #define PYTHON_TARGET_H
-
 
 #define PY_SSIZE_T_CLEAN
 
@@ -64,15 +68,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #error "MODULE_NAME is undefined"
 #endif
 
-#define CONCAT(x,y) x##y
-#define GEN_NAME(x,y) CONCAT(x,y)
+#define CONCAT(x, y) x##y
+#define GEN_NAME(x, y) CONCAT(x, y)
 #define STRINGIFY(X) #X
 #define TOSTRING(x) STRINGIFY(x)
 
-
 ////////////// Global variables ///////////////
-extern PyObject *globalPythonModule;
-extern PyObject *globalPythonModuleDict;
+extern PyObject* globalPythonModule;
+extern PyObject* globalPythonModuleDict;
 extern PyObject* global_pickler;
 extern environment_t* top_level_environment;
 
@@ -87,15 +90,14 @@ extern environment_t* top_level_environment;
  *      - action: Pointer to an action on the self struct.
  *      - offset: The time offset over and above that in the action.
  **/
-PyObject* py_schedule(PyObject *self, PyObject *args);
+PyObject* py_schedule(PyObject* self, PyObject* args);
 
 /**
  * Schedule an action to occur with the specified value and time offset
  * with a copy of the specified value.
  * See reactor.h for documentation.
  */
-PyObject* py_schedule_copy(PyObject *self, PyObject *args);
-
+PyObject* py_schedule_copy(PyObject* self, PyObject* args);
 
 //////////////////////////////////////////////////////////////
 /////////////  Python Helper Functions (called from Python code)
@@ -103,11 +105,11 @@ PyObject* py_schedule_copy(PyObject *self, PyObject *args);
 /**
  * Stop execution at the conclusion of the current logical time.
  */
-PyObject* py_request_stop(PyObject *self, PyObject *args);
+PyObject* py_request_stop(PyObject* self, PyObject* args);
 
 //////////////////////////////////////////////////////////////
 ///////////// Main function callable from Python code
-PyObject* py_main(PyObject *self, PyObject *args);
+PyObject* py_main(PyObject* self, PyObject* args);
 
 //////////////////////////////////////////////////////////////
 /////////////  Python Helper Functions
@@ -131,47 +133,51 @@ PyObject* convert_C_port_to_py(void* port, int width);
 
 /**
  * A helper function to convert C actions to Python action capsules
- * @see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CGenerator.xtend for details about C actions
- * Python actions have the following fields (for more information @see generic_action_capsule_struct):
- *   PyObject_HEAD
- *   PyObject* action;
- *   PyObject* value;
- *   bool is_present;
+ * @see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CGenerator.xtend
+ *for details about C actions Python actions have the following fields (for more
+ *information @see generic_action_capsule_struct): PyObject_HEAD PyObject*
+ *action; PyObject* value; bool is_present;
  *
  * The input to this function is a pointer to a C action, which might or
- * might not contain a value and an is_present field. To simplify the assumptions
- * made by this function, the "value" and "is_present" are passed to the function
- * instead of expecting them to exist.
+ * might not contain a value and an is_present field. To simplify the
+ *assumptions made by this function, the "value" and "is_present" are passed to
+ *the function instead of expecting them to exist.
  *
- * The void* pointer to the C action instance is encapsulated in a PyCapsule instead of passing an exposed pointer through
- * Python. @see https://docs.python.org/3/c-api/capsule.html
- * This encapsulation is done by calling PyCapsule_New(action, "name_of_the_container_in_the_capsule", NULL),
- * where "name_of_the_container_in_the_capsule" is an agreed-upon container name inside the capsule. This
- * capsule can then be treated as a PyObject* and safely passed through Python code. On the other end
- * (which is in schedule functions), PyCapsule_GetPointer(recieved_action,"action") can be called to retrieve
- * the void* pointer into recieved_action.
+ * The void* pointer to the C action instance is encapsulated in a PyCapsule
+ *instead of passing an exposed pointer through Python. @see
+ *https://docs.python.org/3/c-api/capsule.html This encapsulation is done by
+ *calling PyCapsule_New(action, "name_of_the_container_in_the_capsule", NULL),
+ * where "name_of_the_container_in_the_capsule" is an agreed-upon container name
+ *inside the capsule. This capsule can then be treated as a PyObject* and safely
+ *passed through Python code. On the other end (which is in schedule functions),
+ *PyCapsule_GetPointer(recieved_action,"action") can be called to retrieve the
+ *void* pointer into recieved_action.
  **/
 PyObject* convert_C_action_to_py(void* action);
 
 /**
  * Invoke a Python func in class[instance_id] from module.
  * Class instances in generated Python code are always instantiated in a
- * list of template classs[_class(params), _class(params), ...] (note the extra s) regardless
- * of whether a bank is used or not. If there is no bank, or a bank of width 1, the list will be
- * instantiated as classs[_class(params)].
+ * list of template classs[_class(params), _class(params), ...] (note the extra
+ * s) regardless of whether a bank is used or not. If there is no bank, or a
+ * bank of width 1, the list will be instantiated as classs[_class(params)].
  *
- * This function would thus call classs[0] to access the first instance in a bank and so on.
+ * This function would thus call classs[0] to access the first instance in a
+ * bank and so on.
  *
- * Possible optimizations include: - Not loading the module each time (by storing it in global memory),
+ * Possible optimizations include: - Not loading the module each time (by
+ * storing it in global memory),
  *                                 - Keeping a persistent argument table
- * @param module The Python module to load the function from. In embedded mode, it should
- *               be set to "__main__"
+ * @param module The Python module to load the function from. In embedded mode,
+ * it should be set to "__main__"
  * @param class The name of the list of classes in the generated Python code
- * @param instance_id The element number in the list of classes. class[instance_id] points to a class instance
+ * @param instance_id The element number in the list of classes.
+ * class[instance_id] points to a class instance
  * @param func The reaction functino to be called
  * @param pArgs the PyList of arguments to be sent to function func()
  */
-PyObject* get_python_function(string module, string class, int instance_id, string func);
+PyObject* get_python_function(string module, string class, int instance_id,
+                              string func);
 
 /*
  * The Python runtime will call this function to initialize the module.
@@ -182,7 +188,6 @@ PyObject* get_python_function(string module, string class, int instance_id, stri
  * For example for a module named LinguaFrancaFoo, this function
  * will be called PyInit_LinguaFrancaFoo
  */
-PyMODINIT_FUNC
-GEN_NAME(PyInit_,MODULE_NAME)(void);
+PyMODINIT_FUNC GEN_NAME(PyInit_, MODULE_NAME)(void);
 
 #endif // PYTHON_TARGET_H

@@ -4,7 +4,9 @@
  * @author Soroush Bateni
  * @author Hou Seng (Steven) Wong
  * @copyright (c) 2020-2023, The University of California at Berkeley.
- * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * License: <a
+ * href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD
+ * 2-clause</a>
  * @brief Time and tag definitions and functions for Lingua Franca
  */
 
@@ -17,29 +19,33 @@
 #define USECS(t) (t * 1000LL)
 #define MSEC(t) (t * 1000000LL)
 #define MSECS(t) (t * 1000000LL)
-#define SEC(t)  (t * 1000000000LL)
+#define SEC(t) (t * 1000000000LL)
 #define SECS(t) (t * 1000000000LL)
-#define SECOND(t)  (t * 1000000000LL)
+#define SECOND(t) (t * 1000000000LL)
 #define SECONDS(t) (t * 1000000000LL)
-#define MINUTE(t)   (t * 60000000000LL)
-#define MINUTES(t)  (t * 60000000000LL)
-#define HOUR(t)  (t * 3600000000000LL)
+#define MINUTE(t) (t * 60000000000LL)
+#define MINUTES(t) (t * 60000000000LL)
+#define HOUR(t) (t * 3600000000000LL)
 #define HOURS(t) (t * 3600000000000LL)
-#define DAY(t)   (t * 86400000000000LL)
-#define DAYS(t)  (t * 86400000000000LL)
-#define WEEK(t)  (t * 604800000000000LL)
+#define DAY(t) (t * 86400000000000LL)
+#define DAYS(t) (t * 86400000000000LL)
+#define WEEK(t) (t * 604800000000000LL)
 #define WEEKS(t) (t * 604800000000000LL)
 
 #define NEVER LLONG_MIN
 #define NEVER_MICROSTEP 0u
 #define FOREVER LLONG_MAX
 #define FOREVER_MICROSTEP UINT_MAX
-#define NEVER_TAG (tag_t) { .time = NEVER, .microstep = NEVER_MICROSTEP }
+#define NEVER_TAG                                                              \
+  (tag_t) { .time = NEVER, .microstep = NEVER_MICROSTEP }
 // Need a separate initializer expression to comply with some C compilers
-#define NEVER_TAG_INITIALIZER { NEVER,  NEVER_MICROSTEP }
-#define FOREVER_TAG (tag_t) { .time = FOREVER, .microstep = FOREVER_MICROSTEP }
+#define NEVER_TAG_INITIALIZER                                                  \
+  { NEVER, NEVER_MICROSTEP }
+#define FOREVER_TAG                                                            \
+  (tag_t) { .time = FOREVER, .microstep = FOREVER_MICROSTEP }
 // Need a separate initializer expression to comply with some C compilers
-#define FOREVER_TAG_INITIALIZER { FOREVER,  FOREVER_MICROSTEP }
+#define FOREVER_TAG_INITIALIZER                                                \
+  { FOREVER, FOREVER_MICROSTEP }
 
 // Convenience for converting times
 #define BILLION 1000000000LL
@@ -70,8 +76,8 @@ typedef uint32_t microstep_t;
  * A tag is a time, microstep pair.
  */
 typedef struct {
-    instant_t time;
-    microstep_t microstep;
+  instant_t time;
+  microstep_t microstep;
 } tag_t;
 
 ////////////////  Functions
@@ -147,7 +153,7 @@ instant_t lf_time_logical(void* env);
  * @param env The environment from which we want the elapsed logical time.
  * @return A time interval.
  */
-interval_t lf_time_logical_elapsed(void *env);
+interval_t lf_time_logical_elapsed(void* env);
 
 /**
  * Return the current physical time in nanoseconds.
@@ -166,9 +172,9 @@ instant_t lf_time_physical(void);
 instant_t lf_time_physical_elapsed(void);
 
 /**
- * Return the physical and logical time of the start of execution in nanoseconds.
- * On many platforms, this is the number of nanoseconds
- * since January 1, 1970, but it is actually platform dependent.
+ * Return the physical and logical time of the start of execution in
+ * nanoseconds. On many platforms, this is the number of nanoseconds since
+ * January 1, 1970, but it is actually platform dependent.
  * @return A time instant.
  */
 instant_t lf_time_start(void);
@@ -214,11 +220,12 @@ void lf_set_physical_clock_offset(interval_t offset);
 size_t lf_readable_time(char* buffer, instant_t time);
 
 /**
- * Print a non-negative time value in nanoseconds with commas separating thousands
- * into the specified buffer. Ideally, this would use the locale to
+ * Print a non-negative time value in nanoseconds with commas separating
+ * thousands into the specified buffer. Ideally, this would use the locale to
  * use periods if appropriate, but I haven't found a sufficiently portable
  * way to do that.
- * @param buffer A buffer long enough to contain a string like "9,223,372,036,854,775,807".
+ * @param buffer A buffer long enough to contain a string like
+ * "9,223,372,036,854,775,807".
  * @param time A time value.
  * @return The number of characters written (not counting the null terminator).
  */

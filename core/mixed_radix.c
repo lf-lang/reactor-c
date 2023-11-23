@@ -15,15 +15,16 @@ are permitted provided that the following conditions are met:
    this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  * @section DESCRIPTION
  * Functions for permuted mixed-radix numbers used in Lingua Franca programs.
@@ -31,7 +32,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include <assert.h>
-#include <stdlib.h>  // defines NULL
+#include <stdlib.h> // defines NULL
 
 #include "mixed_radix.h"
 
@@ -40,22 +41,23 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @param mixed A pointer to the mixed-radix number.
  */
 void mixed_radix_incr(mixed_radix_int_t* mixed) {
-	int i = 0;
-	assert(mixed != NULL);
-	assert(mixed->size > 0);
-	while (i < mixed->size) {
-		int digit_to_increment = mixed->permutation[i];
-		assert(digit_to_increment >= 0);
-		mixed->digits[digit_to_increment]++;
-		if (mixed->digits[digit_to_increment] >= mixed->radixes[digit_to_increment]) {
-			mixed->digits[digit_to_increment] = 0;
-			i++;
-		} else {
-			return; // All done.
-		}
-	}
-	// If we get here, the number has overflowed. Wrap to zero.
-	mixed->digits[i - 1] = 0;
+  int i = 0;
+  assert(mixed != NULL);
+  assert(mixed->size > 0);
+  while (i < mixed->size) {
+    int digit_to_increment = mixed->permutation[i];
+    assert(digit_to_increment >= 0);
+    mixed->digits[digit_to_increment]++;
+    if (mixed->digits[digit_to_increment] >=
+        mixed->radixes[digit_to_increment]) {
+      mixed->digits[digit_to_increment] = 0;
+      i++;
+    } else {
+      return; // All done.
+    }
+  }
+  // If we get here, the number has overflowed. Wrap to zero.
+  mixed->digits[i - 1] = 0;
 }
 
 /**
@@ -67,16 +69,16 @@ void mixed_radix_incr(mixed_radix_int_t* mixed) {
  *  be greater than or equal to 0.
  */
 int mixed_radix_parent(mixed_radix_int_t* mixed, int n) {
-	assert(mixed != NULL);
-	assert(mixed->size > 0);
-	assert(n >= 0);
-	int result = 0;
-	int factor = 1;
-	for (int i = n; i < mixed->size; i++) {
-		result += factor * mixed->digits[i];
-		factor *= mixed->radixes[i];
-	}
-	return result;
+  assert(mixed != NULL);
+  assert(mixed->size > 0);
+  assert(n >= 0);
+  int result = 0;
+  int factor = 1;
+  for (int i = n; i < mixed->size; i++) {
+    result += factor * mixed->digits[i];
+    factor *= mixed->radixes[i];
+  }
+  return result;
 }
 
 /**
@@ -84,6 +86,5 @@ int mixed_radix_parent(mixed_radix_int_t* mixed, int n) {
  * @param mixed A pointer to the mixed-radix number.
  */
 int mixed_radix_to_int(mixed_radix_int_t* mixed) {
-	return mixed_radix_parent(mixed, 0);
+  return mixed_radix_parent(mixed, 0);
 }
-

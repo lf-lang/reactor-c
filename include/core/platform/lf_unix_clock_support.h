@@ -11,7 +11,6 @@
  */
 instant_t convert_timespec_to_ns(struct timespec tp);
 
-
 /**
  * @brief Convert an instant_t ('t') representation in nanoseconds to a
  * _lf_time_spec_t.
@@ -21,7 +20,7 @@ instant_t convert_timespec_to_ns(struct timespec tp);
 struct timespec convert_ns_to_timespec(instant_t t);
 
 /**
- * @brief Calculate the necessary offset to bring _LF_CLOCK in parity with the epoch
- * time reported by CLOCK_REALTIME.
+ * @brief Calculate the necessary offset to bring _LF_CLOCK in parity with the
+ * epoch time reported by CLOCK_REALTIME.
  */
 void calculate_epoch_offset(void);

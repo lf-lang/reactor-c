@@ -16,15 +16,16 @@ are permitted provided that the following conditions are met:
    this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  * @section DESCRIPTION
  *
@@ -55,7 +56,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * @param action Pointer to an action on the self struct.
  * @param offset The time offset over and above that in the action.
- * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for
+ * error.
  */
 trigger_handle_t lf_schedule(void* action, interval_t offset);
 
@@ -66,11 +68,14 @@ trigger_handle_t lf_schedule(void* action, interval_t offset);
  * in a token. See lf_schedule_token() for more details.
  *
  * @param action The action to be triggered.
- * @param extra_delay Extra offset of the event release above that in the action.
+ * @param extra_delay Extra offset of the event release above that in the
+ * action.
  * @param value The value to send.
- * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for
+ * error.
  */
-trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value);
+trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay,
+                                 int value);
 
 /**
  * Schedule the specified action with the specified token as a payload.
@@ -115,11 +120,14 @@ trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value
  * The third condition is that the trigger argument is null.
  *
  * @param action The action to be triggered.
- * @param extra_delay Extra offset of the event release above that in the action.
+ * @param extra_delay Extra offset of the event release above that in the
+ * action.
  * @param token The token to carry the payload or null for no payload.
- * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for
+ * error.
  */
-trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token);
+trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay,
+                                   lf_token_t* token);
 
 /**
  * Schedule an action to occur with the specified value and time offset with a
@@ -137,11 +145,12 @@ trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_toke
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for
  *  error.
  */
-trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, int length);
+trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value,
+                                  int length);
 
 /**
- * Variant of lf_schedule_token that creates a token to carry the specified value.
- * The value is required to be malloc'd memory with a size equal to the
+ * Variant of lf_schedule_token that creates a token to carry the specified
+ * value. The value is required to be malloc'd memory with a size equal to the
  * element_size of the specified action times the length parameter.
  *
  * See lf_schedule_token(), which this uses, for details.
@@ -155,7 +164,8 @@ trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, 
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for
  *  error.
  */
-trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* value, int length);
+trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay,
+                                   void* value, int length);
 
 /**
  * Check the deadline of the currently executing reaction against the
@@ -184,9 +194,9 @@ int lf_tag_compare(tag_t tag1, tag_t tag2);
 
 /**
  * Return the current tag of a reactor. If NULL is passed to this function it
- * will return the "global tag" of the runtime.  
+ * will return the "global tag" of the runtime.
  * @param self A pointer to the environment of which you want the current tag
- * @return the current tag 
+ * @return the current tag
  */
 tag_t lf_tag(void* env);
 

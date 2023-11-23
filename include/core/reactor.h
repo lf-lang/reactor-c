@@ -8,8 +8,8 @@
  * @section LICENSE
  * Copyright (c) 2019, The University of California at Berkeley.
  *
- * Redistribution and use in source and binary forms, with or without modification,
- * are permitted provided that the following conditions are met:
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
  *
  * 1. Redistributions of source code must retain the above copyright notice,
  *    this list of conditions and the following disclaimer.
@@ -18,15 +18,17 @@
  *    this list of conditions and the following disclaimer in the documentation
  *    and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
- * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
- * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
- * THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
- * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
- * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
- * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
- * THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ * CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ * SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ * INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ * CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+ * POSSIBILITY OF SUCH DAMAGE.
  *
  * @section DESCRIPTION
  *
@@ -50,15 +52,15 @@
 #define REACTOR_H
 
 #include "lf_types.h"
-#include "modes.h"     // Modal model support
+#include "modes.h" // Modal model support
 #include "port.h"
-#include "tag.h"       // Time-related functions.
+#include "tag.h" // Time-related functions.
 #include "trace.h"
 #include "util.h"
 
 //  ======== Macros ========  //
-#define CONSTRUCTOR(classname) (new_ ## classname)
-#define SELF_STRUCT_T(classname) (classname ## _self_t)
+#define CONSTRUCTOR(classname) (new_##classname)
+#define SELF_STRUCT_T(classname) (classname##_self_t)
 
 ////////////////////////////////////////////////////////////
 //// Macros for producing outputs.
@@ -82,12 +84,13 @@ void _lf_set_present(lf_port_base_t* port);
 // NOTE: Ports passed to these macros can be cast to:
 // lf_port_base_t: which has the field bool is_present (and more);
 // token_template_t: which has a lf_token_t* token field; or
-// token_type_t: Which has element_size, destructor, and copy_constructor fields.
+// token_type_t: Which has element_size, destructor, and copy_constructor
+// fields.
 
 /**
  * @brief Forward declaration for the executable preamble;
  * @param env Environment in which to execute to preamble
- * 
+ *
  */
 void _lf_executable_preamble(environment_t* env);
 
@@ -105,18 +108,20 @@ void _lf_executable_preamble(environment_t* env);
  *  reactor in form input_name.port_name.
  * @param value The value to insert into the self struct.
  */
-#define _LF_SET(out, val) \
-do { \
-    /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
-    /* even if it is a literal */ \
-    out->value = val; \
-   _lf_set_present((lf_port_base_t*)out); \
-    if (((token_template_t*)out)->token != NULL) { \
-        /* The cast "*((void**) &out->value)" is a hack to make the code */ \
-        /* compile with non-token types where value is not a pointer. */ \
-        lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, *((void**) &out->value), 1); \
-    } \
-} while(0)
+#define _LF_SET(out, val)                                                      \
+  do {                                                                         \
+    /* We need to assign "val" to "out->value" since we need to give "val" an  \
+     * address */                                                              \
+    /* even if it is a literal */                                              \
+    out->value = val;                                                          \
+    _lf_set_present((lf_port_base_t*)out);                                     \
+    if (((token_template_t*)out)->token != NULL) {                             \
+      /* The cast "*((void**) &out->value)" is a hack to make the code */      \
+      /* compile with non-token types where value is not a pointer. */         \
+      lf_token_t* token = _lf_initialize_token_with_value(                     \
+          (token_template_t*)out, *((void**)&out->value), 1);                  \
+    }                                                                          \
+  } while (0)
 
 /**
  * Version of set for output types given as 'type[]' where you
@@ -132,19 +137,21 @@ do { \
  * @see lf_token_t
  */
 #ifndef __cplusplus
-#define lf_set_array(out, val, length) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
-    out->value = token->value; \
-} while(0)
+#define lf_set_array(out, val, length)                                         \
+  do {                                                                         \
+    _lf_set_present((lf_port_base_t*)out);                                     \
+    lf_token_t* token =                                                        \
+        _lf_initialize_token_with_value((token_template_t*)out, val, length);  \
+    out->value = token->value;                                                 \
+  } while (0)
 #else
-#define lf_set_array(out, val, length) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, val, length); \
-    out->value = static_cast<decltype(out->value)>(token->value); \
-} while(0)
+#define lf_set_array(out, val, length)                                         \
+  do {                                                                         \
+    _lf_set_present((lf_port_base_t*)out);                                     \
+    lf_token_t* token =                                                        \
+        _lf_initialize_token_with_value((token_template_t*)out, val, length);  \
+    out->value = static_cast<decltype(out->value)>(token->value);              \
+  } while (0)
 #endif
 
 /**
@@ -162,19 +169,19 @@ do { \
  * @param out The output port (by name).
  */
 #ifndef __cplusplus
-#define _LF_SET_NEW(out) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
-    out->value = token->value; \
-} while(0)
+#define _LF_SET_NEW(out)                                                       \
+  do {                                                                         \
+    _lf_set_present((lf_port_base_t*)out);                                     \
+    lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1);       \
+    out->value = token->value;                                                 \
+  } while (0)
 #else
-#define _LF_SET_NEW(out) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1); \
-    out->value = static_cast<decltype(out->value)>(token->value); \
-} while(0)
+#define _LF_SET_NEW(out)                                                       \
+  do {                                                                         \
+    _lf_set_present((lf_port_base_t*)out);                                     \
+    lf_token_t* token = _lf_initialize_token((token_template_t*)out, 1);       \
+    out->value = static_cast<decltype(out->value)>(token->value);              \
+  } while (0)
 #endif // __cplusplus
 
 /**
@@ -191,21 +198,21 @@ do { \
  * @param length The length of the array to be sent.
  */
 #ifndef __cplusplus
-#define _LF_SET_NEW_ARRAY(out, len) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
-    out->value = token->value; \
-    out->length = len; \
-} while(0)
+#define _LF_SET_NEW_ARRAY(out, len)                                            \
+  do {                                                                         \
+    _lf_set_present((lf_port_base_t*)out);                                     \
+    lf_token_t* token = _lf_initialize_token((token_template_t*)out, len);     \
+    out->value = token->value;                                                 \
+    out->length = len;                                                         \
+  } while (0)
 #else
-#define _LF_SET_NEW_ARRAY(out, len) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-    lf_token_t* token = _lf_initialize_token((token_template_t*)out, len); \
-    out->value = static_cast<decltype(out->value)>(token->value); \
-    out->length = len; \
-} while(0)
+#define _LF_SET_NEW_ARRAY(out, len)                                            \
+  do {                                                                         \
+    _lf_set_present((lf_port_base_t*)out);                                     \
+    lf_token_t* token = _lf_initialize_token((token_template_t*)out, len);     \
+    out->value = static_cast<decltype(out->value)>(token->value);              \
+    out->length = len;                                                         \
+  } while (0)
 #endif
 /**
  * Version of set() for output types given as 'type[number]'.
@@ -216,10 +223,10 @@ do { \
  * after this is called.
  * @param out The output port (by name).
  */
-#define lf_set_present(out) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-} while(0)
+#define lf_set_present(out)                                                    \
+  do {                                                                         \
+    _lf_set_present((lf_port_base_t*)out);                                     \
+  } while (0)
 
 /**
  * Version of set() for output types given as 'type*' or 'type[]' where you want
@@ -231,21 +238,21 @@ do { \
  * @param token A pointer to token obtained from an input or action.
  */
 #ifndef __cplusplus
-#define _LF_SET_TOKEN(out, newtoken) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-    _lf_replace_template_token((token_template_t*)out, newtoken); \
-    out->value = newtoken->value; \
-    out->length = newtoken->length; \
-} while(0)
+#define _LF_SET_TOKEN(out, newtoken)                                           \
+  do {                                                                         \
+    _lf_set_present((lf_port_base_t*)out);                                     \
+    _lf_replace_template_token((token_template_t*)out, newtoken);              \
+    out->value = newtoken->value;                                              \
+    out->length = newtoken->length;                                            \
+  } while (0)
 #else
-#define _LF_SET_TOKEN(out, newtoken) \
-do { \
-   _lf_set_present((lf_port_base_t*)out); \
-    _lf_replace_template_token((token_template_t*)out, newtoken); \
-    out->value = static_cast<decltype(out->value)>(newtoken->value); \
-    out->length = newtoken->length; \
-} while(0)
+#define _LF_SET_TOKEN(out, newtoken)                                           \
+  do {                                                                         \
+    _lf_set_present((lf_port_base_t*)out);                                     \
+    _lf_replace_template_token((token_template_t*)out, newtoken);              \
+    out->value = static_cast<decltype(out->value)>(newtoken->value);           \
+    out->length = newtoken->length;                                            \
+  } while (0)
 #endif
 
 /**
@@ -258,10 +265,10 @@ do { \
  * @param destruct A pointer to a void function that takes a pointer argument
  *             or NULL to use the default void free(void*) function.
  */
-#define _LF_SET_DESTRUCTOR(out, destruct) \
-do { \
-    ((token_type_t*)out)->destructor = destruct; \
-} while(0)
+#define _LF_SET_DESTRUCTOR(out, destruct)                                      \
+  do {                                                                         \
+    ((token_type_t*)out)->destructor = destruct;                               \
+  } while (0)
 
 /**
  * Set the constructor used to copy construct "token->value" received
@@ -269,13 +276,13 @@ do { \
  *
  * @param out The output port (by name) or input of a contained
  *            reactor in form input_name.port_name.
- * @param constructor A pointer to a void* function that takes a pointer argument
- *                 or NULL to use the memcpy operator.
+ * @param constructor A pointer to a void* function that takes a pointer
+ * argument or NULL to use the memcpy operator.
  */
-#define _LF_SET_COPY_CONSTRUCTOR(out, constructor) \
-do { \
-    ((token_type_t*)out)->copy_constructor = constructor; \
-} while(0)
+#define _LF_SET_COPY_CONSTRUCTOR(out, constructor)                             \
+  do {                                                                         \
+    ((token_type_t*)out)->copy_constructor = constructor;                      \
+  } while (0)
 
 /**
  * Macro for extracting the deadline from the index of a reaction.
@@ -323,8 +330,9 @@ void lf_print_snapshot(environment_t* env);
  * Request a stop to execution as soon as possible.
  * In a non-federated execution with only a single enclave, this will occur
  * one microstep later than the current tag. In a federated execution or when
- * there is more than one enclave, it will likely occur at a later tag determined
- * by the RTI so that all federates and enclaves stop at the same tag.
+ * there is more than one enclave, it will likely occur at a later tag
+ * determined by the RTI so that all federates and enclaves stop at the same
+ * tag.
  */
 void lf_request_stop();
 
@@ -337,8 +345,8 @@ void lf_request_stop();
  * @param head Pointer to the head of a list on which to record
  *  the allocation, or NULL to not record it.
  */
-void* _lf_allocate(
-		size_t count, size_t size, struct allocation_record_t** head);
+void* _lf_allocate(size_t count, size_t size,
+                   struct allocation_record_t** head);
 
 /**
  * Free memory allocated using
@@ -370,7 +378,7 @@ void _lf_free_all_reactors(void);
  * Free memory recorded on the allocations list of the specified reactor.
  * @param self The self struct of the reactor.
  */
-void _lf_free_reactor(self_base_t *self);
+void _lf_free_reactor(self_base_t* self);
 
 /**
  * Generated function that optionally sets default command-line options.
@@ -382,7 +390,7 @@ void _lf_set_default_command_line_options(void);
  * start of a new time step.
  * @param env The environment in which we are executing
  */
-void _lf_start_time_step(environment_t *env);
+void _lf_start_time_step(environment_t* env);
 
 /**
  * Generated function that produces a table containing all triggers
@@ -396,9 +404,7 @@ void _lf_initialize_trigger_objects();
  * queue.
  * @param env The environment in which we are executing
  */
-void _lf_pop_events(environment_t *env);
-
-
+void _lf_pop_events(environment_t* env);
 
 /**
  * Internal version of the lf_schedule() function, used by generated
@@ -407,46 +413,51 @@ void _lf_pop_events(environment_t *env);
  * @param trigger The action or timer to be triggered.
  * @param delay Offset of the event release.
  * @param token The token payload.
- * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for
+ * error.
  */
-trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger, interval_t delay, lf_token_t* token);
-
+trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger,
+                              interval_t delay, lf_token_t* token);
 
 /**
  * Function to initialize mutexes for watchdogs
  */
 void _lf_initialize_watchdog_mutexes(void);
 
-
 /**
- * @brief Get the array of ids of enclaves directly upstream of the specified enclave.
- * This updates the specified result pointer to point to a statically allocated array of IDs
- * and returns the length of the array. The implementation is code-generated.
- * 
+ * @brief Get the array of ids of enclaves directly upstream of the specified
+ * enclave. This updates the specified result pointer to point to a statically
+ * allocated array of IDs and returns the length of the array. The
+ * implementation is code-generated.
+ *
  * @param enclave_id The enclave for which to report upstream IDs.
- * @param result The pointer to dereference and update to point to the resulting array.
+ * @param result The pointer to dereference and update to point to the resulting
+ * array.
  * @return The number of direct upstream enclaves.
  */
 int _lf_get_upstream_of(int enclave_id, int** result);
 
 /**
- * @brief Get the array of ids of enclaves directly downstream of the specified enclave.
- * This updates the specified result pointer to point to a statically allocated array of IDs
- * and returns the length of the array. The implementation is code-generated.
- * 
+ * @brief Get the array of ids of enclaves directly downstream of the specified
+ * enclave. This updates the specified result pointer to point to a statically
+ * allocated array of IDs and returns the length of the array. The
+ * implementation is code-generated.
+ *
  * @param enclave_id The enclave for which to report downstream IDs.
- * @param result The pointer to dereference and update to point to the resulting array.
+ * @param result The pointer to dereference and update to point to the resulting
+ * array.
  * @return The number of direct downstream enclaves.
  */
 int _lf_get_downstream_of(int enclave_id, int** result);
 
 /**
  * @brief Retrive the delays on the connections to direct upstream enclaves.
- * This updates the result pointer to point to a statically allocated array of delays.
- * The implementation is code-generated.
- * 
+ * This updates the result pointer to point to a statically allocated array of
+ * delays. The implementation is code-generated.
+ *
  * @param enclave_id The enclave for which to search for upstream delays.
- * @param result The pointer to dereference and update to point to the resulting array.
+ * @param result The pointer to dereference and update to point to the resulting
+ * array.
  * @return int The number of direct upstream enclaves.
  */
 int _lf_get_upstream_delay_of(int enclave_id, interval_t** result);
@@ -466,16 +477,20 @@ void termination();
  * what its parameter values are. This wraps a copy of the integer value
  * in a token. See schedule_token() for more details.
  * @param action The action to be triggered.
- * @param extra_delay Extra offset of the event release above that in the action.
+ * @param extra_delay Extra offset of the event release above that in the
+ * action.
  * @param value The value to send.
- * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for
+ * error.
  */
-trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_delay, int value);
+trigger_handle_t _lf_schedule_int(lf_action_base_t* action,
+                                  interval_t extra_delay, int value);
 
 /**
  * Create a dummy event to be used as a spacer in the event queue.
  */
-event_t* _lf_create_dummy_event(trigger_t* trigger, instant_t time, event_t* next, unsigned int offset);
+event_t* _lf_create_dummy_event(trigger_t* trigger, instant_t time,
+                                event_t* next, unsigned int offset);
 
 /**
  * Schedule the specified action with the specified token as a payload.
@@ -520,11 +535,14 @@ event_t* _lf_create_dummy_event(trigger_t* trigger, instant_t time, event_t* nex
  * The third condition is that the trigger argument is null.
  *
  * @param action The action to be triggered.
- * @param extra_delay Extra offset of the event release above that in the action.
+ * @param extra_delay Extra offset of the event release above that in the
+ * action.
  * @param token The token to carry the payload or null for no payload.
- * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for
+ * error.
  */
-trigger_handle_t _lf_schedule_token(lf_action_base_t* action, interval_t extra_delay, lf_token_t* token);
+trigger_handle_t _lf_schedule_token(lf_action_base_t* action,
+                                    interval_t extra_delay, lf_token_t* token);
 
 /**
  * Variant of schedule_token that creates a token to carry the specified value.
@@ -532,13 +550,17 @@ trigger_handle_t _lf_schedule_token(lf_action_base_t* action, interval_t extra_d
  * element_size of the specifies action times the length parameter.
  * See _lf_schedule_token() for details.
  * @param action The action to be triggered.
- * @param extra_delay Extra offset of the event release above that in the action.
+ * @param extra_delay Extra offset of the event release above that in the
+ * action.
  * @param value Dynamically allocated memory containing the value to send.
  * @param length The length of the array, if it is an array, or 1 for a
  *  scalar and 0 for no payload.
- * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for
+ * error.
  */
-trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_delay, void* value, size_t length);
+trigger_handle_t _lf_schedule_value(lf_action_base_t* action,
+                                    interval_t extra_delay, void* value,
+                                    size_t length);
 
 /**
  * Schedule an action to occur with the specified value and time offset
@@ -551,33 +573,35 @@ trigger_handle_t _lf_schedule_value(lf_action_base_t* action, interval_t extra_d
  * @param offset The time offset over and above that in the action.
  * @param value A pointer to the value to copy.
  * @param length The length, if an array, 1 if a scalar, and 0 if value is NULL.
- * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for
+ * error.
  */
-trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset, void* value, size_t length);
+trigger_handle_t _lf_schedule_copy(lf_action_base_t* action, interval_t offset,
+                                   void* value, size_t length);
 
 // See reactor.h for doc.
 int _lf_fd_send_stop_request_to_rti(tag_t stop_tag);
 
 /**
- * @brief Will update the argument to point to the beginning of the array of environments in this program
+ * @brief Will update the argument to point to the beginning of the array of
+ * environments in this program
  * @note Is code-generated by the compiler
  * @param envs A double pointer which will be dereferenced and modified
  * @return int The number of environments in the array
  */
-int _lf_get_environments(environment_t **envs);
-
+int _lf_get_environments(environment_t** envs);
 
 /**
- * @brief Will create and initialize the required number of environments for the program
+ * @brief Will create and initialize the required number of environments for the
+ * program
  * @note Will be code generated by the compiler
  */
 void _lf_create_environments();
 
-
 /**
  * These functions must be implemented by both threaded and single-threaded
  * runtime. Should be routed to appropriate API calls in platform.h
-*/
+ */
 
 #endif /* REACTOR_H */
 /** @} */

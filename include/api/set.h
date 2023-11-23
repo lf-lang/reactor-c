@@ -15,26 +15,31 @@ are permitted provided that the following conditions are met:
    this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  * @section DESCRIPTION
  * Target-specific runtime functions for the C target language.
  * This API layer can be used in conjunction with:
  *     target C;
- * 
- * Note for target language developers. This is one way of developing a target language where 
- * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca 
- * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a 
+ *
+ * Note for target language developers. This is one way of developing a target
+language where
+ * the C core runtime is adopted. This file is a translation layer that
+implements Lingua Franca
+ * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This
+file can act as a
  * template for future runtime developement for target languages.
- * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
+ * For source generation, see
+xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
  */
 
 #ifndef CTARGET_SET
@@ -54,30 +59,30 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * to the specified value.
  *
  * If the value argument is a primitive type such as int,
- * double, etc. as well as the built-in types bool and string, 
+ * double, etc. as well as the built-in types bool and string,
  * the value is copied and therefore the variable carrying the
  * value can be subsequently modified without changing the output.
  * This also applies to structs with a type defined by a typedef
  * so that the type designating string does not end in '*'.
- * 
+ *
  * If the value argument is a pointer
  * to memory that the calling reaction has dynamically allocated,
  * the memory will be automatically freed once all downstream
  * reactions no longer need the value.
  * If 'lf_set_destructor' is called on 'out', then that destructor
- * will be used to free 'value'. 
+ * will be used to free 'value'.
  * Otherwise, the default void free(void*) function is used.
- * 
+ *
  * @param out The output port (by name) or input of a contained
  *  reactor in form input_name.port_name.
  * @param value The value to insert into the self struct.
  */
 #define lf_set(out, val) _LF_SET(out, val)
-#define SET(out, val) \
-do { \
-        _Pragma ("Warning \"'SET' is deprecated. Use 'lf_set' instead.\""); \
-        _LF_SET(out, val); \
-} while (0)
+#define SET(out, val)                                                          \
+  do {                                                                         \
+    _Pragma("Warning \"'SET' is deprecated. Use 'lf_set' instead.\"");         \
+    _LF_SET(out, val);                                                         \
+  } while (0)
 
 /**
  * Version of lf_set for output types given as `type[]` or `type*` where you
@@ -92,11 +97,11 @@ do { \
  * @param length The length of the array to send.
  * @see lf_token_t
  */
-#define SET_ARRAY(out, val, elem_size, length) \
-do { \
-        _Pragma ("Warning \"'SET_ARRAY' is deprecated.\""); \
-        lf_set_array(out, val, length); \
-} while (0)
+#define SET_ARRAY(out, val, elem_size, length)                                 \
+  do {                                                                         \
+    _Pragma("Warning \"'SET_ARRAY' is deprecated.\"");                         \
+    lf_set_array(out, val, length);                                            \
+  } while (0)
 
 /**
  * Version of lf_set() for output types given as 'type*' that
@@ -112,11 +117,11 @@ do { \
  * struct to true (which causes the object message to be sent),
  * @param out The output port (by name).
  */
-#define SET_NEW(out) \
-do { \
-        _Pragma ("Warning \"'SET_NEW' is deprecated.\""); \
-        _LF_SET_NEW(out); \
-} while (0)
+#define SET_NEW(out)                                                           \
+  do {                                                                         \
+    _Pragma("Warning \"'SET_NEW' is deprecated.\"");                           \
+    _LF_SET_NEW(out);                                                          \
+  } while (0)
 
 /**
  * Version of lf_set() for output types given as 'type[]'.
@@ -131,11 +136,11 @@ do { \
  * @param out The output port (by name).
  * @param len The length of the array to be sent.
  */
-#define SET_NEW_ARRAY(out, len) \
-do { \
-        _Pragma ("Warning \"'SET_NEW_ARRAY' is deprecated.\""); \
-        _LF_SET_NEW_ARRAY(out, len); \
-} while (0)
+#define SET_NEW_ARRAY(out, len)                                                \
+  do {                                                                         \
+    _Pragma("Warning \"'SET_NEW_ARRAY' is deprecated.\"");                     \
+    _LF_SET_NEW_ARRAY(out, len);                                               \
+  } while (0)
 
 /**
  * Version of lf_set() for output types given as 'type[number]'.
@@ -146,15 +151,15 @@ do { \
  * after this is called.
  * @param out The output port (by name).
  */
-#define SET_PRESENT(out) \
-do { \
-	_Pragma ("Warning \"'SET_PRESENT' is deprecated.\""); \
-        _lf_set_present((lf_port_base_t*)out); \
-} while (0)
+#define SET_PRESENT(out)                                                       \
+  do {                                                                         \
+    _Pragma("Warning \"'SET_PRESENT' is deprecated.\"");                       \
+    _lf_set_present((lf_port_base_t*)out);                                     \
+  } while (0)
 
 /**
- * Version of lf_set() for output types given as 'type*' or 'type[]' where you want
- * to forward an input or action without copying it.
+ * Version of lf_set() for output types given as 'type*' or 'type[]' where you
+ * want to forward an input or action without copying it.
  *
  * The deallocation of memory is delegated to downstream reactors, which
  * automatically deallocate when the reference count drops to zero.
@@ -162,34 +167,36 @@ do { \
  * @param token A pointer to token obtained from an input or action.
  */
 #define lf_set_token(out, newtoken) _LF_SET_TOKEN(out, newtoken)
-#define SET_TOKEN(out, newtoken) \
-do { \
-        _Pragma ("Warning \"'SET_TOKEN' is deprecated. Use 'lf_set_token' instead.\""); \
-        _LF_SET_TOKEN(out, newtoken); \
-} while (0)
+#define SET_TOKEN(out, newtoken)                                               \
+  do {                                                                         \
+    _Pragma(                                                                   \
+        "Warning \"'SET_TOKEN' is deprecated. Use 'lf_set_token' instead.\""); \
+    _LF_SET_TOKEN(out, newtoken);                                              \
+  } while (0)
 
 /**
  * Set the destructor used to free "token->value" set on "out".
  * That memory will be automatically freed once all downstream
  * reactions no longer need the value.
- * 
+ *
  * @param out The output port (by name) or input of a contained
  *            reactor in form input_name.port_name.
  * @param dtor A pointer to a void function that takes a pointer argument
- *             or NULL to use the default void free(void*) function. 
+ *             or NULL to use the default void free(void*) function.
  */
 #define lf_set_destructor(out, dtor) _LF_SET_DESTRUCTOR(out, dtor)
 
 /**
  * Set the destructor used to copy construct "token->value" received
  * by "in" if "in" is mutable.
- * 
+ *
  * @param out The output port (by name) or input of a contained
  *            reactor in form input_name.port_name.
  * @param cpy_ctor A pointer to a void* function that takes a pointer argument
  *                 or NULL to use the memcpy operator.
  */
-#define lf_set_copy_constructor(out, cpy_ctor) _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor)
+#define lf_set_copy_constructor(out, cpy_ctor)                                 \
+  _LF_SET_COPY_CONSTRUCTOR(out, cpy_ctor)
 
 //////////////////////////////////////////////////////////////
 /////////////  SET_MODE Function (to switch a mode)
@@ -203,22 +210,26 @@ do { \
  */
 #ifdef MODAL_REACTORS
 #define lf_set_mode(mode) _LF_SET_MODE(mode)
-#define SET_MODE(mode) \
-do { \
-        _Pragma ("Warning \"'SET_MODE' is deprecated. Use 'lf_set_mode' instead.\""); \
-        _LF_SET_MODE(mode); \
-} while (0)
+#define SET_MODE(mode)                                                         \
+  do {                                                                         \
+    _Pragma(                                                                   \
+        "Warning \"'SET_MODE' is deprecated. Use 'lf_set_mode' instead.\"");   \
+    _LF_SET_MODE(mode);                                                        \
+  } while (0)
 #endif // MODAL_REACTORS
 
 #endif // CTARGET_SET
 
-// For simplicity and backward compatability, dont require the environment-pointer when calling the timing API.
-// As long as this is done from the context of a reaction, `self` is in scope and is a pointer to the self-struct
-// of the current reactor. 
+// For simplicity and backward compatability, dont require the
+// environment-pointer when calling the timing API. As long as this is done from
+// the context of a reaction, `self` is in scope and is a pointer to the
+// self-struct of the current reactor.
 #define lf_tag() lf_tag(self->base.environment)
 #define get_current_tag() get_current_tag(self->base.environment)
 #define get_microstep() get_microstep(self->base.environment)
 #define lf_time_logical() lf_time_logical(self->base.environment)
-#define lf_time_logical_elapsed() lf_time_logical_elapsed(self->base.environment)
-#define get_elapsed_logical_time() get_elapsed_logical_time(self->base.environment)
+#define lf_time_logical_elapsed()                                              \
+  lf_time_logical_elapsed(self->base.environment)
+#define get_elapsed_logical_time()                                             \
+  get_elapsed_logical_time(self->base.environment)
 #define get_logical_time() get_logical_time(self->base.environment)

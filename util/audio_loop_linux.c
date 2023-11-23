@@ -2,13 +2,14 @@
  * @file
  * @author Edward A. Lee
  * @author Soroush Bateni
- * @copyright (c) 2020-2023, The University of California at Berkeley and UT Dallas.
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
- * 
+ * @copyright (c) 2020-2023, The University of California at Berkeley and UT
+ * Dallas. License in [BSD
+ * 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ *
  * @brief Utility function for playing audio on Linux.
- * 
+ *
  * See audio_loop.h for instructions.
- * 
+ *
  * Help from http://equalarea.com/paul/alsa-audio.html
  *
  */
@@ -34,17 +35,17 @@ pthread_cond_t lf_audio_cond = PTHREAD_COND_INITIALIZER;
 int16_t* next_buffer = NULL;
 instant_t next_buffer_start_time = NEVER;
 
-snd_pcm_t *playback_handle;
-snd_async_handler_t *pcm_callback;
+snd_pcm_t* playback_handle;
+snd_async_handler_t* pcm_callback;
 
 struct note {
-    lf_waveform_t* waveform;
-    int position;   // Starts at 0 when note starts.
-    double volume;  // 0.0 for not active.
+  lf_waveform_t* waveform;
+  int position;  // Starts at 0 when note starts.
+  double volume; // 0.0 for not active.
 };
 
 // Array keeping track of notes being played.
-struct note notes[NUM_NOTES] = { 0 };
+struct note notes[NUM_NOTES] = {0};
 
 // Notes are added sequentially.
 // When we reach the end of the notes array, we cycle
@@ -60,74 +61,81 @@ int note_counter = 0;
  * @param value The amplitude to add to whatever amplitude is already there.
  */
 void add_to_sound(int index_offset, double value) {
-    int sample_value = next_buffer[index_offset] + value;
-    if (sample_value > MAX_AMPLITUDE) {
-        sample_value = MAX_AMPLITUDE;
-    } else if (sample_value < -MAX_AMPLITUDE) {
-        sample_value = -MAX_AMPLITUDE;
-    }
-    next_buffer[index_offset] = (int16_t)sample_value;
+  int sample_value = next_buffer[index_offset] + value;
+  if (sample_value > MAX_AMPLITUDE) {
+    sample_value = MAX_AMPLITUDE;
+  } else if (sample_value < -MAX_AMPLITUDE) {
+    sample_value = -MAX_AMPLITUDE;
+  }
+  next_buffer[index_offset] = (int16_t)sample_value;
 }
 
 /**
  * Function that is called by the audio loop to fill the audio buffer
  * with the next batch of audio data.  When this callback occurs,
- * this grabs the mutex lock, copies the buffer that the main program 
+ * this grabs the mutex lock, copies the buffer that the main program
  * has been filling into the destination buffer, clears the next
  * buffer, and updates the start time of the next buffer.
  * @param playback_handle Handle for the audio interface
- * @param buffer_ref Reference to the buffer of size AUDIO_BUFFER_SIZE to be copied to the hardware
+ * @param buffer_ref Reference to the buffer of size AUDIO_BUFFER_SIZE to be
+ * copied to the hardware
  */
-int callback (snd_pcm_t *playback_handle,  int16_t buf_ref[]) {
-    int error_number;
-    pthread_mutex_lock(&lf_audio_mutex);
+int callback(snd_pcm_t* playback_handle, int16_t buf_ref[]) {
+  int error_number;
+  pthread_mutex_lock(&lf_audio_mutex);
 
-    // next_buffer = buf_ref;
-    next_buffer = buf_ref;
-    // memset(next_buffer, 0, AUDIO_BUFFER_SIZE * sizeof(int16_t));
+  // next_buffer = buf_ref;
+  next_buffer = buf_ref;
+  // memset(next_buffer, 0, AUDIO_BUFFER_SIZE * sizeof(int16_t));
 
-    // Clear out the next buffer.
-    next_buffer_start_time += BUFFER_DURATION_NS;
-    
-    // Fill the buffer with any trailing sample data that
-    // didn't fit in the previous buffer.
-    for (int note_to_use = 0; note_to_use < NUM_NOTES; note_to_use++) {
-        struct note* note_instance = &(notes[note_to_use]);
+  // Clear out the next buffer.
+  next_buffer_start_time += BUFFER_DURATION_NS;
 
-        // Add as much of the note instance into the buffer as will fit.
-        for (int i = 0; i < AUDIO_BUFFER_SIZE; i++) {
-            if (note_instance->waveform == NULL || note_instance->volume == 0.0) {
-                continue;
-            }
-            // Calculate the value to add to the sound by averaging all the channels.
-            int value = 0;
-            for (int channel = 0; channel < note_instance->waveform->num_channels; channel++) {
-                value += note_instance->waveform->waveform[note_instance->position + channel];
-            }
-            value = value / note_instance->waveform->num_channels;
-            add_to_sound(i, value * note_instance->volume);
+  // Fill the buffer with any trailing sample data that
+  // didn't fit in the previous buffer.
+  for (int note_to_use = 0; note_to_use < NUM_NOTES; note_to_use++) {
+    struct note* note_instance = &(notes[note_to_use]);
 
-            note_instance->position += note_instance->waveform->num_channels;
-            if (note_instance->position >= note_instance->waveform->length - note_instance->waveform->num_channels) {
-                // Reached the end of the note. Reset the note.
-                note_instance->volume = 0.0;
-                note_instance->position = 0;
-                note_instance->waveform = NULL;
-                break;
-            }
-        }
+    // Add as much of the note instance into the buffer as will fit.
+    for (int i = 0; i < AUDIO_BUFFER_SIZE; i++) {
+      if (note_instance->waveform == NULL || note_instance->volume == 0.0) {
+        continue;
+      }
+      // Calculate the value to add to the sound by averaging all the channels.
+      int value = 0;
+      for (int channel = 0; channel < note_instance->waveform->num_channels;
+           channel++) {
+        value += note_instance->waveform
+                     ->waveform[note_instance->position + channel];
+      }
+      value = value / note_instance->waveform->num_channels;
+      add_to_sound(i, value * note_instance->volume);
+
+      note_instance->position += note_instance->waveform->num_channels;
+      if (note_instance->position >=
+          note_instance->waveform->length -
+              note_instance->waveform->num_channels) {
+        // Reached the end of the note. Reset the note.
+        note_instance->volume = 0.0;
+        note_instance->position = 0;
+        note_instance->waveform = NULL;
+        break;
+      }
     }
-    
-    // Reinsert this same audio buffer at the end of the queue.
-    if ((error_number = snd_pcm_writei(playback_handle, buf_ref, AUDIO_BUFFER_SIZE)) < 0) {
-        lf_print_error("Writing to sound buffer failed: %s", snd_strerror(error_number));
-    }
+  }
 
-    // In case the other thread is waiting for this event, notify
-    // (the other thread should not be waiting).
-    pthread_cond_signal(&lf_audio_cond);
-    pthread_mutex_unlock(&lf_audio_mutex);
-    return error_number;
+  // Reinsert this same audio buffer at the end of the queue.
+  if ((error_number =
+           snd_pcm_writei(playback_handle, buf_ref, AUDIO_BUFFER_SIZE)) < 0) {
+    lf_print_error("Writing to sound buffer failed: %s",
+                   snd_strerror(error_number));
+  }
+
+  // In case the other thread is waiting for this event, notify
+  // (the other thread should not be waiting).
+  pthread_cond_signal(&lf_audio_cond);
+  pthread_mutex_unlock(&lf_audio_mutex);
+  return error_number;
 }
 
 bool stop_audio = false;
@@ -136,258 +144,274 @@ bool stop_audio = false;
  * Run the audio loop indefinitely.
  */
 void* run_audio_loop(void* ignored) {
-    snd_pcm_hw_params_t *hw_params;
-    snd_pcm_sw_params_t *sw_params;
-    snd_pcm_sframes_t frames_to_deliver;
-    int error_number;
-    unsigned int sample_rate = SAMPLE_RATE;
-    const char* device_name = AUDIO_DEVICE;
-    int buffer_size_bytes = AUDIO_BUFFER_SIZE * 4 * NUM_CHANNELS;
+  snd_pcm_hw_params_t* hw_params;
+  snd_pcm_sw_params_t* sw_params;
+  snd_pcm_sframes_t frames_to_deliver;
+  int error_number;
+  unsigned int sample_rate = SAMPLE_RATE;
+  const char* device_name = AUDIO_DEVICE;
+  int buffer_size_bytes = AUDIO_BUFFER_SIZE * 4 * NUM_CHANNELS;
 
-    if ((error_number = snd_pcm_open(&playback_handle, device_name, SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
-        lf_print_error_and_exit("Cannot open audio device %s (%s)\n",
-                AUDIO_DEVICE,
-             snd_strerror(error_number));
-    }
+  if ((error_number = snd_pcm_open(&playback_handle, device_name,
+                                   SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
+    lf_print_error_and_exit("Cannot open audio device %s (%s)\n", AUDIO_DEVICE,
+                            snd_strerror(error_number));
+  }
 
-    if ((error_number = snd_pcm_hw_params_malloc(&hw_params)) < 0) {
-        lf_print_error_and_exit("Cannot allocate hardware parameter structure (%s)\n",
-             snd_strerror(error_number));
-    }
+  if ((error_number = snd_pcm_hw_params_malloc(&hw_params)) < 0) {
+    lf_print_error_and_exit(
+        "Cannot allocate hardware parameter structure (%s)\n",
+        snd_strerror(error_number));
+  }
 
-    if ((error_number = snd_pcm_hw_params_any(playback_handle, hw_params)) < 0) {
-        lf_print_error_and_exit("Cannot initialize hardware parameter structure (%s)\n",
-             snd_strerror(error_number));
-    }
+  if ((error_number = snd_pcm_hw_params_any(playback_handle, hw_params)) < 0) {
+    lf_print_error_and_exit(
+        "Cannot initialize hardware parameter structure (%s)\n",
+        snd_strerror(error_number));
+  }
 
-    if ((error_number = snd_pcm_hw_params_set_access(playback_handle, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
-        lf_print_error_and_exit("Cannot set access type (%s)\n",
-             snd_strerror(error_number));
-    }
+  if ((error_number = snd_pcm_hw_params_set_access(
+           playback_handle, hw_params, SND_PCM_ACCESS_RW_INTERLEAVED)) < 0) {
+    lf_print_error_and_exit("Cannot set access type (%s)\n",
+                            snd_strerror(error_number));
+  }
 
-    if ((error_number = snd_pcm_hw_params_set_format(playback_handle, hw_params, SND_PCM_FORMAT_S16_LE)) < 0) {
-        lf_print_error_and_exit("Cannot set sample format (%s)\n",
-             snd_strerror(error_number));
-    }
+  if ((error_number = snd_pcm_hw_params_set_format(
+           playback_handle, hw_params, SND_PCM_FORMAT_S16_LE)) < 0) {
+    lf_print_error_and_exit("Cannot set sample format (%s)\n",
+                            snd_strerror(error_number));
+  }
 
-    if ((error_number = snd_pcm_hw_params_set_rate_near(playback_handle, hw_params, &sample_rate, 0)) < 0) {
-        lf_print_error_and_exit("Cannot set sample rate (%s)\n",
-             snd_strerror(error_number));
-    }
-    // FIXME: check sample rate
+  if ((error_number = snd_pcm_hw_params_set_rate_near(
+           playback_handle, hw_params, &sample_rate, 0)) < 0) {
+    lf_print_error_and_exit("Cannot set sample rate (%s)\n",
+                            snd_strerror(error_number));
+  }
+  // FIXME: check sample rate
 
-    if ((error_number = snd_pcm_hw_params_set_channels(playback_handle, hw_params, NUM_CHANNELS)) < 0) {
-        lf_print_error_and_exit("Cannot set channel count (%s)\n",
-             snd_strerror(error_number));
-    }
-    snd_pcm_uframes_t periods = buffer_size_bytes / AUDIO_BUFFER_SIZE;
-    if ((error_number = snd_pcm_hw_params_set_periods(playback_handle, hw_params, periods, 0)) < 0) {
-        lf_print_error_and_exit("Cannot set channel count (%s)\n",
-             snd_strerror(error_number));
-    }
-    snd_pcm_uframes_t size = buffer_size_bytes;
-    if ((error_number = snd_pcm_hw_params_set_buffer_size_near(playback_handle, hw_params, &size)) < 0) {
-        lf_print_error_and_exit("Cannot set channel count (%s)\n",
-             snd_strerror(error_number));
-    }
-    if ((error_number = snd_pcm_hw_params(playback_handle, hw_params)) < 0) {
-        lf_print_error_and_exit("Cannot set parameters (%s)\n",
-             snd_strerror(error_number));
-    }
+  if ((error_number = snd_pcm_hw_params_set_channels(playback_handle, hw_params,
+                                                     NUM_CHANNELS)) < 0) {
+    lf_print_error_and_exit("Cannot set channel count (%s)\n",
+                            snd_strerror(error_number));
+  }
+  snd_pcm_uframes_t periods = buffer_size_bytes / AUDIO_BUFFER_SIZE;
+  if ((error_number = snd_pcm_hw_params_set_periods(playback_handle, hw_params,
+                                                    periods, 0)) < 0) {
+    lf_print_error_and_exit("Cannot set channel count (%s)\n",
+                            snd_strerror(error_number));
+  }
+  snd_pcm_uframes_t size = buffer_size_bytes;
+  if ((error_number = snd_pcm_hw_params_set_buffer_size_near(
+           playback_handle, hw_params, &size)) < 0) {
+    lf_print_error_and_exit("Cannot set channel count (%s)\n",
+                            snd_strerror(error_number));
+  }
+  if ((error_number = snd_pcm_hw_params(playback_handle, hw_params)) < 0) {
+    lf_print_error_and_exit("Cannot set parameters (%s)\n",
+                            snd_strerror(error_number));
+  }
 
-    snd_pcm_hw_params_free(hw_params);
+  snd_pcm_hw_params_free(hw_params);
 
-    /* tell ALSA to wake us up whenever 4096 or more frames
-       of playback data can be delivered. Also, tell
-       ALSA that we'll start the device ourselves.
-    */
+  /* tell ALSA to wake us up whenever 4096 or more frames
+     of playback data can be delivered. Also, tell
+     ALSA that we'll start the device ourselves.
+  */
 
-    if ((error_number = snd_pcm_sw_params_malloc(&sw_params)) < 0) {
-        lf_print_error_and_exit("Cannot allocate software parameters structure (%s)\n",
-             snd_strerror (error_number));
-    }
-    if ((error_number = snd_pcm_sw_params_current(playback_handle, sw_params)) < 0) {
-        lf_print_error_and_exit("Cannot initialize software parameters structure (%s)\n",
-             snd_strerror (error_number));
-    }
-    if ((error_number = snd_pcm_sw_params_set_avail_min(playback_handle, sw_params, buffer_size_bytes)) < 0) {
-        lf_print_error_and_exit("Cannot set minimum available count (%s)\n",
-             snd_strerror (error_number));
-    }
-    if ((error_number = snd_pcm_sw_params_set_start_threshold(playback_handle, sw_params, AUDIO_BUFFER_SIZE)) < 0) {
-        lf_print_error_and_exit("Cannot set start mode (%s)\n",
-             snd_strerror (error_number));
-    }
-    if ((error_number = snd_pcm_sw_params(playback_handle, sw_params)) < 0) {
-        lf_print_error_and_exit("Cannot set software parameters (%s)\n",
-             snd_strerror (error_number));
-    }
+  if ((error_number = snd_pcm_sw_params_malloc(&sw_params)) < 0) {
+    lf_print_error_and_exit(
+        "Cannot allocate software parameters structure (%s)\n",
+        snd_strerror(error_number));
+  }
+  if ((error_number = snd_pcm_sw_params_current(playback_handle, sw_params)) <
+      0) {
+    lf_print_error_and_exit(
+        "Cannot initialize software parameters structure (%s)\n",
+        snd_strerror(error_number));
+  }
+  if ((error_number = snd_pcm_sw_params_set_avail_min(
+           playback_handle, sw_params, buffer_size_bytes)) < 0) {
+    lf_print_error_and_exit("Cannot set minimum available count (%s)\n",
+                            snd_strerror(error_number));
+  }
+  if ((error_number = snd_pcm_sw_params_set_start_threshold(
+           playback_handle, sw_params, AUDIO_BUFFER_SIZE)) < 0) {
+    lf_print_error_and_exit("Cannot set start mode (%s)\n",
+                            snd_strerror(error_number));
+  }
+  if ((error_number = snd_pcm_sw_params(playback_handle, sw_params)) < 0) {
+    lf_print_error_and_exit("Cannot set software parameters (%s)\n",
+                            snd_strerror(error_number));
+  }
 
-    snd_pcm_sw_params_free(sw_params);
+  snd_pcm_sw_params_free(sw_params);
 
+  /*
+   * The interface will interrupt the kernel every AUDIO_BUFFER_SIZE frames, and
+   * ALSA will wake up this program very soon after that.
+   */
+
+  if ((error_number = snd_pcm_prepare(playback_handle)) < 0) {
+    lf_print_error_and_exit("Cannot prepare audio interface for use (%s)\n",
+                            snd_strerror(error_number));
+  }
+
+  int16_t buffer[buffer_size_bytes];
+  memset(buffer, 0, buffer_size_bytes * sizeof(int16_t));
+  int head = 0;
+  while (!stop_audio) {
     /*
-     * The interface will interrupt the kernel every AUDIO_BUFFER_SIZE frames, and ALSA
-     * will wake up this program very soon after that.
-    */
+     * Wait until the interface is ready for data, or BUFFER_DURATION_NS
+     * has elapsed.
+     */
 
-    if ((error_number = snd_pcm_prepare(playback_handle)) < 0) {
-        lf_print_error_and_exit("Cannot prepare audio interface for use (%s)\n",
-             snd_strerror (error_number));
+    if ((error_number =
+             snd_pcm_wait(playback_handle, BUFFER_DURATION_NS / 1000)) < 0) {
+      lf_print_error("Poll failed (%s)\n", strerror(errno));
+      break;
     }
 
+    /* Find out how much space is available for playback data */
 
-    int16_t buffer[buffer_size_bytes];
-    memset(buffer, 0, buffer_size_bytes * sizeof(int16_t));
-    int head = 0;
-    while (!stop_audio) {
-        /*
-         * Wait until the interface is ready for data, or BUFFER_DURATION_NS
-         * has elapsed.
-        */
-
-        if ((error_number = snd_pcm_wait(playback_handle, BUFFER_DURATION_NS/1000)) < 0) {
-            lf_print_error("Poll failed (%s)\n", strerror(errno));
-            break;
-        }
-
-        /* Find out how much space is available for playback data */
-
-        if ((frames_to_deliver = snd_pcm_avail_update(playback_handle)) < 0) {
-            if (frames_to_deliver == -EPIPE) {
-                lf_print_error("An xrun occured\n");
-                continue;
-            } else {
-                lf_print_error("Unknown ALSA avail update return value (%d)\n",
-                     frames_to_deliver);
-                break;
-            }
-        }
-
-        if (frames_to_deliver < AUDIO_BUFFER_SIZE) {
-            continue;
-        }
-
-        /* deliver the data */
-        callback(playback_handle, &(buffer[head]));
-
-
-        if (head <= (buffer_size_bytes - (2 * AUDIO_BUFFER_SIZE))) {
-            head += AUDIO_BUFFER_SIZE;
-        } else {
-            head = 0;
-        }
-        // Clear out the next buffer.
-        memset(&(buffer[head]), 0, AUDIO_BUFFER_SIZE * sizeof(int16_t));
-        next_buffer = &(buffer[head]);
+    if ((frames_to_deliver = snd_pcm_avail_update(playback_handle)) < 0) {
+      if (frames_to_deliver == -EPIPE) {
+        lf_print_error("An xrun occured\n");
+        continue;
+      } else {
+        lf_print_error("Unknown ALSA avail update return value (%d)\n",
+                       frames_to_deliver);
+        break;
+      }
     }
 
-    snd_pcm_close(playback_handle);
+    if (frames_to_deliver < AUDIO_BUFFER_SIZE) {
+      continue;
+    }
 
+    /* deliver the data */
+    callback(playback_handle, &(buffer[head]));
 
-    return NULL;
+    if (head <= (buffer_size_bytes - (2 * AUDIO_BUFFER_SIZE))) {
+      head += AUDIO_BUFFER_SIZE;
+    } else {
+      head = 0;
+    }
+    // Clear out the next buffer.
+    memset(&(buffer[head]), 0, AUDIO_BUFFER_SIZE * sizeof(int16_t));
+    next_buffer = &(buffer[head]);
+  }
+
+  snd_pcm_close(playback_handle);
+
+  return NULL;
 }
 
 pthread_t loop_thread_id;
 bool loop_thread_started = false;
 
 void lf_start_audio_loop(instant_t start_time) {
-    
-    if (loop_thread_started) return;
-    loop_thread_started = true;
-    
-    // Set the start time of the current buffer to the current time
-    // minus twice the buffer duration. The two calls to callback()
-    // during setup will increment this to equal to the start time.
-    // Then create a thread to
-    // start the audio loop. That thread will place
-    // two empty audio buffers in the queue and will schedule the
-    // audio to start at the current logical time plus the buffer
-    // duration. The current buffer being filled (the second buffer)
-    // will have logical start time 0, but will play later by less
-    // than the buffer duration.
-    next_buffer_start_time = start_time - 2 * BUFFER_DURATION_NS;
-    
-    // Start the audio loop thread.
-    pthread_create(&loop_thread_id, NULL, &run_audio_loop, NULL);
+
+  if (loop_thread_started)
+    return;
+  loop_thread_started = true;
+
+  // Set the start time of the current buffer to the current time
+  // minus twice the buffer duration. The two calls to callback()
+  // during setup will increment this to equal to the start time.
+  // Then create a thread to
+  // start the audio loop. That thread will place
+  // two empty audio buffers in the queue and will schedule the
+  // audio to start at the current logical time plus the buffer
+  // duration. The current buffer being filled (the second buffer)
+  // will have logical start time 0, but will play later by less
+  // than the buffer duration.
+  next_buffer_start_time = start_time - 2 * BUFFER_DURATION_NS;
+
+  // Start the audio loop thread.
+  pthread_create(&loop_thread_id, NULL, &run_audio_loop, NULL);
 }
 
-void lf_stop_audio_loop() {
-    stop_audio = true;
-}
+void lf_stop_audio_loop() { stop_audio = true; }
 
-int lf_play_audio_waveform(lf_waveform_t* waveform, float emphasis, instant_t start_time) {
-    int result = 0;
-    pthread_mutex_lock(&lf_audio_mutex);
-    
-    // If the buffer into which to write has not yet been set up, wait.
-    while (next_buffer == NULL) {
-        pthread_cond_wait(&lf_audio_cond, &lf_audio_mutex);
-    }
-    instant_t time_offset = start_time - next_buffer_start_time;
-    
-    // If this is late, then tick right away.
+int lf_play_audio_waveform(lf_waveform_t* waveform, float emphasis,
+                           instant_t start_time) {
+  int result = 0;
+  pthread_mutex_lock(&lf_audio_mutex);
+
+  // If the buffer into which to write has not yet been set up, wait.
+  while (next_buffer == NULL) {
+    pthread_cond_wait(&lf_audio_cond, &lf_audio_mutex);
+  }
+  instant_t time_offset = start_time - next_buffer_start_time;
+
+  // If this is late, then tick right away.
+  if (time_offset < 0) {
+    // printf("WARNING: audio has passed the specified time by %lld.\n",
+    // time_offset);
+    time_offset = 0;
+    result = 1;
+  }
+  // Calculate the index of the tick.
+  size_t index_offset = (time_offset * SAMPLE_RATE) / BILLION;
+
+  // If the offset is beyond the end of the audio buffer, then the program
+  // has gotten ahead of the audio. Wait for audio to catch up.
+  // This happens when a timestamp is at or close to the start time
+  // for the buffer because the audio system has not yet invoked the
+  // callback to swap buffers.  Here, we wait for the callback to
+  // occur.
+  while (index_offset >= AUDIO_BUFFER_SIZE) {
+    pthread_cond_wait(&lf_audio_cond, &lf_audio_mutex);
+    // next_buffer_start_time has been incremented by BUFFER_DURATION_NS.
+    time_offset = start_time - next_buffer_start_time;
+    // time_offset should be >= 0, but just in case:
     if (time_offset < 0) {
-        // printf("WARNING: audio has passed the specified time by %lld.\n", time_offset);
-        time_offset = 0;
-        result = 1;
+      time_offset = 0;
+      result = 1;
     }
-    // Calculate the index of the tick.
-    size_t index_offset = (time_offset * SAMPLE_RATE) / BILLION;
-    
-    // If the offset is beyond the end of the audio buffer, then the program
-    // has gotten ahead of the audio. Wait for audio to catch up.
-    // This happens when a timestamp is at or close to the start time
-    // for the buffer because the audio system has not yet invoked the
-    // callback to swap buffers.  Here, we wait for the callback to
-    // occur.
-    while (index_offset >= AUDIO_BUFFER_SIZE) {
-        pthread_cond_wait(&lf_audio_cond, &lf_audio_mutex);
-        // next_buffer_start_time has been incremented by BUFFER_DURATION_NS.
-        time_offset = start_time - next_buffer_start_time;
-        // time_offset should be >= 0, but just in case:
-        if (time_offset < 0) {
-            time_offset = 0;
-            result = 1;
-        }
-        index_offset = (time_offset * SAMPLE_RATE) / BILLION;
+    index_offset = (time_offset * SAMPLE_RATE) / BILLION;
+  }
+
+  if (waveform == NULL) {
+    // Waveform ID is out of range. Just emit a tick.
+    add_to_sound(index_offset, MAX_AMPLITUDE * emphasis);
+  } else {
+    int note_to_use =
+        note_counter++; // Increment so that the next note uses a new slot.
+    if (note_counter >= NUM_NOTES) {
+      note_counter = 0; // Wrap around.
     }
-    
-    if (waveform == NULL) {
-        // Waveform ID is out of range. Just emit a tick.
-        add_to_sound(index_offset, MAX_AMPLITUDE * emphasis);
-    } else {
-        int note_to_use = note_counter++; // Increment so that the next note uses a new slot.
-        if (note_counter >= NUM_NOTES) {
-            note_counter = 0; // Wrap around.
+    // Initialize the note instance to start playing.
+    struct note* note_instance = &notes[note_to_use];
+    note_instance->waveform = waveform;
+    // If the waveform length is 0, do not play anything.
+    if (waveform->length > 0) {
+      note_instance->volume = emphasis;
+      note_instance->position = 0;
+
+      // Add as much of the note instance into the buffer as will fit.
+      for (int i = index_offset; i < AUDIO_BUFFER_SIZE; i++) {
+        // Calculate the value to add to the sound by averaging all the
+        // channels.
+        int value = 0;
+        for (int channel = 0; channel < waveform->num_channels; channel++) {
+          value += waveform->waveform[note_instance->position + channel];
         }
-        // Initialize the note instance to start playing.
-        struct note* note_instance = &notes[note_to_use];
-        note_instance->waveform = waveform;
-        // If the waveform length is 0, do not play anything.
-        if (waveform->length > 0) {
-            note_instance->volume = emphasis;
-            note_instance->position = 0;
-                        
-            // Add as much of the note instance into the buffer as will fit.
-            for (int i = index_offset; i < AUDIO_BUFFER_SIZE; i++) {
-                // Calculate the value to add to the sound by averaging all the channels.
-                int value = 0;
-                for (int channel = 0; channel < waveform->num_channels; channel++) {
-                    value += waveform->waveform[note_instance->position + channel];
-                }
-                value = value / waveform->num_channels;
-                add_to_sound(i, value * emphasis);
-            
-                note_instance->position += note_instance->waveform->num_channels;
-                if (note_instance->position >= note_instance->waveform->length - note_instance->waveform->num_channels) {
-                    // Reached the end of the note. Reset the note.
-                    note_instance->volume = 0.0;
-                    note_instance->position = 0;
-                    break;
-                }
-            }
+        value = value / waveform->num_channels;
+        add_to_sound(i, value * emphasis);
+
+        note_instance->position += note_instance->waveform->num_channels;
+        if (note_instance->position >=
+            note_instance->waveform->length -
+                note_instance->waveform->num_channels) {
+          // Reached the end of the note. Reset the note.
+          note_instance->volume = 0.0;
+          note_instance->position = 0;
+          break;
         }
+      }
     }
-    pthread_mutex_unlock(&lf_audio_mutex);
-    return result;
+  }
+  pthread_mutex_unlock(&lf_audio_mutex);
+  return result;
 }

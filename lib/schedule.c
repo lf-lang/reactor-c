@@ -15,26 +15,31 @@ are permitted provided that the following conditions are met:
    this list of conditions and the following disclaimer in the documentation
    and/or other materials provided with the distribution.
 
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
  * @section DESCRIPTION
  * Target-specific runtime functions for the C target language.
  * This API layer can be used in conjunction with:
  *     target C;
  *
- * Note for target language developers. This is one way of developing a target language where
- * the C core runtime is adopted. This file is a translation layer that implements Lingua Franca
- * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This file can act as a
+ * Note for target language developers. This is one way of developing a target
+language where
+ * the C core runtime is adopted. This file is a translation layer that
+implements Lingua Franca
+ * APIs which interact with the internal _lf_SET and _lf_schedule APIs. This
+file can act as a
  * template for future runtime developement for target languages.
- * For source generation, see xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
+ * For source generation, see
+xtext/org.icyphy.linguafranca/src/org/icyphy/generator/CCppGenerator.xtend.
  */
 
 #include "api.h"
@@ -47,10 +52,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * @param action Pointer to an action on the self struct.
  * @param offset The time offset over and above that in the action.
- * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for
+ * error.
  */
 trigger_handle_t lf_schedule(void* action, interval_t offset) {
-    return _lf_schedule_token((lf_action_base_t*)action, offset, NULL);
+  return _lf_schedule_token((lf_action_base_t*)action, offset, NULL);
 }
 
 /**
@@ -60,13 +66,15 @@ trigger_handle_t lf_schedule(void* action, interval_t offset) {
  * in a token. See schedule_token() for more details.
  *
  * @param action The action to be triggered.
- * @param extra_delay Extra offset of the event release above that in the action.
+ * @param extra_delay Extra offset of the event release above that in the
+ * action.
  * @param value The value to send.
- * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for
+ * error.
  */
-trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value)
-{
-    return _lf_schedule_int((lf_action_base_t*)action, extra_delay, value);
+trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay,
+                                 int value) {
+  return _lf_schedule_int((lf_action_base_t*)action, extra_delay, value);
 }
 
 /**
@@ -112,12 +120,15 @@ trigger_handle_t lf_schedule_int(void* action, interval_t extra_delay, int value
  * The third condition is that the trigger argument is null.
  *
  * @param action The action to be triggered.
- * @param extra_delay Extra offset of the event release above that in the action.
+ * @param extra_delay Extra offset of the event release above that in the
+ * action.
  * @param token The token to carry the payload or null for no payload.
- * @return A handle to the event, or 0 if no event was scheduled, or -1 for error.
+ * @return A handle to the event, or 0 if no event was scheduled, or -1 for
+ * error.
  */
-trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_token_t* token) {
-    return _lf_schedule_token((lf_action_base_t*)action, extra_delay, token);
+trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay,
+                                   lf_token_t* token) {
+  return _lf_schedule_token((lf_action_base_t*)action, extra_delay, token);
 }
 
 /**
@@ -136,18 +147,18 @@ trigger_handle_t lf_schedule_token(void* action, interval_t extra_delay, lf_toke
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for
  *  error.
  */
-trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, int length) {
-    if (length < 0) {
-        lf_print_error(
-            "schedule_copy():"
-            " Ignoring request to copy a value with a negative length (%d).",
-            length
-        );
-        return -1;
-    }
-    return _lf_schedule_copy((lf_action_base_t*)action, offset, value, (size_t)length);
+trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value,
+                                  int length) {
+  if (length < 0) {
+    lf_print_error(
+        "schedule_copy():"
+        " Ignoring request to copy a value with a negative length (%d).",
+        length);
+    return -1;
+  }
+  return _lf_schedule_copy((lf_action_base_t*)action, offset, value,
+                           (size_t)length);
 }
-
 
 /**
  * Variant of schedule_token that creates a token to carry the specified value.
@@ -165,18 +176,18 @@ trigger_handle_t lf_schedule_copy(void* action, interval_t offset, void* value, 
  * @return A handle to the event, or 0 if no event was scheduled, or -1 for
  *  error.
  */
-trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* value, int length) {
-    if (length < 0) {
-        lf_print_error(
-            "schedule_value():"
-            " Ignoring request to schedule an action with a value that has a negative length (%d).",
-            length
-        );
-        return -1;
-    }
-    return _lf_schedule_value((lf_action_base_t*)action, extra_delay, value, (size_t)length);
+trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay,
+                                   void* value, int length) {
+  if (length < 0) {
+    lf_print_error("schedule_value():"
+                   " Ignoring request to schedule an action with a value that "
+                   "has a negative length (%d).",
+                   length);
+    return -1;
+  }
+  return _lf_schedule_value((lf_action_base_t*)action, extra_delay, value,
+                            (size_t)length);
 }
-
 
 /**
  * Check the deadline of the currently executing reaction against the
@@ -190,12 +201,13 @@ trigger_handle_t lf_schedule_value(void* action, interval_t extra_delay, void* v
  * @return True if the specified deadline has passed and false otherwise.
  */
 bool lf_check_deadline(void* self, bool invoke_deadline_handler) {
-    reaction_t* reaction = ((self_base_t*)self)->executing_reaction;
-    if (lf_time_physical() > (lf_time_logical(((self_base_t *)self)->environment) + reaction->deadline)) {
-        if (invoke_deadline_handler) {
-            reaction->deadline_violation_handler(self);
-        }
-        return true;
+  reaction_t* reaction = ((self_base_t*)self)->executing_reaction;
+  if (lf_time_physical() > (lf_time_logical(((self_base_t*)self)->environment) +
+                            reaction->deadline)) {
+    if (invoke_deadline_handler) {
+      reaction->deadline_violation_handler(self);
     }
-    return false;
+    return true;
+  }
+  return false;
 }

@@ -3,29 +3,32 @@
 /**
  * @file
  * @author Edward A. Lee
- * @copyright (c) 2020-2023, The University of California at Berkeley and UT Dallas.
- * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
- * 
+ * @copyright (c) 2020-2023, The University of California at Berkeley and UT
+ Dallas.
+ * License in [BSD
+ 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
+ *
  * @brief Simple terminal-based user interface based on ncurses.
- * 
+ *
  * When prototyping Lingua Franca programs on a laptop, it is convenient to use
  * the laptop keyboard to simulate asynchronous sensor input. This small library
  * provides a convenient way to do that.
- * 
+ *
  * To use this, include the following flags in your target properties:
  * <pre>
  * target C {
     files: [
-        "/lib/c/reactor-c/util/sensor_simulator.c", 
+        "/lib/c/reactor-c/util/sensor_simulator.c",
         "/lib/c/reactor-c/util/sensor_simulator.h",
     ],
     cmake-include: [
         "/lib/c/reactor-c/util/sensor_simulator.cmake",
-    ] 
+    ]
  * };
  * </pre>
- * This requires `ncurses`, a library providing somewhat portable keyboard access.
- * 
+ * This requires `ncurses`, a library providing somewhat portable keyboard
+ access.
+ *
  * In addition, you need this in your Lingua Franca file:
  * <pre>
  * preamble {=
@@ -35,9 +38,10 @@
  * To start the sensor simulator, call `start_sensor_simulator` passing it
  * an array of strings to print and the width of the window to use to display
  * characters using the `show_tick` function.
- * 
+ *
  * To print messages to the screen, rather than using printf(), you should use
- * the messaging functions in util.h, such as lf_print(). Otherwise, your messages
+ * the messaging functions in util.h, such as lf_print(). Otherwise, your
+ messages
  * will be printed over other information.
  */
 
@@ -54,19 +58,16 @@
  * @param message_lines The message lines.
  * @param number_of_lines The number of lines.
  * @param tick_window_width The width of the tick window or 0 for none.
- * @param log_file If non-NULL, the name of a file to which to write logging messages.
+ * @param log_file If non-NULL, the name of a file to which to write logging
+ * messages.
  * @param log_level The level of log messages to redirect to the file.
  *  The level should be one of LOG_LEVEL_ERROR, LOG_LEVEL_WARNING,
  *  LOG_LEVEL_INFO, LOG_LEVEL_LOG, LOG_LEVEL_DEBUG, or LOG_LEVEL_ALL.
  * @return 0 for success, error code for failure.
  */
-int start_sensor_simulator(
-		const char* message_lines[],
-		int number_of_lines,
-		int tick_window_width,
-		char* log_file,
-		int log_level
-);
+int start_sensor_simulator(const char* message_lines[], int number_of_lines,
+                           int tick_window_width, char* log_file,
+                           int log_level);
 
 /**
  * End ncurses control of the terminal.

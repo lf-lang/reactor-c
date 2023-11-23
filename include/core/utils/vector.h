@@ -2,7 +2,7 @@
  * This file defines a minimal vector (resizing array) data type.
  * It is intended to be the simplest way of storing a collection of
  * pointers that is frequently filled and then completely emptied.
- * 
+ *
  * @author Peter Donovan (peterdonovan@berkeley.edu)
  * @author Soroush Bateni (soroush@utdallas.edu)
  */
@@ -14,12 +14,12 @@
 #include <stdlib.h>
 
 typedef struct vector_t {
-    void** start; /* The start of the underlying array. */
-    void** next;  /* The element after the last element in the underlying array.
-                        start <= next <= end. */
-    void** end;   /* The end of the underlying array. */
-    int votes_required;  /* The number of votes required to shrink this vector. */
-    int votes;    /* The number of votes to shrink this vector. */
+  void** start; /* The start of the underlying array. */
+  void** next;  /* The element after the last element in the underlying array.
+                      start <= next <= end. */
+  void** end;   /* The end of the underlying array. */
+  int votes_required; /* The number of votes required to shrink this vector. */
+  int votes;          /* The number of votes to shrink this vector. */
 } vector_t;
 
 /**
@@ -66,17 +66,17 @@ void* vector_pop(vector_t* v);
  * is automatically expanded and filled with NULL pointers as needed.
  * If no element at `idx` has been previously set, then the value
  * pointed to by the returned pointer will be NULL.
- * 
+ *
  * @param v The vector.
  * @param idx The index into the vector.
- * 
+ *
  * @return A pointer to the element at 'idx', which is itself a pointer.
  */
 void** vector_at(vector_t* v, size_t idx);
 
 /**
  * @brief Return the size of the vector.
- * 
+ *
  * @param v Any vector
  * @return size_t  The size of the vector.
  */

@@ -12,26 +12,21 @@
  */
 
 #if defined(_THREADS_H) || defined(_PTHREAD_H)
-    #error Usage of threads in the single-threaded runtime is not safe.
+#error Usage of threads in the single-threaded runtime is not safe.
 #endif
 
 /**
- * @brief Single-threaded support under a OS is a special case in which we assume
- * only a single execution context. Other threads scheduling physical actions
- * are not a use-case. ISRs scheduling physical actions are also not a use-case.
- * 
- * @return int 
+ * @brief Single-threaded support under a OS is a special case in which we
+ * assume only a single execution context. Other threads scheduling physical
+ * actions are not a use-case. ISRs scheduling physical actions are also not a
+ * use-case.
+ *
+ * @return int
  */
-int lf_disable_interrupts_nested() {
-    return 0;
-}
+int lf_disable_interrupts_nested() { return 0; }
 
-int lf_enable_interrupts_nested() {
-    return 0;
-}
+int lf_enable_interrupts_nested() { return 0; }
 
-int _lf_single_threaded_notify_of_event() {
-    return 0;
-}
+int _lf_single_threaded_notify_of_event() { return 0; }
 
 #endif
