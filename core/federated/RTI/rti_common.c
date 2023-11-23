@@ -40,7 +40,7 @@ void invalidate_min_delays_upstream(scheduling_node_t* node) {
     if(node->min_delays != NULL) free(node->min_delays);
     node->min_delays = NULL;
     node->num_min_delays = 0;
-    node->flags = IS_IN_ZERO_DELAY_CYCLE | IS_IN_CYCLE; // Pessimistic, in case it is accessed without updating.
+    node->flags = 0; // All flags cleared because they get set lazily.
 }
 
 void initialize_scheduling_node(scheduling_node_t* e, uint16_t id) {
@@ -96,6 +96,11 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e) {
     for (int i = 0; i < e->num_min_delays; i++) {
         // Node e->min_delays[i].id is upstream of e with min delay e->min_delays[i].min_delay.
         scheduling_node_t* upstream = rti_common->scheduling_nodes[e->min_delays[i].id];
+        // If we haven't heard from the upstream node, then assume it can send an event at the start time.
+        if (lf_tag_compare(upstream->next_event, NEVER_TAG) == 0) {
+            tag_t start_tag = {.time = start_time, .microstep = 0};
+            upstream->next_event = start_tag;
+        }
         tag_t earliest_tag_from_upstream = lf_tag_add(upstream->next_event, e->min_delays[i].min_delay);
         LF_PRINT_DEBUG("RTI: Earliest next event upstream of fed/encl %d at fed/encl %d has tag " PRINTF_TAG ".",
                 e->id,
@@ -155,12 +160,13 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     LF_PRINT_LOG("RTI: Earliest next event upstream of node %d has tag " PRINTF_TAG ".",
             e->id, t_d.time - start_time, t_d.microstep);
 
-    // Given an EIMT there are three possible scenarios.
-    //  1) The EIMT is greater than the NET we want to advance to.
-    //  2) The EIMT is greater, however, the federate is part of a zero-delay cycle (ZDC)
-    //  3) The EIMT is equal to the NET.
+    // Given an EIMT (earliest incoming message tag) there are these possible scenarios:
+    //  1) The EIMT is greater than the NET we want to advance to. Grant a TAG.
+    //  2) The EIMT is equal to the NET and the federate is part of a zero-delay cycle (ZDC).
+    //  3) The EIMT is equal to the NET and the federate is not part of a ZDC.
     //  4) The EIMT is less than the NET
-    // In (1) we can give a TAG to NET. In (2) and (3) we can give a PTAG.
+    // In (1) we can give a TAG to NET. In (2) we can give a PTAG.
+    // In (3) and (4), we wait for further updates from upstream federates.
 
     if ( // Scenario (1) above
         lf_tag_compare(t_d, e->next_event) > 0                      // EIMT greater than NET
@@ -168,7 +174,6 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
                                                                       // (equal is important to override any previous
                                                                       // PTAGs).
         && lf_tag_compare(t_d, e->last_granted) > 0                   // The grant is not redundant.
-        && !is_in_zero_delay_cycle(e)                               // The node is not part of a ZDC
     ) {
         // No upstream node can send events that will be received with a tag less than or equal to
         // e->next_event, so it is safe to send a TAG.
@@ -180,7 +185,8 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
                 e->next_event.microstep);
         result.tag = e->next_event;
     } else if( // Scenario (2) or (3) above
-        lf_tag_compare(t_d, e->next_event) >= 0                      // EIMT greater than or equal to NET
+        lf_tag_compare(t_d, e->next_event) >= 0                     // EIMT greater than or equal to NET
+        && is_in_zero_delay_cycle(e)                                // The node is part of a ZDC
         && lf_tag_compare(t_d, e->last_provisionally_granted) >= 0  // The grant is not redundant
         && lf_tag_compare(t_d, e->last_granted) > 0                 // The grant is not redundant.
     ) { 
@@ -223,6 +229,9 @@ void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t ne
     // nor expect a reply. It just proceeds to advance time.
     if (e->num_upstream > 0) {
         notify_advance_grant_if_safe(e);
+    } else {
+        // Even though there was no grant, mark the tag as if there was.
+        e->last_granted = next_event_tag;
     }
     // Check downstream scheduling_nodes to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
@@ -285,6 +294,9 @@ static void _update_min_delays_upstream(scheduling_node_t* end, scheduling_node_
                 // Is it a zero-delay cycle?
                 if (lf_tag_compare(path_delay, ZERO_TAG) == 0 && intermediate->upstream_delay[i] < 0) {
                     end->flags = end->flags | IS_IN_ZERO_DELAY_CYCLE;
+                } else {
+                    // Clear the flag.
+                    end->flags = end->flags & ~IS_IN_ZERO_DELAY_CYCLE;
                 }
             }
         }
@@ -301,20 +313,17 @@ void update_min_delays_upstream(scheduling_node_t* node) {
         // Array of results on the stack:
         tag_t path_delays[rti_common->number_of_scheduling_nodes];
         // This will be the number of non-FOREVER entries put into path_delays.
-        size_t count = 1;
+        size_t count = 0;
 
         for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
-            if (i == node->id) {
-                path_delays[i] = ZERO_TAG;
-            } else {
-                path_delays[i] = FOREVER_TAG;
-            }
+            path_delays[i] = FOREVER_TAG;
         }
         _update_min_delays_upstream(node, NULL, path_delays, &count);
 
         // Put the results onto the node's struct.
         node->num_min_delays = count;
         node->min_delays = (minimum_delay_t*)malloc(count * sizeof(minimum_delay_t));
+        LF_PRINT_DEBUG("++++ Node %hu(is in ZDC: %d\n", node->id, node->flags & IS_IN_ZERO_DELAY_CYCLE);
         int k = 0;
         for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
             if (lf_tag_compare(path_delays[i], FOREVER_TAG) < 0) {
@@ -324,6 +333,8 @@ void update_min_delays_upstream(scheduling_node_t* node) {
                 }
                 minimum_delay_t min_delay = {.id = i, .min_delay = path_delays[i]};
                 node->min_delays[k++] = min_delay;
+                // N^2 debug statement could be a problem with large benchmarks.
+                // LF_PRINT_DEBUG("++++    Node %hu is upstream with delay" PRINTF_TAG "\n", i, path_delays[i].time, path_delays[i].microstep);
             }
         }
     }
