@@ -1209,7 +1209,7 @@ extern size_t _lf_zero_delay_action_table_size;
 extern reaction_t* network_input_reactions[];
 extern size_t num_network_input_reactions;
 extern reaction_t* port_absent_reaction[];
-extern size_t num_sender_reactions;
+extern size_t num_port_absent_reactions;
 #ifdef FEDERATED_DECENTRALIZED
 extern staa_t* staa_lst[];
 extern size_t staa_lst_size;
@@ -1361,11 +1361,11 @@ void enqueue_port_absent_reactions(environment_t* env){
     }
 #endif
     LF_PRINT_DEBUG("Enqueueing port absent reactions at time %lld.", (long long) (env->current_tag.time - start_time));
-    if (num_sender_reactions == 0) {
+    if (num_port_absent_reactions == 0) {
         LF_PRINT_DEBUG("No port absent reactions.");
         return;
     }
-    for (int i = 0; i < num_sender_reactions; i++) {
+    for (int i = 0; i < num_port_absent_reactions; i++) {
         reaction_t* reaction = port_absent_reaction[i];
         if (reaction && reaction->status == inactive) {
             LF_PRINT_DEBUG("Inserting port absent reaction on reaction queue.");
