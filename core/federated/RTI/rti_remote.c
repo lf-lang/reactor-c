@@ -469,8 +469,9 @@ void handle_timed_message(federate_info_t* sending_federate, unsigned char* buff
         tracepoint_rti_to_federate(rti_remote->base.trace, send_TAGGED_MSG, federate_id, &intended_tag);
     }
 
-    write_to_socket_errexit(destination_socket, bytes_read, buffer,
-            "RTI failed to forward message to federate %d.", federate_id);
+    // Comment out this for debugging.
+    // write_to_socket_errexit(destination_socket, bytes_read, buffer,
+    //         "RTI failed to forward message to federate %d.", federate_id);
 
     // The message length may be longer than the buffer,
     // in which case we have to handle it in chunks.
