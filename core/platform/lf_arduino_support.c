@@ -95,7 +95,7 @@ int lf_sleep(interval_t sleep_duration) {
     do {
         _lf_clock_now(&now);
     } while ((now < wakeup));
-
+    return 0;
 }
 
 /**
