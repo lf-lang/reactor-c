@@ -328,8 +328,6 @@ bool _lf_is_blocked_by_executing_reaction(void) {
     return false;
 }
 
-global_delay_array_t _lf_global_delay_array;
-
 /**
  * The main loop of the LF program.
  *
@@ -343,7 +341,6 @@ global_delay_array_t _lf_global_delay_array;
  * at compile time.
  */
 int lf_reactor_c_main(int argc, const char* argv[]) {
-    parse_global_delay_array(&_lf_global_delay_array);
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
     _lf_initialize_clock();

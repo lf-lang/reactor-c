@@ -9,6 +9,7 @@
 #include "util.h"
 #include "modes.h"
 #include "port.h"
+#include "c-ordering-client.h"
 
 
 //  ******** Global Variables :( ********  //
@@ -77,7 +78,7 @@ trigger_handle_t _lf_schedule_int(lf_action_base_t* action, interval_t extra_del
 void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker);
 void schedule_output_reactions(environment_t *env, reaction_t* reaction, int worker);
 int process_args(int argc, const char* argv[]);
-void initialize_global();
+ClientAndJoinHandle initialize_global();
 void termination(void);
 int lf_notify_of_event(environment_t* env);
 int lf_critical_section_enter(environment_t* env);

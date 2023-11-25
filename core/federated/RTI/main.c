@@ -253,12 +253,16 @@ int process_args(int argc, const char* argv[]) {
     return 1;
 }
 
-global_delay_array_t _lf_global_delay_array;
+OrderingClientApi* ordering_client_api;
+void* ordering_client;
+static void* ordering_client_join_handle;
 
 int main(int argc, const char* argv[]) {
-    parse_global_delay_array(&_lf_global_delay_array);
-
     initialize_RTI(&rti);
+    ordering_client_api = load_ordering_client_api();
+    ClientAndJoinHandle client_and_join_handle = ordering_client_api->start_client(-1);
+    ordering_client = client_and_join_handle.client;
+    ordering_client_join_handle = client_and_join_handle.join_handle;
 
     // Catch the Ctrl-C signal, for a clean exit that does not lose the trace information
     signal(SIGINT, exit);

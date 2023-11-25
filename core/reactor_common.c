@@ -1704,11 +1704,15 @@ int process_args(int argc, const char* argv[]) {
     return 1;
 }
 
+OrderingClientApi* ordering_client_api;
+void* ordering_client;
+static void* ordering_client_join_handle;
+
 /**
  * Initialize global variables and start tracing before calling the
  * `_lf_initialize_trigger_objects` function
  */
-void initialize_global(void) {
+ClientAndJoinHandle initialize_global(void) {
     _lf_count_payload_allocations = 0;
     _lf_count_token_allocations = 0;
     
@@ -1725,7 +1729,11 @@ void initialize_global(void) {
     #endif
     // Call the code-generated function to initialize all actions, timers, and ports
     // This is done for all environments/enclaves at the same time.
-    _lf_initialize_trigger_objects() ;
+    _lf_initialize_trigger_objects();
+    ordering_client_api = load_ordering_client_api();
+    ClientAndJoinHandle client_and_join_handle = ordering_client_api->start_client(_lf_my_fed_id);
+    ordering_client = client_and_join_handle.client;
+    ordering_client_join_handle = client_and_join_handle.join_handle;
 }
 
 /**
@@ -1739,6 +1747,7 @@ void termination(void) {
     // Invoke the code generated termination function. It terminates the federated related services. 
     // It should only be called for the top-level environment, which, after convention, is the first environment.
     terminate_execution(env);
+    ordering_client_api->drop_join_handle(ordering_client_join_handle);
 
 
     // In order to free tokens, we perform the same actions we would have for a new time step.

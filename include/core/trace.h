@@ -128,7 +128,7 @@ typedef enum
 /**
  * String description of event types.
  */
-static inline const char *trace_event_names[] = {
+static const char *trace_event_names[] = {
     "Reaction starts",
     "Reaction ends",
     "Reaction deadline missed",

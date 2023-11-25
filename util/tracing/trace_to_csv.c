@@ -51,9 +51,6 @@ FILE* summary_file = NULL;
 /** Size of the stats table is object_table_size plus twice MAX_NUM_WORKERS. */
 int table_size;
 
-/** This is just here to suppress a linker error. */
-extern global_delay_array_t _lf_global_delay_array;
-
 /**
  * Print a usage message.
  */

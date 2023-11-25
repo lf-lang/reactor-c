@@ -1,10 +1,10 @@
 set(CORE_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
 # Get the general common sources for reactor-c
-list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c lf_token.c environment.c)
+list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c lf_token.c environment.c c-ordering-client.c)
 
 # Add tracing support if requested
-if (DEFINED LF_TRACE)
+if(DEFINED LF_TRACE)
     message(STATUS "Including sources specific to tracing.")
     list(APPEND GENERAL_SOURCES trace.c)
 endif()
@@ -16,7 +16,7 @@ list(APPEND INFO_SOURCES ${GENERAL_SOURCES})
 add_library(core ${GENERAL_SOURCES})
 
 # Add sources for either threaded or single-threaded runtime
-if (DEFINED FEDERATED)
+if(DEFINED FEDERATED)
     include(federated/CMakeLists.txt)
 endif()
 
@@ -35,7 +35,7 @@ endif()
 
 # Add sources for the local RTI if we are using scheduling enclaves
 if(DEFINED LF_ENCLAVES)
-include(federated/RTI/local_rti.cmake)
+    include(federated/RTI/local_rti.cmake)
 endif()
 
 # Include sources from subdirectories
@@ -56,27 +56,29 @@ target_include_directories(core PUBLIC ../include/core/threaded)
 target_include_directories(core PUBLIC ../include/core/utils)
 target_include_directories(core PUBLIC federated/RTI/)
 
-if (APPLE)
-    SET(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
+if(APPLE)
+    SET(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
     SET(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
-    SET(CMAKE_C_ARCHIVE_FINISH   "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
+    SET(CMAKE_C_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
     SET(CMAKE_CXX_ARCHIVE_FINISH "<CMAKE_RANLIB> -no_warning_for_no_symbols -c <TARGET>")
 endif()
 
 # Link with OpenSSL library
 if(DEFINED FEDERATED_AUTHENTICATED)
-    if (APPLE)
+    if(APPLE)
         set(OPENSSL_ROOT_DIR /usr/local/opt/openssl)
     endif()
+
     find_package(OpenSSL REQUIRED)
     target_link_libraries(core PUBLIC OpenSSL::SSL)
 endif()
 
 if(DEFINED _LF_CLOCK_SYNC_ON)
-  find_library(MATH_LIBRARY m)
-  if(MATH_LIBRARY)
-    target_link_libraries(core PUBLIC ${MATH_LIBRARY})
-  endif()
+    find_library(MATH_LIBRARY m)
+
+    if(MATH_LIBRARY)
+        target_link_libraries(core PUBLIC ${MATH_LIBRARY})
+    endif()
 endif()
 
 # Link with thread library, unless if we are targeting the Zephyr RTOS

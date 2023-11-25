@@ -37,9 +37,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "trace.h"
 #include "trace_util.h"
 
-/** This is just here to suppress a linker error. */
-global_delay_array_t _lf_global_delay_array;
-
 /** Buffer for reading object descriptions. Size limit is BUFFER_SIZE bytes. */
 char buffer[BUFFER_SIZE];
 

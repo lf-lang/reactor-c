@@ -62,6 +62,7 @@ add_executable(
   main.c
   rti_common.c
   rti_remote.c
+  c-ordering-client.c
   ${CoreLib}/trace.c
   ${LF_PLATFORM_FILE}
   ${CoreLib}/platform/lf_unix_clock_support.c

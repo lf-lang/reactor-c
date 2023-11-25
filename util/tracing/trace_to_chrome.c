@@ -53,9 +53,6 @@ FILE* trace_file = NULL;
 /** File for writing the output data. */
 FILE* output_file = NULL;
 
-/** This is just here to suppress a linker error. */
-extern global_delay_array_t _lf_global_delay_array;
-
 /**
  * Print a usage message.
  */
