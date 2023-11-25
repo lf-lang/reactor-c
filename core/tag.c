@@ -168,9 +168,6 @@ instant_t lf_time_logical(void *env) {
     return ((environment_t *) env)->current_tag.time;
 }
 
-/**
- * Return the elapsed logical time in nanoseconds since the start of execution.
- */
 interval_t lf_time_logical_elapsed(void *env) {
     return lf_time_logical(env) - start_time;
 }
