@@ -91,146 +91,54 @@ $(document).ready(function(){initNavTree('da/db5/pqueue_8c.html','../../'); init
 
 <div class="header">
   <div class="summary">
-<a href="#define-members">Macros</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle"><div class="title">pqueue.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;stdlib.h&gt;</code><br />
-<code>#include &lt;stdio.h&gt;</code><br />
-<code>#include &lt;string.h&gt;</code><br />
-<code>#include &lt;assert.h&gt;</code><br />
-<code>#include &lt;stdbool.h&gt;</code><br />
-<code>#include &quot;<a class="el" href="../../de/d03/platform_8h_source.html">platform.h</a>&quot;</code><br />
+
+<p>Priority queue definitions for the event queue and reaction queue.  
+<a href="#details">More...</a></p>
+<div class="textblock"><code>#include &quot;<a class="el" href="../../de/d03/platform_8h_source.html">platform.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../dc/d66/pqueue_8h_source.html">pqueue.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d8/d3c/util_8h_source.html">util.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d6/d1d/lf__types_8h_source.html">lf_types.h</a>&quot;</code><br />
 </div><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="define-members" name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:a8d1b3e7289cde75b3042e855207bbd6e" id="r_a8d1b3e7289cde75b3042e855207bbd6e"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a8d1b3e7289cde75b3042e855207bbd6e">LF_LEFT</a>(<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">i</a>)&#160;&#160;&#160;((<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">i</a>) &lt;&lt; 1)</td></tr>
-<tr class="separator:a8d1b3e7289cde75b3042e855207bbd6e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae14316df2cad4b399158d355b917bbd3" id="r_ae14316df2cad4b399158d355b917bbd3"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#ae14316df2cad4b399158d355b917bbd3">LF_RIGHT</a>(<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">i</a>)&#160;&#160;&#160;(((<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">i</a>) &lt;&lt; 1) + 1)</td></tr>
-<tr class="separator:ae14316df2cad4b399158d355b917bbd3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a673aa06f4a4edddbf8cf5020c50552b8" id="r_a673aa06f4a4edddbf8cf5020c50552b8"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a673aa06f4a4edddbf8cf5020c50552b8">LF_PARENT</a>(<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">i</a>)&#160;&#160;&#160;((<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">i</a>) &gt;&gt; 1)</td></tr>
-<tr class="separator:a673aa06f4a4edddbf8cf5020c50552b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a7ea64f179be575a87e0145481f1d679c" id="r_a7ea64f179be575a87e0145481f1d679c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a7ea64f179be575a87e0145481f1d679c">find_equal</a> (<a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">e</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> pos, <a class="el" href="../../dc/d66/pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> max)</td></tr>
-<tr class="separator:a7ea64f179be575a87e0145481f1d679c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5e022cf1bf56de20b3cad2969cebec8e" id="r_a5e022cf1bf56de20b3cad2969cebec8e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a5e022cf1bf56de20b3cad2969cebec8e">find_equal_same_priority</a> (<a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">e</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> pos)</td></tr>
-<tr class="separator:a5e022cf1bf56de20b3cad2969cebec8e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5a4c8b51b16189ab4a687f562733b1a5" id="r_a5a4c8b51b16189ab4a687f562733b1a5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a5a4c8b51b16189ab4a687f562733b1a5">pqueue_init</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">n</a>, <a class="el" href="../../dc/d66/pqueue_8h.html#a1c3f02694b2a0ec19584c395a88bb6f9">pqueue_cmp_pri_f</a> cmppri, <a class="el" href="../../dc/d66/pqueue_8h.html#aa84f0100faf971295df5aed226c390a6">pqueue_get_pri_f</a> getpri, <a class="el" href="../../dc/d66/pqueue_8h.html#a31ca7927983005bd7866021819ad7037">pqueue_get_pos_f</a> getpos, <a class="el" href="../../dc/d66/pqueue_8h.html#afdc8f52cbc45181ef375df22917bc4f9">pqueue_set_pos_f</a> setpos, <a class="el" href="../../dc/d66/pqueue_8h.html#a664f0abcd86c8089468869aa3dc6e535">pqueue_eq_elem_f</a> eqelem, <a class="el" href="../../dc/d66/pqueue_8h.html#a884902da135214a6167f1536ad4ed4bc">pqueue_print_entry_f</a> prt)</td></tr>
-<tr class="separator:a5a4c8b51b16189ab4a687f562733b1a5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acceacc4429dd9cd31d5af09f3f473cb0" id="r_acceacc4429dd9cd31d5af09f3f473cb0"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#acceacc4429dd9cd31d5af09f3f473cb0">pqueue_free</a> (<a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>)</td></tr>
-<tr class="separator:acceacc4429dd9cd31d5af09f3f473cb0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae0cf88c8360a5f08ada81feaaeb40505" id="r_ae0cf88c8360a5f08ada81feaaeb40505"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#ae0cf88c8360a5f08ada81feaaeb40505">pqueue_size</a> (<a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>)</td></tr>
-<tr class="separator:ae0cf88c8360a5f08ada81feaaeb40505"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9bb9cb0e5f41746db17b7581f5fe0559" id="r_a9bb9cb0e5f41746db17b7581f5fe0559"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a9bb9cb0e5f41746db17b7581f5fe0559">pqueue_find_equal_same_priority</a> (<a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">e</a>)</td></tr>
-<tr class="separator:a9bb9cb0e5f41746db17b7581f5fe0559"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a710e5b3f5e1bf8100a9f130084b5cac3" id="r_a710e5b3f5e1bf8100a9f130084b5cac3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a710e5b3f5e1bf8100a9f130084b5cac3">pqueue_find_equal</a> (<a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">e</a>, <a class="el" href="../../dc/d66/pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> max)</td></tr>
-<tr class="separator:a710e5b3f5e1bf8100a9f130084b5cac3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:addd8cdfbc8c47b8cdd7eb4c4560de7aa" id="r_addd8cdfbc8c47b8cdd7eb4c4560de7aa"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#addd8cdfbc8c47b8cdd7eb4c4560de7aa">pqueue_insert</a> (<a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *d)</td></tr>
-<tr class="separator:addd8cdfbc8c47b8cdd7eb4c4560de7aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9a509654dacb6be3d34ff7a4958ab4dd" id="r_a9a509654dacb6be3d34ff7a4958ab4dd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a9a509654dacb6be3d34ff7a4958ab4dd">pqueue_remove</a> (<a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *d)</td></tr>
-<tr class="separator:a9a509654dacb6be3d34ff7a4958ab4dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a66bce8cd2c2afa804405005798498823" id="r_a66bce8cd2c2afa804405005798498823"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a66bce8cd2c2afa804405005798498823">pqueue_pop</a> (<a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>)</td></tr>
-<tr class="separator:a66bce8cd2c2afa804405005798498823"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa0f5e3d63138880461b1f04dc2d4f48a" id="r_aa0f5e3d63138880461b1f04dc2d4f48a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#aa0f5e3d63138880461b1f04dc2d4f48a">pqueue_empty_into</a> (<a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> **<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">dest</a>, <a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> **<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">src</a>)</td></tr>
-<tr class="memdesc:aa0f5e3d63138880461b1f04dc2d4f48a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Empty 'src' into 'dest'.  <br /></td></tr>
-<tr class="separator:aa0f5e3d63138880461b1f04dc2d4f48a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9ec5c03203b587dbb92f8d2a977aa7e4" id="r_a9ec5c03203b587dbb92f8d2a977aa7e4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a9ec5c03203b587dbb92f8d2a977aa7e4">pqueue_peek</a> (<a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>)</td></tr>
-<tr class="separator:a9ec5c03203b587dbb92f8d2a977aa7e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:add0fae8523cca210f1574586e82cf7dd" id="r_add0fae8523cca210f1574586e82cf7dd"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#add0fae8523cca210f1574586e82cf7dd">pqueue_dump</a> (<a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>, <a class="el" href="../../dc/d66/pqueue_8h.html#a884902da135214a6167f1536ad4ed4bc">pqueue_print_entry_f</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">print</a>)</td></tr>
-<tr class="separator:add0fae8523cca210f1574586e82cf7dd"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1bc71ac57e101d48d91c75ecbf8fc278" id="r_a1bc71ac57e101d48d91c75ecbf8fc278"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a1bc71ac57e101d48d91c75ecbf8fc278">pqueue_print</a> (<a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>, <a class="el" href="../../dc/d66/pqueue_8h.html#a884902da135214a6167f1536ad4ed4bc">pqueue_print_entry_f</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">print</a>)</td></tr>
-<tr class="separator:a1bc71ac57e101d48d91c75ecbf8fc278"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aecb92aa04f03ad7866508bc27778d7e9" id="r_aecb92aa04f03ad7866508bc27778d7e9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#aecb92aa04f03ad7866508bc27778d7e9">pqueue_is_valid</a> (<a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">q</a>)</td></tr>
-<tr class="separator:aecb92aa04f03ad7866508bc27778d7e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a19d650d18c331602f44c642bce2456e8" id="r_a19d650d18c331602f44c642bce2456e8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a19d650d18c331602f44c642bce2456e8">in_reverse_order</a> (<a class="el" href="../../dc/d66/pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">thiz</a>, <a class="el" href="../../dc/d66/pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">that</a>)</td></tr>
+<tr class="memitem:a19d650d18c331602f44c642bce2456e8" id="r_a19d650d18c331602f44c642bce2456e8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a19d650d18c331602f44c642bce2456e8">in_reverse_order</a> (<a class="el" href="../../d6/d51/pqueue__base_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">thiz</a>, <a class="el" href="../../d6/d51/pqueue__base_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">that</a>)</td></tr>
 <tr class="separator:a19d650d18c331602f44c642bce2456e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a987e40d356a70d4799d6fe56920d3b8f" id="r_a987e40d356a70d4799d6fe56920d3b8f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a987e40d356a70d4799d6fe56920d3b8f">in_no_particular_order</a> (<a class="el" href="../../dc/d66/pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">thiz</a>, <a class="el" href="../../dc/d66/pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">that</a>)</td></tr>
+<tr class="memitem:a987e40d356a70d4799d6fe56920d3b8f" id="r_a987e40d356a70d4799d6fe56920d3b8f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a987e40d356a70d4799d6fe56920d3b8f">in_no_particular_order</a> (<a class="el" href="../../d6/d51/pqueue__base_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">thiz</a>, <a class="el" href="../../d6/d51/pqueue__base_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">that</a>)</td></tr>
 <tr class="separator:a987e40d356a70d4799d6fe56920d3b8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6abb03cf541980b01e48f830260c46e9" id="r_a6abb03cf541980b01e48f830260c46e9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a6abb03cf541980b01e48f830260c46e9">event_matches</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *next, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">curr</a>)</td></tr>
-<tr class="separator:a6abb03cf541980b01e48f830260c46e9"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa369c3ef69d9502b77f4e154c2a25faf" id="r_aa369c3ef69d9502b77f4e154c2a25faf"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#aa369c3ef69d9502b77f4e154c2a25faf">reaction_matches</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *next, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">curr</a>)</td></tr>
-<tr class="separator:aa369c3ef69d9502b77f4e154c2a25faf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0fb21cd2840e8552d5a127f6e949668c" id="r_a0fb21cd2840e8552d5a127f6e949668c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dc/d66/pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a0fb21cd2840e8552d5a127f6e949668c">get_event_time</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">a</a>)</td></tr>
-<tr class="separator:a0fb21cd2840e8552d5a127f6e949668c"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a625c09da56c743c2180613c25271f7da" id="r_a625c09da56c743c2180613c25271f7da"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dc/d66/pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a625c09da56c743c2180613c25271f7da">get_reaction_index</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">a</a>)</td></tr>
-<tr class="separator:a625c09da56c743c2180613c25271f7da"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae5b1746e75bcefbd924c4cdeeb7bce6a" id="r_ae5b1746e75bcefbd924c4cdeeb7bce6a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#ae5b1746e75bcefbd924c4cdeeb7bce6a">get_event_position</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">a</a>)</td></tr>
-<tr class="separator:ae5b1746e75bcefbd924c4cdeeb7bce6a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a66344e489d0494ce2d74e719fd190a10" id="r_a66344e489d0494ce2d74e719fd190a10"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a66344e489d0494ce2d74e719fd190a10">get_reaction_position</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">a</a>)</td></tr>
-<tr class="separator:a66344e489d0494ce2d74e719fd190a10"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad12f6906a77b8e62780d4462bdf33126" id="r_ad12f6906a77b8e62780d4462bdf33126"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#ad12f6906a77b8e62780d4462bdf33126">set_event_position</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">a</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> pos)</td></tr>
-<tr class="separator:ad12f6906a77b8e62780d4462bdf33126"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a10095d3883ff8e244676f38ddbb0ffee" id="r_a10095d3883ff8e244676f38ddbb0ffee"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a10095d3883ff8e244676f38ddbb0ffee">set_reaction_position</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">a</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> pos)</td></tr>
-<tr class="separator:a10095d3883ff8e244676f38ddbb0ffee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:abfdc2f4bf7d1b3de1983757579e652d4" id="r_abfdc2f4bf7d1b3de1983757579e652d4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#abfdc2f4bf7d1b3de1983757579e652d4">event_matches</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">event1</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">event2</a>)</td></tr>
+<tr class="separator:abfdc2f4bf7d1b3de1983757579e652d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a648da83816bb67aedeeaa8c10a99ec7a" id="r_a648da83816bb67aedeeaa8c10a99ec7a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a648da83816bb67aedeeaa8c10a99ec7a">reaction_matches</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">a</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">b</a>)</td></tr>
+<tr class="separator:a648da83816bb67aedeeaa8c10a99ec7a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ae598c82bee1e3e1f1b6d95f15133fcf2" id="r_ae598c82bee1e3e1f1b6d95f15133fcf2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d51/pqueue__base_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#ae598c82bee1e3e1f1b6d95f15133fcf2">get_event_time</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *event)</td></tr>
+<tr class="separator:ae598c82bee1e3e1f1b6d95f15133fcf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acd6d67f4e05f2780b23aef72f92468f5" id="r_acd6d67f4e05f2780b23aef72f92468f5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/d51/pqueue__base_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#acd6d67f4e05f2780b23aef72f92468f5">get_reaction_index</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">reaction</a>)</td></tr>
+<tr class="separator:acd6d67f4e05f2780b23aef72f92468f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6fe0fb47f50e822155a0b9a77fc87769" id="r_a6fe0fb47f50e822155a0b9a77fc87769"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a6fe0fb47f50e822155a0b9a77fc87769">get_event_position</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *event)</td></tr>
+<tr class="separator:a6fe0fb47f50e822155a0b9a77fc87769"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a051ae6a8bc2b547818e06cb0c72b14a2" id="r_a051ae6a8bc2b547818e06cb0c72b14a2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a051ae6a8bc2b547818e06cb0c72b14a2">get_reaction_position</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">reaction</a>)</td></tr>
+<tr class="separator:a051ae6a8bc2b547818e06cb0c72b14a2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a86800d369ca9d46e67cabba8fa236681" id="r_a86800d369ca9d46e67cabba8fa236681"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a86800d369ca9d46e67cabba8fa236681">set_event_position</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *event, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> pos)</td></tr>
+<tr class="separator:a86800d369ca9d46e67cabba8fa236681"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a463f89e588c57a76b4cd6a0e633a94b4" id="r_a463f89e588c57a76b4cd6a0e633a94b4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a463f89e588c57a76b4cd6a0e633a94b4">set_reaction_position</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">reaction</a>, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> pos)</td></tr>
+<tr class="separator:a463f89e588c57a76b4cd6a0e633a94b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a26e33f5180dc5951b3d26094959913b7" id="r_a26e33f5180dc5951b3d26094959913b7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#a26e33f5180dc5951b3d26094959913b7">print_reaction</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">reaction</a>)</td></tr>
 <tr class="separator:a26e33f5180dc5951b3d26094959913b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac3748c134d36779db69ce9dd3d7ac4ac" id="r_ac3748c134d36779db69ce9dd3d7ac4ac"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../da/db5/pqueue_8c.html#ac3748c134d36779db69ce9dd3d7ac4ac">print_event</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *event)</td></tr>
 <tr class="separator:ac3748c134d36779db69ce9dd3d7ac4ac"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Macro Definition Documentation</h2>
-<a id="a8d1b3e7289cde75b3042e855207bbd6e" name="a8d1b3e7289cde75b3042e855207bbd6e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8d1b3e7289cde75b3042e855207bbd6e">&#9670;&#160;</a></span>LF_LEFT</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> LF_LEFT</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">i</a></td><td>)</td>
-          <td>&#160;&#160;&#160;((<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">i</a>) &lt;&lt; 1)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="a673aa06f4a4edddbf8cf5020c50552b8" name="a673aa06f4a4edddbf8cf5020c50552b8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a673aa06f4a4edddbf8cf5020c50552b8">&#9670;&#160;</a></span>LF_PARENT</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> LF_PARENT</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">i</a></td><td>)</td>
-          <td>&#160;&#160;&#160;((<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">i</a>) &gt;&gt; 1)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a id="ae14316df2cad4b399158d355b917bbd3" name="ae14316df2cad4b399158d355b917bbd3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae14316df2cad4b399158d355b917bbd3">&#9670;&#160;</a></span>LF_RIGHT</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> LF_RIGHT</td>
-          <td>(</td>
-          <td class="paramtype">&#160;</td>
-          <td class="paramname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">i</a></td><td>)</td>
-          <td>&#160;&#160;&#160;(((<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">i</a>) &lt;&lt; 1) + 1)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<h2 class="groupheader">Function Documentation</h2>
-<a id="a6abb03cf541980b01e48f830260c46e9" name="a6abb03cf541980b01e48f830260c46e9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6abb03cf541980b01e48f830260c46e9">&#9670;&#160;</a></span>event_matches()</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Priority queue definitions for the event queue and reaction queue. </p>
+<dl class="section author"><dt>Author</dt><dd>Marten Lohstroh </dd>
+<dd>
+Edward A. Lee </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>(c) 2020-2023, The University of California at Berkeley. License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a> </dd></dl>
+</div><h2 class="groupheader">Function Documentation</h2>
+<a id="abfdc2f4bf7d1b3de1983757579e652d4" name="abfdc2f4bf7d1b3de1983757579e652d4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abfdc2f4bf7d1b3de1983757579e652d4">&#9670;&#160;</a></span>event_matches()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -239,13 +147,13 @@ Functions</h2></td></tr>
           <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> event_matches </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
-          <td class="paramname"><em>next</em>, </td>
+          <td class="paramname"><em>event1</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
-          <td class="paramname"><em>curr</em>&#160;</td>
+          <td class="paramname"><em>event2</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -254,88 +162,18 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Return whether or not the given events have matching triggers. </p>
+<p>Return 1 if the two events have the same trigger. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">event1</td><td>A pointer to an <a class="el" href="../../da/d67/structevent__t.html">event_t</a>. </td></tr>
+    <tr><td class="paramname">event2</td><td>A pointer to an <a class="el" href="../../da/d67/structevent__t.html">event_t</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a id="a7ea64f179be575a87e0145481f1d679c" name="a7ea64f179be575a87e0145481f1d679c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7ea64f179be575a87e0145481f1d679c">&#9670;&#160;</a></span>find_equal()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> * find_equal </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>q</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
-          <td class="paramname"><em>e</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td>
-          <td class="paramname"><em>pos</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../dc/d66/pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td>
-          <td class="paramname"><em>max</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Find an element in the queue that matches the given element up to and including the given maximum priority. </p>
-
-</div>
-</div>
-<a id="a5e022cf1bf56de20b3cad2969cebec8e" name="a5e022cf1bf56de20b3cad2969cebec8e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5e022cf1bf56de20b3cad2969cebec8e">&#9670;&#160;</a></span>find_equal_same_priority()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> * find_equal_same_priority </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>q</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
-          <td class="paramname"><em>e</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a>&#160;</td>
-          <td class="paramname"><em>pos</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Find an element in the queue that matches the given element up to but not including the given maximum priority. The matching element has to <em>also</em> have the same priority. </p>
-
-</div>
-</div>
-<a id="ae5b1746e75bcefbd924c4cdeeb7bce6a" name="ae5b1746e75bcefbd924c4cdeeb7bce6a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae5b1746e75bcefbd924c4cdeeb7bce6a">&#9670;&#160;</a></span>get_event_position()</h2>
+<a id="a6fe0fb47f50e822155a0b9a77fc87769" name="a6fe0fb47f50e822155a0b9a77fc87769"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6fe0fb47f50e822155a0b9a77fc87769">&#9670;&#160;</a></span>get_event_position()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -344,55 +182,70 @@ Functions</h2></td></tr>
           <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> get_event_position </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
-          <td class="paramname"><em>a</em></td><td>)</td>
+          <td class="paramname"><em>event</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Return the given event's position in the queue. </p>
+<p>Return the given event's position in the queue. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">event</td><td>A pointer to an <a class="el" href="../../da/d67/structevent__t.html">event_t</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a id="a0fb21cd2840e8552d5a127f6e949668c" name="a0fb21cd2840e8552d5a127f6e949668c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0fb21cd2840e8552d5a127f6e949668c">&#9670;&#160;</a></span>get_event_time()</h2>
+<a id="ae598c82bee1e3e1f1b6d95f15133fcf2" name="ae598c82bee1e3e1f1b6d95f15133fcf2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae598c82bee1e3e1f1b6d95f15133fcf2">&#9670;&#160;</a></span>get_event_time()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../dc/d66/pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> get_event_time </td>
+          <td class="memname"><a class="el" href="../../d6/d51/pqueue__base_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> get_event_time </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
-          <td class="paramname"><em>a</em></td><td>)</td>
+          <td class="paramname"><em>event</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Report a priority equal to the time of the given event. Used for sorting pointers to <a class="el" href="../../da/d67/structevent__t.html">event_t</a> structs in the event queue. </p>
+<p>Report a priority equal to the time of the given event. This is used for sorting pointers to <a class="el" href="../../da/d67/structevent__t.html">event_t</a> structs in the event queue. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">a</td><td>A pointer to an <a class="el" href="../../da/d67/structevent__t.html">event_t</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a id="a625c09da56c743c2180613c25271f7da" name="a625c09da56c743c2180613c25271f7da"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a625c09da56c743c2180613c25271f7da">&#9670;&#160;</a></span>get_reaction_index()</h2>
+<a id="acd6d67f4e05f2780b23aef72f92468f5" name="acd6d67f4e05f2780b23aef72f92468f5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acd6d67f4e05f2780b23aef72f92468f5">&#9670;&#160;</a></span>get_reaction_index()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../dc/d66/pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> get_reaction_index </td>
+          <td class="memname"><a class="el" href="../../d6/d51/pqueue__base_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a> get_reaction_index </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
-          <td class="paramname"><em>a</em></td><td>)</td>
+          <td class="paramname"><em>reaction_t</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Report a priority equal to the index of the given reaction. Used for sorting pointers to <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> structs in the blocked and executing queues. </p>
+<p>Report a priority equal to the index of the given reaction. Used for sorting pointers to <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> structs in the blocked and executing queues. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">reaction</td><td>A pointer to a <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a id="a66344e489d0494ce2d74e719fd190a10" name="a66344e489d0494ce2d74e719fd190a10"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a66344e489d0494ce2d74e719fd190a10">&#9670;&#160;</a></span>get_reaction_position()</h2>
+<a id="a051ae6a8bc2b547818e06cb0c72b14a2" name="a051ae6a8bc2b547818e06cb0c72b14a2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a051ae6a8bc2b547818e06cb0c72b14a2">&#9670;&#160;</a></span>get_reaction_position()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -401,12 +254,17 @@ Functions</h2></td></tr>
           <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> get_reaction_position </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
-          <td class="paramname"><em>a</em></td><td>)</td>
+          <td class="paramname"><em>reaction</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Return the given reaction's position in the queue. </p>
+<p>Return the given reaction's position in the queue. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">reaction</td><td>A pointer to a <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -419,13 +277,13 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> in_no_particular_order </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../dc/d66/pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d6/d51/pqueue__base_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td>
           <td class="paramname"><em>thiz</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../dc/d66/pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d6/d51/pqueue__base_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td>
           <td class="paramname"><em>that</em>&#160;</td>
         </tr>
         <tr>
@@ -435,7 +293,13 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Return false (0) regardless of reaction order. </p>
+<p>Return 0 regardless of argument order. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">thiz</td><td>First argument. </td></tr>
+    <tr><td class="paramname">that</td><td>Second argument. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -448,13 +312,13 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> in_reverse_order </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../dc/d66/pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d6/d51/pqueue__base_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td>
           <td class="paramname"><em>thiz</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../dc/d66/pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d6/d51/pqueue__base_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td>
           <td class="paramname"><em>that</em>&#160;</td>
         </tr>
         <tr>
@@ -464,438 +328,10 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Return whether the first and second argument are given in reverse order. </p>
-
-</div>
-</div>
-<a id="add0fae8523cca210f1574586e82cf7dd" name="add0fae8523cca210f1574586e82cf7dd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#add0fae8523cca210f1574586e82cf7dd">&#9670;&#160;</a></span>pqueue_dump()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> pqueue_dump </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>q</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../dc/d66/pqueue_8h.html#a884902da135214a6167f1536ad4ed4bc">pqueue_print_entry_f</a>&#160;</td>
-          <td class="paramname"><em>print</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Dump the queue and it's internal structure. </p>
-
-</div>
-</div>
-<a id="aa0f5e3d63138880461b1f04dc2d4f48a" name="aa0f5e3d63138880461b1f04dc2d4f48a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa0f5e3d63138880461b1f04dc2d4f48a">&#9670;&#160;</a></span>pqueue_empty_into()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> pqueue_empty_into </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> **&#160;</td>
-          <td class="paramname"><em>dest</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> **&#160;</td>
-          <td class="paramname"><em>src</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Empty 'src' into 'dest'. </p>
-<p>As an optimization, this function might swap 'src' and 'dest'.</p>
-<dl class="params"><dt>Parameters</dt><dd>
+<p>Return 1 if the first argument is greater than the second and zero otherwise. </p><dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramname">dest</td><td>The queue to fill up </td></tr>
-    <tr><td class="paramname">src</td><td>The queue to empty </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a710e5b3f5e1bf8100a9f130084b5cac3" name="a710e5b3f5e1bf8100a9f130084b5cac3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a710e5b3f5e1bf8100a9f130084b5cac3">&#9670;&#160;</a></span>pqueue_find_equal()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> * pqueue_find_equal </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>q</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
-          <td class="paramname"><em>e</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../dc/d66/pqueue_8h.html#ad8239ddc32134716f57e54bb972f6bf0">pqueue_pri_t</a>&#160;</td>
-          <td class="paramname"><em>max_priority</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Find the highest-ranking item with priority up to and including the given maximum priority that matches the supplied entry. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">q</td><td>the queue </td></tr>
-    <tr><td class="paramname">e</td><td>the entry to compare against </td></tr>
-    <tr><td class="paramname">max_priority</td><td>the maximum priority to consider </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>NULL if no matching event has been found, otherwise the entry </dd></dl>
-
-</div>
-</div>
-<a id="a9bb9cb0e5f41746db17b7581f5fe0559" name="a9bb9cb0e5f41746db17b7581f5fe0559"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9bb9cb0e5f41746db17b7581f5fe0559">&#9670;&#160;</a></span>pqueue_find_equal_same_priority()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> * pqueue_find_equal_same_priority </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>q</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
-          <td class="paramname"><em>e</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Find the highest-ranking item with the same priority that matches the supplied entry. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">q</td><td>the queue </td></tr>
-    <tr><td class="paramname">e</td><td>the entry to compare against </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>NULL if no matching event has been found, otherwise the entry </dd></dl>
-
-</div>
-</div>
-<a id="acceacc4429dd9cd31d5af09f3f473cb0" name="acceacc4429dd9cd31d5af09f3f473cb0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acceacc4429dd9cd31d5af09f3f473cb0">&#9670;&#160;</a></span>pqueue_free()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> pqueue_free </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>q</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>free all memory used by the queue </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">q</td><td>the queue </td></tr>
-  </table>
-  </dd>
-</dl>
-
-</div>
-</div>
-<a id="a5a4c8b51b16189ab4a687f562733b1a5" name="a5a4c8b51b16189ab4a687f562733b1a5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5a4c8b51b16189ab4a687f562733b1a5">&#9670;&#160;</a></span>pqueue_init()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> * pqueue_init </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a>&#160;</td>
-          <td class="paramname"><em>n</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../dc/d66/pqueue_8h.html#a1c3f02694b2a0ec19584c395a88bb6f9">pqueue_cmp_pri_f</a>&#160;</td>
-          <td class="paramname"><em>cmppri</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../dc/d66/pqueue_8h.html#aa84f0100faf971295df5aed226c390a6">pqueue_get_pri_f</a>&#160;</td>
-          <td class="paramname"><em>getpri</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../dc/d66/pqueue_8h.html#a31ca7927983005bd7866021819ad7037">pqueue_get_pos_f</a>&#160;</td>
-          <td class="paramname"><em>getpos</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../dc/d66/pqueue_8h.html#afdc8f52cbc45181ef375df22917bc4f9">pqueue_set_pos_f</a>&#160;</td>
-          <td class="paramname"><em>setpos</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../dc/d66/pqueue_8h.html#a664f0abcd86c8089468869aa3dc6e535">pqueue_eq_elem_f</a>&#160;</td>
-          <td class="paramname"><em>eqelem</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../dc/d66/pqueue_8h.html#a884902da135214a6167f1536ad4ed4bc">pqueue_print_entry_f</a>&#160;</td>
-          <td class="paramname"><em>prt</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>initialize the queue</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">n</td><td>the initial estimate of the number of queue items for which memory should be preallocated </td></tr>
-    <tr><td class="paramname">cmppri</td><td>The callback function to run to compare two elements This callback should return 0 for 'lower' and non-zero for 'higher', or vice versa if reverse priority is desired </td></tr>
-    <tr><td class="paramname">getpri</td><td>the callback function to run to set a score to an element </td></tr>
-    <tr><td class="paramname">getpos</td><td>the callback function to get the current element's position </td></tr>
-    <tr><td class="paramname">setpos</td><td>the callback function to set the current element's position</td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>the handle or NULL for insufficent memory </dd></dl>
-
-</div>
-</div>
-<a id="addd8cdfbc8c47b8cdd7eb4c4560de7aa" name="addd8cdfbc8c47b8cdd7eb4c4560de7aa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#addd8cdfbc8c47b8cdd7eb4c4560de7aa">&#9670;&#160;</a></span>pqueue_insert()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> pqueue_insert </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>q</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
-          <td class="paramname"><em>d</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Insert an element into the queue. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">q</td><td>the queue </td></tr>
-    <tr><td class="paramname">e</td><td>the element </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success </dd></dl>
-
-</div>
-</div>
-<a id="aecb92aa04f03ad7866508bc27778d7e9" name="aecb92aa04f03ad7866508bc27778d7e9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aecb92aa04f03ad7866508bc27778d7e9">&#9670;&#160;</a></span>pqueue_is_valid()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> pqueue_is_valid </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>q</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Check that the all entries are in the right order, etc. </p>
-
-</div>
-</div>
-<a id="a9ec5c03203b587dbb92f8d2a977aa7e4" name="a9ec5c03203b587dbb92f8d2a977aa7e4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9ec5c03203b587dbb92f8d2a977aa7e4">&#9670;&#160;</a></span>pqueue_peek()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> * pqueue_peek </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>q</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Access highest-ranking item without removing it. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">q</td><td>the queue </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>NULL on error, otherwise the entry </dd></dl>
-
-</div>
-</div>
-<a id="a66bce8cd2c2afa804405005798498823" name="a66bce8cd2c2afa804405005798498823"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a66bce8cd2c2afa804405005798498823">&#9670;&#160;</a></span>pqueue_pop()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> * pqueue_pop </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>q</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Pop the highest-ranking item from the queue. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">q</td><td>the queue </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>NULL on error, otherwise the entry </dd></dl>
-
-</div>
-</div>
-<a id="a1bc71ac57e101d48d91c75ecbf8fc278" name="a1bc71ac57e101d48d91c75ecbf8fc278"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1bc71ac57e101d48d91c75ecbf8fc278">&#9670;&#160;</a></span>pqueue_print()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> pqueue_print </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>q</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../dc/d66/pqueue_8h.html#a884902da135214a6167f1536ad4ed4bc">pqueue_print_entry_f</a>&#160;</td>
-          <td class="paramname"><em>print</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Print the queue. </p>
-
-</div>
-</div>
-<a id="a9a509654dacb6be3d34ff7a4958ab4dd" name="a9a509654dacb6be3d34ff7a4958ab4dd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9a509654dacb6be3d34ff7a4958ab4dd">&#9670;&#160;</a></span>pqueue_remove()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> pqueue_remove </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>q</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
-          <td class="paramname"><em>e</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Remove an item from the queue. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">q</td><td>the queue </td></tr>
-    <tr><td class="paramname">e</td><td>the entry </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>0 on success </dd></dl>
-
-</div>
-</div>
-<a id="ae0cf88c8360a5f08ada81feaaeb40505" name="ae0cf88c8360a5f08ada81feaaeb40505"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae0cf88c8360a5f08ada81feaaeb40505">&#9670;&#160;</a></span>pqueue_size()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">size_t</a> pqueue_size </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d5/d38/structpqueue__t.html">pqueue_t</a> *&#160;</td>
-          <td class="paramname"><em>q</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>return the size of the queue. </p><dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramname">q</td><td>the queue </td></tr>
+    <tr><td class="paramname">thiz</td><td>First argument. </td></tr>
+    <tr><td class="paramname">that</td><td>Second argument. </td></tr>
   </table>
   </dd>
 </dl>
@@ -917,8 +353,12 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Print some information about the given event.</p>
-<p>DEBUG function only. </p>
+<p>Print some information about the given event. This only prints something if logging is set to DEBUG. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">event</td><td>A pointer to an <a class="el" href="../../da/d67/structevent__t.html">event_t</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -937,13 +377,17 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Print some information about the given reaction.</p>
-<p>DEBUG function only. </p>
+<p>Print some information about the given reaction. This only prints something if logging is set to DEBUG. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">reaction</td><td>A pointer to a <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a>. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a id="aa369c3ef69d9502b77f4e154c2a25faf" name="aa369c3ef69d9502b77f4e154c2a25faf"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa369c3ef69d9502b77f4e154c2a25faf">&#9670;&#160;</a></span>reaction_matches()</h2>
+<a id="a648da83816bb67aedeeaa8c10a99ec7a" name="a648da83816bb67aedeeaa8c10a99ec7a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a648da83816bb67aedeeaa8c10a99ec7a">&#9670;&#160;</a></span>reaction_matches()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -952,13 +396,13 @@ Functions</h2></td></tr>
           <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> reaction_matches </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
-          <td class="paramname"><em>next</em>, </td>
+          <td class="paramname"><em>a</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
-          <td class="paramname"><em>curr</em>&#160;</td>
+          <td class="paramname"><em>b</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -967,12 +411,18 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Return whether or not the given <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a> pointers point to the same struct. </p>
+<p>Return 1 if the two arguments are identical pointers. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">a</td><td>First argument. </td></tr>
+    <tr><td class="paramname">b</td><td>Second argument. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a id="ad12f6906a77b8e62780d4462bdf33126" name="ad12f6906a77b8e62780d4462bdf33126"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad12f6906a77b8e62780d4462bdf33126">&#9670;&#160;</a></span>set_event_position()</h2>
+<a id="a86800d369ca9d46e67cabba8fa236681" name="a86800d369ca9d46e67cabba8fa236681"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a86800d369ca9d46e67cabba8fa236681">&#9670;&#160;</a></span>set_event_position()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -981,7 +431,7 @@ Functions</h2></td></tr>
           <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> set_event_position </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
-          <td class="paramname"><em>a</em>, </td>
+          <td class="paramname"><em>event</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -996,12 +446,18 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Set the given event's position in the queue. </p>
+<p>Set the given event's position in the queue. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">event</td><td>A pointer to an <a class="el" href="../../da/d67/structevent__t.html">event_t</a> </td></tr>
+    <tr><td class="paramname">pos</td><td>The position. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
-<a id="a10095d3883ff8e244676f38ddbb0ffee" name="a10095d3883ff8e244676f38ddbb0ffee"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a10095d3883ff8e244676f38ddbb0ffee">&#9670;&#160;</a></span>set_reaction_position()</h2>
+<a id="a463f89e588c57a76b4cd6a0e633a94b4" name="a463f89e588c57a76b4cd6a0e633a94b4"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a463f89e588c57a76b4cd6a0e633a94b4">&#9670;&#160;</a></span>set_reaction_position()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1010,7 +466,7 @@ Functions</h2></td></tr>
           <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> set_reaction_position </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> *&#160;</td>
-          <td class="paramname"><em>a</em>, </td>
+          <td class="paramname"><em>reaction</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1025,7 +481,13 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Return the given reaction's position in the queue. </p>
+<p>Set the given reaction's position in the queue. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">event</td><td>A pointer to a <a class="el" href="../../d2/d35/structreaction__t.html">reaction_t</a>. </td></tr>
+    <tr><td class="paramname">pos</td><td>The position. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

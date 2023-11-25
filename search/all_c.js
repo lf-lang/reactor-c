@@ -28,7 +28,7 @@ var searchData=
   ['eqelem_25',['eqelem',['../d5/d38/structpqueue__t.html#a27ad9197156c9be3cbc2845478223f32',1,'pqueue_t']]],
   ['error_26',['error',['../d8/d3c/util_8h.html#a4866b2d37ffc80c5ba705d3fcd1e0ecf',1,'util.h']]],
   ['event_27',['event',['../d6/d1e/namespacefedsd.html#a7a0e345901ddc16ed6e98e1c75d9a8c6',1,'fedsd']]],
-  ['event_5fmatches_28',['event_matches',['../dc/d66/pqueue_8h.html#a6abb03cf541980b01e48f830260c46e9',1,'event_matches(void *next, void *curr):&#160;pqueue.c'],['../da/db5/pqueue_8c.html#a6abb03cf541980b01e48f830260c46e9',1,'event_matches(void *next, void *curr):&#160;pqueue.c']]],
+  ['event_5fmatches_28',['event_matches',['../dc/d66/pqueue_8h.html#abfdc2f4bf7d1b3de1983757579e652d4',1,'event_matches(void *event1, void *event2):&#160;pqueue.c'],['../da/db5/pqueue_8c.html#abfdc2f4bf7d1b3de1983757579e652d4',1,'event_matches(void *event1, void *event2):&#160;pqueue.c']]],
   ['event_5fq_29',['event_q',['../d2/d01/structenvironment__t.html#aed648612adb3c7940a90535f8c324bfc',1,'environment_t']]],
   ['event_5fq_5fchanged_30',['event_q_changed',['../d2/d01/structenvironment__t.html#a2e3007a4c73bbe1242f5b4d901c729e8',1,'environment_t']]],
   ['event_5ft_31',['event_t',['../da/d67/structevent__t.html',1,'event_t'],['../d6/d1d/lf__types_8h.html#a59f5f6b9c6023baebf9c49c328b639a1',1,'event_t:&#160;lf_types.h']]],

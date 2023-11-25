@@ -37,6 +37,7 @@ var annotated_dup =
     [ "note", "da/d62/structnote.html", "da/d62/structnote" ],
     [ "open_file_t", "db/de2/structopen__file__t.html", "db/de2/structopen__file__t" ],
     [ "pqueue_t", "d5/d38/structpqueue__t.html", "d5/d38/structpqueue__t" ],
+    [ "pqueue_tag_element_t", "d2/dce/structpqueue__tag__element__t.html", "d2/dce/structpqueue__tag__element__t" ],
     [ "py_tag_t", "d2/d92/structpy__tag__t.html", "d2/d92/structpy__tag__t" ],
     [ "reaction_stats_t", "df/da2/structreaction__stats__t.html", "df/da2/structreaction__stats__t" ],
     [ "reaction_t", "d2/d35/structreaction__t.html", "d2/d35/structreaction__t" ],
