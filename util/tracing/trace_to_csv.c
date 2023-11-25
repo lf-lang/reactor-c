@@ -399,29 +399,33 @@ void write_summary_file() {
     }
 }
 
-int main(int argc, char* argv[]) {
-    // if (argc != 2) {
-    //     usage();
-    //     exit(0);
-    // }
-    instant_t trace_start_time;
-    instant_t trace_end_time;
-    if (argc == 4) {
-        sscanf(argv[2], "%lld", &trace_start_time);
-        sscanf(argv[3], "%lld", &trace_end_time);
-        trace_start_time = MSEC(trace_start_time);
-        trace_end_time = MSEC(trace_end_time);
-        printf("%lld, %lld\n", trace_start_time, trace_end_time);
-    } else if (argc != 2) {
-        usage();
-        exit(0);
+int process_args(int argc, const char* argv[], char** root, instant_t* start_time, instant_t* end_time) {
+    for (int i = 1; i < argc; i++) {
+        if (strcmp(strrchr(argv[i], '\0') - 4, ".lft") == 0) {
+            // Open the trace file.
+            trace_file = open_file(argv[i], "r");
+            if (trace_file == NULL) exit(1);
+            *root = root_name(argv[i]);
+        } else if (strcmp(argv[i], "-s") == 0) {
+            sscanf(argv[++i], "%lld", start_time);
+        } else if (strcmp(argv[i], "-e") == 0) {
+            sscanf(argv[++i], "%lld", end_time);
+        } else {
+            usage();
+            exit(0);
+        }
     }
-    // Open the trace file.
-    trace_file = open_file(argv[1], "r");
-    if (trace_file == NULL) exit(1);
+    return 0;
+}
+
+int main(int argc, char* argv[]) {
+    instant_t trace_start_time = NEVER;
+    instant_t trace_end_time = FOREVER;
+    char* root;
+
+    process_args(argc, argv, &root, &trace_start_time, &trace_end_time);
 
     // Construct the name of the csv output file and open it.
-    char* root = root_name(argv[1]);
     char csv_filename[strlen(root) + 5];
     strcpy(csv_filename, root);
     strcat(csv_filename, ".csv");

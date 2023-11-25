@@ -101,9 +101,9 @@ parser.add_argument('-r','--rti', type=str,
 parser.add_argument('-f','--federates', nargs='+',
                     help='List of the federates\' lft trace files.')
 parser.add_argument('-s', '--start', type=str,
-                    help='Elapsed logical time (msec) to start visualization')
+                    help='Elapsed logical time (nsec) to start visualization')
 parser.add_argument('-e', '--end', type=str,
-                    help='Elapsed logical time (msec) to end visualization')
+                    help='Elapsed logical time (nsec) to end visualization')
 
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
@@ -386,7 +386,14 @@ def convert_lft_file_to_csv(lft_file, start_time, end_time):
      * File: the converted csv file, if the conversion succeeds, and empty string otherwise.
      * String: the error message, in case the conversion did not succeed, and empty string otherwise.
     '''
-    convert_process = subprocess.run(['trace_to_csv', lft_file, start_time, end_time], stdout=subprocess.DEVNULL)
+
+    subprocess_args = ['trace_to_csv', lft_file]
+    if (start_time != None):
+        subprocess_args.extend(['-s', start_time])
+    if (end_time != None):
+        subprocess_args.extend(['-e', end_time])
+
+    convert_process = subprocess.run(subprocess_args, stdout=subprocess.DEVNULL)
 
     if (convert_process.returncode == 0):
         csv_file = os.path.splitext(lft_file)[0] + '.csv'
@@ -464,7 +471,6 @@ if __name__ == '__main__':
     # Look up the lft files and transform them to csv files
 
     rti_csv_file, federates_csv_files = get_and_convert_lft_files(args.rti, args.federates, args.start, args.end)
-    print('args.start', args.start)
     
     # The RTI and each of the federates have a fixed x coordinate. They will be
     # saved in a dict
