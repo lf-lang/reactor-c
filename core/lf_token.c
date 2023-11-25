@@ -115,7 +115,9 @@ lf_token_t* lf_writable_copy(lf_port_base_t* port) {
     LF_PRINT_DEBUG("lf_writable_copy: Allocated memory for payload (token value): %p", copy);
 
     // Count allocations to issue a warning if this is never freed.
+    LF_ASSERT(!lf_critical_section_enter(GLOBAL_ENVIRONMENT), "Could not enter critical section");
     _lf_count_payload_allocations++;
+    LF_ASSERT(!lf_critical_section_exit(GLOBAL_ENVIRONMENT), "Could not exit critical section");
 
     // Create a new, dynamically allocated token.
     lf_token_t* result = _lf_new_token((token_type_t*)port, copy, token->length);
@@ -133,7 +135,9 @@ lf_token_t* lf_writable_copy(lf_port_base_t* port) {
 void _lf_free_token_value(lf_token_t* token) {
     if (token->value != NULL) {
         // Count frees to issue a warning if this is never freed.
+        LF_ASSERT(!lf_critical_section_enter(GLOBAL_ENVIRONMENT), "Could not enter critical section");
         _lf_count_payload_allocations--;
+        LF_ASSERT(!lf_critical_section_exit(GLOBAL_ENVIRONMENT), "Could not exit critical section");
         // Free the value field (the payload).
         LF_PRINT_DEBUG("_lf_free_token_value: Freeing allocated memory for payload (token value): %p",
             token->value);
@@ -161,9 +165,7 @@ token_freed _lf_free_token(lf_token_t* token) {
     // Tokens that are created at the start of execution and associated with
     // output ports or actions persist until they are overwritten.
     // Need to acquire a mutex to access the recycle bin.
-    if (lf_critical_section_enter(GLOBAL_ENVIRONMENT) != 0) {
-        lf_print_error_and_exit("Could not enter critical section");
-    }
+    LF_ASSERT(!lf_critical_section_enter(GLOBAL_ENVIRONMENT), "Could not enter critical section");
     if (_lf_token_recycling_bin == NULL) {
         _lf_token_recycling_bin = hashset_create(4); // Initial size is 16.
         if (_lf_token_recycling_bin == NULL) {
@@ -182,10 +184,8 @@ token_freed _lf_free_token(lf_token_t* token) {
         LF_PRINT_DEBUG("_lf_free_token: Freeing allocated memory for token: %p", token);
         free(token);
     }
-    if(lf_critical_section_exit(GLOBAL_ENVIRONMENT) != 0) {
-        lf_print_error_and_exit("Could not leave critical section");
-    }
     _lf_count_token_allocations--;
+    LF_ASSERT(!lf_critical_section_exit(GLOBAL_ENVIRONMENT), "Could not exit critical section");
     result &= TOKEN_FREED;
 
     return result;
@@ -276,7 +276,9 @@ lf_token_t* _lf_initialize_token_with_value(token_template_t* tmplt, void* value
     lf_token_t* result = _lf_get_token(tmplt);
     result->value = value;
     // Count allocations to issue a warning if this is never freed.
+    LF_ASSERT(!lf_critical_section_enter(GLOBAL_ENVIRONMENT), "Could not enter critical section");
     _lf_count_payload_allocations++;
+    LF_ASSERT(!lf_critical_section_exit(GLOBAL_ENVIRONMENT), "Could not exit critical section");
     result->length = length;
     return result;
 }
