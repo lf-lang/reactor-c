@@ -1704,10 +1704,6 @@ int process_args(int argc, const char* argv[]) {
     return 1;
 }
 
-OrderingClientApi* ordering_client_api;
-void* ordering_client;
-static void* ordering_client_join_handle;
-
 /**
  * Initialize global variables and start tracing before calling the
  * `_lf_initialize_trigger_objects` function
@@ -1730,10 +1726,6 @@ ClientAndJoinHandle initialize_global(void) {
     // Call the code-generated function to initialize all actions, timers, and ports
     // This is done for all environments/enclaves at the same time.
     _lf_initialize_trigger_objects();
-    ordering_client_api = load_ordering_client_api();
-    ClientAndJoinHandle client_and_join_handle = ordering_client_api->start_client(_lf_my_fed_id);
-    ordering_client = client_and_join_handle.client;
-    ordering_client_join_handle = client_and_join_handle.join_handle;
 }
 
 /**

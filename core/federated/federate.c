@@ -84,6 +84,10 @@ lf_cond_t logical_time_changed;
 // Variable to track how far in the reaction queue we can go until we need to wait for more network port statuses to be known.
 int max_level_allowed_to_advance;
 
+OrderingClientApi* ordering_client_api;
+void* ordering_client;
+static void* ordering_client_join_handle;
+
 /**
  * The state of this federate instance.
  */
@@ -988,6 +992,10 @@ void perform_hmac_authentication(int rti_socket) {
  */
 void connect_to_rti(const char* hostname, int port) {
     LF_PRINT_LOG("Connecting to the RTI.");
+    ordering_client_api = load_ordering_client_api();
+    ClientAndJoinHandle client_and_join_handle = ordering_client_api->start_client(_lf_my_fed_id);
+    ordering_client = client_and_join_handle.client;
+    ordering_client_join_handle = client_and_join_handle.join_handle;
 
     // override passed hostname and port if passed as runtime arguments
     hostname = federation_metadata.rti_host ? federation_metadata.rti_host : hostname;
