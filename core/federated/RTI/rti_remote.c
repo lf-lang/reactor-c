@@ -990,7 +990,8 @@ void handle_federate_resign(federate_info_t *my_fed) {
                                  "RTI failed to read the timed message header from remote federate.");
         // Extract the tag sent by the resigning federate
         tag_t tag = extract_tag(&(buffer[1]));
-        tracepoint_rti_from_federate(rti_remote->base.trace, receive_RESIGN, my_fed->enclave.id, &tag);
+        // see comment at send_RESIGN
+        // tracepoint_rti_from_federate(rti_remote->base.trace, receive_RESIGN, my_fed->enclave.id, &tag);
     }
 
     my_fed->enclave.state = NOT_CONNECTED;
