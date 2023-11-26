@@ -105,6 +105,8 @@ IF(AUTH MATCHES ON)
   target_link_libraries(RTI OpenSSL::SSL)
 ENDIF(AUTH MATCHES ON)
 
+target_link_libraries(RTI ${CMAKE_DL_LIBS})
+
 find_package(Git)
 execute_process(COMMAND
   "${GIT_EXECUTABLE}" describe --match=NeVeRmAtCh --always --abbrev=40 --dirty

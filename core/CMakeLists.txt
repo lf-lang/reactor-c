@@ -89,6 +89,8 @@ if(NOT DEFINED LF_SINGLE_THREADED OR DEFINED LF_TRACE)
     endif()
 endif()
 
+target_link_libraries(core ${CMAKE_DL_LIBS})
+
 # Macro for translating a command-line argument into compile definition for
 # core lib
 macro(define X)
