@@ -474,7 +474,7 @@ void stop_trace(trace_t* trace);
 void tracepoint_federate_to_rti_internal(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag, int file_idx, int line, int sequence_number_for_file_and_line);
 #define tracepoint_federate_to_rti(trace, event_type, fed_id, tag) \
     LF_DO_HOOK_START(trace) \
-    tracepoint_federate_to_rti_internal(trace, event_type, fed_id, tag, lf_hook_file_idx, lf_hook_line, lf_hook_sequence_number); \
+    tracepoint_federate_to_rti_internal(trace, event_type, fed_id, tag, 0, lf_hook_line, lf_hook_sequence_number); /* FIXME: file_idx is 0 */\
     LF_DO_HOOK_END
 
 /**
@@ -487,7 +487,7 @@ void tracepoint_federate_to_rti_internal(trace_t* trace, trace_event_t event_typ
 void tracepoint_federate_from_rti_internal(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag, int file_idx, int line, int sequence_number_for_file_and_line);
 #define tracepoint_federate_from_rti(trace, event_type, fed_id, tag) \
     LF_DO_HOOK_START(trace) \
-    tracepoint_federate_from_rti_internal(trace, event_type, fed_id, tag, lf_hook_file_idx, lf_hook_line, lf_hook_sequence_number); \
+    tracepoint_federate_from_rti_internal(trace, event_type, fed_id, tag, 0, lf_hook_line, lf_hook_sequence_number); \
     LF_DO_HOOK_END
 
 /**
@@ -501,7 +501,7 @@ void tracepoint_federate_from_rti_internal(trace_t* trace, trace_event_t event_t
 void tracepoint_federate_to_federate_internal(trace_t* trace, trace_event_t event_type, int fed_id, int partner_id, tag_t *tag, int file_idx, int line, int sequence_number_for_file_and_line);
 #define tracepoint_federate_to_federate(trace, event_type, fed_id, partner_id, tag) \
     LF_DO_HOOK_START(trace) \
-    tracepoint_federate_to_federate_internal(trace, event_type, fed_id, partner_id, tag, lf_hook_file_idx, lf_hook_line, lf_hook_sequence_number); \
+    tracepoint_federate_to_federate_internal(trace, event_type, fed_id, partner_id, tag, 0, lf_hook_line, lf_hook_sequence_number); \
     LF_DO_HOOK_END
 
 /**
@@ -515,7 +515,7 @@ void tracepoint_federate_to_federate_internal(trace_t* trace, trace_event_t even
 void tracepoint_federate_from_federate_internal(trace_t* trace, trace_event_t event_type, int fed_id, int partner_id, tag_t *tag, int file_idx, int line, int sequence_number_for_file_and_line);
 #define tracepoint_federate_from_federate(trace, event_type, fed_id, partner_id, tag) \
     LF_DO_HOOK_START(trace) \
-    tracepoint_federate_from_federate_internal(trace, event_type, fed_id, partner_id, tag, lf_hook_file_idx, lf_hook_line, lf_hook_sequence_number); \
+    tracepoint_federate_from_federate_internal(trace, event_type, fed_id, partner_id, tag, 0, lf_hook_line, lf_hook_sequence_number); \
     LF_DO_HOOK_END
 
 #else
@@ -540,7 +540,7 @@ void tracepoint_federate_from_federate_internal(trace_t* trace, trace_event_t ev
 void tracepoint_rti_to_federate_internal(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag, int file_idx, int line, int sequence_number_for_file_and_line);
 #define tracepoint_rti_to_federate(trace, event_type, fed_id, tag) \
     LF_DO_HOOK_START(trace) \
-    tracepoint_rti_to_federate_internal(trace, event_type, fed_id, tag, lf_hook_file_idx, lf_hook_line, lf_hook_sequence_number); \
+    tracepoint_rti_to_federate_internal(trace, event_type, fed_id, tag, 0, lf_hook_line, lf_hook_sequence_number); \
     LF_DO_HOOK_END
 
 /**
@@ -553,7 +553,7 @@ void tracepoint_rti_to_federate_internal(trace_t* trace, trace_event_t event_typ
 void tracepoint_rti_from_federate_internal(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag, int file_idx, int line, int sequence_number_for_file_and_line);
 #define tracepoint_rti_from_federate(trace, event_type, fed_id, tag) \
     LF_DO_HOOK_START(trace) \
-    tracepoint_rti_from_federate_internal(trace, event_type, fed_id, tag, lf_hook_file_idx, lf_hook_line, lf_hook_sequence_number); \
+    tracepoint_rti_from_federate_internal(trace, event_type, fed_id, tag, 0, lf_hook_line, lf_hook_sequence_number); \
     LF_DO_HOOK_END
 
 #else
