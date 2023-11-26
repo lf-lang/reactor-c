@@ -86,7 +86,7 @@ int max_level_allowed_to_advance;
 
 OrderingClientApi* ordering_client_api;
 void* ordering_client;
-static void* ordering_client_join_handle;
+void* ordering_client_join_handle;
 
 /**
  * The state of this federate instance.

@@ -1728,6 +1728,8 @@ ClientAndJoinHandle initialize_global(void) {
     _lf_initialize_trigger_objects();
 }
 
+extern void* ordering_client_join_handle;
+
 /**
  * Report elapsed logical and physical times and report if any
  * memory allocated by set_new, set_new_array, or lf_writable_copy
