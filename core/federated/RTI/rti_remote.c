@@ -1322,161 +1322,205 @@ int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* clie
     return (int32_t)fed_id;
 }
 
-int receive_connection_information(int socket_id, uint16_t fed_id) {
-    LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_NEIGHBOR_STRUCTURE from federate %d.", fed_id);
-    unsigned char connection_info_header[MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE];
+int receive_set_up_information(int socket_id, uint16_t fed_id) {
+    LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_NEIGHBOR_STRUCTURE, MSG_TYPE_PHYSICAL_ACTION, and "
+    "MSG_TYPE_UDP_PORT from federate %d.", fed_id);
+
+    bool waiting_connection_information = true;
+    bool waiting_physical_action_information = true;
+    bool waiting_udp_message_and_set_up_clock_sync = true;
+
+    // Buffer for incoming messages.
+    // This does not constrain the message size because messages
+    // are forwarded piece by piece.
+    unsigned char buffer[FED_COM_BUFFER_SIZE];
+
+    // Listen for messages from the federate.
+    while (waiting_connection_information
+    || waiting_physical_action_information
+    || waiting_udp_message_and_set_up_clock_sync) {
+        // Read no more than one byte to get the message type.
+        ssize_t bytes_read = read_from_socket(socket_id, 1, buffer);
+        if (bytes_read < 1) {
+            // Socket is closed
+            lf_print_warning("RTI: Socket to federate %d is closed.", fed_id);
+            return 0;
+        }
+        LF_PRINT_DEBUG("RTI: Received message type %u from federate %d.", buffer[0], fed_id);
+        switch(buffer[0]) {
+            case MSG_TYPE_NEIGHBOR_STRUCTURE:
+                if (handle_connection_information(socket_id, (uint16_t)fed_id)) {
+                    waiting_connection_information = false;
+                } else {
+                    LF_PRINT_DEBUG("RTI failed to handle MSG_TYPE_NEIGHBOR_STRUCTURE message header from federate %d.", fed_id);
+                    return 0;
+                }
+                break;
+            case MSG_TYPE_PHYSICAL_ACTION:
+                if (handle_physical_action_information(socket_id, (uint16_t)fed_id)) {
+                    waiting_physical_action_information = false;
+                } else {
+                    LF_PRINT_DEBUG("RTI failed to handle MSG_TYPE_NEIGHBOR_STRUCTURE message header from federate %d.", fed_id);
+                    return 0;
+                }
+                break;
+            case MSG_TYPE_UDP_PORT:
+                if (handle_udp_message_and_set_up_clock_sync(socket_id, (uint16_t)fed_id)) {
+                    waiting_udp_message_and_set_up_clock_sync = false;
+                } else {
+                    LF_PRINT_DEBUG("RTI failed to handle MSG_TYPE_NEIGHBOR_STRUCTURE message header from federate %d.", fed_id);
+                    return 0;
+                }
+                break;
+            default:
+                lf_print_error("RTI was expecting a MSG_TYPE_NEIGHBOR_STRUCTURE, MSG_TYPE_PHYSICAL_ACTION, or MSG_TYPE_UDP_PORT "
+                "message from federate %d. Got %u instead. Rejecting federate.", fed_id, buffer[0]);
+                send_reject(socket_id, UNEXPECTED_MESSAGE);
+                return 0;
+        }
+    }
+    return 1;
+}
+
+int handle_connection_information(int socket_id, uint16_t fed_id) {
+    LF_PRINT_DEBUG("RTI received MSG_TYPE_NEIGHBOR_STRUCTURE from federate %d.", fed_id);
+    unsigned char connection_info_header[MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE - 1];
     read_from_socket_errexit(
         socket_id,
-        MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE,
+        MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE - 1,
         connection_info_header,
         "RTI failed to read MSG_TYPE_NEIGHBOR_STRUCTURE message header from federate %d.",
         fed_id
     );
 
-    if (connection_info_header[0] != MSG_TYPE_NEIGHBOR_STRUCTURE) {
-        lf_print_error("RTI was expecting a MSG_TYPE_UDP_PORT message from federate %d. Got %u instead. "
-                "Rejecting federate.", fed_id, connection_info_header[0]);
-        send_reject(socket_id, UNEXPECTED_MESSAGE);
-        return 0;
-    } else {
-        federate_info_t* fed = GET_FED_INFO(fed_id);
-        // Read the number of upstream and downstream connections
-        fed->enclave.num_upstream = extract_int32(&(connection_info_header[1]));
-        fed->enclave.num_downstream = extract_int32(&(connection_info_header[1 + sizeof(int32_t)]));
-        LF_PRINT_DEBUG(
-            "RTI got %d upstreams and %d downstreams from federate %d.",
-            fed->enclave.num_upstream,
-            fed->enclave.num_downstream,
-            fed_id);
+    federate_info_t* fed = GET_FED_INFO(fed_id);
+    // Read the number of upstream and downstream connections
+    fed->enclave.num_upstream = extract_int32(&(connection_info_header[0]));
+    fed->enclave.num_downstream = extract_int32(&(connection_info_header[sizeof(int32_t)]));
+    LF_PRINT_DEBUG(
+        "RTI got %d upstreams and %d downstreams from federate %d.",
+        fed->enclave.num_upstream,
+        fed->enclave.num_downstream,
+        fed_id);
 
-        // Allocate memory for the upstream and downstream pointers
-        fed->enclave.upstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_upstream);
-        fed->enclave.downstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_downstream);
+    // Allocate memory for the upstream and downstream pointers
+    fed->enclave.upstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_upstream);
+    fed->enclave.downstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_downstream);
 
-        // Allocate memory for the upstream delay pointers
-        fed->enclave.upstream_delay =
-            (interval_t*)malloc(
-                sizeof(interval_t) * fed->enclave.num_upstream
-            );
-
-        size_t connections_info_body_size = ((sizeof(uint16_t) + sizeof(int64_t)) *
-            fed->enclave.num_upstream) + (sizeof(uint16_t) * fed->enclave.num_downstream);
-        unsigned char* connections_info_body = (unsigned char*)malloc(connections_info_body_size);
-        read_from_socket_errexit(
-            socket_id,
-            connections_info_body_size,
-            connections_info_body,
-            "RTI failed to read MSG_TYPE_NEIGHBOR_STRUCTURE message body from federate %d.",
-            fed_id
+    // Allocate memory for the upstream delay pointers
+    fed->enclave.upstream_delay =
+        (interval_t*)malloc(
+            sizeof(interval_t) * fed->enclave.num_upstream
         );
 
-        // Keep track of where we are in the buffer
-        size_t message_head = 0;
-        // First, read the info about upstream federates
-        for (int i=0; i<fed->enclave.num_upstream; i++) {
-            fed->enclave.upstream[i] = extract_uint16(&(connections_info_body[message_head]));
-            message_head += sizeof(uint16_t);
-            fed->enclave.upstream_delay[i] = extract_int64(&(connections_info_body[message_head]));
-            message_head += sizeof(int64_t);
-        }
+    size_t connections_info_body_size = ((sizeof(uint16_t) + sizeof(int64_t)) *
+        fed->enclave.num_upstream) + (sizeof(uint16_t) * fed->enclave.num_downstream);
+    unsigned char* connections_info_body = (unsigned char*)malloc(connections_info_body_size);
+    read_from_socket_errexit(
+        socket_id,
+        connections_info_body_size,
+        connections_info_body,
+        "RTI failed to read MSG_TYPE_NEIGHBOR_STRUCTURE message body from federate %d.",
+        fed_id
+    );
 
-        // Next, read the info about downstream federates
-        for (int i=0; i<fed->enclave.num_downstream; i++) {
-            fed->enclave.downstream[i] = extract_uint16(&(connections_info_body[message_head]));
-            message_head += sizeof(uint16_t);
-        }
-
-        free(connections_info_body);
-        return 1;
+    // Keep track of where we are in the buffer
+    size_t message_head = 0;
+    // First, read the info about upstream federates
+    for (int i=0; i<fed->enclave.num_upstream; i++) {
+        fed->enclave.upstream[i] = extract_uint16(&(connections_info_body[message_head]));
+        LF_PRINT_DEBUG("fed->enclave.upstream[i] = %d", fed->enclave.upstream[i]); // Remove
+        message_head += sizeof(uint16_t);
+        fed->enclave.upstream_delay[i] = extract_int64(&(connections_info_body[message_head]));
+        LF_PRINT_DEBUG("fed->enclave.upstream_delay[i] = %ld", fed->enclave.upstream_delay[i]); // Remove
+        message_head += sizeof(int64_t);
     }
+
+    // Next, read the info about downstream federates
+    for (int i=0; i<fed->enclave.num_downstream; i++) {
+        fed->enclave.downstream[i] = extract_uint16(&(connections_info_body[message_head]));
+        LF_PRINT_DEBUG("fed->enclave.downstream[i] = %d", fed->enclave.downstream[i]); // Remove
+        message_head += sizeof(uint16_t);
+    }
+
+    free(connections_info_body);
+    return 1;
 }
 
-int receive_physical_action_information(int socket_id, uint16_t fed_id) {
-    LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_PHYSICAL_ACTION from federate %d.", fed_id);
-    unsigned char response[1 + sizeof(uint16_t)];
-    read_from_socket_errexit(socket_id, 1 + sizeof(uint16_t) , response,
+int handle_physical_action_information(int socket_id, uint16_t fed_id) {
+    LF_PRINT_DEBUG("RTI received MSG_TYPE_PHYSICAL_ACTION from federate %d.", fed_id);
+    unsigned char response[sizeof(uint16_t)];
+    read_from_socket_errexit(socket_id, sizeof(uint16_t) , response,
             "RTI failed to read MSG_TYPE_PHYSICAL_ACTION message from federate %d.", fed_id);
-    if (response[0] != MSG_TYPE_PHYSICAL_ACTION) {
-        lf_print_error("RTI was expecting a MSG_TYPE_PHYSICAL_ACTION message from federate %d. Got %u instead. "
-                "Rejecting federate.", fed_id, response[0]);
-        send_reject(socket_id, UNEXPECTED_MESSAGE);
-        return 0;
-    } else {
-        federate_info_t *fed = GET_FED_INFO(fed_id);
-        uint16_t federate_has_physical_action = extract_uint16(&(response[1]));
 
-        LF_PRINT_DEBUG("RTI got MSG_TYPE_PHYSICAL_ACTION %u from federate %d.", federate_has_physical_action, fed_id);
+    federate_info_t *fed = GET_FED_INFO(fed_id);
+    uint16_t federate_has_physical_action = extract_uint16(&(response[0]));
 
-        fed->enclave.has_physical_action = (bool) federate_has_physical_action;
-    }
+    LF_PRINT_DEBUG("RTI got MSG_TYPE_PHYSICAL_ACTION %u from federate %d.", federate_has_physical_action, fed_id);
+
+    fed->enclave.has_physical_action = (bool) federate_has_physical_action;
 
     return 1;
 }
 
-int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id) {
+int handle_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id) {
     // Read the MSG_TYPE_UDP_PORT message from the federate regardless of the status of
     // clock synchronization. This message will tell the RTI whether the federate
     // is doing clock synchronization, and if it is, what port to use for UDP.
-    LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_UDP_PORT from federate %d.", fed_id);
-    unsigned char response[1 + sizeof(uint16_t)];
-    read_from_socket_errexit(socket_id, 1 + sizeof(uint16_t) , response,
+    LF_PRINT_DEBUG("RTI received MSG_TYPE_UDP_PORT from federate %d.", fed_id);
+    unsigned char response[sizeof(uint16_t)];
+    read_from_socket_errexit(socket_id, sizeof(uint16_t) , response,
             "RTI failed to read MSG_TYPE_UDP_PORT message from federate %d.", fed_id);
-    if (response[0] != MSG_TYPE_UDP_PORT) {
-        lf_print_error("RTI was expecting a MSG_TYPE_UDP_PORT message from federate %d. Got %u instead. "
-                "Rejecting federate.", fed_id, response[0]);
-        send_reject(socket_id, UNEXPECTED_MESSAGE);
-        return 0;
-    } else {
-        federate_info_t *fed = GET_FED_INFO(fed_id);
-        if (rti_remote->clock_sync_global_status >= clock_sync_init) {// If no initial clock sync, no need perform initial clock sync.
-            uint16_t federate_UDP_port_number = extract_uint16(&(response[1]));
 
-            LF_PRINT_DEBUG("RTI got MSG_TYPE_UDP_PORT %u from federate %d.", federate_UDP_port_number, fed_id);
+    federate_info_t *fed = GET_FED_INFO(fed_id);
+    if (rti_remote->clock_sync_global_status >= clock_sync_init) {// If no initial clock sync, no need perform initial clock sync.
+        uint16_t federate_UDP_port_number = extract_uint16(&(response[0]));
 
-            // A port number of UINT16_MAX means initial clock sync should not be performed.
-            if (federate_UDP_port_number != UINT16_MAX) {
-                // Perform the initialization clock synchronization with the federate.
-                // Send the required number of messages for clock synchronization
-                for (int i=0; i < rti_remote->clock_sync_exchanges_per_interval; i++) {
-                    // Send the RTI's current physical time T1 to the federate.
-                    send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, TCP);
+        LF_PRINT_DEBUG("RTI got MSG_TYPE_UDP_PORT %u from federate %d.", federate_UDP_port_number, fed_id);
 
-                    // Listen for reply message, which should be T3.
-                    size_t message_size = 1 + sizeof(int32_t);
-                    unsigned char buffer[message_size];
-                    read_from_socket_errexit(socket_id, message_size, buffer,
-                            "Socket to federate %d unexpectedly closed.", fed_id);
-                    if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
-                        int32_t fed_id = extract_int32(&(buffer[1]));
-                        assert(fed_id > -1);
-                        assert(fed_id < 65536);
-                        LF_PRINT_DEBUG("RTI received T3 clock sync message from federate %d.", fed_id);
-                        handle_physical_clock_sync_message(fed, TCP);
-                    } else {
-                        lf_print_error("Unexpected message %u from federate %d.", buffer[0], fed_id);
-                        send_reject(socket_id, UNEXPECTED_MESSAGE);
-                        return 0;
-                    }
+        // A port number of UINT16_MAX means initial clock sync should not be performed.
+        if (federate_UDP_port_number != UINT16_MAX) {
+            // Perform the initialization clock synchronization with the federate.
+            // Send the required number of messages for clock synchronization
+            for (int i=0; i < rti_remote->clock_sync_exchanges_per_interval; i++) {
+                // Send the RTI's current physical time T1 to the federate.
+                send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, TCP);
+
+                // Listen for reply message, which should be T3.
+                size_t message_size = 1 + sizeof(int32_t);
+                unsigned char buffer[message_size];
+                read_from_socket_errexit(socket_id, message_size, buffer,
+                        "Socket to federate %d unexpectedly closed.", fed_id);
+                if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
+                    int32_t fed_id = extract_int32(&(buffer[1]));
+                    assert(fed_id > -1);
+                    assert(fed_id < 65536);
+                    LF_PRINT_DEBUG("RTI received T3 clock sync message from federate %d.", fed_id);
+                    handle_physical_clock_sync_message(fed, TCP);
+                } else {
+                    lf_print_error("Unexpected message %u from federate %d.", buffer[0], fed_id);
+                    send_reject(socket_id, UNEXPECTED_MESSAGE);
+                    return 0;
                 }
-                LF_PRINT_DEBUG("RTI finished initial clock synchronization with federate %d.", fed_id);
             }
-            if (rti_remote->clock_sync_global_status >= clock_sync_on) { // If no runtime clock sync, no need to set up the UDP port.
-                    if (federate_UDP_port_number > 0) {
-                        // Initialize the UDP_addr field of the federate struct
-                        fed->UDP_addr.sin_family = AF_INET;
-                        fed->UDP_addr.sin_port = htons(federate_UDP_port_number);
-                        fed->UDP_addr.sin_addr = fed->server_ip_addr;
-                    }
-            } else {
-                    // Disable clock sync after initial round.
-                    fed->clock_synchronization_enabled = false;
-            }
-        } else { // No clock synchronization at all.
-            // Clock synchronization is universally disabled via the clock-sync command-line parameter
-            // (-c off was passed to the RTI).
-            // Note that the federates are still going to send a MSG_TYPE_UDP_PORT message but with a payload (port) of -1.
-            fed->clock_synchronization_enabled = false;
+            LF_PRINT_DEBUG("RTI finished initial clock synchronization with federate %d.", fed_id);
         }
+        if (rti_remote->clock_sync_global_status >= clock_sync_on) { // If no runtime clock sync, no need to set up the UDP port.
+                if (federate_UDP_port_number > 0) {
+                    // Initialize the UDP_addr field of the federate struct
+                    fed->UDP_addr.sin_family = AF_INET;
+                    fed->UDP_addr.sin_port = htons(federate_UDP_port_number);
+                    fed->UDP_addr.sin_addr = fed->server_ip_addr;
+                }
+        } else {
+                // Disable clock sync after initial round.
+                fed->clock_synchronization_enabled = false;
+        }
+    } else { // No clock synchronization at all.
+        // Clock synchronization is universally disabled via the clock-sync command-line parameter
+        // (-c off was passed to the RTI).
+        // Note that the federates are still going to send a MSG_TYPE_UDP_PORT message but with a payload (port) of -1.
+        fed->clock_synchronization_enabled = false;
     }
     return 1;
 }
@@ -1584,10 +1628,7 @@ void connect_to_federates(int socket_descriptor) {
         
         // The first message from the federate should contain its ID and the federation ID.
         int32_t fed_id = receive_and_check_fed_id_message(socket_id, (struct sockaddr_in*)&client_fd);
-        if (fed_id >= 0
-                && receive_connection_information(socket_id, (uint16_t)fed_id)
-                && receive_physical_action_information(socket_id, (uint16_t)fed_id)
-                && receive_udp_message_and_set_up_clock_sync(socket_id, (uint16_t)fed_id)) {
+        if (fed_id >= 0 && receive_set_up_information(socket_id, (uint16_t)fed_id)) {
 
             // Create a thread to communicate with the federate.
             // This has to be done after clock synchronization is finished

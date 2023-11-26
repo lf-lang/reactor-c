@@ -435,14 +435,36 @@ void send_reject(int socket_id, unsigned char error_code);
 int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* client_fd);
 
 /**
- * Listen for a MSG_TYPE_NEIGHBOR_STRUCTURE message, and upon receiving it, fill
- * out the relevant information in the federate's struct.
- */
-int receive_connection_information(int socket_id, uint16_t fed_id);
+ * Listen for MSG_TYPE_NEIGHBOR_STRUCTURE, MSG_TYPE_PHYSICAL_ACTION, and
+ * MSG_TYPE_UDP_PORT messages, and upon receiving them, handle a payload
+ * of each message.
+ * @param socket_id The socket on which to listen.
+ * @param fed_id The federate ID.
+ * @return 1 for success, 0 for failure.
+*/
+int receive_set_up_information(int socket_id, uint16_t fed_id);
 
 /**
- * Listen for a MSG_TYPE_UDP_PORT message, and upon receiving it, set up
- * clock synchronization and perform the initial clock synchronization.
+ * Handle a MSG_TYPE_NEIGHBOR_STRUCTURE message. Fill out 
+ * the relevant information in the federate's struct.
+ * @param socket_id The socket on which to listen.
+ * @param fed_id The federate ID.
+ * @return 1 for success, 0 for failure.
+ */
+int handle_connection_information(int socket_id, uint16_t fed_id);
+
+/**
+ * Handle a MSG_TYPE_PHYSICAL_ACTION message. Update the information of 
+ * presence of a physical action.
+ * @param socket_id The socket on which to listen.
+ * @param fed_id The federate ID.
+ * @return 1 for success, 0 for failure.
+*/
+int handle_physical_action_information(int socket_id, uint16_t fed_id);
+
+/**
+ * Handle a MSG_TYPE_UDP_PORT message, set up clock synchronization and
+ * perform the initial clock synchronization.
  * Initial clock synchronization is performed only if the MSG_TYPE_UDP_PORT message
  * payload is not UINT16_MAX. If it is also not 0, then this function sets
  * up to perform runtime clock synchronization using the UDP port number
@@ -452,7 +474,7 @@ int receive_connection_information(int socket_id, uint16_t fed_id);
  * @param fed_id The federate ID.
  * @return 1 for success, 0 for failure.
  */
-int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id);
+int handle_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id);
 
 #ifdef __RTI_AUTH__
 /**
