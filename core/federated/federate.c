@@ -2386,7 +2386,8 @@ void terminate_execution(environment_t* env) {
         tag_t tag = env->current_tag;
         encode_tag(&(buffer[1]), tag);
         // Trace the event when tracing is enabled
-        tracepoint_federate_to_rti(_fed.trace, send_RESIGN, _lf_my_fed_id, &tag);
+        // FIXME: the following is commented out because it results in a crash due to the tokio runtime having already shut down in response to the signal
+        // tracepoint_federate_to_rti(_fed.trace, send_RESIGN, _lf_my_fed_id, &tag);
         ssize_t written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, &(buffer[0]));
         if (written == bytes_to_write) {
             LF_PRINT_LOG("Resigned.");
