@@ -30,12 +30,14 @@
  * Functions supporting token types.  See lf_token.h for docs.
  */
 
+#if !defined NDEBUG
 /**
  * Counter used to issue a warning if memory is
  * allocated for message payloads and never freed.
  */
 int _lf_count_payload_allocations;
 int _lf_count_token_allocations;
+#endif
 
 #include <stdbool.h>
 #include <assert.h>
@@ -115,9 +117,11 @@ lf_token_t* lf_writable_copy(lf_port_base_t* port) {
     LF_PRINT_DEBUG("lf_writable_copy: Allocated memory for payload (token value): %p", copy);
 
     // Count allocations to issue a warning if this is never freed.
+    #if !defined NDEBUG
     LF_ASSERT(!lf_critical_section_enter(GLOBAL_ENVIRONMENT), "Could not enter critical section");
     _lf_count_payload_allocations++;
     LF_ASSERT(!lf_critical_section_exit(GLOBAL_ENVIRONMENT), "Could not exit critical section");
+    #endif
 
     // Create a new, dynamically allocated token.
     lf_token_t* result = _lf_new_token((token_type_t*)port, copy, token->length);
@@ -135,9 +139,11 @@ lf_token_t* lf_writable_copy(lf_port_base_t* port) {
 void _lf_free_token_value(lf_token_t* token) {
     if (token->value != NULL) {
         // Count frees to issue a warning if this is never freed.
+        #if !defined NDEBUG
         LF_ASSERT(!lf_critical_section_enter(GLOBAL_ENVIRONMENT), "Could not enter critical section");
         _lf_count_payload_allocations--;
         LF_ASSERT(!lf_critical_section_exit(GLOBAL_ENVIRONMENT), "Could not exit critical section");
+        #endif
         // Free the value field (the payload).
         LF_PRINT_DEBUG("_lf_free_token_value: Freeing allocated memory for payload (token value): %p",
             token->value);
@@ -184,7 +190,9 @@ token_freed _lf_free_token(lf_token_t* token) {
         LF_PRINT_DEBUG("_lf_free_token: Freeing allocated memory for token: %p", token);
         free(token);
     }
+    #if !defined NDEBUG
     _lf_count_token_allocations--;
+    #endif
     LF_ASSERT(!lf_critical_section_exit(GLOBAL_ENVIRONMENT), "Could not exit critical section");
     result &= TOKEN_FREED;
 
@@ -206,6 +214,12 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
         }
         free(iterator);
     }
+
+    // Count the token allocation to catch memory leaks.
+    #if !defined NDEBUG
+    _lf_count_token_allocations++;
+    #endif
+
     if(lf_critical_section_exit(GLOBAL_ENVIRONMENT) != 0) {
         lf_print_error_and_exit("Could not leave critical section");
     }
@@ -276,9 +290,11 @@ lf_token_t* _lf_initialize_token_with_value(token_template_t* tmplt, void* value
     lf_token_t* result = _lf_get_token(tmplt);
     result->value = value;
     // Count allocations to issue a warning if this is never freed.
+    #if !defined NDEBUG
     LF_ASSERT(!lf_critical_section_enter(GLOBAL_ENVIRONMENT), "Could not enter critical section");
     _lf_count_payload_allocations++;
     LF_ASSERT(!lf_critical_section_exit(GLOBAL_ENVIRONMENT), "Could not exit critical section");
+    #endif
     result->length = length;
     return result;
 }

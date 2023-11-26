@@ -72,8 +72,10 @@ extern watchdog_t* _lf_watchdogs;
 // Global variable defined in tag.c:
 extern instant_t start_time;
 
+#if !defined NDEBUG
 // Global variable defined in lf_token.c:
 extern int _lf_count_payload_allocations;
+#endif
 
 /**
  * Indicator of whether to wait for physical time to match logical time.
@@ -1709,8 +1711,10 @@ int process_args(int argc, const char* argv[]) {
  * `_lf_initialize_trigger_objects` function
  */
 void initialize_global(void) {
+    #if !defined NDEBUG
     _lf_count_payload_allocations = 0;
     _lf_count_token_allocations = 0;
+    #endif
     
     environment_t *envs;
     int num_envs = _lf_get_environments(&envs);
@@ -1787,6 +1791,7 @@ void termination(void) {
         env++;
     }
     _lf_free_all_tokens(); // Must be done before freeing reactors.
+    #if !defined NDEBUG
     // Issue a warning if a memory leak has been detected.
     if (_lf_count_payload_allocations > 0) {
         lf_print_warning("Memory allocated for messages has not been freed.");
@@ -1796,6 +1801,7 @@ void termination(void) {
         lf_print_warning("Memory allocated for tokens has not been freed!");
         lf_print_warning("Number of unfreed tokens: %d.", _lf_count_token_allocations);
     }
+    #endif
 #if !defined(LF_SINGLE_THREADED)
     for (int i = 0; i < _lf_watchdog_count; i++) {
         if (_lf_watchdogs[i].base->reactor_mutex != NULL) {
