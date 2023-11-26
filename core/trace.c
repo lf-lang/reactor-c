@@ -37,6 +37,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
+#include <execinfo.h>
 
 #include "platform.h"
 
@@ -68,6 +69,7 @@ trace_t* trace_new(environment_t* env, const char * filename) {
 
     trace->_lf_trace_stop=1;
     trace->env = env;
+    lf_mutex_init(&trace->mutex);
 
     // Determine length of the filename
     size_t len = strlen(filename)  + 1;
@@ -300,6 +302,15 @@ void tracepoint(
         int line,
         int sequence_number_for_file_and_line
 ) {
+    if (!event_type || !line) {
+        void* callstack[128];
+        int i, frames = backtrace(callstack, 128);
+        char** strs = backtrace_symbols(callstack, frames);
+        for (i = 0; i < frames; ++i) {
+            fprintf(stderr, "%s\n", strs[i]);
+        }
+        free(strs);
+    }
     instant_t time;
     if (!is_interval_start && physical_time == NULL) {
         time = lf_time_physical();

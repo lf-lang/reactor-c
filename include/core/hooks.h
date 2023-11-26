@@ -42,6 +42,7 @@ static inline int get_file_idx(trace_t* trace, int worker, char* file_name) {
 
 #define LF_DO_HOOK_START(trace) \
     { \
+        lf_mutex_lock(&trace->mutex); \
         char lf_hook_location_id[120]; \
         int lf_hook_line; \
         static volatile int lf_hook_sequence_number_volatile = 0; \
@@ -50,7 +51,8 @@ static inline int get_file_idx(trace_t* trace, int worker, char* file_name) {
         /* snprintf(lf_hook_location_id, 120, "%s %d %d", lf_hook_file, lf_hook_line, _lf_my_fed_id); */ \
         snprintf(lf_hook_location_id, 120, "%d %d", lf_hook_line, _lf_my_fed_id); /* FIXME: it currently isn't necessary to use the file name simply because there is only one file per executable that has hooks. This could change. and FIXME: This snprintf might be a significant inefficiency. */ \
 
-#define LF_DO_HOOK_END \
+#define LF_DO_HOOK_END(trace) \
         ordering_client_api->tracepoint_maybe_do(ordering_client, &lf_hook_location_id[0], _lf_my_fed_id, lf_hook_sequence_number); \
+        lf_mutex_unlock(&trace->mutex); \
     }
 #endif // HOOKS_H

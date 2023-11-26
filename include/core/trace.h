@@ -54,6 +54,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "lf_types.h"
 #include <stdio.h>
+#include "platform.h"
 
 #ifdef FEDERATED
 #include "net_common.h"
@@ -263,12 +264,12 @@ typedef struct trace_t {
     /** Table of pointers to a description of the object. */
     object_description_t _lf_trace_object_descriptions[TRACE_OBJECT_TABLE_SIZE];
     int _lf_trace_object_descriptions_size;
-
     /** Indicator that the trace header information has been written to the file. */
     bool _lf_trace_header_written;
 
     /** Pointer back to the environment which we are tracing within*/
     environment_t* env;
+    lf_mutex_t mutex;
 } trace_t;
 
 #include "hooks.h"
@@ -475,7 +476,7 @@ void tracepoint_federate_to_rti_internal(trace_t* trace, trace_event_t event_typ
 #define tracepoint_federate_to_rti(trace, event_type, fed_id, tag) \
     LF_DO_HOOK_START(trace) \
     tracepoint_federate_to_rti_internal(trace, event_type, fed_id, tag, 0, lf_hook_line, lf_hook_sequence_number); /* FIXME: file_idx is 0 */\
-    LF_DO_HOOK_END
+    LF_DO_HOOK_END(trace)
 
 /**
  * Trace federate receiving a message from the RTI.
@@ -488,7 +489,7 @@ void tracepoint_federate_from_rti_internal(trace_t* trace, trace_event_t event_t
 #define tracepoint_federate_from_rti(trace, event_type, fed_id, tag) \
     LF_DO_HOOK_START(trace) \
     tracepoint_federate_from_rti_internal(trace, event_type, fed_id, tag, 0, lf_hook_line, lf_hook_sequence_number); \
-    LF_DO_HOOK_END
+    LF_DO_HOOK_END(trace)
 
 /**
  * Trace federate sending a message to another federate.
@@ -502,7 +503,7 @@ void tracepoint_federate_to_federate_internal(trace_t* trace, trace_event_t even
 #define tracepoint_federate_to_federate(trace, event_type, fed_id, partner_id, tag) \
     LF_DO_HOOK_START(trace) \
     tracepoint_federate_to_federate_internal(trace, event_type, fed_id, partner_id, tag, 0, lf_hook_line, lf_hook_sequence_number); \
-    LF_DO_HOOK_END
+    LF_DO_HOOK_END(trace)
 
 /**
  * Trace federate receiving a message from another federate.
@@ -516,7 +517,7 @@ void tracepoint_federate_from_federate_internal(trace_t* trace, trace_event_t ev
 #define tracepoint_federate_from_federate(trace, event_type, fed_id, partner_id, tag) \
     LF_DO_HOOK_START(trace) \
     tracepoint_federate_from_federate_internal(trace, event_type, fed_id, partner_id, tag, 0, lf_hook_line, lf_hook_sequence_number); \
-    LF_DO_HOOK_END
+    LF_DO_HOOK_END(trace)
 
 #else
 #define tracepoint_federate_to_rti(...);
@@ -541,7 +542,7 @@ void tracepoint_rti_to_federate_internal(trace_t* trace, trace_event_t event_typ
 #define tracepoint_rti_to_federate(trace, event_type, fed_id, tag) \
     LF_DO_HOOK_START(trace) \
     tracepoint_rti_to_federate_internal(trace, event_type, fed_id, tag, 0, lf_hook_line, lf_hook_sequence_number); \
-    LF_DO_HOOK_END
+    LF_DO_HOOK_END(trace)
 
 /**
  * Trace RTI receiving a message from a federate.
@@ -554,7 +555,7 @@ void tracepoint_rti_from_federate_internal(trace_t* trace, trace_event_t event_t
 #define tracepoint_rti_from_federate(trace, event_type, fed_id, tag) \
     LF_DO_HOOK_START(trace) \
     tracepoint_rti_from_federate_internal(trace, event_type, fed_id, tag, 0, lf_hook_line, lf_hook_sequence_number); \
-    LF_DO_HOOK_END
+    LF_DO_HOOK_END(trace)
 
 #else
 #define tracepoint_rti_to_federate(...);
