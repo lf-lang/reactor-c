@@ -74,6 +74,9 @@ static hashset_t _lf_token_recycling_bin = NULL;
  */
 static hashset_t _lf_token_templates = NULL;
 
+// Forward declarations
+static lf_token_t* _lf_writable_copy_locked(lf_port_base_t* port);
+
 ////////////////////////////////////////////////////////////////////
 //// Functions that users may call.
 
@@ -82,6 +85,13 @@ lf_token_t* lf_new_token(void* port_or_action, void* val, size_t len) {
 }
 
 lf_token_t* lf_writable_copy(lf_port_base_t* port) {
+    lf_critical_section_enter(port->source_reactor->environment);
+    lf_token_t* token = _lf_writable_copy_locked(port);
+    lf_critical_section_exit(port->source_reactor->environment);
+    return token;
+}
+
+static lf_token_t* _lf_writable_copy_locked(lf_port_base_t* port) {
     assert(port != NULL);
 
     lf_token_t* token = port->tmplt.token;
