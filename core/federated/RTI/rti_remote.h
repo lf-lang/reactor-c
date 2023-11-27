@@ -35,7 +35,7 @@
 /////////////////////////////////////////////
 //// Data structures
 
-static char version_info[] = "0.5.0"; // Simply use Lingua Franca version name now.
+static char version_info[] = "0.5.0"; // Simply use Lingua Franca version name for now.
 
 typedef enum socket_type_t {
     TCP,
@@ -162,6 +162,11 @@ typedef struct rti_remote_t {
      * Boolean indicating that authentication is enabled.
      */
     bool authentication_enabled;
+
+    /**
+     * Boolean indicating that NDT message is enabled.
+    */
+    bool ndt_enabled;
 
     /**
      * Boolean indicating that a stop request is already in progress.

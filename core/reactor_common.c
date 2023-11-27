@@ -293,7 +293,7 @@ void _lf_start_time_step(environment_t *env) {
         }
     }
 
-// #ifdef FEDERATED_CENTRALIZED
+#ifdef FEDERATED_NDT_ENABLED
     while (pqueue_tag_size(env->ndt_q) != 0 
     && lf_tag_compare(pqueue_tag_peek(env->ndt_q)->tag, env->current_tag) < 0) {
         // Remove elements of ndt_q with tag less than the current tag.
@@ -302,7 +302,7 @@ void _lf_start_time_step(environment_t *env) {
         tag_to_remove.time - start_time, tag_to_remove.microstep,
         env->current_tag.time - start_time, env->current_tag.microstep);
     }
-// #endif
+#endif
 #ifdef FEDERATED_DECENTRALIZED
     for (int i = 0; i < env->is_present_fields_size; i++) {
         // FIXME: For now, an intended tag of (NEVER, 0)

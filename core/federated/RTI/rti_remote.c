@@ -335,6 +335,9 @@ void determine_the_ndt_condition() {
 }
 
 void send_upstream_next_downstream_tag(federate_info_t* fed, tag_t next_event_tag) {
+    if (!rti_remote->ndt_enabled) {
+        return;
+    }
     // The RTI receives next_event_tag from the federated fed. 
     // It has to send NDT messages to the upstream federates of fed
     // if the LTC message from an upstream federate is ealrier than the next_event_tag.
@@ -1330,6 +1333,10 @@ int receive_set_up_information(int socket_id, uint16_t fed_id) {
     bool waiting_physical_action_information = true;
     bool waiting_udp_message_and_set_up_clock_sync = true;
 
+    if (!rti_remote->ndt_enabled) {
+        waiting_physical_action_information = false;
+    }
+
     // Buffer for incoming messages.
     // This does not constrain the message size because messages
     // are forwarded piece by piece.
@@ -1794,6 +1801,7 @@ void initialize_RTI(rti_remote_t *rti){
     rti_remote->clock_sync_period_ns = MSEC(10);
     rti_remote->clock_sync_exchanges_per_interval = 10;
     rti_remote->authentication_enabled = false;
+    rti_remote->ndt_enabled = false;
     rti_remote->base.tracing_enabled = false;
     rti_remote->stop_in_progress = false;
 }

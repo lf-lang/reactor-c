@@ -107,9 +107,9 @@ typedef struct environment_t {
     tag_t** _lf_intended_tag_fields;
     int _lf_intended_tag_fields_size;
 #endif // FEDERATED
-// #ifdef FEDERATED_CENTRALIZED
+#ifdef FEDERATED_NDT_ENABLED
     pqueue_tag_t* ndt_q;
-// #endif // FEDERATED_CENTRALIZED
+#endif // FEDERATED_NDT_ENABLED
 #ifdef LF_ENCLAVES // TODO: Consider dropping #ifdef
     enclave_info_t *enclave_info;
 #endif

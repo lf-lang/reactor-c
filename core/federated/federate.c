@@ -67,7 +67,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <openssl/rand.h> // For secure random number generation.
 #include <openssl/hmac.h> // For HMAC-based authentication of federates.
 #endif
+#ifdef FEDERATED_NDT_ENABLED
 #include "pqueue_tag.h"
+#endif // FEDERATED_NDT_ENABLED
 
 // Global variables defined in tag.c:
 extern instant_t _lf_last_reported_unadjusted_physical_time_ns;
@@ -423,12 +425,14 @@ int send_timed_message(environment_t* env,
     }
 
     // Insert the intended tag into the ndt_q to send LTC to the RTI quickly.
+#ifdef FEDERATED_NDT_ENABLED
     if (pqueue_tag_size(env->ndt_q) != 0) {
         // FIXME: If the RTI changes the use of NDTs dynamically, merely checking the size
         // is not enough to know whether this federate using the NDT optimization or not.
         LF_PRINT_DEBUG("Insert NDT at the intended to send LTC and NET quickly.");
         pqueue_tag_insert_if_no_match(env->ndt_q, current_message_intended_tag);
     }
+#endif // FEDERATED_NDT_ENABLED
 
     // Trace the event when tracing is enabled
     if (message_type == MSG_TYPE_TAGGED_MESSAGE) {
@@ -1153,6 +1157,7 @@ void connect_to_rti(const char* hostname, int port) {
                 // @see MSG_TYPE_NEIGHBOR_STRUCTURE in net_common.h
                 send_neighbor_structure_to_RTI(_fed.socket_TCP_RTI);
 
+#ifdef FEDERATED_NDT_ENABLED
                 // Send whether this federate has a physical action to the RTI.
                 uint16_t has_physical_action = _fed.min_delay_from_physical_action_to_federate_output != NEVER;
                 unsigned char physical_action_message_buffer[1 + sizeof(uint16_t)];
@@ -1160,6 +1165,7 @@ void connect_to_rti(const char* hostname, int port) {
                 encode_uint16(has_physical_action, &(physical_action_message_buffer[1]));
                 write_to_socket_errexit(_fed.socket_TCP_RTI, 1 + sizeof(uint16_t), physical_action_message_buffer,
                     "Failed to send physical action info to RTI.");
+#endif // FEDERATED_NDT_ENABLED
 
                 uint16_t udp_port = setup_clock_synchronization_with_rti();
 
@@ -1420,6 +1426,7 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
     
     // FIXME: If port absent messages are not used when there is no zero-delay cycle,
     // This part is not needed as we don't apply the NDT optimization for cycles.
+#ifdef FEDERATED_NDT_ENABLED
     if (pqueue_tag_size(env->ndt_q) != 0 ) {
         // FIXME: If the RTI changes the use of NDTs dynamically, merely checking the size
         // is not enough to know whether this federate using the NDT optimization or not.
@@ -1433,6 +1440,7 @@ void send_port_absent_to_federate(environment_t* env, interval_t additional_dela
             return;
         }
     }
+#endif // FEDERATED_NDT_ENABLED
 
     // Construct the message
     size_t message_length = 1 + sizeof(port_ID) + sizeof(fed_ID) + sizeof(instant_t) + sizeof(microstep_t);
@@ -1948,6 +1956,7 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
     environment_t *env;
     _lf_get_environments(&env);
     bool need_to_send_LTC = true;
+#ifdef FEDERATED_NDT_ENABLED
     if (pqueue_tag_size(env->ndt_q) != 0 ) {
         // FIXME: If the RTI changes the use of NDTs dynamically, merely checking the size
         // is not enough to know whether this federate using the NDT optimization or not.
@@ -1961,6 +1970,7 @@ void _lf_logical_tag_complete(tag_t tag_to_send) {
             need_to_send_LTC = false;
         }
     }
+#endif // FEDERATED_NDT_ENABLED
     if (need_to_send_LTC) {
         LF_PRINT_LOG("Sending Logical Tag Complete (LTC) " PRINTF_TAG " to the RTI.",
             tag_to_send.time - start_time,
@@ -2391,6 +2401,7 @@ void handle_stop_request_message() {
     lf_mutex_unlock(&outbound_socket_mutex);
 }
 
+#ifdef FEDERATED_NDT_ENABLED
 /**
  * Handle a MSG_TYPE_NEXT_DOWNSTREAM_MESSAGE from the RTI
  * 
@@ -2425,6 +2436,7 @@ void handle_next_downstream_tag() {
         pqueue_tag_insert_if_no_match(env->ndt_q, env->current_tag);
     }
 }
+#endif // FEDERATED_NDT_ENABLED
 
 /**
  * Close sockets used to communicate with other federates, if they are open,
@@ -2643,9 +2655,11 @@ void* listen_to_rti_TCP(void* args) {
             case MSG_TYPE_PORT_ABSENT:
                 handle_port_absent_message(_fed.socket_TCP_RTI, -1);
                 break;
+#ifdef FEDERATED_NDT_ENABLED
             case MSG_TYPE_NEXT_DOWNSTREAM_TAG:
                 handle_next_downstream_tag();
                 break;
+#endif // FEDERATED_NDT_ENABLED
             case MSG_TYPE_CLOCK_SYNC_T1:
             case MSG_TYPE_CLOCK_SYNC_T4:
                 lf_print_error("Federate %d received unexpected clock sync message from RTI on TCP socket.",
@@ -2838,6 +2852,7 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
             // If there is no downstream events that require the NET of the current tag,
             // do not send the NET.
             bool need_to_send_NET = true;
+#ifdef FEDERATED_NDT_ENABLED
             if (pqueue_tag_size(env->ndt_q) != 0 ) {
                 // FIXME: If the RTI changes the use of NDTs dynamically, merely checking the size
                 // is not enough to know whether this federate using the NDT optimization or not.
@@ -2851,6 +2866,7 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
                     need_to_send_NET = false;
                 }
             }
+#endif // FEDERATED_NDT_ENABLED
             if (need_to_send_NET) {
                 _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag, wait_for_reply);
                 _fed.last_sent_NET = tag;

@@ -99,6 +99,8 @@ void usage(int argc, const char* argv[]) {
     lf_print("          clock sync attempt (default is 10). Applies to 'init' and 'on'.\n");
     lf_print("  -a, --auth Turn on HMAC authentication options.\n");
     lf_print("  -t, --tracing Turn on tracing.\n");
+    lf_print("  -v, --version The minimum required version of Lingua Franca.");
+    lf_print("      --ndt Turn on ndt optimization.\n");
 
     lf_print("Command given:");
     for (int i = 0; i < argc; i++) {
@@ -170,8 +172,11 @@ int process_clock_sync_args(int argc, const char* argv[]) {
 }
 
 int process_args(int argc, const char* argv[]) {
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--id") == 0) {
+    for (int i = 1; i < argc; i++) { 
+        if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0) {
+            lf_print("%s", version_info);
+            return 0;
+        } else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--id") == 0) {
             if (argc < i + 2) {
                 lf_print_error("--id needs a string argument.");
                 usage(argc, argv);
@@ -232,6 +237,8 @@ int process_args(int argc, const char* argv[]) {
             rti.authentication_enabled = true;
         } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tracing") == 0) {
             rti.base.tracing_enabled = true;
+        } else if (strcmp(argv[i], "--ndt" == 0)) {
+            rti.ndt_enabled = true;
         } else if (strcmp(argv[i], " ") == 0) {
             // Tolerate spaces
             continue;
