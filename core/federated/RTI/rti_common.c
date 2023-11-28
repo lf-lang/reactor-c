@@ -188,7 +188,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
         lf_tag_compare(t_d, e->next_event) == 0                     // EIMT equal to NET
         && lf_tag_compare(t_d, e->last_provisionally_granted) > 0   // The grant is not redundant
         && lf_tag_compare(t_d, e->last_granted) > 0                 // The grant is not redundant.
-        && is_in_zero_delay_cycle(e)                                // The node is part of a ZDC
+        // && is_in_zero_delay_cycle(e)                                // The node is part of a ZDC
     ) { 
         // Some upstream node may send an event that has the same tag as this node's next event,
         // so we can only grant a PTAG.
