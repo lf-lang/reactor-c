@@ -349,8 +349,8 @@ void _lf_pop_events(environment_t *env) {
         }
 
 #ifdef MODAL_REACTORS
-        // If this event is associated with an incative it should haven been suspended and no longer on the event queue.
-        // FIXME This should not be possible
+        // If this event is associated with an inactive mode it should haven been suspended and no longer on the event queue.
+        // NOTE: This should not be possible
         if (!_lf_mode_is_active(event->trigger->mode)) {
             lf_print_warning("Assumption violated. There is an event on the event queue that is associated to an inactive mode.");
         }

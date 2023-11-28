@@ -251,9 +251,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
         // a later or equal PTAG or TAG sent previously and if their transitive
         // NET is greater than or equal to the tag.
         // This is needed to stimulate absent messages from upstream and break deadlocks.
-        // NOTE: This could later be replaced with a TNET mechanism once
-        // we have an available encoding of causality interfaces.
-        // That might be more efficient.
+        // The scenario this deals with is FIXME
         // NOTE: This is not needed for enclaves because zero-delay loops are prohibited.
         // It's only needed for federates, which is why this is implemented here.
         for (int j = 0; j < e->num_upstream; j++) {
