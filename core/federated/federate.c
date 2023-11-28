@@ -1666,6 +1666,7 @@ void stall_advance_level_federation(environment_t* env, size_t level) {
     LF_PRINT_DEBUG("Acquiring the environment mutex.");
     lf_mutex_lock(&env->mutex);
     LF_PRINT_DEBUG("Waiting on MLAA with next_reaction_level %zu and MLAA %d.", level, max_level_allowed_to_advance);
+    send_next_event_tag(env, env->current_tag, false);
     while (((int) level) >= max_level_allowed_to_advance) {
         lf_cond_wait(&port_status_changed);
     };
@@ -2714,9 +2715,12 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
             return tag;
         }
 
+        // FIXME: In case this federate is waiting for network inputs at the current tag,
+        // return immediately only TAG is granted.
         // If time advance (TAG or PTAG) has already been granted for this tag
         // or a larger tag, then return immediately.
-        if (lf_tag_compare(_fed.last_TAG, tag) >= 0) {
+        if (lf_tag_compare(_fed.last_TAG, tag) >= 0
+        && !_fed.is_last_TAG_provisional) {
             LF_PRINT_DEBUG("Granted tag " PRINTF_TAG " because TAG or PTAG has been received.",
                     _fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
             return _fed.last_TAG;
