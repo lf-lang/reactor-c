@@ -68,15 +68,14 @@ static rti_remote_t rti;
 const char *rti_trace_file_name = "rti.lft";
 
 OrderingClientApi* ordering_client_api;
-void* ordering_client;
-static void* ordering_client_join_handle;
+ClientAndJoinHandle ordering_client_and_join_handle;
 
 /**
  * @brief A clean termination of the RTI will write the trace file, if tracing is
  * enabled, before exiting.
  */
 void termination() {
-    ordering_client_api->drop_join_handle(ordering_client_join_handle);
+    ordering_client_api->finish(ordering_client_and_join_handle);
     if (rti.base.tracing_enabled) {
         stop_trace(rti.base.trace);
         lf_print("RTI trace file saved.");
@@ -261,9 +260,7 @@ int process_args(int argc, const char* argv[]) {
 int main(int argc, const char* argv[]) {
     initialize_RTI(&rti);
     ordering_client_api = load_ordering_client_api();
-    ClientAndJoinHandle client_and_join_handle = ordering_client_api->start_client(-1);
-    ordering_client = client_and_join_handle.client;
-    ordering_client_join_handle = client_and_join_handle.join_handle;
+    ordering_client_and_join_handle = ordering_client_api->start_client(-1);
 
     // Catch the Ctrl-C signal, for a clean exit that does not lose the trace information
     signal(SIGINT, exit);
