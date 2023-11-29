@@ -251,7 +251,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
         // a later or equal PTAG or TAG sent previously and if their transitive
         // NET is greater than or equal to the tag.
         // This is needed to stimulate absent messages from upstream and break deadlocks.
-        // The scenario this deals with is FIXME
+        // The scenario this deals with is illustrated in `test/C/src/federated/FeedbackDelay.lf`
         // NOTE: This is not needed for enclaves because zero-delay loops are prohibited.
         // It's only needed for federates, which is why this is implemented here.
         for (int j = 0; j < e->num_upstream; j++) {
@@ -264,7 +264,9 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
 
             // If these tags are equal, then a TAG or PTAG should have already been granted,
             // in which case, another will not be sent. But it may not have been already granted.
-            if (lf_tag_compare(earliest, tag) >= 0) {
+            if (lf_tag_compare(earliest, tag) > 0) {
+                notify_tag_advance_grant(upstream, tag);
+            } else if(lf_tag_compare(earliest, tag) == 0) {
                 notify_provisional_tag_advance_grant(upstream, tag);
             }
         }
