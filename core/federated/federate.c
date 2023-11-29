@@ -1957,6 +1957,16 @@ bool update_max_level(tag_t tag, bool is_provisional) {
             continue;
         }
 #endif // FEDERATED_DECENTRALIZED
+        // FIXME: The following assumes that the input port is absent if the
+        // current tag is not greater than the last known status tag.
+        // This may not be true if the current_tag is due to a provisional tag advance grant.
+        // For centralized coordination, there is a delay on this incoming connection, so
+        // this assumes that such a delay will prevent granting of the PTAG until the
+        // upstream federate has progressed past current_tag - delay.
+        // If this code is applied when there is a delay, the FeedbackDelay test deadlocks.
+        // The test should be not whether there is a delay, but rather whether the upstream
+        // federate is in a zero-delay cycle.  Perhaps this test can redefine the
+        // _lf_zero_delay_action_table contents.
         if (lf_tag_compare(env->current_tag,
                 input_port_action->trigger->last_known_status_tag) > 0
                 && !input_port_action->trigger->is_physical) {
