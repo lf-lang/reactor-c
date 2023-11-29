@@ -57,10 +57,6 @@ void initialize_scheduling_node(scheduling_node_t* e, uint16_t id) {
     e->num_downstream = 0;
     e->mode = REALTIME;
     invalidate_min_delays_upstream(e);
-
-    LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG,
-                   FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
-                   NEVER_TAG.time - start_time, 0);
 }
 
 void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
