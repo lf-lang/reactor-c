@@ -180,7 +180,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
                 e->next_event.time - lf_time_start(),
                 e->next_event.microstep);
         result.tag = e->next_event;
-    } else if( // Scenario (2) or (3) above
+    } else if( // Scenario (2) above
         lf_tag_compare(t_d, e->next_event) == 0                     // EIMT equal to NET
         && is_in_zero_delay_cycle(e)                                // The node is part of a ZDC
         && lf_tag_compare(t_d, e->last_provisionally_granted) > 0   // The grant is not redundant
