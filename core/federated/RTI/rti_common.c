@@ -57,6 +57,10 @@ void initialize_scheduling_node(scheduling_node_t* e, uint16_t id) {
     e->num_downstream = 0;
     e->mode = REALTIME;
     invalidate_min_delays_upstream(e);
+
+    LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG,
+                   FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
+                   NEVER_TAG.time - start_time, 0);
 }
 
 void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
@@ -153,10 +157,6 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     // or federate (which includes any after delays on the connections).
     tag_t t_d = earliest_future_incoming_message_tag(e);
 
-    LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG,
-                   FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
-                   NEVER_TAG.time - start_time, 0);
-
     LF_PRINT_LOG("RTI: Earliest next event upstream of node %d has tag " PRINTF_TAG ".",
             e->id, t_d.time - start_time, t_d.microstep);
 
@@ -185,9 +185,9 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
                 e->next_event.microstep);
         result.tag = e->next_event;
     } else if( // Scenario (2) or (3) above
-        lf_tag_compare(t_d, e->next_event) >= 0                     // EIMT greater than or equal to NET
+        lf_tag_compare(t_d, e->next_event) == 0                     // EIMT equal to NET
         && is_in_zero_delay_cycle(e)                                // The node is part of a ZDC
-        && lf_tag_compare(t_d, e->last_provisionally_granted) >= 0  // The grant is not redundant
+        && lf_tag_compare(t_d, e->last_provisionally_granted) > 0   // The grant is not redundant
         && lf_tag_compare(t_d, e->last_granted) > 0                 // The grant is not redundant.
     ) { 
         // Some upstream node may send an event that has the same tag as this node's next event,
@@ -240,7 +240,6 @@ void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t ne
     notify_downstream_advance_grant_if_safe(e, visited);
     free(visited);
 }
-
 
 void notify_advance_grant_if_safe(scheduling_node_t* e) {
     tag_advance_grant_t grant = tag_advance_grant_if_safe(e);
