@@ -1933,11 +1933,17 @@ bool update_max_level(tag_t tag, bool is_provisional) {
         // Safe to complete the current tag
         return (prev_max_level_allowed_to_advance != max_level_allowed_to_advance);
     }
+#ifdef FEDERATED_DECENTRALIZED
     size_t action_table_size = _lf_action_table_size;
     lf_action_base_t** action_table = _lf_action_table;
+#else
+    size_t action_table_size = _lf_zero_delay_action_table_size;
+    lf_action_base_t** action_table = _lf_zero_delay_action_table;
+#endif // FEDERATED_DECENTRALIZED
     for (int i = 0; i < action_table_size; i++) {
         lf_action_base_t* input_port_action = action_table[i];
-        // In federated execution, if the current_tag is close enough to the
+#ifdef FEDERATED_DECENTRALIZED
+        // In decentralized execution, if the current_tag is close enough to the
         // start tag and there is a large enough delay on an incoming
         // connection, then there is no need to block progress waiting for this
         // port status.
@@ -1950,6 +1956,7 @@ bool update_max_level(tag_t tag, bool is_provisional) {
         ) {
             continue;
         }
+#endif // FEDERATED_DECENTRALIZED
         if (lf_tag_compare(env->current_tag,
                 input_port_action->trigger->last_known_status_tag) > 0
                 && !input_port_action->trigger->is_physical) {
