@@ -40,10 +40,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdarg.h>     // Defines va_list
 #include <time.h>       // Defines nanosleep()
 #include <stdbool.h>      
+#include "c-ordering-client.h"
 
 #ifndef NUMBER_OF_FEDERATES
 #define NUMBER_OF_FEDERATES 1
 #endif
+
+extern OrderingClientApi* ordering_client_api;
+extern ClientAndJoinHandle ordering_client_and_join_handle;
 
 /** Number of nanoseconds to sleep before retrying a socket read. */
 #define SOCKET_READ_RETRY_INTERVAL 1000000
@@ -242,6 +246,7 @@ void lf_print_error_and_exit(const char* format, ...) {
     va_start (args, format);
     lf_vprint_error_and_exit(format, args);
     va_end (args);
+		ordering_client_api->finish(ordering_client_and_join_handle);
     exit(EXIT_FAILURE);
 }
 

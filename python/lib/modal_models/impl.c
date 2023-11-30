@@ -43,14 +43,12 @@ static PyObject* py_mode_set(PyObject *mode_capsule, PyObject *args) {
 
     reactor_mode_t* mode = PyCapsule_GetPointer(m->mode, "mode");
     if (mode == NULL) {
-        lf_print_error("Null pointer received.");
-        exit(1);
+        lf_print_error_and_exit("Null pointer received.");
     }
 
     self_base_t* self = PyCapsule_GetPointer(m->lf_self, "lf_self");
     if (self == NULL) {
-        lf_print_error("Null pointer received.");
-        exit(1);
+        lf_print_error_and_exit("Null pointer received.");
     }
 
     _LF_SET_MODE_WITH_TYPE(mode, m->change_type);

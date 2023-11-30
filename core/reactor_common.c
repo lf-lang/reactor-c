@@ -1742,7 +1742,6 @@ void termination(void) {
     // Invoke the code generated termination function. It terminates the federated related services. 
     // It should only be called for the top-level environment, which, after convention, is the first environment.
     terminate_execution(env);
-    ordering_client_api->finish(ordering_client_and_join_handle);
 
 
     // In order to free tokens, we perform the same actions we would have for a new time step.

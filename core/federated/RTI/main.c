@@ -75,7 +75,6 @@ ClientAndJoinHandle ordering_client_and_join_handle;
  * enabled, before exiting.
  */
 void termination() {
-    ordering_client_api->finish(ordering_client_and_join_handle);
     if (rti.base.tracing_enabled) {
         stop_trace(rti.base.trace);
         lf_print("RTI trace file saved.");
@@ -294,6 +293,7 @@ int main(int argc, const char* argv[]) {
 
     int socket_descriptor = start_rti_server(rti.user_specified_port);
     wait_for_federates(socket_descriptor);
+    ordering_client_api->finish(ordering_client_and_join_handle);
     lf_print("RTI is exiting.");
     return 0;
 }
