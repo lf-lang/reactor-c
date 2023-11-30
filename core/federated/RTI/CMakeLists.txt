@@ -75,32 +75,6 @@ add_executable(
     message_record/message_record.c
 )
 
-# # Add RTI test executable temporarily here.
-# add_executable(
-#   test_RTI
-#   EIMTCalculation_test.c
-#   rti_common.c
-#   rti_remote.c
-#   ${CoreLib}/trace.c
-#   ${LF_PLATFORM_FILE}
-#   ${CoreLib}/platform/lf_unix_clock_support.c
-#   ${CoreLib}/utils/util.c
-#   ${CoreLib}/tag.c
-#   ${CoreLib}/federated/net_util.c
-#   ${CoreLib}/utils/pqueue_base.c
-#   ${CoreLib}/utils/pqueue_tag.c
-#   ${CoreLib}/utils/pqueue.c
-#   message_record/message_record.c
-# )
-# # Set the STANDALONE_RTI flag to include the rti_remote and rti_common.
-# target_compile_definitions(test_RTI PUBLIC STANDALONE_RTI=1)
-
-# # Set FEDERATED to get federated compilation support
-# target_compile_definitions(test_RTI PUBLIC FEDERATED=1)
-
-# target_compile_definitions(test_RTI PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
-# # End test_RTI
-
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
     # Set the LOG_LEVEL to 4 to get DEBUG messages
     message("-- Building RTI with DEBUG messages enabled")
