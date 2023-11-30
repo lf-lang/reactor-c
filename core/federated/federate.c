@@ -2715,12 +2715,10 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
             return tag;
         }
 
-        // FIXME: In case this federate is waiting for network inputs at the current tag,
-        // return immediately only TAG is granted.
-        // If time advance (TAG or PTAG) has already been granted for this tag
-        // or a larger tag, then return immediately.
-        if (lf_tag_compare(_fed.last_TAG, tag) >= 0
-        && !_fed.is_last_TAG_provisional) {
+        // If TAG for this tag or a larger tag or PTAG for a larger tag has already
+        // been granted, then return immediately.
+        if (lf_tag_compare(_fed.last_TAG, tag) > 0
+        && (lf_tag_compare(_fed.last_TAG, tag) == 0 && !_fed.is_last_TAG_provisional)) {
             LF_PRINT_DEBUG("Granted tag " PRINTF_TAG " because TAG or PTAG has been received.",
                     _fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
             return _fed.last_TAG;
