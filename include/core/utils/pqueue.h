@@ -1,230 +1,99 @@
-/*
- * Copyright (c) 2014, Volkan Yazıcı <volkan.yazici@gmail.com>
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- *
- * 1. Redistributions of source code must retain the above copyright notice, this
- *    list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright notice,
- *    this list of conditions and the following disclaimer in the documentation
- *    and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
- * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- * Modified by Marten Lohstroh (May, 2019).
- * Changes:
- * - Require implementation of a pqueue_eq_elem_f function to determine
- *   whether two elements are equal or not; and
- * - The provided pqueue_eq_elem_f implementation is used to test and
- *   search for equal elements present in the queue; and
- * - Removed capability to reassign priorities.
- */
-
 /**
- * @file  pqueue.h
- * @brief Priority Queue function declarations
- *
- * @{
+ * @file pqueue.h
+ * @author Marten Lohstroh
+ * @author Edward A. Lee
+ * @copyright (c) 2020-2023, The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * 
+ * @brief Priority queue declarations for the event queue and reaction queue.
  */
-
 
 #ifndef PQUEUE_H
 #define PQUEUE_H
 
-#include <stddef.h>
-
-/** priority data type */
-typedef unsigned long long pqueue_pri_t;
-
-/** callback functions to get/set/compare the priority of an element */
-typedef pqueue_pri_t (*pqueue_get_pri_f)(void *a);
-typedef void (*pqueue_set_pri_f)(void *a, pqueue_pri_t pri);
-typedef int (*pqueue_cmp_pri_f)(pqueue_pri_t next, pqueue_pri_t curr);
-typedef int (*pqueue_eq_elem_f)(void* next, void* curr);
-
-/** callback functions to get/set the position of an element */
-typedef size_t (*pqueue_get_pos_f)(void *a);
-typedef void (*pqueue_set_pos_f)(void *a, size_t pos);
-
-/** debug callback function to print a entry */
-typedef void (*pqueue_print_entry_f)(void *a);
-
-/** the priority queue handle */
-typedef struct pqueue_t
-{
-    size_t size;                /**< number of elements in this queue plus 1 */
-    size_t avail;               /**< slots available in this queue */
-    size_t step;                /**< growth stepping setting */
-    pqueue_cmp_pri_f cmppri;    /**< callback to compare priorities */
-    pqueue_get_pri_f getpri;    /**< callback to get priority of a node */
-    pqueue_get_pos_f getpos;    /**< callback to get position of a node */
-    pqueue_set_pos_f setpos;    /**< callback to set position of a node */
-    pqueue_eq_elem_f eqelem;    /**< callback to compare elements */
-    pqueue_print_entry_f prt;   /**< callback to print elements */
-    void **d;                   /**< The actual queue in binary heap form */
-} pqueue_t;
+#include "pqueue_base.h"
 
 /**
- * initialize the queue
- *
- * @param n the initial estimate of the number of queue items for which memory
- *     should be preallocated
- * @param cmppri The callback function to run to compare two elements
- *     This callback should return 0 for 'lower' and non-zero
- *     for 'higher', or vice versa if reverse priority is desired
- * @param getpri the callback function to run to set a score to an element
- * @param getpos the callback function to get the current element's position
- * @param setpos the callback function to set the current element's position
- *
- * @return the handle or NULL for insufficent memory
+ * Return 1 if the first argument is greater than the second and zero otherwise.
+ * @param thiz First argument.
+ * @param that Second argument.
  */
-pqueue_t *
-pqueue_init(size_t n,
-            pqueue_cmp_pri_f cmppri,
-            pqueue_get_pri_f getpri,
-            pqueue_get_pos_f getpos,
-            pqueue_set_pos_f setpos,
-            pqueue_eq_elem_f eqelem,
-            pqueue_print_entry_f prt);
-
-
-/**
- * free all memory used by the queue
- * @param q the queue
- */
-void pqueue_free(pqueue_t *q);
-
-
-/**
- * return the size of the queue.
- * @param q the queue
- */
-size_t pqueue_size(pqueue_t *q);
-
-/**
- * Insert an element into the queue.
- * @param q the queue
- * @param e the element
- * @return 0 on success
- */
-int pqueue_insert(pqueue_t *q, void *d);
-
-/**
- * Move an existing entry to a different priority.
- * @param q the queue
- * @param new_pri the new priority
- * @param d the entry
- */
-void
-pqueue_change_priority(pqueue_t *q,
-                       pqueue_pri_t new_pri,
-                       void *d);
-
-
-/**
- * Pop the highest-ranking item from the queue.
- * @param q the queue
- * @return NULL on error, otherwise the entry
- */
-void *pqueue_pop(pqueue_t *q);
-
-/**
- * @brief Empty 'src' into 'dest'.
- *
- * As an optimization, this function might swap 'src' and 'dest'.
- *
- * @param dest The queue to fill up
- * @param src  The queue to empty
- */
-void pqueue_empty_into(pqueue_t** dest, pqueue_t** src);
-
-/**
- * Find the highest-ranking item with the same priority that matches the
- * supplied entry.
- * @param q the queue
- * @param e the entry to compare against
- * @return NULL if no matching event has been found, otherwise the entry
- */
-void* pqueue_find_equal_same_priority(pqueue_t *q, void *e);
-
-/**
- * Find the highest-ranking item with priority up to and including the given
- * maximum priority that matches the supplied entry.
- * @param q the queue
- * @param e the entry to compare against
- * @param max_priority the maximum priority to consider
- * @return NULL if no matching event has been found, otherwise the entry
- */
-void* pqueue_find_equal(pqueue_t *q, void *e, pqueue_pri_t max_priority);
-
-/**
- * Remove an item from the queue.
- * @param q the queue
- * @param e the entry
- * @return 0 on success
- */
-int pqueue_remove(pqueue_t *q, void *e);
-
-/**
- * Access highest-ranking item without removing it.
- * @param q the queue
- * @return NULL on error, otherwise the entry
- */
-void *pqueue_peek(pqueue_t *q);
-
-/**
- * Print the queue.
- * @internal
- * DEBUG function only
- * @param q the queue
- * @param the callback function to print the entry
- */
-void
-pqueue_print(pqueue_t *q,
-             pqueue_print_entry_f print);
-
-/**
- * Dump the queue and it's internal structure.
- * @internal
- * debug function only
- * @param q the queue
- * @param the callback function to print the entry
- */
-void
-pqueue_dump(pqueue_t *q,
-             pqueue_print_entry_f print);
-
-/**
- * Check that the all entries are in the right order, etc.
- * @internal
- * debug function only
- * @param q the queue
- */
-int pqueue_is_valid(pqueue_t *q);
-
-// ********** Priority Queue Support Start
 int in_reverse_order(pqueue_pri_t thiz, pqueue_pri_t that);
+
+/**
+ * Return 0 regardless of argument order.
+ * @param thiz First argument.
+ * @param that Second argument.
+ */
 int in_no_particular_order(pqueue_pri_t thiz, pqueue_pri_t that);
-int event_matches(void* next, void* curr);
-int reaction_matches(void* next, void* curr);
-pqueue_pri_t get_event_time(void *a);
-pqueue_pri_t get_reaction_index(void *a);
-size_t get_event_position(void *a);
-size_t get_reaction_position(void *a);
-void set_event_position(void *a, size_t pos);
-void set_reaction_position(void *a, size_t pos);
+
+/**
+ * Return 1 if the two events have the same trigger.
+ * @param event1 A pointer to an event_t.
+ * @param event2 A pointer to an event_t.
+ */
+int event_matches(void* event1, void* event2);
+
+/**
+ * Return 1 if the two arguments are identical pointers.
+ * @param a First argument.
+ * @param b Second argument.
+ */
+int reaction_matches(void* a, void* b);
+
+/**
+ * Report a priority equal to the time of the given event.
+ * This is used for sorting pointers to event_t structs in the event queue.
+ * @param a A pointer to an event_t.
+ */
+pqueue_pri_t get_event_time(void *event);
+
+/**
+ * Report a priority equal to the index of the given reaction.
+ * Used for sorting pointers to reaction_t structs in the
+ * blocked and executing queues.
+ * @param reaction A pointer to a reaction_t.
+ */
+pqueue_pri_t get_reaction_index(void *reaction_t);
+
+/**
+ * Return the given event's position in the queue.
+ * @param event A pointer to an event_t.
+ */
+size_t get_event_position(void *event);
+
+/**
+ * Return the given reaction's position in the queue.
+ * @param reaction A pointer to a reaction_t.
+ */
+size_t get_reaction_position(void *reaction);
+
+/**
+ * Set the given event's position in the queue.
+ * @param event A pointer to an event_t
+ * @param pos The position.
+ */
+void set_event_position(void *event, size_t pos);
+
+/**
+ * Set the given reaction's position in the queue.
+ * @param event A pointer to a reaction_t.
+ * @param pos The position.
+ */
+void set_reaction_position(void *reaction, size_t pos);
+
+/**
+ * Print some information about the given reaction.
+ * This only prints something if logging is set to DEBUG.
+ * @param reaction A pointer to a reaction_t.
+ */
 void print_reaction(void *reaction);
+
+/**
+ * Print some information about the given event.
+ * This only prints something if logging is set to DEBUG.
+ * @param event A pointer to an event_t.
+ */
 void print_event(void *event);
 
 #endif /* PQUEUE_H */
-/** @} */
