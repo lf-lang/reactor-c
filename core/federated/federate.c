@@ -2717,8 +2717,10 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
 
         // If TAG for this tag or a larger tag or PTAG for a larger tag has already
         // been granted, then return immediately.
+        // If tag == PTAG but except for current_tag < PTAG curret_tag <= tag
         if (lf_tag_compare(_fed.last_TAG, tag) > 0
-        && (lf_tag_compare(_fed.last_TAG, tag) == 0 && !_fed.is_last_TAG_provisional)) {
+        || (!_fed.is_last_TAG_provisional && lf_tag_compare(_fed.last_TAG, tag) == 0)
+        || (_fed.is_last_TAG_provisional && lf_tag_compare(env->current_tag, _fed.last_TAG) < 0)) {
             LF_PRINT_DEBUG("Granted tag " PRINTF_TAG " because TAG or PTAG has been received.",
                     _fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
             return _fed.last_TAG;
