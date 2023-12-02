@@ -21,7 +21,6 @@ var reactor_8h =
     [ "_lf_free_all_reactors", "dc/d85/reactor_8h.html#ae911181dab92c081386aae7addc645e7", null ],
     [ "_lf_free_reactor", "dc/d85/reactor_8h.html#a5ea59ff3ad866fbd13c0b641bf21fa2f", null ],
     [ "_lf_get_downstream_of", "dc/d85/reactor_8h.html#a40863c1b4a6356214ea5326b3614ec11", null ],
-    [ "_lf_get_environments", "dc/d85/reactor_8h.html#ac109cd752121228507a95495a1eb6d8f", null ],
     [ "_lf_get_upstream_delay_of", "dc/d85/reactor_8h.html#a63f10adfcf0c3dbfbfd778ebd56928fe", null ],
     [ "_lf_get_upstream_of", "dc/d85/reactor_8h.html#a110fa4bc5c433e28e33f3ff3697d52a5", null ],
     [ "_lf_initialize_trigger_objects", "dc/d85/reactor_8h.html#a52ffa06ff177dc19d33713beb2ff344e", null ],

@@ -121,81 +121,98 @@ $(document).ready(function(){initNavTree('dc/da9/rti__common_8h_source.html','..
 <div class="line"><a id="l00034" name="l00034"></a><span class="lineno">   34</span>    PENDING         <span class="comment">// Waiting for upstream scheduling nodes.</span></div>
 <div class="line"><a id="l00035" name="l00035"></a><span class="lineno">   35</span>} scheduling_node_state_t;</div>
 <div class="line"><a id="l00036" name="l00036"></a><span class="lineno">   36</span> </div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span><span class="keyword">typedef</span> <span class="keyword">struct </span>scheduling_node_t {</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>    uint16_t id;                        <span class="comment">// ID of this scheduling node.</span></div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>    <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> completed;                    <span class="comment">// The largest logical tag completed by the scheduling node </span></div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>                                        <span class="comment">// (or NEVER if no LTC has been received).</span></div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>    <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> last_granted;                 <span class="comment">// The maximum TAG that has been granted so far (or NEVER if none granted)</span></div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>    <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> last_provisionally_granted;   <span class="comment">// The maximum PTAG that has been provisionally granted (or NEVER if none granted)</span></div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>    <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> next_event;                   <span class="comment">// Most recent NET received from the scheduling node (or NEVER if none received).</span></div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    scheduling_node_state_t state;      <span class="comment">// State of the scheduling node.</span></div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <span class="keywordtype">int</span>* upstream;                      <span class="comment">// Array of upstream scheduling node ids.</span></div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>    <a class="code hl_typedef" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>* upstream_delay;         <span class="comment">// Minimum delay on connections from upstream scheduling nodes.</span></div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>                                        <span class="comment">// Here, NEVER encodes no delay. 0LL is a microstep delay.</span></div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    <span class="keywordtype">int</span> num_upstream;                   <span class="comment">// Size of the array of upstream scheduling nodes and delays.</span></div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    <span class="keywordtype">int</span>* downstream;                    <span class="comment">// Array of downstream scheduling node ids.</span></div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    <span class="keywordtype">int</span> num_downstream;                 <span class="comment">// Size of the array of downstream scheduling nodes.</span></div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    execution_mode_t mode;              <span class="comment">// FAST or REALTIME.</span></div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>} scheduling_node_t;</div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span> </div>
-<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span><span class="keyword">typedef</span> <span class="keyword">struct </span>rti_common_t {</div>
-<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    <span class="comment">// The scheduling nodes.</span></div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>    scheduling_node_t **scheduling_nodes;</div>
+<div class="line"><a id="l00038" name="l00038"></a><span class="lineno">   38</span><span class="keyword">typedef</span> <span class="keyword">struct </span>minimum_delay_t {</div>
+<div class="line"><a id="l00039" name="l00039"></a><span class="lineno">   39</span>    <span class="keywordtype">int</span> id;          <span class="comment">// ID of the upstream node.</span></div>
+<div class="line"><a id="l00040" name="l00040"></a><span class="lineno">   40</span>    <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> min_delay; <span class="comment">// Minimum delay from upstream.</span></div>
+<div class="line"><a id="l00041" name="l00041"></a><span class="lineno">   41</span>} minimum_delay_t;</div>
+<div class="line"><a id="l00042" name="l00042"></a><span class="lineno">   42</span> </div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="keyword">typedef</span> <span class="keyword">struct </span>scheduling_node_t {</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>    uint16_t id;                        <span class="comment">// ID of this scheduling node.</span></div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>    <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> completed;                    <span class="comment">// The largest logical tag completed by the scheduling node </span></div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>                                        <span class="comment">// (or NEVER if no LTC has been received).</span></div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>    <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> last_granted;                 <span class="comment">// The maximum TAG that has been granted so far (or NEVER if none granted)</span></div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>    <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> last_provisionally_granted;   <span class="comment">// The maximum PTAG that has been provisionally granted (or NEVER if none granted)</span></div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>    <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> next_event;                   <span class="comment">// Most recent NET received from the scheduling node (or NEVER if none received).</span></div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>    scheduling_node_state_t state;      <span class="comment">// State of the scheduling node.</span></div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>    <span class="keywordtype">int</span>* upstream;                      <span class="comment">// Array of upstream scheduling node ids.</span></div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>    <a class="code hl_typedef" href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a>* upstream_delay;         <span class="comment">// Minimum delay on connections from upstream scheduling nodes.</span></div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>                                        <span class="comment">// Here, NEVER encodes no delay. 0LL is a microstep delay.</span></div>
+<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span>    <span class="keywordtype">int</span> num_upstream;                   <span class="comment">// Size of the array of upstream scheduling nodes and delays.</span></div>
+<div class="line"><a id="l00065" name="l00065"></a><span class="lineno">   65</span>    <span class="keywordtype">int</span>* downstream;                    <span class="comment">// Array of downstream scheduling node ids.</span></div>
+<div class="line"><a id="l00066" name="l00066"></a><span class="lineno">   66</span>    <span class="keywordtype">int</span> num_downstream;                 <span class="comment">// Size of the array of downstream scheduling nodes.</span></div>
+<div class="line"><a id="l00067" name="l00067"></a><span class="lineno">   67</span>    execution_mode_t mode;              <span class="comment">// FAST or REALTIME.</span></div>
+<div class="line"><a id="l00068" name="l00068"></a><span class="lineno">   68</span>    minimum_delay_t* min_delays;        <span class="comment">// Array of minimum delays from upstream nodes, not including this node.</span></div>
+<div class="line"><a id="l00069" name="l00069"></a><span class="lineno">   69</span>    <span class="keywordtype">size_t</span> num_min_delays;              <span class="comment">// Size of min_delays array.</span></div>
+<div class="line"><a id="l00070" name="l00070"></a><span class="lineno">   70</span>    <span class="keywordtype">int</span> flags;                          <span class="comment">// Or of IS_IN_ZERO_DELAY_CYCLE, IS_IN_CYCLE</span></div>
+<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span>} scheduling_node_t;</div>
 <div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span> </div>
-<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span>    <span class="comment">// Number of scheduling nodes</span></div>
-<div class="line"><a id="l00074" name="l00074"></a><span class="lineno">   74</span>    int32_t number_of_scheduling_nodes;</div>
-<div class="line"><a id="l00075" name="l00075"></a><span class="lineno">   75</span> </div>
-<div class="line"><a id="l00076" name="l00076"></a><span class="lineno">   76</span>    <span class="comment">// RTI&#39;s decided stop tag for the scheduling nodes</span></div>
-<div class="line"><a id="l00077" name="l00077"></a><span class="lineno">   77</span>    <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> max_stop_tag;</div>
-<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span> </div>
-<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    <span class="comment">// Number of scheduling nodes handling stop</span></div>
-<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    <span class="keywordtype">int</span> num_scheduling_nodes_handling_stop;</div>
+<div class="line"><a id="l00078" name="l00078"></a><span class="lineno">   78</span><span class="keyword">typedef</span> <span class="keyword">struct </span>rti_common_t {</div>
+<div class="line"><a id="l00079" name="l00079"></a><span class="lineno">   79</span>    <span class="comment">// The scheduling nodes.</span></div>
+<div class="line"><a id="l00080" name="l00080"></a><span class="lineno">   80</span>    scheduling_node_t **scheduling_nodes;</div>
 <div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span> </div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    <span class="comment">// Boolean indicating that tracing is enabled.</span></div>
-<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    <span class="keywordtype">bool</span> tracing_enabled;</div>
-<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span>    </div>
-<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="comment">// Pointer to a tracing object</span></div>
-<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    <a class="code hl_typedef" href="../../d1/d1b/trace_8h.html#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a>* <a class="code hl_variable" href="../../d5/df4/trace__util_8c.html#acc1427f623068d0c5a2c307969e8a447">trace</a>;</div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>    <span class="comment">// Number of scheduling nodes</span></div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span>    int32_t number_of_scheduling_nodes;</div>
+<div class="line"><a id="l00084" name="l00084"></a><span class="lineno">   84</span> </div>
+<div class="line"><a id="l00085" name="l00085"></a><span class="lineno">   85</span>    <span class="comment">// RTI&#39;s decided stop tag for the scheduling nodes</span></div>
+<div class="line"><a id="l00086" name="l00086"></a><span class="lineno">   86</span>    <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> max_stop_tag;</div>
 <div class="line"><a id="l00087" name="l00087"></a><span class="lineno">   87</span> </div>
-<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    <span class="comment">// The RTI mutex for making thread-safe access to the shared state.</span></div>
-<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>    <a class="code hl_typedef" href="../../d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f">lf_mutex_t</a>* mutex;</div>
-<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span>} rti_common_t;</div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span> </div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> tag;           <span class="comment">// NEVER if there is no tag advance grant.</span></div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    <span class="keywordtype">bool</span> is_provisional; <span class="comment">// True for PTAG, false for TAG.</span></div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>} tag_advance_grant_t;</div>
+<div class="line"><a id="l00088" name="l00088"></a><span class="lineno">   88</span>    <span class="comment">// Number of scheduling nodes handling stop</span></div>
+<div class="line"><a id="l00089" name="l00089"></a><span class="lineno">   89</span>    <span class="keywordtype">int</span> num_scheduling_nodes_handling_stop;</div>
+<div class="line"><a id="l00090" name="l00090"></a><span class="lineno">   90</span> </div>
+<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>    <span class="comment">// Boolean indicating that tracing is enabled.</span></div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>    <span class="keywordtype">bool</span> tracing_enabled;</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>    </div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>    <span class="comment">// Pointer to a tracing object</span></div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>    <a class="code hl_typedef" href="../../d1/d1b/trace_8h.html#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a>* <a class="code hl_variable" href="../../d5/df4/trace__util_8c.html#acc1427f623068d0c5a2c307969e8a447">trace</a>;</div>
 <div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span> </div>
-<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span><span class="keywordtype">void</span> initialize_rti_common(rti_common_t * rti_common);</div>
-<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span> </div>
-<div class="line"><a id="l00116" name="l00116"></a><span class="lineno">  116</span><span class="keywordtype">void</span> _logical_tag_complete(scheduling_node_t* e, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> completed);</div>
-<div class="line"><a id="l00117" name="l00117"></a><span class="lineno">  117</span> </div>
-<div class="line"><a id="l00124" name="l00124"></a><span class="lineno">  124</span><span class="keywordtype">void</span> initialize_scheduling_node(scheduling_node_t* e, uint16_t <span class="keywordtype">id</span>);</div>
-<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span> </div>
-<div class="line"><a id="l00136" name="l00136"></a><span class="lineno">  136</span><span class="keywordtype">void</span> notify_downstream_advance_grant_if_safe(scheduling_node_t* e, <span class="keywordtype">bool</span> visited[]);</div>
-<div class="line"><a id="l00137" name="l00137"></a><span class="lineno">  137</span> </div>
-<div class="line"><a id="l00151" name="l00151"></a><span class="lineno">  151</span><span class="keywordtype">void</span> notify_tag_advance_grant(scheduling_node_t* e, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> tag);</div>
-<div class="line"><a id="l00152" name="l00152"></a><span class="lineno">  152</span> </div>
-<div class="line"><a id="l00162" name="l00162"></a><span class="lineno">  162</span><span class="keywordtype">void</span> notify_advance_grant_if_safe(scheduling_node_t* e);</div>
-<div class="line"><a id="l00163" name="l00163"></a><span class="lineno">  163</span> </div>
-<div class="line"><a id="l00176" name="l00176"></a><span class="lineno">  176</span><span class="keywordtype">void</span> notify_provisional_tag_advance_grant(scheduling_node_t* e, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> tag);</div>
-<div class="line"><a id="l00177" name="l00177"></a><span class="lineno">  177</span> </div>
-<div class="line"><a id="l00208" name="l00208"></a><span class="lineno">  208</span>tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e);</div>
-<div class="line"><a id="l00209" name="l00209"></a><span class="lineno">  209</span> </div>
-<div class="line"><a id="l00210" name="l00210"></a><span class="lineno">  210</span> </div>
-<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span><span class="keywordtype">void</span> update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> next_event_tag);</div>
-<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span> </div>
-<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span><a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> transitive_next_event(scheduling_node_t *e, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> candidate, <span class="keywordtype">bool</span> visited[]);</div>
-<div class="line"><a id="l00247" name="l00247"></a><span class="lineno">  247</span> </div>
-<div class="line"><a id="l00248" name="l00248"></a><span class="lineno">  248</span><span class="preprocessor">#endif </span><span class="comment">// RTI_COMMON_H</span></div>
-<div class="line"><a id="l00249" name="l00249"></a><span class="lineno">  249</span><span class="preprocessor">#endif </span><span class="comment">// STANDALONE_RTI || LF_ENCLAVES</span></div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>    <span class="comment">// The RTI mutex for making thread-safe access to the shared state.</span></div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span>    <a class="code hl_typedef" href="../../d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f">lf_mutex_t</a>* mutex;</div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span>} rti_common_t;</div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span> </div>
+<div class="line"><a id="l00101" name="l00101"></a><span class="lineno">  101</span><span class="keyword">typedef</span> <span class="keyword">struct </span>{</div>
+<div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span>    <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> tag;           <span class="comment">// NEVER if there is no tag advance grant.</span></div>
+<div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>    <span class="keywordtype">bool</span> is_provisional; <span class="comment">// True for PTAG, false for TAG.</span></div>
+<div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>} tag_advance_grant_t;</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span> </div>
+<div class="line"><a id="l00112" name="l00112"></a><span class="lineno">  112</span><span class="keywordtype">void</span> initialize_rti_common(rti_common_t * rti_common);</div>
+<div class="line"><a id="l00113" name="l00113"></a><span class="lineno">  113</span> </div>
+<div class="line"><a id="l00125" name="l00125"></a><span class="lineno">  125</span><span class="keywordtype">void</span> _logical_tag_complete(scheduling_node_t* e, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> completed);</div>
+<div class="line"><a id="l00126" name="l00126"></a><span class="lineno">  126</span> </div>
+<div class="line"><a id="l00133" name="l00133"></a><span class="lineno">  133</span><span class="keywordtype">void</span> initialize_scheduling_node(scheduling_node_t* e, uint16_t <span class="keywordtype">id</span>);</div>
+<div class="line"><a id="l00134" name="l00134"></a><span class="lineno">  134</span> </div>
+<div class="line"><a id="l00145" name="l00145"></a><span class="lineno">  145</span><span class="keywordtype">void</span> notify_downstream_advance_grant_if_safe(scheduling_node_t* e, <span class="keywordtype">bool</span> visited[]);</div>
+<div class="line"><a id="l00146" name="l00146"></a><span class="lineno">  146</span> </div>
+<div class="line"><a id="l00160" name="l00160"></a><span class="lineno">  160</span><span class="keywordtype">void</span> notify_tag_advance_grant(scheduling_node_t* e, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> tag);</div>
+<div class="line"><a id="l00161" name="l00161"></a><span class="lineno">  161</span> </div>
+<div class="line"><a id="l00171" name="l00171"></a><span class="lineno">  171</span><span class="keywordtype">void</span> notify_advance_grant_if_safe(scheduling_node_t* e);</div>
+<div class="line"><a id="l00172" name="l00172"></a><span class="lineno">  172</span> </div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span><span class="keywordtype">void</span> notify_provisional_tag_advance_grant(scheduling_node_t* e, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> tag);</div>
+<div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span> </div>
+<div class="line"><a id="l00217" name="l00217"></a><span class="lineno">  217</span>tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e);</div>
+<div class="line"><a id="l00218" name="l00218"></a><span class="lineno">  218</span> </div>
+<div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span><span class="keywordtype">void</span> update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, <a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> next_event_tag);</div>
+<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span> </div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span><a class="code hl_struct" href="../../db/df7/structtag__t.html">tag_t</a> earliest_future_incoming_message_tag(scheduling_node_t* e);</div>
+<div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span> </div>
+<div class="line"><a id="l00245" name="l00245"></a><span class="lineno">  245</span><span class="keywordtype">bool</span> is_in_zero_delay_cycle(scheduling_node_t* node);</div>
+<div class="line"><a id="l00246" name="l00246"></a><span class="lineno">  246</span> </div>
+<div class="line"><a id="l00251" name="l00251"></a><span class="lineno">  251</span><span class="keywordtype">bool</span> is_in_cycle(scheduling_node_t* node);</div>
+<div class="line"><a id="l00252" name="l00252"></a><span class="lineno">  252</span> </div>
+<div class="line"><a id="l00260" name="l00260"></a><span class="lineno">  260</span><span class="keywordtype">void</span> update_min_delays_upstream(scheduling_node_t* node);</div>
+<div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span> </div>
+<div class="line"><a id="l00269" name="l00269"></a><span class="lineno">  269</span><span class="keywordtype">void</span> invalidate_min_delays_upstream(scheduling_node_t* node);</div>
+<div class="line"><a id="l00270" name="l00270"></a><span class="lineno">  270</span> </div>
+<div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span><span class="keywordtype">void</span> free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes);</div>
+<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span> </div>
+<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span><span class="preprocessor">#endif </span><span class="comment">// RTI_COMMON_H</span></div>
+<div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span><span class="preprocessor">#endif </span><span class="comment">// STANDALONE_RTI || LF_ENCLAVES</span></div>
 <div class="ttc" id="alf__arduino__support_8h_html_a7f67574f8818b6b888aa06156db05a7f"><div class="ttname"><a href="../../d3/d79/lf__arduino__support_8h.html#a7f67574f8818b6b888aa06156db05a7f">lf_mutex_t</a></div><div class="ttdeci">void * lf_mutex_t</div><div class="ttdef"><b>Definition</b> lf_arduino_support.h:118</div></div>
 <div class="ttc" id="aplatform_8h_html"><div class="ttname"><a href="../../de/d03/platform_8h.html">platform.h</a></div></div>
-<div class="ttc" id="astructtag__t_html"><div class="ttname"><a href="../../db/df7/structtag__t.html">tag_t</a></div><div class="ttdef"><b>Definition</b> tag.h:72</div></div>
+<div class="ttc" id="astructtag__t_html"><div class="ttname"><a href="../../db/df7/structtag__t.html">tag_t</a></div><div class="ttdef"><b>Definition</b> tag.h:73</div></div>
 <div class="ttc" id="atag_8h_html"><div class="ttname"><a href="../../d2/dcd/tag_8h.html">tag.h</a></div><div class="ttdoc">Time and tag definitions and functions for Lingua Franca.</div></div>
-<div class="ttc" id="atag_8h_html_af5b4e62d03782997d813be6145316f4b"><div class="ttname"><a href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a></div><div class="ttdeci">int64_t interval_t</div><div class="ttdef"><b>Definition</b> tag.h:62</div></div>
+<div class="ttc" id="atag_8h_html_af5b4e62d03782997d813be6145316f4b"><div class="ttname"><a href="../../d2/dcd/tag_8h.html#af5b4e62d03782997d813be6145316f4b">interval_t</a></div><div class="ttdeci">int64_t interval_t</div><div class="ttdef"><b>Definition</b> tag.h:63</div></div>
 <div class="ttc" id="atrace_8h_html"><div class="ttname"><a href="../../d1/d1b/trace_8h.html">trace.h</a></div></div>
-<div class="ttc" id="atrace_8h_html_abec033e59d4add4aa6ec61a874d0d52d"><div class="ttname"><a href="../../d1/d1b/trace_8h.html#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a></div><div class="ttdeci">struct trace_t trace_t</div><div class="ttdef"><b>Definition</b> trace.h:518</div></div>
+<div class="ttc" id="atrace_8h_html_abec033e59d4add4aa6ec61a874d0d52d"><div class="ttname"><a href="../../d1/d1b/trace_8h.html#abec033e59d4add4aa6ec61a874d0d52d">trace_t</a></div><div class="ttdeci">struct trace_t trace_t</div><div class="ttdef"><b>Definition</b> trace.h:519</div></div>
 <div class="ttc" id="atrace__util_8c_html_acc1427f623068d0c5a2c307969e8a447"><div class="ttname"><a href="../../d5/df4/trace__util_8c.html#acc1427f623068d0c5a2c307969e8a447">trace</a></div><div class="ttdeci">trace_record_t trace[TRACE_BUFFER_CAPACITY]</div><div class="ttdef"><b>Definition</b> trace_util.c:44</div></div>
 <div class="ttc" id="autil_8h_html"><div class="ttname"><a href="../../d8/d3c/util_8h.html">util.h</a></div></div>
 </div><!-- fragment --></div><!-- contents -->

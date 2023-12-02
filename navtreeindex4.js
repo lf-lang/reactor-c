@@ -1,5 +1,9 @@
 var NAVTREEINDEX4 =
 {
+"d7/dc9/structlf__waveform__t.html#a04db217ea68b2e445ff25f2f53f855cd":[11,0,32,0],
+"d7/dc9/structlf__waveform__t.html#ac1821431ece937edd64e32209a793018":[11,0,32,1],
+"d7/dc9/structlf__waveform__t.html#add06d5d0fc6b2337a8aa902736c28558":[11,0,32,2],
+"d7/dd0/struct__lf__sensor__message__t.html":[11,0,2],
 "d7/dd0/struct__lf__sensor__message__t.html#a3a9fd3aca3ae40d8a10665c4cc89cd68":[11,0,2,0],
 "d7/dd0/struct__lf__sensor__message__t.html#a96731ca0567d1b00ef6f677a35a95228":[11,0,2,1],
 "d7/dd0/struct__lf__sensor__message__t.html#a985768458c6b00559db82b549f2870a4":[11,0,2,2],
@@ -87,11 +91,13 @@ var NAVTREEINDEX4 =
 "d8/d84/set__undef_8h.html":[12,0,1,0,2],
 "d8/d84/set__undef_8h_source.html":[12,0,1,0,2],
 "d8/d9c/src__gen__stub_8c.html":[12,0,4,3],
-"d8/d9c/src__gen__stub_8c.html#a114c79dc673219d5df3b794552ca88d7":[12,0,4,3,4],
-"d8/d9c/src__gen__stub_8c.html#a13c2f54f700bce3d4572600bb87ab055":[12,0,4,3,1],
-"d8/d9c/src__gen__stub_8c.html#a52ffa06ff177dc19d33713beb2ff344e":[12,0,4,3,0],
-"d8/d9c/src__gen__stub_8c.html#a75fa89818532f0a22032b4892061f4dd":[12,0,4,3,2],
-"d8/d9c/src__gen__stub_8c.html#ad96dd94446ff66184dcf0f8f65cdb4f0":[12,0,4,3,3],
+"d8/d9c/src__gen__stub_8c.html#a114c79dc673219d5df3b794552ca88d7":[12,0,4,3,5],
+"d8/d9c/src__gen__stub_8c.html#a13c2f54f700bce3d4572600bb87ab055":[12,0,4,3,2],
+"d8/d9c/src__gen__stub_8c.html#a52ffa06ff177dc19d33713beb2ff344e":[12,0,4,3,1],
+"d8/d9c/src__gen__stub_8c.html#a75fa89818532f0a22032b4892061f4dd":[12,0,4,3,3],
+"d8/d9c/src__gen__stub_8c.html#ac109cd752121228507a95495a1eb6d8f":[12,0,4,3,0],
+"d8/d9c/src__gen__stub_8c.html#ad96dd94446ff66184dcf0f8f65cdb4f0":[12,0,4,3,4],
+"d8/d9c/src__gen__stub_8c.html#ada5e97527390d0efc2794e490725b823":[12,0,4,3,6],
 "d8/dd6/lf__arduino__support_8c.html":[12,0,0,2,1],
 "d8/ddc/trace_8c.html":[12,0,0,12],
 "d8/def/federate_8c.html":[12,0,0,0,2],
@@ -243,11 +249,5 @@ var NAVTREEINDEX4 =
 "d9/dc7/trace__util_8h_source.html":[12,0,5,0,6],
 "d9/dd5/clock-sync_8h.html":[12,0,1,1,0,0],
 "d9/dd5/clock-sync_8h.html#a0810a64801750ce9b148848c228c86e9":[12,0,1,1,0,0,3],
-"d9/dd5/clock-sync_8h.html#a1b35d21eda090ea4bf8a79f401dbdad0":[12,0,1,1,0,0,7],
-"d9/dd5/clock-sync_8h.html#a532da6f271eb75c9ac745571b995c404":[12,0,1,1,0,0,1],
-"d9/dd5/clock-sync_8h.html#a6d31f2c4caa9ee12f2e1e018f9e6e1f0":[12,0,1,1,0,0,8],
-"d9/dd5/clock-sync_8h.html#a7e49fed082ec884e26d761e1c4f0d428":[12,0,1,1,0,0,4],
-"d9/dd5/clock-sync_8h.html#a834b31e00e677a23b6a86119b7a2fe59":[12,0,1,1,0,0,10],
-"d9/dd5/clock-sync_8h.html#a8a95b04db741b4fd04fb2ee4941fc8c6":[12,0,1,1,0,0,11],
-"d9/dd5/clock-sync_8h.html#ab0eeaea19d6e5c9217a4eed928c32141":[12,0,1,1,0,0,2]
+"d9/dd5/clock-sync_8h.html#a1b35d21eda090ea4bf8a79f401dbdad0":[12,0,1,1,0,0,7]
 };

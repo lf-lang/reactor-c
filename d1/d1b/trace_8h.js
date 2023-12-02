@@ -4,6 +4,7 @@ var trace_8h =
     [ "register_user_trace_event", "d1/d1b/trace_8h.html#a93b33b5ac0d1091ac118ab464bf3a7d0", null ],
     [ "start_trace", "d1/d1b/trace_8h.html#a27e365336dc38cd3fec8741832c0e195", null ],
     [ "stop_trace", "d1/d1b/trace_8h.html#a9c54cf0034978f2dd5b3521fc522d237", null ],
+    [ "stop_trace_locked", "d1/d1b/trace_8h.html#aa8c7f01120c9a062093dd061bcc2fb1c", null ],
     [ "trace_free", "d1/d1b/trace_8h.html#a4b3f193c812fcc1b5b86a1578101d998", null ],
     [ "TRACE_H", "d1/d1b/trace_8h.html#ae594945e35ccf287b44f0de67d6194d1", null ],
     [ "trace_new", "d1/d1b/trace_8h.html#a25fefd425c9b8a91265c273dcffa793d", null ],

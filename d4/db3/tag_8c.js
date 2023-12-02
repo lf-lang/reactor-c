@@ -15,6 +15,7 @@ var tag_8c =
     [ "lf_readable_time", "d4/db3/tag_8c.html#a43509483b3e9886acd002c7d7b6482c8", null ],
     [ "lf_set_physical_clock_offset", "d4/db3/tag_8c.html#a3a209c8df88a5ef884e0cf51d4727cda", null ],
     [ "lf_tag", "d4/db3/tag_8c.html#acbe5117469b98e0e6df45b5421f58026", null ],
+    [ "lf_tag_add", "d4/db3/tag_8c.html#aa1186f7e330ecbfd20a4dd90b97439e6", null ],
     [ "lf_tag_compare", "d4/db3/tag_8c.html#a596d8734432616c9c7847283fde63cfa", null ],
     [ "lf_time_logical", "d4/db3/tag_8c.html#a751c9fce12510f5bb98d862f57077396", null ],
     [ "lf_time_logical_elapsed", "d4/db3/tag_8c.html#a6faad0d905f7135352f511bc235425e1", null ],
