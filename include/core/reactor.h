@@ -60,16 +60,11 @@
 #define CONSTRUCTOR(classname) (new_ ## classname)
 #define SELF_STRUCT_T(classname) (classname ## _self_t)
 
-////////////////////////////////////////////////////////////
-//// Macros for producing outputs.
-
-// NOTE: According to the "Swallowing the Semicolon" section on this page:
-//    https://gcc.gnu.org/onlinedocs/gcc-3.0.1/cpp_3.html
-// the following macros should use an odd do-while construct to avoid
-// problems with if ... else statements that do not use braces around the
-// two branches.
-
-// Declarations for functions used by the macros.
+/**
+ * Print an event from the event queue.
+ * This is a function of type pqueue_print_entry_f.
+ */
+void _lf_print_event(void* event);
 
 /**
  * Mark the given port's is_present field as true. This is_present field
