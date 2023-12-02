@@ -924,8 +924,9 @@ void try_advance_level(environment_t* env, volatile size_t* next_reaction_level)
     #ifdef FEDERATED
     stall_advance_level_federation(env, *next_reaction_level);
     #endif
-    *next_reaction_level += 1;
+    if (*next_reaction_level < SIZE_MAX) *next_reaction_level += 1;
 }
+
 /**
  * The main looping logic of each LF worker thread.
  * This function assumes the caller holds the mutex lock.
@@ -1216,6 +1217,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
             LF_PRINT_LOG("---- All worker threads exited successfully.");
         }
     }
+#if defined LF_ENCLAVES
+    free_local_rti();
+#endif
     return 0;
 }   
 

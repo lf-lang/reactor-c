@@ -29,9 +29,13 @@ typedef struct {
 
 /**
  * @brief Dynamically create and initialize the local RTI.
- * 
  */
 void initialize_local_rti(environment_t* envs, int num_envs);
+
+/**
+ * @brief Free memory associated with the local the RTI and the local RTI iself.
+ */
+void free_local_rti();
 
 /**
  * @brief Initialize the enclave object.
@@ -41,7 +45,8 @@ void initialize_local_rti(environment_t* envs, int num_envs);
 void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t *env);
 
 /**
- * @brief This function call may block. A call to this function serves two purposes. 
+ * @brief Notify the local RTI of a next event tag (NET).
+ * This function call may block. A call to this function serves two purposes. 
  * 1) It is a promise that, unless receiving events from other enclaves, this
  * enclave will not produce any event until the next_event_tag (NET) argument.
  * 2) It is a request for permission to advance the logical tag of the enclave
