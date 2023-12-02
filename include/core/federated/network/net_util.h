@@ -63,7 +63,7 @@ int host_is_big_endian(void);
 #ifdef FEDERATED
 
 typedef struct netdrv_t {
-    int  ( *init)(struct netdrv_t *drv);
+    int  ( *open)(struct netdrv_t *drv);
     void (*close)(struct netdrv_t *drv);
     int  ( *read)(struct netdrv_t *drv, void * buffer, int size);
     int  (*write)(struct netdrv_t *drv, void * buffer, int size);

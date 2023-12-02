@@ -56,7 +56,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** Number of nanoseconds to sleep before retrying a socket read. */
 #define SOCKET_READ_RETRY_INTERVAL 1000000
 
-int  netdrv_init(netdrv_t *drv)
+int  netdrv_open(netdrv_t *drv)
 {
 	if (!drv)
 		return -1;
