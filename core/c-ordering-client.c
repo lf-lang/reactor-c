@@ -9,7 +9,7 @@ const char* LIBRARY_PATH_ENV_VAR = "C_ORDERING_CLIENT_LIBRARY_PATH";
 ClientAndJoinHandle start_client_nop(int federate_id) {
   return (ClientAndJoinHandle) { .client = NULL, .join_handle = NULL };
 }
-void finish_nop(ClientAndJoinHandle) {}
+void finish_nop(ClientAndJoinHandle cajh) {}
 void tracepoint_maybe_wait_nop(void* client, char* hook_id, int federate_id, int sequence_number) {}
 void tracepoint_maybe_notify_nop(void* client, char* hook_id, int federate_id, int sequence_number) {}
 void tracepoint_maybe_do_nop(void* client, char* hook_id, int federate_id, int sequence_number) {}
