@@ -435,6 +435,7 @@ void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, i
  * close the files.
  */
 void stop_trace(trace_t* trace);
+void stop_trace_locked(trace_t* trace);
 
 ////////////////////////////////////////////////////////////
 //// For federated execution
@@ -540,6 +541,7 @@ typedef struct trace_t trace_t;
 
 #define start_trace(...)
 #define stop_trace(...)
+#define stop_trace_locked(...)
 #define trace_new(...) NULL
 #define trace_free(...)
 
