@@ -56,26 +56,26 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** Number of nanoseconds to sleep before retrying a socket read. */
 #define SOCKET_READ_RETRY_INTERVAL 1000000
 
-int  netapi_init(net_drv_t *drv)
+int  netdrv_init(netdrv_t *drv)
 {
 	if (!drv)
 		return -1;
-	return drv->init(drv);
+	return drv->open(drv);
 }
-void netapi_close(net_drv_t *drv)
+void netdrv_close(netdrv_t *drv)
 {
 	if (drv)
 		drv->close(drv);
 }
 
-int netapi_read(net_drv_t *drv, void * buffer, int size)
+int netdrv_read(netdrv_t *drv, void * buffer, int size)
 {
 	if (!drv)
 		return -1;
 	return drv->read(drv, buffer, size);
 }
 
-int  netapi_write(net_drv_t *drv, void * buffer, int size)
+int  netdrv_write(netdrv_t *drv, void * buffer, int size)
 {
 	if (!drv)
 		return -1;

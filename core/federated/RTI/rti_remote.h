@@ -124,8 +124,8 @@ typedef struct rti_remote_t {
     const char* federation_id;
 
     //TODO: Does it have to be a pointer?
-    net_drv_t *rti_net_drv;
-    net_drv_t *clock_net_drv;
+    netdrv_t *rti_net_drv;
+    netdrv_t *clock_net_drv;
 
 
     /************* TCP server information *************/

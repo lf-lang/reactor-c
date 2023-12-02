@@ -6,8 +6,10 @@
 typedef struct socket_priv_t {
 	int sock;
 	int proto;
+    int port;
+    int user_specified_port;
 } socket_priv_t;
 
-net_drv_t * socket_create(int protocol);
+netdrv_t * socket_init(int protocol);
 
 #endif // LF_SOCKET_SUPPORT_H

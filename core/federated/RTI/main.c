@@ -281,7 +281,8 @@ int main(int argc, const char* argv[]) {
         initialize_federate(fed_info, i);
         rti.base.scheduling_nodes[i] = (scheduling_node_t *) fed_info;
     }
-
+    _lf_initialize_clock();
+    
     int socket_descriptor = start_rti_server(rti.user_specified_port);
     wait_for_federates(socket_descriptor);
     free_scheduling_nodes(rti.base.scheduling_nodes, rti.base.number_of_scheduling_nodes);

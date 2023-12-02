@@ -13,14 +13,14 @@
 #include "lf_socket_support.h"
 // #include "net_util.h"
 
-static socket_priv_t *get_priv(net_drv_t *drv)
+static socket_priv_t *get_priv(netdrv_t *drv)
 {
 	if (!drv)
 		return NULL;
 	return (socket_priv_t *)(drv+1);
 }
 
-// static int socket_init(net_drv_t *drv)
+// static int socket_open(netdrv_t *drv)
 // {
 // 	socket_priv_t *priv = get_priv(drv);
 // 	priv->sock = socket(AF_PACKET, SOCK_RAW, htons(priv->proto));
@@ -46,7 +46,7 @@ static socket_priv_t *get_priv(net_drv_t *drv)
 // 	return 0;
 // }
 
-// static void socket_close(net_drv_t *drv)
+// static void socket_close(netdrv_t *drv)
 // {
 // 	if (!drv)
 // 		return;
@@ -57,7 +57,7 @@ static socket_priv_t *get_priv(net_drv_t *drv)
 // 	}
 // }
 
-// static int socket_recv(net_drv_t *drv, void * buffer, int size)
+// static int socket_recv(netdrv_t *drv, void * buffer, int size)
 // {
 // 	if (!drv)
 // 		return -1;
@@ -72,7 +72,7 @@ static socket_priv_t *get_priv(net_drv_t *drv)
 // 	return recv(priv->sock, buffer, size, MSG_TRUNC);
 // }
 
-// static int socket_send(net_drv_t *drv, void * buffer, int size)
+// static int socket_send(netdrv_t *drv, void * buffer, int size)
 // {
 // 	if (!drv)
 // 		return -1;
@@ -80,18 +80,18 @@ static socket_priv_t *get_priv(net_drv_t *drv)
 // 	return send(priv->sock, buffer, size, MSG_DONTWAIT);
 // }
 
-net_drv_t * socket_create(int protocol) {
+netdrv_t * socket_init(int protocol) {
     //TODO: Should it be malloc? To support different network stacks operate simulatneously?
-	net_drv_t *drv = malloc(sizeof(*drv) + sizeof(socket_priv_t)); //Don't need to call malloc() twice.
+	netdrv_t *drv = malloc(sizeof(*drv) + sizeof(socket_priv_t)); //Don't need to call malloc() twice.
 	if (!drv) {// check if malloc worked.
-		lf_print_error_and_exit("Falied to malloc net_drv_t.");
+		lf_print_error_and_exit("Falied to malloc netdrv_t.");
     }
 	memset(drv, 0, sizeof(*drv));
 
 	socket_priv_t *priv = get_priv(drv); //drv+1 return.
 	priv->proto = protocol;
 
-	// drv->init = socket_init;
+	// drv->init = socket_open;
 	// drv->close = socket_close;
 	// drv->read = socket_recv;
 	// drv->write = socket_send;
