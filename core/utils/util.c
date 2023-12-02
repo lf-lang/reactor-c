@@ -53,6 +53,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** Number of nanoseconds to sleep before retrying a socket read. */
 #define SOCKET_READ_RETRY_INTERVAL 1000000
 
+/**
+ * The ID of this federate. For a non-federated execution, this will be -1. 
+ * For a federated execution, it will be assigned in the generated code.
+ */
 int _lf_my_fed_id = -1;
 
 /**
