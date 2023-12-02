@@ -736,7 +736,6 @@ void _lf_initialize_start_tag(environment_t *env) {
     // Here we wait until the start time and also release the environment mutex.
     // this means that the other worker threads will be allowed to start. We need
     // this to avoid potential deadlock in federated startup.
-    // NOTE: wait_until automatically adds _lf_fed_STA_offset.
     while(!wait_until(env, start_time + _lf_fed_STA_offset, &env->event_q_changed)) {};
     LF_PRINT_DEBUG("Done waiting for start time + STA offset " PRINTF_TIME ".", start_time + _lf_fed_STA_offset);
     LF_PRINT_DEBUG("Physical time is ahead of current time by " PRINTF_TIME 
@@ -768,8 +767,6 @@ void _lf_initialize_start_tag(environment_t *env) {
     _lf_wait_on_tag_barrier(env, (tag_t){.time=start_time,.microstep=0});
     spawn_staa_thread();
 
-    // Pull from the event queue any messages that have been received during waiting.
-    
 #else // NOT FEDERATED_DECENTRALIZED
     // Each federate executes the start tag (which is the current
     // tag). Inform the RTI of this if needed.
