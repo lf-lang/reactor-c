@@ -18,6 +18,7 @@ add_library(core ${GENERAL_SOURCES})
 # Add sources for either threaded or single-threaded runtime
 if (DEFINED FEDERATED)
     include(federated/CMakeLists.txt)
+    include(federated/network/CMakeLists.txt)
 endif()
 
 # Add sources for either threaded or single-threaded runtime
@@ -43,6 +44,7 @@ include(utils/CMakeLists.txt)
 include(modal_models/CMakeLists.txt)
 include(platform/CMakeLists.txt)
 
+
 # Print sources used for compilation
 list(JOIN INFO_SOURCES ", " PRINTABLE_SOURCE_LIST)
 message(STATUS "Including the following sources: " ${PRINTABLE_SOURCE_LIST})
@@ -50,6 +52,7 @@ message(STATUS "Including the following sources: " ${PRINTABLE_SOURCE_LIST})
 target_include_directories(core PUBLIC ../include)
 target_include_directories(core PUBLIC ../include/core)
 target_include_directories(core PUBLIC ../include/core/federated)
+target_include_directories(core PUBLIC ../include/core/federated/network)
 target_include_directories(core PUBLIC ../include/core/platform)
 target_include_directories(core PUBLIC ../include/core/modal_models)
 target_include_directories(core PUBLIC ../include/core/threaded)
