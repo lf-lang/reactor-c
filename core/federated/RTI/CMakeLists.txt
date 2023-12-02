@@ -70,6 +70,7 @@ add_executable(
     ${CoreLib}/utils/util.c
     ${CoreLib}/tag.c
     ${CoreLib}/federated/network/net_util.c
+    ${CoreLib}/federated/network/lf_socket_support.c
     ${CoreLib}/utils/pqueue_base.c
     ${CoreLib}/utils/pqueue_tag.c
     ${CoreLib}/utils/pqueue.c
