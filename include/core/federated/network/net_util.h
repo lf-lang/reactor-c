@@ -62,6 +62,12 @@ int host_is_big_endian(void);
 
 #ifdef FEDERATED
 
+typedef struct net_drv_t {
+	int  ( *init)(struct net_drv_t *drv);
+	void (*close)(struct net_drv_t *drv);
+	int  ( *read)(struct net_drv_t *drv, void * buffer, int size);
+	int  (*write)(struct net_drv_t *drv, void * buffer, int size);
+} net_drv_t;
 
 /**
  * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled

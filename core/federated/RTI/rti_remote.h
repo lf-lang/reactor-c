@@ -22,6 +22,7 @@
 #include <unistd.h>     // Defines read(), write(), and close()
 #include <strings.h>    // Defines bzero().
 
+#include "net_util.h"
 #include "rti_common.h"
 
 #ifdef __RTI_AUTH__
@@ -118,6 +119,9 @@ typedef struct rti_remote_t {
      * that each federate only joins its assigned federation.
      */
     const char* federation_id;
+
+    net_driver
+
 
     /************* TCP server information *************/
     /** The desired port specified by the user on the command line. */
