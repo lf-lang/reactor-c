@@ -1632,8 +1632,8 @@ void initialize_RTI(rti_remote_t *rti){
     rti_remote->base.mutex = &rti_mutex;
 
     // TODO: How to make this compile dependent? When should the options be determined?
-    rti_remote->rti_net_drv = socket_init(TCP);
-    rti_remote->clock_net_drv = socket_init(UDP);
+    rti_remote->rti_netdrv = socket_init(TCP);
+    rti_remote->clock_netdrv = socket_init(UDP);
 
     // federation_rti related initializations
     rti_remote->max_start_time = 0LL;
