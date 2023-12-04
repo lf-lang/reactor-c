@@ -83,10 +83,10 @@ static socket_priv_t *get_priv(netdrv_t *drv)
 netdrv_t * socket_init(int protocol) {
     //TODO: Should it be malloc? To support different network stacks operate simulatneously?
 	netdrv_t *drv = malloc(sizeof(*drv) + sizeof(socket_priv_t)); //Don't need to call malloc() twice.
-	if (!drv) {// check if malloc worked.
-		lf_print_error_and_exit("Falied to malloc netdrv_t.");
-    }
-	memset(drv, 0, sizeof(*drv));
+	// if (!drv) {// check if malloc worked.
+	// 	lf_print_error_and_exit("Falied to malloc netdrv_t.");
+    // }
+	// memset(drv, 0, sizeof(*drv));
 
 	socket_priv_t *priv = get_priv(drv); //drv+1 return.
 	priv->proto = protocol;
