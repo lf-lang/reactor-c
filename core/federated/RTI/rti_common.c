@@ -300,44 +300,23 @@ static void _update_min_delays_upstream(scheduling_node_t* end, scheduling_node_
     }
 }
 
-// bool check_cycle(scheduling_node_t* e, int target_id, bool visited[]) {
-//     if (visited[e->id] || e->state == NOT_CONNECTED) {
-//         if (e->id == target_id) {
-//             return true;
-//         } else {
-//             return false;
-//         }
-//     }
-
-//     visited[e->id] = true;
-
-//     for (int i = 0; i < e->num_upstream; i++) {
-//         if (check_cycle(rti_common->scheduling_nodes[e->upstream[i]], target_id, visited)) {
-//             return true;
-//         }
-//     }
-//     return false;
-// }
-
-// FIXME: Implement this function again by adopting the function update_min_delays_upstream
 bool check_physical_action_of_transitive_downstreams(scheduling_node_t* e, bool visited[]) {
-    return false;
-    // if (visited[e->id] || e->state == NOT_CONNECTED) {
-    //     return false;
-    // }
+    if (visited[e->id] || e->state == NOT_CONNECTED) {
+        return false;
+    }
 
-    // visited[e->id] = true;
+    visited[e->id] = true;
 
-    // for (int i = 0; i < e->num_downstream; i++) {
-    //     if (check_physical_action_of_transitive_downstreams(rti_common->scheduling_nodes[e->downstream[i]], visited)) {
-    //         return true;
-    //     }
-    // }
-    // if (e->has_physical_action) {
-    //     return true;
-    // } else {
-    //     return false;
-    // }
+    for (int i = 0; i < e->num_downstream; i++) {
+        if (check_physical_action_of_transitive_downstreams(rti_common->scheduling_nodes[e->downstream[i]], visited)) {
+            return true;
+        }
+    }
+    if (e->has_physical_action) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void update_min_delays_upstream(scheduling_node_t* node) {

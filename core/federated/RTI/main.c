@@ -172,7 +172,7 @@ int process_clock_sync_args(int argc, const char* argv[]) {
 }
 
 int process_args(int argc, const char* argv[]) {
-    for (int i = 1; i < argc; i++) { 
+    for (int i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0) {
             lf_print("%s", version_info);
             return 0;
@@ -237,7 +237,7 @@ int process_args(int argc, const char* argv[]) {
             rti.authentication_enabled = true;
         } else if (strcmp(argv[i], "-t") == 0 || strcmp(argv[i], "--tracing") == 0) {
             rti.base.tracing_enabled = true;
-        } else if (strcmp(argv[i], "--ndt" == 0)) {
+        } else if (strcmp(argv[i], "--ndt") == 0) {
             rti.ndt_enabled = true;
         } else if (strcmp(argv[i], " ") == 0) {
             // Tolerate spaces
@@ -246,7 +246,7 @@ int process_args(int argc, const char* argv[]) {
            lf_print_error("Unrecognized command-line argument: %s", argv[i]);
            usage(argc, argv);
            return 0;
-       }
+        }
     }
     if (rti.base.number_of_scheduling_nodes == 0) {
         lf_print_error("--number_of_federates needs a valid positive integer argument.");

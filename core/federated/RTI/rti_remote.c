@@ -1644,7 +1644,6 @@ void connect_to_federates(int socket_descriptor) {
             i--;
         }
     }
-    update_cycle_information();
     determine_the_ndt_condition();
     // All federates have connected.
     LF_PRINT_DEBUG("All federates have connected to RTI.");
