@@ -34,6 +34,12 @@ typedef enum scheduling_node_state_t {
     PENDING         // Waiting for upstream scheduling nodes.
 } scheduling_node_state_t;
 
+/** Struct for minimum delays from upstream nodes. */
+typedef struct minimum_delay_t {
+    int id;          // ID of the upstream node.
+    tag_t min_delay; // Minimum delay from upstream.
+} minimum_delay_t;
+
 /**
  * Information about the scheduling nodes coordinated by the RTI.
  * The abstract scheduling node could either be an enclave or a federate.
@@ -62,6 +68,9 @@ typedef struct scheduling_node_t {
     bool is_in_cycle;
     bool has_physical_action;
     bool enable_ndt;
+    minimum_delay_t* min_delays;        // Array of minimum delays from upstream nodes, not including this node.
+    size_t num_min_delays;              // Size of min_delays array.
+    int flags;                          // Or of IS_IN_ZERO_DELAY_CYCLE, IS_IN_CYCLE
 } scheduling_node_t;
 
 /**
@@ -165,7 +174,7 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag);
 void notify_advance_grant_if_safe(scheduling_node_t* e);
 
 /**
- * Nontify a provisional tag advance grant (PTAG) message to the specified scheduling node.
+ * Notify a provisional tag advance grant (PTAG) message to the specified scheduling node.
  * Do not notify it if a previously sent PTAG or TAG was greater or equal.
  *
  * This function will keep a record of this PTAG in the node's last_provisionally_granted
@@ -210,7 +219,6 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag);
  */
 tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e);
 
-
 /**
  * @brief Update the next event tag of an scheduling node.
  *
@@ -224,29 +232,49 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e);
 void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t next_event_tag);
 
 /**
- * Find the earliest tag at which the specified federate may
- * experience its next event. This is the least next event tag (NET)
- * of the specified federate and (transitively) upstream federates
- * (with delays of the connections added). For upstream federates,
- * we assume (conservatively) that federate upstream of those
- * may also send an event. The result will never be less than
- * the completion time of the federate (which may be NEVER,
- * if the federate has not yet completed a logical time).
- *
- * FIXME: This could be made less conservative by building
- * at code generation time a causality interface table indicating
- * which outputs can be triggered by which inputs. For now, we
- * assume any output can be triggered by any input.
- *
- * @param e The scheduling node.
- * @param candidate A candidate tag (for the first invocation,
- *  this should be fed->next_event).
- * @param visited An array of booleans indicating which federates
- *  have been visited (for the first invocation, this should be
- *  an array of falses of size _RTI.number_of_federates).
- * @return The earliest next event tag of the scheduling node e.
+ * Given a node (enclave or federate), find the tag of the earliest possible incoming
+ * message from upstream enclaves or federates, which will be the smallest upstream NET
+ * plus the least delay. This could be NEVER_TAG if the RTI has not seen a NET from some
+ * upstream node.
+ * @param e The target node.
+ * @return The earliest possible incoming message tag.
  */
-tag_t transitive_next_event(scheduling_node_t *e, tag_t candidate, bool visited[]);
+tag_t earliest_future_incoming_message_tag(scheduling_node_t* e);
+
+/**
+ * Return true if the node is in a zero-delay cycle.
+ * @param node The node.
+ */
+bool is_in_zero_delay_cycle(scheduling_node_t* node);
+
+/**
+ * Return true if the node is in a cycle (possibly a zero-delay cycle).
+ * @param node The node.
+ */
+bool is_in_cycle(scheduling_node_t* node);
+
+/**
+ * For the given scheduling node (enclave or federate), if necessary, update the `min_delays`,
+ * `num_min_delays`, and the fields that indicate cycles.  These fields will be
+ * updated only if they have not been previously updated or if invalidate_min_delays_upstream
+ * has been called since they were last updated.
+ * @param node The node.
+ */
+void update_min_delays_upstream(scheduling_node_t* node);
+
+/**
+ * For the given scheduling node (enclave or federate), invalidate the `min_delays`,
+ * `num_min_delays`, and the fields that indicate cycles.
+ * This should be called whenever the structure of the connections upstream of the
+ * given node have changed.
+ * @param node The node.
+ */
+void invalidate_min_delays_upstream(scheduling_node_t* node);
+
+/**
+ * Free dynamically allocated memory on the scheduling nodes and the scheduling node array itself.
+ */
+void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes);
 
 bool check_cycle(scheduling_node_t* e, int target_id, bool visited[]);
 
