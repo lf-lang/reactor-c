@@ -48,8 +48,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <sys/types.h>
 #include <stdbool.h>
 
-#include "../platform.h"
-#include "../tag.h"
+#include "../../platform.h"
+#include "../../tag.h"
 
 #define HOST_LITTLE_ENDIAN 1
 #define HOST_BIG_ENDIAN 2

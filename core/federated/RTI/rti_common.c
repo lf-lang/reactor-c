@@ -153,10 +153,6 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     // or federate (which includes any after delays on the connections).
     tag_t t_d = earliest_future_incoming_message_tag(e);
 
-    LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG,
-                   FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
-                   NEVER_TAG.time - start_time, 0);
-
     LF_PRINT_LOG("RTI: Earliest next event upstream of node %d has tag " PRINTF_TAG ".",
             e->id, t_d.time - start_time, t_d.microstep);
 
@@ -240,7 +236,6 @@ void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t ne
     notify_downstream_advance_grant_if_safe(e, visited);
     free(visited);
 }
-
 
 void notify_advance_grant_if_safe(scheduling_node_t* e) {
     tag_advance_grant_t grant = tag_advance_grant_if_safe(e);

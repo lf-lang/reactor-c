@@ -2,6 +2,13 @@
 #include "tag.h"
 #include "environment.h"
 
+/**
+ * This file enables unit tests to run without there having been an actual code generation
+ * from a Lingua Franca program. It defines (mostly empty) functions that would normally be
+ * code generated. Of course, this strategy will only work for tests that do not actually
+ * need functional versions of these functions.
+ */
+
 environment_t _env;
 
 void _lf_initialize_trigger_objects() {}

@@ -2068,8 +2068,8 @@ void spawn_staa_thread(){
  * If current_time is less than the specified PTAG, then this will
  * also insert into the event_q a dummy event with the specified tag.
  * This will ensure that the federate advances time to the specified
- * tag and, for centralized coordination, inserts blocking reactions
- * and null-message-sending output reactions at that tag.
+ * tag and, for centralized coordination, stimulates null-message-sending
+ * output reactions at that tag.
  *
  * @note This function is similar to handle_tag_advance_grant() except that
  *  it sets last_TAG_was_provisional to true and also it does not update the
