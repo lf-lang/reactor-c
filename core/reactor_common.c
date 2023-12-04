@@ -376,8 +376,8 @@ void _lf_pop_events(environment_t *env) {
 #ifdef FEDERATED_DECENTRALIZED
                 // In federated execution, an intended tag that is not (NEVER, 0)
                 // indicates that this particular event is triggered by a network message.
-                // The intended tag is set in handle_timed_message in federate.c whenever
-                // a timed message arrives from another federate.
+                // The intended tag is set in handle_tagged_message in federate.c whenever
+                // a tagged message arrives from another federate.
                 if (event->intended_tag.time != NEVER) {
                     // If the intended tag of the event is actually set,
                     // transfer the intended tag to the trigger so that
@@ -1391,7 +1391,7 @@ void schedule_output_reactions(environment_t *env, reaction_t* reaction, int wor
 #ifdef FEDERATED_DECENTRALIZED // Only pass down STP violation for federated programs that use decentralized coordination.
     // Extract the inherited STP violation
     bool inherited_STP_violation = reaction->is_STP_violated;
-    LF_PRINT_LOG("Reaction %s has STP violation status: %d.", reaction->name, reaction->is_STP_violated);
+    LF_PRINT_DEBUG("Reaction %s has STP violation status: %d.", reaction->name, reaction->is_STP_violated);
 #endif
     LF_PRINT_DEBUG("There are %zu outputs from reaction %s.", reaction->num_outputs, reaction->name);
     for (size_t i=0; i < reaction->num_outputs; i++) {

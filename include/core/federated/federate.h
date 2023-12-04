@@ -212,10 +212,14 @@ typedef struct federate_instance_t {
 } federate_instance_t;
 
 #ifdef FEDERATED_DECENTRALIZED
+/**
+ * An array of actions associated with network input ports that have STAA offsets.
+ */
 typedef struct staa {
-    lf_action_base_t** actions;
-    size_t STAA;
-    size_t numActions;
+    lf_action_base_t** actions;  // Array of pointers to actions with the same STAA offset.
+    interval_t* action_delays;   // Array of delays on the network connections for these actions.
+    interval_t STAA;             // The STAA offset.
+    size_t num_actions;          // The length of the arrays.
 } staa_t;
 #endif
 
@@ -239,12 +243,11 @@ extern lf_cond_t logical_time_changed;
 */
 void send_neighbor_structure_to_RTI(int);
 
-/**
- * @brief Spawns a thread to iterate through STAA structs, setting its associated ports absent
- * at an offset if the port is not present with a value by a certain physical time.
- * 
- */
 #ifdef FEDERATED_DECENTRALIZED
+/**
+ * @brief Spawn a thread to iterate through STAA structs, setting their associated ports absent
+ * at an offset if the port is not present with a value by a certain physical time.
+ */
 void spawn_staa_thread(void);
 #endif
 

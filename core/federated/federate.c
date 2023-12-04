@@ -78,6 +78,9 @@ char* ERROR_SENDING_MESSAGE = "ERROR sending message to federate via RTI";
 
 // Mutex lock held while performing socket write and close operations.
 lf_mutex_t outbound_socket_mutex;
+
+// The following two mutexes are initialized in generated code and associated
+// with the top-level environment's mutex.
 lf_cond_t port_status_changed;
 lf_cond_t logical_time_changed;
 
@@ -1674,7 +1677,7 @@ void stall_advance_level_federation(environment_t* env, size_t level) {
 }
 
 /**
- * Handle a timed message being received from a remote federate via the RTI
+ * Handle a tagged message being received from a remote federate via the RTI
  * or directly from other federates.
  * This will read the tag encoded in the header
  * and calculate an offset to pass to the schedule function.
@@ -1726,7 +1729,7 @@ void handle_tagged_message(int socket, int fed_id) {
 
     if (action->trigger->is_physical) {
         // Messages sent on physical connections should be handled via handle_message().
-        lf_print_error_and_exit("Received a timed message on a physical connection.");
+        lf_print_error_and_exit("Received a tagged message on a physical connection.");
     }
 
 #ifdef FEDERATED_DECENTRALIZED
@@ -1760,9 +1763,6 @@ void handle_tagged_message(int socket, int fed_id) {
     // Create a token for the message
     lf_token_t* message_token = _lf_new_token((token_type_t*)action, message_contents, length);
 
-    // FIXME: It might be enough to just check this field and not the status at all
-    update_last_known_status_on_input_port(intended_tag, port_id);
-
     // Check whether reactions need to be inserted directly into the reaction
     // queue or a call to schedule is needed. This checks if the intended
     // tag of the message is for the current tag or a tag that is already
@@ -1781,13 +1781,15 @@ void handle_tagged_message(int socket, int fed_id) {
     // to exit. The port status is on the other hand changed in this thread, and thus,
     // can be checked in this scenario without this race condition. The message with
     // intended_tag of 9 in this case needs to wait one microstep to be processed.
-    if (lf_tag_compare(intended_tag, lf_tag(env)) <= 0 && // The event is meant for the current or a previous tag.
-            (action->trigger->status == unknown ||             // if the status of the port is still unknown.
-             _lf_execution_started == false)         // Or, execution hasn't even started, so it's safe to handle this event.
+    if (lf_tag_compare(intended_tag, lf_tag(env)) == 0 // The event is meant for the current tag.
+            && lf_tag_compare(intended_tag, action->trigger->last_known_status_tag) > 0
     ) {
         // Since the message is intended for the current tag and a port absent reaction
         // was waiting for the message, trigger the corresponding reactions for this
         // message.
+
+        update_last_known_status_on_input_port(intended_tag, port_id);
+
         LF_PRINT_LOG(
             "Inserting reactions directly at tag " PRINTF_TAG ". "
             "Intended tag: " PRINTF_TAG ".",
@@ -1811,6 +1813,8 @@ void handle_tagged_message(int socket, int fed_id) {
     } else {
         // If no port absent reaction is waiting for this message, or if the intended
         // tag is in the future, use schedule functions to process the message.
+
+        update_last_known_status_on_input_port(intended_tag, port_id);
 
         // Before that, if the current time >= stop time, discard the message.
         // But only if the stop time is not equal to the start time!
@@ -1991,7 +1995,7 @@ bool update_max_level(tag_t tag, bool is_provisional) {
  */
 static bool a_port_is_unknown(staa_t* staa_elem) {
     bool do_wait = false;
-    for (int j = 0; j < staa_elem->numActions; ++j) {
+    for (int j = 0; j < staa_elem->num_actions; ++j) {
         if (staa_elem->actions[j]->trigger->status == unknown) {
             do_wait = true;
             break;
@@ -2012,57 +2016,76 @@ static int id_of_action(lf_action_base_t* input_port_action) {
 }
 
 /**
- * @brief Given a list of staa offsets and its associated triggers,
- * have a single thread work to set ports to absent at a given logical time
- *
+ * @brief Thread handling setting the known absent status of input ports.
+ * For the code-generated array of staa offsets `staa_lst`, which is sorted by STAA offset,
+ * wait for physical time to advance to the current time plus the STAA offset,
+ * then set the absent status of the input ports associated with the STAA.
+ * Then wait for current time to advance and start over.
  */
 #ifdef FEDERATED_DECENTRALIZED
 static void* update_ports_from_staa_offsets(void* args) {
+    if (staa_lst_size == 0) return NULL; // Nothing to do.
+    // NOTE: Using only the top-level environment, which is the one that deals with network
+    // input ports.
     environment_t *env;
     int num_envs = _lf_get_environments(&env);
+    lf_mutex_lock(&env->mutex);
     while (1) {
         bool restart = false;
         tag_t tag_when_started_waiting = lf_tag(env);
         for (int i = 0; i < staa_lst_size; ++i) {
             staa_t* staa_elem = staa_lst[i];
-            interval_t wait_until_time = env->current_tag.time + staa_elem->STAA + _lf_fed_STA_offset - _lf_action_delay_table[i];
-            lf_mutex_lock(&env->mutex);
-            // Both before and after the wait, check that the tag has not changed
-            if (a_port_is_unknown(staa_elem) && lf_tag_compare(lf_tag(env), tag_when_started_waiting) == 0 && wait_until(env, wait_until_time, &port_status_changed) && lf_tag_compare(lf_tag(env), tag_when_started_waiting) == 0) {
-                for (int j = 0; j < staa_elem->numActions; ++j) {
-                    lf_action_base_t* input_port_action = staa_elem->actions[j];
-                    if (input_port_action->trigger->status == unknown) {
-                        input_port_action->trigger->status = absent;
-                        LF_PRINT_DEBUG("Assuming port absent at time %lld.", (long long) (lf_tag(env).time - start_time));
-                        update_last_known_status_on_input_port(lf_tag(env), id_of_action(input_port_action));
-                        update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
-                        lf_cond_broadcast(&port_status_changed);
+            // The staa_elem is adjusted in the code generator to have subtracted the delay on the connection.
+            // The list is sorted in increasing order of adjusted STAA offsets.
+            interval_t wait_until_time = env->current_tag.time + staa_elem->STAA + _lf_fed_STA_offset;
+            // The wait_until call will release the env->mutex while it is waiting.
+            while (a_port_is_unknown(staa_elem)) {
+                if (wait_until(env, wait_until_time, &port_status_changed)) {
+                    if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) {
+                        // Wait was interrupted and we have committed to a new tag before we
+                        // finished processing the list. Start over.
+                        restart = true;
+                        break;
                     }
-                }
-                lf_mutex_unlock(&env->mutex);
-            } else if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) {
-                // We have committed to a new tag before we finish processing the list. Start over.
-                restart = true;
-                lf_mutex_unlock(&env->mutex);
-                break;
-            } else {
-                lf_mutex_unlock(&env->mutex);
-            }
-        }
-        if (restart) continue;
+                    /* Possibly useful for debugging:
+                    tag_t current_tag = lf_tag(env);
+                    lf_print("--------------------- FIXME: assuming absent! " PRINTF_TAG, current_tag.time - lf_time_start(), current_tag.microstep);
+                    lf_print("--------------------- Lag is " PRINTF_TIME, current_tag.time - lf_time_physical());
+                    lf_print("--------------------- Wait until time is " PRINTF_TIME, wait_until_time - lf_time_start());
+                    */
 
-        lf_mutex_lock(&env->mutex);
+                    // Wait went to completion. Mark any ports with this STAA that remain unknown as absent.
+                    for (int j = 0; j < staa_elem->num_actions; ++j) {
+                        lf_action_base_t* input_port_action = staa_elem->actions[j];
+                        if (input_port_action->trigger->status == unknown) {
+                            input_port_action->trigger->status = absent;
+                            LF_PRINT_DEBUG("Assuming port absent at time " PRINTF_TIME, lf_tag(env).time - start_time);
+                            update_last_known_status_on_input_port(lf_tag(env), id_of_action(input_port_action));
+                            lf_cond_broadcast(&port_status_changed);
+                        }
+                    }
+                } else if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) {
+                    // Wait was interrupted and we have committed to a new tag before we
+                    // finished processing the list. Start over.
+                    restart = true;
+                    break;
+                }
+            }
+            if (restart) break; // No need to check the rest of the STAAs.
+        }
+        if (restart) continue; // No need to wait for a new tag.
+
+        // Wait until we progress to a new tag.
         while (lf_tag_compare(lf_tag(env), tag_when_started_waiting) == 0) {
+            // The following will release the env->mutex while waiting.
             lf_cond_wait(&logical_time_changed);
         }
-        lf_mutex_unlock(&env->mutex);
     }
 }
 
 /**
- * @brief Spawns a thread to iterate through STAA structs, setting its associated ports absent
+ * @brief Spawn a thread to iterate through STAA structs, setting their associated ports absent
  * at an offset if the port is not present with a value by a certain physical time.
- *
  */
 void spawn_staa_thread(){
     lf_thread_create(&_fed.staaSetter, update_ports_from_staa_offsets, NULL);
