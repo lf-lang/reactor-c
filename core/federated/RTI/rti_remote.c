@@ -251,7 +251,9 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
         // a later or equal PTAG or TAG sent previously and if their transitive
         // NET is greater than or equal to the tag.
         // This is needed to stimulate absent messages from upstream and break deadlocks.
-        // The scenario this deals with is illustrated in `test/C/src/federated/FeedbackDelay.lf`
+        // The scenario this deals with is illustrated in `test/C/src/federated/FeedbackDelay2.lf`
+        // and `test/C/src/federated/FeedbackDelay4.lf`.
+        // Note that this is transitive.
         // NOTE: This is not needed for enclaves because zero-delay loops are prohibited.
         // It's only needed for federates, which is why this is implemented here.
         for (int j = 0; j < e->num_upstream; j++) {
