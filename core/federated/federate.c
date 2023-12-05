@@ -1207,8 +1207,8 @@ instant_t get_start_time_from_rti(instant_t my_physical_time) {
 extern lf_action_base_t* _lf_action_table[];
 extern interval_t _lf_action_delay_table[];
 extern size_t _lf_action_table_size;
-extern lf_action_base_t* _lf_zero_delay_action_table[];
-extern size_t _lf_zero_delay_action_table_size;
+extern lf_action_base_t* _lf_zero_delay_cycle_action_table[];
+extern size_t _lf_zero_delay_cycle_action_table_size;
 extern reaction_t* network_input_reactions[];
 extern size_t num_network_input_reactions;
 extern reaction_t* port_absent_reaction[];
@@ -1941,8 +1941,8 @@ bool update_max_level(tag_t tag, bool is_provisional) {
     size_t action_table_size = _lf_action_table_size;
     lf_action_base_t** action_table = _lf_action_table;
 #else
-    size_t action_table_size = _lf_zero_delay_action_table_size;
-    lf_action_base_t** action_table = _lf_zero_delay_action_table;
+    size_t action_table_size = _lf_zero_delay_cycle_action_table_size;
+    lf_action_base_t** action_table = _lf_zero_delay_cycle_action_table;
 #endif // FEDERATED_DECENTRALIZED
     for (int i = 0; i < action_table_size; i++) {
         lf_action_base_t* input_port_action = action_table[i];
@@ -1970,7 +1970,7 @@ bool update_max_level(tag_t tag, bool is_provisional) {
         // If this code is applied when there is a delay, the FeedbackDelay test deadlocks.
         // The test should be not whether there is a delay, but rather whether the upstream
         // federate is in a zero-delay cycle.  Perhaps this test can redefine the
-        // _lf_zero_delay_action_table contents.
+        // _lf_zero_delay_cycle_action_table contents.
         if (lf_tag_compare(env->current_tag,
                 input_port_action->trigger->last_known_status_tag) > 0
                 && !input_port_action->trigger->is_physical) {
