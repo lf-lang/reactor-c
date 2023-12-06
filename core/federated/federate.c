@@ -2036,6 +2036,18 @@ static void* update_ports_from_staa_offsets(void* args) {
             // The wait_until function automatically adds the _lf_fed_STA_offset to the wait time.
             interval_t wait_until_time = env->current_tag.time + staa_elem->STAA;
             // The wait_until call will release the env->mutex while it is waiting.
+            // However, it will not release the env->mutex if the wait time is too small.
+            // At the cost of a small additional delay in deciding a port is absent,
+            // we require a minimum wait time here.  Otherwise, if both the STAA and STA are
+            // zero, this thread will fail to ever release the environment mutex.
+            // This causes chaos.  The MIN_SLEEP_DURATION is the smallest amount of time
+            // that wait_until will actually wait. Note that this strategy does not
+            // block progress of any execution that is actually processing events.
+            // It only slightly delays the decision that an event is absent, and only
+            // if the STAA and STA are extremely small.
+            if (_lf_fed_STA_offset + staa_elem->STAA < 5 * MIN_SLEEP_DURATION) {
+                wait_until_time += 5 * MIN_SLEEP_DURATION;
+            }
             while (a_port_is_unknown(staa_elem)) {
                 if (wait_until(env, wait_until_time, &port_status_changed)) {
                     if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) {
