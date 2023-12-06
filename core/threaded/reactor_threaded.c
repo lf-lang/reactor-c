@@ -246,23 +246,24 @@ void synchronize_with_other_federates(void);
 
 /**
  * Wait until physical time matches or exceeds the specified logical time,
- * unless -fast is given.
+ * unless -fast is given. For decentralized coordination, this function will
+ * add the STA offset to the wait time.
  *
  * If an event is put on the event queue during the wait, then the wait is
  * interrupted and this function returns false. It also returns false if the
- * timeout time is reached before the wait has completed.
+ * timeout time is reached before the wait has completed. Note this this could 
+ * return true even if the a new event was placed on the queue if that event
+ * time matches or exceeds the specified time.
  *
- * The mutex lock is assumed to be held by the calling thread.
- * Note this this could return true even if the a new event
- * was placed on the queue if that event time matches or exceeds
- * the specified time.
+ * The mutex lock associated with the condition argument is assumed to be held by
+ * the calling thread. This mutex is released while waiting. If the wait time is
+ * too small to actually wait (less than MIN_SLEEP_DURATION), then this function
+ * immediately returns true and the mutex is not released.
  *
  * @param env Environment within which we are executing.
  * @param logical_time Logical time to wait until physical time matches it.
- * @param return_if_interrupted If this is false, then wait_util will wait
- *  until physical time matches the logical time regardless of whether new
- *  events get put on the event queue. This is useful, for example, for
- *  synchronizing the start of the program.
+ * @param condition A condition variable that can interrupt the wait. The mutex
+ * associated with this condition variable will be released during the wait.
  *
  * @return Return false if the wait is interrupted either because of an event
  *  queue signal or if the wait time was interrupted early by reaching
