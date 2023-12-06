@@ -1961,16 +1961,12 @@ bool update_max_level(tag_t tag, bool is_provisional) {
             continue;
         }
 #endif // FEDERATED_DECENTRALIZED
-        // FIXME: The following assumes that the input port is absent if the
-        // current tag is not greater than the last known status tag.
-        // This may not be true if the current_tag is due to a provisional tag advance grant.
-        // For centralized coordination, there is a delay on this incoming connection, so
-        // this assumes that such a delay will prevent granting of the PTAG until the
-        // upstream federate has progressed past current_tag - delay.
-        // If this code is applied when there is a delay, the FeedbackDelay test deadlocks.
-        // The test should be not whether there is a delay, but rather whether the upstream
-        // federate is in a zero-delay cycle.  Perhaps this test can redefine the
-        // _lf_zero_delay_cycle_action_table contents.
+        // If the current tag is greater than the last known status tag of the input port,
+        // and the input port is not physical, then block on that port by ensuring
+        // the MLAA is no greater than the level of that port.
+        // For centralized coordination, this is applied only to input ports coming from
+        // federates that are in a ZDC.  For decentralized coordination, this is applied
+        // to all input ports.
         if (lf_tag_compare(env->current_tag,
                 input_port_action->trigger->last_known_status_tag) > 0
                 && !input_port_action->trigger->is_physical) {
@@ -2037,12 +2033,13 @@ static void* update_ports_from_staa_offsets(void* args) {
             staa_t* staa_elem = staa_lst[i];
             // The staa_elem is adjusted in the code generator to have subtracted the delay on the connection.
             // The list is sorted in increasing order of adjusted STAA offsets.
-            interval_t wait_until_time = env->current_tag.time + staa_elem->STAA + _lf_fed_STA_offset;
+            // The wait_until function automatically adds the _lf_fed_STA_offset to the wait time.
+            interval_t wait_until_time = env->current_tag.time + staa_elem->STAA;
             // The wait_until call will release the env->mutex while it is waiting.
             while (a_port_is_unknown(staa_elem)) {
                 if (wait_until(env, wait_until_time, &port_status_changed)) {
                     if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) {
-                        // Wait was interrupted and we have committed to a new tag before we
+                        // Wait was not interrupted and we have committed to a new tag before we
                         // finished processing the list. Start over.
                         restart = true;
                         break;
