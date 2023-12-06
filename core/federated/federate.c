@@ -1474,7 +1474,8 @@ static trigger_handle_t schedule_message_received_from_network_locked(
     // federate. By default, assume it is not.
     bool message_tag_is_in_the_future = lf_tag_compare(tag, env->current_tag) > 0;
 
-    // Assign the intended tag
+    // Assign the intended tag temporarily to restore later.
+    tag_t previous_intended_tag = trigger->intended_tag;
     trigger->intended_tag = tag;
 
     // Calculate the extra_delay required to be passed
@@ -1506,6 +1507,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(
                 "in the future.", extra_delay, tag.microstep - env->current_tag.microstep);
         return_value = _lf_schedule_at_tag(env, trigger, tag, token);
     }
+    trigger->intended_tag = previous_intended_tag;
     // Notify the main thread in case it is waiting for physical time to elapse.
     LF_PRINT_DEBUG("Broadcasting notification that event queue changed.");
     lf_cond_broadcast(&env->event_q_changed);
@@ -1782,6 +1784,9 @@ void handle_tagged_message(int socket, int fed_id) {
     // can be checked in this scenario without this race condition. The message with
     // intended_tag of 9 in this case needs to wait one microstep to be processed.
     if (lf_tag_compare(intended_tag, lf_tag(env)) == 0 // The event is meant for the current tag.
+            // Check that MLAA is blocking at the right level. Otherwise, data can be lost.
+            && action->trigger->reactions[0]->index >= max_level_allowed_to_advance
+            && !action->trigger->is_physical
             && lf_tag_compare(intended_tag, action->trigger->last_known_status_tag) > 0
     ) {
         // Since the message is intended for the current tag and a port absent reaction
@@ -1827,7 +1832,6 @@ void handle_tagged_message(int socket, int fed_id) {
             goto release;
         }
 
-        LF_PRINT_LOG("Calling schedule with tag " PRINTF_TAG ".", intended_tag.time - start_time, intended_tag.microstep);
         schedule_message_received_from_network_locked(env, action->trigger, intended_tag, message_token);
     }
 
