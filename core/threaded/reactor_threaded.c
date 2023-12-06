@@ -868,6 +868,10 @@ bool _lf_worker_handle_STP_violation_for_reaction(environment_t* env, int worker
             violation_occurred = true;
             (*handler)(reaction->self);
 
+            // Reset the STP violation flag because it has been dealt with.
+            // Downstream handlers should not be invoked.
+            reaction->is_STP_violated = false;
+
             // If the reaction produced outputs, put the resulting
             // triggered reactions into the queue or execute them directly if possible.
             schedule_output_reactions(env, reaction, worker_number);
