@@ -66,16 +66,6 @@ extern instant_t start_time;
 #define MAX_STALL_INTERVAL MSEC(1)
 
 /**
- * Unless the "fast" option is given, an LF program will wait until
- * physical time matches logical time before handling an event with
- * a given logical time. The amount of time is less than this given
- * threshold, then no wait will occur. The purpose of this is
- * to prevent unnecessary delays caused by simply setting up and
- * performing the wait.
- */
-#define MIN_SLEEP_DURATION USEC(10)
-
-/**
  * Global mutex, used for synchronizing across environments. Mainly used for token-management and tracing
 */
 lf_mutex_t global_mutex;

@@ -61,11 +61,20 @@
 #define SELF_STRUCT_T(classname) (classname ## _self_t)
 
 /**
+ * Unless the "fast" option is given, an LF program will wait until
+ * physical time matches logical time before handling an event with
+ * a given logical time. The amount of time is less than this given
+ * threshold, then no wait will occur. The purpose of this is
+ * to prevent unnecessary delays caused by simply setting up and
+ * performing the wait.
+ */
+#define MIN_SLEEP_DURATION USEC(10)
+
+/**
  * Print an event from the event queue.
  * This is a function of type pqueue_print_entry_f.
  */
 void _lf_print_event(void* event);
-
 /**
  * Mark the given port's is_present field as true. This is_present field
  * will later be cleaned up by _lf_start_time_step.
