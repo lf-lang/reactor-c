@@ -36,7 +36,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * @author{Marten Lohstroh <marten@berkeley.edu>}
  */
 #include "lf_types.h"
-#if SCHEDULER == GEDF_NP
+#if SCHEDULER == SCHED_GEDF_NP
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
@@ -87,15 +87,17 @@ int _lf_sched_distribute_ready_reactions(lf_scheduler_t* scheduler) {
     // Note: All the threads are idle, which means that they are done inserting
     // reactions. Therefore, the reaction queues can be accessed without locking
     // a mutex.
-    for (; scheduler->next_reaction_level <=
-           scheduler->max_reaction_level;
-        try_advance_level(scheduler->env, &scheduler->next_reaction_level)) {
+
+    while (scheduler->next_reaction_level <= scheduler->max_reaction_level) {
+        LF_PRINT_DEBUG("Waiting with curr_reaction_level %zu.", scheduler->next_reaction_level);
+        try_advance_level(scheduler->env, &scheduler->next_reaction_level);
+
         tmp_queue = ((pqueue_t**)scheduler->triggered_reactions)
-                        [scheduler->next_reaction_level];
+                        [scheduler->next_reaction_level-1];
         size_t reactions_to_execute = pqueue_size(tmp_queue);
+
         if (reactions_to_execute) {
             scheduler->executing_reactions = tmp_queue;
-            scheduler->next_reaction_level++;
             return reactions_to_execute;
         }
     }
@@ -353,7 +355,7 @@ void lf_sched_done_with_reaction(size_t worker_number,
  * @param reaction The reaction to trigger at the current tag.
  * @param worker_number The ID of the worker that is making this call. 0 should
  * be used if there is only one worker (e.g., when the program is using the
- *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
+ *  single-threaded C runtime). -1 is used for an anonymous call in a context where a
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
 void lf_scheduler_trigger_reaction(lf_scheduler_t* scheduler, reaction_t* reaction, int worker_number) {

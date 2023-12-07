@@ -45,7 +45,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "semaphore.h"
 #include <stdbool.h>
 
-#if SCHEDULER == STATIC
+#if SCHEDULER == SCHED_STATIC
 #include "lf_types.h"
 #include "scheduler_instructions.h"
 #endif
@@ -146,7 +146,7 @@ typedef struct lf_scheduler_t {
     // Is not touched by `init_sched_instance` and must be initialized by each scheduler that needs it
     custom_scheduler_data_t * custom_data;
 
-#if SCHEDULER == STATIC
+#if SCHEDULER == SCHED_STATIC
 
     /**
      * @brief Points to an array of program counters for each worker.
@@ -206,11 +206,6 @@ typedef struct lf_scheduler_t {
 typedef struct {
     size_t* num_reactions_per_level;
     size_t num_reactions_per_level_size;
-#if SCHEDULER == STATIC
-    struct self_base_t** reactor_self_instances;
-    size_t num_reactor_self_instances;
-    reaction_t** reaction_instances;
-#endif
 } sched_params_t;
 
 /**
@@ -232,7 +227,7 @@ bool init_sched_instance(
     size_t number_of_workers,
     sched_params_t* params);
 
-#if SCHEDULER == STATIC
+#if SCHEDULER == SCHED_STATIC
 /**
  * @brief Initialize the static schedule by filling in placeholders which are
  * not considered "compile-time constants" by the compiler.

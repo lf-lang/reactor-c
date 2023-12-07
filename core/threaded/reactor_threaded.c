@@ -30,7 +30,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  @author{Marten Lohstroh <marten@berkeley.edu>}
  *  @author{Soroush Bateni <soroush@utdallas.edu>}
  */
-#if defined LF_THREADED
+#if !defined LF_SINGLE_THREADED
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif // NUMBER_OF_WORKERS
@@ -48,6 +48,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler.h"
 #include "tag.h"
 #include "environment.h"
+#include "rti_local.h"
 
 #ifdef FEDERATED
 #include "federate.h"
@@ -275,7 +276,7 @@ bool wait_until(environment_t* env, instant_t logical_time, lf_cond_t* condition
 #ifdef FEDERATED_DECENTRALIZED // Only apply the STA if coordination is decentralized
     // Apply the STA to the logical time
     // Prevent an overflow
-    if (wait_until_time_ns < FOREVER - _lf_fed_STA_offset) {
+    if (start_time != logical_time && wait_until_time_ns < FOREVER - _lf_fed_STA_offset) {
         // If wait_time is not forever
         LF_PRINT_DEBUG("Adding STA " PRINTF_TIME " to wait until time " PRINTF_TIME ".",
                 _lf_fed_STA_offset,
@@ -412,8 +413,10 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
  * @return The tag to which it is safe to advance.
  */
 tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply) {
-#ifdef FEDERATED_CENTRALIZED
+#if defined(FEDERATED_CENTRALIZED)
     return _lf_send_next_event_tag(env, tag, wait_for_reply);
+#elif defined(LF_ENCLAVES)
+    return rti_next_event_tag_locked(env->enclave_info, tag);
 #else
     return tag;
 #endif
@@ -447,10 +450,30 @@ void _lf_next_locked(environment_t *env) {
     _lf_handle_mode_changes(env);
 #endif
 
-    // Previous logical time is complete.
+    // Get the tag of the next event on the event queue.
     tag_t next_tag = get_next_event_tag(env);
 
-#ifdef FEDERATED_CENTRALIZED
+#if defined LF_ENCLAVES
+    // Request permission to advance time. This call might block.
+    tag_t grant_tag = rti_next_event_tag_locked(env->enclave_info, next_tag);
+
+    // If we received are granted a tag which is less than the requested tag
+    // then we return and re-do the next function. We might have gotten a new
+    // event on the event queue.
+    if (lf_tag_compare(grant_tag, next_tag) < 0) return;
+
+    // Next event might have changed while waiting for the TAG
+    next_tag = get_next_event_tag(env);
+
+    // Check for starvation. If our next tag is FOREVER_TAG now. This means that 
+    // we have no events on our event queue and that the RTI has granted us a TAG
+    // to advance to FOREVER. I.e. all upstream enclaves have terminated and sent
+    // an LTC for FOREVER. We can, in this case, terminate the current enclave.
+    if(!keepalive_specified && lf_tag_compare(next_tag, FOREVER_TAG) == 0) {
+        _lf_set_stop_tag(env, (tag_t){.time=env->current_tag.time,.microstep=env->current_tag.microstep+1});
+        next_tag = get_next_event_tag(env);
+    }
+#elif defined FEDERATED_CENTRALIZED
     // In case this is in a federation with centralized coordination, notify
     // the RTI of the next earliest tag at which this federate might produce
     // an event. This function may block until it is safe to advance the current
@@ -475,7 +498,7 @@ void _lf_next_locked(environment_t *env) {
     // allow keepalive to be either true or false and could get the same
     // behavior with centralized coordination as with unfederated execution.
 
-#else  // not FEDERATED_CENTRALIZED
+#else  // not FEDERATED_CENTRALIZED nor LF_ENCLAVES
     if (pqueue_peek(env->event_q) == NULL && !keepalive_specified) {
         // There is no event on the event queue and keepalive is false.
         // No event in the queue
@@ -634,7 +657,7 @@ void lf_request_stop() {
  * @param reaction The reaction.
  * @param worker_number The ID of the worker that is making this call. 0 should be
  *  used if there is only one worker (e.g., when the program is using the
- *  unthreaded C runtime). -1 is used for an anonymous call in a context where a
+ *  single-threaded C runtime). -1 is used for an anonymous call in a context where a
  *  worker number does not make sense (e.g., the caller is not a worker thread).
  */
 void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_number) {
@@ -697,7 +720,7 @@ void _lf_initialize_start_tag(environment_t *env) {
         _lf_trigger_shutdown_reactions(env);
     }
 
-#ifdef FEDERATED
+#if defined FEDERATED
     // Call wait_until if federated. This is required because the startup procedure
     // in synchronize_with_other_federates() can decide on a new start_time that is
     // larger than the current physical time.
@@ -713,9 +736,10 @@ void _lf_initialize_start_tag(environment_t *env) {
     // a chance to process incoming messages while utilizing the STA.
     LF_PRINT_LOG("Waiting for start time " PRINTF_TIME " plus STA " PRINTF_TIME ".",
             start_time, _lf_fed_STA_offset);
-    // Ignore interrupts to this wait. We don't want to start executing until
-    // physical time matches or exceeds the logical start time.
-    while (!wait_until(env, start_time, &env->event_q_changed)) {}
+    // Here we wait until the start time and also release the environment mutex.
+    // this means that the other worker threads will be allowed to start. We need
+    // this to avoid potential deadlock in federated startup.
+    while(!wait_until(env, start_time, &env->event_q_changed)) {};
     LF_PRINT_DEBUG("Done waiting for start time " PRINTF_TIME ".", start_time);
     LF_PRINT_DEBUG("Physical time is ahead of current time by " PRINTF_TIME ". This should be small.",
             lf_time_physical() - start_time);
@@ -953,33 +977,56 @@ void _lf_worker_do_work(environment_t *env, int worker_number) {
 }
 
 /**
- * Worker thread for the thread pool.
- * This acquires the mutex lock and releases it to wait for time to
- * elapse or for asynchronous events and also releases it to execute reactions.
+ * Worker thread for the thread pool. Its argument is the environment within which is working
+ * The very first worker per environment/enclave is in charge of synchronizing with 
+ * the other enclaves by getting a TAG to (0,0) this might block until upstream enclaves
+ * have finished tag (0,0). This is unlike federated scheduling where each federate will
+ * get a PTAG to (0,0) and use network control reactions to handle upstream dependencies
  * @param arg Environment within which the worker should execute.
  */
 void* worker(void* arg) {
     environment_t *env = (environment_t* ) arg;
-
-    assert(env != GLOBAL_ENVIRONMENT);
-
     lf_mutex_lock(&env->mutex);
-    int worker_number = worker_thread_count++;
-    LF_PRINT_LOG("Worker thread %d started.", worker_number);
-    lf_mutex_unlock(&env->mutex);
 
+    int worker_number = env->worker_thread_count++;
+    LF_PRINT_LOG("Environment %u: Worker thread %d started.",env->id, worker_number);
+
+    // If we have scheduling enclaves. The first worker will block here until
+    // it receives a TAG for tag (0,0) from the local RTI. In federated scheduling
+    // we use PTAGs to get things started on tag (0,0) but those are not used 
+    // with enclaves.
+    #if defined LF_ENCLAVES
+    if (worker_number == 0) {
+        // If we have scheduling enclaves. We must get a TAG to the start tag.
+        LF_PRINT_LOG("Environment %u: Worker thread %d waits for TAG to (0,0).",env->id, worker_number);
+
+        tag_t tag_granted = rti_next_event_tag_locked(env->enclave_info, env->current_tag);
+        LF_ASSERT(  lf_tag_compare(tag_granted, env->current_tag) == 0,
+                    "We did not receive a TAG to the start tag.");
+    }
+    #endif 
+
+    // Release mutex and start working.
+    lf_mutex_unlock(&env->mutex); 
     _lf_worker_do_work(env, worker_number);
-
     lf_mutex_lock(&env->mutex);
 
     // This thread is exiting, so don't count it anymore.
-    worker_thread_count--;
+    env->worker_thread_count--;
 
-    if (worker_thread_count == 0) {
+    if (env->worker_thread_count == 0) {
         // The last worker thread to exit will inform the RTI if needed.
-        // Notify the RTI that there will be no more events (if centralized coord).
-        // False argument means don't wait for a reply.
+#if defined LF_ENCLAVES 
+        // If we have scheduling enclaves. Then we must send a LTC of FOREVER.
+        // to grant other enclaves a TAG to FOREVER.
+        // TODO: Can we unify this? Preferraby also have federates send NETs
+        rti_logical_tag_complete_locked(env->enclave_info, FOREVER_TAG);
+#else
+        // In federated execution we send a NET to the RTI. This will result in
+        // giving the other federates a PTAG to FOREVER.
         send_next_event_tag(env, FOREVER_TAG, false);
+#endif
+
     }
 
     lf_cond_signal(&env->event_q_changed);
@@ -1113,10 +1160,10 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     
     environment_t *envs;
     int num_envs = _lf_get_environments(&envs);
-    if (num_envs > 1) {
-        // TODO: This must be refined when we introduce multiple enclaves
-        keepalive_specified = true;
-    }
+
+#if defined LF_ENCLAVES
+    initialize_local_rti(envs, num_envs);
+#endif
     
     // Do environment-specific setup
     for (int i = 0; i<num_envs; i++) {
@@ -1129,7 +1176,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         _lf_initialize_modes(env);
     #endif
 
-
         // Initialize the scheduler
         // FIXME: Why is this called here and in `_lf_initialize_trigger objects`?
         lf_sched_init(env, (size_t)env->num_workers, NULL);  
@@ -1140,10 +1186,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
             lf_print_error_and_exit("Could not lock environment mutex");
         }
 
-        // Call the following function only once, rather than per worker thread (although
-        // it can be probably called in that manner as well).
+        // Initialize start tag
+        lf_print("Environment %u: ---- Intializing start tag", env->id);
         _lf_initialize_start_tag(env);
-
 
         lf_print("Environment %u: ---- Spawning %d workers.",env->id, env->num_workers);
         start_threads(env);

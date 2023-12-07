@@ -38,11 +38,12 @@
 
 #include "lf_types.h"
 #include "platform.h"
+#include "trace.h"
 
 // Forward declarations so that a pointers can appear in the environment struct.
 typedef struct lf_scheduler_t lf_scheduler_t;
-typedef struct trace_t trace_t;
 typedef struct mode_environment_t mode_environment_t;
+typedef struct enclave_info_t enclave_info_t;
 
 /**
  * @brief The global environment.
@@ -66,6 +67,7 @@ typedef struct mode_environment_t mode_environment_t;
  */
 typedef struct environment_t {
     bool initialized;
+    char *name;
     int id;
     tag_t current_tag;
     tag_t stop_tag;
@@ -88,10 +90,10 @@ typedef struct environment_t {
     int reset_reactions_size;
     mode_environment_t* modes;
     trace_t* trace;
-#ifdef LF_UNTHREADED
+    int worker_thread_count;
+#if defined(LF_SINGLE_THREADED)
     pqueue_t *reaction_q;
-#endif 
-#ifdef LF_THREADED
+#else
     int num_workers;
     lf_thread_t* thread_ids;
     lf_mutex_t mutex;
@@ -99,12 +101,12 @@ typedef struct environment_t {
     lf_scheduler_t* scheduler;
     _lf_tag_advancement_barrier barrier;
     lf_cond_t global_tag_barrier_requestors_reached_zero;
-#endif // LF_THREADED
-#ifdef FEDERATED
+#endif // LF_SINGLE_THREADED
+#if defined(FEDERATED)
     tag_t** _lf_intended_tag_fields;
     int _lf_intended_tag_fields_size;
 #endif // FEDERATED
-#if SCHEDULER == STATIC
+#if SCHEDULER == SCHED_STATIC
     self_base_t** reactor_array;
     int reactor_array_size;
     bool** reaction_trigger_present_array;
@@ -112,9 +114,12 @@ typedef struct environment_t {
     reaction_t** reaction_array;
     int reaction_array_size;
 #endif
+#ifdef LF_ENCLAVES // TODO: Consider dropping #ifdef
+    enclave_info_t *enclave_info;
+#endif
 } environment_t;
 
-#ifdef MODAL_REACTORS
+#if defined(MODAL_REACTORS)
 struct mode_environment_t {
     uint8_t triggered_reactions_request;
     reactor_mode_state_t** modal_reactor_states;
@@ -129,6 +134,7 @@ struct mode_environment_t {
  */
 int environment_init(
     environment_t* env,
+    const char * name,
     int id,
     int num_workers,
     int num_timers, 

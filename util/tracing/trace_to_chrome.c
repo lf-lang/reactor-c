@@ -69,13 +69,11 @@ int max_reaction_number = 0;
 bool physical_time_only = false;
 
 /**
- * Read a trace in the specified file and write it to the specified json file.
- * @param trace_file An open trace file.
- * @param output_file An open output .json file.
+ * Read a trace in the trace_file and write it to the output_file in json.
  * @return The number of records read or 0 upon seeing an EOF.
  */
-size_t read_and_write_trace(FILE* trace_file, FILE* output_file) {
-    int trace_length = read_trace(trace_file);
+size_t read_and_write_trace() {
+    int trace_length = read_trace();
     if (trace_length == 0) return 0;
     // Write each line.
     for (int i = 0; i < trace_length; i++) {
@@ -442,10 +440,10 @@ int main(int argc, char* argv[]) {
     strcat(json_filename, ".json");
     output_file = open_file(json_filename, "w");
 
-    if (read_header(trace_file) >= 0) {
+    if (read_header() >= 0) {
         // Write the opening bracket into the json file.
         fprintf(output_file, "{ \"traceEvents\": [\n");
-        while (read_and_write_trace(trace_file, output_file) != 0) {};
+        while (read_and_write_trace() != 0) {};
         write_metadata_events(output_file);
         fprintf(output_file, "]}\n");
    }

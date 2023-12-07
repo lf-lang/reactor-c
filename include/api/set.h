@@ -216,7 +216,7 @@ do { \
 // As long as this is done from the context of a reaction, `self` is in scope and is a pointer to the self-struct
 // of the current reactor. 
 
-// The fully static (STATIC) runtime, uses time local to each reactor. If this is the case
+// The fully static (SCHED_STATIC) runtime, uses time local to each reactor. If this is the case
 // then we defined these macros to access that timestamp rather than using the standard API
 // FIXME (erj): I am not really stoked about this added complexity
 #if defined REACTOR_LOCAL_TIME
@@ -238,6 +238,6 @@ do { \
 #define get_microstep() get_microstep(self->base.environment)
 #endif
 
-// FIXME: How should this be implemented for the STATIC scheduler?
+// FIXME: How should this be implemented for the SCHED_STATIC scheduler?
 // #define lf_request_stop() _lf_request_stop(self->base.environment)
 

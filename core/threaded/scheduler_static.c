@@ -1,4 +1,4 @@
-#if defined(LF_THREADED)
+#if !defined(LF_SINGLE_THREADED)
 /*************
 Copyright (c) 2022, The University of Texas at Dallas. Copyright (c) 2022, The
 University of California at Berkeley.
@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #include <inttypes.h>
 #include "lf_types.h"
-#if SCHEDULER == STATIC || (!defined(SCHEDULER) && defined(LF_THREADED))
+#if defined SCHEDULER && SCHEDULER == SCHED_STATIC
 #ifndef NUMBER_OF_WORKERS
 #define NUMBER_OF_WORKERS 1
 #endif  // NUMBER_OF_WORKERS
@@ -144,13 +144,13 @@ void _lf_sched_wait_for_work(
  */
 void execute_inst_ADD(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    // tracepoint_static_scheduler_ADDI_starts(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_ADDI_starts(scheduler->env->trace, worker_number, (int) *pc);
     reg_t *dst = op1.reg;
     reg_t *src = op2.reg;
     reg_t *src2 = op3.reg;
     *dst = *src + *src2;
     *pc += 1; // Increment pc.
-    // tracepoint_static_scheduler_ADDI_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_ADDI_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -241,13 +241,13 @@ void execute_inst_BEQ(lf_scheduler_t* scheduler, size_t worker_number, operand_t
  */
 void execute_inst_BGE(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    // tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_BIT_starts(scheduler->env->trace, worker_number, (int) *pc);
     reg_t *_rs1 = op1.reg;
     reg_t *_rs2 = op2.reg;
     LF_PRINT_DEBUG("Worker %zu: BGE : operand 1 = %lld, operand 2 = %lld", worker_number, *_rs1, *_rs2);
     if (*_rs1 >= *_rs2) *pc = op3.imm;
     else *pc += 1;
-    // tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_BIT_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -382,13 +382,13 @@ void execute_inst_WU(lf_scheduler_t* scheduler, size_t worker_number, operand_t 
  */
 void execute_inst_JAL(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    // tracepoint_static_scheduler_JAL_starts(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_JAL_starts(scheduler->env->trace, worker_number, (int) *pc);
     // Use the destination register as the return address and, if the
     // destination register is not the zero register, store pc+1 in it.
     reg_t *destReg = op1.reg;
     if (destReg != &zero) *destReg = *pc + 1;
     *pc = op2.imm;
-    // tracepoint_static_scheduler_JAL_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_JAL_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -396,7 +396,7 @@ void execute_inst_JAL(lf_scheduler_t* scheduler, size_t worker_number, operand_t
  */
 void execute_inst_JALR(lf_scheduler_t* scheduler, size_t worker_number, operand_t op1, operand_t op2, operand_t op3, size_t* pc,
     reaction_t** returned_reaction, bool* exit_loop) {
-    // tracepoint_static_scheduler_JALR_starts(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_JALR_starts(scheduler->env->trace, worker_number, (int) *pc);
     // Use the destination register as the return address and, if the
     // destination register is not the zero register, store pc+1 in it.
     reg_t *destReg = op1.reg;
@@ -404,7 +404,7 @@ void execute_inst_JALR(lf_scheduler_t* scheduler, size_t worker_number, operand_
     // Set pc to base addr + immediate.
     reg_t *baseAddr = op2.reg;
     *pc = *baseAddr + op3.imm;
-    // tracepoint_static_scheduler_JALR_ends(scheduler->env->trace, worker_number, (int) *pc);
+    tracepoint_static_scheduler_JALR_ends(scheduler->env->trace, worker_number, (int) *pc);
 }
 
 /**
@@ -580,7 +580,7 @@ void lf_sched_init(
         //        to a meaningful value. When the first time lf_sched_init() is
         //        called, start_time has not been set.
 
-        // Initialize the local tags for the STATIC scheduler.
+        // Initialize the local tags for the SCHED_STATIC scheduler.
         for (int i = 0; i < env->scheduler->num_reactor_self_instances; i++) {
             env->scheduler->reactor_self_instances[i]->tag.time = start_time;
             env->scheduler->reactor_self_instances[i]->tag.microstep = 0;
@@ -592,9 +592,6 @@ void lf_sched_init(
 
     env->scheduler->pc = calloc(number_of_workers, sizeof(size_t));
     env->scheduler->static_schedules = &static_schedules[0];
-    env->scheduler->reaction_instances = params->reaction_instances;
-    env->scheduler->reactor_self_instances = params->reactor_self_instances;
-    env->scheduler->num_reactor_self_instances = params->num_reactor_self_instances;
     env->scheduler->counters = counters;
 
     initialize_static_schedule();
