@@ -35,6 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdarg.h>   // Defines va_list
 #include <stdbool.h>
+#include <stdint.h>   // Defines int64_t
 
 // To silence warnings about a function being a candidate for format checking
 // with gcc, add an attribute.
@@ -50,10 +51,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Holds generic statistical data
  */
 typedef struct lf_stat_ll {
-    long long average;
-    long long standard_deviation;
-    long long variance;
-    long long max;
+    int64_t average;
+    int64_t standard_deviation;
+    int64_t variance;
+    int64_t max;
 } lf_stat_ll;
 
 /**
