@@ -1784,7 +1784,10 @@ void handle_tagged_message(int socket, int fed_id) {
     // can be checked in this scenario without this race condition. The message with
     // intended_tag of 9 in this case needs to wait one microstep to be processed.
     if (lf_tag_compare(intended_tag, lf_tag(env)) == 0 // The event is meant for the current tag.
+#if defined FEDERATED_DECENTRALIZED
+            // Not sure why this test is only needed for decentralized coordination.
             && _lf_execution_started
+#endif // FEDERATED_DECENTRALIZED
             // Check that MLAA is blocking at the right level. Otherwise, data can be lost.
             && action->trigger->reactions[0]->index >= max_level_allowed_to_advance
             && !action->trigger->is_physical
