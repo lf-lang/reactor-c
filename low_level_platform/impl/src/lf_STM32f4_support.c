@@ -28,6 +28,8 @@ static uint32_t _lf_time_us_high = 0;
 #define COMBINE_HI_LO(hi, lo) ((((uint64_t)hi) << 32) | ((uint64_t)lo))
 
 
+void lf_SystemClock_Config();
+void Error_Handler();
 
 //  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
 //  | Code for timer functions
@@ -37,7 +39,7 @@ static uint32_t _lf_time_us_high = 0;
 void _lf_initialize_clock(void) {
     // Standard initializations from generated code
     HAL_Init();
-    SystemClock_Config();
+    lf_SystemClock_Config();
 
     // Configure TIM5 as our 32-bit clock timer
     __HAL_RCC_TIM5_CLK_ENABLE(); // initialize counter
@@ -204,7 +206,7 @@ int test_func(void) {
 //  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
 //  | Other functions I found -> taken from the generated main.c
 //  + -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- +
-void SystemClock_Config(void) {
+void lf_SystemClock_Config(void) {
     RCC_OscInitTypeDef RCC_OscInitStruct = {0};
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
