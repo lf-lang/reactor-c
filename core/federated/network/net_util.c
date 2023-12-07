@@ -96,18 +96,20 @@ ssize_t read_from_socket_errexit(
         lf_print_error_and_exit(format, args);
 	}
     ssize_t bytes_read = 0;
+    int retry_count = 0;
     while (bytes_read < (ssize_t)num_bytes) {
         ssize_t more = read(socket, buffer + bytes_read, num_bytes - (size_t)bytes_read);
-        if(more <= 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+        if(more <= 0 && retry_count++ < NUM_SOCKET_RETRIES) { // Used to retry only on: (errno == EAGAIN || errno == EWOULDBLOCK)
             // The error code set by the socket indicates
             // that we should try again (@see man errno).
-            LF_PRINT_DEBUG("Reading from socket was blocked. Will try again.");
+            LF_PRINT_DEBUG("Reading from socket failed. Will try again.");
+            lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
             continue;
         } else if (more <= 0) {
             if (format != NULL) {
                 shutdown(socket, SHUT_RDWR);
                 close(socket);
-                lf_print_error("Read %ld bytes, but expected %zu. errno=%d",
+                lf_print_error("Socket read failed. Read %ld bytes, but expected %zu. errno=%d",
                         more + bytes_read, num_bytes, errno);
                 lf_print_error_and_exit(format, args);
             } else if (more == 0) {
@@ -115,6 +117,7 @@ ssize_t read_from_socket_errexit(
             	// upon receiving a zero length packet or an error, we can close the socket.
             	// If there are any pending outgoing messages, this will attempt to send those
             	// followed by an EOF.
+                LF_PRINT_DEBUG("Read zero bytes from client. Closing socket.");
             	close(socket);
             }
             return more;
