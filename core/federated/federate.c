@@ -2726,6 +2726,14 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
             return _fed.last_TAG;
         }
 
+        if (lf_tag_compare(tag, _fed.last_sent_NET) == 0) {
+            LF_PRINT_DEBUG("Granted tag " PRINTF_TAG " because TAG or PTAG has been received and "
+                    "the NET " PRINTF_TAG " is already sent.",
+                    _fed.last_TAG.time - start_time, _fed.last_TAG.microstep,
+                    _fed.last_sent_NET.time -start_time, _fed.last_sent_NET.microstep);
+            return _fed.last_TAG;
+        }
+
         // Copy the tag because _lf_bounded_NET() may modify it.
         tag_t original_tag = tag;
 
