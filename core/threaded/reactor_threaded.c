@@ -837,7 +837,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(environment_t *env, int w
  * @param worker_number The ID of the worker.
  * @param reaction The reaction whose STP offset has been violated.
  *
- * @return true if an STP violation occurred. false otherwise.
+ * @return true if an STP violation occurred and was handled. false otherwise.
  */
 bool _lf_worker_handle_STP_violation_for_reaction(environment_t* env, int worker_number, reaction_t* reaction) {
     bool violation_occurred = false;
@@ -902,7 +902,7 @@ bool _lf_worker_handle_STP_violation_for_reaction(environment_t* env, int worker
  * @param worker_number The ID of the worker.
  * @param reaction The reaction.
  *
- * @return true if a violation occurred. false otherwise.
+ * @return true if a violation occurred and was handled. false otherwise.
  */
 bool _lf_worker_handle_violations(environment_t *env, int worker_number, reaction_t* reaction) {
     bool violation = false;
