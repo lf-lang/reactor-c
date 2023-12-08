@@ -863,10 +863,10 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
  * the will be freed. Hence, it is essential that the payload be in
  * memory allocated using malloc.
  *
- * There are three conditions under which this function will not
+ * There are several conditions under which this function will not
  * actually put an event on the event queue and decrement the reference count
  * of the token (if there is one), which could result in the payload being
- * freed. In all three cases, this function returns 0. Otherwise,
+ * freed. In all cases, this function returns 0. Otherwise,
  * it returns a handle to the scheduled trigger, which is an integer
  * greater than 0.
  *
@@ -874,7 +874,9 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
  * offset plus the extra delay is greater than zero.
  * The second condition is that the trigger offset plus the extra delay
  * is greater that the requested stop time (timeout).
- * The third condition is that the trigger argument is null.
+ * A third condition is that the trigger argument is null.
+ * Also, an event might not be scheduled if the trigger is an action
+ * with a `min_spacing` parameter.  See the documentation.
  *
  * @param env Environment in which we are executing.
  * @param trigger The trigger to be invoked at a later logical time.
@@ -974,9 +976,8 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     e->intended_tag = trigger->intended_tag;
 #endif
 
-    event_t* existing = (event_t*)(trigger->last);
     // Check for conflicts (a queued event with the same trigger and time).
-    if (trigger->period < 0) {
+    if (min_spacing <= 0) {
         // No minimum spacing defined.
         tag_t intended_tag = (tag_t) {.time = intended_time, .microstep = 0u};
         e->time = intended_tag.time;
@@ -998,52 +999,50 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
             }
             // Hook the event into the list.
             found->next = e;
+            trigger->last_time = intended_tag.time;
             return(0); // FIXME: return value
         }
         // If there are not conflicts, schedule as usual. If intended time is
         // equal to the current logical time, the event will effectively be
         // scheduled at the next microstep.
-    } else if (!trigger->is_timer && existing != NULL) {
-        // There exists a previously scheduled event. It determines the
+    } else if (!trigger->is_timer && trigger->last_time != NEVER) {
+        // There is a min_spacing and there exists a previously
+        // scheduled event. It determines the
         // earliest time at which the new event can be scheduled.
         // Check to see whether the event is too early.
-        instant_t earliest_time = existing->time + min_spacing;
+        instant_t earliest_time = trigger->last_time + min_spacing;
         LF_PRINT_DEBUG("There is a previously scheduled event; earliest possible time "
                 "with min spacing: " PRINTF_TIME,
                 earliest_time);
         // If the event is early, see which policy applies.
-        if (earliest_time >= intended_time) {
+        if (earliest_time > intended_time) {
             LF_PRINT_DEBUG("Event is early.");
             switch(trigger->policy) {
                 case drop:
                     LF_PRINT_DEBUG("Policy is drop. Dropping the event.");
-                    if (min_spacing > 0 ||
-                            pqueue_find_equal_same_priority(env->event_q, existing) != NULL) {
-                        // Recycle the new event and the token.
-                        if (existing->token != token) {
-                            _lf_done_using(token);
-                        }
-                        _lf_recycle_event(env, e);
-                        return(0);
-                    }
+                    // Recycle the new event and decrement the
+                    // reference count of the token.
+                    _lf_done_using(token);
+                    _lf_recycle_event(env, e);
+                    return(0);
                 case replace:
                     LF_PRINT_DEBUG("Policy is replace. Replacing the previous event.");
-                    // If the existing event has not been handled yet, update
-                    // it. WARNING: If provide a mechanism for unscheduling, we
-                    // can no longer rely on the tag of the existing event to
-                    // determine whether or not it has been recycled (the
-                    // existing->time < env->current_tag.time case below).
-                    // NOTE: Because microsteps are not explicit, if the tag of
-                    // the preceding event is equal to the current time, then
-                    // we search the event queue to figure out whether it has
-                    // been handled yet.
-                    if (existing->time > env->current_tag.time ||
-                            (existing->time == env->current_tag.time &&
-                            pqueue_find_equal_same_priority(env->event_q, existing) != NULL)) {
+                    // If the event with the previous time is still on the event
+                    // queue, then replace the token.  To find this event, we have
+                    // to construct a dummy event_t struct.
+                    event_t* dummy = _lf_get_new_event(env);
+                    dummy->next = NULL;
+                    dummy->trigger = trigger;
+                    dummy->time = trigger->last_time;
+                    event_t* found = (event_t *)pqueue_find_equal_same_priority(env->event_q, dummy);
+
+                    if (found != NULL) {
                         // Recycle the existing token and the new event
                         // and update the token of the existing event.
-                        _lf_replace_token(existing, token);
+                        _lf_replace_token(found, token);
                         _lf_recycle_event(env, e);
+                        _lf_recycle_event(env, dummy);
+                        // Leave the last_time the same.
                         return(0);
                     }
                     // If the preceding event _has_ been handled, then adjust
@@ -1051,22 +1050,8 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
                     intended_time = earliest_time;
                     break;
                 default:
-                    if (existing->time == env->current_tag.time &&
-                            pqueue_find_equal_same_priority(env->event_q, existing) != NULL) {
-                        if (_lf_is_tag_after_stop_tag(env, (tag_t){.time=existing->time,.microstep=env->current_tag.microstep+1})) {
-                            // Scheduling e will incur a microstep at timeout, 
-                            // which is illegal.
-                            _lf_recycle_event(env, e);
-                            return 0;
-                        }
-                        // If the last event hasn't been handled yet, insert
-                        // the new event right behind.
-                        existing->next = e;
-                        return 0; // FIXME: return a value
-                    } else {
-                         // Adjust the tag.
-                        intended_time = earliest_time;
-                    }
+                    // Default policy is defer
+                    intended_time = earliest_time;
                     break;
             }
         }
@@ -1098,10 +1083,9 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
         return(0);
     }
 
-    // Store a pointer to the current event in order to check the min spacing
-    // between this and the following event. Only necessary for actions
-    // that actually specify a min spacing.
-    trigger->last = (event_t*)e;
+    // Store the time in order to check the min spacing
+    // between this and any following event.
+    trigger->last_time = intended_time;
 
     // Queue the event.
     // NOTE: There is no need for an explicit microstep because
