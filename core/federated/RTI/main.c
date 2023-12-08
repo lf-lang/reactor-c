@@ -51,6 +51,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <signal.h>     // To trap ctrl-c and invoke a clean stop to save the trace file, if needed.
 #include <string.h>
 
+extern void print_fed_info(FILE* f);
 
 /**
  * The tracing mechanism uses the number of workers variable `_lf_number_of_workers`.
@@ -78,7 +79,16 @@ void termination() {
     if (rti.base.tracing_enabled) {
         stop_trace(rti.base.trace);
         lf_print("RTI trace file saved.");
-    }   
+    }
+    if (getenv("LF_CONNECTION_INFO_FILE")) {
+        FILE* f = fopen(getenv("LF_CONNECTION_INFO_FILE"), "w");
+        if (f == NULL) {
+            lf_print_error("Failed to open connection info file %s.", getenv("LF_CONNECTION_INFO_FILE"));
+        } else {
+            print_fed_info(f);
+            fclose(f);
+        }
+    }
     lf_print("RTI is exiting.");
 }
 

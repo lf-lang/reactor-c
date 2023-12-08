@@ -42,11 +42,30 @@ static rti_remote_t *rti_remote;
 
 // A convenient macro for getting the `federate_info_t *` at index `_idx`
 // and casting it. 
-#define GET_FED_INFO(_idx) (federate_info_t *) rti_remote->base.scheduling_nodes[_idx]  
+#define GET_FED_INFO(_idx) (federate_info_t *) rti_remote->base.scheduling_nodes[_idx]
 
 lf_mutex_t rti_mutex;
 lf_cond_t received_start_times;
 lf_cond_t sent_start_time;
+
+/**
+ * @brief Print connection information for all enclaves. Format:
+ * number_of_scheduling_nodes
+ * (enclave_id num_upstream (upstream_federate_id upstream_delay)*\n)*
+ *
+ * @param f The file to print to.
+ */
+void print_fed_info(FILE* f) {
+    fprintf(f, "%d\n", rti_remote->base.number_of_scheduling_nodes);
+    for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+        federate_info_t* fed = GET_FED_INFO(i);
+        fprintf(f, "%d %d", fed->enclave.id, fed->enclave.num_upstream);
+        for (int j = 0; j < fed->enclave.num_upstream; j++) {
+            fprintf(f, " %d %lld", fed->enclave.upstream[j], (long long) fed->enclave.upstream_delay[j]);
+        }
+        fprintf(f, "\n");
+    }
+}
 
 extern int lf_critical_section_enter(environment_t* env) {
     return lf_mutex_lock(&rti_mutex);
