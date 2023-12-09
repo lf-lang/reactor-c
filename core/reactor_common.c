@@ -928,7 +928,8 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     if (!trigger->is_timer) {
         delay += trigger->offset;
     }
-    interval_t intended_time = env->current_tag.time + delay;
+    tag_t intended_tag = (tag_t){.time = env->current_tag.time + delay, .microstep = 0};
+    
     LF_PRINT_DEBUG("_lf_schedule: env->current_tag.time = " PRINTF_TIME ". Total logical delay = " PRINTF_TIME "",
             env->current_tag.time, delay);
     interval_t min_spacing = trigger->period;
@@ -950,7 +951,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     // modify the intended time.
     if (trigger->is_physical) {
         // Get the current physical time and assign it as the intended time.
-        intended_time = lf_time_physical() + delay;
+        intended_tag.time = lf_time_physical() + delay;
     } else {
         // FIXME: We need to verify that we are executing within a reaction?
         // See reactor_threaded.
@@ -961,11 +962,11 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
         // - we have eliminated the possibility to have a negative additional delay; and
         // - we detect the asynchronous use of logical actions
         #ifndef NDEBUG
-        if (intended_time < env->current_tag.time) {
+        if (intended_tag.time < env->current_tag.time) {
             lf_print_warning("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
                     "Revising to the current time " PRINTF_TIME ".",
-                    env->current_tag.time - intended_time, env->current_tag.time);
-            intended_time = env->current_tag.time;
+                    env->current_tag.time - intended_tag.time, env->current_tag.time);
+            intended_tag.time = env->current_tag.time;
         }
         #endif
     }
@@ -979,7 +980,6 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     // Check for conflicts (a queued event with the same trigger and time).
     if (min_spacing <= 0) {
         // No minimum spacing defined.
-        tag_t intended_tag = (tag_t) {.time = intended_time, .microstep = 0u};
         e->time = intended_tag.time;
         event_t* found = (event_t *)pqueue_find_equal_same_priority(env->event_q, e);
         // Check for conflicts. Let events pile up in super dense time.
@@ -999,23 +999,23 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
             }
             // Hook the event into the list.
             found->next = e;
-            trigger->last_time = intended_tag.time;
+            trigger->last_tag = intended_tag;
             return(0); // FIXME: return value
         }
         // If there are not conflicts, schedule as usual. If intended time is
         // equal to the current logical time, the event will effectively be
         // scheduled at the next microstep.
-    } else if (!trigger->is_timer && trigger->last_time != NEVER) {
+    } else if (!trigger->is_timer && trigger->last_tag.time != NEVER) {
         // There is a min_spacing and there exists a previously
         // scheduled event. It determines the
         // earliest time at which the new event can be scheduled.
         // Check to see whether the event is too early.
-        instant_t earliest_time = trigger->last_time + min_spacing;
+        instant_t earliest_time = trigger->last_tag.time + min_spacing;
         LF_PRINT_DEBUG("There is a previously scheduled event; earliest possible time "
                 "with min spacing: " PRINTF_TIME,
                 earliest_time);
         // If the event is early, see which policy applies.
-        if (earliest_time > intended_time) {
+        if (earliest_time > intended_tag.time) {
             LF_PRINT_DEBUG("Event is early.");
             switch(trigger->policy) {
                 case drop:
@@ -1033,7 +1033,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
                     event_t* dummy = _lf_get_new_event(env);
                     dummy->next = NULL;
                     dummy->trigger = trigger;
-                    dummy->time = trigger->last_time;
+                    dummy->time = trigger->last_tag.time;
                     event_t* found = (event_t *)pqueue_find_equal_same_priority(env->event_q, dummy);
 
                     if (found != NULL) {
@@ -1042,16 +1042,16 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
                         _lf_replace_token(found, token);
                         _lf_recycle_event(env, e);
                         _lf_recycle_event(env, dummy);
-                        // Leave the last_time the same.
+                        // Leave the last_tag the same.
                         return(0);
                     }
                     // If the preceding event _has_ been handled, then adjust
                     // the tag to defer the event.
-                    intended_time = earliest_time;
+                    intended_tag = (tag_t){.time = earliest_time, .microstep = 0};
                     break;
                 default:
                     // Default policy is defer
-                    intended_time = earliest_time;
+                    intended_tag = (tag_t){.time = earliest_time, .microstep = 0};
                     break;
             }
         }
@@ -1062,16 +1062,16 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     // FIXME: This is a development assertion and might
     // not be necessary for end-user LF programs
     #ifndef NDEBUG
-    if (intended_time < env->current_tag.time) {
+    if (intended_tag.time < env->current_tag.time) {
         lf_print_error("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
                 "Revising to the current time " PRINTF_TIME ".",
-                env->current_tag.time - intended_time, env->current_tag.time);
-        intended_time = env->current_tag.time;
+                env->current_tag.time - intended_tag.time, env->current_tag.time);
+        intended_tag.time = env->current_tag.time;
     }
     #endif
 
     // Set the tag of the event.
-    e->time = intended_time;
+    e->time = intended_tag.time;
 
     // Do not schedule events if if the event time is past the stop time
     // (current microsteps are checked earlier).
@@ -1085,7 +1085,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
 
     // Store the time in order to check the min spacing
     // between this and any following event.
-    trigger->last_time = intended_time;
+    trigger->last_tag = intended_tag;
 
     // Queue the event.
     // NOTE: There is no need for an explicit microstep because

@@ -1791,6 +1791,7 @@ void handle_tagged_message(int socket, int fed_id) {
             // Check that MLAA is blocking at the right level. Otherwise, data can be lost.
             && action->trigger->reactions[0]->index >= max_level_allowed_to_advance
             && !action->trigger->is_physical
+            && lf_tag_compare(intended_tag, action->trigger->last_tag) > 0   // Not already enabled at the current tag.
             && lf_tag_compare(intended_tag, action->trigger->last_known_status_tag) > 0
     ) {
         // Since the message is intended for the current tag and a port absent reaction
