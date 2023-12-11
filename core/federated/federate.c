@@ -2348,6 +2348,9 @@ void handle_stop_request_message() {
     lf_mutex_unlock(&outbound_socket_mutex);
 }
 
+static void print_connection_info(FILE* f);
+static void write_connection_info_if_set();
+
 /**
  * Close sockets used to communicate with other federates, if they are open,
  * and send a MSG_TYPE_RESIGN message to the RTI. This implements the function
@@ -2357,6 +2360,8 @@ void handle_stop_request_message() {
  */
 void terminate_execution(environment_t* env) {
     assert(env != GLOBAL_ENVIRONMENT);
+
+    write_connection_info_if_set();
 
     // Check for all outgoing physical connections in
     // _fed.sockets_for_outbound_p2p_connections and
@@ -2498,6 +2503,49 @@ static void stop_all_traces() {
     int num_envs = _lf_get_environments(&env);
     for (int i = 0; i < num_envs; i++) {
         stop_trace(env[i].trace);
+    }
+}
+/// print a list of all upstream delays in the format:
+///  federate_id n_delays delay0 delay1 delay2 ...
+static void print_connection_info(FILE* f) {
+    fprintf(f, "%d %d ", _lf_my_fed_id, _lf_action_table_size);
+    for (int i = 0; i < _lf_action_table_size; i++) {
+        fprintf(f, "%d ", _lf_action_delay_table[i]);
+    }
+    fprintf(f, "\n");
+}
+
+/// Write the connection info to the file specified by the environment variable
+/// LF_CONNECTION_INFO_FILE if it is set.
+void write_connection_info_if_set() {
+    // if LF_CONNECTION_INFO_FILE env var is set, write connection info to file with the federate id appended the part of the file before the extension
+    char* connection_info_file = getenv("LF_CONNECTION_INFO_FILE");
+    if (connection_info_file != NULL) {
+        char* connection_info_file_with_fed_id = (char*)malloc(strlen(connection_info_file) + 10);
+        int index_of_dot = -1;
+        for (int i = strlen(connection_info_file) - 1; i >= 0; i--) {
+            if (connection_info_file[i] == '.') {
+                index_of_dot = i;
+                break;
+            }
+        }
+        // write the part of the file before the extension, or the entire file name if there is no extension
+        if (index_of_dot == -1) {
+            strcpy(connection_info_file_with_fed_id, connection_info_file);
+        } else {
+            strncpy(connection_info_file_with_fed_id, connection_info_file, index_of_dot);
+            connection_info_file_with_fed_id[index_of_dot] = '\0';
+        }
+        // write the federate id
+        sprintf(connection_info_file_with_fed_id + index_of_dot, "_%d%s", _lf_my_fed_id, connection_info_file + index_of_dot);
+        FILE* f = fopen(connection_info_file_with_fed_id, "w");
+        if (f == NULL) {
+            lf_print_error("Failed to open connection info file %s.", connection_info_file_with_fed_id);
+        } else {
+            print_connection_info(f);
+            fclose(f);
+        }
+        free(connection_info_file_with_fed_id);
     }
 }
 
