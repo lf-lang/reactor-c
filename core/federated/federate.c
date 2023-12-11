@@ -2792,9 +2792,11 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
         if (!tag_bounded_by_physical_time) {
             // This if statement does not fall through but rather returns.
             // NET is not bounded by physical time or has no downstream federates.
-            // Normal case.
-            _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag, wait_for_reply);
-            _fed.last_sent_NET = tag;
+            // Normal case. Avoid sending duplicate NETs.
+            if (lf_tag_compare(_fed.last_sent_NET, tag) != 0) {
+                _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag, wait_for_reply);
+                _fed.last_sent_NET = tag;
+            }
             LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.",
                     tag.time - start_time, tag.microstep);
 
@@ -2841,9 +2843,10 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
         }
 
         if (tag.time != FOREVER) {
-            // Create a dummy event that will force this federate to advance time and subsequently enable progress for
-            // downstream federates.
-            event_t* dummy = _lf_create_dummy_events(env, NULL, tag.time, NULL, 0);
+            // Create a dummy event that will force this federate to advance time and subsequently
+            // enable progress for downstream federates. Increment the time by ADVANCE_MESSAGE_INTERVAL
+            // to prevent too frequent dummy events.
+            event_t* dummy = _lf_create_dummy_events(env, NULL, tag.time + ADVANCE_MESSAGE_INTERVAL, NULL, 0);
             pqueue_insert(env->event_q, dummy);
         }
 
@@ -2851,7 +2854,7 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
                 tag.time - lf_time_start());
 
         if (!wait_for_reply) {
-            LF_PRINT_LOG("Not waiting physical time to advance further.");
+            LF_PRINT_LOG("Not waiting for physical time to advance further.");
             return tag;
         }
 
