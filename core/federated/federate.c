@@ -2792,11 +2792,9 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
         if (!tag_bounded_by_physical_time) {
             // This if statement does not fall through but rather returns.
             // NET is not bounded by physical time or has no downstream federates.
-            // Normal case. Avoid sending duplicate NETs.
-            if (lf_tag_compare(_fed.last_sent_NET, tag) != 0) {
-                _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag, wait_for_reply);
-                _fed.last_sent_NET = tag;
-            }
+            // Normal case.
+            _lf_send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag, wait_for_reply);
+            _fed.last_sent_NET = tag;
             LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.",
                     tag.time - start_time, tag.microstep);
 
