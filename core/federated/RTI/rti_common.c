@@ -128,7 +128,14 @@ tag_t eimt_strict(scheduling_node_t* e) {
             tag_t start_tag = {.time = start_time, .microstep = 0};
             upstream->next_event = start_tag;
         }
-        tag_t earliest_tag_from_upstream = lf_delay_tag(upstream->next_event, e->upstream_delay[i]);
+        // Need to consider nodes that are upstream of the upstream node because those
+        // nodes may send messages to the upstream node.
+        tag_t earliest = earliest_future_incoming_message_tag(upstream);
+        // If the next event of the upstream node is earlier, then use that.
+        if (lf_tag_compare(upstream->next_event, earliest) < 0) {
+            earliest = upstream->next_event;
+        }
+        tag_t earliest_tag_from_upstream = lf_delay_tag(earliest, e->upstream_delay[i]);
         LF_PRINT_DEBUG("RTI: Strict EIMT of fed/encl %d at fed/encl %d has tag " PRINTF_TAG ".",
                 e->id,
                 upstream->id,
