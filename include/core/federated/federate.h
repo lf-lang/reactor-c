@@ -363,7 +363,7 @@ void stall_advance_level_federation(environment_t* env, size_t level);
 /**
  * @brief Update the max level allowed to advance (MLAA).
  * If the specified tag is greater than the current_tag of the top-level environment
- * (or equal an is_provisional is false), then set the MLAA to MAX_INT and return.
+ * (or equal and is_provisional is false), then set the MLAA to MAX_INT and return.
  * This removes any barriers on execution at the current tag due to network inputs.
  * Otherwise, set the MLAA to the minimum level over all (non-physical) network input ports
  * where the status of the input port is not known at that current_tag.

@@ -35,7 +35,7 @@ static rti_local_t * rti_local;
 lf_mutex_t rti_mutex;
 
 void initialize_local_rti(environment_t *envs, int num_envs) {
-    rti_local = malloc(sizeof(rti_local_t));
+    rti_local = (rti_local_t*)malloc(sizeof(rti_local_t));
     LF_ASSERT(rti_local, "Out of memory");
 
     initialize_rti_common(&rti_local->base);
@@ -58,6 +58,11 @@ void initialize_local_rti(environment_t *envs, int num_envs) {
 
         enclave_info->base.state = GRANTED;
     }
+}
+
+void free_local_rti() {
+    free_scheduling_nodes(rti_local->base.scheduling_nodes, rti_local->base.number_of_scheduling_nodes);
+    free(rti_local);
 }
 
 void initialize_enclave_info(enclave_info_t* enclave, int idx, environment_t * env) {
@@ -192,4 +197,9 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
     LF_PRINT_LOG("RTI: enclave %u callback with PTAG " PRINTF_TAG " ",
         e->id, tag.time - lf_time_start(), tag.microstep);
 }
+
+void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
+    // Nothing to do here.
+}
+
 #endif //LF_ENCLAVES

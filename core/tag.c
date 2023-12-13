@@ -116,14 +116,22 @@ tag_t lf_tag(void *env) {
     return ((environment_t *)env)->current_tag;
 }
 
+tag_t lf_tag_add(tag_t a, tag_t b) {
+    if (a.time == NEVER || b.time == NEVER) return NEVER_TAG;
+    if (a.time == FOREVER || b.time == FOREVER) return FOREVER_TAG;
+    tag_t result = {.time = a.time + b.time, .microstep = a.microstep + b.microstep};
+    if (result.microstep < a.microstep) return FOREVER_TAG;
+    if (result.time < a.time && b.time > 0) return FOREVER_TAG;
+    if (result.time > a.time && b.time < 0) return NEVER_TAG;
+    return result;
+}
+
 int lf_tag_compare(tag_t tag1, tag_t tag2) {
     if (tag1.time < tag2.time) {
-        LF_PRINT_DEBUG(PRINTF_TIME " < " PRINTF_TIME, tag1.time, tag2.time);
         return -1;
     } else if (tag1.time > tag2.time) {
         return 1;
     } else if (tag1.microstep < tag2.microstep) {
-        LF_PRINT_DEBUG(PRINTF_TIME " and microstep < " PRINTF_TIME, tag1.time, tag2.time);
         return -1;
     } else if (tag1.microstep > tag2.microstep) {
         return 1;
@@ -150,7 +158,8 @@ tag_t lf_tag_min(tag_t tag1, tag_t tag2) {
 
 tag_t lf_delay_tag(tag_t tag, interval_t interval) {
     if (tag.time == NEVER || interval < 0LL) return tag;
-    if (tag.time >= FOREVER - interval) return tag;
+    // Note that overflow in C is undefined for signed variables.
+    if (tag.time >= FOREVER - interval) return FOREVER_TAG; // Overflow.
     tag_t result = tag;
     if (interval == 0LL) {
         // Note that unsigned variables will wrap on overflow.
@@ -158,12 +167,7 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval) {
         // microsteps.
         result.microstep++;
     } else {
-        // Note that overflow in C is undefined for signed variables.
-        if (FOREVER - interval < result.time) {
-            result.time = FOREVER;
-        } else {
-            result.time += interval;
-        }
+        result.time += interval;
         result.microstep = 0;
     }
     return result;
@@ -172,7 +176,6 @@ tag_t lf_delay_tag(tag_t tag, interval_t interval) {
 tag_t lf_delay_strict(tag_t tag, interval_t interval) {
     tag_t result = lf_delay_tag(tag, interval);
     if (interval != 0 && interval != NEVER && interval != FOREVER && result.time != NEVER && result.time != FOREVER) {
-        LF_PRINT_DEBUG("interval=%lld, result time=%lld", (long long) interval, (long long) result.time);
         result.time -= 1;
         result.microstep = UINT_MAX;
     }
@@ -184,9 +187,6 @@ instant_t lf_time_logical(void *env) {
     return ((environment_t *) env)->current_tag.time;
 }
 
-/**
- * Return the elapsed logical time in nanoseconds since the start of execution.
- */
 interval_t lf_time_logical_elapsed(void *env) {
     return lf_time_logical(env) - start_time;
 }

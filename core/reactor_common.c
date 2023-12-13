@@ -1749,7 +1749,7 @@ void termination(void) {
             continue;
         }
         // Stop any tracing, if it is running.
-        stop_trace(env->trace);
+        stop_trace_locked(env->trace);
 
         _lf_start_time_step(env);
 

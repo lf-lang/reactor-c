@@ -250,30 +250,25 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
         // Send PTAG to all upstream federates, if they have not had
         // a later or equal PTAG or TAG sent previously and if their transitive
         // NET is greater than or equal to the tag.
+        // This is needed to stimulate absent messages from upstream and break deadlocks.
         // NOTE: This could later be replaced with a TNET mechanism once
         // we have an available encoding of causality interfaces.
         // That might be more efficient.
+        // NOTE: This is not needed for enclaves because zero-delay loops are prohibited.
+        // It's only needed for federates, which is why this is implemented here.
         for (int j = 0; j < e->num_upstream; j++) {
-            federate_info_t* upstream = GET_FED_INFO(e->upstream[j]);
+            scheduling_node_t* upstream = rti_remote->base.scheduling_nodes[e->upstream[j]];
 
             // Ignore this federate if it has resigned.
-            if (upstream->enclave.state == NOT_CONNECTED) continue;
-            // To handle cycles, need to create a boolean array to keep
-            // track of which upstream federates have been visited.
-            bool* visited = (bool*)calloc(rti_remote->base.number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
+            if (upstream->state == NOT_CONNECTED) continue;
 
-            // Find the (transitive) next event tag upstream.
-            tag_t upstream_next_event = transitive_next_event(
-                    &(upstream->enclave), upstream->enclave.next_event, visited);
-            free(visited);
-            // If these tags are equal, then
-            // a TAG or PTAG should have already been granted,
-            // in which case, another will not be sent. But it
-            // may not have been already granted.
-            if (lf_tag_compare(upstream_next_event, tag) >= 0) {
-                notify_provisional_tag_advance_grant(&(upstream->enclave), tag);
+            tag_t earliest = earliest_future_incoming_message_tag(upstream);
+
+            // If these tags are equal, then a TAG or PTAG should have already been granted,
+            // in which case, another will not be sent. But it may not have been already granted.
+            if (lf_tag_compare(earliest, tag) >= 0) {
+                notify_provisional_tag_advance_grant(upstream, tag);
             }
-
         }
     }
 }
@@ -1265,14 +1260,22 @@ int receive_connection_information(int socket_id, uint16_t fed_id) {
             fed_id);
 
         // Allocate memory for the upstream and downstream pointers
-        fed->enclave.upstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_upstream);
-        fed->enclave.downstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_downstream);
-
-        // Allocate memory for the upstream delay pointers
-        fed->enclave.upstream_delay =
-            (interval_t*)malloc(
-                sizeof(interval_t) * fed->enclave.num_upstream
-            );
+        if (fed->enclave.num_upstream > 0) {
+            fed->enclave.upstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_upstream);
+            // Allocate memory for the upstream delay pointers
+            fed->enclave.upstream_delay =
+                (interval_t*)malloc(
+                    sizeof(interval_t) * fed->enclave.num_upstream
+                );
+        } else {
+            fed->enclave.upstream = (int*)NULL;
+            fed->enclave.upstream_delay = (interval_t*)NULL;
+        }
+        if (fed->enclave.num_downstream > 0) {
+            fed->enclave.downstream = (int*)malloc(sizeof(uint16_t) * fed->enclave.num_downstream);
+        } else {
+            fed->enclave.downstream = (int*)NULL;
+        }
 
         size_t connections_info_body_size = ((sizeof(uint16_t) + sizeof(int64_t)) *
             fed->enclave.num_upstream) + (sizeof(uint16_t) * fed->enclave.num_downstream);
@@ -1646,4 +1649,15 @@ void initialize_RTI(rti_remote_t *rti){
     rti_remote->base.tracing_enabled = false;
     rti_remote->stop_in_progress = false;
 }
+
+void free_scheduling_nodes(scheduling_node_t** scheduling_nodes, uint16_t number_of_scheduling_nodes) {
+    for (uint16_t i = 0; i < number_of_scheduling_nodes; i++) {
+        // FIXME: Gives error freeing memory not allocated!!!!
+        scheduling_node_t* node = scheduling_nodes[i];
+        if (node->upstream != NULL) free(node->upstream);
+        if (node->downstream != NULL) free(node->downstream);
+    }
+    free(scheduling_nodes);
+}
+
 #endif // STANDALONE_RTI

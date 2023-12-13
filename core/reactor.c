@@ -371,6 +371,11 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         initialize_global();
         // Set start time
         start_time = lf_time_physical();
+
+        LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG,
+                FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
+                NEVER_TAG.time - start_time, 0);
+
         environment_init_tags(env, start_time, duration);
         env->current_tag = env->start_tag;
         // Start tracing if enalbed

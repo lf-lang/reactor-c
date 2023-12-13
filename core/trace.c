@@ -459,6 +459,11 @@ void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, i
 
 void stop_trace(trace_t* trace) {
     lf_critical_section_enter(trace->env);
+    stop_trace_locked(trace);
+    lf_critical_section_exit(trace->env);
+}
+
+void stop_trace_locked(trace_t* trace) {
     if (trace->_lf_trace_stop) {
         // Trace was already stopped. Nothing to do.
         return;
@@ -480,7 +485,6 @@ void stop_trace(trace_t* trace) {
     fclose(trace->_lf_trace_file);
     trace->_lf_trace_file = NULL;
     LF_PRINT_DEBUG("Stopped tracing.");
-    lf_critical_section_exit(trace->env);
 }
 
 ////////////////////////////////////////////////////////////
