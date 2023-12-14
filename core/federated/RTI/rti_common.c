@@ -306,7 +306,7 @@ void update_min_delays_upstream(scheduling_node_t* node) {
         // There must be a name for this algorithm.
 
         // Dynamically allocate array for the results
-        tag_t path_delays* = (tag_t *) malloc(rti_common->number_of_scheduling_nodes * sizeof(tag_t));
+        tag_t *path_delays = (tag_t *) malloc(rti_common->number_of_scheduling_nodes * sizeof(tag_t));
         // This will be the number of non-FOREVER entries put into path_delays.
         size_t count = 0;
 
