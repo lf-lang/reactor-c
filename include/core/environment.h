@@ -107,12 +107,12 @@ typedef struct environment_t {
     int _lf_intended_tag_fields_size;
 #endif // FEDERATED
 #if SCHEDULER == SCHED_STATIC
-    self_base_t** reactor_array;
-    int reactor_array_size;
-    bool** reaction_trigger_present_array;
-    int reaction_trigger_present_array_size;
+    self_base_t** reactor_self_array;
+    int reactor_self_array_size;
     reaction_t** reaction_array;
     int reaction_array_size;
+    event_t** pqueue_heads;
+    int num_pqueue_heads;
 #endif
 #ifdef LF_ENCLAVES // TODO: Consider dropping #ifdef
     enclave_info_t *enclave_info;
