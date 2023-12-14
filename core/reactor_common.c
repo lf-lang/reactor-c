@@ -1045,6 +1045,8 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
                         // Leave the last_tag the same.
                         return(0);
                     }
+                    _lf_recycle_event(env, dummy);
+
                     // If the preceding event _has_ been handled, then adjust
                     // the tag to defer the event.
                     intended_tag = (tag_t){.time = earliest_time, .microstep = 0};
