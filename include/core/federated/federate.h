@@ -231,6 +231,7 @@ typedef struct federation_metadata_t {
 } federation_metadata_t;
 
 extern lf_mutex_t outbound_socket_mutex;
+extern lf_mutex_t inbound_socket_mutex;
 extern lf_cond_t port_status_changed;
 extern lf_cond_t logical_time_changed;
 

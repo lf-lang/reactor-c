@@ -79,6 +79,10 @@ char* ERROR_SENDING_MESSAGE = "ERROR sending message to federate via RTI";
 // Mutex lock held while performing socket write and close operations.
 lf_mutex_t outbound_socket_mutex;
 
+// Mutex lock held while performing socket close operations.
+// A deadlock can occur if two threads simulataneously attempt to close the same socket.
+lf_mutex_t inbound_socket_mutex;
+
 // The following two mutexes are initialized in generated code and associated
 // with the top-level environment's mutex.
 lf_cond_t port_status_changed;
@@ -614,10 +618,10 @@ void* handle_p2p_connections_from_federates(void* env_arg) {
         tracepoint_federate_to_federate(_fed.trace, receive_FED_ID, _lf_my_fed_id, remote_fed_id, NULL);
 
         // Once we record the socket_id here, all future calls to close() on
-        // the socket should be done while holding a mutex, and this array
+        // the socket should be done while holding the inbound_socket_mutex, and this array
         // element should be reset to -1 during that critical section.
         // Otherwise, there can be race condition where, during termination,
-        // two threads attempt to simultaneously access the socket.
+        // two threads attempt to simultaneously close the socket.
         _fed.sockets_for_inbound_p2p_connections[remote_fed_id] = socket_id;
 
         // Send an MSG_TYPE_ACK message.
@@ -637,8 +641,12 @@ void* handle_p2p_connections_from_federates(void* env_arg) {
                 fed_id_arg);
         if (result != 0) {
             // Failed to create a listening thread.
-            close(socket_id);
-            _fed.sockets_for_inbound_p2p_connections[remote_fed_id] = -1;
+            lf_mutex_lock(&inbound_socket_mutex);
+            if (_fed.sockets_for_inbound_p2p_connections[remote_fed_id] != -1) {
+                close(socket_id);
+                _fed.sockets_for_inbound_p2p_connections[remote_fed_id] = -1;
+            }
+            lf_mutex_unlock(&inbound_socket_mutex);
             lf_print_error_and_exit(
                     "Failed to create a thread to listen for incoming physical connection. Error code: %d.",
                     result
@@ -1520,6 +1528,8 @@ static trigger_handle_t schedule_message_received_from_network_locked(
  * requesting that it close the socket. If the message is sent successfully,
  * this returns 1. Otherwise it returns 0, which presumably means that the
  * socket is already closed.
+ * 
+ * This function assumes that the caller holds the inbound_socket_mutex lock.
  *
  * @param The ID of the peer federate sending messages to this federate.
  *
@@ -1528,19 +1538,21 @@ static trigger_handle_t schedule_message_received_from_network_locked(
 int _lf_request_close_inbound_socket(int fed_id) {
     assert(fed_id >= 0 && fed_id < NUMBER_OF_FEDERATES);
 
-    if (_fed.sockets_for_inbound_p2p_connections[fed_id] < 1) return 0;
+    if (_fed.sockets_for_inbound_p2p_connections[fed_id] < 0) {
+        return 0;
+    }
 
     // Send a MSG_TYPE_CLOSE_REQUEST message.
     unsigned char message_marker = MSG_TYPE_CLOSE_REQUEST;
-    LF_PRINT_LOG("Sending MSG_TYPE_CLOSE_REQUEST message to upstream federate.");
-
-    // Trace the event when tracing is enabled
-    tracepoint_federate_to_federate(_fed.trace, send_CLOSE_RQ, _lf_my_fed_id, fed_id, NULL);
 
     ssize_t written = write_to_socket(
         _fed.sockets_for_inbound_p2p_connections[fed_id],
         1, &message_marker);
     _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
+
+    // Trace the event when tracing is enabled
+    tracepoint_federate_to_federate(_fed.trace, send_CLOSE_RQ, _lf_my_fed_id, fed_id, NULL);
+
     if (written == 1) {
         LF_PRINT_LOG("Sent MSG_TYPE_CLOSE_REQUEST message to upstream federate.");
         return 1;
@@ -1567,9 +1579,13 @@ void _lf_close_inbound_socket(int fed_id) {
         shutdown(socket, SHUT_RDWR);
         close(socket);
     } else if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
-        shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_RDWR);
-        close(_fed.sockets_for_inbound_p2p_connections[fed_id]);
-        _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
+        lf_mutex_lock(&inbound_socket_mutex);
+        if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
+            shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_RDWR);
+            close(_fed.sockets_for_inbound_p2p_connections[fed_id]);
+            _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
+        }
+        lf_mutex_unlock(&inbound_socket_mutex);
     }
 }
 
@@ -2431,12 +2447,14 @@ void terminate_execution(environment_t* env) {
 
     LF_PRINT_DEBUG("Requesting closing of incoming P2P sockets.");
     // Request closing the incoming P2P sockets.
+    lf_mutex_lock(&inbound_socket_mutex);
     for (int i=0; i < NUMBER_OF_FEDERATES; i++) {
         if (_lf_request_close_inbound_socket(i) == 0) {
             // Sending the close request failed. Mark the socket closed.
             _fed.sockets_for_inbound_p2p_connections[i] = -1;
         }
     }
+    lf_mutex_unlock(&inbound_socket_mutex);
 
     LF_PRINT_DEBUG("Waiting for inbound p2p socket listener threads.");
     // Wait for each inbound socket listener thread to close.
