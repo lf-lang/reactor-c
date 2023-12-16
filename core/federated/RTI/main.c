@@ -73,7 +73,9 @@ const char *rti_trace_file_name = "rti.lft";
  */
 void termination() {
     if (rti.base.tracing_enabled) {
-        stop_trace(rti.base.trace);
+        // Use the version that does not acquire a lock because acquiring a lock in
+        // the termination function can cause a deadlock that prevents the termination.
+        stop_trace_locked(rti.base.trace);
         lf_print("RTI trace file saved.");
     }   
     lf_print("RTI is exiting.");
@@ -257,6 +259,16 @@ int main(int argc, const char* argv[]) {
     if (atexit(termination) != 0) {
         lf_print_warning("Failed to register termination function!");
     }
+#ifdef SIGPIPE
+    // Ignore SIGPIPE errors, which terminate the entire application if
+    // socket write() fails because the reader has closed the socket.
+    // Instead, cause an EPIPE error to be set when write() fails.
+    // NOTE: The reason for a broken socket causing a SIGPIPE signal
+    // instead of just having write() return an error is to robutly
+    // a foo | bar pipeline where bar crashes. The default behavior
+    // is for foo to also exit.
+    signal(SIGPIPE, SIG_IGN);
+#endif // SIGPIPE
 
     if (!process_args(argc, argv)) {
         // Processing command-line arguments failed.
