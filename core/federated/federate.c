@@ -1559,6 +1559,7 @@ int _lf_request_close_inbound_socket(int fed_id) {
  *  federate, or -1 if the RTI.
  */
 void _lf_close_inbound_socket(int fed_id) {
+    lf_mutex_lock(&socket_mutex);
     if (fed_id < 0) {
         // socket connection is to the RTI.
         int socket = _fed.socket_TCP_RTI;
@@ -1568,14 +1569,13 @@ void _lf_close_inbound_socket(int fed_id) {
         shutdown(socket, SHUT_RDWR);
         close(socket);
     } else if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
-        lf_mutex_lock(&socket_mutex);
         if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
             shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_RDWR);
             close(_fed.sockets_for_inbound_p2p_connections[fed_id]);
             _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
         }
-        lf_mutex_unlock(&socket_mutex);
     }
+    lf_mutex_unlock(&socket_mutex);
 }
 
 /**

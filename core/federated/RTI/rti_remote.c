@@ -1096,8 +1096,10 @@ void* federate_info_thread_TCP(void* fed) {
     }
 
     // Nothing more to do. Close the socket and exit.
+    // Prevent multiple threads from closing the same socket at the same time.
+    lf_mutex_lock(&rti_mutex);
     close(my_fed->socket); //  from unistd.h
-
+    lf_mutex_unlock(&rti_mutex);
     return NULL;
 }
 
