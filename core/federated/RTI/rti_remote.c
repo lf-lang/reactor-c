@@ -68,7 +68,7 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
         timeout_time = (struct timeval){.tv_sec = UDP_TIMEOUT_TIME / BILLION, .tv_usec = (UDP_TIMEOUT_TIME % BILLION) / 1000};
     }
     if (socket_descriptor < 0) {
-        lf_print_error_and_exit("Failed to create RTI socket.");
+        lf_print_error_system_failure("Failed to create RTI socket.");
     }
 
     // Set the option for this socket to reuse the same address
@@ -143,10 +143,10 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
     }
     if (result != 0) {
         if (specified_port == 0) {
-            lf_print_error_and_exit("Failed to bind the RTI socket. Cannot find a usable port. "
+            lf_print_error_system_failure("Failed to bind the RTI socket. Cannot find a usable port. "
                     "Consider increasing PORT_RANGE_LIMIT in net_common.h.");
         } else {
-            lf_print_error_and_exit("Failed to bind the RTI socket. Specified port is not available. "
+            lf_print_error_system_failure("Failed to bind the RTI socket. Specified port is not available. "
                     "Consider leaving the port unspecified");
         }
     }
@@ -1461,7 +1461,7 @@ void connect_to_federates(int socket_descriptor) {
                 // Got a socket
                 break;
             } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
-                lf_print_error_and_exit("RTI failed to accept the socket. %s.", strerror(errno));
+                lf_print_error_system_failure("RTI failed to accept the socket.");
             } else {
                 // Try again
                 lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));

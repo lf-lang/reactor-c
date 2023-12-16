@@ -46,7 +46,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <assert.h>
 #include <errno.h>      // Defined perror(), errno
 #include <limits.h>
-#include <signal.h>     // Defines sigaction.
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -78,10 +77,6 @@ char* ERROR_SENDING_MESSAGE = "ERROR sending message to federate via RTI";
 
 // Mutex lock held while performing socket write and close operations.
 lf_mutex_t outbound_socket_mutex;
-
-// Mutex lock held while performing socket close operations.
-// A deadlock can occur if two threads simulataneously attempt to close the same socket.
-lf_mutex_t inbound_socket_mutex;
 
 // The following two mutexes are initialized in generated code and associated
 // with the top-level environment's mutex.
@@ -197,11 +192,11 @@ void create_server(int specified_port) {
     }
     if (result != 0) {
         if (specified_port == 0) {
-            lf_print_error_and_exit("Failed to bind socket. Cannot find a usable port. \
-                                 Consider increasing PORT_RANGE_LIMIT in federate.c");
+            lf_print_error_system_failure("Failed to bind socket. Cannot find a usable port. "
+                                 "Consider increasing PORT_RANGE_LIMIT in federate.c");
         } else {
-            lf_print_error_and_exit("Failed to bind socket. Specified port is not available. \
-                                 Consider leaving the port unspecified");
+            lf_print_error_system_failure("Failed to bind socket. Specified port is not available. "
+                                 "Consider leaving the port unspecified");
         }
     }
     LF_PRINT_LOG("Server for communicating with other federates started using port %d.", port);
@@ -533,12 +528,9 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
             return;
         } else {
             lf_mutex_unlock(&outbound_socket_mutex);
-            lf_print_error_and_exit("Failed to send tag " PRINTF_TAG " to the RTI."
-                                    " Error code %d: %s",
+            lf_print_error_system_failure("Failed to send tag " PRINTF_TAG " to the RTI.",
                                     tag.time - start_time,
-                                    tag.microstep,
-                                    errno,
-                                    strerror(errno)
+                                    tag.microstep
                                 );
         }
     }
@@ -552,7 +544,6 @@ void _lf_send_tag(unsigned char type, tag_t tag, bool exit_on_error) {
  * sockets, exits.
  * @param env_arg pointer to the environment of this federate.
  */
-
 void* handle_p2p_connections_from_federates(void* env_arg) {
     assert(env_arg);
     environment_t* env = (environment_t *) env_arg;
@@ -618,7 +609,7 @@ void* handle_p2p_connections_from_federates(void* env_arg) {
         tracepoint_federate_to_federate(_fed.trace, receive_FED_ID, _lf_my_fed_id, remote_fed_id, NULL);
 
         // Once we record the socket_id here, all future calls to close() on
-        // the socket should be done while holding the inbound_socket_mutex, and this array
+        // the socket should be done while holding the socket_mutex, and this array
         // element should be reset to -1 during that critical section.
         // Otherwise, there can be race condition where, during termination,
         // two threads attempt to simultaneously close the socket.
@@ -641,12 +632,12 @@ void* handle_p2p_connections_from_federates(void* env_arg) {
                 fed_id_arg);
         if (result != 0) {
             // Failed to create a listening thread.
-            lf_mutex_lock(&inbound_socket_mutex);
+            lf_mutex_lock(&socket_mutex);
             if (_fed.sockets_for_inbound_p2p_connections[remote_fed_id] != -1) {
                 close(socket_id);
                 _fed.sockets_for_inbound_p2p_connections[remote_fed_id] = -1;
             }
-            lf_mutex_unlock(&inbound_socket_mutex);
+            lf_mutex_unlock(&socket_mutex);
             lf_print_error_and_exit(
                     "Failed to create a thread to listen for incoming physical connection. Error code: %d.",
                     result
@@ -715,12 +706,10 @@ void* listen_for_upstream_messages_from_downstream_federates(void* fed_id_ptr) {
             LF_PRINT_DEBUG("Received EOF from federate %d.", fed_id);
             _lf_close_outbound_socket(fed_id);
             break;
-        }
-        if (bytes_read < 0) {
-            // EOF.
-            LF_PRINT_DEBUG("Error on socket from federate %d.", fed_id);
+        } else if (bytes_read < 0) {
+            // Error.
             _lf_close_outbound_socket(fed_id);
-            break;
+            lf_print_error_system_failure("Error on socket from federate %d.", fed_id);
         }
     }
     lf_mutex_unlock(&outbound_socket_mutex);
@@ -896,7 +885,7 @@ void connect_to_federate(uint16_t remote_federate_id) {
     // this downstream federate.
     uint16_t* remote_fed_id_copy = (uint16_t*)malloc(sizeof(uint16_t));
     if (remote_fed_id_copy == NULL) {
-        lf_print_error_and_exit("malloc failed.");
+        lf_print_error_system_failure("malloc failed.");
     }
     *remote_fed_id_copy = remote_federate_id;
     lf_thread_t thread_id;
@@ -1529,7 +1518,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(
  * this returns 1. Otherwise it returns 0, which presumably means that the
  * socket is already closed.
  * 
- * This function assumes that the caller holds the inbound_socket_mutex lock.
+ * This function assumes that the caller holds the socket_mutex lock.
  *
  * @param The ID of the peer federate sending messages to this federate.
  *
@@ -1579,13 +1568,13 @@ void _lf_close_inbound_socket(int fed_id) {
         shutdown(socket, SHUT_RDWR);
         close(socket);
     } else if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
-        lf_mutex_lock(&inbound_socket_mutex);
+        lf_mutex_lock(&socket_mutex);
         if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
             shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_RDWR);
             close(_fed.sockets_for_inbound_p2p_connections[fed_id]);
             _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
         }
-        lf_mutex_unlock(&inbound_socket_mutex);
+        lf_mutex_unlock(&socket_mutex);
     }
 }
 
@@ -2438,7 +2427,8 @@ void terminate_execution(environment_t* env) {
         encode_tag(&(buffer[1]), tag);
         // Trace the event when tracing is enabled
         tracepoint_federate_to_rti(_fed.trace, send_RESIGN, _lf_my_fed_id, &tag);
-        ssize_t written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, &(buffer[0]));
+        ssize_t written = write_to_socket_with_mutex(_fed.socket_TCP_RTI, bytes_to_write, &(buffer[0]), &outbound_socket_mutex,
+                "Failed to send the resign message to the RTI.");
         if (written == bytes_to_write) {
             LF_PRINT_LOG("Resigned.");
         }
@@ -2447,14 +2437,14 @@ void terminate_execution(environment_t* env) {
 
     LF_PRINT_DEBUG("Requesting closing of incoming P2P sockets.");
     // Request closing the incoming P2P sockets.
-    lf_mutex_lock(&inbound_socket_mutex);
+    lf_mutex_lock(&socket_mutex);
     for (int i=0; i < NUMBER_OF_FEDERATES; i++) {
         if (_lf_request_close_inbound_socket(i) == 0) {
             // Sending the close request failed. Mark the socket closed.
             _fed.sockets_for_inbound_p2p_connections[i] = -1;
         }
     }
-    lf_mutex_unlock(&inbound_socket_mutex);
+    lf_mutex_unlock(&socket_mutex);
 
     LF_PRINT_DEBUG("Waiting for inbound p2p socket listener threads.");
     // Wait for each inbound socket listener thread to close.

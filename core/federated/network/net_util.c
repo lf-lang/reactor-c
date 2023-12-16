@@ -56,10 +56,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** Number of nanoseconds to sleep before retrying a socket read. */
 #define SOCKET_READ_RETRY_INTERVAL 1000000
 
+// Mutex lock held while performing socket close operations.
+// A deadlock can occur if two threads simulataneously attempt to close the same socket.
+lf_mutex_t socket_mutex;
+
 int create_real_time_tcp_socket_errexit() {
     int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock < 0) {
-        lf_print_error_and_exit("Could not open TCP socket. Err=%d", sock);
+        lf_print_error_system_failure("Could not open TCP socket.");
     }
     // Disable Nagle's algorithm which bundles together small TCP messages to
     //  reduce network traffic
@@ -69,7 +73,7 @@ int create_real_time_tcp_socket_errexit() {
     int result = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
     
     if (result < 0) {
-        lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+        lf_print_error_system_failure("Failed to disable Nagle algorithm on socket server.");
     }
     
     // Disable delayed ACKs. Only possible on Linux
@@ -77,7 +81,7 @@ int create_real_time_tcp_socket_errexit() {
         result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
         
         if (result < 0) {
-            lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+            lf_print_error_system_failure("Failed to disable Nagle algorithm on socket server.");
         }
     #endif
     
@@ -99,27 +103,27 @@ ssize_t read_from_socket_errexit(
     int retry_count = 0;
     while (bytes_read < (ssize_t)num_bytes) {
         ssize_t more = read(socket, buffer + bytes_read, num_bytes - (size_t)bytes_read);
-        if(more <= 0 && retry_count++ < NUM_SOCKET_RETRIES) { // Used to retry only on: (errno == EAGAIN || errno == EWOULDBLOCK)
-            // The error code set by the socket indicates
+        if(more < 0 && retry_count++ < NUM_SOCKET_RETRIES) {
+            // Used to retry only on: (errno == EAGAIN || errno == EWOULDBLOCK)
+            // Those error codes set by the socket indicates
             // that we should try again (@see man errno).
+            // Now we retry on all errors, but a bounded number of times.
             LF_PRINT_DEBUG("Reading from socket failed. Will try again.");
             lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
             continue;
-        } else if (more <= 0) {
-            if (format != NULL) {
-                shutdown(socket, SHUT_RDWR);
-                close(socket);
-                lf_print_error("Socket read failed. Read %ld bytes, but expected %zu. errno=%d",
-                        more + bytes_read, num_bytes, errno);
-                lf_print_error_and_exit(format, args);
-            } else if (more == 0) {
-                // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
-            	// upon receiving a zero length packet or an error, we can close the socket.
-            	// If there are any pending outgoing messages, this will attempt to send those
-            	// followed by an EOF.
-                LF_PRINT_DEBUG("Read zero bytes from client. Closing socket.");
-            	close(socket);
-            }
+        } else if (more < 0) {
+            // Retries are exhausted.
+            lf_print_error_system_failure("Socket read failed after %d tries. Read %ld bytes, but expected %zu.",
+                    retry_count, more + bytes_read, num_bytes);
+        } else if (more == 0) {
+            // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
+            // upon receiving a zero length packet or an error, we can close the socket.
+            // If there are any pending outgoing messages, this will attempt to send those
+            // followed by an EOF.
+            LF_PRINT_DEBUG("EOF received from client. Closing socket.");
+            lf_mutex_lock(&socket_mutex);
+            close(socket);
+            lf_mutex_unlock(&socket_mutex);
             return more;
         }
         bytes_read += more;

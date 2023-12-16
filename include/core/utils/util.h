@@ -240,6 +240,12 @@ void lf_vprint_warning(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF
 void lf_print_error_and_exit(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 /**
+ * Report an error and exit just like lf_print_error_and_exit(), but
+ * also print the system error message associated with the error.
+ */
+void lf_print_error_system_failure(const char* format, ...);
+
+/**
  * varargs alternative of "lf_print_error_and_exit"
  */
 void lf_vprint_error_and_exit(const char* format, va_list args)

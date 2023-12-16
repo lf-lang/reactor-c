@@ -1738,7 +1738,7 @@ void termination(void) {
 
 
     // In order to free tokens, we perform the same actions we would have for a new time step.
-    for (int i = 0; i<num_envs; i++) {
+    for (int i = 0; i<num_envs; i++) {  // NOTE: env pointer is incremented at the end of this loop.
         lf_print("---- Terminating environment %u", env->id);
         if (!env->initialized) {
             lf_print_warning("---- Environment %u was never initialized", env->id);

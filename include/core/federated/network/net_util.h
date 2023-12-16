@@ -65,6 +65,10 @@ int host_is_big_endian(void);
 
 #ifdef FEDERATED
 
+/**
+ * Mutex protecting socket close operations.
+ */
+extern lf_mutex_t socket_mutex;
 
 /**
  * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled

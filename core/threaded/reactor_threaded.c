@@ -1146,6 +1146,10 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Ignore SIGPIPE errors, which terminate the entire application if
     // socket write() fails because the reader has closed the socket.
     // Instead, cause an EPIPE error to be set when write() fails.
+    // NOTE: The reason for a broken socket causing a SIGPIPE signal
+    // instead of just having write() return an error is to robutly
+    // a foo | bar pipeline where bar crashes. The default behavior
+    // is for foo to also exit.
     signal(SIGPIPE, SIG_IGN);
 #endif // SIGPIPE
 
