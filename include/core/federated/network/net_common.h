@@ -243,13 +243,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define PORT_BIND_RETRY_LIMIT 100
 
 /**
- * Default starting port number for the RTI and federates' socket server.
+ * Default port number for the RTI and base number for federates' socket server.
  * Unless a specific port has been specified by the LF program in the "at"
- * for the RTI, when the federates start up, they will attempt
- * to open a socket server on this port. If that port is not available (e.g.,
- * another RTI is running or has recently exited), then it will try again
- * after waiting PORT_MAX_TRIES. It will try repeatedly until
- * it reaches PORT_KNOCKING_LIMIT attempts, at which point it will fail.
+ * for the RTI or on the command line, when the RTI starts up, it will attempt
+ * to open a socket server on this port. The federates start attempting to bind
+ * to ports one greater than this plus the federate ID, and if that port is not,
+ * then they try incrementing the port number with up to PORT_BIND_RETRY_LIMIT
+ * attempts.  The RTI will try repeatedly on the same port number with a delay
+ * of PORT_BIND_RETRY_INTERVAL and a maximum number of attempts of PORT_BIND_RETRY_LIMIT.
  */
 #define DEFAULT_PORT 15045u
 
