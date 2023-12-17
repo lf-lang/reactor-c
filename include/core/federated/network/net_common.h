@@ -37,12 +37,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *
  * Each federate attempts to connect with an RTI at the IP address
  * put into its code by the code generator (i.e., it attempts to
- * open a TCP connection). It starts by trying the
- * port number given by STARTING_PORT and increments the port number
- * from there until it successfully connects. The maximum port number
- * it will try before giving up is STARTING_PORT + PORT_RANGE_LIMIT.
- *
- * FIXME: What if a port is specified in the "at" of the federated statement?
+ * open a TCP connection).  If an explicit port is given in the `at` clause
+ * on the `federated reactor` statement, it will use that port. Otherwise, it will
+ * use DEFAULT_PORT.
  *
  * When it has successfully opened a TCP connection, the first message it sends
  * to the RTI is a MSG_TYPE_FED_IDS message, which contains the ID of this federate
@@ -137,9 +134,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * parameter of the target is "decentralized" and the federate has
  * inbound connections from other federates, then it starts a socket
  * server to listen for incoming connections from those federates.
- * It attempts to create the server at the port given by STARTING_PORT,
- * and if this fails, increments the port number from there until a
- * port is available. It then sends to the RTI an MSG_TYPE_ADDRESS_ADVERTISEMENT message
+ * It then sends to the RTI an MSG_TYPE_ADDRESS_ADVERTISEMENT message
  * with the port number as a payload. The federate then creates a thread
  * to listen for incoming socket connections and messages.
  *
@@ -208,7 +203,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define UDP_TIMEOUT_TIME SEC(1)
 
-
 /**
  * Size of the buffer used for messages sent between federates.
  * This is used by both the federates and the rti, so message lengths
@@ -217,63 +211,55 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define FED_COM_BUFFER_SIZE 256u
 
 /**
- * Number of nanoseconds that elapse between a federate's attempts
- * to connect to the RTI.
+ * Time between a federate's attempts to connect to the RTI.
  */
-#define CONNECT_RETRY_INTERVAL 2000000000LL
+#define CONNECT_RETRY_INTERVAL SEC(1)
 
 /**
  * Bound on the number of retries to connect to the RTI.
  * A federate will retry every CONNECT_RETRY_INTERVAL seconds
- * this many times before giving up. E.g., 500 retries every
- * 2 seconds results in retrying for about 16 minutes.
+ * this many times before giving up. E.g., 600 retries every
+ * 1 seconds results in retrying for about 10 minutes.
+ * This allows time to start federates before the RTI.
  */
-#define CONNECT_NUM_RETRIES 500
+#define CONNECT_MAX_RETRIES 600
 
 /**
- * Number of nanoseconds that a federate waits before asking
+ * Time that a federate waits before asking
  * the RTI again for the port and IP address of a federate
  * (an MSG_TYPE_ADDRESS_QUERY message) after the RTI responds that it
- * does not know.
+ * does not know.  This allows time for federates to start separately.
  */
-#define ADDRESS_QUERY_RETRY_INTERVAL 100000000LL
+#define ADDRESS_QUERY_RETRY_INTERVAL SEC(1)
 
 /**
- * Number of nanoseconds that a federate waits before trying
- * another port for the RTI. This is to avoid overwhelming
- * the OS and the socket with too many calls.
- * FIXME: Is this too small?
+ * Time to wait before re-attempting to bind to a port.
  */
-#define PORT_KNOCKING_RETRY_INTERVAL 10000LL
+#define PORT_BIND_RETRY_INTERVAL MSEC(10)
+
+/**
+ * Number of attempts to bind to a port before giving up.
+ */
+#define PORT_BIND_RETRY_LIMIT 100
 
 /**
  * Default starting port number for the RTI and federates' socket server.
  * Unless a specific port has been specified by the LF program in the "at"
  * for the RTI, when the federates start up, they will attempt
- * to open a socket server
- * on this port, and, if this fails, increment the port number and
- * try again. The number of increments is limited by PORT_RANGE_LIMIT.
- * FIXME: Clarify what happens if a specific port has been given in "at".
+ * to open a socket server on this port. If that port is not available (e.g.,
+ * another RTI is running or has recently exited), then it will try again
+ * after waiting PORT_MAX_TRIES. It will try repeatedly until
+ * it reaches PORT_KNOCKING_LIMIT attempts, at which point it will fail.
  */
-#define STARTING_PORT 15045u
-
-/**
- * Number of ports to try to connect to. Unless the LF program specifies
- * a specific port number to use, the RTI or federates will attempt to start
- * a socket server on port STARTING_PORT. If that port is not available (e.g.,
- * another RTI is running or has recently exited), then it will try the
- * next port, STARTING_PORT+1, and keep incrementing the port number up to this
- * limit. If no port between STARTING_PORT and STARTING_PORT + PORT_RANGE_LIMIT
- * is available, then the RTI or the federate will fail to start. This number, therefore,
- * limits the number of RTIs and federates that can be simultaneously
- * running on any given machine without assigning specific port numbers.
- */
-#define PORT_RANGE_LIMIT 1024
+#define DEFAULT_PORT 15045u
 
 /**
  * Delay the start of all federates by this amount.
- * FIXME: More.
- * FIXME: Should use the latency estimates that were
+ * This helps ensure that the federates do not start at the same time.
+ * Each federate has provided its current physical time to the RTI, and
+ * the RTI has picked the largest of these.  It will add this quantity
+ * and declare that to be the start time.
+ * FIXME: This could use the latency estimates that were
  * acquired during initial clock synchronization.
  */
 #define DELAY_START SEC(1)
