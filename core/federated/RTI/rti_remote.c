@@ -128,10 +128,10 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
             sizeof(server_fd));
 
     // Try repeatedly to bind to the specified port.
-    int count = 0;
-    while (result != 0 && count++ < PORT_KNOCKING_LIMIT) {
+    int count = 1;
+    while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
         lf_print("RTI failed to get port %d. Will try again.", port);
-        lf_sleep(PORT_MAX_TRIES);
+        lf_sleep(PORT_BIND_RETRY_INTERVAL);
         server_fd.sin_port = htons(port);
         result = bind(
                 socket_descriptor,
