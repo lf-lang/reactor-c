@@ -289,7 +289,7 @@ int main(int argc, const char* argv[]) {
     // Allocate memory for the federates
     rti.base.scheduling_nodes = (scheduling_node_t**)calloc(rti.base.number_of_scheduling_nodes, sizeof(scheduling_node_t*));
     for (uint16_t i = 0; i < rti.base.number_of_scheduling_nodes; i++) {
-        federate_info_t *fed_info = (federate_info_t *) malloc(sizeof(federate_info_t));
+        federate_info_t *fed_info = (federate_info_t *) calloc(1, sizeof(federate_info_t));
         initialize_federate(fed_info, i);
         rti.base.scheduling_nodes[i] = (scheduling_node_t *) fed_info;
     }
