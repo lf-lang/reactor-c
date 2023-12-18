@@ -317,6 +317,8 @@ void update_min_delays_upstream(scheduling_node_t* node) {
 
         // Put the results onto the node's struct.
         node->num_min_delays = count;
+        // FIXME: What should the newly allocated `min_delays` be initialized to?
+        //  currently it could be any value.
         node->min_delays = (minimum_delay_t*)malloc(count * sizeof(minimum_delay_t));
         LF_PRINT_DEBUG("++++ Node %hu(is in ZDC: %d\n", node->id, node->flags & IS_IN_ZERO_DELAY_CYCLE);
         int k = 0;

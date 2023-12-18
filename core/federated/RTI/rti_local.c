@@ -35,7 +35,7 @@ static rti_local_t * rti_local;
 lf_mutex_t rti_mutex;
 
 void initialize_local_rti(environment_t *envs, int num_envs) {
-    rti_local = (rti_local_t*)malloc(sizeof(rti_local_t));
+    rti_local = (rti_local_t*)calloc(1, sizeof(rti_local_t));
     LF_ASSERT(rti_local, "Out of memory");
 
     initialize_rti_common(&rti_local->base);
@@ -47,7 +47,7 @@ void initialize_local_rti(environment_t *envs, int num_envs) {
     // Allocate memory for the enclave_info objects
     rti_local->base.scheduling_nodes = (scheduling_node_t**)calloc(num_envs, sizeof(scheduling_node_t*));
     for (int i = 0; i < num_envs; i++) {
-        enclave_info_t *enclave_info = (enclave_info_t *) malloc(sizeof(enclave_info_t));
+        enclave_info_t *enclave_info = (enclave_info_t *) calloc(1, sizeof(enclave_info_t));
         initialize_enclave_info(enclave_info, i, &envs[i]);
         rti_local->base.scheduling_nodes[i] = (scheduling_node_t *) enclave_info;
 
