@@ -116,22 +116,9 @@ federation_metadata_t federation_metadata = {
 };
 
 void create_server(int specified_port, int id) {
-    if (specified_port > UINT16_MAX ||
-        specified_port < 0) {
-        lf_print_error(
-            "create_server(): The specified port (%d) is out of range."
-            " Starting with %d instead.",
-            specified_port,
-            DEFAULT_PORT
-        );
-        specified_port = 0;
-    }
+    assert(specified_port <= UINT16_MAX && specified_port >= 0);
     uint16_t port = (uint16_t)specified_port;
-    if (specified_port == 0) {
-        // Use the default starting port + 1 + id (to try to get unique ports for each federate)
-        port = DEFAULT_PORT + 1 + id;
-    }
-    lf_print("Creating a socket server on port %d.", port);
+    LF_PRINT_LOG("Creating a socket server on port %d.", port);
     // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
     int socket_descriptor = create_real_time_tcp_socket_errexit();
 
@@ -149,40 +136,37 @@ void create_server(int specified_port, int id) {
             socket_descriptor,
             (struct sockaddr *) &server_fd,
             sizeof(server_fd));
-    // If the binding fails with this port and no particular port was specified
-    // in the LF program, then try the next few ports in sequence.
     int count = 0;
-    while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
-        if (specified_port != 0) {
-            port++;
-            server_fd.sin_port = htons(port);
-            LF_PRINT_DEBUG("Failed to get port. Trying %d.", port);
-        } else {
-            LF_PRINT_DEBUG("Failed to get port %d. Will try again after waiting.", port);
-            lf_sleep(PORT_BIND_RETRY_INTERVAL);
-        }
-        server_fd.sin_port = htons(port);
+    while (result < 0 && count++ < PORT_BIND_RETRY_LIMIT) {
+        lf_sleep(PORT_BIND_RETRY_INTERVAL);
         result = bind(
                 socket_descriptor,
                 (struct sockaddr *) &server_fd,
                 sizeof(server_fd));
     }
     if (result < 0) {
-        if (specified_port == 0) {
-            lf_print_error_and_exit("Failed to bind socket. Cannot find a usable port.");
-        } else {
-            lf_print_error_and_exit("Failed to bind socket. Specified port is not available.");
-        }
+        lf_print_error_and_exit("Failed to bind socket on port %d.", port);
     }
-    LF_PRINT_LOG("Server for communicating with other federates started using port %d.", port);
+
+    // Set the global server port.
+    if (specified_port == 0) {
+        // Need to retrieve the port number assigned by the OS.
+        struct sockaddr_in assigned;
+        socklen_t addr_len = sizeof(assigned);
+        if (getsockname(socket_descriptor, (struct sockaddr *) &assigned, &addr_len) < 0) {
+            lf_print_error_and_exit("Failed to retrieve assigned port number.");
+        }
+        _fed.server_port = ntohs(assigned.sin_port);
+    } else {
+        _fed.server_port = port;
+    }
 
     // Enable listening for socket connections.
     // The second argument is the maximum number of queued socket requests,
     // which according to the Mac man page is limited to 128.
     listen(socket_descriptor, 128);
 
-    // Set the global server port
-    _fed.server_port = port;
+    lf_print("Server for communicating with other federates started using port %d.", _fed.server_port);
 
     // Send the server port number to the RTI
     // on an MSG_TYPE_ADDRESS_ADVERTISEMENT message (@see net_common.h).
@@ -2288,6 +2272,7 @@ void terminate_execution(environment_t* env) {
     // function should NEVER be called while holding any mutex lock.
     lf_mutex_lock(&outbound_socket_mutex);
     for (int i=0; i < NUMBER_OF_FEDERATES; i++) {
+
         // Close outbound connections, in case they have not closed themselves.
         // This will result in EOF being sent to the remote federate, I think.
         _lf_close_outbound_socket(i);
@@ -2319,10 +2304,11 @@ void terminate_execution(environment_t* env) {
 
     LF_PRINT_DEBUG("Waiting for inbound p2p socket listener threads.");
     // Wait for each inbound socket listener thread to close.
-    if (_fed.number_of_inbound_p2p_connections > 0) {
+    if (_fed.number_of_inbound_p2p_connections > 0 && _fed.inbound_socket_listeners != NULL) {
         LF_PRINT_LOG("Waiting for %zu threads listening for incoming messages to exit.",
                 _fed.number_of_inbound_p2p_connections);
         for (int i=0; i < _fed.number_of_inbound_p2p_connections; i++) {
+            if (_fed.inbound_socket_listeners[i] == NULL) continue;
             // Ignoring errors here.
             lf_thread_join(_fed.inbound_socket_listeners[i], NULL);
         }

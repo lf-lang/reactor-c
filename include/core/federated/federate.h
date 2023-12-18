@@ -305,22 +305,14 @@ void* listen_to_federates(void*);
  * (@see net_common.h). This function expects no response
  * from the RTI.
  *
- * If a port is specified by the user, that will be used
- * as the only possibility for the server. This function
- * will fail if that port is not available. If a port is not
- * specified, the DEFAULT_PORT + 1 + id will be attempted,
- * The function will keep incrementing the port in this case
- * until the number of tries reaches PORT_BIND_RETRY_LIMIT (@see net_common.h).
+ * If a port is specified by the user, that will be used.
+ * Otherwise, a random port will be assigned.  If the bind fails,
+ * it will retry after PORT_BIND_RETRY_INTERVAL until it has tried
+ * PORT_BIND_RETRY_LIMIT times. Then it will fail.
  *
- * @note This function is similar to create_server(...) in rti.c.
- * However, it contains specific log messages for the peer to
- * peer connections between federates. It also additionally
- * sends an address advertisement (MSG_TYPE_ADDRESS_ADVERTISEMENT) message to the
- * RTI informing it of the port.  Finally, it tries multiple ports
- * because the port used by a federate is not as important as the port used
- * by the RTI.
+ * @note This function is different from create_server(...) in rti.c.
  *
- * @param specified_port The specified port by the user.
+ * @param specified_port The specified port by the user or 0 to use a random port.
  * @param id The id of the federate (to help find a unique port).
  */
 void create_server(int specified_port, int id);

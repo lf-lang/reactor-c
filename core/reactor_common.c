@@ -265,6 +265,11 @@ void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_n
  * counts between time steps and at the end of execution.
  */
 void _lf_start_time_step(environment_t *env) {
+    if (_lf_execution_started == false) {
+        // Execution hasn't started, so this is probably being invoked in termination
+        // due to an error.
+        return;
+    }
     assert(env != GLOBAL_ENVIRONMENT);
     LF_PRINT_LOG("--------- Start time step at tag " PRINTF_TAG ".", env->current_tag.time - start_time, env->current_tag.microstep);
     // Handle dynamically created tokens for mutable inputs.
@@ -1726,14 +1731,13 @@ void termination(void) {
     // It should only be called for the top-level environment, which, after convention, is the first environment.
     terminate_execution(env);
 
-
     // In order to free tokens, we perform the same actions we would have for a new time step.
     for (int i = 0; i<num_envs; i++) {
-        lf_print("---- Terminating environment %u", env->id);
-        if (!env->initialized) {
+        if (env == NULL || !env->initialized) {
             lf_print_warning("---- Environment %u was never initialized", env->id);
             continue;
         }
+        lf_print("---- Terminating environment %u", env->id);
         // Stop any tracing, if it is running.
         stop_trace_locked(env->trace);
 
@@ -1743,7 +1747,6 @@ void termination(void) {
         // Free events and tokens suspended by modal reactors.
         _lf_terminate_modal_reactors(env);
     #endif
-
         // If the event queue still has events on it, report that.
         if (env->event_q != NULL && pqueue_size(env->event_q) > 0) {
             lf_print_warning("---- There are %zu unprocessed future events on the event queue.", pqueue_size(env->event_q));

@@ -1007,7 +1007,7 @@ void handle_federate_resign(federate_info_t *my_fed) {
     // an orderly shutdown.
     // close(my_fed->socket); //  from unistd.h
 
-    lf_print("Federate %d has resigned.", my_fed->enclave.id);
+    lf_print("RTI: Federate %d has resigned.", my_fed->enclave.id);
 
     // Check downstream federates to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
