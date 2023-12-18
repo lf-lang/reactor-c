@@ -276,11 +276,12 @@ void _lf_logical_tag_complete(tag_t);
 
 /**
  * Connect to the RTI at the specified host and port and return
- * the socket descriptor for the connection. If this fails, the
+ * the socket descriptor for the connection. If this fails, wait CONNECT_RETRY_INTERVAL
+ * and try again.  If it fails after CONNECT_MAX_RETRIES, the
  * program exits. If it succeeds, it sets the _fed.socket_TCP_RTI global
  * variable to refer to the socket for communicating with the RTI.
  * @param hostname A hostname, such as "localhost".
- * @param port_number A port number.
+ * @param port_number A port number, or 0 to use the default port.
  */
 void connect_to_rti(const char*, int);
 
@@ -299,30 +300,25 @@ void connect_to_rti(const char*, int);
 void* listen_to_federates(void*);
 
 /**
- * Create a server to listen to incoming physical
- * connections from remote federates. This function
+ * Create a server to listen to incoming p2p connection (physical
+ * connections or decentralized connections) from remote federates. This function
  * only handles the creation of the server socket.
- * The reserved port for the server socket is then
+ * The bound port for the server socket is then
  * sent to the RTI by sending an MSG_TYPE_ADDRESS_ADVERTISEMENT message
  * (@see net_common.h). This function expects no response
  * from the RTI.
  *
- * If a port is specified by the user, that will be used
- * as the only possibility for the server. This function
- * will fail if that port is not available. If a port is not
- * specified, the STARTING_PORT (@see net_common.h) will be used.
- * The function will keep incrementing the port in this case
- * until the number of tries reaches PORT_RANGE_LIMIT.
+ * If a port is specified by the user, that will be used.
+ * Otherwise, a random port will be assigned.  If the bind fails,
+ * it will retry after PORT_BIND_RETRY_INTERVAL until it has tried
+ * PORT_BIND_RETRY_LIMIT times. Then it will fail.
  *
- * @note This function is similar to create_server(...) in rti.c.
- * However, it contains specific log messages for the peer to
- * peer connections between federates. It also additionally
- * sends an address advertisement (MSG_TYPE_ADDRESS_ADVERTISEMENT) message to the
- * RTI informing it of the port.
+ * @note This function is different from create_server(...) in rti.c.
  *
- * @param specified_port The specified port by the user.
+ * @param specified_port The specified port by the user or 0 to use a random port.
+ * @param id The id of the federate (to help find a unique port).
  */
-void create_server(int specified_port);
+void create_server(int specified_port, int id);
 
 /**
  * Thread to accept connections from other federates that send this federate
