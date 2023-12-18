@@ -437,7 +437,7 @@ void destroy_action_capsule(PyObject* capsule) {
 PyObject* convert_C_port_to_py(void* port, int width) {
     // Create the port struct in Python
     PyObject* cap =
-        (PyObject*)PyObject_GC_New(generic_port_capsule_struct, &py_port_capsule_t);
+        (PyObject*)PyObject_New(generic_port_capsule_struct, &py_port_capsule_t);
     if (cap == NULL) {
         lf_print_error_and_exit("Failed to convert port.");
     }
@@ -506,7 +506,7 @@ PyObject* convert_C_action_to_py(void* action) {
     trigger_t* trigger = ((lf_action_base_t*)action)->trigger;
 
     // Create the action struct in Python
-    PyObject* cap = (PyObject*)PyObject_GC_New(generic_action_capsule_struct, &py_action_capsule_t);
+    PyObject* cap = (PyObject*)PyObject_New(generic_action_capsule_struct, &py_action_capsule_t);
     if (cap == NULL) {
         lf_print_error_and_exit("Failed to convert action.");
     }
@@ -597,7 +597,16 @@ get_python_function(string module, string class, int instance_id, string func) {
 
         mbstowcs(wcwd, cwd, PATH_MAX);
 
-        Py_SetPath(wcwd);
+        // Deprecated: Py_SetPath(wcwd)
+        // Set Python's sys.path
+        PyObject* sys_path, * path;
+        sys_path = PySys_GetObject("path");
+        // New reference
+        path = PyUnicode_FromWideChar(wcwd, wcslen(wcwd));
+        if (sys_path != NULL && path != NULL) {
+            PyList_Insert(sys_path, 0, path);
+        }
+        Py_XDECREF(path);
 
         LF_PRINT_DEBUG("Loading module %s in %s.", module, cwd);
 
