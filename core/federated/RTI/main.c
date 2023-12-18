@@ -254,6 +254,12 @@ int main(int argc, const char* argv[]) {
 
     // Catch the Ctrl-C signal, for a clean exit that does not lose the trace information
     signal(SIGINT, exit);
+#ifdef SIGPIPE
+    // Ignore SIGPIPE errors, which terminate the entire application if
+    // socket write() fails because the reader has closed the socket.
+    // Instead, cause an EPIPE error to be set when write() fails.
+    signal(SIGPIPE, SIG_IGN);
+#endif // SIGPIPE
     if (atexit(termination) != 0) {
         lf_print_warning("Failed to register termination function!");
     }
