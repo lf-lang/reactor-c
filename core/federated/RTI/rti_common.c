@@ -305,8 +305,8 @@ void update_min_delays_upstream(scheduling_node_t* node) {
         // This is not Dijkstra's algorithm, but rather one optimized for sparse upstream nodes.
         // There must be a name for this algorithm.
 
-        // Array of results on the stack:
-        tag_t path_delays[rti_common->number_of_scheduling_nodes];
+        // Dynamically allocate array for the results
+        tag_t *path_delays = (tag_t *) malloc(rti_common->number_of_scheduling_nodes * sizeof(tag_t));
         // This will be the number of non-FOREVER entries put into path_delays.
         size_t count = 0;
 
@@ -317,6 +317,8 @@ void update_min_delays_upstream(scheduling_node_t* node) {
 
         // Put the results onto the node's struct.
         node->num_min_delays = count;
+        // FIXME: What should the newly allocated `min_delays` be initialized to?
+        //  currently it could be any value.
         node->min_delays = (minimum_delay_t*)malloc(count * sizeof(minimum_delay_t));
         LF_PRINT_DEBUG("++++ Node %hu(is in ZDC: %d\n", node->id, node->flags & IS_IN_ZERO_DELAY_CYCLE);
         int k = 0;
@@ -332,6 +334,8 @@ void update_min_delays_upstream(scheduling_node_t* node) {
                 // LF_PRINT_DEBUG("++++    Node %hu is upstream with delay" PRINTF_TAG "\n", i, path_delays[i].time, path_delays[i].microstep);
             }
         }
+        // Free the dynamically allocated array above
+        free(path_delays);
     }
 }
 

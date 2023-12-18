@@ -71,6 +71,8 @@ typedef struct environment_t {
     int id;
     tag_t current_tag;
     tag_t stop_tag;
+    tag_t start_tag;
+    interval_t duration;
     pqueue_t *event_q;
     pqueue_t *recycle_q;
     pqueue_t *next_q;

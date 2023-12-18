@@ -242,7 +242,7 @@ void _lf_set_present(lf_port_base_t* port) {
 }
 
 // Forward declaration. See federate.h
-void synchronize_with_other_federates(void);
+void synchronize_with_other_federates(environment_t* env);
 
 /**
  * Wait until physical time matches or exceeds the specified logical time,
@@ -699,16 +699,10 @@ void _lf_initialize_start_tag(environment_t *env) {
         // Reset status fields before talking to the RTI to set network port
         // statuses to unknown
         reset_status_fields_on_input_port_triggers();
-
-        // Get a start_time from the RTI
-        synchronize_with_other_federates(); // Resets start_time in federated execution according to the RTI.
-    }
-
-    // The start time will likely have changed. Adjust the current tag and stop tag.
-    env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
-    if (duration >= 0LL) {
-        // A duration has been specified. Recalculate the stop time.
-       env->stop_tag = ((tag_t) {.time = start_time + duration, .microstep = 0});
+        // This will update the start_tag, current_tag and stop_tag
+        synchronize_with_other_federates(env);
+    } else {
+        lf_print_error_and_exit("Enclaves and federates dont mix");
     }
 
     _lf_initialize_timers(env);
@@ -1023,11 +1017,12 @@ void* worker(void* arg) {
         // If we have scheduling enclaves. We must get a TAG to the start tag.
         LF_PRINT_LOG("Environment %u: Worker thread %d waits for TAG to (0,0).",env->id, worker_number);
 
-        tag_t tag_granted = rti_next_event_tag_locked(env->enclave_info, env->current_tag);
-        LF_ASSERT(  lf_tag_compare(tag_granted, env->current_tag) == 0,
-                    "We did not receive a TAG to the start tag.");
+        tag_t tag_granted = rti_next_event_tag_locked(env->enclave_info, env->start_tag);
+        LF_ASSERT(  lf_tag_compare(tag_granted, env->start_tag) == 0,
+                    "We did not receive a TAG to the start tag. Got tag " PRINTF_TAG, tag_granted);
+        env->current_tag = env->start_tag;
     }
-    #endif 
+    #endif
 
     // Release mutex and start working.
     lf_mutex_unlock(&env->mutex); 

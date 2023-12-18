@@ -35,7 +35,7 @@ static rti_local_t * rti_local;
 lf_mutex_t rti_mutex;
 
 void initialize_local_rti(environment_t *envs, int num_envs) {
-    rti_local = (rti_local_t*)malloc(sizeof(rti_local_t));
+    rti_local = (rti_local_t*)calloc(1, sizeof(rti_local_t));
     LF_ASSERT(rti_local, "Out of memory");
 
     initialize_rti_common(&rti_local->base);
@@ -47,7 +47,7 @@ void initialize_local_rti(environment_t *envs, int num_envs) {
     // Allocate memory for the enclave_info objects
     rti_local->base.scheduling_nodes = (scheduling_node_t**)calloc(num_envs, sizeof(scheduling_node_t*));
     for (int i = 0; i < num_envs; i++) {
-        enclave_info_t *enclave_info = (enclave_info_t *) malloc(sizeof(enclave_info_t));
+        enclave_info_t *enclave_info = (enclave_info_t *) calloc(1, sizeof(enclave_info_t));
         initialize_enclave_info(enclave_info, i, &envs[i]);
         rti_local->base.scheduling_nodes[i] = (scheduling_node_t *) enclave_info;
 
@@ -96,8 +96,17 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
     tag_t previous_ptag = e->base.last_provisionally_granted;
 
     update_scheduling_node_next_event_tag_locked(&e->base, next_event_tag);
+
+    // If this enclave has no upstream, then we give it the TAG and return
+    if (e->base.num_upstream == 0) {
+        LF_PRINT_LOG("RTI: enclave %u has no upstream. Giving it a to the NET", e->base.id);
+        // Release RTI mutex and re-enter the critical section of the source enclave before returning.
+        LF_ASSERT(lf_mutex_unlock(rti_local->base.mutex) == 0, "Could not unlock mutex");
+        LF_ASSERT(lf_mutex_lock(&e->env->mutex) == 0, "Could not lock mutex");
+        return next_event_tag;
+    }
     
-    // Return early if we already have been granted past the NET.
+    // Also return early if we already was granted this tag.
     if (lf_tag_compare(e->base.last_granted, next_event_tag) >= 0) {
         LF_PRINT_LOG("RTI: enclave %u has already been granted a TAG to" PRINTF_TAG ". Returning with a TAG to" PRINTF_TAG " ",
         e->base.id, e->base.last_granted.time - lf_time_start(), e->base.last_granted.microstep,
@@ -109,22 +118,19 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
         return next_event_tag;
     }
     
-    // If this enclave has no upstream, then we give a TAG till forever straight away.
-    if (e->base.num_upstream == 0) {
-        LF_PRINT_LOG("RTI: enclave %u has no upstream. Giving it a to the NET", e->base.id);
-        e->base.last_granted = next_event_tag;
-    }
 
+    // We stay in this while loop until we get a TAG. It might not be the TAG
+    // we requested.
     while(true) {
-        // Determine whether the above call notified a TAG.
-        // If so, return that value. Note that we dont care about PTAGs as we
-        // have disallowed zero-delay enclave loops.
+        // If we have been granted a TAG greater than our previously granted TAG.
+        // then return with the min of this tag and our NET.
         if (lf_tag_compare(previous_tag, e->base.last_granted) < 0) {
-            result.tag = e->base.last_granted;
+            result.tag = lf_tag_min(e->base.last_granted, next_event_tag);
             result.is_provisional = false;
             break;
         }
-        // If not, block.
+        // If we have not received such a TAG. Then we will wait on a condition
+        // variable until another enclave advances their time and release us.
         LF_PRINT_LOG("RTI: enclave %u sleeps waiting for TAG to" PRINTF_TAG " ",
         e->base.id, e->base.next_event.time - lf_time_start(), e->base.next_event.microstep);
         LF_ASSERT(lf_cond_wait(&e->next_event_condition) == 0, "Could not wait for cond var");

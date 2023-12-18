@@ -508,7 +508,7 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     // Recycle event_t structs, if possible.
     event_t* e = _lf_get_new_event(env);
     e->trigger = timer;
-    e->time = lf_time_logical(env) + delay;
+    e->time = env->start_tag.time + delay;
     // NOTE: No lock is being held. Assuming this only happens at startup.
     pqueue_insert(env->event_q, e);
     tracepoint_schedule(env->trace, timer, delay); // Trace even though schedule is not called.
@@ -675,7 +675,7 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
     LF_PRINT_DEBUG("_lf_schedule_at_tag() called with tag " PRINTF_TAG " at tag " PRINTF_TAG ".",
                   tag.time - start_time, tag.microstep,
                   current_logical_tag.time - start_time, current_logical_tag.microstep);
-    if (lf_tag_compare(tag, current_logical_tag) <= 0) {
+    if (lf_tag_compare(tag, current_logical_tag) < 0) {
         lf_print_warning("_lf_schedule_at_tag(): requested to schedule an event in the past.");
         return -1;
     }
