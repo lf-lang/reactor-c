@@ -2270,7 +2270,11 @@ void terminate_execution(environment_t* env) {
     // Hence, it is paramount that these mutexes not allow for any
     // possibility of deadlock. To ensure this, this
     // function should NEVER be called while holding any mutex lock.
-    lf_mutex_lock(&outbound_socket_mutex);
+    // However, this cannot be ensured because this function is called
+    // when a SIGINT is received, which can be triggered by a user, so
+    // trying to acquire a mutex in this function can result in a deadlock.
+    // Better to do without the mutex and tolerate any resulting errors.
+    // lf_mutex_lock(&outbound_socket_mutex);
     for (int i=0; i < NUMBER_OF_FEDERATES; i++) {
 
         // Close outbound connections, in case they have not closed themselves.
@@ -2278,6 +2282,11 @@ void terminate_execution(environment_t* env) {
         _lf_close_outbound_socket(i);
     }
     // Resign the federation, which will close the socket to the RTI.
+    // Note that to write ensure that the resign message is not corrupted,
+    // we should acquire the mutex before writing to the socket.
+    // Here, we assume that that write will complete or fail without blocking.
+    // Otherwise, there will be deadlock risk here.
+    // lf_mutex_lock(&outbound_socket_mutex);
     if (_fed.socket_TCP_RTI >= 0) {
         size_t bytes_to_write = 1 + sizeof(tag_t);
         unsigned char buffer[bytes_to_write];
@@ -2291,7 +2300,7 @@ void terminate_execution(environment_t* env) {
             LF_PRINT_LOG("Resigned.");
         }
     }
-    lf_mutex_unlock(&outbound_socket_mutex);
+    // lf_mutex_unlock(&outbound_socket_mutex);
 
     LF_PRINT_DEBUG("Requesting closing of incoming P2P sockets.");
     // Request closing the incoming P2P sockets.
