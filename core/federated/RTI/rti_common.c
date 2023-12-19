@@ -113,6 +113,40 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e) {
     return t_d;
 }
 
+tag_t eimt_strict(scheduling_node_t* e) {
+    // Find the tag of the earliest possible incoming message from immediately upstream
+    // enclaves or federates that are not part of a zero-delay cycle.
+    // This will be the smallest upstream NET plus the least delay.
+    // This could be NEVER_TAG if the RTI has not seen a NET from some upstream node.
+    tag_t t_d = FOREVER_TAG;
+    for (int i = 0; i < e->num_upstream; i++) {
+        scheduling_node_t* upstream = rti_common->scheduling_nodes[e->upstream[i]];
+        // Skip this node if it is part of a zero-delay cycle.
+        if (is_in_zero_delay_cycle(upstream)) continue;
+        // If we haven't heard from the upstream node, then assume it can send an event at the start time.
+        if (lf_tag_compare(upstream->next_event, NEVER_TAG) == 0) {
+            tag_t start_tag = {.time = start_time, .microstep = 0};
+            upstream->next_event = start_tag;
+        }
+        // Need to consider nodes that are upstream of the upstream node because those
+        // nodes may send messages to the upstream node.
+        tag_t earliest = earliest_future_incoming_message_tag(upstream);
+        // If the next event of the upstream node is earlier, then use that.
+        if (lf_tag_compare(upstream->next_event, earliest) < 0) {
+            earliest = upstream->next_event;
+        }
+        tag_t earliest_tag_from_upstream = lf_delay_tag(earliest, e->upstream_delay[i]);
+        LF_PRINT_DEBUG("RTI: Strict EIMT of fed/encl %d at fed/encl %d has tag " PRINTF_TAG ".",
+                e->id,
+                upstream->id,
+                earliest_tag_from_upstream.time - start_time, earliest_tag_from_upstream.microstep);
+        if (lf_tag_compare(earliest_tag_from_upstream, t_d) < 0) {
+            t_d = earliest_tag_from_upstream;
+        }
+    }
+    return t_d;
+}
+
 tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     tag_advance_grant_t result = {.tag = NEVER_TAG, .is_provisional = false};
 
@@ -152,24 +186,26 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     // Find the tag of the earliest event that may be later received from an upstream enclave
     // or federate (which includes any after delays on the connections).
     tag_t t_d = earliest_future_incoming_message_tag(e);
+    // Strict version of the above. This is a tag that must be strictly greater than
+    // that of any granted PTAG.
+    tag_t t_d_strict = eimt_strict(e);
 
     LF_PRINT_LOG("RTI: Earliest next event upstream of node %d has tag " PRINTF_TAG ".",
             e->id, t_d.time - start_time, t_d.microstep);
 
     // Given an EIMT (earliest incoming message tag) there are these possible scenarios:
     //  1) The EIMT is greater than the NET we want to advance to. Grant a TAG.
-    //  2) The EIMT is equal to the NET and the federate is part of a zero-delay cycle (ZDC).
-    //  3) The EIMT is equal to the NET and the federate is not part of a ZDC.
-    //  4) The EIMT is less than the NET
-    // In (1) we can give a TAG to NET. In (2) we can give a PTAG.
-    // In (3) and (4), we wait for further updates from upstream federates.
+    //  2) The EIMT is equal to the NET and the strict EIMT is greater than the net
+    //     and the federate is part of a zero-delay cycle (ZDC).  Grant a PTAG.
+    //  3) Otherwise, grant nothing and wait for further updates.
 
     if ( // Scenario (1) above
         lf_tag_compare(t_d, e->next_event) > 0                      // EIMT greater than NET
+        && lf_tag_compare(e->next_event, NEVER_TAG) > 0             // NET is not NEVER_TAG
         && lf_tag_compare(t_d, e->last_provisionally_granted) >= 0  // The grant is not redundant
-                                                                      // (equal is important to override any previous
-                                                                      // PTAGs).
-        && lf_tag_compare(t_d, e->last_granted) > 0                   // The grant is not redundant.
+                                                                    // (equal is important to override any previous
+                                                                    // PTAGs).
+        && lf_tag_compare(t_d, e->last_granted) > 0                 // The grant is not redundant.
     ) {
         // No upstream node can send events that will be received with a tag less than or equal to
         // e->next_event, so it is safe to send a TAG.
@@ -180,9 +216,10 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
                 e->next_event.time - lf_time_start(),
                 e->next_event.microstep);
         result.tag = e->next_event;
-    } else if( // Scenario (2) or (3) above
+    } else if( // Scenario (2) above
         lf_tag_compare(t_d, e->next_event) == 0                     // EIMT equal to NET
         && is_in_zero_delay_cycle(e)                                // The node is part of a ZDC
+        && lf_tag_compare(t_d_strict, e->next_event) > 0            // The strict EIMT is greater than the NET
         && lf_tag_compare(t_d, e->last_provisionally_granted) > 0   // The grant is not redundant
         && lf_tag_compare(t_d, e->last_granted) > 0                 // The grant is not redundant.
     ) { 
@@ -318,7 +355,7 @@ void update_min_delays_upstream(scheduling_node_t* node) {
         // Put the results onto the node's struct.
         node->num_min_delays = count;
         node->min_delays = (minimum_delay_t*)malloc(count * sizeof(minimum_delay_t));
-        LF_PRINT_DEBUG("++++ Node %hu(is in ZDC: %d\n", node->id, node->flags & IS_IN_ZERO_DELAY_CYCLE);
+        LF_PRINT_DEBUG("++++ Node %hu is in ZDC: %d", node->id, is_in_zero_delay_cycle(node));
         int k = 0;
         for (int i = 0; i < rti_common->number_of_scheduling_nodes; i++) {
             if (lf_tag_compare(path_delays[i], FOREVER_TAG) < 0) {

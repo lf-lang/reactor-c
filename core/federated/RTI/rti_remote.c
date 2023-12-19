@@ -68,7 +68,7 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
         timeout_time = (struct timeval){.tv_sec = UDP_TIMEOUT_TIME / BILLION, .tv_usec = (UDP_TIMEOUT_TIME % BILLION) / 1000};
     }
     if (socket_descriptor < 0) {
-        lf_print_error_and_exit("Failed to create RTI socket.");
+        lf_print_error_system_failure("Failed to create RTI socket.");
     }
 
     // Set the option for this socket to reuse the same address
@@ -86,8 +86,8 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
 
     /*
      * The following used to permit reuse of a port that an RTI has previously
-     * used that has not been released. We no longer do this, but instead
-     * increment the port number until an available port is found.
+     * used that has not been released. We no longer do this, and instead retry
+     * some number of times after waiting.
 
     // SO_REUSEPORT (since Linux 3.9)
     //       Permits multiple AF_INET or AF_INET6 sockets to be bound to an
@@ -127,14 +127,11 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
             (struct sockaddr *) &server_fd,
             sizeof(server_fd));
 
-    // If the binding fails with this port and no particular port was specified
-    // in the LF program, then try the next few ports in sequence.
-    while (result != 0
-            && specified_port == 0
-            && port >= STARTING_PORT
-            && port <= STARTING_PORT + PORT_RANGE_LIMIT) {
-        lf_print("RTI failed to get port %d. Trying %d.", port, port + 1);
-        port++;
+    // Try repeatedly to bind to the specified port.
+    int count = 1;
+    while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
+        lf_print("RTI failed to get port %d. Will try again.", port);
+        lf_sleep(PORT_BIND_RETRY_INTERVAL);
         server_fd.sin_port = htons(port);
         result = bind(
                 socket_descriptor,
@@ -142,13 +139,7 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
                 sizeof(server_fd));
     }
     if (result != 0) {
-        if (specified_port == 0) {
-            lf_print_error_and_exit("Failed to bind the RTI socket. Cannot find a usable port. "
-                    "Consider increasing PORT_RANGE_LIMIT in net_common.h.");
-        } else {
-            lf_print_error_and_exit("Failed to bind the RTI socket. Specified port is not available. "
-                    "Consider leaving the port unspecified");
-        }
+        lf_print_error_and_exit("Failed to bind the RTI socket. Port %d is not available. ", port);
     }
     char* type = "TCP";
     if (socket_type == UDP) {
@@ -251,9 +242,9 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
         // a later or equal PTAG or TAG sent previously and if their transitive
         // NET is greater than or equal to the tag.
         // This is needed to stimulate absent messages from upstream and break deadlocks.
-        // NOTE: This could later be replaced with a TNET mechanism once
-        // we have an available encoding of causality interfaces.
-        // That might be more efficient.
+        // The scenario this deals with is illustrated in `test/C/src/federated/FeedbackDelay2.lf`
+        // and `test/C/src/federated/FeedbackDelay4.lf`.
+        // Note that this is transitive.
         // NOTE: This is not needed for enclaves because zero-delay loops are prohibited.
         // It's only needed for federates, which is why this is implemented here.
         for (int j = 0; j < e->num_upstream; j++) {
@@ -263,10 +254,13 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
             if (upstream->state == NOT_CONNECTED) continue;
 
             tag_t earliest = earliest_future_incoming_message_tag(upstream);
+            tag_t strict_earliest = eimt_strict(upstream);
 
             // If these tags are equal, then a TAG or PTAG should have already been granted,
             // in which case, another will not be sent. But it may not have been already granted.
-            if (lf_tag_compare(earliest, tag) >= 0) {
+            if (lf_tag_compare(earliest, tag) > 0) {
+                notify_tag_advance_grant(upstream, tag);
+            } else if(lf_tag_compare(earliest, tag) == 0 && lf_tag_compare(strict_earliest, tag) > 0) {
                 notify_provisional_tag_advance_grant(upstream, tag);
             }
         }
@@ -1016,7 +1010,7 @@ void handle_federate_resign(federate_info_t *my_fed) {
     // an orderly shutdown.
     // close(my_fed->socket); //  from unistd.h
 
-    lf_print("Federate %d has resigned.", my_fed->enclave.id);
+    lf_print("RTI: Federate %d has resigned.", my_fed->enclave.id);
 
     // Check downstream federates to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
@@ -1093,8 +1087,10 @@ void* federate_info_thread_TCP(void* fed) {
     }
 
     // Nothing more to do. Close the socket and exit.
+    // Prevent multiple threads from closing the same socket at the same time.
+    lf_mutex_lock(&rti_mutex);
     close(my_fed->socket); //  from unistd.h
-
+    lf_mutex_unlock(&rti_mutex);
     return NULL;
 }
 
@@ -1458,7 +1454,7 @@ void connect_to_federates(int socket_descriptor) {
                 // Got a socket
                 break;
             } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
-                lf_print_error_and_exit("RTI failed to accept the socket. %s.", strerror(errno));
+                lf_print_error_system_failure("RTI failed to accept the socket.");
             } else {
                 // Try again
                 lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
@@ -1558,8 +1554,8 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
 int32_t start_rti_server(uint16_t port) {
     int32_t specified_port = port;
     if (port == 0) {
-        // Use the default starting port.
-        port = STARTING_PORT;
+        // Use the default port.
+        port = DEFAULT_PORT;
     }
     _lf_initialize_clock();
     // Create the TCP socket server

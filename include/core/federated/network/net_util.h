@@ -51,6 +51,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../../platform.h"
 #include "../../tag.h"
 
+#define NUM_SOCKET_RETRIES 10
+#define DELAY_BETWEEN_SOCKET_RETRIES MSEC(100)
+
 #define HOST_LITTLE_ENDIAN 1
 #define HOST_BIG_ENDIAN 2
 
@@ -62,6 +65,10 @@ int host_is_big_endian(void);
 
 #ifdef FEDERATED
 
+/**
+ * Mutex protecting socket close operations.
+ */
+extern lf_mutex_t socket_mutex;
 
 /**
  * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
