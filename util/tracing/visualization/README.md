@@ -38,4 +38,10 @@ It is also possible to operate on specific files. In such a case, run `fedsd` wi
 fedsd -r <rti.lft> -f <federate__f1.lft> <federate__f2.lft>
 ```
 
+If the trace is too long, the target time interval can be specified. Running `fedsd` with `-s <start_time>` will show the messages with the tag later than or equal to the start time and with `-e <end_time>` will show the messages with the tag strictly earlier than the end_time. Here, the time unit of `start_time` and `end_time` is `nsec`.
+
+```bash
+fedsd -s <start_time> -e <end_time>
+```
+
 The output is an html file named `trace_svg.html` (in the current directory) that contains the sequence of interactions between the federates and the RTI.
