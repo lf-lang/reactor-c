@@ -73,7 +73,7 @@ const char *rti_trace_file_name = "rti.lft";
  */
 void termination() {
     if (rti.base.tracing_enabled) {
-        stop_trace(rti.base.trace);
+        stop_trace_locked(rti.base.trace);
         lf_print("RTI trace file saved.");
     }   
     lf_print("RTI is exiting.");
