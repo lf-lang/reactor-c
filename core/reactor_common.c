@@ -1719,12 +1719,21 @@ void initialize_global(void) {
     _lf_initialize_trigger_objects() ;
 }
 
+/** Flag to prevent termination function from executing twice. */
+bool _lf_termination_executed = false;
+
+/** Flag used to disable cleanup operations on normal termination. */
+bool _lf_normal_termination = false;
+
 /**
  * Report elapsed logical and physical times and report if any
  * memory allocated by set_new, set_new_array, or lf_writable_copy
  * has not been freed.
  */
 void termination(void) {
+    if (_lf_termination_executed) return;
+    _lf_termination_executed = true;
+
     environment_t *env;
     int num_envs = _lf_get_environments(&env);
     // Invoke the code generated termination function. It terminates the federated related services. 
@@ -1739,58 +1748,66 @@ void termination(void) {
         }
         lf_print("---- Terminating environment %u", env->id);
         // Stop any tracing, if it is running.
+        // No need to acquire a mutex because if this is normal termination, all
+        // other threads have stopped, and if it's not, then acquiring a mutex could
+        // lead to a deadlock.
         stop_trace_locked(env->trace);
 
-        _lf_start_time_step(env);
+        // Skip most cleanup on abnormal termination.
+        if (_lf_normal_termination) {
+            _lf_start_time_step(env);
 
     #ifdef MODAL_REACTORS
-        // Free events and tokens suspended by modal reactors.
-        _lf_terminate_modal_reactors(env);
+            // Free events and tokens suspended by modal reactors.
+            _lf_terminate_modal_reactors(env);
     #endif
-        // If the event queue still has events on it, report that.
-        if (env->event_q != NULL && pqueue_size(env->event_q) > 0) {
-            lf_print_warning("---- There are %zu unprocessed future events on the event queue.", pqueue_size(env->event_q));
-            event_t* event = (event_t*)pqueue_peek(env->event_q);
-            interval_t event_time = event->time - start_time;
-            lf_print_warning("---- The first future event has timestamp " PRINTF_TIME " after start time.", event_time);
-        }
-        // Print elapsed times.
-        // If these are negative, then the program failed to start up.
-        interval_t elapsed_time = lf_time_logical_elapsed(env);
-        if (elapsed_time >= 0LL) {
-            char time_buffer[29]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
-            lf_comma_separated_time(time_buffer, elapsed_time);
-            printf("---- Elapsed logical time (in nsec): %s\n", time_buffer);
-
-            // If start_time is 0, then execution didn't get far enough along
-            // to initialize this.
-            if (start_time > 0LL) {
-                lf_comma_separated_time(time_buffer, lf_time_physical_elapsed());
-                printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
+            // If the event queue still has events on it, report that.
+            if (env->event_q != NULL && pqueue_size(env->event_q) > 0) {
+                lf_print_warning("---- There are %zu unprocessed future events on the event queue.", pqueue_size(env->event_q));
+                event_t* event = (event_t*)pqueue_peek(env->event_q);
+                interval_t event_time = event->time - start_time;
+                lf_print_warning("---- The first future event has timestamp " PRINTF_TIME " after start time.", event_time);
             }
-        }
-        
-        // Free up memory associated with environment
-        environment_free(env);
+            // Print elapsed times.
+            // If these are negative, then the program failed to start up.
+            interval_t elapsed_time = lf_time_logical_elapsed(env);
+            if (elapsed_time >= 0LL) {
+                char time_buffer[29]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
+                lf_comma_separated_time(time_buffer, elapsed_time);
+                printf("---- Elapsed logical time (in nsec): %s\n", time_buffer);
 
+                // If start_time is 0, then execution didn't get far enough along
+                // to initialize this.
+                if (start_time > 0LL) {
+                    lf_comma_separated_time(time_buffer, lf_time_physical_elapsed());
+                    printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
+                }
+            }
+        
+            // Free up memory associated with environment
+            environment_free(env);
+        }
         env++;
     }
-    _lf_free_all_tokens(); // Must be done before freeing reactors.
-    // Issue a warning if a memory leak has been detected.
-    if (_lf_count_payload_allocations > 0) {
-        lf_print_warning("Memory allocated for messages has not been freed.");
-        lf_print_warning("Number of unfreed messages: %d.", _lf_count_payload_allocations);
-    }
-    if (_lf_count_token_allocations > 0) {
-        lf_print_warning("Memory allocated for tokens has not been freed!");
-        lf_print_warning("Number of unfreed tokens: %d.", _lf_count_token_allocations);
-    }
-#if !defined(LF_SINGLE_THREADED)
-    for (int i = 0; i < _lf_watchdog_count; i++) {
-        if (_lf_watchdogs[i].base->reactor_mutex != NULL) {
-            free(_lf_watchdogs[i].base->reactor_mutex);
+    // Skip most cleanup on abnormal termination.
+    if (_lf_normal_termination) {
+        _lf_free_all_tokens(); // Must be done before freeing reactors.
+        // Issue a warning if a memory leak has been detected.
+        if (_lf_count_payload_allocations > 0) {
+            lf_print_warning("Memory allocated for messages has not been freed.");
+            lf_print_warning("Number of unfreed messages: %d.", _lf_count_payload_allocations);
         }
-    }
+        if (_lf_count_token_allocations > 0) {
+            lf_print_warning("Memory allocated for tokens has not been freed!");
+            lf_print_warning("Number of unfreed tokens: %d.", _lf_count_token_allocations);
+        }
+#if !defined(LF_SINGLE_THREADED)
+        for (int i = 0; i < _lf_watchdog_count; i++) {
+            if (_lf_watchdogs[i].base->reactor_mutex != NULL) {
+                free(_lf_watchdogs[i].base->reactor_mutex);
+            }
+        }
 #endif
-    _lf_free_all_reactors();
+        _lf_free_all_reactors();
+    }
 }

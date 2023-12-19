@@ -19,6 +19,9 @@ extern bool _lf_execution_started;
 extern bool keepalive_specified;
 extern interval_t _lf_fed_STA_offset;
 
+/** Flag used to disable cleanup operations on normal termination. */
+extern bool _lf_normal_termination;
+
 extern int default_argc;
 extern const char** default_argv;
 

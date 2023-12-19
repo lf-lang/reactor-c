@@ -1239,6 +1239,10 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
             LF_PRINT_LOG("---- All worker threads exited successfully.");
         }
     }
+    _lf_normal_termination = true;
+    // Invoke termination function here before freeing the local RTI.
+    termination();
+    
 #if defined LF_ENCLAVES
     free_local_rti();
 #endif
