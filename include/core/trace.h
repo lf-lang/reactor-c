@@ -435,6 +435,10 @@ void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, i
  * close the files.
  */
 void stop_trace(trace_t* trace);
+
+/**
+ * Version of stop_trace() that does not lock the trace mutex.
+ */
 void stop_trace_locked(trace_t* trace);
 
 ////////////////////////////////////////////////////////////
