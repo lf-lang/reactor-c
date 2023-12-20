@@ -71,12 +71,13 @@ const char *rti_trace_file_name = "rti.lft";
 bool normal_termination = false;
 
 /**
- * @brief Function to run upon abnormal termination.
- * This function will be invoked both after main() returns, and when a signal
+ * @brief Function to run upon termination.
+ * This function will be invoked both after main() returns and when a signal
  * that results in terminating the process, such as SIGINT.  In the former
  * case, it should do nothing.  In the latter case, it will attempt to write
  * the trace file, but without acquiring a mutex lock, so the resulting files
- * may be incomplete or even corrupted.
+ * may be incomplete or even corrupted.  But this is better than just failing
+ * to write the data we have collected so far.
  */
 void termination() {
     if (!normal_termination) {

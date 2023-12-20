@@ -115,7 +115,7 @@ federation_metadata_t federation_metadata = {
     .rti_user = NULL
 };
 
-void create_server(int specified_port, int id) {
+void create_server(int specified_port) {
     assert(specified_port <= UINT16_MAX && specified_port >= 0);
     uint16_t port = (uint16_t)specified_port;
     LF_PRINT_LOG("Creating a socket server on port %d.", port);
@@ -166,7 +166,7 @@ void create_server(int specified_port, int id) {
     // which according to the Mac man page is limited to 128.
     listen(socket_descriptor, 128);
 
-    lf_print("Server for communicating with other federates started using port %d.", _fed.server_port);
+    LF_PRINT_LOG("Server for communicating with other federates started using port %d.", _fed.server_port);
 
     // Send the server port number to the RTI
     // on an MSG_TYPE_ADDRESS_ADVERTISEMENT message (@see net_common.h).
@@ -2279,7 +2279,7 @@ void terminate_execution(environment_t* env) {
     assert(env != GLOBAL_ENVIRONMENT);
 
     // For an abnormal termination (e.g. a SIGINT), we need to send a
-    // MSG_TYPE_RESIGN message to the RTI, but we should not trace it.
+    // MSG_TYPE_RESIGN message to the RTI, but we should not acquire a mutex.
     if (_fed.socket_TCP_RTI >= 0) {
         if (_lf_normal_termination) {
             lf_mutex_lock(&outbound_socket_mutex);
