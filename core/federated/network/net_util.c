@@ -69,21 +69,21 @@ int create_real_time_tcp_socket_errexit() {
     //  reduce network traffic
     // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
     //  is enough.
-    int flag = 1;
-    int result = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
+    // int flag = 1;
+    // int result = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
     
-    if (result < 0) {
-        lf_print_error_system_failure("Failed to disable Nagle algorithm on socket server.");
-    }
+    // if (result < 0) {
+    //     lf_print_error_system_failure("Failed to disable Nagle algorithm on socket server.");
+    // }
     
-    // Disable delayed ACKs. Only possible on Linux
-    #if defined(PLATFORM_Linux)
-        result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
+    // // Disable delayed ACKs. Only possible on Linux
+    // #if defined(PLATFORM_Linux)
+    //     result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
         
-        if (result < 0) {
-            lf_print_error_system_failure("Failed to disable Nagle algorithm on socket server.");
-        }
-    #endif
+    //     if (result < 0) {
+    //         lf_print_error_system_failure("Failed to disable Nagle algorithm on socket server.");
+    //     }
+    // #endif
     
     return sock;
 }
