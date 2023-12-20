@@ -66,16 +66,6 @@ extern instant_t start_time;
 #define MAX_STALL_INTERVAL MSEC(1)
 
 /**
- * Unless the "fast" option is given, an LF program will wait until
- * physical time matches logical time before handling an event with
- * a given logical time. The amount of time is less than this given
- * threshold, then no wait will occur. The purpose of this is
- * to prevent unnecessary delays caused by simply setting up and
- * performing the wait.
- */
-#define MIN_SLEEP_DURATION USEC(10)
-
-/**
  * Global mutex, used for synchronizing across environments. Mainly used for token-management and tracing
 */
 lf_mutex_t global_mutex;
@@ -246,23 +236,24 @@ void synchronize_with_other_federates(void);
 
 /**
  * Wait until physical time matches or exceeds the specified logical time,
- * unless -fast is given.
+ * unless -fast is given. For decentralized coordination, this function will
+ * add the STA offset to the wait time.
  *
  * If an event is put on the event queue during the wait, then the wait is
  * interrupted and this function returns false. It also returns false if the
- * timeout time is reached before the wait has completed.
+ * timeout time is reached before the wait has completed. Note this this could 
+ * return true even if the a new event was placed on the queue if that event
+ * time matches or exceeds the specified time.
  *
- * The mutex lock is assumed to be held by the calling thread.
- * Note this this could return true even if the a new event
- * was placed on the queue if that event time matches or exceeds
- * the specified time.
+ * The mutex lock associated with the condition argument is assumed to be held by
+ * the calling thread. This mutex is released while waiting. If the wait time is
+ * too small to actually wait (less than MIN_SLEEP_DURATION), then this function
+ * immediately returns true and the mutex is not released.
  *
  * @param env Environment within which we are executing.
  * @param logical_time Logical time to wait until physical time matches it.
- * @param return_if_interrupted If this is false, then wait_util will wait
- *  until physical time matches the logical time regardless of whether new
- *  events get put on the event queue. This is useful, for example, for
- *  synchronizing the start of the program.
+ * @param condition A condition variable that can interrupt the wait. The mutex
+ * associated with this condition variable will be released during the wait.
  *
  * @return Return false if the wait is interrupted either because of an event
  *  queue signal or if the wait time was interrupted early by reaching
@@ -846,7 +837,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(environment_t *env, int w
  * @param worker_number The ID of the worker.
  * @param reaction The reaction whose STP offset has been violated.
  *
- * @return true if an STP violation occurred. false otherwise.
+ * @return true if an STP violation occurred and was handled. false otherwise.
  */
 bool _lf_worker_handle_STP_violation_for_reaction(environment_t* env, int worker_number, reaction_t* reaction) {
     bool violation_occurred = false;
@@ -876,6 +867,10 @@ bool _lf_worker_handle_STP_violation_for_reaction(environment_t* env, int worker
             // There is a violation
             violation_occurred = true;
             (*handler)(reaction->self);
+
+            // Reset the STP violation flag because it has been dealt with.
+            // Downstream handlers should not be invoked.
+            reaction->is_STP_violated = false;
 
             // If the reaction produced outputs, put the resulting
             // triggered reactions into the queue or execute them directly if possible.
@@ -907,7 +902,7 @@ bool _lf_worker_handle_STP_violation_for_reaction(environment_t* env, int worker
  * @param worker_number The ID of the worker.
  * @param reaction The reaction.
  *
- * @return true if a violation occurred. false otherwise.
+ * @return true if a violation occurred and was handled. false otherwise.
  */
 bool _lf_worker_handle_violations(environment_t *env, int worker_number, reaction_t* reaction) {
     bool violation = false;
@@ -1151,6 +1146,10 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Ignore SIGPIPE errors, which terminate the entire application if
     // socket write() fails because the reader has closed the socket.
     // Instead, cause an EPIPE error to be set when write() fails.
+    // NOTE: The reason for a broken socket causing a SIGPIPE signal
+    // instead of just having write() return an error is to robutly
+    // a foo | bar pipeline where bar crashes. The default behavior
+    // is for foo to also exit.
     signal(SIGPIPE, SIG_IGN);
 #endif // SIGPIPE
 
@@ -1239,6 +1238,10 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
             LF_PRINT_LOG("---- All worker threads exited successfully.");
         }
     }
+    _lf_normal_termination = true;
+    // Invoke termination function here before freeing the local RTI.
+    termination();
+    
 #if defined LF_ENCLAVES
     free_local_rti();
 #endif

@@ -116,6 +116,16 @@ bool keepalive_specified = false;
  */
 interval_t _lf_fed_STA_offset = 0LL;
 
+void _lf_print_event(void* event) {
+    if (event == NULL) {
+        printf("NULL");
+    } else {
+        event_t* ev = (event_t*)event;
+        lf_print("Event: Time=" PRINTF_TIME ", dummy=%d, timer=%d",
+                ev->time - start_time, ev->is_dummy, ev->trigger->is_timer);
+    }
+}
+
 /**
  * Allocate memory using calloc (so the allocated memory is zeroed out)
  * and record the allocated memory on the specified self struct so that
@@ -265,6 +275,11 @@ void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_n
  * counts between time steps and at the end of execution.
  */
 void _lf_start_time_step(environment_t *env) {
+    if (_lf_execution_started == false) {
+        // Execution hasn't started, so this is probably being invoked in termination
+        // due to an error.
+        return;
+    }
     assert(env != GLOBAL_ENVIRONMENT);
     LF_PRINT_LOG("--------- Start time step at tag " PRINTF_TAG ".", env->current_tag.time - start_time, env->current_tag.microstep);
     // Handle dynamically created tokens for mutable inputs.
@@ -349,8 +364,8 @@ void _lf_pop_events(environment_t *env) {
         }
 
 #ifdef MODAL_REACTORS
-        // If this event is associated with an incative it should haven been suspended and no longer on the event queue.
-        // FIXME This should not be possible
+        // If this event is associated with an inactive mode it should haven been suspended and no longer on the event queue.
+        // NOTE: This should not be possible
         if (!_lf_mode_is_active(event->trigger->mode)) {
             lf_print_warning("Assumption violated. There is an event on the event queue that is associated to an inactive mode.");
         }
@@ -366,8 +381,8 @@ void _lf_pop_events(environment_t *env) {
 #ifdef FEDERATED_DECENTRALIZED
                 // In federated execution, an intended tag that is not (NEVER, 0)
                 // indicates that this particular event is triggered by a network message.
-                // The intended tag is set in handle_timed_message in federate.c whenever
-                // a timed message arrives from another federate.
+                // The intended tag is set in handle_tagged_message in federate.c whenever
+                // a tagged message arrives from another federate.
                 if (event->intended_tag.time != NEVER) {
                     // If the intended tag of the event is actually set,
                     // transfer the intended tag to the trigger so that
@@ -918,7 +933,8 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     if (!trigger->is_timer) {
         delay += trigger->offset;
     }
-    interval_t intended_time = env->current_tag.time + delay;
+    tag_t intended_tag = (tag_t){.time = env->current_tag.time + delay, .microstep = 0};
+    
     LF_PRINT_DEBUG("_lf_schedule: env->current_tag.time = " PRINTF_TIME ". Total logical delay = " PRINTF_TIME "",
             env->current_tag.time, delay);
     interval_t min_spacing = trigger->period;
@@ -940,7 +956,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     // modify the intended time.
     if (trigger->is_physical) {
         // Get the current physical time and assign it as the intended time.
-        intended_time = lf_time_physical() + delay;
+        intended_tag.time = lf_time_physical() + delay;
     } else {
         // FIXME: We need to verify that we are executing within a reaction?
         // See reactor_threaded.
@@ -951,11 +967,11 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
         // - we have eliminated the possibility to have a negative additional delay; and
         // - we detect the asynchronous use of logical actions
         #ifndef NDEBUG
-        if (intended_time < env->current_tag.time) {
+        if (intended_tag.time < env->current_tag.time) {
             lf_print_warning("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
                     "Revising to the current time " PRINTF_TIME ".",
-                    env->current_tag.time - intended_time, env->current_tag.time);
-            intended_time = env->current_tag.time;
+                    env->current_tag.time - intended_tag.time, env->current_tag.time);
+            intended_tag.time = env->current_tag.time;
         }
         #endif
     }
@@ -969,7 +985,6 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     // Check for conflicts (a queued event with the same trigger and time).
     if (min_spacing <= 0) {
         // No minimum spacing defined.
-        tag_t intended_tag = (tag_t) {.time = intended_time, .microstep = 0u};
         e->time = intended_tag.time;
         event_t* found = (event_t *)pqueue_find_equal_same_priority(env->event_q, e);
         // Check for conflicts. Let events pile up in super dense time.
@@ -989,23 +1004,23 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
             }
             // Hook the event into the list.
             found->next = e;
-            trigger->last_time = intended_tag.time;
+            trigger->last_tag = intended_tag;
             return(0); // FIXME: return value
         }
         // If there are not conflicts, schedule as usual. If intended time is
         // equal to the current logical time, the event will effectively be
         // scheduled at the next microstep.
-    } else if (!trigger->is_timer && trigger->last_time != NEVER) {
+    } else if (!trigger->is_timer && trigger->last_tag.time != NEVER) {
         // There is a min_spacing and there exists a previously
         // scheduled event. It determines the
         // earliest time at which the new event can be scheduled.
         // Check to see whether the event is too early.
-        instant_t earliest_time = trigger->last_time + min_spacing;
+        instant_t earliest_time = trigger->last_tag.time + min_spacing;
         LF_PRINT_DEBUG("There is a previously scheduled event; earliest possible time "
                 "with min spacing: " PRINTF_TIME,
                 earliest_time);
         // If the event is early, see which policy applies.
-        if (earliest_time > intended_time) {
+        if (earliest_time > intended_tag.time) {
             LF_PRINT_DEBUG("Event is early.");
             switch(trigger->policy) {
                 case drop:
@@ -1023,7 +1038,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
                     event_t* dummy = _lf_get_new_event(env);
                     dummy->next = NULL;
                     dummy->trigger = trigger;
-                    dummy->time = trigger->last_time;
+                    dummy->time = trigger->last_tag.time;
                     event_t* found = (event_t *)pqueue_find_equal_same_priority(env->event_q, dummy);
 
                     if (found != NULL) {
@@ -1032,18 +1047,18 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
                         _lf_replace_token(found, token);
                         _lf_recycle_event(env, e);
                         _lf_recycle_event(env, dummy);
-                        // Leave the last_time the same.
+                        // Leave the last_tag the same.
                         return(0);
                     }
                     _lf_recycle_event(env, dummy);
 
                     // If the preceding event _has_ been handled, then adjust
                     // the tag to defer the event.
-                    intended_time = earliest_time;
+                    intended_tag = (tag_t){.time = earliest_time, .microstep = 0};
                     break;
                 default:
                     // Default policy is defer
-                    intended_time = earliest_time;
+                    intended_tag = (tag_t){.time = earliest_time, .microstep = 0};
                     break;
             }
         }
@@ -1054,16 +1069,16 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     // FIXME: This is a development assertion and might
     // not be necessary for end-user LF programs
     #ifndef NDEBUG
-    if (intended_time < env->current_tag.time) {
+    if (intended_tag.time < env->current_tag.time) {
         lf_print_error("Attempting to schedule an event earlier than current time by " PRINTF_TIME " nsec! "
                 "Revising to the current time " PRINTF_TIME ".",
-                env->current_tag.time - intended_time, env->current_tag.time);
-        intended_time = env->current_tag.time;
+                env->current_tag.time - intended_tag.time, env->current_tag.time);
+        intended_tag.time = env->current_tag.time;
     }
     #endif
 
     // Set the tag of the event.
-    e->time = intended_time;
+    e->time = intended_tag.time;
 
     // Do not schedule events if if the event time is past the stop time
     // (current microsteps are checked earlier).
@@ -1077,7 +1092,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
 
     // Store the time in order to check the min spacing
     // between this and any following event.
-    trigger->last_time = intended_time;
+    trigger->last_tag = intended_tag;
 
     // Queue the event.
     // NOTE: There is no need for an explicit microstep because
@@ -1367,7 +1382,7 @@ void schedule_output_reactions(environment_t *env, reaction_t* reaction, int wor
 #ifdef FEDERATED_DECENTRALIZED // Only pass down STP violation for federated programs that use decentralized coordination.
     // Extract the inherited STP violation
     bool inherited_STP_violation = reaction->is_STP_violated;
-    LF_PRINT_LOG("Reaction %s has STP violation status: %d.", reaction->name, reaction->is_STP_violated);
+    LF_PRINT_DEBUG("Reaction %s has STP violation status: %d.", reaction->name, reaction->is_STP_violated);
 #endif
     LF_PRINT_DEBUG("There are %zu outputs from reaction %s.", reaction->num_outputs, reaction->name);
     for (size_t i=0; i < reaction->num_outputs; i++) {
@@ -1714,80 +1729,96 @@ void initialize_global(void) {
     _lf_initialize_trigger_objects() ;
 }
 
+/** Flag to prevent termination function from executing twice. */
+bool _lf_termination_executed = false;
+
+/** Flag used to disable cleanup operations on normal termination. */
+bool _lf_normal_termination = false;
+
 /**
  * Report elapsed logical and physical times and report if any
  * memory allocated by set_new, set_new_array, or lf_writable_copy
  * has not been freed.
  */
 void termination(void) {
+    if (_lf_termination_executed) return;
+    _lf_termination_executed = true;
+
     environment_t *env;
     int num_envs = _lf_get_environments(&env);
     // Invoke the code generated termination function. It terminates the federated related services. 
-    // It should only be called for the top-level environment, which, after convention, is the first environment.
+    // It should only be called for the top-level environment, which, by convention, is the first environment.
     terminate_execution(env);
-
 
     // In order to free tokens, we perform the same actions we would have for a new time step.
     for (int i = 0; i<num_envs; i++) {
-        lf_print("---- Terminating environment %u", env->id);
-        if (!env->initialized) {
+        // NOTE: env pointer is incremented at the end of this loop.
+        if (env == NULL || !env->initialized) {
             lf_print_warning("---- Environment %u was never initialized", env->id);
             continue;
         }
+        lf_print("---- Terminating environment %u", env->id);
         // Stop any tracing, if it is running.
+        // No need to acquire a mutex because if this is normal termination, all
+        // other threads have stopped, and if it's not, then acquiring a mutex could
+        // lead to a deadlock.
         stop_trace_locked(env->trace);
 
-        _lf_start_time_step(env);
+        // Skip most cleanup on abnormal termination.
+        if (_lf_normal_termination) {
+            _lf_start_time_step(env);
 
     #ifdef MODAL_REACTORS
-        // Free events and tokens suspended by modal reactors.
-        _lf_terminate_modal_reactors(env);
+            // Free events and tokens suspended by modal reactors.
+            _lf_terminate_modal_reactors(env);
     #endif
-
-        // If the event queue still has events on it, report that.
-        if (env->event_q != NULL && pqueue_size(env->event_q) > 0) {
-            lf_print_warning("---- There are %zu unprocessed future events on the event queue.", pqueue_size(env->event_q));
-            event_t* event = (event_t*)pqueue_peek(env->event_q);
-            interval_t event_time = event->time - start_time;
-            lf_print_warning("---- The first future event has timestamp " PRINTF_TIME " after start time.", event_time);
-        }
-        // Print elapsed times.
-        // If these are negative, then the program failed to start up.
-        interval_t elapsed_time = lf_time_logical_elapsed(env);
-        if (elapsed_time >= 0LL) {
-            char time_buffer[29]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
-            lf_comma_separated_time(time_buffer, elapsed_time);
-            printf("---- Elapsed logical time (in nsec): %s\n", time_buffer);
-
-            // If start_time is 0, then execution didn't get far enough along
-            // to initialize this.
-            if (start_time > 0LL) {
-                lf_comma_separated_time(time_buffer, lf_time_physical_elapsed());
-                printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
+            // If the event queue still has events on it, report that.
+            if (env->event_q != NULL && pqueue_size(env->event_q) > 0) {
+                lf_print_warning("---- There are %zu unprocessed future events on the event queue.", pqueue_size(env->event_q));
+                event_t* event = (event_t*)pqueue_peek(env->event_q);
+                interval_t event_time = event->time - start_time;
+                lf_print_warning("---- The first future event has timestamp " PRINTF_TIME " after start time.", event_time);
             }
-        }
-        
-        // Free up memory associated with environment
-        environment_free(env);
+            // Print elapsed times.
+            // If these are negative, then the program failed to start up.
+            interval_t elapsed_time = lf_time_logical_elapsed(env);
+            if (elapsed_time >= 0LL) {
+                char time_buffer[29]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
+                lf_comma_separated_time(time_buffer, elapsed_time);
+                printf("---- Elapsed logical time (in nsec): %s\n", time_buffer);
 
+                // If start_time is 0, then execution didn't get far enough along
+                // to initialize this.
+                if (start_time > 0LL) {
+                    lf_comma_separated_time(time_buffer, lf_time_physical_elapsed());
+                    printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
+                }
+            }
+        
+            // Free up memory associated with environment
+            environment_free(env);
+        }
         env++;
     }
-    _lf_free_all_tokens(); // Must be done before freeing reactors.
-    // Issue a warning if a memory leak has been detected.
-    if (_lf_count_payload_allocations > 0) {
-        lf_print_warning("Memory allocated for messages has not been freed.");
-        lf_print_warning("Number of unfreed messages: %d.", _lf_count_payload_allocations);
-    }
-    if (_lf_count_token_allocations > 0) {
-        lf_print_warning("Memory allocated for tokens has not been freed!");
-        lf_print_warning("Number of unfreed tokens: %d.", _lf_count_token_allocations);
-    }
-#if !defined(LF_SINGLE_THREADED)
-    for (int i = 0; i < _lf_watchdog_count; i++) {
-        if (_lf_watchdogs[i].base->reactor_mutex != NULL) {
-            free(_lf_watchdogs[i].base->reactor_mutex);
+    // Skip most cleanup on abnormal termination.
+    if (_lf_normal_termination) {
+        _lf_free_all_tokens(); // Must be done before freeing reactors.
+        // Issue a warning if a memory leak has been detected.
+        if (_lf_count_payload_allocations > 0) {
+            lf_print_warning("Memory allocated for messages has not been freed.");
+            lf_print_warning("Number of unfreed messages: %d.", _lf_count_payload_allocations);
         }
-    }
+        if (_lf_count_token_allocations > 0) {
+            lf_print_warning("Memory allocated for tokens has not been freed!");
+            lf_print_warning("Number of unfreed tokens: %d.", _lf_count_token_allocations);
+        }
+#if !defined(LF_SINGLE_THREADED)
+        for (int i = 0; i < _lf_watchdog_count; i++) {
+            if (_lf_watchdogs[i].base->reactor_mutex != NULL) {
+                free(_lf_watchdogs[i].base->reactor_mutex);
+            }
+        }
 #endif
-    _lf_free_all_reactors();
+        _lf_free_all_reactors();
+    }
 }
