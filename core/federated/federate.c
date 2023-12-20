@@ -117,7 +117,7 @@ federation_metadata_t federation_metadata = {
     .rti_user = NULL
 };
 
-void create_server(int specified_port, int id) {
+void create_server(int specified_port) {
     assert(specified_port <= UINT16_MAX && specified_port >= 0);
     uint16_t port = (uint16_t)specified_port;
     LF_PRINT_LOG("Creating a socket server on port %d.", port);
@@ -168,7 +168,7 @@ void create_server(int specified_port, int id) {
     // which according to the Mac man page is limited to 128.
     listen(socket_descriptor, 128);
 
-    lf_print("Server for communicating with other federates started using port %d.", _fed.server_port);
+    LF_PRINT_LOG("Server for communicating with other federates started using port %d.", _fed.server_port);
 
     // Send the server port number to the RTI
     // on an MSG_TYPE_ADDRESS_ADVERTISEMENT message (@see net_common.h).
@@ -1438,7 +1438,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(
  *
  * @return 1 if the MSG_TYPE_CLOSE_REQUEST message is sent successfully, 0 otherwise.
  */
-int _lf_request_close_inbound_socket(int fed_id) {
+static int _lf_request_close_inbound_socket(int fed_id) {
     assert(fed_id >= 0 && fed_id < NUMBER_OF_FEDERATES);
 
     if (_fed.sockets_for_inbound_p2p_connections[fed_id] < 0) {
@@ -2308,6 +2308,23 @@ void handle_stop_request_message() {
 }
 
 /**
+ * Send a resign signal to the RTI.
+ */
+static void send_resign_signal(environment_t* env) {
+    size_t bytes_to_write = 1 + sizeof(tag_t);
+    unsigned char buffer[bytes_to_write];
+    buffer[0] = MSG_TYPE_RESIGN;
+    tag_t tag = env->current_tag;
+    encode_tag(&(buffer[1]), tag);
+    ssize_t written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, &(buffer[0]));
+    if (written == bytes_to_write) {
+        LF_PRINT_LOG("Resigned.");
+    }
+    // Trace the event when tracing is enabled
+    tracepoint_federate_to_rti(_fed.trace, send_RESIGN, _lf_my_fed_id, &tag);
+}
+
+/**
  * Close sockets used to communicate with other federates, if they are open,
  * and send a MSG_TYPE_RESIGN message to the RTI. This implements the function
  * defined in reactor.h. For unfederated execution, the code generator
@@ -2317,49 +2334,41 @@ void handle_stop_request_message() {
 void terminate_execution(environment_t* env) {
     assert(env != GLOBAL_ENVIRONMENT);
 
+    // For an abnormal termination (e.g. a SIGINT), we need to send a
+    // MSG_TYPE_RESIGN message to the RTI, but we should not acquire a mutex.
+    if (_fed.socket_TCP_RTI >= 0) {
+        if (_lf_normal_termination) {
+            lf_mutex_lock(&outbound_socket_mutex);
+            send_resign_signal(env);
+            lf_mutex_unlock(&outbound_socket_mutex);
+        } else {
+            // Do not acquire mutex and do not trace.
+            send_resign_signal(env);
+        }
+    }
+
+    LF_PRINT_DEBUG("Requesting closing of incoming P2P sockets.");
+    // Request closing the incoming P2P sockets.
+    for (int i=0; i < NUMBER_OF_FEDERATES; i++) {
+        _lf_request_close_inbound_socket(i);
+        // Ignore errors. Mark the socket closed.
+        _fed.sockets_for_inbound_p2p_connections[i] = -1;
+    }
+
+    // For abnormal termination, skip the rest, letting the threads be terminated
+    // and sockets be closed by the OS.
+    if (!_lf_normal_termination) return;
+
     // Check for all outgoing physical connections in
     // _fed.sockets_for_outbound_p2p_connections and
     // if the socket ID is not -1, the connection is still open.
     // Send an EOF by closing the socket here.
-    // NOTE: It is dangerous to acquire a mutex in a termination
-    // process because it can block program exit if a deadlock occurs.
-    // Hence, it is paramount that these mutexes not allow for any
-    // possibility of deadlock. To ensure this, this
-    // function should NEVER be called while holding any mutex lock.
-    lf_mutex_lock(&outbound_socket_mutex);
     for (int i=0; i < NUMBER_OF_FEDERATES; i++) {
 
         // Close outbound connections, in case they have not closed themselves.
         // This will result in EOF being sent to the remote federate, I think.
         _lf_close_outbound_socket(i);
     }
-    // Resign the federation, which will close the socket to the RTI.
-    if (_fed.socket_TCP_RTI >= 0) {
-        size_t bytes_to_write = 1 + sizeof(tag_t);
-        unsigned char buffer[bytes_to_write];
-        buffer[0] = MSG_TYPE_RESIGN;
-        tag_t tag = env->current_tag;
-        encode_tag(&(buffer[1]), tag);
-        // Trace the event when tracing is enabled
-        tracepoint_federate_to_rti(_fed.trace, send_RESIGN, _lf_my_fed_id, &tag);
-        ssize_t written = write_to_socket_with_mutex(_fed.socket_TCP_RTI, bytes_to_write, &(buffer[0]), &outbound_socket_mutex,
-                "Failed to send the resign message to the RTI.");
-        if (written == bytes_to_write) {
-            LF_PRINT_LOG("Resigned.");
-        }
-    }
-    lf_mutex_unlock(&outbound_socket_mutex);
-
-    LF_PRINT_DEBUG("Requesting closing of incoming P2P sockets.");
-    // Request closing the incoming P2P sockets.
-    lf_mutex_lock(&socket_mutex);
-    for (int i=0; i < NUMBER_OF_FEDERATES; i++) {
-        if (_lf_request_close_inbound_socket(i) == 0) {
-            // Sending the close request failed. Mark the socket closed.
-            _fed.sockets_for_inbound_p2p_connections[i] = -1;
-        }
-    }
-    lf_mutex_unlock(&socket_mutex);
 
     LF_PRINT_DEBUG("Waiting for inbound p2p socket listener threads.");
     // Wait for each inbound socket listener thread to close.

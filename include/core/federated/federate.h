@@ -316,9 +316,8 @@ void* listen_to_federates(void*);
  * @note This function is different from create_server(...) in rti.c.
  *
  * @param specified_port The specified port by the user or 0 to use a random port.
- * @param id The id of the federate (to help find a unique port).
  */
-void create_server(int specified_port, int id);
+void create_server(int specified_port);
 
 /**
  * Thread to accept connections from other federates that send this federate

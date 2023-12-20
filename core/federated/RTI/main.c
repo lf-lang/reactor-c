@@ -67,18 +67,26 @@ static rti_remote_t rti;
  */
 const char *rti_trace_file_name = "rti.lft";
 
+/** Indicator that normal termination has occurred. */
+bool normal_termination = false;
+
 /**
- * @brief A clean termination of the RTI will write the trace file, if tracing is
- * enabled, before exiting.
+ * @brief Function to run upon termination.
+ * This function will be invoked both after main() returns and when a signal
+ * that results in terminating the process, such as SIGINT.  In the former
+ * case, it should do nothing.  In the latter case, it will attempt to write
+ * the trace file, but without acquiring a mutex lock, so the resulting files
+ * may be incomplete or even corrupted.  But this is better than just failing
+ * to write the data we have collected so far.
  */
 void termination() {
-    if (rti.base.tracing_enabled) {
-        // Use the version that does not acquire a lock because acquiring a lock in
-        // the termination function can cause a deadlock that prevents the termination.
-        stop_trace_locked(rti.base.trace);
-        lf_print("RTI trace file saved.");
+    if (!normal_termination) {
+        if (rti.base.tracing_enabled) {
+            stop_trace_locked(rti.base.trace);
+            lf_print("RTI trace file saved.");
+        }
+        lf_print("RTI is exiting abnormally.");
     }   
-    lf_print("RTI is exiting.");
 }
 
 void usage(int argc, const char* argv[]) {
@@ -256,6 +264,12 @@ int main(int argc, const char* argv[]) {
 
     // Catch the Ctrl-C signal, for a clean exit that does not lose the trace information
     signal(SIGINT, exit);
+#ifdef SIGPIPE
+    // Ignore SIGPIPE errors, which terminate the entire application if
+    // socket write() fails because the reader has closed the socket.
+    // Instead, cause an EPIPE error to be set when write() fails.
+    signal(SIGPIPE, SIG_IGN);
+#endif // SIGPIPE
     if (atexit(termination) != 0) {
         lf_print_warning("Failed to register termination function!");
     }
@@ -296,6 +310,13 @@ int main(int argc, const char* argv[]) {
 
     int socket_descriptor = start_rti_server(rti.user_specified_port);
     wait_for_federates(socket_descriptor);
+    normal_termination = true;
+    if (rti.base.tracing_enabled) {
+        // No need for a mutex lock because all threads have exited.
+        stop_trace_locked(rti.base.trace);
+        lf_print("RTI trace file saved.");
+    }
+
     free_scheduling_nodes(rti.base.scheduling_nodes, rti.base.number_of_scheduling_nodes);
     lf_print("RTI is exiting.");
     return 0;
