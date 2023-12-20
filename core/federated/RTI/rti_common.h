@@ -230,13 +230,25 @@ void update_scheduling_node_next_event_tag_locked(scheduling_node_t* e, tag_t ne
 
 /**
  * Given a node (enclave or federate), find the tag of the earliest possible incoming
- * message from upstream enclaves or federates, which will be the smallest upstream NET
+ * message (EIMT) from upstream enclaves or federates, which will be the smallest upstream NET
  * plus the least delay. This could be NEVER_TAG if the RTI has not seen a NET from some
  * upstream node.
  * @param e The target node.
  * @return The earliest possible incoming message tag.
  */
 tag_t earliest_future_incoming_message_tag(scheduling_node_t* e);
+
+/**
+ * Given a node (enclave or federate), find the earliest incoming message tag (EIMT) from
+ * any immediately upstream node that is not part of zero-delay cycle (ZDC).
+ * These tags are treated strictly by the RTI when deciding whether to grant a PTAG.
+ * Since the upstream node is not part of a ZDC, there is no need to block on the input
+ * from that node since we can simply wait for it to complete its tag without chance of
+ * introducing a deadlock.  This will return FOREVER_TAG if there are no non-ZDC upstream nodes.
+ * @param e The target node.
+ * @return The earliest possible incoming message tag from a non-ZDC upstream node.
+ */
+tag_t eimt_strict(scheduling_node_t* e);
 
 /**
  * Return true if the node is in a zero-delay cycle.

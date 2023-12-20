@@ -397,6 +397,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         if (_lf_do_step(env)) {
             while (next(env) != 0);
         }
+        _lf_normal_termination = true;
         return 0;
     } else {
         return -1;

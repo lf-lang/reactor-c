@@ -187,9 +187,7 @@ extern int lf_critical_section_exit(environment_t* env);
 /**
  * Create a server and enable listening for socket connections.
  *
- * @note This function is similar to create_server(...) in
- * federate.c. However, it contains logs that are specific
- * to the RTI.
+ * @note This function is different from create_server(...) in federate.c.
  *
  * @param port The port number to use.
  * @param socket_type The type of the socket for the server (TCP or UDP).
