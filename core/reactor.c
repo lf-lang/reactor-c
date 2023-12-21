@@ -377,7 +377,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
                 NEVER_TAG.time - start_time, 0);
 
         environment_init_tags(env, start_time, duration);
-        // Start tracing if enalbed
+        // Start tracing if enabled.
         start_trace(env->trace);
 #ifdef MODAL_REACTORS
         // Set up modal infrastructure

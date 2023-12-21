@@ -2165,12 +2165,12 @@ int _lf_fd_send_stop_request_to_rti(tag_t stop_tag) {
             lf_mutex_unlock(&outbound_socket_mutex);
             return -1;
         }
-        // Trace the event when tracing is enabled
-        tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ, _lf_my_fed_id, &stop_tag);
         write_to_socket_with_mutex(_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH,
                 buffer, &outbound_socket_mutex,
                 "Failed to send stop time " PRINTF_TIME " to the RTI.", stop_tag.time - start_time);
         lf_mutex_unlock(&outbound_socket_mutex);
+        // Trace the event when tracing is enabled
+        tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ, _lf_my_fed_id, &stop_tag);
         return 0;
     } else {
         lf_mutex_unlock(&outbound_socket_mutex);
@@ -2221,10 +2221,7 @@ void handle_stop_granted_message() {
                     env[i].stop_tag.microstep);
 
         if (env[i].barrier.requestors) _lf_decrement_tag_barrier_locked(&env[i]);
-        // We signal instead of broadcast under the assumption that only
-        // one worker thread can call wait_until at a given time because
-        // the call to wait_until is protected by a mutex lock
-        lf_cond_signal(&env[i].event_q_changed);
+        lf_cond_broadcast(&env[i].event_q_changed);
         lf_mutex_unlock(&env[i].mutex);
     }
 }
@@ -2268,6 +2265,12 @@ void handle_stop_request_message() {
     }
     lf_mutex_unlock(&global_mutex);
 
+    if (already_blocked) {
+        // Either we have sent a stop request to the RTI ourselves,
+        // or we have previously received a stop request from the RTI.
+        // Nothing more to do. Tag advance is already blocked on enclaves.
+        return;
+    }
 
     // Iterate over the scheduling enclaves to find the maximum current tag
     // and adjust the tag_to_stop if any of those is greater than tag_to_stop.
@@ -2281,10 +2284,9 @@ void handle_stop_request_message() {
             tag_to_stop = env->current_tag;
             tag_to_stop.microstep++;
         }
-        if (!already_blocked) {
-            // Set a barrier to prevent the enclave from advancing past the so-far tag to stop.
-            _lf_increment_tag_barrier_locked(&env[i], tag_to_stop);
-        }
+        // Set a barrier to prevent the enclave from advancing past the so-far tag to stop.
+        _lf_increment_tag_barrier_locked(&env[i], tag_to_stop);
+
         lf_mutex_unlock(&env[i].mutex);
     }
     // Send the reply, which is the least tag at which we can stop.
@@ -2297,14 +2299,14 @@ void handle_stop_request_message() {
         lf_mutex_unlock(&outbound_socket_mutex);
         return;
     }
-    // Trace the event when tracing is enabled
-    tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ_REP, _lf_my_fed_id, &tag_to_stop);
     // Send the current logical time to the RTI. This message does not have an identifying byte
     // since the RTI is waiting for a response from this federate.
     write_to_socket_with_mutex(
             _fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH, outgoing_buffer, &outbound_socket_mutex,
             "Failed to send the answer to MSG_TYPE_STOP_REQUEST to RTI.");
     lf_mutex_unlock(&outbound_socket_mutex);
+    // Trace the event when tracing is enabled
+    tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ_REP, _lf_my_fed_id, &tag_to_stop);
 }
 
 /**

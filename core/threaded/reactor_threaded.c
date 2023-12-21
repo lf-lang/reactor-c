@@ -611,9 +611,9 @@ void lf_request_stop() {
     }
 
 #ifdef FEDERATED
-    // In the federated case, do not set lf_stop_requested because the RTI might grant a
+    // In the federated case, the RTI might grant a
     // later stop tag than the current tag. The above code has raised
-    // a barrier no greater than the requested stop tag for each enclave.
+    // a barrier no greater than max_current_tag.
     if (_lf_fd_send_stop_request_to_rti(max_current_tag) != 0) {
         // Message was not sent to the RTI.
         // Decrement the barriers to reverse our previous increment.
