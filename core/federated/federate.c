@@ -2320,8 +2320,6 @@ static void send_resign_signal(environment_t* env) {
     if (written == bytes_to_write) {
         LF_PRINT_LOG("Resigned.");
     }
-    // Trace the event when tracing is enabled
-    tracepoint_federate_to_rti(_fed.trace, send_RESIGN, _lf_my_fed_id, &tag);
 }
 
 /**
@@ -2341,6 +2339,8 @@ void terminate_execution(environment_t* env) {
             lf_mutex_lock(&outbound_socket_mutex);
             send_resign_signal(env);
             lf_mutex_unlock(&outbound_socket_mutex);
+            // Trace the event when tracing is enabled
+            tracepoint_federate_to_rti(_fed.trace, send_RESIGN, _lf_my_fed_id, &tag);
         } else {
             // Do not acquire mutex and do not trace.
             send_resign_signal(env);
