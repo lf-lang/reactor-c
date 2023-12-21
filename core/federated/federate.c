@@ -2263,6 +2263,8 @@ void handle_stop_request_message() {
     if (lf_stop_requested) {
         already_blocked = true;
     }
+    // Treat the stop request from the RTI as if a local stop request had been received.
+    lf_stop_requested = true;
     lf_mutex_unlock(&global_mutex);
 
     if (already_blocked) {
