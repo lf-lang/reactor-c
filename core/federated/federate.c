@@ -2340,7 +2340,7 @@ void terminate_execution(environment_t* env) {
             send_resign_signal(env);
             lf_mutex_unlock(&outbound_socket_mutex);
             // Trace the event when tracing is enabled
-            tracepoint_federate_to_rti(_fed.trace, send_RESIGN, _lf_my_fed_id, &tag);
+            tracepoint_federate_to_rti(_fed.trace, send_RESIGN, _lf_my_fed_id, &env->current_tag);
         } else {
             // Do not acquire mutex and do not trace.
             send_resign_signal(env);
@@ -2376,7 +2376,6 @@ void terminate_execution(environment_t* env) {
         LF_PRINT_LOG("Waiting for %zu threads listening for incoming messages to exit.",
                 _fed.number_of_inbound_p2p_connections);
         for (int i=0; i < _fed.number_of_inbound_p2p_connections; i++) {
-            if (_fed.inbound_socket_listeners[i] == NULL) continue;
             // Ignoring errors here.
             lf_thread_join(_fed.inbound_socket_listeners[i], NULL);
         }
