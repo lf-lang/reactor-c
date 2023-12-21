@@ -605,6 +605,9 @@ void handle_stop_request_message(federate_info_t* fed) {
     read_from_socket_errexit(fed->socket, bytes_to_read, buffer,
             "RTI failed to read the MSG_TYPE_STOP_REQUEST payload from federate %d.", fed->enclave.id);
 
+    // Extract the proposed stop tag for the federate
+    tag_t proposed_stop_tag = extract_tag(buffer);
+
     if (rti_remote->base.tracing_enabled) {
         tracepoint_rti_from_federate(rti_remote->base.trace, receive_STOP_REQ, fed->enclave.id, &proposed_stop_tag);
     }
@@ -621,9 +624,6 @@ void handle_stop_request_message(federate_info_t* fed) {
         return;
     }
 
-    // Extract the proposed stop tag for the federate
-    tag_t proposed_stop_tag = extract_tag(buffer);
-
     // Update the maximum stop tag received from federates
     if (lf_tag_compare(proposed_stop_tag, rti_remote->base.max_stop_tag) > 0) {
         rti_remote->base.max_stop_tag = proposed_stop_tag;
@@ -638,7 +638,7 @@ void handle_stop_request_message(federate_info_t* fed) {
 
     if (rti_remote->base.num_scheduling_nodes_handling_stop == rti_remote->base.number_of_scheduling_nodes) {
         // We now have information about the stop time of all
-        // federates, and mark_federate_requesting_stop has sent out stop time to all.
+        // federates, and mark_federate_requesting_stop has sent out stop time to.
         lf_mutex_unlock(&rti_mutex);
         return;
     }
