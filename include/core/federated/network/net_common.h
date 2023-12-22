@@ -234,13 +234,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 /**
  * Time to wait before re-attempting to bind to a port.
+ * When a process closes, the network stack typically waits between 30 and 120
+ * seconds before releasing the port.  This is to allow for delayed packets so
+ * that a new process does not receive packets from a previous process.
+ * Here, we limit the retries to 120 seconds.
  */
-#define PORT_BIND_RETRY_INTERVAL MSEC(10)
+#define PORT_BIND_RETRY_INTERVAL SEC(2)
 
 /**
  * Number of attempts to bind to a port before giving up.
  */
-#define PORT_BIND_RETRY_LIMIT 100
+#define PORT_BIND_RETRY_LIMIT 60
 
 /**
  * Default port number for the RTI.
