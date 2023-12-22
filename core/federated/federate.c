@@ -2359,10 +2359,6 @@ void terminate_execution(environment_t* env) {
         _fed.sockets_for_inbound_p2p_connections[i] = -1;
     }
 
-    // For abnormal termination, skip the rest, letting the threads be terminated
-    // and sockets be closed by the OS.
-    if (!_lf_normal_termination) return;
-
     // Check for all outgoing physical connections in
     // _fed.sockets_for_outbound_p2p_connections and
     // if the socket ID is not -1, the connection is still open.
@@ -2389,10 +2385,13 @@ void terminate_execution(environment_t* env) {
     // Wait for the thread listening for messages from the RTI to close.
     lf_thread_join(_fed.RTI_socket_listener, NULL);
 
-    LF_PRINT_DEBUG("Freeing memory occupied by the federate.");
-    free(_fed.inbound_socket_listeners);
-    free(federation_metadata.rti_host);
-    free(federation_metadata.rti_user);
+    // For abnormal termination, there is no need to free memory.
+    if (_lf_normal_termination) {
+        LF_PRINT_DEBUG("Freeing memory occupied by the federate.");
+        free(_fed.inbound_socket_listeners);
+        free(federation_metadata.rti_host);
+        free(federation_metadata.rti_user);
+    }
 }
 
 /**
@@ -2477,6 +2476,16 @@ static void stop_all_traces() {
 }
 
 /**
+ * Handle a resign signal from the RTI. The RTI will only resign
+ * if it is forced to exit, e.g. by a SIG_INT. Hence, this federate
+ * will exit immediately with an error condition, counting on the
+ * termination functions to handle any cleanup needed. 
+ */
+void handle_rti_resign_message(void) {
+    exit(1);
+}
+
+/**
  * Thread that listens for TCP inputs from the RTI.
  * When messages arrive, this calls the appropriate handler.
  * @param args Ignored
@@ -2540,6 +2549,9 @@ void* listen_to_rti_TCP(void* args) {
                 break;
             case MSG_TYPE_PORT_ABSENT:
                 handle_port_absent_message(_fed.socket_TCP_RTI, -1);
+                break;
+            case MSG_TYPE_RESIGN:
+                handle_rti_resign_message();
                 break;
             case MSG_TYPE_CLOCK_SYNC_T1:
             case MSG_TYPE_CLOCK_SYNC_T4:

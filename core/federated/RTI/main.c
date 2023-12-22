@@ -48,6 +48,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #include "rti_remote.h"
+#include "net_util.h"
 #include <signal.h>     // To trap ctrl-c and invoke a clean stop to save the trace file, if needed.
 #include <string.h>
 
@@ -71,16 +72,44 @@ const char *rti_trace_file_name = "rti.lft";
 bool normal_termination = false;
 
 /**
+ * Send a resign signal to the RTI. The tag payload is the tag
+ * of the most recently received LTC from the federate or NEVER
+ * if no LTC has been received.
+ */
+static void send_resign_signal(federate_info_t* fed) {
+    size_t bytes_to_write = 1 + sizeof(tag_t);
+    unsigned char buffer[bytes_to_write];
+    buffer[0] = MSG_TYPE_RESIGN;
+    tag_t tag = fed->enclave.completed;
+    encode_tag(&(buffer[1]), tag);
+    ssize_t written = write_to_socket(fed->socket, bytes_to_write, &(buffer[0]));
+    if (written == bytes_to_write) {
+        LF_PRINT_LOG("RTI has sent resign signal to federate %d due to abnormal termination.", fed->enclave.id);
+    } else {
+        LF_PRINT_LOG("RTI failed to send resign signal to federate %d.", fed->enclave.id);
+    }
+    if (rti.base.tracing_enabled) {
+        tracepoint_rti_to_federate(rti.base.trace, send_RESIGN, fed->enclave.id, &tag);
+    }
+}
+
+/**
  * @brief Function to run upon termination.
  * This function will be invoked both after main() returns and when a signal
  * that results in terminating the process, such as SIGINT.  In the former
- * case, it should do nothing.  In the latter case, it will attempt to write
- * the trace file, but without acquiring a mutex lock, so the resulting files
- * may be incomplete or even corrupted.  But this is better than just failing
- * to write the data we have collected so far.
+ * case, it should do nothing.  In the latter case, it will send a MSG_TYPE_RESIGN
+ * signal to each federate and attempt to write the trace file, but without
+ * acquiring a mutex lock, so the resulting files may be incomplete or even
+ * corrupted.  But this is better than just failing to write the data we have
+ * collected so far.
  */
 void termination() {
     if (!normal_termination) {
+        for (int i = 0; i < rti.base.number_of_scheduling_nodes; i++) {
+            federate_info_t *f = rti.base.scheduling_nodes[i];
+            if (!f || f->enclave.state == NOT_CONNECTED) continue;
+            send_resign_signal(f);
+        }
         if (rti.base.tracing_enabled) {
             stop_trace_locked(rti.base.trace);
             lf_print("RTI trace file saved.");

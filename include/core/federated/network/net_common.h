@@ -384,7 +384,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_MESSAGE 3
 
-/** Byte identifying that the federate is ending its execution. */
+/** Byte identifying that the federate or the RTI is ending its execution. */
 #define MSG_TYPE_RESIGN 4
 
 /** Byte identifying a timestamped message to forward to another federate.
