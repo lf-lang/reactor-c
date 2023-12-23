@@ -1751,37 +1751,36 @@ void termination(void) {
     terminate_execution(env);
 
     // In order to free tokens, we perform the same actions we would have for a new time step.
-    for (int i = 0; i<num_envs; i++) {
-        // NOTE: env pointer is incremented at the end of this loop.
-        if (env == NULL || !env->initialized) {
-            lf_print_warning("---- Environment %u was never initialized", env->id);
+    for (int i = 0; i < num_envs; i++) {
+        if (!env[i].initialized) {
+            lf_print_warning("---- Environment %u was never initialized", env[i].id);
             continue;
         }
-        lf_print("---- Terminating environment %u", env->id);
+        LF_PRINT_LOG("---- Terminating environment %u, normal termination: %d", env[i].id, _lf_normal_termination);
         // Stop any tracing, if it is running.
         // No need to acquire a mutex because if this is normal termination, all
         // other threads have stopped, and if it's not, then acquiring a mutex could
         // lead to a deadlock.
-        stop_trace_locked(env->trace);
+        stop_trace_locked(env[i].trace);
 
         // Skip most cleanup on abnormal termination.
         if (_lf_normal_termination) {
-            _lf_start_time_step(env);
+            _lf_start_time_step(&env[i]);
 
     #ifdef MODAL_REACTORS
             // Free events and tokens suspended by modal reactors.
-            _lf_terminate_modal_reactors(env);
+            _lf_terminate_modal_reactors(env[i]);
     #endif
             // If the event queue still has events on it, report that.
-            if (env->event_q != NULL && pqueue_size(env->event_q) > 0) {
-                lf_print_warning("---- There are %zu unprocessed future events on the event queue.", pqueue_size(env->event_q));
-                event_t* event = (event_t*)pqueue_peek(env->event_q);
+            if (env[i].event_q != NULL && pqueue_size(env[i].event_q) > 0) {
+                lf_print_warning("---- There are %zu unprocessed future events on the event queue.", pqueue_size(env[i].event_q));
+                event_t* event = (event_t*)pqueue_peek(env[i].event_q);
                 interval_t event_time = event->time - start_time;
                 lf_print_warning("---- The first future event has timestamp " PRINTF_TIME " after start time.", event_time);
             }
             // Print elapsed times.
             // If these are negative, then the program failed to start up.
-            interval_t elapsed_time = lf_time_logical_elapsed(env);
+            interval_t elapsed_time = lf_time_logical_elapsed(&env[i]);
             if (elapsed_time >= 0LL) {
                 char time_buffer[29]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
                 lf_comma_separated_time(time_buffer, elapsed_time);
@@ -1794,11 +1793,7 @@ void termination(void) {
                     printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
                 }
             }
-        
-            // Free up memory associated with environment
-            environment_free(env);
         }
-        env++;
     }
     // Skip most cleanup on abnormal termination.
     if (_lf_normal_termination) {
@@ -1820,5 +1815,11 @@ void termination(void) {
         }
 #endif
         _lf_free_all_reactors();
+
+        // Free up memory associated with environment.
+        // Do this last so that printed warnings don't access freed memory.
+        for (int i = 0; i < num_envs; i++) {
+            environment_free(&env[i]);
+        }
     }
 }
