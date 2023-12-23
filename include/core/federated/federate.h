@@ -212,14 +212,10 @@ typedef struct federate_instance_t {
 } federate_instance_t;
 
 #ifdef FEDERATED_DECENTRALIZED
-/**
- * An array of actions associated with network input ports that have STAA offsets.
- */
 typedef struct staa {
-    lf_action_base_t** actions;  // Array of pointers to actions with the same STAA offset.
-    interval_t* action_delays;   // Array of delays on the network connections for these actions.
-    interval_t STAA;             // The STAA offset.
-    size_t num_actions;          // The length of the arrays.
+    lf_action_base_t** actions;
+    size_t STAA;
+    size_t num_actions;
 } staa_t;
 #endif
 
@@ -245,7 +241,7 @@ void send_neighbor_structure_to_RTI(int);
 
 #ifdef FEDERATED_DECENTRALIZED
 /**
- * @brief Spawn a thread to iterate through STAA structs, setting their associated ports absent
+ * Spawn a thread to iterate through STAA structs, setting their associated ports absent
  * at an offset if the port is not present with a value by a certain physical time.
  */
 void spawn_staa_thread(void);
@@ -281,9 +277,9 @@ void _lf_logical_tag_complete(tag_t);
  * program exits. If it succeeds, it sets the _fed.socket_TCP_RTI global
  * variable to refer to the socket for communicating with the RTI.
  * @param hostname A hostname, such as "localhost".
- * @param port_number A port number, or 0 to use the default port.
+ * @param port_number A port number.
  */
-void connect_to_rti(const char*, int);
+void connect_to_rti(const char* hostname, int port_number);
 
 /**
  * Thread that listens for inputs from other federates.
@@ -315,7 +311,7 @@ void* listen_to_federates(void*);
  *
  * @note This function is different from create_server(...) in rti.c.
  *
- * @param specified_port The specified port by the user or 0 to use a random port.
+ * @param specified_port The port specified by the user or 0 to use a random port.
  */
 void create_server(int specified_port);
 

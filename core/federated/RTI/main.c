@@ -68,11 +68,11 @@ static rti_remote_t rti;
  */
 const char *rti_trace_file_name = "rti.lft";
 
-/** Indicator that normal termination has occurred. */
+/** Indicator that normal termination of the RTI has occurred. */
 bool normal_termination = false;
 
 /**
- * Send a resign signal to the RTI. The tag payload is the tag
+ * Send a resign signal to the specified federate. The tag payload is the tag
  * of the most recently received LTC from the federate or NEVER
  * if no LTC has been received.
  */
@@ -106,7 +106,7 @@ static void send_resign_signal(federate_info_t* fed) {
 void termination() {
     if (!normal_termination) {
         for (int i = 0; i < rti.base.number_of_scheduling_nodes; i++) {
-            federate_info_t *f = rti.base.scheduling_nodes[i];
+            federate_info_t *f = (federate_info_t*)rti.base.scheduling_nodes[i];
             if (!f || f->enclave.state == NOT_CONNECTED) continue;
             send_resign_signal(f);
         }
@@ -342,7 +342,10 @@ int main(int argc, const char* argv[]) {
 
     lf_print("RTI is exiting."); // Do this before freeing scheduling nodes.
     free_scheduling_nodes(rti.base.scheduling_nodes, rti.base.number_of_scheduling_nodes);
-    return 0;
+
+    // Even if the RTI is exiting normally, it should report an error code if one of the
+    // federates has reported an error.
+    return (int)_lf_federate_reports_error;
 }
 #endif // STANDALONE_RTI
 

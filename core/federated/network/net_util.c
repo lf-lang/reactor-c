@@ -66,9 +66,9 @@ int create_real_time_tcp_socket_errexit() {
         lf_print_error_system_failure("Could not open TCP socket.");
     }
     // Disable Nagle's algorithm which bundles together small TCP messages to
-    //  reduce network traffic
+    // reduce network traffic.
     // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
-    //  is enough.
+    // is enough.
     int flag = 1;
     int result = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
     
@@ -76,14 +76,14 @@ int create_real_time_tcp_socket_errexit() {
         lf_print_error_system_failure("Failed to disable Nagle algorithm on socket server.");
     }
     
+#if defined(PLATFORM_Linux)
     // Disable delayed ACKs. Only possible on Linux
-    #if defined(PLATFORM_Linux)
         result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
         
         if (result < 0) {
             lf_print_error_system_failure("Failed to disable Nagle algorithm on socket server.");
         }
-    #endif
+#endif // Linux
     
     return sock;
 }
@@ -150,15 +150,17 @@ ssize_t write_to_socket_with_mutex(
                     // that we should try again (@see man errno).
             LF_PRINT_DEBUG("Writing to socket was blocked. Will try again.");
             continue;
-        } else if (more <= 0) {
+        } else if (more < 0) {
+            // An error occurred.
+            shutdown(socket, SHUT_RDWR);
+            close(socket);
+            if (mutex != NULL) {
+                lf_mutex_unlock(mutex);
+            }
             if (format != NULL) {
-                shutdown(socket, SHUT_RDWR);
-            	close(socket);
-            	if (mutex != NULL) {
-            		lf_mutex_unlock(mutex);
-            	}
-                lf_print_error(format, args);
-                lf_print_error("Code %d: %s.", errno, strerror(errno));
+                lf_print_error_system_failure(format, args);
+            } else {
+                lf_print_error("Failed to write to socket. Closing it.");
             }
             return more;
         }

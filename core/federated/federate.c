@@ -94,8 +94,6 @@ federate_instance_t _fed = {
         .number_of_inbound_p2p_connections = 0,
         .inbound_socket_listeners = NULL,
         .number_of_outbound_p2p_connections = 0,
-        .sockets_for_inbound_p2p_connections = { -1 },
-        .sockets_for_outbound_p2p_connections = { -1 },
         .inbound_p2p_handling_thread_id = 0,
         .server_socket = -1,
         .server_port = -1,
@@ -615,14 +613,27 @@ void* handle_p2p_connections_from_federates(void* env_arg) {
 /**
  * Close the socket that sends outgoing messages to the
  * specified federate ID. This function assumes the caller holds
- * the outbound_socket_mutex mutex lock.
+ * the outbound_socket_mutex mutex lock, at least during normal termination.
  * @param fed_id The ID of the peer federate receiving messages from this
  *  federate, or -1 if the RTI (centralized coordination).
+ * @param flag 0 if the socket has received EOF, 1 if not, -1 if abnormal termination.
  */
-void _lf_close_outbound_socket(int fed_id) {
+static void _lf_close_outbound_socket(int fed_id, int flag) {
     assert (fed_id >= 0 && fed_id < NUMBER_OF_FEDERATES);
     if (_fed.sockets_for_outbound_p2p_connections[fed_id] >= 0) {
-        shutdown(_fed.sockets_for_outbound_p2p_connections[fed_id], SHUT_RDWR);
+        // Close the socket by sending a FIN packet indicating that no further writes
+        // are expected.  Then read until we get an EOF indication.
+        if (flag >= 0) {
+            // SHUT_WR indicates no further outgoing messages.
+            shutdown(_fed.sockets_for_outbound_p2p_connections[fed_id], SHUT_WR);
+            if (flag > 0) {
+                // Have not received EOF yet. read until we get an EOF or error indication.
+                // This compensates for delayed ACKs and disabling of Nagles algorithm
+                // by delaying exiting until the shutdown is complete.
+                unsigned char message[32];
+                while (read(_fed.sockets_for_outbound_p2p_connections[fed_id], &message, 32) > 0);
+            }
+        }
         close(_fed.sockets_for_outbound_p2p_connections[fed_id]);
         _fed.sockets_for_outbound_p2p_connections[fed_id] = -1;
     }
@@ -659,17 +670,17 @@ void* listen_for_upstream_messages_from_downstream_federates(void* fed_id_ptr) {
             LF_PRINT_DEBUG("Received MSG_TYPE_CLOSE_REQUEST from federate %d.", fed_id);
             // Trace the event when tracing is enabled
             tracepoint_federate_from_federate(_fed.trace, receive_CLOSE_RQ, _lf_my_fed_id, fed_id, NULL);
-            _lf_close_outbound_socket(fed_id);
+            _lf_close_outbound_socket(fed_id, bytes_read);
             break;
         }
         if (bytes_read == 0) {
             // EOF.
             LF_PRINT_DEBUG("Received EOF from federate %d.", fed_id);
-            _lf_close_outbound_socket(fed_id);
+            _lf_close_outbound_socket(fed_id, bytes_read);
             break;
         } else if (bytes_read < 0) {
             // Error.
-            _lf_close_outbound_socket(fed_id);
+            _lf_close_outbound_socket(fed_id, bytes_read);
             lf_print_error_system_failure("Error on socket from federate %d.", fed_id);
         }
     }
@@ -1426,6 +1437,34 @@ static trigger_handle_t schedule_message_received_from_network_locked(
 }
 
 /**
+ * Close the socket that receives incoming messages from the
+ * specified federate ID. This function should be called when a read
+ * of incoming socket fails or when an EOF is received.
+ *
+ * @param fed_id The ID of the peer federate sending messages to this
+ *  federate, or -1 if the RTI.
+ * @param flag 0 if an EOF was received, -1 if a socket error occurred, 1 otherwise.
+ */
+static void _lf_close_inbound_socket(int fed_id, int flag) {
+    lf_mutex_lock(&socket_mutex);
+    if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
+        if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
+            if (flag >= 0) {
+                shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_WR);
+                if (flag > 0) {
+                    // Flag indicates that there could still be incoming data.
+                    unsigned char message[32];
+                    while (read(_fed.sockets_for_inbound_p2p_connections[fed_id], &message, 32) > 0);
+                }
+            }
+            close(_fed.sockets_for_inbound_p2p_connections[fed_id]);
+            _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
+        }
+    }
+    lf_mutex_unlock(&socket_mutex);
+}
+
+/**
  * Request to close the socket that receives incoming messages from the
  * specified federate ID. This sends a message to the upstream federate
  * requesting that it close the socket. If the message is sent successfully,
@@ -1451,7 +1490,8 @@ static int _lf_request_close_inbound_socket(int fed_id) {
     ssize_t written = write_to_socket(
         _fed.sockets_for_inbound_p2p_connections[fed_id],
         1, &message_marker);
-    _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
+    // Close the socket upon receiving EOF.
+    _lf_close_inbound_socket(fed_id, 1);
 
     // Trace the event when tracing is enabled
     tracepoint_federate_to_federate(_fed.trace, send_CLOSE_RQ, _lf_my_fed_id, fed_id, NULL);
@@ -1462,34 +1502,6 @@ static int _lf_request_close_inbound_socket(int fed_id) {
     } else {
         return 0;
     }
-}
-
-/**
- * Close the socket that receives incoming messages from the
- * specified federate ID or RTI. This function should be called when a read
- * of incoming socket fails or when an EOF is received.
- *
- * @param The ID of the peer federate sending messages to this
- *  federate, or -1 if the RTI.
- */
-void _lf_close_inbound_socket(int fed_id) {
-    lf_mutex_lock(&socket_mutex);
-    if (fed_id < 0) {
-        // socket connection is to the RTI.
-        int socket = _fed.socket_TCP_RTI;
-        // First, set the global socket to -1.
-        _fed.socket_TCP_RTI = -1;
-        // Then shutdown and close the socket.
-        shutdown(socket, SHUT_RDWR);
-        close(socket);
-    } else if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
-        if (_fed.sockets_for_inbound_p2p_connections[fed_id] >= 0) {
-            shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_RDWR);
-            close(_fed.sockets_for_inbound_p2p_connections[fed_id]);
-            _fed.sockets_for_inbound_p2p_connections[fed_id] = -1;
-        }
-    }
-    lf_mutex_unlock(&socket_mutex);
 }
 
 /**
@@ -2312,14 +2324,19 @@ void handle_stop_request_message() {
 }
 
 /**
- * Send a resign signal to the RTI.
+ * Send a resign signal to the RTI. The tag payload will be the current
+ * tag of the specified environment or, if there has been an error that
+ * will lead to an abnormal termination, the tag NEVER_TAG.
  */
 static void send_resign_signal(environment_t* env) {
     size_t bytes_to_write = 1 + sizeof(tag_t);
     unsigned char buffer[bytes_to_write];
     buffer[0] = MSG_TYPE_RESIGN;
-    tag_t tag = env->current_tag;
-    encode_tag(&(buffer[1]), tag);
+    if (_lf_normal_termination) {
+        encode_tag(&(buffer[1]), env->current_tag);
+    } else {
+        encode_tag(&(buffer[1]), NEVER_TAG);
+    }
     ssize_t written = write_to_socket(_fed.socket_TCP_RTI, bytes_to_write, &(buffer[0]));
     if (written == bytes_to_write) {
         LF_PRINT_LOG("Resigned.");
@@ -2366,8 +2383,10 @@ void terminate_execution(environment_t* env) {
     for (int i=0; i < NUMBER_OF_FEDERATES; i++) {
 
         // Close outbound connections, in case they have not closed themselves.
-        // This will result in EOF being sent to the remote federate, I think.
-        _lf_close_outbound_socket(i);
+        // This will result in EOF being sent to the remote federate, except for
+        // abnormal termination, in which case it will just close the socket.
+        int flag = _lf_normal_termination? 1 : -1;
+        _lf_close_outbound_socket(i, flag);
     }
 
     LF_PRINT_DEBUG("Waiting for inbound p2p socket listener threads.");
@@ -2427,11 +2446,11 @@ void* listen_to_federates(void* _args) {
         if (bytes_read == 0) {
             // EOF occurred. This breaks the connection.
             lf_print("Received EOF from peer federate %d. Closing the socket.", fed_id);
-            _lf_close_inbound_socket(fed_id);
+            _lf_close_inbound_socket(fed_id, bytes_read);
             break;
         } else if (bytes_read < 0) {
             lf_print_error("P2P socket to federate %d is broken.", fed_id);
-            _lf_close_inbound_socket(fed_id);
+            _lf_close_inbound_socket(fed_id, bytes_read);
             break;
         }
         LF_PRINT_DEBUG("Received a P2P message on socket %d of type %d.",

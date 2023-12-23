@@ -185,6 +185,11 @@ extern int lf_critical_section_enter(environment_t* env);
 extern int lf_critical_section_exit(environment_t* env);
 
 /**
+ * Indicator that one or more federates have reported an error on resigning.
+ */
+extern bool _lf_federate_reports_error;
+
+/**
  * Create a server and enable listening for socket connections.
  *
  * @note This function is different from create_server(...) in federate.c.
@@ -363,6 +368,10 @@ void* clock_synchronization_thread(void* noargs);
  * message is sent at the time of termination
  * after all shutdown events are processed
  * on the federate.
+ * 
+ * If the tag on the resign message is NEVER, then the RTI assumes that
+ * the federate is terminating abnormally. In this case, the RTI will
+ * also terminate abnormally, returning a non-zero exit code.
  *
  * This function assumes the caller does not hold the mutex.
  *
