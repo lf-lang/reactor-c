@@ -249,7 +249,7 @@ void spawn_staa_thread(void);
 
 /**
  * Connect to the federate with the specified id. This established
- * connection will then be used in functions such as send_timed_message()
+ * connection will then be used in functions such as send_tagged_message()
  * to send messages directly to the specified federate.
  * This function first sends an MSG_TYPE_ADDRESS_QUERY message to the RTI to obtain
  * the IP address and port number of the specified federate. It then attempts
@@ -371,26 +371,20 @@ void stall_advance_level_federation(environment_t* env, size_t level);
 bool update_max_level(tag_t tag, bool is_provisional);
 
 /**
- * Send a message to another federate directly or via the RTI.
+ * Send a message to another federate.  This function is used for physical connections
+ * between federates. If the socket connection to the remote federate or the RTI has been broken,
+ * then this returns -1 without sending. Otherwise, it returns 0.
+ * 
  * This method assumes that the caller does not hold the outbound_socket_mutex lock,
  * which it acquires to perform the send.
  *
- * If the socket connection to the remote federate or the RTI has been broken,
- * then this returns 0 without sending. Otherwise, it returns 1.
- *
- * @note This function is similar to send_timed_message() except that it
- *  does not deal with time and timed_messages.
- *
- * @param message_type The type of the message being sent.
- *  Currently can be MSG_TYPE_TAGGED_MESSAGE for messages sent via
- *  RTI or MSG_TYPE_P2P_TAGGED_MESSAGE for messages sent between
- *  federates.
+ * @param message_type The type of the message being sent (currently only MSG_TYPE_P2P_MESSAGE).
  * @param port The ID of the destination port.
  * @param federate The ID of the destination federate.
- * @param next_destination_str The name of the next destination in string format
+ * @param next_destination_str The name of the next destination in string format (for reporting).
  * @param length The message length.
  * @param message The message.
- * @return 1 if the message has been sent, 0 otherwise.
+ * @return 0 if the message has been sent, -1 otherwise.
  */
 int send_message(int message_type,
                   unsigned short port,
@@ -400,48 +394,45 @@ int send_message(int message_type,
                   unsigned char* message);
 
 /**
- * Send the specified timestamped message to the specified port in the
- * specified federate via the RTI or directly to a federate depending on
- * the given socket. The timestamp is calculated as current_logical_time +
- * additional delay which is greater than or equal to zero.
- * The port should be an input port of a reactor in
- * the destination federate. This version does include the timestamp
- * in the message. The caller can reuse or free the memory after this returns.
+ * Send a tagged message to the specified port of the specified federate.
+ * The tag will be the current tag of the specified environment delayed by the specified additional_delay.
+ * If the delayed tag falls after the timeout time, then the message is not sent and -1 is returned.
+ * The caller can reuse or free the memory storing the message after this returns.
  *
- * If the socket connection to the remote federate or the RTI has been broken,
- * then this returns 0 without sending. Otherwise, it returns 1.
+ * If the message fails to send (e.g. the socket connection is broken), then the
+ * response depends on the message_type.  For MSG_TYPE_TAGGED_MESSAGE, the message is
+ * supposed to go via the RTI, and failure to communicate with the RTI is a critical failure.
+ * In this case, the program will exit with an error message. If the message type is
+ * MSG_TYPE_P2P_TAGGED_MESSAGE, then the failure is not critical. It may be due to the
+ * remote federate having exited, for example, because its safe-to-process offset led it
+ * to believe that there were no messages forthcoming.  In this case, on failure to send
+ * the message, this function returns -11.
  *
  * This method assumes that the caller does not hold the outbound_socket_mutex lock,
  * which it acquires to perform the send.
  *
- * @note This function is similar to send_message() except that it
- *   sends timed messages and also contains logics related to time.
- *
- * @param env The environment in which we are executing
- * @param additional_delay The offset applied to the timestamp
- *  using after. The additional delay will be greater or equal to zero
- *  if an after is used on the connection. If no after is given in the
- *  program, -1 is passed.
- * @param message_type The type of the message being sent.
- *  Currently can be MSG_TYPE_TAGGED_MESSAGE for messages sent via
- *  RTI or MSG_TYPE_P2P_TAGGED_MESSAGE for messages sent between
- *  federates.
+ * @param env The environment from which to get the current tag.
+ * @param additional_delay The after delay on the connection or NEVER is there is none.
+ * @param message_type The type of the message being sent. Currently can be
+ *  MSG_TYPE_TAGGED_MESSAGE for messages sent via the RTI or MSG_TYPE_P2P_TAGGED_MESSAGE
+ *  for messages sent directly between federates.
  * @param port The ID of the destination port.
  * @param federate The ID of the destination federate.
  * @param next_destination_str The next destination in string format (RTI or federate)
  *  (used for reporting errors).
  * @param length The message length.
  * @param message The message.
- * @return 1 if the message has been sent, 0 otherwise.
+ * @return 0 if the message has been sent, 1 otherwise.
  */
-int send_timed_message(environment_t*,
-                        interval_t,
-                        int,
-                        unsigned short,
-                        unsigned short,
-                        const char*,
-                        size_t,
-                        unsigned char*);
+int send_tagged_message(
+        environment_t* env,
+        interval_t additional_delay,
+        int message_type,
+        unsigned short port,
+        unsigned short federate,
+        const char* next_destination_str,
+        size_t length,
+        unsigned char* message);
 
 /**
  * Synchronize the start with other federates via the RTI.

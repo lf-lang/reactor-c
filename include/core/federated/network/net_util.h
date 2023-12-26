@@ -101,7 +101,64 @@ ssize_t read_from_socket_errexit(
 		unsigned char* buffer,
 		char* format, ...);
 
-ssize_t write_to_socket(int socket, size_t num_bytes, unsigned char* buffer);
+/**
+ * Without blocking, peek at the specified socket and, if there is
+ * anything on the queue, put its first byte at the specified address and return 1.
+ * If there is nothing on the queue, return 0, and if an error occurs,
+ * return -1.
+ * @param socket The socket ID.
+ * @param result Pointer to where to put the first byte available on the socket.
+ */
+ssize_t peek_from_socket(int socket, unsigned char* result);
+
+/**
+ * Write the specified number of bytes to the specified socket from the
+ * specified buffer. If an error occurs, return -1 and set errno to indicate
+ * the cause of the error. If the write succeeds, return 0.
+ * This function repeats the attempt until the specified number of bytes
+ * have been written or an error occurs. Specifically, errors EAGAIN,
+ * EWOULDBLOCK, and EINTR are not considered errors and instead trigger
+ * another attempt. A delay between attempts is given by
+ * DELAY_BETWEEN_SOCKET_RETRIES.
+ * @param socket The socket ID.
+ * @param num_bytes The number of bytes to write.
+ * @param buffer The buffer from which to get the bytes.
+ * @return 0 for success, -1 for failure.
+ */
+int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer);
+
+/**
+ * Write the specified number of bytes to the specified socket using write_to_socket
+ * and close the socket if an error occurs. If an error occurs, this will change the
+ * socket ID pointed to by the first argument to -1 and will return -1.
+ * @param socket Pointer to the socket ID.
+ * @param num_bytes The number of bytes to write.
+ * @param buffer The buffer from which to get the bytes.
+ * @return 0 for success, -1 for failure.
+ */
+int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer);
+
+/**
+ * Write the specified number of bytes to the specified socket using
+ * write_to_socket_close_on_error and exit with an error code if an error occurs.
+ * If the mutex argument is non-NULL, release the mutex before exiting.  If the
+ * format argument is non-null, then use it an any additional arguments to form
+ * the error message using printf conventions. Otherwise, print a generic error
+ * message.
+ * @param socket Pointer to the socket ID.
+ * @param num_bytes The number of bytes to write.
+ * @param buffer The buffer from which to get the bytes.
+ * @param mutex If non-NULL, the mutex to unlock before exiting.
+ * @param format A format string for error messages, followed by any number of
+ *  fields that will be used to fill the format string as in printf, or NULL
+ *  to print a generic error message.
+ */
+void write_to_socket_fail_on_error(
+		int* socket,
+		size_t num_bytes,
+		unsigned char* buffer,
+		lf_mutex_t* mutex,
+		char* format, ...);
 
 /**
  * Read the specified number of bytes from the specified socket into the
@@ -115,67 +172,6 @@ ssize_t write_to_socket(int socket, size_t num_bytes, unsigned char* buffer);
  * @return The number of bytes read or 0 when EOF is received or negative for an error.
  */
 ssize_t read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
-
-/**
- * Write the specified number of bytes to the specified socket from the
- * specified buffer. If a disconnect or an EOF occurs during this
- * reading, report an error and exit, unless the format string is NULL,
- * in which case, report an error and return. This function takes a formatted
- * string and additional optional arguments similar to printf(format, ...)
- * that is appended to the error messages.
- * @param socket The socket ID.
- * @param num_bytes The number of bytes to write.
- * @param buffer The buffer from which to get the bytes.
- * @param mutex If non-NULL, the mutex to unlock before exiting.
- * @param format A format string for error messages, followed by any number of
- *  fields that will be used to fill the format string as in printf, or NULL
- *  to prevent exit on error.
- * @return The number of bytes written, or 0 if an EOF was received, or a negative
- *  number if an error occurred.
- */
-ssize_t write_to_socket_with_mutex(
-		int socket,
-		size_t num_bytes,
-		unsigned char* buffer,
-		lf_mutex_t* mutex,
-		char* format, ...);
-
-/**
- * Write the specified number of bytes to the specified socket from the
- * specified buffer. If a disconnect or an EOF occurs during this
- * reading, report an error and exit, unless the format string is NULL,
- * in which case, report an error and return. This function takes a formatted
- * string and additional optional arguments similar to printf(format, ...)
- * that is appended to the error messages.
- * @param socket The socket ID.
- * @param num_bytes The number of bytes to write.
- * @param buffer The buffer from which to get the bytes.
- * @param mutex If non-NULL, the mutex to unlock before exiting.
- * @param format A format string for error messages, followed by any number of
- *  fields that will be used to fill the format string as in printf, or NULL
- *  to prevent exit on error.
- * @return The number of bytes written, or 0 if an EOF was received, or a negative
- *  number if an error occurred.
- */
-ssize_t write_to_socket_errexit(
-		int socket,
-		size_t num_bytes,
-		unsigned char* buffer,
-		char* format, ...);
-
-/**
- * Write the specified number of bytes to the specified socket from the
- * specified buffer. If a disconnect or an EOF occurs during this
- * reading, return a negative number or 0 respectively. Otherwise,
- * return the number of bytes written.
- * This is a version of write_to_socket() that does not error out.
- * @param socket The socket ID.
- * @param num_bytes The number of bytes to write.
- * @param buffer The buffer from which to get the bytes.
- * @return The number of bytes written, or 0 if an EOF was received, or a negative
- *  number if an error occurred.
- */
-int write_to_socket2(int socket, int num_bytes, unsigned char* buffer);
 
 #endif // FEDERATED
 

@@ -151,18 +151,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Physical connections also use the above P2P sockets between
  * federates even if the coordination is centralized.
  *
- * Note: Peer-to-peer sockets can be closed by the downstream federate.
- * For example, when a downstream federate reaches its stop time, then
- * it will stop accepting physical messages. To achieve an orderly shutdown,
- * the downstream federate sends a MSG_TYPE_CLOSE_REQUEST message to the upstream
- * one and the upstream federate handles closing the socket. This way, any
- * messages that are in the middle of being sent while the downstream
- * federate shuts down will successfully traverse the socket, even if
- * only to be ignored by the downstream federate.  It is valid to ignore
- * such messages if the connection is physical or if the coordination is
- * decentralized and the messages arrive after the STP offset of the
- * downstream federate (i.e., they are "tardy").
- *
  * Afterward, the federates and the RTI decide on a common start time by having
  * each federate report a reading of its physical clock to the RTI on a
  * `MSG_TYPE_TIMESTAMP`. The RTI broadcasts the maximum of these readings plus
@@ -584,14 +572,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * The ramaining bytes are the message.
  */
 #define MSG_TYPE_P2P_TAGGED_MESSAGE 17
-
-/**
- * Byte identifying a message that a downstream federate sends to its
- * upstream counterpart to request that the socket connection be closed.
- * This is the only message that should flow upstream on such socket
- * connections.
- */
-#define MSG_TYPE_CLOSE_REQUEST 18
 
 ////////////////////////////////////////////////
 /**

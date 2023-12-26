@@ -403,52 +403,10 @@ void* federate_info_thread_TCP(void* fed);
 
 /**
  * Send a MSG_TYPE_REJECT message to the specified socket and close the socket.
- * @param socket_id The socket.
+ * @param socket_id Pointer to the socket ID.
  * @param error_code An error code.
  */
-void send_reject(int socket_id, unsigned char error_code);
-
-/**
- * Listen for a MSG_TYPE_FED_IDS message, which includes as a payload
- * a federate ID and a federation ID. If the federation ID
- * matches this federation, send an MSG_TYPE_ACK and otherwise send
- * a MSG_TYPE_REJECT message. Return 1 if the federate is accepted to
- * the federation and 0 otherwise.
- * @param socket_id The socket on which to listen.
- * @param client_fd The socket address.
- * @return The federate ID for success or -1 for failure.
- */
-int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* client_fd);
-
-/**
- * Listen for a MSG_TYPE_NEIGHBOR_STRUCTURE message, and upon receiving it, fill
- * out the relevant information in the federate's struct.
- */
-int receive_connection_information(int socket_id, uint16_t fed_id);
-
-/**
- * Listen for a MSG_TYPE_UDP_PORT message, and upon receiving it, set up
- * clock synchronization and perform the initial clock synchronization.
- * Initial clock synchronization is performed only if the MSG_TYPE_UDP_PORT message
- * payload is not UINT16_MAX. If it is also not 0, then this function sets
- * up to perform runtime clock synchronization using the UDP port number
- * specified in the payload to communicate with the federate's clock
- * synchronization logic.
- * @param socket_id The socket on which to listen.
- * @param fed_id The federate ID.
- * @return 1 for success, 0 for failure.
- */
-int receive_udp_message_and_set_up_clock_sync(int socket_id, uint16_t fed_id);
-
-#ifdef __RTI_AUTH__
-/**
- * Authenticate incoming federate by performing HMAC-based authentication.
- * 
- * @param socket Socket for the incoming federate tryting to authenticate.
- * @return True if authentication is successful and false otherwise.
- */
-bool authenticate_federate(int socket);
-#endif
+void send_reject(int* socket_id, unsigned char error_code);
 
 /**
  * Wait for one incoming connection request from each federate,

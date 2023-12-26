@@ -82,11 +82,11 @@ static void send_resign_signal(federate_info_t* fed) {
     buffer[0] = MSG_TYPE_RESIGN;
     tag_t tag = fed->enclave.completed;
     encode_tag(&(buffer[1]), tag);
-    ssize_t written = write_to_socket(fed->socket, bytes_to_write, &(buffer[0]));
-    if (written == bytes_to_write) {
+    int failed = write_to_socket(fed->socket, bytes_to_write, &(buffer[0]));
+    if (failed == 0) {
         LF_PRINT_LOG("RTI has sent resign signal to federate %d due to abnormal termination.", fed->enclave.id);
     } else {
-        LF_PRINT_LOG("RTI failed to send resign signal to federate %d.", fed->enclave.id);
+        LF_PRINT_LOG("RTI failed to send resign signal to federate %d on socket ID %d.", fed->enclave.id, fed->socket);
     }
     if (rti.base.tracing_enabled) {
         tracepoint_rti_to_federate(rti.base.trace, send_RESIGN, fed->enclave.id, &tag);
