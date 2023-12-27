@@ -836,10 +836,11 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
         if (tag.time == current_logical_tag.time) {
             relative_microstep -= current_logical_tag.microstep;
         }
-        if (((tag.time == current_logical_tag.time) && (relative_microstep == 1)) ||
+        if ((tag.time == current_logical_tag.time && relative_microstep == 1 && env->execution_started) ||
                 tag.microstep == 0) {
             // Do not need a dummy event if we are scheduling at 1 microstep
             // in the future at current time or at microstep 0 in a future time.
+            // Note that if execution hasn't started, then we have to insert dummy events.
             pqueue_insert(env->event_q, e);
         } else {
             // Create a dummy event. Insert it into the queue, and let its next
