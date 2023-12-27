@@ -141,11 +141,8 @@ void _lf_message_print(
 #endif // STANDALONE_RTI
 		}
 		if (print_message_function == NULL) {
-			if (is_error) {
-				vfprintf(stderr, message, args);
-			} else {
-				vfprintf(stdout, message, args);
-			}
+			// NOTE: Send all messages to stdout, not to stderr, so that ordering makes sense.
+			vfprintf(stdout, message, args);
 		} else {
 			(*print_message_function)(message, args);
 		}
@@ -213,6 +210,7 @@ void lf_print_error_and_exit(const char* format, ...) {
     va_start (args, format);
     lf_vprint_fatal_error(format, args);
     va_end (args);
+	fflush(stdout);
     exit(EXIT_FAILURE);
 }
 
