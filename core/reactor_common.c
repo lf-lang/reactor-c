@@ -652,8 +652,8 @@ static void _lf_replace_token(event_t* event, lf_token_t* token) {
 
 /**
  * Schedule events at a specific tag (time, microstep), provided
- * that the tag is in the future relative to the current tag.
- * The input time values are absolute.
+ * that the tag is in the future relative to the current tag (or the
+ * environment has not started executing). The input time values are absolute.
  *
  * If there is an event found at the requested tag, the payload
  * is replaced and 0 is returned.
