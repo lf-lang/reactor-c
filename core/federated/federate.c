@@ -255,9 +255,6 @@ static void _lf_close_inbound_socket(int fed_id, int flag) {
         if (flag >= 0) {
             if (flag > 0) {
                 shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_RDWR);
-                // Flag indicates that there could still be incoming data.
-                unsigned char message[32];
-                while (read(_fed.sockets_for_inbound_p2p_connections[fed_id], &message, 32) > 0);
             } else {
                 // Have received EOF from the other end. Send EOF to the other end.
                 shutdown(_fed.sockets_for_inbound_p2p_connections[fed_id], SHUT_WR);
@@ -1602,7 +1599,7 @@ void handle_tagged_message(int socket, int fed_id) {
 
         // Before that, if the current time >= stop time, discard the message.
         // But only if the stop time is not equal to the start time!
-        if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0) {
+        if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0 && env->execution_started) {
             lf_print_error("Received message too late. Already at stop tag.\n"
             		"    Current tag is " PRINTF_TAG " and intended tag is " PRINTF_TAG ".\n"
             		"    Discarding message and closing the socket.",
@@ -2629,7 +2626,9 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
             while (true) {
                 // Wait until either something changes on the event queue or
                 // the RTI has responded with a TAG.
-                LF_PRINT_DEBUG("Waiting for a TAG from the RTI with _fed.last_TAG.time=%lld, %lld and net=%lld, %lld", (long long) _fed.last_TAG.time - start_time, (long long) _fed.last_TAG.microstep, (long long) tag.time - start_time, (long long) tag.microstep);
+                LF_PRINT_DEBUG("Waiting for a TAG from the RTI with _fed.last_TAG= " PRINTF_TAG " and net=" PRINTF_TAG,
+                        _fed.last_TAG.time - start_time, _fed.last_TAG.microstep,
+                        tag.time - start_time, tag.microstep);
                 if (lf_cond_wait(&env->event_q_changed) != 0) {
                     lf_print_error("Wait error.");
                 }
