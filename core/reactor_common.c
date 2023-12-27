@@ -1766,7 +1766,7 @@ void termination(void) {
 
     #ifdef MODAL_REACTORS
             // Free events and tokens suspended by modal reactors.
-            _lf_terminate_modal_reactors(env[i]);
+            _lf_terminate_modal_reactors(&env[i]);
     #endif
             // If the event queue still has events on it, report that.
             if (env[i].event_q != NULL && pqueue_size(env[i].event_q) > 0) {
