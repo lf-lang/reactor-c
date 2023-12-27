@@ -272,8 +272,7 @@ void lf_register_print_function(print_message_function_t* function, int log_leve
  * By definng `LF_NOASSERT` this check is not performed.
  */
 #if defined(LF_NOASSERT)
-#define LF_ASSERT(condition, format, ...) \
-	while(0) { }
+#define LF_ASSERT(condition, format, ...) (condition)
 #else
 #define LF_ASSERT(condition, format, ...) \
 	do { \
