@@ -736,10 +736,6 @@ void _lf_initialize_start_tag(environment_t *env) {
     // Restore the current tag to match the start time.
     env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
 
-    // For messages that may have arrived while we were waiting, put
-    // reactions on the reaction queue.
-    _lf_pop_events(env);
-
     // If the stop_tag is (0,0), also insert the shutdown
     // reactions. This can only happen if the timeout time
     // was set to 0.
@@ -763,6 +759,11 @@ void _lf_initialize_start_tag(environment_t *env) {
     // tag). Inform the RTI of this if needed.
     send_next_event_tag(env, env->current_tag, true);
 #endif // NOT FEDERATED_DECENTRALIZED
+
+    // For messages that may have arrived while we were waiting, put
+    // reactions on the reaction queue.
+    _lf_pop_events(env);
+    
 #else // NOT FEDERATED
     _lf_initialize_timers(env);
 
