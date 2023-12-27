@@ -35,7 +35,7 @@
  * pqueue_tag_insert_tag, pqueue_tag_insert_if_no_match, and pqueue_tag_pop_tag.
  * 
  * To customize the element you put onto the queue, for example to carry
- * a pyaload, you can create your own element struct type by simply declaring
+ * a payload, you can create your own element struct type by simply declaring
  * the first field to be a pqueue_tag_element_t.  For example, if you want an
  * element of the queue to include a pointer to your own payload, you can 
  * declare the following struct type:
