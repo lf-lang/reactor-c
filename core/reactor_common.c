@@ -690,7 +690,7 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
     LF_PRINT_DEBUG("_lf_schedule_at_tag() called with tag " PRINTF_TAG " at tag " PRINTF_TAG ".",
                   tag.time - start_time, tag.microstep,
                   current_logical_tag.time - start_time, current_logical_tag.microstep);
-    if (lf_tag_compare(tag, current_logical_tag) <= 0) {
+    if (lf_tag_compare(tag, current_logical_tag) <= 0 && _lf_execution_started) {
         lf_print_warning("_lf_schedule_at_tag(): requested to schedule an event in the past.");
         return -1;
     }
