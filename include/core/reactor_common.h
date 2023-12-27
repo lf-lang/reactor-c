@@ -15,7 +15,6 @@
 extern unsigned int _lf_number_of_workers;
 extern bool fast;
 extern instant_t duration;
-extern bool _lf_execution_started;
 extern bool keepalive_specified;
 extern interval_t _lf_fed_STA_offset;
 

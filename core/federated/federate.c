@@ -1316,7 +1316,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(
     // Calculate the extra_delay required to be passed
     // to the schedule function.
     interval_t extra_delay = tag.time - env->current_tag.time;
-    if (!message_tag_is_in_the_future && _lf_execution_started) {
+    if (!message_tag_is_in_the_future && env->execution_started) {
 #ifdef FEDERATED_CENTRALIZED
         // If the coordination is centralized, receiving a message
         // that does not carry a timestamp that is in the future
@@ -1562,7 +1562,7 @@ void handle_tagged_message(int socket, int fed_id) {
     // can be checked in this scenario without this race condition. The message with
     // intended_tag of 9 in this case needs to wait one microstep to be processed.
     if (lf_tag_compare(intended_tag, lf_tag(env)) == 0 // The event is meant for the current tag.
-            && _lf_execution_started
+            && env->execution_started
             // Check that MLAA is blocking at the right level. Otherwise, data can be lost.
             && action->trigger->reactions[0]->index >= max_level_allowed_to_advance
             && !action->trigger->is_physical

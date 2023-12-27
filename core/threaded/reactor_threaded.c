@@ -776,7 +776,7 @@ void _lf_initialize_start_tag(environment_t *env) {
 
     // Set the following boolean so that other thread(s), including federated threads,
     // know that the execution has started
-    _lf_execution_started = true;
+    env->execution_started = true;
 }
 
 /** For logging and debugging, each worker thread is numbered. */

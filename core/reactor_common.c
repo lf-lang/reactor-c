@@ -99,12 +99,6 @@ unsigned int _lf_number_of_workers = 0u;
  */
 instant_t duration = -1LL;
 
-/**
- * Indicates whether or not the execution
- * has started.
- */
-bool _lf_execution_started = false;
-
 /** Indicator of whether the keepalive command-line option was given. */
 bool keepalive_specified = false;
 
@@ -275,7 +269,7 @@ void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_n
  * counts between time steps and at the end of execution.
  */
 void _lf_start_time_step(environment_t *env) {
-    if (_lf_execution_started == false) {
+    if (!env->execution_started) {
         // Execution hasn't started, so this is probably being invoked in termination
         // due to an error.
         return;
@@ -690,8 +684,8 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
     LF_PRINT_DEBUG("_lf_schedule_at_tag() called with tag " PRINTF_TAG " at tag " PRINTF_TAG ".",
                   tag.time - start_time, tag.microstep,
                   current_logical_tag.time - start_time, current_logical_tag.microstep);
-    if (lf_tag_compare(tag, current_logical_tag) <= 0 && _lf_execution_started) {
-        lf_print_warning("_lf_schedule_at_tag(): requested to schedule an event in the past.");
+    if (lf_tag_compare(tag, current_logical_tag) <= 0 && env->execution_started) {
+        lf_print_warning("_lf_schedule_at_tag(): requested to schedule an event at the current or past tag.");
         return -1;
     }
 
@@ -1540,6 +1534,8 @@ void usage(int argc, const char* argv[]) {
     #ifdef FEDERATED
     printf("  -r, --rti <n>\n");
     printf("   The address of the RTI, which can be in the form of user@host:port or ip:port.\n\n");
+    printf("  -l\n");
+    printf("   Send stdout to individual log files for each federate.\n\n");
     #endif
 
     printf("Command given:\n");
