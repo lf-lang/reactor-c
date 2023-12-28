@@ -80,13 +80,40 @@ extern lf_mutex_t socket_mutex;
 int create_real_time_tcp_socket_errexit();
 
 /**
+ * Read the specified number of bytes from the specified socket into the specified buffer.
+ * If an error occurs during this reading, return -1 and set errno to indicate
+ * the cause of the error. If the read succeeds in reading the specified number of bytes,
+ * return 0. If an EOF occurs before reading the specified number of bytes, return 1.
+ * This function repeats the read attempt until the specified number of bytes
+ * have been read, an EOF is read, or an error occurs. Specifically, errors EAGAIN,
+ * EWOULDBLOCK, and EINTR are not considered errors and instead trigger
+ * another attempt. A delay between attempts is given by DELAY_BETWEEN_SOCKET_RETRIES.
+ * @param socket The socket ID.
+ * @param num_bytes The number of bytes to read.
+ * @param buffer The buffer into which to put the bytes.
+ * @return 0 for success, 1 for EOF, and -1 for an error.
+ */
+int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
+
+/**
+ * Read the specified number of bytes to the specified socket using read_from_socket
+ * and close the socket if an error occurs. If an error occurs, this will change the
+ * socket ID pointed to by the first argument to -1 and will return -1.
+ * @param socket Pointer to the socket ID.
+ * @param num_bytes The number of bytes to write.
+ * @param buffer The buffer from which to get the bytes.
+ * @return 0 for success, -1 for failure.
+ */
+int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer);
+
+/**
  * Read the specified number of bytes from the specified socket into the
  * specified buffer. If a disconnect or an EOF occurs during this
  * reading, then if format is non-null, report an error and exit.
+ * If the mutex argument is non-NULL, release the mutex before exiting.
  * If format is null, then report the error, but do not exit.
- * This function takes a formatted
- * string and additional optional arguments similar to printf(format, ...)
- * that is appended to the error messages.
+ * This function takes a formatted string and additional optional arguments
+ * similar to printf(format, ...) that is appended to the error messages.
  * @param socket The socket ID.
  * @param num_bytes The number of bytes to read.
  * @param buffer The buffer into which to put the bytes.
@@ -95,10 +122,11 @@ int create_real_time_tcp_socket_errexit();
  * @return The number of bytes read, or 0 if an EOF is received, or
  *  a negative number for an error.
  */
-ssize_t read_from_socket_errexit(
-		int socket,
+void read_from_socket_fail_on_error(
+		int* socket,
 		size_t num_bytes,
 		unsigned char* buffer,
+		lf_mutex_t* mutex,
 		char* format, ...);
 
 /**
@@ -159,19 +187,6 @@ void write_to_socket_fail_on_error(
 		unsigned char* buffer,
 		lf_mutex_t* mutex,
 		char* format, ...);
-
-/**
- * Read the specified number of bytes from the specified socket into the
- * specified buffer. If a disconnect occurs during this
- * reading, return a negative number. If an EOF occurs during this
- * reading, return 0. Otherwise, return the number of bytes read.
- * This is a version of read_from_socket_errexit() that does not error out.
- * @param socket The socket ID.
- * @param num_bytes The number of bytes to read.
- * @param buffer The buffer into which to put the bytes.
- * @return The number of bytes read or 0 when EOF is received or negative for an error.
- */
-ssize_t read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
 
 #endif // FEDERATED
 

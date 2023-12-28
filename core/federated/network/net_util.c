@@ -88,17 +88,12 @@ int create_real_time_tcp_socket_errexit() {
     return sock;
 }
 
-ssize_t read_from_socket_errexit(
-		int socket,
-		size_t num_bytes,
-		unsigned char* buffer,
-		char* format, ...) {
-    va_list args;
-	// Error checking first
-    if (socket < 0 && format != NULL) {
-		lf_print_error("Socket is no longer open.");
-        lf_print_error_and_exit(format, args);
-	}
+int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
+    if (socket < 0) {
+        // Socket is not open.
+        errno = EBADF;
+        return -1;
+    }
     ssize_t bytes_read = 0;
     int retry_count = 0;
     while (bytes_read < (ssize_t)num_bytes) {
@@ -111,32 +106,53 @@ ssize_t read_from_socket_errexit(
             lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
             continue;
         } else if (more < 0) {
-            // Socket failure. Probably closed.
-            if (format != NULL) {
-                lf_print_error_system_failure(format, args);
-            } else {
-                lf_print_error("Socket read failed.");
-                return more;
-            }
+            // A more serious error occurred.
+            return -1;
         } else if (more == 0) {
-            // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
-            // upon receiving a zero length packet or an error, we can close the socket.
-            LF_PRINT_DEBUG("EOF received from client. Closing socket.");
-            lf_mutex_lock(&socket_mutex);
-            // If there are any pending outgoing messages, this will attempt to send those
-            // followed by an EOF.
-            shutdown(socket, SHUT_WR);
-            close(socket);
-            lf_mutex_unlock(&socket_mutex);
-            return more;
+            // EOF received.
+            return 1;
         }
         bytes_read += more;
     }
-    return bytes_read;
+    return 0;
 }
 
-ssize_t read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
-    return read_from_socket_errexit(socket, num_bytes, buffer, NULL);
+int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer) {
+    assert(socket);
+    int read_failed = read_from_socket(*socket, num_bytes, buffer);
+    if (read_failed) {
+        // Read failed.
+        // Socket has probably been closed from the other side.
+        // Shut down and close the socket from this side.
+        shutdown(*socket, SHUT_RDWR);
+        close(*socket);
+        // Mark the socket closed.
+        *socket = -1;
+        return -1;
+    }
+    return 0;
+}
+
+void read_from_socket_fail_on_error(
+		int* socket,
+		size_t num_bytes,
+		unsigned char* buffer,
+		lf_mutex_t* mutex,
+		char* format, ...) {
+    va_list args;
+    assert(socket);
+    int read_failed = read_from_socket_close_on_error(socket, num_bytes, buffer);
+    if (read_failed) {
+        // Read failed.
+        if (mutex != NULL) {
+            lf_mutex_unlock(mutex);
+        }
+        if (format != NULL) {
+            lf_print_error_system_failure(format, args);
+        } else {
+            lf_print_error_system_failure("Failed to read from socket.");
+        }
+    }
 }
 
 ssize_t peek_from_socket(int socket, unsigned char* result) {
@@ -173,20 +189,17 @@ int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer) {
 
 int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer) {
     assert(socket);
-    if (*socket >= 0) {
-        int result = write_to_socket(*socket, num_bytes, buffer);
-        if (result) {
-            // Write failed.
-            // Socket has probably been closed from the other side.
-            // Shut down and close the socket from this side.
-            shutdown(*socket, SHUT_RDWR);
-            close(*socket);
-            // Mark the socket closed.
-            *socket = -1;
-        }
-        return result;
+    int result = write_to_socket(*socket, num_bytes, buffer);
+    if (result) {
+        // Write failed.
+        // Socket has probably been closed from the other side.
+        // Shut down and close the socket from this side.
+        shutdown(*socket, SHUT_RDWR);
+        close(*socket);
+        // Mark the socket closed.
+        *socket = -1;
     }
-    return -1;
+    return result;
 }
 
 void write_to_socket_fail_on_error(
@@ -197,18 +210,16 @@ void write_to_socket_fail_on_error(
 		char* format, ...) {
     va_list args;
     assert(socket);
-    if (*socket >= 0) {
-        int result = write_to_socket_close_on_error(socket, num_bytes, buffer);
-        if (result) {
-            // Write failed.
-            if (mutex != NULL) {
-                lf_mutex_unlock(mutex);
-            }
-            if (format != NULL) {
-                lf_print_error_system_failure(format, args);
-            } else {
-                lf_print_error("Failed to write to socket. Closing it.");
-            }
+    int result = write_to_socket_close_on_error(socket, num_bytes, buffer);
+    if (result) {
+        // Write failed.
+        if (mutex != NULL) {
+            lf_mutex_unlock(mutex);
+        }
+        if (format != NULL) {
+            lf_print_error_system_failure(format, args);
+        } else {
+            lf_print_error("Failed to write to socket. Closing it.");
         }
     }
 }
