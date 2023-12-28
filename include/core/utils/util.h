@@ -269,11 +269,10 @@ void lf_register_print_function(print_message_function_t* function, int log_leve
 /**
  * Assertion handling. LF_ASSERT can be used as a short hand for verifying
  * a condition and calling `lf_print_error_and_exit` if it is not true.
- * By definng `LF_NOASSERT` this check is not performed.
+ * This is optimized away if the NDEBUG flag is defined.
  */
-#if defined(LF_NOASSERT)
-#define LF_ASSERT(condition, format, ...) \
-	while(0) { }
+#if defined(NDEBUG)
+#define LF_ASSERT(condition, format, ...) (condition)
 #else
 #define LF_ASSERT(condition, format, ...) \
 	do { \
@@ -281,5 +280,5 @@ void lf_register_print_function(print_message_function_t* function, int log_leve
 				lf_print_error_and_exit(format, ##__VA_ARGS__); \
 		} \
 	} while(0)
-#endif // LF_NOASSERT
+#endif // NDEBUG
 #endif /* UTIL_H */
