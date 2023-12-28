@@ -2286,7 +2286,7 @@ void* listen_to_federates(void* _args) {
         LF_PRINT_DEBUG("Waiting for a P2P message on socket %d.", *socket_id);
         if (read_from_socket_close_on_error(socket_id, 1, buffer)) {
             // Socket has been closed.
-            lf_print("Socket from federate %d is close.", fed_id);
+            lf_print("Socket from federate %d is closed.", fed_id);
             // Stop listening to this federate.
             break;
         }
