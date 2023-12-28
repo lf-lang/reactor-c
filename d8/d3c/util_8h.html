@@ -305,7 +305,7 @@ Functions intitializing and freeing memory for environments.</h1>
 <div class="line">        } \</div>
 <div class="line">    } <span class="keywordflow">while</span>(0)</div>
 <div class="ttc" id="ahashmap_8h_html_ad2c17ed7e0d4d65a63bf9002aba2016f"><div class="ttname"><a href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">address</a></div><div class="ttdeci">return address</div><div class="ttdef"><b>Definition</b> hashmap.h:74</div></div>
-</div><!-- fragment --><p>Assertion handling. LF_ASSERT can be used as a short hand for verifying a condition and calling <code>lf_print_error_and_exit</code> if it is not true. By definng <code>LF_NOASSERT</code> this check is not performed. </p>
+</div><!-- fragment --><p>Assertion handling. LF_ASSERT can be used as a short hand for verifying a condition and calling <code>lf_print_error_and_exit</code> if it is not true. This is optimized away if the NDEBUG flag is defined. </p>
 
 </div>
 </div>
