@@ -197,7 +197,7 @@ $(document).ready(function(){initNavTree('d8/d3c/util_8h_source.html','../../');
 <div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span><span class="keywordtype">void</span> <a class="code hl_function" href="../../d8/d3c/util_8h.html#a6ad22ca79136cd15dc0d560aec067f76">lf_register_print_function</a>(<a class="code hl_function" href="../../d8/d3c/util_8h.html#a1917df59f183af6181ebafdf50877246">print_message_function_t</a>* function, <span class="keywordtype">int</span> <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">log_level</a>);</div>
 <div class="line"><a id="l00268" name="l00268"></a><span class="lineno">  268</span> </div>
 <div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span><span class="preprocessor">#if defined(NDEBUG)</span></div>
-<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span><span class="preprocessor">#define LF_ASSERT(condition, format, ...) (condition)</span></div>
+<div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span><span class="preprocessor">#define LF_ASSERT(condition, format, ...) (void)(condition)</span></div>
 <div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span><span class="preprocessor">#else</span></div>
 <div class="foldopen" id="foldopen00277" data-start="" data-end="">
 <div class="line"><a id="l00277" name="l00277"></a><span class="lineno"><a class="line" href="../../d8/d3c/util_8h.html#a26ab6a0fd21cdcff11a5557406536bf1">  277</a></span><span class="preprocessor">#define LF_ASSERT(condition, format, ...) \</span></div>
