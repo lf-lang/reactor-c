@@ -272,7 +272,7 @@ void lf_register_print_function(print_message_function_t* function, int log_leve
  * This is optimized away if the NDEBUG flag is defined.
  */
 #if defined(NDEBUG)
-#define LF_ASSERT(condition, format, ...) (condition)
+#define LF_ASSERT(condition, format, ...) (void)(condition)
 #else
 #define LF_ASSERT(condition, format, ...) \
 	do { \
