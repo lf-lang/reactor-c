@@ -276,11 +276,10 @@ void lf_register_print_function(print_message_function_t* function, int log_leve
 /**
  * Assertion handling. LF_ASSERT can be used as a short hand for verifying
  * a condition and calling `lf_print_error_and_exit` if it is not true.
- * By definng `LF_NOASSERT` this check is not performed.
+ * This is optimized away if the NDEBUG flag is defined.
  */
-#if defined(LF_NOASSERT)
-#define LF_ASSERT(condition, format, ...) \
-	while(0) { }
+#if defined(NDEBUG)
+#define LF_ASSERT(condition, format, ...) (condition)
 #else
 #define LF_ASSERT(condition, format, ...) \
 	do { \
@@ -288,33 +287,18 @@ void lf_register_print_function(print_message_function_t* function, int log_leve
 				lf_print_error_and_exit(format, ##__VA_ARGS__); \
 		} \
 	} while(0)
-#endif // LF_NOASSERT
+#endif // NDEBUG
 
 /**
  * Checking mutex locking and unlocking.
+ * This is optimized away if the NDEBUG flag is defined.
  */
-#define LF_MUTEX_INIT(mutex) \
-    do { \
-        int result = lf_mutex_init(mutex); \
-        LF_ASSERT(result == 0, "Mutex init failed."); \
-    } while (0)
+#define LF_MUTEX_INIT(mutex) LF_ASSERT(lf_mutex_init(mutex), "Mutex init failed.")
 
-#define LF_MUTEX_LOCK(mutex) \
-    do { \
-        int result = lf_mutex_lock(mutex); \
-        LF_ASSERT(result == 0, "Mutex lock failed."); \
-    } while (0)
+#define LF_MUTEX_LOCK(mutex) LF_ASSERT(lf_mutex_lock(mutex), "Mutex lock failed.")
 
-#define LF_MUTEX_UNLOCK(mutex) \
-    do { \
-        int result = lf_mutex_unlock(mutex); \
-        LF_ASSERT(result == 0, "Mutex unlock failed."); \
-    } while (0)
+#define LF_MUTEX_UNLOCK(mutex) LF_ASSERT(lf_mutex_unlock(mutex), "Mutex unlock failed.")
 
-#define LF_COND_INIT(cond, mutex) \
-    do { \
-        int result = lf_cond_init(cond, mutex); \
-        LF_ASSERT(result == 0, "Condition variable init failed."); \
-    } while (0)
+#define LF_COND_INIT(cond, mutex) LF_ASSERT(lf_cond_init(cond, mutex), "Condition variable init failed.")
 
 #endif /* UTIL_H */
