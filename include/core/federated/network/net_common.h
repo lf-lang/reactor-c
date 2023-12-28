@@ -218,7 +218,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * (an MSG_TYPE_ADDRESS_QUERY message) after the RTI responds that it
  * does not know.  This allows time for federates to start separately.
  */
-#define ADDRESS_QUERY_RETRY_INTERVAL MSEC(100)
+#define ADDRESS_QUERY_RETRY_INTERVAL MSEC(250)
 
 /**
  * Time to wait before re-attempting to bind to a port.
