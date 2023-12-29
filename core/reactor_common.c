@@ -392,6 +392,8 @@ void _lf_pop_events(environment_t *env) {
                                     env->current_tag.time - start_time, env->current_tag.microstep);
                         // Need to update the last_known_status_tag of the port because otherwise,
                         // the MLAA could get stuck, causing the program to lock up.
+                        // This should not call update_last_known_status_on_input_port because we
+                        // are starting a new tag step execution, so there are no reactions blocked on this input.
                         event->trigger->last_known_status_tag = env->current_tag;
                     }
                 }
