@@ -75,7 +75,7 @@ extern lf_mutex_t socket_mutex;
  * (TCP_NODELAY) and Delayed ACKs disabled (TCP_QUICKACK). Exits application
  * on any error.
  *
- * @return int 
+ * @return The socket ID (a file descriptor).
  */
 int create_real_time_tcp_socket_errexit();
 

@@ -201,16 +201,21 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /**
  * Time between a federate's attempts to connect to the RTI.
  */
-#define CONNECT_RETRY_INTERVAL SEC(1)
+#define CONNECT_RETRY_INTERVAL MSEC(500)
 
 /**
  * Bound on the number of retries to connect to the RTI.
  * A federate will retry every CONNECT_RETRY_INTERVAL seconds
- * this many times before giving up. E.g., 600 retries every
- * 1 seconds results in retrying for about 10 minutes.
- * This allows time to start federates before the RTI.
+ * this many times before giving up.
  */
-#define CONNECT_MAX_RETRIES 600
+#define CONNECT_MAX_RETRIES 100
+
+/**
+ * Maximum number of port addresses that a federate will try to connect to the RTI on.
+ * If you are using automatic ports begining at DEFAULT_PORT, this puts an upper bound
+ * on the number of RTIs that can be running on the same host.
+ */
+#define MAX_NUM_PORT_ADDRESSES 16
 
 /**
  * Time that a federate waits before asking
@@ -225,9 +230,9 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * When a process closes, the network stack typically waits between 30 and 120
  * seconds before releasing the port.  This is to allow for delayed packets so
  * that a new process does not receive packets from a previous process.
- * Here, we limit the retries to 120 seconds.
+ * Here, we limit the retries to 60 seconds.
  */
-#define PORT_BIND_RETRY_INTERVAL SEC(2)
+#define PORT_BIND_RETRY_INTERVAL SEC(1)
 
 /**
  * Number of attempts to bind to a port before giving up.

@@ -190,17 +190,6 @@ extern int lf_critical_section_exit(environment_t* env);
 extern bool _lf_federate_reports_error;
 
 /**
- * Create a server and enable listening for socket connections.
- *
- * @note This function is different from create_server(...) in federate.c.
- *
- * @param port The port number to use.
- * @param socket_type The type of the socket for the server (TCP or UDP).
- * @return The socket descriptor on which to accept connections.
- */
-int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_type);
-
-/**
  * @brief Update the next event tag of federate `federate_id`.
  *
  * It will update the recorded next event tag of federate `federate_id` to the minimum of `next_event_tag` and the

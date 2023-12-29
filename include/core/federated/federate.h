@@ -269,13 +269,14 @@ void connect_to_federate(uint16_t);
 void _lf_logical_tag_complete(tag_t);
 
 /**
- * Connect to the RTI at the specified host and port and return
- * the socket descriptor for the connection. If this fails, wait CONNECT_RETRY_INTERVAL
- * and try again.  If it fails after CONNECT_MAX_RETRIES, the
- * program exits. If it succeeds, it sets the _fed.socket_TCP_RTI global
- * variable to refer to the socket for communicating with the RTI.
+ * Connect to the RTI at the specified host and port and return the socket descriptor
+ * for the connection. If port_number is 0, then start at DEFAULT_PORT and increment
+ * the port number on each attempt. If an attempt fails, wait CONNECT_RETRY_INTERVAL
+ * and try again.  If it fails after CONNECT_MAX_RETRIES, the program exits.
+ * If it succeeds, it sets the _fed.socket_TCP_RTI global variable to refer to
+ * the socket for communicating with the RTI.
  * @param hostname A hostname, such as "localhost".
- * @param port_number A port number.
+ * @param port_number A port number or 0 to start with the default.
  */
 void connect_to_rti(const char* hostname, int port_number);
 

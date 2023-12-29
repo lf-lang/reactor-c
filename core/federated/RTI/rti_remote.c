@@ -56,40 +56,68 @@ extern int lf_critical_section_exit(environment_t *env) {
     return lf_mutex_unlock(&rti_mutex);
 }
 
-int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_type)
-{
+/**
+ * Create a server and enable listening for socket connections.
+ * If the specified port if it is non-zero, it will attempt to acquire that port.
+ * If it fails, it will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times with
+ * a delay of PORT_BIND_RETRY_INTERVAL in between. If the specified port is
+ * zero, then it will attempt to acquire DEFAULT_PORT first. If this fails, then it
+ * will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times, incrementing the port
+ * number between attempts, with no delay between attempts.  Once it has incremented
+ * the port number MAX_NUM_PORT_ADDRESSES times, it will cycle around and begin again
+ * with DEFAULT_PORT.
+ *
+ * @param port The port number to use or 0 to start trying at DEFAULT_PORT.
+ * @param socket_type The type of the socket for the server (TCP or UDP).
+ * @return The socket descriptor on which to accept connections.
+ */
+static int create_rti_server(uint16_t port, socket_type_t socket_type) {
     // Timeout time for the communications of the server
-    struct timeval timeout_time = {.tv_sec = TCP_TIMEOUT_TIME / BILLION, .tv_usec = (TCP_TIMEOUT_TIME % BILLION) / 1000};
+    struct timeval timeout_time = {
+            .tv_sec = TCP_TIMEOUT_TIME / BILLION,
+            .tv_usec = (TCP_TIMEOUT_TIME % BILLION) / 1000
+    };
     // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
     int socket_descriptor = -1;
-    if (socket_type == TCP)
-    {
+    if (socket_type == TCP) {
         socket_descriptor = create_real_time_tcp_socket_errexit();
-    }
-    else if (socket_type == UDP)
-    {
+    } else if (socket_type == UDP) {
         socket_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         // Set the appropriate timeout time
-        timeout_time = (struct timeval){.tv_sec = UDP_TIMEOUT_TIME / BILLION, .tv_usec = (UDP_TIMEOUT_TIME % BILLION) / 1000};
+        timeout_time = (struct timeval){
+                .tv_sec = UDP_TIMEOUT_TIME / BILLION,
+                .tv_usec = (UDP_TIMEOUT_TIME % BILLION) / 1000
+        };
     }
-    if (socket_descriptor < 0)
-    {
+    if (socket_descriptor < 0) {
         lf_print_error_system_failure("Failed to create RTI socket.");
     }
 
     // Set the option for this socket to reuse the same address
     int true_variable = 1; // setsockopt() requires a reference to the value assigned to an option
-    if (setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEADDR, &true_variable, sizeof(int32_t)) < 0)
-    {
+    if (setsockopt(
+            socket_descriptor,
+            SOL_SOCKET,
+            SO_REUSEADDR,
+            &true_variable,
+            sizeof(int32_t)) < 0) {
         lf_print_error("RTI failed to set SO_REUSEADDR option on the socket: %s.", strerror(errno));
     }
     // Set the timeout on the socket so that read and write operations don't block for too long
-    if (setsockopt(socket_descriptor, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout_time, sizeof(timeout_time)) < 0)
-    {
+    if (setsockopt(
+            socket_descriptor,
+            SOL_SOCKET,
+            SO_RCVTIMEO,
+            (const char *)&timeout_time,
+            sizeof(timeout_time)) < 0) {
         lf_print_error("RTI failed to set SO_RCVTIMEO option on the socket: %s.", strerror(errno));
     }
-    if (setsockopt(socket_descriptor, SOL_SOCKET, SO_SNDTIMEO, (const char *)&timeout_time, sizeof(timeout_time)) < 0)
-    {
+    if (setsockopt(
+            socket_descriptor,
+            SOL_SOCKET,
+            SO_SNDTIMEO,
+            (const char *)&timeout_time,
+            sizeof(timeout_time)) < 0) {
         lf_print_error("RTI failed to set SO_SNDTIMEO option on the socket: %s.", strerror(errno));
     }
 
@@ -108,11 +136,6 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
     //       UDP sockets.
 
     int reuse = 1;
-    if (setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEADDR,
-            (const char*)&reuse, sizeof(reuse)) < 0) {
-        perror("setsockopt(SO_REUSEADDR) failed");
-    }
-
     #ifdef SO_REUSEPORT
     if (setsockopt(socket_descriptor, SOL_SOCKET, SO_REUSEPORT,
             (const char*)&reuse, sizeof(reuse)) < 0)  {
@@ -126,23 +149,35 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
     // Zero out the server address structure.
     bzero((char *)&server_fd, sizeof(server_fd));
 
+    uint16_t specified_port = port;
+    if (specified_port == 0) port = DEFAULT_PORT;
+
     server_fd.sin_family = AF_INET;         // IPv4
     server_fd.sin_addr.s_addr = INADDR_ANY; // All interfaces, 0.0.0.0.
     // Convert the port number from host byte order to network byte order.
     server_fd.sin_port = htons(port);
 
     int result = bind(
-        socket_descriptor,
-        (struct sockaddr *)&server_fd,
-        sizeof(server_fd));
+            socket_descriptor,
+            (struct sockaddr *)&server_fd,
+            sizeof(server_fd));
 
-    // Try repeatedly to bind to the specified port.
+    // Try repeatedly to bind to a port. If no specific port is specified, then
+    // increment the port number each time.
+
     int count = 1;
-    while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT)
-    {
-        lf_print("RTI failed to get port %d. Will try again.", port);
-        lf_sleep(PORT_BIND_RETRY_INTERVAL);
-        server_fd.sin_port = htons(port);
+    while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
+        if (specified_port == 0) {
+            lf_print_warning("RTI failed to get port %d.", port);
+            port++;
+            if (port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES) port = DEFAULT_PORT;
+            lf_print_warning("RTI will try again with port %d.", port);
+            server_fd.sin_port = htons(port);
+            // Do not sleep.
+        } else {
+            lf_print("RTI failed to get port %d. Will try again.", port);
+            lf_sleep(PORT_BIND_RETRY_INTERVAL);
+        }
         result = bind(
             socket_descriptor,
             (struct sockaddr *)&server_fd,
@@ -153,22 +188,18 @@ int create_server(int32_t specified_port, uint16_t port, socket_type_t socket_ty
         lf_print_error_and_exit("Failed to bind the RTI socket. Port %d is not available. ", port);
     }
     char *type = "TCP";
-    if (socket_type == UDP)
-    {
+    if (socket_type == UDP) {
         type = "UDP";
     }
     lf_print("RTI using %s port %d for federation %s.", type, port, rti_remote->federation_id);
 
-    if (socket_type == TCP)
-    {
+    if (socket_type == TCP) {
         rti_remote->final_port_TCP = port;
         // Enable listening for socket connections.
         // The second argument is the maximum number of queued socket requests,
         // which according to the Mac man page is limited to 128.
         listen(socket_descriptor, 128);
-    }
-    else if (socket_type == UDP)
-    {
+    } else if (socket_type == UDP) {
         rti_remote->final_port_UDP = port;
         // No need to listen on the UDP socket
     }
@@ -1694,23 +1725,15 @@ void initialize_federate(federate_info_t *fed, uint16_t id)
     fed->server_port = -1;
 }
 
-int32_t start_rti_server(uint16_t port)
-{
-    int32_t specified_port = port;
-    if (port == 0)
-    {
-        // Use the default port.
-        port = DEFAULT_PORT;
-    }
+int32_t start_rti_server(uint16_t port) {
     _lf_initialize_clock();
     // Create the TCP socket server
-    rti_remote->socket_descriptor_TCP = create_server(specified_port, port, TCP);
+    rti_remote->socket_descriptor_TCP = create_rti_server(port, TCP);
     lf_print("RTI: Listening for federates.");
     // Create the UDP socket server
-    // Try to get the rti->final_port_TCP + 1 port
-    if (rti_remote->clock_sync_global_status >= clock_sync_on)
-    {
-        rti_remote->socket_descriptor_UDP = create_server(specified_port, rti_remote->final_port_TCP + 1, UDP);
+    // Try to get the rti_remote->final_port_TCP + 1 port
+    if (rti_remote->clock_sync_global_status >= clock_sync_on) {
+        rti_remote->socket_descriptor_UDP = create_rti_server(rti_remote->final_port_TCP + 1, UDP);
     }
     return rti_remote->socket_descriptor_TCP;
 }
