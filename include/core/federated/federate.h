@@ -144,11 +144,9 @@ typedef struct federate_instance_t {
     int server_port;
 
     /**
-     * Most recent TIME_ADVANCE_GRANT received from the RTI, or NEVER if none
-     * has been received.
-     * This is used to communicate between the listen_to_rti_TCP thread and the
-     * main federate thread.
-     * This variable should only be accessed while holding the mutex lock.
+     * Most recent tag advance grant (TAG) received from the RTI, or NEVER if none
+     * has been received. This variable should only be accessed while holding the
+     * mutex lock on the top-level environment.
      */
     tag_t last_TAG;
 
