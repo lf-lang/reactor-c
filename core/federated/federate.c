@@ -768,11 +768,9 @@ static int perform_hmac_authentication() {
     RAND_bytes(fed_nonce, NONCE_LENGTH);
     memcpy(&fed_hello_buf[1 + fed_id_length], fed_nonce, NONCE_LENGTH);
 
-    LF_MUTEX_LOCK(outbound_socket_mutex);
     write_to_socket_fail_on_error(
-        &_fed.socket_TCP_RTI, message_length, fed_hello_buf, &outbound_socket_mutex,
+        &_fed.socket_TCP_RTI, message_length, fed_hello_buf, NULL,
         "Failed to write nonce.");
-    LF_MUTEX_UNLOCK(outbound_socket_mutex);
 
     // Check HMAC of received FED_RESPONSE message.
     unsigned int hmac_length = SHA256_HMAC_LENGTH;
@@ -809,10 +807,8 @@ static int perform_hmac_authentication() {
         response[0] = MSG_TYPE_REJECT;
         response[1] = HMAC_DOES_NOT_MATCH;
 
-        LF_MUTEX_LOCK(outbound_socket_mutex);
         // Ignore errors on writing back.
-        write_to_socket(&_fed.socket_TCP_RTI, 2, response, &outbound_socket_mutex);
-        LF_MUTEX_UNLOCK(outbound_socket_mutex);
+        write_to_socket(_fed.socket_TCP_RTI, 2, response);
         return -1;
     } else {
         LF_PRINT_LOG("HMAC verified.");
@@ -826,11 +822,9 @@ static int perform_hmac_authentication() {
         HMAC(EVP_sha256(), federation_metadata.federation_id, federation_id_length, mac_buf, 1 + NONCE_LENGTH,
              &sender[1], &hmac_length);
 
-        LF_MUTEX_LOCK(outbound_socket_mutex);
         write_to_socket_fail_on_error(
-            &_fed.socket_TCP_RTI, 1 + hmac_length, sender, &outbound_socket_mutex,
+            &_fed.socket_TCP_RTI, 1 + hmac_length, sender, NULL,
             "Failed to write fed response.");
-        LF_MUTEX_UNLOCK(outbound_socket_mutex);
     }
     return 0;
 }
