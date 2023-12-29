@@ -1072,16 +1072,15 @@ void set_network_port_status(int portID, port_status_t status) {
  * Update the last known status tag of all network input ports
  * to the value of `tag`, unless that the provided `tag` is less
  * than the last_known_status_tag of the port. This is called when
- * all inputs to network ports with tags up to and including `tag`
- * have been received by those ports. If any update occurs,
- * then this broadcasts on `port_status_changed`.
+ * a TAG signal is received from the RTI in centralized coordination.
+ * If any update occurs, then this broadcasts on `port_status_changed`.
  *
  * This assumes the caller holds the mutex.
  *
  * @param tag The tag on which the latest status of all network input
  *  ports is known.
  */
-void update_last_known_status_on_input_ports(tag_t tag) {
+static void update_last_known_status_on_input_ports(tag_t tag) {
     LF_PRINT_DEBUG("In update_last_known_status_on_input ports.");
     bool notify = false;
     for (int i = 0; i < _lf_action_table_size; i++) {
@@ -1116,26 +1115,38 @@ void update_last_known_status_on_input_ports(tag_t tag) {
 }
 
 /**
- * Update the last known status tag of a network input port
- * to the value of "tag". This is the largest tag at which the status
- * (present or absent) of the port is known.
+ * @brief Update the last known status tag of a network input port.
+ * 
+ * First, if the specified tag is less than the current_tag of the top-level
+ * environment, then ignore the specified tag and use the current_tag. This
+ * situation can arise if a message has arrived late (an STP violation has occurred).
+ * 
+ * If the specified tag is greater than the previous last_known_status_tag
+ * of the port, then update the last_known_status_tag to the new tag.
+ * 
+ * If the tag is equal to the previous last_known_status_tag, then
+ * increment the microstep of the last_known_status_tag. This situation can
+ * occur if a sequence of late messages (STP violations) are occurring all at
+ * once during an execution of a logical tag.
+ * 
+ * This function is called when a message or absent message arrives. For decentralized
+ * coordination, it is also called by the background thread update_ports_from_staa_offsets
+ * which uses physical time to determine when an input port can be assumed to be absent
+ * if a message has not been received.
  *
- * This function assumes the caller holds the mutex, and, if the tag
- * actually increases, it broadcasts on `port_status_changed`.
+ * This function assumes the caller holds the mutex on the top-level environment,
+ * and, if the tag actually increases, it broadcasts on `port_status_changed`.
  *
- * @param tag The tag on which the latest status of network input
- *  ports is known.
- * @param portID The port ID
+ * @param env The top-level environment, whose mutex is assumed to be held.
+ * @param tag The tag on which the latest status of the specified network input port is known.
+ * @param portID The port ID.
  */
-void update_last_known_status_on_input_port(tag_t tag, int port_id) {
+static void update_last_known_status_on_input_port(environment_t* env, tag_t tag, int port_id) {
+    if (lf_tag_compare(tag, env->current_tag) < 0) tag = env->current_tag;
     trigger_t* input_port_action = _lf_action_for_port(port_id)->trigger;
-    if (lf_tag_compare(tag, input_port_action->last_known_status_tag) >= 0) {
-        if (lf_tag_compare(tag, input_port_action->last_known_status_tag) == 0) {
-            // If the intended tag for an input port is equal to the last known status, we need
-            // to increment the microstep. This is a direct result of the behavior of the lf_delay_tag()
-            // semantics in tag.h.
-            tag.microstep++;
-        }
+    int comparison = lf_tag_compare(tag, input_port_action->last_known_status_tag);
+    if (comparison == 0) tag.microstep++;
+    if (comparison >= 0) {
         LF_PRINT_LOG(
             "Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".",
             port_id,
@@ -1145,14 +1156,19 @@ void update_last_known_status_on_input_port(tag_t tag, int port_id) {
             tag.microstep
         );
         input_port_action->last_known_status_tag = tag;
-        // There is no guarantee that there is either a TAG or a PTAG for this time.
+
+        // Check whether this port update implies a change to MLAA, which may unblock reactions.
+        // For decentralized coordination, the first argument is NEVER, so it has no effect.
+        // For centralized, the arguments probably also have no effect, but the port update may.
+        // Note that it would not be correct to pass `tag` as the first argument because
+        // there is no guarantee that there is either a TAG or a PTAG for this time.
         // The message that triggered this to be called could be from an upstream
         // federate that is far ahead of other upstream federates in logical time.
-        // Therefore, do not pass `tag` to `update_max_level`.
         update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
         lf_cond_broadcast(&port_status_changed);
     } else {
-        LF_PRINT_DEBUG("Attempt to update the last known status tag "
+        // Message arrivals should be monotonic, so this should not occur.
+        lf_print_warning("Attempt to update the last known status tag "
                "of network input port %d to an earlier tag was ignored.", port_id);
     }
 }
@@ -1274,8 +1290,6 @@ void send_port_absent_to_federate(
     }
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////
-
 /**
  * Version of schedule_value() similar to that in reactor_common.c
  * except that it does not acquire the mutex lock and has a special
@@ -1391,17 +1405,7 @@ static void handle_port_absent_message(int* socket, int fed_id) {
     _lf_get_environments(&env);
 
     LF_MUTEX_LOCK(env->mutex);
-#ifdef FEDERATED_DECENTRALIZED
-    trigger_t* network_input_port_action = _lf_action_for_port(port_id)->trigger;
-    if (lf_tag_compare(intended_tag,
-            network_input_port_action->last_known_status_tag) < 0) {
-        LF_MUTEX_UNLOCK(env->mutex);
-    }
-#endif // In centralized coordination, a TAG message from the RTI
-       // can set the last_known_status_tag to a future tag where messages
-       // have not arrived yet.
-    // Set the mutex status as absent
-    update_last_known_status_on_input_port(intended_tag, port_id);
+    update_last_known_status_on_input_port(env, intended_tag, port_id);
     LF_MUTEX_UNLOCK(env->mutex);
 }
 
@@ -1573,7 +1577,7 @@ void handle_tagged_message(int* socket, int fed_id) {
         // was waiting for the message, trigger the corresponding reactions for this
         // message.
 
-        update_last_known_status_on_input_port(intended_tag, port_id);
+        update_last_known_status_on_input_port(env, intended_tag, port_id);
 
         LF_PRINT_LOG(
             "Inserting reactions directly at tag " PRINTF_TAG ". "
@@ -1598,10 +1602,11 @@ void handle_tagged_message(int* socket, int fed_id) {
     } else {
         // If no port absent reaction is waiting for this message, or if the intended
         // tag is in the future, use schedule functions to process the message.
-        update_last_known_status_on_input_port(intended_tag, port_id);
-
         // Before that, if the current time >= stop time, discard the message.
         // But only if the stop time is not equal to the start time!
+
+        update_last_known_status_on_input_port(env, intended_tag, port_id);
+
         if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0 && env->execution_started) {
             lf_print_error("Received message too late. Already at stop tag.\n"
             		"    Current tag is " PRINTF_TAG " and intended tag is " PRINTF_TAG ".\n"
@@ -1668,8 +1673,7 @@ void handle_tag_advance_grant(void) {
     // It is possible for this federate to have received a PTAG
     // earlier with the same tag as this TAG.
     if (lf_tag_compare(TAG, _fed.last_TAG) >= 0) {
-        _fed.last_TAG.time = TAG.time;
-        _fed.last_TAG.microstep = TAG.microstep;
+        _fed.last_TAG = TAG;
         _fed.is_last_TAG_provisional = false;
         LF_PRINT_LOG("Received Time Advance Grant (TAG): " PRINTF_TAG ".",
                 _fed.last_TAG.time - start_time, _fed.last_TAG.microstep);
@@ -1712,6 +1716,12 @@ bool update_max_level(tag_t tag, bool is_provisional) {
     _lf_get_environments(&env);
     int prev_max_level_allowed_to_advance = max_level_allowed_to_advance;
     max_level_allowed_to_advance = INT_MAX;
+#ifdef FEDERATED_DECENTRALIZED
+    size_t action_table_size = _lf_action_table_size;
+    lf_action_base_t** action_table = _lf_action_table;
+#else
+    // Note that the following test is never true for decentralized coordination,
+    // where tag always is NEVER_TAG.
     if ((lf_tag_compare(env->current_tag, tag) < 0) || (
         lf_tag_compare(env->current_tag, tag) == 0 && !is_provisional
     )) {
@@ -1722,10 +1732,7 @@ bool update_max_level(tag_t tag, bool is_provisional) {
         // Safe to complete the current tag
         return (prev_max_level_allowed_to_advance != max_level_allowed_to_advance);
     }
-#ifdef FEDERATED_DECENTRALIZED
-    size_t action_table_size = _lf_action_table_size;
-    lf_action_base_t** action_table = _lf_action_table;
-#else
+
     size_t action_table_size = _lf_zero_delay_cycle_action_table_size;
     lf_action_base_t** action_table = _lf_zero_delay_cycle_action_table;
 #endif // FEDERATED_DECENTRALIZED
@@ -1735,7 +1742,8 @@ bool update_max_level(tag_t tag, bool is_provisional) {
         // In decentralized execution, if the current_tag is close enough to the
         // start tag and there is a large enough delay on an incoming
         // connection, then there is no need to block progress waiting for this
-        // port status.
+        // port status.  This is irrelevant for centralized because blocking only
+        // occurs on zero-delay cycles.
         if (
             (_lf_action_delay_table[i] == 0 && env->current_tag.time == start_time && env->current_tag.microstep == 0)
             || (_lf_action_delay_table[i] > 0 && lf_tag_compare(
@@ -1854,7 +1862,7 @@ static void* update_ports_from_staa_offsets(void* args) {
                         if (input_port_action->trigger->status == unknown) {
                             input_port_action->trigger->status = absent;
                             LF_PRINT_DEBUG("Assuming port absent at time " PRINTF_TIME, lf_tag(env).time - start_time);
-                            update_last_known_status_on_input_port(lf_tag(env), id_of_action(input_port_action));
+                            update_last_known_status_on_input_port(env, lf_tag(env), id_of_action(input_port_action));
                             lf_cond_broadcast(&port_status_changed);
                         }
                     }
