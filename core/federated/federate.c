@@ -2083,6 +2083,9 @@ int _lf_fd_send_stop_request_to_rti(tag_t stop_tag) {
         write_to_socket_fail_on_error(&_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_LENGTH,
                 buffer, &outbound_socket_mutex,
                 "Failed to send stop time " PRINTF_TIME " to the RTI.", stop_tag.time - start_time);
+
+        // Treat this sending  as equivalent to having received a stop request from the RTI.
+        _fed.received_stop_request_from_rti = true;
         LF_MUTEX_UNLOCK(outbound_socket_mutex);
         // Trace the event when tracing is enabled
         tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ, _lf_my_fed_id, &stop_tag);
@@ -2153,9 +2156,22 @@ void handle_stop_request_message() {
 
     // Trace the event when tracing is enabled
     tracepoint_federate_from_rti(_fed.trace, receive_STOP_REQ, _lf_my_fed_id, &tag_to_stop);
-    LF_PRINT_LOG("Received from RTI a MSG_TYPE_STOP_REQUEST message with tag " PRINTF_TAG ".",
+    LF_PRINT_LOG("Received from RTI a MSG_TYPE_STOP_REQUEST signal with tag " PRINTF_TAG ".",
              tag_to_stop.time - start_time,
              tag_to_stop.microstep);
+
+    extern lf_mutex_t global_mutex;
+    extern bool lf_stop_requested;
+    bool already_blocked = false;
+
+    LF_MUTEX_LOCK(global_mutex);
+    if (lf_stop_requested) {
+        LF_PRINT_LOG("Ignoring MSG_TYPE_STOP_REQUEST from RTI because lf_request_stop has been called locally.");
+        already_blocked = true;
+    }
+    // Treat the stop request from the RTI as if a local stop request had been received.
+    lf_stop_requested = true;
+    LF_MUTEX_UNLOCK(global_mutex);
 
     // If we have previously received from the RTI a stop request,
     // or we have previously sent a stop request to the RTI,
@@ -2165,22 +2181,15 @@ void handle_stop_request_message() {
     // The second is guarded by the global mutex.
     // Note that the RTI should not send stop requests more than once to federates.
     LF_MUTEX_LOCK(outbound_socket_mutex);
-    bool already_blocked = false;
     if (_fed.received_stop_request_from_rti) {
+        LF_PRINT_LOG("Redundant MSG_TYPE_STOP_REQUEST from RTI. Ignoring it.");
         already_blocked = true;
+    } else if (!already_blocked) {
+        // Do this only if lf_request_stop has not been called because it will
+        // prevent lf_request_stop from sending.
+        _fed.received_stop_request_from_rti = true;
     }
-    _fed.received_stop_request_from_rti = true;
     LF_MUTEX_UNLOCK(outbound_socket_mutex);
-
-    extern lf_mutex_t global_mutex;
-    extern bool lf_stop_requested;
-    LF_MUTEX_LOCK(global_mutex);
-    if (lf_stop_requested) {
-        already_blocked = true;
-    }
-    // Treat the stop request from the RTI as if a local stop request had been received.
-    lf_stop_requested = true;
-    LF_MUTEX_UNLOCK(global_mutex);
 
     if (already_blocked) {
         // Either we have sent a stop request to the RTI ourselves,

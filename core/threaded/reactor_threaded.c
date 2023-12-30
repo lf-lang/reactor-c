@@ -587,9 +587,11 @@ bool lf_stop_requested = false;
 // See reactor.h for docs.
 void lf_request_stop() {
     // If a requested stop is pending, return without doing anything.
+    LF_PRINT_LOG("lf_request_stop() has been called.");
     lf_mutex_lock(&global_mutex);
     if (lf_stop_requested) {
         lf_mutex_unlock(&global_mutex);
+        LF_PRINT_LOG("Ignoring redundant lf_request_stop() call.");
         return;
     }
     lf_stop_requested = true;

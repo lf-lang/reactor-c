@@ -242,18 +242,6 @@ void handle_logical_tag_complete(federate_info_t* fed);
 void handle_next_event_tag(federate_info_t* fed);
 
 /////////////////// STOP functions ////////////////////
-/**
- * Mark a federate requesting stop.
- *
- * If the number of federates handling stop reaches the
- * NUM_OF_FEDERATES, broadcast MSG_TYPE_STOP_GRANTED to every federate.
- *
- * This function assumes the _RTI.mutex is already locked.
- *
- * @param fed The federate that has requested a stop or has suddenly
- *  stopped (disconnected).
- */
-void mark_federate_requesting_stop(federate_info_t* fed);
 
 /**
  * Handle a MSG_TYPE_STOP_REQUEST message.

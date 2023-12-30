@@ -605,7 +605,7 @@ void handle_next_event_tag(federate_info_t *fed)
  * Boolean used to prevent the RTI from sending the
  * MSG_TYPE_STOP_GRANTED message multiple times.
  */
-bool _lf_rti_stop_granted_already_sent_to_federates = false;
+bool stop_granted_already_sent_to_federates = false;
 
 /**
  * Once the RTI has seen proposed tags from all connected federates,
@@ -615,62 +615,62 @@ bool _lf_rti_stop_granted_already_sent_to_federates = false;
  *
  * This function assumes the caller holds the rti_mutex lock.
  */
-void _lf_rti_broadcast_stop_time_to_federates_locked()
-{
-    if (_lf_rti_stop_granted_already_sent_to_federates == true)
-    {
+static void broadcast_stop_time_to_federates_locked() {
+    if (stop_granted_already_sent_to_federates == true) {
         return;
     }
+    stop_granted_already_sent_to_federates = true;
+
     // Reply with a stop granted to all federates
     unsigned char outgoing_buffer[MSG_TYPE_STOP_GRANTED_LENGTH];
     ENCODE_STOP_GRANTED(outgoing_buffer, rti_remote->base.max_stop_tag.time, rti_remote->base.max_stop_tag.microstep);
 
     // Iterate over federates and send each the message.
-    for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++)
-    {
+    for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
         federate_info_t *fed = GET_FED_INFO(i);
-        if (fed->enclave.state == NOT_CONNECTED)
-        {
+        if (fed->enclave.state == NOT_CONNECTED) {
             continue;
         }
-        if (lf_tag_compare(fed->enclave.next_event, rti_remote->base.max_stop_tag) >= 0)
-        {
+        if (lf_tag_compare(fed->enclave.next_event, rti_remote->base.max_stop_tag) >= 0) {
             // Need the next_event to be no greater than the stop tag.
             fed->enclave.next_event = rti_remote->base.max_stop_tag;
         }
-        if (rti_remote->base.tracing_enabled)
-        {
+        if (rti_remote->base.tracing_enabled) {
             tracepoint_rti_to_federate(rti_remote->base.trace, send_STOP_GRN, fed->enclave.id, &rti_remote->base.max_stop_tag);
         }
-        write_to_socket_fail_on_error(&fed->socket, MSG_TYPE_STOP_GRANTED_LENGTH, outgoing_buffer, &rti_mutex,
-                                      "RTI failed to send MSG_TYPE_STOP_GRANTED message to federate %d.", fed->enclave.id);
+        write_to_socket_fail_on_error(
+                &fed->socket, MSG_TYPE_STOP_GRANTED_LENGTH, outgoing_buffer, &rti_mutex,
+                "RTI failed to send MSG_TYPE_STOP_GRANTED message to federate %d.", fed->enclave.id);
     }
 
-    LF_PRINT_LOG("RTI sent to federates MSG_TYPE_STOP_GRANTED with tag (" PRINTF_TIME ", %u).",
-                 rti_remote->base.max_stop_tag.time - start_time,
-                 rti_remote->base.max_stop_tag.microstep);
-    _lf_rti_stop_granted_already_sent_to_federates = true;
+    LF_PRINT_LOG("RTI sent to federates MSG_TYPE_STOP_GRANTED with tag " PRINTF_TAG,
+            rti_remote->base.max_stop_tag.time - start_time,
+            rti_remote->base.max_stop_tag.microstep);
 }
 
-void mark_federate_requesting_stop(federate_info_t *fed)
-{
-    if (!fed->requested_stop)
-    {
-        // Assume that the federate
-        // has requested stop
+/**
+ * Mark a federate requesting stop. If the number of federates handling stop reaches the
+ * NUM_OF_FEDERATES, broadcast MSG_TYPE_STOP_GRANTED to every federate.
+ * This function assumes the _RTI.mutex is already locked.
+ * @param fed The federate that has requested a stop.
+ * @return 1 if stop time has been sent to all federates and 0 otherwise.
+ */
+static int mark_federate_requesting_stop(federate_info_t *fed) {
+    if (!fed->requested_stop) {
         rti_remote->base.num_scheduling_nodes_handling_stop++;
         fed->requested_stop = true;
     }
-    if (rti_remote->base.num_scheduling_nodes_handling_stop == rti_remote->base.number_of_scheduling_nodes)
-    {
+    if (rti_remote->base.num_scheduling_nodes_handling_stop
+            == rti_remote->base.number_of_scheduling_nodes) {
         // We now have information about the stop time of all
         // federates.
-        _lf_rti_broadcast_stop_time_to_federates_locked();
+        broadcast_stop_time_to_federates_locked();
+        return 1;
     }
+    return 0;
 }
 
-void handle_stop_request_message(federate_info_t *fed)
-{
+void handle_stop_request_message(federate_info_t *fed) {
     LF_PRINT_DEBUG("RTI handling stop_request from federate %d.", fed->enclave.id);
 
     size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
@@ -682,10 +682,12 @@ void handle_stop_request_message(federate_info_t *fed)
     // Extract the proposed stop tag for the federate
     tag_t proposed_stop_tag = extract_tag(buffer);
 
-    if (rti_remote->base.tracing_enabled)
-    {
+    if (rti_remote->base.tracing_enabled) {
         tracepoint_rti_from_federate(rti_remote->base.trace, receive_STOP_REQ, fed->enclave.id, &proposed_stop_tag);
     }
+
+    LF_PRINT_LOG("RTI received from federate %d a MSG_TYPE_STOP_REQUEST message with tag " PRINTF_TAG ".",
+            fed->enclave.id, proposed_stop_tag.time - start_time, proposed_stop_tag.microstep);
 
     // Acquire a mutex lock to ensure that this state does change while a
     // message is in transport or being used to determine a TAG.
@@ -693,64 +695,51 @@ void handle_stop_request_message(federate_info_t *fed)
 
     // Check whether we have already received a stop_tag
     // from this federate
-    if (fed->requested_stop)
-    {
-        // Ignore this request
+    if (fed->requested_stop) {
+        // If stop request messages have already been broadcast, treat this as if it were a reply.
+        if (rti_remote->stop_in_progress) {
+            mark_federate_requesting_stop(fed);
+        }
         LF_MUTEX_UNLOCK(rti_mutex);
         return;
     }
 
     // Update the maximum stop tag received from federates
-    if (lf_tag_compare(proposed_stop_tag, rti_remote->base.max_stop_tag) > 0)
-    {
+    if (lf_tag_compare(proposed_stop_tag, rti_remote->base.max_stop_tag) > 0) {
         rti_remote->base.max_stop_tag = proposed_stop_tag;
     }
 
-    LF_PRINT_LOG("RTI received from federate %d a MSG_TYPE_STOP_REQUEST message with tag " PRINTF_TAG ".",
-                 fed->enclave.id, proposed_stop_tag.time - start_time, proposed_stop_tag.microstep);
-
-    // If this federate has not already asked
-    // for a stop, add it to the tally.
-    mark_federate_requesting_stop(fed);
-
-    if (rti_remote->base.num_scheduling_nodes_handling_stop == rti_remote->base.number_of_scheduling_nodes)
-    {
-        // We now have information about the stop time of all
-        // federates, and mark_federate_requesting_stop has sent out stop time to.
+    // If all federates have replied, send stop request granted.
+    if (mark_federate_requesting_stop(fed)) {
+        // Have send stop request granted to all federates. Nothing more to do.
         LF_MUTEX_UNLOCK(rti_mutex);
         return;
     }
+
     // Forward the stop request to all other federates that have not
     // also issued a stop request.
     unsigned char stop_request_buffer[MSG_TYPE_STOP_REQUEST_LENGTH];
-    ENCODE_STOP_REQUEST(stop_request_buffer, rti_remote->base.max_stop_tag.time, rti_remote->base.max_stop_tag.microstep);
+    ENCODE_STOP_REQUEST(stop_request_buffer,
+            rti_remote->base.max_stop_tag.time, rti_remote->base.max_stop_tag.microstep);
 
     // Iterate over federates and send each the MSG_TYPE_STOP_REQUEST message
     // if we do not have a stop_time already for them. Do not do this more than once.
-    if (rti_remote->stop_in_progress)
-    {
+    if (rti_remote->stop_in_progress) {
         LF_MUTEX_UNLOCK(rti_mutex);
         return;
     }
     rti_remote->stop_in_progress = true;
-    for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++)
-    {
+    // FIXME: Need a timeout here in case a federate never replies.
+    for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
         federate_info_t *f = GET_FED_INFO(i);
-        if (f->enclave.id != fed->enclave.id && f->requested_stop == false)
-        {
-            if (f->enclave.state == NOT_CONNECTED)
-            {
+        if (f->enclave.id != fed->enclave.id && f->requested_stop == false) {
+            if (f->enclave.state == NOT_CONNECTED) {
                 mark_federate_requesting_stop(f);
                 continue;
             }
-            if (rti_remote->base.tracing_enabled)
-            {
-                tracepoint_rti_to_federate(rti_remote->base.trace, send_STOP_REQ, f->enclave.id, &rti_remote->base.max_stop_tag);
-            }
             write_to_socket_fail_on_error(&f->socket, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer, &rti_mutex,
-                                          "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.", f->enclave.id);
-            if (rti_remote->base.tracing_enabled)
-            {
+                    "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.", f->enclave.id);
+            if (rti_remote->base.tracing_enabled) {
                 tracepoint_rti_to_federate(rti_remote->base.trace, send_STOP_REQ, f->enclave.id, &rti_remote->base.max_stop_tag);
             }
         }
@@ -761,8 +750,7 @@ void handle_stop_request_message(federate_info_t *fed)
     LF_MUTEX_UNLOCK(rti_mutex);
 }
 
-void handle_stop_request_reply(federate_info_t *fed)
-{
+void handle_stop_request_reply(federate_info_t *fed) {
     size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_REPLY_LENGTH - 1;
     unsigned char buffer_stop_time[bytes_to_read];
     read_from_socket_fail_on_error(&fed->socket, bytes_to_read, buffer_stop_time, NULL,
@@ -771,20 +759,18 @@ void handle_stop_request_reply(federate_info_t *fed)
 
     tag_t federate_stop_tag = extract_tag(buffer_stop_time);
 
-    if (rti_remote->base.tracing_enabled)
-    {
+    if (rti_remote->base.tracing_enabled) {
         tracepoint_rti_from_federate(rti_remote->base.trace, receive_STOP_REQ_REP, fed->enclave.id, &federate_stop_tag);
     }
 
     LF_PRINT_LOG("RTI received from federate %d STOP reply tag " PRINTF_TAG ".", fed->enclave.id,
-                 federate_stop_tag.time - start_time,
-                 federate_stop_tag.microstep);
+            federate_stop_tag.time - start_time,
+            federate_stop_tag.microstep);
 
     // Acquire the mutex lock so that we can change the state of the RTI
     LF_MUTEX_LOCK(rti_mutex);
     // If the federate has not requested stop before, count the reply
-    if (lf_tag_compare(federate_stop_tag, rti_remote->base.max_stop_tag) > 0)
-    {
+    if (lf_tag_compare(federate_stop_tag, rti_remote->base.max_stop_tag) > 0) {
         rti_remote->base.max_stop_tag = federate_stop_tag;
     }
     mark_federate_requesting_stop(fed);
