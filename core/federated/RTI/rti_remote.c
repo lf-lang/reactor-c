@@ -670,6 +670,25 @@ static int mark_federate_requesting_stop(federate_info_t *fed) {
     return 0;
 }
 
+/**
+ * Thread to time out if federates do not reply to stop request.
+ */
+static void* wait_for_stop_request_reply(void* args) {
+    // Divide the time into small chunks and check periodically.
+    interval_t chunk = MAX_TIME_FOR_REPLY_TO_STOP_REQUEST/30;
+    int count = 0;
+    while (count++ < 30) {
+        if (stop_granted_already_sent_to_federates) return NULL;
+        lf_sleep(chunk);
+    }
+    // If we reach here, then error out.
+    lf_print_error_and_exit("Received only %d stop request replies within timeout "
+            PRINTF_TIME "ns. RTI is exiting.",
+            rti_remote->base.num_scheduling_nodes_handling_stop,
+            MAX_TIME_FOR_REPLY_TO_STOP_REQUEST
+    );
+}
+
 void handle_stop_request_message(federate_info_t *fed) {
     LF_PRINT_DEBUG("RTI handling stop_request from federate %d.", fed->enclave.id);
 
@@ -729,7 +748,10 @@ void handle_stop_request_message(federate_info_t *fed) {
         return;
     }
     rti_remote->stop_in_progress = true;
-    // FIXME: Need a timeout here in case a federate never replies.
+    // Need a timeout here in case a federate never replies.
+    lf_thread_t timeout_thread;
+    lf_thread_create(&timeout_thread, wait_for_stop_request_reply, NULL);
+    
     for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
         federate_info_t *f = GET_FED_INFO(i);
         if (f->enclave.id != fed->enclave.id && f->requested_stop == false) {

@@ -32,6 +32,9 @@
 #include "lf_types.h"
 #include "message_record/message_record.h"
 
+/** Time allowed for federates to reply to stop request. */
+#define MAX_TIME_FOR_REPLY_TO_STOP_REQUEST SEC(30)
+
 /////////////////////////////////////////////
 //// Data structures
 
