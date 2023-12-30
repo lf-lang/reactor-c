@@ -1470,8 +1470,14 @@ void handle_message(int* socket, int fed_id) {
     // Read the header.
     size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t);
     unsigned char buffer[bytes_to_read];
-    read_from_socket_fail_on_error(socket, bytes_to_read, buffer, NULL,
-            "Failed to read message header.");
+    if (read_from_socket_close_on_error(socket, bytes_to_read, buffer)) {
+        // Read failed, which means the socket has been closed between reading the
+        // message ID byte and here.  Issue a warning only. This is a physical
+        // connection, so likely the message is just late. If it's a serious failure,
+        // it should be caught in another thread.
+        lf_print_warning("Failed to read message header.");
+        return;
+    }
 
     // Extract the header information.
     unsigned short port_id;
@@ -1488,8 +1494,9 @@ void handle_message(int* socket, int fed_id) {
     // Read the payload.
     // Allocate memory for the message contents.
     unsigned char* message_contents = (unsigned char*)malloc(length);
-    read_from_socket_fail_on_error(socket, length, message_contents, NULL,
-            "Failed to read message body.");
+    if (read_from_socket_close_on_error(socket, length, message_contents)) {
+        lf_print_warning("Failed to read message body.");
+    }
     // Trace the event when tracing is enabled
     tracepoint_federate_from_federate(_fed.trace, receive_P2P_MSG, _lf_my_fed_id, federate_id, NULL);
     LF_PRINT_LOG("Message received by federate: %s. Length: %zu.", message_contents, length);
