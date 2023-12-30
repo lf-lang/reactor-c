@@ -2065,7 +2065,8 @@ int _lf_fd_send_stop_request_to_rti(tag_t stop_tag) {
     // Send a stop request with the specified tag to the RTI
     unsigned char buffer[MSG_TYPE_STOP_REQUEST_LENGTH];
     // Stop at the next microstep
-    ENCODE_STOP_REQUEST(buffer, stop_tag.time, stop_tag.microstep + 1);
+    stop_tag.microstep++;
+    ENCODE_STOP_REQUEST(buffer, stop_tag.time, stop_tag.microstep);
 
     LF_MUTEX_LOCK(outbound_socket_mutex);
     // Do not send a stop request if a stop request has been previously received from the RTI.
@@ -2215,6 +2216,9 @@ void handle_stop_request_message() {
             &_fed.socket_TCP_RTI, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH, outgoing_buffer, &outbound_socket_mutex,
             "Failed to send the answer to MSG_TYPE_STOP_REQUEST to RTI.");
     LF_MUTEX_UNLOCK(outbound_socket_mutex);
+
+    LF_PRINT_DEBUG("Sent MSG_TYPE_STOP_REQUEST_REPLY to RTI with tag " PRINTF_TAG,
+            tag_to_stop.time, tag_to_stop.microstep);
     // Trace the event when tracing is enabled
     tracepoint_federate_to_rti(_fed.trace, send_STOP_REQ_REP, _lf_my_fed_id, &tag_to_stop);
 }
