@@ -678,10 +678,11 @@ static void _lf_replace_token(event_t* event, lf_token_t* token) {
  * @param tag Logical tag of the event
  * @param token The token wrapping the payload or NULL for no payload.
  *
- * @return 1 for success, 0 if no new event was scheduled (instead, the payload was updated),
- *  or -1 for error (the tag is equal to or less than the current tag).
+ * @return A positive trigger handle for success, 0 if no new event was scheduled
+ *  (instead, the payload was updated), or -1 for error (the tag is equal to or less
+ *  than the current tag).
  */
-int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_token_t* token) {
+trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_token_t* token) {
     assert(env != GLOBAL_ENVIRONMENT);
     tag_t current_logical_tag = env->current_tag;
 
@@ -852,7 +853,11 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
             pqueue_insert(env->event_q, _lf_create_dummy_events(env, trigger, tag.time, e, relative_microstep));
         }
     }
-    return 1;
+    trigger_handle_t return_value = env->_lf_handle++;
+    if (env->_lf_handle < 0) {
+        env->_lf_handle = 1;
+    }
+    return return_value;
 }
 
 /**
@@ -1110,7 +1115,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     // NOTE: Rather than wrapping around to get a negative number,
     // we reset the handle on the assumption that much earlier
     // handles are irrelevant.
-    int return_value = env->_lf_handle++;
+    trigger_handle_t return_value = env->_lf_handle++;
     if (env->_lf_handle < 0) {
         env->_lf_handle = 1;
     }

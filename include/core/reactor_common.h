@@ -63,7 +63,7 @@ event_t* _lf_create_dummy_events(
     event_t* next,
     microstep_t offset
 );
-int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_token_t* token);
+trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_token_t* token);
 trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger, interval_t extra_delay, lf_token_t* token);
 trigger_handle_t _lf_insert_reactions_for_trigger(environment_t* env, trigger_t* trigger, lf_token_t* token);
 
