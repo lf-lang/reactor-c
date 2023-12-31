@@ -1366,7 +1366,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(
     assert(env != GLOBAL_ENVIRONMENT);
 
     // Return value of the function
-    int return_value = 0;
+    trigger_handle_t return_value = 0;
 
     // Indicates whether or not the intended tag
     // of the message (timestamp, microstep) is
@@ -1517,6 +1517,52 @@ void stall_advance_level_federation(environment_t* env, size_t level) {
 }
 
 /**
+ * Return true if reactions need to be inserted directly into the reaction queue and
+ * false if a call to schedule is needed (the normal case). This function handles zero-delay
+ * cycles, where processing at a tag must be able to begin before all messages have arrived
+ * at that tag. This returns true if the following conditions are all true:
+ *
+ * 1. the first reaction triggered has a level >= MLAA (a port is or will be blocked on this trigger);
+ * 2. the intended_tag is less than or equal to the current tag of the environment;
+ * 3. the intended_tag is greater than the last_tag of the trigger;
+ * 4. the intended_tag is greater than the last_known_status_tag of the trigger;
+ * 5. the execution has started (the event queue has been examined);
+ * 6. the trigger is not physical;
+ *
+ * The comparison against the MLAA (condition 1), if true, means that there is a blocking port
+ * waiting for this trigger (or possibly an earlier blocking port). For condition (2), if the
+ * intended tag is less than the current tag, then the message is tardy.  A tardy message can
+ * unblock a port, although it will trigger an STP violation handler if one is defined or an
+ * error if not (or if centralized coordination is being used). The comparison against the
+ * last_tag of the trigger (condition 3) ensures that if the message is tardy but there is
+ * already an earlier tardy message that has been handled (or is being handled), then we
+ * don't try to handle two messages in the same tag, which is not allowed. For example, there
+ * could be a case where current tag is 10 with a port absent reaction waiting, and a message
+ * has arrived with intended_tag 8. This message will eventually cause the port absent reaction
+ * to exit, but before that, a message with intended_tag of 9 could arrive before the port absent
+ * reaction has had a chance to exit. The port status is on the other hand changed in this thread,
+ * and thus, can be checked in this scenario without this race condition. The message with
+ * intended_tag of 9 in this case needs to wait one microstep to be processed. The check with
+ * last_known_status_tag (condition 4) deals with messages arriving with identical intended
+ * tags (which should not happen). This one will be handled late (one microstep later than
+ * the current tag if 1 and 2 are true).
+ *
+ * This function assumes the mutex is held on the environment.
+ *
+ * @param env The environment.
+ * @param trigger The trigger.
+ * @param intended_tag The intended tag.
+ */
+static bool handle_message_now(environment_t* env, trigger_t* trigger, tag_t intended_tag) {
+    return trigger->reactions[0]->index >= max_level_allowed_to_advance
+            && lf_tag_compare(intended_tag, lf_tag(env)) <= 0
+            && lf_tag_compare(intended_tag, trigger->last_tag) > 0
+            && lf_tag_compare(intended_tag, trigger->last_known_status_tag) > 0
+            && env->execution_started
+            && !trigger->is_physical;
+}
+
+/**
  * Handle a tagged message being received from a remote federate via the RTI
  * or directly from other federates.
  * This will read the tag encoded in the header
@@ -1603,35 +1649,9 @@ void handle_tagged_message(int* socket, int fed_id) {
     // Create a token for the message
     lf_token_t* message_token = _lf_new_token((token_type_t*)action, message_contents, length);
 
-    // Check whether reactions need to be inserted directly into the reaction
-    // queue or a call to schedule is needed. This checks if the intended
-    // tag of the message is for the current tag or a tag that is already
-    // passed and if any port absent reaction is waiting on this port (or the
-    // execution hasn't even started).
-    // If the tag is intended for a tag that is passed, the port absent reactions
-    // would need to exit because only one message can be processed per tag,
-    // and that message is going to be a tardy message. The actual tardiness
-    // handling is done inside _lf_insert_reactions_for_trigger.
-    // To prevent multiple processing of messages per tag,
-    // we also need to check the port status.
-    // For example, there could be a case where current tag is
-    // 10 with a port absent reaction waiting, and a message has arrived with intended_tag 8.
-    // This message will eventually cause the port absent reaction to exit, but before that,
-    // a message with intended_tag of 9 could arrive before the port absent reaction has had a chance
-    // to exit. The port status is on the other hand changed in this thread, and thus,
-    // can be checked in this scenario without this race condition. The message with
-    // intended_tag of 9 in this case needs to wait one microstep to be processed.
-    if (lf_tag_compare(intended_tag, lf_tag(env)) == 0 // The event is meant for the current tag.
-            && env->execution_started
-            // Check that MLAA is blocking at the right level. Otherwise, data can be lost.
-            && action->trigger->reactions[0]->index >= max_level_allowed_to_advance
-            && !action->trigger->is_physical
-            && lf_tag_compare(intended_tag, action->trigger->last_tag) > 0   // Not already enabled at the current tag.
-            && lf_tag_compare(intended_tag, action->trigger->last_known_status_tag) > 0
-    ) {
+    if (handle_message_now(env, action->trigger, intended_tag)) {
         // Since the message is intended for the current tag and a port absent reaction
-        // was waiting for the message, trigger the corresponding reactions for this
-        // message.
+        // was waiting for the message, trigger the corresponding reactions for this message.
 
         update_last_known_status_on_input_port(env, intended_tag, port_id);
 
@@ -1643,7 +1663,12 @@ void handle_tagged_message(int* socket, int fed_id) {
             intended_tag.time - lf_time_start(), 
             intended_tag.microstep
         );
+        // Only set the intended tag of the trigger if it is being executed now
+        // because otherwise this may preempt the intended_tag of a previous activation
+        // of the trigger.
         action->trigger->intended_tag = intended_tag;
+
+        // This will mark the STP violation in the reaction if the message is tardy.
         _lf_insert_reactions_for_trigger(env, action->trigger, message_token);
 
         // Set the status of the port as present here to inform the network input
