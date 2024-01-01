@@ -24,21 +24,6 @@ extern bool _lf_normal_termination;
 extern int default_argc;
 extern const char** default_argv;
 
-#ifdef FEDERATED
-void reset_status_fields_on_input_port_triggers();
-port_status_t determine_port_status_if_possible(int portID);
-typedef enum parse_rti_code_t {
-    SUCCESS,
-    INVALID_PORT,
-    INVALID_HOST,
-    INVALID_USER,
-    FAILED_TO_PARSE
-} parse_rti_code_t;
-parse_rti_code_t parse_rti_addr(const char* rti_addr);
-void set_federation_id(const char* fid);
-void set_federation_trace_object(trace_t * trace);
-#endif
-
 extern struct allocation_record_t* _lf_reactors_to_free;
 void* _lf_new_reactor(size_t size);
 void _lf_free(struct allocation_record_t** head);

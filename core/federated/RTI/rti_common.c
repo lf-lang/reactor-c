@@ -66,7 +66,7 @@ void _logical_tag_complete(scheduling_node_t* enclave, tag_t completed) {
 
     enclave->completed = completed;
 
-    LF_PRINT_LOG("RTI received from federate/enclave %d the Logical Tag Complete (LTC) " PRINTF_TAG ".",
+    LF_PRINT_LOG("RTI received from federate/enclave %d the latest tag complete (LTC) " PRINTF_TAG ".",
                 enclave->id, enclave->completed.time - start_time, enclave->completed.microstep);
 
     // Check downstream scheduling_nodes to see whether they should now be granted a TAG.

@@ -269,12 +269,12 @@ void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_n
  * counts between time steps and at the end of execution.
  */
 void _lf_start_time_step(environment_t *env) {
+    assert(env != GLOBAL_ENVIRONMENT);
     if (!env->execution_started) {
         // Execution hasn't started, so this is probably being invoked in termination
         // due to an error.
         return;
     }
-    assert(env != GLOBAL_ENVIRONMENT);
     LF_PRINT_LOG("--------- Start time step at tag " PRINTF_TAG ".", env->current_tag.time - start_time, env->current_tag.microstep);
     // Handle dynamically created tokens for mutable inputs.
     _lf_free_token_copies(env);
@@ -300,22 +300,29 @@ void _lf_start_time_step(environment_t *env) {
             }
         }
     }
+    env->is_present_fields_abbreviated_size = 0;
+
+#ifdef FEDERATED
+    // If the environment is the top-level one, we have some work to do.
+    environment_t *envs;
+    int num_envs = _lf_get_environments(&envs);
+    if (env == envs) {
+        // This is the top-level environment.
 
 #ifdef FEDERATED_DECENTRALIZED
-    for (int i = 0; i < env->is_present_fields_size; i++) {
-        // FIXME: For now, an intended tag of (NEVER, 0)
-        // indicates that it has never been set.
-        *env->_lf_intended_tag_fields[i] = (tag_t) {NEVER, 0};
+        for (int i = 0; i < env->is_present_fields_size; i++) {
+            // An intended tag of NEVER_TAG indicates that it has never been set.
+            *env->_lf_intended_tag_fields[i] = NEVER_TAG;
+        }
+#endif // FEDERATED_DECENTRALIZED
+
+        // Reset absent fields on network ports because
+        // their status is unknown
+        lf_reset_status_fields_on_input_port_triggers();
+        // Signal the helper thread to reset its progress since the logical time has changed.
+        lf_cond_signal(&lf_current_tag_changed);
     }
-#endif
-#ifdef FEDERATED
-    // Reset absent fields on network ports because
-    // their status is unknown
-    reset_status_fields_on_input_port_triggers();
-    // Signal the helper thread to reset its progress since the logical time has changed.
-    lf_cond_signal(&logical_time_changed);
-#endif
-    env->is_present_fields_abbreviated_size = 0;
+#endif // FEDERATED
 }
 
 /**
@@ -1669,7 +1676,7 @@ int process_args(int argc, const char* argv[]) {
                 return 0;
             }
             const char* fid = argv[i++];
-            set_federation_id(fid);
+            lf_set_federation_id(fid);
             lf_print("Federation ID for executable %s: %s", argv[0], fid);
         } else if (strcmp(arg, "-r") == 0 || strcmp(arg, "--rti") == 0) {
             if (argc < i + 1) {
@@ -1677,7 +1684,7 @@ int process_args(int argc, const char* argv[]) {
                 usage(argc, argv);
                 return 0;
             }
-            parse_rti_code_t code = parse_rti_addr(argv[i++]);
+            parse_rti_code_t code = lf_parse_rti_addr(argv[i++]);
             if (code != SUCCESS) {
                 switch (code) {
                     case INVALID_HOST:
@@ -1728,7 +1735,7 @@ void initialize_global(void) {
     // Federation trace object must be set before `initialize_trigger_objects` is called because it
     //  uses tracing functionality depending on that pointer being set.
     #ifdef FEDERATED
-    set_federation_trace_object(envs->trace);
+    lf_set_federation_trace_object(envs->trace);
     #endif
     // Call the code-generated function to initialize all actions, timers, and ports
     // This is done for all environments/enclaves at the same time.

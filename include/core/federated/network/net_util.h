@@ -350,7 +350,7 @@ void encode_tag(
 );
 
 /**
- * A helper struct for passing rti_addr information between parse_rti_addr and extract_rti_addr_info
+ * A helper struct for passing rti_addr information between lf_parse_rti_addr and extract_rti_addr_info
  */
 typedef struct rti_addr_info_t {
     char rti_host_str[256];

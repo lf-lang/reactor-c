@@ -163,7 +163,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * each federate has a valid event at the start tag (start time, 0) and it will
  * inform the RTI of this event.
  * Subsequently, at the conclusion of each tag, each federate will send a
- * `MSG_TYPE_LOGICAL_TAG_COMPLETE` followed by a `MSG_TYPE_NEXT_EVENT_TAG` (see
+ * `MSG_TYPE_LATEST_TAG_COMPLETE` followed by a `MSG_TYPE_NEXT_EVENT_TAG` (see
  * the comment for each message for further explanation). Each federate would
  * have to wait for a `MSG_TYPE_TAG_ADVANCE_GRANT` or a
  * `MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT` before it can advance to a
@@ -303,7 +303,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  *  to the RTI. This is its first message to the RTI.
  *  The RTI will respond with either MSG_TYPE_REJECT, MSG_TYPE_ACK, or MSG_TYPE_UDP_PORT.
  *  If the federate is a C target LF program, the generated federate
- *  code does this by calling synchronize_with_other_federates(),
+ *  code does this by calling lf_synchronize_with_other_federates(),
  *  passing to it its federate ID.
  */
 #define MSG_TYPE_FED_IDS 1
@@ -431,12 +431,12 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT 8
 
 /** 
- * Byte identifying a logical tag complete (LTC) message sent by a federate
+ * Byte identifying a latest tag complete (LTC) message sent by a federate
  * to the RTI.
  * The next eight bytes will be the timestep of the completed tag.
  * The next four bytes will be the microsteps of the completed tag.
  */
-#define MSG_TYPE_LOGICAL_TAG_COMPLETE 9
+#define MSG_TYPE_LATEST_TAG_COMPLETE 9
 
 /////////// Messages used in lf_request_stop() ///////////////
 //// Overview of the algorithm:

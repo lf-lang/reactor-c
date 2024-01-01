@@ -204,7 +204,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t* e, tag_t tag);
  * If M is equal to the NET of the federate, then return PTAG(M).
  *
  * This should be called whenever an immediately upstream federate sends to
- * the RTI an LTC (Logical Tag Complete), or when a transitive upstream
+ * the RTI an LTC (latest tag complete), or when a transitive upstream
  * federate sends a NET (Next Event Tag) message.
  * It is also called when an upstream federate resigns from the federation.
  *

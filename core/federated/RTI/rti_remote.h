@@ -226,14 +226,14 @@ void handle_port_absent_message(federate_info_t* sending_federate, unsigned char
 void handle_timed_message(federate_info_t* sending_federate, unsigned char* buffer);
 
 /**
- * Handle a logical tag complete (LTC) message. @see
- * MSG_TYPE_LOGICAL_TAG_COMPLETE in rti.h.
+ * Handle a latest tag complete (LTC) message. @see
+ * MSG_TYPE_LATEST_TAG_COMPLETE in rti.h.
  *
  * This function assumes the caller does not hold the mutex.
  *
  * @param fed The federate that has completed a logical tag.
  */
-void handle_logical_tag_complete(federate_info_t* fed);
+void handle_latest_tag_complete(federate_info_t* fed);
 
 /**
  * Handle a next event tag (NET) message. @see MSG_TYPE_NEXT_EVENT_TAG in rti.h.
@@ -274,7 +274,7 @@ void handle_stop_request_reply(federate_info_t* fed);
  * are initialized to -1. If no MSG_TYPE_ADDRESS_ADVERTISEMENT message has been received from
  * the destination federate, the RTI will simply reply with -1 for the port.
  * The sending federate is responsible for checking back with the RTI after a
- * period of time. @see connect_to_federate() in federate.c. *
+ * period of time.
  * @param fed_id The federate sending a MSG_TYPE_ADDRESS_QUERY message.
  */
 void handle_address_query(uint16_t fed_id);
@@ -286,7 +286,7 @@ void handle_address_query(uint16_t fed_id);
  * field of the _RTI.federates[federate_id] array of structs.
  *
  * The server_hostname and server_ip_addr fields are assigned
- * in connect_to_federates() upon accepting the socket
+ * in lf_connect_to_federates() upon accepting the socket
  * from the remote federate.
  *
  * This function assumes the caller does not hold the mutex.
@@ -394,7 +394,7 @@ void send_reject(int* socket_id, unsigned char error_code);
  * that federate. Return when all federates have connected.
  * @param socket_descriptor The socket on which to accept connections.
  */
-void connect_to_federates(int socket_descriptor);
+void lf_connect_to_federates(int socket_descriptor);
 
 /**
  * Thread to respond to new connections, which could be federates of other

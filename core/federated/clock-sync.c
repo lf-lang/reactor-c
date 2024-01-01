@@ -71,7 +71,7 @@ instant_t _lf_last_clock_sync_instant = 0LL;
 
 /**
  * The UDP socket descriptor for this federate to communicate with the RTI.
- * This is set by setup_clock_synchronization_with_rti() in connect_to_rti()
+ * This is set by setup_clock_synchronization_with_rti() in lf_connect_to_rti()
  * in federate.c, which must be called before other
  * functions that communicate with the rti are called.
  */
