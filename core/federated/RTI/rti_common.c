@@ -101,13 +101,18 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e) {
             tag_t start_tag = {.time = start_time, .microstep = 0};
             upstream->next_event = start_tag;
         }
-        tag_t earliest_tag_from_upstream = lf_tag_add(upstream->next_event, e->min_delays[i].min_delay);
-        /* Following debug message is too verbose for normal use:
+        // The min_delay here is a tag_t, not an interval_t.
+        // No delay at all is represented by (0,0). A delay of 0 is represented by (0,1).
+        // If the time part of the delay is greater than 0, then we want to ignore the microstep in
+        // upstream->next_event. Otherwise, we want preserve it and add to it.
+        tag_t next_event = upstream->next_event;
+        if (e->min_delays[i].min_delay.time > 0) next_event.microstep = 0;
+        tag_t earliest_tag_from_upstream = lf_tag_add(next_event, e->min_delays[i].min_delay);
+        /* Following debug message is too verbose for normal use: */
         LF_PRINT_DEBUG("RTI: Earliest next event upstream of fed/encl %d at fed/encl %d has tag " PRINTF_TAG ".",
                 e->id,
                 upstream->id,
                 earliest_tag_from_upstream.time - start_time, earliest_tag_from_upstream.microstep);
-        */
         if (lf_tag_compare(earliest_tag_from_upstream, t_d) < 0) {
             t_d = earliest_tag_from_upstream;
         }

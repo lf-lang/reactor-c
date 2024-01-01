@@ -1673,8 +1673,7 @@ void *respond_to_erroneous_connections(void *nothing) {
     return NULL;
 }
 
-void initialize_federate(federate_info_t *fed, uint16_t id)
-{
+void initialize_federate(federate_info_t *fed, uint16_t id) {
     initialize_scheduling_node(&(fed->enclave), id);
     fed->requested_stop = false;
     fed->socket = -1; // No socket.
