@@ -4,12 +4,9 @@
  * @author Peter Donovan
  * @author Edward A. Lee
  * @author Anirudh Rengarajsm
- *
- * @section LICENSE
- * See LICENSE.md in the root directory.
- * @section DESCRIPTION
- * Utility functions for a federate in a federated execution.
- * The main entry point is lf_synchronize_with_other_federates().
+ * @copyright (c) 2020-2023, The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief Utility functions for a federate in a federated execution.
  */
 
 #ifdef FEDERATED
