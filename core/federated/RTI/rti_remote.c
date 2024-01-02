@@ -307,7 +307,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t *e, tag_t tag) {
 
 void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_event_tag) {
     federate_info_t *fed = GET_FED_INFO(federate_id);
-    tag_t min_in_transit_tag = pqueue_tag_peek_tag(fed->in_transit_message_tags)->tag;
+    tag_t min_in_transit_tag = pqueue_tag_peek_tag(fed->in_transit_message_tags);
     if (lf_tag_compare(min_in_transit_tag, next_event_tag) < 0) {
         next_event_tag = min_in_transit_tag;
     }
@@ -1676,7 +1676,7 @@ void initialize_federate(federate_info_t *fed, uint16_t id) {
     fed->requested_stop = false;
     fed->socket = -1; // No socket.
     fed->clock_synchronization_enabled = true;
-    fed->in_transit_message_tags = pqueue_tag_init();
+    fed->in_transit_message_tags = pqueue_tag_init(10);
     strncpy(fed->server_hostname, "localhost", INET_ADDRSTRLEN);
     fed->server_ip_addr.s_addr = 0;
     fed->server_port = -1;
