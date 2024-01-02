@@ -7,17 +7,18 @@
  * @copyright (c) 2020-2023, The University of California at Berkeley
  * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
  * 
- * This files implements the enclave coordination logic.
+ * This file implements the enclave coordination logic.
  * Here we are dealing with multiple mutexes. To avoid deadlocking we follow the
  * following rules:
  * 1) Mutexes are always locked in the following order:
- *  Enclave mutexes -> RTI mutex.
+ *  Enclave mutexes followed by RTI mutex.
  *  This means that we never lock an enclave mutex while holding the RTI mutex.
  * 2) Mutexes are always unlocked in the following order:
- *  RTI mutex -> Enclave mutex.
- * 3) If the coordination logic might block. We unlock the enclave mutex
- * 
-*/
+ *  RTI mutex followed by Enclave mutex.
+ * 3) If the coordination logic might block. We unlock the enclave mutex while
+ *  blocking, using a condition variable to unblock.
+ * 4) When blocking on the coordination logic, never hold the RTI mutex.
+ */
 
 #ifdef LF_ENCLAVES
 #include "rti_local.h"

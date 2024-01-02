@@ -6,9 +6,8 @@
  * @author Chadlia Jerad (chadlia.jerad@ensi-uma.tn)
  * @copyright (c) 2020-2023, The University of California at Berkeley
  * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
- * @brief Common declarations for runtime infrastructure (RTI) for scheduling enclaves and distributed Lingua Franca programs.
- * This file declares RTI features that are used by scheduling enclaves as well as federated
- * LF programs.
+ * @brief Common declarations for runtime infrastructure (RTI) for scheduling enclaves
+ * and distributed Lingua Franca programs.
  */
 #if defined STANDALONE_RTI || defined LF_ENCLAVES
 #ifndef RTI_COMMON_H

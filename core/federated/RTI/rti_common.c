@@ -26,8 +26,6 @@ void initialize_rti_common(rti_common_t * _rti_common) {
     rti_common->num_scheduling_nodes_handling_stop = 0;
 }
 
-// FIXME: For log and debug message in this file, what sould be kept: 'enclave', 
-//        'federate', or 'enlcave/federate'? Currently its is 'enclave/federate'.
 // FIXME: Should scheduling_nodes tracing use the same mechanism as federates? 
 //        It needs to account a federate having itself a number of scheduling_nodes.
 //        Currently, all calls to tracepoint_from_federate() and 
@@ -101,10 +99,11 @@ tag_t earliest_future_incoming_message_tag(scheduling_node_t* e) {
             tag_t start_tag = {.time = start_time, .microstep = 0};
             upstream->next_event = start_tag;
         }
-        // The min_delay here is a tag_t, not an interval_t.
-        // No delay at all is represented by (0,0). A delay of 0 is represented by (0,1).
-        // If the time part of the delay is greater than 0, then we want to ignore the microstep in
-        // upstream->next_event. Otherwise, we want preserve it and add to it.
+        // The min_delay here is a tag_t, not an interval_t because it may account for more than
+        // one connection. No delay at all is represented by (0,0). A delay of 0 is represented
+        // by (0,1). If the time part of the delay is greater than 0, then we want to ignore
+        // the microstep in upstream->next_event because that microstep will have been lost.
+        // Otherwise, we want preserve it and add to it.
         tag_t next_event = upstream->next_event;
         if (e->min_delays[i].min_delay.time > 0) next_event.microstep = 0;
         tag_t earliest_tag_from_upstream = lf_tag_add(next_event, e->min_delays[i].min_delay);
@@ -294,7 +293,11 @@ void notify_advance_grant_if_safe(scheduling_node_t* e) {
 
 // Local function used recursively to find minimum delays upstream.
 // Return in count the number of non-FOREVER_TAG entries in path_delays[].
-static void _update_min_delays_upstream(scheduling_node_t* end, scheduling_node_t* intermediate, tag_t path_delays[], size_t* count) {
+static void _update_min_delays_upstream(
+        scheduling_node_t* end,
+        scheduling_node_t* intermediate,
+        tag_t path_delays[],
+        size_t* count) {
     // On first call, intermediate will be NULL, so the path delay is initialized to zero.
     tag_t delay_from_intermediate_so_far = ZERO_TAG;
     if (intermediate == NULL) {
