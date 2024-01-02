@@ -30,7 +30,7 @@
 #endif
 
 #include "lf_types.h"
-#include "message_record/message_record.h"
+#include "pqueue_tag.h"
 
 /** Time allowed for federates to reply to stop request. */
 #define MAX_TIME_FOR_REPLY_TO_STOP_REQUEST SEC(30)
@@ -61,9 +61,9 @@ typedef struct federate_info_t {
     struct sockaddr_in UDP_addr;           // The UDP address for the federate.
     bool clock_synchronization_enabled;    // Indicates the status of clock synchronization
                                            // for this federate. Enabled by default.
-    in_transit_message_record_q_t* in_transit_message_tags; // Record of in-transit messages to this federate that are not
-                                                            // yet processed. This record is ordered based on the time
-                                                            // value of each message for a more efficient access.
+    pqueue_tag_t* in_transit_message_tags; // Record of in-transit messages to this federate that are not
+                                           // yet processed. This record is ordered based on the time
+                                           // value of each message for a more efficient access.
     char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
     int32_t server_port;    // port number of the socket server of the federate
                             // if it has any incoming direct connections from other federates.

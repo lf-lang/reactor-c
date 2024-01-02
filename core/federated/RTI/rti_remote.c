@@ -307,10 +307,8 @@ void notify_provisional_tag_advance_grant(scheduling_node_t *e, tag_t tag) {
 
 void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_event_tag) {
     federate_info_t *fed = GET_FED_INFO(federate_id);
-    tag_t min_in_transit_tag = get_minimum_in_transit_message_tag(fed->in_transit_message_tags);
-    if (lf_tag_compare(
-            min_in_transit_tag,
-            next_event_tag) < 0) {
+    tag_t min_in_transit_tag = pqueue_tag_peek_tag(fed->in_transit_message_tags)->tag;
+    if (lf_tag_compare(min_in_transit_tag, next_event_tag) < 0) {
         next_event_tag = min_in_transit_tag;
     }
     update_scheduling_node_next_event_tag_locked(&(fed->enclave), next_event_tag);
@@ -461,7 +459,7 @@ void handle_timed_message(federate_info_t *sending_federate, unsigned char *buff
     // Record this in-transit message in federate's in-transit message queue.
     if (lf_tag_compare(fed->enclave.completed, intended_tag) < 0) {
         // Add a record of this message to the list of in-transit messages to this federate.
-        add_in_transit_message_record(
+        pqueue_tag_insert_if_no_match(
             fed->in_transit_message_tags,
             intended_tag);
         LF_PRINT_DEBUG(
@@ -537,7 +535,7 @@ void handle_latest_tag_complete(federate_info_t *fed) {
     // FIXME: Should this function be in the enclave version?
     LF_MUTEX_LOCK(rti_mutex);
     // See if we can remove any of the recorded in-transit messages for this.
-    clean_in_transit_message_record_up_to_tag(fed->in_transit_message_tags, fed->enclave.completed);
+    pqueue_tag_remove_up_to(fed->in_transit_message_tags, completed);
     LF_MUTEX_UNLOCK(rti_mutex);
 }
 
@@ -1678,7 +1676,7 @@ void initialize_federate(federate_info_t *fed, uint16_t id) {
     fed->requested_stop = false;
     fed->socket = -1; // No socket.
     fed->clock_synchronization_enabled = true;
-    fed->in_transit_message_tags = initialize_in_transit_message_q();
+    fed->in_transit_message_tags = pqueue_tag_init();
     strncpy(fed->server_hostname, "localhost", INET_ADDRSTRLEN);
     fed->server_ip_addr.s_addr = 0;
     fed->server_port = -1;
@@ -1717,7 +1715,7 @@ void wait_for_federates(int socket_descriptor) {
         federate_info_t *fed = GET_FED_INFO(i);
         lf_print("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
         lf_thread_join(fed->thread_id, &thread_exit_status);
-        free_in_transit_message_q(fed->in_transit_message_tags);
+        pqueue_tag_free(fed->in_transit_message_tags);
         lf_print("RTI: Federate %d thread exited.", fed->enclave.id);
     }
 

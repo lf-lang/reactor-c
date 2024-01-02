@@ -132,6 +132,16 @@ int pqueue_tag_insert_if_no_match(pqueue_tag_t* q, tag_t t) {
     }
 }
 
+pqueue_tag_element_t* pqueue_tag_peek(pqueue_tag_t* q) {
+    return (pqueue_tag_element_t*) pqueue_peek((pqueue_t*)q);
+}
+
+tag_t pqueue_tag_peek_tag(pqueue_tag_t* q) {
+    pqueue_tag_element_t* element = (pqueue_tag_element_t*)pqueue_tag_peek(q);
+    if (element == NULL) return FOREVER_TAG;
+    else return element->tag;
+}
+
 pqueue_tag_element_t* pqueue_tag_pop(pqueue_tag_t* q) {
     return (pqueue_tag_element_t*)pqueue_pop((pqueue_t*)q);
 }
@@ -146,10 +156,14 @@ tag_t pqueue_tag_pop_tag(pqueue_tag_t* q) {
     }
 }
 
-int pqueue_tag_remove(pqueue_tag_t* q, pqueue_tag_element_t* e) {
-    return pqueue_remove((pqueue_t*) q, (void*) e);
+void pqueue_tag_remove(pqueue_tag_t* q, pqueue_tag_element_t* e) {
+    pqueue_remove((pqueue_t*) q, (void*) e);
 }
 
-pqueue_tag_element_t* pqueue_tag_peek(pqueue_tag_t* q) {
-    return (pqueue_tag_element_t*) pqueue_peek((pqueue_t*)q);
+void pqueue_tag_remove_up_to(pqueue_tag_t* q, tag_t t){
+    tag_t head = pqueue_tag_peek_tag(q);
+    while (lf_tag_compare(head, FOREVER_TAG) < 0 && lf_tag_compare(head, t) <= 0) {
+        pqueue_tag_pop(q);
+        head = pqueue_tag_peek_tag(q);
+    }
 }
