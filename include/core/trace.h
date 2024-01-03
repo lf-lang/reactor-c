@@ -79,6 +79,7 @@ typedef enum
     federated, // Everything above this is tracing federated interactions.
     // Sending messages
     send_ACK,
+    send_FAILED,
     send_TIMESTAMP,
     send_NET,
     send_LTC,
@@ -100,6 +101,7 @@ typedef enum
     send_ADR_QR,
     // Receiving messages
     receive_ACK,
+    receive_FAILED,
     receive_TIMESTAMP,
     receive_NET,
     receive_LTC,

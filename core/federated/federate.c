@@ -155,12 +155,12 @@ static void send_tag(unsigned char type, tag_t tag) {
 
 /**
  * Return true if either the socket to the RTI is broken or the socket is
- * alive and the first unread byte on the socket's queue is MSG_TYPE_RESIGN.
+ * alive and the first unread byte on the socket's queue is MSG_TYPE_FAILED.
  */
-static bool rti_resigned() {
+static bool rti_failed() {
     unsigned char first_byte;
     ssize_t bytes = peek_from_socket(_fed.socket_TCP_RTI, &first_byte);
-    if (bytes < 0 || (bytes == 1 && first_byte == MSG_TYPE_RESIGN)) return true;
+    if (bytes < 0 || (bytes == 1 && first_byte == MSG_TYPE_FAILED)) return true;
     else return false;
 }
 
@@ -831,8 +831,8 @@ static int perform_hmac_authentication() {
         return -1;
     }
     if (received[0] != MSG_TYPE_RTI_RESPONSE) {
-        if (received[0] == MSG_TYPE_RESIGN) {
-            lf_print_error("RTI has resigned.");
+        if (received[0] == MSG_TYPE_FAILED) {
+            lf_print_error("RTI has failed.");
             return -1;
         } else {
             lf_print_error(
@@ -941,8 +941,8 @@ static instant_t get_start_time_from_rti(instant_t my_physical_time) {
 
     // First byte received is the message ID.
     if (buffer[0] != MSG_TYPE_TIMESTAMP) {
-        if (buffer[0] == MSG_TYPE_RESIGN) {
-            lf_print_error_and_exit("RTI has unexpectedly resigned.");
+        if (buffer[0] == MSG_TYPE_FAILED) {
+            lf_print_error_and_exit("RTI has failed.");
         }
         lf_print_error_and_exit(
                 "Expected a MSG_TYPE_TIMESTAMP message from the RTI. Got %u (see net_common.h).",
@@ -1374,25 +1374,31 @@ static void handle_stop_request_message() {
 }
 
 /**
- * Send a resign signal to the RTI. The tag payload will be the current
- * tag of the specified environment or, if there has been an error that
- * will lead to an abnormal termination, the tag NEVER_TAG.
+ * Send a resign signal to the RTI.
  */
 static void send_resign_signal(environment_t* env) {
-    size_t bytes_to_write = 1 + sizeof(tag_t);
+    size_t bytes_to_write = 1;
     unsigned char buffer[bytes_to_write];
     buffer[0] = MSG_TYPE_RESIGN;
-    if (_lf_normal_termination) {
-        encode_tag(&(buffer[1]), env->current_tag);
-    } else {
-        encode_tag(&(buffer[1]), NEVER_TAG);
-    }
     LF_MUTEX_LOCK(lf_outbound_socket_mutex);
     write_to_socket_fail_on_error(
             &_fed.socket_TCP_RTI, bytes_to_write, &(buffer[0]), &lf_outbound_socket_mutex,
-            "Failed to send RESIGN.");
+            "Failed to send MSG_TYPE_RESIGN.");
     LF_MUTEX_UNLOCK(lf_outbound_socket_mutex);
     LF_PRINT_LOG("Resigned.");
+}
+
+/**
+ * Send a failed signal to the RTI.
+ */
+static void send_failed_signal(environment_t* env) {
+    size_t bytes_to_write = 1;
+    unsigned char buffer[bytes_to_write];
+    buffer[0] = MSG_TYPE_FAILED;
+    write_to_socket_fail_on_error(
+            &_fed.socket_TCP_RTI, bytes_to_write, &(buffer[0]), NULL,
+            "Failed to send MSG_TYPE_FAILED.");
+    LF_PRINT_LOG("Failed.");
 }
 
 /**
@@ -1407,12 +1413,12 @@ static void stop_all_traces() {
 }
 
 /**
- * Handle a resign signal from the RTI. The RTI will only resign
+ * Handle a failed signal from the RTI. The RTI will only fail
  * if it is forced to exit, e.g. by a SIG_INT. Hence, this federate
  * will exit immediately with an error condition, counting on the
  * termination functions to handle any cleanup needed. 
  */
-static void handle_rti_resign_message(void) {
+static void handle_rti_failed_message(void) {
     exit(1);
 }
 
@@ -1480,8 +1486,8 @@ static void* listen_to_rti_TCP(void* args) {
             case MSG_TYPE_PORT_ABSENT:
                 handle_port_absent_message(&_fed.socket_TCP_RTI, -1);
                 break;
-            case MSG_TYPE_RESIGN:
-                handle_rti_resign_message();
+            case MSG_TYPE_FAILED:
+                handle_rti_failed_message();
                 break;
             case MSG_TYPE_CLOCK_SYNC_T1:
             case MSG_TYPE_CLOCK_SYNC_T4:
@@ -1564,17 +1570,16 @@ void terminate_execution(environment_t* env) {
     assert(env != GLOBAL_ENVIRONMENT);
 
     // For an abnormal termination (e.g. a SIGINT), we need to send a
-    // MSG_TYPE_RESIGN message to the RTI, but we should not acquire a mutex.
+    // MSG_TYPE_FAILED message to the RTI, but we should not acquire a mutex.
     if (_fed.socket_TCP_RTI >= 0) {
         if (_lf_normal_termination) {
-            LF_MUTEX_LOCK(lf_outbound_socket_mutex);
             send_resign_signal(env);
-            LF_MUTEX_UNLOCK(lf_outbound_socket_mutex);
             // Trace the event when tracing is enabled
             tracepoint_federate_to_rti(_fed.trace, send_RESIGN, _lf_my_fed_id, &env->current_tag);
         } else {
             // Do not acquire mutex and do not trace.
-            send_resign_signal(env);
+            send_failed_signal(env);
+            tracepoint_federate_to_rti(_fed.trace, send_FAILED, _lf_my_fed_id, &env->current_tag);
         }
     }
 
@@ -1662,8 +1667,8 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
 
         if (buffer[0] != MSG_TYPE_ADDRESS_QUERY) {
             // Unexpected reply.  Could be that RTI has failed and sent a resignation.
-            if (buffer[0] == MSG_TYPE_RESIGN) {
-                lf_print_error_and_exit("RTI has resigned.");
+            if (buffer[0] == MSG_TYPE_FAILED) {
+                lf_print_error_and_exit("RTI has failed.");
             } else {
                 lf_print_error_and_exit("Unexpected reply of type %hhu from RTI (see net_common.h).", buffer[0]);
             }
@@ -1745,7 +1750,7 @@ void lf_connect_to_federate(uint16_t remote_federate_id) {
                    remote_federate_id, ADDRESS_QUERY_RETRY_INTERVAL);
             
             // Check whether the RTI is still there.
-            if (rti_resigned()) break;
+            if (rti_failed()) break;
 
             // Wait ADDRESS_QUERY_RETRY_INTERVAL nanoseconds.
             lf_sleep(ADDRESS_QUERY_RETRY_INTERVAL);
@@ -2071,7 +2076,7 @@ void* lf_handle_p2p_connections_from_federates(void* env_arg) {
 
         if (socket_id < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR) {
-                if (rti_resigned()) break;
+                if (rti_failed()) break;
                 else continue; // Try again.
             } else if (errno == EPERM) {
                 lf_print_error_system_failure("Firewall permissions prohibit connection.");

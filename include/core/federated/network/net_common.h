@@ -377,20 +377,23 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_MESSAGE 3
 
-/** Byte identifying that the federate or the RTI is ending its execution. */
+/**
+ * Byte identifying that the federate or the RTI is ending its execution.
+ */
 #define MSG_TYPE_RESIGN 4
 
-/** Byte identifying a timestamped message to forward to another federate.
- *  The next two bytes will be the ID of the destination reactor port.
- *  The next two bytes are the destination federate ID.
- *  The four bytes after that will be the length of the message.
- *  The next eight bytes will be the timestamp of the message.
- *  The next four bytes will be the microstep of the message.
- *  The remaining bytes are the message.
+/** 
+ * Byte identifying a timestamped message to forward to another federate.
+ * The next two bytes will be the ID of the destination reactor port.
+ * The next two bytes are the destination federate ID.
+ * The four bytes after that will be the length of the message.
+ * The next eight bytes will be the timestamp of the message.
+ * The next four bytes will be the microstep of the message.
+ * The remaining bytes are the message.
  *
- *  With centralized coordination, all such messages flow through the RTI.
- *  With decentralized coordination, tagged messages are sent peer-to-peer
- *  between federates and are marked with MSG_TYPE_P2P_TAGGED_MESSAGE.
+ * With centralized coordination, all such messages flow through the RTI.
+ * With decentralized coordination, tagged messages are sent peer-to-peer
+ * between federates and are marked with MSG_TYPE_P2P_TAGGED_MESSAGE.
  */
 #define MSG_TYPE_TAGGED_MESSAGE 5
 
@@ -656,6 +659,11 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_NEIGHBOR_STRUCTURE 24
 #define MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE 9
+
+/**
+ * Byte identifying that the federate or the RTI has failed.
+ */
+#define MSG_TYPE_FAILED 25
 
 /////////////////////////////////////////////
 //// Rejection codes

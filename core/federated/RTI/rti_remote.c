@@ -1039,29 +1039,72 @@ void *clock_synchronization_thread(void *noargs) {
     return NULL;
 }
 
-void handle_federate_resign(federate_info_t *my_fed) {
+/**
+ * Handle MSG_TYPE_FAILED sent by a federate. This message is sent by a federate
+ * that is exiting in failure.  In this case, the RTI will
+ * also terminate abnormally, returning a non-zero exit code when it exits.
+ * But it does not immediately exit. It does close the socket connection to the federate.
+ *
+ * This function assumes the caller does not hold the mutex.
+ *
+ * @param my_fed The federate sending a MSG_TYPE_FAILED message.
+ */
+static void handle_federate_failed(federate_info_t *my_fed) {
     // Nothing more to do. Close the socket and exit.
     LF_MUTEX_LOCK(rti_mutex);
-    // Extract the tag
-    size_t header_size = 1 + sizeof(tag_t);
-    unsigned char buffer[header_size];
-    // Read the header, minus the first byte which has already been read.
-    read_from_socket_fail_on_error(&my_fed->socket, header_size - 1, &(buffer[1]), NULL,
-            "RTI failed to read the resign tag from remote federate.");
-    // Extract the tag sent by the resigning federate
-    tag_t tag = extract_tag(&(buffer[1]));
 
     if (rti_remote->base.tracing_enabled) {
-        tracepoint_rti_from_federate(rti_remote->base.trace, receive_RESIGN, my_fed->enclave.id, &tag);
+        tracepoint_rti_from_federate(rti_remote->base.trace, receive_FAILED, my_fed->enclave.id, NULL);
     }
 
-    if (lf_tag_compare(tag, NEVER_TAG) == 0) {
-        // The federate is reporting an error.
-        _lf_federate_reports_error = true;
-        lf_print("RTI: Federate %d reports an error and has resigned.", my_fed->enclave.id);
-    } else {
-        lf_print("RTI: Federate %d has resigned.", my_fed->enclave.id);
+    _lf_federate_reports_error = true;
+    lf_print_warning("RTI: Federate %d reports an error and has exited.", my_fed->enclave.id);
+
+    my_fed->enclave.state = NOT_CONNECTED;
+
+    // Indicate that there will no further events from this federate.
+    my_fed->enclave.next_event = FOREVER_TAG;
+
+    // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
+    // the close should happen when receiving a 0 length message from the other end.
+    // Here, we just signal the other side that no further writes to the socket are
+    // forthcoming, which should result in the other end getting a zero-length reception.
+    shutdown(my_fed->socket, SHUT_RDWR);
+
+    // We can now safely close the socket.
+    close(my_fed->socket); //  from unistd.h
+
+    // Check downstream federates to see whether they should now be granted a TAG.
+    // To handle cycles, need to create a boolean array to keep
+    // track of which upstream federates have been visited.
+    bool *visited = (bool *)calloc(rti_remote->base.number_of_scheduling_nodes, sizeof(bool)); // Initializes to 0.
+    notify_downstream_advance_grant_if_safe(&(my_fed->enclave), visited);
+    free(visited);
+
+    LF_MUTEX_UNLOCK(rti_mutex);
+}
+
+/**
+ * Handle MSG_TYPE_RESIGN sent by a federate. This message is sent at the time of termination
+ * after all shutdown events are processed on the federate.
+ * 
+ * This function assumes the caller does not hold the mutex.
+ *
+ * @note At this point, the RTI might have outgoing messages to the federate. This
+ * function thus first performs a shutdown on the socket, which sends an EOF. It then
+ * waits for the remote socket to be closed before closing the socket itself.
+ *
+ * @param my_fed The federate sending a MSG_TYPE_RESIGN message.
+ */
+static void handle_federate_resign(federate_info_t *my_fed) {
+    // Nothing more to do. Close the socket and exit.
+    LF_MUTEX_LOCK(rti_mutex);
+
+    if (rti_remote->base.tracing_enabled) {
+        tracepoint_rti_from_federate(rti_remote->base.trace, receive_RESIGN, my_fed->enclave.id, NULL);
     }
+
+    lf_print("RTI: Federate %d has resigned.", my_fed->enclave.id);
 
     my_fed->enclave.state = NOT_CONNECTED;
 
@@ -1077,8 +1120,9 @@ void handle_federate_resign(federate_info_t *my_fed) {
     // Wait for the federate to send an EOF or a socket error to occur.
     // Discard any incoming bytes. Normally, this read should return 0 because
     // the federate is resigning and should itself invoke shutdown.
-    while (read(my_fed->socket, buffer, header_size) > 0)
-        ;
+    unsigned char buffer[10];
+    while (read(my_fed->socket, buffer, 10) > 0);
+
     // We can now safely close the socket.
     close(my_fed->socket); //  from unistd.h
 
@@ -1129,7 +1173,6 @@ void *federate_info_thread_TCP(void *fed) {
         case MSG_TYPE_RESIGN:
             handle_federate_resign(my_fed);
             return NULL;
-            break;
         case MSG_TYPE_NEXT_EVENT_TAG:
             handle_next_event_tag(my_fed);
             break;
@@ -1148,6 +1191,9 @@ void *federate_info_thread_TCP(void *fed) {
         case MSG_TYPE_PORT_ABSENT:
             handle_port_absent_message(my_fed, buffer);
             break;
+        case MSG_TYPE_FAILED:
+            handle_federate_failed(my_fed);
+            return NULL;
         default:
             lf_print_error("RTI received from federate %d an unrecognized TCP message type: %u.", my_fed->enclave.id, buffer[0]);
             if (rti_remote->base.tracing_enabled)

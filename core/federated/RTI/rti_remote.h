@@ -343,38 +343,6 @@ void handle_physical_clock_sync_message(federate_info_t* my_fed, socket_type_t s
 void* clock_synchronization_thread(void* noargs);
 
 /**
- * A function to handle messages labeled
- * as MSG_TYPE_RESIGN sent by a federate. This
- * message is sent at the time of termination
- * after all shutdown events are processed
- * on the federate.
- * 
- * If the tag on the resign message is NEVER, then the RTI assumes that
- * the federate is terminating abnormally. In this case, the RTI will
- * also terminate abnormally, returning a non-zero exit code.
- *
- * This function assumes the caller does not hold the mutex.
- *
- * @note At this point, the RTI might have
- * outgoing messages to the federate. This
- * function thus first performs a shutdown
- * on the socket which sends an EOF. It then
- * waits for the remote socket to be closed
- * before closing the socket itself.
- *
- * Assumptions:
- * - We assume that the other side (the federates)
- *  are in charge of closing the socket (by calling
- *  close() on the socket), and then wait for the RTI
- *  to shutdown the socket.
- * - We assume that calling shutdown() follows the same
- *  shutdown procedure as stated in the TCP/IP specification.
- *
- * @param my_fed The federate sending a MSG_TYPE_RESIGN message.
- **/
-void handle_federate_resign(federate_info_t *my_fed);
-
-/**
  * Thread handling TCP communication with a federate.
  * @param fed A pointer to the federate's struct that has the
  *  socket descriptor for the federate.
