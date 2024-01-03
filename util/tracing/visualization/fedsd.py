@@ -106,7 +106,7 @@ parser.add_argument('-f','--federates', nargs='+',
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
 # Set of tagged events (messages)
-non_tagged_messages = {'FED_ID', 'ACK', 'FAILED', 'REJECT', 'ADR_RQ', 'ADR_AD', 'MSG', 'P2P_MSG'}
+non_tagged_messages = {'FED_ID', 'ACK', 'RESIGN', 'FAILED', 'REJECT', 'ADR_RQ', 'ADR_AD', 'MSG', 'P2P_MSG'}
 
 
 ################################################################################
