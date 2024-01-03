@@ -41,6 +41,7 @@ css_style = ' <style> \
 # communication rendering
 prune_event_name = {
     "Sending ACK": "ACK",
+    "Sending FAILED": "FAILED",
     "Sending TIMESTAMP": "TIMESTAMP",
     "Sending NET": "NET",
     "Sending LTC": "LTC",
@@ -61,6 +62,7 @@ prune_event_name = {
     "Sending ADR_AD": "ADR_AD",
     "Sending ADR_QR": "ADR_QR",
     "Receiving ACK": "ACK",
+    "Receiving FAILED": "FAILED",
     "Receiving TIMESTAMP": "TIMESTAMP",
     "Receiving NET": "NET",
     "Receiving LTC": "LTC",
@@ -104,7 +106,7 @@ parser.add_argument('-f','--federates', nargs='+',
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
 # Set of tagged events (messages)
-non_tagged_messages = {'FED_ID', 'ACK', 'REJECT', 'ADR_RQ', 'ADR_AD', 'MSG', 'P2P_MSG'}
+non_tagged_messages = {'FED_ID', 'ACK', 'FAILED', 'REJECT', 'ADR_RQ', 'ADR_AD', 'MSG', 'P2P_MSG'}
 
 
 ################################################################################
@@ -659,7 +661,7 @@ if __name__ == '__main__':
             # FIXME: Using microseconds is hardwired here.
             physical_time = f'{int(row["physical_time"]/1000):,}'
 
-            if (row['event'] in {'FED_ID', 'ACK', 'REJECT', 'ADR_RQ', 'ADR_AD', 'MSG', 'P2P_MSG'}):
+            if (row['event'] in {'FED_ID', 'ACK', 'FAILED', 'REJECT', 'ADR_RQ', 'ADR_AD', 'MSG', 'P2P_MSG'}):
                 label = row['event']
             else:
                 label = row['event'] + '(' + f'{int(row["logical_time"]):,}' + ', ' + str(row['microstep']) + ')'

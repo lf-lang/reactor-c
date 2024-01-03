@@ -76,7 +76,7 @@ typedef enum
     worker_wait_ends,
     scheduler_advancing_time_starts,
     scheduler_advancing_time_ends,
-    federated, // Everything above this is tracing federated interactions.
+    federated, // Everything below this is for tracing federated interactions.
     // Sending messages
     send_ACK,
     send_FAILED,
@@ -144,6 +144,7 @@ static const char *trace_event_names[] = {
     "Federated marker",
     // Sending messages
     "Sending ACK",
+    "Sending FAILED",
     "Sending TIMESTAMP",
     "Sending NET",
     "Sending LTC",
@@ -165,6 +166,7 @@ static const char *trace_event_names[] = {
     "Sending ADR_QR",
     // Receiving messages
     "Receiving ACK",
+    "Receiving FAILED",
     "Receiving TIMESTAMP",
     "Receiving NET",
     "Receiving LTC",
