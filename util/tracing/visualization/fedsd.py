@@ -100,6 +100,8 @@ parser.add_argument('-r','--rti', type=str,
                     help='RTI\'s lft trace file.')
 parser.add_argument('-f','--federates', nargs='+',
                     help='List of the federates\' lft trace files.')
+parser.add_argument('-o', '--output-format', type=str, choices=['html', 'svg'], default='html',
+                    help='Output format: "html" or "svg" (default: "html").')
 
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
@@ -451,6 +453,9 @@ def get_and_convert_lft_files(rti_lft_file, federates_lft_files):
 
 if __name__ == '__main__':
     args = parser.parse_args()
+    
+    # Determine output format
+    output_format = args.output_format
 
     # Check that trace_to_csv is in PATH
     if (not command_is_in_path('trace_to_csv')):
@@ -624,76 +629,87 @@ if __name__ == '__main__':
     svg_width = padding * 2 + (len(actors) - 1) * spacing + padding * 2 + 200
     svg_height = padding + trace_df.iloc[-1]['y1']
 
-    with open('trace_svg.html', 'w', encoding='utf-8') as f:
-        # Print header
-        f.write('<!DOCTYPE html>\n')
-        f.write('<html>\n')
-        f.write('<body>\n\n')
+    code = ""
+    
+    # Print header
+    if output_format == 'html':
+        code += '<!DOCTYPE html>\n'
+        code += '<html>\n'
+        code += '<body>\n\n'
+    
+    code += '<svg width="'+str(svg_width)+'" height="'+str(svg_height)+'">\n'
+
+    code += css_style
+    
+    # Print the circles and the names
+    for key in x_coor:
+        title = actors_names[key]
+        if (key == -1):
+            code += svg_string_comment('RTI Actor and line')
+            center = 15
+        else:
+            code += svg_string_comment('Federate '+str(key)+': ' + title + ' Actor and line')
+            center = 5
+        code += svg_string_draw_line(x_coor[key], math.ceil(padding/2), x_coor[key], svg_height, False)
+        code += '\t<circle cx="'+str(x_coor[key])+'" cy="'+str(math.ceil(padding/2))+'" r="20" stroke="black" stroke-width="2" fill="white"/>\n'
+        code += '\t<text x="'+str(x_coor[key]-center)+'" y="'+str(math.ceil(padding/2)+5)+'" fill="black">'+title+'</text>\n'
+
+    # Now, we need to iterate over the traces to draw the lines
+    code += svg_string_comment('Draw interactions')
+    for index, row in trace_df.iterrows():
+        # For time labels, display them on the left for the RTI, right for everthing else.
+        anchor = 'start'
+        if (row['self_id'] < 0):
+            anchor = 'end'
+
+        # formatted physical time.
+        # FIXME: Using microseconds is hardwired here.
+        physical_time = f'{int(row["physical_time"]/1000):,}'
+
+        if (row['event'] in {'FED_ID', 'ACK', 'REJECT', 'ADR_RQ', 'ADR_AD', 'MSG', 'P2P_MSG'}):
+            label = row['event']
+        else:
+            label = row['event'] + '(' + f'{int(row["logical_time"]):,}' + ', ' + str(row['microstep']) + ')'
         
-        f.write('<svg width="'+str(svg_width)+'" height="'+str(svg_height)+'">\n')
-
-        f.write(css_style)
-        
-        # Print the circles and the names
-        for key in x_coor:
-            title = actors_names[key]
-            if (key == -1):
-                f.write(svg_string_comment('RTI Actor and line'))
-                center = 15
+        if (row['arrow'] == 'arrow'): 
+            code += svg_string_draw_arrow(row['x1'], row['y1'], row['x2'], row['y2'], label, row['event'])
+            if (row['inout'] in 'in'):
+                code += svg_string_draw_side_label(row['x2'], row['y2'], physical_time, anchor)
             else:
-                f.write(svg_string_comment('Federate '+str(key)+': ' + title + ' Actor and line'))
-                center = 5
-            f.write(svg_string_draw_line(x_coor[key], math.ceil(padding/2), x_coor[key], svg_height, False))
-            f.write('\t<circle cx="'+str(x_coor[key])+'" cy="'+str(math.ceil(padding/2))+'" r="20" stroke="black" stroke-width="2" fill="white"/>\n')
-            f.write('\t<text x="'+str(x_coor[key]-center)+'" y="'+str(math.ceil(padding/2)+5)+'" fill="black">'+title+'</text>\n')
-
-        # Now, we need to iterate over the traces to draw the lines
-        f.write(svg_string_comment('Draw interactions'))
-        for index, row in trace_df.iterrows():
-            # For time labels, display them on the left for the RTI, right for everthing else.
-            anchor = 'start'
-            if (row['self_id'] < 0):
-                anchor = 'end'
-
-            # formatted physical time.
-            # FIXME: Using microseconds is hardwired here.
-            physical_time = f'{int(row["physical_time"]/1000):,}'
-
-            if (row['event'] in {'FED_ID', 'ACK', 'REJECT', 'ADR_RQ', 'ADR_AD', 'MSG', 'P2P_MSG'}):
-                label = row['event']
-            else:
-                label = row['event'] + '(' + f'{int(row["logical_time"]):,}' + ', ' + str(row['microstep']) + ')'
+                code += svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor)
+        elif (row['arrow'] == 'dot'):
+            if (row['inout'] == 'in'):
+                label = "(in) from " + str(row['partner_id']) + ' ' + label
+            else :
+                label = "(out) to " + str(row['partner_id']) + ' ' + label
             
-            if (row['arrow'] == 'arrow'): 
-                f.write(svg_string_draw_arrow(row['x1'], row['y1'], row['x2'], row['y2'], label, row['event']))
-                if (row['inout'] in 'in'):
-                    f.write(svg_string_draw_side_label(row['x2'], row['y2'], physical_time, anchor))
-                else:
-                    f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
-            elif (row['arrow'] == 'dot'):
-                if (row['inout'] == 'in'):
-                    label = "(in) from " + str(row['partner_id']) + ' ' + label
-                else :
-                    label = "(out) to " + str(row['partner_id']) + ' ' + label
-                
-                if (anchor == 'end'):
-                    f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
-                    f.write(svg_string_draw_dot(row['x1'], row['y1'], label))
-                else:
-                    f.write(svg_string_draw_dot_with_time(row['x1'], row['y1'], physical_time, label))
+            if (anchor == 'end'):
+                code += svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor)
+                code += svg_string_draw_dot(row['x1'], row['y1'], label)
+            else:
+                code += svg_string_draw_dot_with_time(row['x1'], row['y1'], physical_time, label)
 
-            elif (row['arrow'] == 'marked'):
-                f.write(svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor))
+        elif (row['arrow'] == 'marked'):
+            code += svg_string_draw_side_label(row['x1'], row['y1'], physical_time, anchor)
 
-            elif (row['arrow'] == 'adv'):
-                f.write(svg_string_draw_adv(row['x1'], row['y1'], label))
+        elif (row['arrow'] == 'adv'):
+            code += svg_string_draw_adv(row['x1'], row['y1'], label)
 
-        f.write('\n</svg>\n\n')
+    code += '\n</svg>\n\n'
 
-        # Print footer
-        f.write('</body>\n')
-        f.write('</html>\n')
+    # Print footer
+    if output_format == 'html':
+        code += '</body>\n'
+        code += '</html>\n'
+        
+    if output_format == 'html':
+        output_filename = 'trace.html'
+    else:
+        output_filename = 'trace.svg'
+    
+    with open(output_filename, 'w', encoding='utf-8') as f:
+        f.write(code)
 
     # Write to a csv file, just to double check
     trace_df.to_csv('all.csv', index=True)
-    print('Fedsd: Successfully generated the sequence diagram in trace_svg.html.')
+    print(f'Fedsd: Successfully generated the sequence diagram in {output_filename}.')
