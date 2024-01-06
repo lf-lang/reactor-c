@@ -467,18 +467,16 @@ static bool handle_message_now(environment_t* env, trigger_t* trigger, tag_t int
  * @param socket Pointer to the socket to read the message from.
  * @param buffer The buffer to read.
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
+ * @return 0 for success, -1 for failure.
  */
-static void handle_message(int* socket, int fed_id) {
+static int handle_message(int* socket, int fed_id) {
     // Read the header.
     size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t);
     unsigned char buffer[bytes_to_read];
     if (read_from_socket_close_on_error(socket, bytes_to_read, buffer)) {
         // Read failed, which means the socket has been closed between reading the
-        // message ID byte and here.  Issue a warning only. This is a physical
-        // connection, so likely the message is just late. If it's a serious failure,
-        // it should be caught in another thread.
-        lf_print_warning("Failed to read message header.");
-        return;
+        // message ID byte and here.
+        return -1;
     }
 
     // Extract the header information.
@@ -497,7 +495,7 @@ static void handle_message(int* socket, int fed_id) {
     // Allocate memory for the message contents.
     unsigned char* message_contents = (unsigned char*)malloc(length);
     if (read_from_socket_close_on_error(socket, length, message_contents)) {
-        lf_print_warning("Failed to read message body.");
+        return -1;
     }
     // Trace the event when tracing is enabled
     tracepoint_federate_from_federate(_fed.trace, receive_P2P_MSG, _lf_my_fed_id, federate_id, NULL);
@@ -505,6 +503,7 @@ static void handle_message(int* socket, int fed_id) {
 
     LF_PRINT_DEBUG("Calling schedule for message received on a physical connection.");
     _lf_schedule_value(action, 0, message_contents, length);
+    return 0;
 }
 
 /**
@@ -522,8 +521,9 @@ static void handle_message(int* socket, int fed_id) {
  * @param socket Pointer to the socket to read the message from.
  * @param buffer The buffer to read.
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
+ * @return 0 on successfully reading the message, -1 on failure (e.g. due to socket closed).
  */
-static void handle_tagged_message(int* socket, int fed_id) {
+static int handle_tagged_message(int* socket, int fed_id) {
     // Environment is always the one corresponding to the top-level scheduling enclave.
     environment_t *env;
     _lf_get_environments(&env);
@@ -533,8 +533,9 @@ static void handle_tagged_message(int* socket, int fed_id) {
     size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t)
             + sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_read];
-    read_from_socket_fail_on_error(socket, bytes_to_read, buffer, NULL,
-            "Failed to read timed message header");
+    if (read_from_socket_close_on_error(socket, bytes_to_read, buffer)) {
+        return -1;  // Read failed.
+    }
 
     // Extract the header information.
     unsigned short port_id;
@@ -581,8 +582,9 @@ static void handle_tagged_message(int* socket, int fed_id) {
     // Read the payload.
     // Allocate memory for the message contents.
     unsigned char* message_contents = (unsigned char*)malloc(length);
-    read_from_socket_fail_on_error(socket, length, message_contents, NULL,
-            "Failed to read message body.");
+    if (read_from_socket_close_on_error(socket, length, message_contents)) {
+        return -1; // Read failed.
+    }
 
     // The following is only valid for string messages.
     // LF_PRINT_DEBUG("Message received: %s.", message_contents);
@@ -658,6 +660,8 @@ static void handle_tagged_message(int* socket, int fed_id) {
     // the need for unecessary lock and unlock
     // operations.
     LF_MUTEX_UNLOCK(env->mutex);
+
+    return 0;
 }
 
 /**
@@ -668,12 +672,14 @@ static void handle_tagged_message(int* socket, int fed_id) {
  * @param socket Pointer to the socket to read the message from
  * @param buffer The buffer to read
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
+ * @return 0 for success, -1 for failure to complete the read.
  */
-static void handle_port_absent_message(int* socket, int fed_id) {
+static int handle_port_absent_message(int* socket, int fed_id) {
     size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(instant_t) + sizeof(microstep_t);
     unsigned char buffer[bytes_to_read];
-    read_from_socket_fail_on_error(socket, bytes_to_read, buffer, NULL,
-            "Failed to read port absent message.");
+    if (read_from_socket_close_on_error(socket, bytes_to_read, buffer)) {
+        return -1;
+    }
 
     // Extract the header information.
     unsigned short port_id = extract_uint16(buffer);
@@ -701,6 +707,8 @@ static void handle_port_absent_message(int* socket, int fed_id) {
     LF_MUTEX_LOCK(env->mutex);
     update_last_known_status_on_input_port(env, intended_tag, port_id);
     LF_MUTEX_UNLOCK(env->mutex);
+
+    return 0;
 }
 
 /**
@@ -744,15 +752,31 @@ static void* listen_to_federates(void* _args) {
         switch (buffer[0]) {
             case MSG_TYPE_P2P_MESSAGE:
                 LF_PRINT_LOG("Received untimed message from federate %d.", fed_id);
-                handle_message(socket_id, fed_id);
+                if (handle_message(socket_id, fed_id)) {
+                    // Failed to complete the reading of a message on a physical connection.
+                    lf_print_warning("Failed to complete reading of message on physical connection.");
+                    return NULL;
+                }
                 break;
             case MSG_TYPE_P2P_TAGGED_MESSAGE:
                 LF_PRINT_LOG("Received timed message from federate %d.", fed_id);
-                handle_tagged_message(socket_id, fed_id);
+                if (handle_tagged_message(socket_id, fed_id)) {
+                    // P2P tagged messages are only used in decentralized coordination, and
+                    // it is not a fatal error if the socket is closed before the whole message is read.
+                    // But this thread should exit.
+                    lf_print_warning("Failed to complete reading of tagged message.");
+                    return NULL;
+                }
                 break;
             case MSG_TYPE_PORT_ABSENT:
                 LF_PRINT_LOG("Received port absent message from federate %d.", fed_id);
-                handle_port_absent_message(socket_id, fed_id);
+                if (handle_port_absent_message(socket_id, fed_id)) {
+                    // P2P tagged messages are only used in decentralized coordination, and
+                    // it is not a fatal error if the socket is closed before the whole message is read.
+                    // But this thread should exit.
+                    lf_print_warning("Failed to complete reading of tagged message.");
+                    return NULL;
+                }
                 break;
             default:
                 bad_message = true;
@@ -1469,7 +1493,10 @@ static void* listen_to_rti_TCP(void* args) {
         }
         switch (buffer[0]) {
             case MSG_TYPE_TAGGED_MESSAGE:
-                handle_tagged_message(&_fed.socket_TCP_RTI, -1);
+                if (handle_tagged_message(&_fed.socket_TCP_RTI, -1)) {
+                    // Failures to complete the read of messages from the RTI are fatal.
+                    lf_print_error_and_exit("Failed to complete the reading of a message from the RTI.");
+                }
                 break;
             case MSG_TYPE_TAG_ADVANCE_GRANT:
                 handle_tag_advance_grant();
@@ -1484,7 +1511,10 @@ static void* listen_to_rti_TCP(void* args) {
                 handle_stop_granted_message();
                 break;
             case MSG_TYPE_PORT_ABSENT:
-                handle_port_absent_message(&_fed.socket_TCP_RTI, -1);
+                if (handle_port_absent_message(&_fed.socket_TCP_RTI, -1)) {
+                    // Failures to complete the read of absent messages from the RTI are fatal.
+                    lf_print_error_and_exit("Failed to complete the reading of an absent message from the RTI.");
+                }
                 break;
             case MSG_TYPE_FAILED:
                 handle_rti_failed_message();
