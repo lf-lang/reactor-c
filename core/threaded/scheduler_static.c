@@ -42,6 +42,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "platform.h"
 #include "reactor_common.h"
 #include "scheduler_instance.h"
+#include "scheduler_static_functions.h"
 #include "scheduler_sync_tag_advance.h"
 #include "scheduler.h"
 #include "semaphore.h"
