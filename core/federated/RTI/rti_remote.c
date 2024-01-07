@@ -206,8 +206,7 @@ static int create_rti_server(uint16_t port, socket_type_t socket_type) {
     return socket_descriptor;
 }
 
-void notify_tag_advance_grant(scheduling_node_t *e, tag_t tag)
-{
+void notify_tag_advance_grant(scheduling_node_t *e, tag_t tag) {
     if (e->state == NOT_CONNECTED
             || lf_tag_compare(tag, e->last_granted) <= 0
             || lf_tag_compare(tag, e->last_provisionally_granted) < 0) {
