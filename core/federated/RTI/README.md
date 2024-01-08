@@ -33,5 +33,5 @@ If you would like to go back to non-AUTH mode, you would have to remove all cont
 
 To build a docker image for the RTI, do 
 ```bash
-docker build -t rti:rti -f rti.Dockerfile ../../../core/
+docker build -t rti:rti -f rti.Dockerfile ../../../
 ```
