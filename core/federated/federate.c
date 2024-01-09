@@ -2015,7 +2015,7 @@ static void* update_ports_from_staa_offsets(void* args) {
         tag_t tag_when_started_waiting = lf_tag(env);
         for (int i = 0; i < staa_lst_size; ++i) {
             staa_t* staa_elem = staa_lst[i];
-            interval_t wait_until_time = env->current_tag.time + staa_elem->STAA + _lf_fed_STA_offset - _lf_action_delay_table[i];
+            interval_t wait_until_time = env->current_tag.time + staa_elem->STAA + _lf_fed_STA_offset - (_lf_action_delay_table[i] == NEVER ? 0 : _lf_action_delay_table[i]);
             lf_mutex_lock(&env->mutex);
             // Both before and after the wait, check that the tag has not changed
             if (a_port_is_unknown(staa_elem) && lf_tag_compare(lf_tag(env), tag_when_started_waiting) == 0 && wait_until(env, wait_until_time, &port_status_changed) && lf_tag_compare(lf_tag(env), tag_when_started_waiting) == 0) {
