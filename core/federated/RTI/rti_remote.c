@@ -1042,7 +1042,6 @@ void *clock_synchronization_thread(void *noargs) {
  * Handle MSG_TYPE_FAILED sent by a federate. This message is sent by a federate
  * that is exiting in failure.  In this case, the RTI will
  * also terminate abnormally, returning a non-zero exit code when it exits.
- * But it does not immediately exit. It does close the socket connection to the federate.
  *
  * This function assumes the caller does not hold the mutex.
  *
@@ -1057,7 +1056,7 @@ static void handle_federate_failed(federate_info_t *my_fed) {
     }
 
     _lf_federate_reports_error = true;
-    lf_print_warning("RTI: Federate %d reports an error and has exited.", my_fed->enclave.id);
+    lf_print_error_and_exit("RTI: Federate %d reports an error and has exited.", my_fed->enclave.id);
 
     my_fed->enclave.state = NOT_CONNECTED;
 
