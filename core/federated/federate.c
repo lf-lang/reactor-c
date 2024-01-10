@@ -642,10 +642,10 @@ static int handle_tagged_message(int* socket, int fed_id) {
                 actual_tag.microstep++;
             }
         }
+#endif // FEDERATED_DECENTRALIZED
         // The following will update the input_port_action->last_known_status_tag.
         // For decentralized coordination, this is needed for the thread implementing STAA.
         update_last_known_status_on_input_port(env, actual_tag, port_id);
-#endif // FEDERATED_DECENTRALIZED
 
         // If the current time >= stop time, discard the message.
         // But only if the stop time is not equal to the start time!
