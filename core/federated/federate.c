@@ -19,6 +19,8 @@
 #include <netinet/in.h> // Defines struct sockaddr_in
 #include <sys/socket.h>
 #include <unistd.h>     // Defines read(), write(), and close()
+#include <string.h>     // Defines memset(), strnlen(), strncmp(), strncpy()
+#include <stdio.h>      // Defines strerror()
 
 #include <assert.h>
 #include <errno.h>      // Defined perror(), errno
