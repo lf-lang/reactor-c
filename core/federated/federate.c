@@ -1176,8 +1176,24 @@ static void* update_ports_from_staa_offsets(void* args) {
             // If this occurs, then the current tag advanced during a wait.
             // Some ports may have been reset to uknown during that wait, in which case,
             // it would be huge mistake to enter the wait for a new tag below because the
-            // program will freeze.  Hence, we start over rather than wait for the current
-            // tag to advance.
+            // program will freeze.  First, check whether any ports are unknown:
+            bool port_unkonwn = false;
+            for (int i = 0; i < staa_lst_size; ++i) {
+                staa_t* staa_elem = staa_lst[i];
+                if (a_port_is_unknown(staa_elem)) {
+                    port_unkonwn = true;
+                    break;
+                }
+            }
+            if (!port_unkonwn) {
+                // If this occurs, then there is a race condition that can lead to deadlocks.
+                lf_print_error_and_exit("**** (update thread) Inconsistency: All ports are known, but MLAA is blocking.");
+            }
+            
+            // Since max_level_allowed_to_advance will block advancement of time, we cannot follow
+            // through to the next step without deadlocking.  Wait some time, then continue.
+            // The wait is necessary to prevent a busy wait.
+            lf_sleep(2 * MIN_SLEEP_DURATION);
             continue;
         }
 
