@@ -187,10 +187,10 @@ extern size_t staa_lst_size;
  * @return A pointer to an action struct or null if the ID is out of range.
  */
 static lf_action_base_t* action_for_port(int port_id) {
-    if (port_id < _lf_action_table_size) {
+    if (port_id >= 0 && port_id < _lf_action_table_size) {
         return _lf_action_table[port_id];
     }
-    lf_print_error("Invalid port ID: %d", port_id);
+    lf_print_error_and_exit("Invalid port ID: %d", port_id);
     return NULL;
 }
 
@@ -210,7 +210,7 @@ static void update_last_known_status_on_input_ports(tag_t tag) {
     LF_PRINT_DEBUG("In update_last_known_status_on_input ports.");
     bool notify = false;
     for (int i = 0; i < _lf_action_table_size; i++) {
-        lf_action_base_t* input_port_action = action_for_port(i);
+        lf_action_base_t* input_port_action = _lf_action_table[i];
         // This is called when a TAG is received.
         // But it is possible for an input port to have received already
         // a message with a larger tag (if there is an after delay on the
@@ -421,17 +421,16 @@ static void close_inbound_socket(int fed_id, int flag) {
  * at that tag. This returns true if the following conditions are all true:
  *
  * 1. the first reaction triggered has a level >= MLAA (a port is or will be blocked on this trigger);
- * 2. the intended_tag is less than or equal to the current tag of the environment;
+ * 2. the intended_tag is equal to the current tag of the environment;
  * 3. the intended_tag is greater than the last_tag of the trigger;
  * 4. the intended_tag is greater than the last_known_status_tag of the trigger;
  * 5. the execution has started (the event queue has been examined);
  * 6. the trigger is not physical;
  *
  * The comparison against the MLAA (condition 1), if true, means that there is a blocking port
- * waiting for this trigger (or possibly an earlier blocking port). For condition (2), if the
- * intended tag is less than the current tag, then the message is tardy.  A tardy message can
- * unblock a port, although it will trigger an STP violation handler if one is defined or an
- * error if not (or if centralized coordination is being used). The comparison against the
+ * waiting for this trigger (or possibly an earlier blocking port). For condition (2), tardy
+ * messages are not scheduled now (they are already late), so if a reaction is blocked on
+ * unknown status of this port, it will be unblocked with an absent. The comparison against the
  * last_tag of the trigger (condition 3) ensures that if the message is tardy but there is
  * already an earlier tardy message that has been handled (or is being handled), then we
  * don't try to handle two messages in the same tag, which is not allowed. For example, there
@@ -444,7 +443,7 @@ static void close_inbound_socket(int fed_id, int flag) {
  * last_known_status_tag (condition 4) deals with messages arriving with identical intended
  * tags (which should not happen). This one will be handled late (one microstep later than
  * the current tag if 1 and 2 are true).
- *
+  *
  * This function assumes the mutex is held on the environment.
  *
  * @param env The environment.
@@ -453,7 +452,7 @@ static void close_inbound_socket(int fed_id, int flag) {
  */
 static bool handle_message_now(environment_t* env, trigger_t* trigger, tag_t intended_tag) {
     return trigger->reactions[0]->index >= max_level_allowed_to_advance
-            && lf_tag_compare(intended_tag, lf_tag(env)) <= 0
+            && lf_tag_compare(intended_tag, lf_tag(env)) == 0
             && lf_tag_compare(intended_tag, trigger->last_tag) > 0
             && lf_tag_compare(intended_tag, trigger->last_known_status_tag) > 0
             && env->execution_started
@@ -465,7 +464,6 @@ static bool handle_message_now(environment_t* env, trigger_t* trigger, tag_t int
  *
  * This function assumes the caller does not hold the mutex lock.
  * @param socket Pointer to the socket to read the message from.
- * @param buffer The buffer to read.
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  * @return 0 for success, -1 for failure.
  */
@@ -519,7 +517,6 @@ static int handle_message(int* socket, int fed_id) {
  * the tag will not advance at all if the tag of the message is
  * now or in the past.
  * @param socket Pointer to the socket to read the message from.
- * @param buffer The buffer to read.
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  * @return 0 on successfully reading the message, -1 on failure (e.g. due to socket closed).
  */
@@ -575,7 +572,7 @@ static int handle_tagged_message(int* socket, int fed_id) {
     // If something happens, make sure to release the barrier.
     _lf_increment_tag_barrier(env, intended_tag);
 #endif
-    LF_PRINT_LOG("Received message on port %d with tag: " PRINTF_TAG ", Current tag: " PRINTF_TAG ".",
+    LF_PRINT_LOG("Received message on port %d with intended tag: " PRINTF_TAG ", Current tag: " PRINTF_TAG ".",
             port_id, intended_tag.time - start_time, intended_tag.microstep,
             lf_time_logical_elapsed(env), env->current_tag.microstep);
 
@@ -583,6 +580,9 @@ static int handle_tagged_message(int* socket, int fed_id) {
     // Allocate memory for the message contents.
     unsigned char* message_contents = (unsigned char*)malloc(length);
     if (read_from_socket_close_on_error(socket, length, message_contents)) {
+#ifdef FEDERATED_DECENTRALIZED 
+        _lf_decrement_tag_barrier_locked(env);
+#endif
         return -1; // Read failed.
     }
 
@@ -623,18 +623,32 @@ static int handle_tagged_message(int* socket, int fed_id) {
         // that is because the network receiver reaction is now in the reaction queue
         // keeping the precedence order intact.
         set_network_port_status(port_id, present);
-
-        // Port is now present. Therefore, notify the level advancer to proceed
-        lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
-        lf_cond_broadcast(&lf_port_status_changed);
     } else {
         // If no port absent reaction is waiting for this message, or if the intended
-        // tag is in the future, use schedule functions to process the message.
-        // Before that, if the current time >= stop time, discard the message.
+        // tag is in the future, or the message is tardy, use schedule functions to process the message.
+
+        tag_t actual_tag = intended_tag;
+#ifdef FEDERATED_DECENTRALIZED 
+        // For tardy messages in decentralized coordination, we need to figure out what the actual tag will be.
+        // (Centralized coordination errors out with tardy messages).
+        if (lf_tag_compare(intended_tag, env->current_tag) <= 0) {
+            // Message is tardy.
+            actual_tag = env->current_tag;
+            actual_tag.microstep++;
+            // Check that this is greater than any previously scheduled event for this port.
+            trigger_t* input_port_action = action_for_port(port_id)->trigger;
+            if (lf_tag_compare(actual_tag, input_port_action->last_known_status_tag) <= 0) {
+                actual_tag = input_port_action->last_known_status_tag;
+                actual_tag.microstep++;
+            }
+        }
+        // The following will update the input_port_action->last_known_status_tag.
+        // For decentralized coordination, this is needed for the thread implementing STAA.
+        update_last_known_status_on_input_port(env, actual_tag, port_id);
+#endif // FEDERATED_DECENTRALIZED
+
+        // If the current time >= stop time, discard the message.
         // But only if the stop time is not equal to the start time!
-
-        update_last_known_status_on_input_port(env, intended_tag, port_id);
-
         if (lf_tag_compare(env->current_tag, env->stop_tag) >= 0 && env->execution_started) {
             lf_print_error("Received message too late. Already at stop tag.\n"
             		"    Current tag is " PRINTF_TAG " and intended tag is " PRINTF_TAG ".\n"
@@ -644,6 +658,8 @@ static int handle_tagged_message(int* socket, int fed_id) {
             // Close socket, reading any incoming data and discarding it.
             close_inbound_socket(fed_id, 1);
         } else {
+            // Need to use intended_tag here, not actual_tag, so that STP violations are detected.
+            // It will become actual_tag (that is when the reactions will be invoked).
             schedule_message_received_from_network_locked(env, action->trigger, intended_tag, message_token);
         }
     }
@@ -670,7 +686,6 @@ static int handle_tagged_message(int* socket, int fed_id) {
  * in the message.
  *
  * @param socket Pointer to the socket to read the message from
- * @param buffer The buffer to read
  * @param fed_id The sending federate ID or -1 if the centralized coordination.
  * @return 0 for success, -1 for failure to complete the read.
  */
@@ -738,12 +753,14 @@ static void* listen_to_federates(void* _args) {
 
     // Listen for messages from the federate.
     while (1) {
+        bool socket_closed = false;
         // Read one byte to get the message type.
         LF_PRINT_DEBUG("Waiting for a P2P message on socket %d.", *socket_id);
         if (read_from_socket_close_on_error(socket_id, 1, buffer)) {
             // Socket has been closed.
             lf_print("Socket from federate %d is closed.", fed_id);
             // Stop listening to this federate.
+            socket_closed = true;
             break;
         }
         LF_PRINT_DEBUG("Received a P2P message on socket %d of type %d.",
@@ -755,17 +772,17 @@ static void* listen_to_federates(void* _args) {
                 if (handle_message(socket_id, fed_id)) {
                     // Failed to complete the reading of a message on a physical connection.
                     lf_print_warning("Failed to complete reading of message on physical connection.");
-                    return NULL;
+                    socket_closed = true;
                 }
                 break;
             case MSG_TYPE_P2P_TAGGED_MESSAGE:
-                LF_PRINT_LOG("Received timed message from federate %d.", fed_id);
+                LF_PRINT_LOG("Received tagged message from federate %d.", fed_id);
                 if (handle_tagged_message(socket_id, fed_id)) {
                     // P2P tagged messages are only used in decentralized coordination, and
                     // it is not a fatal error if the socket is closed before the whole message is read.
                     // But this thread should exit.
                     lf_print_warning("Failed to complete reading of tagged message.");
-                    return NULL;
+                    socket_closed = true;
                 }
                 break;
             case MSG_TYPE_PORT_ABSENT:
@@ -775,18 +792,27 @@ static void* listen_to_federates(void* _args) {
                     // it is not a fatal error if the socket is closed before the whole message is read.
                     // But this thread should exit.
                     lf_print_warning("Failed to complete reading of tagged message.");
-                    return NULL;
+                    socket_closed = true;
                 }
                 break;
             default:
                 bad_message = true;
         }
         if (bad_message) {
-            // FIXME: Better error handling needed.
             lf_print_error("Received erroneous message type: %d. Closing the socket.", buffer[0]);
             // Trace the event when tracing is enabled
             tracepoint_federate_from_federate(_fed.trace, receive_UNIDENTIFIED, _lf_my_fed_id, fed_id, NULL);
-            break;
+            break; // while loop
+        }
+        if (socket_closed) {
+            // NOTE: For decentralized execution, once this socket is closed, we could
+            // update last known tags of all ports connected to the specified federate to FOREVER_TAG,
+            // which would eliminate the need to wait for STAA to assume an input is absent.
+            // However, at this time, we don't know which ports correspond to which upstream federates.
+            // The code generator would have to encode this information. Once that is done,
+            // we could call update_last_known_status_on_input_port with FOREVER_TAG.
+
+            break; // while loop
         }
     }
     return NULL;
@@ -1061,12 +1087,13 @@ static bool a_port_is_unknown(staa_t* staa_elem) {
 
 /**
  * @brief Return the port ID of the port associated with the given action.
+ * @return The port ID or -1 if there is no match.
  */
 static int id_of_action(lf_action_base_t* input_port_action) {
-    for (int i = 0; 1; i++) {
-        if (action_for_port(i) == input_port_action) return i;
+    for (int i = 0; i < _lf_action_table_size; i++) {
+        if (_lf_action_table[i] == input_port_action) return i;
     }
-    // There will be no UB buffer overrun because action_for_port(i) has a check.
+    return -1;
 }
 
 /**
@@ -1085,7 +1112,7 @@ static void* update_ports_from_staa_offsets(void* args) {
     int num_envs = _lf_get_environments(&env);
     LF_MUTEX_LOCK(env->mutex);
     while (1) {
-        bool restart = false;
+        LF_PRINT_DEBUG("**** (update thread) starting");
         tag_t tag_when_started_waiting = lf_tag(env);
         for (int i = 0; i < staa_lst_size; ++i) {
             staa_t* staa_elem = staa_lst[i];
@@ -1093,6 +1120,8 @@ static void* update_ports_from_staa_offsets(void* args) {
             // The list is sorted in increasing order of adjusted STAA offsets.
             // The wait_until function automatically adds the _lf_fed_STA_offset to the wait time.
             interval_t wait_until_time = env->current_tag.time + staa_elem->STAA;
+            LF_PRINT_DEBUG("**** (update thread) original wait_until_time: " PRINTF_TIME, wait_until_time - lf_time_start());
+    
             // The wait_until call will release the env->mutex while it is waiting.
             // However, it will not release the env->mutex if the wait time is too small.
             // At the cost of a small additional delay in deciding a port is absent,
@@ -1107,47 +1136,66 @@ static void* update_ports_from_staa_offsets(void* args) {
                 wait_until_time += 5 * MIN_SLEEP_DURATION;
             }
             while (a_port_is_unknown(staa_elem)) {
+                LF_PRINT_DEBUG("**** (update thread) waiting until: " PRINTF_TIME, wait_until_time - lf_time_start());
                 if (wait_until(env, wait_until_time, &lf_port_status_changed)) {
                     if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) {
-                        // Wait was not interrupted and we have committed to a new tag before we
-                        // finished processing the list. Start over.
-                        restart = true;
                         break;
                     }
                     /* Possibly useful for debugging:
                     tag_t current_tag = lf_tag(env);
-                    lf_print("--------------------- FIXME: assuming absent! " PRINTF_TAG, current_tag.time - lf_time_start(), current_tag.microstep);
-                    lf_print("--------------------- Lag is " PRINTF_TIME, current_tag.time - lf_time_physical());
-                    lf_print("--------------------- Wait until time is " PRINTF_TIME, wait_until_time - lf_time_start());
+                    LF_PRINT_DEBUG("**** (update thread) Assuming absent! " PRINTF_TAG, current_tag.time - lf_time_start(), current_tag.microstep);
+                    LF_PRINT_DEBUG("**** (update thread) Lag is " PRINTF_TIME, current_tag.time - lf_time_physical());
+                    LF_PRINT_DEBUG("**** (update thread) Wait until time is " PRINTF_TIME, wait_until_time - lf_time_start());
                     */
 
-                    // Wait went to completion. Mark any ports with this STAA that remain unknown as absent.
                     for (int j = 0; j < staa_elem->num_actions; ++j) {
                         lf_action_base_t* input_port_action = staa_elem->actions[j];
                         if (input_port_action->trigger->status == unknown) {
                             input_port_action->trigger->status = absent;
-                            LF_PRINT_DEBUG("Assuming port absent at time " PRINTF_TIME, lf_tag(env).time - start_time);
+                            LF_PRINT_DEBUG("**** (update thread) Assuming port absent at time " PRINTF_TIME, lf_tag(env).time - start_time);
                             update_last_known_status_on_input_port(env, lf_tag(env), id_of_action(input_port_action));
                             lf_cond_broadcast(&lf_port_status_changed);
                         }
                     }
-                } else if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) {
-                    // Wait was interrupted and we have committed to a new tag before we
-                    // finished processing the list. Start over.
-                    restart = true;
-                    break;
                 }
+                // If the tag has advanced, start over.
+                if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) break;
             }
-            if (restart) break; // No need to check the rest of the STAAs.
+            // If the tag has advanced, start over.
+            if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) break;
         }
-        if (restart) continue; // No need to wait for a new tag.
+        // If the tag has advanced, start over.
+        if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) continue;
+
+        // At this point, the current tag is the same as when we started waiting
+        // and all ports should be known, and hence max_level_allowed_to_advance
+        // should be INT_MAX.  Check this to prevent an infinite wait.
+        if (max_level_allowed_to_advance != INT_MAX) {
+            // If this error occurs, then there is a mismatch between ports being known
+            // the max_level_allowed_to_advance.  Perhaps max_level_allowed_to_advance is
+            // not being set when a port becomes known?
+            LF_MUTEX_UNLOCK(env->mutex);
+            lf_print_error_and_exit("**** (update thread) All port statuses are known at tag " PRINTF_TAG
+                    ", but the MLAA of %d indicates otherwise!",
+                    tag_when_started_waiting.time - start_time,
+                    tag_when_started_waiting.microstep,
+                    max_level_allowed_to_advance);
+        }
 
         // Wait until we progress to a new tag.
         while (lf_tag_compare(lf_tag(env), tag_when_started_waiting) == 0) {
             // The following will release the env->mutex while waiting.
-            lf_cond_wait(&lf_current_tag_changed);
+            LF_PRINT_DEBUG("**** (update thread) Waiting for tags to not match: " PRINTF_TAG ", " PRINTF_TAG,
+                lf_tag(env).time - lf_time_start(), lf_tag(env).microstep,
+                tag_when_started_waiting.time -lf_time_start(), tag_when_started_waiting.microstep);
+            // Ports are reset to unknown at the start of new tag, so that will wake this up.
+            lf_cond_wait(&lf_port_status_changed);
         }
+        LF_PRINT_DEBUG("**** (update thread) Tags after wait: " PRINTF_TAG ", " PRINTF_TAG,
+            lf_tag(env).time - lf_time_start(), lf_tag(env).microstep,
+            tag_when_started_waiting.time -lf_time_start(), tag_when_started_waiting.microstep);
     }
+    LF_MUTEX_UNLOCK(env->mutex);
 }
 #endif // FEDERATED_DECENTRALIZED
 
@@ -2259,11 +2307,19 @@ parse_rti_code_t lf_parse_rti_addr(const char* rti_addr) {
 }
 
 void lf_reset_status_fields_on_input_port_triggers() {
+    environment_t *env;
+    _lf_get_environments(&env);
+    tag_t now = lf_tag(env);
     for (int i = 0; i < _lf_action_table_size; i++) {
-        set_network_port_status(i, unknown);
+        if (lf_tag_compare(_lf_action_table[i]->trigger->last_known_status_tag, now) >= 0) {
+            set_network_port_status(i, absent);  // Default may be overriden to become present.
+        } else {
+            set_network_port_status(i, unknown);
+        }
     }
     LF_PRINT_DEBUG("Resetting port status fields.");
     lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
+    lf_cond_broadcast(&lf_port_status_changed);
 }
 
 int lf_send_message(int message_type,

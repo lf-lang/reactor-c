@@ -320,8 +320,12 @@ void lf_latest_tag_complete(tag_t);
 parse_rti_code_t lf_parse_rti_addr(const char* rti_addr);
 
 /**
- * @brief Reset the status fields on network input ports to unknown.
+ * @brief Reset the status fields on network input ports to unknown or absent.
  *
+ * This will reset to absent if the last_known_status_tag field of the port
+ * is greater than or equal to the current tag of the top-level environment.
+ * This should be overriden to present if an event gets scheduled.
+ * Otherwise, set the status to unknown.
  * @note This function must be called at the beginning of each
  *  logical time.
  */
