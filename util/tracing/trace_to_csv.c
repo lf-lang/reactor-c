@@ -55,7 +55,7 @@ int table_size;
  * Print a usage message.
  */
 void usage() {
-    printf("\nUsage: trace_to_csv [options] trace_file_root (without .lft extension)\n\n");
+    printf("\nUsage: trace_to_csv [options] trace_file_root (with .lft extension)\n\n");
     /* No options yet:
     printf("\nOptions: \n\n");
     printf("  -f, --fast [true | false]\n");
