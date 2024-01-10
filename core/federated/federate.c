@@ -1171,15 +1171,12 @@ static void* update_ports_from_staa_offsets(void* args) {
         // and all ports should be known, and hence max_level_allowed_to_advance
         // should be INT_MAX.  Check this to prevent an infinite wait.
         if (max_level_allowed_to_advance != INT_MAX) {
-            // If this error occurs, then there is a mismatch between ports being known
-            // the max_level_allowed_to_advance.  Perhaps max_level_allowed_to_advance is
-            // not being set when a port becomes known?
-            LF_MUTEX_UNLOCK(env->mutex);
-            lf_print_error_and_exit("**** (update thread) All port statuses are known at tag " PRINTF_TAG
-                    ", but the MLAA of %d indicates otherwise!",
-                    tag_when_started_waiting.time - start_time,
-                    tag_when_started_waiting.microstep,
-                    max_level_allowed_to_advance);
+            // If this occurs, then the current tag advanced during a wait.
+            // Some ports may have been reset to uknown during that wait, in which case,
+            // it would be huge mistake to enter the wait for a new tag below because the
+            // program will freeze.  Hence, we start over rather than wait for the current
+            // tag to advance.
+            continue;
         }
 
         // Wait until we progress to a new tag.
