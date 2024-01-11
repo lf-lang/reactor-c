@@ -199,6 +199,10 @@ static const char *trace_event_names[] = {
 /** Size of the table of trace objects. */
 #define TRACE_OBJECT_TABLE_SIZE 1024
 
+#ifndef LF_TRACE_OBJECT_TABLE_SIZE
+#define LF_TRACE_OBJECT_TABLE_SIZE TRACE_OBJECT_TABLE_SIZE
+#endif // LF_TRACE_OBJECT_TABLE_SIZE
+
 /**
  * @brief A trace record that is written in binary to the trace file.
  */
@@ -263,7 +267,7 @@ typedef struct trace_t {
     char *filename;
 
     /** Table of pointers to a description of the object. */
-    object_description_t _lf_trace_object_descriptions[TRACE_OBJECT_TABLE_SIZE];
+    object_description_t _lf_trace_object_descriptions[LF_TRACE_OBJECT_TABLE_SIZE];
     int _lf_trace_object_descriptions_size;
 
     /** Indicator that the trace header information has been written to the file. */
