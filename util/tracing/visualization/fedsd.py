@@ -100,10 +100,10 @@ parser.add_argument('-r','--rti', type=str,
                     help='RTI\'s lft trace file.')
 parser.add_argument('-f','--federates', nargs='+',
                     help='List of the federates\' lft trace files.')
-parser.add_argument('-s', '--start', type=str,
-                    help='Elapsed logical time (nsec) to start visualization')
-parser.add_argument('-e', '--end', type=str,
-                    help='Elapsed logical time (nsec) to end visualization')
+parser.add_argument('-s', '--start', type=str, nargs=2,
+                    help='Elapsed logical time that targets to start visualization. [time_value time_unit]')
+parser.add_argument('-e', '--end', type=str, nargs=2,
+                    help='Elapsed logical time that targets to end visualization. [time_value time_unit]')
 
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
@@ -389,9 +389,9 @@ def convert_lft_file_to_csv(lft_file, start_time, end_time):
 
     subprocess_args = ['trace_to_csv', lft_file]
     if (start_time != None):
-        subprocess_args.extend(['-s', start_time])
+        subprocess_args.extend(['-s', start_time[0], start_time[1]])
     if (end_time != None):
-        subprocess_args.extend(['-e', end_time])
+        subprocess_args.extend(['-e', end_time[0], end_time[1]])
 
     convert_process = subprocess.run(subprocess_args, stdout=subprocess.DEVNULL)
 

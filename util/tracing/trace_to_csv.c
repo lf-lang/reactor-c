@@ -450,28 +450,28 @@ int process_args(int argc, const char* argv[], char** root, instant_t* start_tim
         } else if (strcmp(arg, "-s") == 0) {
             // sscanf(argv[++i], "%ld", start_time);
             if (argc < i + 2) {
-                printf("-s needs time and units.");
-                usage(argc, argv);
+                printf("-s needs time value and unit.");
+                usage();
                 return -1;
             }
             const char* time_spec = argv[i++];
             const char* units = argv[i++];
             *start_time = string_to_instant(time_spec, units);
             if (*start_time == -1) {
-                usage(argc, argv);
+                usage();
                 return -1;
             }
         } else if (strcmp(arg, "-e") == 0) {
             if (argc < i + 2) {
-                printf("-e needs time and units.");
-                usage(argc, argv);
+                printf("-e needs time value and unit.");
+                usage();
                 return -1;
             }
             const char* time_spec = argv[i++];
             const char* units = argv[i++];
             *end_time = string_to_instant(time_spec, units);
             if (*end_time == -1) {
-                usage(argc, argv);
+                usage();
                 return -1;
             }
         } else {
