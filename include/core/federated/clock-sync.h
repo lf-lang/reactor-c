@@ -149,9 +149,9 @@ uint16_t setup_clock_synchronization_with_rti(void);
  * Failing to complete this protocol is treated as a catastrophic
  * error that causes the federate to exit.
  * 
- * @param rti_socket_TCP The rti's socket
+ * @param rti_socket_TCP Pointer to the RTI's socket
  */
-void synchronize_initial_physical_clock_with_rti(int rti_socket_TCP);
+void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP);
 
 /**
  * Handle a clock synchroninzation message T1 coming from the RTI.

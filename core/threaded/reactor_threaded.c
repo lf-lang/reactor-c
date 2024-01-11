@@ -231,9 +231,6 @@ void _lf_set_present(lf_port_base_t* port) {
     }
 }
 
-// Forward declaration. See federate.h
-void synchronize_with_other_federates(void);
-
 /**
  * Wait until physical time matches or exceeds the specified logical time,
  * unless -fast is given. For decentralized coordination, this function will
@@ -384,11 +381,6 @@ tag_t get_next_event_tag(environment_t *env) {
     return next_tag;
 }
 
-#ifdef FEDERATED_CENTRALIZED
-// The following is defined in federate.c and used in the following function.
-tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply);
-#endif
-
 /**
  * In a federated execution with centralized coordination, this function returns
  * a tag that is less than or equal to the specified tag when, as far
@@ -405,7 +397,7 @@ tag_t _lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply
  */
 tag_t send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply) {
 #if defined(FEDERATED_CENTRALIZED)
-    return _lf_send_next_event_tag(env, tag, wait_for_reply);
+    return lf_send_next_event_tag(env, tag, wait_for_reply);
 #elif defined(LF_ENCLAVES)
     return rti_next_event_tag_locked(env->enclave_info, tag);
 #else
@@ -572,10 +564,10 @@ void _lf_next_locked(environment_t *env) {
     // stick them into the reaction queue.
     _lf_pop_events(env);
 #ifdef FEDERATED
-    enqueue_port_absent_reactions(env);
+    lf_enqueue_port_absent_reactions(env);
     // _lf_pop_events may have set some triggers present.
     extern federate_instance_t _fed;
-    update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
+    lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
 #endif
 }
 
@@ -587,9 +579,11 @@ bool lf_stop_requested = false;
 // See reactor.h for docs.
 void lf_request_stop() {
     // If a requested stop is pending, return without doing anything.
+    LF_PRINT_LOG("lf_request_stop() has been called.");
     lf_mutex_lock(&global_mutex);
     if (lf_stop_requested) {
         lf_mutex_unlock(&global_mutex);
+        LF_PRINT_LOG("Ignoring redundant lf_request_stop() call.");
         return;
     }
     lf_stop_requested = true;
@@ -611,10 +605,10 @@ void lf_request_stop() {
     }
 
 #ifdef FEDERATED
-    // In the federated case, do not set lf_stop_requested because the RTI might grant a
+    // In the federated case, the RTI might grant a
     // later stop tag than the current tag. The above code has raised
-    // a barrier no greater than the requested stop tag for each enclave.
-    if (_lf_fd_send_stop_request_to_rti(max_current_tag) != 0) {
+    // a barrier no greater than max_current_tag.
+    if (lf_send_stop_request_to_rti(max_current_tag) != 0) {
         // Message was not sent to the RTI.
         // Decrement the barriers to reverse our previous increment.
         for (int i = 0; i < num_environments; i++) {
@@ -689,10 +683,10 @@ void _lf_initialize_start_tag(environment_t *env) {
     if (env == top_level_env) {
         // Reset status fields before talking to the RTI to set network port
         // statuses to unknown
-        reset_status_fields_on_input_port_triggers();
+        lf_reset_status_fields_on_input_port_triggers();
 
         // Get a start_time from the RTI
-        synchronize_with_other_federates(); // Resets start_time in federated execution according to the RTI.
+        lf_synchronize_with_other_federates(); // Resets start_time in federated execution according to the RTI.
     }
 
     // The start time will likely have changed. Adjust the current tag and stop tag.
@@ -710,7 +704,7 @@ void _lf_initialize_start_tag(environment_t *env) {
     env->current_tag = (tag_t){.time = start_time - _lf_fed_STA_offset, .microstep = 0u};
 
     // Call wait_until if federated. This is required because the startup procedure
-    // in synchronize_with_other_federates() can decide on a new start_time that is
+    // in lf_synchronize_with_other_federates() can decide on a new start_time that is
     // larger than the current physical time.
     // Therefore, if --fast was not specified, wait until physical time matches
     // or exceeds the start time. Microstep is ignored.
@@ -736,10 +730,6 @@ void _lf_initialize_start_tag(environment_t *env) {
     // Restore the current tag to match the start time.
     env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
 
-    // For messages that may have arrived while we were waiting, put
-    // reactions on the reaction queue.
-    _lf_pop_events(env);
-
     // If the stop_tag is (0,0), also insert the shutdown
     // reactions. This can only happen if the timeout time
     // was set to 0.
@@ -756,13 +746,18 @@ void _lf_initialize_start_tag(environment_t *env) {
     // once the complete message has been read. Here, we wait for that barrier
     // to be removed, if appropriate before proceeding to executing tag (0,0).
     _lf_wait_on_tag_barrier(env, (tag_t){.time=start_time,.microstep=0});
-    spawn_staa_thread();
+    lf_spawn_staa_thread();
 
 #else // NOT FEDERATED_DECENTRALIZED
     // Each federate executes the start tag (which is the current
     // tag). Inform the RTI of this if needed.
     send_next_event_tag(env, env->current_tag, true);
 #endif // NOT FEDERATED_DECENTRALIZED
+
+    // For messages that may have arrived while we were waiting, put
+    // reactions on the reaction queue.
+    _lf_pop_events(env);
+    
 #else // NOT FEDERATED
     _lf_initialize_timers(env);
 
@@ -776,7 +771,7 @@ void _lf_initialize_start_tag(environment_t *env) {
 
     // Set the following boolean so that other thread(s), including federated threads,
     // know that the execution has started
-    _lf_execution_started = true;
+    env->execution_started = true;
 }
 
 /** For logging and debugging, each worker thread is numbered. */
@@ -939,7 +934,7 @@ void _lf_worker_invoke_reaction(environment_t *env, int worker_number, reaction_
 
 void try_advance_level(environment_t* env, volatile size_t* next_reaction_level) {
     #ifdef FEDERATED
-    stall_advance_level_federation(env, *next_reaction_level);
+    lf_stall_advance_level_federation(env, *next_reaction_level);
     #endif
     if (*next_reaction_level < SIZE_MAX) *next_reaction_level += 1;
 }
@@ -961,7 +956,7 @@ void _lf_worker_do_work(environment_t *env, int worker_number) {
     // lf_print_snapshot(); // This is quite verbose (but very useful in debugging reaction deadlocks).
     reaction_t* current_reaction_to_execute = NULL;
 #ifdef FEDERATED
-    stall_advance_level_federation(env, 0);
+    lf_stall_advance_level_federation(env, 0);
 #endif
     while ((current_reaction_to_execute =
             lf_sched_get_ready_reaction(env->scheduler, worker_number))
@@ -1238,6 +1233,10 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
             LF_PRINT_LOG("---- All worker threads exited successfully.");
         }
     }
+    _lf_normal_termination = true;
+    // Invoke termination function here before freeing the local RTI.
+    termination();
+    
 #if defined LF_ENCLAVES
     free_local_rti();
 #endif

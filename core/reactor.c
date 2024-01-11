@@ -377,13 +377,12 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
                 NEVER_TAG.time - start_time, 0);
 
         environment_init_tags(env, start_time, duration);
-        // Start tracing if enalbed
+        // Start tracing if enabled.
         start_trace(env->trace);
 #ifdef MODAL_REACTORS
         // Set up modal infrastructure
         _lf_initialize_modes(env);
 #endif
-        _lf_execution_started = true;
         _lf_trigger_startup_reactions(env);
         _lf_initialize_timers(env);
         // If the stop_tag is (0,0), also insert the shutdown
@@ -394,9 +393,11 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         }
         LF_PRINT_DEBUG("Running the program's main loop.");
         // Handle reactions triggered at time (T,m).
+        env->execution_started = true;
         if (_lf_do_step(env)) {
             while (next(env) != 0);
         }
+        _lf_normal_termination = true;
         return 0;
     } else {
         return -1;

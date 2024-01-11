@@ -66,9 +66,9 @@ int create_real_time_tcp_socket_errexit() {
         lf_print_error_system_failure("Could not open TCP socket.");
     }
     // Disable Nagle's algorithm which bundles together small TCP messages to
-    //  reduce network traffic
+    // reduce network traffic.
     // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
-    //  is enough.
+    // is enough.
     int flag = 1;
     int result = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
     
@@ -76,107 +76,152 @@ int create_real_time_tcp_socket_errexit() {
         lf_print_error_system_failure("Failed to disable Nagle algorithm on socket server.");
     }
     
+#if defined(PLATFORM_Linux)
     // Disable delayed ACKs. Only possible on Linux
-    #if defined(PLATFORM_Linux)
         result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
         
         if (result < 0) {
             lf_print_error_system_failure("Failed to disable Nagle algorithm on socket server.");
         }
-    #endif
+#endif // Linux
     
     return sock;
 }
 
-ssize_t read_from_socket_errexit(
-		int socket,
-		size_t num_bytes,
-		unsigned char* buffer,
-		char* format, ...) {
-    va_list args;
-	// Error checking first
-    if (socket < 0 && format != NULL) {
-		lf_print_error("Socket is no longer open.");
-        lf_print_error_and_exit(format, args);
-	}
+int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
+    if (socket < 0) {
+        // Socket is not open.
+        errno = EBADF;
+        return -1;
+    }
     ssize_t bytes_read = 0;
     int retry_count = 0;
     while (bytes_read < (ssize_t)num_bytes) {
         ssize_t more = read(socket, buffer + bytes_read, num_bytes - (size_t)bytes_read);
-        if(more < 0 && retry_count++ < NUM_SOCKET_RETRIES) {
-            // Used to retry only on: (errno == EAGAIN || errno == EWOULDBLOCK)
+        if(more < 0 && retry_count++ < NUM_SOCKET_RETRIES 
+                && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
             // Those error codes set by the socket indicates
             // that we should try again (@see man errno).
-            // Now we retry on all errors, but a bounded number of times.
-            LF_PRINT_DEBUG("Reading from socket failed. Will try again.");
+            lf_print_warning("Reading from socket failed. Will try again.");
             lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
             continue;
         } else if (more < 0) {
-            // Retries are exhausted.
-            lf_print_error_system_failure("Socket read failed after %d tries. Read %ld bytes, but expected %zu.",
-                    retry_count, more + bytes_read, num_bytes);
+            // A more serious error occurred.
+            return -1;
         } else if (more == 0) {
-            // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
-            // upon receiving a zero length packet or an error, we can close the socket.
-            // If there are any pending outgoing messages, this will attempt to send those
-            // followed by an EOF.
-            LF_PRINT_DEBUG("EOF received from client. Closing socket.");
-            lf_mutex_lock(&socket_mutex);
-            close(socket);
-            lf_mutex_unlock(&socket_mutex);
-            return more;
+            // EOF received.
+            return 1;
         }
         bytes_read += more;
     }
-    return bytes_read;
+    return 0;
 }
 
-ssize_t read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
-    return read_from_socket_errexit(socket, num_bytes, buffer, NULL);
+int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer) {
+    assert(socket);
+    int read_failed = read_from_socket(*socket, num_bytes, buffer);
+    if (read_failed) {
+        // Read failed.
+        // Socket has probably been closed from the other side.
+        // Shut down and close the socket from this side.
+        shutdown(*socket, SHUT_RDWR);
+        close(*socket);
+        // Mark the socket closed.
+        *socket = -1;
+        return -1;
+    }
+    return 0;
 }
 
-ssize_t write_to_socket_with_mutex(
-		int socket,
+void read_from_socket_fail_on_error(
+		int* socket,
 		size_t num_bytes,
 		unsigned char* buffer,
 		lf_mutex_t* mutex,
 		char* format, ...) {
+    va_list args;
+    assert(socket);
+    int read_failed = read_from_socket_close_on_error(socket, num_bytes, buffer);
+    if (read_failed) {
+        // Read failed.
+        if (mutex != NULL) {
+            lf_mutex_unlock(mutex);
+        }
+        if (format != NULL) {
+            lf_print_error_system_failure(format, args);
+        } else {
+            lf_print_error_system_failure("Failed to read from socket.");
+        }
+    }
+}
+
+ssize_t peek_from_socket(int socket, unsigned char* result) {
+    ssize_t bytes_read = recv(socket, result, 1, MSG_DONTWAIT | MSG_PEEK);
+    if (bytes_read < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) return 0;
+    else return bytes_read;
+}
+
+int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer) {
+    if (socket < 0) {
+        // Socket is not open.
+        errno = EBADF;
+        return -1;
+    }
     ssize_t bytes_written = 0;
     va_list args;
     while (bytes_written < (ssize_t)num_bytes) {
         ssize_t more = write(socket, buffer + bytes_written, num_bytes - (size_t)bytes_written);
-        if (more <= 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-                    // The error code set by the socket indicates
-                    // that we should try again (@see man errno).
+        if (more <= 0 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
+            // The error codes EAGAIN or EWOULDBLOCK indicate
+            // that we should try again (@see man errno).
+            // The error code EINTR means the system call was interrupted before completing.
             LF_PRINT_DEBUG("Writing to socket was blocked. Will try again.");
+            lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
             continue;
-        } else if (more <= 0) {
-            if (format != NULL) {
-                shutdown(socket, SHUT_RDWR);
-            	close(socket);
-            	if (mutex != NULL) {
-            		lf_mutex_unlock(mutex);
-            	}
-                lf_print_error(format, args);
-                lf_print_error("Code %d: %s.", errno, strerror(errno));
-            }
-            return more;
+        } else if (more < 0) {
+            // A more serious error occurred.
+            return -1;
         }
         bytes_written += more;
     }
-    return bytes_written;
+    return 0;
 }
 
-ssize_t write_to_socket_errexit(
-		int socket,
+int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer) {
+    assert(socket);
+    int result = write_to_socket(*socket, num_bytes, buffer);
+    if (result) {
+        // Write failed.
+        // Socket has probably been closed from the other side.
+        // Shut down and close the socket from this side.
+        shutdown(*socket, SHUT_RDWR);
+        close(*socket);
+        // Mark the socket closed.
+        *socket = -1;
+    }
+    return result;
+}
+
+void write_to_socket_fail_on_error(
+		int* socket,
 		size_t num_bytes,
 		unsigned char* buffer,
+		lf_mutex_t* mutex,
 		char* format, ...) {
-	return write_to_socket_with_mutex(socket, num_bytes, buffer, NULL, format);
-}
-
-ssize_t write_to_socket(int socket, size_t num_bytes, unsigned char* buffer) {
-    return write_to_socket_with_mutex(socket, num_bytes, buffer, NULL, NULL);
+    va_list args;
+    assert(socket);
+    int result = write_to_socket_close_on_error(socket, num_bytes, buffer);
+    if (result) {
+        // Write failed.
+        if (mutex != NULL) {
+            lf_mutex_unlock(mutex);
+        }
+        if (format != NULL) {
+            lf_print_error_system_failure(format, args);
+        } else {
+            lf_print_error("Failed to write to socket. Closing it.");
+        }
+    }
 }
 
 #endif // FEDERATED

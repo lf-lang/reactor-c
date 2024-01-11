@@ -99,12 +99,6 @@ unsigned int _lf_number_of_workers = 0u;
  */
 instant_t duration = -1LL;
 
-/**
- * Indicates whether or not the execution
- * has started.
- */
-bool _lf_execution_started = false;
-
 /** Indicator of whether the keepalive command-line option was given. */
 bool keepalive_specified = false;
 
@@ -281,6 +275,11 @@ void _lf_start_time_step(environment_t *env) {
         return;
     }
     assert(env != GLOBAL_ENVIRONMENT);
+    if (!env->execution_started) {
+        // Execution hasn't started, so this is probably being invoked in termination
+        // due to an error.
+        return;
+    }
     LF_PRINT_LOG("--------- Start time step at tag " PRINTF_TAG ".", env->current_tag.time - start_time, env->current_tag.microstep);
     // Handle dynamically created tokens for mutable inputs.
     _lf_free_token_copies(env);
@@ -306,22 +305,29 @@ void _lf_start_time_step(environment_t *env) {
             }
         }
     }
+    env->is_present_fields_abbreviated_size = 0;
+
+#ifdef FEDERATED
+    // If the environment is the top-level one, we have some work to do.
+    environment_t *envs;
+    int num_envs = _lf_get_environments(&envs);
+    if (env == envs) {
+        // This is the top-level environment.
 
 #ifdef FEDERATED_DECENTRALIZED
-    for (int i = 0; i < env->is_present_fields_size; i++) {
-        // FIXME: For now, an intended tag of (NEVER, 0)
-        // indicates that it has never been set.
-        *env->_lf_intended_tag_fields[i] = (tag_t) {NEVER, 0};
+        for (int i = 0; i < env->is_present_fields_size; i++) {
+            // An intended tag of NEVER_TAG indicates that it has never been set.
+            *env->_lf_intended_tag_fields[i] = NEVER_TAG;
+        }
+#endif // FEDERATED_DECENTRALIZED
+
+        // Reset absent fields on network ports because
+        // their status is unknown
+        lf_reset_status_fields_on_input_port_triggers();
+        // Signal the helper thread to reset its progress since the logical time has changed.
+        lf_cond_signal(&lf_current_tag_changed);
     }
-#endif
-#ifdef FEDERATED
-    // Reset absent fields on network ports because
-    // their status is unknown
-    reset_status_fields_on_input_port_triggers();
-    // Signal the helper thread to reset its progress since the logical time has changed.
-    lf_cond_signal(&logical_time_changed);
-#endif
-    env->is_present_fields_abbreviated_size = 0;
+#endif // FEDERATED
 }
 
 /**
@@ -389,14 +395,18 @@ void _lf_pop_events(environment_t *env) {
                     // the reaction can access the value.
                     event->trigger->intended_tag = event->intended_tag;
                     // And check if it is in the past compared to the current tag.
-                    if (lf_tag_compare(event->intended_tag,
-                                    env->current_tag) < 0) {
+                    if (lf_tag_compare(event->intended_tag, env->current_tag) < 0) {
                         // Mark the triggered reaction with a STP violation
                         reaction->is_STP_violated = true;
                         LF_PRINT_LOG("Trigger %p has violated the reaction's STP offset. Intended tag: " PRINTF_TAG ". Current tag: " PRINTF_TAG,
                                     event->trigger,
                                     event->intended_tag.time - start_time, event->intended_tag.microstep,
                                     env->current_tag.time - start_time, env->current_tag.microstep);
+                        // Need to update the last_known_status_tag of the port because otherwise,
+                        // the MLAA could get stuck, causing the program to lock up.
+                        // This should not call update_last_known_status_on_input_port because we
+                        // are starting a new tag step execution, so there are no reactions blocked on this input.
+                        event->trigger->last_known_status_tag = env->current_tag;
                     }
                 }
 #endif
@@ -658,8 +668,8 @@ static void _lf_replace_token(event_t* event, lf_token_t* token) {
 
 /**
  * Schedule events at a specific tag (time, microstep), provided
- * that the tag is in the future relative to the current tag.
- * The input time values are absolute.
+ * that the tag is in the future relative to the current tag (or the
+ * environment has not started executing). The input time values are absolute.
  *
  * If there is an event found at the requested tag, the payload
  * is replaced and 0 is returned.
@@ -680,18 +690,19 @@ static void _lf_replace_token(event_t* event, lf_token_t* token) {
  * @param tag Logical tag of the event
  * @param token The token wrapping the payload or NULL for no payload.
  *
- * @return 1 for success, 0 if no new event was scheduled (instead, the payload was updated),
- *  or -1 for error (the tag is equal to or less than the current tag).
+ * @return A positive trigger handle for success, 0 if no new event was scheduled
+ *  (instead, the payload was updated), or -1 for error (the tag is equal to or less
+ *  than the current tag).
  */
-int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_token_t* token) {
+trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_token_t* token) {
     assert(env != GLOBAL_ENVIRONMENT);
     tag_t current_logical_tag = env->current_tag;
 
     LF_PRINT_DEBUG("_lf_schedule_at_tag() called with tag " PRINTF_TAG " at tag " PRINTF_TAG ".",
                   tag.time - start_time, tag.microstep,
                   current_logical_tag.time - start_time, current_logical_tag.microstep);
-    if (lf_tag_compare(tag, current_logical_tag) <= 0) {
-        lf_print_warning("_lf_schedule_at_tag(): requested to schedule an event in the past.");
+    if (lf_tag_compare(tag, current_logical_tag) <= 0 && env->execution_started) {
+        lf_print_warning("_lf_schedule_at_tag(): requested to schedule an event at the current or past tag.");
         return -1;
     }
 
@@ -842,10 +853,11 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
         if (tag.time == current_logical_tag.time) {
             relative_microstep -= current_logical_tag.microstep;
         }
-        if (((tag.time == current_logical_tag.time) && (relative_microstep == 1)) ||
+        if ((tag.time == current_logical_tag.time && relative_microstep == 1 && env->execution_started) ||
                 tag.microstep == 0) {
             // Do not need a dummy event if we are scheduling at 1 microstep
             // in the future at current time or at microstep 0 in a future time.
+            // Note that if execution hasn't started, then we have to insert dummy events.
             pqueue_insert(env->event_q, e);
         } else {
             // Create a dummy event. Insert it into the queue, and let its next
@@ -853,7 +865,11 @@ int _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag_t tag, lf_to
             pqueue_insert(env->event_q, _lf_create_dummy_events(env, trigger, tag.time, e, relative_microstep));
         }
     }
-    return 1;
+    trigger_handle_t return_value = env->_lf_handle++;
+    if (env->_lf_handle < 0) {
+        env->_lf_handle = 1;
+    }
+    return return_value;
 }
 
 /**
@@ -1111,7 +1127,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
     // NOTE: Rather than wrapping around to get a negative number,
     // we reset the handle on the assumption that much earlier
     // handles are irrelevant.
-    int return_value = env->_lf_handle++;
+    trigger_handle_t return_value = env->_lf_handle++;
     if (env->_lf_handle < 0) {
         env->_lf_handle = 1;
     }
@@ -1540,6 +1556,8 @@ void usage(int argc, const char* argv[]) {
     #ifdef FEDERATED
     printf("  -r, --rti <n>\n");
     printf("   The address of the RTI, which can be in the form of user@host:port or ip:port.\n\n");
+    printf("  -l\n");
+    printf("   Send stdout to individual log files for each federate.\n\n");
     #endif
 
     printf("Command given:\n");
@@ -1663,7 +1681,7 @@ int process_args(int argc, const char* argv[]) {
                 return 0;
             }
             const char* fid = argv[i++];
-            set_federation_id(fid);
+            lf_set_federation_id(fid);
             lf_print("Federation ID for executable %s: %s", argv[0], fid);
         } else if (strcmp(arg, "-r") == 0 || strcmp(arg, "--rti") == 0) {
             if (argc < i + 1) {
@@ -1671,7 +1689,7 @@ int process_args(int argc, const char* argv[]) {
                 usage(argc, argv);
                 return 0;
             }
-            parse_rti_code_t code = parse_rti_addr(argv[i++]);
+            parse_rti_code_t code = lf_parse_rti_addr(argv[i++]);
             if (code != SUCCESS) {
                 switch (code) {
                     case INVALID_HOST:
@@ -1722,12 +1740,18 @@ void initialize_global(void) {
     // Federation trace object must be set before `initialize_trigger_objects` is called because it
     //  uses tracing functionality depending on that pointer being set.
     #ifdef FEDERATED
-    set_federation_trace_object(envs->trace);
+    lf_set_federation_trace_object(envs->trace);
     #endif
     // Call the code-generated function to initialize all actions, timers, and ports
     // This is done for all environments/enclaves at the same time.
     _lf_initialize_trigger_objects() ;
 }
+
+/** Flag to prevent termination function from executing twice. */
+bool _lf_termination_executed = false;
+
+/** Flag used to disable cleanup operations on normal termination. */
+bool _lf_normal_termination = false;
 
 /**
  * Report elapsed logical and physical times and report if any
@@ -1735,73 +1759,85 @@ void initialize_global(void) {
  * has not been freed.
  */
 void termination(void) {
+    if (_lf_termination_executed) return;
+    _lf_termination_executed = true;
+
     environment_t *env;
     int num_envs = _lf_get_environments(&env);
     // Invoke the code generated termination function. It terminates the federated related services. 
-    // It should only be called for the top-level environment, which, after convention, is the first environment.
+    // It should only be called for the top-level environment, which, by convention, is the first environment.
     terminate_execution(env);
 
     // In order to free tokens, we perform the same actions we would have for a new time step.
-    for (int i = 0; i<num_envs; i++) {
-        // NOTE: env pointer is incremented at the end of this loop.
-        if (env == NULL || !env->initialized) {
-            lf_print_warning("---- Environment %u was never initialized", env->id);
+    for (int i = 0; i < num_envs; i++) {
+        if (!env[i].initialized) {
+            lf_print_warning("---- Environment %u was never initialized", env[i].id);
             continue;
         }
-        lf_print("---- Terminating environment %u", env->id);
+        LF_PRINT_LOG("---- Terminating environment %u, normal termination: %d", env[i].id, _lf_normal_termination);
         // Stop any tracing, if it is running.
-        stop_trace_locked(env->trace);
+        // No need to acquire a mutex because if this is normal termination, all
+        // other threads have stopped, and if it's not, then acquiring a mutex could
+        // lead to a deadlock.
+        stop_trace_locked(env[i].trace);
 
-        _lf_start_time_step(env);
+        // Skip most cleanup on abnormal termination.
+        if (_lf_normal_termination) {
+            _lf_start_time_step(&env[i]);
 
     #ifdef MODAL_REACTORS
-        // Free events and tokens suspended by modal reactors.
-        _lf_terminate_modal_reactors(env);
+            // Free events and tokens suspended by modal reactors.
+            _lf_terminate_modal_reactors(&env[i]);
     #endif
-        // If the event queue still has events on it, report that.
-        if (env->event_q != NULL && pqueue_size(env->event_q) > 0) {
-            lf_print_warning("---- There are %zu unprocessed future events on the event queue.", pqueue_size(env->event_q));
-            event_t* event = (event_t*)pqueue_peek(env->event_q);
-            interval_t event_time = event->time - start_time;
-            lf_print_warning("---- The first future event has timestamp " PRINTF_TIME " after start time.", event_time);
-        }
-        // Print elapsed times.
-        // If these are negative, then the program failed to start up.
-        interval_t elapsed_time = lf_time_logical_elapsed(env);
-        if (elapsed_time >= 0LL) {
-            char time_buffer[29]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
-            lf_comma_separated_time(time_buffer, elapsed_time);
-            printf("---- Elapsed logical time (in nsec): %s\n", time_buffer);
+            // If the event queue still has events on it, report that.
+            if (env[i].event_q != NULL && pqueue_size(env[i].event_q) > 0) {
+                lf_print_warning("---- There are %zu unprocessed future events on the event queue.", pqueue_size(env[i].event_q));
+                event_t* event = (event_t*)pqueue_peek(env[i].event_q);
+                interval_t event_time = event->time - start_time;
+                lf_print_warning("---- The first future event has timestamp " PRINTF_TIME " after start time.", event_time);
+            }
+            // Print elapsed times.
+            // If these are negative, then the program failed to start up.
+            interval_t elapsed_time = lf_time_logical_elapsed(&env[i]);
+            if (elapsed_time >= 0LL) {
+                char time_buffer[29]; // 28 bytes is enough for the largest 64 bit number: 9,223,372,036,854,775,807
+                lf_comma_separated_time(time_buffer, elapsed_time);
+                printf("---- Elapsed logical time (in nsec): %s\n", time_buffer);
 
-            // If start_time is 0, then execution didn't get far enough along
-            // to initialize this.
-            if (start_time > 0LL) {
-                lf_comma_separated_time(time_buffer, lf_time_physical_elapsed());
-                printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
+                // If start_time is 0, then execution didn't get far enough along
+                // to initialize this.
+                if (start_time > 0LL) {
+                    lf_comma_separated_time(time_buffer, lf_time_physical_elapsed());
+                    printf("---- Elapsed physical time (in nsec): %s\n", time_buffer);
+                }
             }
         }
-        
-        // Free up memory associated with environment
-        environment_free(env);
-
-        env++;
     }
-    _lf_free_all_tokens(); // Must be done before freeing reactors.
-    // Issue a warning if a memory leak has been detected.
-    if (_lf_count_payload_allocations > 0) {
-        lf_print_warning("Memory allocated for messages has not been freed.");
-        lf_print_warning("Number of unfreed messages: %d.", _lf_count_payload_allocations);
-    }
-    if (_lf_count_token_allocations > 0) {
-        lf_print_warning("Memory allocated for tokens has not been freed!");
-        lf_print_warning("Number of unfreed tokens: %d.", _lf_count_token_allocations);
-    }
+    // Skip most cleanup on abnormal termination.
+    if (_lf_normal_termination) {
+        _lf_free_all_tokens(); // Must be done before freeing reactors.
+        // Issue a warning if a memory leak has been detected.
+        if (_lf_count_payload_allocations > 0) {
+            lf_print_warning("Memory allocated for messages has not been freed.");
+            lf_print_warning("Number of unfreed messages: %d.", _lf_count_payload_allocations);
+        }
+        if (_lf_count_token_allocations > 0) {
+            lf_print_warning("Memory allocated for tokens has not been freed!");
+            lf_print_warning("Number of unfreed tokens: %d.", _lf_count_token_allocations);
+        }
 #if !defined(LF_SINGLE_THREADED)
-    for (int i = 0; i < _lf_watchdog_count; i++) {
-        if (_lf_watchdogs[i].base->reactor_mutex != NULL) {
-            free(_lf_watchdogs[i].base->reactor_mutex);
+        for (int i = 0; i < _lf_watchdog_count; i++) {
+            if (_lf_watchdogs[i].base->reactor_mutex != NULL) {
+                free(_lf_watchdogs[i].base->reactor_mutex);
+            }
+        }
+#endif
+        _lf_free_all_reactors();
+
+        // Free up memory associated with environment.
+        // Do this last so that printed warnings don't access freed memory.
+        for (int i = 0; i < num_envs; i++) {
+            environment_free(&env[i]);
         }
     }
-#endif
-    _lf_free_all_reactors();
 }

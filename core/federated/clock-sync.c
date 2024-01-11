@@ -71,7 +71,7 @@ instant_t _lf_last_clock_sync_instant = 0LL;
 
 /**
  * The UDP socket descriptor for this federate to communicate with the RTI.
- * This is set by setup_clock_synchronization_with_rti() in connect_to_rti()
+ * This is set by setup_clock_synchronization_with_rti() in lf_connect_to_rti()
  * in federate.c, which must be called before other
  * functions that communicate with the rti are called.
  */
@@ -203,22 +203,7 @@ uint16_t setup_clock_synchronization_with_rti() {
     return port_to_return;
 }
 
-/**
- * Synchronize the initial physical clock with the RTI.
- * A call to this function is inserted into the startup
- * sequence by the code generator if initial clock synchronization
- * is required.
- *
- * This is a blocking function that expects
- * to read a MSG_TYPE_CLOCK_SYNC_T1 from the RTI TCP socket.
- * It will then follow the PTP protocol to synchronize the local
- * physical clock with the RTI.
- * Failing to complete this protocol is treated as a catastrophic
- * error that causes the federate to exit.
- *
- * @param rti_socket_TCP The rti's socket
- */
-void synchronize_initial_physical_clock_with_rti(int rti_socket_TCP) {
+void synchronize_initial_physical_clock_with_rti(int* rti_socket_TCP) {
     LF_PRINT_DEBUG("Waiting for initial clock synchronization messages from the RTI.");
 
     size_t message_size = 1 + sizeof(instant_t);
@@ -226,7 +211,7 @@ void synchronize_initial_physical_clock_with_rti(int rti_socket_TCP) {
 
     for (int i=0; i < _LF_CLOCK_SYNC_EXCHANGES_PER_INTERVAL; i++) {
         // The first message expected from the RTI is MSG_TYPE_CLOCK_SYNC_T1
-        read_from_socket_errexit(rti_socket_TCP, message_size, buffer,
+        read_from_socket_fail_on_error(rti_socket_TCP, message_size, buffer, NULL,
                 "Federate %d did not get the initial clock synchronization message T1 from the RTI.",
                 _lf_my_fed_id);
 
@@ -240,12 +225,12 @@ void synchronize_initial_physical_clock_with_rti(int rti_socket_TCP) {
         // Handle the message and send a reply T3 message.
         // NOTE: No need to acquire the mutex lock during initialization because only
         // one thread is running.
-        if (handle_T1_clock_sync_message(buffer, rti_socket_TCP, receive_time) != 0) {
+        if (handle_T1_clock_sync_message(buffer, *rti_socket_TCP, receive_time) != 0) {
             lf_print_error_and_exit("Initial clock sync: Failed to send T3 reply to RTI.");
         }
 
         // Next message from the RTI is required to be MSG_TYPE_CLOCK_SYNC_T4
-        read_from_socket_errexit(rti_socket_TCP, message_size, buffer,
+        read_from_socket_fail_on_error(rti_socket_TCP, message_size, buffer, NULL,
                 "Federate %d did not get the clock synchronization message T4 from the RTI.",
                 _lf_my_fed_id);
 
@@ -255,7 +240,7 @@ void synchronize_initial_physical_clock_with_rti(int rti_socket_TCP) {
         }
 
         // Handle the message.
-        handle_T4_clock_sync_message(buffer, rti_socket_TCP, receive_time);
+        handle_T4_clock_sync_message(buffer, *rti_socket_TCP, receive_time);
     }
 
     LF_PRINT_LOG("Finished initial clock synchronization with the RTI.");
@@ -292,7 +277,7 @@ int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2
 
     // Write the reply to the socket.
     LF_PRINT_DEBUG("Sending T3 message to RTI.");
-    if (write_to_socket(socket, 1 + sizeof(int), reply_buffer) != 1 + sizeof(int)) {
+    if (write_to_socket(socket, 1 + sizeof(int), reply_buffer)) {
         lf_print_error("Clock sync: Failed to send T3 message to RTI.");
         return -1;
     }
@@ -359,12 +344,11 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
     if (socket == _lf_rti_socket_UDP) {
         // Read the coded probe message.
         // We can reuse the same buffer.
-        ssize_t bytes_read = read_from_socket(socket, 1 + sizeof(instant_t), buffer);
+        int read_failed = read_from_socket(socket, 1 + sizeof(instant_t), buffer);
 
         instant_t r5 = lf_time_physical();
 
-        if ((bytes_read < 1 + (ssize_t)sizeof(instant_t))
-                || buffer[0] != MSG_TYPE_CLOCK_SYNC_CODED_PROBE) {
+        if (read_failed || buffer[0] != MSG_TYPE_CLOCK_SYNC_CODED_PROBE) {
             lf_print_warning("Clock sync: Did not get the expected coded probe message from the RTI. "
                     "Skipping clock synchronization round.");
             return;

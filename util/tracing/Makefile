@@ -37,4 +37,4 @@ install: trace_to_csv trace_to_chrome trace_to_influxdb
 	chmod +x $(BIN_INSTALL_PATH)/fedsd
 	
 clean:
-	rm -f *.o
+	rm -f *.o trace_to_chrome trace_to_influxdb trace_to_csv
