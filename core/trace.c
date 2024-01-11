@@ -86,7 +86,7 @@ void trace_free(trace_t *trace) {
 
 int _lf_register_trace_event(trace_t* trace, void* pointer1, void* pointer2, _lf_trace_object_t type, char* description) {
     lf_critical_section_enter(trace->env);
-    if (trace->_lf_trace_object_descriptions_size >= LF_TRACE_OBJECT_TABLE_SIZE) {
+    if (trace->_lf_trace_object_descriptions_size >= TRACE_OBJECT_TABLE_SIZE) {
         static unsigned int failed_regs = 0;
         ++failed_regs;
         lf_critical_section_exit(trace->env);
