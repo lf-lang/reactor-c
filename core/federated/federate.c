@@ -346,10 +346,6 @@ static trigger_handle_t schedule_message_received_from_network_locked(
     // in the future relative to the tag of this
     // federate. By default, assume it is not.
     bool message_tag_is_in_the_future = lf_tag_compare(tag, env->current_tag) > 0;
-<<<<<<< HEAD
-
-=======
->>>>>>> federated-cleanup
     // Assign the intended tag temporarily to restore later.
     tag_t previous_intended_tag = trigger->intended_tag;
     trigger->intended_tag = tag;

@@ -269,11 +269,6 @@ void _lf_trigger_reaction(environment_t* env, reaction_t* reaction, int worker_n
  * counts between time steps and at the end of execution.
  */
 void _lf_start_time_step(environment_t *env) {
-    if (_lf_execution_started == false) {
-        // Execution hasn't started, so this is probably being invoked in termination
-        // due to an error.
-        return;
-    }
     assert(env != GLOBAL_ENVIRONMENT);
     if (!env->execution_started) {
         // Execution hasn't started, so this is probably being invoked in termination
