@@ -61,8 +61,6 @@ void usage() {
     printf("   The target time to begin tracing.\n\n");
     printf("  -e, --end [time_spec] [units]\n");
     printf("   The target time to stop tracing.\n\n");
-    // printf("  -f, --fast [true | false]\n");
-    // printf("   Whether to wait for physical time to match logical time.\n\n");
     printf("\n\n");
 }
 
