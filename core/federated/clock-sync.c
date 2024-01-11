@@ -277,7 +277,7 @@ int handle_T1_clock_sync_message(unsigned char* buffer, int socket, instant_t t2
 
     // Write the reply to the socket.
     LF_PRINT_DEBUG("Sending T3 message to RTI.");
-    if (write_to_socket(socket, 1 + sizeof(int), reply_buffer) != 1 + sizeof(int)) {
+    if (write_to_socket(socket, 1 + sizeof(int), reply_buffer)) {
         lf_print_error("Clock sync: Failed to send T3 message to RTI.");
         return -1;
     }
