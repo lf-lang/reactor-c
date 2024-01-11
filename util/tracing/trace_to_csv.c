@@ -119,7 +119,7 @@ size_t read_and_write_trace(instant_t trace_start_time, instant_t trace_end_time
             trigger_name = "NO TRIGGER";
         }
         if ((trace[i].logical_time - start_time) >= trace_start_time
-        && (trace[i].logical_time - start_time) < trace_end_time) {
+            && (trace[i].logical_time - start_time) < trace_end_time) {
             fprintf(output_file, "%s, %s, %d, %d, %lld, %d, %lld, %s, %lld\n",
                     trace_event_names[trace[i].event_type],
                     reactor_name,

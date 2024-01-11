@@ -101,9 +101,9 @@ parser.add_argument('-r','--rti', type=str,
 parser.add_argument('-f','--federates', nargs='+',
                     help='List of the federates\' lft trace files.')
 parser.add_argument('-s', '--start', type=str, nargs=2,
-                    help='Elapsed logical time that targets to start visualization. [time_value time_unit]')
+                    help='Start time of visualization in elapsed logical time. [time_value time_unit]')
 parser.add_argument('-e', '--end', type=str, nargs=2,
-                    help='Elapsed logical time that targets to end visualization. [time_value time_unit]')
+                    help='End time of visualization in elapsed logical time. [time_value time_unit]')
 
 # Events matching at the sender and receiver ends depend on whether they are tagged
 # (the elapsed logical time and microstep have to be the same) or not. 
