@@ -56,12 +56,14 @@ int table_size;
  */
 void usage() {
     printf("\nUsage: trace_to_csv [options] trace_file_root (with .lft extension)\n\n");
-    /* No options yet:
     printf("\nOptions: \n\n");
-    printf("  -f, --fast [true | false]\n");
-    printf("   Whether to wait for physical time to match logical time.\n\n");
+    printf("  -s, --start [time_spec] [units]\n");
+    printf("   The target time to begin tracing.\n\n");
+    printf("  -e, --end [time_spec] [units]\n");
+    printf("   The target time to stop tracing.\n\n");
+    // printf("  -f, --fast [true | false]\n");
+    // printf("   Whether to wait for physical time to match logical time.\n\n");
     printf("\n\n");
-    */
 }
 
 /**
@@ -399,17 +401,79 @@ void write_summary_file() {
     }
 }
 
+instant_t string_to_instant(const char* time_spec, const char* units) {
+    instant_t duration;
+    #if defined(PLATFORM_ARDUINO)
+    duration = atol(time_spec);
+    #else
+    duration = atoll(time_spec);
+    #endif
+    // A parse error returns 0LL, so check to see whether that is what is meant.
+    if (duration == 0LL && strncmp(time_spec, "0", 1) != 0) {
+        // Parse error.
+        printf("Invalid time value: %s", time_spec);
+        return -1;
+    }
+    if (strncmp(units, "sec", 3) == 0) {
+        duration = SEC(duration);
+    } else if (strncmp(units, "msec", 4) == 0) {
+        duration = MSEC(duration);
+    } else if (strncmp(units, "usec", 4) == 0) {
+        duration = USEC(duration);
+    } else if (strncmp(units, "nsec", 4) == 0) {
+        duration = NSEC(duration);
+    } else if (strncmp(units, "min", 3) == 0) {
+        duration = MINUTE(duration);
+    } else if (strncmp(units, "hour", 4) == 0) {
+        duration = HOUR(duration);
+    } else if (strncmp(units, "day", 3) == 0) {
+        duration = DAY(duration);
+    } else if (strncmp(units, "week", 4) == 0) {
+        duration = WEEK(duration);
+    } else {
+        // Invalid units.
+        printf("Invalid time units: %s", units);
+        return -1;
+    }
+    return duration;
+}
+
 int process_args(int argc, const char* argv[], char** root, instant_t* start_time, instant_t* end_time) {
-    for (int i = 1; i < argc; i++) {
-        if (strcmp(strrchr(argv[i], '\0') - 4, ".lft") == 0) {
+    int i = 1;
+    while (i < argc){
+        const char* arg = argv[i++];
+        if (strcmp(strrchr(arg, '\0') - 4, ".lft") == 0) {
             // Open the trace file.
-            trace_file = open_file(argv[i], "r");
+            trace_file = open_file(arg, "r");
             if (trace_file == NULL) exit(1);
-            *root = root_name(argv[i]);
-        } else if (strcmp(argv[i], "-s") == 0) {
-            sscanf(argv[++i], "%ld", start_time);
-        } else if (strcmp(argv[i], "-e") == 0) {
-            sscanf(argv[++i], "%ld", end_time);
+            *root = root_name(arg);
+        } else if (strcmp(arg, "-s") == 0) {
+            // sscanf(argv[++i], "%ld", start_time);
+            if (argc < i + 2) {
+                printf("-s needs time and units.");
+                usage(argc, argv);
+                return -1;
+            }
+            const char* time_spec = argv[i++];
+            const char* units = argv[i++];
+            *start_time = string_to_instant(time_spec, units);
+            if (*start_time == -1) {
+                usage(argc, argv);
+                return -1;
+            }
+        } else if (strcmp(arg, "-e") == 0) {
+            if (argc < i + 2) {
+                printf("-e needs time and units.");
+                usage(argc, argv);
+                return -1;
+            }
+            const char* time_spec = argv[i++];
+            const char* units = argv[i++];
+            *end_time = string_to_instant(time_spec, units);
+            if (*end_time == -1) {
+                usage(argc, argv);
+                return -1;
+            }
         } else {
             usage();
             exit(0);
@@ -423,7 +487,9 @@ int main(int argc, const char* argv[]) {
     instant_t trace_end_time = FOREVER;
     char* root;
 
-    process_args(argc, argv, &root, &trace_start_time, &trace_end_time);
+    if (process_args(argc, argv, &root, &trace_start_time, &trace_end_time) != 0) {
+        return -1;
+    }
 
     // Construct the name of the csv output file and open it.
     char csv_filename[strlen(root) + 5];
