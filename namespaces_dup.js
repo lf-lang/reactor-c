@@ -2,8 +2,8 @@ var namespaces_dup =
 [
     [ "fedsd", "d6/d1e/namespacefedsd.html", [
       [ "command_is_in_path", "d6/d1e/namespacefedsd.html#ab3b02a4fc3bc67685e7d4998bd7fb975", null ],
-      [ "convert_lft_file_to_csv", "d6/d1e/namespacefedsd.html#ab0b9fc206bb473b71f4fa9dcf5fe9b1a", null ],
-      [ "get_and_convert_lft_files", "d6/d1e/namespacefedsd.html#af23cbd8899c334e95aed55cc84ec3dd3", null ],
+      [ "convert_lft_file_to_csv", "d6/d1e/namespacefedsd.html#a9419c369fa9f1377e24ef230e02b266a", null ],
+      [ "get_and_convert_lft_files", "d6/d1e/namespacefedsd.html#af4bde7c69b0ef62a9c427feb6a4461d4", null ],
       [ "load_and_process_csv_file", "d6/d1e/namespacefedsd.html#a7351d60937561c11614e2a827d3cca3e", null ],
       [ "svg_string_comment", "d6/d1e/namespacefedsd.html#af517026295e43df9fb618954f50f5762", null ],
       [ "svg_string_draw_adv", "d6/d1e/namespacefedsd.html#a3185285ed37fe45e15fbe778ee42beac", null ],
@@ -52,6 +52,7 @@ var namespaces_dup =
       [ "scale", "d6/d1e/namespacefedsd.html#ae5ba8ed38b1b62ab3cce546f674a623f", null ],
       [ "self_id", "d6/d1e/namespacefedsd.html#ac2b65a7ae5230b21e264f488eab666f7", null ],
       [ "spacing", "d6/d1e/namespacefedsd.html#aa38cb62ae37af225cd5e31066a5d4633", null ],
+      [ "str", "d6/d1e/namespacefedsd.html#aeb6bffa3287c668e8498bdc6295c0cd7", null ],
       [ "svg_height", "d6/d1e/namespacefedsd.html#a2ca05e976cceb9fdd79e4663d2ad067a", null ],
       [ "svg_width", "d6/d1e/namespacefedsd.html#a10e7f6734668faa1d424a410d29fb02e", null ],
       [ "title", "d6/d1e/namespacefedsd.html#a3fe8855d125aec0ede8975013632b9ff", null ],

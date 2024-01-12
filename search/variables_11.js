@@ -31,10 +31,11 @@ var searchData=
   ['stop_5faudio_28',['stop_audio',['../da/d0e/audio__loop__linux_8c.html#a18e506de17bb8e0ee78fc5a3dc67e408',1,'audio_loop_linux.c']]],
   ['stop_5ftag_29',['stop_tag',['../d2/d01/structenvironment__t.html#a76de8d17202ec539b9e3f03755a0e593',1,'environment_t']]],
   ['stp_5fhandler_30',['STP_handler',['../d2/d35/structreaction__t.html#a7c0b5a8f57c78b1434e92cedf0379228',1,'reaction_t']]],
-  ['subchunk_5fid_31',['subchunk_id',['../d1/d3f/structlf__wav__format__t.html#a57e5f5a678f3e707e72f9fe8d08343dc',1,'lf_wav_format_t::subchunk_id'],['../db/d43/structlf__wav__data__t.html#ab8bd3b197739b497ff0e6a040225942f',1,'lf_wav_data_t::subchunk_id']]],
-  ['subchunk_5fsize_32',['subchunk_size',['../d1/d3f/structlf__wav__format__t.html#adfd9e75e1cac08a0c8a8743d98f8885d',1,'lf_wav_format_t::subchunk_size'],['../db/d43/structlf__wav__data__t.html#a0c28c013afb329a0fac6d19f141c43a1',1,'lf_wav_data_t::subchunk_size']]],
-  ['summary_5ffile_33',['summary_file',['../d8/d60/trace__to__csv_8c.html#ac84b6d7af9cb309303d5658997f0d7a2',1,'summary_file:&#160;trace_to_csv.c'],['../d9/dc7/trace__util_8h.html#ac84b6d7af9cb309303d5658997f0d7a2',1,'summary_file:&#160;trace_to_csv.c']]],
-  ['summary_5fstats_34',['summary_stats',['../d8/d60/trace__to__csv_8c.html#ae957200dda71fc243bd75ac28d24418d',1,'trace_to_csv.c']]],
-  ['svg_5fheight_35',['svg_height',['../d6/d1e/namespacefedsd.html#a2ca05e976cceb9fdd79e4663d2ad067a',1,'fedsd']]],
-  ['svg_5fwidth_36',['svg_width',['../d6/d1e/namespacefedsd.html#a10e7f6734668faa1d424a410d29fb02e',1,'fedsd']]]
+  ['str_31',['str',['../d6/d1e/namespacefedsd.html#aeb6bffa3287c668e8498bdc6295c0cd7',1,'fedsd']]],
+  ['subchunk_5fid_32',['subchunk_id',['../d1/d3f/structlf__wav__format__t.html#a57e5f5a678f3e707e72f9fe8d08343dc',1,'lf_wav_format_t::subchunk_id'],['../db/d43/structlf__wav__data__t.html#ab8bd3b197739b497ff0e6a040225942f',1,'lf_wav_data_t::subchunk_id']]],
+  ['subchunk_5fsize_33',['subchunk_size',['../d1/d3f/structlf__wav__format__t.html#adfd9e75e1cac08a0c8a8743d98f8885d',1,'lf_wav_format_t::subchunk_size'],['../db/d43/structlf__wav__data__t.html#a0c28c013afb329a0fac6d19f141c43a1',1,'lf_wav_data_t::subchunk_size']]],
+  ['summary_5ffile_34',['summary_file',['../d8/d60/trace__to__csv_8c.html#ac84b6d7af9cb309303d5658997f0d7a2',1,'summary_file:&#160;trace_to_csv.c'],['../d9/dc7/trace__util_8h.html#ac84b6d7af9cb309303d5658997f0d7a2',1,'summary_file:&#160;trace_to_csv.c']]],
+  ['summary_5fstats_35',['summary_stats',['../d8/d60/trace__to__csv_8c.html#ae957200dda71fc243bd75ac28d24418d',1,'trace_to_csv.c']]],
+  ['svg_5fheight_36',['svg_height',['../d6/d1e/namespacefedsd.html#a2ca05e976cceb9fdd79e4663d2ad067a',1,'fedsd']]],
+  ['svg_5fwidth_37',['svg_width',['../d6/d1e/namespacefedsd.html#a10e7f6734668faa1d424a410d29fb02e',1,'fedsd']]]
 ];

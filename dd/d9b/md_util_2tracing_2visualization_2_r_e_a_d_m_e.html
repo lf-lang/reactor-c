@@ -107,6 +107,8 @@ Running</h1>
 <p>Once the federation stopped executing, running <code>fedsd</code> will operate on all the <code>.lft</code> files in the current directory: </p><div class="fragment"><div class="line">fedsd</div>
 </div><!-- fragment --><p> It is also possible to operate on specific files. In such a case, run <code>fedsd</code> with <code>-r</code> flag to provide the RTI trace file, and <code>-f</code> flag to provide the list of federate.</p>
 <div class="fragment"><div class="line">fedsd -r &lt;rti.lft&gt; -f &lt;federate__f1.lft&gt; &lt;federate__f2.lft&gt;</div>
+</div><!-- fragment --><p>If the trace is too long, the target time interval can be specified. Running <code>fedsd</code> with <code>-s &lt;start_time_value&gt; &lt;time_unit&gt;</code> will show the messages with the tag later than or equal to the start time and with <code>-e &lt;end_time_value&gt; &lt;time_unit&gt;</code> will show the messages with the tag strictly earlier than the end_time.</p>
+<div class="fragment"><div class="line">fedsd -s &lt;start_time_value&gt; &lt;time_unit&gt; -e &lt;end_time_value&gt; &lt;time_unit&gt;</div>
 </div><!-- fragment --><p>The output is an html file named <code>trace_svg.html</code> (in the current directory) that contains the sequence of interactions between the federates and the RTI. </p>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->

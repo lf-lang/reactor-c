@@ -1,5 +1,8 @@
 var NAVTREEINDEX5 =
 {
+"d9/dd5/clock-sync_8h.html":[12,0,1,1,0,1],
+"d9/dd5/clock-sync_8h.html#a0810a64801750ce9b148848c228c86e9":[12,0,1,1,0,1,3],
+"d9/dd5/clock-sync_8h.html#a1b35d21eda090ea4bf8a79f401dbdad0":[12,0,1,1,0,1,7],
 "d9/dd5/clock-sync_8h.html#a532da6f271eb75c9ac745571b995c404":[12,0,1,1,0,1,1],
 "d9/dd5/clock-sync_8h.html#a6d31f2c4caa9ee12f2e1e018f9e6e1f0":[12,0,1,1,0,1,8],
 "d9/dd5/clock-sync_8h.html#a7e49fed082ec884e26d761e1c4f0d428":[12,0,1,1,0,1,4],
@@ -246,8 +249,5 @@ var NAVTREEINDEX5 =
 "db/dd7/pqueue__tag_8h.html#aa2144411e9b6d74af078d51078526fe3":[12,0,1,1,4,4,10],
 "db/dd7/pqueue__tag_8h.html#ac52d056c47d9595f94d37e95484b3acd":[12,0,1,1,4,4,1],
 "db/dd7/pqueue__tag_8h.html#af6709c3c3756e65205762a4cf33848be":[12,0,1,1,4,4,9],
-"db/dd7/pqueue__tag_8h_source.html":[12,0,1,1,4,4],
-"db/de2/structopen__file__t.html":[11,0,35],
-"db/de2/structopen__file__t.html#a2bd2f5e17b460e7f6bf3fe7374be73c0":[11,0,35,0],
-"db/de2/structopen__file__t.html#ac076db2b72e54f19822cc507acdc1a7a":[11,0,35,1]
+"db/dd7/pqueue__tag_8h_source.html":[12,0,1,1,4,4]
 };
