@@ -233,7 +233,6 @@ void notify_tag_advance_grant(scheduling_node_t *e, tag_t tag) {
     if (write_to_socket(((federate_info_t *)e)->socket, message_length, buffer)) {
         lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
         e->state = NOT_CONNECTED;
-        // FIXME: We need better error handling, but don't stop other execution here.
     } else {
         e->last_granted = tag;
         LF_PRINT_LOG("RTI sent to federate %d the tag advance grant (TAG) " PRINTF_TAG ".",
@@ -268,7 +267,6 @@ void notify_provisional_tag_advance_grant(scheduling_node_t *e, tag_t tag) {
     if (write_to_socket(((federate_info_t *)e)->socket, message_length, buffer)) {
         lf_print_error("RTI failed to send tag advance grant to federate %d.", e->id);
         e->state = NOT_CONNECTED;
-        // FIXME: We need better error handling, but don't stop other execution here.
     } else {
         e->last_provisionally_granted = tag;
         LF_PRINT_LOG("RTI sent to federate %d the Provisional Tag Advance Grant (PTAG) " PRINTF_TAG ".",
