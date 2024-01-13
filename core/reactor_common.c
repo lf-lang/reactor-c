@@ -401,7 +401,9 @@ void _lf_pop_events(environment_t *env) {
                         // the MLAA could get stuck, causing the program to lock up.
                         // This should not call update_last_known_status_on_input_port because we
                         // are starting a new tag step execution, so there are no reactions blocked on this input.
-                        event->trigger->last_known_status_tag = env->current_tag;
+                        if (lf_tag_compare(env->current_tag, event->trigger->last_known_status_tag) > 0) {
+                            event->trigger->last_known_status_tag = env->current_tag;
+                        }
                     }
                 }
 #endif
