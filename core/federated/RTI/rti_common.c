@@ -192,7 +192,7 @@ tag_advance_grant_t tag_advance_grant_if_safe(scheduling_node_t* e) {
     // Find the tag of the earliest event that may be later received from an upstream enclave
     // or federate (which includes any after delays on the connections).
     tag_t t_d = earliest_future_incoming_message_tag(e);
-    // Strict version of the above. This is a tag that must be strictly greater than
+    // Non-ZDC version of the above. This is a tag that must be strictly greater than
     // that of the next granted PTAG.
     tag_t t_d_strict = eimt_strict(e);
 

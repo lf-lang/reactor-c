@@ -289,7 +289,7 @@ void notify_provisional_tag_advance_grant(scheduling_node_t *e, tag_t tag) {
                 continue;
 
             tag_t earliest = earliest_future_incoming_message_tag(upstream);
-            tag_t strict_earliest = eimt_strict(upstream);
+            tag_t strict_earliest = eimt_strict(upstream);  // Non-ZDC version.
 
             // If these tags are equal, then a TAG or PTAG should have already been granted,
             // in which case, another will not be sent. But it may not have been already granted.
