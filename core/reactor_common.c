@@ -1744,7 +1744,10 @@ void initialize_global(void) {
     _lf_initialize_trigger_objects() ;
 }
 
-/** Flag to prevent termination function from executing twice. */
+/** 
+ * Flag to prevent termination function from executing twice and to signal to background
+ * threads to terminate.
+ */
 bool _lf_termination_executed = false;
 
 /** Flag used to disable cleanup operations on normal termination. */
