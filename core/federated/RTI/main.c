@@ -82,7 +82,7 @@ static void send_failed_signal(federate_info_t* fed) {
     if (failed == 0) {
         LF_PRINT_LOG("RTI has sent failed signal to federate %d due to abnormal termination.", fed->enclave.id);
     } else {
-        LF_PRINT_LOG("RTI failed to send failed signal to federate %d on socket ID %d.", fed->enclave.id, fed->socket);
+        lf_print_error("RTI failed to send failed signal to federate %d on socket ID %d.", fed->enclave.id, fed->socket);
     }
     if (rti.base.tracing_enabled) {
         tracepoint_rti_to_federate(rti.base.trace, send_FAILED, fed->enclave.id, NULL);
