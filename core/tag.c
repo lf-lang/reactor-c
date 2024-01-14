@@ -120,6 +120,7 @@ tag_t lf_tag(void *env) {
 tag_t lf_tag_add(tag_t a, tag_t b) {
     if (a.time == NEVER || b.time == NEVER) return NEVER_TAG;
     if (a.time == FOREVER || b.time == FOREVER) return FOREVER_TAG;
+    if (b.time > 0) a.microstep = 0; // Ignore microstep of first arg if time of second is > 0.
     tag_t result = {.time = a.time + b.time, .microstep = a.microstep + b.microstep};
     if (result.microstep < a.microstep) return FOREVER_TAG;
     if (result.time < a.time && b.time > 0) return FOREVER_TAG;

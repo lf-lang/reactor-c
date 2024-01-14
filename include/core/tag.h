@@ -88,6 +88,11 @@ tag_t lf_tag(void* env);
  * return NEVER_TAG or FOREVER_TAG, respectively. Also return NEVER_TAG or FOREVER_TAG
  * if the result underflows or overflows when adding the times.
  * If the microstep overflows, also return FOREVER_TAG.
+ * If the time field of the second tag is greater than 0, then the microstep of the first tag
+ * is reset to 0 before adding. This models the delay semantics in LF and makes this
+ * addition operation non-commutative.
+ * @param a The first tag.
+ * @param b The second tag.
  */
 tag_t lf_tag_add(tag_t a, tag_t b);
 
