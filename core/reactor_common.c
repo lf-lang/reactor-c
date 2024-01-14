@@ -1750,7 +1750,7 @@ void initialize_global(void) {
  */
 bool _lf_termination_executed = false;
 
-/** Flag used to disable cleanup operations on normal termination. */
+/** Flag used to disable cleanup operations on abnormal termination. */
 bool _lf_normal_termination = false;
 
 /**
