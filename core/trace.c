@@ -195,7 +195,10 @@ void flush_trace_locked(trace_t* trace, int worker) {
         // This is deferred to here so that user trace objects can be
         // registered in startup reactions.
         if (!trace->_lf_trace_header_written) {
-            if (write_trace_header(trace) < 0) return;
+            if (write_trace_header(trace) < 0) {
+                lf_print_error("Failed to write trace header. Trace file will be incomplete.");
+                return;
+            }
             trace->_lf_trace_header_written = true;
         }
 
