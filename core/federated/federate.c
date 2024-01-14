@@ -1670,7 +1670,6 @@ void terminate_execution(environment_t* env) {
             // Trace the event when tracing is enabled
             tracepoint_federate_to_rti(_fed.trace, send_RESIGN, _lf_my_fed_id, &env->current_tag);
         } else {
-            // Do not acquire mutex and do not trace.
             send_failed_signal(env);
             tracepoint_federate_to_rti(_fed.trace, send_FAILED, _lf_my_fed_id, &env->current_tag);
         }
