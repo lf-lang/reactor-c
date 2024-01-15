@@ -1053,8 +1053,9 @@ static void handle_federate_failed(federate_info_t *my_fed) {
         tracepoint_rti_from_federate(rti_remote->base.trace, receive_FAILED, my_fed->enclave.id, NULL);
     }
 
+    // Set the flag telling the RTI to exit with an error code when it exits.
     _lf_federate_reports_error = true;
-    lf_print_error_and_exit("RTI: Federate %d reports an error and has exited.", my_fed->enclave.id);
+    lf_print_error("RTI: Federate %d reports an error and has exited.", my_fed->enclave.id);
 
     my_fed->enclave.state = NOT_CONNECTED;
 
