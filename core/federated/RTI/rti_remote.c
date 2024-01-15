@@ -1364,6 +1364,7 @@ static int32_t receive_and_check_fed_id_message(int *socket_id, struct sockaddr_
 /**
  * Listen for a MSG_TYPE_NEIGHBOR_STRUCTURE message, and upon receiving it, fill
  * out the relevant information in the federate's struct.
+ * @return 1 on success and 0 on failure.
  */
 static int receive_connection_information(int *socket_id, uint16_t fed_id) {
     LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_NEIGHBOR_STRUCTURE from federate %d.", fed_id);
