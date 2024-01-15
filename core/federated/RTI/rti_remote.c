@@ -1229,8 +1229,7 @@ void send_reject(int *socket_id, unsigned char error_code) {
  * Listen for a MSG_TYPE_FED_IDS message, which includes as a payload
  * a federate ID and a federation ID. If the federation ID
  * matches this federation, send an MSG_TYPE_ACK and otherwise send
- * a MSG_TYPE_REJECT message. Return 1 if the federate is accepted to
- * the federation and 0 otherwise.
+ * a MSG_TYPE_REJECT message.
  * @param socket_id Pointer to the socket on which to listen.
  * @param client_fd The socket address.
  * @return The federate ID for success or -1 for failure.
@@ -1241,9 +1240,10 @@ static int32_t receive_and_check_fed_id_message(int *socket_id, struct sockaddr_
     unsigned char buffer[length];
 
     // Read bytes from the socket. We need 4 bytes.
-    // FIXME: This should not exit with error but rather should just reject the connection.
-    read_from_socket_fail_on_error(socket_id, length, buffer, NULL,
-            "RTI failed to read from accepted socket.");
+    if (read_from_socket_close_on_error(socket_id, length, buffer)) {
+        lf_print_error("RTI failed to read from accepted socket.");
+        return -1;
+    }
 
     uint16_t fed_id = rti_remote->base.number_of_scheduling_nodes; // Initialize to an invalid value.
 
@@ -1275,10 +1275,11 @@ static int32_t receive_and_check_fed_id_message(int *socket_id, struct sockaddr_
         size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 1];
         char federation_id_received[federation_id_length + 1]; // One extra for null terminator.
         // Next read the actual federation ID.
-        // FIXME: This should not exit on error, but rather just reject the connection.
-        read_from_socket_fail_on_error(socket_id, federation_id_length,
-                (unsigned char *)federation_id_received, NULL,
-                "RTI failed to read federation id from federate %d.", fed_id);
+        if (read_from_socket_close_on_error(socket_id, federation_id_length,
+                (unsigned char *)federation_id_received)) {
+            lf_print_error("RTI failed to read federation id from federate %d.", fed_id);
+            return -1;
+        }
 
         // Terminate the string with a null.
         federation_id_received[federation_id_length] = 0;
@@ -1291,9 +1292,9 @@ static int32_t receive_and_check_fed_id_message(int *socket_id, struct sockaddr_
         // Compare the received federation ID to mine.
         if (strncmp(rti_remote->federation_id, federation_id_received, federation_id_length) != 0) {
             // Federation IDs do not match. Send back a MSG_TYPE_REJECT message.
-            lf_print_error("WARNING: Federate from another federation %s attempted to connect to RTI in federation %s.\n",
-                           federation_id_received,
-                           rti_remote->federation_id);
+            lf_print_warning("Federate from another federation %s attempted to connect to RTI in federation %s.",
+                    federation_id_received,
+                    rti_remote->federation_id);
             if (rti_remote->base.tracing_enabled) {
                 tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
             }
@@ -1353,8 +1354,11 @@ static int32_t receive_and_check_fed_id_message(int *socket_id, struct sockaddr_
         tracepoint_rti_to_federate(rti_remote->base.trace, send_ACK, fed_id, NULL);
     }
     LF_MUTEX_LOCK(rti_mutex);
-    write_to_socket_fail_on_error(&fed->socket, 1, &ack_message, &rti_mutex,
-            "RTI failed to write MSG_TYPE_ACK message to federate %d.", fed_id);
+    if (write_to_socket_close_on_error(&fed->socket, 1, &ack_message)) {
+        LF_MUTEX_UNLOCK(rti_mutex);
+        lf_print_error("RTI failed to write MSG_TYPE_ACK message to federate %d.", fed_id);
+        return -1;
+    }
     LF_MUTEX_UNLOCK(rti_mutex);
 
     LF_PRINT_DEBUG("RTI sent MSG_TYPE_ACK to federate %d.", fed_id);
