@@ -1234,12 +1234,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         }
     }
     _lf_normal_termination = true;
-    // Invoke termination function here before freeing the local RTI.
-    termination();
-    
-#if defined LF_ENCLAVES
-    free_local_rti();
-#endif
     return 0;
 }   
 

@@ -1839,5 +1839,8 @@ void termination(void) {
         for (int i = 0; i < num_envs; i++) {
             environment_free(&env[i]);
         }
+#if defined LF_ENCLAVES
+        free_local_rti();
+#endif
     }
 }
