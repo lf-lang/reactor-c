@@ -72,6 +72,9 @@ typedef struct federate_info_t {
                             // RTI has not been informed of the port number.
     struct in_addr server_ip_addr; // Information about the IP address of the socket
                                 // server of the federate.
+
+    netdrv_t *fed_netdrv;
+    netdrv_t *clock_netdrv;                            
 } federate_info_t;
 
 

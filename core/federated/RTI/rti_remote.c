@@ -1445,6 +1445,80 @@ bool authenticate_federate(int socket) {
 }
 #endif
 
+
+void net_connect_to_federates(netdrv_t *netdrv) {
+    for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+        // Wait for an incoming connection request.
+        struct sockaddr client_fd;
+        uint32_t client_length = sizeof(client_fd);
+        // The following blocks until a federate connects.
+        int socket_id = -1;
+        while(1) {
+            socket_id = accept(rti_remote->socket_descriptor_TCP, &client_fd, &client_length);
+            if (socket_id >= 0) {
+                // Got a socket
+                break;
+            } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
+                lf_print_error_and_exit("RTI failed to accept the socket. %s.", strerror(errno));
+            } else {
+                // Try again
+                lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
+                continue;
+            }
+        }
+
+        // Wait for the first message from the federate when RTI -a option is on.
+        #ifdef __RTI_AUTH__
+        if (rti_remote->authentication_enabled) {
+            if (!authenticate_federate(socket_id)) {
+                lf_print_warning("RTI failed to authenticate the incoming federate.");
+                // Ignore the federate that failed authentication.
+                i--;
+                continue;
+            }
+        }
+        #endif
+        
+        // The first message from the federate should contain its ID and the federation ID.
+        int32_t fed_id = receive_and_check_fed_id_message(socket_id, (struct sockaddr_in*)&client_fd);
+        if (fed_id >= 0
+                && receive_connection_information(socket_id, (uint16_t)fed_id)
+                && receive_udp_message_and_set_up_clock_sync(socket_id, (uint16_t)fed_id)) {
+
+            // Create a thread to communicate with the federate.
+            // This has to be done after clock synchronization is finished
+            // or that thread may end up attempting to handle incoming clock
+            // synchronization messages.
+            federate_info_t *fed = GET_FED_INFO(fed_id);
+            lf_thread_create(&(fed->thread_id), federate_info_thread_TCP, fed);
+
+        } else {
+            // Received message was rejected. Try again.
+            i--;
+        }
+    }
+    // All federates have connected.
+    LF_PRINT_DEBUG("All federates have connected to RTI.");
+
+    if (rti_remote->clock_sync_global_status >= clock_sync_on) {
+        // Create the thread that performs periodic PTP clock synchronization sessions
+        // over the UDP channel, but only if the UDP channel is open and at least one
+        // federate is performing runtime clock synchronization.
+        bool clock_sync_enabled = false;
+        for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+            federate_info_t* fed_info = GET_FED_INFO(i);
+            if (fed_info->clock_synchronization_enabled) {
+                clock_sync_enabled = true;
+                break;
+            }
+        }
+        if (rti_remote->final_port_UDP != UINT16_MAX && clock_sync_enabled) {
+            lf_thread_create(&rti_remote->clock_thread, clock_synchronization_thread, NULL);
+        }
+    }
+}
+
+
 void connect_to_federates(int socket_descriptor) {
     for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
         // Wait for an incoming connection request.
@@ -1553,6 +1627,8 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
     strncpy(fed->server_hostname ,"localhost", INET_ADDRSTRLEN);
     fed->server_ip_addr.s_addr = 0;
     fed->server_port = -1;
+    fed->fed_netdrv = netdrv_init();
+    fed->clock_netdrv = netdrv_init();
 }
 
 void start_net_rti_server() {
@@ -1579,9 +1655,6 @@ int32_t start_rti_server(uint16_t port) {
         rti_remote->socket_descriptor_UDP = create_server(specified_port, rti_remote->final_port_TCP + 1, UDP);
     }
     return rti_remote->socket_descriptor_TCP;
-}
-
-void net_connect_to_federates(netdrv_t *netdrv) {
 }
 
 void net_wait_for_federates(netdrv_t *netdrv) {
