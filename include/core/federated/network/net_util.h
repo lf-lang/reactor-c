@@ -62,17 +62,24 @@ int host_is_big_endian(void);
 
 #ifdef FEDERATED
 
+typedef enum netdrv_type_t {
+    RTI,
+    CLOCKSYNC
+} netdrv_type_t;
+
 typedef struct netdrv_t {
     int  ( *open)(struct netdrv_t *drv);
     void (*close)(struct netdrv_t *drv);
     int  ( *read)(struct netdrv_t *drv, void * buffer, int size);
     int  (*write)(struct netdrv_t *drv, void * buffer, int size);
+    // void * (*get_priv)(struct netdrv_t *drv);
 } netdrv_t;
 
 int  netdrv_open(netdrv_t *drv);
 void netdrv_close(netdrv_t *drv);
 int  netdrv_read(netdrv_t *drv, void * buffer, int size);
 int  netdrv_write(netdrv_t *drv, void * buffer, int size);
+// void * netdrv_get_privdrv(netdrv_t *drv);
 
 /**
  * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled

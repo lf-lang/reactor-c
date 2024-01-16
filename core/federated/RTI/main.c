@@ -215,6 +215,11 @@ int process_args(int argc, const char* argv[]) {
                 return 0;
             }
             rti.user_specified_port = (uint16_t)RTI_port;
+            // (socket_priv_t *)(rti.rti_netdrv + 1)->user_specified_port= (uint16_t)RTI_port;
+            // netdrv_get_privdrv(rti.rti_netdrv)->user_specified_port = (uint16_t)RTI_port;
+            // netdrv_get_privdrv(rti.rti_netdrv).user_specified_port = (uint16_t)RTI_port;
+            // void * a = netdrv_get_privdrv(rti.rti_netdrv);
+            // // get_prvi(rti.rti_netdrv).user_specified_port = (uint16_t)RTI_port;
             //TODO: Need to fix.
         } else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--clock_sync") == 0) {
             if (argc < i + 2) {
@@ -286,6 +291,7 @@ int main(int argc, const char* argv[]) {
     
     start_net_rti_server();
     
+
 //TODO: Let's leave this user_specified_port yet.
     int socket_descriptor = start_rti_server(rti.user_specified_port);
     wait_for_federates(socket_descriptor);

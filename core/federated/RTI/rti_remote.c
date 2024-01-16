@@ -1557,10 +1557,10 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
 
 void start_net_rti_server() {
     // Create the RTI's netdriver.
-    create_net_server(rti_remote->rti_netdrv);
+    create_net_server(rti_remote->rti_netdrv, RTI);
     // Create the clocksync's netdriver.
     if (rti_remote->clock_sync_global_status >= clock_sync_on) {
-        create_net_server(rti_remote->clock_netdrv);
+        create_net_server(rti_remote->clock_netdrv, CLOCKSYNC);
     }
 }
 
@@ -1641,8 +1641,8 @@ void initialize_RTI(rti_remote_t *rti){
     rti_remote->base.mutex = &rti_mutex;
 
     // TODO: How to make this compile dependent? When should the options be determined?
-    rti_remote->rti_netdrv = socket_init(TCP);
-    rti_remote->clock_netdrv = socket_init(UDP);
+    rti_remote->rti_netdrv = netdrv_init();
+    rti_remote->clock_netdrv = netdrv_init();
 
     // federation_rti related initializations
     rti_remote->max_start_time = 0LL;

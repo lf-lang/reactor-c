@@ -193,6 +193,8 @@ extern int lf_critical_section_enter(environment_t* env);
  */
 extern int lf_critical_section_exit(environment_t* env);
 
+void create_net_server(netdrv_t *drv, netdrv_type_t netdrv_type);
+
 /**
  * Create a server and enable listening for socket connections.
  *
@@ -472,6 +474,9 @@ void* respond_to_erroneous_connections(void* nothing);
  * @param id The federate ID.
  */
 void initialize_federate(federate_info_t* fed, uint16_t id);
+
+//TODO: Need to add descriptions.
+void start_net_rti_server();
 
 /**
  * Start the socket server for the runtime infrastructure (RTI) and

@@ -196,12 +196,14 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef NET_COMMON_H
 #define NET_COMMON_H
 
+//TODO: Copied at lf_socket_support.h. Erase after finished.
 /**
  * The timeout time in ns for TCP operations.
  * Default value is 10 secs.
  */
 #define TCP_TIMEOUT_TIME SEC(10)
 
+//TODO: Copied at lf_socket_support.h. Erase after finished.
 /**
  * The timeout time in ns for UDP operations.
  * Default value is 1 sec.
@@ -246,6 +248,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define PORT_KNOCKING_RETRY_INTERVAL 10000LL
 
+
+//TODO: Copied at lf_socket_support.h. Erase after finished.
 /**
  * Default starting port number for the RTI and federates' socket server.
  * Unless a specific port has been specified by the LF program in the "at"
@@ -257,6 +261,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define STARTING_PORT 15045u
 
+//TODO: Copied at lf_socket_support.h. Erase after finished.
 /**
  * Number of ports to try to connect to. Unless the LF program specifies
  * a specific port number to use, the RTI or federates will attempt to start

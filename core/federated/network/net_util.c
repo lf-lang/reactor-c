@@ -56,7 +56,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /** Number of nanoseconds to sleep before retrying a socket read. */
 #define SOCKET_READ_RETRY_INTERVAL 1000000
 
-int  netdrv_open(netdrv_t *drv) {
+int netdrv_open(netdrv_t *drv) {
 	if (!drv) {
 		return -1;
     }
@@ -83,6 +83,12 @@ int netdrv_write(netdrv_t *drv, void * buffer, int size) {
 	return drv->write(drv, buffer, size);
 }
 
+// void *netdrv_get_privdrv(netdrv_t *drv) {
+// 	if (!drv) {
+// 		return -1;
+//     }
+// 	return drv->get_priv(drv);
+// }
 
 int create_real_time_tcp_socket_errexit() {
     int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
