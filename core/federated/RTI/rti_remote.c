@@ -1555,6 +1555,15 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
     fed->server_port = -1;
 }
 
+void start_net_rti_server() {
+    // Create the RTI's netdriver.
+    create_net_server(rti_remote->rti_netdrv);
+    // Create the clocksync's netdriver.
+    if (rti_remote->clock_sync_global_status >= clock_sync_on) {
+        create_net_server(rti_remote->clock_netdrv);
+    }
+}
+
 int32_t start_rti_server(uint16_t port) {
     int32_t specified_port = port;
     if (port == 0) {

@@ -215,6 +215,7 @@ int process_args(int argc, const char* argv[]) {
                 return 0;
             }
             rti.user_specified_port = (uint16_t)RTI_port;
+            //TODO: Need to fix.
         } else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--clock_sync") == 0) {
             if (argc < i + 2) {
                lf_print_error("--clock-sync needs off|init|on.");
@@ -283,6 +284,9 @@ int main(int argc, const char* argv[]) {
     }
     _lf_initialize_clock();
     
+    start_net_rti_server();
+    
+//TODO: Let's leave this user_specified_port yet.
     int socket_descriptor = start_rti_server(rti.user_specified_port);
     wait_for_federates(socket_descriptor);
     free_scheduling_nodes(rti.base.scheduling_nodes, rti.base.number_of_scheduling_nodes);

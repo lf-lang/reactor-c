@@ -83,8 +83,6 @@ int netdrv_write(netdrv_t *drv, void * buffer, int size) {
 	return drv->write(drv, buffer, size);
 }
 
-int create_net_server(netdrv_t *drv);
-
 
 int create_real_time_tcp_socket_errexit() {
     int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);

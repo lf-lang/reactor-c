@@ -3,6 +3,18 @@
 
 #include "net_util.h"
 
+/**
+ * The timeout time in ns for TCP operations.
+ * Default value is 10 secs.
+ */
+#define TCP_TIMEOUT_TIME SEC(10)
+
+/**
+ * The timeout time in ns for UDP operations.
+ * Default value is 1 sec.
+ */
+#define UDP_TIMEOUT_TIME SEC(1)
+
 typedef struct socket_priv_t {
 	int sock;
 	int proto;
