@@ -15,13 +15,17 @@
 
 static socket_priv_t *get_priv(netdrv_t *drv)
 {
-	if (!drv)
+	if (!drv) {
+		lf_print_error_and_exit("Falied to malloc netdrv_t.");
 		return NULL;
-	return (socket_priv_t *)(drv+1);
+	}
+	socket_priv_t *aa = (socket_priv_t *)(drv+1);
+	return aa;
+	// return (socket_priv_t *)(drv+1);
 }
 
-// static int socket_open(netdrv_t *drv)
-// {
+static int socket_open(netdrv_t *drv)
+{
 // 	socket_priv_t *priv = get_priv(drv);
 // 	priv->sock = socket(AF_PACKET, SOCK_RAW, htons(priv->proto));
 // 	if (priv->sock < 0)
@@ -44,7 +48,7 @@ static socket_priv_t *get_priv(netdrv_t *drv)
 
 // 	printf("Socket created\n");
 // 	return 0;
-// }
+}
 
 // static void socket_close(netdrv_t *drv)
 // {
@@ -83,15 +87,15 @@ static socket_priv_t *get_priv(netdrv_t *drv)
 netdrv_t * socket_init(int protocol) {
     //TODO: Should it be malloc? To support different network stacks operate simulatneously?
 	netdrv_t *drv = malloc(sizeof(*drv) + sizeof(socket_priv_t)); //Don't need to call malloc() twice.
-	// if (!drv) {// check if malloc worked.
-	// 	lf_print_error_and_exit("Falied to malloc netdrv_t.");
-    // }
-	// memset(drv, 0, sizeof(*drv));
+	if (!drv) {// check if malloc worked.
+		lf_print_error_and_exit("Falied to malloc netdrv_t.");
+    }
+	memset(drv, 0, sizeof(netdrv_t));
 
 	socket_priv_t *priv = get_priv(drv); //drv+1 return.
 	priv->proto = protocol;
 
-	// drv->init = socket_open;
+	drv->open = socket_open;
 	// drv->close = socket_close;
 	// drv->read = socket_recv;
 	// drv->write = socket_send;
