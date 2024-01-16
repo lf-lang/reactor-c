@@ -90,33 +90,34 @@ int netdrv_write(netdrv_t *drv, void * buffer, int size) {
 // 	return drv->get_priv(drv);
 // }
 
-int create_real_time_tcp_socket_errexit() {
-    int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (sock < 0) {
-        lf_print_error_and_exit("Could not open TCP socket. Err=%d", sock);
-    }
-    // Disable Nagle's algorithm which bundles together small TCP messages to
-    //  reduce network traffic
-    // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
-    //  is enough.
-    int flag = 1;
-    int result = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
+// // TODO: Need to erase. Moved to lf_socket_support.c
+// int create_real_time_tcp_socket_errexit() {
+//     int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+//     if (sock < 0) {
+//         lf_print_error_and_exit("Could not open TCP socket. Err=%d", sock);
+//     }
+//     // Disable Nagle's algorithm which bundles together small TCP messages to
+//     //  reduce network traffic
+//     // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
+//     //  is enough.
+//     int flag = 1;
+//     int result = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
     
-    if (result < 0) {
-        lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
-    }
+//     if (result < 0) {
+//         lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+//     }
     
-    // Disable delayed ACKs. Only possible on Linux
-    #if defined(PLATFORM_Linux)
-        result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
+//     // Disable delayed ACKs. Only possible on Linux
+//     #if defined(PLATFORM_Linux)
+//         result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
         
-        if (result < 0) {
-            lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
-        }
-    #endif
+//         if (result < 0) {
+//             lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+//         }
+//     #endif
     
-    return sock;
-}
+//     return sock;
+// }
 
 ssize_t read_from_socket_errexit(
 		int socket,

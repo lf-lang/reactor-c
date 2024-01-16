@@ -487,6 +487,9 @@ void start_net_rti_server();
  */
 int32_t start_rti_server(uint16_t port);
 
+//TODO: Add documentation.
+void net_wait_for_federates(netdrv_t *netdrv);
+
 /**
  * Start the runtime infrastructure (RTI) interaction with the federates
  * and wait for the federates to exit.

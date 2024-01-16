@@ -290,6 +290,7 @@ int main(int argc, const char* argv[]) {
     _lf_initialize_clock();
     
     start_net_rti_server();
+    net_wait_for_federates(rti.rti_netdrv);
     
 
 //TODO: Let's leave this user_specified_port yet.

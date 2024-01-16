@@ -1581,6 +1581,38 @@ int32_t start_rti_server(uint16_t port) {
     return rti_remote->socket_descriptor_TCP;
 }
 
+void net_connect_to_federates(netdrv_t *netdrv) {
+}
+
+void net_wait_for_federates(netdrv_t *netdrv) {
+    // Wait for connections from federates and create a thread for each.
+    net_connect_to_federates(netdrv);
+
+    // All federates have connected.
+    lf_print("RTI: All expected federates have connected. Starting execution.");
+
+    // The socket server will not continue to accept connections after all the federates
+    // have joined.
+    // In case some other federation's federates are trying to join the wrong
+    // federation, need to respond. Start a separate thread to do that.
+    lf_thread_t responder_thread;
+    lf_thread_create(&responder_thread, respond_to_erroneous_connections, NULL);
+
+    // Wait for federate threads to exit.
+    void* thread_exit_status;
+    for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
+        federate_info_t* fed = GET_FED_INFO(i);
+        lf_print("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
+        lf_thread_join(fed->thread_id, &thread_exit_status);
+        free_in_transit_message_q(fed->in_transit_message_tags);
+        lf_print("RTI: Federate %d thread exited.", fed->enclave.id);
+    }
+
+    rti_remote->all_federates_exited = true;
+
+    close_netdrvs(netdrv, rti_remote->clock_netdrv);
+}
+
 void wait_for_federates(int socket_descriptor) {
     // Wait for connections from federates and create a thread for each.
     connect_to_federates(socket_descriptor);

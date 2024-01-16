@@ -10,6 +10,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <netinet/in.h>     // IPPROTO_TCP, IPPROTO_UDP 
+#include <netinet/tcp.h>    // TCP_NODELAY 
 
 #include "util.h"
 // #include "net_util.h"
@@ -86,7 +88,10 @@ netdrv_t *netdrv_init() {
     }
     memset(drv, 0, sizeof(netdrv_t));
 
-    socket_priv_t *priv = get_priv(drv);  // drv+1 return.
+    socket_priv_t *priv = get_priv(drv);
+    priv->port = 0;
+    priv->socket_descriptor = 0;
+    priv->user_specified_port = 0;
 
     drv->open = socket_open;
     // drv->close = socket_close;
@@ -214,5 +219,57 @@ void create_net_server(netdrv_t *drv, netdrv_type_t netdrv_type) {
     } else if (netdrv_type == CLOCKSYNC) {
         priv->port = port;
         // No need to listen on the UDP socket
+    }
+}
+
+int create_real_time_tcp_socket_errexit() {
+    int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (sock < 0) {
+        lf_print_error_and_exit("Could not open TCP socket. Err=%d", sock);
+    }
+    // Disable Nagle's algorithm which bundles together small TCP messages to
+    //  reduce network traffic
+    // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
+    //  is enough.
+    int flag = 1;
+    int result = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
+    
+    if (result < 0) {
+        lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+    }
+    
+    // Disable delayed ACKs. Only possible on Linux
+    #if defined(PLATFORM_Linux)
+        result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
+        
+        if (result < 0) {
+            lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+        }
+    #endif
+    
+    return sock;
+}
+
+void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv) {
+    socket_priv_t *rti_priv = get_priv(rti_netdrv);
+    socket_priv_t *clock_priv = get_priv(clock_netdrv);
+    // Shutdown and close the socket so that the accept() call in
+    // respond_to_erroneous_connections returns. That thread should then
+    // check rti->all_federates_exited and it should exit.
+    if (shutdown(rti_priv->socket_descriptor, SHUT_RDWR)) {
+        LF_PRINT_LOG("On shut down TCP socket, received reply: %s", strerror(errno));
+    }
+    // NOTE: In all common TCP/IP stacks, there is a time period,
+    // typically between 30 and 120 seconds, called the TIME_WAIT period,
+    // before the port is released after this close. This is because
+    // the OS is preventing another program from accidentally receiving
+    // duplicated packets intended for this program.
+    close(rti_priv->socket_descriptor);
+
+    if (clock_priv->socket_descriptor > 0) {
+        if (shutdown(clock_priv->socket_descriptor, SHUT_RDWR)) {
+            LF_PRINT_LOG("On shut down UDP socket, received reply: %s", strerror(errno));
+        }
+        close(clock_priv->socket_descriptor);
     }
 }
