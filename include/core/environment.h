@@ -67,6 +67,7 @@ typedef struct enclave_info_t enclave_info_t;
  */
 typedef struct environment_t {
     bool initialized;
+    bool execution_started;  // Events at the start tag have been pulled from the event queue.
     char *name;
     int id;
     tag_t current_tag;

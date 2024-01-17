@@ -35,6 +35,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <stdarg.h>   // Defines va_list
 #include <stdbool.h>
+#include <stdint.h>   // Defines int64_t
 
 // To silence warnings about a function being a candidate for format checking
 // with gcc, add an attribute.
@@ -50,10 +51,10 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * Holds generic statistical data
  */
 typedef struct lf_stat_ll {
-    long long average;
-    long long standard_deviation;
-    long long variance;
-    long long max;
+    int64_t average;
+    int64_t standard_deviation;
+    int64_t variance;
+    int64_t max;
 } lf_stat_ll;
 
 /**
@@ -239,6 +240,12 @@ void lf_vprint_warning(const char* format, va_list args) ATTRIBUTE_FORMAT_PRINTF
 void lf_print_error_and_exit(const char* format, ...) ATTRIBUTE_FORMAT_PRINTF(1, 2);
 
 /**
+ * Report an error and exit just like lf_print_error_and_exit(), but
+ * also print the system error message associated with the error.
+ */
+void lf_print_error_system_failure(const char* format, ...);
+
+/**
  * varargs alternative of "lf_print_error_and_exit"
  */
 void lf_vprint_error_and_exit(const char* format, va_list args)
@@ -267,12 +274,16 @@ typedef void(print_message_function_t)(const char*, va_list);
 void lf_register_print_function(print_message_function_t* function, int log_level);
 
 /**
- * Assertion handling. LF_ASSERT can be used as a short hand for verifying
+ * Assertion handling. LF_ASSERT can be used as a shorthand for verifying
  * a condition and calling `lf_print_error_and_exit` if it is not true.
- * This is optimized away if the NDEBUG flag is defined.
+ * The LF_ASSERT version requires that the condition evaluate to true
+ * (non-zero), whereas the LF_ASSERTN version requires that the condition
+ * evaluate to false (zero).
+ * These are optimized away if the NDEBUG flag is defined.
  */
 #if defined(NDEBUG)
 #define LF_ASSERT(condition, format, ...) (void)(condition)
+#define LF_ASSERTN(condition, format, ...) (void)(condition)
 #else
 #define LF_ASSERT(condition, format, ...) \
 	do { \
@@ -280,5 +291,24 @@ void lf_register_print_function(print_message_function_t* function, int log_leve
 				lf_print_error_and_exit(format, ##__VA_ARGS__); \
 		} \
 	} while(0)
+#define LF_ASSERTN(condition, format, ...) \
+	do { \
+		if (condition) { \
+				lf_print_error_and_exit(format, ##__VA_ARGS__); \
+		} \
+	} while(0)
 #endif // NDEBUG
+
+/**
+ * Checking mutex locking and unlocking.
+ * This is optimized away if the NDEBUG flag is defined.
+ */
+#define LF_MUTEX_INIT(mutex) LF_ASSERTN(lf_mutex_init(&mutex), "Mutex init failed.")
+
+#define LF_MUTEX_LOCK(mutex) LF_ASSERTN(lf_mutex_lock(&mutex), "Mutex lock failed.")
+
+#define LF_MUTEX_UNLOCK(mutex) LF_ASSERTN(lf_mutex_unlock(&mutex), "Mutex unlock failed.")
+
+#define LF_COND_INIT(cond, mutex) LF_ASSERTN(lf_cond_init(&cond, &mutex), "Condition variable init failed.")
+
 #endif /* UTIL_H */

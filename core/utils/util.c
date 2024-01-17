@@ -80,6 +80,13 @@ void _lf_message_print(
 ) ATTRIBUTE_FORMAT_PRINTF(3, 0);
 
 /**
+ * Print a fatal error message. Internal function.
+ */
+static void lf_vprint_fatal_error(const char* format, va_list args) {
+    _lf_message_print(1, "FATAL ERROR: ", format, args, LOG_LEVEL_ERROR);
+}
+
+/**
  * Internal implementation of the next few reporting functions.
  */
 void _lf_message_print(
@@ -134,11 +141,8 @@ void _lf_message_print(
 #endif // STANDALONE_RTI
 		}
 		if (print_message_function == NULL) {
-			if (is_error) {
-				vfprintf(stderr, message, args);
-			} else {
-				vfprintf(stdout, message, args);
-			}
+			// NOTE: Send all messages to stdout, not to stderr, so that ordering makes sense.
+			vfprintf(stdout, message, args);
 		} else {
 			(*print_message_function)(message, args);
 		}
@@ -204,13 +208,19 @@ void lf_vprint_warning(const char* format, va_list args) {
 void lf_print_error_and_exit(const char* format, ...) {
     va_list args;
     va_start (args, format);
-    lf_vprint_error_and_exit(format, args);
+    lf_vprint_fatal_error(format, args);
     va_end (args);
+	fflush(stdout);
     exit(EXIT_FAILURE);
 }
 
-void lf_vprint_error_and_exit(const char* format, va_list args) {
-    _lf_message_print(1, "FATAL ERROR: ", format, args, LOG_LEVEL_ERROR);
+void lf_print_error_system_failure(const char* format, ...) {
+    va_list args;
+    va_start (args, format);
+    lf_vprint_error(format, args);
+    va_end (args);
+    lf_print_error_and_exit("Error %d: %s", errno, strerror(errno));
+    exit(EXIT_FAILURE);
 }
 
 void lf_register_print_function(print_message_function_t* function, int log_level) {

@@ -7,17 +7,18 @@
  * @copyright (c) 2020-2023, The University of California at Berkeley
  * License in [BSD 2-clause](https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md)
  * 
- * This files implements the enclave coordination logic.
+ * This file implements the enclave coordination logic.
  * Here we are dealing with multiple mutexes. To avoid deadlocking we follow the
  * following rules:
  * 1) Mutexes are always locked in the following order:
- *  Enclave mutexes -> RTI mutex.
+ *  Enclave mutexes followed by RTI mutex.
  *  This means that we never lock an enclave mutex while holding the RTI mutex.
  * 2) Mutexes are always unlocked in the following order:
- *  RTI mutex -> Enclave mutex.
- * 3) If the coordination logic might block. We unlock the enclave mutex
- * 
-*/
+ *  RTI mutex followed by Enclave mutex.
+ * 3) If the coordination logic might block. We unlock the enclave mutex while
+ *  blocking, using a condition variable to unblock.
+ * 4) When blocking on the coordination logic, never hold the RTI mutex.
+ */
 
 #ifdef LF_ENCLAVES
 #include "rti_local.h"
@@ -35,7 +36,7 @@ static rti_local_t * rti_local;
 lf_mutex_t rti_mutex;
 
 void initialize_local_rti(environment_t *envs, int num_envs) {
-    rti_local = (rti_local_t*)malloc(sizeof(rti_local_t));
+    rti_local = (rti_local_t*)calloc(1, sizeof(rti_local_t));
     LF_ASSERT(rti_local, "Out of memory");
 
     initialize_rti_common(&rti_local->base);
@@ -47,7 +48,7 @@ void initialize_local_rti(environment_t *envs, int num_envs) {
     // Allocate memory for the enclave_info objects
     rti_local->base.scheduling_nodes = (scheduling_node_t**)calloc(num_envs, sizeof(scheduling_node_t*));
     for (int i = 0; i < num_envs; i++) {
-        enclave_info_t *enclave_info = (enclave_info_t *) malloc(sizeof(enclave_info_t));
+        enclave_info_t *enclave_info = (enclave_info_t *) calloc(1, sizeof(enclave_info_t));
         initialize_enclave_info(enclave_info, i, &envs[i]);
         rti_local->base.scheduling_nodes[i] = (scheduling_node_t *) enclave_info;
 

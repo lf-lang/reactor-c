@@ -76,9 +76,10 @@ typedef enum
     worker_wait_ends,
     scheduler_advancing_time_starts,
     scheduler_advancing_time_ends,
-    federated, // Everything above this is tracing federated interactions.
+    federated, // Everything below this is for tracing federated interactions.
     // Sending messages
     send_ACK,
+    send_FAILED,
     send_TIMESTAMP,
     send_NET,
     send_LTC,
@@ -100,6 +101,7 @@ typedef enum
     send_ADR_QR,
     // Receiving messages
     receive_ACK,
+    receive_FAILED,
     receive_TIMESTAMP,
     receive_NET,
     receive_LTC,
@@ -142,6 +144,7 @@ static const char *trace_event_names[] = {
     "Federated marker",
     // Sending messages
     "Sending ACK",
+    "Sending FAILED",
     "Sending TIMESTAMP",
     "Sending NET",
     "Sending LTC",
@@ -163,6 +166,7 @@ static const char *trace_event_names[] = {
     "Sending ADR_QR",
     // Receiving messages
     "Receiving ACK",
+    "Receiving FAILED",
     "Receiving TIMESTAMP",
     "Receiving NET",
     "Receiving LTC",
@@ -435,6 +439,10 @@ void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, i
  * close the files.
  */
 void stop_trace(trace_t* trace);
+
+/**
+ * Version of stop_trace() that does not lock the trace mutex.
+ */
 void stop_trace_locked(trace_t* trace);
 
 ////////////////////////////////////////////////////////////

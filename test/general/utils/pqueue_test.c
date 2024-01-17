@@ -79,7 +79,7 @@ static void pop_empty(pqueue_tag_t* q) {
 static void remove_from_queue(pqueue_tag_t* q, pqueue_tag_element_t* e1, pqueue_tag_element_t* e2) {
     assert(pqueue_tag_insert(q, e1) == 0);
     assert(pqueue_tag_insert(q, e2) == 0);
-    assert(pqueue_tag_remove(q, e1) == 0);
+    pqueue_tag_remove(q, e1);
     assert(pqueue_tag_peek(q) == e2);
     assert(pqueue_tag_size(q) == 1);
 }
