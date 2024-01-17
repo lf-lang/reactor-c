@@ -5,13 +5,13 @@
 #include <errno.h>
 #include <linux/if.h> /* IFNAMSIZ */
 #include <netinet/ether.h>
+#include <netinet/in.h>   // IPPROTO_TCP, IPPROTO_UDP
+#include <netinet/tcp.h>  // TCP_NODELAY
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <netinet/in.h>     // IPPROTO_TCP, IPPROTO_UDP 
-#include <netinet/tcp.h>    // TCP_NODELAY 
 
 #include "util.h"
 // #include "net_util.h"
@@ -59,26 +59,61 @@ static int socket_open(netdrv_t *drv) {
 //     }
 // }
 
-// static int socket_recv(netdrv_t *drv, void *buffer, int size) {
-//     if (!drv)
-//         return -1;
-//     socket_priv_t *priv = get_priv(drv);
-//     if (priv->timeout_us > 0) {
-//         int res = -1;
-//         do {
-//             res = recv(priv->sock, buffer, size, MSG_TRUNC);
-//         } while (res > 0);
-//         return res;
-//     }
-//     return recv(priv->sock, buffer, size, MSG_TRUNC);
-// }
+static ssize_t socket_recv(netdrv_t *drv, size_t num_bytes, unsigned char* buffer, char* format, ...) {
+    va_list args;
+	// Error checking first
+    if (socket < 0 && format != NULL) {
+		lf_print_error("Socket is no longer open.");
+        lf_print_error_and_exit(format, args);
+	}
+    ssize_t bytes_read = 0;
+    while (bytes_read < (ssize_t)num_bytes) {
+        ssize_t more = read(socket, buffer + bytes_read, num_bytes - (size_t)bytes_read);
+        if(more <= 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
+            // The error code set by the socket indicates
+            // that we should try again (@see man errno).
+            LF_PRINT_DEBUG("Reading from socket was blocked. Will try again.");
+            continue;
+        } else if (more <= 0) {
+            if (format != NULL) {
+                shutdown(socket, SHUT_RDWR);
+                close(socket);
+                lf_print_error("Read %ld bytes, but expected %zu. errno=%d",
+                        more + bytes_read, num_bytes, errno);
+                lf_print_error_and_exit(format, args);
+            } else if (more == 0) {
+                // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
+            	// upon receiving a zero length packet or an error, we can close the socket.
+            	// If there are any pending outgoing messages, this will attempt to send those
+            	// followed by an EOF.
+            	close(socket);
+            }
+            return more;
+        }
+        bytes_read += more;
+    }
+    return bytes_read;
+    // if (!drv) {
+    //     return -1;
+    // }
+    // socket_priv_t *priv = get_priv(drv);
+    // if (priv->timeout_us > 0) {
+    //     int res = -1;
+    //     do {
+    //         res = recv(priv->sock, buffer, size, MSG_TRUNC);
+    //     } while (res > 0);
+    //     return res;
+    // }
+    // return recv(priv->sock, buffer, size, MSG_TRUNC);
+}
 
-// static int socket_send(netdrv_t *drv, void *buffer, int size) {
-//     if (!drv)
-//         return -1;
-//     socket_priv_t *priv = get_priv(drv);
-//     return send(priv->sock, buffer, size, MSG_DONTWAIT);
-// }
+static ssize_t socket_send(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
+    if (!drv) {
+        return -1;
+    }
+    socket_priv_t *priv = get_priv(drv);
+    return send(priv->sock, buffer, size, MSG_DONTWAIT);
+}
 
 netdrv_t *netdrv_init() {
     // TODO: Should it be malloc? To support different network stacks operate simulatneously?
@@ -95,8 +130,8 @@ netdrv_t *netdrv_init() {
 
     drv->open = socket_open;
     // drv->close = socket_close;
-    // drv->read = socket_recv;
-    // drv->write = socket_send;
+    drv->read = socket_recv;
+    drv->write = socket_send;
     // drv->get_priv = get_priv;
     return drv;
 }
@@ -233,20 +268,20 @@ int create_real_time_tcp_socket_errexit() {
     //  is enough.
     int flag = 1;
     int result = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
-    
+
     if (result < 0) {
         lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
     }
-    
-    // Disable delayed ACKs. Only possible on Linux
-    #if defined(PLATFORM_Linux)
-        result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
-        
-        if (result < 0) {
-            lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
-        }
-    #endif
-    
+
+// Disable delayed ACKs. Only possible on Linux
+#if defined(PLATFORM_Linux)
+    result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
+
+    if (result < 0) {
+        lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+    }
+#endif
+
     return sock;
 }
 
@@ -272,4 +307,36 @@ void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv) {
         }
         close(clock_priv->socket_descriptor);
     }
+}
+
+netdrv_t *accept_connection(netdrv_t *rti_netdrv) {
+    netdrv_t *fed_netdrv = netdrv_init();
+    socket_priv_t *rti_priv = get_priv(rti_netdrv);
+    socket_priv_t *fed_priv = get_priv(fed_netdrv);
+    // Wait for an incoming connection request.
+    struct sockaddr client_fd;
+    uint32_t client_length = sizeof(client_fd);
+    // The following blocks until a federate connects.
+    while (1) {
+        fed_priv->socket_descriptor = accept(rti_priv->socket_descriptor, &client_fd, &client_length);
+        if (fed_priv->socket_descriptor >= 0) {
+            // Got a socket
+            break;
+        } else if (fed_priv->socket_descriptor < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
+            lf_print_error_and_exit("RTI failed to accept the socket. %s.", strerror(errno));
+        } else {
+            // Try again
+            lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
+            continue;
+        }
+    }
+    // The MSG_TYPE_FED_IDS message has the right federation ID.
+    // Assign the address information for federate.
+    // The IP address is stored here as an in_addr struct (in .server_ip_addr) that can be useful
+    // to create sockets and can be efficiently sent over the network.
+    // First, convert the sockaddr structure into a sockaddr_in that contains an internet address.
+    struct sockaddr_in *pV4_addr = (struct sockaddr_in *)&client_fd;
+    // Then extract the internet address (which is in IPv4 format) and assign it as the federate's socket server
+    fed_priv->server_ip_addr = pV4_addr->sin_addr;
+    return fed_netdrv;
 }

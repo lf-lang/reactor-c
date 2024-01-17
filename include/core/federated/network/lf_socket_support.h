@@ -1,6 +1,9 @@
 #ifndef LF_SOCKET_SUPPORT_H
 #define LF_SOCKET_SUPPORT_H
 
+#include <netinet/in.h>     // IPPROTO_TCP, IPPROTO_UDP 
+#include <netinet/tcp.h>    // TCP_NODELAY 
+
 #include "net_util.h"
 
 /**
@@ -44,8 +47,20 @@ typedef struct socket_priv_t {
     int socket_descriptor;
 	int proto;
 	uint16_t user_specified_port;
+
+    char server_hostname[INET_ADDRSTRLEN]; // Human-readable IP address and
+    int32_t server_port;    // port number of the socket server of the federate
+                            // if it has any incoming direct connections from other federates.
+                            // The port number will be -1 if there is no server or if the
+                            // RTI has not been informed of the port number.
+    struct in_addr server_ip_addr; // Information about the IP address of the socket
+                                // server of the federate.
 } socket_priv_t;
 
 netdrv_t * netdrv_init();
+void create_net_server(netdrv_t *drv, netdrv_type_t netdrv_type);
+int create_real_time_tcp_socket_errexit();
+void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv);
+netdrv_t *accept_connection(netdrv_t * rti_netdrv);
 
 #endif // LF_SOCKET_SUPPORT_H

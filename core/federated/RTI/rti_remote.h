@@ -415,6 +415,7 @@ void* federate_info_thread_TCP(void* fed);
  */
 void send_reject(int socket_id, unsigned char error_code);
 
+int32_t net_receive_and_check_fed_id_message(netdrv_t *fed_netdrv);
 /**
  * Listen for a MSG_TYPE_FED_IDS message, which includes as a payload
  * a federate ID and a federation ID. If the federation ID

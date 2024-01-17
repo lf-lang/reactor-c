@@ -1109,6 +1109,131 @@ void send_reject(int socket_id, unsigned char error_code) {
     close(socket_id);
 }
 
+
+int32_t net_receive_and_check_fed_id_message(netdrv_t *fed_netdrv) {
+    // Buffer for message ID, federate ID, and federation ID length.
+    size_t length = 1 + sizeof(uint16_t) + 1; // Message ID, federate ID, length of fedration ID.
+    unsigned char buffer[length];
+
+    // Read bytes from the socket. We need 4 bytes.
+    // FIXME: This should not exit with error but rather should just reject the connection.
+    netdrv_read(fed_netdrv, length, buffer, "RTI failed to read from accepted socket.");
+    read_from_socket_errexit(socket_id, length, buffer, "RTI failed to read from accepted socket.");
+
+    uint16_t fed_id = rti_remote->base.number_of_scheduling_nodes; // Initialize to an invalid value.
+
+    // First byte received is the message type.
+    if (buffer[0] != MSG_TYPE_FED_IDS) {
+        if(buffer[0] == MSG_TYPE_P2P_SENDING_FED_ID || buffer[0] == MSG_TYPE_P2P_TAGGED_MESSAGE) {
+            // The federate is trying to connect to a peer, not to the RTI.
+            // It has connected to the RTI instead.
+            // FIXME: This should not happen, but apparently has been observed.
+            // It should not happen because the peers get the port and IP address
+            // of the peer they want to connect to from the RTI.
+            // If the connection is a peer-to-peer connection between two
+            // federates, reject the connection with the WRONG_SERVER error.
+            send_reject(socket_id, WRONG_SERVER);
+        } else {
+            send_reject(socket_id, UNEXPECTED_MESSAGE);
+        }
+        if (rti_remote->base.tracing_enabled){
+            tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
+        }
+        lf_print_error("RTI expected a MSG_TYPE_FED_IDS message. Got %u (see net_common.h).", buffer[0]);
+        return -1;
+    } else {
+        // Received federate ID.
+        fed_id = extract_uint16(buffer + 1);
+        LF_PRINT_DEBUG("RTI received federate ID: %d.", fed_id);
+
+        // Read the federation ID.  First read the length, which is one byte.
+        size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 1];
+        char federation_id_received[federation_id_length + 1]; // One extra for null terminator.
+        // Next read the actual federation ID.
+        // FIXME: This should not exit on error, but rather just reject the connection.
+        read_from_socket_errexit(socket_id, federation_id_length,
+                            (unsigned char*)federation_id_received,
+                            "RTI failed to read federation id from federate %d.", fed_id);
+
+        // Terminate the string with a null.
+        federation_id_received[federation_id_length] = 0;
+
+        LF_PRINT_DEBUG("RTI received federation ID: %s.", federation_id_received);
+
+        if (rti_remote->base.tracing_enabled) {
+            tracepoint_rti_from_federate(rti_remote->base.trace, receive_FED_ID, fed_id, NULL);
+        }
+        // Compare the received federation ID to mine.
+        if (strncmp(rti_remote->federation_id, federation_id_received, federation_id_length) != 0) {
+            // Federation IDs do not match. Send back a MSG_TYPE_REJECT message.
+            lf_print_error("WARNING: Federate from another federation %s attempted to connect to RTI in federation %s.\n",
+                    federation_id_received,
+                    rti_remote->federation_id);
+            if (rti_remote->base.tracing_enabled) {
+                    tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
+            }
+            send_reject(socket_id, FEDERATION_ID_DOES_NOT_MATCH);
+            return -1;
+        } else {
+            if (fed_id >= rti_remote->base.number_of_scheduling_nodes) {
+                // Federate ID is out of range.
+                lf_print_error("RTI received federate ID %d, which is out of range.", fed_id);
+                if (rti_remote->base.tracing_enabled){
+                    tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
+                }
+                send_reject(socket_id, FEDERATE_ID_OUT_OF_RANGE);
+                return -1;
+            } else {
+                if ((rti_remote->base.scheduling_nodes[fed_id])->state != NOT_CONNECTED) {
+
+                    lf_print_error("RTI received duplicate federate ID: %d.", fed_id);
+                    if (rti_remote->base.tracing_enabled) {
+                        tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
+                    }
+                    send_reject(socket_id, FEDERATE_ID_IN_USE);
+                    return -1;
+                }
+            }
+        }
+    }
+    federate_info_t* fed = GET_FED_INFO(fed_id);
+    // The MSG_TYPE_FED_IDS message has the right federation ID.
+    // Assign the address information for federate.
+    // The IP address is stored here as an in_addr struct (in .server_ip_addr) that can be useful
+    // to create sockets and can be efficiently sent over the network.
+    // First, convert the sockaddr structure into a sockaddr_in that contains an internet address.
+    struct sockaddr_in* pV4_addr = client_fd;
+    // Then extract the internet address (which is in IPv4 format) and assign it as the federate's socket server
+    fed->server_ip_addr = pV4_addr->sin_addr;
+
+#if LOG_LEVEL >= LOG_LEVEL_DEBUG
+    // Create the human readable format and copy that into
+    // the .server_hostname field of the federate.
+    char str[INET_ADDRSTRLEN];
+    inet_ntop( AF_INET, &fed->server_ip_addr, str, INET_ADDRSTRLEN );
+    strncpy (fed->server_hostname, str, INET_ADDRSTRLEN);
+
+    LF_PRINT_DEBUG("RTI got address %s from federate %d.", fed->server_hostname, fed_id);
+#endif
+    fed->socket = socket_id;
+
+    // Set the federate's state as pending
+    // because it is waiting for the start time to be
+    // sent by the RTI before beginning its execution.
+    fed->enclave.state = PENDING;
+
+    LF_PRINT_DEBUG("RTI responding with MSG_TYPE_ACK to federate %d.", fed_id);
+    // Send an MSG_TYPE_ACK message.
+    unsigned char ack_message = MSG_TYPE_ACK;
+    if (rti_remote->base.tracing_enabled) {
+        tracepoint_rti_to_federate(rti_remote->base.trace, send_ACK, fed_id, NULL);
+    }
+    write_to_socket_errexit(socket_id, 1, &ack_message,
+            "RTI failed to write MSG_TYPE_ACK message to federate %d.", fed_id);
+
+    return (int32_t)fed_id;
+}
+
 int32_t receive_and_check_fed_id_message(int socket_id, struct sockaddr_in* client_fd) {
     // Buffer for message ID, federate ID, and federation ID length.
     size_t length = 1 + sizeof(uint16_t) + 1; // Message ID, federate ID, length of fedration ID.
@@ -1446,27 +1571,11 @@ bool authenticate_federate(int socket) {
 #endif
 
 
-void net_connect_to_federates(netdrv_t *netdrv) {
+void net_connect_to_federates(netdrv_t *rti_netdrv) {
     for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
-        // Wait for an incoming connection request.
-        struct sockaddr client_fd;
-        uint32_t client_length = sizeof(client_fd);
-        // The following blocks until a federate connects.
-        int socket_id = -1;
-        while(1) {
-            socket_id = accept(rti_remote->socket_descriptor_TCP, &client_fd, &client_length);
-            if (socket_id >= 0) {
-                // Got a socket
-                break;
-            } else if (socket_id < 0 && (errno != EAGAIN || errno != EWOULDBLOCK)) {
-                lf_print_error_and_exit("RTI failed to accept the socket. %s.", strerror(errno));
-            } else {
-                // Try again
-                lf_print_warning("RTI failed to accept the socket. %s. Trying again.", strerror(errno));
-                continue;
-            }
-        }
 
+        netdrv_t *fed_netdrv = accept_connection(rti_netdrv);
+        int socket_id = -1;
         // Wait for the first message from the federate when RTI -a option is on.
         #ifdef __RTI_AUTH__
         if (rti_remote->authentication_enabled) {
@@ -1478,7 +1587,7 @@ void net_connect_to_federates(netdrv_t *netdrv) {
             }
         }
         #endif
-        
+        struct sockaddr_in client_fd;
         // The first message from the federate should contain its ID and the federation ID.
         int32_t fed_id = receive_and_check_fed_id_message(socket_id, (struct sockaddr_in*)&client_fd);
         if (fed_id >= 0
@@ -1627,7 +1736,7 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
     strncpy(fed->server_hostname ,"localhost", INET_ADDRSTRLEN);
     fed->server_ip_addr.s_addr = 0;
     fed->server_port = -1;
-    fed->fed_netdrv = netdrv_init();
+    // fed->fed_netdrv = netdrv_init();
     fed->clock_netdrv = netdrv_init();
 }
 
