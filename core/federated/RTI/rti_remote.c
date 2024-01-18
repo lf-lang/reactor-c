@@ -903,21 +903,22 @@ void net_send_physical_clock(unsigned char message_type, federate_info_t *fed, s
 
     // Send the message
     if (socket_type == UDP) {
-        // FIXME: UDP_addr is never initialized.
-        LF_PRINT_DEBUG("Clock sync: RTI sending UDP message type %u.", buffer[0]);
-        ssize_t bytes_written = sendto(rti_remote->socket_descriptor_UDP, buffer, 1 + sizeof(int64_t), 0,
-                (struct sockaddr *)&fed->UDP_addr, sizeof(fed->UDP_addr));
-        if (bytes_written < (ssize_t)sizeof(int64_t) + 1) {
-            lf_print_warning("Clock sync: RTI failed to send physical time to federate %d: %s\n",
-                    fed->enclave.id,
-                    strerror(errno));
-            return;
-        }
+        //TODO: NEED TO FIX!
+        // // FIXME: UDP_addr is never initialized.
+        // LF_PRINT_DEBUG("Clock sync: RTI sending UDP message type %u.", buffer[0]);
+        // ssize_t bytes_written = sendto(rti_remote->socket_descriptor_UDP, buffer, 1 + sizeof(int64_t), 0,
+        //         (struct sockaddr *)&fed->UDP_addr, sizeof(fed->UDP_addr));
+        // if (bytes_written < (ssize_t)sizeof(int64_t) + 1) {
+        //     lf_print_warning("Clock sync: RTI failed to send physical time to federate %d: %s\n",
+        //             fed->enclave.id,
+        //             strerror(errno));
+        //     return;
+        // }
     }
     else if (socket_type == TCP) {
         LF_PRINT_DEBUG("Clock sync:  RTI sending TCP message type %u.", buffer[0]);
         LF_MUTEX_LOCK(rti_mutex);
-        write_to_socket_fail_on_error(&fed->socket, 1 + sizeof(int64_t), buffer, &rti_mutex,
+        write_to_netdrv_fail_on_error(fed->fed_netdrv, 1 + sizeof(int64_t), buffer, &rti_mutex,
                 "Clock sync: RTI failed to send physical time to federate %d.",
                 fed->enclave.id);
         LF_MUTEX_UNLOCK(rti_mutex);
@@ -964,6 +965,20 @@ void send_physical_clock(unsigned char message_type, federate_info_t *fed, socke
             " to federate %d.",
             current_physical_time,
             fed->enclave.id);
+}
+
+void net_handle_physical_clock_sync_message(federate_info_t *my_fed, socket_type_t socket_type) {
+    // Lock the mutex to prevent interference between sending the two
+    // coded probe messages.
+    LF_MUTEX_LOCK(rti_mutex);
+    // Reply with a T4 type message
+    net_send_physical_clock(MSG_TYPE_CLOCK_SYNC_T4, my_fed, socket_type);
+    // Send the corresponding coded probe immediately after,
+    // but only if this is a UDP channel.
+    if (socket_type == UDP) {
+        net_send_physical_clock(MSG_TYPE_CLOCK_SYNC_CODED_PROBE, my_fed, socket_type);
+    }
+    LF_MUTEX_UNLOCK(rti_mutex);
 }
 
 void handle_physical_clock_sync_message(federate_info_t *my_fed, socket_type_t socket_type) {
@@ -1738,6 +1753,7 @@ static int receive_connection_information(int *socket_id, uint16_t fed_id) {
     return 1;
 }
 
+//TODO: NEEDS TO BE FIXED!!
 /**
  * Listen for a MSG_TYPE_UDP_PORT message, and upon receiving it, set up
  * clock synchronization and perform the initial clock synchronization.
@@ -1750,13 +1766,13 @@ static int receive_connection_information(int *socket_id, uint16_t fed_id) {
  * @param fed_id The federate ID.
  * @return 1 for success, 0 for failure.
  */
-static int net_receive_udp_message_and_set_up_clock_sync(int *netdrv_t *netdrv, uint16_t fed_id) {
+static int net_receive_udp_message_and_set_up_clock_sync(netdrv_t *netdrv, uint16_t fed_id) {
     // Read the MSG_TYPE_UDP_PORT message from the federate regardless of the status of
     // clock synchronization. This message will tell the RTI whether the federate
     // is doing clock synchronization, and if it is, what port to use for UDP.
     LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_UDP_PORT from federate %d.", fed_id);
     unsigned char response[1 + sizeof(uint16_t)];
-    read_from_netdrv_fail_on_error(socket_id, 1 + sizeof(uint16_t), response, NULL,
+    read_from_netdrv_fail_on_error(netdrv, 1 + sizeof(uint16_t), response, NULL,
             "RTI failed to read MSG_TYPE_UDP_PORT message from federate %d.", fed_id);
     if (response[0] != MSG_TYPE_UDP_PORT) {
         lf_print_error(
@@ -1779,7 +1795,7 @@ static int net_receive_udp_message_and_set_up_clock_sync(int *netdrv_t *netdrv, 
                 // Send the required number of messages for clock synchronization
                 for (int i = 0; i < rti_remote->clock_sync_exchanges_per_interval; i++) {
                     // Send the RTI's current physical time T1 to the federate.
-                    send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, TCP);
+                    net_send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, TCP);
 
                     // Listen for reply message, which should be T3.
                     size_t message_size = 1 + sizeof(int32_t);
@@ -1791,10 +1807,10 @@ static int net_receive_udp_message_and_set_up_clock_sync(int *netdrv_t *netdrv, 
                         assert(fed_id > -1);
                         assert(fed_id < 65536);
                         LF_PRINT_DEBUG("RTI received T3 clock sync message from federate %d.", fed_id);
-                        handle_physical_clock_sync_message(fed, TCP);
+                        net_handle_physical_clock_sync_message(fed, TCP);
                     } else {
                         lf_print_error("Unexpected message %u from federate %d.", buffer[0], fed_id);
-                        net_send_reject(socket_id, UNEXPECTED_MESSAGE);
+                        net_send_reject(netdrv, UNEXPECTED_MESSAGE);
                         return 0;
                     }
                 }
@@ -2015,7 +2031,7 @@ void net_lf_connect_to_federates(netdrv_t *rti_netdrv) {
         int32_t fed_id = net_receive_and_check_fed_id_message(fed_netdrv);
         if (fed_id >= 0
                 && net_receive_connection_information(fed_netdrv, (uint16_t)fed_id)
-                && receive_udp_message_and_set_up_clock_sync(&socket_id, (uint16_t)fed_id)) {
+                && net_receive_udp_message_and_set_up_clock_sync(fed_netdrv, (uint16_t)fed_id)) {
 
             // Create a thread to communicate with the federate.
             // This has to be done after clock synchronization is finished

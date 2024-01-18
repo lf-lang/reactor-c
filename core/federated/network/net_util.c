@@ -68,23 +68,23 @@ int netdrv_open(netdrv_t *drv) {
 }
 void netdrv_close(netdrv_t *drv) {
 	if (!drv) {
-		return -1;
+		return;
     }
 		drv->close(drv);
 }
 
-int netdrv_read(netdrv_t *drv, void * buffer, int size) {
+int netdrv_read(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
 	if (!drv) {
 		return -1;
     }
-	return drv->read(drv, buffer, size);
+	return drv->read(drv, num_bytes, buffer);
 }
 
-int netdrv_write(netdrv_t *drv, void * buffer, int size) {
+int netdrv_write(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
 	if (!drv) {
 		return -1;
     }
-	return drv->write(drv, buffer, size);
+	return drv->write(drv, num_bytes, buffer);
 }
 
 // void *netdrv_get_privdrv(netdrv_t *drv) {

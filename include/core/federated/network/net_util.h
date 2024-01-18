@@ -73,7 +73,7 @@ typedef enum netdrv_type_t {
 
 typedef struct netdrv_t {
     int ( *open)(struct netdrv_t *drv);
-    int (*close)(struct netdrv_t *drv);
+    void (*close)(struct netdrv_t *drv);
     int ( *read)(struct netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
     int (*write)(struct netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
 } netdrv_t;
@@ -93,7 +93,7 @@ typedef struct netdrv_t {
 // netdrv.read_fail_on_error(num_bytes, write_buffer, mutex, format, ...);
 
 int netdrv_open(netdrv_t *drv);
-int netdrv_close(netdrv_t *drv);
+void netdrv_close(netdrv_t *drv);
 int netdrv_read(netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
 int netdrv_write(netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
 // void * netdrv_get_privdrv(netdrv_t *drv);

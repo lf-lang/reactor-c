@@ -97,12 +97,47 @@ netdrv_t *netdrv_init() {
     priv->socket_descriptor = 0;
     priv->user_specified_port = 0;
 
-    drv->open = socket_open;
-    // drv->close = socket_close;
-    drv->read = socket_read;
-    drv->write = socket_write;
+    // drv->open = socket_open;
+    drv->close = socket_close;
+    // drv->read = socket_read;
+    // drv->write = socket_write;
     // drv->get_priv = get_priv;
     return drv;
+}
+
+/**
+ * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
+ * (TCP_NODELAY) and Delayed ACKs disabled (TCP_QUICKACK). Exits application
+ * on any error.
+ *
+ * @return The socket ID (a file descriptor).
+ */
+static int net_create_real_time_tcp_socket_errexit() {
+    int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (sock < 0) {
+        lf_print_error_and_exit("Could not open TCP socket. Err=%d", sock);
+    }
+    // Disable Nagle's algorithm which bundles together small TCP messages to
+    //  reduce network traffic
+    // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
+    //  is enough.
+    int flag = 1;
+    int result = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
+
+    if (result < 0) {
+        lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+    }
+
+// Disable delayed ACKs. Only possible on Linux
+#if defined(PLATFORM_Linux)
+    result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
+
+    if (result < 0) {
+        lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
+    }
+#endif
+
+    return sock;
 }
 
 void create_net_server(netdrv_t *drv, netdrv_type_t netdrv_type) {
@@ -116,7 +151,7 @@ void create_net_server(netdrv_t *drv, netdrv_type_t netdrv_type) {
     // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
     priv->socket_descriptor = -1;
     if (netdrv_type == RTI) {
-        priv->socket_descriptor = create_real_time_tcp_socket_errexit();
+        priv->socket_descriptor = net_create_real_time_tcp_socket_errexit();
     } else if (netdrv_type == CLOCKSYNC) {
         priv->socket_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         // Set the appropriate timeout time
@@ -245,41 +280,6 @@ void create_net_server(netdrv_t *drv, netdrv_type_t netdrv_type) {
         priv->port = port;
         // No need to listen on the UDP socket
     }
-}
-
-/**
- * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
- * (TCP_NODELAY) and Delayed ACKs disabled (TCP_QUICKACK). Exits application
- * on any error.
- *
- * @return The socket ID (a file descriptor).
- */
-static int create_real_time_tcp_socket_errexit() {
-    int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (sock < 0) {
-        lf_print_error_and_exit("Could not open TCP socket. Err=%d", sock);
-    }
-    // Disable Nagle's algorithm which bundles together small TCP messages to
-    //  reduce network traffic
-    // TODO: Re-consider if we should do this, and whether disabling delayed ACKs
-    //  is enough.
-    int flag = 1;
-    int result = setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &flag, sizeof(int));
-
-    if (result < 0) {
-        lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
-    }
-
-// Disable delayed ACKs. Only possible on Linux
-#if defined(PLATFORM_Linux)
-    result = setsockopt(sock, IPPROTO_TCP, TCP_QUICKACK, &flag, sizeof(int));
-
-    if (result < 0) {
-        lf_print_error_and_exit("Failed to disable Nagle algorithm on socket server.");
-    }
-#endif
-
-    return sock;
 }
 
 void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv) {
@@ -442,12 +442,12 @@ int write_to_netdrv(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
 int write_to_netdrv_close_on_error(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
     socket_priv_t *priv = get_priv(drv);
     assert(&priv->socket_descriptor);
-    int result = write_to_socket(drv, num_bytes, buffer);
+    int result = write_to_netdrv(drv, num_bytes, buffer);
     if (result) {
         // Write failed.
         // Netdrv has probably been closed from the other side.
         // Shut down and close the netdrv from this side.
-        drv.close(drv);
+        drv->close(drv);
     }
     return result;
 }
@@ -461,7 +461,7 @@ void write_to_netdrv_fail_on_error(
     va_list args;
     socket_priv_t *priv = get_priv(drv);
     assert(&priv->socket_descriptor);
-    int result = write_to_socket_close_on_error(drv, num_bytes, buffer);
+    int result = write_to_netdrv_close_on_error(drv, num_bytes, buffer);
     if (result) {
         // Write failed.
         if (mutex != NULL) {
