@@ -138,15 +138,12 @@ netdrv_t *netdrv_init() {
 
 void create_net_server(netdrv_t *drv, netdrv_type_t netdrv_type) {
     socket_priv_t *priv = get_priv(drv);
-    int port = 0;                      // TODO: Need to bring specified port.
-    priv->user_specified_port = port;  // This is the user specified port.
-    int32_t specified_port = port;
-    if (port == 0) {
-        // Use the default starting port.
-        port = STARTING_PORT;
-    }
+
     // Timeout time for the communications of the server
-    struct timeval timeout_time = {.tv_sec = TCP_TIMEOUT_TIME / BILLION, .tv_usec = (TCP_TIMEOUT_TIME % BILLION) / 1000};
+    struct timeval timeout_time = {
+            .tv_sec = TCP_TIMEOUT_TIME / BILLION,
+            .tv_usec = (TCP_TIMEOUT_TIME % BILLION) / 1000
+    };
     // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
     priv->socket_descriptor = -1;
     if (netdrv_type == RTI) {
@@ -154,22 +151,40 @@ void create_net_server(netdrv_t *drv, netdrv_type_t netdrv_type) {
     } else if (netdrv_type == CLOCKSYNC) {
         priv->socket_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         // Set the appropriate timeout time
-        timeout_time = (struct timeval){.tv_sec = UDP_TIMEOUT_TIME / BILLION, .tv_usec = (UDP_TIMEOUT_TIME % BILLION) / 1000};
+        timeout_time = (struct timeval){
+                .tv_sec = UDP_TIMEOUT_TIME / BILLION,
+                .tv_usec = (UDP_TIMEOUT_TIME % BILLION) / 1000
+        };
     }
     if (priv->socket_descriptor < 0) {
         lf_print_error_and_exit("Failed to create RTI socket.");
     }
 
     // Set the option for this socket to reuse the same address
-    int true_variable = 1;  // setsockopt() requires a reference to the value assigned to an option
-    if (setsockopt(priv->socket_descriptor, SOL_SOCKET, SO_REUSEADDR, &true_variable, sizeof(int32_t)) < 0) {
+    int true_variable = 1; // setsockopt() requires a reference to the value assigned to an option
+    if (setsockopt(
+            priv->socket_descriptor,
+            SOL_SOCKET,
+            SO_REUSEADDR,
+            &true_variable,
+            sizeof(int32_t)) < 0) {
         lf_print_error("RTI failed to set SO_REUSEADDR option on the socket: %s.", strerror(errno));
     }
     // Set the timeout on the socket so that read and write operations don't block for too long
-    if (setsockopt(priv->socket_descriptor, SOL_SOCKET, SO_RCVTIMEO, (const char *)&timeout_time, sizeof(timeout_time)) < 0) {
+    if (setsockopt(
+            priv->socket_descriptor,
+            SOL_SOCKET,
+            SO_RCVTIMEO,
+            (const char *)&timeout_time,
+            sizeof(timeout_time)) < 0) {
         lf_print_error("RTI failed to set SO_RCVTIMEO option on the socket: %s.", strerror(errno));
     }
-    if (setsockopt(priv->socket_descriptor, SOL_SOCKET, SO_SNDTIMEO, (const char *)&timeout_time, sizeof(timeout_time)) < 0) {
+    if (setsockopt(
+            priv->socket_descriptor,
+            SOL_SOCKET,
+            SO_SNDTIMEO,
+            (const char *)&timeout_time,
+            sizeof(timeout_time)) < 0) {
         lf_print_error("RTI failed to set SO_SNDTIMEO option on the socket: %s.", strerror(errno));
     }
 
@@ -206,6 +221,10 @@ void create_net_server(netdrv_t *drv, netdrv_type_t netdrv_type) {
     // Zero out the server address structure.
     bzero((char *)&server_fd, sizeof(server_fd));
 
+    uint16_t port = 0; //TODO: Need to bring specified port. Not working currently.
+    uint16_t specified_port = port;
+    if (specified_port == 0) port = DEFAULT_PORT;
+
     server_fd.sin_family = AF_INET;          // IPv4
     server_fd.sin_addr.s_addr = INADDR_ANY;  // All interfaces, 0.0.0.0.
     // Convert the port number from host byte order to network byte order.
@@ -216,27 +235,29 @@ void create_net_server(netdrv_t *drv, netdrv_type_t netdrv_type) {
         (struct sockaddr *)&server_fd,
         sizeof(server_fd));
 
-    // If the binding fails with this port and no particular port was specified
-    // in the LF program, then try the next few ports in sequence.
-    while (result != 0 && specified_port == 0 && port >= STARTING_PORT && port <= STARTING_PORT + PORT_RANGE_LIMIT) {
-        lf_print("RTI failed to get port %d. Trying %d.", port, port + 1);
-        port++;
-        server_fd.sin_port = htons(port);
+    // Try repeatedly to bind to a port. If no specific port is specified, then
+    // increment the port number each time.
+
+    int count = 1;
+    while (result != 0 && count++ < PORT_BIND_RETRY_LIMIT) {
+        if (specified_port == 0) {
+            lf_print_warning("RTI failed to get port %d.", port);
+            port++;
+            if (port >= DEFAULT_PORT + MAX_NUM_PORT_ADDRESSES) port = DEFAULT_PORT;
+            lf_print_warning("RTI will try again with port %d.", port);
+            server_fd.sin_port = htons(port);
+            // Do not sleep.
+        } else {
+            lf_print("RTI failed to get port %d. Will try again.", port);
+            lf_sleep(PORT_BIND_RETRY_INTERVAL);
+        }
         result = bind(
             priv->socket_descriptor,
             (struct sockaddr *)&server_fd,
             sizeof(server_fd));
     }
     if (result != 0) {
-        if (specified_port == 0) {
-            lf_print_error_and_exit(
-                "Failed to bind the RTI socket. Cannot find a usable port. "
-                "Consider increasing PORT_RANGE_LIMIT in net_common.h.");
-        } else {
-            lf_print_error_and_exit(
-                "Failed to bind the RTI socket. Specified port is not available. "
-                "Consider leaving the port unspecified");
-        }
+        lf_print_error_and_exit("Failed to bind the RTI socket. Port %d is not available. ", port);
     }
     char *type = "TCP";
     if (netdrv_type == CLOCKSYNC) {
@@ -330,7 +351,6 @@ netdrv_t *accept_connection(netdrv_t *rti_netdrv) {
             continue;
         }
     }
-    // The MSG_TYPE_FED_IDS message has the right federation ID.
     // Assign the address information for federate.
     // The IP address is stored here as an in_addr struct (in .server_ip_addr) that can be useful
     // to create sockets and can be efficiently sent over the network.

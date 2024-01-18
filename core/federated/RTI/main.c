@@ -332,7 +332,6 @@ int main(int argc, const char* argv[]) {
         initialize_federate(fed_info, i);
         rti.base.scheduling_nodes[i] = (scheduling_node_t *) fed_info;
     }
-    _lf_initialize_clock();
     
     start_net_rti_server();
     net_wait_for_federates(rti.rti_netdrv);

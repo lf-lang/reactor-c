@@ -19,28 +19,33 @@
 #define UDP_TIMEOUT_TIME SEC(1)
 
 /**
- * Default starting port number for the RTI and federates' socket server.
- * Unless a specific port has been specified by the LF program in the "at"
- * for the RTI, when the federates start up, they will attempt
- * to open a socket server
- * on this port, and, if this fails, increment the port number and
- * try again. The number of increments is limited by PORT_RANGE_LIMIT.
- * FIXME: Clarify what happens if a specific port has been given in "at".
+ * Maximum number of port addresses that a federate will try to connect to the RTI on.
+ * If you are using automatic ports begining at DEFAULT_PORT, this puts an upper bound
+ * on the number of RTIs that can be running on the same host.
  */
-#define STARTING_PORT 15045u
+#define MAX_NUM_PORT_ADDRESSES 16
 
 /**
- * Number of ports to try to connect to. Unless the LF program specifies
- * a specific port number to use, the RTI or federates will attempt to start
- * a socket server on port STARTING_PORT. If that port is not available (e.g.,
- * another RTI is running or has recently exited), then it will try the
- * next port, STARTING_PORT+1, and keep incrementing the port number up to this
- * limit. If no port between STARTING_PORT and STARTING_PORT + PORT_RANGE_LIMIT
- * is available, then the RTI or the federate will fail to start. This number, therefore,
- * limits the number of RTIs and federates that can be simultaneously
- * running on any given machine without assigning specific port numbers.
+ * Time to wait before re-attempting to bind to a port.
+ * When a process closes, the network stack typically waits between 30 and 120
+ * seconds before releasing the port.  This is to allow for delayed packets so
+ * that a new process does not receive packets from a previous process.
+ * Here, we limit the retries to 60 seconds.
  */
-#define PORT_RANGE_LIMIT 1024
+#define PORT_BIND_RETRY_INTERVAL SEC(1)
+
+/**
+ * Number of attempts to bind to a port before giving up.
+ */
+#define PORT_BIND_RETRY_LIMIT 60
+
+/**
+ * Default port number for the RTI.
+ * Unless a specific port has been specified by the LF program in the "at"
+ * for the RTI or on the command line, when the RTI starts up, it will attempt
+ * to open a socket server on this port.
+ */
+#define DEFAULT_PORT 15045u
 
 typedef struct socket_priv_t {
     int port;
@@ -58,6 +63,22 @@ typedef struct socket_priv_t {
 } socket_priv_t;
 
 netdrv_t * netdrv_init();
+
+/**
+ * Create a server and enable listening for socket connections.
+ * If the specified port if it is non-zero, it will attempt to acquire that port.
+ * If it fails, it will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times with
+ * a delay of PORT_BIND_RETRY_INTERVAL in between. If the specified port is
+ * zero, then it will attempt to acquire DEFAULT_PORT first. If this fails, then it
+ * will repeatedly attempt up to PORT_BIND_RETRY_LIMIT times, incrementing the port
+ * number between attempts, with no delay between attempts.  Once it has incremented
+ * the port number MAX_NUM_PORT_ADDRESSES times, it will cycle around and begin again
+ * with DEFAULT_PORT.
+ *
+ * @param port The port number to use or 0 to start trying at DEFAULT_PORT.
+ * @param socket_type The type of the socket for the server (TCP or UDP).
+ * @return The socket descriptor on which to accept connections.
+ */
 void create_net_server(netdrv_t *drv, netdrv_type_t netdrv_type);
 int create_real_time_tcp_socket_errexit();
 void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv);

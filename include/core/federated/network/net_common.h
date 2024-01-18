@@ -212,6 +212,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define CONNECT_MAX_RETRIES 100
 
+//TODO: Copied at lf_socket_support.h. Erase after finished.
 /**
  * Maximum number of port addresses that a federate will try to connect to the RTI on.
  * If you are using automatic ports begining at DEFAULT_PORT, this puts an upper bound
@@ -227,6 +228,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define ADDRESS_QUERY_RETRY_INTERVAL MSEC(250)
 
+//TODO: Copied at lf_socket_support.h. Erase after finished.
 /**
  * Time to wait before re-attempting to bind to a port.
  * When a process closes, the network stack typically waits between 30 and 120
