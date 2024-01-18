@@ -18,7 +18,7 @@
 
 static socket_priv_t *get_priv(netdrv_t *drv) {
     if (!drv) {
-        lf_print_error_and_exit("Falied to malloc netdrv_t.");
+        lf_print_error_and_exit("Falied get socket_priv_t.");
         return NULL;
     }
     return (socket_priv_t *)(drv + 1);
@@ -49,71 +49,40 @@ static int socket_open(netdrv_t *drv) {
     // return 0;
 }
 
-// static void socket_close(netdrv_t *drv) {
-//     if (!drv)
-//         return;
-//     socket_priv_t *priv = get_priv(drv);
-//     if (priv->sock > 0) {
-//         close(priv->sock);
-//         priv->sock = -1;
-//     }
-// }
-
-static ssize_t socket_recv(netdrv_t *drv, size_t num_bytes, unsigned char* buffer, char* format, ...) {
-    va_list args;
-	// Error checking first
-    if (socket < 0 && format != NULL) {
-		lf_print_error("Socket is no longer open.");
-        lf_print_error_and_exit(format, args);
-	}
-    ssize_t bytes_read = 0;
-    while (bytes_read < (ssize_t)num_bytes) {
-        ssize_t more = read(socket, buffer + bytes_read, num_bytes - (size_t)bytes_read);
-        if(more <= 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) {
-            // The error code set by the socket indicates
-            // that we should try again (@see man errno).
-            LF_PRINT_DEBUG("Reading from socket was blocked. Will try again.");
-            continue;
-        } else if (more <= 0) {
-            if (format != NULL) {
-                shutdown(socket, SHUT_RDWR);
-                close(socket);
-                lf_print_error("Read %ld bytes, but expected %zu. errno=%d",
-                        more + bytes_read, num_bytes, errno);
-                lf_print_error_and_exit(format, args);
-            } else if (more == 0) {
-                // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
-            	// upon receiving a zero length packet or an error, we can close the socket.
-            	// If there are any pending outgoing messages, this will attempt to send those
-            	// followed by an EOF.
-            	close(socket);
-            }
-            return more;
-        }
-        bytes_read += more;
-    }
-    return bytes_read;
-    // if (!drv) {
-    //     return -1;
-    // }
-    // socket_priv_t *priv = get_priv(drv);
-    // if (priv->timeout_us > 0) {
-    //     int res = -1;
-    //     do {
-    //         res = recv(priv->sock, buffer, size, MSG_TRUNC);
-    //     } while (res > 0);
-    //     return res;
-    // }
-    // return recv(priv->sock, buffer, size, MSG_TRUNC);
-}
-
-static ssize_t socket_send(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
-    if (!drv) {
-        return -1;
+static void socket_close(netdrv_t *drv) {
+    if (!drv){
+        return;
     }
     socket_priv_t *priv = get_priv(drv);
-    return send(priv->sock, buffer, size, MSG_DONTWAIT);
+    if (priv->socket_descriptor > 0) {
+        shutdown(priv->socket_descriptor, SHUT_RDWR);
+        close(priv->socket_descriptor);
+        priv->socket_descriptor = -1;
+    }
 }
+
+// static ssize_t socket_read(netdrv_t *drv, size_t num_bytes, unsigned char* buffer, char* format, ...) {
+//     // if (!drv) {
+//     //     return -1;
+//     // }
+//     // socket_priv_t *priv = get_priv(drv);
+//     // if (priv->timeout_us > 0) {
+//     //     int res = -1;
+//     //     do {
+//     //         res = recv(priv->sock, buffer, size, MSG_TRUNC);
+//     //     } while (res > 0);
+//     //     return res;
+//     // }
+//     // return recv(priv->sock, buffer, size, MSG_TRUNC);
+// }
+
+// static ssize_t socket_write(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
+//     if (!drv) {
+//         return -1;
+//     }
+//     socket_priv_t *priv = get_priv(drv);
+//     return send(priv->sock, buffer, size, MSG_DONTWAIT);
+// }
 
 netdrv_t *netdrv_init() {
     // TODO: Should it be malloc? To support different network stacks operate simulatneously?
@@ -130,8 +99,8 @@ netdrv_t *netdrv_init() {
 
     drv->open = socket_open;
     // drv->close = socket_close;
-    drv->read = socket_recv;
-    drv->write = socket_send;
+    drv->read = socket_read;
+    drv->write = socket_write;
     // drv->get_priv = get_priv;
     return drv;
 }
@@ -278,7 +247,14 @@ void create_net_server(netdrv_t *drv, netdrv_type_t netdrv_type) {
     }
 }
 
-int create_real_time_tcp_socket_errexit() {
+/**
+ * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
+ * (TCP_NODELAY) and Delayed ACKs disabled (TCP_QUICKACK). Exits application
+ * on any error.
+ *
+ * @return The socket ID (a file descriptor).
+ */
+static int create_real_time_tcp_socket_errexit() {
     int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock < 0) {
         lf_print_error_and_exit("Could not open TCP socket. Err=%d", sock);
@@ -359,4 +335,142 @@ netdrv_t *accept_connection(netdrv_t *rti_netdrv) {
     // Then extract the internet address (which is in IPv4 format) and assign it as the federate's socket server
     fed_priv->server_ip_addr = pV4_addr->sin_addr;
     return fed_netdrv;
+}
+
+int read_from_netdrv(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
+    socket_priv_t *priv = get_priv(drv);
+    if (priv->socket_descriptor < 0) {
+        // Socket is not open.
+        errno = EBADF;
+        return -1;
+    }
+    ssize_t bytes_read = 0;
+    int retry_count = 0;
+    while (bytes_read < (ssize_t)num_bytes) {
+        ssize_t more = read(priv->socket_descriptor, buffer + bytes_read, num_bytes - (size_t)bytes_read);
+        if(more < 0 && retry_count++ < NUM_SOCKET_RETRIES 
+                && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
+            // Those error codes set by the socket indicates
+            // that we should try again (@see man errno).
+            lf_print_warning("Reading from socket failed. Will try again.");
+            lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
+            continue;
+        } else if (more < 0) {
+            // A more serious error occurred.
+            return -1;
+        } else if (more == 0) {
+            // EOF received.
+            return 1;
+        }
+        bytes_read += more;
+    }
+    return 0;    
+}
+int read_from_netdrv_close_on_error(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
+    socket_priv_t *priv = get_priv(drv);
+    assert(&priv->socket_descriptor);
+    int read_failed = read_from_netdrv(drv, num_bytes, buffer);
+    if (read_failed) {
+        // Read failed.
+        // Socket has probably been closed from the other side.
+        // Shut down and close the socket from this side.
+        shutdown(priv->socket_descriptor, SHUT_RDWR);
+        close(priv->socket_descriptor);
+        // Mark the socket closed.
+        priv->socket_descriptor = -1;
+        return -1;
+    }
+    return 0;
+}
+void read_from_netdrv_fail_on_error(
+		netdrv_t *drv,
+		size_t num_bytes,
+		unsigned char* buffer,
+		lf_mutex_t* mutex,
+		char* format, ...) {
+    socket_priv_t *priv = get_priv(drv);
+    va_list args;
+    assert(&priv->socket_descriptor);
+    int read_failed = read_from_netdrv_close_on_error(drv, num_bytes, buffer);
+    if (read_failed) {
+        // Read failed.
+        if (mutex != NULL) {
+            lf_mutex_unlock(mutex);
+        }
+        if (format != NULL) {
+            lf_print_error_system_failure(format, args);
+        } else {
+            lf_print_error_system_failure("Failed to read from socket.");
+        }
+    }
+}
+
+ssize_t peek_from_netdrv(netdrv_t *drv, unsigned char* result) {
+    socket_priv_t *priv = get_priv(drv);
+    ssize_t bytes_read = recv(priv->socket_descriptor, result, 1, MSG_DONTWAIT | MSG_PEEK);
+    if (bytes_read < 0 && (errno == EAGAIN || errno == EWOULDBLOCK)) return 0;
+    else return bytes_read;
+}
+
+int write_to_netdrv(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
+    socket_priv_t *priv = get_priv(drv);
+    if (priv->socket_descriptor < 0) {
+        // Socket is not open.
+        errno = EBADF;
+        return -1;
+    }
+    ssize_t bytes_written = 0;
+    va_list args;
+    while (bytes_written < (ssize_t)num_bytes) {
+        ssize_t more = write(priv->socket_descriptor, buffer + bytes_written, num_bytes - (size_t)bytes_written);
+        if (more <= 0 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
+            // The error codes EAGAIN or EWOULDBLOCK indicate
+            // that we should try again (@see man errno).
+            // The error code EINTR means the system call was interrupted before completing.
+            LF_PRINT_DEBUG("Writing to socket was blocked. Will try again.");
+            lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
+            continue;
+        } else if (more < 0) {
+            // A more serious error occurred.
+            return -1;
+        }
+        bytes_written += more;
+    }
+    return 0;
+}
+
+int write_to_netdrv_close_on_error(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
+    socket_priv_t *priv = get_priv(drv);
+    assert(&priv->socket_descriptor);
+    int result = write_to_socket(drv, num_bytes, buffer);
+    if (result) {
+        // Write failed.
+        // Netdrv has probably been closed from the other side.
+        // Shut down and close the netdrv from this side.
+        drv.close(drv);
+    }
+    return result;
+}
+
+void write_to_netdrv_fail_on_error(
+		netdrv_t *drv,
+		size_t num_bytes,
+		unsigned char* buffer,
+		lf_mutex_t* mutex,
+		char* format, ...) {
+    va_list args;
+    socket_priv_t *priv = get_priv(drv);
+    assert(&priv->socket_descriptor);
+    int result = write_to_socket_close_on_error(drv, num_bytes, buffer);
+    if (result) {
+        // Write failed.
+        if (mutex != NULL) {
+            lf_mutex_unlock(mutex);
+        }
+        if (format != NULL) {
+            lf_print_error_system_failure(format, args);
+        } else {
+            lf_print_error("Failed to write to socket. Closing it.");
+        }
+    }
 }

@@ -52,6 +52,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "../../tag.h"
 
 #define NUM_SOCKET_RETRIES 10
+//TODO: Copied at lf_socket_support.h. Erase after finished.
 #define DELAY_BETWEEN_SOCKET_RETRIES MSEC(100)
 
 #define HOST_LITTLE_ENDIAN 1
@@ -71,23 +72,37 @@ typedef enum netdrv_type_t {
 } netdrv_type_t;
 
 typedef struct netdrv_t {
-    int  ( *open)(struct netdrv_t *drv);
-    void (*close)(struct netdrv_t *drv);
-    int  ( *read)(struct netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
-    int  (*write)(struct netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
-    // void * (*get_priv)(struct netdrv_t *drv);
+    int ( *open)(struct netdrv_t *drv);
+    int (*close)(struct netdrv_t *drv);
+    int ( *read)(struct netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
+    int (*write)(struct netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
 } netdrv_t;
+    // void * (*get_priv)(struct netdrv_t *drv);
 
-int  netdrv_open(netdrv_t *drv);
-void netdrv_close(netdrv_t *drv);
-int  netdrv_read(netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
-int  netdrv_write(netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
+
+// typedef struct netdrv_t {
+//     ...
+//     int ( *read)(size_t num_bytes, unsigned char* buffer);
+//     int ( *read_close_on_error)(size_t num_bytes, unsigned char* buffer);
+//     int ( *read_fail_on_error)(size_t num_bytes, unsigned char* buffer, lf_mutex_t* mutex, char* format, ...);
+//     ...
+// } netdrv_t;
+
+// netdrv.read(num_bytes, read_buffer);
+// netdrv.read_close_on_error(num_bytes, write_buffer);
+// netdrv.read_fail_on_error(num_bytes, write_buffer, mutex, format, ...);
+
+int netdrv_open(netdrv_t *drv);
+int netdrv_close(netdrv_t *drv);
+int netdrv_read(netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
+int netdrv_write(netdrv_t *drv, size_t num_bytes, unsigned char* buffer);
 // void * netdrv_get_privdrv(netdrv_t *drv);
 /**
  * Mutex protecting socket close operations.
  */
 extern lf_mutex_t socket_mutex;
 
+//TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
  * (TCP_NODELAY) and Delayed ACKs disabled (TCP_QUICKACK). Exits application
@@ -97,6 +112,7 @@ extern lf_mutex_t socket_mutex;
  */
 int create_real_time_tcp_socket_errexit();
 
+//TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * Read the specified number of bytes from the specified socket into the specified buffer.
  * If an error occurs during this reading, return -1 and set errno to indicate
@@ -113,6 +129,7 @@ int create_real_time_tcp_socket_errexit();
  */
 int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
 
+//TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * Read the specified number of bytes to the specified socket using read_from_socket
  * and close the socket if an error occurs. If an error occurs, this will change the
@@ -124,6 +141,7 @@ int read_from_socket(int socket, size_t num_bytes, unsigned char* buffer);
  */
 int read_from_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer);
 
+//TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * Read the specified number of bytes from the specified socket into the
  * specified buffer. If a disconnect or an EOF occurs during this
@@ -147,6 +165,7 @@ void read_from_socket_fail_on_error(
 		lf_mutex_t* mutex,
 		char* format, ...);
 
+//TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * Without blocking, peek at the specified socket and, if there is
  * anything on the queue, put its first byte at the specified address and return 1.
@@ -157,6 +176,7 @@ void read_from_socket_fail_on_error(
  */
 ssize_t peek_from_socket(int socket, unsigned char* result);
 
+//TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * Write the specified number of bytes to the specified socket from the
  * specified buffer. If an error occurs, return -1 and set errno to indicate
@@ -173,6 +193,7 @@ ssize_t peek_from_socket(int socket, unsigned char* result);
  */
 int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer);
 
+//TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * Write the specified number of bytes to the specified socket using write_to_socket
  * and close the socket if an error occurs. If an error occurs, this will change the
@@ -184,6 +205,7 @@ int write_to_socket(int socket, size_t num_bytes, unsigned char* buffer);
  */
 int write_to_socket_close_on_error(int* socket, size_t num_bytes, unsigned char* buffer);
 
+//TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
  * Write the specified number of bytes to the specified socket using
  * write_to_socket_close_on_error and exit with an error code if an error occurs.
