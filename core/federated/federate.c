@@ -396,7 +396,7 @@ static trigger_handle_t schedule_message_received_from_network_locked(
  * in which case, flag should be 1.
  *
  * @param fed_id The ID of the peer federate sending messages to this
- *  federate, or -1 if the RTI.
+ *  federate.
  * @param flag 0 if an EOF was received, -1 if a socket error occurred, 1 otherwise.
  */
 static void close_inbound_socket(int fed_id, int flag) {
