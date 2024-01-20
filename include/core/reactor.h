@@ -105,6 +105,24 @@ void _lf_executable_preamble(environment_t* env);
  *  reactor in form input_name.port_name.
  * @param value The value to insert into the self struct.
  */
+#if SCHEDULER == SCHED_STATIC
+#define _LF_SET(out, val) \
+do { \
+    /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
+    /* even if it is a literal */ \
+    out->value = val; \
+    _lf_set_present((lf_port_base_t*)out); \
+    /* Create a token for the literal. How do we generalize this to any literal type? */ \
+    int *payload = (int*)calloc(1, sizeof(int)); \
+    *payload = val; \
+    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, (void*)payload, 1); \
+    /* VERY IMPORTANT: Increment reference count > 1 so that it does NOT get reused right away */ \
+    /* FIXME: I still don't fully understand this. */
+    token->ref_count = 1; \
+    /* DEBUG: The token address should be distinct. */ \
+    lf_print("Token address = %p", token); \
+} while(0)
+#else
 #define _LF_SET(out, val) \
 do { \
     /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
@@ -117,6 +135,7 @@ do { \
         lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, *((void**) &out->value), 1); \
     } \
 } while(0)
+#endif
 
 /**
  * Version of set for output types given as 'type[]' where you
