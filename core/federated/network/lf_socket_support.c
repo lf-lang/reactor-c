@@ -285,9 +285,9 @@ void create_net_server(netdrv_t *drv, netdrv_type_t netdrv_type) {
 void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv) {
     socket_priv_t *rti_priv = get_priv(rti_netdrv);
     socket_priv_t *clock_priv = get_priv(clock_netdrv);
-    // Shutdown and close the socket so that the accept() call in
-    // respond_to_erroneous_connections returns. That thread should then
-    // check rti->all_federates_exited and it should exit.
+    // Shutdown and close the socket that is listening for incoming connections
+    // so that the accept() call in respond_to_erroneous_connections returns.
+    // That thread should then check rti->all_federates_exited and it should exit.
     if (shutdown(rti_priv->socket_descriptor, SHUT_RDWR)) {
         LF_PRINT_LOG("On shut down TCP socket, received reply: %s", strerror(errno));
     }

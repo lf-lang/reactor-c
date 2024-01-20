@@ -2221,12 +2221,12 @@ void net_wait_for_federates(netdrv_t *netdrv) {
     lf_thread_create(&responder_thread, respond_to_erroneous_connections, NULL);
 
     // Wait for federate threads to exit.
-    void* thread_exit_status;
+    void *thread_exit_status;
     for (int i = 0; i < rti_remote->base.number_of_scheduling_nodes; i++) {
-        federate_info_t* fed = GET_FED_INFO(i);
+        federate_info_t *fed = GET_FED_INFO(i);
         lf_print("RTI: Waiting for thread handling federate %d.", fed->enclave.id);
         lf_thread_join(fed->thread_id, &thread_exit_status);
-        free_in_transit_message_q(fed->in_transit_message_tags);
+        pqueue_tag_free(fed->in_transit_message_tags);
         lf_print("RTI: Federate %d thread exited.", fed->enclave.id);
     }
 
