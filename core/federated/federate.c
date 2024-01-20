@@ -527,7 +527,6 @@ static int handle_tagged_message(int* socket, int fed_id) {
     environment_t *env;
     _lf_get_environments(&env);
 
-    // FIXME: Need better error handling?
     // Read the header which contains the timestamp.
     size_t bytes_to_read = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int32_t)
             + sizeof(instant_t) + sizeof(microstep_t);
