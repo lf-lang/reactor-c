@@ -1,37 +1,15 @@
 /**
  * @file
  * @author Edward A. Lee
- *
- * @section LICENSE
-Copyright (c) 2020, The University of California at Berkeley and TU Dresden
-
-Redistribution and use in source and binary forms, with or without modification,
-are permitted provided that the following conditions are met:
-
-1. Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
-
-2. Redistributions in binary form must reproduce the above copyright notice,
-   this list of conditions and the following disclaimer in the documentation
-   and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL
-THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
- * @section DESCRIPTION
- * Definitions of tracepoint events for use with the C code generator and any other
+ * @author Peter Donovan
+ * @copyright (c) 2020-2024, The University of California at Berkeley.
+ * License: <a href="https://github.com/lf-lang/reactor-c/blob/main/LICENSE.md">BSD 2-clause</a>
+ * @brief Definitions of tracepoint functions for use with the C code generator and any other
  * code generator that uses the C infrastructure (such as the Python code generator).
  *
  * See: https://www.lf-lang.org/docs/handbook/tracing?target=c
  *
- * The trace file is named trace.lft and is a binary file with the following format:
+* The trace file is named trace.lft and is a binary file with the following format:
  *
  * Header:
  * * instant_t: The start time. This is both the starting physical time and the starting logical time.
@@ -64,8 +42,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * string representation below. Also, create a tracepoint function
  * for each event type.
  */
-typedef enum
-{
+typedef enum {
     reaction_starts,
     reaction_ends,
     reaction_deadline_missed,
@@ -196,7 +173,9 @@ static const char *trace_event_names[] = {
 #define TRACE_OBJECT_TABLE_SIZE 1024
 
 /**
- * @brief A trace record that is written in binary to the trace file.
+ * @brief A trace record/
+ * 
+ * This gets written in binary to the trace file in the default implementation.
  */
 typedef struct trace_record_t {
     trace_event_t event_type;
@@ -229,6 +208,7 @@ struct object_description_t {
     _lf_trace_object_t type;  // The type of trace object.
     char* description; // A NULL terminated string.
 };
+
 /**
  * 
  * @brief This struct holds all the state associated with tracing in a single environment.
@@ -267,7 +247,6 @@ typedef struct trace_t {
     environment_t* env;
 } trace_t;
 
-
 /**
  * @brief Dynamically allocate a new tracing object. 
  * 
@@ -283,7 +262,6 @@ trace_t* trace_new(environment_t *env, const char *filename);
  * @param trace 
  */
 void trace_free(trace_t *trace);
-
 
 /**
  * Register a trace object.
@@ -354,7 +332,8 @@ void tracepoint(
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
-void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker);
+#define tracepoint_reaction_starts(trace, reaction, worker) \
+    tracepoint(trace, reaction_starts, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, true)
 
 /**
  * Trace the end of a reaction execution.
@@ -362,7 +341,8 @@ void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
-void tracepoint_reaction_ends(trace_t* trace, reaction_t* reaction, int worker);
+#define tracepoint_reaction_ends(trace, reaction, worker) \
+    tracepoint(trace, reaction_ends, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false)
 
 /**
  * Trace a call to schedule.
@@ -400,43 +380,48 @@ void tracepoint_user_value(void* self, char* description, long long value);
 
 /**
  * Trace the start of a worker waiting for something to change on the reaction queue.
- * @param env The environment in which we are executing
+ * @param trace The trace object.
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
-void tracepoint_worker_wait_starts(trace_t* trace, int worker);
+#define tracepoint_worker_wait_starts(trace, worker) \
+    tracepoint(trace, worker_wait_starts, NULL, NULL, worker, worker, -1, NULL, NULL, 0, true)
 
 /**
- * Trace the end of a worker waiting for something to change on reaction queue.
- * @param env The environment in which we are executing
+ * Trace the end of a worker waiting for something to change on the event or reaction queue.
+ * @param trace The trace object.
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
-void tracepoint_worker_wait_ends(trace_t* trace, int worker);
+#define tracepoint_worker_wait_ends(trace, worker) \
+    tracepoint(trace, worker_wait_ends, NULL, NULL, worker, worker, -1, NULL, NULL, 0, false)
 
 /**
  * Trace the start of the scheduler waiting for logical time to advance or an event to
  * appear on the event queue.
- * @param env The environment in which we are executing
+ * @param trace The trace object.
  */
-void tracepoint_scheduler_advancing_time_starts(trace_t* trace);
+#define tracepoint_scheduler_advancing_time_starts(trace) \
+    tracepoint(trace, scheduler_advancing_time_starts, NULL, NULL, -1, -1, -1, NULL, NULL, 0, true);
 
 /**
  * Trace the end of the scheduler waiting for logical time to advance or an event to
  * appear on the event queue.
- * @param env The environment in which we are executing
+ * @param trace The trace object.
  */
-void tracepoint_scheduler_advancing_time_ends(trace_t* trace);
+#define tracepoint_scheduler_advancing_time_ends(trace) \
+    tracepoint(trace, scheduler_advancing_time_ends, NULL, NULL, -1, -1, -1, NULL, NULL, 0, false)
 
 /**
- * Trace the occurence of a deadline miss.
- * @param env The environment in which we are executing
+ * Trace the occurrence of a deadline miss.
+ * @param trace The trace object.
  * @param reaction Pointer to the reaction_t struct for the reaction.
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
-void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, int worker);
+#define tracepoint_reaction_deadline_missed(trace, reaction, worker) \
+    tracepoint(trace, reaction_deadline_missed, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false)
 
 /**
- * Flush any buffered trace records to the trace file and
- * close the files.
+ * Flush any buffered trace records to the trace file and close the files.
+ * @param trace The trace object.
  */
 void stop_trace(trace_t* trace);
 

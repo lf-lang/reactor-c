@@ -82,7 +82,6 @@ void trace_free(trace_t *trace) {
     free(trace);
 }
 
-
 int _lf_register_trace_event(trace_t* trace, void* pointer1, void* pointer2, _lf_trace_object_t type, char* description) {
     lf_critical_section_enter(trace->env);
     if (trace->_lf_trace_object_descriptions_size >= TRACE_OBJECT_TABLE_SIZE) {
@@ -105,13 +104,12 @@ int register_user_trace_event(void *self, char* description) {
     return _lf_register_trace_event(trace, description, NULL, trace_user, description);
 }
 
-
 /**
  * Write the trace header information.
  * See trace.h.
  * @return The number of items written to the object table or -1 for failure.
  */
-int write_trace_header(trace_t* trace) {
+static int write_trace_header(trace_t* trace) {
     if (trace->_lf_trace_file != NULL) {
         // The first item in the header is the start time.
         // This is both the starting physical time and the starting logical time.
@@ -326,24 +324,6 @@ void tracepoint(
 }
 
 /**
- * Trace the start of a reaction execution.
- * @param reaction Pointer to the reaction_t struct for the reaction.
- * @param worker The thread number of the worker thread or 0 for single-threaded execution.
- */
-void tracepoint_reaction_starts(trace_t* trace, reaction_t* reaction, int worker) {
-    tracepoint(trace, reaction_starts, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, true);
-}
-
-/**
- * Trace the end of a reaction execution.
- * @param reaction Pointer to the reaction_t struct for the reaction.
- * @param worker The thread number of the worker thread or 0 for single-threaded execution.
- */
-void tracepoint_reaction_ends(trace_t* trace, reaction_t* reaction, int worker) {
-    tracepoint(trace, reaction_ends, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
-}
-
-/**
  * Trace a call to schedule.
  * @param trigger Pointer to the trigger_t struct for the trigger.
  * @param extra_delay The extra delay passed to schedule().
@@ -416,47 +396,6 @@ void tracepoint_user_value(void* self, char* description, long long value) {
     lf_critical_section_enter(env);
     tracepoint(trace, user_value, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
     lf_critical_section_exit(env);
-}
-
-/**
- * Trace the start of a worker waiting for something to change on the event or reaction queue.
- * @param worker The thread number of the worker thread or 0 for single-threaded execution.
- */
-void tracepoint_worker_wait_starts(trace_t* trace, int worker) {
-    tracepoint(trace, worker_wait_starts, NULL, NULL, worker, worker, -1, NULL, NULL, 0, true);
-}
-
-/**
- * Trace the end of a worker waiting for something to change on the event or reaction queue.
- * @param worker The thread number of the worker thread or 0 for single-threaded execution.
- */
-void tracepoint_worker_wait_ends(trace_t* trace, int worker) {
-    tracepoint(trace, worker_wait_ends, NULL, NULL, worker, worker, -1, NULL, NULL, 0, false);
-}
-
-/**
- * Trace the start of the scheduler waiting for logical time to advance or an event to
- * appear on the event queue.
- */
-void tracepoint_scheduler_advancing_time_starts(trace_t* trace) {
-    tracepoint(trace, scheduler_advancing_time_starts, NULL, NULL, -1, -1, -1, NULL, NULL, 0, true);
-}
-
-/**
- * Trace the end of the scheduler waiting for logical time to advance or an event to
- * appear on the event queue.
- */
-void tracepoint_scheduler_advancing_time_ends(trace_t* trace) {
-    tracepoint(trace, scheduler_advancing_time_ends, NULL, NULL, -1, -1, -1, NULL, NULL, 0, false);
-}
-
-/**
- * Trace the occurrence of a deadline miss.
- * @param reaction Pointer to the reaction_t struct for the reaction.
- * @param worker The thread number of the worker thread or 0 for single-threaded execution.
- */
-void tracepoint_reaction_deadline_missed(trace_t* trace, reaction_t *reaction, int worker) {
-    tracepoint(trace, reaction_deadline_missed, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false);
 }
 
 void stop_trace(trace_t* trace) {
