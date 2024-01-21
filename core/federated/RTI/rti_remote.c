@@ -365,15 +365,15 @@ void handle_port_absent_message(federate_info_t *sending_federate, unsigned char
         lf_cond_wait(&sent_start_time);
     }
 
+    if (rti_remote->base.tracing_enabled) {
+        tracepoint_rti_to_federate(rti_remote->base.trace, send_PORT_ABS, federate_id, &tag);
+    }
+
     // Forward the message.
     write_to_socket_fail_on_error(&fed->socket, message_size + 1, buffer, &rti_mutex,
                                   "RTI failed to forward message to federate %d.", federate_id);
 
     LF_MUTEX_UNLOCK(rti_mutex);
-
-    if (rti_remote->base.tracing_enabled) {
-        tracepoint_rti_to_federate(rti_remote->base.trace, send_PORT_ABS, federate_id, &tag);
-    }
 }
 
 void handle_timed_message(federate_info_t *sending_federate, unsigned char *buffer) {
@@ -725,11 +725,11 @@ void handle_stop_request_message(federate_info_t *fed) {
                 mark_federate_requesting_stop(f);
                 continue;
             }
-            write_to_socket_fail_on_error(&f->socket, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer, &rti_mutex,
-                    "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.", f->enclave.id);
             if (rti_remote->base.tracing_enabled) {
                 tracepoint_rti_to_federate(rti_remote->base.trace, send_STOP_REQ, f->enclave.id, &rti_remote->base.max_stop_tag);
             }
+            write_to_socket_fail_on_error(&f->socket, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer, &rti_mutex,
+                    "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.", f->enclave.id);
         }
     }
     LF_PRINT_LOG("RTI forwarded to federates MSG_TYPE_STOP_REQUEST with tag (" PRINTF_TIME ", %u).",
@@ -1197,8 +1197,7 @@ void *federate_info_thread_TCP(void *fed) {
             return NULL;
         default:
             lf_print_error("RTI received from federate %d an unrecognized TCP message type: %u.", my_fed->enclave.id, buffer[0]);
-            if (rti_remote->base.tracing_enabled)
-            {
+            if (rti_remote->base.tracing_enabled) {
                 tracepoint_rti_from_federate(rti_remote->base.trace, receive_UNIDENTIFIED, my_fed->enclave.id, NULL);
             }
         }
@@ -1253,6 +1252,9 @@ static int32_t receive_and_check_fed_id_message(int *socket_id, struct sockaddr_
 
     // First byte received is the message type.
     if (buffer[0] != MSG_TYPE_FED_IDS) {
+        if (rti_remote->base.tracing_enabled) {
+            tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
+        }
         if (buffer[0] == MSG_TYPE_P2P_SENDING_FED_ID || buffer[0] == MSG_TYPE_P2P_TAGGED_MESSAGE) {
             // The federate is trying to connect to a peer, not to the RTI.
             // It has connected to the RTI instead.
@@ -1264,9 +1266,6 @@ static int32_t receive_and_check_fed_id_message(int *socket_id, struct sockaddr_
             send_reject(socket_id, WRONG_SERVER);
         } else {
             send_reject(socket_id, UNEXPECTED_MESSAGE);
-        }
-        if (rti_remote->base.tracing_enabled) {
-            tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
         }
         lf_print_error("RTI expected a MSG_TYPE_FED_IDS message. Got %u (see net_common.h).", buffer[0]);
         return -1;
