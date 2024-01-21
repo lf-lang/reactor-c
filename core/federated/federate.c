@@ -821,15 +821,17 @@ static void* listen_to_federates(void* _args) {
 
 /**
  * Close the socket that sends outgoing messages to the
- * specified federate ID. This function assumes the caller holds
- * the lf_outbound_socket_mutex mutex lock, at least during normal termination.
+ * specified federate ID. This function acquires the lf_outbound_socket_mutex mutex lock
+ * if _lf_normal_termination is true and otherwise proceeds without the lock.
  * @param fed_id The ID of the peer federate receiving messages from this
  *  federate, or -1 if the RTI (centralized coordination).
  * @param flag 0 if the socket has received EOF, 1 if not, -1 if abnormal termination.
  */
 static void close_outbound_socket(int fed_id, int flag) {
     assert (fed_id >= 0 && fed_id < NUMBER_OF_FEDERATES);
-    LF_MUTEX_LOCK(lf_outbound_socket_mutex);
+    if (_lf_normal_termination) {
+        LF_MUTEX_LOCK(lf_outbound_socket_mutex);
+    }
     if (_fed.sockets_for_outbound_p2p_connections[fed_id] >= 0) {
         // Close the socket by sending a FIN packet indicating that no further writes
         // are expected.  Then read until we get an EOF indication.
@@ -847,7 +849,9 @@ static void close_outbound_socket(int fed_id, int flag) {
         close(_fed.sockets_for_outbound_p2p_connections[fed_id]);
         _fed.sockets_for_outbound_p2p_connections[fed_id] = -1;
     }
-    LF_MUTEX_UNLOCK(lf_outbound_socket_mutex);
+    if (_lf_normal_termination) {
+        LF_MUTEX_UNLOCK(lf_outbound_socket_mutex);
+    }
 }
 
 #ifdef FEDERATED_AUTHENTICATED
