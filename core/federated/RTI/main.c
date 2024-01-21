@@ -286,6 +286,7 @@ int process_args(int argc, const char* argv[]) {
 int main(int argc, const char* argv[]) {
 
     initialize_RTI(&rti);
+    _lf_load_tracing_api(-1);
 
     // Catch the Ctrl-C signal, for a clean exit that does not lose the trace information
     signal(SIGINT, exit);
