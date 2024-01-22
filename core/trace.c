@@ -53,7 +53,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         fprintf(stderr, "WARNING: Access to trace file failed.\n"); \
         fclose(trace->_lf_trace_file); \
         trace->_lf_trace_file = NULL; \
-        lf_critical_section_exit(trace->env); \
         return -1; \
     } while(0)
 
@@ -196,7 +195,10 @@ void flush_trace_locked(trace_t* trace, int worker) {
         // This is deferred to here so that user trace objects can be
         // registered in startup reactions.
         if (!trace->_lf_trace_header_written) {
-            write_trace_header(trace);
+            if (write_trace_header(trace) < 0) {
+                lf_print_error("Failed to write trace header. Trace file will be incomplete.");
+                return;
+            }
             trace->_lf_trace_header_written = true;
         }
 
@@ -482,8 +484,10 @@ void stop_trace_locked(trace_t* trace) {
         flush_trace_locked(trace, 0);
     }
     trace->_lf_trace_stop = 1;
-    fclose(trace->_lf_trace_file);
-    trace->_lf_trace_file = NULL;
+    if (trace->_lf_trace_file != NULL) {
+        fclose(trace->_lf_trace_file);
+        trace->_lf_trace_file = NULL;
+    }
     LF_PRINT_DEBUG("Stopped tracing.");
 }
 

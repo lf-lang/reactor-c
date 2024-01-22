@@ -73,7 +73,6 @@ add_executable(
     ${CoreLib}/utils/pqueue_base.c
     ${CoreLib}/utils/pqueue_tag.c
     ${CoreLib}/utils/pqueue.c
-    message_record/message_record.c
 )
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
