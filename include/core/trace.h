@@ -248,7 +248,7 @@ typedef struct trace_t {
 
 typedef void tracepoint_fn_t(
         void* trace,
-        trace_event_t event_type,
+        int event_type, // trace_event_t
         void* reactor,
         tag_t* tag,
         int worker,
