@@ -1,7 +1,6 @@
 var reactor__threaded_8c =
 [
     [ "MAX_STALL_INTERVAL", "d5/dbc/reactor__threaded_8c.html#a2759df05e92b68f74325190e9a6aca13", null ],
-    [ "MIN_SLEEP_DURATION", "d5/dbc/reactor__threaded_8c.html#a3b755b6f58cb9ea64ae2f1ba9a382c86", null ],
     [ "NUMBER_OF_WORKERS", "d5/dbc/reactor__threaded_8c.html#a43fcdba4ed8864d210afd3f031b4e346", null ],
     [ "_lf_decrement_tag_barrier_locked", "d5/dbc/reactor__threaded_8c.html#a5a0540790dfc6d954fb443da3336ce27", null ],
     [ "_lf_increment_tag_barrier", "d5/dbc/reactor__threaded_8c.html#aa8e97abcbd89bb371d396da44ff4becb", null ],
@@ -26,7 +25,6 @@ var reactor__threaded_8c =
     [ "lf_request_stop", "d5/dbc/reactor__threaded_8c.html#aa217496c12cb5b53dad3d91e203cc323", null ],
     [ "send_next_event_tag", "d5/dbc/reactor__threaded_8c.html#a6f9a4a14de3aa9e560935a57093eb122", null ],
     [ "start_threads", "d5/dbc/reactor__threaded_8c.html#aebbe83b2cb8e4ff5180c33eb8c8f9739", null ],
-    [ "synchronize_with_other_federates", "d5/dbc/reactor__threaded_8c.html#a1050d75d3d2a6a00effec4e07d7ad031", null ],
     [ "try_advance_level", "d5/dbc/reactor__threaded_8c.html#a5fdda22cb08d864a229c84f1ba995b21", null ],
     [ "wait_until", "d5/dbc/reactor__threaded_8c.html#ab769495d64de2c45344fad51a14d3db2", null ],
     [ "worker", "d5/dbc/reactor__threaded_8c.html#a15b16453216ed29570af03009e7c7c63", null ],

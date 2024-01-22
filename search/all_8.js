@@ -30,6 +30,6 @@ var searchData=
   ['audio_5floop_5flinux_2ec_27',['audio_loop_linux.c',['../da/d0e/audio__loop__linux_8c.html',1,'']]],
   ['audio_5floop_5fmac_2ec_28',['audio_loop_mac.c',['../d5/daa/audio__loop__mac_8c.html',1,'']]],
   ['avail_29',['avail',['../d5/d38/structpqueue__t.html#a2edc2359d1420efc7031677ecd19c1ec',1,'pqueue_t']]],
-  ['average_30',['average',['../db/d63/structlf__stat__ll.html#a33b66435c85f8a8297e3d39f6d3be218',1,'lf_stat_ll']]],
+  ['average_30',['average',['../db/d63/structlf__stat__ll.html#aa1018daf35cf8d68814ee876382eaecc',1,'lf_stat_ll']]],
   ['avr_31',['AVR',['../d3/d79/lf__arduino__support_8h.html#a1519396040c1c9c28f597ccfbae61843',1,'lf_arduino_support.h']]]
 ];

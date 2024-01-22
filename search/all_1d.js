@@ -5,7 +5,7 @@ var searchData=
   ['value_5ffreed_2',['VALUE_FREED',['../d2/dff/lf__token_8h.html#abe23a36a87d2f0c076da417eb0114c7ea417a0268666423fd955fea6f38cde238',1,'lf_token.h']]],
   ['var_3',['var',['../dd/d70/generics_8h.html#a1b0936415a643c88ce543099c10e0d7f',1,'generics.h']]],
   ['variable_20names_207_201e_4',['Short variable names (7.1e)',['../d6/dcd/md__c_o_n_t_r_i_b_u_t_i_n_g.html#autotoc_md13',1,'']]],
-  ['variance_5',['variance',['../db/d63/structlf__stat__ll.html#a01442ef866207612cf33c90949ae0007',1,'lf_stat_ll']]],
+  ['variance_5',['variance',['../db/d63/structlf__stat__ll.html#a58abf354e780a1ec59cae3644d2fcbc1',1,'lf_stat_ll']]],
   ['vector_2ec_6',['vector.c',['../df/dfa/vector_8c.html',1,'']]],
   ['vector_2eh_7',['vector.h',['../d6/d68/vector_8h.html',1,'']]],
   ['vector_5fat_8',['vector_at',['../df/dfa/vector_8c.html#a201cb1fd5299e01b6fdfb499d3008952',1,'vector_at(vector_t *v, size_t idx):&#160;vector.c'],['../d6/d68/vector_8h.html#a201cb1fd5299e01b6fdfb499d3008952',1,'vector_at(vector_t *v, size_t idx):&#160;vector.c']]],

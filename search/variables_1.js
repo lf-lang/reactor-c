@@ -11,5 +11,5 @@ var searchData=
   ['array_5fof_5fmutexes_8',['array_of_mutexes',['../da/d7a/structlf__scheduler__t.html#a9ab8fa3b3b1554eaa4101b8aaa167add',1,'lf_scheduler_t']]],
   ['audio_5fformat_9',['audio_format',['../d1/d3f/structlf__wav__format__t.html#a52979bb4f51994d359760876aa1c9db8',1,'lf_wav_format_t']]],
   ['avail_10',['avail',['../d5/d38/structpqueue__t.html#a2edc2359d1420efc7031677ecd19c1ec',1,'pqueue_t']]],
-  ['average_11',['average',['../db/d63/structlf__stat__ll.html#a33b66435c85f8a8297e3d39f6d3be218',1,'lf_stat_ll']]]
+  ['average_11',['average',['../db/d63/structlf__stat__ll.html#aa1018daf35cf8d68814ee876382eaecc',1,'lf_stat_ll']]]
 ];

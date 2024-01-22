@@ -21,9 +21,8 @@ var searchData=
   ['sha256_5fhmac_5flength_18',['SHA256_HMAC_LENGTH',['../d9/da6/net__common_8h.html#abd435507a255ff2571133013bdf93bd2',1,'net_common.h']]],
   ['socket_5fread_5fretry_5finterval_19',['SOCKET_READ_RETRY_INTERVAL',['../de/df1/util_8c.html#a065f1f00e4a82d34116e1cd8734fabde',1,'util.c']]],
   ['start_5ftrace_20',['start_trace',['../d1/d1b/trace_8h.html#a27e365336dc38cd3fec8741832c0e195',1,'trace.h']]],
-  ['starting_5fport_21',['STARTING_PORT',['../d9/da6/net__common_8h.html#a3935567021a890f8b97f3d733ca5cfa1',1,'net_common.h']]],
-  ['stop_5ftrace_22',['stop_trace',['../d1/d1b/trace_8h.html#a9c54cf0034978f2dd5b3521fc522d237',1,'trace.h']]],
-  ['stop_5ftrace_5flocked_23',['stop_trace_locked',['../d1/d1b/trace_8h.html#aa8c7f01120c9a062093dd061bcc2fb1c',1,'trace.h']]],
-  ['stringify_24',['STRINGIFY',['../db/dc8/pythontarget_8h.html#a43e1cad902b6477bec893cb6430bd6c8',1,'pythontarget.h']]],
-  ['suppress_5funused_5fwarning_25',['SUPPRESS_UNUSED_WARNING',['../dc/d65/api_8h.html#a4625be3023ef492f25fd5193ef754774',1,'api.h']]]
+  ['stop_5ftrace_21',['stop_trace',['../d1/d1b/trace_8h.html#a9c54cf0034978f2dd5b3521fc522d237',1,'trace.h']]],
+  ['stop_5ftrace_5flocked_22',['stop_trace_locked',['../d1/d1b/trace_8h.html#aa8c7f01120c9a062093dd061bcc2fb1c',1,'trace.h']]],
+  ['stringify_23',['STRINGIFY',['../db/dc8/pythontarget_8h.html#a43e1cad902b6477bec893cb6430bd6c8',1,'pythontarget.h']]],
+  ['suppress_5funused_5fwarning_24',['SUPPRESS_UNUSED_WARNING',['../dc/d65/api_8h.html#a4625be3023ef492f25fd5193ef754774',1,'api.h']]]
 ];

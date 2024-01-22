@@ -2,7 +2,7 @@ var structtrigger__t =
 [
     [ "is_physical", "d6/d13/structtrigger__t.html#aec6676110ebe0f82293e2f916312e4a0", null ],
     [ "is_timer", "d6/d13/structtrigger__t.html#a6beec6375e3259c9ed1aa006074bd315", null ],
-    [ "last_time", "d6/d13/structtrigger__t.html#abdb060cb071ac5499990653cfeec61fc", null ],
+    [ "last_tag", "d6/d13/structtrigger__t.html#a60626b318fd14e908f12e065af616880", null ],
     [ "mode", "d6/d13/structtrigger__t.html#ab6427e404b91c483332fc1a1722e8cc7", null ],
     [ "number_of_reactions", "d6/d13/structtrigger__t.html#a53bebeaf8708d9dbe859df99972fb667", null ],
     [ "offset", "d6/d13/structtrigger__t.html#afb30417114ed72187e37528523ca65c6", null ],

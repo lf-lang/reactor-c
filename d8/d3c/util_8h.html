@@ -101,6 +101,7 @@ $(document).ready(function(){initNavTree('d8/d3c/util_8h.html','../../'); initRe
 <div class="contents">
 <div class="textblock"><code>#include &lt;stdarg.h&gt;</code><br />
 <code>#include &lt;stdbool.h&gt;</code><br />
+<code>#include &lt;stdint.h&gt;</code><br />
 </div>
 <p><a href="../../d8/d3c/util_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -141,6 +142,16 @@ Macros</h2></td></tr>
 <tr class="separator:ab5a65df50027549a8245f6b3eaff97e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a26ab6a0fd21cdcff11a5557406536bf1" id="r_a26ab6a0fd21cdcff11a5557406536bf1"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#a26ab6a0fd21cdcff11a5557406536bf1">LF_ASSERT</a>(condition,  format, ...)</td></tr>
 <tr class="separator:a26ab6a0fd21cdcff11a5557406536bf1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1c464cee8cabb65eebf454fc016d47b1" id="r_a1c464cee8cabb65eebf454fc016d47b1"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#a1c464cee8cabb65eebf454fc016d47b1">LF_ASSERTN</a>(condition,  format, ...)</td></tr>
+<tr class="separator:a1c464cee8cabb65eebf454fc016d47b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:adab0b8f13f8462ec0eddc7257ddb5394" id="r_adab0b8f13f8462ec0eddc7257ddb5394"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#adab0b8f13f8462ec0eddc7257ddb5394">LF_MUTEX_INIT</a>(mutex)&#160;&#160;&#160;<a class="el" href="../../d8/d3c/util_8h.html#a1c464cee8cabb65eebf454fc016d47b1">LF_ASSERTN</a>(<a class="el" href="../../d3/d9c/lf___c11__threads__support_8c.html#aa6f228487e6af38e496882f406aafaf6">lf_mutex_init</a>(&amp;mutex), &quot;Mutex <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">init</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">failed.&quot;</a>)</td></tr>
+<tr class="separator:adab0b8f13f8462ec0eddc7257ddb5394"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab907d4c8d53c26fdbcbaa8d02e6a8810" id="r_ab907d4c8d53c26fdbcbaa8d02e6a8810"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#ab907d4c8d53c26fdbcbaa8d02e6a8810">LF_MUTEX_LOCK</a>(mutex)&#160;&#160;&#160;<a class="el" href="../../d8/d3c/util_8h.html#a1c464cee8cabb65eebf454fc016d47b1">LF_ASSERTN</a>(<a class="el" href="../../d3/d9c/lf___c11__threads__support_8c.html#ac4c0721974b31d98f491be1febeb2c9a">lf_mutex_lock</a>(&amp;mutex), &quot;Mutex <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">lock</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">failed.&quot;</a>)</td></tr>
+<tr class="separator:ab907d4c8d53c26fdbcbaa8d02e6a8810"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2bb9c8d2b589a6eb4f72f6750a1133fc" id="r_a2bb9c8d2b589a6eb4f72f6750a1133fc"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#a2bb9c8d2b589a6eb4f72f6750a1133fc">LF_MUTEX_UNLOCK</a>(mutex)&#160;&#160;&#160;<a class="el" href="../../d8/d3c/util_8h.html#a1c464cee8cabb65eebf454fc016d47b1">LF_ASSERTN</a>(<a class="el" href="../../d3/d9c/lf___c11__threads__support_8c.html#a01c4d5070c8402d4713a3fcab5a46a9f">lf_mutex_unlock</a>(&amp;mutex), &quot;Mutex <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">unlock</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">failed.&quot;</a>)</td></tr>
+<tr class="separator:a2bb9c8d2b589a6eb4f72f6750a1133fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47d73a5ec6fa7ebc7838312cb93c2bb8" id="r_a47d73a5ec6fa7ebc7838312cb93c2bb8"><td class="memItemLeft" align="right" valign="top">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#a47d73a5ec6fa7ebc7838312cb93c2bb8">LF_COND_INIT</a>(cond,  mutex)&#160;&#160;&#160;<a class="el" href="../../d8/d3c/util_8h.html#a1c464cee8cabb65eebf454fc016d47b1">LF_ASSERTN</a>(<a class="el" href="../../d3/d9c/lf___c11__threads__support_8c.html#ab32dc7869dd4cf48bda70663f2591ae1">lf_cond_init</a>(&amp;cond, &amp;mutex), &quot;Condition <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">variable</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">init</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">failed.&quot;</a>)</td></tr>
+<tr class="separator:a47d73a5ec6fa7ebc7838312cb93c2bb8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -175,11 +186,13 @@ Functions</h2></td></tr>
 <tr class="separator:abce9ddab1394675a9305be42fae67ebc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a70c26a4acb499ff8710d035eec14680b" id="r_a70c26a4acb499ff8710d035eec14680b"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#a70c26a4acb499ff8710d035eec14680b">lf_print_error_and_exit</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *format,...) <a class="el" href="../../d8/d3c/util_8h.html#a1e753fbf3551d4a04cd45c04b5a90867">ATTRIBUTE_FORMAT_PRINTF</a>(1</td></tr>
 <tr class="separator:a70c26a4acb499ff8710d035eec14680b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9d6ed78bc22f074a040a0f46ecae9bce" id="r_a9d6ed78bc22f074a040a0f46ecae9bce"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#a9d6ed78bc22f074a040a0f46ecae9bce">lf_vprint_error_and_exit</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *format, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">va_list</a> args) <a class="el" href="../../d8/d3c/util_8h.html#a1e753fbf3551d4a04cd45c04b5a90867">ATTRIBUTE_FORMAT_PRINTF</a>(1</td></tr>
-<tr class="separator:a9d6ed78bc22f074a040a0f46ecae9bce"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1917df59f183af6181ebafdf50877246" id="r_a1917df59f183af6181ebafdf50877246"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>()&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#a1917df59f183af6181ebafdf50877246">print_message_function_t</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">va_list</a>)</td></tr>
-<tr class="separator:a1917df59f183af6181ebafdf50877246"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6ad22ca79136cd15dc0d560aec067f76" id="r_a6ad22ca79136cd15dc0d560aec067f76"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#a6ad22ca79136cd15dc0d560aec067f76">lf_register_print_function</a> (<a class="el" href="../../d8/d3c/util_8h.html#a1917df59f183af6181ebafdf50877246">print_message_function_t</a> *function, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">log_level</a>)</td></tr>
+<tr class="memitem:a092bfce84e225f228332ca8d4926d7d2" id="r_a092bfce84e225f228332ca8d4926d7d2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#a092bfce84e225f228332ca8d4926d7d2">lf_print_error_system_failure</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *format,...)</td></tr>
+<tr class="separator:a092bfce84e225f228332ca8d4926d7d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af7d17d1c521edc81e08aa92ea4de1d22" id="r_af7d17d1c521edc81e08aa92ea4de1d22"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#af7d17d1c521edc81e08aa92ea4de1d22">lf_vprint_error_and_exit</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *format, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">va_list</a> args) <a class="el" href="../../d8/d3c/util_8h.html#a1e753fbf3551d4a04cd45c04b5a90867">ATTRIBUTE_FORMAT_PRINTF</a>(1</td></tr>
+<tr class="separator:af7d17d1c521edc81e08aa92ea4de1d22"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a80fbbd25930ec00b5e52814e82a439b7" id="r_a80fbbd25930ec00b5e52814e82a439b7"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>()&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#a80fbbd25930ec00b5e52814e82a439b7">print_message_function_t</a> (<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">va_list</a>)</td></tr>
+<tr class="separator:a80fbbd25930ec00b5e52814e82a439b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6ad22ca79136cd15dc0d560aec067f76" id="r_a6ad22ca79136cd15dc0d560aec067f76"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d3c/util_8h.html#a6ad22ca79136cd15dc0d560aec067f76">lf_register_print_function</a> (<a class="el" href="../../d8/d3c/util_8h.html#a80fbbd25930ec00b5e52814e82a439b7">print_message_function_t</a> *function, <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">int</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">log_level</a>)</td></tr>
 <tr class="separator:a6ad22ca79136cd15dc0d560aec067f76"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a id="var-members" name="var-members"></a>
@@ -305,7 +318,74 @@ Functions intitializing and freeing memory for environments.</h1>
 <div class="line">        } \</div>
 <div class="line">    } <span class="keywordflow">while</span>(0)</div>
 <div class="ttc" id="ahashmap_8h_html_ad2c17ed7e0d4d65a63bf9002aba2016f"><div class="ttname"><a href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">address</a></div><div class="ttdeci">return address</div><div class="ttdef"><b>Definition</b> hashmap.h:74</div></div>
-</div><!-- fragment --><p>Assertion handling. LF_ASSERT can be used as a short hand for verifying a condition and calling <code>lf_print_error_and_exit</code> if it is not true. This is optimized away if the NDEBUG flag is defined. </p>
+</div><!-- fragment --><p>Assertion handling. LF_ASSERT can be used as a shorthand for verifying a condition and calling <code>lf_print_error_and_exit</code> if it is not true. The LF_ASSERT version requires that the condition evaluate to true (non-zero), whereas the LF_ASSERTN version requires that the condition evaluate to false (zero). These are optimized away if the NDEBUG flag is defined. </p>
+
+</div>
+</div>
+<a id="a1c464cee8cabb65eebf454fc016d47b1" name="a1c464cee8cabb65eebf454fc016d47b1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1c464cee8cabb65eebf454fc016d47b1">&#9670;&#160;</a></span>LF_ASSERTN</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> LF_ASSERTN</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">condition, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">format, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<b>Value:</b><div class="fragment"><div class="line">    <span class="keywordflow">do</span> { <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">\</a></div>
+<div class="line"><a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">		if</a> (condition) { <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">\</a></div>
+<div class="line"><a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">				lf_print_error_and_exit</a>(format, ##<a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">__VA_ARGS__</a>); \</div>
+<div class="line">        } \</div>
+<div class="line">    } <span class="keywordflow">while</span>(0)</div>
+</div><!-- fragment -->
+</div>
+</div>
+<a id="a47d73a5ec6fa7ebc7838312cb93c2bb8" name="a47d73a5ec6fa7ebc7838312cb93c2bb8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a47d73a5ec6fa7ebc7838312cb93c2bb8">&#9670;&#160;</a></span>LF_COND_INIT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> LF_COND_INIT</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">cond, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">mutex&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td>&#160;&#160;&#160;<a class="el" href="../../d8/d3c/util_8h.html#a1c464cee8cabb65eebf454fc016d47b1">LF_ASSERTN</a>(<a class="el" href="../../d3/d9c/lf___c11__threads__support_8c.html#ab32dc7869dd4cf48bda70663f2591ae1">lf_cond_init</a>(&amp;cond, &amp;mutex), &quot;Condition <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">variable</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">init</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">failed.&quot;</a>)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -386,6 +466,61 @@ Functions intitializing and freeing memory for environments.</h1>
 
 </div>
 </div>
+<a id="adab0b8f13f8462ec0eddc7257ddb5394" name="adab0b8f13f8462ec0eddc7257ddb5394"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adab0b8f13f8462ec0eddc7257ddb5394">&#9670;&#160;</a></span>LF_MUTEX_INIT</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> LF_MUTEX_INIT</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">mutex</td><td>)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="../../d8/d3c/util_8h.html#a1c464cee8cabb65eebf454fc016d47b1">LF_ASSERTN</a>(<a class="el" href="../../d3/d9c/lf___c11__threads__support_8c.html#aa6f228487e6af38e496882f406aafaf6">lf_mutex_init</a>(&amp;mutex), &quot;Mutex <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">init</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">failed.&quot;</a>)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Checking mutex locking and unlocking. This is optimized away if the NDEBUG flag is defined. </p>
+
+</div>
+</div>
+<a id="ab907d4c8d53c26fdbcbaa8d02e6a8810" name="ab907d4c8d53c26fdbcbaa8d02e6a8810"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab907d4c8d53c26fdbcbaa8d02e6a8810">&#9670;&#160;</a></span>LF_MUTEX_LOCK</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> LF_MUTEX_LOCK</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">mutex</td><td>)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="../../d8/d3c/util_8h.html#a1c464cee8cabb65eebf454fc016d47b1">LF_ASSERTN</a>(<a class="el" href="../../d3/d9c/lf___c11__threads__support_8c.html#ac4c0721974b31d98f491be1febeb2c9a">lf_mutex_lock</a>(&amp;mutex), &quot;Mutex <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">lock</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">failed.&quot;</a>)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a id="a2bb9c8d2b589a6eb4f72f6750a1133fc" name="a2bb9c8d2b589a6eb4f72f6750a1133fc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2bb9c8d2b589a6eb4f72f6750a1133fc">&#9670;&#160;</a></span>LF_MUTEX_UNLOCK</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#<a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">define</a> LF_MUTEX_UNLOCK</td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname">mutex</td><td>)</td>
+          <td>&#160;&#160;&#160;<a class="el" href="../../d8/d3c/util_8h.html#a1c464cee8cabb65eebf454fc016d47b1">LF_ASSERTN</a>(<a class="el" href="../../d3/d9c/lf___c11__threads__support_8c.html#a01c4d5070c8402d4713a3fcab5a46a9f">lf_mutex_unlock</a>(&amp;mutex), &quot;Mutex <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">unlock</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">failed.&quot;</a>)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a id="ab5a65df50027549a8245f6b3eaff97e4" name="ab5a65df50027549a8245f6b3eaff97e4"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ab5a65df50027549a8245f6b3eaff97e4">&#9670;&#160;</a></span>LF_PRINT_DEBUG</h2>
 
@@ -414,8 +549,8 @@ Functions intitializing and freeing memory for environments.</h1>
 <b>Value:</b><div class="fragment"><div class="line">            <span class="keywordflow">do</span> { <span class="keywordflow">if</span>(<a class="code hl_define" href="../../d8/d3c/util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a> &gt;= <a class="code hl_define" href="../../d8/d3c/util_8h.html#a130224df8c6bf22a688e3cb74a45689a">LOG_LEVEL_DEBUG</a>) { <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">\</a></div>
 <div class="line"><a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">                    lf_print_debug</a>(format, ##<a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">__VA_ARGS__</a>); \</div>
 <div class="line">                } } <span class="keywordflow">while</span> (0)</div>
-<div class="ttc" id="autil_8h_html_a0b87e0d3bf5853bcbb0b66a7c48fdc05"><div class="ttname"><a href="../../d8/d3c/util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a></div><div class="ttdeci">#define LOG_LEVEL</div><div class="ttdef"><b>Definition</b> util.h:110</div></div>
-<div class="ttc" id="autil_8h_html_a130224df8c6bf22a688e3cb74a45689a"><div class="ttname"><a href="../../d8/d3c/util_8h.html#a130224df8c6bf22a688e3cb74a45689a">LOG_LEVEL_DEBUG</a></div><div class="ttdeci">#define LOG_LEVEL_DEBUG</div><div class="ttdef"><b>Definition</b> util.h:105</div></div>
+<div class="ttc" id="autil_8h_html_a0b87e0d3bf5853bcbb0b66a7c48fdc05"><div class="ttname"><a href="../../d8/d3c/util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a></div><div class="ttdeci">#define LOG_LEVEL</div><div class="ttdef"><b>Definition</b> util.h:111</div></div>
+<div class="ttc" id="autil_8h_html_a130224df8c6bf22a688e3cb74a45689a"><div class="ttname"><a href="../../d8/d3c/util_8h.html#a130224df8c6bf22a688e3cb74a45689a">LOG_LEVEL_DEBUG</a></div><div class="ttdeci">#define LOG_LEVEL_DEBUG</div><div class="ttdef"><b>Definition</b> util.h:106</div></div>
 </div><!-- fragment --><p>A macro used to print useful debug information. It can be enabled by setting the target property 'logging' to 'DEBUG' or by defining LOG_LEVEL to 2 in the top-level preamble. The input to this macro is exactly like printf: (format, ...). "DEBUG: " is prepended to the beginning of the message and a newline is appended to the end of the message.</p>
 <dl class="section note"><dt>Note</dt><dd>This macro is non-empty even if LOG_LEVEL is not defined in user-code. This is to ensure that the compiler will still parse the predicate inside (...) to prevent LF_PRINT_DEBUG statements to fall out of sync with the rest of the code. This should have a negligible impact on performance if compiler optimization (e.g., -O2 for gcc) is used as long as the arguments passed to it do not themselves incur significant overhead to evaluate. </dd></dl>
 
@@ -449,7 +584,7 @@ Functions intitializing and freeing memory for environments.</h1>
 <b>Value:</b><div class="fragment"><div class="line">            <span class="keywordflow">do</span> { <span class="keywordflow">if</span>(<a class="code hl_define" href="../../d8/d3c/util_8h.html#a0b87e0d3bf5853bcbb0b66a7c48fdc05">LOG_LEVEL</a> &gt;= <a class="code hl_define" href="../../d8/d3c/util_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd">LOG_LEVEL_LOG</a>) { <a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">\</a></div>
 <div class="line"><a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">                    lf_print_log</a>(format, ##<a class="code hl_variable" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">__VA_ARGS__</a>); \</div>
 <div class="line">                } } <span class="keywordflow">while</span> (0)</div>
-<div class="ttc" id="autil_8h_html_a8b58cabecd61bfd1b706be9cb992e0bd"><div class="ttname"><a href="../../d8/d3c/util_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd">LOG_LEVEL_LOG</a></div><div class="ttdeci">#define LOG_LEVEL_LOG</div><div class="ttdef"><b>Definition</b> util.h:104</div></div>
+<div class="ttc" id="autil_8h_html_a8b58cabecd61bfd1b706be9cb992e0bd"><div class="ttname"><a href="../../d8/d3c/util_8h.html#a8b58cabecd61bfd1b706be9cb992e0bd">LOG_LEVEL_LOG</a></div><div class="ttdeci">#define LOG_LEVEL_LOG</div><div class="ttdef"><b>Definition</b> util.h:105</div></div>
 </div><!-- fragment --><p>A macro used to print useful logging information. It can be enabled by setting the target property 'logging' to 'LOG' or by defining LOG_LEVEL to LOG_LEVEL_LOG or LOG_LEVEL_DEBUG in the top-level preamble. The input to this macro is exactly like printf: (format, ...). "LOG: " is prepended to the beginning of the message and a newline is appended to the end of the message.</p>
 <dl class="section note"><dt>Note</dt><dd>This macro is non-empty even if LOG_LEVEL is not defined in user-code. This is to ensure that the compiler will still parse the predicate inside (...) to prevent LF_PRINT_LOG statements to fall out of sync with the rest of the code. This should have a negligible impact on performance if compiler optimization (e.g., -O2 for gcc) is used as long as the arguments passed to it do not themselves incur significant overhead to evaluate. </dd></dl>
 
@@ -731,6 +866,35 @@ Functions intitializing and freeing memory for environments.</h1>
 
 </div>
 </div>
+<a id="a092bfce84e225f228332ca8d4926d7d2" name="a092bfce84e225f228332ca8d4926d7d2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a092bfce84e225f228332ca8d4926d7d2">&#9670;&#160;</a></span>lf_print_error_system_failure()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_print_error_system_failure </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *&#160;</td>
+          <td class="paramname"><em>format</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Report an error and exit just like <a class="el" href="../../d8/d3c/util_8h.html#a70c26a4acb499ff8710d035eec14680b">lf_print_error_and_exit()</a>, but also print the system error message associated with the error. </p>
+
+</div>
+</div>
 <a id="a04de5be3e0e5beee4d80966937bc63ca" name="a04de5be3e0e5beee4d80966937bc63ca"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a04de5be3e0e5beee4d80966937bc63ca">&#9670;&#160;</a></span>lf_print_log()</h2>
 
@@ -798,7 +962,7 @@ Functions intitializing and freeing memory for environments.</h1>
         <tr>
           <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_register_print_function </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d8/d3c/util_8h.html#a1917df59f183af6181ebafdf50877246">print_message_function_t</a> *&#160;</td>
+          <td class="paramtype"><a class="el" href="../../d8/d3c/util_8h.html#a80fbbd25930ec00b5e52814e82a439b7">print_message_function_t</a> *&#160;</td>
           <td class="paramname"><em>function</em>, </td>
         </tr>
         <tr>
@@ -912,14 +1076,14 @@ Functions intitializing and freeing memory for environments.</h1>
 
 </div>
 </div>
-<a id="a9d6ed78bc22f074a040a0f46ecae9bce" name="a9d6ed78bc22f074a040a0f46ecae9bce"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9d6ed78bc22f074a040a0f46ecae9bce">&#9670;&#160;</a></span>lf_vprint_error_and_exit()</h2>
+<a id="af7d17d1c521edc81e08aa92ea4de1d22" name="af7d17d1c521edc81e08aa92ea4de1d22"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af7d17d1c521edc81e08aa92ea4de1d22">&#9670;&#160;</a></span>lf_vprint_error_and_exit()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_vprint_error_and_exit </td>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> lf_vprint_error_and_exit </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *&#160;</td>
           <td class="paramname"><em>format</em>, </td>
@@ -999,14 +1163,14 @@ Functions intitializing and freeing memory for environments.</h1>
 
 </div>
 </div>
-<a id="a1917df59f183af6181ebafdf50877246" name="a1917df59f183af6181ebafdf50877246"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1917df59f183af6181ebafdf50877246">&#9670;&#160;</a></span>print_message_function_t()</h2>
+<a id="a80fbbd25930ec00b5e52814e82a439b7" name="a80fbbd25930ec00b5e52814e82a439b7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a80fbbd25930ec00b5e52814e82a439b7">&#9670;&#160;</a></span>print_message_function_t()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>() print_message_function_t </td>
+          <td class="memname"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">typedef</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">void</a>() print_message_function_t </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">const</a> <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">char</a> *&#160;</td>
           <td class="paramname">, </td>

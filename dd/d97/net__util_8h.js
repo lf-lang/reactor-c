@@ -1,7 +1,9 @@
 var net__util_8h =
 [
+    [ "DELAY_BETWEEN_SOCKET_RETRIES", "dd/d97/net__util_8h.html#a7b7cd916c6c027dc9ebdff449fb6edad", null ],
     [ "HOST_BIG_ENDIAN", "dd/d97/net__util_8h.html#a18c839c3ef122fe4ecc7b907ea688a97", null ],
     [ "HOST_LITTLE_ENDIAN", "dd/d97/net__util_8h.html#ae0b024f7ee4bd875149b1a0a50c20b0a", null ],
+    [ "NUM_SOCKET_RETRIES", "dd/d97/net__util_8h.html#a85e29d75153ed9f02bb35f42b6c2669b", null ],
     [ "encode_int32", "dd/d97/net__util_8h.html#afc6b3d0e0e777738422c11fa07b35e0f", null ],
     [ "encode_int64", "dd/d97/net__util_8h.html#ae233fa02382ed619a78b1c32e14a8657", null ],
     [ "encode_uint16", "dd/d97/net__util_8h.html#afad4dadc9bbc06596be44e7ecc4c7281", null ],

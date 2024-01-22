@@ -11,5 +11,5 @@ var clock_sync_8h =
     [ "listen_to_rti_UDP_thread", "d9/dd5/clock-sync_8h.html#a6d31f2c4caa9ee12f2e1e018f9e6e1f0", null ],
     [ "reset_socket_stat", "d9/dd5/clock-sync_8h.html#ae267d03a5f2263604459ca4c1aef2c2c", null ],
     [ "setup_clock_synchronization_with_rti", "d9/dd5/clock-sync_8h.html#a834b31e00e677a23b6a86119b7a2fe59", null ],
-    [ "synchronize_initial_physical_clock_with_rti", "d9/dd5/clock-sync_8h.html#a8a95b04db741b4fd04fb2ee4941fc8c6", null ]
+    [ "synchronize_initial_physical_clock_with_rti", "d9/dd5/clock-sync_8h.html#a3eba5f95a19f86a70d9d11fd2c736dd1", null ]
 ];

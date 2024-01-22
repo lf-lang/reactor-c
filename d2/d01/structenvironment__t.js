@@ -5,6 +5,7 @@ var structenvironment__t =
     [ "current_tag", "d2/d01/structenvironment__t.html#ac86519935540bf879f60baba5424bc0c", null ],
     [ "event_q", "d2/d01/structenvironment__t.html#aed648612adb3c7940a90535f8c324bfc", null ],
     [ "event_q_changed", "d2/d01/structenvironment__t.html#a2e3007a4c73bbe1242f5b4d901c729e8", null ],
+    [ "execution_started", "d2/d01/structenvironment__t.html#a98c12d624ec660bb83bd614481643a16", null ],
     [ "global_tag_barrier_requestors_reached_zero", "d2/d01/structenvironment__t.html#aa4647e332e903c405fd86fff8144c776", null ],
     [ "id", "d2/d01/structenvironment__t.html#a369cd434d5ddd5d8061537643bd93d75", null ],
     [ "initialized", "d2/d01/structenvironment__t.html#a3daf0ba3d9ea05bed6d51f995a53cdf1", null ],

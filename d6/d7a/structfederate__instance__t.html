@@ -228,7 +228,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>A record of the most recently sent LTC (logical tag complete) message. In some situations, federates can send logical_tag_complete for the same tag twice or more in-a-row to the RTI. For example, when <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">_lf_next()</a> returns without advancing tag. To prevent overwhelming the RTI with extra messages, record the last sent logical tag complete message and check against it in <a class="el" href="../../d1/dfa/federate_8h.html#addfded0ac14ed1d7a4de9a5f04870c20">_lf_logical_tag_complete()</a>.</p>
+<p>A record of the most recently sent LTC (latest tag complete) message. In some situations, federates can send logical_tag_complete for the same tag twice or more in-a-row to the RTI. For example, when <a class="el" href="../../d6/df3/hashmap_8h.html#ad2c17ed7e0d4d65a63bf9002aba2016f">_lf_next()</a> returns without advancing tag. To prevent overwhelming the RTI with extra messages, record the last sent logical tag complete message and check against it in <a class="el" href="../../d1/dfa/federate_8h.html#a0666da3ab34995c8050d58a89f41fa87" title="Send a latest tag complete (LTC) signal to the RTI.">lf_latest_tag_complete()</a>.</p>
 <dl class="section note"><dt>Note</dt><dd>Here, the underlying assumption is that the TCP stack will deliver the Logical TAG Complete message to the RTI eventually if it is deliverable </dd></dl>
 
 </div>
@@ -259,7 +259,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Most recent TIME_ADVANCE_GRANT received from the RTI, or NEVER if none has been received. This is used to communicate between the listen_to_rti_TCP thread and the main federate thread. This variable should only be accessed while holding the mutex lock. </p>
+<p>Most recent tag advance grant (TAG) received from the RTI, or NEVER if none has been received. This variable should only be accessed while holding the mutex lock on the top-level environment. </p>
 
 </div>
 </div>
@@ -289,7 +289,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Thread responsible for setting ports to absent by an STAA offset if they aren't already known. Number of inbound physical connections to the federate. This can be either physical connections, or logical connections in the decentralized coordination, or both. </p>
+<p>Number of inbound physical connections to the federate. This can be either physical connections, or logical connections in the decentralized coordination, or both. </p>
 
 </div>
 </div>
@@ -364,7 +364,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>A socket descriptor for the socket server of the federate. This is assigned in <a class="el" href="../../d1/dfa/federate_8h.html#a0e2425b519aae66167fbf454f896df92">create_server()</a>. This socket is used to listen to incoming physical connections from remote federates. Once an incoming connection is accepted, the opened socket will be stored in federate_sockets_for_inbound_p2p_connections. </p>
+<p>A socket descriptor for the socket server of the federate. This is assigned in <a class="el" href="../../d1/dfa/federate_8h.html#a926a4fb7f9b045acb13fee6c2b7192dd" title="Create a server to listen to incoming P2P connections.">lf_create_server()</a>. This socket is used to listen to incoming physical connections from remote federates. Once an incoming connection is accepted, the opened socket will be stored in federate_sockets_for_inbound_p2p_connections. </p>
 
 </div>
 </div>
@@ -379,7 +379,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>The TCP socket descriptor for this federate to communicate with the RTI. This is set by <a class="el" href="../../d1/dfa/federate_8h.html#ab3ddbf51d107ecd60890fef2193507a4">connect_to_rti()</a>, which must be called before other functions that communicate with the rti are called. </p>
+<p>The TCP socket descriptor for this federate to communicate with the RTI. This is set by <a class="el" href="../../d1/dfa/federate_8h.html#a92e8c30255091911a80601bf341cf0a2" title="Connect to the RTI at the specified host and port.">lf_connect_to_rti()</a>, which must be called before other functions that communicate with the rti are called. </p>
 
 </div>
 </div>
@@ -394,7 +394,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>An array that holds the socket descriptors for inbound connections from each federate. The index will be the federate ID of the remote sending federate. This is initialized at startup to -1 and is set to a socket ID by <a class="el" href="../../d1/dfa/federate_8h.html#ad71f6bcab18122c661af9c5d02be4602">handle_p2p_connections_from_federates()</a> when the socket is opened.</p>
+<p>An array that holds the socket descriptors for inbound connections from each federate. The index will be the federate ID of the remote sending federate. This is initialized at startup to -1 and is set to a socket ID by <a class="el" href="../../d1/dfa/federate_8h.html#a5bf0f2e328634d13f36aeb2587bd7947" title="Thread to accept connections from other federates.">lf_handle_p2p_connections_from_federates()</a> when the socket is opened.</p>
 <dl class="section note"><dt>Note</dt><dd>There will not be an inbound socket unless a physical connection or a p2p logical connection (by setting the coordination target property to "distributed") is specified in the Lingua Franca program where this federate is the destination. Multiple incoming p2p connections from the same remote federate will use the same socket. </dd></dl>
 
 </div>
@@ -410,7 +410,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>An array that holds the socket descriptors for outbound direct connections to each remote federate. The index will be the federate ID of the remote receiving federate. This is initialized at startup to -1 and is set to a socket ID by <a class="el" href="../../d1/dfa/federate_8h.html#a3e3a769ec47609bd5cb9fc44d51e48a4" title="Spawns a thread to iterate through STAA structs, setting its associated ports absent at an offset if ...">connect_to_federate()</a> when the socket is opened.</p>
+<p>An array that holds the socket descriptors for outbound direct connections to each remote federate. The index will be the federate ID of the remote receiving federate. This is initialized at startup to -1 and is set to a socket ID by <a class="el" href="../../d1/dfa/federate_8h.html#a904322a77f1741ad25860d573d3ef96e" title="Connect to the federate with the specified id.">lf_connect_to_federate()</a> when the socket is opened.</p>
 <dl class="section note"><dt>Note</dt><dd>This federate will not open an outbound socket unless a physical connection or a p2p logical connection (by setting the coordination target property to "distributed") is specified in the Lingua Franca program where this federate acts as the source. Multiple outgoing p2p connections to the same remote federate will use the same socket. </dd></dl>
 
 </div>
@@ -426,6 +426,7 @@ Data Fields</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Trace object for this federate, used if tracing is enabled. </p>
 
 </div>
 </div>

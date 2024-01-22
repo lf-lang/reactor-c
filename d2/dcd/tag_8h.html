@@ -978,7 +978,13 @@ Hou Seng (Steven) Wong </dd></dl>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Add two tags. If either tag has has NEVER or FOREVER in its time field, then return NEVER_TAG or FOREVER_TAG, respectively. Also return NEVER_TAG or FOREVER_TAG if the result underflows or overflows when adding the times. If the microstep overflows, also return FOREVER_TAG. </p>
+<p>Add two tags. If either tag has has NEVER or FOREVER in its time field, then return NEVER_TAG or FOREVER_TAG, respectively. Also return NEVER_TAG or FOREVER_TAG if the result underflows or overflows when adding the times. If the microstep overflows, also return FOREVER_TAG. If the time field of the second tag is greater than 0, then the microstep of the first tag is reset to 0 before adding. This models the delay semantics in LF and makes this addition operation non-commutative. </p><dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">a</td><td>The first tag. </td></tr>
+    <tr><td class="paramname">b</td><td>The second tag. </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>

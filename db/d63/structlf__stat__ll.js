@@ -1,7 +1,7 @@
 var structlf__stat__ll =
 [
-    [ "average", "db/d63/structlf__stat__ll.html#a33b66435c85f8a8297e3d39f6d3be218", null ],
-    [ "max", "db/d63/structlf__stat__ll.html#a0f03f89499cdd68d790e3b874e0d0d43", null ],
-    [ "standard_deviation", "db/d63/structlf__stat__ll.html#a70b953298d0cca9ac399168825cd54d6", null ],
-    [ "variance", "db/d63/structlf__stat__ll.html#a01442ef866207612cf33c90949ae0007", null ]
+    [ "average", "db/d63/structlf__stat__ll.html#aa1018daf35cf8d68814ee876382eaecc", null ],
+    [ "max", "db/d63/structlf__stat__ll.html#a8841b6fc40c60f3f1b73ada60ce556b7", null ],
+    [ "standard_deviation", "db/d63/structlf__stat__ll.html#a012949dce8d9257172f510eebdf848d4", null ],
+    [ "variance", "db/d63/structlf__stat__ll.html#a58abf354e780a1ec59cae3644d2fcbc1", null ]
 ];
