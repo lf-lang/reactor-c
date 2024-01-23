@@ -244,6 +244,15 @@ void handle_latest_tag_complete(federate_info_t* fed);
  */
 void handle_next_event_tag(federate_info_t* fed);
 
+/**
+ * Send a next dowsntream tag (NDT) message. This will be called by handle_next_event_Tag
+ * @see MSG_TYPE_NEXT_EVENT_TAG in rti.h.
+ * 
+ * @param fed The source federate of next event tag.
+ * @param next_event_tag The next event tag from the downstream federate.
+*/
+void send_upstream_next_downstream_tag(federate_info_t* fed, tag_t next_event_tag);
+
 /////////////////// STOP functions ////////////////////
 
 /**

@@ -561,7 +561,47 @@ void handle_next_event_tag(federate_info_t *fed) {
     update_federate_next_event_tag_locked(
         fed->enclave.id,
         intended_tag);
+    // If fed cannot get the grant of the intended tag, send NDTs to its upstream federates.
+    if (lf_tag_compare(fed->enclave.last_granted, intended_tag) < 0) {
+            send_upstream_next_downstream_tag(fed, intended_tag);
+    }
     LF_MUTEX_UNLOCK(rti_mutex);
+}
+
+void send_upstream_next_downstream_tag(federate_info_t* fed, tag_t next_event_tag) {
+    // The RTI receives next_event_tag from fed. 
+    // It has to send NDT messages to the upstream federates of fed
+    // if the LTC message from an upstream federate is ealrier than the next_event_tag.
+    size_t message_length = 1 + sizeof(int64_t) + sizeof(uint32_t);
+    unsigned char buffer[message_length];
+    buffer[0] = MSG_TYPE_NEXT_DOWNSTREAM_TAG;
+    encode_int64(next_event_tag.time, &(buffer[1]));
+    encode_int32((int32_t)next_event_tag.microstep, &(buffer[1 + sizeof(int64_t)]));
+
+    // FIXME: Send NDT to transitive upstreams either. Also, the RTI has to check the sparsity 
+    // of a federate and determine whether it sends NDT to it or not.
+    for (int i = 0; i < fed->enclave.num_upstream; i++) {
+        int upstream_id = fed->enclave.upstream[i];
+        // scheduling_node_t* upstream_node = rti_remote->base.scheduling_nodes[upstream_id];
+        federate_info_t* upstream_federate = GET_FED_INFO(upstream_id);
+
+        if (is_in_cycle(&(upstream_federate->enclave))) {
+            LF_PRINT_DEBUG("Do not send the NDT to federate %d", i);
+            continue;
+        }
+
+        if (lf_tag_compare(upstream_federate->enclave.completed, next_event_tag) < 0 &&
+        lf_tag_compare(upstream_federate->enclave.next_event, next_event_tag) <= 0) {
+            // Send next downstream tag to upstream federates that do not complete at next_event_tag
+            LF_PRINT_LOG("RTI sending the next downstream event message (NDT) " PRINTF_TAG "to federate %u.",
+                next_event_tag.time - start_time, next_event_tag.microstep, upstream_id);
+            if (rti_remote->base.tracing_enabled) {
+                tracepoint_rti_to_federate(rti_remote->base.trace, send_NDT, upstream_id, &next_event_tag);
+            }
+            write_to_socket_fail_on_error(&upstream_federate->socket, message_length, buffer, &rti_mutex,
+                    "RTI failed to send MSG_TYPE_NEXT_DOWNSTREAM_TAG message to federate %d.", upstream_id);
+        }
+    }
 }
 
 /////////////////// STOP functions ////////////////////

@@ -665,6 +665,19 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_FAILED 25
 
+/** 
+ * Byte identifying a next downstream event tag (NDET) message sent from a downstream
+ * federate via the RTI in centralized coordination. 
+ * The next eight bytes will be the timestamp. 
+ * The next four bytes will be the microstep. 
+ * This message from the RTI tells the federate the tag of the earliest event on the  
+ * source federate's event queue. In other words, this federate only has to send LTC 
+ * and NULL messages greater than or equal to this tag. If this federate has no its 
+ * upstream federates, this federate also can skip sending NET messages that are 
+ * greater than or equal to this tag. 
+ */
+#define MSG_TYPE_NEXT_DOWNSTREAM_TAG 26
+
 /////////////////////////////////////////////
 //// Rejection codes
 

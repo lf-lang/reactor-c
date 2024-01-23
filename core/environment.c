@@ -106,6 +106,9 @@ static void environment_init_modes(environment_t* env, int num_modes, int num_st
  * @brief Initialize the federation-specific parts of the environment struct.
  */
 static void environment_init_federated(environment_t* env, int num_is_present_fields) {
+#ifdef FEDERATED
+    env->ndt_q = pqueue_tag_init(10);
+#endif
 #ifdef FEDERATED_DECENTRALIZED
     env->_lf_intended_tag_fields = (tag_t**) calloc(num_is_present_fields, sizeof(tag_t*));
     LF_ASSERT(env->_lf_intended_tag_fields, "Out of memory");
@@ -113,7 +116,7 @@ static void environment_init_federated(environment_t* env, int num_is_present_fi
 #endif
 }
 
-void environment_init_tags( environment_t *env, instant_t start_time, interval_t duration) {
+void environment_init_tags(environment_t *env, instant_t start_time, interval_t duration) {
     env->current_tag = (tag_t){.time = start_time, .microstep = 0u};
     
     tag_t stop_tag = FOREVER_TAG_INITIALIZER;
@@ -149,6 +152,9 @@ static void environment_free_modes(environment_t* env) {
 }
 
 static void environment_free_federated(environment_t* env) {
+#ifdef FEDERATED
+    free(env->ndt_q);
+#endif
 #ifdef FEDERATED_DECENTRALIZED
     free(env->_lf_intended_tag_fields);
 #endif

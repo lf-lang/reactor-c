@@ -99,6 +99,7 @@ typedef enum
     send_P2P_MSG,
     send_ADR_AD,
     send_ADR_QR,
+    send_NDT,
     // Receiving messages
     receive_ACK,
     receive_FAILED,
@@ -121,6 +122,7 @@ typedef enum
     receive_P2P_MSG,
     receive_ADR_AD,
     receive_ADR_QR,
+    receive_NDT,
     receive_UNIDENTIFIED,
     NUM_EVENT_TYPES
 } trace_event_t;
@@ -164,6 +166,7 @@ static const char *trace_event_names[] = {
     "Sending P2P_MSG",
     "Sending ADR_AD",
     "Sending ADR_QR",
+    "Sending NDT",
     // Receiving messages
     "Receiving ACK",
     "Receiving FAILED",
@@ -186,6 +189,7 @@ static const char *trace_event_names[] = {
     "Receiving P2P_MSG",
     "Receiving ADR_AD",
     "Receiving ADR_QR",
+    "Receiving NDT",
     "Receiving UNIDENTIFIED",
 };
 

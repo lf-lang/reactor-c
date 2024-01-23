@@ -30,6 +30,7 @@
 #include "federate.h"
 #include "net_common.h"
 #include "net_util.h"
+#include "pqueue_tag.h"
 #include "reactor.h"
 #include "reactor_common.h"
 #include "reactor_threaded.h"
@@ -1514,6 +1515,36 @@ static void handle_rti_failed_message(void) {
 }
 
 /**
+ * Handle a next downstream tag (NDT) from the RTI.
+*/
+static void handle_next_dowsntream_tag() {
+    size_t bytes_to_read = sizeof(instant_t) + sizeof(microstep_t);
+    unsigned char buffer[bytes_to_read];
+    read_from_socket_fail_on_error(&_fed.socket_TCP_RTI, bytes_to_read, buffer, NULL,
+                "Failed to read next downstream tag from RTI.");
+    tag_t NDT = extract_tag(buffer);
+
+    LF_PRINT_LOG("Received from RTI a MSG_TYPE_NEXT_DOWNSTREAM_TAG message with elapsed tag " PRINTF_TAG ".",
+            NDT.time - start_time, NDT.microstep);
+    // Trace the event when tracing is enabled
+    tracepoint_federate_from_rti(_fed.trace, receive_NDT, _lf_my_fed_id, &NDT);
+
+    environment_t* env;
+    _lf_get_environments(&env);
+
+    if (lf_tag_compare(env->current_tag, NDT) <= 0) {
+        // The current tag is less than or equal to the NDT. Insert NDT to ndt_q if this tag is not in the queue.
+        pqueue_tag_insert_if_no_match(env->ndt_q, NDT);
+    }
+    if (lf_tag_compare(env->current_tag, NDT) > 0) {
+        // The current tag is greater than the NDT. Send the LTC with the NDT and
+        // push the current tag to ndt_q to notify the appropriate NET message.
+        send_tag(MSG_TYPE_LATEST_TAG_COMPLETE, NDT);
+        pqueue_tag_insert_if_no_match(env->ndt_q, env->current_tag);
+    }
+}
+
+/**
  * Thread that listens for TCP inputs from the RTI.
  * When messages arrive, this calls the appropriate handler.
  * @param args Ignored
@@ -1586,6 +1617,8 @@ static void* listen_to_rti_TCP(void* args) {
             case MSG_TYPE_FAILED:
                 handle_rti_failed_message();
                 break;
+            case MSG_TYPE_NEXT_DOWNSTREAM_TAG:
+                handle_next_dowsntream_tag();
             case MSG_TYPE_CLOCK_SYNC_T1:
             case MSG_TYPE_CLOCK_SYNC_T4:
                 lf_print_error("Federate %d received unexpected clock sync message from RTI on TCP socket.",
@@ -2282,11 +2315,28 @@ void lf_latest_tag_complete(tag_t tag_to_send) {
     if (compare_with_last_tag >= 0) {
         return;
     }
-    LF_PRINT_LOG("Sending Latest Tag Complete (LTC) " PRINTF_TAG " to the RTI.",
+    environment_t *env;
+    _lf_get_environments(&env);
+    bool need_to_send_LTC = true;
+    // Check the ndt queue's size to prevent to compare a tag with NULL.
+    if (pqueue_tag_size(env->ndt_q) != 0 ) {
+        tag_t earliest_ndt = pqueue_tag_peek(env->ndt_q)->tag;
+        if (lf_tag_compare(tag_to_send, earliest_ndt) < 0) {
+            // No events exist in any downstream federates
+            LF_PRINT_DEBUG("The intended tag " PRINTF_TAG " is less than the earliest NDT " PRINTF_TAG "."
+            "Skip sending the logical tag complete.",
+            tag_to_send.time - start_time, tag_to_send.microstep,
+            earliest_ndt.time - start_time, earliest_ndt.microstep);
+            need_to_send_LTC = false;
+        }
+    }
+    if (need_to_send_LTC) {
+        LF_PRINT_LOG("Sending Logical Tag Complete (LTC) " PRINTF_TAG " to the RTI.",
             tag_to_send.time - start_time,
             tag_to_send.microstep);
-    send_tag(MSG_TYPE_LATEST_TAG_COMPLETE, tag_to_send);
-    _fed.last_sent_LTC = tag_to_send;
+        send_tag(MSG_TYPE_LATEST_TAG_COMPLETE, tag_to_send);
+        _fed.last_sent_LTC = tag_to_send;
+    }
 }
 
 parse_rti_code_t lf_parse_rti_addr(const char* rti_addr) {
@@ -2439,10 +2489,29 @@ tag_t lf_send_next_event_tag(environment_t* env, tag_t tag, bool wait_for_reply)
             // This if statement does not fall through but rather returns.
             // NET is not bounded by physical time or has no downstream federates.
             // Normal case.
-            send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
-            _fed.last_sent_NET = tag;
-            LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.",
-                    tag.time - start_time, tag.microstep);
+
+            // If there is no downstream events that require the NET of the current tag,
+            // do not send the NET.
+            bool need_to_send_NET = true;
+            if (pqueue_tag_size(env->ndt_q) != 0 ) {
+                // FIXME: If the RTI changes the use of NDTs dynamically, merely checking the size
+                // is not enough to know whether this federate using the NDT optimization or not.
+                tag_t earliest_ndt = pqueue_tag_peek(env->ndt_q)->tag;
+                if (lf_tag_compare(tag, earliest_ndt) < 0) {
+                    // No events exist in any downstream federates
+                    LF_PRINT_DEBUG("The intended tag " PRINTF_TAG " is less than the earliest NDT " PRINTF_TAG "."
+                    "Skip sending the next event tag.",
+                    tag.time - start_time, tag.microstep,
+                    earliest_ndt.time - start_time, earliest_ndt.microstep);
+                    need_to_send_NET = false;
+                }
+            }
+            if (need_to_send_NET) {
+                send_tag(MSG_TYPE_NEXT_EVENT_TAG, tag);
+                _fed.last_sent_NET = tag;
+                LF_PRINT_LOG("Sent next event tag (NET) " PRINTF_TAG " to RTI.",
+                        tag.time - start_time, tag.microstep);
+            }
 
             if (!wait_for_reply) {
                 LF_PRINT_LOG("Not waiting for reply to NET.");
@@ -2703,6 +2772,10 @@ int lf_send_tagged_message(environment_t* env,
         socket = &_fed.socket_TCP_RTI;
         tracepoint_federate_to_rti(_fed.trace, send_TAGGED_MSG, _lf_my_fed_id, &current_message_intended_tag);
     }
+
+    // Insert the intended tag into the ndt_q to send LTC to the RTI quickly.
+    LF_PRINT_DEBUG("Insert the intended tag to the ndt queue to send LTC and NET quickly.");
+    pqueue_tag_insert_if_no_match(env->ndt_q, current_message_intended_tag);
 
     int result = write_to_socket_close_on_error(socket, header_length, header_buffer);
     if (result == 0) {
