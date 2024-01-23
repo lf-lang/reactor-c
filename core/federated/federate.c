@@ -2774,8 +2774,12 @@ int lf_send_tagged_message(environment_t* env,
     }
 
     // Insert the intended tag into the ndt_q to send LTC to the RTI quickly.
-    LF_PRINT_DEBUG("Insert the intended tag to the ndt queue to send LTC and NET quickly.");
-    pqueue_tag_insert_if_no_match(env->ndt_q, current_message_intended_tag);
+    if (pqueue_tag_size(env->ndt_q) != 0) {
+        // Check the size of the queue to know if NDT is used or not.
+        // FIXME: This mechanism won't be work when we dynamically control NDTs.
+        LF_PRINT_DEBUG("Insert the intended tag to the ndt queue to send LTC and NET quickly.");
+        pqueue_tag_insert_if_no_match(env->ndt_q, current_message_intended_tag);
+    }
 
     int result = write_to_socket_close_on_error(socket, header_length, header_buffer);
     if (result == 0) {
