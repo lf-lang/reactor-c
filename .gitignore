@@ -2,7 +2,7 @@
 /docs/_build
 /docs/api
 **/.vscode/
-/build/
+**/build/
 **/.DS_Store
 /core/federated/RTI/build/
 /cmake-build-debug/

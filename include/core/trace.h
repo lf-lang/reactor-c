@@ -244,27 +244,12 @@ typedef struct trace_t {
     environment_t* env;
 } trace_t;
 
-typedef void tracepoint_fn_t(
-        void* trace,
-        int event_type, // trace_event_t
-        void* reactor,
-        tag_t* tag,
-        int worker,
-        int src_id,
-        int dst_id,
-        instant_t* physical_time,
-        trigger_t* trigger,
-        interval_t extra_delay,
-        bool is_interval_start
-);
-typedef void global_init_fn_t(int process_id);
-typedef void global_shutdown_fn_t(void);
 void lf_tracing_init(int process_id);
 
 typedef struct {
     tracepoint_fn_t* tracepoint;
-    global_init_fn_t* global_init;
-    global_shutdown_fn_t* global_shutdown;
+    global_init_fn_t* lf_tracing_global_init;
+    global_shutdown_fn_t* lf_tracing_global_shutdown;
 } lf_trace_api_t;
 
 /**

@@ -35,6 +35,11 @@ if(DEFINED LF_ENCLAVES)
 include(federated/RTI/local_rti.cmake)
 endif()
 
+if (DEFINED LF_TRACE_PLUGIN)
+    message(STATUS "linking trace plugin library ${LF_TRACE_PLUGIN}")
+    target_link_libraries(core PRIVATE ${LF_TRACE_PLUGIN})
+endif()
+
 # Include sources from subdirectories
 include(utils/CMakeLists.txt)
 include(modal_models/CMakeLists.txt)

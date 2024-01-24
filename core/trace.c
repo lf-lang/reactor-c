@@ -57,23 +57,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
         return -1; \
     } while(0)
 
-#define _LF_TRACE_LIBRARY_PATH_ENV_VAR "LF_TRACE_LIBRARY_PATH"
-
 void lf_tracing_init(int process_id) {
-    char* library_path = getenv(_LF_TRACE_LIBRARY_PATH_ENV_VAR);
-    if (library_path) {
-        void* handle = dlopen(library_path, RTLD_LAZY);
-        if (!handle) {
-            fprintf(stderr, "%s\n", dlerror());
-            exit(1);
-        }
-        lf_trace_api = dlsym(handle, "lf_trace_api");
-        if (!lf_trace_api) {
-            fprintf(stderr, "%s\n", dlerror());
-            exit(1);
-        }
-    }
-    lf_trace_api->global_init(process_id);
+    lf_trace_global_init(process_id);
 }
 
 trace_t* trace_new(environment_t* env, const char * filename) {
@@ -204,8 +189,8 @@ static int write_trace_header(trace_t* trace) {
  * @param worker Index specifying the trace to flush.
  */
 void flush_trace_locked(trace_t* trace, int worker) {
-    if (trace->_lf_trace_stop == 0 
-        && trace->_lf_trace_file != NULL 
+    if (trace->_lf_trace_stop == 0
+        && trace->_lf_trace_file != NULL
         && trace->_lf_trace_buffer_size[worker] > 0
     ) {
         // If the trace header has not been written, write it now.
@@ -288,7 +273,6 @@ void start_trace(trace_t* trace) {
 }
 
 void call_tracepoint(
-        lf_trace_api_t* api,
         trace_t* trace,
         int event_type,
         void* reactor,
@@ -316,78 +300,18 @@ void call_tracepoint(
         local_tag.microstep = ((environment_t*)env)->current_tag.microstep;
     }
     tag = &local_tag;
-    api->tracepoint(trace, event_type, reactor, tag, worker, src_id, dst_id, physical_time, trigger, extra_delay, is_interval_start);
-}
-
-/**
- * Trace an event identified by a type and a pointer to the self struct of the reactor instance.
- * This is a generic tracepoint function. It is better to use one of the specific functions.
- * The worker argument determines which buffer to write to.
- * Hence, as long as this argument is distinct for each caller, the callers can be in
- * different threads without the need for a mutex lock.
- * @param event_type The type of event (see trace_event_t in trace.h)
- * @param reactor The pointer to the self struct of the reactor instance in the trace table.
- * @param tag Pointer to a tag or NULL to use current tag.
- * @param worker The ID of the worker thread (which determines which buffer to write to).
- * @param src_id The ID number of the source (e.g. worker or federate) or -1 for no ID number.
- * @param dst_id The ID number of the destination (e.g. reaction or federate) or -1 for no ID number.
- * @param physical_time If the caller has already accessed physical time, provide it here.
- *  Otherwise, provide NULL. This argument avoids a second call to lf_time_physical()
- *  and ensures that the physical time in the trace is the same as that used by the caller.
- * @param trigger Pointer to the trigger_t struct for calls to schedule or NULL otherwise.
- * @param extra_delay The extra delay passed to schedule(). If not relevant for this event
- *  type, pass 0.
- * @param is_interval_start True to indicate that this tracepoint is at the beginning of
- *  time interval, such as reaction invocation, so that physical time is captured as late
- *  as possible.  False to indicate that it is at the end of an interval, such as the end
- *  of a reaction invocation, so that physical time is captured as early as possible.
- */
-static void tracepoint_internal(
-        void* trace_void,
-        trace_event_t event_type,
-        void* reactor,
-        tag_t* tag,
-        int worker,
-        int src_id,
-        int dst_id,
-        instant_t* physical_time,
-        trigger_t* trigger,
-        interval_t extra_delay,
-        bool is_interval_start
-) {
-    trace_t* trace = (trace_t*) trace_void;
-
-    environment_t *env = trace->env;
-    // Worker argument determines which buffer to write to.
-    int index = (worker >= 0) ? worker : 0;
-
-    // Flush the buffer if it is full.
-    if (trace->_lf_trace_buffer_size[index] >= TRACE_BUFFER_CAPACITY) {
-        // No more room in the buffer. Write the buffer to the file.
-        flush_trace(trace, index);
-    }
-    // The above flush_trace resets the write pointer.
-    int i = trace->_lf_trace_buffer_size[index];
-    // Write to memory buffer.
-    // Get the correct time of the event
-    
-    trace->_lf_trace_buffer[index][i].event_type = event_type;
-    trace->_lf_trace_buffer[index][i].pointer = reactor;
-    trace->_lf_trace_buffer[index][i].src_id = src_id;
-    trace->_lf_trace_buffer[index][i].dst_id = dst_id;
-    trace->_lf_trace_buffer[index][i].logical_time = tag->time;
-    trace->_lf_trace_buffer[index][i].microstep = tag->microstep;
-    trace->_lf_trace_buffer[index][i].trigger = trigger;
-    trace->_lf_trace_buffer[index][i].extra_delay = extra_delay;
-    trace->_lf_trace_buffer[index][i].physical_time = *physical_time;
-    trace->_lf_trace_buffer_size[index]++;
-}
-
-static void global_init_nop(int process_id) {
-    // Do nothing.
-}
-static void global_shutdown_nop() {
-    // Do nothing.
+    trace_record_t tr = {
+        .event_type = event_type,
+        .pointer = reactor,
+        .src_id = src_id,
+        .dst_id = dst_id,
+        .logical_time = tag->time,
+        .microstep = tag->microstep,
+        .trigger = trigger,
+        .extra_delay = extra_delay,
+        .physical_time = *physical_time
+    };
+    tracepoint(trace, worker, (trace_record_nodeps_t) tr);
 }
 
 /**
@@ -409,7 +333,7 @@ void tracepoint_schedule(trace_t* trace, trigger_t* trigger, interval_t extra_de
     // This is OK because it is called only while holding the mutex lock.
     // True argument specifies to record physical time as late as possible, when
     // the event is already on the event queue.
-    call_tracepoint(lf_trace_api, trace, schedule_called, reactor, NULL, -1, 0, 0, NULL, trigger, extra_delay, true);
+    call_tracepoint(trace, schedule_called, reactor, NULL, -1, 0, 0, NULL, trigger, extra_delay, true);
 }
 
 /**
@@ -417,7 +341,7 @@ void tracepoint_schedule(trace_t* trace, trigger_t* trigger, interval_t extra_de
  * register_user_trace_event() with a pointer to the same string
  * or else the event will not be recognized.
  * @param self Pointer to the self struct of the reactor from which we want
- * to trace this event. This pointer is used to get the correct environment and 
+ * to trace this event. This pointer is used to get the correct environment and
  * thus the correct logical tag of the event.
  * @param description Pointer to the description string.
  */
@@ -433,7 +357,7 @@ void tracepoint_user_event(void* self, char* description) {
     environment_t *env = ((self_base_t *)self)->environment;
     trace_t *trace = env->trace;
     lf_critical_section_enter(env);
-    call_tracepoint(lf_trace_api, trace, user_event, description, NULL, -1, -1, -1, NULL, NULL, 0, false);
+    call_tracepoint(trace, user_event, description, NULL, -1, -1, -1, NULL, NULL, 0, false);
     lf_critical_section_exit(env);
 }
 
@@ -443,7 +367,7 @@ void tracepoint_user_event(void* self, char* description) {
  * register_user_trace_event() with a pointer to the same string
  * or else the event will not be recognized.
  * @param self Pointer to the self struct of the reactor from which we want
- * to trace this event. This pointer is used to get the correct environment and 
+ * to trace this event. This pointer is used to get the correct environment and
  * thus the correct logical tag of the event.
  * @param description Pointer to the description string.
  * @param value The value of the event. This is a long long for
@@ -461,7 +385,7 @@ void tracepoint_user_value(void* self, char* description, long long value) {
     environment_t *env = ((self_base_t *)self)->environment;
     trace_t *trace = env->trace;
     lf_critical_section_enter(env);
-    call_tracepoint(lf_trace_api, trace, user_value, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
+    call_tracepoint(trace, user_value, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
     lf_critical_section_exit(env);
 }
 
@@ -497,13 +421,6 @@ void stop_trace_locked(trace_t* trace) {
     LF_PRINT_DEBUG("Stopped tracing.");
 }
 
-lf_trace_api_t lf_trace_api_internal = {
-    .tracepoint = tracepoint_internal,
-    .global_init = global_init_nop,
-    .global_shutdown = global_shutdown_nop,
-};
-lf_trace_api_t* lf_trace_api = &lf_trace_api_internal;
-
 ////////////////////////////////////////////////////////////
 //// For federated execution
 
@@ -519,7 +436,7 @@ lf_trace_api_t* lf_trace_api = &lf_trace_api_internal;
 void tracepoint_federate_to_rti(trace_t *trace, trace_event_t event_type, int fed_id, tag_t* tag) {
     call_tracepoint(lf_trace_api,
         trace,
-        event_type, 
+        event_type,
         NULL,   // void* pointer,
         tag,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
@@ -636,12 +553,12 @@ void tracepoint_rti_to_federate(trace_t* trace, trace_event_t event_type, int fe
 /**
  * Trace RTI receiving a message from a federate.
  * @param event_type The type of event. Possible values are:
- * 
+ *
  * @param fed_id The fedaerate ID.
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
 void tracepoint_rti_from_federate(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag) {
-    call_tracepoint(lf_trace_api, 
+    call_tracepoint(lf_trace_api,
         trace,
         event_type,
         NULL,   // void* pointer,
