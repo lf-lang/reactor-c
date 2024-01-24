@@ -1619,6 +1619,7 @@ static void* listen_to_rti_TCP(void* args) {
                 break;
             case MSG_TYPE_NEXT_DOWNSTREAM_TAG:
                 handle_next_dowsntream_tag();
+                break;
             case MSG_TYPE_CLOCK_SYNC_T1:
             case MSG_TYPE_CLOCK_SYNC_T4:
                 lf_print_error("Federate %d received unexpected clock sync message from RTI on TCP socket.",
