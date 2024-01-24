@@ -287,6 +287,38 @@ void start_trace(trace_t* trace) {
     LF_PRINT_DEBUG("Started tracing.");
 }
 
+void call_tracepoint(
+        lf_trace_api_t* api,
+        trace_t* trace,
+        int event_type,
+        void* reactor,
+        tag_t* tag,
+        int worker,
+        int src_id,
+        int dst_id,
+        instant_t* physical_time,
+        trigger_t* trigger,
+        interval_t extra_delay,
+        bool is_interval_start
+) {
+    environment_t *env = trace->env;
+    instant_t local_time;
+    if (!is_interval_start && physical_time == NULL) {
+        local_time = lf_time_physical();
+        physical_time = &local_time;
+    }
+    tag_t local_tag;
+    if (tag != NULL) {
+        local_tag.time = tag->time;
+        local_tag.microstep = tag->microstep;
+    } else if (env != NULL) {
+        local_tag.time = ((environment_t *)env)->current_tag.time;
+        local_tag.microstep = ((environment_t*)env)->current_tag.microstep;
+    }
+    tag = &local_tag;
+    api->tracepoint(trace, event_type, reactor, tag, worker, src_id, dst_id, physical_time, trigger, extra_delay, is_interval_start);
+}
+
 /**
  * Trace an event identified by a type and a pointer to the self struct of the reactor instance.
  * This is a generic tracepoint function. It is better to use one of the specific functions.
@@ -324,11 +356,6 @@ static void tracepoint_internal(
         bool is_interval_start
 ) {
     trace_t* trace = (trace_t*) trace_void;
-    instant_t time;
-    if (!is_interval_start && physical_time == NULL) {
-        time = lf_time_physical();
-        physical_time = &time;
-    }
 
     environment_t *env = trace->env;
     // Worker argument determines which buffer to write to.
@@ -348,20 +375,10 @@ static void tracepoint_internal(
     trace->_lf_trace_buffer[index][i].pointer = reactor;
     trace->_lf_trace_buffer[index][i].src_id = src_id;
     trace->_lf_trace_buffer[index][i].dst_id = dst_id;
-    if (tag != NULL) {
-        trace->_lf_trace_buffer[index][i].logical_time = tag->time;
-        trace->_lf_trace_buffer[index][i].microstep = tag->microstep;
-    } else if (env != NULL) {
-        trace->_lf_trace_buffer[index][i].logical_time = ((environment_t *)env)->current_tag.time;
-        trace->_lf_trace_buffer[index][i].microstep = ((environment_t*)env)->current_tag.microstep;
-    }
-    
+    trace->_lf_trace_buffer[index][i].logical_time = tag->time;
+    trace->_lf_trace_buffer[index][i].microstep = tag->microstep;
     trace->_lf_trace_buffer[index][i].trigger = trigger;
     trace->_lf_trace_buffer[index][i].extra_delay = extra_delay;
-    if (is_interval_start && physical_time == NULL) {
-        time = lf_time_physical();
-        physical_time = &time;
-    }
     trace->_lf_trace_buffer[index][i].physical_time = *physical_time;
     trace->_lf_trace_buffer_size[index]++;
 }
@@ -392,7 +409,7 @@ void tracepoint_schedule(trace_t* trace, trigger_t* trigger, interval_t extra_de
     // This is OK because it is called only while holding the mutex lock.
     // True argument specifies to record physical time as late as possible, when
     // the event is already on the event queue.
-    lf_trace_api->tracepoint(trace, schedule_called, reactor, NULL, -1, 0, 0, NULL, trigger, extra_delay, true);
+    call_tracepoint(lf_trace_api, trace, schedule_called, reactor, NULL, -1, 0, 0, NULL, trigger, extra_delay, true);
 }
 
 /**
@@ -416,7 +433,7 @@ void tracepoint_user_event(void* self, char* description) {
     environment_t *env = ((self_base_t *)self)->environment;
     trace_t *trace = env->trace;
     lf_critical_section_enter(env);
-    lf_trace_api->tracepoint(trace, user_event, description, NULL, -1, -1, -1, NULL, NULL, 0, false);
+    call_tracepoint(lf_trace_api, trace, user_event, description, NULL, -1, -1, -1, NULL, NULL, 0, false);
     lf_critical_section_exit(env);
 }
 
@@ -444,7 +461,7 @@ void tracepoint_user_value(void* self, char* description, long long value) {
     environment_t *env = ((self_base_t *)self)->environment;
     trace_t *trace = env->trace;
     lf_critical_section_enter(env);
-    lf_trace_api->tracepoint(trace, user_value, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
+    call_tracepoint(lf_trace_api, trace, user_value, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
     lf_critical_section_exit(env);
 }
 
@@ -500,7 +517,7 @@ lf_trace_api_t* lf_trace_api = &lf_trace_api_internal;
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
 void tracepoint_federate_to_rti(trace_t *trace, trace_event_t event_type, int fed_id, tag_t* tag) {
-    lf_trace_api->tracepoint(
+    call_tracepoint(lf_trace_api,
         trace,
         event_type, 
         NULL,   // void* pointer,
@@ -524,7 +541,7 @@ void tracepoint_federate_to_rti(trace_t *trace, trace_event_t event_type, int fe
  */
 void tracepoint_federate_from_rti(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag) {
     // trace_event_t event_type = (type == MSG_TYPE_TAG_ADVANCE_GRANT)? federate_TAG : federate_PTAG;
-    lf_trace_api->tracepoint(
+    call_tracepoint(lf_trace_api,
         trace,
         event_type,
         NULL,   // void* pointer,
@@ -548,7 +565,7 @@ void tracepoint_federate_from_rti(trace_t* trace, trace_event_t event_type, int 
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
 void tracepoint_federate_to_federate(trace_t* trace, trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
-    lf_trace_api->tracepoint(
+    call_tracepoint(lf_trace_api,
         trace,
         event_type,
         NULL,   // void* pointer,
@@ -572,7 +589,7 @@ void tracepoint_federate_to_federate(trace_t* trace, trace_event_t event_type, i
  * @param tag Pointer to the tag that has been received, or NULL.
  */
 void tracepoint_federate_from_federate(trace_t* trace, trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
-    lf_trace_api->tracepoint(
+    call_tracepoint(lf_trace_api,
         trace,
         event_type,
         NULL,   // void* pointer,
@@ -601,7 +618,7 @@ void tracepoint_federate_from_federate(trace_t* trace, trace_event_t event_type,
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
 void tracepoint_rti_to_federate(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag) {
-    lf_trace_api->tracepoint(
+    call_tracepoint(lf_trace_api,
         trace,
         event_type,
         NULL,   // void* pointer,
@@ -624,7 +641,7 @@ void tracepoint_rti_to_federate(trace_t* trace, trace_event_t event_type, int fe
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
 void tracepoint_rti_from_federate(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag) {
-    lf_trace_api->tracepoint(
+    call_tracepoint(lf_trace_api, 
         trace,
         event_type,
         NULL,   // void* pointer,

@@ -173,9 +173,7 @@ static const char *trace_event_names[] = {
 #define TRACE_OBJECT_TABLE_SIZE 1024
 
 /**
- * @brief A trace record/
- * 
- * This gets written in binary to the trace file in the default implementation.
+ * @brief A trace record that gets written in binary to the trace file in the default implementation.
  */
 typedef struct trace_record_t {
     trace_event_t event_type;
@@ -275,6 +273,21 @@ typedef struct {
  */
 extern lf_trace_api_t* lf_trace_api;
 
+void call_tracepoint(
+        lf_trace_api_t* api,
+        trace_t* trace,
+        int event_type,
+        void* reactor,
+        tag_t* tag,
+        int worker,
+        int src_id,
+        int dst_id,
+        instant_t* physical_time,
+        trigger_t* trigger,
+        interval_t extra_delay,
+        bool is_interval_start
+);
+
 /**
  * @brief Dynamically allocate a new tracing object. 
  * 
@@ -324,7 +337,7 @@ void start_trace(trace_t* trace);
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 #define tracepoint_reaction_starts(trace, reaction, worker) \
-    lf_trace_api->tracepoint(trace, reaction_starts, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, true)
+    call_tracepoint(lf_trace_api, trace, reaction_starts, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, true)
 
 /**
  * Trace the end of a reaction execution.
@@ -333,7 +346,7 @@ void start_trace(trace_t* trace);
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 #define tracepoint_reaction_ends(trace, reaction, worker) \
-    lf_trace_api->tracepoint(trace, reaction_ends, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false)
+    call_tracepoint(lf_trace_api, trace, reaction_ends, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false)
 
 /**
  * Trace a call to schedule.
@@ -375,7 +388,7 @@ void tracepoint_user_value(void* self, char* description, long long value);
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 #define tracepoint_worker_wait_starts(trace, worker) \
-    lf_trace_api->tracepoint(trace, worker_wait_starts, NULL, NULL, worker, worker, -1, NULL, NULL, 0, true)
+    call_tracepoint(lf_trace_api, trace, worker_wait_starts, NULL, NULL, worker, worker, -1, NULL, NULL, 0, true)
 
 /**
  * Trace the end of a worker waiting for something to change on the event or reaction queue.
@@ -383,7 +396,7 @@ void tracepoint_user_value(void* self, char* description, long long value);
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 #define tracepoint_worker_wait_ends(trace, worker) \
-    lf_trace_api->tracepoint(trace, worker_wait_ends, NULL, NULL, worker, worker, -1, NULL, NULL, 0, false)
+    call_tracepoint(lf_trace_api, trace, worker_wait_ends, NULL, NULL, worker, worker, -1, NULL, NULL, 0, false)
 
 /**
  * Trace the start of the scheduler waiting for logical time to advance or an event to
@@ -391,7 +404,7 @@ void tracepoint_user_value(void* self, char* description, long long value);
  * @param trace The trace object.
  */
 #define tracepoint_scheduler_advancing_time_starts(trace) \
-    lf_trace_api->tracepoint(trace, scheduler_advancing_time_starts, NULL, NULL, -1, -1, -1, NULL, NULL, 0, true);
+    call_tracepoint(lf_trace_api, trace, scheduler_advancing_time_starts, NULL, NULL, -1, -1, -1, NULL, NULL, 0, true);
 
 /**
  * Trace the end of the scheduler waiting for logical time to advance or an event to
@@ -399,7 +412,7 @@ void tracepoint_user_value(void* self, char* description, long long value);
  * @param trace The trace object.
  */
 #define tracepoint_scheduler_advancing_time_ends(trace) \
-    lf_trace_api->tracepoint(trace, scheduler_advancing_time_ends, NULL, NULL, -1, -1, -1, NULL, NULL, 0, false)
+    call_tracepoint(lf_trace_api, trace, scheduler_advancing_time_ends, NULL, NULL, -1, -1, -1, NULL, NULL, 0, false)
 
 /**
  * Trace the occurrence of a deadline miss.
@@ -408,7 +421,7 @@ void tracepoint_user_value(void* self, char* description, long long value);
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 #define tracepoint_reaction_deadline_missed(trace, reaction, worker) \
-    lf_trace_api->tracepoint(trace, reaction_deadline_missed, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false)
+    call_tracepoint(lf_trace_api, trace, reaction_deadline_missed, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false)
 
 /**
  * Flush any buffered trace records to the trace file and close the files.
