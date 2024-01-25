@@ -260,10 +260,10 @@ size_t lf_readable_time(char* buffer, instant_t time) {
         const char* units = "nanoseconds";
         if (time % MSEC(1) == (instant_t) 0) {
             units = "milliseconds";
-            time = time % MSEC(1);
+            time = time / MSEC(1);
         } else if (time % USEC(1) == (instant_t) 0) {
             units = "microseconds";
-            time = time % USEC(1);
+            time = time / USEC(1);
         }
         size_t printed = lf_comma_separated_time(buffer, time);
         buffer += printed;
