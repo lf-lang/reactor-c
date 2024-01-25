@@ -1,6 +1,6 @@
 #include <stdio.h>  // debugging only
 
-#include "trace_api.h"
+#include "trace.h"
 
 void tracepoint(
         void* trace_void,

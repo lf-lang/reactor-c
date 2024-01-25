@@ -246,20 +246,7 @@ typedef struct trace_t {
 
 void lf_tracing_init(int process_id);
 
-typedef struct {
-    tracepoint_fn_t* tracepoint;
-    global_init_fn_t* lf_tracing_global_init;
-    global_shutdown_fn_t* lf_tracing_global_shutdown;
-} lf_trace_api_t;
-
-/**
- * @brief The plugin API for tracing. This struct, and all that it
- * (transitively) may point to, shall not be mutated after initialization.
- */
-extern lf_trace_api_t* lf_trace_api;
-
 void call_tracepoint(
-        lf_trace_api_t* api,
         trace_t* trace,
         int event_type,
         void* reactor,
@@ -322,7 +309,7 @@ void start_trace(trace_t* trace);
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 #define tracepoint_reaction_starts(trace, reaction, worker) \
-    call_tracepoint(lf_trace_api, trace, reaction_starts, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, true)
+    call_tracepoint(trace, reaction_starts, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, true)
 
 /**
  * Trace the end of a reaction execution.
@@ -331,7 +318,7 @@ void start_trace(trace_t* trace);
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 #define tracepoint_reaction_ends(trace, reaction, worker) \
-    call_tracepoint(lf_trace_api, trace, reaction_ends, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false)
+    call_tracepoint(trace, reaction_ends, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false)
 
 /**
  * Trace a call to schedule.
@@ -373,7 +360,7 @@ void tracepoint_user_value(void* self, char* description, long long value);
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 #define tracepoint_worker_wait_starts(trace, worker) \
-    call_tracepoint(lf_trace_api, trace, worker_wait_starts, NULL, NULL, worker, worker, -1, NULL, NULL, 0, true)
+    call_tracepoint(trace, worker_wait_starts, NULL, NULL, worker, worker, -1, NULL, NULL, 0, true)
 
 /**
  * Trace the end of a worker waiting for something to change on the event or reaction queue.
@@ -381,7 +368,7 @@ void tracepoint_user_value(void* self, char* description, long long value);
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 #define tracepoint_worker_wait_ends(trace, worker) \
-    call_tracepoint(lf_trace_api, trace, worker_wait_ends, NULL, NULL, worker, worker, -1, NULL, NULL, 0, false)
+    call_tracepoint(trace, worker_wait_ends, NULL, NULL, worker, worker, -1, NULL, NULL, 0, false)
 
 /**
  * Trace the start of the scheduler waiting for logical time to advance or an event to
@@ -389,7 +376,7 @@ void tracepoint_user_value(void* self, char* description, long long value);
  * @param trace The trace object.
  */
 #define tracepoint_scheduler_advancing_time_starts(trace) \
-    call_tracepoint(lf_trace_api, trace, scheduler_advancing_time_starts, NULL, NULL, -1, -1, -1, NULL, NULL, 0, true);
+    call_tracepoint(trace, scheduler_advancing_time_starts, NULL, NULL, -1, -1, -1, NULL, NULL, 0, true);
 
 /**
  * Trace the end of the scheduler waiting for logical time to advance or an event to
@@ -397,7 +384,7 @@ void tracepoint_user_value(void* self, char* description, long long value);
  * @param trace The trace object.
  */
 #define tracepoint_scheduler_advancing_time_ends(trace) \
-    call_tracepoint(lf_trace_api, trace, scheduler_advancing_time_ends, NULL, NULL, -1, -1, -1, NULL, NULL, 0, false)
+    call_tracepoint(trace, scheduler_advancing_time_ends, NULL, NULL, -1, -1, -1, NULL, NULL, 0, false)
 
 /**
  * Trace the occurrence of a deadline miss.
@@ -406,7 +393,7 @@ void tracepoint_user_value(void* self, char* description, long long value);
  * @param worker The thread number of the worker thread or 0 for single-threaded execution.
  */
 #define tracepoint_reaction_deadline_missed(trace, reaction, worker) \
-    call_tracepoint(lf_trace_api, trace, reaction_deadline_missed, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false)
+    call_tracepoint(trace, reaction_deadline_missed, reaction->self, NULL, worker, worker, reaction->number, NULL, NULL, 0, false)
 
 /**
  * Flush any buffered trace records to the trace file and close the files.

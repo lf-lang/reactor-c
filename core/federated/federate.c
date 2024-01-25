@@ -221,12 +221,12 @@ static void update_last_known_status_on_input_ports(tag_t tag) {
         // we do not update the last known status tag.
         if (lf_tag_compare(tag,
                 input_port_action->trigger->last_known_status_tag) >= 0) {
-            LF_PRINT_DEBUG(
+            lf_print(
                 "Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".",
                 i,
-                input_port_action->trigger->last_known_status_tag.time - lf_time_start(),
+                input_port_action->trigger->last_known_status_tag.time,
                 input_port_action->trigger->last_known_status_tag.microstep,
-                tag.time - lf_time_start(),
+                tag.time,
                 tag.microstep
             );
             input_port_action->trigger->last_known_status_tag = tag;
@@ -275,12 +275,12 @@ static void update_last_known_status_on_input_port(environment_t* env, tag_t tag
     int comparison = lf_tag_compare(tag, input_port_action->last_known_status_tag);
     if (comparison == 0) tag.microstep++;
     if (comparison >= 0) {
-        LF_PRINT_LOG(
+        lf_print(
             "Updating the last known status tag of port %d from " PRINTF_TAG " to " PRINTF_TAG ".",
             port_id,
-            input_port_action->last_known_status_tag.time - lf_time_start(),
+            input_port_action->last_known_status_tag.time,
             input_port_action->last_known_status_tag.microstep,
-            tag.time - lf_time_start(),
+            tag.time,
             tag.microstep
         );
         input_port_action->last_known_status_tag = tag;
@@ -1120,6 +1120,7 @@ static void* update_ports_from_staa_offsets(void* args) {
         LF_PRINT_DEBUG("**** (update thread) starting");
         tag_t tag_when_started_waiting = lf_tag(env);
         for (int i = 0; i < staa_lst_size; ++i) {
+<<<<<<< Updated upstream
             staa_t* staa_elem = staa_lst[i];
             // The staa_elem is adjusted in the code generator to have subtracted the delay on the connection.
             // The list is sorted in increasing order of adjusted STAA offsets.
@@ -1153,25 +1154,67 @@ static void* update_ports_from_staa_offsets(void* args) {
                     LF_PRINT_DEBUG("**** (update thread) Wait until time is " PRINTF_TIME, wait_until_time - lf_time_start());
                     */
 
+=======
+            staa_t* staa_elem = staa_lst[i];  // FIXME: this assumes that the list is sorted by STAA + STAA offset. Is this true?
+            interval_t wait_until_time = env->current_tag.time + staa_elem->STAA + _lf_fed_STA_offset;
+            LF_PRINT_DEBUG("UPFSO waiting until time %lld at time %lld with staa %lld and offset %lld.", (long long) (wait_until_time - start_time), (long long) (lf_tag(env).time - start_time), (long long) staa_elem->STAA, (long long) _lf_fed_STA_offset);
+            // if (wait_until_time != FOREVER && wait_until_time != NEVER) {
+            //     wait_until_time -= _lf_action_delay_table[i];
+            // }
+            lf_mutex_lock(&env->mutex);
+            // Both before and after the wait, check that the tag has not changed
+            while (a_port_is_unknown(staa_elem)) {
+                // if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) {
+                //     // We have committed to a new tag before we finish processing the list. Start over.
+                //     lf_mutex_unlock(&env->mutex);
+                //     goto outer;
+                // }
+                if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) == 0 && wait_until(env, wait_until_time, &lf_port_status_changed) && lf_tag_compare(lf_tag(env), tag_when_started_waiting) == 0) {
+>>>>>>> Stashed changes
                     for (int j = 0; j < staa_elem->num_actions; ++j) {
                         lf_action_base_t* input_port_action = staa_elem->actions[j];
                         if (input_port_action->trigger->status == unknown) {
                             input_port_action->trigger->status = absent;
+<<<<<<< Updated upstream
                             LF_PRINT_DEBUG("**** (update thread) Assuming port absent at time " PRINTF_TIME, lf_tag(env).time - start_time);
                             update_last_known_status_on_input_port(env, lf_tag(env), id_of_action(input_port_action));
                             lf_cond_broadcast(&lf_port_status_changed);
+=======
+                            lf_print("Assuming port absent at time %lld.", (long long) (lf_tag(env).time - start_time));
+                            update_last_known_status_on_input_port(env, lf_tag(env), id_of_action(input_port_action));
+>>>>>>> Stashed changes
                         }
                     }
+                    // lf_mutex_unlock(&env->mutex);
+                } else if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) {
+                    // We have committed to a new tag before we finish processing the list. Start over.
+                    lf_mutex_unlock(&env->mutex);
+                    goto outer;
+                } else {
+                    // lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
+                    // lf_cond_broadcast(&lf_port_status_changed);
+                    // lf_mutex_unlock(&env->mutex);
                 }
+<<<<<<< Updated upstream
                 // If the tag has advanced, start over.
                 if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) break;
             }
             // If the tag has advanced, start over.
             if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) break;
+=======
+                lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
+                lf_cond_broadcast(&lf_port_status_changed);
+            }
+            // lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
+            // lf_cond_broadcast(&lf_port_status_changed);
+            // lf_mutex_unlock(&env->mutex);
+            lf_print("UPFSO cleared %d / %d at time %lld with MLAA %lld and unknown %d and tag (which should be NEVER) is %lld and tag when started waiting is %lld.", i + 1, (int) staa_lst_size, (long long) (lf_tag(env).time - start_time), (long long) max_level_allowed_to_advance, a_port_is_unknown(staa_elem), (long long) _fed.last_TAG.time, (long long) tag_when_started_waiting.time);
+>>>>>>> Stashed changes
         }
         // If the tag has advanced, start over.
         if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) continue;
 
+<<<<<<< Updated upstream
         // At this point, the current tag is the same as when we started waiting
         // and all ports should be known, and hence max_level_allowed_to_advance
         // should be INT_MAX.  Check this to prevent an infinite wait.
@@ -1208,6 +1251,34 @@ static void* update_ports_from_staa_offsets(void* args) {
                 tag_when_started_waiting.time -lf_time_start(), tag_when_started_waiting.microstep);
             // Ports are reset to unknown at the start of new tag, so that will wake this up.
             lf_cond_wait(&lf_port_status_changed);
+=======
+        lf_print("UPFSO acquiring mutex at time %lld.", (long long) (lf_tag(env).time - start_time));
+        // lf_mutex_lock(&env->mutex);
+        while (lf_tag_compare(lf_tag(env), tag_when_started_waiting) == 0) {
+            // At this point, the current tag is the same as when we started waiting
+            // and all ports should be known, and hence max_level_allowed_to_advance
+            // should be INT_MAX.  Check this to prevent an infinite wait.
+            if (max_level_allowed_to_advance != INT_MAX) {
+                // If this occurs, then the current tag advanced during a wait.
+                // Some ports may have been reset to uknown during that wait, in which case,
+                // it would be huge mistake to enter the wait for a new tag below because the
+                // program will freeze.  First, check whether any ports are unknown:
+                bool port_unknown = false;
+                for (int i = 0; i < staa_lst_size; ++i) {
+                    staa_t* staa_elem = staa_lst[i];
+                    if (a_port_is_unknown(staa_elem)) {
+                        port_unknown = true;
+                        break;
+                    }
+                }
+                if (!port_unknown) {
+                    // If this occurs, then there is a race condition that can lead to deadlocks.
+                    lf_print_error_and_exit("**** (update thread) Inconsistency: All ports are known, but MLAA is blocking.");
+                }
+            }
+            LF_PRINT_DEBUG("UPFSO waiting on tag change at time %lld.", (long long) (lf_tag(env).time - start_time));
+            lf_cond_wait(&lf_current_tag_changed);
+>>>>>>> Stashed changes
         }
         LF_PRINT_DEBUG("**** (update thread) Tags after wait: " PRINTF_TAG ", " PRINTF_TAG,
             lf_tag(env).time - lf_time_start(), lf_tag(env).microstep,
@@ -2770,8 +2841,8 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
     // This always needs the top-level environment, which will be env[0].
     environment_t *env;
     _lf_get_environments(&env);
-    int prev_max_level_allowed_to_advance = max_level_allowed_to_advance;
-    max_level_allowed_to_advance = INT_MAX;
+    // int prev_max_level_allowed_to_advance = max_level_allowed_to_advance;
+    int next_max_level_allowed_to_advance = INT_MAX;
 #ifdef FEDERATED_DECENTRALIZED
     size_t action_table_size = _lf_action_table_size;
     lf_action_base_t** action_table = _lf_action_table;
@@ -2786,7 +2857,9 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
               lf_time_logical_elapsed(env)
         );
         // Safe to complete the current tag
-        return (prev_max_level_allowed_to_advance != max_level_allowed_to_advance);
+        int changed = (next_max_level_allowed_to_advance != max_level_allowed_to_advance);
+        max_level_allowed_to_advance = next_max_level_allowed_to_advance;
+        return changed;
     }
 
     size_t action_table_size = _lf_zero_delay_cycle_action_table_size;
@@ -2819,8 +2892,10 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
         if (lf_tag_compare(env->current_tag,
                 input_port_action->trigger->last_known_status_tag) > 0
                 && !input_port_action->trigger->is_physical) {
-            max_level_allowed_to_advance = LF_MIN(
-                max_level_allowed_to_advance,
+            lf_print("current tag: %lld, last known status tag: %lld",
+                    env->current_tag.time, input_port_action->trigger->last_known_status_tag.time);
+            next_max_level_allowed_to_advance = LF_MIN(
+                next_max_level_allowed_to_advance,
                 ((int) LF_LEVEL(input_port_action->trigger->reactions[0]->index))
             );
         }
@@ -2829,7 +2904,9 @@ bool lf_update_max_level(tag_t tag, bool is_provisional) {
         max_level_allowed_to_advance,
         lf_time_logical_elapsed(env)
     );
-    return (prev_max_level_allowed_to_advance != max_level_allowed_to_advance);
+    int changed = (next_max_level_allowed_to_advance != max_level_allowed_to_advance);
+    max_level_allowed_to_advance = next_max_level_allowed_to_advance;
+    return changed;
 }
 
 #endif

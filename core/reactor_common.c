@@ -393,10 +393,10 @@ void _lf_pop_events(environment_t *env) {
                     if (lf_tag_compare(event->intended_tag, env->current_tag) < 0) {
                         // Mark the triggered reaction with a STP violation
                         reaction->is_STP_violated = true;
-                        LF_PRINT_LOG("Trigger %p has violated the reaction's STP offset. Intended tag: " PRINTF_TAG ". Current tag: " PRINTF_TAG,
+                        lf_print("Trigger %p has violated the reaction's STP offset. Intended tag: " PRINTF_TAG ". Current tag: " PRINTF_TAG,
                                     event->trigger,
-                                    event->intended_tag.time - start_time, event->intended_tag.microstep,
-                                    env->current_tag.time - start_time, env->current_tag.microstep);
+                                    event->intended_tag.time, event->intended_tag.microstep,
+                                    env->current_tag.time, env->current_tag.microstep);
                         // Need to update the last_known_status_tag of the port because otherwise,
                         // the MLAA could get stuck, causing the program to lock up.
                         // This should not call update_last_known_status_on_input_port because we

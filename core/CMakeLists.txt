@@ -37,7 +37,7 @@ endif()
 
 if (DEFINED LF_TRACE_PLUGIN)
     message(STATUS "linking trace plugin library ${LF_TRACE_PLUGIN}")
-    target_link_libraries(core PRIVATE ${LF_TRACE_PLUGIN})
+    target_link_libraries(core PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${LF_TRACE_PLUGIN})
 endif()
 
 # Include sources from subdirectories

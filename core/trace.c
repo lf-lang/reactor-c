@@ -47,6 +47,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "reactor_common.h"
 #include "util.h"
+#include "plugin-apis/trace.h"
 
 /** Macro to use when access to trace file fails. */
 #define _LF_TRACE_FAILURE(trace) \
@@ -58,7 +59,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     } while(0)
 
 void lf_tracing_init(int process_id) {
-    lf_trace_global_init(process_id);
+    lf_tracing_global_init(process_id);
 }
 
 trace_t* trace_new(environment_t* env, const char * filename) {
@@ -311,7 +312,7 @@ void call_tracepoint(
         .extra_delay = extra_delay,
         .physical_time = *physical_time
     };
-    tracepoint(trace, worker, (trace_record_nodeps_t) tr);
+    tracepoint(trace, worker, (trace_record_nodeps_t*) &tr);
 }
 
 /**
@@ -434,7 +435,7 @@ void stop_trace_locked(trace_t* trace) {
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
 void tracepoint_federate_to_rti(trace_t *trace, trace_event_t event_type, int fed_id, tag_t* tag) {
-    call_tracepoint(lf_trace_api,
+    call_tracepoint(
         trace,
         event_type,
         NULL,   // void* pointer,
@@ -458,7 +459,7 @@ void tracepoint_federate_to_rti(trace_t *trace, trace_event_t event_type, int fe
  */
 void tracepoint_federate_from_rti(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag) {
     // trace_event_t event_type = (type == MSG_TYPE_TAG_ADVANCE_GRANT)? federate_TAG : federate_PTAG;
-    call_tracepoint(lf_trace_api,
+    call_tracepoint(
         trace,
         event_type,
         NULL,   // void* pointer,
@@ -482,7 +483,7 @@ void tracepoint_federate_from_rti(trace_t* trace, trace_event_t event_type, int 
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
 void tracepoint_federate_to_federate(trace_t* trace, trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
-    call_tracepoint(lf_trace_api,
+    call_tracepoint(
         trace,
         event_type,
         NULL,   // void* pointer,
@@ -506,7 +507,7 @@ void tracepoint_federate_to_federate(trace_t* trace, trace_event_t event_type, i
  * @param tag Pointer to the tag that has been received, or NULL.
  */
 void tracepoint_federate_from_federate(trace_t* trace, trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
-    call_tracepoint(lf_trace_api,
+    call_tracepoint(
         trace,
         event_type,
         NULL,   // void* pointer,
@@ -535,7 +536,7 @@ void tracepoint_federate_from_federate(trace_t* trace, trace_event_t event_type,
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
 void tracepoint_rti_to_federate(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag) {
-    call_tracepoint(lf_trace_api,
+    call_tracepoint(
         trace,
         event_type,
         NULL,   // void* pointer,
@@ -558,7 +559,7 @@ void tracepoint_rti_to_federate(trace_t* trace, trace_event_t event_type, int fe
  * @param tag Pointer to the tag that has been sent, or NULL.
  */
 void tracepoint_rti_from_federate(trace_t* trace, trace_event_t event_type, int fed_id, tag_t* tag) {
-    call_tracepoint(lf_trace_api,
+    call_tracepoint(
         trace,
         event_type,
         NULL,   // void* pointer,
