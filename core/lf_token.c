@@ -221,6 +221,10 @@ lf_token_t* _lf_new_token(token_type_t* type, void* value, size_t length) {
     return result;
 }
 
+// FIXME (Shaokai): The function name is probably a misnomer.
+// It should better be _lf_get_new_token.
+// I also don't get why the token isn't simply returned, and
+// _lf_free_token_value or _lf_done_using has to be called. 
 lf_token_t* _lf_get_token(token_template_t* tmplt) {
     if (tmplt->token != NULL) {
         if (tmplt->token->ref_count == 1) {

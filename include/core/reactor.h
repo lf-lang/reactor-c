@@ -49,6 +49,7 @@
 #ifndef REACTOR_H
 #define REACTOR_H
 
+#include <string.h>    // memcpy
 #include "lf_types.h"
 #include "modes.h"     // Modal model support
 #include "port.h"
@@ -111,16 +112,22 @@ do { \
     /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
     /* even if it is a literal */ \
     out->value = val; \
+    /* DEBUG: lf_print("lf_set value = %d", (int)val); */ \
     _lf_set_present((lf_port_base_t*)out); \
-    /* Create a token for the literal. How do we generalize this to any literal type? */ \
-    int *payload = (int*)calloc(1, sizeof(int)); \
-    *payload = val; \
-    lf_token_t* token = _lf_initialize_token_with_value((token_template_t*)out, (void*)payload, 1); \
+    /* Create a token for the literal based on the token element_size. */ \
+    size_t payload_size = ((token_type_t*)out)->element_size; \
+    /* DEBUG: lf_print("payload_size = %zu", payload_size); */ \
+    /* Put the literal in the payload using memcpy. */ \
+    void *payload = malloc(payload_size); \
+    memcpy(payload, &val, payload_size); \
+    /* Create a new token and put it in the port. */ \
+    lf_token_t* newtoken = _lf_new_token((token_type_t*)out, payload, 1); \
+    _lf_replace_template_token((token_template_t*)out, newtoken); \
     /* VERY IMPORTANT: Increment reference count > 1 so that it does NOT get reused right away */ \
-    /* FIXME: I still don't fully understand this. */
-    token->ref_count = 1; \
+    /* FIXME: I still don't fully understand this. */ \
+    newtoken->ref_count = 2; \
     /* DEBUG: The token address should be distinct. */ \
-    lf_print("Token address = %p", token); \
+    /* DEBUG: lf_print("Token address = %p", newtoken); */ \
 } while(0)
 #else
 #define _LF_SET(out, val) \
@@ -128,7 +135,7 @@ do { \
     /* We need to assign "val" to "out->value" since we need to give "val" an address */ \
     /* even if it is a literal */ \
     out->value = val; \
-   _lf_set_present((lf_port_base_t*)out); \
+    _lf_set_present((lf_port_base_t*)out); \
     if (((token_template_t*)out)->token != NULL) { \
         /* The cast "*((void**) &out->value)" is a hack to make the code */ \
         /* compile with non-token types where value is not a pointer. */ \
