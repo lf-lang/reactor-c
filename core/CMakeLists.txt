@@ -9,8 +9,8 @@ if (DEFINED LF_TRACE)
     list(APPEND GENERAL_SOURCES trace.c)
 endif()
 
-# Add the generl sources to the list of CORE_SOURCES
-list(APPEND CORE_SOURCES ${GENERAL_SOURCES})
+# Add the general sources to the list of REACTORC_SOURCES
+list(APPEND REACTORC_SOURCES ${GENERAL_SOURCES})
 
 # Add sources for either threaded or single-threaded runtime
 if (DEFINED FEDERATED)
@@ -22,7 +22,7 @@ endif()
 if(DEFINED LF_SINGLE_THREADED)
     message(STATUS "Including sources for single-threaded runtime.")
     list(APPEND SINGLE_THREADED_SOURCES reactor.c)
-    list(APPEND CORE_SOURCES ${SINGLE_THREADED_SOURCES})
+    list(APPEND REACTORC_SOURCES ${SINGLE_THREADED_SOURCES})
 else()
     message(STATUS "Including sources for threaded runtime with \
 ${NUMBER_OF_WORKERS} worker(s) with scheduler=${SCHEDULER} and \
@@ -41,7 +41,7 @@ include(modal_models/CMakeLists.txt)
 include(platform/CMakeLists.txt)
 
 # Print sources used for compilation
-list(JOIN CORE_SOURCES ", " PRINTABLE_SOURCE_LIST)
+list(JOIN REACTORC_SOURCES ", " PRINTABLE_SOURCE_LIST)
 message(STATUS "Including the following sources: " ${PRINTABLE_SOURCE_LIST})
 
 # Create the reactor-c library. If we are targeting Zephyr we have to use the
@@ -49,10 +49,10 @@ message(STATUS "Including the following sources: " ${PRINTABLE_SOURCE_LIST})
 if(PLATFORM_ZEPHYR)
     message("--- Building Zephyr library")
     zephyr_library_named(reactor-c)
-    zephyr_library_sources(${CORE_SOURCES})
+    zephyr_library_sources(${REACTORC_SOURCES})
     zephyr_library_link_libraries(kernel)
 else()
-    add_library(reactor-c ${CORE_SOURCES})
+    add_library(reactor-c ${REACTORC_SOURCES})
 endif()
 
 # Apply compile definitions to the reactor-c library.
@@ -91,12 +91,10 @@ if(DEFINED _LF_CLOCK_SYNC_ON)
   endif()
 endif()
 
-# Link with thread library, unless if we are targeting the Zephyr RTOS
+# Link with thread library
 if(NOT DEFINED LF_SINGLE_THREADED OR DEFINED LF_TRACE)
-    if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
-        find_package(Threads REQUIRED)
-        target_link_libraries(reactor-c PUBLIC Threads::Threads)
-    endif()
+    find_package(Threads REQUIRED)
+    target_link_libraries(reactor-c PUBLIC Threads::Threads)
 endif()
 
 # Macro for translating a command-line argument into compile definition for

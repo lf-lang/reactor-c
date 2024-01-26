@@ -30,4 +30,4 @@ endif()
 list(TRANSFORM LF_PLATFORM_FILES PREPEND platform/)
 
 # Add sources to the list for debug info
-list(APPEND CORE_SOURCES ${LF_PLATFORM_FILES})
+list(APPEND REACTORC_SOURCES ${LF_PLATFORM_FILES})
