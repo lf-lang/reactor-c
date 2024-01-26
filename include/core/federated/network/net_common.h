@@ -354,6 +354,8 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_FED_RESPONSE 102
 
+
+// TODO: Need to be moved.
 /**
  * The randomly created nonce size will be 8 bytes.
  */
@@ -373,6 +375,7 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #define MSG_TYPE_TIMESTAMP 2
 #define MSG_TYPE_TIMESTAMP_LENGTH (1 + sizeof(int64_t))
 
+//TODO: Deprecated.
 /** Byte identifying a message to forward to another federate.
  *  The next two bytes will be the ID of the destination port.
  *  The next two bytes are the destination federate ID.

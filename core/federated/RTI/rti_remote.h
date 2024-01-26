@@ -314,7 +314,7 @@ void handle_address_ad(uint16_t federate_id);
  * A function to handle timestamp messages.
  * This function assumes the caller does not hold the mutex.
  */
-void handle_timestamp(federate_info_t *my_fed);
+void handle_timestamp(federate_info_t *my_fed, unsigned char *buffer);
 
 /**
  * Take a snapshot of the physical clock time and send

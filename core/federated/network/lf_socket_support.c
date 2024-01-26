@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 #include "util.h"
-// #include "net_util.h"
+#include "net_common.h"
 
 static socket_priv_t *get_priv(netdrv_t *drv) {
     if (!drv) {
@@ -337,74 +337,6 @@ netdrv_t *accept_connection(netdrv_t *rti_netdrv) {
     return fed_netdrv;
 }
 
-int read_from_netdrv(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
-    socket_priv_t *priv = get_priv(drv);
-    if (priv->socket_descriptor < 0) {
-        // Socket is not open.
-        errno = EBADF;
-        return -1;
-    }
-    ssize_t bytes_read = 0;
-    int retry_count = 0;
-    while (bytes_read < (ssize_t)num_bytes) {
-        ssize_t more = read(priv->socket_descriptor, buffer + bytes_read, num_bytes - (size_t)bytes_read);
-        if(more < 0 && retry_count++ < NUM_SOCKET_RETRIES 
-                && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
-            // Those error codes set by the socket indicates
-            // that we should try again (@see man errno).
-            lf_print_warning("Reading from socket failed. Will try again.");
-            lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
-            continue;
-        } else if (more < 0) {
-            // A more serious error occurred.
-            return -1;
-        } else if (more == 0) {
-            // EOF received.
-            return 1;
-        }
-        bytes_read += more;
-    }
-    return 0;    
-}
-int read_from_netdrv_close_on_error(netdrv_t *drv, size_t num_bytes, unsigned char* buffer) {
-    socket_priv_t *priv = get_priv(drv);
-    assert(&priv->socket_descriptor);
-    int read_failed = read_from_netdrv(drv, num_bytes, buffer);
-    if (read_failed) {
-        // Read failed.
-        // Socket has probably been closed from the other side.
-        // Shut down and close the socket from this side.
-        shutdown(priv->socket_descriptor, SHUT_RDWR);
-        close(priv->socket_descriptor);
-        // Mark the socket closed.
-        priv->socket_descriptor = -1;
-        return -1;
-    }
-    return 0;
-}
-void read_from_netdrv_fail_on_error(
-		netdrv_t *drv,
-		size_t num_bytes,
-		unsigned char* buffer,
-		lf_mutex_t* mutex,
-		char* format, ...) {
-    socket_priv_t *priv = get_priv(drv);
-    va_list args;
-    assert(&priv->socket_descriptor);
-    int read_failed = read_from_netdrv_close_on_error(drv, num_bytes, buffer);
-    if (read_failed) {
-        // Read failed.
-        if (mutex != NULL) {
-            lf_mutex_unlock(mutex);
-        }
-        if (format != NULL) {
-            lf_print_error_system_failure(format, args);
-        } else {
-            lf_print_error_system_failure("Failed to read from socket.");
-        }
-    }
-}
-
 ssize_t peek_from_netdrv(netdrv_t *drv, unsigned char* result) {
     socket_priv_t *priv = get_priv(drv);
     ssize_t bytes_read = recv(priv->socket_descriptor, result, 1, MSG_DONTWAIT | MSG_PEEK);
@@ -472,5 +404,193 @@ void write_to_netdrv_fail_on_error(
         } else {
             lf_print_error("Failed to write to socket. Closing it.");
         }
+    }
+}
+
+static int net_read_from_socket(int socket, size_t num_bytes, unsigned char* buffer) {
+    if (socket < 0) {
+        // Socket is not open.
+        errno = EBADF;
+        return -1;
+    }
+    ssize_t bytes_read = 0;
+    int retry_count = 0;
+    while (bytes_read < (ssize_t)num_bytes) {
+        ssize_t more = read(socket, buffer + bytes_read, num_bytes - (size_t)bytes_read);
+        if(more < 0 && retry_count++ < NUM_SOCKET_RETRIES 
+                && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) {
+            // Those error codes set by the socket indicates
+            // that we should try again (@see man errno).
+            lf_print_warning("Reading from socket failed. Will try again.");
+            lf_sleep(DELAY_BETWEEN_SOCKET_RETRIES);
+            continue;
+        } else if (more < 0) {
+            // A more serious error occurred.
+            return -1;
+        } else if (more == 0) {
+            // EOF received.
+            return 1;
+        }
+        bytes_read += more;
+    }
+    return 0;
+}
+
+int read_from_netdrv_close_on_error(netdrv_t *drv, unsigned char* buffer) {
+    socket_priv_t *priv = get_priv(drv);
+    assert(&priv->socket_descriptor);
+    int read_failed = read_from_netdrv(drv, buffer);
+    if (read_failed) {
+        drv->close(drv);
+        return -1;
+    }
+    return 0;
+}
+
+void read_from_netdrv_fail_on_error(
+		netdrv_t *drv,
+		unsigned char* buffer,
+		lf_mutex_t* mutex,
+		char* format, ...) {
+    va_list args;
+    socket_priv_t *priv = get_priv(drv);
+    assert(&priv->socket_descriptor);
+    int read_failed = read_from_netdrv_close_on_error(drv, buffer);
+    if (read_failed) {
+        // Read failed.
+        if (mutex != NULL) {
+            lf_mutex_unlock(mutex);
+        }
+        if (format != NULL) {
+            lf_print_error_system_failure(format, args);
+        } else {
+            lf_print_error_system_failure("Failed to read from netdrv.");
+        }
+    }
+}
+
+
+
+int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
+    socket_priv_t *priv = get_priv(netdrv);
+    net_read_from_socket(priv->socket_descriptor, 1, buffer);
+    int msg_type = buffer[0];
+    buffer += 1;
+    switch (msg_type) {
+
+        // case MSG_TYPE_REJECT: // 1 +1
+        //     break;
+        // case MSG_TYPE_ACK: // 1
+        //     break;
+        case MSG_TYPE_UDP_PORT: // 1 + sizeof(uint16_t) = 3
+            return net_read_from_socket(priv->socket_descriptor, sizeof(uint16_t), buffer);
+        case MSG_TYPE_FED_IDS: // 1 + sizeof(uint16_t) + 1 + federation_id
+            net_read_from_socket(priv->socket_descriptor, sizeof(uint16_t) + 1, buffer);
+            size_t federation_id_length = (size_t)buffer[sizeof(uint16_t)];
+            return net_read_from_socket(priv->socket_descriptor, federation_id_length, buffer + 1 + sizeof(uint16_t));
+
+        case MSG_TYPE_FED_NONCE: //1 + sizeof(uint16_t) + NONCE_LENGTH(8)
+            return net_read_from_socket(priv->socket_descriptor, sizeof(uint16_t) + NONCE_LENGTH, buffer);
+            
+
+        // case MSG_TYPE_RTI_RESPONSE: //1 + sizeof(uint16_t) + NONCE_LENGTH(8)
+        //     break;
+
+        // case MSG_TYPE_FED_RESPONSE: //1 + NONCE_LENGTH(8)
+        //     break;
+
+        case MSG_TYPE_TIMESTAMP: // 1+sizeof(int64_t)
+            return net_read_from_socket(priv->socket_descriptor, sizeof(int64_t), buffer);
+
+        // case MSG_TYPE_RESIGN:
+        //     handle_federate_resign(my_fed);
+        //     return NULL;            
+        // case MSG_TYPE_TAGGED_MESSAGE:
+        //     handle_timed_message(my_fed, buffer);
+        //     break;
+
+
+
+
+
+        // case MSG_TYPE_NEXT_EVENT_TAG:
+        //     handle_next_event_tag(my_fed);
+        //     break;
+        //     case MSG_TYPE_TAG_ADVANCE_GRANT:
+        //         handle_tag_advance_grant();
+        //         break;
+        //     case MSG_TYPE_PROVISIONAL_TAG_ADVANCE_GRANT:
+        //         handle_provisional_tag_advance_grant();
+        //         break;
+
+        // case MSG_TYPE_LATEST_TAG_COMPLETE:
+        //     handle_latest_tag_complete(my_fed);
+        //     break;
+        // case MSG_TYPE_STOP_REQUEST:
+        //     handle_stop_request_message(my_fed); 
+        // case MSG_TYPE_STOP_REQUEST_REPLY:
+        //     handle_stop_request_reply(my_fed);
+        //     break;
+        //     case MSG_TYPE_STOP_GRANTED:
+        //         handle_stop_granted_message();
+        //         break;
+
+        // case MSG_TYPE_ADDRESS_QUERY:
+        //     handle_address_query(my_fed->enclave.id);
+        //     break;
+        // case MSG_TYPE_ADDRESS_ADVERTISEMENT:
+        //     handle_address_ad(my_fed->enclave.id);
+        //     break;
+
+        // case MSG_TYPE_P2P_SENDING_FED_ID: //1 /////////TODO: CHECK!!!!!!!
+        //     break;
+
+        //     case MSG_TYPE_P2P_MESSAGE:
+        //         LF_PRINT_LOG("Received untimed message from federate %d.", fed_id);
+        //         if (handle_message(socket_id, fed_id)) {
+        //             // Failed to complete the reading of a message on a physical connection.
+        //             lf_print_warning("Failed to complete reading of message on physical connection.");
+        //             socket_closed = true;
+        //         }
+        //         break;
+        //     case MSG_TYPE_P2P_TAGGED_MESSAGE:
+        //         LF_PRINT_LOG("Received tagged message from federate %d.", fed_id);
+        //         if (handle_tagged_message(socket_id, fed_id)) {
+        //             // P2P tagged messages are only used in decentralized coordination, and
+        //             // it is not a fatal error if the socket is closed before the whole message is read.
+        //             // But this thread should exit.
+        //             lf_print_warning("Failed to complete reading of tagged message.");
+        //             socket_closed = true;
+        //         }
+        //         break;
+        // case MSG_TYPE_CLOCK_SYNC_T1:
+        //     break;
+
+        case MSG_TYPE_CLOCK_SYNC_T3:
+            return net_read_from_socket(priv->socket_descriptor, sizeof(int32_t), buffer);
+        // case MSG_TYPE_CLOCK_SYNC_T4:
+        //     break;
+        // case MSG_TYPE_CLOCK_SYNC_CODED_PROBE:
+        //     break;
+        // case MSG_TYPE_PORT_ABSENT:
+        //     handle_port_absent_message(my_fed, buffer);
+        //     break;
+
+        case MSG_TYPE_NEIGHBOR_STRUCTURE:
+            net_read_from_socket(priv->socket_descriptor, MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE - 1, buffer);
+            int num_upstream = extract_int32(buffer);
+            int num_downstream = extract_int32(buffer+sizeof(int32_t));
+            size_t connections_info_body_size = ((sizeof(uint16_t) + sizeof(int64_t)) * num_upstream)+ (sizeof(uint16_t) * num_downstream);
+            return net_read_from_socket(priv->socket_descriptor, connections_info_body_size, buffer + MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE - 1);
+
+
+
+
+        // case MSG_TYPE_FAILED:
+        //     handle_federate_failed(my_fed);
+        //     return NULL;
+        default:
+            return -1;
+            
     }
 }

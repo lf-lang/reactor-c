@@ -833,13 +833,8 @@ void handle_address_ad(uint16_t federate_id) {
     }
 }
 
-void handle_timestamp(federate_info_t *my_fed) {
-    unsigned char buffer[sizeof(int64_t)];
-    // Read bytes from the socket. We need 8 bytes.
-    read_from_socket_fail_on_error(&my_fed->socket, sizeof(int64_t), (unsigned char *)&buffer, NULL,
-            "ERROR reading timestamp from federate %d.\n", my_fed->enclave.id);
-
-    int64_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t *)(&buffer)));
+void handle_timestamp(federate_info_t *my_fed, unsigned char *buffer) {
+    int64_t timestamp = swap_bytes_if_big_endian_int64(*((int64_t *)(buffer)));
     if (rti_remote->base.tracing_enabled) {
         tag_t tag = {.time = timestamp, .microstep = 0};
         tracepoint_rti_from_federate(rti_remote->base.trace, receive_TIMESTAMP, my_fed->enclave.id, &tag);
@@ -877,7 +872,7 @@ void handle_timestamp(federate_info_t *my_fed) {
         tag_t tag = {.time = start_time, .microstep = 0};
         tracepoint_rti_to_federate(rti_remote->base.trace, send_TIMESTAMP, my_fed->enclave.id, &tag);
     }
-    if (write_to_socket(my_fed->socket, MSG_TYPE_TIMESTAMP_LENGTH, start_time_buffer)) {
+    if (write_to_netdrv(my_fed->fed_netdrv, MSG_TYPE_TIMESTAMP_LENGTH, start_time_buffer)) {
         lf_print_error("Failed to send the starting time to federate %d.", my_fed->enclave.id);
     }
 
@@ -1195,12 +1190,12 @@ void *federate_info_thread_TCP(void *fed) {
     // Buffer for incoming messages.
     // This does not constrain the message size because messages
     // are forwarded piece by piece.
-    unsigned char buffer[FED_COM_BUFFER_SIZE];
+    unsigned char buffer[FED_COM_BUFFER_SIZE]; //TODO: NEED TO CHECK SIZE.
 
     // Listen for messages from the federate.
     while (my_fed->enclave.state != NOT_CONNECTED) {
         // Read no more than one byte to get the message type.
-        int read_failed = read_from_socket(my_fed->socket, 1, buffer);
+        int read_failed = read_from_netdrv(my_fed->fed_netdrv, buffer);
         if (read_failed) {
             // Socket is closed
             lf_print_warning("RTI: Socket to federate %d is closed. Exiting the thread.", my_fed->enclave.id);
@@ -1212,7 +1207,7 @@ void *federate_info_thread_TCP(void *fed) {
         LF_PRINT_DEBUG("RTI: Received message type %u from federate %d.", buffer[0], my_fed->enclave.id);
         switch (buffer[0]) {
         case MSG_TYPE_TIMESTAMP:
-            handle_timestamp(my_fed);
+            handle_timestamp(my_fed, buffer + 1);
             break;
         case MSG_TYPE_ADDRESS_QUERY:
             handle_address_query(my_fed->enclave.id);
@@ -1305,12 +1300,11 @@ void send_reject(int *socket_id, unsigned char error_code) {
  * @return The federate ID for success or -1 for failure.
  */
 static int32_t net_receive_and_check_fed_id_message(netdrv_t *netdrv) {
-    // Buffer for message ID, federate ID, and federation ID length.
-    size_t length = 1 + sizeof(uint16_t) + 1; // Message ID, federate ID, length of fedration ID.
-    unsigned char buffer[length];
+    // Buffer for message ID, federate ID, federation ID length, and federation ID.
+    unsigned char buffer[256]; //TODO: NEED TO CHECK.
     // Read bytes from the socket. We need 4 bytes.
 
-    if (read_from_netdrv_close_on_error(netdrv, length, buffer)) {
+    if (read_from_netdrv_close_on_error(netdrv, buffer)) {
         lf_print_error("RTI failed to read from accepted socket.");
         return -1;
     }
@@ -1343,27 +1337,20 @@ static int32_t net_receive_and_check_fed_id_message(netdrv_t *netdrv) {
 
         // Read the federation ID.  First read the length, which is one byte.
         size_t federation_id_length = (size_t)buffer[sizeof(uint16_t) + 1];
-        char federation_id_received[federation_id_length + 1]; // One extra for null terminator.
-        // Next read the actual federation ID.
-        if (read_from_netdrv_close_on_error(netdrv, federation_id_length,
-                                            (unsigned char *)federation_id_received)) {
-            lf_print_error("RTI failed to read federation id from federate %d.", fed_id);
-            return -1;
-        }
 
         // Terminate the string with a null.
-        federation_id_received[federation_id_length] = 0;
+        buffer[2 + sizeof(uint16_t) + federation_id_length] = 0;
 
-        LF_PRINT_DEBUG("RTI received federation ID: %s.", federation_id_received);
+        LF_PRINT_DEBUG("RTI received federation ID: %s.", buffer + 2 + sizeof(uint16_t));
 
         if (rti_remote->base.tracing_enabled) {
             tracepoint_rti_from_federate(rti_remote->base.trace, receive_FED_ID, fed_id, NULL);
         }
         // Compare the received federation ID to mine.
-        if (strncmp(rti_remote->federation_id, federation_id_received, federation_id_length) != 0) {
+        if (strncmp(rti_remote->federation_id, buffer + 2 + sizeof(uint16_t), federation_id_length) != 0) {
             // Federation IDs do not match. Send back a MSG_TYPE_REJECT message.
             lf_print_warning("Federate from another federation %s attempted to connect to RTI in federation %s.",
-                             federation_id_received,
+                             buffer + 2 + sizeof(uint16_t),
                              rti_remote->federation_id);
             if (rti_remote->base.tracing_enabled) {
                 tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
@@ -1586,28 +1573,27 @@ static int32_t receive_and_check_fed_id_message(int *socket_id, struct sockaddr_
  * @return 1 on success and 0 on failure.
  */
 static int net_receive_connection_information(netdrv_t *netdrv, uint16_t fed_id) {
+    unsigned char connection_info_buffer[1024];
     LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_NEIGHBOR_STRUCTURE from federate %d.", fed_id);
-    unsigned char connection_info_header[MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE];
     read_from_netdrv_fail_on_error(
             netdrv,
-            MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE,
-            connection_info_header,
+            connection_info_buffer,
             NULL,
             "RTI failed to read MSG_TYPE_NEIGHBOR_STRUCTURE message header from federate %d.",
             fed_id);
 
-    if (connection_info_header[0] != MSG_TYPE_NEIGHBOR_STRUCTURE) {
+    if (connection_info_buffer[0] != MSG_TYPE_NEIGHBOR_STRUCTURE) {
         lf_print_error(
                 "RTI was expecting a MSG_TYPE_UDP_PORT message from federate %d. Got %u instead. "
                 "Rejecting federate.",
-                fed_id, connection_info_header[0]);
+                fed_id, connection_info_buffer[0]);
         net_send_reject(netdrv, UNEXPECTED_MESSAGE);
         return 0;
     } else {
         federate_info_t *fed = GET_FED_INFO(fed_id);
         // Read the number of upstream and downstream connections
-        fed->enclave.num_upstream = extract_int32(&(connection_info_header[1]));
-        fed->enclave.num_downstream = extract_int32(&(connection_info_header[1 + sizeof(int32_t)]));
+        fed->enclave.num_upstream = extract_int32(&(connection_info_buffer[1]));
+        fed->enclave.num_downstream = extract_int32(&(connection_info_buffer[1 + sizeof(int32_t)]));
         LF_PRINT_DEBUG(
                 "RTI got %d upstreams and %d downstreams from federate %d.",
                 fed->enclave.num_upstream,
@@ -1633,33 +1619,22 @@ static int net_receive_connection_information(netdrv_t *netdrv, uint16_t fed_id)
         size_t connections_info_body_size = (
                 (sizeof(uint16_t) + sizeof(int64_t)) * fed->enclave.num_upstream)
                 + (sizeof(uint16_t) * fed->enclave.num_downstream);
-        unsigned char *connections_info_body = NULL;
         if (connections_info_body_size > 0) {
-            connections_info_body = (unsigned char *)malloc(connections_info_body_size);
-            read_from_netdrv_fail_on_error(
-                    netdrv,
-                    connections_info_body_size,
-                    connections_info_body,
-                    NULL,
-                    "RTI failed to read MSG_TYPE_NEIGHBOR_STRUCTURE message body from federate %d.",
-                    fed_id);
             // Keep track of where we are in the buffer
-            size_t message_head = 0;
+            size_t message_head = MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE;
             // First, read the info about upstream federates
             for (int i = 0; i < fed->enclave.num_upstream; i++) {
-                fed->enclave.upstream[i] = extract_uint16(&(connections_info_body[message_head]));
+                fed->enclave.upstream[i] = extract_uint16(&(connection_info_buffer[message_head]));
                 message_head += sizeof(uint16_t);
-                fed->enclave.upstream_delay[i] = extract_int64(&(connections_info_body[message_head]));
+                fed->enclave.upstream_delay[i] = extract_int64(&(connection_info_buffer[message_head]));
                 message_head += sizeof(int64_t);
             }
 
             // Next, read the info about downstream federates
             for (int i = 0; i < fed->enclave.num_downstream; i++) {
-                fed->enclave.downstream[i] = extract_uint16(&(connections_info_body[message_head]));
+                fed->enclave.downstream[i] = extract_uint16(&(connection_info_buffer[message_head]));
                 message_head += sizeof(uint16_t);
             }
-
-            free(connections_info_body);
         }
     }
     LF_PRINT_DEBUG("RTI received neighbor structure from federate %d.", fed_id);
@@ -1771,7 +1746,7 @@ static int net_receive_udp_message_and_set_up_clock_sync(netdrv_t *netdrv, uint1
     // is doing clock synchronization, and if it is, what port to use for UDP.
     LF_PRINT_DEBUG("RTI waiting for MSG_TYPE_UDP_PORT from federate %d.", fed_id);
     unsigned char response[1 + sizeof(uint16_t)];
-    read_from_netdrv_fail_on_error(netdrv, 1 + sizeof(uint16_t), response, NULL,
+    read_from_netdrv_fail_on_error(netdrv, response, NULL,
             "RTI failed to read MSG_TYPE_UDP_PORT message from federate %d.", fed_id);
     if (response[0] != MSG_TYPE_UDP_PORT) {
         lf_print_error(
@@ -1799,7 +1774,7 @@ static int net_receive_udp_message_and_set_up_clock_sync(netdrv_t *netdrv, uint1
                     // Listen for reply message, which should be T3.
                     size_t message_size = 1 + sizeof(int32_t);
                     unsigned char buffer[message_size];
-                    read_from_netdrv_fail_on_error(netdrv, message_size, buffer, NULL,
+                    read_from_netdrv_fail_on_error(netdrv, buffer, NULL,
                             "Socket to federate %d unexpectedly closed.", fed_id);
                     if (buffer[0] == MSG_TYPE_CLOCK_SYNC_T3) {
                         int32_t fed_id = extract_int32(&(buffer[1]));
@@ -1934,12 +1909,12 @@ static int receive_udp_message_and_set_up_clock_sync(int *socket_id, uint16_t fe
  * @param socket Socket for the incoming federate tryting to authenticate.
  * @return True if authentication is successful and false otherwise.
  */
-static bool authenticate_federate(int *socket) {
+static bool authenticate_federate(netdrv_t *rti_netdrv) {
     // Wait for MSG_TYPE_FED_NONCE from federate.
     size_t fed_id_length = sizeof(uint16_t);
     unsigned char buffer[1 + fed_id_length + NONCE_LENGTH];
-    read_from_socket_fail_on_error(socket, 1 + fed_id_length + NONCE_LENGTH, buffer, NULL,
-            "Failed to read MSG_TYPE_FED_NONCE");
+    read_from_netdrv_fail_on_error(rti_netdrv, buffer, NULL,
+            "Failed to read MSG_TYPE_FED_NONCE.");
     if (buffer[0] != MSG_TYPE_FED_NONCE) {
         lf_print_error_and_exit(
                 "Received unexpected response %u from the FED (see net_common.h).",
@@ -1966,13 +1941,13 @@ static bool authenticate_federate(int *socket) {
     RAND_bytes(rti_nonce, NONCE_LENGTH);
     memcpy(&sender[1], rti_nonce, NONCE_LENGTH);
     memcpy(&sender[1 + NONCE_LENGTH], hmac_tag, hmac_length);
-    if (write_to_socket(*socket, 1 + NONCE_LENGTH + hmac_length, sender)) {
+    if (write_to_netdrv(rti_netdrv, 1 + NONCE_LENGTH + hmac_length, sender)) {
         lf_print_error("Failed to send nonce to federate.");
     }
 
     // Wait for MSG_TYPE_FED_RESPONSE
     unsigned char received[1 + hmac_length];
-    read_from_socket_fail_on_error(socket, 1 + hmac_length, received, NULL,
+    read_from_netdrv_fail_on_error(rti_netdrv, 1 + hmac_length, received, NULL,
             "Failed to read federate response.");
     if (received[0] != MSG_TYPE_FED_RESPONSE) {
         lf_print_error_and_exit(
@@ -1994,7 +1969,7 @@ static bool authenticate_federate(int *socket) {
     if (memcmp(&received[1], rti_tag, hmac_length) != 0) {
         // Federation IDs do not match. Send back a HMAC_DOES_NOT_MATCH message.
         lf_print_warning("HMAC authentication failed. Rejecting the federate.");
-        send_reject(socket, HMAC_DOES_NOT_MATCH);
+        net_send_reject(rti_netdrv, HMAC_DOES_NOT_MATCH);
         return false;
     } else {
         LF_PRINT_LOG("Federate's HMAC verified.");
@@ -2013,12 +1988,10 @@ void net_lf_connect_to_federates(netdrv_t *rti_netdrv) {
 // Wait for the first message from the federate when RTI -a option is on.
 #ifdef __RTI_AUTH__
         if (rti_remote->authentication_enabled) {
-            if (!authenticate_federate(&socket_id)) {
+            if (!authenticate_federate(rti_netdrv)) {
                 lf_print_warning("RTI failed to authenticate the incoming federate.");
-                // Close the socket.
-                shutdown(socket_id, SHUT_RDWR);
-                close(socket_id);
-                socket_id = -1;
+                
+                rti_netdrv->close(rti_netdrv);
                 // Ignore the federate that failed authentication.
                 i--;
                 continue;

@@ -1973,9 +1973,10 @@ void lf_connect_to_rti(const char* hostname, int port) {
 #else
         LF_PRINT_LOG("Connected to an RTI. Sending federation ID for authentication.");
 #endif
-
-        // Send the message type first.
-        unsigned char buffer[4];
+        // Send message_type + federate_ID + federation_id_length + federation_id
+        size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
+        lf_print("federation_id_length: %d", federation_id_length);
+        unsigned char *buffer = (unsigned char*) malloc(1 + sizeof(uint16_t) + 1 + federation_id_length);
         buffer[0] = MSG_TYPE_FED_IDS;
         // Next send the federate ID.
         if (_lf_my_fed_id > UINT16_MAX) {
@@ -1984,23 +1985,14 @@ void lf_connect_to_rti(const char* hostname, int port) {
         encode_uint16((uint16_t)_lf_my_fed_id, &buffer[1]);
         // Next send the federation ID length.
         // The federation ID is limited to 255 bytes.
-        size_t federation_id_length = strnlen(federation_metadata.federation_id, 255);
         buffer[1 + sizeof(uint16_t)] = (unsigned char)(federation_id_length & 0xff);
-
+        memcpy(buffer + 2 + sizeof(uint16_t), (unsigned char*)federation_metadata.federation_id, federation_id_length);
         // Trace the event when tracing is enabled
         tracepoint_federate_to_rti(_fed.trace, send_FED_ID, _lf_my_fed_id, NULL);
 
         // No need for a mutex here because no other threads are writing to this socket.
-        if (write_to_socket(_fed.socket_TCP_RTI, 2 + sizeof(uint16_t), buffer)) {
+        if (write_to_socket(_fed.socket_TCP_RTI, 2 + sizeof(uint16_t) + federation_id_length, buffer)) {
             continue; // Try again, possibly on a new port.
-        }
-
-        // Next send the federation ID itself.
-        if (write_to_socket(
-                _fed.socket_TCP_RTI,
-                federation_id_length,
-                (unsigned char*)federation_metadata.federation_id)) {
-            continue; // Try again.
         }
 
         // Wait for a response.

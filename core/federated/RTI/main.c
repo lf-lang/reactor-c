@@ -332,22 +332,27 @@ int main(int argc, const char* argv[]) {
         initialize_federate(fed_info, i);
         rti.base.scheduling_nodes[i] = (scheduling_node_t *) fed_info;
     }
-    
+    // TODO: Need to add user_specified_port
     start_net_rti_server();
     net_wait_for_federates(rti.rti_netdrv);
-    
-
-//TODO: Let's leave this user_specified_port yet.
-    int socket_descriptor = start_rti_server(rti.user_specified_port);
-    if (socket_descriptor >= 0) {
-        wait_for_federates(socket_descriptor);
-        normal_termination = true;
-        if (rti.base.tracing_enabled) {
-            // No need for a mutex lock because all threads have exited.
-            stop_trace_locked(rti.base.trace);
-            lf_print("RTI trace file saved.");
-        }
+    normal_termination = true;
+    if (rti.base.tracing_enabled) {
+        // No need for a mutex lock because all threads have exited.
+        stop_trace_locked(rti.base.trace);
+        lf_print("RTI trace file saved.");
     }
+
+
+//     int socket_descriptor = start_rti_server(rti.user_specified_port);
+//     if (socket_descriptor >= 0) {
+//         wait_for_federates(socket_descriptor);
+//         normal_termination = true;
+//         if (rti.base.tracing_enabled) {
+//             // No need for a mutex lock because all threads have exited.
+//             stop_trace_locked(rti.base.trace);
+//             lf_print("RTI trace file saved.");
+//         }
+//     }
 
     lf_print("RTI is exiting."); // Do this before freeing scheduling nodes.
     free_scheduling_nodes(rti.base.scheduling_nodes, rti.base.number_of_scheduling_nodes);
