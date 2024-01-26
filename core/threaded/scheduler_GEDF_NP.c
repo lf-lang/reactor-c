@@ -50,7 +50,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "scheduler_instance.h"
 #include "scheduler_sync_tag_advance.h"
 #include "scheduler.h"
-#include "semaphore.h"
+#include "lf_semaphore.h"
 #include "trace.h"
 #include "util.h"
 

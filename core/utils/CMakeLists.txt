@@ -1,4 +1,4 @@
-set(UTIL_SOURCES vector.c pqueue_base.c pqueue_tag.c pqueue.c util.c semaphore.c)
+set(UTIL_SOURCES vector.c pqueue_base.c pqueue_tag.c pqueue.c util.c lf_semaphore.c)
 
 list(APPEND INFO_SOURCES ${UTIL_SOURCES})
 
