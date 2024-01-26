@@ -535,9 +535,9 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
         //         handle_stop_granted_message();
         //         break;
 
-        // case MSG_TYPE_ADDRESS_QUERY:
-        //     handle_address_query(my_fed->enclave.id);
-        //     break;
+        case MSG_TYPE_ADDRESS_QUERY:
+            return net_read_from_socket(priv->socket_descriptor, sizeof(uint16_t), buffer);
+            break;
         // case MSG_TYPE_ADDRESS_ADVERTISEMENT:
         //     handle_address_ad(my_fed->enclave.id);
         //     break;

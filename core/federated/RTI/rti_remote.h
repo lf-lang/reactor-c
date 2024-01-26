@@ -291,7 +291,7 @@ void handle_stop_request_reply(federate_info_t* fed);
  * period of time.
  * @param fed_id The federate sending a MSG_TYPE_ADDRESS_QUERY message.
  */
-void handle_address_query(uint16_t fed_id);
+void handle_address_query(uint16_t fed_id, unsigned char *buffer);
 
 /**
  * Handle address advertisement messages (@see MSG_TYPE_ADDRESS_ADVERTISEMENT in net_common.h).

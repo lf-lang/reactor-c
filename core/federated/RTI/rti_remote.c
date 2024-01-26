@@ -767,13 +767,11 @@ void handle_stop_request_reply(federate_info_t *fed) {
 
 //////////////////////////////////////////////////
 
-void handle_address_query(uint16_t fed_id) {
+//TODO: The whole message needs to be changed. It should not be port and IP specific.
+void handle_address_query(uint16_t fed_id, unsigned char *buffer) {
     federate_info_t *fed = GET_FED_INFO(fed_id);
     // Use buffer both for reading and constructing the reply.
     // The length is what is needed for the reply.
-    unsigned char buffer[1 + sizeof(int32_t)];
-    read_from_socket_fail_on_error(&fed->socket, sizeof(uint16_t), (unsigned char *)buffer, NULL,
-            "Failed to read address query.");
     uint16_t remote_fed_id = extract_uint16(buffer);
 
     if (rti_remote->base.tracing_enabled) {
@@ -785,25 +783,20 @@ void handle_address_query(uint16_t fed_id) {
     // NOTE: server_port initializes to -1, which means the RTI does not know
     // the port number because it has not yet received an MSG_TYPE_ADDRESS_ADVERTISEMENT message
     // from this federate. In that case, it will respond by sending -1.
-
-    // Response message is also of type MSG_TYPE_ADDRESS_QUERY.
-    buffer[0] = MSG_TYPE_ADDRESS_QUERY;
-
-    // Encode the port number.
+    
     federate_info_t *remote_fed = GET_FED_INFO(remote_fed_id);
+    unsigned char buf[1 + sizeof(int32_t) + sizeof(remote_fed->server_ip_addr)];
+    // Response message is also of type MSG_TYPE_ADDRESS_QUERY.
+    buf[0] = MSG_TYPE_ADDRESS_QUERY;
 
-    // Send the port number (which could be -1).
+    // Send the port number (which could be -1) and server IP address to federate.
     LF_MUTEX_LOCK(rti_mutex);
-    encode_int32(remote_fed->server_port, (unsigned char *)&buffer[1]);
-    write_to_socket_fail_on_error(
-            &fed->socket, sizeof(int32_t) + 1, (unsigned char *)buffer, &rti_mutex,
+    encode_int32(remote_fed->server_port, (unsigned char *)&buf[1]);
+    memcpy(buf + 1 + sizeof(int32_t), (unsigned char *)&remote_fed->server_ip_addr, sizeof(remote_fed->server_ip_addr));
+    write_to_netdrv_fail_on_error(
+            fed->fed_netdrv, sizeof(int32_t) + 1, (unsigned char *)buf, &rti_mutex,
             "Failed to write port number to socket of federate %d.", fed_id);
 
-    // Send the server IP address to federate.
-    write_to_socket_fail_on_error(
-            &fed->socket, sizeof(remote_fed->server_ip_addr),
-            (unsigned char *)&remote_fed->server_ip_addr, &rti_mutex,
-            "Failed to write ip address to socket of federate %d.", fed_id);
     LF_MUTEX_UNLOCK(rti_mutex);
 
     LF_PRINT_DEBUG("Replied to address query from federate %d with address %s:%d.",
@@ -1210,7 +1203,7 @@ void *federate_info_thread_TCP(void *fed) {
             handle_timestamp(my_fed, buffer + 1);
             break;
         case MSG_TYPE_ADDRESS_QUERY:
-            handle_address_query(my_fed->enclave.id);
+            handle_address_query(my_fed->enclave.id, buffer + 1);
             break;
         case MSG_TYPE_ADDRESS_ADVERTISEMENT:
             handle_address_ad(my_fed->enclave.id);
@@ -1380,15 +1373,6 @@ static int32_t net_receive_and_check_fed_id_message(netdrv_t *netdrv) {
     }
     federate_info_t *fed = GET_FED_INFO(fed_id);
     fed->fed_netdrv = netdrv;
-    //TODO: Done the process below in accept_connection(); Erase after fixing the TODO in #if below.
-    // // The MSG_TYPE_FED_IDS message has the right federation ID.
-    // // Assign the address information for federate.
-    // // The IP address is stored here as an in_addr struct (in .server_ip_addr) that can be useful
-    // // to create sockets and can be efficiently sent over the network.
-    // // First, convert the sockaddr structure into a sockaddr_in that contains an internet address.
-    // struct sockaddr_in *pV4_addr = client_fd;
-    // // Then extract the internet address (which is in IPv4 format) and assign it as the federate's socket server
-    // fed->server_ip_addr = pV4_addr->sin_addr;
 
 #if LOG_LEVEL >= LOG_LEVEL_DEBUG
     // Create the human readable format and copy that into
