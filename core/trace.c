@@ -284,11 +284,11 @@ void call_tracepoint(
         instant_t* physical_time,
         trigger_t* trigger,
         interval_t extra_delay,
-        bool is_interval_start
+        bool is_interval_start  // FIXME: Unused argument. It originally was a micro-optimization which I suspect is not needed, but if there is (statistically significant) empirical evidence that it is needed, then we should use it. Note that without a memory barrier, even its original use may have had no effect (i.e., it could have generated the same assembly code anyway).
 ) {
     environment_t *env = trace->env;
     instant_t local_time;
-    if (!is_interval_start && physical_time == NULL) {
+    if (physical_time == NULL) {
         local_time = lf_time_physical();
         physical_time = &local_time;
     }
