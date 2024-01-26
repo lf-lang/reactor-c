@@ -9,11 +9,8 @@ if (DEFINED LF_TRACE)
     list(APPEND GENERAL_SOURCES trace.c)
 endif()
 
-# Store all sources used to build the reactor-c lib in INFO_SOURCES
-list(APPEND INFO_SOURCES ${GENERAL_SOURCES})
-
-# Create the core library
-add_library(core ${GENERAL_SOURCES})
+# Add the generl sources to the list of CORE_SOURCES
+list(APPEND CORE_SOURCES ${GENERAL_SOURCES})
 
 # Add sources for either threaded or single-threaded runtime
 if (DEFINED FEDERATED)
@@ -25,8 +22,7 @@ endif()
 if(DEFINED LF_SINGLE_THREADED)
     message(STATUS "Including sources for single-threaded runtime.")
     list(APPEND SINGLE_THREADED_SOURCES reactor.c)
-    target_sources(core PRIVATE ${SINGLE_THREADED_SOURCES})
-    list(APPEND INFO_SOURCES ${SINGLE_THREADED_SOURCES})
+    list(APPEND CORE_SOURCES ${SINGLE_THREADED_SOURCES})
 else()
     message(STATUS "Including sources for threaded runtime with \
 ${NUMBER_OF_WORKERS} worker(s) with scheduler=${SCHEDULER} and \
@@ -44,20 +40,32 @@ include(utils/CMakeLists.txt)
 include(modal_models/CMakeLists.txt)
 include(platform/CMakeLists.txt)
 
-
 # Print sources used for compilation
-list(JOIN INFO_SOURCES ", " PRINTABLE_SOURCE_LIST)
+list(JOIN CORE_SOURCES ", " PRINTABLE_SOURCE_LIST)
 message(STATUS "Including the following sources: " ${PRINTABLE_SOURCE_LIST})
 
-target_include_directories(core PUBLIC ../include)
-target_include_directories(core PUBLIC ../include/core)
-target_include_directories(core PUBLIC ../include/core/federated)
-target_include_directories(core PUBLIC ../include/core/federated/network)
-target_include_directories(core PUBLIC ../include/core/platform)
-target_include_directories(core PUBLIC ../include/core/modal_models)
-target_include_directories(core PUBLIC ../include/core/threaded)
-target_include_directories(core PUBLIC ../include/core/utils)
-target_include_directories(core PUBLIC federated/RTI/)
+# Create the reactor-c library. If we are targeting Zephyr we have to use the
+# Zephyr Cmake extension to create the library and add the sources.
+if(PLATFORM_ZEPHYR)
+    message("--- Building Zephyr library")
+    zephyr_library_named(reactor-c)
+    zephyr_library_sources(${CORE_SOURCES})
+else()
+    add_library(reactor-c ${CORE_SOURCES})
+endif()
+
+# Apply compile definitions to the reactor-c library.
+target_compile_definitions(reactor-c PUBLIC ${CORE_COMPILE_DEFS})
+
+target_include_directories(reactor-c PUBLIC ../include)
+target_include_directories(reactor-c PUBLIC ../include/core)
+target_include_directories(reactor-c PUBLIC ../include/core/federated)
+target_include_directories(reactor-c PUBLIC ../include/core/federated/network)
+target_include_directories(reactor-c PUBLIC ../include/core/platform)
+target_include_directories(reactor-c PUBLIC ../include/core/modal_models)
+target_include_directories(reactor-c PUBLIC ../include/core/threaded)
+target_include_directories(reactor-c PUBLIC ../include/core/utils)
+target_include_directories(reactor-c PUBLIC federated/RTI/)
 
 if (APPLE)
     SET(CMAKE_C_ARCHIVE_CREATE   "<CMAKE_AR> Scr <TARGET> <LINK_FLAGS> <OBJECTS>")
@@ -72,13 +80,13 @@ if(DEFINED FEDERATED_AUTHENTICATED)
         set(OPENSSL_ROOT_DIR /usr/local/opt/openssl)
     endif()
     find_package(OpenSSL REQUIRED)
-    target_link_libraries(core PUBLIC OpenSSL::SSL)
+    target_link_libraries(reactor-c PUBLIC OpenSSL::SSL)
 endif()
 
 if(DEFINED _LF_CLOCK_SYNC_ON)
   find_library(MATH_LIBRARY m)
   if(MATH_LIBRARY)
-    target_link_libraries(core PUBLIC ${MATH_LIBRARY})
+    target_link_libraries(reactor-c PUBLIC ${MATH_LIBRARY})
   endif()
 endif()
 
@@ -86,24 +94,24 @@ endif()
 if(NOT DEFINED LF_SINGLE_THREADED OR DEFINED LF_TRACE)
     if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
         find_package(Threads REQUIRED)
-        target_link_libraries(core PUBLIC Threads::Threads)
+        target_link_libraries(reactor-c PUBLIC Threads::Threads)
     endif()
 endif()
 
 # Macro for translating a command-line argument into compile definition for
-# core lib
+# reactor-c lib
 macro(define X)
     if(DEFINED ${X})
         message(STATUS ${X}=${${X}})
-        target_compile_definitions(core PUBLIC ${X}=${${X}})
+        target_compile_definitions(reactor-c PUBLIC ${X}=${${X}})
     endif(DEFINED ${X})
 endmacro()
 
 # FIXME: May want these to be application dependent, hence passed as
 # parameters to Cmake.
-target_compile_definitions(core PRIVATE INITIAL_EVENT_QUEUE_SIZE=10)
-target_compile_definitions(core PRIVATE INITIAL_REACT_QUEUE_SIZE=10)
-target_compile_definitions(core PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
+target_compile_definitions(reactor-c PRIVATE INITIAL_EVENT_QUEUE_SIZE=10)
+target_compile_definitions(reactor-c PRIVATE INITIAL_REACT_QUEUE_SIZE=10)
+target_compile_definitions(reactor-c PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 
 # Search and apply all possible compile definitions
 message(STATUS "Applying preprocessor definitions...")

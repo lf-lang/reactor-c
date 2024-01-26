@@ -8,8 +8,7 @@ set(
     scheduler_instance.c
     watchdog.c
 )
-list(APPEND INFO_SOURCES ${THREADED_SOURCES})
 
 list(TRANSFORM THREADED_SOURCES PREPEND threaded/)
-target_sources(core PRIVATE ${THREADED_SOURCES})
+list(APPEND CORE_SOURCES ${THREADED_SOURCES})
 
