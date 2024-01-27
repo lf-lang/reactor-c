@@ -91,10 +91,12 @@ if(DEFINED _LF_CLOCK_SYNC_ON)
   endif()
 endif()
 
-# Link with thread library
+# Link with thread library, unless we are on the Zephyr platform.
 if(NOT DEFINED LF_SINGLE_THREADED OR DEFINED LF_TRACE)
-    find_package(Threads REQUIRED)
-    target_link_libraries(reactor-c PUBLIC Threads::Threads)
+    if (NOT PLATFORM_ZEPHYR)
+        find_package(Threads REQUIRED)
+        target_link_libraries(reactor-c PUBLIC Threads::Threads)
+    endif()
 endif()
 
 # Macro for translating a command-line argument into compile definition for
