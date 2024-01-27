@@ -55,25 +55,19 @@ FILE* output_file = NULL;
 /** File for writing summary statistics. */
 FILE* summary_file = NULL;
 
-/** File for User Statistics */
-FILE* filtered_file = NULL;
-
 /** Size of the stats table is object_table_size plus twice MAX_NUM_WORKERS. */
 int table_size;
 
 /** Structure for passed command line options */
 typedef struct {
-    char *r_name; // resource name
-    char *out_file; // Output Directory
     trace_event_t filter; // Filter
-    bool is_dir; // Resource is Directory?
-    bool recursive; // Recursive?
+    char *suffix;
+    char *r_name;
 } program_options_t;
 
 program_options_t opts = {
         .filter = -1,
-        .is_dir = false,
-        .recursive = false
+        .suffix = ""
 };
 
 /** All Events of specified Types */
@@ -112,7 +106,7 @@ struct filter {
  * Print a usage message.
  */
 void usage() {
-    printf("\nBasic Usage (Single File Mode)\nUsage: trace_to_csv [options] trace_file_root (without .lft extension)\n\n");
+    printf("\nBasic Usage: trace_to_csv [options] trace_file_root (without .lft extension)\n\n");
     printf("Advanced Usage (Directory Mode)\nUsage: trace_to_csv [options] [args] path_to_root_directory\n\n");
     printf("Options:\n-r:\t Recursively find *.lft files on provided path\n");
     printf("-d:\t Root Directory Path\n");
@@ -161,7 +155,7 @@ typedef struct summary_stats_t {
  * object table. Pointer in the array will be void if there
  * are no stats for the object table item.
  */
-summary_stats_t** summary_stats;
+summary_stats_t** summary_stats = NULL;
 
 /** Largest timestamp seen. */
 instant_t latest_time = 0LL;
@@ -233,7 +227,7 @@ bool is_filtered_event(trace_event_t ev) {
  * Read a trace in the specified file and write it to the specified CSV file.
  * @return The number of records read or 0 upon seeing an EOF.
  */
-size_t read_and_write_trace(const char *fname) {
+size_t read_and_write_trace() {
     int trace_length = read_trace();
     if (trace_length == 0) return 0;
     // Write each line.
@@ -249,20 +243,23 @@ size_t read_and_write_trace(const char *fname) {
         if (trigger_name == NULL) {
             trigger_name = "NO TRIGGER";
         }
-        if (opts.filter != -1 && is_filtered_event(trace[i].event_type)) {
-            size_t find_key_len = strlen ("Configuration_");
-            char *start_index = strstr (fname, "Configuration_");
-            assert (start_index);
-            start_index += find_key_len;
-            char *end_index = strstr(start_index, "/");
-            assert (end_index);
-            char *index_str = calloc (end_index - start_index + 1, sizeof (char));
-            memcpy (index_str, start_index, end_index - start_index);
-            int index = atoi (index_str);
-            free (index_str);
-            fprintf(filtered_file, "%s, %d, %s, %s, %d, %d, %lld, %d, %lld, %s, %lld, %Lf\n",
-                    fname,
-                    index,
+        if ((opts.filter != -1) && is_filtered_event(trace[i].event_type)) {
+            fprintf(output_file, "%s, %s, %s, %s, %d, %d, %lld, %d, %lld, %s, %lld, %Lf\n",
+                    opts.r_name,
+                    opts.suffix,
+                    trace_event_names[trace[i].event_type],
+                    reactor_name,
+                    trace[i].src_id,
+                    trace[i].dst_id,
+                    trace[i].logical_time - start_time,
+                    trace[i].microstep,
+                    trace[i].physical_time - start_time,
+                    trigger_name,
+                    trace[i].extra_delay,
+                    trace[i].extra_value
+            );
+        } else {
+            fprintf(output_file, "%s, %s, %d, %d, %lld, %d, %lld, %s, %lld, %Lf\n",
                     trace_event_names[trace[i].event_type],
                     reactor_name,
                     trace[i].src_id,
@@ -275,159 +272,149 @@ size_t read_and_write_trace(const char *fname) {
                     trace[i].extra_value
             );
         }
-        fprintf(output_file, "%s, %s, %d, %d, %lld, %d, %lld, %s, %lld, %Lf\n",
-                trace_event_names[trace[i].event_type],
-                reactor_name,
-                trace[i].src_id,
-                trace[i].dst_id,
-                trace[i].logical_time - start_time,
-                trace[i].microstep,
-                trace[i].physical_time - start_time,
-                trigger_name,
-                trace[i].extra_delay,
-                trace[i].extra_value
-        );
 
-        // Update summary statistics.
-        if (trace[i].physical_time > latest_time) {
-            latest_time = trace[i].physical_time;
-        }
-        if (object_instance >= 0 && summary_stats[NUM_EVENT_TYPES + object_instance] == NULL) {
-            summary_stats[NUM_EVENT_TYPES + object_instance] = (summary_stats_t*)calloc(1, sizeof(summary_stats_t));
-        }
-        if (trigger_instance >= 0 && summary_stats[NUM_EVENT_TYPES + trigger_instance] == NULL) {
-            summary_stats[NUM_EVENT_TYPES + trigger_instance] = (summary_stats_t*)calloc(1, sizeof(summary_stats_t));
-        }
+        if (summary_file) {
+            // Update summary statistics.
+            if (trace[i].physical_time > latest_time) {
+                latest_time = trace[i].physical_time;
+            }
+            if (object_instance >= 0 && summary_stats[NUM_EVENT_TYPES + object_instance] == NULL) {
+                summary_stats[NUM_EVENT_TYPES + object_instance] = (summary_stats_t*)calloc(1, sizeof(summary_stats_t));
+            }
+            if (trigger_instance >= 0 && summary_stats[NUM_EVENT_TYPES + trigger_instance] == NULL) {
+                summary_stats[NUM_EVENT_TYPES + trigger_instance] = (summary_stats_t*)calloc(1, sizeof(summary_stats_t));
+            }
 
-        summary_stats_t* stats = NULL;
-        interval_t exec_time;
-        reaction_stats_t* rstats;
-        int index;
+            summary_stats_t* stats = NULL;
+            interval_t exec_time;
+            reaction_stats_t* rstats;
+            int index;
 
-        // Count of event type.
-        if (summary_stats[trace[i].event_type] == NULL) {
-            summary_stats[trace[i].event_type] = (summary_stats_t*)calloc(1, sizeof(summary_stats_t));
-        }
-        summary_stats[trace[i].event_type]->event_type = trace[i].event_type;
-        summary_stats[trace[i].event_type]->description = trace_event_names[trace[i].event_type];
-        summary_stats[trace[i].event_type]->occurrences++;
+            // Count of event type.
+            if (summary_stats[trace[i].event_type] == NULL) {
+                summary_stats[trace[i].event_type] = (summary_stats_t*)calloc(1, sizeof(summary_stats_t));
+            }
+            summary_stats[trace[i].event_type]->event_type = trace[i].event_type;
+            summary_stats[trace[i].event_type]->description = trace_event_names[trace[i].event_type];
+            summary_stats[trace[i].event_type]->occurrences++;
 
-        switch(trace[i].event_type) {
-            case reaction_starts:
-            case reaction_ends:
-                // This code relies on the mutual exclusion of reactions in a reactor
-                // and the ordering of reaction_starts and reaction_ends events.
-                if (trace[i].dst_id >= MAX_NUM_REACTIONS) {
-                    fprintf(stderr, "WARNING: Too many reactions. Not all will be shown in summary file.\n");
-                    continue;
-                }
-                stats = summary_stats[NUM_EVENT_TYPES + object_instance];
-                stats->description = reactor_name;
-                if (trace[i].dst_id >= stats->num_reactions_seen) {
-                    stats->num_reactions_seen = trace[i].dst_id + 1;
-                }
-                rstats = &stats->reactions[trace[i].dst_id];
-                if (trace[i].event_type == reaction_starts) {
-                    rstats->latest_start_time = trace[i].physical_time;
-                } else {
+            switch(trace[i].event_type) {
+                case reaction_starts:
+                case reaction_ends:
+                    // This code relies on the mutual exclusion of reactions in a reactor
+                    // and the ordering of reaction_starts and reaction_ends events.
+                    if (trace[i].dst_id >= MAX_NUM_REACTIONS) {
+                        fprintf(stderr, "WARNING: Too many reactions. Not all will be shown in summary file.\n");
+                        continue;
+                    }
+                    stats = summary_stats[NUM_EVENT_TYPES + object_instance];
+                    stats->description = reactor_name;
+                    if (trace[i].dst_id >= stats->num_reactions_seen) {
+                        stats->num_reactions_seen = trace[i].dst_id + 1;
+                    }
+                    rstats = &stats->reactions[trace[i].dst_id];
+                    if (trace[i].event_type == reaction_starts) {
+                        rstats->latest_start_time = trace[i].physical_time;
+                    } else {
+                        rstats->occurrences++;
+                        exec_time = trace[i].physical_time - rstats->latest_start_time;
+                        rstats->latest_start_time = 0LL;
+                        rstats->total_exec_time += exec_time;
+                        if (exec_time > rstats->max_exec_time) {
+                            rstats->max_exec_time = exec_time;
+                        }
+                        if (exec_time < rstats->min_exec_time || rstats->min_exec_time == 0LL) {
+                            rstats->min_exec_time = exec_time;
+                        }
+                    }
+                    break;
+                case schedule_called:
+                    if (trigger_instance < 0) {
+                        // No trigger. Do not report.
+                        continue;
+                    }
+                    stats = summary_stats[NUM_EVENT_TYPES + trigger_instance];
+                    stats->description = trigger_name;
+                    break;
+                case user_event:
+                    // Although these are not exec times and not reactions,
+                    // commandeer the first entry in the reactions array to track values.
+                    stats = summary_stats[NUM_EVENT_TYPES + object_instance];
+                    stats->description = reactor_name;
+                    break;
+                case user_stats:
+                case user_value:
+                    // Although these are not exec times and not reactions,
+                    // commandeer the first entry in the reactions array to track values.
+                    stats = summary_stats[NUM_EVENT_TYPES + object_instance];
+                    stats->description = reactor_name;
+                    rstats = &stats->reactions[0];
                     rstats->occurrences++;
-                    exec_time = trace[i].physical_time - rstats->latest_start_time;
-                    rstats->latest_start_time = 0LL;
-                    rstats->total_exec_time += exec_time;
-                    if (exec_time > rstats->max_exec_time) {
-                        rstats->max_exec_time = exec_time;
+                    // User values are stored in the "extra_delay" field, which is an interval_t.
+                    interval_t value = trace[i].extra_delay;
+                    rstats->total_exec_time += value;
+                    if (value > rstats->max_exec_time) {
+                        rstats->max_exec_time = value;
                     }
-                    if (exec_time < rstats->min_exec_time || rstats->min_exec_time == 0LL) {
-                        rstats->min_exec_time = exec_time;
+                    if (value < rstats->min_exec_time || rstats->min_exec_time == 0LL) {
+                        rstats->min_exec_time = value;
                     }
-                }
-                break;
-            case schedule_called:
-                if (trigger_instance < 0) {
-                    // No trigger. Do not report.
-                    continue;
-                }
-                stats = summary_stats[NUM_EVENT_TYPES + trigger_instance];
-                stats->description = trigger_name;
-                break;
-            case user_event:
-                // Although these are not exec times and not reactions,
-                // commandeer the first entry in the reactions array to track values.
-                stats = summary_stats[NUM_EVENT_TYPES + object_instance];
-                stats->description = reactor_name;
-                break;
-            case user_stats:
-            case user_value:
-                // Although these are not exec times and not reactions,
-                // commandeer the first entry in the reactions array to track values.
-                stats = summary_stats[NUM_EVENT_TYPES + object_instance];
-                stats->description = reactor_name;
-                rstats = &stats->reactions[0];
-                rstats->occurrences++;
-                // User values are stored in the "extra_delay" field, which is an interval_t.
-                interval_t value = trace[i].extra_delay;
-                rstats->total_exec_time += value;
-                if (value > rstats->max_exec_time) {
-                    rstats->max_exec_time = value;
-                }
-                if (value < rstats->min_exec_time || rstats->min_exec_time == 0LL) {
-                     rstats->min_exec_time = value;
-                }
-                break;
-            case worker_wait_starts:
-            case worker_wait_ends:
-            case scheduler_advancing_time_starts:
-            case scheduler_advancing_time_ends:
-                // Use the reactions array to store data.
-                // There will be two entries per worker, one for waits on the
-                // reaction queue and one for waits while advancing time.
-                index = trace[i].src_id * 2;
-                // Even numbered indices are used for waits on reaction queue.
-                // Odd numbered indices for waits for time advancement.
-                if (trace[i].event_type == scheduler_advancing_time_starts
-                        || trace[i].event_type == scheduler_advancing_time_ends) {
-                    index++;
-                }
-                if (object_table_size + index >= table_size) {
-                    fprintf(stderr, "WARNING: Too many workers. Not all will be shown in summary file.\n");
-                    continue;
-                }
-                stats = summary_stats[NUM_EVENT_TYPES + object_table_size + index];
-                if (stats == NULL) {
-                    stats = (summary_stats_t*)calloc(1, sizeof(summary_stats_t));
-                    summary_stats[NUM_EVENT_TYPES + object_table_size + index] = stats;
-                }
-                // num_reactions_seen here will be used to store the number of
-                // entries in the reactions array, which is twice the number of workers.
-                if (index >= stats->num_reactions_seen) {
-                    stats->num_reactions_seen = index;
-                }
-                rstats = &stats->reactions[index];
-                if (trace[i].event_type == worker_wait_starts
-                        || trace[i].event_type == scheduler_advancing_time_starts
-                ) {
-                    rstats->latest_start_time = trace[i].physical_time;
-                } else {
-                    rstats->occurrences++;
-                    exec_time = trace[i].physical_time - rstats->latest_start_time;
-                    rstats->latest_start_time = 0LL;
-                    rstats->total_exec_time += exec_time;
-                    if (exec_time > rstats->max_exec_time) {
-                        rstats->max_exec_time = exec_time;
+                    break;
+                case worker_wait_starts:
+                case worker_wait_ends:
+                case scheduler_advancing_time_starts:
+                case scheduler_advancing_time_ends:
+                    // Use the reactions array to store data.
+                    // There will be two entries per worker, one for waits on the
+                    // reaction queue and one for waits while advancing time.
+                    index = trace[i].src_id * 2;
+                    // Even numbered indices are used for waits on reaction queue.
+                    // Odd numbered indices for waits for time advancement.
+                    if (trace[i].event_type == scheduler_advancing_time_starts
+                            || trace[i].event_type == scheduler_advancing_time_ends) {
+                        index++;
                     }
-                    if (exec_time < rstats->min_exec_time || rstats->min_exec_time == 0LL) {
-                        rstats->min_exec_time = exec_time;
+                    if (object_table_size + index >= table_size) {
+                        fprintf(stderr, "WARNING: Too many workers. Not all will be shown in summary file.\n");
+                        continue;
                     }
-                }
-                break;
-            default:
-                // No special summary statistics for the rest.
-                break;
-        }
-        // Common stats across event types.
-        if (stats != NULL) {
-            stats->occurrences++;
-            stats->event_type = trace[i].event_type;
+                    stats = summary_stats[NUM_EVENT_TYPES + object_table_size + index];
+                    if (stats == NULL) {
+                        stats = (summary_stats_t*)calloc(1, sizeof(summary_stats_t));
+                        summary_stats[NUM_EVENT_TYPES + object_table_size + index] = stats;
+                    }
+                    // num_reactions_seen here will be used to store the number of
+                    // entries in the reactions array, which is twice the number of workers.
+                    if (index >= stats->num_reactions_seen) {
+                        stats->num_reactions_seen = index;
+                    }
+                    rstats = &stats->reactions[index];
+                    if (trace[i].event_type == worker_wait_starts
+                            || trace[i].event_type == scheduler_advancing_time_starts
+                    ) {
+                        rstats->latest_start_time = trace[i].physical_time;
+                    } else {
+                        rstats->occurrences++;
+                        exec_time = trace[i].physical_time - rstats->latest_start_time;
+                        rstats->latest_start_time = 0LL;
+                        rstats->total_exec_time += exec_time;
+                        if (exec_time > rstats->max_exec_time) {
+                            rstats->max_exec_time = exec_time;
+                        }
+                        if (exec_time < rstats->min_exec_time || rstats->min_exec_time == 0LL) {
+                            rstats->min_exec_time = exec_time;
+                        }
+                    }
+                    break;
+                default:
+                    // No special summary statistics for the rest.
+                    break;
+            }
+            // Common stats across event types.
+            if (stats != NULL) {
+                stats->occurrences++;
+                stats->event_type = trace[i].event_type;
+            }
         }
     }
     return trace_length;
@@ -571,66 +558,63 @@ void scan_program_options(int argc, char **argv) {
     if (argc > 2) {
         // scan for program options
         int arg;
-        char cwd[MAXPATHLEN] = {0};
-        getcwd(cwd, MAXPATHLEN);
-        while((arg = getopt(argc, argv, "rd:f:o:")) != -1) {
+        printf( "------- options specified:\n");
+        while((arg = getopt(argc, argv, "i:f:s:")) != -1) {
             switch (arg) {
-                case 'r':
-                    opts.recursive = true;
-                    break;
-                case 'd':
-                    opts.is_dir = true;
-                    opts.r_name = optarg;
-                    break;
                 case 'f':
                     opts.filter = get_filtered_option(optarg);
+                    printf ("\tFilter=%s", filters[opts.filter].str);
                     break;
-                case 'o':
-                    opts.out_file = optarg;
+                case 'i':
+                    opts.r_name = strdup (optarg);
+                    printf ("\tFileName=%s", opts.r_name);
+                    break;
+                case 's':
+                    opts.suffix = strdup(optarg);
+                    printf ("\tSuffix=%s", opts.suffix);
                     break;
                 default:
                     break;
             }
         }
-        printf("------- options specified:\n\tDirectory Mode=%s\n"
-               "\tRecursive=%s\n"
-               "\tResource=%s\n"
-               "\tFilter=%s\n"
-               "\tOutfilePrefix=%s\n-------\n",
-               opts.is_dir ? "true" : "false",
-               opts.recursive ? "true" : "false",
-               opts.r_name,
-               filters[opts.filter].str,
-               opts.out_file);
+        printf ("\n---------\n");
     } else {
         opts.r_name = argv[1];
-        opts.out_file = argv[1];
     }
 }
 
 void open_output_files(const char *fname) {
     // Construct the name of the csv output file and open it.
-    char* root = root_name(fname);
-    char csv_filename[strlen(root) + 5];
-    strcpy(csv_filename, root);
-    strcat(csv_filename, ".csv");
+    char* root = NULL;
+    if (strcmp (opts.suffix, "") == 0) {
+        root = root_name(fname);
+    } else {
+        char* last_period = strrchr(fname, '.');
+        size_t length = (last_period == NULL) ?
+            strlen(fname) : last_period - fname;
+        root = (char*)calloc(length + 1, sizeof (char));
+        if (root == NULL) exit (1);
+        strncpy(root, fname, length);
+    }
+    char *csv_filename;
+    int csv_len = snprintf (NULL, 0, "%s%s%s", root, opts.suffix, ".csv");
+    csv_filename = calloc (csv_len + 1, sizeof (char));
+    assert (csv_filename);
+    sprintf (csv_filename, "%s%s%s", root, opts.suffix, ".csv");
     output_file = open_file(csv_filename, "w");
     if (output_file == NULL) exit(1);
+    free (csv_filename);
 
-    // Construct the name of the summary output file and open it.
-    char summary_filename[strlen(root) + 13];
-    strcpy(summary_filename, root);
-    strcat(summary_filename, "_summary.csv");
-    summary_file = open_file(summary_filename, "w");
-    if (summary_file == NULL) exit(1);
-    if (opts.filter != -1) {
-        char filtered_filename[strlen(root) + 13];
-        strcpy(filtered_filename, root);
-        strcat(filtered_filename, "_");
-        strcat(filtered_filename, filters[opts.filter].str);
-        strcat(filtered_filename, ".csv");
-        filtered_file = open_file(filtered_filename, "w");
-        if (filtered_file == NULL) exit(1);
+    if (opts.filter == -1) {
+        // Construct the name of the summary output file and open it.
+        char *summary_filename;
+        int summary_len = snprintf (NULL, 0, "%s%s%s", root, opts.suffix, "_summary.csv");
+        summary_filename = calloc (summary_len + 1, sizeof (char));
+        assert (summary_filename);
+        sprintf (summary_filename, "%s%s%s", root, opts.suffix, "_summary.csv");
+        summary_file = open_file(summary_filename, "w");
+        if (summary_file == NULL) exit(1);
+        free (summary_filename);
     }
 
     free(root);
@@ -638,8 +622,9 @@ void open_output_files(const char *fname) {
 
 void close_output_files() {
     fclose(output_file);
-    fclose(filtered_file);
-    fclose(summary_file);
+    if (summary_file) {
+        fclose(summary_file);
+    }
 }
 
 void trace_processor(const char *fname) {
@@ -650,69 +635,21 @@ void trace_processor(const char *fname) {
     if (read_header() > 0) {
         // Allocate an array for summary statistics.
         table_size = NUM_EVENT_TYPES + object_table_size + (MAX_NUM_WORKERS * 2);
-        summary_stats = (summary_stats_t**)calloc(table_size, sizeof(summary_stats_t*));
+        summary_stats = (summary_file) ? (summary_stats_t**)calloc(table_size, sizeof(summary_stats_t*)) : NULL;
 
-        while (read_and_write_trace(fname) != 0) {};
+        while (read_and_write_trace() != 0) {};
 
-        write_summary_file();
-
-        for (int i = 0; i < table_size; ++i) {
-            if (summary_stats[i] != NULL) {
-                free (summary_stats[i]);
-            }
-        }
-        free (summary_stats);
-        summary_stats = NULL;
-        cleanup_after_each_run (trace_file);
-    }
-}
-
-/**
- * Invokes processor for each trace-file on current path
- * @param trace_ext Extension of Trace File
- * @param tmp_buffer temporary buffer space
- * @param recursive Specifies if we need to examine sub-directories as well
- * @param process Function Pointer to trace processor
- * */
-int for_each_trace(char *trace_ext, bool recursive, processor_f process) {
-    DIR *d;
-    struct dirent *dir;
-    d = opendir(".");
-    if (d == NULL) {
-        return 1;
-    }
-
-    while ((dir = readdir(d))) {
-        if (strcmp(dir->d_name, ".") == 0 ||
-            strcmp(dir->d_name, "..") == 0) {
-            continue;
-        }
-        if (dir->d_type == DT_DIR && recursive) {
-            chdir(dir->d_name);
-            for_each_trace(trace_ext, recursive, process);
-            chdir("..");
-        } else {
-            if (strstr(dir->d_name, trace_ext) != NULL) {
-                size_t len;
-                char final_buffer[MAXPATHLEN] = {0};
-                char *tmp_buffer;
-                tmp_buffer = getcwd(NULL, 0);
-                if (tmp_buffer == NULL) {
-                    tmp_buffer = getcwd(NULL, 0);
-                    printf("getcwd FAILURE, returned tmp_buffer:%p ERRNO:%s\n", tmp_buffer, strerror(errno));
-                    exit (1);
+        if (summary_file) {
+            write_summary_file();
+            for (int i = 0; i < table_size; ++i) {
+                if (summary_stats[i] != NULL) {
+                    free (summary_stats[i]);
                 }
-                len = strnlen(tmp_buffer, MAXPATHLEN);
-                memcpy (final_buffer, tmp_buffer, len);
-                free (tmp_buffer);
-                snprintf(final_buffer + len, MAXPATHLEN - len, "/%s", dir->d_name);
-                printf("Found File file_name:%s complete_file_name:%s len:%zu\n", dir->d_name, final_buffer, len);
-                process(final_buffer);
             }
+            free (summary_stats);
+            summary_stats = NULL;
         }
     }
-    closedir(d);
-    return 0;
 }
 
 int main(int argc, char* argv[]) {
@@ -721,22 +658,15 @@ int main(int argc, char* argv[]) {
         exit(0);
     }
     scan_program_options(argc, argv);
-    open_output_files(opts.out_file);
+    open_output_files(opts.r_name);
 
     // Write a header line into the CSV file.
-    fprintf(output_file, "Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay, Extra Value\n");
     if (opts.filter != -1) {
-        fprintf(filtered_file,
+        fprintf(output_file,
                 "Trace File, Trace Index, Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay, Extra Value\n");
-    }
-    if (!opts.is_dir) {
-        trace_processor(opts.r_name);
     } else {
-        char cwd[MAXPATHLEN] = {0};
-        getcwd(cwd, MAXPATHLEN);
-        chdir(opts.r_name);
-        for_each_trace(".lft", opts.recursive, trace_processor);
-        chdir(cwd);
+        fprintf(output_file, "Event, Reactor, Source, Destination, Elapsed Logical Time, Microstep, Elapsed Physical Time, Trigger, Extra Delay, Extra Value\n");
     }
+    trace_processor(opts.r_name);
     close_output_files();
 }
