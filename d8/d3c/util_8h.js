@@ -38,6 +38,6 @@ var util_8h =
     [ "lf_vprint_error_and_exit", "d8/d3c/util_8h.html#af7d17d1c521edc81e08aa92ea4de1d22", null ],
     [ "lf_vprint_log", "d8/d3c/util_8h.html#a98d6cf309d0ec4cd0b71a32e1e1f398d", null ],
     [ "lf_vprint_warning", "d8/d3c/util_8h.html#abce9ddab1394675a9305be42fae67ebc", null ],
-    [ "print_message_function_t", "d8/d3c/util_8h.html#a80fbbd25930ec00b5e52814e82a439b7", null ],
+    [ "print_message_function_t", "d8/d3c/util_8h.html#a88a0d1c170c7a701e96ab7b51c55dee1", null ],
     [ "_lf_my_fed_id", "d8/d3c/util_8h.html#a2c4180118c19ff02a0d42f4c6758bdd3", null ]
 ];
