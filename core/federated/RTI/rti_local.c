@@ -88,7 +88,7 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
     // this critical section and acquire the RTI mutex.
     LF_ASSERT(lf_mutex_unlock(&e->env->mutex) == 0, "Could not unlock mutex");
     LF_ASSERT(lf_mutex_lock(rti_local->base.mutex) == 0, "Could not lock mutex");
-    tracepoint_federate_to_rti(e->env->trace, send_NET, e->base.id, &next_event_tag);
+    tracepoint_federate_to_rti(send_NET, e->base.id, &next_event_tag);
     // First, update the enclave data structure to record this next_event_tag,
     // and notify any downstream scheduling_nodes, and unblock them if appropriate.
     tag_advance_grant_t result;
@@ -103,7 +103,7 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
         LF_PRINT_LOG("RTI: enclave %u has already been granted a TAG to" PRINTF_TAG ". Returning with a TAG to" PRINTF_TAG " ",
         e->base.id, e->base.last_granted.time - lf_time_start(), e->base.last_granted.microstep,
         next_event_tag.time - lf_time_start(), next_event_tag.microstep);
-        tracepoint_federate_from_rti(e->env->trace, receive_TAG, e->base.id, &next_event_tag);
+        tracepoint_federate_from_rti(receive_TAG, e->base.id, &next_event_tag);
         // Release RTI mutex and re-enter the critical section of the source enclave before returning.
         LF_ASSERT(lf_mutex_unlock(rti_local->base.mutex) == 0, "Could not unlock mutex");
         LF_ASSERT(lf_mutex_lock(&e->env->mutex) == 0, "Could not lock mutex");
@@ -134,7 +134,7 @@ tag_t rti_next_event_tag_locked(enclave_info_t* e, tag_t next_event_tag) {
     // At this point we have gotten a new TAG.
     LF_PRINT_LOG("RTI: enclave %u returns with TAG to" PRINTF_TAG " ",
         e->base.id, e->base.next_event.time - lf_time_start(), e->base.next_event.microstep);
-    tracepoint_federate_from_rti(e->env->trace, receive_TAG, e->base.id, &result.tag);
+    tracepoint_federate_from_rti(receive_TAG, e->base.id, &result.tag);
     // Release RTI mutex and re-enter the critical section of the source enclave.
     LF_ASSERT(lf_mutex_unlock(rti_local->base.mutex) == 0, "Could not unlock mutex");
     LF_ASSERT(lf_mutex_lock(&e->env->mutex) == 0, "Could not lock mutex");
@@ -147,7 +147,7 @@ void rti_logical_tag_complete_locked(enclave_info_t* enclave, tag_t completed) {
     }
     // Release the enclave mutex while doing the local RTI work.
     LF_ASSERT(lf_mutex_unlock(&enclave->env->mutex) == 0, "Could not unlock mutex");
-    tracepoint_federate_to_rti(enclave->env->trace, send_LTC, enclave->base.id, &completed);
+    tracepoint_federate_to_rti(enclavsend_LTC, enclave->base.id, &completed);
     _logical_tag_complete(&enclave->base, completed);
     // Acquire the enclave mutex again before returning.
     LF_ASSERT(lf_mutex_lock(&enclave->env->mutex) == 0, "Could not lock mutex");
@@ -157,7 +157,7 @@ void rti_update_other_net_locked(enclave_info_t* src, enclave_info_t * target, t
     // Here we do NOT leave the critical section of the target enclave before we
     // acquire the RTI mutex. This means that we cannot block within this function.
     LF_ASSERT(lf_mutex_lock(rti_local->base.mutex) == 0, "Could not lock mutex");
-    tracepoint_federate_to_federate(src->env->trace, send_TAGGED_MSG, src->base.id, target->base.id, &net);
+    tracepoint_federate_to_federate(send_TAGGED_MSG, src->base.id, target->base.id, &net);
 
     // If our proposed NET is less than the current NET, update it.
     if (lf_tag_compare(net, target->base.next_event) < 0) {
@@ -178,7 +178,7 @@ void notify_tag_advance_grant(scheduling_node_t* e, tag_t tag) {
         return;
     }
     if (rti_local->base.tracing_enabled) {
-        tracepoint_rti_to_federate(e->env->trace, send_TAG, e->id, &tag);
+        tracepoint_rti_to_federate(send_TAG, e->id, &tag);
     }
     e->last_granted = tag;
     // TODO: Here we can consider adding a flag to the RTI struct and only signal the cond var if we have

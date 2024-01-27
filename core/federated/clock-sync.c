@@ -446,6 +446,7 @@ void handle_T4_clock_sync_message(unsigned char* buffer, int socket, instant_t r
  * Thread that listens for UDP inputs from the RTI.
  */
 void* listen_to_rti_UDP_thread(void* args) {
+    initialize_lf_thread_id();
     // Listen for UDP messages from the RTI.
     // The only expected messages are T1 and T4, which have
     // a payload of a time value.

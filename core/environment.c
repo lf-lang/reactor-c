@@ -178,7 +178,7 @@ void environment_free(environment_t* env) {
     environment_free_single_threaded(env);
     environment_free_modes(env);
     environment_free_federated(env);
-    trace_free(env->trace);
+    // trace_free(env->trace);
 }
 
 
@@ -260,7 +260,7 @@ int environment_init(
             get_event_position, set_event_position, event_matches, print_event);
 
     // If tracing is enabled. Initialize a tracing struct on the env struct.
-    env->trace = trace_new(env, trace_file_name);
+    // env->trace = trace_new(env, trace_file_name);
 
     // Initialize functionality depending on target properties.
     environment_init_threaded(env, num_workers);

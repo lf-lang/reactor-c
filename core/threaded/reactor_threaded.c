@@ -70,6 +70,16 @@ extern instant_t start_time;
 */
 lf_mutex_t global_mutex;
 
+static volatile int _lf_worker_thread_count = 0;
+static thread_local int lf_thread_id_var = -1;
+
+int lf_thread_id() {
+    return lf_thread_id_var;
+}
+
+void initialize_lf_thread_id() {
+    lf_thread_id_var = lf_atomic_fetch_add(&_lf_worker_thread_count, 1);
+}
 
 void _lf_increment_tag_barrier_locked(environment_t *env, tag_t future_tag) {
     assert(env != GLOBAL_ENVIRONMENT);
@@ -804,7 +814,7 @@ bool _lf_worker_handle_deadline_violation_for_reaction(environment_t *env, int w
         // Check for deadline violation.
         if (reaction->deadline == 0 || physical_time > env->current_tag.time + reaction->deadline) {
             // Deadline violation has occurred.
-            tracepoint_reaction_deadline_missed(env->trace, reaction, worker_number);
+            tracepoint_reaction_deadline_missed(reaction, worker_number);
             violation_occurred = true;
             // Invoke the local handler, if there is one.
             reaction_function_t handler = reaction->deadline_violation_handler;
@@ -998,6 +1008,7 @@ void _lf_worker_do_work(environment_t *env, int worker_number) {
  * @param arg Environment within which the worker should execute.
  */
 void* worker(void* arg) {
+    initialize_lf_thread_id();
     environment_t *env = (environment_t* ) arg;
     lf_mutex_lock(&env->mutex);
 
@@ -1120,9 +1131,6 @@ void determine_number_of_workers(void) {
  * at compile time.
  */
 int lf_reactor_c_main(int argc, const char* argv[]) {
-#ifndef FEDERATED
-    lf_tracing_init(0);
-#endif
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
 

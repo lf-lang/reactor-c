@@ -97,9 +97,9 @@ bool _lf_sched_advance_tag_locked(lf_scheduler_t * sched) {
     // Advance time.
     // _lf_next_locked() may block waiting for real time to pass or events to appear.
     // to appear on the event queue. Note that we already
-    tracepoint_scheduler_advancing_time_starts(env->trace);
+    tracepoint_scheduler_advancing_time_starts();
     _lf_next_locked(env);
-    tracepoint_scheduler_advancing_time_ends(env->trace);
+    tracepoint_scheduler_advancing_time_ends();
 
     LF_PRINT_DEBUG("Scheduler: Done waiting for _lf_next_locked().");
     return false;

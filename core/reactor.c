@@ -51,6 +51,19 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 // Global variable defined in tag.c:
 extern instant_t start_time;
 
+int lf_thread_id() {
+    return 0;
+}
+int lf_mutex_unlock(lf_mutex_t* mutex) {
+    return 0;
+}
+int lf_mutex_init(lf_mutex_t* mutex) {
+    return 0;
+}
+int lf_mutex_lock(lf_mutex_t* mutex) {
+    return 0;
+}
+
 /**
  * Mark the given port's is_present field as true. This is_present field
  * will later be cleaned up by _lf_start_time_step. If the port is unconnected,
@@ -179,7 +192,7 @@ int _lf_do_step(environment_t* env) {
             // Handle the local deadline first.
             if (reaction->deadline == 0 || physical_time > env->current_tag.time + reaction->deadline) {
                 LF_PRINT_LOG("Deadline violation. Invoking deadline handler.");
-                tracepoint_reaction_deadline_missed(env->trace, reaction, 0);
+                tracepoint_reaction_deadline_missed(reaction, 0);
                 // Deadline violation has occurred.
                 violation = true;
                 // Invoke the local handler, if there is one.
@@ -342,7 +355,7 @@ bool _lf_is_blocked_by_executing_reaction(void) {
  */
 int lf_reactor_c_main(int argc, const char* argv[]) {
 #ifndef FEDERATED
-    lf_tracing_init(0);
+    lf_tracing_init(0, 1);
 #endif
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
@@ -369,7 +382,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         int num_environments = _lf_get_environments(&env);
         LF_ASSERT(num_environments == 1,
             "Found %d environments. Only 1 can be used with the single-threaded runtime", num_environments);
-        
+
         LF_PRINT_DEBUG("Initializing.");
         initialize_global();
         // Set start time
@@ -380,8 +393,6 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
                 NEVER_TAG.time - start_time, 0);
 
         environment_init_tags(env, start_time, duration);
-        // Start tracing if enabled.
-        start_trace(env->trace);
 #ifdef MODAL_REACTORS
         // Set up modal infrastructure
         _lf_initialize_modes(env);

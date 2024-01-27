@@ -741,6 +741,7 @@ static int handle_port_absent_message(int* socket, int fed_id) {
  *  This procedure frees the memory pointed to before returning.
  */
 static void* listen_to_federates(void* _args) {
+    initialize_lf_thread_id();
     uint16_t fed_id = (uint16_t)(uintptr_t)_args;
 
     LF_PRINT_LOG("Listening to federate %d.", fed_id);
@@ -1110,6 +1111,7 @@ static int id_of_action(lf_action_base_t* input_port_action) {
  */
 #ifdef FEDERATED_DECENTRALIZED
 static void* update_ports_from_staa_offsets(void* args) {
+    initialize_lf_thread_id();
     if (staa_lst_size == 0) return NULL; // Nothing to do.
     // NOTE: Using only the top-level environment, which is the one that deals with network
     // input ports.
@@ -1120,7 +1122,6 @@ static void* update_ports_from_staa_offsets(void* args) {
         LF_PRINT_DEBUG("**** (update thread) starting");
         tag_t tag_when_started_waiting = lf_tag(env);
         for (int i = 0; i < staa_lst_size; ++i) {
-<<<<<<< Updated upstream
             staa_t* staa_elem = staa_lst[i];
             // The staa_elem is adjusted in the code generator to have subtracted the delay on the connection.
             // The list is sorted in increasing order of adjusted STAA offsets.
@@ -1154,35 +1155,13 @@ static void* update_ports_from_staa_offsets(void* args) {
                     LF_PRINT_DEBUG("**** (update thread) Wait until time is " PRINTF_TIME, wait_until_time - lf_time_start());
                     */
 
-=======
-            staa_t* staa_elem = staa_lst[i];  // FIXME: this assumes that the list is sorted by STAA + STAA offset. Is this true?
-            interval_t wait_until_time = env->current_tag.time + staa_elem->STAA + _lf_fed_STA_offset;
-            LF_PRINT_DEBUG("UPFSO waiting until time %lld at time %lld with staa %lld and offset %lld.", (long long) (wait_until_time - start_time), (long long) (lf_tag(env).time - start_time), (long long) staa_elem->STAA, (long long) _lf_fed_STA_offset);
-            // if (wait_until_time != FOREVER && wait_until_time != NEVER) {
-            //     wait_until_time -= _lf_action_delay_table[i];
-            // }
-            lf_mutex_lock(&env->mutex);
-            // Both before and after the wait, check that the tag has not changed
-            while (a_port_is_unknown(staa_elem)) {
-                // if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) {
-                //     // We have committed to a new tag before we finish processing the list. Start over.
-                //     lf_mutex_unlock(&env->mutex);
-                //     goto outer;
-                // }
-                if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) == 0 && wait_until(env, wait_until_time, &lf_port_status_changed) && lf_tag_compare(lf_tag(env), tag_when_started_waiting) == 0) {
->>>>>>> Stashed changes
                     for (int j = 0; j < staa_elem->num_actions; ++j) {
                         lf_action_base_t* input_port_action = staa_elem->actions[j];
                         if (input_port_action->trigger->status == unknown) {
                             input_port_action->trigger->status = absent;
-<<<<<<< Updated upstream
                             LF_PRINT_DEBUG("**** (update thread) Assuming port absent at time " PRINTF_TIME, lf_tag(env).time - start_time);
                             update_last_known_status_on_input_port(env, lf_tag(env), id_of_action(input_port_action));
                             lf_cond_broadcast(&lf_port_status_changed);
-=======
-                            lf_print("Assuming port absent at time %lld.", (long long) (lf_tag(env).time - start_time));
-                            update_last_known_status_on_input_port(env, lf_tag(env), id_of_action(input_port_action));
->>>>>>> Stashed changes
                         }
                     }
                     // lf_mutex_unlock(&env->mutex);
@@ -1195,26 +1174,15 @@ static void* update_ports_from_staa_offsets(void* args) {
                     // lf_cond_broadcast(&lf_port_status_changed);
                     // lf_mutex_unlock(&env->mutex);
                 }
-<<<<<<< Updated upstream
                 // If the tag has advanced, start over.
                 if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) break;
             }
             // If the tag has advanced, start over.
             if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) break;
-=======
-                lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
-                lf_cond_broadcast(&lf_port_status_changed);
-            }
-            // lf_update_max_level(_fed.last_TAG, _fed.is_last_TAG_provisional);
-            // lf_cond_broadcast(&lf_port_status_changed);
-            // lf_mutex_unlock(&env->mutex);
-            lf_print("UPFSO cleared %d / %d at time %lld with MLAA %lld and unknown %d and tag (which should be NEVER) is %lld and tag when started waiting is %lld.", i + 1, (int) staa_lst_size, (long long) (lf_tag(env).time - start_time), (long long) max_level_allowed_to_advance, a_port_is_unknown(staa_elem), (long long) _fed.last_TAG.time, (long long) tag_when_started_waiting.time);
->>>>>>> Stashed changes
         }
         // If the tag has advanced, start over.
         if (lf_tag_compare(lf_tag(env), tag_when_started_waiting) != 0) continue;
 
-<<<<<<< Updated upstream
         // At this point, the current tag is the same as when we started waiting
         // and all ports should be known, and hence max_level_allowed_to_advance
         // should be INT_MAX.  Check this to prevent an infinite wait.
@@ -1251,34 +1219,6 @@ static void* update_ports_from_staa_offsets(void* args) {
                 tag_when_started_waiting.time -lf_time_start(), tag_when_started_waiting.microstep);
             // Ports are reset to unknown at the start of new tag, so that will wake this up.
             lf_cond_wait(&lf_port_status_changed);
-=======
-        lf_print("UPFSO acquiring mutex at time %lld.", (long long) (lf_tag(env).time - start_time));
-        // lf_mutex_lock(&env->mutex);
-        while (lf_tag_compare(lf_tag(env), tag_when_started_waiting) == 0) {
-            // At this point, the current tag is the same as when we started waiting
-            // and all ports should be known, and hence max_level_allowed_to_advance
-            // should be INT_MAX.  Check this to prevent an infinite wait.
-            if (max_level_allowed_to_advance != INT_MAX) {
-                // If this occurs, then the current tag advanced during a wait.
-                // Some ports may have been reset to uknown during that wait, in which case,
-                // it would be huge mistake to enter the wait for a new tag below because the
-                // program will freeze.  First, check whether any ports are unknown:
-                bool port_unknown = false;
-                for (int i = 0; i < staa_lst_size; ++i) {
-                    staa_t* staa_elem = staa_lst[i];
-                    if (a_port_is_unknown(staa_elem)) {
-                        port_unknown = true;
-                        break;
-                    }
-                }
-                if (!port_unknown) {
-                    // If this occurs, then there is a race condition that can lead to deadlocks.
-                    lf_print_error_and_exit("**** (update thread) Inconsistency: All ports are known, but MLAA is blocking.");
-                }
-            }
-            LF_PRINT_DEBUG("UPFSO waiting on tag change at time %lld.", (long long) (lf_tag(env).time - start_time));
-            lf_cond_wait(&lf_current_tag_changed);
->>>>>>> Stashed changes
         }
         LF_PRINT_DEBUG("**** (update thread) Tags after wait: " PRINTF_TAG ", " PRINTF_TAG,
             lf_tag(env).time - lf_time_start(), lf_tag(env).microstep,
@@ -1563,16 +1503,16 @@ static void send_failed_signal(environment_t* env) {
     LF_PRINT_LOG("Failed.");
 }
 
-/**
- * @brief Stop the traces associated with all environments in the program.
- */
-static void stop_all_traces() {
-    environment_t *env;
-    int num_envs = _lf_get_environments(&env);
-    for (int i = 0; i < num_envs; i++) {
-        stop_trace(env[i].trace);
-    }
-}
+// /**
+//  * @brief Stop the traces associated with all environments in the program.
+//  */
+// static void stop_all_traces() {
+//     environment_t *env;
+//     int num_envs = _lf_get_environments(&env);
+//     for (int i = 0; i < num_envs; i++) {
+//         stop_trace(env[i].trace);
+//     }
+// }
 
 /**
  * Handle a failed signal from the RTI. The RTI will only fail
@@ -1590,6 +1530,7 @@ static void handle_rti_failed_message(void) {
  * @param args Ignored
  */
 static void* listen_to_rti_TCP(void* args) {
+    initialize_lf_thread_id();
     // Buffer for incoming messages.
     // This does not constrain the message size
     // because the message will be put into malloc'd memory.
@@ -1626,7 +1567,7 @@ static void* listen_to_rti_TCP(void* args) {
             // EOF received.
             lf_print("Connection to the RTI closed with an EOF.");
             _fed.socket_TCP_RTI = -1;
-            stop_all_traces();
+            // stop_all_traces();
             return NULL;
         }
         switch (buffer[0]) {

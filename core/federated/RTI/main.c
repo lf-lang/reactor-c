@@ -107,7 +107,7 @@ void termination() {
             send_failed_signal(f);
         }
         if (rti.base.tracing_enabled) {
-            stop_trace_locked(rti.base.trace);
+            // stop_trace_locked(rti.base.trace);
             lf_print("RTI trace file saved.");
         }
         lf_print("RTI is exiting abnormally.");
@@ -334,7 +334,8 @@ int main(int argc, const char* argv[]) {
         normal_termination = true;
         if (rti.base.tracing_enabled) {
             // No need for a mutex lock because all threads have exited.
-            stop_trace_locked(rti.base.trace);
+            // stop_trace_locked(rti.base.trace);
+            lf_tracing_global_shutdown();
             lf_print("RTI trace file saved.");
         }
     }

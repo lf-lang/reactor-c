@@ -120,7 +120,11 @@ int lf_critical_section_exit(environment_t* env);
      * @return int 
      */
     int _lf_single_threaded_notify_of_event();
-#else 
+
+    int lf_mutex_unlock(lf_mutex_t* mutex);
+    int lf_mutex_init(lf_mutex_t* mutex);
+    int lf_mutex_lock(lf_mutex_t* mutex);
+#else
 // For platforms with threading support, the following functions
 // abstract the API so that the LF runtime remains portable.
 
@@ -136,6 +140,11 @@ int lf_available_cores();
  *
  * @return 0 on success, platform-specific error number otherwise.
  *
+ */
+int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments);
+
+/**
+ * @brief Helper function for creating a thread.
  */
 int lf_thread_create(lf_thread_t* thread, void *(*lf_thread) (void *), void* arguments);
 
@@ -209,6 +218,38 @@ int lf_cond_wait(lf_cond_t* cond);
  *  number otherwise.
  */
 int lf_cond_timedwait(lf_cond_t* cond, instant_t absolute_time_ns);
+
+/**
+ * @brief Cross-platform version of the C11 thread_local keyword.
+ */
+#ifndef thread_local
+# if __STDC_VERSION__ >= 201112 && !defined __STDC_NO_THREADS__
+#  define thread_local _Thread_local
+# elif defined _WIN32 && ( \
+       defined _MSC_VER || \
+       defined __ICL || \
+       defined __DMC__ || \
+       defined __BORLANDC__ )
+#  define thread_local __declspec(thread)
+/* note that ICC (linux) and Clang are covered by __GNUC__ */
+# elif defined __GNUC__ || \
+       defined __SUNPRO_C || \
+       defined __xlC__
+#  define thread_local __thread
+# else
+#  error "Cannot define thread_local"
+# endif
+#endif
+
+/**
+ * @brief The ID of the current thread. The only guarantee is that these IDs will be a contiguous range of numbers starting at 0.
+ */
+int lf_thread_id();
+
+/**
+ * @brief Initialize the thread ID for the current thread.
+ */
+void initialize_lf_thread_id();
 
 /*
  * Atomically increment the variable that ptr points to by the given value, and return the original value of the variable.

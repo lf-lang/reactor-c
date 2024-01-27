@@ -41,6 +41,7 @@ void _lf_initialize_watchdog_mutexes() {
  * @return NULL
  */
 void* _lf_run_watchdog(void* arg) {
+    initialize_lf_thread_id();
     watchdog_t* watchdog = (watchdog_t*)arg;
 
     self_base_t* base = watchdog->base;
