@@ -56,7 +56,7 @@ else()
 endif()
 
 # Apply compile definitions to the reactor-c library.
-target_compile_definitions(reactor-c PUBLIC ${CORE_COMPILE_DEFS})
+target_compile_definitions(reactor-c PUBLIC ${REACTORC_COMPILE_DEFS})
 
 target_include_directories(reactor-c PUBLIC ../include)
 target_include_directories(reactor-c PUBLIC ../include/core)
