@@ -26,10 +26,10 @@ void _lf_initialize_watchdog_mutexes(environment_t *env) {
         watchdog_t *watchdog = env->watchdogs[i];
         if (watchdog->base->reactor_mutex != NULL) {
             ret = lf_mutex_init((lf_mutex_t*)(watchdog->base->reactor_mutex));
-            LF_NASSERT(ret, "lf_mutex_init failed");
+            LF_ASSERTN(ret, "lf_mutex_init failed");
         }
         ret = lf_cond_init(&watchdog->cond, watchdog->base->reactor_mutex);
-    LF_NASSERT(ret, "lf_cond_init failed");
+    LF_ASSERTN(ret, "lf_cond_init failed");
     }
 }
 
@@ -43,12 +43,12 @@ void _lf_watchdog_terminate(environment_t *env) {
         watchdog_t *watchdog = env->watchdogs[i];
         if (watchdog->thread_active) {
             ret = lf_mutex_lock(watchdog->base->reactor_mutex);
-            LF_NASSERT(ret, "lf_mutex_lock failed");
+            LF_ASSERTN(ret, "lf_mutex_lock failed");
             lf_watchdog_stop(watchdog);
             ret = lf_mutex_unlock(watchdog->base->reactor_mutex);
-            LF_NASSERT(ret, "lf_mutex_unlock failed");
+            LF_ASSERTN(ret, "lf_mutex_unlock failed");
             ret = lf_thread_join(watchdog->thread_id, &thread_return);
-            LF_NASSERT(ret, "lf_thread_join failed");
+            LF_ASSERTN(ret, "lf_thread_join failed");
         }
     }
 }
@@ -77,7 +77,7 @@ void* _lf_run_watchdog(void* arg) {
     self_base_t* base = watchdog->base;
     LF_ASSERT(base->reactor_mutex, "reactor-mutex not alloc'ed but has watchdogs.");
     ret = lf_mutex_lock((lf_mutex_t*)(base->reactor_mutex));
-    LF_NASSERT(ret, "lf_mutex_lock failed");
+    LF_ASSERTN(ret, "lf_mutex_lock failed");
     instant_t physical_time = lf_time_physical();
     while (watchdog->expiration != NEVER && physical_time < watchdog->expiration) {
         interval_t T = watchdog->expiration - physical_time;
@@ -103,7 +103,7 @@ terminate:
     // Here the thread terminates. 
     watchdog->thread_active = false;
     ret = lf_mutex_unlock(base->reactor_mutex);
-    LF_NASSERT(ret, "lf_mutex_unlock failed");
+    LF_ASSERTN(ret, "lf_mutex_unlock failed");
     return NULL;
 }
 
@@ -117,7 +117,7 @@ void lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
     // If we dont have a running watchdog thread.
     if (!watchdog->thread_active) {
         ret = lf_thread_create(&(watchdog->thread_id), _lf_run_watchdog, watchdog);
-        LF_NASSERT(ret, "lf_thread_create failed");
+        LF_ASSERTN(ret, "lf_thread_create failed");
         watchdog->thread_active = true;
     } 
 }
@@ -129,5 +129,5 @@ void lf_watchdog_stop(watchdog_t* watchdog) {
         return;
     watchdog->expiration = NEVER;
     ret = lf_cond_signal(&watchdog->cond);
-    LF_NASSERT(ret, "lf_conf_signal failed");
+    LF_ASSERTN(ret, "lf_conf_signal failed");
 }
