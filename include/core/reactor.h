@@ -419,8 +419,10 @@ trigger_handle_t _lf_schedule(environment_t* env, trigger_t* trigger, interval_t
 /**
  * Function to initialize mutexes for watchdogs
  */
-void _lf_initialize_watchdog_mutexes(void);
+void _lf_initialize_watchdog_mutexes(environment_t *env);
 
+/** Terminates all watchdogs inside the environment. */
+void _lf_watchdog_terminate(environment_t *env);
 
 /**
  * @brief Get the array of ids of enclaves directly upstream of the specified enclave.
