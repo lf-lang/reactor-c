@@ -194,6 +194,7 @@ int environment_init(
     int num_is_present_fields,
     int num_modes,
     int num_state_resets,
+    int num_watchdogs,
     const char * trace_file_name
 ) {
 
@@ -247,6 +248,11 @@ int environment_init(
     } else {
         env->is_present_fields = NULL;
         env->is_present_fields_abbreviated = NULL;
+    }
+
+    env->watchdogs_size = num_watchdogs;
+    if(env->watchdogs_size > 0) {
+        env->watchdogs = (watchdog_t** )calloc(env->watchdogs_size, sizeof(watchdog_t*));
     }
 
     env->_lf_handle=1;
