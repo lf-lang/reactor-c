@@ -29,7 +29,7 @@ void _lf_initialize_watchdog_mutexes(environment_t *env) {
             LF_ASSERTN(ret, "lf_mutex_init failed");
         }
         ret = lf_cond_init(&watchdog->cond, watchdog->base->reactor_mutex);
-    LF_ASSERTN(ret, "lf_cond_init failed");
+        LF_ASSERTN(ret, "lf_cond_init failed");
     }
 }
 
