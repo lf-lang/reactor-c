@@ -665,6 +665,17 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 #define MSG_TYPE_FAILED 25
 
+/**
+ * Byte identifying a downstream next event tag (DNET) message sent
+ * from the RTI in centralized coordination.
+ * The next eight bytes will be the timestamp.
+ * The next four bytes will be the microstep.
+ * This message from the RTI tells the federate the tag of the earliest event on the
+ * downstream federate's event queue. In other words, this federate doesn't have to send
+ * LTC and NET messages earlier than this tag.
+ */
+#define MSG_TYPE_DOWNSTREAM_NEXT_EVENT_TAG 26
+
 /////////////////////////////////////////////
 //// Rejection codes
 
