@@ -253,6 +253,7 @@ int environment_init(
     env->watchdogs_size = num_watchdogs;
     if(env->watchdogs_size > 0) {
         env->watchdogs = (watchdog_t** )calloc(env->watchdogs_size, sizeof(watchdog_t*));
+        LF_ASSERT(env->watchdogs, "Out of memory");
     }
 
     env->_lf_handle=1;
