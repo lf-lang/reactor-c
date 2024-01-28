@@ -1777,8 +1777,10 @@ void termination(void) {
         // lead to a deadlock.
         stop_trace_locked(env[i].trace);
 
+    #if !defined(LF_SINGLE_THREADED)
         // Make sure all watchdog threads have stopped
         _lf_watchdog_terminate(&env[i]);
+    #endif
 
         // Skip most cleanup on abnormal termination.
         if (_lf_normal_termination) {
