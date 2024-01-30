@@ -89,9 +89,6 @@ typedef struct rti_common_t {
 
     // Boolean indicating that tracing is enabled.
     bool tracing_enabled;
-    
-    // Pointer to a tracing object
-    trace_t* trace;
 
     // The RTI mutex for making thread-safe access to the shared state.
     lf_mutex_t* mutex;

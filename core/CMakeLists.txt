@@ -58,7 +58,9 @@ if (DEFINED LF_TRACE_PLUGIN)
     message(STATUS "linking trace plugin library ${LF_TRACE_PLUGIN}")
     target_link_libraries(reactor-c PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${LF_TRACE_PLUGIN})
 endif()
+
 include(platform/CMakeLists.txt)
+target_link_libraries(reactor-c PUBLIC Platform)
 
 # Apply compile definitions to the reactor-c library.
 target_compile_definitions(reactor-c PUBLIC ${REACTORC_COMPILE_DEFS})

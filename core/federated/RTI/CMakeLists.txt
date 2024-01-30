@@ -25,7 +25,7 @@
 
 # To enable simple HMAC-based authentication of federates,
 # add `-DAUTH=ON` option to the cmake command as shown below:
-# 
+#
 # $> mkdir build && cd build
 # $> cmake -DAUTH=ON ../
 # $> make
@@ -50,6 +50,7 @@ else()
 endif()
 
 set(IncludeDir ../../../include/core)
+include_directories(../../../include)
 include_directories(${IncludeDir})
 include_directories(${IncludeDir}/federated)
 include_directories(${IncludeDir}/federated/network)
@@ -74,6 +75,9 @@ add_executable(
     ${CoreLib}/utils/pqueue_tag.c
     ${CoreLib}/utils/pqueue.c
 )
+target_link_libraries(RTI ${CMAKE_CURRENT_LIST_DIR}/../../../plugin-defaults/trace/build/libDefaultTracing.a)
+include(${CMAKE_CURRENT_LIST_DIR}/../../platform/CMakeLists.txt)
+target_link_libraries(RTI Platform)
 
 IF(CMAKE_BUILD_TYPE MATCHES DEBUG)
     # Set the LOG_LEVEL to 4 to get DEBUG messages

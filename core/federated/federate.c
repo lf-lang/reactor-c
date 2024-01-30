@@ -2738,9 +2738,9 @@ void lf_set_federation_id(const char* fid) {
     federation_metadata.federation_id = fid;
 }
 
-void lf_set_federation_trace_object(trace_t * trace) {
-    _fed.trace = trace;
-}
+// void lf_set_federation_trace_object(trace_t * trace) {
+//     _fed.trace = trace;
+// }
 
 #ifdef FEDERATED_DECENTRALIZED
 void lf_spawn_staa_thread(){

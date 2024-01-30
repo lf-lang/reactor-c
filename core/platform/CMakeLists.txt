@@ -47,7 +47,6 @@ platform_define(LOG_LEVEL)
 platform_define(MODAL_REACTORS)
 platform_define(USER_THREADS)
 
-target_link_libraries(reactor-c PUBLIC Platform)
 target_include_directories(Platform PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include)
 target_include_directories(Platform PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include/core)
 target_include_directories(Platform PUBLIC ${CMAKE_CURRENT_LIST_DIR}/../../include/core/platform)

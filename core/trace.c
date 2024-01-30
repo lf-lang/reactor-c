@@ -263,7 +263,6 @@ void tracepoint_federate_to_rti(trace_event_t event_type, int fed_id, tag_t* tag
 void tracepoint_federate_from_rti(trace_event_t event_type, int fed_id, tag_t* tag) {
     // trace_event_t event_type = (type == MSG_TYPE_TAG_ADVANCE_GRANT)? federate_TAG : federate_PTAG;
     call_tracepoint(
-        trace,
         event_type,
         NULL,   // void* pointer,
         tag,    // tag* tag,
@@ -287,7 +286,6 @@ void tracepoint_federate_from_rti(trace_event_t event_type, int fed_id, tag_t* t
  */
 void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
     call_tracepoint(
-        trace,
         event_type,
         NULL,   // void* pointer,
         tag,    // tag* tag,
@@ -311,7 +309,6 @@ void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int p
  */
 void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int partner_id, tag_t *tag) {
     call_tracepoint(
-        trace,
         event_type,
         NULL,   // void* pointer,
         tag,    // tag* tag,
@@ -340,7 +337,6 @@ void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int
  */
 void tracepoint_rti_to_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
     call_tracepoint(
-        trace,
         event_type,
         NULL,   // void* pointer,
         tag,    // tag_t* tag,
@@ -363,7 +359,6 @@ void tracepoint_rti_to_federate(trace_event_t event_type, int fed_id, tag_t* tag
  */
 void tracepoint_rti_from_federate(trace_event_t event_type, int fed_id, tag_t* tag) {
     call_tracepoint(
-        trace,
         event_type,
         NULL,   // void* pointer,
         tag,    // tag_t* tag,

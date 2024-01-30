@@ -176,10 +176,10 @@ typedef struct federate_instance_t {
      */
     instant_t min_delay_from_physical_action_to_federate_output;
 
-    /**
-     * Trace object for this federate, used if tracing is enabled.
-     */
-    trace_t* trace;
+    // /**
+    //  * Trace object for this federate, used if tracing is enabled.
+    //  */
+    // trace_t* trace;
 
     #ifdef FEDERATED_DECENTRALIZED
     /**
@@ -500,12 +500,12 @@ int lf_send_tagged_message(
  */
 void lf_set_federation_id(const char* fid);
 
-/**
- * @brief Set the trace object for this federate (used when tracing is enabled).
- * 
- * @param The trace object.
- */
-void lf_set_federation_trace_object(trace_t * trace);
+// /**
+//  * @brief Set the trace object for this federate (used when tracing is enabled).
+//  *
+//  * @param The trace object.
+//  */
+// void lf_set_federation_trace_object(trace_t * trace);
 
 #ifdef FEDERATED_DECENTRALIZED
 /**

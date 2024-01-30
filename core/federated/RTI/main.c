@@ -79,7 +79,7 @@ static void send_failed_signal(federate_info_t* fed) {
     unsigned char buffer[bytes_to_write];
     buffer[0] = MSG_TYPE_FAILED;
     if (rti.base.tracing_enabled) {
-        tracepoint_rti_to_federate(rti.base.trace, send_FAILED, fed->enclave.id, NULL);
+        tracepoint_rti_to_federate(send_FAILED, fed->enclave.id, NULL);
     }
     int failed = write_to_socket(fed->socket, bytes_to_write, &(buffer[0]));
     if (failed == 0) {
@@ -286,7 +286,6 @@ int process_args(int argc, const char* argv[]) {
 int main(int argc, const char* argv[]) {
 
     initialize_RTI(&rti);
-    lf_tracing_init(-1);
 
     // Catch the Ctrl-C signal, for a clean exit that does not lose the trace information
     signal(SIGINT, exit);
@@ -311,9 +310,10 @@ int main(int argc, const char* argv[]) {
 
     if (rti.base.tracing_enabled) {
         _lf_number_of_workers = rti.base.number_of_scheduling_nodes;
-        rti.base.trace = trace_new(NULL, rti_trace_file_name);
-        LF_ASSERT(rti.base.trace, "Out of memory");
-        start_trace(rti.base.trace);
+        lf_tracing_init(-1, _lf_number_of_workers + 1);  // FIXME: almost certainly wrong
+        // rti.base.trace = trace_new(NULL, rti_trace_file_name);
+        // LF_ASSERT(rti.base.trace, "Out of memory");
+        // start_trace(rti.base.trace);
         lf_print("Tracing the RTI execution in %s file.", rti_trace_file_name);
     }
 
