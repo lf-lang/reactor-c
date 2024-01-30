@@ -3,7 +3,7 @@
 #include <errno.h>
 
 #include "platform.h"
-#include "util.h"
+// #include "util.h"
 #include "lf_unix_clock_support.h"
 
 /**
@@ -55,10 +55,13 @@ void _lf_initialize_clock() {
     struct timespec res;
     int return_value = clock_getres(_LF_CLOCK, (struct timespec*) &res);
     if (return_value < 0) {
-        lf_print_error_and_exit("Could not obtain resolution for _LF_CLOCK");
+        // lf_print_error_and_exit("Could not obtain resolution for _LF_CLOCK");
+        printf("Could not obtain resolution for _LF_CLOCK"); // FIXME
+        exit(1); // FIXME
     }
 
-    lf_print("---- System clock resolution: %ld nsec", res.tv_nsec);
+    // lf_print("---- System clock resolution: %ld nsec", res.tv_nsec);
+    printf("---- System clock resolution: %ld nsec", res.tv_nsec); // FIXME
 }
 
 /**

@@ -1,33 +1,45 @@
-# Check which system we are running on to select the correct platform support
-# file and assign the file's path to LF_PLATFORM_FILE
+cmake_minimum_required(VERSION 3.13..3.22)
+
+project(DefaultPlatform LANGUAGES C)
 
 set(LF_PLATFORM_FILES
-    lf_unix_clock_support.c
-    lf_unix_syscall_support.c
-    lf_linux_support.c
-    lf_macos_support.c
-    lf_windows_support.c
-    lf_nrf52_support.c
-    lf_zephyr_support.c
-    lf_zephyr_clock_counter.c
-    lf_zephyr_clock_kernel.c
-    lf_rp2040_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/platform/lf_unix_clock_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/platform/lf_unix_syscall_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/platform/lf_linux_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/platform/lf_macos_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/platform/lf_windows_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/platform/lf_nrf52_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/platform/lf_zephyr_support.c
+    ${CMAKE_CURRENT_LIST_DIR}/platform/lf_zephyr_clock_counter.c
+    ${CMAKE_CURRENT_LIST_DIR}/platform/lf_zephyr_clock_kernel.c
+    ${CMAKE_CURRENT_LIST_DIR}/platform/lf_rp2040_support.c
 )
 
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    set(CMAKE_SYSTEM_VERSION 10.0)
-    message("Using Windows SDK version ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
-    list(APPEND REACTORC_COMPILE_DEFS PLATFORM_NRF52)
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
-    list(APPEND REACTORC_COMPILE_DEFS PLATFORM_ZEPHYR)
-    set(PLATFORM_ZEPHYR true)
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
-    list(APPEND REACTORC_COMPILE_DEFS PLATFORM_RP2040)
+add_library(DefaultPlatform STATIC ${LF_PLATFORM_FILES})
+target_include_directories(DefaultPlatform PRIVATE ../../include/plugin-apis)
+target_include_directories(DefaultPlatform PRIVATE ../../include/api)
+target_include_directories(DefaultPlatform PRIVATE ${CMAKE_CURRENT_LIST_DIR}/include)
+
+# Link with thread library, unless we are on the Zephyr platform.
+if(NOT DEFINED LF_SINGLE_THREADED OR DEFINED LF_TRACE)
+    if (NOT PLATFORM_ZEPHYR)
+        find_package(Threads REQUIRED)
+        target_link_libraries(DefaultPlatform PUBLIC Threads::Threads)
+    endif()
 endif()
 
-# Prepend all sources with platform
-list(TRANSFORM LF_PLATFORM_FILES PREPEND platform/)
+target_compile_definitions(DefaultPlatform PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
 
-# Add sources to the list for debug info
-list(APPEND REACTORC_SOURCES ${LF_PLATFORM_FILES})
+macro(define X)
+    if(DEFINED ${X})
+        message(STATUS ${X}=${${X}})
+        target_compile_definitions(DefaultPlatform PUBLIC ${X}=${${X}})
+    endif(DEFINED ${X})
+endmacro()
+
+define(LF_SINGLE_THREADED)
+define(USER_THREADS)
+
+# FIXME: This is a hack, see the comment in Platform.cmake
+MESSAGE(INFO ${CMAKE_CURRENT_LIST_DIR}/../../include/plugin-apis/Platform.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/../../include/plugin-apis/Platform.cmake)

@@ -38,7 +38,7 @@ endif()
 # Include sources from subdirectories
 include(utils/CMakeLists.txt)
 include(modal_models/CMakeLists.txt)
-include(platform/CMakeLists.txt)
+include(../plugin-defaults/platform/CMakeLists.txt)
 
 # Print sources used for compilation
 list(JOIN REACTORC_SOURCES ", " PRINTABLE_SOURCE_LIST)
@@ -91,13 +91,8 @@ if(DEFINED _LF_CLOCK_SYNC_ON)
   endif()
 endif()
 
-# Link with thread library, unless we are on the Zephyr platform.
-if(NOT DEFINED LF_SINGLE_THREADED OR DEFINED LF_TRACE)
-    if (NOT PLATFORM_ZEPHYR)
-        find_package(Threads REQUIRED)
-        target_link_libraries(reactor-c PUBLIC Threads::Threads)
-    endif()
-endif()
+message(STATUS "linking platform library ${LF_PLATFORM_PLUGIN}")
+target_link_libraries(reactor-c PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${LF_PLATFORM_PLUGIN})
 
 # Macro for translating a command-line argument into compile definition for
 # reactor-c lib
@@ -112,7 +107,7 @@ endmacro()
 # parameters to Cmake.
 target_compile_definitions(reactor-c PRIVATE INITIAL_EVENT_QUEUE_SIZE=10)
 target_compile_definitions(reactor-c PRIVATE INITIAL_REACT_QUEUE_SIZE=10)
-target_compile_definitions(reactor-c PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})
+target_compile_definitions(reactor-c PUBLIC PLATFORM_${CMAKE_SYSTEM_NAME})  # FIXME: should be in platform lib only
 
 # Search and apply all possible compile definitions
 message(STATUS "Applying preprocessor definitions...")
