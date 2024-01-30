@@ -70,6 +70,7 @@ typedef struct trace_t {
 
 static lf_platform_mutex_ptr_t trace_mutex;
 static trace_t trace;
+static int64_t start_time;
 
 // PRIVATE HELPERS ***********************************************************
 
@@ -83,7 +84,7 @@ static int write_trace_header(trace_t* trace) {
         // The first item in the header is the start time.
         // This is both the starting physical time and the starting logical time.
         // int64_t start_time = lf_time_start();
-        int64_t start_time = 0; // FIXME: We want the actual start time, but the trouble is that it is possible that many tracepoints could have been registered before the start time is known. I am not aware of an easy way to fix this that is more robust than just assuming that the number of tracepoints before you reach the start time is small enough that flushing doesn't happen first -- which will be true in practice, but it doesn't generalize in other implementations where you want to always flush right away.
+        // int64_t start_time = 0; // FIXME: We want the actual start time, but the trouble is that it is possible that many tracepoints could have been registered before the start time is known. I am not aware of an easy way to fix this that is more robust than just assuming that the number of tracepoints before you reach the start time is small enough that flushing doesn't happen first -- which will be true in practice, but it doesn't generalize in other implementations where you want to always flush right away.
         // printf("DEBUG: Start time written to trace file is %lld.\n", start_time);
         size_t items_written = fwrite(
                 &start_time,
@@ -339,6 +340,10 @@ void lf_tracing_global_init(int process_id, int max_num_local_threads) {
     sprintf(filename, "trace_%d.lft", process_id);
     trace_new(filename);
     start_trace(&trace, max_num_local_threads);
+}
+void lf_tracing_set_start_time(int64_t time) {
+    printf("default lf_tracing_set_start_time called\n");
+    start_time = time;
 }
 void lf_tracing_global_shutdown() {
     printf("default lf_tracing_global_shutdown called\n");

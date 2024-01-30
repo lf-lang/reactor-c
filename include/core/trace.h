@@ -454,6 +454,7 @@ typedef struct trace_t trace_t;
 // #define trace_new(...) NULL
 // #define trace_free(...)
 #define lf_tracing_register_trace_event(...);
+#define lf_tracing_set_start_time(...);
 #define tracepoint(...);
 #define lf_tracing_global_init(...);
 #define lf_tracing_global_shutdown(...);

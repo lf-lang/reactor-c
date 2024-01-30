@@ -281,9 +281,9 @@ PyObject* py_main(PyObject* self, PyObject* py_args) {
     // Store a reference to the top-level environment
     int num_environments = _lf_get_environments(&top_level_environment);
     LF_ASSERT(num_environments == 1, "Python target only supports programs with a single environment/enclave");
-#ifndef FEDERATED
-    lf_tracing_global_init(0, 100); // FIXME: what is the actual max number of threads
-#endif
+// #ifndef FEDERATED
+//     lf_tracing_global_init(0, 100); // FIXME: what is the actual max number of threads
+// #endif
     Py_BEGIN_ALLOW_THREADS
     lf_reactor_c_main(argc, argv);
     Py_END_ALLOW_THREADS

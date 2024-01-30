@@ -1740,9 +1740,9 @@ void initialize_global(void) {
 
     // Federation trace object must be set before `initialize_trigger_objects` is called because it
     //  uses tracing functionality depending on that pointer being set.
-    #ifdef FEDERATED
-    lf_set_federation_trace_object(envs->trace);
-    #endif
+    // #ifdef FEDERATED
+    // lf_set_federation_trace_object(envs->trace);
+    // #endif
     // Call the code-generated function to initialize all actions, timers, and ports
     // This is done for all environments/enclaves at the same time.
     _lf_initialize_trigger_objects() ;

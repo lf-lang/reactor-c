@@ -354,9 +354,9 @@ bool _lf_is_blocked_by_executing_reaction(void) {
  * at compile time.
  */
 int lf_reactor_c_main(int argc, const char* argv[]) {
-#ifndef FEDERATED
-    lf_tracing_global_init(0, 1);
-#endif
+// #ifndef FEDERATED
+//     lf_tracing_global_init(0, 1);
+// #endif
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();
     _lf_initialize_clock();
@@ -387,6 +387,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         initialize_global();
         // Set start time
         start_time = lf_time_physical();
+        lf_tracing_set_start_time(start_time);
 
         LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG,
                 FOREVER_TAG.time - start_time, FOREVER_TAG.microstep,
