@@ -2,6 +2,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 
 #include "trace.h"
 
@@ -67,7 +68,7 @@ typedef struct trace_t {
 
 // PRIVATE DATA STRUCTURES ***************************************************
 
-static lf_mutex_t trace_mutex;
+static lf_platform_mutex_ptr_t trace_mutex;
 static trace_t trace;
 
 // PRIVATE HELPERS ***********************************************************
@@ -206,9 +207,9 @@ static void flush_trace_locked(trace_t* trace, int worker) {
 static void flush_trace(trace_t* trace, int worker) {
     // To avoid having more than one worker writing to the file at the same time,
     // enter a critical section.
-    lf_mutex_lock(&trace_mutex);
+    lf_platform_mutex_lock(trace_mutex);
     flush_trace_locked(trace, worker);
-    lf_mutex_unlock(&trace_mutex);
+    lf_platform_mutex_unlock(trace_mutex);
 }
 
 static void start_trace(trace_t* trace, int max_num_local_threads) {
@@ -287,22 +288,22 @@ static void stop_trace_locked(trace_t* trace) {
 }
 
 static void stop_trace(trace_t* trace) {
-    lf_mutex_lock(&trace_mutex);
+    lf_platform_mutex_lock(trace_mutex);
     stop_trace_locked(trace);
-    lf_mutex_unlock(&trace_mutex);
+    lf_platform_mutex_unlock(trace_mutex);
 }
 
 // IMPLEMENTATION OF TRACE API ***********************************************
 
 void lf_tracing_register_trace_event(object_description_t description) {
-    lf_mutex_lock(&trace_mutex);
+    lf_platform_mutex_lock(trace_mutex);
     if (trace._lf_trace_object_descriptions_size >= TRACE_OBJECT_TABLE_SIZE) {
-        lf_mutex_unlock(&trace_mutex);
+        lf_platform_mutex_unlock(trace_mutex);
         fprintf(stderr, "WARNING: Exceeded trace object table size. Trace file will be incomplete.\n");
         return;
     }
     trace._lf_trace_object_descriptions[trace._lf_trace_object_descriptions_size++] = description;
-    lf_mutex_unlock(&trace_mutex);
+    lf_platform_mutex_unlock(trace_mutex);
 }
 
 void tracepoint(int worker, trace_record_nodeps_t* tr) {
@@ -329,7 +330,8 @@ void tracepoint(int worker, trace_record_nodeps_t* tr) {
 
 void lf_tracing_global_init(int process_id, int max_num_local_threads) {
     printf("default lf_tracing_global_init called\n");
-    if (lf_mutex_init(&trace_mutex)) {
+    trace_mutex = lf_platform_mutex_new();
+    if (!trace_mutex) {
         fprintf(stderr, "WARNING: Failed to initialize trace mutex.\n");
         exit(1);
     }
@@ -342,4 +344,5 @@ void lf_tracing_global_shutdown() {
     printf("default lf_tracing_global_shutdown called\n");
     stop_trace(&trace);
     trace_free(&trace);
+    lf_platform_mutex_free(trace_mutex);
 }

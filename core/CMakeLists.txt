@@ -35,15 +35,9 @@ if(DEFINED LF_ENCLAVES)
 include(federated/RTI/local_rti.cmake)
 endif()
 
-if (DEFINED LF_TRACE_PLUGIN)
-    message(STATUS "linking trace plugin library ${LF_TRACE_PLUGIN}")
-    target_link_libraries(core PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${LF_TRACE_PLUGIN})
-endif()
-
 # Include sources from subdirectories
 include(utils/CMakeLists.txt)
 include(modal_models/CMakeLists.txt)
-include(platform/CMakeLists.txt)
 
 # Print sources used for compilation
 list(JOIN REACTORC_SOURCES ", " PRINTABLE_SOURCE_LIST)
@@ -59,6 +53,12 @@ if(PLATFORM_ZEPHYR)
 else()
     add_library(reactor-c ${REACTORC_SOURCES})
 endif()
+
+if (DEFINED LF_TRACE_PLUGIN)
+    message(STATUS "linking trace plugin library ${LF_TRACE_PLUGIN}")
+    target_link_libraries(reactor-c PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/${LF_TRACE_PLUGIN})
+endif()
+include(platform/CMakeLists.txt)
 
 # Apply compile definitions to the reactor-c library.
 target_compile_definitions(reactor-c PUBLIC ${REACTORC_COMPILE_DEFS})
