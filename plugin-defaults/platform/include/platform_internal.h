@@ -1,5 +1,3 @@
-#include "plugin-apis/platform.h"
-
 #if defined(PLATFORM_ARDUINO)
     #include "platform/lf_arduino_support.h"
 #elif defined(PLATFORM_ZEPHYR)

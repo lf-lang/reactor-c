@@ -2,7 +2,10 @@
 #include <time.h>
 #include <errno.h>
 
-#include "platform.h"
+#include <stdio.h> // FIXME
+#include <stdlib.h> // FIXME
+
+#include "platform_internal.h"
 // #include "util.h"
 #include "lf_unix_clock_support.h"
 
