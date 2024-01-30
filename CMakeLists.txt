@@ -24,7 +24,8 @@ endif()
 
 set(Test test)
 set(Lib lib)
-set(CoreLib core)
+set(CoreLibPath core)
+set(CoreLib reactor-c)
 set(PlatformLib platform)
 
 include_directories(${CMAKE_SOURCE_DIR}/include)
@@ -40,6 +41,6 @@ include_directories(${CMAKE_SOURCE_DIR}/include/api)
 enable_testing()
 add_subdirectory(${Test})
 add_subdirectory(${Lib})
-add_subdirectory(${CoreLib})
+add_subdirectory(${CoreLibPath})
 
 include(test/Tests.cmake)
