@@ -37,8 +37,6 @@
 #include "net_common.h"
 #endif // FEDERATED
 
-#include "plugin-apis/trace.h"
-
 /**
  * Trace event types. If you update this, be sure to update the
  * string representation below. Also, create a tracepoint function
@@ -105,6 +103,8 @@ typedef enum {
 } trace_event_t;
 
 #ifdef LF_TRACE
+
+#include "plugin-apis/trace.h"
 
 /**
  * String description of event types.
@@ -183,9 +183,9 @@ typedef struct trace_record_t {
     interval_t extra_delay;
 } trace_record_t;
 
-void lf_tracing_init(int process_id, int max_num_local_threads);
+// void lf_tracing_init(int process_id, int max_num_local_threads);
 
-void lf_tracing_global_shutdown();
+// void lf_tracing_global_shutdown();
 
 void call_tracepoint(
         // trace_t* trace,
@@ -454,6 +454,10 @@ typedef struct trace_t trace_t;
 // #define stop_trace_locked(...)
 // #define trace_new(...) NULL
 // #define trace_free(...)
+#define lf_tracing_register_trace_event(...);
+#define tracepoint(...);
+#define lf_tracing_global_init(...);
+#define lf_tracing_global_shutdown(...);
 
 
 #endif // LF_TRACE
