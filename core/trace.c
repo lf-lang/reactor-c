@@ -85,10 +85,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //     environment_t* env;
 // } trace_t;
 
-void lf_tracing_init(int process_id, int max_num_local_threads) {
-    lf_tracing_global_init(process_id, max_num_local_threads);
-}
-
 int _lf_register_trace_event(void* pointer1, void* pointer2, _lf_trace_object_t type, char* description) {
     object_description_t desc = {
         .pointer = pointer1,

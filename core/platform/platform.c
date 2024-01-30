@@ -22,8 +22,8 @@ void lf_platform_mutex_free(lf_platform_mutex_ptr_t mutex) {
     free((void*) mutex);
 }
 int lf_platform_mutex_lock(lf_platform_mutex_ptr_t mutex) {
-    lf_mutex_lock((lf_mutex_t*) mutex);
+    return lf_mutex_lock((lf_mutex_t*) mutex);
 }
 int lf_platform_mutex_unlock(lf_platform_mutex_ptr_t mutex) {
-    lf_mutex_unlock((lf_mutex_t*) mutex);
+    return lf_mutex_unlock((lf_mutex_t*) mutex);
 }

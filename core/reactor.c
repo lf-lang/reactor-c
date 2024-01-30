@@ -355,7 +355,7 @@ bool _lf_is_blocked_by_executing_reaction(void) {
  */
 int lf_reactor_c_main(int argc, const char* argv[]) {
 #ifndef FEDERATED
-    lf_tracing_init(0, 1);
+    lf_tracing_global_init(0, 1);
 #endif
     // Invoke the function that optionally provides default command-line options.
     _lf_set_default_command_line_options();

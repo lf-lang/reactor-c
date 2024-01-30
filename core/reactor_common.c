@@ -1732,7 +1732,7 @@ void initialize_global(void) {
     int num_envs = _lf_get_environments(&envs);
 
 #ifndef FEDERATED
-    lf_tracing_init(0, envs[0].num_workers * num_envs + 2); // FIXME: is this right? In case of federation, I doubt it. Easy to check but I am in a hurry.
+    lf_tracing_global_init(0, envs[0].num_workers * num_envs + 2); // FIXME: is this right? In case of federation, I doubt it. Easy to check but I am in a hurry.
 #endif
     // for (int i = 0; i<num_envs; i++) {
     //     start_trace(envs[i].trace);

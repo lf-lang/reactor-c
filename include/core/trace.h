@@ -447,7 +447,6 @@ typedef struct trace_t trace_t;
 #define tracepoint_federate_from_federate(...) ;
 #define tracepoint_rti_to_federate(...);
 #define tracepoint_rti_from_federate(...) ;
-#define lf_tracing_init(...) ;
 
 // #define start_trace(...)
 // #define stop_trace(...)
