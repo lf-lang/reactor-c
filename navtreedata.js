@@ -90,11 +90,11 @@ var NAVTREEINDEX =
 "d2/d35/structreaction__t.html#a861cbf9521eb367cedf9e2d0ecee0fca",
 "d4/d3d/lf__zephyr__support_8h.html",
 "d6/d1e/namespacefedsd.html#ac2b65a7ae5230b21e264f488eab666f7",
-"d7/dc7/lf__nrf52__support_8h.html#a1a993c1a57a54296ab361e669008b79e",
-"d9/dc7/trace__util_8h.html#a20b56e8fb05c017508f1c4fa2e311a87",
-"db/dd1/mixed__radix_8h.html#a7d95374fb5368705263c2f1ac2579183",
-"dd/d03/trace__to__influxdb_8c.html#a3fc7a0b0ac649ffc4c4d3d36df52f5b0",
-"de/df1/util_8c.html#adf0f2afd766e2f2b77c36c890fd56192"
+"d7/dc7/struct__lf__tag__advancement__barrier.html",
+"d9/dad/structlf__wav__t.html#a5bb20beaea682b4cacf483ae929c220c",
+"db/dc8/pythontarget_8h.html#ac17112817f2b0d419f4c8c590fc772ac",
+"dc/de9/sensor__simulator_8h_source.html",
+"de/df1/util_8c.html#a855d4da1222d05ddd0bcc5bb1644bf39"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';
