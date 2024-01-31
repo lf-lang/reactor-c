@@ -52,9 +52,9 @@ typedef struct {
 //     _lf_trace_object_t type;  // The type of trace object.
 //     char* description; // A NULL terminated string.
 // };
-void lf_tracing_global_init(int process_id, int max_num_local_threads);
+void lf_tracing_global_init(int max_num_local_threads);
 void lf_tracing_register_trace_event(object_description_t description);
-void lf_tracing_set_start_time(int64_t start_time);
+void lf_tracing_set_start_time(char* file_name_prefix, int process_id, int64_t start_time);
 void tracepoint(
     int worker,
     trace_record_nodeps_t* tr

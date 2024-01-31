@@ -1165,7 +1165,9 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
     // Initialize the clock through the platform API. No reading of physical time before this.
     _lf_initialize_clock();
     start_time = lf_time_physical();
-    lf_tracing_set_start_time(start_time);
+    #ifndef FEDERATED
+    lf_tracing_set_start_time("trace_", 0, start_time);
+    #endif
 
     LF_PRINT_DEBUG("Start time: " PRINTF_TIME "ns", start_time);
     struct timespec physical_time_timespec = {start_time / BILLION, start_time % BILLION};

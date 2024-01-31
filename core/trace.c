@@ -34,7 +34,6 @@ THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #ifdef LF_TRACE
 
-#include <dlfcn.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>

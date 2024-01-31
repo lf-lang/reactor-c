@@ -5,12 +5,7 @@
 #include <assert.h>
 
 #include "trace.h"
-
-// FIXME: Decide on a safe way to expose such APIs as these to plugins implemented in C
 #include "platform.h"
-// int lf_mutex_unlock(lf_mutex_t* mutex);
-// int lf_mutex_init(lf_mutex_t* mutex);
-// int lf_mutex_lock(lf_mutex_t* mutex);
 
 // FIXME: Target property should specify the capacity of the trace buffer.
 #define TRACE_BUFFER_CAPACITY 2048
@@ -70,6 +65,7 @@ typedef struct trace_t {
 
 static lf_platform_mutex_ptr_t trace_mutex;
 static trace_t trace;
+static int process_id;
 static int64_t start_time;
 
 // PRIVATE HELPERS ***********************************************************
@@ -81,11 +77,6 @@ static int64_t start_time;
  */
 static int write_trace_header(trace_t* trace) {
     if (trace->_lf_trace_file != NULL) {
-        // The first item in the header is the start time.
-        // This is both the starting physical time and the starting logical time.
-        // int64_t start_time = lf_time_start();
-        // int64_t start_time = 0; // FIXME: We want the actual start time, but the trouble is that it is possible that many tracepoints could have been registered before the start time is known. I am not aware of an easy way to fix this that is more robust than just assuming that the number of tracepoints before you reach the start time is small enough that flushing doesn't happen first -- which will be true in practice, but it doesn't generalize in other implementations where you want to always flush right away.
-        // printf("DEBUG: Start time written to trace file is %lld.\n", start_time);
         size_t items_written = fwrite(
                 &start_time,
                 sizeof(int64_t),
@@ -96,7 +87,6 @@ static int write_trace_header(trace_t* trace) {
 
         // The next item in the header is the size of the
         // _lf_trace_object_descriptions table.
-        // printf("DEBUG: Table size written to trace file is %d.\n", _lf_trace_object_descriptions_size);
         items_written = fwrite(
                 &trace->_lf_trace_object_descriptions_size,
                 sizeof(int),
@@ -107,7 +97,6 @@ static int write_trace_header(trace_t* trace) {
 
         // Next we write the table.
         for (int i = 0; i < trace->_lf_trace_object_descriptions_size; i++) {
-            // printf("DEBUG: Object pointer: %p.\n", _lf_trace_object_descriptions[i].pointer);
             // Write the pointer to the self struct.
             items_written = fwrite(
                         &trace->_lf_trace_object_descriptions[i].pointer,
@@ -137,7 +126,6 @@ static int write_trace_header(trace_t* trace) {
 
             // Write the description.
             int description_size = strlen(trace->_lf_trace_object_descriptions[i].description);
-            // printf("DEBUG: Object description: %s.\n", trace->_lf_trace_object_descriptions[i].description);
             items_written = fwrite(
                         trace->_lf_trace_object_descriptions[i].description,
                         sizeof(char),
@@ -215,11 +203,7 @@ static void flush_trace(trace_t* trace, int worker) {
 
 static void start_trace(trace_t* trace, int max_num_local_threads) {
     // FIXME: location of trace file should be customizable.
-    trace->_lf_trace_file = fopen(trace->filename, "w");
-    if (trace->_lf_trace_file == NULL) {
-        fprintf(stderr, "WARNING: Failed to open log file with error code %d."
-                "No log will be written.\n", errno);
-    }
+    trace->_lf_trace_file = NULL;
     // Do not write the trace header information to the file yet
     // so that startup reactions can register user-defined trace objects.
     // write_trace_header();
@@ -255,6 +239,13 @@ static void trace_new(char * filename) {
 
     // Copy it to the struct
     strncpy(trace.filename, filename, len);
+    trace._lf_trace_file = fopen(trace.filename, "w");
+    if (trace._lf_trace_file == NULL) {
+        fprintf(stderr, "WARNING: Failed to open log file with error code %d."
+                "No log will be written.\n", errno);
+    } else {
+        printf("Opened trace file %s.\n", trace.filename); // FIXME
+    }
 }
 
 static void trace_free(trace_t *trace) {
@@ -308,10 +299,6 @@ void lf_tracing_register_trace_event(object_description_t description) {
 }
 
 void tracepoint(int worker, trace_record_nodeps_t* tr) {
-    printf("default tracepoint called in worker %d\n", worker);
-    // trace_t* trace = (trace_t*) trace_void;
-
-    // environment_t *env = trace->env;
     // Worker argument determines which buffer to write to.
     int index = (worker >= 0) ? worker : 0;
 
@@ -329,24 +316,23 @@ void tracepoint(int worker, trace_record_nodeps_t* tr) {
     trace._lf_trace_buffer_size[index]++;
 }
 
-void lf_tracing_global_init(int process_id, int max_num_local_threads) {
-    printf("default lf_tracing_global_init called\n");
+void lf_tracing_global_init(int max_num_local_threads) {
     trace_mutex = lf_platform_mutex_new();
     if (!trace_mutex) {
         fprintf(stderr, "WARNING: Failed to initialize trace mutex.\n");
         exit(1);
     }
-    char filename[100];
-    sprintf(filename, "trace_%d.lft", process_id);
-    trace_new(filename);
     start_trace(&trace, max_num_local_threads);
 }
-void lf_tracing_set_start_time(int64_t time) {
-    printf("default lf_tracing_set_start_time called\n");
+void lf_tracing_set_start_time(char* file_name_prefix, int fedid, int64_t time) {
+    process_id = fedid;
     start_time = time;
+    char filename[100];
+    sprintf(filename, "%s%d.lft", file_name_prefix, process_id);
+    trace_new(filename);
 }
 void lf_tracing_global_shutdown() {
-    printf("default lf_tracing_global_shutdown called\n");
+    printf("DEBUG: Shutting down tracing at process %d.\n", process_id);
     stop_trace(&trace);
     trace_free(&trace);
     lf_platform_mutex_free(trace_mutex);

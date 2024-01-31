@@ -1731,8 +1731,10 @@ void initialize_global(void) {
     environment_t *envs;
     int num_envs = _lf_get_environments(&envs);
 
-#ifndef FEDERATED
-    lf_tracing_global_init(0, envs[0].num_workers * num_envs + 2); // FIXME: is this right? In case of federation, I doubt it. Easy to check but I am in a hurry.
+#if defined(LF_SINGLE_THREADED)
+    lf_tracing_global_init(1);
+#else
+    lf_tracing_global_init(envs[0].num_workers * num_envs + 2); // FIXME: is this right? In case of federation, I doubt it. Easy to check but I am in a hurry.
 #endif
     // for (int i = 0; i<num_envs; i++) {
     //     start_trace(envs[i].trace);
@@ -1784,7 +1786,6 @@ void termination(void) {
         // // other threads have stopped, and if it's not, then acquiring a mutex could
         // // lead to a deadlock.
         // stop_trace_locked(env[i].trace);
-        lf_tracing_global_shutdown();
 
         // Skip most cleanup on abnormal termination.
         if (_lf_normal_termination) {
@@ -1848,4 +1849,5 @@ void termination(void) {
         free_local_rti();
 #endif
     }
+    lf_tracing_global_shutdown();
 }
