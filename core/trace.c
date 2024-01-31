@@ -239,7 +239,7 @@ void tracepoint_federate_to_rti(trace_event_t event_type, int fed_id, tag_t* tag
     call_tracepoint(
         event_type,
         NULL,   // void* pointer,
-        tag ? *tag : NEVER,    // tag* tag,
+        tag ? *tag : NEVER_TAG,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
         fed_id, // int src_id,
         -1,     // int dst_id,
@@ -262,7 +262,7 @@ void tracepoint_federate_from_rti(trace_event_t event_type, int fed_id, tag_t* t
     call_tracepoint(
         event_type,
         NULL,   // void* pointer,
-        tag ? *tag : NEVER,    // tag* tag,
+        tag ? *tag : NEVER_TAG,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
         fed_id, // int src_id,
         -1,     // int dst_id,
@@ -285,7 +285,7 @@ void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int p
     call_tracepoint(
         event_type,
         NULL,   // void* pointer,
-        tag ? *tag : NEVER,    // tag* tag,
+        tag ? *tag : NEVER_TAG,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
         fed_id, // int src_id,
         partner_id,     // int dst_id,
@@ -308,7 +308,7 @@ void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int
     call_tracepoint(
         event_type,
         NULL,   // void* pointer,
-        tag ? *tag : NEVER,    // tag* tag,
+        tag ? *tag : NEVER_TAG,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
         fed_id, // int src_id,
         partner_id,     // int dst_id,
@@ -336,7 +336,7 @@ void tracepoint_rti_to_federate(trace_event_t event_type, int fed_id, tag_t* tag
     call_tracepoint(
         event_type,
         NULL,   // void* pointer,
-        tag ? *tag : NEVER,    // tag_t* tag,
+        tag ? *tag : NEVER_TAG,    // tag_t* tag,
         fed_id, // int worker (one thread per federate)
         -1,     // int src_id
         fed_id, // int dst_id
@@ -358,7 +358,7 @@ void tracepoint_rti_from_federate(trace_event_t event_type, int fed_id, tag_t* t
     call_tracepoint(
         event_type,
         NULL,   // void* pointer,
-        tag ? *tag : NEVER,    // tag_t* tag,
+        tag ? *tag : NEVER_TAG,    // tag_t* tag,
         fed_id, // int worker (one thread per federate)
         -1,     // int src_id  (RTI is the source of the tracepoint)
         fed_id, // int dst_id
