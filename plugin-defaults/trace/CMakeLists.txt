@@ -4,7 +4,7 @@ set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_LIST_DIR}/lib")
 
 project(DefaultTracing LANGUAGES C)
 
-add_library(DefaultTracing STATIC trace.c)
+add_library(DefaultTracing STATIC default-trace.c)
 target_include_directories(DefaultTracing PRIVATE ../../include/plugin-apis)
 
 # make name platform-independent
