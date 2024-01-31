@@ -20,7 +20,7 @@
  * This function initializes those mutexes. It also initializes the condition
  * variable which enables the safe termination of a running watchdog.
  */
-void _lf_initialize_watchdog_mutexes(environment_t *env) {
+void _lf_initialize_watchdogs(environment_t *env) {
     int ret;            
     for (int i = 0; i < env->watchdogs_size; i++) {
         watchdog_t *watchdog = env->watchdogs[i];
@@ -41,15 +41,25 @@ void _lf_watchdog_terminate(environment_t *env) {
     int ret;
     for (int i = 0; i < env->watchdogs_size; i++) {
         watchdog_t *watchdog = env->watchdogs[i];
-        if (watchdog->thread_active) {
-            ret = lf_mutex_lock(watchdog->base->reactor_mutex);
-            LF_ASSERTN(ret, "lf_mutex_lock failed");
-            lf_watchdog_stop(watchdog);
-            ret = lf_mutex_unlock(watchdog->base->reactor_mutex);
-            LF_ASSERTN(ret, "lf_mutex_unlock failed");
-            ret = lf_thread_join(watchdog->thread_id, &thread_return);
-            LF_ASSERTN(ret, "lf_thread_join failed");
-        }
+        ret = lf_mutex_lock(watchdog->base->reactor_mutex);
+        LF_ASSERTN(ret, "lf_mutex_lock failed");
+        lf_watchdog_stop(watchdog);
+        ret = lf_mutex_unlock(watchdog->base->reactor_mutex);
+        LF_ASSERTN(ret, "lf_mutex_unlock failed");
+        ret = lf_thread_join(watchdog->thread_id, &thread_return);
+        LF_ASSERTN(ret, "lf_thread_join failed");
+    }
+}
+
+void watchdog_wait(watchdog_t *watchdog) {
+    watchdog->active = true;
+    instant_t physical_time = lf_time_physical();
+    while ( watchdog->expiration != NEVER && 
+            physical_time < watchdog->expiration &&
+            !watchdog->terminate) {
+        // Wait for expiration, or a signal to terminate
+        lf_cond_timedwait(&watchdog->cond, watchdog->expiration);
+        physical_time = lf_time_physical();
     }
 }
 
@@ -69,65 +79,101 @@ void _lf_watchdog_terminate(environment_t *env) {
  * @param arg A pointer to the watchdog struct
  * @return NULL
  */
-void* _lf_run_watchdog(void* arg) {
+void* watchdog_thread_main(void* arg) {
     int ret;
     watchdog_t* watchdog = (watchdog_t*)arg;
-    LF_PRINT_DEBUG("Starting Watchdog %p", watchdog);
-
     self_base_t* base = watchdog->base;
+    LF_PRINT_DEBUG("Starting Watchdog %p", watchdog);
     LF_ASSERT(base->reactor_mutex, "reactor-mutex not alloc'ed but has watchdogs.");
+
+    // Grab reactor-mutex and start infinite loop.
     ret = lf_mutex_lock((lf_mutex_t*)(base->reactor_mutex));
     LF_ASSERTN(ret, "lf_mutex_lock failed");
-    instant_t physical_time = lf_time_physical();
-    while (watchdog->expiration != NEVER && physical_time < watchdog->expiration) {
-        interval_t T = watchdog->expiration - physical_time;
-        LF_PRINT_DEBUG("Watchdog %p going to sleep", watchdog);
-        // Wait for expiration, or a signal to terminate
-        if(lf_cond_timedwait(&watchdog->cond, watchdog->expiration) != LF_TIMEOUT) {
-            LF_PRINT_DEBUG("Watchdog %p was cancelled. Terminating", watchdog);
+    while (true) {
+
+        // Step 1: Wait for a timeout to start watching for.
+        
+        // Edge case 1: We have already gotten a signal to terminate.
+        if (watchdog->terminate) {
             goto terminate;
         }
-        LF_PRINT_DEBUG("Watchdog %p woke up from sleep. Checking for timeout", watchdog);
-        physical_time = lf_time_physical();
-    }
-    // If we get here then we either have a time-out or expiration is NEVER.
 
-    if (watchdog->expiration != NEVER) {
-        // At this point we have a timeout.
+        // Edge case 2: We have already received a timeout.
+        if(watchdog->expiration != NEVER) {
+            watchdog_wait(watchdog);
+        } else {
+            // Wait for a signal that we have a timeout to wait for on the cond-var.
+            do {
+                lf_cond_wait(watchdog->cond);
+            } while (watchdog->expiration == NEVER && !watchdog->terminate);
+            
+            // Check whether we actually got a termination signal.
+            if (watchdog->terminate) {
+                goto terminate;
+            }
+
+            // Finally go wait for that timeout.
+            watchdog_wait(watchdog);
+        }
+
+        // At this point we have returned from the watchdog wait. But it could
+        // be that it was to terminate the watchdog.
+        if (watchdog->terminate) {
+            goto terminate;
+        }
+
+        // It could also be that the watchdog was just stopped
+        if (watchdog->expirateion == NEVER) {
+            continue;
+        }
+
+        // Finally. The watchdog actually timed out. Handle it.
         LF_PRINT_DEBUG("Watchdog %p timed out", watchdog);
         watchdog_function_t watchdog_func = watchdog->watchdog_function;
         (*watchdog_func)(base);
+
+        watchdog->active = false;
     }
 
 terminate:
     // Here the thread terminates. 
-    watchdog->thread_active = false;
+    watchdog->active = false;
     ret = lf_mutex_unlock(base->reactor_mutex);
     LF_ASSERTN(ret, "lf_mutex_unlock failed");
     return NULL;
 }
 
 void lf_watchdog_start(watchdog_t* watchdog, interval_t additional_timeout) {
-    int ret;
     // Assumes reactor mutex is already held.
-
     self_base_t* base = watchdog->base;
+    watchdog->terminate = false;
     watchdog->expiration = base->environment->current_tag.time + watchdog->min_expiration + additional_timeout;
 
-    // If we dont have a running watchdog thread.
-    if (!watchdog->thread_active) {
-        ret = lf_thread_create(&(watchdog->thread_id), _lf_run_watchdog, watchdog);
-        LF_ASSERTN(ret, "lf_thread_create failed");
-        watchdog->thread_active = true;
+    // If the watchdog is inactive, signal it to start waiting.
+    if (!watchdog->active) {
+        ret = lf_cond_signal(watchdog->cond);
+        LF_ASSERTN(ret, "lf_conf_signal failed");
     } 
 }
 
 void lf_watchdog_stop(watchdog_t* watchdog) {
     int ret;
-    // Assumes reactor mutex is already held.
-    if (!watchdog->thread_active)
+    // If the watchdog isnt active, then it is no reason to stop it.
+    if (!watchdog->active) {
         return;
+    }
+
+    // Assumes reactor mutex is already held.
     watchdog->expiration = NEVER;
     ret = lf_cond_signal(&watchdog->cond);
     LF_ASSERTN(ret, "lf_conf_signal failed");
+}
+
+
+void _lf_watchdog_terminate(watchdog_t* watchdog) {
+    watchdog->terminate = true;
+    watchdog->expiration = NEVER;
+    int ret = lf_cond_signal(watchdog->cond);
+    LF_ASSERTN(ret, "lf_cond_signal failed");
+
 }

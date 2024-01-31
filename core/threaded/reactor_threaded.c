@@ -1185,7 +1185,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         environment_t *env = &envs[i];
         
         // Initialize the watchdogs on this environment.
-        _lf_initialize_watchdog_mutexes(env);
+        _lf_initialize_watchdogs(env);
 
         // Initialize the start and stop tags of the environment
         environment_init_tags(env, start_time, duration);

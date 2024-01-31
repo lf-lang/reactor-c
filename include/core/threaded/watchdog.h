@@ -35,7 +35,8 @@ struct watchdog_t {
     interval_t min_expiration;              // The minimum expiration interval for the watchdog.
     lf_thread_t thread_id;                  // The thread that the watchdog is meant to run on.
     lf_cond_t cond;                         // Condition variable used for sleeping and termination.
-    bool thread_active;                     // Boolean indicating whether or not thread is active.  
+    bool active;                            // Boolean indicating whether or not thread is active.  
+    bool terminate;                         // Boolean indicating whether or not thread is active.  
     watchdog_function_t watchdog_function;  // The function/handler for the watchdog.
 };
 
