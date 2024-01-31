@@ -4,8 +4,8 @@
 #include <string.h>
 #include <assert.h>
 
-#include "trace.h"
-#include "platform.h"
+#include "trace-abi.h"
+#include "platform-abi.h"
 
 // FIXME: Target property should specify the capacity of the trace buffer.
 #define TRACE_BUFFER_CAPACITY 2048

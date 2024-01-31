@@ -11,7 +11,7 @@
 #include <stdlib.h>
 
 #include "core/platform.h"
-#include "plugin-apis/platform.h"
+#include "plugin-apis/platform-abi.h"
 
 lf_platform_mutex_ptr_t lf_platform_mutex_new() {
     lf_platform_mutex_ptr_t mutex = (lf_platform_mutex_ptr_t) malloc(sizeof(lf_mutex_t));
