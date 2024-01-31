@@ -75,7 +75,7 @@ add_executable(
     ${CoreLib}/utils/pqueue_tag.c
     ${CoreLib}/utils/pqueue.c
 )
-target_link_libraries(RTI ${CMAKE_CURRENT_LIST_DIR}/../../../plugin-defaults/trace/build/libDefaultTracing.a)
+target_link_libraries(RTI ${CMAKE_CURRENT_LIST_DIR}/../../../plugin-defaults/trace/build/defaulttracing.a)
 include(${CMAKE_CURRENT_LIST_DIR}/../../platform/CMakeLists.txt)
 target_link_libraries(RTI Platform)
 
