@@ -1730,11 +1730,15 @@ void initialize_global(void) {
     
     environment_t *envs;
     int num_envs = _lf_get_environments(&envs);
-
 #if defined(LF_SINGLE_THREADED)
-    lf_tracing_global_init(1);
+    int max_threads_tracing = 1;
 #else
-    lf_tracing_global_init(envs[0].num_workers * num_envs + 2); // FIXME: is this right? In case of federation, I doubt it. Easy to check but I am in a hurry.
+    int max_threads_tracing = envs[0].num_workers * num_envs + 2;
+#endif
+#if defined(FEDERATED)
+    lf_tracing_global_init("federate__", FEDERATE_ID, max_threads_tracing);
+#else
+    lf_tracing_global_init("trace_", 0, max_threads_tracing); // FIXME: is this right? In case of federation, I doubt it. Easy to check but I am in a hurry.
 #endif
     // for (int i = 0; i<num_envs; i++) {
     //     start_trace(envs[i].trace);

@@ -2766,7 +2766,7 @@ void lf_synchronize_with_other_federates(void) {
     // Reset the start time to the coordinated start time for all federates.
     // Note that this does not grant execution to this federate.
     start_time = get_start_time_from_rti(lf_time_physical());
-    lf_tracing_set_start_time("federate__", _lf_my_fed_id, start_time);
+    lf_tracing_set_start_time(start_time);
 
     // Start a thread to listen for incoming TCP messages from the RTI.
     // @note Up until this point, the federate has been listening for messages

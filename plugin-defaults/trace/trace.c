@@ -316,20 +316,20 @@ void tracepoint(int worker, trace_record_nodeps_t* tr) {
     trace._lf_trace_buffer_size[index]++;
 }
 
-void lf_tracing_global_init(int max_num_local_threads) {
+void lf_tracing_global_init(char* file_name_prefix, int fedid, int max_num_local_threads) {
     trace_mutex = lf_platform_mutex_new();
     if (!trace_mutex) {
         fprintf(stderr, "WARNING: Failed to initialize trace mutex.\n");
         exit(1);
     }
-    start_trace(&trace, max_num_local_threads);
-}
-void lf_tracing_set_start_time(char* file_name_prefix, int fedid, int64_t time) {
     process_id = fedid;
-    start_time = time;
     char filename[100];
     sprintf(filename, "%s%d.lft", file_name_prefix, process_id);
     trace_new(filename);
+    start_trace(&trace, max_num_local_threads);
+}
+void lf_tracing_set_start_time(int64_t time) {
+    start_time = time;
 }
 void lf_tracing_global_shutdown() {
     printf("DEBUG: Shutting down tracing at process %d.\n", process_id);

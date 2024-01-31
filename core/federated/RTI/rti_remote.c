@@ -871,7 +871,7 @@ void handle_timestamp(federate_info_t *my_fed) {
     start_time_buffer[0] = MSG_TYPE_TIMESTAMP;
     // Add an offset to this start time to get everyone starting together.
     start_time = rti_remote->max_start_time + DELAY_START;
-    lf_tracing_set_start_time("rti", -1, start_time);
+    lf_tracing_set_start_time(start_time);
     encode_int64(swap_bytes_if_big_endian_int64(start_time), &start_time_buffer[1]);
 
     if (rti_remote->base.tracing_enabled) {

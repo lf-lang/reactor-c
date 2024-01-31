@@ -388,7 +388,7 @@ int lf_reactor_c_main(int argc, const char* argv[]) {
         // Set start time
         start_time = lf_time_physical();
         #ifndef FEDERATED
-        lf_tracing_set_start_time("trace_", 0, start_time);
+        lf_tracing_set_start_time(start_time);
         #endif
 
         LF_PRINT_DEBUG("NOTE: FOREVER is displayed as " PRINTF_TAG " and NEVER as " PRINTF_TAG,
