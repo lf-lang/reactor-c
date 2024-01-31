@@ -3,6 +3,7 @@
 /docs/api
 **/.vscode/
 **/build/
+**/lib/
 **/.DS_Store
 /core/federated/RTI/build/
 /cmake-build-debug/
