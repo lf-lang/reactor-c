@@ -513,7 +513,7 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     if (timer->offset == 0) {
         for (int i = 0; i < timer->number_of_reactions; i++) {
             _lf_trigger_reaction(env, timer->reactions[i], -1);
-            tracepoint_schedule(timer, 0LL); // Trace even though schedule is not called.
+            tracepoint_schedule(env, timer, 0LL); // Trace even though schedule is not called.
         }
         if (timer->period == 0) {
             return;
@@ -533,7 +533,7 @@ void _lf_initialize_timer(environment_t* env, trigger_t* timer) {
     e->time = lf_time_logical(env) + delay;
     // NOTE: No lock is being held. Assuming this only happens at startup.
     pqueue_insert(env->event_q, e);
-    tracepoint_schedule(timer, delay); // Trace even though schedule is not called.
+    tracepoint_schedule(env, timer, delay); // Trace even though schedule is not called.
 }
 
 /**
@@ -721,7 +721,7 @@ trigger_handle_t _lf_schedule_at_tag(environment_t* env, trigger_t* trigger, tag
     // Set the event time
     e->time = tag.time;
 
-    tracepoint_schedule(trigger, tag.time - current_logical_tag.time);
+    tracepoint_schedule(env, trigger, tag.time - current_logical_tag.time);
 
     // Make sure the event points to this trigger so when it is
     // dequeued, it will trigger this trigger.
@@ -1118,7 +1118,7 @@ trigger_handle_t _lf_schedule(environment_t *env, trigger_t* trigger, interval_t
             e->time - start_time);
     pqueue_insert(env->event_q, e);
 
-    tracepoint_schedule(trigger, e->time - env->current_tag.time);
+    tracepoint_schedule(env, trigger, e->time - env->current_tag.time);
 
     // FIXME: make a record of handle and implement unschedule.
     // NOTE: Rather than wrapping around to get a negative number,
@@ -1359,11 +1359,11 @@ void _lf_invoke_reaction(environment_t* env, reaction_t* reaction, int worker) {
     }
 #endif
 
-    tracepoint_reaction_starts(reaction, worker);
+    tracepoint_reaction_starts(env, reaction, worker);
     ((self_base_t*) reaction->self)->executing_reaction = reaction;
     reaction->function(reaction->self);
     ((self_base_t*) reaction->self)->executing_reaction = NULL;
-    tracepoint_reaction_ends(reaction, worker);
+    tracepoint_reaction_ends(env, reaction, worker);
 
 
 #if !defined(LF_SINGLE_THREADED)
@@ -1502,7 +1502,7 @@ void schedule_output_reactions(environment_t *env, reaction_t* reaction, int wor
             // Check for deadline violation.
             if (downstream_to_execute_now->deadline == 0 || physical_time > env->current_tag.time + downstream_to_execute_now->deadline) {
                 // Deadline violation has occurred.
-                tracepoint_reaction_deadline_missed(downstream_to_execute_now, worker);
+                tracepoint_reaction_deadline_missed(env, downstream_to_execute_now, worker);
                 violation = true;
                 // Invoke the local handler, if there is one.
                 reaction_function_t handler = downstream_to_execute_now->deadline_violation_handler;

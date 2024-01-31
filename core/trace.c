@@ -110,7 +110,7 @@ int register_user_trace_event(void *self, char* description) {
 void call_tracepoint(
         int event_type,
         void* reactor,
-        tag_t* tag,
+        tag_t tag,
         int worker,
         int src_id,
         int dst_id,
@@ -125,23 +125,23 @@ void call_tracepoint(
         local_time = lf_time_physical();
         physical_time = &local_time;
     }
-    tag_t local_tag;
-    if (tag != NULL) {
-        local_tag.time = tag->time;
-        local_tag.microstep = tag->microstep;
-    }
-    // else if (env != NULL) {
-    //     local_tag.time = ((environment_t *)env)->current_tag.time;
-    //     local_tag.microstep = ((environment_t*)env)->current_tag.microstep;
+    // tag_t local_tag;
+    // if (tag != NULL) {
+    //     local_tag.time = tag->time;
+    //     local_tag.microstep = tag->microstep;
     // }
-    tag = &local_tag;
+    // // else if (env != NULL) {
+    // //     local_tag.time = ((environment_t *)env)->current_tag.time;
+    // //     local_tag.microstep = ((environment_t*)env)->current_tag.microstep;
+    // // }
+    // tag = &local_tag;
     trace_record_t tr = {
         .event_type = event_type,
         .pointer = reactor,
         .src_id = src_id,
         .dst_id = dst_id,
-        .logical_time = tag->time,
-        .microstep = tag->microstep,
+        .logical_time = tag.time,
+        .microstep = tag.microstep,
         .trigger = trigger,
         .extra_delay = extra_delay,
         .physical_time = *physical_time
@@ -154,7 +154,7 @@ void call_tracepoint(
  * @param trigger Pointer to the trigger_t struct for the trigger.
  * @param extra_delay The extra delay passed to schedule().
  */
-void tracepoint_schedule(trigger_t* trigger, interval_t extra_delay) {
+void tracepoint_schedule(environment_t* env, trigger_t* trigger, interval_t extra_delay) {
     // schedule() can only trigger reactions within the same reactor as the action
     // or timer. If there is such a reaction, find its reactor's self struct and
     // put that into the tracepoint. We only have to look at the first reaction.
@@ -168,7 +168,7 @@ void tracepoint_schedule(trigger_t* trigger, interval_t extra_delay) {
     // This is OK because it is called only while holding the mutex lock.
     // True argument specifies to record physical time as late as possible, when
     // the event is already on the event queue.
-    call_tracepoint(schedule_called, reactor, NULL, -1, 0, 0, NULL, trigger, extra_delay, true);
+    call_tracepoint(schedule_called, reactor, env->current_tag, -1, 0, 0, NULL, trigger, extra_delay, true);
 }
 
 /**
@@ -189,8 +189,9 @@ void tracepoint_user_event(void* self, char* description) {
     // because multiple reactions might be calling the same tracepoint function.
     // There will be a performance hit for this.
     LF_ASSERT(self, "A pointer to the self struct is needed to trace an event");
+    environment_t *env = ((self_base_t *)self)->environment;
     // lf_critical_section_enter(env); // FIXME: NOT NEEDED. SELF IS NOT NEEDED
-    call_tracepoint(user_event, description, NULL, -1, -1, -1, NULL, NULL, 0, false);
+    call_tracepoint(user_event, description, env->current_tag, -1, -1, -1, NULL, NULL, 0, false);
     // lf_critical_section_exit(env);
 }
 
@@ -218,7 +219,7 @@ void tracepoint_user_value(void* self, char* description, long long value) {
     environment_t *env = ((self_base_t *)self)->environment;
     // trace_t *trace = env->trace;  // FIXME
     // lf_critical_section_enter(env);
-    call_tracepoint(user_value, description,  NULL, -1, -1, -1, NULL, NULL, value, false);
+    call_tracepoint(user_value, description, env->current_tag, -1, -1, -1, NULL, NULL, value, false);
     // lf_critical_section_exit(env);
 }
 
@@ -238,7 +239,7 @@ void tracepoint_federate_to_rti(trace_event_t event_type, int fed_id, tag_t* tag
     call_tracepoint(
         event_type,
         NULL,   // void* pointer,
-        tag,    // tag* tag,
+        tag ? *tag : NEVER,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
         fed_id, // int src_id,
         -1,     // int dst_id,
@@ -261,7 +262,7 @@ void tracepoint_federate_from_rti(trace_event_t event_type, int fed_id, tag_t* t
     call_tracepoint(
         event_type,
         NULL,   // void* pointer,
-        tag,    // tag* tag,
+        tag ? *tag : NEVER,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
         fed_id, // int src_id,
         -1,     // int dst_id,
@@ -284,7 +285,7 @@ void tracepoint_federate_to_federate(trace_event_t event_type, int fed_id, int p
     call_tracepoint(
         event_type,
         NULL,   // void* pointer,
-        tag,    // tag* tag,
+        tag ? *tag : NEVER,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
         fed_id, // int src_id,
         partner_id,     // int dst_id,
@@ -307,7 +308,7 @@ void tracepoint_federate_from_federate(trace_event_t event_type, int fed_id, int
     call_tracepoint(
         event_type,
         NULL,   // void* pointer,
-        tag,    // tag* tag,
+        tag ? *tag : NEVER,    // tag* tag,
         -1,     // int worker, // no worker ID needed because this is called within a mutex
         fed_id, // int src_id,
         partner_id,     // int dst_id,
@@ -335,7 +336,7 @@ void tracepoint_rti_to_federate(trace_event_t event_type, int fed_id, tag_t* tag
     call_tracepoint(
         event_type,
         NULL,   // void* pointer,
-        tag,    // tag_t* tag,
+        tag ? *tag : NEVER,    // tag_t* tag,
         fed_id, // int worker (one thread per federate)
         -1,     // int src_id
         fed_id, // int dst_id
@@ -357,7 +358,7 @@ void tracepoint_rti_from_federate(trace_event_t event_type, int fed_id, tag_t* t
     call_tracepoint(
         event_type,
         NULL,   // void* pointer,
-        tag,    // tag_t* tag,
+        tag ? *tag : NEVER,    // tag_t* tag,
         fed_id, // int worker (one thread per federate)
         -1,     // int src_id  (RTI is the source of the tracepoint)
         fed_id, // int dst_id
