@@ -256,7 +256,7 @@ void handle_latest_tag_complete(federate_info_t* fed);
  *
  * @param fed The federate sending a NET message.
  */
-void handle_next_event_tag(federate_info_t* fed);
+void handle_next_event_tag(federate_info_t *fed, unsigned char *buffer);
 
 /////////////////// STOP functions ////////////////////
 

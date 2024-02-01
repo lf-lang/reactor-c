@@ -551,9 +551,9 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
 
 
 
-        // case MSG_TYPE_NEXT_EVENT_TAG:
-        //     handle_next_event_tag(my_fed);
-        //     break;
+        case MSG_TYPE_NEXT_EVENT_TAG:
+            net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
+            "RTI failed to read the content of the next event tag");
         //     case MSG_TYPE_TAG_ADVANCE_GRANT:
         //         handle_tag_advance_grant();
         //         break;
@@ -577,7 +577,7 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
             return net_read_from_socket(priv->socket_descriptor, sizeof(uint16_t), buffer);
             break;
         case MSG_TYPE_ADDRESS_ADVERTISEMENT:
-            net_read_from_socket_fail_on_error(priv->socket_descriptor, sizeof(int32_t), (unsigned char *)buffer, NULL,
+            net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int32_t), (unsigned char *)buffer, NULL,
                 "Error reading port data.");            
             break;
 

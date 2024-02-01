@@ -540,12 +540,7 @@ void handle_latest_tag_complete(federate_info_t *fed) {
     LF_MUTEX_UNLOCK(rti_mutex);
 }
 
-void handle_next_event_tag(federate_info_t *fed) {
-    unsigned char buffer[sizeof(int64_t) + sizeof(uint32_t)];
-    read_from_socket_fail_on_error(&fed->socket, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
-            "RTI failed to read the content of the next event tag from federate %d.",
-            fed->enclave.id);
-
+void handle_next_event_tag(federate_info_t *fed, unsigned char *buffer) {
     // Acquire a mutex lock to ensure that this state does not change while a
     // message is in transport or being used to determine a TAG.
     LF_MUTEX_LOCK(rti_mutex); // FIXME: Instead of using a mutex, it might be more efficient to use a
@@ -1214,7 +1209,7 @@ void *federate_info_thread_TCP(void *fed) {
             handle_federate_resign(my_fed);
             return NULL;
         case MSG_TYPE_NEXT_EVENT_TAG:
-            handle_next_event_tag(my_fed);
+            handle_next_event_tag(my_fed, buffer + 1);
             break;
         case MSG_TYPE_LATEST_TAG_COMPLETE:
             handle_latest_tag_complete(my_fed);
