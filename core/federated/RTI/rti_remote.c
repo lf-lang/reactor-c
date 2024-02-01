@@ -1451,7 +1451,7 @@ static int32_t receive_and_check_fed_id_message(int* socket_id, struct sockaddr_
   // First byte received is the message type.
   if (buffer[0] != MSG_TYPE_FED_IDS) {
     if (rti_remote->base.tracing_enabled) {
-      tracepoint_rti_to_federate(send_REJECT, fed_id, NULL);
+      tracepoint_rti_to_federate(rti_remote->base.trace, send_REJECT, fed_id, NULL);
     }
     if (buffer[0] == MSG_TYPE_P2P_SENDING_FED_ID || buffer[0] == MSG_TYPE_P2P_TAGGED_MESSAGE) {
       // The federate is trying to connect to a peer, not to the RTI.
