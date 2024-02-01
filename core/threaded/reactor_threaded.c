@@ -34,6 +34,7 @@
 
 // Global variables defined in tag.c and shared across environments:
 extern instant_t start_time;
+extern tag_t effective_start_tag;
 
 /**
  * The maximum amount of time a worker thread should stall
