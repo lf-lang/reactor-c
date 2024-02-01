@@ -24,6 +24,7 @@ elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
     set(PLATFORM_ZEPHYR true)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
     list(APPEND REACTORC_COMPILE_DEFS PLATFORM_RP2040)
+    set(PLATFORM_RP2040 true)
 endif()
 
 # Prepend all sources with platform
