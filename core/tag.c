@@ -38,6 +38,12 @@ typedef enum _lf_time_type {
 // Global variables declared in tag.h:
 instant_t start_time = NEVER;
 
+/**
+ * Only useful for transient federates. It records the effective start tag, to 
+ * be used at startup. Elapsed logical time calculations will use start_time. 
+ */
+tag_t effective_start_tag = {.time = 0LL, .microstep = 0};
+
 //////////////// Global variables not declared in tag.h (must be declared extern if used elsewhere):
 
 
