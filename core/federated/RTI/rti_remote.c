@@ -312,16 +312,9 @@ void update_federate_next_event_tag_locked(uint16_t federate_id, tag_t next_even
 }
 
 void handle_port_absent_message(federate_info_t *sending_federate, unsigned char *buffer) {
-    size_t message_size = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int64_t) + sizeof(uint32_t);
-
-    read_from_socket_fail_on_error(
-            &sending_federate->socket, message_size, &(buffer[1]), NULL,
-            " RTI failed to read port absent message from federate %u.",
-            sending_federate->enclave.id);
-
-    uint16_t reactor_port_id = extract_uint16(&(buffer[1]));
-    uint16_t federate_id = extract_uint16(&(buffer[1 + sizeof(uint16_t)]));
-    tag_t tag = extract_tag(&(buffer[1 + 2 * sizeof(uint16_t)]));
+    uint16_t reactor_port_id = extract_uint16(buffer + 1);
+    uint16_t federate_id = extract_uint16(buffer + 1 + sizeof(uint16_t));
+    tag_t tag = extract_tag(buffer + 1 + 2 * sizeof(uint16_t));
 
     if (rti_remote->base.tracing_enabled) {
         tracepoint_rti_from_federate(rti_remote->base.trace, receive_PORT_ABS, sending_federate->enclave.id, &tag);
@@ -370,7 +363,8 @@ void handle_port_absent_message(federate_info_t *sending_federate, unsigned char
     }
 
     // Forward the message.
-    write_to_socket_fail_on_error(&fed->socket, message_size + 1, buffer, &rti_mutex,
+    size_t message_size = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int64_t) + sizeof(uint32_t);
+    write_to_netdrv_fail_on_error(&fed->socket, message_size + 1, buffer, &rti_mutex,
                                   "RTI failed to forward message to federate %d.", federate_id);
 
     LF_MUTEX_UNLOCK(rti_mutex);

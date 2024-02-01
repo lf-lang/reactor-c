@@ -578,7 +578,7 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
             return net_read_from_socket(priv->socket_descriptor, sizeof(uint16_t), buffer);
             break;
         case MSG_TYPE_ADDRESS_ADVERTISEMENT:
-            net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int32_t), (unsigned char *)buffer, NULL,
+            net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int32_t), buffer, NULL,
                     "Error reading port data.");            
             break;
 
@@ -612,9 +612,9 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
         //     break;
         // case MSG_TYPE_CLOCK_SYNC_CODED_PROBE:
         //     break;
-        // case MSG_TYPE_PORT_ABSENT:
-        //     handle_port_absent_message(my_fed, buffer);
-        //     break;
+        case MSG_TYPE_PORT_ABSENT:
+            net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
+                    "RTI failed to read port absent message.");
 
         case MSG_TYPE_NEIGHBOR_STRUCTURE:
             net_read_from_socket(priv->socket_descriptor, MSG_TYPE_NEIGHBOR_STRUCTURE_HEADER_SIZE - 1, buffer);
