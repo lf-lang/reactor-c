@@ -2100,15 +2100,16 @@ void initialize_federate(federate_info_t *fed, uint16_t id) {
     fed->clock_netdrv = netdrv_init();
 }
 
-void start_net_rti_server() {
+int32_t start_net_rti_server() {
     _lf_initialize_clock();
     // Create the RTI's netdriver.
-    create_net_server(rti_remote->rti_netdrv, RTI);
+    int success = create_net_server(rti_remote->rti_netdrv, RTI);
     lf_print("RTI: Listening for federates.");
     // Create the clocksync's netdriver.
     if (rti_remote->clock_sync_global_status >= clock_sync_on) {
         create_net_server(rti_remote->clock_netdrv, CLOCKSYNC);
     }
+    return success;
 }
 
 int32_t start_rti_server(uint16_t port) {

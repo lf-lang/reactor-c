@@ -392,7 +392,7 @@ void* respond_to_erroneous_connections(void* nothing);
 void initialize_federate(federate_info_t* fed, uint16_t id);
 
 //TODO: Need to add descriptions.
-void start_net_rti_server();
+int32_t start_net_rti_server();
 
 /**
  * Start the socket server for the runtime infrastructure (RTI) and
