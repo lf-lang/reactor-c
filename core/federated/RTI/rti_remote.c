@@ -2215,23 +2215,7 @@ void initialize_federate(federate_info_t* fed, uint16_t id) {
   strncpy(fed->server_hostname, "localhost", INET_ADDRSTRLEN);
   fed->server_ip_addr.s_addr = 0;
   fed->server_port = -1;
-  fed->has_upstream_transient_federates = false;
   fed->is_transient = true;
-  fed->effective_start_tag = NEVER_TAG;
-}
-
-void reset_transient_federate(federate_info_t* fed) {
-  // Reset of the federate-related attributes
-  fed->socket = -1; // No socket.
-  fed->clock_synchronization_enabled = true;
-  // FIXME: The following two lines can be improved?
-  pqueue_tag_free(fed->in_transit_message_tags);
-  fed->in_transit_message_tags = pqueue_tag_init(10);
-  strncpy(fed->server_hostname, "localhost", INET_ADDRSTRLEN);
-  fed->server_ip_addr.s_addr = 0;
-  fed->server_port = -1;
-  fed->requested_stop = false;
-  invalidate_min_delays_upstream(&(fed->enclave));
 }
 
 int32_t start_rti_server(uint16_t port) {
