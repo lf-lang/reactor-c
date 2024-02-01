@@ -147,7 +147,7 @@ void rti_logical_tag_complete_locked(enclave_info_t* enclave, tag_t completed) {
     }
     // Release the enclave mutex while doing the local RTI work.
     LF_ASSERT(lf_mutex_unlock(&enclave->env->mutex) == 0, "Could not unlock mutex");
-    tracepoint_federate_to_rti(enclavsend_LTC, enclave->base.id, &completed);
+    tracepoint_federate_to_rti(send_LTC, enclave->base.id, &completed);
     _logical_tag_complete(&enclave->base, completed);
     // Acquire the enclave mutex again before returning.
     LF_ASSERT(lf_mutex_lock(&enclave->env->mutex) == 0, "Could not lock mutex");

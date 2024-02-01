@@ -1,5 +1,17 @@
 set(CORE_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
+    set(CMAKE_SYSTEM_VERSION 10.0)
+    message("Using Windows SDK version ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
+    list(APPEND REACTORC_COMPILE_DEFS PLATFORM_NRF52)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
+    list(APPEND REACTORC_COMPILE_DEFS PLATFORM_ZEPHYR)
+    set(PLATFORM_ZEPHYR true)
+elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
+    list(APPEND REACTORC_COMPILE_DEFS PLATFORM_RP2040)
+endif()
+
 # Get the general common sources for reactor-c
 list(APPEND GENERAL_SOURCES tag.c port.c mixed_radix.c reactor_common.c lf_token.c environment.c)
 

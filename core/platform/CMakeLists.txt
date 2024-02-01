@@ -14,21 +14,22 @@ set(LF_PLATFORM_FILES
     ${CMAKE_CURRENT_LIST_DIR}/lf_rp2040_support.c
     ${CMAKE_CURRENT_LIST_DIR}/platform.c
 )
+if(PLATFORM_ZEPHYR)
+    message("--- Building Zephyr library")
+    zephyr_library_named(LfPlatform)
+    zephyr_library_sources(${LF_PLATFORM_FILES})
+    zephyr_library_link_libraries(kernel)
+else()
+message("--- Building non-Zephyr library")
+    add_library(LfPlatform STATIC ${LF_PLATFORM_FILES})
+endif()
+# add_library(LfPlatform STATIC ${LF_PLATFORM_FILES})
 
-add_library(LfPlatform STATIC ${LF_PLATFORM_FILES})
-
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    set(CMAKE_SYSTEM_VERSION 10.0)
-    message("Using Windows SDK version ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION}")
-elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
-    list(APPEND REACTORC_COMPILE_DEFS PLATFORM_NRF52)
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Nrf52")
     target_compile_definitions(LfPlatform PUBLIC PLATFORM_NRF52)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Zephyr")
-    list(APPEND REACTORC_COMPILE_DEFS PLATFORM_ZEPHYR)
     target_compile_definitions(LfPlatform PUBLIC PLATFORM_ZEPHYR)
-    set(PLATFORM_ZEPHYR true)
 elseif(${CMAKE_SYSTEM_NAME} STREQUAL "Rp2040")
-    list(APPEND REACTORC_COMPILE_DEFS PLATFORM_RP2040)
     target_compile_definitions(LfPlatform PUBLIC PLATFORM_RP2040)
 endif()
 
