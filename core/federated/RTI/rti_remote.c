@@ -699,7 +699,7 @@ void handle_timestamp(federate_info_t *my_fed, unsigned char *buffer) {
     LF_PRINT_LOG("RTI sent start time " PRINTF_TIME " to federate %d.", start_time, my_fed->enclave.id);
     LF_MUTEX_UNLOCK(rti_mutex);
 }
-void net_send_physical_clock(unsigned char message_type, federate_info_t *fed, socket_type_t socket_type) {
+void send_physical_clock(unsigned char message_type, federate_info_t *fed, socket_type_t socket_type) {
     if (fed->enclave.state == NOT_CONNECTED) {
         lf_print_warning("Clock sync: RTI failed to send physical time to federate %d. Socket not connected.\n",
                          fed->enclave.id);
@@ -736,58 +736,6 @@ void net_send_physical_clock(unsigned char message_type, federate_info_t *fed, s
             " to federate %d.",
             current_physical_time,
             fed->enclave.id);
-}
-
-void send_physical_clock(unsigned char message_type, federate_info_t *fed, socket_type_t socket_type) {
-    if (fed->enclave.state == NOT_CONNECTED) {
-        lf_print_warning("Clock sync: RTI failed to send physical time to federate %d. Socket not connected.\n",
-                         fed->enclave.id);
-        return;
-    }
-    unsigned char buffer[sizeof(int64_t) + 1];
-    buffer[0] = message_type;
-    int64_t current_physical_time = lf_time_physical();
-    encode_int64(current_physical_time, &(buffer[1]));
-
-    // Send the message
-    if (socket_type == UDP) {
-        // FIXME: UDP_addr is never initialized.
-        LF_PRINT_DEBUG("Clock sync: RTI sending UDP message type %u.", buffer[0]);
-        ssize_t bytes_written = sendto(rti_remote->socket_descriptor_UDP, buffer, 1 + sizeof(int64_t), 0,
-                (struct sockaddr *)&fed->UDP_addr, sizeof(fed->UDP_addr));
-        if (bytes_written < (ssize_t)sizeof(int64_t) + 1) {
-            lf_print_warning("Clock sync: RTI failed to send physical time to federate %d: %s\n",
-                    fed->enclave.id,
-                    strerror(errno));
-            return;
-        }
-    }
-    else if (socket_type == TCP) {
-        LF_PRINT_DEBUG("Clock sync:  RTI sending TCP message type %u.", buffer[0]);
-        LF_MUTEX_LOCK(rti_mutex);
-        write_to_socket_fail_on_error(&fed->socket, 1 + sizeof(int64_t), buffer, &rti_mutex,
-                "Clock sync: RTI failed to send physical time to federate %d.",
-                fed->enclave.id);
-        LF_MUTEX_UNLOCK(rti_mutex);
-    }
-    LF_PRINT_DEBUG("Clock sync: RTI sent PHYSICAL_TIME_SYNC_MESSAGE with timestamp " PRINTF_TIME 
-            " to federate %d.",
-            current_physical_time,
-            fed->enclave.id);
-}
-
-void net_handle_physical_clock_sync_message(federate_info_t *my_fed, socket_type_t socket_type) {
-    // Lock the mutex to prevent interference between sending the two
-    // coded probe messages.
-    LF_MUTEX_LOCK(rti_mutex);
-    // Reply with a T4 type message
-    net_send_physical_clock(MSG_TYPE_CLOCK_SYNC_T4, my_fed, socket_type);
-    // Send the corresponding coded probe immediately after,
-    // but only if this is a UDP channel.
-    if (socket_type == UDP) {
-        net_send_physical_clock(MSG_TYPE_CLOCK_SYNC_CODED_PROBE, my_fed, socket_type);
-    }
-    LF_MUTEX_UNLOCK(rti_mutex);
 }
 
 void handle_physical_clock_sync_message(federate_info_t *my_fed, socket_type_t socket_type) {
@@ -1322,7 +1270,7 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t *netdrv, uint16_t 
                 // Send the required number of messages for clock synchronization
                 for (int i = 0; i < rti_remote->clock_sync_exchanges_per_interval; i++) {
                     // Send the RTI's current physical time T1 to the federate.
-                    net_send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, TCP);
+                    send_physical_clock(MSG_TYPE_CLOCK_SYNC_T1, fed, TCP);
 
                     // Listen for reply message, which should be T3.
                     size_t message_size = 1 + sizeof(int32_t);
@@ -1334,7 +1282,7 @@ static int receive_udp_message_and_set_up_clock_sync(netdrv_t *netdrv, uint16_t 
                         assert(fed_id > -1);
                         assert(fed_id < 65536);
                         LF_PRINT_DEBUG("RTI received T3 clock sync message from federate %d.", fed_id);
-                        net_handle_physical_clock_sync_message(fed, TCP);
+                        handle_physical_clock_sync_message(fed, TCP);
                     } else {
                         lf_print_error("Unexpected message %u from federate %d.", buffer[0], fed_id);
                         send_reject(netdrv, UNEXPECTED_MESSAGE);
