@@ -267,7 +267,7 @@ void handle_next_event_tag(federate_info_t *fed, unsigned char *buffer);
  *
  * @param fed The federate sending a MSG_TYPE_STOP_REQUEST message.
  */
-void handle_stop_request_message(federate_info_t* fed);
+void handle_stop_request_message(federate_info_t *fed, unsigned char *buffer);
 
 /**
  * Handle a MSG_TYPE_STOP_REQUEST_REPLY message.

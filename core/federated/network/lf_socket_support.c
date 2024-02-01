@@ -553,7 +553,7 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
 
         case MSG_TYPE_NEXT_EVENT_TAG:
             net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
-                "RTI failed to read the content of the next event tag");
+                    "RTI failed to read the content of the next event tag.");
         //     case MSG_TYPE_TAG_ADVANCE_GRANT:
         //         handle_tag_advance_grant();
         //         break;
@@ -563,9 +563,10 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
 
         case MSG_TYPE_LATEST_TAG_COMPLETE:
             net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int64_t) + sizeof(uint32_t), buffer, NULL,
-                "RTI failed to read the content of the logical tag complete");
-        // case MSG_TYPE_STOP_REQUEST:
-        //     handle_stop_request_message(my_fed); 
+                    "RTI failed to read the content of the logical tag complete.");
+        case MSG_TYPE_STOP_REQUEST:
+            net_read_from_socket_fail_on_error(&priv->socket_descriptor, MSG_TYPE_STOP_REQUEST_LENGTH - 1, buffer, NULL,
+                    "RTI failed to read the MSG_TYPE_STOP_REQUEST payload.");
         // case MSG_TYPE_STOP_REQUEST_REPLY:
         //     handle_stop_request_reply(my_fed);
         //     break;
@@ -578,7 +579,7 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
             break;
         case MSG_TYPE_ADDRESS_ADVERTISEMENT:
             net_read_from_socket_fail_on_error(&priv->socket_descriptor, sizeof(int32_t), (unsigned char *)buffer, NULL,
-                "Error reading port data.");            
+                    "Error reading port data.");            
             break;
 
         // case MSG_TYPE_P2P_SENDING_FED_ID: //1 /////////TODO: CHECK!!!!!!!

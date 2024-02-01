@@ -594,8 +594,8 @@ static void broadcast_stop_time_to_federates_locked() {
         if (rti_remote->base.tracing_enabled) {
             tracepoint_rti_to_federate(rti_remote->base.trace, send_STOP_GRN, fed->enclave.id, &rti_remote->base.max_stop_tag);
         }
-        write_to_socket_fail_on_error(
-                &fed->socket, MSG_TYPE_STOP_GRANTED_LENGTH, outgoing_buffer, &rti_mutex,
+        write_to_netdrv_fail_on_error(
+                fed->fed_netdrv, MSG_TYPE_STOP_GRANTED_LENGTH, outgoing_buffer, &rti_mutex,
                 "RTI failed to send MSG_TYPE_STOP_GRANTED message to federate %d.", fed->enclave.id);
     }
 
@@ -646,14 +646,8 @@ static void* wait_for_stop_request_reply(void* args) {
     return NULL;
 }
 
-void handle_stop_request_message(federate_info_t *fed) {
+void handle_stop_request_message(federate_info_t *fed, unsigned char *buffer) {
     LF_PRINT_DEBUG("RTI handling stop_request from federate %d.", fed->enclave.id);
-
-    size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_LENGTH - 1;
-    unsigned char buffer[bytes_to_read];
-    read_from_socket_fail_on_error(&fed->socket, bytes_to_read, buffer, NULL,
-            "RTI failed to read the MSG_TYPE_STOP_REQUEST payload from federate %d.",
-            fed->enclave.id);
 
     // Extract the proposed stop tag for the federate
     tag_t proposed_stop_tag = extract_tag(buffer);
@@ -719,7 +713,7 @@ void handle_stop_request_message(federate_info_t *fed) {
             if (rti_remote->base.tracing_enabled) {
                 tracepoint_rti_to_federate(rti_remote->base.trace, send_STOP_REQ, f->enclave.id, &rti_remote->base.max_stop_tag);
             }
-            write_to_socket_fail_on_error(&f->socket, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer, &rti_mutex,
+            write_to_netdrv_fail_on_error(f->fed_netdrv, MSG_TYPE_STOP_REQUEST_LENGTH, stop_request_buffer, &rti_mutex,
                     "RTI failed to forward MSG_TYPE_STOP_REQUEST message to federate %d.", f->enclave.id);
         }
     }
@@ -1211,11 +1205,7 @@ void *federate_info_thread_TCP(void *fed) {
             handle_latest_tag_complete(my_fed, buffer + 1);
             break;
         case MSG_TYPE_STOP_REQUEST:
-            handle_stop_request_message(my_fed); // FIXME: Reviewed until here.
-                                                 // Need to also look at
-                                                 // notify_advance_grant_if_safe()
-                                                 // and notify_downstream_advance_grant_if_safe()
-            break;
+            handle_stop_request_message(my_fed, buffer + 1);
         case MSG_TYPE_STOP_REQUEST_REPLY:
             handle_stop_request_reply(my_fed);
             break;
