@@ -364,7 +364,7 @@ void handle_port_absent_message(federate_info_t *sending_federate, unsigned char
 
     // Forward the message.
     size_t message_size = sizeof(uint16_t) + sizeof(uint16_t) + sizeof(int64_t) + sizeof(uint32_t);
-    write_to_netdrv_fail_on_error(&fed->socket, message_size + 1, buffer, &rti_mutex,
+    write_to_netdrv_fail_on_error(fed->fed_netdrv, message_size + 1, buffer, &rti_mutex,
                                   "RTI failed to forward message to federate %d.", federate_id);
 
     LF_MUTEX_UNLOCK(rti_mutex);
@@ -1077,14 +1077,8 @@ static void handle_federate_failed(federate_info_t *my_fed) {
     // Indicate that there will no further events from this federate.
     my_fed->enclave.next_event = FOREVER_TAG;
 
-    // According to this: https://stackoverflow.com/questions/4160347/close-vs-shutdown-socket,
-    // the close should happen when receiving a 0 length message from the other end.
-    // Here, we just signal the other side that no further writes to the socket are
-    // forthcoming, which should result in the other end getting a zero-length reception.
-    shutdown(my_fed->socket, SHUT_RDWR);
-
-    // We can now safely close the socket.
-    close(my_fed->socket); //  from unistd.h
+    // Shutdown and close netdriver.
+    my_fed->fed_netdrv->close(my_fed->fed_netdrv);
 
     // Check downstream federates to see whether they should now be granted a TAG.
     // To handle cycles, need to create a boolean array to keep
@@ -1229,7 +1223,7 @@ void net_send_reject(netdrv_t *netdrv, unsigned char error_code) {
     if (write_to_netdrv(netdrv, 2, response)) {
         lf_print_warning("RTI failed to write MSG_TYPE_REJECT message on the socket.");
     }
-    // Close the netdrv.
+    // Shutdown and close the netdrv.
     netdrv->close(netdrv);
     LF_MUTEX_UNLOCK(rti_mutex);
 }
