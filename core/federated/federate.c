@@ -90,7 +90,8 @@ federate_instance_t _fed = {
         .received_stop_request_from_rti = false,
         .last_sent_LTC = (tag_t) {.time = NEVER, .microstep = 0u},
         .last_sent_NET = (tag_t) {.time = NEVER, .microstep = 0u},
-        .min_delay_from_physical_action_to_federate_output = NEVER
+        .min_delay_from_physical_action_to_federate_output = NEVER,
+        .is_transient = false
 };
 
 federation_metadata_t federation_metadata = {
