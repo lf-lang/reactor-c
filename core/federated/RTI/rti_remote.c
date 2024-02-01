@@ -1505,13 +1505,7 @@ void lf_connect_to_federates(netdrv_t *rti_netdrv) {
 
 void *respond_to_erroneous_connections(void *nothing) {
     while (true) {
-        // Wait for an incoming connection request.
-        struct sockaddr client_fd;
-        uint32_t client_length = sizeof(client_fd);
-        // The following will block until either a federate attempts to connect
-        // or close(rti->socket_descriptor_TCP) is called.
-        int socket_id = accept(rti_remote->socket_descriptor_TCP, &client_fd, &client_length);
-        if (socket_id < 0) return NULL;
+        netdrv_t *fed_netdrv = netdrv_accept(rti_remote->rti_netdrv);
 
         if (rti_remote->all_federates_exited) {
             return NULL;
@@ -1522,12 +1516,11 @@ void *respond_to_erroneous_connections(void *nothing) {
         response[0] = MSG_TYPE_REJECT;
         response[1] = FEDERATION_ID_DOES_NOT_MATCH;
         // Ignore errors on this response.
-        if (write_to_socket(socket_id, 2, response)) {
+        if (write_to_netdrv(fed_netdrv, 2, response)) {
             lf_print_warning("RTI failed to write FEDERATION_ID_DOES_NOT_MATCH to erroneous incoming connection.");
         }
-        // Close the socket.
-        shutdown(socket_id, SHUT_RDWR);
-        close(socket_id);
+        // Close the netdriver.
+        fed_netdrv->close(fed_netdrv);
     }
     return NULL;
 }

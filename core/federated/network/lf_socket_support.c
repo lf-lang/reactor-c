@@ -112,7 +112,7 @@ netdrv_t *netdrv_init() {
  *
  * @return The socket ID (a file descriptor).
  */
-static int net_create_real_time_tcp_socket_errexit() {
+static int create_real_time_tcp_socket_errexit() {
     int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
     if (sock < 0) {
         lf_print_error_and_exit("Could not open TCP socket. Err=%d", sock);
@@ -167,7 +167,7 @@ int create_rti_server(netdrv_t *drv, netdrv_type_t netdrv_type) {
     // Create an IPv4 socket for TCP (not UDP) communication over IP (0).
     priv->socket_descriptor = -1;
     if (netdrv_type == RTI) {
-        priv->socket_descriptor = net_create_real_time_tcp_socket_errexit();
+        priv->socket_descriptor = create_real_time_tcp_socket_errexit();
     } else if (netdrv_type == CLOCKSYNC) {
         priv->socket_descriptor = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
         // Set the appropriate timeout time
@@ -321,6 +321,17 @@ void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv) {
         }
         close(clock_priv->socket_descriptor);
     }
+}
+
+netdrv_t *netdrv_accept(netdrv_t *rti_netdrv) {
+    netdrv_t *fed_netdrv = netdrv_init();
+    socket_priv_t *rti_priv = get_priv(rti_netdrv);
+    socket_priv_t *fed_priv = get_priv(fed_netdrv);
+    struct sockaddr client_fd;
+    uint32_t client_length = sizeof(client_fd);
+    fed_priv->socket_descriptor = accept(rti_priv->socket_descriptor, &client_fd, &client_length);
+    if (fed_priv->socket_descriptor < 0) return NULL;
+    return fed_netdrv;
 }
 
 netdrv_t *accept_connection(netdrv_t *rti_netdrv) {

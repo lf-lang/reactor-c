@@ -87,8 +87,10 @@ int create_rti_server(netdrv_t *drv, netdrv_type_t netdrv_type);
 
 // int create_real_time_tcp_socket_errexit();
 void close_netdrvs(netdrv_t *rti_netdrv, netdrv_t *clock_netdrv);
-netdrv_t *accept_connection(netdrv_t * rti_netdrv);
 
+netdrv_t *netdrv_accept(netdrv_t *rti_netdrv);
+
+netdrv_t *accept_connection(netdrv_t * rti_netdrv);
 
 
 

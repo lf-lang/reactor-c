@@ -104,16 +104,6 @@ extern lf_mutex_t socket_mutex;
 
 //TODO: Copied at lf_socket_support.c. Erase after finished.
 /**
- * @brief Create an IPv4 TCP socket with Nagle's algorithm disabled
- * (TCP_NODELAY) and Delayed ACKs disabled (TCP_QUICKACK). Exits application
- * on any error.
- *
- * @return The socket ID (a file descriptor).
- */
-int create_real_time_tcp_socket_errexit();
-
-//TODO: Copied at lf_socket_support.c. Erase after finished.
-/**
  * Read the specified number of bytes from the specified socket into the specified buffer.
  * If an error occurs during this reading, return -1 and set errno to indicate
  * the cause of the error. If the read succeeds in reading the specified number of bytes,
