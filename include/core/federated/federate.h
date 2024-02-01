@@ -176,6 +176,12 @@ typedef struct federate_instance_t {
    */
   instant_t min_delay_from_physical_action_to_federate_output;
 
+  /**
+   * Indicator of whether this federate is transient.
+   * The default value of false may be overridden in _lf_initialize_trigger_objects.
+   */
+  bool is_transient;
+
 #ifdef FEDERATED_DECENTRALIZED
   /**
    * Thread responsible for setting ports to absent by an STAA offset if they
