@@ -117,6 +117,15 @@ typedef struct rti_remote_t {
     volatile bool all_federates_exited;
 
     /**
+     * Boolean indicating that all persistent federates have exited.
+     * This gets set to true exactly once before the program waits for
+     * persistent federates, then exits.
+     * It is marked volatile because the write is not guarded by a mutex.
+     * The main thread makes this true.
+     */
+    volatile bool all_persistent_federates_exited;
+
+    /**
      * The ID of the federation that this RTI will supervise.
      * This should be overridden with a command-line -i option to ensure
      * that each federate only joins its assigned federation.
@@ -174,6 +183,11 @@ typedef struct rti_remote_t {
      * Number of transient federates  
      */
     int32_t number_of_transient_federates;
+
+    /**
+     * Number of connected transient federates  
+     */
+    int32_t number_of_connected_transient_federates;
 } rti_remote_t;
 
 /**
@@ -293,7 +307,7 @@ void handle_address_query(uint16_t fed_id);
  * field of the _RTI.federates[federate_id] array of structs.
  *
  * The server_hostname and server_ip_addr fields are assigned
- * in lf_connect_to_federates() upon accepting the socket
+ * in lf_connect_to_persistent_federates() upon accepting the socket
  * from the remote federate.
  *
  * This function assumes the caller does not hold the mutex.
@@ -364,12 +378,21 @@ void* federate_info_thread_TCP(void* fed);
 void send_reject(int* socket_id, unsigned char error_code);
 
 /**
- * Wait for one incoming connection request from each federate,
- * and upon receiving it, create a thread to communicate with
- * that federate. Return when all federates have connected.
+ * Wait for one incoming connection request from each (persistent) federate,
+ * and upon receiving it, create a thread to communicate with that federate.
+ * Return when all persistent federates have connected.
  * @param socket_descriptor The socket on which to accept connections.
  */
-void lf_connect_to_federates(int socket_descriptor);
+void lf_connect_to_persistent_federates(int socket_descriptor);
+
+/**
+ * Thread to wait for incoming connection request from transient federates. 
+ * Upon receiving the connection request, check if a hot swap should start or 
+ * simply create a thread to communicate with that federate.
+ * Stops if all persistent federates exited.
+ * @param socket_descriptor The socket on which to accept connections.
+ */
+void* lf_connect_to_transient_federates_thread(int socket_descriptor);
 
 /**
  * Thread to respond to new connections, which could be federates of other
