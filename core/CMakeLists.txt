@@ -60,7 +60,7 @@ if (DEFINED LF_TRACE_PLUGIN)
 endif()
 
 include(platform/CMakeLists.txt)
-target_link_libraries(reactor-c PUBLIC Platform)
+target_link_libraries(reactor-c PUBLIC LfPlatform)
 
 # Apply compile definitions to the reactor-c library.
 target_compile_definitions(reactor-c PUBLIC ${REACTORC_COMPILE_DEFS})
