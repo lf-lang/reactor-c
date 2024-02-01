@@ -122,7 +122,7 @@ void usage(int argc, const char* argv[]) {
   lf_print("  -n, --number_of_federates <n>");
   lf_print("   The number of federates in the federation that this RTI will control.\n");
   lf_print("  -nt, --number_of_transient_federates <n>");
-  lf_print("   The number of federates that are transient; this must be strictly less than the number of federates.\n");
+  lf_print("   The number of transient federates in the federation that this RTI will control.\n");
   lf_print("  -p, --port <n>");
   lf_print("   The port number to use for the RTI. Must be larger than 0 and smaller than %d. Default is %d.\n",
            UINT16_MAX, DEFAULT_PORT);
@@ -242,7 +242,7 @@ int process_args(int argc, const char* argv[]) {
       }
       i++;
       long num_transient_federates = strtol(argv[i], NULL, 10);
-      if (num_transient_federates < 0L || num_transient_federates == LONG_MAX || num_transient_federates == LONG_MIN) {
+      if (num_transient_federates == LONG_MAX || num_transient_federates == LONG_MIN) {
         lf_print_error("--number_of_transient_federates needs a valid positive or null integer argument.");
         usage(argc, argv);
         return 0;
@@ -294,8 +294,8 @@ int process_args(int argc, const char* argv[]) {
     usage(argc, argv);
     return 0;
   }
-  if (rti.number_of_transient_federates >= rti.base.number_of_scheduling_nodes) {
-    lf_print_error("--number_of_transient_federates cannot be higher or equal to the number of federates.");
+  if (rti.number_of_transient_federates > rti.base.number_of_scheduling_nodes) {
+    lf_print_error("--number_of_transient_federates cannot be higher than the number of federates.");
     usage(argc, argv);
     return 0;
   }
@@ -339,7 +339,10 @@ int main(int argc, const char* argv[]) {
   }
 
   lf_print("Starting RTI for a total of %d federates, with %d being transient, in federation ID %s",
-           rti.base.number_of_scheduling_nodes, rti.number_of_transient_federates, rti.federation_id);
+           rti.base.number_of_scheduling_nodes, rti.number_of_transient_federates,
+
+           rti.federation_id);
+
   assert(rti.base.number_of_scheduling_nodes < UINT16_MAX);
 
   // Allocate memory for the federates
