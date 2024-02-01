@@ -1737,6 +1737,7 @@ void initialize_federate(federate_info_t *fed, uint16_t id) {
     strncpy(fed->server_hostname, "localhost", INET_ADDRSTRLEN);
     fed->server_ip_addr.s_addr = 0;
     fed->server_port = -1;
+    fed->is_transient = true;
 }
 
 int32_t start_rti_server(uint16_t port) {
@@ -1826,6 +1827,7 @@ void initialize_RTI(rti_remote_t *rti) {
     rti_remote->authentication_enabled = false;
     rti_remote->base.tracing_enabled = false;
     rti_remote->stop_in_progress = false;
+    rti_remote->num_transient_federates = 0;
 }
 
 void free_scheduling_nodes(scheduling_node_t **scheduling_nodes, uint16_t number_of_scheduling_nodes) {

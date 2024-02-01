@@ -120,6 +120,8 @@ void usage(int argc, const char* argv[]) {
     lf_print("   The ID of the federation that this RTI will control.\n");
     lf_print("  -n, --number_of_federates <n>");
     lf_print("   The number of federates in the federation that this RTI will control.\n");
+    lf_print("  -nt, --number_of_transient_federates <n>");
+    lf_print("   The number of transient federates in the federation that this RTI will control.\n");
     lf_print("  -p, --port <n>");
     lf_print("   The port number to use for the RTI. Must be larger than 0 and smaller than %d. Default is %d.\n", UINT16_MAX, DEFAULT_PORT);
     lf_print("  -c, --clock_sync [off|init|on] [period <n>] [exchanges-per-interval <n>]");
@@ -230,6 +232,21 @@ int process_args(int argc, const char* argv[]) {
             }
             rti.base.number_of_scheduling_nodes = (int32_t)num_federates; // FIXME: Loses numbers on 64-bit machines
             lf_print("RTI: Number of federates: %d", rti.base.number_of_scheduling_nodes);
+        } else if (strcmp(argv[i], "-nt") == 0 || strcmp(argv[i], "--number_of_transient_federates") == 0) {
+            if (argc < i + 2) {
+                lf_print_error("--number_of_transient_federates needs a valid positive argument.");
+                usage(argc, argv);
+                return 0;
+            }
+            i++;
+            long num_transient_federates = strtol(argv[i], NULL, 10);
+            if (num_transient_federates == LONG_MAX ||  num_transient_federates == LONG_MIN) {
+                lf_print_error("--number_of_transient_federates needs a valid positive or null integer argument.");
+                usage(argc, argv);
+                return 0;
+            }
+            rti.number_of_transient_federates = (int32_t)num_transient_federates; // FIXME: Loses numbers on 64-bit machines
+            lf_print("RTI: Number of transient federates: %d", rti.number_of_transient_federates);
         } else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0) {
             if (argc < i + 2) {
                 lf_print_error(
@@ -281,6 +298,11 @@ int process_args(int argc, const char* argv[]) {
         usage(argc, argv);
         return 0;
     }
+    if (rti.number_of_transient_federates > rti.base.number_of_scheduling_nodes) {
+        lf_print_error("--number_of_transient_federates cannot be higher than the number of federates.");
+        usage(argc, argv);
+        return 0;
+    }
     return 1;
 }
 int main(int argc, const char* argv[]) {
@@ -316,7 +338,11 @@ int main(int argc, const char* argv[]) {
         lf_print("Tracing the RTI execution in %s file.", rti_trace_file_name);
     }
 
-    lf_print("Starting RTI for %d federates in federation ID %s.",  rti.base.number_of_scheduling_nodes, rti.federation_id);
+    lf_print("Starting RTI for a total of %d federates, with %d being transient, in federation ID %s", \
+        rti.base.number_of_scheduling_nodes, 
+        rti.number_of_transient_federates, 
+        rti.federation_id);
+
     assert(rti.base.number_of_scheduling_nodes < UINT16_MAX);
     
     // Allocate memory for the federates

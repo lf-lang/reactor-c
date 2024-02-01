@@ -71,6 +71,7 @@ typedef struct federate_info_t {
                             // RTI has not been informed of the port number.
     struct in_addr server_ip_addr; // Information about the IP address of the socket
                                 // server of the federate.
+    bool is_transient;
 } federate_info_t;
 
 
@@ -163,10 +164,16 @@ typedef struct rti_remote_t {
      * Boolean indicating that authentication is enabled.
      */
     bool authentication_enabled;
+
     /**
      * Boolean indicating that a stop request is already in progress.
      */
     bool stop_in_progress;
+
+    /**
+     * Number of transient federates  
+     */
+    int32_t number_of_transient_federates;
 } rti_remote_t;
 
 /**
