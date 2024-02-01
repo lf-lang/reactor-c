@@ -276,7 +276,7 @@ void handle_stop_request_message(federate_info_t *fed, unsigned char *buffer);
  *
  * @param fed The federate replying the MSG_TYPE_STOP_REQUEST
  */
-void handle_stop_request_reply(federate_info_t* fed);
+void handle_stop_request_reply(federate_info_t* fed, unsigned char *buffer);
 
 //////////////////////////////////////////////////
 

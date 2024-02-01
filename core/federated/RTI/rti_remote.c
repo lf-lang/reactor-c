@@ -723,14 +723,8 @@ void handle_stop_request_message(federate_info_t *fed, unsigned char *buffer) {
     LF_MUTEX_UNLOCK(rti_mutex);
 }
 
-void handle_stop_request_reply(federate_info_t *fed) {
-    size_t bytes_to_read = MSG_TYPE_STOP_REQUEST_REPLY_LENGTH - 1;
-    unsigned char buffer_stop_time[bytes_to_read];
-    read_from_socket_fail_on_error(&fed->socket, bytes_to_read, buffer_stop_time, NULL,
-            "RTI failed to read the reply to MSG_TYPE_STOP_REQUEST message from federate %d.",
-            fed->enclave.id);
-
-    tag_t federate_stop_tag = extract_tag(buffer_stop_time);
+void handle_stop_request_reply(federate_info_t *fed, unsigned char *buffer) {
+    tag_t federate_stop_tag = extract_tag(buffer);
 
     if (rti_remote->base.tracing_enabled) {
         tracepoint_rti_from_federate(rti_remote->base.trace, receive_STOP_REQ_REP, fed->enclave.id, &federate_stop_tag);
@@ -1207,7 +1201,7 @@ void *federate_info_thread_TCP(void *fed) {
         case MSG_TYPE_STOP_REQUEST:
             handle_stop_request_message(my_fed, buffer + 1);
         case MSG_TYPE_STOP_REQUEST_REPLY:
-            handle_stop_request_reply(my_fed);
+            handle_stop_request_reply(my_fed, buffer + 1);
             break;
         case MSG_TYPE_PORT_ABSENT:
             handle_port_absent_message(my_fed, buffer);

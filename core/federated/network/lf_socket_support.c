@@ -567,9 +567,9 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
         case MSG_TYPE_STOP_REQUEST:
             net_read_from_socket_fail_on_error(&priv->socket_descriptor, MSG_TYPE_STOP_REQUEST_LENGTH - 1, buffer, NULL,
                     "RTI failed to read the MSG_TYPE_STOP_REQUEST payload.");
-        // case MSG_TYPE_STOP_REQUEST_REPLY:
-        //     handle_stop_request_reply(my_fed);
-        //     break;
+        case MSG_TYPE_STOP_REQUEST_REPLY:
+            net_read_from_socket_fail_on_error(&priv->socket_descriptor, MSG_TYPE_STOP_REQUEST_REPLY_LENGTH - 1, buffer, NULL,
+                    "RTI failed to read the reply to MSG_TYPE_STOP_REQUEST message.");
         //     case MSG_TYPE_STOP_GRANTED:
         //         handle_stop_granted_message();
         //         break;
