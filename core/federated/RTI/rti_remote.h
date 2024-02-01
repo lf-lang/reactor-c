@@ -308,7 +308,7 @@ void handle_address_query(uint16_t fed_id, unsigned char *buffer);
  * @param federate_id The id of the remote federate that is
  *  sending the address advertisement.
  */
-void handle_address_ad(uint16_t federate_id);
+void handle_address_ad(uint16_t federate_id, unsigned char *buffer)
 
 /**
  * A function to handle timestamp messages.

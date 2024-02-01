@@ -803,21 +803,19 @@ void handle_address_query(uint16_t fed_id, unsigned char *buffer) {
             fed_id, remote_fed->server_hostname, remote_fed->server_port);
 }
 
-void handle_address_ad(uint16_t federate_id) {
+//TODO: NEED to be fixed.
+void handle_address_ad(uint16_t federate_id, unsigned char *buffer) {
     federate_info_t *fed = GET_FED_INFO(federate_id);
     // Read the port number of the federate that can be used for physical
     // connections to other federates
     int32_t server_port = -1;
-    unsigned char buffer[sizeof(int32_t)];
-    read_from_socket_fail_on_error(&fed->socket, sizeof(int32_t), (unsigned char *)buffer, NULL,
-            "Error reading port data from federate %d.", federate_id);
 
     server_port = extract_int32(buffer);
 
     assert(server_port < 65536);
 
     LF_MUTEX_LOCK(rti_mutex);
-    fed->server_port = server_port;
+    fed->server_port = server_port; //TODO: NEED to be fixed.
     LF_MUTEX_UNLOCK(rti_mutex);
 
     LF_PRINT_LOG("Received address advertisement with port %d from federate %d.", server_port, federate_id);
@@ -1206,7 +1204,7 @@ void *federate_info_thread_TCP(void *fed) {
             handle_address_query(my_fed->enclave.id, buffer + 1);
             break;
         case MSG_TYPE_ADDRESS_ADVERTISEMENT:
-            handle_address_ad(my_fed->enclave.id);
+            handle_address_ad(my_fed->enclave.id, buffer + 1);
             break;
         case MSG_TYPE_TAGGED_MESSAGE:
             handle_timed_message(my_fed, buffer);

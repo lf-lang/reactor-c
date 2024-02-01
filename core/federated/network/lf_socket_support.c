@@ -538,9 +538,9 @@ int read_from_netdrv(netdrv_t* netdrv, unsigned char* buffer) {
         case MSG_TYPE_ADDRESS_QUERY:
             return net_read_from_socket(priv->socket_descriptor, sizeof(uint16_t), buffer);
             break;
-        // case MSG_TYPE_ADDRESS_ADVERTISEMENT:
-        //     handle_address_ad(my_fed->enclave.id);
-        //     break;
+        case MSG_TYPE_ADDRESS_ADVERTISEMENT:
+            return net_read_from_socket(priv->socket_descriptor, sizeof(int32_t), buffer);
+            break;
 
         // case MSG_TYPE_P2P_SENDING_FED_ID: //1 /////////TODO: CHECK!!!!!!!
         //     break;
